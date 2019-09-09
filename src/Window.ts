@@ -55,7 +55,7 @@ export default class Window extends EventTarget {
 	public document: Document;
 	public customElements: CustomElementRegistry = new CustomElementRegistry();
 	public location = new Location();
-	public navigator = { userAgent: 'server-dom' };
+	public navigator = { userAgent: 'happy-dom' };
 	public self = this;
 
 	// Custom Properties (not part of HTML standard)
