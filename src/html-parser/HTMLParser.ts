@@ -19,8 +19,7 @@ const SELF_CLOSING_ELEMENTS = {
  */
 export default class HTMLParser {
 	/**
-	 * Parses HTML and returns a root element
-	 * Parse a chuck of HTML source.
+	 * Parses HTML and returns a root element.
 	 *
 	 * @param  {Document} document Document.
 	 * @param  {string} data HTML data.
