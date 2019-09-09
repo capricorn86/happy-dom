@@ -21,7 +21,7 @@ import EventTypes from './event/EventTypes.json';
 import MutationObserver from './mutation-observer/MutationObserver';
 import ShadowRootRenderOptions from './shadow-root/ShadowRootRenderOptions';
 
-const TIMER_FUNCTIONS = ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'];
+const GLOBAL_FUNCTIONS = ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'];
 
 const ASYNC_DONE_EVENT = 'asyncDone';
 const ASYNC_ERROR_EVENT = 'asyncError';
@@ -119,8 +119,11 @@ export default class Window extends EventTarget {
 	 */
 	public addEventListener(type: string, listener: (event: Event) => void): void {
 		super.addEventListener(type, listener);
-		this.startAsyncTask();
-		setTimeout(() => this.endAsyncTask(), 0);
+
+		if(type === ASYNC_DONE_EVENT || type === ASYNC_ERROR_EVENT) {
+			this.startAsyncTask();
+			setTimeout(() => this.endAsyncTask(), 0);
+		}
 	}
 
 	/**
@@ -152,8 +155,10 @@ export default class Window extends EventTarget {
 	}
 }
 
-for (const timerFunction of TIMER_FUNCTIONS) {
-	Window.prototype[timerFunction] = () => {
-		throw new Error('Method with name window."' + timerFunction + '"() is not supported.');
-	};
+// @ts-ignore
+if(typeof global !== undefined) {
+	for (const globalFunction of GLOBAL_FUNCTIONS) {
+		// @ts-ignore
+		Window.prototype[globalFunction] = global[globalFunction];
+	}
 }
