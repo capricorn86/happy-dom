@@ -1,0 +1,44 @@
+{
+	"name": "happy-dom",
+	"version": "0.0.1",
+	"license": "MIT",
+	"homepage": "https://github.com/capricorn86/happy-dom#readme",
+	"repository": "https://github.com/capricorn86/happy-dom",
+	"author": "David Ortner",
+	"description": "A jsdom alternative with support for server side rendering of web components.",
+	"main": "lib/index.js",
+	"keywords": [
+		"jsdom",
+		"happy",
+		"dom",
+		"webcomponents",
+		"web",
+		"component",
+		"server",
+		"side",
+		"rendering",
+		"custom",
+		"elements"
+	],
+	"scripts": {
+		"compile": "tsc",
+		"watch": "tsc -w --preserveWatchOutput",
+		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'"
+	},
+	"dependencies": {
+		"he": "1.1.1",
+		"css-tree": "^1.0.0-alpha.29",
+		"node-fetch": "2.5.0"
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^1.9.0",
+		"@typescript-eslint/parser": "^1.9.0",
+		"@types/node": "^12.6.8",
+		"@types/he": "latest",
+		"eslint": "^5.16.0",
+		"eslint-config-prettier": "^4.1.0",
+		"eslint-plugin-prettier": "^3.0.1",
+		"prettier": "^1.16.4",
+		"typescript": "^3.4.5"
+	}
+}
