@@ -31,7 +31,7 @@ const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
  * Handles the Window.
  */
 export default class Window extends EventTarget {
-	// Exposed classes
+	// Global classes
 	public Node = Node;
 	public TextNode = TextNode;
 	public CommentNode = CommentNode;
