@@ -12,13 +12,18 @@ const ASCII = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
  * Node
  */
 export default class Node extends EventTarget {
+	// Public properties
 	public static ownerDocument: Document = null;
 	public ownerDocument: Document = null;
 	public parentNode: Node = null;
 	public readonly nodeType: NodeType;
 	public readonly childNodes: Node[] = [];
-	protected observers: MutationObserverListener[] = [];
+
+	// Protected properties
 	protected _isConnected: boolean = false;
+
+	// Custom Properties (not part of HTML standard)
+	protected observers: MutationObserverListener[] = [];
 
 	/**
 	 * Constructor.
@@ -354,6 +359,7 @@ export default class Node extends EventTarget {
 
 	/**
 	 * Observeres the node.
+	 * Used by MutationObserver, but it is not part of the HTML standard.
 	 *
 	 * @param {MutationObserverListener} listener Listener.
 	 */
@@ -367,7 +373,8 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Observeres the node.
+	 * Stops observing the node.
+	 * Used by MutationObserver, but it is not part of the HTML standard.
 	 *
 	 * @param {MutationObserverListener} listener Listener.
 	 */
