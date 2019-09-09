@@ -391,6 +391,7 @@ export default class Node extends EventTarget {
 	}
 }
 
+// Adds Note types to the Node class (part of the HTML standard)
 for (const key of Object.keys(NodeType)) {
 	Node[key] = NodeType[key];
 }
