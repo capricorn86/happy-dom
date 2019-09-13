@@ -1,4 +1,5 @@
 import Window from './Window';
+import AsyncWindow from './AsyncWindow';
 import Document from './nodes/Document';
 import Element from './nodes/Element';
 import HTMLElement from './nodes/HTMLElement';
@@ -10,8 +11,10 @@ import TextNode from './nodes/TextNode';
 import CommentNode from './nodes/CommentNode';
 import TreeWalker from './tree-walker/TreeWalker';
 import CustomElementRegistry from './html-element/CustomElementRegistry';
+import VMContext from './VMContext';
 
 export {
+	AsyncWindow,
 	Window,
 	Document,
 	Element,
@@ -23,5 +26,6 @@ export {
 	TextNode,
 	CommentNode,
 	TreeWalker,
-	CustomElementRegistry
+	CustomElementRegistry,
+	VMContext
 };

@@ -32,7 +32,8 @@
 	},
 	"include": [
 		"@types/node",
-		"src"
+		"src",
+		"./src/**/*.json"
 	],
 	"exclude": [
 		"node_modules",

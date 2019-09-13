@@ -39,7 +39,13 @@ export default class EventTarget {
 	 * @return {boolean} The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault()
 	 */
 	public dispatchEvent(event: Event): boolean {
+		const onEventName = 'on' + event.type.toLowerCase();
 		let defaultPrevented = false;
+
+		if (typeof this[onEventName] === 'function') {
+			this[onEventName].call(this, event);
+		}
+
 		if (this.listeners[event.type]) {
 			for (const listener of this.listeners[event.type]) {
 				listener(event);
@@ -51,6 +57,7 @@ export default class EventTarget {
 				}
 			}
 		}
+
 		return !defaultPrevented;
 	}
 }
