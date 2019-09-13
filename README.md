@@ -103,7 +103,7 @@ console.log(myContainer.innerHTML);
 
 The asynchronous DOM will add features like "fetch", "setTimeout", "setInterval" etc. on top of the synchronous DOM.
 
-An asynchronous DOM is useful when running scripts inside of it. This is usually done within a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options). See the "Manually Setup a VM Context" to see how to setup this.
+An asynchronous DOM is useful when running scripts inside of it. This is usually done within a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options). See the "Manually Setup a VM Context" to see how to set this up.
 
 *Note: The asynchronous DOM a dependency to "node-fetch", so it will not be supported client side.*
 
