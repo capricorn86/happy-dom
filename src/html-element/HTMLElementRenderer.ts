@@ -52,7 +52,7 @@ export default class HTMLElementRenderer {
 		const renderElement = (<HTMLTemplateElement>element).content || element;
 		let result = '';
 
-		if (renderOptions.openShadowRootAndScopeCSS && element instanceof Element && element.shadowRoot) {
+		if (renderOptions.openShadowRoots && element instanceof Element && element.shadowRoot) {
 			return ShadowRootRenderer.getInnerHTML(element, cssCache);
 		}
 
@@ -65,7 +65,7 @@ export default class HTMLElementRenderer {
 		}
 
 		if (
-			renderOptions.openShadowRootAndScopeCSS &&
+			renderOptions.openShadowRoots &&
 			renderOptions.appendScopedCSSToHead &&
 			element === element.ownerDocument.documentElement
 		) {
