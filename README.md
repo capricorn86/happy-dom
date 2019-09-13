@@ -38,7 +38,7 @@ npm install happy-dom
 
 Happy DOM provide with a utility for server side rendering. The utility will create a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options), which is an isolated environment for where the script and DOM can be executed.
 
-Importing dependencies is not supported by the VM script. Therefore scripts with imports has to be bundled with a tool like Webpack in order to be executed within the virtual machine.
+Importing dependencies is not supported by the VM script. Therefore scripts with imports has to be bundled with a tool like [Webpack](https://webpack.js.org/) in order to be executed within the virtual machine.
 
 ### Example
 
@@ -103,9 +103,9 @@ console.log(myContainer.innerHTML);
 
 The asynchronous DOM will add features like "fetch", "setTimeout", "setInterval" etc. on top of the synchronous DOM.
 
-An asynchronous DOM is useful when running scripts inside of it. This is usually done within a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options). See the "Manually Setup a VM Context" to see how to set this up.
+An asynchronous DOM is useful when running scripts inside of it. This is usually done within a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options). See the "Manually Setup a VM Context" section for an example on how to set this up.
 
-*Note: The asynchronous DOM a dependency to "node-fetch", so it will not be supported client side.*
+*Note: The asynchronous DOM has a dependency to "node-fetch", so it will not work client side.*
 
 ```javascript
 import { AsyncWindow } from 'happy-dom';
