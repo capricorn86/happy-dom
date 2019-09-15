@@ -43,6 +43,27 @@ export default class Window extends EventTarget {
 	public CustomElementRegistry = CustomElementRegistry;
 	public Window = Window;
 
+	// @ts-ignore
+	public Array = typeof global !== undefined ? global.Array : null;
+	// @ts-ignore
+	public Object = typeof global !== undefined ? global.Object : null;
+	// @ts-ignore
+	public Number = typeof global !== undefined ? global.Number : null;
+	// @ts-ignore
+	public Symbol = typeof global !== undefined ? global.Symbol : null;
+	// @ts-ignore
+	public Function = typeof global !== undefined ? global.Function : null;
+	// @ts-ignore
+	public RegExp = typeof global !== undefined ? global.RegExp : null;
+	// @ts-ignore
+	public Date = typeof global !== undefined ? global.Date : null;
+	// @ts-ignore
+	public JSON = typeof global !== undefined ? global.JSON : null;
+	// @ts-ignore
+	public Promise = typeof global !== undefined ? global.Promise : null;
+	// @ts-ignore
+	public Error = typeof global !== undefined ? global.Error : null;
+
 	// Public Properties
 	public document: Document;
 	public customElements: CustomElementRegistry = new CustomElementRegistry();
@@ -50,18 +71,11 @@ export default class Window extends EventTarget {
 	public navigator = { userAgent: 'happy-dom' };
 	public self = this;
 
+	// @ts-ignore
+	public console = typeof global !== undefined ? global.console : null;
+
 	// Custom Properties (not part of HTML standard)
 	public shadowRootRenderOptions = new ShadowRootRenderOptions();
-
-	/**
-	 * Returns the console.
-	 *
-	 * @returns {object} Console.
-	 */
-	public get console(): object {
-		// @ts-ignore
-		return typeof global !== undefined ? global.console : null;
-	}
 
 	/**
 	 * Constructor.

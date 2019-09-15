@@ -5,14 +5,6 @@ As shadow roots are closed, this DOM supports opening them up by providing an op
 
 
 
-# How to Install
-
-```bash
-npm install happy-dom
-```
-
-
-
 # DOM Features
 
 - Custom Elements (Web Components)
@@ -27,6 +19,14 @@ npm install happy-dom
   
 
   And much more..
+
+
+
+# How to Install
+
+```bash
+npm install happy-dom
+```
 
 
 
@@ -132,6 +132,8 @@ window.whenAsynComplete().then(() => {
 });
 ```
 
+
+
 ## Manually Setup a VM Context
 
 The bellow example will show you how to setup a Node [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options).
@@ -181,15 +183,13 @@ script.runInContext(context);
 
 # Known Limitations
 
-Happy DOM supports the most common functionality of a DOM, but there are many features that are not supported yet. 
+Happy DOM supports the most common functionality of a DOM, but there are some features that are not supported yet. 
 
 If you have a need for a missing feature or if you have found a bug, please let me know, and I will do my best to fix it.
 
 
 
 # Release Notes
-
-
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
