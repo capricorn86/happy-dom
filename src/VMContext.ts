@@ -36,7 +36,7 @@ export default class VMContext {
 				window.location.href = options.url;
 			}
 
-			window.shadowRootRenderOptions.openShadowRoots = true;
+			window.shadowRootRenderOptions.openShadowRoots = options.openShadowRoots === true;
 
 			document.write(options.html);
 
