@@ -167,7 +167,7 @@ export default class Document extends DocumentFragment {
 		if (!(node instanceof Node)) {
 			throw new Error('Parameter 1 was not of type Node.');
 		}
-		return node.cloneNode();
+		return node.cloneNode(true);
 	}
 
 	/**

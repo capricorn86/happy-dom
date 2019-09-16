@@ -178,20 +178,25 @@ export default class Node extends EventTarget {
 	/**
 	 * Clones a node.
 	 *
+	 * @param {boolean} [deep=false] "true" to clone deep.
 	 * @return {Node} Cloned node.
 	 */
-	public cloneNode(): Node {
+	public cloneNode(deep = false): Node {
 		const clone = new (<typeof Node>this.constructor)();
 		for (const key of Object.keys(this)) {
 			if (key === 'childNodes') {
-				for (const childNode of this[key]) {
-					const childClone = childNode.cloneNode();
-					childClone.parentNode = clone;
-					clone.childNodes.push(childClone);
+				if (deep) {
+					for (const childNode of this[key]) {
+						const childClone = childNode.cloneNode();
+						childClone.parentNode = clone;
+						clone.childNodes.push(childClone);
+					}
 				}
 			} else if (key !== 'parentNode' && key !== 'ownerDocument' && this[key] instanceof Node) {
-				clone[key] = this[key].cloneNode();
-				clone[key].parentNode = clone;
+				if (deep) {
+					clone[key] = this[key].cloneNode();
+					clone[key].parentNode = clone;
+				}
 			} else if (key === 'classList') {
 				// eslint-disable-next-line
 				clone[key] = new ClassList(<any>clone);

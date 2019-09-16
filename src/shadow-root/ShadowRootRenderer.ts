@@ -17,7 +17,7 @@ export default class ShadowRootRenderer {
 	 * @return {string} Result.
 	 */
 	public static getInnerHTML(element: Element | DocumentFragment, cssCache: ScopedCSSCache): string {
-		const clone = <Element>element.cloneNode();
+		const clone = <Element>element.cloneNode(true);
 		this.scopeElement(clone, cssCache);
 		return clone.shadowRoot.innerHTML;
 	}
