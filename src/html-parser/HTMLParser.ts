@@ -68,23 +68,6 @@ export default class HTMLParser {
 		return root;
 	}
 
-	// /**
-	//  * Prepends text and comment nodes.
-	//  *
-	//  * @param  {Document} document Document.
-	//  * @param  {Node} node Node.
-	//  * @param  {string} text Text to search in.
-	//  */
-	// private static prependTextAndCommentNodes(document: Document, node: Node, text: string): void {
-	// 	for (const innerNode of this.getTextAndCommentNodes(document, text)) {
-	// 		if (node.firstChild) {
-	// 			node.insertBefore(innerNode, node.firstChild);
-	// 		} else {
-	// 			node.appendChild(innerNode);
-	// 		}
-	// 	}
-	// }
-
 	/**
 	 * Appends text and comment nodes.
 	 *
