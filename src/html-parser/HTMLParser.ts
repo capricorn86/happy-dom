@@ -60,7 +60,7 @@ export default class HTMLParser {
 		}
 
 		// Text after last element
-		if ((!match && data.length > 0) || lastTextIndex !== match.index) {
+		if ((!match && data.length > 0) || match && lastTextIndex !== match.index) {
 			const text = data.substring(lastTextIndex);
 			this.appendTextAndCommentNodes(document, root, text);
 		}
