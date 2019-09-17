@@ -20,7 +20,7 @@ export default class Node extends EventTarget {
 	public readonly childNodes: Node[] = [];
 
 	// Protected properties
-	private _isConnected: boolean = false;
+	protected _isConnected: boolean = false;
 
 	// Custom Properties (not part of HTML standard)
 	protected observers: MutationObserverListener[] = [];
