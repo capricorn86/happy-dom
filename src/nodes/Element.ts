@@ -197,8 +197,9 @@ export default class Element extends Node {
 	 * @param {string} value Value.
 	 */
 	public setAttribute(name: string, value: string): void {
-		const oldValue = this.attributesMap[name] !== undefined ? this.attributesMap[name] : null;
-		this.attributesMap[name] = value;
+		const lowerName = name.toLowerCase();
+		const oldValue = this.attributesMap[lowerName] !== undefined ? this.attributesMap[lowerName] : null;
+		this.attributesMap[lowerName] = String(value);
 
 		if (this.attributeChangedCallback) {
 			this.attributeChangedCallback(name, oldValue, value);
@@ -209,11 +210,11 @@ export default class Element extends Node {
 			for (const observer of this.observers) {
 				if (
 					observer.options.attributes &&
-					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(name))
+					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(lowerName))
 				) {
 					const record = new MutationRecord();
 					record.type = MutationTypeConstant.attributes;
-					record.attributeName = name;
+					record.attributeName = lowerName;
 					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
 					observer.callback([record]);
 				}
@@ -227,7 +228,8 @@ export default class Element extends Node {
 	 * @param {string} name Name.
 	 */
 	public getAttribute(name: string): string {
-		return this.attributesMap[name] !== undefined ? this.attributesMap[name] : null;
+		const lowerName = name.toLowerCase();
+		return this.attributesMap[lowerName] !== undefined ? this.attributesMap[lowerName] : null;
 	}
 
 	/**
@@ -236,19 +238,20 @@ export default class Element extends Node {
 	 * @param {string} name Name.
 	 */
 	public removeAttribute(name: string): void {
-		const oldValue = this.attributesMap[name] !== undefined ? this.attributesMap[name] : null;
-		delete this.attributesMap[name];
+		const lowerName = name.toLowerCase();
+		const oldValue = this.attributesMap[lowerName] !== undefined ? this.attributesMap[lowerName] : null;
+		delete this.attributesMap[lowerName];
 
 		// MutationObserver
 		if (this.observers.length > 0) {
 			for (const observer of this.observers) {
 				if (
 					observer.options.attributes &&
-					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(name))
+					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(lowerName))
 				) {
 					const record = new MutationRecord();
 					record.type = MutationTypeConstant.attributes;
-					record.attributeName = name;
+					record.attributeName = lowerName;
 					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
 					observer.callback([record]);
 				}
@@ -266,7 +269,7 @@ export default class Element extends Node {
 			const attributeRegexp = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gi;
 			let match: RegExpExecArray;
 			while ((match = attributeRegexp.exec(rawAttributes))) {
-				const name = match[1];
+				const name = match[1].toLowerCase();
 				const value = decode(match[2] || match[3] || match[4] || '');
 				this.attributesMap[name] = value;
 			}

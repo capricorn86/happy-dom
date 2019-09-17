@@ -29,6 +29,9 @@ export default class MutationObserver {
 	 * @param {IMutationObserverInit} options Options.
 	 */
 	public observe(target: Node, options: IMutationObserverInit): void {
+		options = Object.assign({}, options, {
+			attributeFilter: options.attributeFilter ? options.attributeFilter.map(name => name.toLowerCase()) : null
+		});
 		this.target = target;
 		this.listener = new MutationObserverListener();
 		this.listener.options = options;
