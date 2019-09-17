@@ -34,7 +34,7 @@ export default class TreeWalker {
 	 * @return {Node} Current node.
 	 */
 	public parentNode(): Node {
-		if (this.currentNode !== this.root && this.currentNode.parentNode) {
+		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
 			this.currentNode = this.currentNode.parentNode;
 			return this.currentNode;
 		}
@@ -47,7 +47,7 @@ export default class TreeWalker {
 	 * @return {Node} Current node.
 	 */
 	public firstChild(): Node {
-		const childNodes = this.currentNode.childNodes;
+		const childNodes = this.currentNode ? this.currentNode.childNodes : [];
 
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[0];
@@ -63,7 +63,7 @@ export default class TreeWalker {
 	 * @return {Node} Current node.
 	 */
 	public lastChild(): Node {
-		const childNodes = this.currentNode.childNodes;
+		const childNodes = this.currentNode ? this.currentNode.childNodes : [];
 
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[childNodes.length - 1];
@@ -79,7 +79,7 @@ export default class TreeWalker {
 	 * @return {Node} Current node.
 	 */
 	public previousSibling(): Node {
-		if (this.currentNode !== this.root) {
+		if (this.currentNode !== this.root && this.currentNode) {
 			const siblings = this.currentNode.parentNode.childNodes;
 			const index = siblings.indexOf(this.currentNode);
 
@@ -98,7 +98,7 @@ export default class TreeWalker {
 	 * @return {Node} Current node.
 	 */
 	public nextSibling(): Node {
-		if (this.currentNode !== this.root) {
+		if (this.currentNode !== this.root && this.currentNode) {
 			const siblings = this.currentNode.parentNode.childNodes;
 			const index = siblings.indexOf(this.currentNode);
 
@@ -119,7 +119,7 @@ export default class TreeWalker {
 	public nextNode(): Node {
 		if (!this.firstChild()) {
 			while (!this.nextSibling() && this.parentNode()) {}
-			this.currentNode = this.currentNode === this.root ? null : this.currentNode;
+			this.currentNode = this.currentNode === this.root ? null : (this.currentNode || null);
 		}
 		return this.currentNode;
 	}
@@ -131,7 +131,7 @@ export default class TreeWalker {
 	 */
 	public previousNode(): Node {
 		while (!this.previousSibling() && this.parentNode()) {}
-		this.currentNode = this.currentNode === this.root ? null : this.currentNode;
+		this.currentNode = this.currentNode === this.root ? null : (this.currentNode || null);
 		return this.currentNode;
 	}
 

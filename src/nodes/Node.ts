@@ -20,7 +20,7 @@ export default class Node extends EventTarget {
 	public readonly childNodes: Node[] = [];
 
 	// Protected properties
-	protected _isConnected: boolean = false;
+	private _isConnected: boolean = false;
 
 	// Custom Properties (not part of HTML standard)
 	protected observers: MutationObserverListener[] = [];
@@ -178,10 +178,10 @@ export default class Node extends EventTarget {
 	/**
 	 * Clones a node.
 	 *
-	 * @param {boolean} [deep=false] "true" to clone deep.
+	 * @param {boolean} [deep=true] "false" to not clone deep.
 	 * @return {Node} Cloned node.
 	 */
-	public cloneNode(deep = false): Node {
+	public cloneNode(deep = true): Node {
 		const clone = new (<typeof Node>this.constructor)();
 		for (const key of Object.keys(this)) {
 			if (key === 'childNodes') {
