@@ -1,10 +1,10 @@
 import NodeType from './NodeType';
 import Document from './Document';
-import ClassList from '../html-element/ClassList';
-import EventTarget from '../event/EventTarget';
-import MutationRecord from '../mutation-observer/MutationRecord';
-import MutationTypeConstant from '../mutation-observer/MutationType';
-import MutationObserverListener from '../mutation-observer/MutationListener';
+import ClassList from '../../html-element/ClassList';
+import EventTarget from '../../event/EventTarget';
+import MutationRecord from '../../mutation-observer/MutationRecord';
+import MutationTypeConstant from '../../mutation-observer/MutationType';
+import MutationObserverListener from '../../mutation-observer/MutationListener';
 
 const ASCII = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 

@@ -1,6 +1,6 @@
-import Element from '../nodes/Element';
-import HTMLTemplateElement from '../nodes/HTMLTemplateElement';
-import DocumentFragment from '../nodes/DocumentFragment';
+import Element from '../nodes/basic-types/Element';
+import HTMLTemplateElement from '../nodes/elements/HTMLTemplateElement';
+import DocumentFragment from '../nodes/basic-types/DocumentFragment';
 import ScopedCSSCache from '../shadow-root/css/ScopedCSSCache';
 import ShadowRootRenderer from '../shadow-root/ShadowRootRenderer';
 

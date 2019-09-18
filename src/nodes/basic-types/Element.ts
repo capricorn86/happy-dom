@@ -2,14 +2,14 @@ import Node from './Node';
 import TextNode from './TextNode';
 import NodeType from './NodeType';
 import ShadowRoot from './ShadowRoot';
-import Attribute from '../html-element/Attribute';
-import HTMLParser from '../html-parser/HTMLParser';
+import Attribute from '../../html-element/Attribute';
+import HTMLParser from '../../html-parser/HTMLParser';
 import { decode, encode } from 'he';
-import ClassList from '../html-element/ClassList';
-import QuerySelector from '../html-element/QuerySelector';
-import HTMLElementRenderer from '../html-element/HTMLElementRenderer';
-import MutationRecord from '../mutation-observer/MutationRecord';
-import MutationTypeConstant from '../mutation-observer/MutationType';
+import ClassList from '../../html-element/ClassList';
+import QuerySelector from '../../html-element/QuerySelector';
+import HTMLElementRenderer from '../../html-element/HTMLElementRenderer';
+import MutationRecord from '../../mutation-observer/MutationRecord';
+import MutationTypeConstant from '../../mutation-observer/MutationType';
 
 /**
  * Element.
@@ -265,6 +265,7 @@ export default class Element extends Node {
 	 * @param {string} rawAttributes Raw attributes.
 	 */
 	public setRawAttributes(rawAttributes: string): void {
+		rawAttributes = rawAttributes.trim();
 		if (rawAttributes) {
 			const attributeRegexp = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gi;
 			let match: RegExpExecArray;

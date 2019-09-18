@@ -1,4 +1,4 @@
-import HTMLElement from '../nodes/HTMLElement';
+import HTMLElement from '../nodes/basic-types/HTMLElement';
 
 /**
  * Custom elements registry.

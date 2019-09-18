@@ -1,7 +1,7 @@
 import ScopedCSSCache from './css/ScopedCSSCache';
-import Element from '../nodes/Element';
-import DocumentFragment from '../nodes/DocumentFragment';
-import ShadowRoot from '../nodes/ShadowRoot';
+import Element from '../nodes/basic-types/Element';
+import DocumentFragment from '../nodes/basic-types/DocumentFragment';
+import ShadowRoot from '../nodes/basic-types/ShadowRoot';
 import ScopeCSS from './css/ScopeCSS';
 
 /**
