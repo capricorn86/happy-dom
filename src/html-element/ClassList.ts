@@ -1,4 +1,4 @@
-import Element from '../nodes/Element';
+import Element from '../nodes/basic-types/Element';
 
 /**
  * Class list.

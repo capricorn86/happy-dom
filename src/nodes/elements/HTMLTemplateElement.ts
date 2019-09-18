@@ -1,6 +1,6 @@
-import Node from './Node';
-import HTMLElement from './HTMLElement';
-import DocumentFragment from './DocumentFragment';
+import Node from '../basic-types/Node';
+import HTMLElement from '../basic-types/HTMLElement';
+import DocumentFragment from '../basic-types/DocumentFragment';
 
 /**
  * HTMLTemplateElement.

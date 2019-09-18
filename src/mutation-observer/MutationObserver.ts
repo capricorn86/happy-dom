@@ -1,4 +1,4 @@
-import Node from '../nodes/Node';
+import Node from '../nodes/basic-types/Node';
 import IMutationObserverInit from './IMutationObserverInit';
 import MutationObserverListener from './MutationListener';
 import MutationRecord from './MutationRecord';
@@ -29,6 +29,9 @@ export default class MutationObserver {
 	 * @param {IMutationObserverInit} options Options.
 	 */
 	public observe(target: Node, options: IMutationObserverInit): void {
+		if(!target) {
+			throw new Error('Failed to observer. The first parameter "target" should be of type "Node".');
+		}
 		options = Object.assign({}, options, {
 			attributeFilter: options.attributeFilter ? options.attributeFilter.map(name => name.toLowerCase()) : null
 		});

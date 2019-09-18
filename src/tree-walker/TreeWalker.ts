@@ -1,4 +1,4 @@
-import Node from '../nodes/Node';
+import Node from '../nodes/basic-types/Node';
 import NodeFilter from './NodeFilter';
 
 /**

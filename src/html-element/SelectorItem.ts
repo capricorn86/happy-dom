@@ -1,4 +1,4 @@
-import Element from '../nodes/Element';
+import Element from '../nodes/basic-types/Element';
 
 const ATTRIBUTE_REGEXP = /\[([a-zA-Z_$\-]*)=([^\]]*)\]/g;
 const CLASS_REGEXP = /\.[^\[(]*/g;

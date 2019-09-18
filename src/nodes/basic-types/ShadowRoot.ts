@@ -1,6 +1,6 @@
 import DocumentFragment from './DocumentFragment';
-import HTMLParser from '../html-parser/HTMLParser';
-import HTMLElementRenderer from '../html-element/HTMLElementRenderer';
+import HTMLParser from '../../html-parser/HTMLParser';
+import HTMLElementRenderer from '../../html-element/HTMLElementRenderer';
 
 /**
  * ShadowRoot.

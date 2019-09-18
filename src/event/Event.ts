@@ -1,4 +1,4 @@
-import Node from '../nodes/Node';
+import Node from '../nodes/basic-types/Node';
 
 export default class Event {
 	public readonly bubbles: boolean = false;

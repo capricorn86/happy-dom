@@ -1,6 +1,6 @@
 import Node from './Node';
 import Element from './Element';
-import QuerySelector from '../html-element/QuerySelector';
+import QuerySelector from '../../html-element/QuerySelector';
 import NodeType from './NodeType';
 
 /**

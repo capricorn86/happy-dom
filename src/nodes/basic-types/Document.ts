@@ -1,16 +1,19 @@
 import Element from './Element';
 import HTMLElement from './HTMLElement';
-import HTMLTemplateElement from './HTMLTemplateElement';
+import HTMLTemplateElement from '../elements/HTMLTemplateElement';
+import HTMLFormElement from '../elements/HTMLFormElement';
+import HTMLInputElement from '../elements/HTMLInputElement';
+import HTMLTextAreaElement from '../elements/HTMLTextAreaElement';
 import TextNode from './TextNode';
 import CommentNode from './CommentNode';
-import Window from '../Window';
+import Window from '../../Window';
 import Node from './Node';
 import NodeType from './NodeType';
-import TreeWalker from '../tree-walker/TreeWalker';
+import TreeWalker from '../../tree-walker/TreeWalker';
 import DocumentFragment from './DocumentFragment';
-import HTMLParser from '../html-parser/HTMLParser';
-import Event from '../event/Event';
-import DOMImplementation from '../implementation/DOMImplementation';
+import HTMLParser from '../../html-parser/HTMLParser';
+import Event from '../../event/Event';
+import DOMImplementation from '../../implementation/DOMImplementation';
 
 /**
  * Document.
@@ -90,6 +93,7 @@ export default class Document extends DocumentFragment {
 	public createElement(tagName: string): Element {
 		const customElementClass = this.defaultView.customElements.get(tagName);
 		const elementClass = customElementClass ? customElementClass : this.getElementClass(tagName);
+		
 		elementClass.ownerDocument = this;
 
 		const element = new elementClass();
@@ -177,8 +181,15 @@ export default class Document extends DocumentFragment {
 	 * @return {typeof Element} Element class.
 	 */
 	private getElementClass(tagName: string): typeof Element {
-		if (tagName === 'template') {
-			return HTMLTemplateElement;
+		switch(tagName) {
+			case 'template':
+				return HTMLTemplateElement;
+			case 'form':
+				return HTMLFormElement;
+			case 'input':
+				return HTMLInputElement;
+			case 'textarea':
+				return HTMLTextAreaElement;
 		}
 		return HTMLElement;
 	}

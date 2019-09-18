@@ -1,6 +1,6 @@
-import Node from '../nodes/Node';
-import Element from '../nodes/Element';
-import Document from '../nodes/Document';
+import Node from '../nodes/basic-types/Node';
+import Element from '../nodes/basic-types/Element';
+import Document from '../nodes/basic-types/Document';
 
 const SELF_CLOSING_ELEMENTS = {
 	area: true,

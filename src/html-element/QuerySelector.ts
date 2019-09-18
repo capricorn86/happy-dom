@@ -1,5 +1,5 @@
-import Element from '../nodes/Element';
-import Node from '../nodes/Node';
+import Element from '../nodes/basic-types/Element';
+import Node from '../nodes/basic-types/Node';
 import SelectorItem from './SelectorItem';
 
 /**

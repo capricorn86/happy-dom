@@ -1,7 +1,7 @@
 import Node from './Node';
 import NodeType from './NodeType';
-import MutationRecord from '../mutation-observer/MutationRecord';
-import MutationTypeConstant from '../mutation-observer/MutationType';
+import MutationRecord from '../../mutation-observer/MutationRecord';
+import MutationTypeConstant from '../../mutation-observer/MutationType';
 
 /**
  * TextNode.

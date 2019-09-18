@@ -1,0 +1,20 @@
+[
+    "form",
+    "name",
+    "disabled",
+    "autofocus",
+    "required",
+    "value",
+    "autocomplete",
+    "min-length",
+    "max-length",
+    "pattern",
+    "placeholder",
+    "readOnly",
+    "size",
+    "selection-start",
+    "selection-end",
+    "selection-direction",
+    "default-value",
+    "inputmode"
+]

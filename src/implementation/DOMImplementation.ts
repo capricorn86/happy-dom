@@ -1,4 +1,4 @@
-import Document from '../nodes/Document';
+import Document from '../nodes/basic-types/Document';
 import Window from '../Window';
 
 /**
