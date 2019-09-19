@@ -8,7 +8,7 @@ import MutationRecord from './MutationRecord';
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
  */
-export default class MutationObserver {
+export default class MutationObserverTest {
 	private callback: (records: MutationRecord[]) => void;
 	private target: Node = null;
 	private listener: MutationObserverListener = null;

@@ -4,7 +4,7 @@ import Element from './Element';
  * HTMLElement.
  */
 export default class HTMLElement extends Element {
-	protected static _observedPropertyAttributes = ['tabIndex'];
+	protected static _observedPropertyAttributes: { [k: string]: string } = { tabindex: 'tabIndex' };
 	public style: object = {};
 	public tabIndex: number = 0;
 
@@ -52,8 +52,9 @@ export default class HTMLElement extends Element {
 		const lowerName = name.toLowerCase();
 		super.setAttribute(lowerName, value);
 		const observedPropertyAttributes = (<typeof HTMLElement>this.constructor)._observedPropertyAttributes;
-        if(observedPropertyAttributes.includes(lowerName.toLowerCase())) {
-			const property = this.kebabToCamelCase(name);
+		const observedAttributes = Object.keys(observedPropertyAttributes);
+        if(observedAttributes.includes(lowerName)) {
+			const property = observedPropertyAttributes[lowerName];
             this[property] = typeof this[property] === 'boolean' ? value !== null : String(value);
         }
     }
@@ -77,22 +78,20 @@ export default class HTMLElement extends Element {
     private defineInitialProperties(): void {
 		const observedPropertyAttributes = (<typeof HTMLElement>this.constructor)._observedPropertyAttributes;
 		
-        for(const name of observedPropertyAttributes) {
-            const attribute = this.attributesMap[name];
+        for(const name of Object.keys(observedPropertyAttributes)) {
+			const attribute = this.attributesMap[name];
+			
             if(attribute !== null) {
-				const property = this.kebabToCamelCase(name);
-				this[property] = typeof this[property] === 'boolean' ? true : attribute;
+				const property = observedPropertyAttributes[name];
+				switch(typeof this[property]) {
+					case 'boolean':
+						this[property] = true;
+					case 'number':
+						this[property] = parseFloat(attribute);
+					default:
+						this[property] = attribute;
+				}
             }
         }
-    }
-    
-	/**
-	 * Kebab case to camel case.
-	 *
-	 * @param {string} string String to convert.
-	 * @returns {string} Text as camel case.
-	 */
-	private kebabToCamelCase(string) {
-		return string.replace(/-([a-z])/g, g => g[1].toUpperCase());
     }
 }

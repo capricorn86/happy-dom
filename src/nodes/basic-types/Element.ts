@@ -3,6 +3,8 @@ import TextNode from './TextNode';
 import NodeType from './NodeType';
 import ShadowRoot from './ShadowRoot';
 import Attribute from '../../html-element/Attribute';
+import DOMRect from '../../html-element/DOMRect';
+import Range from '../../html-element/Range';
 import HTMLParser from '../../html-parser/HTMLParser';
 import { decode, encode } from 'he';
 import ClassList from '../../html-element/ClassList';
@@ -310,6 +312,24 @@ export default class Element extends Node {
 	 */
 	public toString(): string {
 		return this.outerHTML;
+	}
+
+	/**
+	 * Returns the size of an element and its position relative to the viewport.
+	 *
+	 * @return {DOMRect} DOM rect.
+	 */
+	public getBoundingClientRect(): DOMRect {
+		return new DOMRect();
+	}
+
+	/**
+	 * Returns a range.
+	 *
+	 * @return {Range} Range.
+	 */
+	public createTextRange(): Range {
+		return new Range();
 	}
 
 	/**
