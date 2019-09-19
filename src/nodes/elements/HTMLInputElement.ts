@@ -7,22 +7,21 @@ import * as HTMLInputPropertyAttributes from './HTMLInputPropertyAttributes.json
  * HTMLElement.
  */
 export default class HTMLInputElement extends HTMLElement {
-    protected static _observedPropertyAttributes = HTMLElement._observedPropertyAttributes.concat(HTMLInputPropertyAttributes);
+	protected static _observedPropertyAttributes = Object.assign({}, HTMLElement._observedPropertyAttributes, HTMLInputPropertyAttributes);
     
     // Related to parent form.
 	public form: HTMLFormElement = null;
-	public formAction: string = null;
-	public formEncType: string = null;
-	public formMethod: string = null;
+	public formAction: string = '';
+	public formMethod: string = '';
     public formNoValidate: boolean = false;
     
     // Any type of input
-    public name: string = null;
-    public type: string = null;
+    public name: string = '';
+    public type: string = 'text';
     public disabled: boolean = false;
     public autofocus: boolean = false;
     public required: boolean = false;
-    public _value: string = null;
+    public _value: string = '';
 
     // Type specific: checkbox/radio
     public _checked: boolean = false;
@@ -30,25 +29,25 @@ export default class HTMLInputElement extends HTMLElement {
     public indeterminate: boolean = false;
 
     // Type specific: image
-    public alt: string = null;
-    public height: string = null;
+    public alt: string = '';
+    public height: number = 0;
     public src: string = null;
-    public width: string = null;
+    public width: number = 0;
 
     // Type specific: file
     public accept: string = null;
     public allowdirs: string = null;
 
     // Type specific: text/number
-    public autocomplete: string = 'off';
-    public min: string = null;
-    public max: string = null;
-    public minLength: number = null;
-    public maxLength: number = null;
-    public pattern: string = null;
-    public placeholder: string = null;
-    public readOnly: boolean = null;
-    public size: number = null;
+    public autocomplete: string = '';
+    public min: string = '';
+    public max: string = '';
+    public minLength: number = -1;
+    public maxLength: number = -1;
+    public pattern: string = '';
+    public placeholder: string = '';
+    public readOnly: boolean = false;
+    public size: number = 0;
 
     // Type specific: text/password/search/tel/url/week/month
     public selectionStart: number = 0;
@@ -56,11 +55,11 @@ export default class HTMLInputElement extends HTMLElement {
     public selectionDirection: string = 'forward';
 
     // Not categorized
-    public defaultValue: string = null;
+    public defaultValue: string = '';
     public multiple: boolean = false;
     public files: [] = [];
-    public step: string = null;
-    public inputmode: string = null;
+    public step: string = '';
+    public inputmode: string = '';
 
     /**
      * Returns value.

@@ -1,20 +1,16 @@
-[
-    "form",
-    "name",
-    "disabled",
-    "autofocus",
-    "required",
-    "value",
-    "autocomplete",
-    "min-length",
-    "max-length",
-    "pattern",
-    "placeholder",
-    "readOnly",
-    "size",
-    "selection-start",
-    "selection-end",
-    "selection-direction",
-    "default-value",
-    "inputmode"
-]
+{
+    "form": "form",
+    "name": "name",
+    "disabled": "disabled",
+    "autofocus": "autofocus",
+    "required": "required",
+    "value": "value",
+    "autocomplete": "autocomplete",
+    "minlength": "minLength",
+    "maxlength": "maxLength",
+    "pattern": "pattern",
+    "placeholder": "placeholder",
+    "readonly": "readOnly",
+    "size": "size",
+    "inputmode": "inputmode"
+}

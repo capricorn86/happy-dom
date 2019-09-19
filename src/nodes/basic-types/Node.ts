@@ -183,6 +183,7 @@ export default class Node extends EventTarget {
 	 */
 	public cloneNode(deep = true): Node {
 		const clone = new (<typeof Node>this.constructor)();
+		debugger;
 		for (const key of Object.keys(this)) {
 			if (key === 'childNodes') {
 				if (deep) {
@@ -200,13 +201,6 @@ export default class Node extends EventTarget {
 			} else if (key === 'classList') {
 				// eslint-disable-next-line
 				clone[key] = new ClassList(<any>clone);
-			} else if (
-				this[key] !== null &&
-				typeof this[key] === 'object' &&
-				!(this[key] instanceof Document) &&
-				!(this[key] instanceof Node)
-			) {
-				clone[key] = Object.assign({}, this[key]);
 			} else {
 				clone[key] = this[key];
 			}

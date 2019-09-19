@@ -6,7 +6,7 @@ import * as HTMLFormPropertyAttributes from './HTMLFormPropertyAttributes.json';
  * HTMLFormElement.
  */
 export default class HTMLFormElement extends HTMLElement {
-	protected static _observedPropertyAttributes = HTMLElement._observedPropertyAttributes.concat(HTMLFormPropertyAttributes);
+	protected static _observedPropertyAttributes = Object.assign({}, HTMLElement._observedPropertyAttributes, HTMLFormPropertyAttributes);
 	
 	public name: string = null;
 	public method: string = null;

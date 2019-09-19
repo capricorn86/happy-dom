@@ -1,11 +1,11 @@
-[
-	"name",
-	"method",
-	"target",
-	"action",
-	"encoding",
-	"enctype",
-	"accept-charset",
-	"autocomplete",
-	"no-validate"
-]
+{
+	"name": "name",
+	"method": "method",
+	"target": "target",
+	"action": "action",
+	"encoding": "encoding",
+	"enctype": "enctype",
+	"accept-charset": "acceptCharset",
+	"autocomplete": "autocomplete",
+	"novalidate": "noValidate"
+}

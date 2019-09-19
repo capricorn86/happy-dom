@@ -6,25 +6,25 @@ import * as HTMLTextAreaPropertyAttributes from './HTMLTextAreaPropertyAttribute
  * HTMLTextAreaElement.
  */
 export default class HTMLTextAreaElement extends HTMLElement {
-    protected static _observedPropertyAttributes = HTMLElement._observedPropertyAttributes.concat(HTMLTextAreaPropertyAttributes);
+	protected static _observedPropertyAttributes = Object.assign({}, HTMLElement._observedPropertyAttributes, HTMLTextAreaPropertyAttributes);
 
 	public form: HTMLFormElement = null;
-    public name: string = null;
+    public name: string = '';
     public readonly type: string = 'textarea';
     public disabled: boolean = false;
     public autofocus: boolean = false;
     public required: boolean = false;
-    public _value: string = null;
-    public autocomplete: string = 'off';
-    public minLength: number = null;
-    public maxLength: number = null;
-    public placeholder: string = null;
-    public readOnly: boolean = null;
+    public _value: string = '';
+    public autocomplete: string = '';
+    public minLength: number = -1;
+    public maxLength: number = -1;
+    public placeholder: string = '';
+    public readOnly: boolean = false;
     public selectionStart: number = 0;
     public selectionEnd: number = 0;
     public selectionDirection: string = 'forward';
-    public defaultValue: string = null;
-    public inputmode: string = null;
+    public defaultValue: string = '';
+    public inputmode: string = '';
 
     /**
      * Returns value.
