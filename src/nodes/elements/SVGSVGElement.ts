@@ -6,6 +6,7 @@ import SVGLength from '../../html-element/SVGLength';
 import SVGAngle from '../../html-element/SVGAngle';
 import SVGNumber from '../../html-element/SVGNumber';
 import SVGTransform from '../../html-element/SVGTransform';
+import SVGAnimatedRect from '../../html-element/SVGAnimatedRect';
 import * as SVGSVGElementPropertyAttributes from './SVGSVGElementPropertyAttributes.json';
 
 /**
