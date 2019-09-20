@@ -183,7 +183,6 @@ export default class Node extends EventTarget {
 	 */
 	public cloneNode(deep = true): Node {
 		const clone = new (<typeof Node>this.constructor)();
-		debugger;
 		for (const key of Object.keys(this)) {
 			if (key === 'childNodes') {
 				if (deep) {
