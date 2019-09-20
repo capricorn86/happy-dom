@@ -4,6 +4,7 @@ import HTMLTemplateElement from '../elements/HTMLTemplateElement';
 import HTMLFormElement from '../elements/HTMLFormElement';
 import HTMLInputElement from '../elements/HTMLInputElement';
 import HTMLTextAreaElement from '../elements/HTMLTextAreaElement';
+import SVGSVGElement from '../elements/SVGSVGElement';
 import TextNode from './TextNode';
 import CommentNode from './CommentNode';
 import Window from '../../Window';
@@ -190,6 +191,8 @@ export default class Document extends DocumentFragment {
 				return HTMLInputElement;
 			case 'textarea':
 				return HTMLTextAreaElement;
+			case 'svg':
+				return SVGSVGElement;
 		}
 		return HTMLElement;
 	}
