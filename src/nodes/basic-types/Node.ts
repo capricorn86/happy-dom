@@ -51,14 +51,14 @@ export default class Node extends EventTarget {
 		if (this._isConnected !== isConnected) {
 			this._isConnected = isConnected;
 
+			for (const child of this.childNodes) {
+				child.isConnected = isConnected;
+			}
+
 			// eslint-disable-next-line
 			if ((<any>this).shadowRoot) {
 				// eslint-disable-next-line
 				(<any>this).shadowRoot.isConnected = isConnected;
-			}
-
-			for (const child of this.childNodes) {
-				child.isConnected = isConnected;
 			}
 
 			if (isConnected && this.connectedCallback) {
