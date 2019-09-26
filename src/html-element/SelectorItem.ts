@@ -1,7 +1,7 @@
 import Element from '../nodes/basic-types/Element';
 
 const ATTRIBUTE_REGEXP = /\[([a-zA-Z_$\-]*)=([^\]]*)\]/g;
-const CLASS_REGEXP = /\.[^\[(]*/g;
+const CLASS_REGEXP = /\.([^\[(.]*)/g;
 
 export default class SelectorItem {
 	public isID: boolean;
@@ -19,7 +19,7 @@ export default class SelectorItem {
 	constructor(part: string) {
 		this.isID = part.startsWith('#');
 		this.isAttribute = !this.isID && ATTRIBUTE_REGEXP.test(part);
-		this.isClass = !this.isID && CLASS_REGEXP.test(part);
+		this.isClass = !this.isID && new RegExp(CLASS_REGEXP, 'g').test(part);
 		this.isTagName = !this.isID && !this.isAttribute && !this.isClass;
 		this.part = part;
 		this.id = this.isID ? this.part.replace('#', '') : null;
@@ -48,19 +48,18 @@ export default class SelectorItem {
 				if (element.attributesMap[match[1]] !== match[2].replace(/"/g, '')) {
 					return false;
 				}
-				part = part.replace(match[0], '');
 			}
 		}
 
 		// Class match
 		if (this.isClass) {
+            const className = element.className;
 			const classRegexp = new RegExp(CLASS_REGEXP, 'g');
 
 			while ((match = classRegexp.exec(part))) {
-				if (element.attributesMap[match[1]] !== match[2].replace(/"/g, '')) {
-					return false;
-				}
-				part = part.replace(match[0], '');
+                if (!className || !className.includes(match[1])) {
+                    return false;
+                }
 			}
 		}
 
