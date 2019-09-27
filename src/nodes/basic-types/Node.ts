@@ -184,24 +184,26 @@ export default class Node extends EventTarget {
 	public cloneNode(deep = true): Node {
 		const clone = new (<typeof Node>this.constructor)();
 		for (const key of Object.keys(this)) {
-			if (key === 'childNodes') {
-				if (deep) {
-					for (const childNode of this[key]) {
-						const childClone = childNode.cloneNode();
-						childClone.parentNode = clone;
-						clone.childNodes.push(childClone);
+			if(key !== '_isConnected' && key !== 'observers') {
+				if (key === 'childNodes') {
+					if (deep) {
+						for (const childNode of this[key]) {
+							const childClone = childNode.cloneNode();
+							childClone.parentNode = clone;
+							clone.childNodes.push(childClone);
+						}
 					}
+				} else if (key !== 'parentNode' && key !== 'ownerDocument' && this[key] instanceof Node) {
+					if (deep) {
+						clone[key] = this[key].cloneNode();
+						clone[key].parentNode = clone;
+					}
+				} else if (key === 'classList') {
+					// eslint-disable-next-line
+					clone[key] = new ClassList(<any>clone);
+				} else {
+					clone[key] = this[key];
 				}
-			} else if (key !== 'parentNode' && key !== 'ownerDocument' && this[key] instanceof Node) {
-				if (deep) {
-					clone[key] = this[key].cloneNode();
-					clone[key].parentNode = clone;
-				}
-			} else if (key === 'classList') {
-				// eslint-disable-next-line
-				clone[key] = new ClassList(<any>clone);
-			} else {
-				clone[key] = this[key];
 			}
 		}
 		return clone;
