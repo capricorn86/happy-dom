@@ -10,7 +10,7 @@ export default class AsyncWindow extends Window {
 	// Private Properties
 	private isDisposed = false;
 	private asyncTaskCount: number = 0;
-	private hasAsyncError: boolean = false;
+	private asyncError: Error = null;
 	private asyncTimeout: NodeJS.Timeout = null;
 	private asyncPromises: { resolve: () => void; reject: (error: Error) => void }[] = [];
 
@@ -113,7 +113,7 @@ export default class AsyncWindow extends Window {
 		return new Promise((resolve, reject) => {
 			this.startAsyncTask();
 			this.asyncPromises.push({ resolve, reject });
-			this.asyncTimeout = setTimeout(() => this.endAsyncTask(), 0);
+			this.endAsyncTask();
 		});
 	}
 
@@ -123,7 +123,7 @@ export default class AsyncWindow extends Window {
 	public dispose(): void {
 		super.dispose();
 		this.isDisposed = true;
-		this.hasAsyncError = false;
+		this.asyncError = null;
 		this.asyncTaskCount = 0;
 		this.asyncPromises = [];
 		clearTimeout(this.asyncTimeout);
@@ -143,22 +143,30 @@ export default class AsyncWindow extends Window {
 	 */
 	private endAsyncTask(error?: Error): void {
 		if (!this.isDisposed) {
-			const promises = this.asyncPromises;
-
 			this.asyncTaskCount--;
 
-			if (error) {
-				this.hasAsyncError = true;
-				this.asyncPromises = [];
-				for (const promise of promises) {
-					promise.reject(error);
-				}
-			} else if (this.asyncTaskCount === 0 && !this.hasAsyncError) {
-				this.asyncPromises = [];
-				for (const promise of promises) {
-					promise.resolve();
-				}
+			if (error && !this.asyncError) {
+				this.asyncError = error;
 			}
+
+			clearTimeout(this.asyncTimeout);
+			this.asyncTimeout = setTimeout(() => {
+				if (!this.isDisposed) {
+					const promises = this.asyncPromises;
+
+					if (this.asyncError) {
+						this.asyncPromises = [];
+						for (const promise of promises) {
+							promise.reject(this.asyncError);
+						}
+					} else if (this.asyncTaskCount === 0) {
+						this.asyncPromises = [];
+						for (const promise of promises) {
+							promise.resolve();
+						}
+					}
+				}
+			}, 0);
 		}
 	}
 }
