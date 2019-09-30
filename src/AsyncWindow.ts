@@ -2,6 +2,7 @@ import NodeFetch from 'node-fetch';
 import Window from './Window';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
+const GLOBAL = global || window;
 
 /**
  * Handles the Window.
@@ -10,7 +11,7 @@ export default class AsyncWindow extends Window {
 	// Private Properties
 	private isDisposed = false;
 	private asyncTaskCount: number = 0;
-	private asyncError: Error = null;
+	private hasAsyncError: boolean = false;
 	private asyncTimeout: NodeJS.Timeout = null;
 	private asyncPromises: { resolve: () => void; reject: (error: Error) => void }[] = [];
 
@@ -23,9 +24,9 @@ export default class AsyncWindow extends Window {
 	 */
 	public setTimeout(callback: () => void, delay?: number): NodeJS.Timeout {
 		this.startAsyncTask();
-		return setTimeout(() => {
-			this.endAsyncTask();
+		return GLOBAL.setTimeout(() => {
 			callback();
+			this.endAsyncTask();
 		}, delay);
 	}
 
@@ -35,7 +36,7 @@ export default class AsyncWindow extends Window {
 	 * @param {NodeJS.Timeout} id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
-		clearTimeout(id);
+		GLOBAL.clearTimeout(id);
 		this.endAsyncTask();
 	}
 
@@ -48,7 +49,7 @@ export default class AsyncWindow extends Window {
 	 */
 	public setInterval(callback: () => void, delay?: number): NodeJS.Timeout {
 		this.startAsyncTask();
-		return setInterval(callback, delay);
+		return GLOBAL.setInterval(callback, delay);
 	}
 
 	/**
@@ -57,12 +58,12 @@ export default class AsyncWindow extends Window {
 	 * @param {NodeJS.Timeout} id ID of the interval.
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
-		clearInterval(id);
+		GLOBAL.clearInterval(id);
 		this.endAsyncTask();
 	}
 
 	/**
-	 * Provides a global fetch() method that provides an easy, logical way to fetch resources asynchronously across the network.
+	 * Provides a GLOBAL fetch() method that provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
 	 * @param {string} url URL to resource.
 	 * @param {object} [options] Options.
@@ -82,23 +83,23 @@ export default class AsyncWindow extends Window {
 
 								asyncMethod
 									.then(response => {
-										this.endAsyncTask();
 										resolve(response);
+										this.endAsyncTask();
 									})
 									.catch(error => {
-										this.endAsyncTask(error);
 										reject(error);
+										this.endAsyncTask(error);
 									});
 							});
 						};
 					}
 
-					this.endAsyncTask();
 					resolve(response);
+					this.endAsyncTask();
 				})
 				.catch(error => {
-					this.endAsyncTask(error);
 					reject(error);
+					this.endAsyncTask(error);
 				});
 		});
 	}
@@ -113,7 +114,8 @@ export default class AsyncWindow extends Window {
 		return new Promise((resolve, reject) => {
 			this.startAsyncTask();
 			this.asyncPromises.push({ resolve, reject });
-			this.endAsyncTask();
+			GLOBAL.clearTimeout(this.asyncTimeout);
+			this.asyncTimeout = GLOBAL.setTimeout(() => this.endAsyncTask(), 0);
 		});
 	}
 
@@ -123,10 +125,10 @@ export default class AsyncWindow extends Window {
 	public dispose(): void {
 		super.dispose();
 		this.isDisposed = true;
-		this.asyncError = null;
+		this.hasAsyncError = false;
 		this.asyncTaskCount = 0;
 		this.asyncPromises = [];
-		clearTimeout(this.asyncTimeout);
+		GLOBAL.clearTimeout(this.asyncTimeout);
 	}
 
 	/**
@@ -145,28 +147,20 @@ export default class AsyncWindow extends Window {
 		if (!this.isDisposed) {
 			this.asyncTaskCount--;
 
-			if (error && !this.asyncError) {
-				this.asyncError = error;
-			}
+			const promises = this.asyncPromises;
 
-			clearTimeout(this.asyncTimeout);
-			this.asyncTimeout = setTimeout(() => {
-				if (!this.isDisposed) {
-					const promises = this.asyncPromises;
-
-					if (this.asyncError) {
-						this.asyncPromises = [];
-						for (const promise of promises) {
-							promise.reject(this.asyncError);
-						}
-					} else if (this.asyncTaskCount === 0) {
-						this.asyncPromises = [];
-						for (const promise of promises) {
-							promise.resolve();
-						}
-					}
+			if (error) {
+				this.hasAsyncError = true;
+				this.asyncPromises = [];
+				for (const promise of promises) {
+					promise.reject(error);
 				}
-			}, 0);
+			} else if (this.asyncTaskCount === 0 && !this.hasAsyncError) {
+				this.asyncPromises = [];
+				for (const promise of promises) {
+					promise.resolve();
+				}
+			}
 		}
 	}
 }
