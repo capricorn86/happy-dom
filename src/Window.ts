@@ -19,6 +19,8 @@ import EventTypes from './event/EventTypes.json';
 import MutationObserver from './mutation-observer/MutationObserver';
 import ShadowRootRenderOptions from './shadow-root/ShadowRootRenderOptions';
 
+const GLOBAL = window || global;
+
 /**
  * Handles the Window.
  */
@@ -43,26 +45,16 @@ export default class Window extends EventTarget {
 	public CustomElementRegistry = CustomElementRegistry;
 	public Window = Window;
 
-	// @ts-ignore
-	public Array = typeof global !== undefined ? global.Array : null;
-	// @ts-ignore
-	public Object = typeof global !== undefined ? global.Object : null;
-	// @ts-ignore
-	public Number = typeof global !== undefined ? global.Number : null;
-	// @ts-ignore
-	public Symbol = typeof global !== undefined ? global.Symbol : null;
-	// @ts-ignore
-	public Function = typeof global !== undefined ? global.Function : null;
-	// @ts-ignore
-	public RegExp = typeof global !== undefined ? global.RegExp : null;
-	// @ts-ignore
-	public Date = typeof global !== undefined ? global.Date : null;
-	// @ts-ignore
-	public JSON = typeof global !== undefined ? global.JSON : null;
-	// @ts-ignore
-	public Promise = typeof global !== undefined ? global.Promise : null;
-	// @ts-ignore
-	public Error = typeof global !== undefined ? global.Error : null;
+	public Array = typeof GLOBAL !== undefined ? GLOBAL.Array : null;
+	public Object = typeof GLOBAL !== undefined ? GLOBAL.Object : null;
+	public Number = typeof GLOBAL !== undefined ? GLOBAL.Number : null;
+	public Symbol = typeof GLOBAL !== undefined ? GLOBAL.Symbol : null;
+	public Function = typeof GLOBAL !== undefined ? GLOBAL.Function : null;
+	public RegExp = typeof GLOBAL !== undefined ? GLOBAL.RegExp : null;
+	public Date = typeof GLOBAL !== undefined ? GLOBAL.Date : null;
+	public JSON = typeof GLOBAL !== undefined ? GLOBAL.JSON : null;
+	public Promise = typeof GLOBAL !== undefined ? GLOBAL.Promise : null;
+	public Error = typeof GLOBAL !== undefined ? GLOBAL.Error : null;
 
 	// Public Properties
 	public document: Document;
@@ -70,9 +62,7 @@ export default class Window extends EventTarget {
 	public location = new Location();
 	public navigator = { userAgent: 'happy-dom' };
 	public self = this;
-
-	// @ts-ignore
-	public console = typeof global !== undefined ? global.console : null;
+	public console = typeof GLOBAL !== undefined ? GLOBAL.console : null;
 
 	// Custom Properties (not part of HTML standard)
 	public shadowRootRenderOptions = new ShadowRootRenderOptions();
