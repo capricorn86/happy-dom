@@ -142,9 +142,10 @@ The bellow example will show you how to setup a Node [VM context](https://nodejs
 import { AsyncWindow } from 'happy-dom';
 import { Script, createContext } from 'vm';
 
-const asyncWindow = new AsyncWindow();
-const global = Object.assign({}, asyncWindow, { window: asyncWindow });
-const context = createContext(global);
+const sandbox = new AsyncWindow();
+sandbox['window'] = window;
+sandbox['global'] = global;
+const context = VM.createContext(sandbox);
 const window = context.window;
 const html = `
     <html>
