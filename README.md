@@ -143,7 +143,7 @@ import { AsyncWindow } from 'happy-dom';
 import { Script, createContext } from 'vm';
 
 const sandbox = new AsyncWindow();
-sandbox['window'] = window;
+sandbox['window'] = sandbox;
 sandbox['global'] = global;
 const context = VM.createContext(sandbox);
 const window = context.window;
