@@ -29,7 +29,7 @@ export default class VMContext {
 
 			window
 				.whenAsyncComplete()
-				.then(resolve)
+				.then(() => resolve(document.documentElement.outerHTML))
 				.catch(reject);
 
 			if (options.url) {
