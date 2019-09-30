@@ -19,7 +19,7 @@ import EventTypes from './event/EventTypes.json';
 import MutationObserver from './mutation-observer/MutationObserver';
 import ShadowRootRenderOptions from './shadow-root/ShadowRootRenderOptions';
 
-const GLOBAL = window || global;
+const GLOBAL = global || window;
 
 /**
  * Handles the Window.
