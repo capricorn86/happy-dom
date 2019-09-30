@@ -38,9 +38,9 @@ export default class VMContext {
 
 			window.shadowRootRenderOptions.openShadowRoots = options.openShadowRoots === true;
 
-			document.write(options.html);
-
 			options.script.runInContext(this.context);
+
+			document.write(options.html);
 		});
 	}
 
