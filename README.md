@@ -174,9 +174,9 @@ window.whenAsyncComplete().then(() => {
     console.log(myContainer.innerHTML);
 });
 
-document.write(html);
-
 script.runInContext(context);
+
+document.write(html);
 ```
 
 
