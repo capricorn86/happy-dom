@@ -19,8 +19,6 @@ import EventTypes from './event/EventTypes.json';
 import MutationObserver from './mutation-observer/MutationObserver';
 import ShadowRootRenderOptions from './shadow-root/ShadowRootRenderOptions';
 
-const GLOBAL = global || window;
-
 /**
  * Handles the Window.
  */
@@ -45,16 +43,16 @@ export default class Window extends EventTarget {
 	public CustomElementRegistry = CustomElementRegistry;
 	public Window = Window;
 
-	public Array = typeof GLOBAL !== undefined ? GLOBAL.Array : null;
-	public Object = typeof GLOBAL !== undefined ? GLOBAL.Object : null;
-	public Number = typeof GLOBAL !== undefined ? GLOBAL.Number : null;
-	public Symbol = typeof GLOBAL !== undefined ? GLOBAL.Symbol : null;
-	public Function = typeof GLOBAL !== undefined ? GLOBAL.Function : null;
-	public RegExp = typeof GLOBAL !== undefined ? GLOBAL.RegExp : null;
-	public Date = typeof GLOBAL !== undefined ? GLOBAL.Date : null;
-	public JSON = typeof GLOBAL !== undefined ? GLOBAL.JSON : null;
-	public Promise = typeof GLOBAL !== undefined ? GLOBAL.Promise : null;
-	public Error = typeof GLOBAL !== undefined ? GLOBAL.Error : null;
+	public Array = typeof global !== undefined ? global.Array : null;
+	public Object = typeof global !== undefined ? global.Object : null;
+	public Number = typeof global !== undefined ? global.Number : null;
+	public Symbol = typeof global !== undefined ? global.Symbol : null;
+	public Function = typeof global !== undefined ? global.Function : null;
+	public RegExp = typeof global !== undefined ? global.RegExp : null;
+	public Date = typeof global !== undefined ? global.Date : null;
+	public JSON = typeof global !== undefined ? global.JSON : null;
+	public Promise = typeof global !== undefined ? global.Promise : null;
+	public Error = typeof global !== undefined ? global.Error : null;
 
 	// Public Properties
 	public document: Document;
@@ -62,7 +60,7 @@ export default class Window extends EventTarget {
 	public location = new Location();
 	public navigator = { userAgent: 'happy-dom' };
 	public self = this;
-	public console = typeof GLOBAL !== undefined ? GLOBAL.console : null;
+	public console = typeof global !== undefined ? global.console : null;
 
 	// Custom Properties (not part of HTML standard)
 	public shadowRootRenderOptions = new ShadowRootRenderOptions();

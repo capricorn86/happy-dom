@@ -2,7 +2,6 @@ import NodeFetch from 'node-fetch';
 import Window from './Window';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
-const GLOBAL = global || window;
 
 /**
  * Handles the Window.
@@ -24,7 +23,7 @@ export default class AsyncWindow extends Window {
 	 */
 	public setTimeout(callback: () => void, delay?: number): NodeJS.Timeout {
 		this.startAsyncTask();
-		return GLOBAL.setTimeout(() => {
+		return global.setTimeout(() => {
 			callback();
 			this.endAsyncTask();
 		}, delay);
@@ -36,7 +35,7 @@ export default class AsyncWindow extends Window {
 	 * @param {NodeJS.Timeout} id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
-		GLOBAL.clearTimeout(id);
+		global.clearTimeout(id);
 		this.endAsyncTask();
 	}
 
@@ -49,7 +48,7 @@ export default class AsyncWindow extends Window {
 	 */
 	public setInterval(callback: () => void, delay?: number): NodeJS.Timeout {
 		this.startAsyncTask();
-		return GLOBAL.setInterval(callback, delay);
+		return global.setInterval(callback, delay);
 	}
 
 	/**
@@ -58,12 +57,12 @@ export default class AsyncWindow extends Window {
 	 * @param {NodeJS.Timeout} id ID of the interval.
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
-		GLOBAL.clearInterval(id);
+		global.clearInterval(id);
 		this.endAsyncTask();
 	}
 
 	/**
-	 * Provides a GLOBAL fetch() method that provides an easy, logical way to fetch resources asynchronously across the network.
+	 * Provides a global fetch() method that provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
 	 * @param {string} url URL to resource.
 	 * @param {object} [options] Options.
@@ -114,8 +113,8 @@ export default class AsyncWindow extends Window {
 		return new Promise((resolve, reject) => {
 			this.startAsyncTask();
 			this.asyncPromises.push({ resolve, reject });
-			GLOBAL.clearTimeout(this.asyncTimeout);
-			this.asyncTimeout = GLOBAL.setTimeout(() => this.endAsyncTask(), 0);
+			global.clearTimeout(this.asyncTimeout);
+			this.asyncTimeout = global.setTimeout(() => this.endAsyncTask(), 0);
 		});
 	}
 
@@ -128,7 +127,7 @@ export default class AsyncWindow extends Window {
 		this.hasAsyncError = false;
 		this.asyncTaskCount = 0;
 		this.asyncPromises = [];
-		GLOBAL.clearTimeout(this.asyncTimeout);
+		global.clearTimeout(this.asyncTimeout);
 	}
 
 	/**
