@@ -59,7 +59,7 @@ export default class VMContext {
 	 */
 	private createContext(): VM.Context {
 		const window = new AsyncWindow();
-		const global = Object.assign({}, window, { window });
-		return VM.createContext(global);
+		const sandbox = Object.assign({}, window, { window, global });
+		return VM.createContext(sandbox);
 	}
 }
