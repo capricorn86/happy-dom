@@ -21,6 +21,8 @@ export default class Element extends Node {
 	public nodeType = NodeType.ELEMENT_NODE;
 	public shadowRoot: ShadowRoot = null;
 	public classList = new ClassList(this);
+	public scrollTop = 0;
+	public scrollLeft = 0;
 	public readonly attributesMap: { [k: string]: string } = {};
 
 	/**
@@ -304,6 +306,13 @@ export default class Element extends Node {
 		this.shadowRoot.isConnected = this.isConnected;
 		return this.shadowRoot;
 	}
+
+	/**
+	 * Scrolls to a particular set of coordinates in the document.
+	 *
+	 * @note This method has not been implemented. It is just here for compatibility.
+	 */
+	public scrollTo(): void {}
 
 	/**
 	 * Converts to string.
