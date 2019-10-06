@@ -7,6 +7,10 @@ export default class HTMLElement extends Element {
 	protected static _observedPropertyAttributes: { [k: string]: string } = { tabindex: 'tabIndex' };
 	public style: object = {};
 	public tabIndex: number = 0;
+	public offsetHeight = 0;
+	public offsetWidth = 0;
+	public offsetLeft = 0;
+	public offsetTop = 0;
 
 	/**
 	 * Returns inner text.
@@ -44,7 +48,7 @@ export default class HTMLElement extends Element {
 	/**
 	 * Sets an attribute.
 	 *
-     * @override
+	 * @override
 	 * @param {string} name Name.
 	 * @param {string} value Value.
 	 */
@@ -53,37 +57,37 @@ export default class HTMLElement extends Element {
 		super.setAttribute(lowerName, value);
 		const observedPropertyAttributes = (<typeof HTMLElement>this.constructor)._observedPropertyAttributes;
 		const observedAttributes = Object.keys(observedPropertyAttributes);
-        if(observedAttributes.includes(lowerName)) {
+		if (observedAttributes.includes(lowerName)) {
 			const property = observedPropertyAttributes[lowerName];
-            this[property] = typeof this[property] === 'boolean' ? value !== null : String(value);
-        }
-    }
+			this[property] = typeof this[property] === 'boolean' ? value !== null : String(value);
+		}
+	}
 
 	/**
 	 * Sets raw attributes.
 	 *
-     * @override
+	 * @override
 	 * @param {string} rawAttributes Raw attributes.
 	 */
 	public setRawAttributes(rawAttributes: string): void {
-        super.setRawAttributes(rawAttributes);
-        if(rawAttributes.trim()) {
-            this.defineInitialProperties();
-        }
+		super.setRawAttributes(rawAttributes);
+		if (rawAttributes.trim()) {
+			this.defineInitialProperties();
+		}
 	}
-    
+
 	/**
 	 * Defines initial properties.
 	 */
-    private defineInitialProperties(): void {
+	private defineInitialProperties(): void {
 		const observedPropertyAttributes = (<typeof HTMLElement>this.constructor)._observedPropertyAttributes;
-		
-        for(const name of Object.keys(observedPropertyAttributes)) {
+
+		for (const name of Object.keys(observedPropertyAttributes)) {
 			const attribute = this.attributesMap[name];
-			
-            if(attribute !== null) {
+
+			if (attribute !== null) {
 				const property = observedPropertyAttributes[name];
-				switch(typeof this[property]) {
+				switch (typeof this[property]) {
 					case 'boolean':
 						this[property] = true;
 					case 'number':
@@ -91,7 +95,7 @@ export default class HTMLElement extends Element {
 					default:
 						this[property] = attribute;
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 }
