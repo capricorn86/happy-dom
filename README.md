@@ -194,6 +194,8 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.3.0   | 2019-10-06 | Adds support for scrollTop, scrollLeft, scrollTo(), offsetLeft, offsetTop offsetHeight, offsetWidth. |
+| 0.2.16  | 2019-10-06 | Major bug fixes with server side rendering. |
 | 0.2.0   | 2019-09-20 | Adds support for SVGSVGElement, SVGElement and SVGGraphicsElement. |
 | 0.1.0   | 2019-09-19 | Adds support for HTMLInputElement, HTMLTextAreaElement, HTMLFormElement, Range and DOMRect (bounding client rect). |
 | 0.0.1   | 2019-09-13 | Initial release. |
