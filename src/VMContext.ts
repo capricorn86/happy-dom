@@ -58,9 +58,6 @@ export default class VMContext {
 	 * @return {VM.Context} Context.
 	 */
 	private createContext(): VM.Context {
-		const sandbox = new AsyncWindow();
-		sandbox['window'] = sandbox;
-		sandbox['global'] = global;
-		return VM.createContext(sandbox);
+		return VM.createContext(new AsyncWindow());
 	}
 }

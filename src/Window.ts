@@ -43,24 +43,14 @@ export default class Window extends EventTarget {
 	public CustomElementRegistry = CustomElementRegistry;
 	public Window = Window;
 
-	public Array = typeof global !== undefined ? global.Array : null;
-	public Object = typeof global !== undefined ? global.Object : null;
-	public Number = typeof global !== undefined ? global.Number : null;
-	public Symbol = typeof global !== undefined ? global.Symbol : null;
-	public Function = typeof global !== undefined ? global.Function : null;
-	public RegExp = typeof global !== undefined ? global.RegExp : null;
-	public Date = typeof global !== undefined ? global.Date : null;
-	public JSON = typeof global !== undefined ? global.JSON : null;
-	public Promise = typeof global !== undefined ? global.Promise : null;
-	public Error = typeof global !== undefined ? global.Error : null;
-
 	// Public Properties
 	public document: Document;
 	public customElements: CustomElementRegistry = new CustomElementRegistry();
 	public location = new Location();
 	public navigator = { userAgent: 'happy-dom' };
-	public self = this;
 	public console = typeof global !== undefined ? global.console : null;
+	public self: Window = this;
+	public window: Window = this;
 
 	// Custom Properties (not part of HTML standard)
 	public shadowRootRenderOptions = new ShadowRootRenderOptions();
@@ -79,6 +69,15 @@ export default class Window extends EventTarget {
 
 		for (const eventType of EventTypes) {
 			this[eventType] = Event;
+		}
+
+		// Copies functionality from global (like eval, String, Array, Object etc.)
+		if (global !== undefined) {
+			for (const key of Object.keys(global)) {
+				if (typeof this[key] === 'undefined') {
+					this[key] = global[key];
+				}
+			}
 		}
 	}
 
