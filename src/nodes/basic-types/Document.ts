@@ -94,7 +94,7 @@ export default class Document extends DocumentFragment {
 	public createElement(tagName: string): Element {
 		const customElementClass = this.defaultView.customElements.get(tagName);
 		const elementClass = customElementClass ? customElementClass : this.getElementClass(tagName);
-		
+
 		elementClass.ownerDocument = this;
 
 		const element = new elementClass();
@@ -156,10 +156,11 @@ export default class Document extends DocumentFragment {
 	 * Creates an event.
 	 *
 	 * @legacy
+	 * @param {string} type Type.
 	 * @return {Event} Event.
 	 */
-	public createEvent(): Event {
-		return new Event();
+	public createEvent(type: string): Event {
+		return new Event(type);
 	}
 
 	/**
@@ -182,7 +183,7 @@ export default class Document extends DocumentFragment {
 	 * @return {typeof Element} Element class.
 	 */
 	private getElementClass(tagName: string): typeof Element {
-		switch(tagName) {
+		switch (tagName) {
 			case 'template':
 				return HTMLTemplateElement;
 			case 'form':
