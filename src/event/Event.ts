@@ -1,4 +1,5 @@
 import Node from '../nodes/basic-types/Node';
+import IEventInit from './IEventInit';
 
 export default class Event {
 	public readonly bubbles: boolean = false;
@@ -9,6 +10,19 @@ export default class Event {
 	public defaultPrevented: boolean = false;
 	public immediatePropagationStopped: boolean = false;
 	public type: string = null;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param {string} type Event type.
+	 * @param {IEventInit} eventInit Event init.
+	 */
+	constructor(type: string, eventInit: IEventInit = null) {
+		this.type = type;
+		this.bubbles = eventInit && eventInit.bubbles ? true : false;
+		this.cancelable = eventInit && eventInit.cancelable ? true : false;
+		this.composed = eventInit && eventInit.composed ? true : false;
+	}
 
 	/**
 	 * Init event.
