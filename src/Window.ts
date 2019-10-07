@@ -73,11 +73,8 @@ export default class Window extends EventTarget {
 
 		// Copies functionality from global (like eval, String, Array, Object etc.)
 		if (global !== undefined) {
-			for (const key of Object.keys(global)) {
-				if (typeof this[key] === 'undefined') {
-					this[key] = global[key];
-				}
-			}
+			const descriptors = Object.getOwnPropertyDescriptors(global);
+			Object.defineProperties(this, descriptors);
 		}
 	}
 
