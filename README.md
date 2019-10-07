@@ -194,6 +194,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.4.0   | 2019-10-07 | Adds type and eventInit to Event constructor. (#4)
 | 0.3.1   | 2019-10-07 | Fixes bug where global.Error is undefined. (#6)
 | 0.3.0   | 2019-10-06 | Adds support for scrollTop, scrollLeft, scrollTo(), offsetLeft, offsetTop offsetHeight, offsetWidth. |
 | 0.2.16  | 2019-10-06 | Major bug fixes with server side rendering. |
