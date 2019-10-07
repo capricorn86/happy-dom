@@ -7,11 +7,16 @@ const SELF_CLOSING_ELEMENTS = {
 	base: true,
 	br: true,
 	col: true,
+	embed: true,
 	hr: true,
 	img: true,
 	input: true,
 	link: true,
-	meta: true
+	meta: true,
+	param: true,
+	source: true,
+	track: true,
+	wbr: true
 };
 
 /**
@@ -45,10 +50,12 @@ export default class HTMLParser {
 			if (isStartTag) {
 				const newElement = document.createElement(tagName);
 				newElement.setRawAttributes(match[3]);
-				currentParent = <Element>currentParent.appendChild(newElement);
 
 				if (!SELF_CLOSING_ELEMENTS[tagName]) {
+					currentParent = <Element>currentParent.appendChild(newElement);
 					stack.push(currentParent);
+				} else {
+					currentParent.appendChild(newElement);
 				}
 
 				lastTextIndex = markupRegexp.lastIndex;
@@ -60,7 +67,7 @@ export default class HTMLParser {
 		}
 
 		// Text after last element
-		if ((!match && data.length > 0) || match && lastTextIndex !== match.index) {
+		if ((!match && data.length > 0) || (match && lastTextIndex !== match.index)) {
 			const text = data.substring(lastTextIndex);
 			this.appendTextAndCommentNodes(document, root, text);
 		}
