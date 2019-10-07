@@ -194,8 +194,9 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
-| 0.4.0   | 2019-10-07 | Adds type and eventInit to Event constructor. (#4)
-| 0.3.1   | 2019-10-07 | Fixes bug where global.Error is undefined. (#6)
+| 0.4.1   | 2019-10-07 | Fixes issue with self closing elements become parent of next element in HTMLParser. (#1) |
+| 0.4.0   | 2019-10-07 | Adds type and eventInit to Event constructor. (#4) |
+| 0.3.1   | 2019-10-07 | Fixes bug where global.Error is undefined. (#6) |
 | 0.3.0   | 2019-10-06 | Adds support for scrollTop, scrollLeft, scrollTo(), offsetLeft, offsetTop offsetHeight, offsetWidth. |
 | 0.2.16  | 2019-10-06 | Major bug fixes with server side rendering. |
 | 0.2.0   | 2019-09-20 | Adds support for SVGSVGElement, SVGElement and SVGGraphicsElement. |
