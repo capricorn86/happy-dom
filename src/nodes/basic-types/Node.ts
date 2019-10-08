@@ -6,8 +6,6 @@ import MutationRecord from '../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../mutation-observer/MutationType';
 import MutationObserverListener from '../../mutation-observer/MutationListener';
 
-const ASCII = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-
 /**
  * Node
  */
@@ -23,7 +21,7 @@ export default class Node extends EventTarget {
 	protected _isConnected: boolean = false;
 
 	// Custom Properties (not part of HTML standard)
-	protected observers: MutationObserverListener[] = [];
+	protected _observers: MutationObserverListener[] = [];
 
 	/**
 	 * Constructor.
@@ -161,21 +159,6 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Returns a unique ID.
-	 *
-	 * @return {string} ID.
-	 */
-	public getUniqueID(): string {
-		if (this.parentNode) {
-			const childNodeIndex = this.parentNode.childNodes.indexOf(this);
-			const id =
-				ASCII[childNodeIndex] !== undefined ? ASCII[childNodeIndex] : childNodeIndex !== -1 ? childNodeIndex : '';
-			return this.parentNode.getUniqueID() + id;
-		}
-		return 'a';
-	}
-
-	/**
 	 * Clones a node.
 	 *
 	 * @param {boolean} [deep=true] "false" to not clone deep.
@@ -184,7 +167,7 @@ export default class Node extends EventTarget {
 	public cloneNode(deep = true): Node {
 		const clone = new (<typeof Node>this.constructor)();
 		for (const key of Object.keys(this)) {
-			if(key !== '_isConnected' && key !== 'observers') {
+			if (key !== '_isConnected' && key !== '_observers') {
 				if (key === 'childNodes') {
 					if (deep) {
 						for (const childNode of this[key]) {
@@ -201,6 +184,8 @@ export default class Node extends EventTarget {
 				} else if (key === 'classList') {
 					// eslint-disable-next-line
 					clone[key] = new ClassList(<any>clone);
+				} else if (key === '_attributesMap') {
+					clone[key] = Object.assign({}, this[key]);
 				} else {
 					clone[key] = this[key];
 				}
@@ -240,14 +225,14 @@ export default class Node extends EventTarget {
 		node.isConnected = this.isConnected;
 
 		// MutationObserver
-		if (this.observers.length > 0) {
+		if (this._observers.length > 0) {
 			const record = new MutationRecord();
 			record.type = MutationTypeConstant.childList;
 			record.addedNodes = [node];
 
-			for (const observer of this.observers) {
+			for (const observer of this._observers) {
 				if (observer.options.subtree) {
-					node.observe(observer);
+					node._observe(observer);
 				}
 				if (observer.options.childList) {
 					observer.callback([record]);
@@ -273,13 +258,13 @@ export default class Node extends EventTarget {
 		node.isConnected = false;
 
 		// MutationObserver
-		if (this.observers.length > 0) {
+		if (this._observers.length > 0) {
 			const record = new MutationRecord();
 			record.type = MutationTypeConstant.childList;
 			record.removedNodes = [node];
 
-			for (const observer of this.observers) {
-				node.unobserve(observer);
+			for (const observer of this._observers) {
+				node._unobserve(observer);
 				if (observer.options.childList) {
 					observer.callback([record]);
 				}
@@ -325,14 +310,14 @@ export default class Node extends EventTarget {
 		newNode.isConnected = this.isConnected;
 
 		// MutationObserver
-		if (this.observers.length > 0) {
+		if (this._observers.length > 0) {
 			const record = new MutationRecord();
 			record.type = MutationTypeConstant.childList;
 			record.addedNodes = [newNode];
 
-			for (const observer of this.observers) {
+			for (const observer of this._observers) {
 				if (observer.options.subtree) {
-					newNode.observe(observer);
+					newNode._observe(observer);
 				}
 				if (observer.options.childList) {
 					observer.callback([record]);
@@ -363,11 +348,11 @@ export default class Node extends EventTarget {
 	 *
 	 * @param {MutationObserverListener} listener Listener.
 	 */
-	public observe(listener: MutationObserverListener): void {
-		this.observers.push(listener);
+	public _observe(listener: MutationObserverListener): void {
+		this._observers.push(listener);
 		if (listener.options.subtree) {
 			for (const node of this.childNodes) {
-				node.observe(listener);
+				node._observe(listener);
 			}
 		}
 	}
@@ -378,14 +363,14 @@ export default class Node extends EventTarget {
 	 *
 	 * @param {MutationObserverListener} listener Listener.
 	 */
-	public unobserve(listener: MutationObserverListener): void {
-		const index = this.observers.indexOf(listener);
+	public _unobserve(listener: MutationObserverListener): void {
+		const index = this._observers.indexOf(listener);
 		if (index !== -1) {
-			this.observers.splice(index, 1);
+			this._observers.splice(index, 1);
 		}
 		if (listener.options.subtree) {
 			for (const node of this.childNodes) {
-				node.unobserve(listener);
+				node._unobserve(listener);
 			}
 		}
 	}

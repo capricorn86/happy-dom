@@ -49,7 +49,7 @@ export default class HTMLParser {
 
 			if (isStartTag) {
 				const newElement = document.createElement(tagName);
-				newElement.setRawAttributes(match[3]);
+				newElement._setRawAttributes(match[3]);
 
 				if (!SELF_CLOSING_ELEMENTS[tagName]) {
 					currentParent = <Element>currentParent.appendChild(newElement);

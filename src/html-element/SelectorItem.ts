@@ -45,7 +45,7 @@ export default class SelectorItem {
 			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'g');
 
 			while ((match = attributeRegexp.exec(part))) {
-				if (element.attributesMap[match[1]] !== match[2].replace(/"/g, '')) {
+				if (element._attributesMap[match[1]] !== match[2].replace(/"/g, '')) {
 					return false;
 				}
 			}

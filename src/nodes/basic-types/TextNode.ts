@@ -47,8 +47,8 @@ export default class TextNode extends Node {
 		this._textContent = textContent;
 
 		// MutationObserver
-		if (this.observers.length > 0) {
-			for (const observer of this.observers) {
+		if (this._observers.length > 0) {
+			for (const observer of this._observers) {
 				if (observer.options.characterData) {
 					const record = new MutationRecord();
 					record.type = MutationTypeConstant.characterData;

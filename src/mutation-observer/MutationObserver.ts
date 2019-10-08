@@ -29,7 +29,7 @@ export default class MutationObserverTest {
 	 * @param {IMutationObserverInit} options Options.
 	 */
 	public observe(target: Node, options: IMutationObserverInit): void {
-		if(!target) {
+		if (!target) {
 			throw new Error('Failed to observer. The first parameter "target" should be of type "Node".');
 		}
 		options = Object.assign({}, options, {
@@ -40,14 +40,14 @@ export default class MutationObserverTest {
 		this.listener.options = options;
 		this.listener.callback = this.callback.bind(this);
 
-		target.observe(this.listener);
+		target._observe(this.listener);
 	}
 
 	/**
 	 * Disconnects.
 	 */
 	public disconnect(): void {
-		this.target.unobserve(this.listener);
+		this.target._unobserve(this.listener);
 	}
 
 	/**
