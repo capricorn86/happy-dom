@@ -53,13 +53,12 @@ export default class SelectorItem {
 
 		// Class match
 		if (this.isClass) {
-            const className = element.className;
 			const classRegexp = new RegExp(CLASS_REGEXP, 'g');
 
 			while ((match = classRegexp.exec(part))) {
-                if (!className || !className.includes(match[1])) {
-                    return false;
-                }
+				if (!element.classList.contains(match[1])) {
+					return false;
+				}
 			}
 		}
 

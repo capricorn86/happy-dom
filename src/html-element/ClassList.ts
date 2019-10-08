@@ -55,6 +55,8 @@ export default class ClassList {
 	 * @return {boolean} TRUE if it contains.
 	 */
 	public contains(className: string): boolean {
-		return this.ownerElement.getAttribute('class').includes(className);
+		const attr = this.ownerElement.getAttribute('class');
+		const list = attr ? attr.split(' ') : [];
+		return list.includes(className);
 	}
 }

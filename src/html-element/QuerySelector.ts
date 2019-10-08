@@ -18,9 +18,9 @@ export default class QuerySelector {
 	public static querySelectorAll(node: Node, selector: string): Element[] {
 		let matched = [];
 
-		for(const part of selector.split(',')) {
+		for (const part of selector.split(',')) {
 			const foundElements = this.singleQuerySelectorAll(node, part.trim());
-			if(foundElements) {
+			if (foundElements) {
 				matched = matched.concat(foundElements);
 			}
 		}
@@ -36,9 +36,9 @@ export default class QuerySelector {
 	 * @return {Element} HTML element.
 	 */
 	public static querySelector(node: Node, selector: string): Element {
-		for(const part of selector.split(',')) {
+		for (const part of selector.split(',')) {
 			const foundElement = this.singleQuerySelector(node, part.trim());
-			if(foundElement) {
+			if (foundElement) {
 				return foundElement;
 			}
 		}
