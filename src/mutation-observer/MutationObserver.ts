@@ -32,9 +32,11 @@ export default class MutationObserverTest {
 		if (!target) {
 			throw new Error('Failed to observer. The first parameter "target" should be of type "Node".');
 		}
+
 		options = Object.assign({}, options, {
 			attributeFilter: options.attributeFilter ? options.attributeFilter.map(name => name.toLowerCase()) : null
 		});
+
 		this.target = target;
 		this.listener = new MutationObserverListener();
 		this.listener.options = options;
