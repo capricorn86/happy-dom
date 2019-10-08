@@ -23,7 +23,7 @@ export default class Element extends Node {
 	public classList = new ClassList(this);
 	public scrollTop = 0;
 	public scrollLeft = 0;
-	public readonly attributesMap: { [k: string]: string } = {};
+	public _attributesMap: { [k: string]: string } = {};
 
 	/**
 	 * Returns ID.
@@ -148,10 +148,10 @@ export default class Element extends Node {
 	 */
 	public get attributes(): Attribute[] {
 		const attributes = [];
-		for (const key of Object.keys(this.attributesMap)) {
+		for (const key of Object.keys(this._attributesMap)) {
 			const attribute = new Attribute();
 			attribute.name = key;
-			attribute.value = this.attributesMap[key];
+			attribute.value = this._attributesMap[key];
 			attributes.push(attribute);
 		}
 		return attributes;
@@ -191,7 +191,7 @@ export default class Element extends Node {
 	 * @return {boolean} "true" if the node has attributes.
 	 */
 	public hasAttributes(): boolean {
-		return Object.keys(this.attributesMap).length > 0;
+		return Object.keys(this._attributesMap).length > 0;
 	}
 
 	/**
@@ -202,16 +202,16 @@ export default class Element extends Node {
 	 */
 	public setAttribute(name: string, value: string): void {
 		const lowerName = name.toLowerCase();
-		const oldValue = this.attributesMap[lowerName] !== undefined ? this.attributesMap[lowerName] : null;
-		this.attributesMap[lowerName] = String(value);
+		const oldValue = this._attributesMap[lowerName] !== undefined ? this._attributesMap[lowerName] : null;
+		this._attributesMap[lowerName] = String(value);
 
 		if (this.attributeChangedCallback) {
 			this.attributeChangedCallback(name, oldValue, value);
 		}
 
 		// MutationObserver
-		if (this.observers.length > 0) {
-			for (const observer of this.observers) {
+		if (this._observers.length > 0) {
+			for (const observer of this._observers) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(lowerName))
@@ -233,7 +233,7 @@ export default class Element extends Node {
 	 */
 	public getAttribute(name: string): string {
 		const lowerName = name.toLowerCase();
-		return this.attributesMap[lowerName] !== undefined ? this.attributesMap[lowerName] : null;
+		return this._attributesMap[lowerName] !== undefined ? this._attributesMap[lowerName] : null;
 	}
 
 	/**
@@ -243,12 +243,12 @@ export default class Element extends Node {
 	 */
 	public removeAttribute(name: string): void {
 		const lowerName = name.toLowerCase();
-		const oldValue = this.attributesMap[lowerName] !== undefined ? this.attributesMap[lowerName] : null;
-		delete this.attributesMap[lowerName];
+		const oldValue = this._attributesMap[lowerName] !== undefined ? this._attributesMap[lowerName] : null;
+		delete this._attributesMap[lowerName];
 
 		// MutationObserver
-		if (this.observers.length > 0) {
-			for (const observer of this.observers) {
+		if (this._observers.length > 0) {
+			for (const observer of this._observers) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(lowerName))
@@ -268,7 +268,7 @@ export default class Element extends Node {
 	 *
 	 * @param {string} rawAttributes Raw attributes.
 	 */
-	public setRawAttributes(rawAttributes: string): void {
+	public _setRawAttributes(rawAttributes: string): void {
 		rawAttributes = rawAttributes.trim();
 		if (rawAttributes) {
 			const attributeRegexp = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gi;
@@ -276,7 +276,7 @@ export default class Element extends Node {
 			while ((match = attributeRegexp.exec(rawAttributes))) {
 				const name = match[1].toLowerCase();
 				const value = decode(match[2] || match[3] || match[4] || '');
-				this.attributesMap[name] = value;
+				this._attributesMap[name] = value;
 			}
 		}
 	}
@@ -284,10 +284,10 @@ export default class Element extends Node {
 	/**
 	 * Returns raw attributes.
 	 */
-	public getRawAttributes(): string {
-		return Object.keys(this.attributesMap)
+	public _getRawAttributes(): string {
+		return Object.keys(this._attributesMap)
 			.map(key => {
-				return key + '="' + encode(this.attributesMap[key]) + '"';
+				return key + '="' + encode(this._attributesMap[key]) + '"';
 			})
 			.join(' ');
 	}

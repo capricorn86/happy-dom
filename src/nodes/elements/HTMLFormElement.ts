@@ -6,8 +6,12 @@ import * as HTMLFormPropertyAttributes from './HTMLFormPropertyAttributes.json';
  * HTMLFormElement.
  */
 export default class HTMLFormElement extends HTMLElement {
-	protected static _observedPropertyAttributes = Object.assign({}, HTMLElement._observedPropertyAttributes, HTMLFormPropertyAttributes);
-	
+	protected static _observedPropertyAttributes = Object.assign(
+		{},
+		HTMLElement._observedPropertyAttributes,
+		HTMLFormPropertyAttributes
+	);
+
 	public name: string = null;
 	public method: string = null;
 	public target: string = null;
@@ -18,34 +22,34 @@ export default class HTMLFormElement extends HTMLElement {
 	public autocomplete: string = 'off';
 	public noValidate: string = null;
 
-    /**
-     * Returns input elements.
-     * 
-     * @return {Element[]} Elements.
-     */
-    public get elements(): Element[] {
-        return this.querySelectorAll('input,textarea');
-    }
+	/**
+	 * Returns input elements.
+	 *
+	 * @return {Element[]} Elements.
+	 */
+	public get elements(): Element[] {
+		return this.querySelectorAll('input,textarea');
+	}
 
-    /**
-     * Returns number of input elements.
-     * 
-     * @return {number} Length.
-     */
-    public get length(): number {
-        return this.elements.length;
-    }
-	
+	/**
+	 * Returns number of input elements.
+	 *
+	 * @return {number} Length.
+	 */
+	public get length(): number {
+		return this.elements.length;
+	}
+
 	/**
 	 * Submits form.
 	 */
 	public submit(): void {}
-	
+
 	/**
 	 * Resets form.
 	 */
 	public reset(): void {}
-	
+
 	/**
 	 * Reports validity.
 	 */

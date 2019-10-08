@@ -57,7 +57,7 @@ export default class HTMLElement extends Element {
 		super.setAttribute(lowerName, value);
 		const observedPropertyAttributes = (<typeof HTMLElement>this.constructor)._observedPropertyAttributes;
 		const observedAttributes = Object.keys(observedPropertyAttributes);
-		if (observedAttributes.includes(lowerName)) {
+		if (value !== null && value !== undefined && observedAttributes.includes(lowerName)) {
 			const property = observedPropertyAttributes[lowerName];
 			this[property] = typeof this[property] === 'boolean' ? value !== null : String(value);
 		}
@@ -69,23 +69,23 @@ export default class HTMLElement extends Element {
 	 * @override
 	 * @param {string} rawAttributes Raw attributes.
 	 */
-	public setRawAttributes(rawAttributes: string): void {
-		super.setRawAttributes(rawAttributes);
+	public _setRawAttributes(rawAttributes: string): void {
+		super._setRawAttributes(rawAttributes);
 		if (rawAttributes.trim()) {
-			this.defineInitialProperties();
+			this._defineInitialProperties();
 		}
 	}
 
 	/**
 	 * Defines initial properties.
 	 */
-	private defineInitialProperties(): void {
+	private _defineInitialProperties(): void {
 		const observedPropertyAttributes = (<typeof HTMLElement>this.constructor)._observedPropertyAttributes;
 
 		for (const name of Object.keys(observedPropertyAttributes)) {
-			const attribute = this.attributesMap[name];
+			const attribute = this._attributesMap[name];
 
-			if (attribute !== null) {
+			if (attribute !== null && attribute !== undefined) {
 				const property = observedPropertyAttributes[name];
 				switch (typeof this[property]) {
 					case 'boolean':

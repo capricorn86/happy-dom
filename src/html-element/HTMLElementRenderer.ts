@@ -23,7 +23,7 @@ export default class HTMLElementRenderer {
 	 */
 	public static renderOuterHTML(element: Element): string {
 		const tagName = element.tagName.toLowerCase();
-		const rawAttributes = element.getRawAttributes();
+		const rawAttributes = element._getRawAttributes();
 		const isUnClosed = META_REGEXP.test(tagName);
 		const isSelfClosed = SELF_CLOSED_REGEXP.test(tagName);
 		const attributes = rawAttributes ? ' ' + rawAttributes : '';
