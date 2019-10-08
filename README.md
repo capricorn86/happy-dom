@@ -194,6 +194,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.4.3   | 2019-10-08 | Fixes issue with clones nodes referring to the same attributes. (#5) |
 | 0.4.2   | 2019-10-08 | Fixes issue where query selector not returning correct elements. (#2) |
 | 0.4.1   | 2019-10-07 | Fixes issue with self closing elements become parent of next element in HTMLParser. (#1) |
 | 0.4.0   | 2019-10-07 | Adds type and eventInit to Event constructor. (#4) |
