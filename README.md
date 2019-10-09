@@ -67,7 +67,7 @@ const script = new Script(`
 `);
 const url = 'http://localhost:8080';
 const openShadowRoots = true;
-const result = vm.render({ html, script, url, openShadowRoots });
+const result = await vm.render({ html, script, url, openShadowRoots });
 
 // Will output HTML with a div element inside the "myContainer" element
 console.log(result);
