@@ -1,7 +1,7 @@
 # Happy DOM
 A "jsdom" alternative with support for server side rendering of web components.
 
-As shadow roots are closed, this DOM supports opening them up by providing an option. When the shadow roots are opened up, Happy DOM will scope the HTML and CSS.
+As shadow roots are scoped, this DOM supports opening them up by providing an option. When the shadow roots are opened up, Happy DOM will scope the HTML and CSS.
 
 
 
