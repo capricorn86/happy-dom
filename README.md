@@ -140,7 +140,7 @@ The bellow example will show you how to setup a Node [VM context](https://nodejs
 
 ```javascript
 import { AsyncWindow } from 'happy-dom';
-import { Script, createContext } from 'vm';
+import VM from 'vm';
 
 const context = VM.createContext(new AsyncWindow());
 const window = context.window;
@@ -156,7 +156,7 @@ const html = `
         </body>
     </html>
 `;
-const script = new Script(`
+const script = new VM.Script(`
     const element = document.createElement('div');
     const myContainer = document.querySelector('.myContainer');
     element.innerHTML = 'Test';
