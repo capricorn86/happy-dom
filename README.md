@@ -124,7 +124,7 @@ window.fetch('http://localhost:8080/json').then(response => {
      })
 });
 
-window.whenAsynComplete().then(() => {
+window.whenAsyncComplete().then(() => {
      const myContainer = document.querySelector('.myContainer');
     
      // Will output the value in "data.test"
