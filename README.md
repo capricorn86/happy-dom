@@ -40,8 +40,6 @@ Happy DOM provide with a utility for server side rendering. The utility will cre
 
 Importing dependencies is not supported by the VM script. Therefore scripts with imports has to be bundled with a tool like [Webpack](https://webpack.js.org/) in order to be executed within the virtual machine.
 
-### Example
-
 ```javascript
 import { VMContext } from 'happy-dom';
 import { Script } from 'vm';
@@ -175,6 +173,35 @@ window.whenAsyncComplete().then(() => {
 script.runInContext(context);
 
 document.write(html);
+```
+
+
+
+# Shadow Root Render Options
+
+As mentioned above, Happy DOM comes with render options for opening the shadow roots for server side rendering.
+
+Opening shadow roots will render them opened when running innerHTML or outerHTML, but they will not be modified in the DOM tree.
+
+By default CSS will be scoped and attached to the head. The most common use case is render the entire document element by running "document.documentElement.outerHTML", which will include the head with the CSS.
+
+## Available Options
+
+The shadow root options are available under "window.shadowRootRenderOptions".
+
+| Name                  | Default value        | Description                                                  |
+| --------------------- | -------------------- | ------------------------------------------------------------ |
+| openShadowRoots       | false                | Opens the shadow root when rendering elements with innerHTML or outerHTML. |
+| appendScopedCSSToHead | true                 | Set to "true" to append extracted and scoped CSS to the head extracted when "openShadowRoots" is enabled.<br /><br />The CSS will still be extracted when set to "false". It will be available in the "cssCache". |
+| cssCache              | new ScopedCSSCache() | CSS cache object with the extracted CSS.                     |
+
+## Retrieve Extracted CSS
+
+```javascript
+const allScopedCSS = window.shadowRootOptions.cssCache.getAllScopedCSS();
+
+// Outputs all extracted CSS
+console.log(allScopedCSS);
 ```
 
 

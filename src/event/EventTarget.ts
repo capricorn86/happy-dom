@@ -3,8 +3,8 @@ import Event from './Event';
 /**
  * Handles events.
  */
-export default class EventTarget {
-	private readonly listeners: { [k: string]: ((event: Event) => void)[] } = {};
+export default abstract class EventTarget {
+	private readonly _listeners: { [k: string]: ((event: Event) => void)[] } = {};
 
 	/**
 	 * Adds an event listener.
@@ -13,8 +13,8 @@ export default class EventTarget {
 	 * @param {function} listener Listener.
 	 */
 	public addEventListener(type: string, listener: (event: Event) => void): void {
-		this.listeners[type] = this.listeners[type] || [];
-		this.listeners[type].push(listener);
+		this._listeners[type] = this._listeners[type] || [];
+		this._listeners[type].push(listener);
 	}
 
 	/**
@@ -24,10 +24,10 @@ export default class EventTarget {
 	 * @param {function} listener Listener.
 	 */
 	public removeEventListener(type: string, listener: (event: Event) => void): void {
-		if (this.listeners[type]) {
-			const index = this.listeners[type].indexOf(listener);
+		if (this._listeners[type]) {
+			const index = this._listeners[type].indexOf(listener);
 			if (index !== -1) {
-				this.listeners[type].splice(index);
+				this._listeners[type].splice(index);
 			}
 		}
 	}
@@ -40,24 +40,33 @@ export default class EventTarget {
 	 */
 	public dispatchEvent(event: Event): boolean {
 		const onEventName = 'on' + event.type.toLowerCase();
-		let defaultPrevented = false;
+		let returnValue = true;
 
 		if (typeof this[onEventName] === 'function') {
 			this[onEventName].call(this, event);
 		}
 
-		if (this.listeners[event.type]) {
-			for (const listener of this.listeners[event.type]) {
+		if (this._listeners[event.type]) {
+			for (const listener of this._listeners[event.type]) {
 				listener(event);
 				if (event.cancelable && event.defaultPrevented) {
-					defaultPrevented = true;
+					returnValue = false;
 				}
 				if (event.immediatePropagationStopped) {
-					return !defaultPrevented;
+					return returnValue;
 				}
 			}
 		}
 
-		return !defaultPrevented;
+		if (
+			event.bubbles &&
+			typeof this['parentNode'] === 'object' &&
+			typeof this['parentNode'].dispatchEvent === 'function' &&
+			!this['parentNode'].dispatchEvent(event)
+		) {
+			returnValue = false;
+		}
+
+		return returnValue;
 	}
 }

@@ -1,4 +1,4 @@
-import Node from '../nodes/basic-types/Node';
+import Node from '../nodes/basic-types/node/Node';
 import NodeFilter from './NodeFilter';
 
 /**
@@ -119,7 +119,7 @@ export default class TreeWalker {
 	public nextNode(): Node {
 		if (!this.firstChild()) {
 			while (!this.nextSibling() && this.parentNode()) {}
-			this.currentNode = this.currentNode === this.root ? null : (this.currentNode || null);
+			this.currentNode = this.currentNode === this.root ? null : this.currentNode || null;
 		}
 		return this.currentNode;
 	}
@@ -131,7 +131,7 @@ export default class TreeWalker {
 	 */
 	public previousNode(): Node {
 		while (!this.previousSibling() && this.parentNode()) {}
-		this.currentNode = this.currentNode === this.root ? null : (this.currentNode || null);
+		this.currentNode = this.currentNode === this.root ? null : this.currentNode || null;
 		return this.currentNode;
 	}
 
