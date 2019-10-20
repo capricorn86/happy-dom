@@ -1,4 +1,4 @@
-import Node from '../nodes/basic-types/Node';
+import Node from '../nodes/basic-types/node/Node';
 
 /**
  * MutationRecord is a model for a mutation.

@@ -23,7 +23,20 @@
 	"scripts": {
 		"compile": "tsc",
 		"watch": "tsc -w --preserveWatchOutput",
-		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'"
+		"prepublish": "npm run compile && npm test",
+		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"test:update-snapshot": "jest --updateSnapshot",
+		"test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand"
+	},
+	"jest": {
+		"transform": {
+			"^.+\\.ts?$": "ts-jest"
+		},
+		"testMatch": [
+			"**/test/**/*.test.ts"
+		]
 	},
 	"dependencies": {
 		"he": "1.1.1",
@@ -35,10 +48,13 @@
 		"@typescript-eslint/parser": "^1.9.0",
 		"@types/node": "^12.6.8",
 		"@types/he": "latest",
+		"@types/jest": "^24.0.18",
 		"eslint": "^5.16.0",
 		"eslint-config-prettier": "^4.1.0",
 		"eslint-plugin-prettier": "^3.0.1",
 		"prettier": "^1.16.4",
-		"typescript": "^3.4.5"
+		"typescript": "^3.5.1",
+		"jest": "^24.9.0",
+		"ts-jest": "^24.1.0"
 	}
 }

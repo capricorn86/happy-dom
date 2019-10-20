@@ -1,0 +1,16 @@
+{
+	"form": "form",
+	"name": "name",
+	"disabled": "disabled",
+	"autofocus": "autofocus",
+	"required": "required",
+	"value": "value",
+	"autocomplete": "autocomplete",
+	"minlength": "minLength",
+	"maxlength": "maxLength",
+	"pattern": "pattern",
+	"placeholder": "placeholder",
+	"readonly": "readOnly",
+	"size": "size",
+	"inputmode": "inputmode"
+}
