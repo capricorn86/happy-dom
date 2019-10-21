@@ -60,6 +60,7 @@ export default abstract class EventTarget {
 
 		if (
 			event.bubbles &&
+			this['parentNode'] !== null &&
 			typeof this['parentNode'] === 'object' &&
 			typeof this['parentNode'].dispatchEvent === 'function' &&
 			!this['parentNode'].dispatchEvent(event)
