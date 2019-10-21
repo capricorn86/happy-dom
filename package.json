@@ -36,7 +36,8 @@
 		},
 		"testMatch": [
 			"**/test/**/*.test.ts"
-		]
+		],
+		"testEnvironment": "node"
 	},
 	"dependencies": {
 		"he": "1.1.1",

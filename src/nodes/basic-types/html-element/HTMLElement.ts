@@ -1,4 +1,5 @@
 import Element from '../element/Element';
+import Event from '../../../event/Event';
 
 /**
  * HTMLElement.
@@ -31,19 +32,25 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
-	 * Blur.
+	 * Triggers a click event.
 	 */
-	public blur(): void {}
+	public click(): void {
+		this.dispatchEvent(new Event('click'));
+	}
 
 	/**
-	 * Click.
+	 * Triggers a blur event.
 	 */
-	public click(): void {}
+	public blur(): void {
+		this.dispatchEvent(new Event('blur'));
+	}
 
 	/**
-	 * Focus.
+	 * Triggers a focus event.
 	 */
-	public focus(): void {}
+	public focus(): void {
+		this.dispatchEvent(new Event('focus'));
+	}
 
 	/**
 	 * Sets an attribute.
