@@ -1,5 +1,6 @@
 import EventTarget from '../../lib/event/EventTarget';
 import Event from '../../lib/event/Event';
+import CustomEvent from '../../lib/event/CustomEvent';
 
 const EVENT_TYPE = 'click';
 class TestEventTarget extends EventTarget {}
@@ -21,6 +22,19 @@ describe('EventTarget', () => {
 			eventTarget.addEventListener(EVENT_TYPE, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
 			expect(recievedEvent).toBe(dispatchedEvent);
+		});
+
+		test('Triggers a custom event and triggers it when calling dispatchEvent().', () => {
+			let recievedEvent: CustomEvent = null;
+			const DETAIL = {};
+			const listener = (event: CustomEvent): void => {
+				recievedEvent = event;
+			};
+			const dispatchedEvent = new CustomEvent(EVENT_TYPE, { detail: DETAIL });
+			eventTarget.addEventListener(EVENT_TYPE, listener);
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(recievedEvent).toBe(dispatchedEvent);
+			expect(recievedEvent.detail).toBe(DETAIL);
 		});
 	});
 

@@ -39,12 +39,7 @@ export default abstract class EventTarget {
 	 * @return {boolean} The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault()
 	 */
 	public dispatchEvent(event: Event): boolean {
-		const onEventName = 'on' + event.type.toLowerCase();
 		let returnValue = true;
-
-		if (typeof this[onEventName] === 'function') {
-			this[onEventName].call(this, event);
-		}
 
 		if (this._listeners[event.type]) {
 			for (const listener of this._listeners[event.type]) {
@@ -56,16 +51,6 @@ export default abstract class EventTarget {
 					return returnValue;
 				}
 			}
-		}
-
-		if (
-			event.bubbles &&
-			this['parentNode'] !== null &&
-			typeof this['parentNode'] === 'object' &&
-			typeof this['parentNode'].dispatchEvent === 'function' &&
-			!this['parentNode'].dispatchEvent(event)
-		) {
-			returnValue = false;
 		}
 
 		return returnValue;

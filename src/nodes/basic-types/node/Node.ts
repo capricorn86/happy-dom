@@ -5,6 +5,7 @@ import EventTarget from '../../../event/EventTarget';
 import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import MutationObserverListener from '../../../mutation-observer/MutationListener';
+import Event from '../../../event/Event';
 
 /**
  * Node
@@ -340,6 +341,29 @@ export default class Node extends EventTarget {
 		this.removeChild(oldChild);
 
 		return oldChild;
+	}
+
+	/**
+	 * Dispatches an event.
+	 *
+	 * @override
+	 * @param {Event} event Event.
+	 * @return {boolean} The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault()
+	 */
+	public dispatchEvent(event: Event): boolean {
+		const onEventName = 'on' + event.type.toLowerCase();
+
+		if (typeof this[onEventName] === 'function') {
+			this[onEventName].call(this, event);
+		}
+
+		let returnValue = super.dispatchEvent(event);
+
+		if (event.bubbles && this.parentNode !== null && !this.dispatchEvent(event)) {
+			returnValue = false;
+		}
+
+		return returnValue;
 	}
 
 	/**
