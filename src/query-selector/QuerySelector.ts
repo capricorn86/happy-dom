@@ -19,7 +19,7 @@ export default class QuerySelector {
 		let matched = [];
 
 		for (const part of selector.split(',')) {
-			const foundElements = this.singleQuerySelectorAll(node, part.trim());
+			const foundElements = this.querySelectorAllForPart(node, part.trim());
 			if (foundElements) {
 				matched = matched.concat(foundElements);
 			}
@@ -37,7 +37,7 @@ export default class QuerySelector {
 	 */
 	public static querySelector(node: Node, selector: string): Element {
 		for (const part of selector.split(',')) {
-			const foundElement = this.singleQuerySelector(node, part.trim());
+			const foundElement = this.querySelectorForPart(node, part.trim());
 			if (foundElement) {
 				return foundElement;
 			}
@@ -46,13 +46,13 @@ export default class QuerySelector {
 	}
 
 	/**
-	 * Finds elements based on a query selector.
+	 * Finds elements based on a query selector for a part of a list of selectors separated with comma.
 	 *
 	 * @param {string} node Node to search in.
 	 * @param {string} selector Selector.
 	 * @return {Element[]} HTML elements.
 	 */
-	private static singleQuerySelectorAll(node: Node, selector: string): Element[] {
+	private static querySelectorAllForPart(node: Node, selector: string): Element[] {
 		const parts = selector.split(' ');
 		const current = new SelectorItem(parts[0]);
 		let matched = [];
@@ -75,13 +75,13 @@ export default class QuerySelector {
 	}
 
 	/**
-	 * Finds an element based on a query selector.
+	 * Finds an element based on a query selector for a part of a list of selectors separated with comma.
 	 *
 	 * @param {string} node Node to search in.
 	 * @param {string} selector Selector.
 	 * @return {Element} HTML element.
 	 */
-	private static singleQuerySelector(node: Node, selector: string): Element {
+	private static querySelectorForPart(node: Node, selector: string): Element {
 		const parts = selector.split(' ');
 		const current = new SelectorItem(parts.shift());
 
