@@ -6,7 +6,7 @@ import Attribute from './Attribute';
 import DOMRect from './DOMRect';
 import Range from './Range';
 import HTMLParser from '../../../html-parser/HTMLParser';
-import { decode, encode } from 'he';
+import {decode, encode} from 'he';
 import ClassList from './ClassList';
 import QuerySelector from '../../../query-selector/QuerySelector';
 import HTMLElementRenderer from '../../../html-renderer/HTMLElementRenderer';
@@ -233,7 +233,18 @@ export default class Element extends Node {
 	 */
 	public getAttribute(name: string): string {
 		const lowerName = name.toLowerCase();
-		return this._attributesMap[lowerName] !== undefined ? this._attributesMap[lowerName] : null;
+		return this.hasAttribute(name) ? this._attributesMap[lowerName] : null;
+	}
+
+	/**
+	 * Returns a boolean value indicating whether the specified element has the attribute or not.
+	 *
+	 * @param {string} name Attribute name.
+	 * @returns {boolean} True if attribute exists, false otherwise.
+	 */
+	public hasAttribute(name: string): boolean {
+		const lowerName = name.toLowerCase();
+		return this._attributesMap[lowerName] !== undefined;
 	}
 
 	/**
@@ -275,8 +286,7 @@ export default class Element extends Node {
 			let match: RegExpExecArray;
 			while ((match = attributeRegexp.exec(rawAttributes))) {
 				const name = match[1].toLowerCase();
-				const value = decode(match[2] || match[3] || match[4] || '');
-				this._attributesMap[name] = value;
+				this._attributesMap[name] = decode(match[2] || match[3] || match[4] || '');
 			}
 		}
 	}
