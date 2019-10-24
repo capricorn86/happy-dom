@@ -183,7 +183,7 @@ As mentioned above, Happy DOM comes with render options for opening the shadow r
 
 Opening shadow roots will render them opened when running innerHTML or outerHTML, but they will not be modified in the DOM tree.
 
-By default CSS will be scoped and attached to the head. The most common use case is render the entire document element by running "document.documentElement.outerHTML", which will include the head with the CSS.
+By default CSS will be scoped and attached to the head. The most common use case is to render the entire document element by running "document.documentElement.outerHTML", which will include the CSS withinn the head tag. It is also possible to disable this behaviour and manually extract the CSS from "cssCache".
 
 ## Available Options
 
