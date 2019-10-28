@@ -19,7 +19,7 @@ describe('HTMLParser', () => {
 		});
 
 		test('Parses HTML with a single <div> with attributes.', () => {
-			const root = HTMLParser.parse(window.document, '<div class="class1 class2" id="id"></div>');
+			const root = HTMLParser.parse(window.document, '<div class="class1 class2" id="id" data-no-value></div>');
 			expect(root.childNodes.length).toBe(1);
 			expect(root.childNodes[0].childNodes.length).toBe(0);
 			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
