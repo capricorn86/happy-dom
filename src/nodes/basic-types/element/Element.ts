@@ -6,12 +6,14 @@ import Attribute from './Attribute';
 import DOMRect from './DOMRect';
 import Range from './Range';
 import HTMLParser from '../../../html-parser/HTMLParser';
-import {decode, encode} from 'he';
+import { decode, encode } from 'he';
 import ClassList from './ClassList';
 import QuerySelector from '../../../query-selector/QuerySelector';
 import HTMLElementRenderer from '../../../html-renderer/HTMLElementRenderer';
 import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
+
+const ATTRIBUTE_REGEXP = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gi;
 
 /**
  * Element.
@@ -144,15 +146,18 @@ export default class Element extends Node {
 	/**
 	 * Returns attributes.
 	 *
-	 * @return {Attribute[]} Attributes.
+	 * @return {{ [k: string]: Attribute | number }} Attributes.
 	 */
-	public get attributes(): Attribute[] {
-		const attributes = [];
-		for (const key of Object.keys(this._attributesMap)) {
+	public get attributes(): { [k: string]: Attribute | number } {
+		const names = Object.keys(this._attributesMap);
+		const attributes = { length: names.length };
+		for (let i = 0, max = names.length; i < max; i++) {
+			const name = names[i];
 			const attribute = new Attribute();
-			attribute.name = key;
-			attribute.value = this._attributesMap[key];
-			attributes.push(attribute);
+			attribute.name = name;
+			attribute.value = this._attributesMap[name];
+			attributes[name] = attribute;
+			attributes[i] = attribute;
 		}
 		return attributes;
 	}
@@ -282,11 +287,21 @@ export default class Element extends Node {
 	public _setRawAttributes(rawAttributes: string): void {
 		rawAttributes = rawAttributes.trim();
 		if (rawAttributes) {
-			const attributeRegexp = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gi;
+			const regExp = new RegExp(ATTRIBUTE_REGEXP, 'gi');
 			let match: RegExpExecArray;
-			while ((match = attributeRegexp.exec(rawAttributes))) {
+
+			// Attributes with value
+			while ((match = regExp.exec(rawAttributes))) {
 				const name = match[1].toLowerCase();
 				this._attributesMap[name] = decode(match[2] || match[3] || match[4] || '');
+			}
+
+			// Attributes with no value
+			for (const name of rawAttributes
+				.replace(ATTRIBUTE_REGEXP, '')
+				.trim()
+				.split(' ')) {
+				this._attributesMap[name.trim().toLowerCase()] = '';
 			}
 		}
 	}
@@ -295,11 +310,13 @@ export default class Element extends Node {
 	 * Returns raw attributes.
 	 */
 	public _getRawAttributes(): string {
-		return Object.keys(this._attributesMap)
-			.map(key => {
-				return key + '="' + encode(this._attributesMap[key]) + '"';
-			})
-			.join(' ');
+		const attributes = [];
+		for (const name of Object.keys(this._attributesMap)) {
+			if (this._attributesMap[name]) {
+				attributes.push(name + '="' + encode(this._attributesMap[name]) + '"');
+			}
+		}
+		return attributes.join(' ');
 	}
 
 	/**

@@ -25,16 +25,15 @@ describe('HTMLParser', () => {
 			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
 			expect((<HTMLElement>root.childNodes[0]).id).toBe('id');
 			expect((<HTMLElement>root.childNodes[0]).className).toBe('class1 class2');
-			expect((<HTMLElement>root.childNodes[0]).attributes).toEqual([
-				{
-					name: 'class',
-					value: 'class1 class2'
-				},
-				{
-					name: 'id',
-					value: 'id'
-				}
-			]);
+			expect((<HTMLElement>root.childNodes[0]).attributes).toEqual({
+				'0': { name: 'class', value: 'class1 class2' },
+				'1': { name: 'id', value: 'id' },
+				'2': { name: 'data-no-value', value: '' },
+				class: { name: 'class', value: 'class1 class2' },
+				id: { name: 'id', value: 'id' },
+				'data-no-value': { name: 'data-no-value', value: '' },
+				length: 3
+			});
 		});
 
 		test('Parses an entire HTML page.', () => {
