@@ -218,7 +218,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
-| 0.6.0   | 2019-10-28 | Thanks to @mat3e we now have support for hasAttributes(). The "attributes" property is now returning an object instead of array (#13).
+| 0.6.0   | 2019-10-28 | Thanks to [@mat3e](https://github.com/mat3e) we now have support for hasAttributes(). The "attributes" property is now returning an object instead of array (#13).
 | 0.5.0   | 2019-10-21 | Adds support for click(), focus() and blur(). (#8) |
 | 0.4.4   | 2019-10-20 | Fixes issue with CustomEvent not being defined correctly causing issues with detail property. (#10) |
 | 0.4.3   | 2019-10-08 | Fixes issue with cloned nodes referring to the same attributes, which is causing weird issues in lit-html. (#5) |
