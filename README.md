@@ -64,8 +64,14 @@ const script = new Script(`
     myContainer.appendChild(element);
 `);
 const url = 'http://localhost:8080';
-const openShadowRoots = true;
-const result = await vm.render({ html, script, url, openShadowRoots });
+const result = await vm.render({
+	html,
+    script,
+    url: 'http://localhost:8080',
+    openShadowRoots: true,
+    appendCSSToHead: true,
+    scopeCSS: true
+});
 
 // Will output HTML with a div element inside the "myContainer" element
 console.log(result);
@@ -162,7 +168,6 @@ const script = new VM.Script(`
 `);
 
 window.location.href = 'http://localhost:8080';
-window.shadowRootRenderOptions.openShadowRoots = true;
 window.whenAsyncComplete().then(() => {
     const myContainer = window.document.querySelector('.myContainer div');
 

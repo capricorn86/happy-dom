@@ -20,7 +20,6 @@ import URL from './location/URL';
 import Location from './location/Location';
 import EventTypes from './event/EventTypes.json';
 import MutationObserver from './mutation-observer/MutationObserver';
-import ShadowRootRenderOptions from './shadow-root-renderer/ShadowRootRenderOptions';
 
 /**
  * Handles the Window.
@@ -57,9 +56,6 @@ export default class Window extends EventTarget {
 	public console = typeof global !== undefined ? global.console : null;
 	public self: Window = this;
 	public window: Window = this;
-
-	// Custom Properties (not part of HTML standard)
-	public shadowRootRenderOptions = new ShadowRootRenderOptions();
 
 	/**
 	 * Constructor.

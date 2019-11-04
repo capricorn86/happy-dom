@@ -23,7 +23,7 @@
 	"scripts": {
 		"compile": "tsc",
 		"watch": "tsc -w --preserveWatchOutput",
-		"prepublish": "npm run compile && npm test",
+		"prepublishOnly": "npm run compile && npm test",
 		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'",
 		"test": "jest",
 		"test:watch": "jest --watch",
@@ -42,7 +42,9 @@
 	"dependencies": {
 		"he": "1.1.1",
 		"css-tree": "^1.0.0-alpha.29",
-		"node-fetch": "2.5.0"
+		"node-fetch": "2.5.0",
+		"memory-fs": "^0.5.0",
+		"webpack": "^4.41.2"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^1.9.0",

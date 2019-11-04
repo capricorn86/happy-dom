@@ -1,6 +1,6 @@
 import DocumentFragment from '../document-fragment/DocumentFragment';
 import HTMLParser from '../../../html-parser/HTMLParser';
-import HTMLElementRenderer from '../../../html-renderer/HTMLElementRenderer';
+import ElementRenderer from '../../../html-renderer/ElementRenderer';
 
 /**
  * ShadowRoot.
@@ -14,7 +14,7 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @return {string} HTML.
 	 */
 	public get innerHTML(): string {
-		return HTMLElementRenderer.renderInnerHTML(this);
+		return ElementRenderer.renderInnerHTML(this).html;
 	}
 
 	/**
