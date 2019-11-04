@@ -1,36 +1,24 @@
-import ScopedCSSCache from './css/ScopedCSSCache';
+import ScopedCSSCache from './ScopedCSSCache';
 import Element from '../nodes/basic-types/element/Element';
-import DocumentFragment from '../nodes/basic-types/document-fragment/DocumentFragment';
 import ShadowRoot from '../nodes/basic-types/shadow-root/ShadowRoot';
-import ScopeCSS from './css/ScopeCSS';
+import StyleScoper from './StyleScoper';
+import ElementRenderOptions from './ElementRenderOptions';
 
 /**
- * Patch for scoping elements when requesting "document.documentElement.innerHTML" or "document.documentElement.outerHTML".
- * This patch is mainly useful on server side DOMs.
+ * Scopes elements and CSS inside shadow roots.
  */
-export default class ShadowRootRenderer {
-	/**
-	 * Renders an element scoped without touching the original elements.
-	 *
-	 * @param {Element|DocumentFragment} element Element to render.
-	 * @param {ScopedCSSCache} cssCache Options object.
-	 * @return {string} Result.
-	 */
-	public static getInnerHTML(element: Element | DocumentFragment, cssCache: ScopedCSSCache): string {
-		const clone = <Element>element.cloneNode(true);
-		this.scopeElement(clone, cssCache);
-		return clone.shadowRoot.innerHTML;
-	}
-
+export default class ShadowRootScoper {
 	/**
 	 * Scopes an element.
 	 *
 	 * @param {Element} element Element to render.
 	 * @param {ScopedCSSCache} cssCache Options object.
+	 * @param {ElementRenderOptions} options Render options.
 	 */
-	public static scopeElement(element: Element, cssCache: ScopedCSSCache): void {
-		this.extractAndScopeCSS(element, cssCache);
-		this.moveChildNodesIntoSlots(element);
+	public static scopeElement(element: Element, cssCache: ScopedCSSCache, options: ElementRenderOptions): void {
+		const clone = <Element>element.cloneNode(true);
+		this.extractAndScopeCSS(clone, cssCache, options);
+		this.moveChildNodesIntoSlots(clone);
 	}
 
 	/**
@@ -73,21 +61,36 @@ export default class ShadowRootRenderer {
 	 *
 	 * @param {Element} element Element.
 	 * @param {ElementRenderOptions} cssCache Options object.
+	 * @param {ElementRenderOptions} options Render options.
 	 */
-	private static extractAndScopeCSS(element: Element, cssCache: ScopedCSSCache): void {
-		const css = this.extractCSS(element.shadowRoot);
+	private static extractAndScopeCSS(element: Element, cssCache: ScopedCSSCache, options: ElementRenderOptions): void {
+		if (options.extractCSS && options.scopeCSS) {
+			const css = this.extractCSS(element.shadowRoot);
 
-		const scopeID = cssCache.getScopeID(css);
-		let scopedCSS = cssCache.getScoped(css);
+			const scopeID = cssCache.getScopeID(css);
+			let scopedCSS = cssCache.getScopedCSS(css);
 
-		if (!scopedCSS) {
-			scopedCSS = ScopeCSS.scope(css, scopeID, element.tagName);
-			cssCache.setScoped(css, scopedCSS);
+			if (!scopedCSS) {
+				scopedCSS = StyleScoper.scope(css, scopeID, element.tagName);
+				cssCache.setScopedCSS(css, scopedCSS);
+			}
+
+			element.classList.add(scopeID);
+
+			this.scopeChildElements(element.shadowRoot, scopeID);
+		} else if (options.extractCSS) {
+			const css = this.extractCSS(element.shadowRoot);
+			cssCache.setScopedCSS(css, css);
+		} else if (options.scopeCSS) {
+			const styles = Array.from(element.shadowRoot.querySelectorAll('style'));
+
+			for (const style of styles) {
+				const css = style.textContent;
+				const scopeID = cssCache.getScopeID(css);
+				style.textContent = StyleScoper.scope(css, scopeID, element.tagName);
+				cssCache.setScopedCSS(css, style.textContent);
+			}
 		}
-
-		element.classList.add(scopeID);
-
-		this.scopeShadowRoot(element.shadowRoot, scopeID);
 	}
 
 	/**
@@ -114,7 +117,7 @@ export default class ShadowRootRenderer {
 	 * @param {Element|ShadowRoot} element Element to scope.
 	 * @param {string} id Unique ID.
 	 */
-	private static scopeShadowRoot(element: Element | ShadowRoot, id: string): void {
+	private static scopeChildElements(element: Element | ShadowRoot, id: string): void {
 		if (element instanceof Element) {
 			element.classList.add(id);
 		}
@@ -122,7 +125,7 @@ export default class ShadowRootRenderer {
 		if (element instanceof ShadowRoot || (element instanceof Element && element.tagName !== 'slot')) {
 			for (let i = 0, max = element.children.length; i < max; i++) {
 				const child = element.children[i];
-				this.scopeShadowRoot(child, id);
+				this.scopeChildElements(child, id);
 			}
 		}
 	}

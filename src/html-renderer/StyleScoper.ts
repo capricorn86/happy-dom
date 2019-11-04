@@ -3,7 +3,7 @@ import CSSTree from 'css-tree';
 /**
  * Utility for scoping CSS inside a shadow root.
  */
-export default class ScopeCSS {
+export default class StyleScoper {
 	/**
 	 * Scopes CSS.
 	 *
