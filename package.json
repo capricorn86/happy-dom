@@ -23,7 +23,7 @@
 	"scripts": {
 		"compile": "tsc",
 		"watch": "tsc -w --preserveWatchOutput",
-		"prepublish": "npm run compile && npm test",
+		"prepublishOnly": "npm run compile && npm test",
 		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'",
 		"test": "jest",
 		"test:watch": "jest --watch",
