@@ -17,4 +17,19 @@ describe('DOMImplementation', () => {
 			expect(document.defaultView).toBe(window);
 		});
 	});
+
+	describe('requestAnimationFrame()', () => {
+		test('Requesting an animation frame', () => {
+			const frame = window.requestAnimationFrame(() => 'Frame');
+			expect(Number.isInteger(frame)).toBeTruthy();
+			expect(frame).toBeGreaterThanOrEqual(1);
+		});
+	});
+
+	describe('cancelAnimationFrame()', () => {
+		test('Cancel an animation frame', () => {
+			const res = window.cancelAnimationFrame(2);
+			expect(res).toBeUndefined();
+		});
+	});
 });
