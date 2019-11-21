@@ -105,4 +105,20 @@ export default class Window extends EventTarget {
 	 * Disposes the window.
 	 */
 	public dispose(): void {}
+
+	/**
+	 * Mock animation frames with timeouts
+	 */
+	public requestAnimationFrame(callback: (time: number) => void): number {
+		setTimeout(callback, 0);
+
+		return 2;
+	}
+
+	/**
+	 * Mock animation frames with timeouts
+	 */
+	public cancelAnimationFrame(handle): void {
+		return clearTimeout(handle);
+	}
 }
