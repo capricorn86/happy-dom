@@ -10,19 +10,10 @@ export default class ScopedCSSCache {
 	/**
 	 * Returns the scoped CSS.
 	 *
-	 * @return {string[]} Scoped style.
+	 * @return {string} Scoped style.
 	 */
-	public getAllScopedCSS(): string[] {
-		return this.scoped.concat();
-	}
-
-	/**
-	 * Returns the original extracted CSS.
-	 *
-	 * @return {string[]} Scoped style.
-	 */
-	public getAllExtractedCSS(): string[] {
-		return this.original.concat();
+	public getAllScopedCSS(): string {
+		return this.scoped.join('');
 	}
 
 	/**
@@ -31,7 +22,7 @@ export default class ScopedCSSCache {
 	 * @param {string} css CSS.
 	 * @return {string} Cached scoped CSS.
 	 */
-	public getScopedCSS(css: string): string {
+	public getScoped(css: string): string {
 		const index = this.original.indexOf(css);
 		if (index !== -1) {
 			return this.scoped[index];
@@ -59,7 +50,7 @@ export default class ScopedCSSCache {
 	 * @param {string} css CSS.
 	 * @param {string} scopedCSS Scoped CSS.
 	 */
-	public setScopedCSS(css: string, scopedCSS): void {
+	public setScoped(css: string, scopedCSS): void {
 		const index = this.original.indexOf(css);
 		if (index !== -1) {
 			this.original[index] = css;
@@ -75,7 +66,7 @@ export default class ScopedCSSCache {
 	 *
 	 * @param {string} css CSS.
 	 */
-	public removeScopedCSS(css: string): void {
+	public removeScoped(css: string): void {
 		const index = this.original.indexOf(css);
 		if (index !== -1) {
 			this.original.splice(index, 1);
@@ -97,7 +88,7 @@ export default class ScopedCSSCache {
 	 * @param {number} index Index.
 	 * @return {string} ID.
 	 */
-	private getIdByIndex(index: number): string {
+	public getIdByIndex(index: number): string {
 		return ABC[index] !== undefined ? ABC[index] : 'a' + index;
 	}
 }
