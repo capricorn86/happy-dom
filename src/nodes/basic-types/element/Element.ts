@@ -9,7 +9,7 @@ import HTMLParser from '../../../html-parser/HTMLParser';
 import { decode, encode } from 'he';
 import ClassList from './ClassList';
 import QuerySelector from '../../../query-selector/QuerySelector';
-import ElementRenderer from '../../../html-renderer/ElementRenderer';
+import HTMLElementRenderer from '../../../html-renderer/HTMLElementRenderer';
 import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
 
@@ -116,7 +116,7 @@ export default class Element extends Node {
 	 * @return {string} HTML.
 	 */
 	public get innerHTML(): string {
-		return ElementRenderer.renderInnerHTML(this).html;
+		return HTMLElementRenderer.renderInnerHTML(this);
 	}
 
 	/**
@@ -140,7 +140,7 @@ export default class Element extends Node {
 	 * @return {string} HTML.
 	 */
 	public get outerHTML(): string {
-		return ElementRenderer.renderOuterHTML(this).html;
+		return HTMLElementRenderer.renderOuterHTML(this);
 	}
 
 	/**

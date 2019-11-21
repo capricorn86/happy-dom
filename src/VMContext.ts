@@ -1,6 +1,5 @@
 import VM from 'vm';
-import AsyncWindow from '../AsyncWindow';
-import ElementRenderer from '../html-renderer/ElementRenderer';
+import AsyncWindow from './AsyncWindow';
 
 /**
  * This class is used for rendering a script server side.
@@ -30,17 +29,14 @@ export default class VMContext {
 
 			window
 				.whenAsyncComplete()
-				.then(() => {
-					const result = ElementRenderer.renderOuterHTML(document.documentElement, {
-						openShadowRoots: options.openShadowRoots
-					});
-					resolve(result.html.replace('</head>', `<style>${result.scopedCSS}</style></head>`));
-				})
+				.then(() => resolve(document.documentElement.outerHTML))
 				.catch(reject);
 
 			if (options.url) {
 				window.location.href = options.url;
 			}
+
+			window.shadowRootRenderOptions.openShadowRoots = options.openShadowRoots === true;
 
 			options.script.runInContext(this.context);
 
