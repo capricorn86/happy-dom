@@ -73,6 +73,27 @@ export default class AsyncWindow extends Window {
 	}
 
 	/**
+	 * Mock animation frames with timeouts.
+	 * 
+	 * @override
+	 * @param {function} callback Callback.
+	 * @returns {NodeJS.Timeout} Timeout ID.
+	 */
+	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout {
+		return this.setTimeout(() =>  { callback(2); }, 0);
+	}
+
+	/**
+	 * Mock animation frames with timeouts.
+	 * 
+	 * @override
+	 * @param {NodeJS.Timeout} id Timeout ID.
+	 */
+	public cancelAnimationFrame(id): void {
+		this.clearTimeout(id);
+	}
+
+	/**
 	 * Provides a global fetch() method that provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
 	 * @param {string} url URL to resource.

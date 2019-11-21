@@ -107,18 +107,21 @@ export default class Window extends EventTarget {
 	public dispose(): void {}
 
 	/**
-	 * Mock animation frames with timeouts
+	 * Mock animation frames with timeouts.
+	 * 
+	 * @param {function} callback Callback.
+	 * @returns {NodeJS.Timeout} Timeout ID.
 	 */
-	public requestAnimationFrame(callback: (time: number) => void): number {
-		setTimeout(callback, 0);
-
-		return 2;
+	public requestAnimationFrame(callback: (timestamp?: number) => void): NodeJS.Timeout {
+		return setTimeout(callback, 0);
 	}
 
 	/**
-	 * Mock animation frames with timeouts
+	 * Mock animation frames with timeouts.
+	 * 
+	 * @param {NodeJS.Timeout} id Timeout ID.
 	 */
-	public cancelAnimationFrame(handle): void {
-		return clearTimeout(handle);
+	public cancelAnimationFrame(id): void {
+		clearTimeout(id);
 	}
 }
