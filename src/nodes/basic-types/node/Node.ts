@@ -122,11 +122,11 @@ export default class Node extends EventTarget {
 	 * @return {Node} Node.
 	 */
 	public get previousElementSibling(): Node {
-		let previousSibling = this.previousSibling;
-		while(previousSibling !== null && previousSibling.nodeType !== NodeType.ELEMENT_NODE) {
-			previousSibling = this.previousSibling;
+		let sibling = this.previousSibling;
+		while(sibling && sibling.nodeType !== NodeType.ELEMENT_NODE) {
+			sibling = sibling.previousSibling;
 		}
-		return previousSibling;
+		return sibling;
 	}
 
 	/**
@@ -135,11 +135,11 @@ export default class Node extends EventTarget {
 	 * @return {Node} Node.
 	 */
 	public get nextElementSibling(): Node {
-		let nextSibling = this.nextSibling;
-		while(nextSibling !== null && nextSibling.nodeType !== NodeType.ELEMENT_NODE) {
-			nextSibling = this.nextSibling;
+		let sibling = this.nextSibling;
+		while(sibling && sibling.nodeType !== NodeType.ELEMENT_NODE) {
+			sibling = sibling.nextSibling;
 		}
-		return nextSibling;
+		return sibling;
 	}
 
 	/**
