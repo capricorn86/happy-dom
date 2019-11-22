@@ -218,6 +218,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.8.0   | 2019-11-21 | Adds support for previousElementSibling and nextElementSibling. (#18).
 | 0.7.0   | 2019-11-21 | Thanks to [@AdeAttwood](https://github.com/AdeAttwood) we now have support for requestAnimationFrame() and cancelAnimationFrame(). (#9).
 | 0.6.0   | 2019-10-28 | Thanks to [@mat3e](https://github.com/mat3e) we now have support for hasAttributes(). The "attributes" property has also been changed. It is now returning an object instead of array. (#13).
 | 0.5.0   | 2019-10-21 | Adds support for click(), focus() and blur(). (#8) |
