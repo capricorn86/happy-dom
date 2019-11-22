@@ -7,6 +7,9 @@ import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import MutationObserverListener from '../../../mutation-observer/MutationListener';
 import Event from '../../../event/Event';
 
+const CLONE_REFERENCE_PROPERTIES = ['ownerDocument', 'tagName', 'nodeType'];
+const CLONE_OBJECT_ASSIGN_PROPERTIES = ['_attributesMap', 'style'];
+
 /**
  * Node
  */
@@ -193,6 +196,7 @@ export default class Node extends EventTarget {
 	 */
 	public cloneNode(deep = true): Node {
 		const clone = new (<typeof Node>this.constructor)();
+		
 		for (const key of Object.keys(this)) {
 			if (key !== '_isConnected' && key !== '_observers') {
 				if (key === 'childNodes') {
@@ -203,17 +207,12 @@ export default class Node extends EventTarget {
 							clone.childNodes.push(childClone);
 						}
 					}
-				} else if (key !== 'parentNode' && key !== 'ownerDocument' && this[key] instanceof Node) {
-					if (deep) {
-						clone[key] = this[key].cloneNode();
-						clone[key].parentNode = clone;
-					}
 				} else if (key === 'classList') {
 					// eslint-disable-next-line
 					clone[key] = new ClassList(<any>clone);
-				} else if (key === '_attributesMap') {
+				} else if (CLONE_OBJECT_ASSIGN_PROPERTIES.includes(key)) {
 					clone[key] = Object.assign({}, this[key]);
-				} else {
+				} else if(CLONE_REFERENCE_PROPERTIES.includes(key)) {
 					clone[key] = this[key];
 				}
 			}
