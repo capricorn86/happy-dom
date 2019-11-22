@@ -117,6 +117,32 @@ export default class Node extends EventTarget {
 	}
 
 	/**
+	 * Previous element sibling.
+	 *
+	 * @return {Node} Node.
+	 */
+	public get previousElementSibling(): Node {
+		let previousSibling = this.previousSibling;
+		while(previousSibling !== null && previousSibling.nodeType !== NodeType.ELEMENT_NODE) {
+			previousSibling = this.previousSibling;
+		}
+		return previousSibling;
+	}
+
+	/**
+	 * Next element sibling.
+	 *
+	 * @return {Node} Node.
+	 */
+	public get nextElementSibling(): Node {
+		let nextSibling = this.nextSibling;
+		while(nextSibling !== null && nextSibling.nodeType !== NodeType.ELEMENT_NODE) {
+			nextSibling = this.nextSibling;
+		}
+		return nextSibling;
+	}
+
+	/**
 	 * First child.
 	 *
 	 * @return {Node} Node.
