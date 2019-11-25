@@ -7,8 +7,9 @@ import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import MutationObserverListener from '../../../mutation-observer/MutationListener';
 import Event from '../../../event/Event';
 
-const CLONE_REFERENCE_PROPERTIES = ['ownerDocument', 'tagName', 'nodeType'];
+const CLONE_REFERENCE_PROPERTIES = ['ownerDocument', 'tagName', 'nodeType', '_textContent', 'mode', 'name', 'type', 'disabled', 'autofocus', 'required', '_value'];
 const CLONE_OBJECT_ASSIGN_PROPERTIES = ['_attributesMap', 'style'];
+const CLONE_NODE_PROPERTIES = ['documentElement', 'body', 'head'];
 
 /**
  * Node
@@ -210,6 +211,11 @@ export default class Node extends EventTarget {
 				} else if (key === 'classList') {
 					// eslint-disable-next-line
 					clone[key] = new ClassList(<any>clone);
+				} else if (CLONE_NODE_PROPERTIES.includes(key)) {	
+					if (deep) {	
+						clone[key] = this[key].cloneNode();	
+						clone[key].parentNode = clone;	
+					}	
 				} else if (CLONE_OBJECT_ASSIGN_PROPERTIES.includes(key)) {
 					clone[key] = Object.assign({}, this[key]);
 				} else if(CLONE_REFERENCE_PROPERTIES.includes(key)) {
