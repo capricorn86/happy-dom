@@ -218,6 +218,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.8.4   | 2019-11-25 | Fixes bug with dispatchEvent() not bubbling correctly. |
 | 0.8.3   | 2019-11-22 | Fixes bug with cloneNode() also copying non-node properties. |
 | 0.8.0   | 2019-11-22 | Adds support for previousElementSibling and nextElementSibling. (#18) |
 | 0.7.0   | 2019-11-21 | Thanks to [@AdeAttwood](https://github.com/AdeAttwood) we now have support for requestAnimationFrame() and cancelAnimationFrame(). (#9) |
