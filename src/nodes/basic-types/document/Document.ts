@@ -25,7 +25,6 @@ export default class Document extends DocumentFragment {
 	public head: Element;
 	public defaultView: Window;
 	public nodeType = NodeType.DOCUMENT_NODE;
-	protected elementsById: { [k: string]: Element[] } = {};
 	protected _isConnected = true;
 	public implementation: DOMImplementation;
 
