@@ -217,6 +217,7 @@ export default class Node extends EventTarget {
 				}
 			}
 		}
+
 		return clone;
 	}
 
@@ -384,7 +385,7 @@ export default class Node extends EventTarget {
 
 		let returnValue = super.dispatchEvent(event);
 
-		if (event.bubbles && this.parentNode !== null && !this.dispatchEvent(event)) {
+		if (event.bubbles && this.parentNode !== null && !this.parentNode.dispatchEvent(event)) {
 			returnValue = false;
 		}
 
