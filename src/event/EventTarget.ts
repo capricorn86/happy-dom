@@ -47,7 +47,7 @@ export default abstract class EventTarget {
 				if (event.cancelable && event.defaultPrevented) {
 					returnValue = false;
 				}
-				if (event.immediatePropagationStopped) {
+				if (event._immediatePropagationStopped) {
 					return returnValue;
 				}
 			}
