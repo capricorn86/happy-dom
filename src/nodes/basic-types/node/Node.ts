@@ -391,7 +391,7 @@ export default class Node extends EventTarget {
 
 		let returnValue = super.dispatchEvent(event);
 
-		if (event.bubbles && this.parentNode !== null && !this.parentNode.dispatchEvent(event)) {
+		if (event.bubbles && this.parentNode !== null && !event._propagationStopped && !this.parentNode.dispatchEvent(event)) {
 			returnValue = false;
 		}
 

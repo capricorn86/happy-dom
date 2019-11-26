@@ -8,7 +8,8 @@ export default class Event {
 	public readonly currentTarget: Node = null;
 	public readonly target: Node = null;
 	public defaultPrevented: boolean = false;
-	public immediatePropagationStopped: boolean = false;
+	public _immediatePropagationStopped: boolean = false;
+	public _propagationStopped: boolean = false;
 	public type: string = null;
 
 	/**
@@ -44,6 +45,13 @@ export default class Event {
 	 * Stops immediate propagation.
 	 */
 	public stopImmediatePropagation(): void {
-		this.immediatePropagationStopped = true;
+		this._immediatePropagationStopped = true;
+	}
+
+	/**
+	 * Stops propagation.
+	 */
+	public stopPropagation(): void {
+		this._propagationStopped = true;
 	}
 }
