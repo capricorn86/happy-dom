@@ -52,7 +52,14 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @return {SVGAnimatedRect} Viewbox.
 	 */
 	public get viewBox(): SVGAnimatedRect {
-		return new SVGAnimatedRect();
+		const rect = new SVGAnimatedRect();
+		const viewBox = this.getAttribute('viewBox');
+		const list = viewBox.split(/\s+/);
+		rect.baseVal.x = Number(list[0]);
+		rect.baseVal.y = Number(list[1]);
+		rect.baseVal.width = Number(list[2]);
+		rect.baseVal.height = Number(list[3]);
+		return rect;
 	}
 
 	/**
