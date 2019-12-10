@@ -218,6 +218,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.10.0  | 2019-12-10 | Adds support for querying all (*). (#19) |
 | 0.9.0   | 2019-11-26 | Adds support for preventDefault() and stopPropagation(). (#11) |
 | 0.8.5   | 2019-11-25 | Fixes bug with cloneNode() not copying some node properties after fix in 0.8.3. |
 | 0.8.4   | 2019-11-25 | Fixes bug with dispatchEvent() not bubbling correctly. |
