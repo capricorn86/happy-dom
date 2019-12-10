@@ -4,6 +4,7 @@ const ATTRIBUTE_REGEXP = /\[([a-zA-Z_$\-]*)=([^\]]*)\]/g;
 const CLASS_REGEXP = /\.([^\[(.]*)/g;
 
 export default class SelectorItem {
+	public isAll: boolean;
 	public isID: boolean;
 	public isAttribute: boolean;
 	public isClass: boolean;
@@ -17,12 +18,13 @@ export default class SelectorItem {
 	 * @param {string} part Part.
 	 */
 	constructor(part: string) {
-		this.isID = part.startsWith('#');
-		this.isAttribute = !this.isID && ATTRIBUTE_REGEXP.test(part);
-		this.isClass = !this.isID && new RegExp(CLASS_REGEXP, 'g').test(part);
-		this.isTagName = !this.isID && !this.isAttribute && !this.isClass;
+		this.isAll = part === '*';
+		this.isID = !this.isAll ? part.startsWith('#') : false;
+		this.isAttribute = !this.isAll && !this.isID && ATTRIBUTE_REGEXP.test(part);
+		this.isClass = !this.isAll && !this.isID && new RegExp(CLASS_REGEXP, 'g').test(part);
+		this.isTagName = !this.isAll && !this.isID && !this.isAttribute && !this.isClass;
 		this.part = part;
-		this.id = this.isID ? this.part.replace('#', '') : null;
+		this.id = !this.isAll && this.isID ? this.part.replace('#', '') : null;
 	}
 
 	/**
@@ -34,6 +36,11 @@ export default class SelectorItem {
 	public match(element: Element): boolean {
 		let part = this.part;
 		let match;
+
+		// Is all (*)
+		if (this.isAll) {
+			return true;
+		}
 
 		// ID Match
 		if (this.isID) {

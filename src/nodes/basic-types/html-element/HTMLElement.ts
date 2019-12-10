@@ -53,7 +53,7 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
-	 * Sets an attribute.
+	 * Sets an attribute.MouseEvent
 	 *
 	 * @override
 	 * @param {string} name Name.
