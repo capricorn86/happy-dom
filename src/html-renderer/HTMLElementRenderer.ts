@@ -24,14 +24,12 @@ export default class HTMLElementRenderer {
 	public static renderOuterHTML(element: Element): string {
 		const tagName = element.tagName.toLowerCase();
 		const rawAttributes = element._getRawAttributes();
-		const isUnClosed = UnclosedElements.includes(tagName);
-		const isSelfClosed = SelfClosingElements.includes(tagName) || SelfClosingSvgElements.includes(tagName);
 		const attributes = rawAttributes ? ' ' + rawAttributes : '';
 		let result = '';
 
-		if (isUnClosed) {
+		if (UnclosedElements.includes(tagName)) {
 			result = `<${tagName}${attributes}>`;
-		} else if (isSelfClosed) {
+		} else if (SelfClosingElements.includes(tagName) || SelfClosingSvgElements.includes(tagName)) {
 			result = `<${tagName}${attributes} />`;
 		} else {
 			result = `<${tagName}${attributes}>${element.innerHTML}</${tagName}>`;
