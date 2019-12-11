@@ -1,0 +1,11 @@
+[
+    "circle",
+    "ellipse",
+    "line",
+    "path",
+    "polygon",
+    "polyline",
+    "rect",
+    "stop",
+    "use"
+]

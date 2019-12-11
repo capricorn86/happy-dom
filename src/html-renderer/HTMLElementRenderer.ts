@@ -3,9 +3,9 @@ import HTMLTemplateElement from '../nodes/elements/template/HTMLTemplateElement'
 import DocumentFragment from '../nodes/basic-types/document-fragment/DocumentFragment';
 import ScopedCSSCache from '../shadow-root-renderer/css/ScopedCSSCache';
 import ShadowRootRenderer from '../shadow-root-renderer/ShadowRootRenderer';
-
-const SELF_CLOSED_REGEXP = /^(img|br|hr|area|base|input|doctype|link)$/i;
-const META_REGEXP = /^meta$/i;
+import * as SelfClosingElements from '../html-config/SelfClosingElements.json';
+import * as SelfClosingSvgElements from '../html-config/SelfClosingSvgElements.json';
+import * as UnclosedElements from '../html-config/UnclosedElements.json';
 
 /**
  * Utility for converting an element to string.
@@ -24,8 +24,8 @@ export default class HTMLElementRenderer {
 	public static renderOuterHTML(element: Element): string {
 		const tagName = element.tagName.toLowerCase();
 		const rawAttributes = element._getRawAttributes();
-		const isUnClosed = META_REGEXP.test(tagName);
-		const isSelfClosed = SELF_CLOSED_REGEXP.test(tagName);
+		const isUnClosed = UnclosedElements.includes(tagName);
+		const isSelfClosed = SelfClosingElements.includes(tagName) || SelfClosingSvgElements.includes(tagName);
 		const attributes = rawAttributes ? ' ' + rawAttributes : '';
 		let result = '';
 
