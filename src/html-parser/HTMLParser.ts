@@ -2,7 +2,7 @@ import Node from '../nodes/basic-types/node/Node';
 import Element from '../nodes/basic-types/element/Element';
 import Document from '../nodes/basic-types/document/Document';
 import SelfClosingElements from '../html-config/SelfClosingElements.json';
-import SelfClosingSvgElements from '../html-config/SelfClosingElements.json';
+import SelfClosingSVGElements from '../html-config/SelfClosingSVGElements.json';
 
 /**
  * HTML parser.
@@ -37,7 +37,7 @@ export default class HTMLParser {
 				newElement._setRawAttributes(match[3]);
 
 				debugger;
-				if (!SelfClosingElements.includes(tagName) && !SelfClosingSvgElements.includes(tagName)) {
+				if (!SelfClosingElements.includes(tagName) && !SelfClosingSVGElements.includes(tagName)) {
 					currentParent = <Element>currentParent.appendChild(newElement);
 					stack.push(currentParent);
 				} else {
