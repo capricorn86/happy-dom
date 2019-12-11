@@ -4,7 +4,7 @@ import DocumentFragment from '../nodes/basic-types/document-fragment/DocumentFra
 import ScopedCSSCache from '../shadow-root-renderer/css/ScopedCSSCache';
 import ShadowRootRenderer from '../shadow-root-renderer/ShadowRootRenderer';
 import SelfClosingElements from '../html-config/SelfClosingElements.json';
-import SelfClosingSvgElements from '../html-config/SelfClosingSvgElements.json';
+import SelfClosingSVGElements from '../html-config/SelfClosingSVGElements.json';
 import UnclosedElements from '../html-config/UnclosedElements.json';
 
 /**
@@ -29,7 +29,7 @@ export default class HTMLElementRenderer {
 
 		if (UnclosedElements.includes(tagName)) {
 			result = `<${tagName}${attributes}>`;
-		} else if (SelfClosingElements.includes(tagName) || SelfClosingSvgElements.includes(tagName)) {
+		} else if (SelfClosingElements.includes(tagName) || SelfClosingSVGElements.includes(tagName)) {
 			result = `<${tagName}${attributes} />`;
 		} else {
 			result = `<${tagName}${attributes}>${element.innerHTML}</${tagName}>`;

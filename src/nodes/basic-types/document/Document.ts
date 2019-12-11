@@ -15,6 +15,8 @@ import DocumentFragment from '../document-fragment/DocumentFragment';
 import HTMLParser from '../../../html-parser/HTMLParser';
 import Event from '../../../event/Event';
 import DOMImplementation from '../../../dom-implementation/DOMImplementation';
+import SVGElements from '../../../html-config/SVGElements.json';
+import SVGElement from '../../elements/svg/SVGElement';
 
 /**
  * Document.
@@ -193,6 +195,9 @@ export default class Document extends DocumentFragment {
 				return HTMLTextAreaElement;
 			case 'svg':
 				return SVGSVGElement;
+		}
+		if(SVGElements.includes(tagName)) {
+			return SVGElement;
 		}
 		return HTMLElement;
 	}
