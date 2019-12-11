@@ -26,6 +26,7 @@ export default class Element extends Node {
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public _attributesMap: { [k: string]: string } = {};
+	public _useCaseSensitiveAttributes: boolean = false;
 
 	/**
 	 * Returns ID.
@@ -206,7 +207,7 @@ export default class Element extends Node {
 	 * @param {string} value Value.
 	 */
 	public setAttribute(name: string, value: string): void {
-		const lowerName = name.toLowerCase();
+		const lowerName = this._useCaseSensitiveAttributes ? name : name.toLowerCase();
 		const oldValue = this._attributesMap[lowerName] !== undefined ? this._attributesMap[lowerName] : null;
 		this._attributesMap[lowerName] = String(value);
 
@@ -237,7 +238,7 @@ export default class Element extends Node {
 	 * @param {string} name Name.
 	 */
 	public getAttribute(name: string): string {
-		const lowerName = name.toLowerCase();
+		const lowerName = this._useCaseSensitiveAttributes ? name : name.toLowerCase();
 		return this.hasAttribute(name) ? this._attributesMap[lowerName] : null;
 	}
 
@@ -248,7 +249,7 @@ export default class Element extends Node {
 	 * @returns {boolean} True if attribute exists, false otherwise.
 	 */
 	public hasAttribute(name: string): boolean {
-		const lowerName = name.toLowerCase();
+		const lowerName = this._useCaseSensitiveAttributes ? name : name.toLowerCase();
 		return this._attributesMap[lowerName] !== undefined;
 	}
 
@@ -258,7 +259,7 @@ export default class Element extends Node {
 	 * @param {string} name Name.
 	 */
 	public removeAttribute(name: string): void {
-		const lowerName = name.toLowerCase();
+		const lowerName = this._useCaseSensitiveAttributes ? name : name.toLowerCase();
 		const oldValue = this._attributesMap[lowerName] !== undefined ? this._attributesMap[lowerName] : null;
 		delete this._attributesMap[lowerName];
 
@@ -292,7 +293,7 @@ export default class Element extends Node {
 
 			// Attributes with value
 			while ((match = regExp.exec(rawAttributes))) {
-				const name = match[1].toLowerCase();
+				const name = this._useCaseSensitiveAttributes ? match[1] : match[1].toLowerCase();
 				this._attributesMap[name] = decode(match[2] || match[3] || match[4] || '');
 			}
 
@@ -301,7 +302,8 @@ export default class Element extends Node {
 				.replace(ATTRIBUTE_REGEXP, '')
 				.trim()
 				.split(' ')) {
-				this._attributesMap[name.trim().toLowerCase()] = '';
+				const lowerName = this._useCaseSensitiveAttributes ? name.trim() : name.trim().toLowerCase();
+				this._attributesMap[lowerName] = '';
 			}
 		}
 	}
@@ -313,22 +315,12 @@ export default class Element extends Node {
 	 */
 	public _getRawAttributes(): string {
 		const attributes = [];
-		const attributesMap = this._getRawAttributesMap();
-		for (const name of Object.keys(attributesMap)) {
-			if (attributesMap[name]) {
-				attributes.push(name + '="' + encode(attributesMap[name]) + '"');
+		for (const name of Object.keys(this._attributesMap)) {
+			if (this._attributesMap[name]) {
+				attributes.push(name + '="' + encode(this._attributesMap[name]) + '"');
 			}
 		}
 		return attributes.join(' ');
-	}
-
-	/**
-	 * Returns the map that should be used for raw attributes.
-	 * 
-	 * @returns {{ [k: string]: string }} Attributes.
-	 */
-	public _getRawAttributesMap(): { [k: string]: string } {
-		return this._attributesMap;
 	}
 
 	/**
