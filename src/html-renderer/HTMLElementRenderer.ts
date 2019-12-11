@@ -3,9 +3,9 @@ import HTMLTemplateElement from '../nodes/elements/template/HTMLTemplateElement'
 import DocumentFragment from '../nodes/basic-types/document-fragment/DocumentFragment';
 import ScopedCSSCache from '../shadow-root-renderer/css/ScopedCSSCache';
 import ShadowRootRenderer from '../shadow-root-renderer/ShadowRootRenderer';
-import * as SelfClosingElements from '../html-config/SelfClosingElements.json';
-import * as SelfClosingSvgElements from '../html-config/SelfClosingSvgElements.json';
-import * as UnclosedElements from '../html-config/UnclosedElements.json';
+import SelfClosingElements from '../html-config/SelfClosingElements.json';
+import SelfClosingSvgElements from '../html-config/SelfClosingSvgElements.json';
+import UnclosedElements from '../html-config/UnclosedElements.json';
 
 /**
  * Utility for converting an element to string.

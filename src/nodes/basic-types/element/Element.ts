@@ -308,15 +308,27 @@ export default class Element extends Node {
 
 	/**
 	 * Returns raw attributes.
+	 * 
+	 * @returns {string} Raw attributes.
 	 */
 	public _getRawAttributes(): string {
 		const attributes = [];
-		for (const name of Object.keys(this._attributesMap)) {
-			if (this._attributesMap[name]) {
-				attributes.push(name + '="' + encode(this._attributesMap[name]) + '"');
+		const attributesMap = this._getRawAttributesMap();
+		for (const name of Object.keys(attributesMap)) {
+			if (attributesMap[name]) {
+				attributes.push(name + '="' + encode(attributesMap[name]) + '"');
 			}
 		}
 		return attributes.join(' ');
+	}
+
+	/**
+	 * Returns the map that should be used for raw attributes.
+	 * 
+	 * @returns {{ [k: string]: string }} Attributes.
+	 */
+	public _getRawAttributesMap(): { [k: string]: string } {
+		return this._attributesMap;
 	}
 
 	/**
