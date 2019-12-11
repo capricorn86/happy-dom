@@ -60,7 +60,7 @@ export default class HTMLElement extends Element {
 	 * @param {string} value Value.
 	 */
 	public setAttribute(name: string, value: string): void {
-		const lowerName = name.toLowerCase();
+		const lowerName = this._useCaseSensitiveAttributes ? name : name.toLowerCase();
 		super.setAttribute(lowerName, value);
 		const observedPropertyAttributes = (<typeof HTMLElement>this.constructor)._observedPropertyAttributes;
 		const observedAttributes = Object.keys(observedPropertyAttributes);
