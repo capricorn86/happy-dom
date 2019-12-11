@@ -5,7 +5,7 @@ import HTMLElement from '../../basic-types/html-element/HTMLElement';
  */
 export default class SVGElement extends HTMLElement {
 	protected static _observedPropertyAttributes = Object.assign({}, HTMLElement._observedPropertyAttributes);
-	public _useCaseSensitiveAttributes = false;
+	public _useCaseSensitiveAttributes = true;
 
 	/**
 	 * Returns viewport.
