@@ -218,6 +218,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.10.6  | 2020-01-13 | No text node is created when there only is one character. (#28) |
 | 0.10.1  | 2019-12-11 | Fixes issue with parsing of self closing SVG elements. (#24) |
 | 0.10.0  | 2019-12-10 | Adds support for querying all (*). (#19) |
 | 0.9.0   | 2019-11-26 | Adds support for preventDefault() and stopPropagation(). (#11) |
