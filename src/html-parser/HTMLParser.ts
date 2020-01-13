@@ -36,7 +36,6 @@ export default class HTMLParser {
 				const newElement = document.createElement(tagName);
 				newElement._setRawAttributes(match[3]);
 
-				debugger;
 				if (!SelfClosingElements.includes(tagName) && !SelfClosingSVGElements.includes(tagName)) {
 					currentParent = <Element>currentParent.appendChild(newElement);
 					stack.push(currentParent);
@@ -97,7 +96,7 @@ export default class HTMLParser {
 			lastIndex = match.index + match[0].length;
 		}
 
-		if (lastIndex < text.length - 1) {
+		if (lastIndex < text.length) {
 			const textNode = document.createTextNode(text.substring(lastIndex));
 			nodes.push(textNode);
 		}
