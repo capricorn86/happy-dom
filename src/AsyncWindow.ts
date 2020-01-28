@@ -1,4 +1,4 @@
-import NodeFetch from 'node-fetch';
+import { Response, fetch } from 'node-fetch';
 import Window from './Window';
 import AsyncTaskManager from './AsyncTaskManager';
 
@@ -100,11 +100,11 @@ export default class AsyncWindow extends Window {
 	 * @param {object} [options] Options.
 	 * @return {Promise<NodeFetch.Response>} Promise.
 	 */
-	public async fetch(url: string, options: object): Promise<NodeFetch.Response> {
+	public async fetch(url: string, options: object): Promise<Response> {
 		return new Promise((resolve, reject) => {
 			this.async.startTask('fetch');
 
-			NodeFetch(url, options)
+			fetch(url, options)
 				.then(response => {
 					for (const methodName of FETCH_RESPONSE_TYPE_METHODS) {
 						const asyncMethod = response[methodName];
