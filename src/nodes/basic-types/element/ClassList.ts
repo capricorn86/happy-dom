@@ -25,6 +25,11 @@ export default class ClassList {
 		const list = attr ? attr.split(' ') : [];
 		for (const className of classNames) {
 			if (!list.includes(className)) {
+				if (className.includes(' ')) {
+					throw new Error(
+						`Failed to execute 'add' on 'DOMTokenList': The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`
+					);
+				}
 				list.push(className);
 			}
 		}
