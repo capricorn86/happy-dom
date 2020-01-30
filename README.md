@@ -218,6 +218,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.12.0  | 2020-01-30 | Adds support for node.remove(). (#23) |
 | 0.11.1  | 2020-01-30 | Adds check for space characters to the element.classList.add() function. (#32) |
 | 0.11.0  | 2020-01-30 | Adds support for firstElementChild and lastElementChild. (#32) |
 | 0.10.7  | 2020-01-28 | Thanks to [@DaSchTour](https://github.com/DaSchTour) we now have a fix for possible name conflicts when integrating with Angular. (#31) |

@@ -317,6 +317,15 @@ export default class Node extends EventTarget {
 	}
 
 	/**
+	 * Removes the node from its parent.
+	 */
+	public remove(): void {
+		if (this.parentNode) {
+			this.parentNode.removeChild(this);
+		}
+	}
+
+	/**
 	 * Remove Child element from childNodes array.
 	 *
 	 * @param {Node} node Node to remove
