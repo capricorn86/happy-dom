@@ -7,7 +7,19 @@ import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import MutationObserverListener from '../../../mutation-observer/MutationListener';
 import Event from '../../../event/Event';
 
-const CLONE_REFERENCE_PROPERTIES = ['ownerDocument', 'tagName', 'nodeType', '_textContent', 'mode', 'name', 'type', 'disabled', 'autofocus', 'required', '_value'];
+const CLONE_REFERENCE_PROPERTIES = [
+	'ownerDocument',
+	'tagName',
+	'nodeType',
+	'_textContent',
+	'mode',
+	'name',
+	'type',
+	'disabled',
+	'autofocus',
+	'required',
+	'_value'
+];
 const CLONE_OBJECT_ASSIGN_PROPERTIES = ['_attributesMap', 'style'];
 const CLONE_NODE_PROPERTIES = ['documentElement', 'body', 'head'];
 
@@ -23,7 +35,7 @@ export default class Node extends EventTarget {
 	public readonly childNodes: Node[] = [];
 
 	// Protected properties
-	protected _isConnected: boolean = false;
+	protected _isConnected = false;
 
 	// Custom Properties (not part of HTML standard)
 	protected _observers: MutationObserverListener[] = [];
@@ -127,7 +139,7 @@ export default class Node extends EventTarget {
 	 */
 	public get previousElementSibling(): Node {
 		let sibling = this.previousSibling;
-		while(sibling && sibling.nodeType !== NodeType.ELEMENT_NODE) {
+		while (sibling && sibling.nodeType !== NodeType.ELEMENT_NODE) {
 			sibling = sibling.previousSibling;
 		}
 		return sibling;
@@ -140,7 +152,7 @@ export default class Node extends EventTarget {
 	 */
 	public get nextElementSibling(): Node {
 		let sibling = this.nextSibling;
-		while(sibling && sibling.nodeType !== NodeType.ELEMENT_NODE) {
+		while (sibling && sibling.nodeType !== NodeType.ELEMENT_NODE) {
 			sibling = sibling.nextSibling;
 		}
 		return sibling;
@@ -166,6 +178,34 @@ export default class Node extends EventTarget {
 	public get lastChild(): Node {
 		if (this.childNodes.length > 0) {
 			return this.childNodes[this.childNodes.length - 1];
+		}
+		return null;
+	}
+
+	/**
+	 * First element child.
+	 *
+	 * @return {Node} Node.
+	 */
+	public get firstElementChild(): Node {
+		for (const node of this.childNodes) {
+			if (node.nodeType === NodeType.ELEMENT_NODE) {
+				return node;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Last element child.
+	 *
+	 * @return {Node} Node.
+	 */
+	public get lastElementChild(): Node {
+		for (let i = this.childNodes.length - 1; i >= 0; i--) {
+			if (this.childNodes[i].nodeType === NodeType.ELEMENT_NODE) {
+				return this.childNodes[i];
+			}
 		}
 		return null;
 	}
@@ -197,7 +237,7 @@ export default class Node extends EventTarget {
 	 */
 	public cloneNode(deep = true): Node {
 		const clone = new (<typeof Node>this.constructor)();
-		
+
 		for (const key of Object.keys(this)) {
 			if (key !== '_isConnected' && key !== '_observers') {
 				if (key === 'childNodes') {
@@ -211,14 +251,14 @@ export default class Node extends EventTarget {
 				} else if (key === 'classList') {
 					// eslint-disable-next-line
 					clone[key] = new ClassList(<any>clone);
-				} else if (CLONE_NODE_PROPERTIES.includes(key)) {	
-					if (deep) {	
-						clone[key] = this[key].cloneNode();	
-						clone[key].parentNode = clone;	
-					}	
+				} else if (CLONE_NODE_PROPERTIES.includes(key)) {
+					if (deep) {
+						clone[key] = this[key].cloneNode();
+						clone[key].parentNode = clone;
+					}
 				} else if (CLONE_OBJECT_ASSIGN_PROPERTIES.includes(key)) {
 					clone[key] = Object.assign({}, this[key]);
-				} else if(CLONE_REFERENCE_PROPERTIES.includes(key)) {
+				} else if (CLONE_REFERENCE_PROPERTIES.includes(key)) {
 					clone[key] = this[key];
 				}
 			}
@@ -391,7 +431,12 @@ export default class Node extends EventTarget {
 
 		let returnValue = super.dispatchEvent(event);
 
-		if (event.bubbles && this.parentNode !== null && !event._propagationStopped && !this.parentNode.dispatchEvent(event)) {
+		if (
+			event.bubbles &&
+			this.parentNode !== null &&
+			!event._propagationStopped &&
+			!this.parentNode.dispatchEvent(event)
+		) {
 			returnValue = false;
 		}
 

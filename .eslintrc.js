@@ -63,6 +63,7 @@ module.exports = {
         '@typescript-eslint/prefer-namespace-keyword': ERROR,
         '@typescript-eslint/type-annotation-spacing': ERROR,
         '@typescript-eslint/no-angle-bracket-type-assertion': OFF,
+        '@typescript-eslint/consistent-type-assertions': OFF,
         '@typescript-eslint/explicit-function-return-type': [WARN, {
             allowExpressions: true
         }],

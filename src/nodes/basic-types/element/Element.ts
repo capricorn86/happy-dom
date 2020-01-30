@@ -26,7 +26,7 @@ export default class Element extends Node {
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public _attributesMap: { [k: string]: string } = {};
-	public _useCaseSensitiveAttributes: boolean = false;
+	public _useCaseSensitiveAttributes = false;
 
 	/**
 	 * Returns ID.
@@ -164,24 +164,6 @@ export default class Element extends Node {
 	}
 
 	/**
-	 * Get first child node.
-	 *
-	 * @return {Node} first child node
-	 */
-	public get firstChild(): Node {
-		return this.childNodes[0] || null;
-	}
-
-	/**
-	 * Get last child node.
-	 *
-	 * @return {Node} last child node
-	 */
-	public get lastChild(): Node {
-		return this.childNodes[this.childNodes.length - 1] || null;
-	}
-
-	/**
 	 * Attribute changed callback.
 	 *
 	 * @param {string} name Name.
@@ -310,7 +292,7 @@ export default class Element extends Node {
 
 	/**
 	 * Returns raw attributes.
-	 * 
+	 *
 	 * @returns {string} Raw attributes.
 	 */
 	public _getRawAttributes(): string {

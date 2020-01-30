@@ -218,6 +218,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.11.0  | 2020-01-30 | Adds support for firstElementChild and lastElementChild. (#32) |
 | 0.10.7  | 2020-01-28 | Thanks to [@DaSchTour](https://github.com/DaSchTour) we now have a fix for possible name conflicts when integrating with Angular. (#31) |
 | 0.10.6  | 2020-01-13 | No text node is created when there only is one character. (#28) |
 | 0.10.1  | 2019-12-11 | Fixes issue with parsing of self closing SVG elements. (#24) |
