@@ -12,6 +12,8 @@ export default class HTMLElement extends Element {
 	public offsetWidth = 0;
 	public offsetLeft = 0;
 	public offsetTop = 0;
+	public clientHeight = 0;
+	public clientWidth = 0;
 
 	/**
 	 * Returns inner text.
