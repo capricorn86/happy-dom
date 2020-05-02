@@ -218,6 +218,7 @@ If you have a need for a missing feature or if you have found a bug, please let 
 
 | Version | Date       | Description      |
 | ------- | ---------- | ---------------- |
+| 0.13.0  | 2020-05-02 | Thanks to [@mat3e](https://github.com/mat3e) we now have support for append() and prepend(). |
 | 0.12.0  | 2020-01-30 | Adds support for node.remove(). (#23) |
 | 0.11.1  | 2020-01-30 | Adds check for space characters to the element.classList.add() function. (#29) |
 | 0.11.0  | 2020-01-30 | Adds support for firstElementChild and lastElementChild. (#32) |
