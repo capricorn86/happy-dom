@@ -268,6 +268,23 @@ export default class Node extends EventTarget {
 	}
 
 	/**
+	 * Inserts nodes before the first child of node, while replacing strings in nodes with equivalent Text nodes.
+	 */
+	public prepend(...nodes: (Node | string)[]): void {
+		const originalFirstChild = this.firstChild;
+		nodes.forEach(item =>
+			this.insertBefore(typeof item === 'string' ? this.ownerDocument.createTextNode(item) : item, originalFirstChild)
+		);
+	}
+
+	/**
+	 * Inserts nodes after the last child of node, while replacing strings in nodes with equivalent Text nodes.
+	 */
+	public append(...nodes: (Node | string)[]): void {
+		nodes.forEach(item => this.appendChild(typeof item === 'string' ? this.ownerDocument.createTextNode(item) : item));
+	}
+
+	/**
 	 * Append a child node to childNodes.
 	 *
 	 * @param  {Node} node Node to append.
