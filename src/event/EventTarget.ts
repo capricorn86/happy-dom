@@ -42,8 +42,12 @@ export default abstract class EventTarget {
 		let returnValue = true;
 
 		if (this._listeners[event.type]) {
+			const newTarget = Object.create(event)
+			// @ts-ignore internally the target can be set but it cannot be modified in user code
+			newTarget.target = this
+
 			for (const listener of this._listeners[event.type]) {
-				listener(event);
+				listener(newTarget);
 				if (event.cancelable && event.defaultPrevented) {
 					returnValue = false;
 				}
