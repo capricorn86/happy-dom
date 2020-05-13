@@ -12,7 +12,7 @@ export default abstract class EventTarget {
 	 * @param {string} type Event type.
 	 * @param {function} listener Listener.
 	 */
-	public addEventListener (type: string, listener: (event: Event) => void): void {
+	public addEventListener(type: string, listener: (event: Event) => void): void {
 		this._listeners[type] = this._listeners[type] || []
 		this._listeners[type].push(listener)
 	}
@@ -23,7 +23,7 @@ export default abstract class EventTarget {
 	 * @param {string} type Event type.
 	 * @param {function} listener Listener.
 	 */
-	public removeEventListener (type: string, listener: (event: Event) => void): void {
+	public removeEventListener(type: string, listener: (event: Event) => void): void {
 		if (this._listeners[type]) {
 			const index = this._listeners[type].indexOf(listener)
 			if (index !== -1) {
@@ -38,12 +38,16 @@ export default abstract class EventTarget {
 	 * @param {Event} event Event.
 	 * @return {boolean} The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault()
 	 */
-	public dispatchEvent (event: Event): boolean {
+	public dispatchEvent(event: Event): boolean {
 		let returnValue = true
 
 		if (this._listeners[event.type]) {
-			// @ts-ignore internally the target can be set but it cannot be modified in user code
-			event.target = this
+			if (!event.target) {
+				// @ts-ignore read-only to user code
+				event.target = this
+			}
+			// @ts-ignore read-only to user code
+			event.currentTarget = this
 
 			for (const listener of this._listeners[event.type]) {
 				listener(event)
