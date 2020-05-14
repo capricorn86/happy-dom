@@ -54,4 +54,22 @@ describe('Element', () => {
 			expect(toTest.childNodes[2]).toHaveProperty('textContent', 'txt');
 		});
 	});
+
+	describe('basic dataset support', () => {
+		test('should set attribute when providing a property', () => {
+			// given
+			const toTest = new Element();
+
+			// when
+			toTest.dataset.foo = 'bar';
+			toTest.id = 'baz';
+			toTest.dataset.id = '123';
+
+			// then
+			expect(toTest.getAttribute('data-foo')).toEqual(toTest.dataset.foo);
+			expect(toTest.getAttribute('data-foo')).toBe('bar');
+			expect(toTest.id).toBe('baz');
+			expect(toTest.getAttribute('data-id')).toBe('123');
+		});
+	});
 });

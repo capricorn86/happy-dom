@@ -215,6 +215,23 @@ export default class Element extends Node {
 	}
 
 	/**
+	 * Read-only property providing access to all the custom data attributes (data-*).
+	 *
+	 * Basic version - no support for converting names (dash-style to camelCase and vice versa).
+	 */
+	public get dataset(): { [key: string]: string } {
+		return (new Proxy(this, {
+			set(target: Element, p: PropertyKey, value: unknown): boolean {
+				target.setAttribute(`data-${p.toString()}`, value.toString());
+				return true;
+			},
+			get(target: Element, p: PropertyKey): unknown {
+				return target.getAttribute(`data-${p.toString()}`);
+			}
+		}) as unknown) as { [key: string]: string };
+	}
+
+	/**
 	 * Returns attribute value.
 	 *
 	 * @param {string} name Name.
