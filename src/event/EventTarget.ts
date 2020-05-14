@@ -1,10 +1,10 @@
-import Event from './Event';
+import Event from './Event'
 
 /**
  * Handles events.
  */
 export default abstract class EventTarget {
-	private readonly _listeners: { [k: string]: ((event: Event) => void)[] } = {};
+	private readonly _listeners: { [k: string]: ((event: Event) => void)[] } = {}
 
 	/**
 	 * Adds an event listener.
@@ -13,8 +13,8 @@ export default abstract class EventTarget {
 	 * @param {function} listener Listener.
 	 */
 	public addEventListener(type: string, listener: (event: Event) => void): void {
-		this._listeners[type] = this._listeners[type] || [];
-		this._listeners[type].push(listener);
+		this._listeners[type] = this._listeners[type] || []
+		this._listeners[type].push(listener)
 	}
 
 	/**
@@ -25,9 +25,9 @@ export default abstract class EventTarget {
 	 */
 	public removeEventListener(type: string, listener: (event: Event) => void): void {
 		if (this._listeners[type]) {
-			const index = this._listeners[type].indexOf(listener);
+			const index = this._listeners[type].indexOf(listener)
 			if (index !== -1) {
-				this._listeners[type].splice(index);
+				this._listeners[type].splice(index)
 			}
 		}
 	}
@@ -39,20 +39,27 @@ export default abstract class EventTarget {
 	 * @return {boolean} The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault()
 	 */
 	public dispatchEvent(event: Event): boolean {
-		let returnValue = true;
+		let returnValue = true
 
 		if (this._listeners[event.type]) {
+			if (!event.target) {
+				// @ts-ignore read-only to user code
+				event.target = this
+			}
+			// @ts-ignore read-only to user code
+			event.currentTarget = this
+
 			for (const listener of this._listeners[event.type]) {
-				listener(event);
+				listener(event)
 				if (event.cancelable && event.defaultPrevented) {
-					returnValue = false;
+					returnValue = false
 				}
 				if (event._immediatePropagationStopped) {
-					return returnValue;
+					return returnValue
 				}
 			}
 		}
 
-		return returnValue;
+		return returnValue
 	}
 }
