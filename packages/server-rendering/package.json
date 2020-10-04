@@ -41,7 +41,7 @@
 	"dependencies": {
 		"he": "1.1.1",
 		"css-tree": "^1.0.0-alpha.29",
-		"node-fetch": "2.5.0",
+		"node-fetch": "2.6.1",
 		"memory-fs": "^0.5.0",
 		"webpack": "^4.41.2",
 		"happy-dom": "^0.12.1"
