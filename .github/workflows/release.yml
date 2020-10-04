@@ -66,10 +66,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - run: |
-          npm run --silent generate-release-notes -- \
-          --latest-version=v${{needs.check-next-version.outputs.latest_version}}" \
-          --next-version=v${{needs.check-next-version.outputs.next_version}}"
+      - run: npm run --silent generate-release-notes -- --latest-version=v${{needs.check-next-version.outputs.latest_version}} --next-version=v${{needs.check-next-version.outputs.next_version}}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
