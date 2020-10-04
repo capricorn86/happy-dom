@@ -140,3 +140,16 @@ Has all the basic functionality of a DOM except for fetch(). This has been exclu
 AsyncWindow extends Window and adds support for fetch(). It also has a method called "window.whenAsyncComplete()" which returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that is resolved when all async tasks has been completed.
 
 The "window.whenAsyncComplete()" method can be used when executing scripts that contains asynchrounous tasks that has to be completed before the render of the page has been completed.
+
+
+
+
+# Jest
+
+Happy DOM provide with a package called [@happy-dom/jest-environment](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering) that makes is possible to use Happy DOM with [Jest](https://jestjs.io/).
+
+
+
+# Server Side Rendering
+
+Happy DOM provide with a package called [@happy-dom/server-rendering](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering) that makes the setup of server side rendering easier.
