@@ -1,0 +1,79 @@
+name: Release
+on:
+  push:
+    branches:
+      - master
+jobs:
+  check-next-version:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14]
+    outputs:
+      next_version: ${{ steps.versionCheck.outputs.next_version }}
+      latest_version: ${{ steps.versionCheck.outputs.latest_version }}
+      release_notes: ${{ steps.versionCheck.outputs.release_notes }}
+      user_email: ${{ steps.versionCheck.outputs.user_email }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci --ignore-scripts
+      - id: versionCheck
+        run: |
+          echo "::set-output name=next_version::$(npm run print-next-version --silent)"
+          echo "::set-output name=latest_version::$(npm run print-latest-version --silent)"
+          echo "::set-output name=release_notes::$(npm run print-release-notes --silent)"
+          echo "::set-output name=user_email::$(git log --format='%ae' HEAD^!)"
+  publish: 
+    runs-on: ubuntu-latest
+    needs: check-next-version
+    if: ${{ needs.check-next-version.outputs.next_version != needs.check-next-version.outputs.latest_version }}
+    strategy:
+      matrix:
+        node-version: [14]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci --ignore-scripts
+      - run: npm run bootstrap-ci
+      - run: npm run compile
+      - name: Checks if we have changed something
+        run: npm run lerna-changed
+      - run: git checkout -b release/${{ needs.check-next-version.outputs.next_version }} origin/master
+      - run: git push origin release/${{ needs.check-next-version.outputs.next_version }}
+      - run: git config --global user.name "${GITHUB_ACTOR}"
+      - run: git config --global user.email "${{ needs.check-next-version.outputs.user_email }}"
+      - run: npm run version -- "${{needs.check-next-version.outputs.next_version }}"
+      - name: Set .npmrc for publish
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_PUBLISH_TOKEN }}" > ./.npmrc
+      - run: npm whoami
+      - run: npm run publish
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [publish, check-next-version]
+    strategy:
+      matrix:
+        node-version: [14]
+    steps:
+        uses: actions/checkout@v2
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.check-next-version.outputs.next_version }}
+          release_name: v${{ needs.check-next-version.outputs.next_version }}
+          body: ${{ needs.check-next-version.outputs.release_notes }}
+          draft: false
+          prerelease: false

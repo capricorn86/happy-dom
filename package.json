@@ -1,61 +1,41 @@
 {
-	"name": "happy-dom",
-	"version": "0.14.1",
-	"license": "MIT",
-	"homepage": "https://github.com/capricorn86/happy-dom#readme",
-	"repository": "https://github.com/capricorn86/happy-dom",
-	"author": "David Ortner",
-	"description": "A jsdom alternative with support for server side rendering of web components.",
-	"main": "lib/index.js",
-	"keywords": [
-		"jsdom",
-		"happy",
-		"dom",
-		"webcomponents",
-		"web",
-		"component",
-		"server",
-		"side",
-		"rendering",
-		"custom",
-		"elements"
-	],
+	"name": "root",
+	"private": true,
 	"scripts": {
-		"compile": "tsc",
-		"watch": "tsc -w --preserveWatchOutput",
-		"prepublishOnly": "npm run compile && npm test",
-		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'",
-		"test": "jest",
-		"test:watch": "jest --watch",
-		"test:update-snapshot": "jest --updateSnapshot",
-		"test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand"
-	},
-	"jest": {
-		"transform": {
-			"^.+\\.ts?$": "ts-jest"
-		},
-		"testMatch": [
-			"**/test/**/*.test.ts"
-		],
-		"testEnvironment": "node"
-	},
-	"dependencies": {
-		"he": "1.1.1",
-		"css-tree": "^1.0.0-alpha.29",
-		"node-fetch": "2.5.0"
+		"compile": "lerna run compile",
+		"watch": "lerna run watch --parallel",
+		"lint": "lerna run lint",
+		"lint:changed": "lerna run lint --since HEAD",
+		"validate-commit-messages": "node ./bin/validate-commit-messages.js",
+		"print-release-notes": "node ./bin/print-release-notes.js",
+		"print-latest-version": "node ./bin/print-latest-version.js",
+		"print-next-version": "node ./bin/print-next-version.js",
+		"postinstall": "lerna bootstrap",
+		"bootstrap-ci": "lerna bootstrap --ci",
+		"prepublishOnly": "npm run compile && npm run lint && npm test",
+		"test": "lerna run test",
+		"test:watch": "lerna run test:watch --parallel",
+		"test:update-snapshot": "lerna run test:update-snapshot",
+		"version": "lerna version --yes",
+		"publish": "lerna publish from-package --yes"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^1.9.0",
-		"@typescript-eslint/parser": "^1.9.0",
-		"@types/node": "^12.6.8",
 		"@types/he": "latest",
-		"@types/jest": "^24.0.18",
-		"eslint": "^5.16.0",
-		"eslint-config-prettier": "^4.1.0",
-		"eslint-plugin-prettier": "^3.0.1",
-		"prettier": "^1.16.4",
-		"typescript": "^3.5.1",
-		"jest": "^24.9.0",
-		"ts-jest": "^24.1.0"
+		"@types/jest": "^25.1.4",
+		"@types/node": "^13.9.5",
+		"@typescript-eslint/eslint-plugin": "^2.11.0",
+		"@typescript-eslint/parser": "^2.11.0",
+		"chalk": "^4.1.0",
+		"semver": "^7.3.2",
+		"eslint": "^6.7.2",
+		"eslint-config-prettier": "^6.7.0",
+		"eslint-plugin-prettier": "^3.1.1",
+		"lerna": "^3.22.1",
+		"husky": "2.3.0",
+		"prettier": "^1.19.1",
+		"typescript": "^3.8.3"
+	},
+	"engines": {
+		"node": ">=12.13"
 	}
 }

@@ -1,11 +1,11 @@
 # Happy DOM
-A "jsdom" alternative with support for server side rendering of web components.
+A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server side rendering of web components.
 
-As shadow roots are scoped, this DOM supports opening them up by providing an option. When the shadow roots are opened up, Happy DOM will scope the HTML and CSS.
+Happy DOM aims to support all common functionality of a web browser.
 
 
 
-# DOM Features
+### DOM Features
 
 - Custom Elements (Web Components)
 
@@ -18,260 +18,62 @@ As shadow roots are scoped, this DOM supports opening them up by providing an op
 - Fetch
   
 
-  And much more..
+And much more..
 
+  
 
+### Works With
 
-# How to Install
+- [Google LitHTML](https://lit-html.polymer-project.org)
 
-```bash
-npm install happy-dom
-```
+- [Google LitElement](https://lit-element.polymer-project.org)
 
+- [React](https://reactjs.org)
 
+- [Angular](https://angular.io/)
 
-# Usage
+  
 
+[Read more about Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/src/packages/happy-dom)
 
 
-## Server Side Rendering
 
-Happy DOM provide with a utility for server side rendering. The utility will create a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options), which is an isolated environment for where the script and DOM can be executed.
+# Jest
 
-Importing dependencies is not supported by the VM script. Therefore scripts with imports has to be bundled with a tool like [Webpack](https://webpack.js.org/) in order to be executed within the virtual machine.
+Happy DOM works with [Jest](https://jestjs.io/).
 
-```javascript
-import { VMContext } from 'happy-dom';
-import { Script } from 'vm';
+[Read more about how use Happy DOM with Jest](https://github.com/capricorn86/happy-dom/tree/master/src/packages/jest-environment)
 
-const vm = new VMContext();
-const html = `
-    <html>
-        <head>
-             <title>Test page</title>
-        </head>
-        <body>
-             <div class="myContainer">
-                  <!–– Content will be added here -->
-             </div>
-        </body>
-    </html>
-`;
-const script = new Script(`
-    const element = document.createElement('div');
-    const myContainer = document.querySelector('.myContainer');
-    element.innerHTML = 'Test';
-    myContainer.appendChild(element);
-`);
-const url = 'http://localhost:8080';
-const openShadowRoots = true;
-const result = await vm.render({ html, script, url, openShadowRoots });
 
-// Will output HTML with a div element inside the "myContainer" element
-console.log(result);
-```
 
+# Server Side Rendering
 
+Happy DOM can be used for server side rendering of Web Components and client side code.
 
-## Create a Synchronous DOM
+[Read more about how use Happy DOM for server side rendering](https://github.com/capricorn86/happy-dom/tree/master/src/packages)
 
-This section will explain how to create a synchronous DOM for parsing HTML and much more.
 
-*Note: You might have to import the Window class as a single import if you wish to use it client side. Path: "happy-dom/lib/Window" .*
 
-```javascript
-import { Window } from 'happy-dom';
+# Whats New in 1.0.0?
 
-const window = new Window();
-const document = window.document;
+- [Lerna](https://lerna.js.org/) is used for managing all packages within a single repository
 
-document.body.innerHTML = `
-     <div class="myContainer">Test</div>
-`;
+- Support for [React](https://reactjs.org) and [Angular](https://angular.io/)
 
-const myContainer = document.querySelector('.myContainer');
+- Full support for [querySelector()](https://www.w3.org/TR/selectors-api/#queryselector) and [querySelectorAll()](https://www.w3.org/TR/selectors-api/#queryselectorall)
 
-// Will output "Test"
-console.log(myContainer.innerHTML);
-```
+- Server side rendering has been split out to its own package
 
+- All functionality is now covered by unit tests
 
+- Automated release process by publishing to NPM automatically when a pull request is merged
 
-## Create an Asynchronous DOM
+- Release notes are generated automatically by using [Github Releases](https://docs.github.com/en/free-pro-team@latest/github/administering-a-repository/about-releases)
 
-The asynchronous DOM will add features like "fetch", "setTimeout", "setInterval" etc. on top of the synchronous DOM.
+- A lot of minor bug fixes
 
-An asynchronous DOM is useful when running scripts inside of it. This is usually done within a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options). See the "Manually Setup a VM Context" section for an example on how to set this up.
 
-*Note: The asynchronous DOM has a dependency to "node-fetch", so it will not work client side.*
 
-```javascript
-import { AsyncWindow } from 'happy-dom';
+# Contributing
 
-const window = new AsyncWindow();
-const document = window.document;
-
-document.body.innerHTML = `
-     <div class="myContainer">Test</div>
-`;
-
-window.fetch('http://localhost:8080/json').then(response => {
-     response.json().then(data => {
-          const myContainer = document.querySelector('.myContainer');
-          myContainer.innerHTML = data.test;
-     })
-});
-
-window.whenAsyncComplete().then(() => {
-     const myContainer = document.querySelector('.myContainer');
-    
-     // Will output the value in "data.test"
-     console.log(myContainer.innerHTML);
-});
-```
-
-
-
-## Manually Setup a VM Context
-
-The bellow example will show you how to setup a Node [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options).
-
-```javascript
-import { AsyncWindow } from 'happy-dom';
-import VM from 'vm';
-
-const context = VM.createContext(new AsyncWindow());
-const window = context.window;
-const html = `
-    <html>
-        <head>
-             <title>Test page</title>
-        </head>
-        <body>
-             <div class="myContainer">
-                  <!–– Content will be added here -->
-             </div>
-        </body>
-    </html>
-`;
-const script = new VM.Script(`
-    const element = document.createElement('div');
-    const myContainer = document.querySelector('.myContainer');
-    element.innerHTML = 'Test';
-    myContainer.appendChild(element);
-`);
-
-window.location.href = 'http://localhost:8080';
-window.shadowRootRenderOptions.openShadowRoots = true;
-window.whenAsyncComplete().then(() => {
-    const myContainer = window.document.querySelector('.myContainer div');
-
-    // Will output "Test"
-    console.log(myContainer.innerHTML);
-});
-
-script.runInContext(context);
-
-document.write(html);
-```
-
-
-
-# Shadow Root Render Options
-
-As mentioned above, Happy DOM comes with render options for opening the shadow roots for server side rendering.
-
-Opening shadow roots will render them opened when running innerHTML or outerHTML, but they will not be modified in the DOM tree.
-
-By default CSS will be scoped and attached as a child to the head element. The most common use case is to render the entire document by running "document.documentElement.outerHTML", which will include the CSS in the head tag. It is also possible to disable the default behaviour and manually extract the CSS from "cssCache".
-
-## Available Options
-
-The shadow root options are available under "window.shadowRootRenderOptions".
-
-| Name                  | Default value        | Description                                                  |
-| --------------------- | -------------------- | ------------------------------------------------------------ |
-| openShadowRoots       | false                | Opens the shadow root when rendering elements with innerHTML or outerHTML. |
-| appendScopedCSSToHead | true                 | Set to "true" to append extracted and scoped CSS to the head extracted when "openShadowRoots" is enabled.<br /><br />The CSS will still be extracted when set to "false". It will be available in the "cssCache". |
-| cssCache              | new ScopedCSSCache() | CSS cache object with the extracted CSS.                     |
-
-## Retrieve Extracted CSS
-
-```javascript
-const allScopedCSS = window.shadowRootOptions.cssCache.getAllScopedCSS();
-
-// Outputs all extracted CSS
-console.log(allScopedCSS);
-```
-
-
-
-# Known Limitations
-
-Happy DOM supports the most common functionality of a DOM, but there are some features that are not supported yet. 
-
-If you have a need for a missing feature or if you have found a bug, please let me know, and I will do my best to fix it.
-
-
-
-# Release Notes
-
-| Version | Date       | Description      |
-| ------- | ---------- | ---------------- |
-| 0.14.0  | 2020-05-14 | Thanks to [@allain](https://github.com/allain) we now have support for "target" and "currentTarget" in events. |
-| 0.13.0  | 2020-05-02 | Thanks to [@mat3e](https://github.com/mat3e) we now have support for append() and prepend(). |
-| 0.12.0  | 2020-01-30 | Adds support for node.remove(). (#23) |
-| 0.11.1  | 2020-01-30 | Adds check for space characters to the element.classList.add() function. (#29) |
-| 0.11.0  | 2020-01-30 | Adds support for firstElementChild and lastElementChild. (#32) |
-| 0.10.7  | 2020-01-28 | Thanks to [@DaSchTour](https://github.com/DaSchTour) we now have a fix for possible name conflicts when integrating with Angular. (#31) |
-| 0.10.6  | 2020-01-13 | No text node is created when there only is one character. (#28) |
-| 0.10.1  | 2019-12-11 | Fixes issue with parsing of self closing SVG elements. (#24) |
-| 0.10.0  | 2019-12-10 | Adds support for querying all (*). (#19) |
-| 0.9.0   | 2019-11-26 | Adds support for preventDefault() and stopPropagation(). (#11) |
-| 0.8.5   | 2019-11-25 | Fixes bug with cloneNode() not copying some node properties after fix in 0.8.3. |
-| 0.8.4   | 2019-11-25 | Fixes bug with dispatchEvent() not bubbling correctly. |
-| 0.8.3   | 2019-11-22 | Fixes bug with cloneNode() also copying non-node properties. |
-| 0.8.0   | 2019-11-22 | Adds support for previousElementSibling and nextElementSibling. (#18) |
-| 0.7.0   | 2019-11-21 | Thanks to [@AdeAttwood](https://github.com/AdeAttwood) we now have support for requestAnimationFrame() and cancelAnimationFrame(). (#9) |
-| 0.6.0   | 2019-10-28 | Thanks to [@mat3e](https://github.com/mat3e) we now have support for hasAttributes(). The "attributes" property has also been changed. It is now returning an object instead of array. (#13) |
-| 0.5.0   | 2019-10-21 | Adds support for click(), focus() and blur(). (#8) |
-| 0.4.4   | 2019-10-20 | Fixes issue with CustomEvent not being defined correctly causing issues with detail property. (#10) |
-| 0.4.3   | 2019-10-08 | Fixes issue with cloned nodes referring to the same attributes, which is causing weird issues in lit-html. (#5) |
-| 0.4.2   | 2019-10-08 | Fixes issue where query selector not returning correct elements. (#2) |
-| 0.4.1   | 2019-10-07 | Fixes issue with self closing elements become parent of next element in HTMLParser. (#1) |
-| 0.4.0   | 2019-10-07 | Adds type and eventInit to Event constructor. (#4) |
-| 0.3.1   | 2019-10-07 | Fixes bug where global.Error is undefined. (#6) |
-| 0.3.0   | 2019-10-06 | Adds support for scrollTop, scrollLeft, scrollTo(), offsetLeft, offsetTop offsetHeight, offsetWidth. |
-| 0.2.16  | 2019-10-06 | Major bug fixes with server side rendering. |
-| 0.2.0   | 2019-09-20 | Adds support for SVGSVGElement, SVGElement and SVGGraphicsElement. |
-| 0.1.0   | 2019-09-19 | Adds support for HTMLInputElement, HTMLTextAreaElement, HTMLFormElement, Range and DOMRect (bounding client rect). |
-| 0.0.1   | 2019-09-13 | Initial release. |
-
-
-
-# How to Develop
-
-
-
-## Installation
-
-```bash
-npm install
-```
-
-
-
-## Compilation
-
-```bash
-npm run compile
-```
-
-
-
-## Run Watcher
-
-```bash
-npm run watch
-```
-
+[Read more about how to develop and contribute](https://github.com/capricorn86/happy-dom/tree/master/src/docs/contributing.md)
