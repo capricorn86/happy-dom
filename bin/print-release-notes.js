@@ -9,15 +9,14 @@ process.on('unhandledRejection', error => {
 });
 
 async function main() {
-	const commitMessages = await GitUtility.getCommitMessages('origin/master', 'HEAD');
+	const latestVersion = await GitUtility.getLatestVersion();
+	const commitMessages = await GitUtility.getCommitMessages(latestVersion, 'HEAD');
 	const commits = { trivial: [], patch: [], minor: [], major: [] };
 	
 	for (const commitMessage of commitMessages) {
 		const parsed = GitUtility.parseCommitMessage(commitMessage);
 	
-		if (parsed.errors.length > 0) {
-			console.error(`Failed to print release notes for the following commit: "${commitMessage}".`);
-		} else {
+		if (!parsed.errors.length) {
 			commits[parsed.commit.versionType].push(parsed.commit);
 		}
 	}
@@ -40,7 +39,7 @@ async function main() {
 	
 	if(commits.patch.length > 0) {
 		output += '\n### :construction_worker_man: Patch fixes\n\n';
-		for(const commit of commits.minor) {
+		for(const commit of commits.patch) {
 			output += ` - ${commit.description} (${commit.taskId})\n`;
 		}
 	}
