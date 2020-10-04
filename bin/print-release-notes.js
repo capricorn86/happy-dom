@@ -24,21 +24,21 @@ async function main() {
 	let output = '';
 	
 	if(commits.major.length > 0) {
-		output += '\n### :bomb: Breaking Changes\n\n';
+		output += '### :bomb: Breaking Changes\n\n';
 		for(const commit of commits.major) {
 			output += ` - ${commit.description} (${commit.taskId})\n`;
 		}
 	}
 	
 	if(commits.minor.length > 0) {
-		output += '\n### :art: Features\n\n';
+		output += '### :art: Features\n\n';
 		for(const commit of commits.minor) {
 			output += ` - ${commit.description} (${commit.taskId})\n`;
 		}
 	}
 	
 	if(commits.patch.length > 0) {
-		output += '\n### :construction_worker_man: Patch fixes\n\n';
+		output += '### :construction_worker_man: Patch fixes\n\n';
 		for(const commit of commits.patch) {
 			output += ` - ${commit.description} (${commit.taskId})\n`;
 		}
