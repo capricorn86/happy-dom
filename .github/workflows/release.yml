@@ -12,7 +12,6 @@ jobs:
     outputs:
       next_version: ${{ steps.versionCheck.outputs.next_version }}
       latest_version: ${{ steps.versionCheck.outputs.latest_version }}
-      release_notes: ${{ steps.versionCheck.outputs.release_notes }}
       user_email: ${{ steps.versionCheck.outputs.user_email }}
     steps:
       - uses: actions/checkout@v2
@@ -27,7 +26,6 @@ jobs:
         run: |
           echo "::set-output name=next_version::$(npm run print-next-version --silent)"
           echo "::set-output name=latest_version::$(npm run print-latest-version --silent)"
-          echo "::set-output name=release_notes::$(npm run print-release-notes --silent)"
           echo "::set-output name=user_email::$(git log --format='%ae' HEAD^!)"
   publish: 
     runs-on: ubuntu-latest
@@ -68,7 +66,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - run: echo "${{ needs.check-next-version.outputs.release_notes }}" > ./RELEASE_NOTES.md
+        run: |
+          npm run --silent generate-release-notes -- \
+          --latest-version=v${{needs.check-next-version.outputs.latest_version}}" \
+          --next-version=v${{needs.check-next-version.outputs.next_version}}"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

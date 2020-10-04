@@ -7,7 +7,7 @@
 		"lint": "lerna run lint",
 		"lint:changed": "lerna run lint --since HEAD",
 		"validate-commit-messages": "node ./bin/validate-commit-messages.js",
-		"print-release-notes": "node ./bin/print-release-notes.js",
+		"generate-release-notes": "node ./bin/generate-release-notes.js",
 		"print-latest-version": "node ./bin/print-latest-version.js",
 		"print-next-version": "node ./bin/print-next-version.js",
 		"postinstall": "lerna bootstrap",

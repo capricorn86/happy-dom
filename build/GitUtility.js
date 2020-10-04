@@ -79,7 +79,7 @@ class GitUtility {
 	 */
 	static async getNextVersion() {
 		const latest = await this.getLatestVersion();
-		const versionType = await this.__getVersionType(latest, 'HEAD');
+		const versionType = await this.__getVersionType('v' + latest, 'HEAD');
 		return Semver.inc(latest, versionType);
 	}
 
@@ -96,7 +96,7 @@ class GitUtility {
 				} else {
 					const gitTags = stdout.trim().split('\n');
 					gitTags.sort(Semver.compare);
-					resolve(gitTags[gitTags.length - 1]);
+					resolve(gitTags[gitTags.length - 1].replace('v', ''));
 				}
 			});
 		});
