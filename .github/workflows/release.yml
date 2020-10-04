@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-        run: echo "${{ needs.check-next-version.outputs.release_notes }}" > ./RELEASE_NOTES.md
+      - run: echo "${{ needs.check-next-version.outputs.release_notes }}" > ./RELEASE_NOTES.md
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
