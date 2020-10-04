@@ -4,5 +4,5 @@
 root = true
 
 # Indentation override for all JS under lib directory
-[{**.js,**.json}]
+[{**.js,**.ts,**.json}]
 indent_style = tab

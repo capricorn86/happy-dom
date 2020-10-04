@@ -1,0 +1,25 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"outDir": "../tmp",
+		"rootDir": "../",
+		"tsBuildInfoFile": "../tmp/.tsbuildinfo-test",
+		"jsx": "react",
+		"lib": [
+			"es2015",
+			"es2016",
+			"es2017",
+			"dom"
+		],
+		"typeRoots": [
+			"../node_modules/@types"
+		]
+	},
+	"include": [
+		"@types/node",
+		"@types/jest",
+		".",
+		"../src",
+		"../src/**/*.json"
+	]
+}
