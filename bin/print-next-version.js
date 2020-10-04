@@ -9,7 +9,7 @@ process.on('unhandledRejection', error => {
 });
 
 async function main() {
-	const nextVersion = await GitUtility.getNextVersion('origin/master', 'HEAD');
+	const nextVersion = await GitUtility.getNextVersion();
 	process.stdout.write(nextVersion);
 }
 
