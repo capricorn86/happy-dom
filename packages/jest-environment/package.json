@@ -1,6 +1,6 @@
 {
 	"name": "@happy-dom/jest-environment",
-	"version": "0.12.1",
+	"version": "0.0.0",
 	"license": "MIT",
 	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/jest-environment",
 	"repository": "https://github.com/capricorn86/happy-dom",
@@ -19,6 +19,9 @@
 		"custom",
 		"elements"
 	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"compile": "tsc",
 		"prepublishOnly": "npm run compile",
@@ -45,7 +48,7 @@
 		"@jest/types": "^26.2.0",
 		"jest-mock": "^26.2.0",
 		"jest-util": "^26.2.0",
-		"happy-dom": "^0.12.1",
+		"happy-dom": "^0.0.0",
 		"node-fetch": "2.5.0"
 	},
 	"devDependencies": {

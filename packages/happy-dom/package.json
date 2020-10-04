@@ -1,6 +1,6 @@
 {
 	"name": "happy-dom",
-	"version": "0.12.1",
+	"version": "0.0.0",
 	"license": "MIT",
 	"homepage": "https://github.com/capricorn86/happy-dom",
 	"repository": "https://github.com/capricorn86/happy-dom",
@@ -20,6 +20,9 @@
 		"custom",
 		"elements"
 	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"compile": "tsc",
 		"watch": "tsc -w --preserveWatchOutput",

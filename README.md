@@ -34,23 +34,29 @@ And much more..
 
   
 
-[Read more about Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom)
+[Read more about how to use Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom)
 
 
 
-# Jest
+# Packages
 
-Happy DOM works with [Jest](https://jestjs.io/).
+This repository is a _Monorepo_. Each package lives under `packages/<package>`.
 
-[Read more about how use Happy DOM with Jest](https://github.com/capricorn86/happy-dom/tree/master/packages/jest-environment)
+### [![Published on npm](https://img.shields.io/npm/v/happy-dom.svg)](https://www.npmjs.com/package/happy-dom) [happy-dom](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom)
 
+This package contains the core functionality of Happy DOM.
 
+---
 
-# Server Side Rendering
+### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/jest-environment.svg)](https://www.npmjs.com/package/@happy-dom/jest-environment) [jest-environment](https://github.com/capricorn86/happy-dom/tree/master/packages/jest-environment)
 
-Happy DOM can be used for server side rendering of Web Components and client side code.
+This package makes it possible to use Happy DOM with [Jest](https://jestjs.io/).
 
-[Read more about how use Happy DOM for server side rendering](https://github.com/capricorn86/happy-dom/tree/master/src/packages)
+---
+
+### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/server-rendering.svg)](https://www.npmjs.com/package/@happy-dom/server-rendering) [server-rendering](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering)
+
+This package makes it easier to setup servering side rendering of web components by handling the setup of the Node [VM Context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) for you.
 
 
 

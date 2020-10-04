@@ -4,7 +4,7 @@ A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server si
 
 Happy DOM aims to support all common functionality of a web browser.
 
-This package makes it easier to setup servering rendering of web components by handling the setup of the Node [VM Context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) for you.
+This package makes it easier to setup servering side rendering of web components by handling the setup of the Node [VM Context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) for you.
 
 
 
