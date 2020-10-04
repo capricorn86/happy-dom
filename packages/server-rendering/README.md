@@ -1,8 +1,11 @@
-# Happy DOM
+![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
+
+
+# About
 
 A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server side rendering of web components.
 
-Happy DOM aims to support all common functionality of a web browser.
+[Happy DOM](https://github.com/capricorn86/happy-dom) aims to support all common functionality of a web browser.
 
 This package makes it easier to setup servering side rendering of web components by handling the setup of the Node [VM Context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) for you.
 
@@ -33,6 +36,8 @@ And much more..
 - [React](https://reactjs.org)
 
 - [Angular](https://angular.io/)
+
+- [Vue](https://vuejs.org/)
 
   
 

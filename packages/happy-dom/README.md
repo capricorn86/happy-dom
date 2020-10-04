@@ -1,8 +1,11 @@
-# Happy DOM
+![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
+
+
+# About
 
 A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server side rendering of web components.
 
-Happy DOM aims to support all common functionality of a web browser.
+[Happy DOM](https://github.com/capricorn86/happy-dom) aims to support all common functionality of a web browser.
 
 
 
@@ -31,6 +34,8 @@ And much more..
 - [React](https://reactjs.org)
 
 - [Angular](https://angular.io/)
+
+- [Vue](https://vuejs.org/)
 
   
 

@@ -1,8 +1,7 @@
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
 
-
-# Happy DOM
+# About
 
 A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server side rendering of web components.
 
@@ -69,7 +68,7 @@ This package makes it easier to setup servering side rendering of web components
 
 - [Lerna](https://lerna.js.org/) is used for managing all packages within a single repository
 
-- Support for [React](https://reactjs.org) and [Angular](https://angular.io/)
+- Support for [React](https://reactjs.org), [Angular](https://angular.io/), [Vue](https://vuejs.org/)
 
 - Full support for [querySelector()](https://www.w3.org/TR/selectors-api/#queryselector) and [querySelectorAll()](https://www.w3.org/TR/selectors-api/#queryselectorall)
 
