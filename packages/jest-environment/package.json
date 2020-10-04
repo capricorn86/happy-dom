@@ -45,6 +45,7 @@
 		"@jest/environment": "^26.2.0",
 		"@jest/fake-timers": "^26.2.0",
 		"@jest/types": "^26.2.0",
+		"vue": "^2.6.12",
 		"jest-mock": "^26.2.0",
 		"jest-util": "^26.2.0",
 		"happy-dom": "^0.0.0",

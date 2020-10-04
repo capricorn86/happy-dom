@@ -1,6 +1,6 @@
 {
   "name": "@happy-dom/jest-environment",
-  "version": "0.12.1",
+  "version": "0.0.0",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
@@ -7465,6 +7465,11 @@
         "core-util-is": "1.0.2",
         "extsprintf": "^1.2.0"
       }
+    },
+    "vue": {
+      "version": "2.6.12",
+      "resolved": "https://registry.npmjs.org/vue/-/vue-2.6.12.tgz",
+      "integrity": "sha512-uhmLFETqPPNyuLLbsKz6ioJ4q7AZHzD8ZVFNATNyICSZouqP2Sz0rotWQC8UNBF6VGSCs5abnKJoStA6JbCbfg=="
     },
     "w3c-hr-time": {
       "version": "1.0.2",
