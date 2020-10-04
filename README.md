@@ -34,7 +34,7 @@ And much more..
 
   
 
-[Read more about Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/src/packages/happy-dom)
+[Read more about Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom)
 
 
 
@@ -42,7 +42,7 @@ And much more..
 
 Happy DOM works with [Jest](https://jestjs.io/).
 
-[Read more about how use Happy DOM with Jest](https://github.com/capricorn86/happy-dom/tree/master/src/packages/jest-environment)
+[Read more about how use Happy DOM with Jest](https://github.com/capricorn86/happy-dom/tree/master/packages/jest-environment)
 
 
 
@@ -76,4 +76,4 @@ Happy DOM can be used for server side rendering of Web Components and client sid
 
 # Contributing
 
-[Read more about how to develop and contribute](https://github.com/capricorn86/happy-dom/tree/master/src/docs/contributing.md)
+[Read more about how to develop and contribute](https://github.com/capricorn86/happy-dom/blob/master/docs/contributing.md)
