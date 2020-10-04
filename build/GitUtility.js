@@ -1,5 +1,4 @@
 const ChildProcess = require('child_process');
-const Semver = require('semver');
 
 const COMMIT_MESSAGE_REGEXP = /(#[0-9]+)@([^:]+): (.+)/ms;
 const VERSION_TYPES = ['trivial', 'patch', 'minor', 'major'];
@@ -80,7 +79,7 @@ class GitUtility {
 	static async getNextVersion() {
 		const latest = await this.getLatestVersion();
 		const versionType = await this.__getVersionType('v' + latest, 'HEAD');
-		return Semver.inc(latest, versionType);
+		return require('semver').inc(latest, versionType);
 	}
 
 	/**
@@ -95,7 +94,7 @@ class GitUtility {
 					reject(error);
 				} else {
 					const gitTags = stdout.trim().split('\n');
-					gitTags.sort(Semver.compare);
+					gitTags.sort(require('semver').compare);
 					resolve(gitTags[gitTags.length - 1].replace('v', ''));
 				}
 			});
