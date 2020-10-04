@@ -3234,6 +3234,23 @@
       "dev": true,
       "optional": true
     },
+    "happy-dom": {
+      "version": "0.12.1",
+      "resolved": "https://registry.npmjs.org/happy-dom/-/happy-dom-0.12.1.tgz",
+      "integrity": "sha512-UPn47CZbOOKRkhMmF+RRABtdhJm1n6RoyTIalz1QLyq2z2seNwJzioTLv6xr5hYEgMpdD6mdsmdgCy4h1dksKA==",
+      "requires": {
+        "css-tree": "^1.0.0-alpha.29",
+        "he": "1.1.1",
+        "node-fetch": "2.5.0"
+      },
+      "dependencies": {
+        "node-fetch": {
+          "version": "2.5.0",
+          "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.5.0.tgz",
+          "integrity": "sha512-YuZKluhWGJwCcUu4RlZstdAxr8bFfOVHakc1mplwHkk8J+tqM1Y5yraYvIUpeX8aY7+crCwiELJq7Vl0o0LWXw=="
+        }
+      }
+    },
     "har-schema": {
       "version": "2.0.0",
       "resolved": "https://registry.npmjs.org/har-schema/-/har-schema-2.0.0.tgz",
@@ -4978,9 +4995,9 @@
       "dev": true
     },
     "node-fetch": {
-      "version": "2.5.0",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.5.0.tgz",
-      "integrity": "sha512-YuZKluhWGJwCcUu4RlZstdAxr8bFfOVHakc1mplwHkk8J+tqM1Y5yraYvIUpeX8aY7+crCwiELJq7Vl0o0LWXw=="
+      "version": "2.6.1",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.1.tgz",
+      "integrity": "sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw=="
     },
     "node-int64": {
       "version": "0.4.0",
