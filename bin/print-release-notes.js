@@ -39,7 +39,7 @@ async function main() {
 	
 	if(commits.patch.length > 0) {
 		output += '\n### :construction_worker_man: Patch fixes\n\n';
-		for(const commit of commits.minor) {
+		for(const commit of commits.patch) {
 			output += ` - ${commit.description} (${commit.taskId})\n`;
 		}
 	}
