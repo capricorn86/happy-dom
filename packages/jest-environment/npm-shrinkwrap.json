@@ -2041,6 +2041,15 @@
         "which": "^1.2.9"
       }
     },
+    "css-tree": {
+      "version": "1.0.0-alpha.39",
+      "resolved": "https://registry.npmjs.org/css-tree/-/css-tree-1.0.0-alpha.39.tgz",
+      "integrity": "sha512-7UvkEYgBAHRG9Nt980lYxjsTrCyHFN53ky3wVsDkiMdVqylqRt+Zc+jm5qw7/qyOvN2dHSYtX0e4MbCCExSvnA==",
+      "requires": {
+        "mdn-data": "2.0.6",
+        "source-map": "^0.6.1"
+      }
+    },
     "cssom": {
       "version": "0.4.4",
       "resolved": "https://registry.npmjs.org/cssom/-/cssom-0.4.4.tgz",
@@ -2860,6 +2869,23 @@
       "dev": true,
       "optional": true
     },
+    "happy-dom": {
+      "version": "0.12.1",
+      "resolved": "https://registry.npmjs.org/happy-dom/-/happy-dom-0.12.1.tgz",
+      "integrity": "sha512-UPn47CZbOOKRkhMmF+RRABtdhJm1n6RoyTIalz1QLyq2z2seNwJzioTLv6xr5hYEgMpdD6mdsmdgCy4h1dksKA==",
+      "requires": {
+        "css-tree": "^1.0.0-alpha.29",
+        "he": "1.1.1",
+        "node-fetch": "2.5.0"
+      },
+      "dependencies": {
+        "node-fetch": {
+          "version": "2.5.0",
+          "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.5.0.tgz",
+          "integrity": "sha512-YuZKluhWGJwCcUu4RlZstdAxr8bFfOVHakc1mplwHkk8J+tqM1Y5yraYvIUpeX8aY7+crCwiELJq7Vl0o0LWXw=="
+        }
+      }
+    },
     "har-schema": {
       "version": "2.0.0",
       "resolved": "https://registry.npmjs.org/har-schema/-/har-schema-2.0.0.tgz",
@@ -2932,6 +2958,11 @@
           }
         }
       }
+    },
+    "he": {
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/he/-/he-1.1.1.tgz",
+      "integrity": "sha1-k0EP0hsAlzUVH4howvJx80J+I/0="
     },
     "hosted-git-info": {
       "version": "2.8.8",
@@ -5561,6 +5592,11 @@
         "object-visit": "^1.0.0"
       }
     },
+    "mdn-data": {
+      "version": "2.0.6",
+      "resolved": "https://registry.npmjs.org/mdn-data/-/mdn-data-2.0.6.tgz",
+      "integrity": "sha512-rQvjv71olwNHgiTbfPZFkJtjNMciWgswYeciZhtvWLO8bmX3TnhyA62I6sTWOyZssWHJJjY6/KiWwqQsWWsqOA=="
+    },
     "merge-stream": {
       "version": "2.0.0",
       "resolved": "https://registry.npmjs.org/merge-stream/-/merge-stream-2.0.0.tgz",
@@ -5686,9 +5722,9 @@
       "dev": true
     },
     "node-fetch": {
-      "version": "2.5.0",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.5.0.tgz",
-      "integrity": "sha512-YuZKluhWGJwCcUu4RlZstdAxr8bFfOVHakc1mplwHkk8J+tqM1Y5yraYvIUpeX8aY7+crCwiELJq7Vl0o0LWXw=="
+      "version": "2.6.1",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.1.tgz",
+      "integrity": "sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw=="
     },
     "node-int64": {
       "version": "0.4.0",
@@ -6757,8 +6793,7 @@
     "source-map": {
       "version": "0.6.1",
       "resolved": "https://registry.npmjs.org/source-map/-/source-map-0.6.1.tgz",
-      "integrity": "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==",
-      "dev": true
+      "integrity": "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g=="
     },
     "source-map-resolve": {
       "version": "0.5.3",
