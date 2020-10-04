@@ -75,13 +75,11 @@ class GitUtility {
 	/**
 	 * Returns the next version.
 	 * 
-	 * @param {string} from From branch.
-	 * @param {string} to To branch.
 	 * @returns {string} Next version (e.g. "v1.2.3").
 	 */
-	static async getNextVersion(from, to) {
+	static async getNextVersion() {
 		const latest = await this.getLatestVersion();
-		const versionType = await this.__getVersionType(from, to);
+		const versionType = await this.__getVersionType(latest, 'HEAD');
 		return Semver.inc(latest, versionType);
 	}
 
