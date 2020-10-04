@@ -65,7 +65,9 @@ jobs:
       matrix:
         node-version: [14]
     steps:
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
