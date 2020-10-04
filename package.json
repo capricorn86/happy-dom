@@ -17,7 +17,8 @@
 		"test:watch": "lerna run test:watch --parallel",
 		"test:update-snapshot": "lerna run test:update-snapshot",
 		"version": "lerna version --yes",
-		"publish": "lerna publish from-package --yes"
+		"publish": "lerna publish from-package --yes",
+		"lerna-changed": "lerna changed"
 	},
 	"devDependencies": {
 		"@types/he": "latest",
