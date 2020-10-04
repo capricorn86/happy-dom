@@ -1,4 +1,4 @@
-![Happy DOM Logo](https://github.com/capricorn86/happy-dom/tree/master/docs/happy-dom-logo.jpg)
+![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
 
 
