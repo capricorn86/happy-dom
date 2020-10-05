@@ -45,7 +45,7 @@ export default class HTMLParser {
 				lastTextIndex = markupRegexp.lastIndex;
 			} else {
 				stack.pop();
-				currentParent = stack[stack.length - 1];
+				currentParent = stack[stack.length - 1] ? stack[stack.length - 1] : currentParent;
 				lastTextIndex = markupRegexp.lastIndex;
 			}
 		}
