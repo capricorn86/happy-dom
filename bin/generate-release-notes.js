@@ -16,12 +16,14 @@ async function main() {
 
 	const commitMessages = await GitUtility.getCommitMessages('v' + latestVersion, 'v' + nextVersion);
 	const commits = { trivial: [], patch: [], minor: [], major: [] };
+	const duplicates = { trivial: [], patch: [], minor: [], major: [] };
 	
 	for (const commitMessage of commitMessages) {
 		const parsed = GitUtility.parseCommitMessage(commitMessage);
 	
-		if (!parsed.errors.length) {
+		if (!parsed.errors.length && !duplicates.includes(parsed.commit.description)) {
 			commits[parsed.commit.versionType].push(parsed.commit);
+			duplicates[parsed.commit.versionType].push(parsed.commit.description);
 		}
 	}
 	
