@@ -21,7 +21,7 @@ async function main() {
 	for (const commitMessage of commitMessages) {
 		const parsed = GitUtility.parseCommitMessage(commitMessage);
 	
-		if (!parsed.errors.length && !duplicates.includes(parsed.commit.description)) {
+		if (!parsed.errors.length && !duplicates[parsed.commit.versionType].includes(parsed.commit.description)) {
 			commits[parsed.commit.versionType].push(parsed.commit);
 			duplicates[parsed.commit.versionType].push(parsed.commit.description);
 		}
