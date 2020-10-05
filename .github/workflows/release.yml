@@ -45,6 +45,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run bootstrap-ci
       - run: npm run compile
+      - run: npm run test
       - name: Checks if we have changed something
         run: npm run lerna-changed
       - run: git checkout -b release/${{ needs.check-next-version.outputs.next_version }} origin/master
