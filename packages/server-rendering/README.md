@@ -11,7 +11,7 @@ This package makes it easier to setup servering side rendering of web components
 
 
 
-### DOM Features
+## DOM Features
 
 - Custom Elements (Web Components)
 
@@ -27,7 +27,7 @@ And much more..
 
 
 
-### Works With
+## Works With
 
 - [Google LitHTML](https://lit-html.polymer-project.org)
 

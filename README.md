@@ -7,11 +7,10 @@ A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server si
 
 Happy DOM aims to support all common functionality of a web browser.
 
-
 [Read more about how to use Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom)
 
 
-### DOM Features
+## DOM Features
 
 - Custom Elements (Web Components)
 
@@ -28,7 +27,7 @@ And much more..
 
   
 
-### Works With
+## Works With
 
 - [Google LitHTML](https://lit-html.polymer-project.org)
 
