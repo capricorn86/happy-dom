@@ -10,7 +10,7 @@ A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server si
 This package makes it possible to use [Happy DOM](https://github.com/capricorn86/happy-dom) with [Jest](https://jestjs.io/).
 
 
-## DOM Features
+### DOM Features
 
 - Custom Elements (Web Components)
 
@@ -26,7 +26,7 @@ And much more..
 
   
 
-## Works With
+### Works With
 
 - [Google LitHTML](https://lit-html.polymer-project.org)
 
