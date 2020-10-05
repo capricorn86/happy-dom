@@ -150,7 +150,7 @@ The "window.whenAsyncComplete()" method can be used when executing scripts that 
 
 # Jest
 
-Happy DOM provide with a package called [@happy-dom/jest-environment](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering) that makes is possible to use Happy DOM with [Jest](https://jestjs.io/).
+Happy DOM provide with a package called [@happy-dom/jest-environment](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering) that makes it possible to use Happy DOM with [Jest](https://jestjs.io/).
 
 
 
