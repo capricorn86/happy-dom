@@ -402,6 +402,37 @@ describe('Node', () => {
 		});
 	});
 
+	describe('replaceWith()', () => {
+		test('Replaces a node another node.', () => {
+			const parent = document.createElement('div');
+			const newChild = document.createElement('span');
+			newChild.className = 'child4';
+			parent.innerHTML =
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>';
+
+			parent.children[2].replaceWith(newChild);
+			expect(parent.innerHTML).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child4"></span>'
+			);
+		});
+
+		test('Replaces a node with a mixed list of Node and DOMString (string).', () => {
+			const parent = document.createElement('div');
+			const newChildrenParent = document.createElement('div');
+			const newChildrenHtml =
+				'<span class="child4"></span><span class="child5"></span><span class="child6"></span>';
+			newChildrenParent.innerHTML =
+				'<span class="child7"></span><span class="child8"></span><span class="child9"></span>';
+			parent.innerHTML =
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>';
+
+			parent.children[2].replaceWith(...[newChildrenHtml, ...newChildrenParent.children]);
+			expect(parent.innerHTML).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+			);
+		});
+	});
+
 	describe('dispatchEvent()', () => {
 		test('Dispatches an event that is set to not bubble.', () => {
 			const child = document.createElement('span');

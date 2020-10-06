@@ -5,6 +5,7 @@ import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import MutationObserverListener from '../../../mutation-observer/MutationListener';
 import Event from '../../../event/Event';
+import HTMLParser from '../../../html-parser/HTMLParser';
 
 const CLONE_REFERENCE_PROPERTIES = [
 	'ownerDocument',
@@ -419,6 +420,37 @@ export default class Node extends EventTarget {
 		this.removeChild(oldChild);
 
 		return oldChild;
+	}
+
+	/**
+	 * The Node.replaceWith() method replaces this Node in the children list of its parent with a set of Node or DOMString objects.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public replaceWith(...nodes: Node[] | string[]): void {
+		const parent = this.parentNode;
+
+		if (!parent) {
+			return;
+		}
+
+		const index = parent.childNodes.indexOf(this);
+
+		parent.removeChild(this);
+
+		for (let i = nodes.length - 1; i >= 0; i--) {
+			const node = nodes[i];
+
+			if (typeof node === 'string') {
+				parent.childNodes.splice(
+					index,
+					0,
+					...HTMLParser.parse(this.ownerDocument, node).childNodes
+				);
+			} else {
+				parent.childNodes.splice(index, 0, node);
+			}
+		}
 	}
 
 	/**
