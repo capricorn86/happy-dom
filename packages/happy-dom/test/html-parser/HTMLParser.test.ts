@@ -2,8 +2,6 @@ import HTMLParser from '../../src/html-parser/HTMLParser';
 import Window from '../../src/window/Window';
 import HTMLElement from '../../src/nodes/basic/html-element/HTMLElement';
 import HTMLParserHTML from './data/HTMLParserHTML';
-import HTMLUnclosedTagsHTML from './data/HTMLUnclosedTagsHTML';
-import HTMLUnclosedTagsHTMLResult from './data/HTMLUnclosedTagsHTMLResult';
 
 describe('HTMLParser', () => {
 	let window: Window;
@@ -59,10 +57,32 @@ describe('HTMLParser', () => {
 			expect(input['disabled']).toBe(true);
 		});
 
-		test('Handles unclosed elements.', () => {
-			const root = HTMLParser.parse(window.document, HTMLUnclosedTagsHTML);
-			expect(root.innerHTML.replace(/[\s\S]/gm, '')).toBe(
-				HTMLUnclosedTagsHTMLResult.replace(/[\s\S]/gm, '')
+		test('Handles unclosed tags of unnestable elements (e.g. <a>, <li>).', () => {
+			const root = HTMLParser.parse(
+				window.document,
+				`
+				<div class="test" disabled>
+					<ul>
+						<li><a href="http://localhost:8080/test/test" target="_blank">Test</a>
+						<li><span>Test 2</span></li>
+						<li><b>Test 3</b></li>
+					</ul>
+					<a><a>Test</a></a>
+				</div>
+				`
+			);
+
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(
+				`
+				<div class="test" disabled="">
+					<ul>
+						<li><a href="http://localhost:8080/test/test" target="_blank">Test</a></li>
+						<li><span>Test 2</span></li>
+						<li><b>Test 3</b></li>
+					</ul>
+					<a></a><a>Test</a>
+				</div>
+				`.replace(/[\s]/gm, '')
 			);
 		});
 	});

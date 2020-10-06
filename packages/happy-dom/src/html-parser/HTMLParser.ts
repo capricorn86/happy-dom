@@ -2,6 +2,7 @@ import Node from '../nodes/basic/node/Node';
 import Element from '../nodes/basic/element/Element';
 import Document from '../nodes/basic/document/Document';
 import SelfClosingHTMLElements from '../html-config/SelfClosingHTMLElements';
+import UnnestableHTMLElements from '../html-config/UnnestableHTMLElements';
 
 /**
  * HTML parser.
@@ -18,7 +19,8 @@ export default class HTMLParser {
 		const root = document.createElement('root');
 		const stack = [root];
 		const markupRegexp = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
-		let currentParent = root;
+		let parent = root;
+		let parentUnnestableTagName = null;
 		let lastTextIndex = 0;
 		let match: RegExpExecArray;
 
@@ -26,26 +28,37 @@ export default class HTMLParser {
 			const tagName = match[2].toLowerCase();
 			const isStartTag = !match[1];
 
-			if (currentParent && match.index !== lastTextIndex) {
+			if (parent && match.index !== lastTextIndex) {
 				const text = data.substring(lastTextIndex, match.index);
-				this.appendTextAndCommentNodes(document, currentParent, text);
+				this.appendTextAndCommentNodes(document, parent, text);
 			}
 
 			if (isStartTag) {
 				const newElement = document.createElement(tagName);
+
 				newElement._setRawAttributes(match[3]);
 
 				if (!SelfClosingHTMLElements.includes(tagName)) {
-					currentParent = <Element>currentParent.appendChild(newElement);
-					stack.push(currentParent);
+					// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
+					// Therefore we will auto-close the tag.
+					if (parentUnnestableTagName === tagName) {
+						stack.pop();
+						parent = <Element>parent.parentNode || root;
+					}
+
+					parent = <Element>parent.appendChild(newElement);
+					parentUnnestableTagName = this.getUnnestableTagName(parent);
+					stack.push(parent);
 				} else {
-					currentParent.appendChild(newElement);
+					parent.appendChild(newElement);
 				}
 
 				lastTextIndex = markupRegexp.lastIndex;
 			} else {
 				stack.pop();
-				currentParent = stack[stack.length - 1] ? stack[stack.length - 1] : currentParent;
+				parent = stack[stack.length - 1] || root;
+				parentUnnestableTagName = this.getUnnestableTagName(parent);
+
 				lastTextIndex = markupRegexp.lastIndex;
 			}
 		}
@@ -57,6 +70,17 @@ export default class HTMLParser {
 		}
 
 		return root;
+	}
+
+	/**
+	 * Returns a tag name if element is unnestable.
+	 *
+	 * @param element Element.
+	 * @return Tag name if element is unnestable.
+	 */
+	private static getUnnestableTagName(element: Element): string {
+		const tagName = element.tagName.toLowerCase();
+		return tagName && UnnestableHTMLElements.includes(tagName) ? tagName : null;
 	}
 
 	/**
