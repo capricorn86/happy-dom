@@ -103,6 +103,12 @@ export default class Document extends DocumentFragment {
 
 			if (documentElement) {
 				this.appendChild(documentElement);
+				const body = this.querySelector('body');
+				if (body) {
+					for (const child of root.childNodes.slice()) {
+						body.appendChild(child);
+					}
+				}
 			} else {
 				const documentElement = this.createElement('html');
 				const bodyElement = this.createElement('body');

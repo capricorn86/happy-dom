@@ -33,6 +33,12 @@ export default class DOMParser {
 
 		if (documentElement) {
 			newDocument.appendChild(documentElement);
+			const body = newDocument.querySelector('body');
+			if (body) {
+				for (const child of root.childNodes.slice()) {
+					body.appendChild(child);
+				}
+			}
 		} else {
 			const documentElement = newDocument.createElement('html');
 			const bodyElement = newDocument.createElement('body');

@@ -51,6 +51,34 @@ describe('Document', () => {
 				`.replace(/[\s]/gm, '')
 			);
 		});
+
+		test('Adds elements outside of the <html> tag to the <body> tag.', () => {
+			const html = `
+				<html>
+					<head>
+						<title>Title</title>
+					</head>
+					<body>
+						<span>Body</span>
+					</body>
+				</html>
+				<div>Should be added to body</div>
+			`;
+			document.write(html);
+			expect(document.documentElement.outerHTML.replace(/[\s]/gm, '')).toBe(
+				`
+				<html>
+					<head>
+						<title>Title</title>
+					</head>
+					<body>
+						<span>Body</span>
+						<div>Should be added to body</div>
+					</body>
+				</html>
+				`.replace(/[\s]/gm, '')
+			);
+		});
 	});
 
 	describe('open()', () => {
