@@ -26,7 +26,7 @@ describe('HappyDOMServerRenderer', () => {
 			div.appendChild(span);
 
 			expect(new HappyDOMServerRenderer().getOuterHTML(div).html).toBe(
-				'<div attr1="value1" attr2="value2" attr3><span attr1="value1" attr2="value2" attr3></span></div>'
+				'<div attr1="value1" attr2="value2" attr3=""><span attr1="value1" attr2="value2" attr3=""></span></div>'
 			);
 		});
 
@@ -79,7 +79,7 @@ describe('HappyDOMServerRenderer', () => {
 			div.appendChild(span1);
 
 			expect(new HappyDOMServerRenderer().getOuterHTML(div).html).toBe(
-				'<div><!--Comment 1.-->Text 1.<!--Comment 2.-->Text 2.<span attr1="value1" attr2="value2" attr3><span attr1="value1">Text 3.</span></span></div>'
+				'<div><!--Comment 1.-->Text 1.<!--Comment 2.-->Text 2.<span attr1="value1" attr2="value2" attr3=""><span attr1="value1">Text 3.</span></span></div>'
 			);
 		});
 
@@ -97,7 +97,7 @@ describe('HappyDOMServerRenderer', () => {
 			document.body.appendChild(div);
 
 			expect(new HappyDOMServerRenderer().getOuterHTML(div).html).toBe(
-				'<div><mocked-html-element attr1="value1" attr2="value2" attr3></mocked-html-element></div>'
+				'<div><mocked-html-element attr1="value1" attr2="value2" attr3=""></mocked-html-element></div>'
 			);
 		});
 
@@ -123,7 +123,7 @@ describe('HappyDOMServerRenderer', () => {
 			expect(result.html.replace(/\s/gm, '')).toBe(
 				`
 				<div>
-					<mocked-html-element attr1=\"value1\" attr2=\"value2\" attr3>
+					<mocked-html-element attr1=\"value1\" attr2=\"value2\" attr3="">
 						<style>
 							:host {
 								display: block;
@@ -183,7 +183,7 @@ describe('HappyDOMServerRenderer', () => {
 			expect(result.html.replace(/\s/gm, '')).toBe(
 				`
 				<div>
-					<mocked-html-element attr1=\"value1\" attr2=\"value2\" attr3 class="a">
+					<mocked-html-element attr1="value1" attr2="value2" attr3="" class="a">
 						<style class="a">
 							mocked-html-element.a {
 								display: block
@@ -201,11 +201,11 @@ describe('HappyDOMServerRenderer', () => {
 								color: green
 							}
 				
-							.class1.a.a[attr1=\"value1\"] {
+							.class1.a.a[attr1="value1"] {
 								color: yellow
 							}
 				
-							.a[attr1=\"value1\"] {
+							.a[attr1="value1"] {
 								color: yellow
 							}
 						</style>
@@ -245,7 +245,7 @@ describe('HappyDOMServerRenderer', () => {
 			expect(result.html.replace(/\s/gm, '')).toBe(
 				`
 				<div>
-					<mocked-html-element attr1=\"value1\" attr2=\"value2\" attr3 class="a">
+					<mocked-html-element attr1="value1" attr2="value2" attr3="" class="a">
 						<div class="a">
 							<span class="a">
 								Some text.

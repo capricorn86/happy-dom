@@ -24,7 +24,7 @@ describe('HTMLRenderer', () => {
 			div.appendChild(span);
 
 			expect(HTMLRenderer.getOuterHTML(div)).toBe(
-				'<div attr1="value1" attr2="value2" attr3><span attr1="value1" attr2="value2" attr3></span></div>'
+				'<div attr1="value1" attr2="value2" attr3=""><span attr1="value1" attr2="value2" attr3=""></span></div>'
 			);
 		});
 
@@ -75,7 +75,7 @@ describe('HTMLRenderer', () => {
 			div.appendChild(span1);
 
 			expect(HTMLRenderer.getOuterHTML(div)).toBe(
-				'<div><!--Comment 1.-->Text 1.<!--Comment 2.-->Text 2.<span attr1="value1" attr2="value2" attr3><span attr1="value1">Text 3.</span></span></div>'
+				'<div><!--Comment 1.-->Text 1.<!--Comment 2.-->Text 2.<span attr1="value1" attr2="value2" attr3=""><span attr1="value1">Text 3.</span></span></div>'
 			);
 		});
 
@@ -93,7 +93,7 @@ describe('HTMLRenderer', () => {
 			document.body.appendChild(div);
 
 			expect(HTMLRenderer.getOuterHTML(div)).toBe(
-				'<div><custom-element attr1="value1" attr2="value2" attr3></custom-element></div>'
+				'<div><custom-element attr1="value1" attr2="value2" attr3=""></custom-element></div>'
 			);
 		});
 	});

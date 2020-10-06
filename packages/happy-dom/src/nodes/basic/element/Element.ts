@@ -460,10 +460,8 @@ export default class Element extends Node {
 	public _getRawAttributes(): string {
 		const attributes = [];
 		for (const name of Object.keys(this._attributesMap)) {
-			if (this._attributesMap[name] && this._attributesMap[name].value) {
+			if (this._attributesMap[name] && this._attributesMap[name].value !== null) {
 				attributes.push(name + '="' + encode(this._attributesMap[name].value) + '"');
-			} else if (this._attributesMap[name] && !this._attributesMap[name].value) {
-				attributes.push(name);
 			}
 		}
 		return attributes.join(' ');
