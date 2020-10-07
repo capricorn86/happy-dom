@@ -59,12 +59,12 @@ Jest uses [JSDOM](https://github.com/jsdom/jsdom) as test environment by default
 ## CLI
 
 1. Edit your "package.json" file.
-2. Add "--env=jest-environment-happy-dom" as an attribute to your Jest command.
+2. Add "--env=@happy-dom/jest-environment" as an attribute to your Jest command.
 
     ```json
     {
         "scripts": {
-            "test": "jest --env=jest-environment-happy-dom"
+            "test": "jest --env=@happy-dom/jest-environment"
         }
     }
     ```
@@ -80,7 +80,7 @@ Jest uses [JSDOM](https://github.com/jsdom/jsdom) as test environment by default
     ```json
     {
         "jest": {
-            "testEnvironment": "jest-environment-happy-dom"
+            "testEnvironment": "@happy-dom/jest-environment"
         }
     }
     ```
@@ -95,7 +95,7 @@ Jest uses [JSDOM](https://github.com/jsdom/jsdom) as test environment by default
 
     ```json
     {
-      "testEnvironment": "jest-environment-happy-dom"
+      "testEnvironment": "@happy-dom/jest-environment"
     }
     ```
 
