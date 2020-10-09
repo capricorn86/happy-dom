@@ -17,7 +17,6 @@ describe('React', () => {
 
 	test('Tests integration with Angular.', async () => {
 		enableProdMode();
-		debugger;
 		await platformBrowserDynamic().bootstrapModule(AngularModule);
 		expect(appElement.innerHTML).toBe('<div>Test</div>');
 	});

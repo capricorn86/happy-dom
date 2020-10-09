@@ -67,4 +67,19 @@ export default class DocumentFragment extends Node {
 	public getElementsByClassName(className: string): Element[] {
 		return this.querySelectorAll('.' + className.split(' ').join('.'));
 	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): Node {
+		const clone = <DocumentFragment>super.cloneNode(deep);
+
+		clone.mode = this.mode;
+
+		return clone;
+	}
 }

@@ -45,13 +45,15 @@
 		"css-tree": "^1.0.0-alpha.29",
 		"memory-fs": "^0.5.0",
 		"webpack": "^4.41.2",
-		"happy-dom": "^0.0.0"
+		"happy-dom": "^0.0.0",
+		"he": "^1.1.1"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^2.11.0",
 		"@typescript-eslint/parser": "^2.11.0",
 		"@types/node": "^13.9.5",
 		"@types/jest": "^25.1.4",
+		"@types/he": "latest",
 		"eslint": "^6.7.2",
 		"eslint-config-prettier": "^6.7.0",
 		"eslint-plugin-prettier": "^3.1.1",

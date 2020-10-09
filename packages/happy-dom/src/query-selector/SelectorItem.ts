@@ -225,7 +225,7 @@ export default class SelectorItem {
 			throw new Error(`The selector "${this.selector}" is not valid.`);
 		}
 
-		return !!element._attributesMap[attributeName.toLowerCase()];
+		return !!element._attributes[attributeName.toLowerCase()];
 	}
 
 	/**
@@ -244,7 +244,7 @@ export default class SelectorItem {
 		attributeValue,
 		matchType = null
 	): boolean {
-		const attribute = element._attributesMap[attributeName.toLowerCase()];
+		const attribute = element._attributes[attributeName.toLowerCase()];
 		const value = attributeValue;
 
 		if (ATTRIBUTE_NAME_REGEXP.test(attributeName)) {

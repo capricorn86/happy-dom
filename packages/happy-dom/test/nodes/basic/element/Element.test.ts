@@ -3,19 +3,25 @@ import HTMLRenderer from '../../../../src/html-renderer/HTMLRenderer';
 import HTMLParser from '../../../../src/html-parser/HTMLParser';
 import CustomElement from '../../../CustomElement';
 import ShadowRoot from '../../../../src/nodes/basic/shadow-root/ShadowRoot';
+import Document from '../../../../src/nodes/basic/document/Document';
+import HTMLElement from '../../../../src/nodes/basic/html-element/HTMLElement';
+import TextNode from '../../../../src/nodes/basic/text-node/TextNode';
 import DOMRect from '../../../../src/nodes/basic/element/DOMRect';
 import Range from '../../../../src/nodes/basic/element/Range';
 import QuerySelector from '../../../../src/query-selector/QuerySelector';
+import NamespaceURI from '../../../../src/html-config/NamespaceURI';
 
 const NAMESPACE_URI = 'https://test.test';
 
 describe('Element', () => {
-	let window, document, element;
+	let window: Window;
+	let document: Document;
+	let element: HTMLElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = document.createElement('div');
+		element = <HTMLElement>document.createElement('div');
 		window.customElements.define('custom-element', CustomElement);
 	});
 
@@ -63,6 +69,12 @@ describe('Element', () => {
 		});
 	});
 
+	describe('get namespaceURI()', () => {
+		test('Returns the "namespaceURI" property of the element.', () => {
+			expect(element.namespaceURI).toEqual(NamespaceURI.html);
+		});
+	});
+
 	describe('get nodeName()', () => {
 		test('Returns the "tagName" property of the element.', () => {
 			expect(element.nodeName).toEqual('DIV');
@@ -95,7 +107,7 @@ describe('Element', () => {
 
 			expect(element.textContent).toBe('new_text');
 			expect(element.childNodes.length).toBe(1);
-			expect(element.childNodes[0].textContent).toBe('new_text');
+			expect((<TextNode>element.childNodes[0]).textContent).toBe('new_text');
 		});
 	});
 
@@ -163,7 +175,7 @@ describe('Element', () => {
 
 	describe('attributeChangedCallback()', () => {
 		test('Calls attribute changed callback when it is implemented by a custom element (web component).', () => {
-			const customElement = document.createElement('custom-element');
+			const customElement = <CustomElement>document.createElement('custom-element');
 
 			element.appendChild(customElement);
 			document.body.appendChild(element);
@@ -192,7 +204,7 @@ describe('Element', () => {
 		});
 
 		test('Does not call the attribute changed callback when the attribute name is not available in the observedAttributes() getter method.', () => {
-			const customElement = document.createElement('custom-element');
+			const customElement = <CustomElement>document.createElement('custom-element');
 
 			element.appendChild(customElement);
 			document.body.appendChild(element);
@@ -215,24 +227,6 @@ describe('Element', () => {
 				key2: { name: 'key2', value: '', namespaceURI: null },
 				length: 2
 			});
-		});
-
-		test('Sets the property with the same name as the attribute to the same value if the property is set to an empty string.', () => {
-			element.stringProperty = '';
-			element.setAttribute('stringproperty', 'test');
-			expect(element.stringProperty).toBe('test');
-		});
-
-		test('Sets the property with the same name as the attribute to "true" if the property is of type boolean.', () => {
-			element.booleanProperty = false;
-			element.setAttribute('booleanproperty', 'anyvalue');
-			expect(element.booleanProperty).toBe(true);
-		});
-
-		test('Sets the property with the same name as the attribute to the same value value parsed as a float if the property is set to -1 (number).', () => {
-			element.numberProperty = -1;
-			element.setAttribute('numberproperty', '20.50');
-			expect(element.numberProperty).toBe(20.5);
 		});
 
 		test('Sets "style" attribute as a property.', () => {
@@ -296,7 +290,7 @@ describe('Element', () => {
 
 	describe('removeAttributeNS()', () => {
 		test('Removes a namespace attribute.', () => {
-			element.setAttributeNS(NAMESPACE_URI, 'global:local');
+			element.setAttributeNS(NAMESPACE_URI, 'global:local', 'value');
 			element.removeAttributeNS(NAMESPACE_URI, 'local');
 			expect(element.attributes).toEqual({
 				length: 0
@@ -306,7 +300,7 @@ describe('Element', () => {
 
 	describe('attachShadow()', () => {
 		test('Creates a new ShadowRoot node and sets it to the shadowRoot property.', () => {
-			element.attachShadow();
+			element.attachShadow({ mode: 'open' });
 			expect(element.shadowRoot instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot.ownerDocument).toBe(document);
 			expect(element.shadowRoot.isConnected).toBe(false);
@@ -399,6 +393,126 @@ describe('Element', () => {
 					return result;
 				});
 			expect(element.getElementsByClassName(className)).toBe(result);
+		});
+	});
+
+	describe('setAttributeNode()', () => {
+		test('Sets an Attr node on a <div> element.', () => {
+			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
+			const attribute2 = document.createAttribute('KEY2');
+
+			attribute1.value = 'value1';
+			attribute2.value = 'value2';
+
+			element.setAttributeNode(attribute1);
+			element.setAttributeNode(attribute2);
+
+			expect(element.attributes).toEqual({
+				'0': {
+					name: 'key1',
+					namespaceURI: NamespaceURI.svg,
+					value: 'value1'
+				},
+				'1': {
+					name: 'key2',
+					namespaceURI: null,
+					value: 'value2'
+				},
+				key1: {
+					name: 'key1',
+					namespaceURI: NamespaceURI.svg,
+					value: 'value1'
+				},
+				key2: {
+					name: 'key2',
+					namespaceURI: null,
+					value: 'value2'
+				},
+				length: 2
+			});
+		});
+
+		test('Sets an Attr node on an <svg> element.', () => {
+			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
+			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
+			const attribute2 = document.createAttribute('KEY2');
+
+			attribute1.value = 'value1';
+			attribute2.value = 'value2';
+
+			svg.setAttributeNode(attribute1);
+			svg.setAttributeNode(attribute2);
+
+			expect(svg.attributes).toEqual({
+				'0': {
+					name: 'KEY1',
+					namespaceURI: NamespaceURI.svg,
+					value: 'value1'
+				},
+				'1': {
+					name: 'key2',
+					namespaceURI: null,
+					value: 'value2'
+				},
+				KEY1: {
+					name: 'KEY1',
+					namespaceURI: NamespaceURI.svg,
+					value: 'value1'
+				},
+				key2: {
+					name: 'key2',
+					namespaceURI: null,
+					value: 'value2'
+				},
+				length: 2
+			});
+		});
+	});
+
+	describe('getAttributeNode()', () => {
+		test('Returns an Attr node from a <div> element.', () => {
+			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
+			const attribute2 = document.createAttribute('KEY2');
+
+			attribute1.value = 'value1';
+			attribute2.value = 'value2';
+
+			element.setAttributeNode(attribute1);
+			element.setAttributeNode(attribute2);
+
+			expect(element.getAttributeNode('key1')).toBe(attribute1);
+			expect(element.getAttributeNode('key2')).toBe(attribute2);
+			expect(element.getAttributeNode('KEY1')).toBe(attribute1);
+			expect(element.getAttributeNode('KEY2')).toBe(attribute2);
+		});
+
+		test('Returns an Attr node from an <svg> element.', () => {
+			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
+			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
+			const attribute2 = document.createAttribute('KEY2');
+
+			attribute1.value = 'value1';
+			attribute2.value = 'value2';
+
+			svg.setAttributeNode(attribute1);
+			svg.setAttributeNode(attribute2);
+
+			expect(svg.getAttributeNode('key1')).toBe(null);
+			expect(svg.getAttributeNode('key2')).toBe(attribute2);
+			expect(svg.getAttributeNode('KEY1')).toBe(attribute1);
+			expect(svg.getAttributeNode('KEY2')).toBe(null);
+		});
+	});
+
+	describe('removeAttributeNode()', () => {
+		test('Removes an Attr node.', () => {
+			const attribute = document.createAttribute('KEY1');
+
+			attribute.value = 'value1';
+			element.setAttributeNode(attribute);
+			element.removeAttributeNode(attribute);
+
+			expect(element.attributes).toEqual({ length: 0 });
 		});
 	});
 });

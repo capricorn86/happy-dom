@@ -2,6 +2,7 @@ import HTMLParser from '../../src/html-parser/HTMLParser';
 import Window from '../../src/window/Window';
 import HTMLElement from '../../src/nodes/basic/html-element/HTMLElement';
 import HTMLParserHTML from './data/HTMLParserHTML';
+import NamespaceURI from '../../src/html-config/NamespaceURI';
 
 describe('HTMLParser', () => {
 	let window: Window;
@@ -44,19 +45,6 @@ describe('HTMLParser', () => {
 			expect(root.innerHTML).toBe(HTMLParserHTML);
 		});
 
-		test('Sets property values if a property name matches the attribute name.', () => {
-			const root = HTMLParser.parse(
-				window.document,
-				'<input name="name" type="number" tabindex="5" disabled />'
-			);
-			const input = root.childNodes[0];
-
-			expect(input['name']).toBe('name');
-			expect(input['type']).toBe('number');
-			expect(input['tabIndex']).toBe(5);
-			expect(input['disabled']).toBe(true);
-		});
-
 		test('Handles unclosed tags of unnestable elements (e.g. <a>, <li>).', () => {
 			const root = HTMLParser.parse(
 				window.document,
@@ -83,6 +71,60 @@ describe('HTMLParser', () => {
 					<a></a><a>Test</a>
 				</div>
 				`.replace(/[\s]/gm, '')
+			);
+		});
+
+		test('Parses an SVG with "xmlns" set to HTML.', () => {
+			const root = HTMLParser.parse(
+				window.document,
+				`
+				<div>
+					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
+						<circle cx="50" cy="50" r="40" />
+						<circle cx="150" cy="50" r="4" />
+					
+						<svg viewBox="0 0 10 10" x="200" width="100">
+							<circle cx="5" cy="5" r="4" />
+						</svg>
+					</svg>
+				</div>
+			`
+			);
+
+			const div = root.children[0];
+			const svg = div.children[0];
+			const circle = svg.children[0];
+
+			expect(div.namespaceURI).toBe(NamespaceURI.html);
+			expect(svg.namespaceURI).toBe(NamespaceURI.html);
+			expect(circle.namespaceURI).toBe(NamespaceURI.html);
+
+			// Attributes should be in lower-case now as the namespace is HTML
+			expect(svg.attributes).toEqual({
+				'0': { name: 'viewbox', value: '0 0 300 100', namespaceURI: null },
+				'1': { name: 'stroke', value: 'red', namespaceURI: null },
+				'2': { name: 'fill', value: 'grey', namespaceURI: null },
+				'3': { name: 'xmlns', value: NamespaceURI.html, namespaceURI: null },
+				viewbox: { name: 'viewbox', value: '0 0 300 100', namespaceURI: null },
+				stroke: { name: 'stroke', value: 'red', namespaceURI: null },
+				fill: { name: 'fill', value: 'grey', namespaceURI: null },
+				xmlns: { name: 'xmlns', value: NamespaceURI.html, namespaceURI: null },
+				length: 4
+			});
+
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(
+				`
+				<div>
+					<svg viewbox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
+						<circle cx="50" cy="50" r="40" />
+						<circle cx="150" cy="50" r="4" />
+					
+						<svg viewBox="0 0 10 10" x="200" width="100">
+							<circle cx="5" cy="5" r="4" />
+						</svg>
+					</svg>
+				</div>
+			`.replace(/[\s]/gm, '')
 			);
 		});
 	});

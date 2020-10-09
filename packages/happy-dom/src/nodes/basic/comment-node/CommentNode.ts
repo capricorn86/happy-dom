@@ -93,4 +93,17 @@ export default class CommentNode extends Node {
 	public toString(): string {
 		return '[object Comment]';
 	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): Node {
+		const clone = <CommentNode>super.cloneNode(deep);
+		clone._textContent = this._textContent;
+		return clone;
+	}
 }

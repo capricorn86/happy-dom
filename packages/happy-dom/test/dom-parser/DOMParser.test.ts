@@ -10,12 +10,12 @@ describe('DOMParser', () => {
 	});
 
 	describe('parseFromString()', () => {
-		test('Parses HTML and returns a new document.', () => {
+		test('Parses HTML of a page and returns a new document.', () => {
 			const newDocument = domParser.parseFromString(DOMParserHTML, 'text/html');
 			expect(newDocument.documentElement.outerHTML).toBe(DOMParserHTML);
 		});
 
-		test('Parses HTML and returns a new document.', () => {
+		test('Parses HTML with just a string and returns a new document with <html>, <head> and <body> tags.', () => {
 			const newDocument = domParser.parseFromString('Test', 'text/html');
 			expect(newDocument.documentElement.outerHTML).toBe(
 				'<html><head></head><body>Test</body></html>'

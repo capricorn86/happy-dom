@@ -11,6 +11,8 @@ import Event from '../../../event/Event';
 import DOMImplementation from '../../../dom-implementation/DOMImplementation';
 import HTMLElementTag from '../../../html-config/HTMLElementTag';
 import INodeFilter from '../../../tree-walker/INodeFilter';
+import Attr from '../../../attribute/Attr';
+import NamespaceURI from '../../../html-config/NamespaceURI';
 
 /**
  * Document.
@@ -163,18 +165,40 @@ export default class Document extends DocumentFragment {
 	/**
 	 * Creates an element.
 	 *
-	 * @param  tagName Tag name.
+	 * @param tagName Tag name.
+	 * @param [options] Options.
 	 * @return Element.
 	 */
-	public createElement(tagName: string): Element {
-		const customElementClass = this.defaultView.customElements.get(tagName);
-		const elementClass = customElementClass ? customElementClass : this.getElementClass(tagName);
+	public createElement(tagName: string, options?: { is: string }): Element {
+		return this.createElementNS(NamespaceURI.html, tagName, options);
+	}
+
+	/**
+	 * Creates an element with the specified namespace URI and qualified name.
+	 *
+	 * @param tagName Tag name.
+	 * @param [options] Options.
+	 * @return Element.
+	 */
+	public createElementNS(
+		namespaceURI: string,
+		qualifiedName: string,
+		options?: { is: string }
+	): Element {
+		const customElementClass =
+			options && options.is
+				? this.defaultView.customElements.get(options.is)
+				: this.defaultView.customElements.get(qualifiedName);
+		const elementClass = customElementClass
+			? customElementClass
+			: this.getElementClass(qualifiedName);
 
 		elementClass.ownerDocument = this;
 
 		const element = new elementClass();
-		element.tagName = tagName.toUpperCase();
+		element.tagName = qualifiedName.toUpperCase();
 		element.ownerDocument = this;
+		element._namespaceURI = namespaceURI;
 
 		return element;
 	}
@@ -236,6 +260,32 @@ export default class Document extends DocumentFragment {
 	 */
 	public createEvent(_type: string): Event {
 		return new Event('init');
+	}
+
+	/**
+	 * Creates an Attr node.
+	 *
+	 * @param name Name.
+	 * @return Attribute.
+	 */
+	public createAttribute(name: string): Attr {
+		const attribute = new Attr();
+		attribute.name = name.toLowerCase();
+		return attribute;
+	}
+
+	/**
+	 * Creates a namespaced Attr node.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param qualifiedName Qualified name.
+	 * @return Element.
+	 */
+	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
+		const attribute = new Attr();
+		attribute.namespaceURI = namespaceURI;
+		attribute.name = qualifiedName;
+		return attribute;
 	}
 
 	/**

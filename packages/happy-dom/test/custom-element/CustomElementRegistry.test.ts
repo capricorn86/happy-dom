@@ -16,6 +16,14 @@ describe('CustomElementRegistry', () => {
 			expect(customElements.get('custom-element')).toBe(CustomElement);
 		});
 
+		test('Defines an HTML element and sets the "extends" option to "ul".', () => {
+			customElements.define('custom-element', CustomElement, {
+				extends: 'ul'
+			});
+			expect(customElements.get('custom-element')).toBe(CustomElement);
+			expect(customElements._registry['custom-element'].extends).toBe('ul');
+		});
+
 		test('Throws an error if tag name does not contain "-".', () => {
 			const tagName = 'element';
 			expect(() => customElements.define(tagName, CustomElement)).toThrow(

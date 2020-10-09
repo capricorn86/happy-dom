@@ -10,6 +10,7 @@ import {
 import ShadowRootRenderer from './shadow-root/ShadowRootRenderer';
 import IHappyDOMServerRenderOptions from './IHappyDOMServerRenderOptions';
 import HappyDOMServerRenderResult from './HappyDOMServerRenderResult';
+import { encode } from 'he';
 
 /**
  * Utility for converting an element to string.
@@ -100,7 +101,12 @@ export default class HappyDOMServerRenderer {
 	 * @return Attributes.
 	 */
 	private getAttributes(element: Element): string {
-		const rawAttributes = element._getRawAttributes();
-		return rawAttributes ? ' ' + rawAttributes : '';
+		const attributes = [];
+		for (const name of Object.keys(element._attributes)) {
+			if (element._attributes[name] && element._attributes[name].value !== null) {
+				attributes.push(name + '="' + encode(element._attributes[name].value) + '"');
+			}
+		}
+		return attributes.length > 0 ? ' ' + attributes.join(' ') : '';
 	}
 }

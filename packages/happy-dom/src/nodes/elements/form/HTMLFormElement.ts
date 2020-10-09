@@ -1,5 +1,7 @@
 import HTMLElement from '../../basic/html-element/HTMLElement';
 import Element from '../../basic/element/Element';
+import Attr from '../../../attribute/Attr';
+import Node from '../../basic/node/Node';
 
 /**
  * HTMLFormElement.
@@ -58,13 +60,84 @@ export default class HTMLFormElement extends HTMLElement {
 	}
 
 	/**
+	 * Removes an Attr node.
+	 *
 	 * @override
+	 * @param attribute Attribute.
 	 */
-	public _setAttributeProperty(name: string, value: string): void {
-		if (name === 'method') {
-			this.method = value;
-		} else {
-			super._setAttributeProperty(name, value);
+	public removeAttributeNode(attribute: Attr): void {
+		super.removeAttributeNode(attribute);
+
+		switch (attribute.name) {
+			case 'method':
+				this[attribute.name] = 'get';
+				break;
+			case 'name':
+			case 'target':
+			case 'action':
+			case 'encoding':
+			case 'enctype':
+			case 'autocomplete':
+				this[attribute.name] = '';
+				break;
+			case 'acceptcharset':
+				this.acceptCharset = '';
+				break;
+			case 'novalidate':
+				this.noValidate = '';
+				break;
 		}
+	}
+
+	/**
+	 * The setAttributeNode() method adds a new Attr node to the specified element.
+	 *
+	 * @override
+	 * @param attribute Attribute.
+	 * @returns Replaced attribute.
+	 */
+	public setAttributeNode(attribute: Attr): Attr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		switch (attribute.name) {
+			case 'name':
+			case 'method':
+			case 'target':
+			case 'action':
+			case 'encoding':
+			case 'enctype':
+			case 'autocomplete':
+				this[attribute.name] = attribute.value;
+				break;
+			case 'acceptcharset':
+				this.acceptCharset = attribute.value;
+				break;
+			case 'novalidate':
+				this.noValidate = attribute.value;
+				break;
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): Node {
+		const clone = <HTMLFormElement>super.cloneNode(deep);
+		clone.name = this.name;
+		clone.method = this.method;
+		clone.target = this.target;
+		clone.action = this.action;
+		clone.encoding = this.encoding;
+		clone.enctype = this.enctype;
+		clone.acceptCharset = this.acceptCharset;
+		clone.autocomplete = this.autocomplete;
+		clone.noValidate = this.noValidate;
+		return clone;
 	}
 }

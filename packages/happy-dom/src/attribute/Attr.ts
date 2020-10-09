@@ -1,4 +1,7 @@
-export default class Attribute {
+/**
+ * Attr node interface.
+ */
+export default class Attr {
 	public value: string = null;
 	public name: string = null;
 	public namespaceURI: string = null;
