@@ -71,13 +71,13 @@ export default class CustomElementRegistry {
 	 * @returns Promise.
 	 */
 	public whenDefined(tagName: string): Promise<void> {
-		const lowerCamelCase = tagName.toLowerCase();
-		if (this.get(lowerCamelCase)) {
+		const name = tagName.toLowerCase();
+		if (this.get(name)) {
 			return Promise.resolve();
 		}
 		return new Promise(resolve => {
-			this._callbacks[lowerCamelCase] = this._callbacks[lowerCamelCase] || [];
-			this._callbacks[lowerCamelCase].push(resolve);
+			this._callbacks[name] = this._callbacks[name] || [];
+			this._callbacks[name].push(resolve);
 		});
 	}
 }
