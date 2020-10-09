@@ -1,6 +1,7 @@
 import DocumentFragment from '../document-fragment/DocumentFragment';
 import HTMLParser from '../../../html-parser/HTMLParser';
 import HTMLRenderer from '../../../html-renderer/HTMLRenderer';
+import Node from '../node/Node';
 
 /**
  * ShadowRoot.
@@ -40,5 +41,18 @@ export default class ShadowRoot extends DocumentFragment {
 	 */
 	public toString(): string {
 		return this.innerHTML;
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): Node {
+		const clone = <ShadowRoot>super.cloneNode(deep);
+		clone.mode = this.mode;
+		return clone;
 	}
 }

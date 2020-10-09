@@ -4,8 +4,6 @@ import HTMLElement from '../../basic/html-element/HTMLElement';
  * SVGElement.
  */
 export default class SVGElement extends HTMLElement {
-	public _useCaseSensitiveAttributes = true;
-
 	/**
 	 * Returns viewport.
 	 *

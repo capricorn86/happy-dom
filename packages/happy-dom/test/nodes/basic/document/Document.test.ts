@@ -8,6 +8,8 @@ import TreeWalker from '../../../../src/tree-walker/TreeWalker';
 import Node from '../../../../src/nodes/basic/node/Node';
 import Event from '../../../../src/event/Event';
 import SVGSVGElement from '../../../../src/nodes/elements/svg/SVGSVGElement';
+import NamespaceURI from '../../../../src/html-config/NamespaceURI';
+import Attr from '../../../../src/attribute/Attr';
 
 describe('Document', () => {
 	let window, document;
@@ -113,12 +115,14 @@ describe('Document', () => {
 		test('Creates an element.', () => {
 			const div = document.createElement('div');
 			expect(div.tagName).toBe('DIV');
+			expect(div.namespaceURI).toBe(NamespaceURI.html);
 			expect(div instanceof HTMLElement).toBe(true);
 		});
 
 		test('Creates an svg element.', () => {
 			const div = document.createElement('svg');
 			expect(div.tagName).toBe('SVG');
+			expect(div.namespaceURI).toBe(NamespaceURI.html);
 			expect(div instanceof SVGSVGElement).toBe(true);
 		});
 
@@ -126,7 +130,75 @@ describe('Document', () => {
 			window.customElements.define('custom-element', CustomElement);
 			const div = document.createElement('custom-element');
 			expect(div.tagName).toBe('CUSTOM-ELEMENT');
-			expect(div instanceof HTMLElement).toBe(true);
+			expect(div.namespaceURI).toBe(NamespaceURI.html);
+			expect(div instanceof CustomElement).toBe(true);
+		});
+
+		test('Creates a custom element that has been extended from an "li" element.', () => {
+			window.customElements.define('custom-element', CustomElement, { extends: 'li' });
+			const div = document.createElement('li', { is: 'custom-element' });
+			expect(div.tagName).toBe('LI');
+			expect(div.namespaceURI).toBe(NamespaceURI.html);
+			expect(div instanceof CustomElement).toBe(true);
+		});
+	});
+
+	describe('createElementNS()', () => {
+		test('Creates an svg element with namespace set to SVG.', () => {
+			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
+			expect(svg.tagName).toBe('SVG');
+			expect(svg.namespaceURI).toBe(NamespaceURI.svg);
+			expect(svg instanceof SVGSVGElement).toBe(true);
+		});
+
+		test('Creates a custom element with namespace set to SVG.', () => {
+			window.customElements.define('custom-element', CustomElement);
+			const div = document.createElementNS(NamespaceURI.svg, 'custom-element');
+			expect(div.tagName).toBe('CUSTOM-ELEMENT');
+			expect(div.namespaceURI).toBe(NamespaceURI.svg);
+			expect(div instanceof CustomElement).toBe(true);
+		});
+
+		test('Creates a custom element that has been extended from an "li" element with namespace set to SVG.', () => {
+			window.customElements.define('custom-element', CustomElement, { extends: 'li' });
+			const div = document.createElementNS(NamespaceURI.svg, 'li', { is: 'custom-element' });
+			expect(div.tagName).toBe('LI');
+			expect(div.namespaceURI).toBe(NamespaceURI.svg);
+			expect(div instanceof CustomElement).toBe(true);
+		});
+	});
+
+	describe('createAttribute()', () => {
+		test('Creates an Attr node.', () => {
+			const attribute = document.createAttribute('KEY1');
+			expect(attribute instanceof Attr).toBe(true);
+			expect(attribute).toEqual({
+				value: null,
+				name: 'key1',
+				namespaceURI: null
+			});
+		});
+	});
+
+	describe('createAttributeNS()', () => {
+		test('Creates an Attr node with namespace set to HTML.', () => {
+			const attribute = document.createAttributeNS(NamespaceURI.html, 'KEY1');
+			expect(attribute instanceof Attr).toBe(true);
+			expect(attribute).toEqual({
+				value: null,
+				name: 'KEY1',
+				namespaceURI: NamespaceURI.html
+			});
+		});
+
+		test('Creates an Attr node with namespace set to SVG.', () => {
+			const attribute = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
+			expect(attribute instanceof Attr).toBe(true);
+			expect(attribute).toEqual({
+				value: null,
+				name: 'KEY1',
+				namespaceURI: NamespaceURI.svg
+			});
 		});
 	});
 

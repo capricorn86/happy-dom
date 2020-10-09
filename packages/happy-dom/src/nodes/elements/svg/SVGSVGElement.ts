@@ -7,6 +7,7 @@ import SVGAngle from './SVGAngle';
 import SVGNumber from './SVGNumber';
 import SVGTransform from './SVGTransform';
 import SVGAnimatedRect from './SVGAnimatedRect';
+import Attr from '../../../attribute/Attr';
 
 /**
  * SVGSVGElement.
@@ -18,7 +19,6 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	public x = '';
 	public y = '';
 	public contentScriptType = '';
-
 	public currentScale = 1;
 
 	/**
@@ -184,13 +184,74 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	}
 
 	/**
+	 * Removes an Attr node.
+	 *
 	 * @override
+	 * @param attribute Attribute.
 	 */
-	public _setAttributeProperty(name: string, value: string): void {
-		if (name.toLowerCase() === 'preserveAspectRatio') {
-			this.preserveAspectRatio = value;
-		} else {
-			super._setAttributeProperty(name, value);
+	public removeAttributeNode(attribute: Attr): void {
+		super.removeAttributeNode(attribute);
+
+		switch (attribute.name) {
+			case 'preserveAspectRatio': // string
+				this[attribute.name] = 'xMidYMid meet';
+				break;
+			case 'width': // string
+			case 'height': // string
+			case 'x': // string
+			case 'y': // string
+			case 'contentScriptType': // string
+				this[attribute.name] = '';
+				break;
+			case 'currentScale': // number
+				this[attribute.name] = 1;
+				break;
 		}
+	}
+
+	/**
+	 * The setAttributeNode() method adds a new Attr node to the specified element.
+	 *
+	 * @override
+	 * @param attribute Attribute.
+	 * @returns Replaced attribute.
+	 */
+	public setAttributeNode(attribute: Attr): Attr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		switch (attribute.name) {
+			case 'preserveAspectRatio': // string
+			case 'width': // string
+			case 'height': // string
+			case 'x': // string
+			case 'y': // string
+			case 'contentScriptType': // string
+				this[attribute.name] = attribute.value;
+				break;
+			case 'currentScale': // number
+				this[attribute.name] = !!attribute.value ? Number(attribute.value) : 0;
+				break;
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): Node {
+		const clone = <SVGSVGElement>super.cloneNode(deep);
+		clone.preserveAspectRatio = this.preserveAspectRatio;
+		clone.width = this.width;
+		clone.height = this.height;
+		clone.x = this.x;
+		clone.y = this.y;
+		clone.contentScriptType = this.contentScriptType;
+		clone.currentScale = this.currentScale;
+		return clone;
 	}
 }

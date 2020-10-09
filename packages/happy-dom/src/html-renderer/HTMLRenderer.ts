@@ -4,6 +4,7 @@ import HTMLTemplateElement from '../nodes/elements/template/HTMLTemplateElement'
 import SelfClosingHTMLElements from '../html-config/SelfClosingHTMLElements';
 import UnclosedHTMLElements from '../html-config/UnclosedHTMLElements';
 import CommentNode from '../nodes/basic/comment-node/CommentNode';
+import { encode } from 'he';
 
 /**
  * Utility for converting an element to string.
@@ -59,7 +60,12 @@ export default class HTMLRenderer {
 	 * @return Attributes.
 	 */
 	private static getAttributes(element: Element): string {
-		const rawAttributes = element._getRawAttributes();
-		return rawAttributes ? ' ' + rawAttributes : '';
+		const attributes = [];
+		for (const name of Object.keys(element._attributes)) {
+			if (element._attributes[name] && element._attributes[name].value !== null) {
+				attributes.push(name + '="' + encode(element._attributes[name].value) + '"');
+			}
+		}
+		return attributes.length > 0 ? ' ' + attributes.join(' ') : '';
 	}
 }

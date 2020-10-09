@@ -3,6 +3,12 @@ import Element from '../nodes/basic/element/Element';
 import Document from '../nodes/basic/document/Document';
 import SelfClosingHTMLElements from '../html-config/SelfClosingHTMLElements';
 import UnnestableHTMLElements from '../html-config/UnnestableHTMLElements';
+import { decode } from 'he';
+import NamespaceURI from '../html-config/NamespaceURI';
+
+const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
+const ATTRIBUTE_REGEXP = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gi;
+const XMLNS_ATTRIBUTE_REGEXP = /xmlns[ ]*=[ ]*"([^"]+)"/;
 
 /**
  * HTML parser.
@@ -18,7 +24,7 @@ export default class HTMLParser {
 	public static parse(document: Document, data: string): Element {
 		const root = document.createElement('root');
 		const stack = [root];
-		const markupRegexp = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
+		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gi');
 		let parent = root;
 		let parentUnnestableTagName = null;
 		let lastTextIndex = 0;
@@ -35,8 +41,17 @@ export default class HTMLParser {
 
 			if (isStartTag) {
 				const newElement = document.createElement(tagName);
+				const xmlnsAttribute = this.getXmlnsAttribute(match[3]);
 
-				newElement._setRawAttributes(match[3]);
+				// The HTML engine can guess that the namespace is SVG for SVG tags
+				// even if "xmlns" is not set if the parent namespace is HTML.
+				if (tagName === 'svg' && parent._namespaceURI === NamespaceURI.html) {
+					newElement._namespaceURI = xmlnsAttribute || NamespaceURI.svg;
+				} else {
+					newElement._namespaceURI = xmlnsAttribute || parent._namespaceURI;
+				}
+
+				this.setAttributes(newElement, newElement._namespaceURI, match[3]);
 
 				if (!SelfClosingHTMLElements.includes(tagName)) {
 					// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
@@ -125,5 +140,69 @@ export default class HTMLParser {
 		}
 
 		return nodes;
+	}
+
+	/**
+	 * Returns XMLNS attribute.
+	 *
+	 * @param attributesString Raw attributes.
+	 */
+	private static getXmlnsAttribute(attributesString: string): string {
+		const match = attributesString.match(XMLNS_ATTRIBUTE_REGEXP);
+		return match ? match[1] : null;
+	}
+
+	/**
+	 * Sets raw attributes.
+	 *
+	 * @param element Element.
+	 * @param namespaceURI Namespace URI.
+	 * @param attributesString Raw attributes.
+	 */
+	private static setAttributes(
+		element: Element,
+		namespaceURI: string,
+		attributesString: string
+	): void {
+		const attributes = attributesString.trim();
+		if (attributes) {
+			const regExp = new RegExp(ATTRIBUTE_REGEXP, 'gi');
+			let match: RegExpExecArray;
+
+			// Attributes with value
+			while ((match = regExp.exec(attributes))) {
+				if (match[1]) {
+					element.setAttributeNS(
+						null,
+						this._getAttributeName(namespaceURI, match[1]),
+						decode(match[2] || match[3] || match[4] || '')
+					);
+				}
+			}
+
+			// Attributes with no value
+			for (const name of attributes
+				.replace(ATTRIBUTE_REGEXP, '')
+				.trim()
+				.split(' ')) {
+				if (name) {
+					element.setAttributeNS(null, this._getAttributeName(namespaceURI, name), '');
+				}
+			}
+		}
+	}
+
+	/**
+	 * Returns attribute name.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param name Name.
+	 * @returns Attribute name based on namespace.
+	 */
+	private static _getAttributeName(namespaceURI: string, name: string): string {
+		if (namespaceURI === NamespaceURI.svg) {
+			return name;
+		}
+		return name.toLowerCase();
 	}
 }

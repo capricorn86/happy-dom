@@ -1,18 +1,16 @@
 import Node from '../node/Node';
 import TextNode from '../text-node/TextNode';
 import ShadowRoot from '../shadow-root/ShadowRoot';
-import Attribute from './Attribute';
+import Attr from '../../../attribute/Attr';
 import DOMRect from './DOMRect';
 import Range from './Range';
 import HTMLParser from '../../../html-parser/HTMLParser';
-import { decode, encode } from 'he';
 import ClassList from './ClassList';
 import QuerySelector from '../../../query-selector/QuerySelector';
 import HTMLRenderer from '../../../html-renderer/HTMLRenderer';
 import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
-
-const ATTRIBUTE_REGEXP = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gi;
+import NamespaceURI from '../../../html-config/NamespaceURI';
 
 /**
  * Element.
@@ -24,9 +22,8 @@ export default class Element extends Node {
 	public classList = new ClassList(this);
 	public scrollTop = 0;
 	public scrollLeft = 0;
-	public _attributesMap: { [k: string]: Attribute } = {};
-	private _attributePropertyMap = null;
-	public _useCaseSensitiveAttributes = false;
+	public _attributes: { [k: string]: Attr } = {};
+	public _namespaceURI: string = null;
 
 	/**
 	 * Returns a list of observed attributes.
@@ -94,6 +91,15 @@ export default class Element extends Node {
 	}
 
 	/**
+	 * Returns the namespace URI.
+	 *
+	 * @return Namespace URI.
+	 */
+	public get namespaceURI(): string {
+		return this._namespaceURI;
+	}
+
+	/**
 	 * Get text value of children.
 	 *
 	 * @return Text content.
@@ -158,15 +164,11 @@ export default class Element extends Node {
 	 *
 	 * @returns Attributes.
 	 */
-	public get attributes(): { [k: string]: Attribute | number } {
-		const names = Object.keys(this._attributesMap);
-		const attributes = { length: names.length };
-		for (let i = 0, max = names.length; i < max; i++) {
-			const name = names[i];
-			attributes[name] = this._attributesMap[name];
-			attributes[i] = this._attributesMap[name];
-		}
-		return attributes;
+	public get attributes(): { [k: string]: Attr | number } {
+		const attributes = Object.values(this._attributes);
+		return Object.assign({}, this._attributes, attributes, {
+			length: attributes.length
+		});
 	}
 
 	/**
@@ -179,31 +181,51 @@ export default class Element extends Node {
 	public attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
 
 	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): Node {
+		const clone = <Element>super.cloneNode(deep);
+
+		for (const key of Object.keys(this._attributes)) {
+			clone._attributes[key] = Object.assign(new Attr(), this._attributes[key]);
+		}
+
+		clone.classList = new ClassList(clone);
+		clone.tagName = this.tagName;
+		clone.scrollLeft = this.scrollLeft;
+		clone.scrollTop = this.scrollTop;
+		clone._namespaceURI = this._namespaceURI;
+
+		return clone;
+	}
+
+	/**
 	 * Sets an attribute.
 	 *
 	 * @param name Name.
 	 * @param value Value.
 	 */
 	public setAttribute(name: string, value: string): void {
-		const attribute = new Attribute();
-		attribute.name = name;
+		const attribute = this.ownerDocument.createAttributeNS(null, name);
 		attribute.value = String(value);
-		this._setAttributeObject(attribute);
+		this.setAttributeNode(attribute);
 	}
 
 	/**
 	 * Sets a namespace attribute.
 	 *
-	 * @param namespace Namespace URI.
+	 * @param namespaceURI Namespace URI.
 	 * @param name Name.
 	 * @param value Value.
 	 */
-	public setAttributeNS(namespace: string, name: string, value: string): void {
-		const attribute = new Attribute();
-		attribute.namespaceURI = namespace;
-		attribute.name = name;
+	public setAttributeNS(namespaceURI: string, name: string, value: string): void {
+		const attribute = this.ownerDocument.createAttributeNS(namespaceURI, name);
 		attribute.value = String(value);
-		this._setAttributeObject(attribute);
+		this.setAttributeNode(attribute);
 	}
 
 	/**
@@ -212,8 +234,11 @@ export default class Element extends Node {
 	 * @param name Name.
 	 */
 	public getAttribute(name: string): string {
-		const lowerName = this._useCaseSensitiveAttributes ? name : name.toLowerCase();
-		return this.hasAttribute(name) ? this._attributesMap[lowerName].value : null;
+		const attribute = this.getAttributeNode(name);
+		if (attribute) {
+			return attribute.value;
+		}
+		return null;
 	}
 
 	/**
@@ -223,8 +248,8 @@ export default class Element extends Node {
 	 * @param localName Local name.
 	 */
 	public getAttributeNS(namespace: string, localName: string): string {
-		for (const name of Object.keys(this._attributesMap)) {
-			const attribute = this._attributesMap[name];
+		for (const name of Object.keys(this._attributes)) {
+			const attribute = this._attributes[name];
 			if (attribute.namespaceURI === namespace && attribute.localName === localName) {
 				return attribute.value;
 			}
@@ -239,8 +264,7 @@ export default class Element extends Node {
 	 * @returns True if attribute exists, false otherwise.
 	 */
 	public hasAttribute(name: string): boolean {
-		const lowerName = this._useCaseSensitiveAttributes ? name : name.toLowerCase();
-		return this._attributesMap[lowerName] !== undefined;
+		return !!this.getAttributeNode(name);
 	}
 
 	/**
@@ -251,8 +275,8 @@ export default class Element extends Node {
 	 * @returns True if attribute exists, false otherwise.
 	 */
 	public hasAttributeNS(namespace: string, localName: string): boolean {
-		for (const name of Object.keys(this._attributesMap)) {
-			const attribute = this._attributesMap[name];
+		for (const name of Object.keys(this._attributes)) {
+			const attribute = this._attributes[name];
 			if (attribute.namespaceURI === namespace && attribute.localName === localName) {
 				return true;
 			}
@@ -266,7 +290,7 @@ export default class Element extends Node {
 	 * @return "true" if the element has attributes.
 	 */
 	public hasAttributes(): boolean {
-		return Object.keys(this._attributesMap).length > 0;
+		return Object.keys(this._attributes).length > 0;
 	}
 
 	/**
@@ -275,35 +299,9 @@ export default class Element extends Node {
 	 * @param name Name.
 	 */
 	public removeAttribute(name: string): void {
-		const lowerName = this._useCaseSensitiveAttributes ? name : name.toLowerCase();
-		const oldValue = this._attributesMap[lowerName] ? this._attributesMap[lowerName].value : null;
-		delete this._attributesMap[lowerName];
-
-		this._removeAttributeProperty(name);
-
-		if (
-			this.attributeChangedCallback &&
-			(<typeof Element>this.constructor).observedAttributes &&
-			(<typeof Element>this.constructor).observedAttributes.includes(lowerName)
-		) {
-			this.attributeChangedCallback(lowerName, oldValue, null);
-		}
-
-		// MutationObserver
-		if (this._observers.length > 0) {
-			for (const observer of this._observers) {
-				if (
-					observer.options.attributes &&
-					(!observer.options.attributeFilter ||
-						observer.options.attributeFilter.includes(lowerName))
-				) {
-					const record = new MutationRecord();
-					record.type = MutationTypeConstant.attributes;
-					record.attributeName = lowerName;
-					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
-					observer.callback([record]);
-				}
-			}
+		const attribute = this._attributes[this._getAttributeName(name)];
+		if (attribute) {
+			this.removeAttributeNode(attribute);
 		}
 	}
 
@@ -314,8 +312,8 @@ export default class Element extends Node {
 	 * @param localName Local name.
 	 */
 	public removeAttributeNS(namespace: string, localName: string): void {
-		for (const name of Object.keys(this._attributesMap)) {
-			const attribute = this._attributesMap[name];
+		for (const name of Object.keys(this._attributes)) {
+			const attribute = this._attributes[name];
 			if (attribute.namespaceURI === namespace && attribute.localName === localName) {
 				this.removeAttribute(attribute.name);
 			}
@@ -413,80 +411,81 @@ export default class Element extends Node {
 	}
 
 	/**
-	 * Sets raw attributes.
-	 *
-	 * @param rawAttributes Raw attributes.
-	 */
-	public _setRawAttributes(rawAttributes: string): void {
-		rawAttributes = rawAttributes.trim();
-		if (rawAttributes) {
-			const regExp = new RegExp(ATTRIBUTE_REGEXP, 'gi');
-			let match: RegExpExecArray;
-
-			// Attributes with value
-			while ((match = regExp.exec(rawAttributes))) {
-				const name = this._useCaseSensitiveAttributes ? match[1] : match[1].toLowerCase();
-				if (name) {
-					this._attributesMap[name] = new Attribute();
-					this._attributesMap[name].name = match[1];
-					this._attributesMap[name].value = decode(match[2] || match[3] || match[4] || '');
-					this._setAttributeProperty(name, this._attributesMap[name].value);
-				}
-			}
-
-			// Attributes with no value
-			for (const name of rawAttributes
-				.replace(ATTRIBUTE_REGEXP, '')
-				.trim()
-				.split(' ')) {
-				const lowerName = this._useCaseSensitiveAttributes
-					? name.trim()
-					: name.trim().toLowerCase();
-				if (lowerName) {
-					this._attributesMap[lowerName] = new Attribute();
-					this._attributesMap[lowerName].name = name;
-					this._attributesMap[lowerName].value = '';
-					this._setAttributeProperty(lowerName, this._attributesMap[lowerName]);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Returns raw attributes.
-	 *
-	 * @returns {string} Raw attributes.
-	 */
-	public _getRawAttributes(): string {
-		const attributes = [];
-		for (const name of Object.keys(this._attributesMap)) {
-			if (this._attributesMap[name] && this._attributesMap[name].value !== null) {
-				attributes.push(name + '="' + encode(this._attributesMap[name].value) + '"');
-			}
-		}
-		return attributes.join(' ');
-	}
-
-	/**
-	 * Sets an attribute object.
+	 * The setAttributeNode() method adds a new Attr node to the specified element.
 	 *
 	 * @param attribute Attribute.
+	 * @returns Replaced attribute.
 	 */
-	protected _setAttributeObject(attribute: Attribute): void {
-		const lowerName = this._useCaseSensitiveAttributes
-			? attribute.name
-			: attribute.name.toLowerCase();
-		const oldValue = this._attributesMap[lowerName] ? this._attributesMap[lowerName].value : null;
-		this._attributesMap[lowerName] = attribute;
+	public setAttributeNode(attribute: Attr): Attr {
+		const name = this._getAttributeName(attribute.name);
+		const replacedAttribute = this._attributes[name];
+		const oldValue = replacedAttribute ? replacedAttribute.value : null;
 
-		this._setAttributeProperty(lowerName, this._attributesMap[lowerName].value);
+		attribute.name = name;
+
+		this._attributes[name] = attribute;
+
+		// Styles
+		if (name === 'style' && this['style']) {
+			for (const part of attribute.value.split(';')) {
+				const [key, value] = part.split(':');
+				if (key && value) {
+					this['style'][this._kebabToCamelCase(key.trim())] = value.trim();
+				}
+			}
+		}
 
 		if (
 			this.attributeChangedCallback &&
 			(<typeof Element>this.constructor).observedAttributes &&
-			(<typeof Element>this.constructor).observedAttributes.includes(lowerName)
+			(<typeof Element>this.constructor).observedAttributes.includes(name)
 		) {
-			this.attributeChangedCallback(lowerName, oldValue, attribute.value);
+			this.attributeChangedCallback(name, oldValue, attribute.value);
+		}
+
+		// MutationObserver
+		if (this._observers.length > 0) {
+			for (const observer of this._observers) {
+				if (
+					observer.options.attributes &&
+					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(name))
+				) {
+					const record = new MutationRecord();
+					record.type = MutationTypeConstant.attributes;
+					record.attributeName = name;
+					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
+					observer.callback([record]);
+				}
+			}
+		}
+
+		return replacedAttribute || null;
+	}
+
+	/**
+	 * Returns an Attr node.
+	 *
+	 * @param name Name.
+	 * @returns Replaced attribute.
+	 */
+	public getAttributeNode(name: string): Attr {
+		return this._attributes[this._getAttributeName(name)] || null;
+	}
+
+	/**
+	 * Removes an Attr node.
+	 *
+	 * @param attribute Attribute.
+	 */
+	public removeAttributeNode(attribute: Attr): void {
+		delete this._attributes[attribute.name];
+
+		if (
+			this.attributeChangedCallback &&
+			(<typeof Element>this.constructor).observedAttributes &&
+			(<typeof Element>this.constructor).observedAttributes.includes(attribute.name)
+		) {
+			this.attributeChangedCallback(attribute.name, attribute.value, null);
 		}
 
 		// MutationObserver
@@ -495,12 +494,12 @@ export default class Element extends Node {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
-						observer.options.attributeFilter.includes(lowerName))
+						observer.options.attributeFilter.includes(attribute.name))
 				) {
 					const record = new MutationRecord();
 					record.type = MutationTypeConstant.attributes;
 					record.attributeName = attribute.name;
-					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
+					record.oldValue = observer.options.attributeOldValue ? attribute.value : null;
 					observer.callback([record]);
 				}
 			}
@@ -508,64 +507,16 @@ export default class Element extends Node {
 	}
 
 	/**
-	 * Sets a property when setting an attribute.
+	 * Returns attribute name.
 	 *
 	 * @param name Name.
-	 * @param value Value.
+	 * @returns Attribute name based on namespace.
 	 */
-	protected _setAttributeProperty(name, value): void {
-		if (name === 'style' && this['style']) {
-			for (const part of value.split(';')) {
-				const [key, value] = part.split(':');
-				if (key && value) {
-					this['style'][this.kebabToCamelCase(key.trim())] = value.trim();
-				}
-			}
-		} else {
-			const property = this._getPropertyNameFromAttribute(name);
-
-			if (property) {
-				if (this[property] === '') {
-					this[property] = value;
-				} else if (typeof this[property] === 'boolean') {
-					this[property] = true;
-				} else if (typeof this[property] === 'number') {
-					this[property] = parseFloat(value);
-				}
-			}
+	protected _getAttributeName(name): string {
+		if (this._namespaceURI === NamespaceURI.svg) {
+			return name;
 		}
-	}
-
-	/**
-	 * Sets boolean properties to false if a matching attribute is removed.
-	 *
-	 * @param name Name.
-	 */
-	protected _removeAttributeProperty(name): void {
-		const property = this._getPropertyNameFromAttribute(name);
-
-		if (property && typeof this[property] === 'boolean') {
-			this[property] = false;
-		}
-	}
-
-	/**
-	 * Returns the property name based on an attribute name.
-	 * This will be used for setting attribute values as properties on the element.
-	 *
-	 * @param name Attribute name.
-	 * @returns Property name.
-	 */
-	protected _getPropertyNameFromAttribute(name: string): string {
-		if (!this._attributePropertyMap) {
-			this._attributePropertyMap = {};
-
-			for (const key of Object.keys(this)) {
-				this._attributePropertyMap[key.toLowerCase()] = key;
-			}
-		}
-
-		return this._attributePropertyMap[name] || null;
+		return name.toLowerCase();
 	}
 
 	/**
@@ -574,7 +525,7 @@ export default class Element extends Node {
 	 * @param string String to convert.
 	 * @returns Text as kebab case.
 	 */
-	private kebabToCamelCase(string): string {
+	private _kebabToCamelCase(string): string {
 		string = string.split('-');
 		for (let i = 0, max = string.length; i < max; i++) {
 			const firstWord = i > 0 ? string[i].charAt(0).toUpperCase() : string[i].charAt(0);

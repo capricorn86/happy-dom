@@ -1,27 +1,10 @@
 import Document from '../document/Document';
-import ClassList from '../element/ClassList';
 import EventTarget from '../../../event/EventTarget';
 import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import MutationObserverListener from '../../../mutation-observer/MutationListener';
 import Event from '../../../event/Event';
 import HTMLParser from '../../../html-parser/HTMLParser';
-
-const CLONE_REFERENCE_PROPERTIES = [
-	'ownerDocument',
-	'tagName',
-	'nodeType',
-	'_textContent',
-	'mode',
-	'name',
-	'type',
-	'disabled',
-	'autofocus',
-	'required',
-	'_value'
-];
-const CLONE_OBJECT_ASSIGN_PROPERTIES = ['_attributesMap', 'style'];
-const CLONE_NODE_PROPERTIES = ['documentElement', 'body', 'head'];
 
 /**
  * Node
@@ -235,27 +218,11 @@ export default class Node extends EventTarget {
 	public cloneNode(deep = false): Node {
 		const clone = new (<typeof Node>this.constructor)();
 
-		for (const key of Object.keys(this)) {
-			if (key === 'childNodes') {
-				if (deep) {
-					for (const childNode of this[key]) {
-						const childClone = childNode.cloneNode(true);
-						childClone.parentNode = clone;
-						clone.childNodes.push(childClone);
-					}
-				}
-			} else if (key === 'classList') {
-				// eslint-disable-next-line
-				clone[key] = new ClassList(<any>clone);
-			} else if (CLONE_NODE_PROPERTIES.includes(key)) {
-				if (deep) {
-					clone[key] = this[key].cloneNode(true);
-					clone[key].parentNode = clone;
-				}
-			} else if (CLONE_OBJECT_ASSIGN_PROPERTIES.includes(key)) {
-				clone[key] = Object.assign({}, this[key]);
-			} else if (CLONE_REFERENCE_PROPERTIES.includes(key)) {
-				clone[key] = this[key];
+		if (deep) {
+			for (const childNode of this.childNodes) {
+				const childClone = childNode.cloneNode(true);
+				childClone.parentNode = clone;
+				clone.childNodes.push(childClone);
 			}
 		}
 

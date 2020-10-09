@@ -1,5 +1,6 @@
 import Element from '../element/Element';
 import Event from '../../../event/Event';
+import Node from '../node/Node';
 
 /**
  * HTMLElement.
@@ -69,5 +70,27 @@ export default class HTMLElement extends Element {
 		event.target = this;
 		event.currentTarget = this;
 		this.dispatchEvent(event);
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): Node {
+		const clone = <HTMLElement>super.cloneNode(deep);
+
+		clone.style = this.style;
+		clone.tabIndex = this.tabIndex;
+		clone.offsetHeight = this.offsetHeight;
+		clone.offsetWidth = this.offsetWidth;
+		clone.offsetLeft = this.offsetLeft;
+		clone.offsetTop = this.offsetTop;
+		clone.clientHeight = this.clientHeight;
+		clone.clientWidth = this.clientWidth;
+
+		return clone;
 	}
 }
