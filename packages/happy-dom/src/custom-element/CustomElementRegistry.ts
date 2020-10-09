@@ -20,25 +20,25 @@ export default class CustomElementRegistry {
 		elementClass: typeof HTMLElement,
 		options?: { extends: string }
 	): void {
-		const lowerCamelCase = tagName.toLowerCase();
-		if (!lowerCamelCase.includes('-')) {
+		const name = tagName.toLowerCase();
+		if (!name.includes('-')) {
 			throw new Error(
 				"Failed to execute 'define' on 'CustomElementRegistry': \"" +
-					lowerCamelCase +
+					name +
 					'" is not a valid custom element name.'
 			);
 		}
 
-		this._registry[lowerCamelCase] = {
+		this._registry[name] = {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
 
-		if (this._callbacks[lowerCamelCase]) {
-			for (const callback of this._callbacks[lowerCamelCase]) {
+		if (this._callbacks[name]) {
+			for (const callback of this._callbacks[name]) {
 				callback();
 			}
-			delete this._callbacks[lowerCamelCase];
+			delete this._callbacks[name];
 		}
 	}
 
@@ -49,8 +49,8 @@ export default class CustomElementRegistry {
 	 * @param HTMLElement class defined.
 	 */
 	public get(tagName: string): typeof HTMLElement {
-		const lowerCamelCase = tagName.toLowerCase();
-		return this._registry[lowerCamelCase] ? this._registry[lowerCamelCase].elementClass : null;
+		const name = tagName.toLowerCase();
+		return this._registry[name] ? this._registry[name].elementClass : null;
 	}
 
 	/**
