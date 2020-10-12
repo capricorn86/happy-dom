@@ -183,24 +183,24 @@ export default class SelectorItem {
 				const onlyChildChildren = parent.children;
 				return onlyChildChildren.length === 1 && onlyChildChildren[0] === element;
 			case 'first-of-type':
-				for (const child of parent.childNodes) {
-					if (child instanceof Element && child.tagName === element.tagName) {
+				for (const child of parent.children) {
+					if (child.tagName === element.tagName) {
 						return child === element;
 					}
 				}
 				return false;
 			case 'last-of-type':
-				for (let i = parent.childNodes.length - 1; i >= 0; i--) {
-					const child = parent.childNodes[i];
-					if (child instanceof Element && child.tagName === element.tagName) {
+				for (let i = parent.children.length - 1; i >= 0; i--) {
+					const child = parent.children[i];
+					if (child.tagName === element.tagName) {
 						return child === element;
 					}
 				}
 				return false;
 			case 'only-of-type':
 				let isFound = false;
-				for (const child of parent.childNodes) {
-					if (child instanceof Element && child.tagName === element.tagName) {
+				for (const child of parent.children) {
+					if (child.tagName === element.tagName) {
 						if (isFound || child !== element) {
 							return false;
 						}

@@ -49,6 +49,7 @@ jobs:
       - name: Checks if we have changed something
         run: npm run lerna-changed
       - run: git checkout -b release/${{ needs.check-next-version.outputs.next_version }} origin/master
+      - run: git pull origin master
       - run: git push origin release/${{ needs.check-next-version.outputs.next_version }}
       - run: git config --global user.name "${GITHUB_ACTOR}"
       - run: git config --global user.email "${{ needs.check-next-version.outputs.user_email }}"

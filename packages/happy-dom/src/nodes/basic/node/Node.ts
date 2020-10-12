@@ -11,12 +11,12 @@ import HTMLParser from '../../../html-parser/HTMLParser';
  */
 export default class Node extends EventTarget {
 	// Public properties
-	public static ELEMENT_NODE = 1;
-	public static TEXT_NODE = 3;
-	public static COMMENT_NODE = 8;
-	public static DOCUMENT_NODE = 9;
-	public static DOCUMENT_TYPE_NODE = 10;
-	public static DOCUMENT_FRAGMENT_NODE = 11;
+	public static readonly ELEMENT_NODE = 1;
+	public static readonly TEXT_NODE = 3;
+	public static readonly COMMENT_NODE = 8;
+	public static readonly DOCUMENT_NODE = 9;
+	public static readonly DOCUMENT_TYPE_NODE = 10;
+	public static readonly DOCUMENT_FRAGMENT_NODE = 11;
 	public static ownerDocument: Document = null;
 	public ownerDocument: Document = null;
 	public parentNode: Node = null;
@@ -177,12 +177,7 @@ export default class Node extends EventTarget {
 	 * @return {Node} Node.
 	 */
 	public get firstElementChild(): Node {
-		for (const node of this.childNodes) {
-			if (node.nodeType === Node.ELEMENT_NODE) {
-				return node;
-			}
-		}
-		return null;
+		return this['children'] ? this['children'][0] || null : null;
 	}
 
 	/**
@@ -191,12 +186,7 @@ export default class Node extends EventTarget {
 	 * @return {Node} Node.
 	 */
 	public get lastElementChild(): Node {
-		for (let i = this.childNodes.length - 1; i >= 0; i--) {
-			if (this.childNodes[i].nodeType === Node.ELEMENT_NODE) {
-				return this.childNodes[i];
-			}
-		}
-		return null;
+		return this['children'] ? this['children'][this['children'].length - 1] || null : null;
 	}
 
 	/**
@@ -225,6 +215,8 @@ export default class Node extends EventTarget {
 				clone.childNodes.push(childClone);
 			}
 		}
+
+		clone.ownerDocument = this.ownerDocument;
 
 		return clone;
 	}

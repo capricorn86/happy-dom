@@ -1,5 +1,4 @@
 import Element from '../nodes/basic/element/Element';
-import Node from '../nodes/basic/node/Node';
 import DocumentFragment from '../nodes/basic/document-fragment/DocumentFragment';
 import SelectorItem from './SelectorItem';
 
@@ -21,7 +20,7 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll(node: Node, selector: string): Element[] {
+	public static querySelectorAll(node: Element | DocumentFragment, selector: string): Element[] {
 		const matched = [];
 
 		for (const parts of this.getSelectorParts(selector)) {
@@ -42,7 +41,7 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @return HTML element.
 	 */
-	public static querySelector(node: Node, selector: string): Element {
+	public static querySelector(node: Element | DocumentFragment, selector: string): Element {
 		for (const parts of this.getSelectorParts(selector)) {
 			const match = this.findFirst(node, [node], parts);
 
@@ -64,8 +63,8 @@ export default class QuerySelector {
 	 * @returns HTML elements.
 	 */
 	private static findAll(
-		rootNode: Node,
-		nodes: Node[],
+		rootNode: Element | DocumentFragment,
+		nodes: (Element | DocumentFragment)[],
 		selectorParts: string[],
 		selectorItem?: SelectorItem
 	): Element[] {
@@ -77,26 +76,22 @@ export default class QuerySelector {
 		let matched = [];
 
 		for (const node of nodes) {
-			if (node instanceof Element || node instanceof DocumentFragment) {
-				if (node instanceof Element) {
-					if (selector.match(node)) {
-						if (selectorParts.length === 1) {
-							if (rootNode !== node) {
-								matched.push(node);
-							}
-						} else {
-							matched = matched.concat(
-								this.findAll(rootNode, node.childNodes, selectorParts.slice(1), null)
-							);
+			if (node instanceof Element) {
+				if (selector.match(node)) {
+					if (selectorParts.length === 1) {
+						if (rootNode !== node) {
+							matched.push(node);
 						}
+					} else {
+						matched = matched.concat(
+							this.findAll(rootNode, node.children, selectorParts.slice(1), null)
+						);
 					}
 				}
+			}
 
-				if (!isDirectChild) {
-					matched = matched.concat(
-						this.findAll(rootNode, node.childNodes, selectorParts, selector)
-					);
-				}
+			if (!isDirectChild) {
+				matched = matched.concat(this.findAll(rootNode, node.children, selectorParts, selector));
 			}
 		}
 
@@ -112,8 +107,8 @@ export default class QuerySelector {
 	 * @return HTML element.
 	 */
 	private static findFirst(
-		rootNode: Node,
-		nodes: Node[],
+		rootNode: Element | DocumentFragment,
+		nodes: (Element | DocumentFragment)[],
 		selectorParts: string[],
 		selectorItem?: SelectorItem
 	): Element {
@@ -124,31 +119,29 @@ export default class QuerySelector {
 		const selector = selectorItem || new SelectorItem(selectorParts[0]);
 
 		for (const node of nodes) {
-			if (node instanceof Element || node instanceof DocumentFragment) {
-				if (node instanceof Element && selector.match(node)) {
-					if (selectorParts.length === 1) {
-						if (rootNode !== node) {
-							return node;
-						}
-					} else {
-						const childSelector = this.findFirst(
-							rootNode,
-							node.childNodes,
-							selectorParts.slice(1),
-							null
-						);
-						if (childSelector) {
-							return childSelector;
-						}
+			if (node instanceof Element && selector.match(node)) {
+				if (selectorParts.length === 1) {
+					if (rootNode !== node) {
+						return node;
 					}
-				}
-
-				if (!isDirectChild) {
-					const childSelector = this.findFirst(rootNode, node.childNodes, selectorParts, selector);
-
+				} else {
+					const childSelector = this.findFirst(
+						rootNode,
+						node.children,
+						selectorParts.slice(1),
+						null
+					);
 					if (childSelector) {
 						return childSelector;
 					}
+				}
+			}
+
+			if (!isDirectChild) {
+				const childSelector = this.findFirst(rootNode, node.children, selectorParts, selector);
+
+				if (childSelector) {
+					return childSelector;
 				}
 			}
 		}
