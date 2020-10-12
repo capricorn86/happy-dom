@@ -1,4 +1,5 @@
 import Window from '../../src/window/Window';
+import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
 import DOMParserHTML from './data/DOMParserHTML';
 
 describe('DOMParser', () => {
@@ -12,12 +13,14 @@ describe('DOMParser', () => {
 	describe('parseFromString()', () => {
 		test('Parses HTML of a page and returns a new document.', () => {
 			const newDocument = domParser.parseFromString(DOMParserHTML, 'text/html');
-			expect(newDocument.documentElement.outerHTML).toBe(DOMParserHTML);
+			expect(new XMLSerializer().serializeToString(newDocument).replace(/[\s]/gm, '')).toBe(
+				DOMParserHTML.replace(/[\s]/gm, '')
+			);
 		});
 
 		test('Parses HTML with just a string and returns a new document with <html>, <head> and <body> tags.', () => {
 			const newDocument = domParser.parseFromString('Test', 'text/html');
-			expect(newDocument.documentElement.outerHTML).toBe(
+			expect(new XMLSerializer().serializeToString(newDocument)).toBe(
 				'<html><head></head><body>Test</body></html>'
 			);
 		});
@@ -37,7 +40,7 @@ describe('DOMParser', () => {
 			`,
 				'text/html'
 			);
-			expect(newDocument.documentElement.outerHTML.replace(/[\s]/gm, '')).toBe(
+			expect(new XMLSerializer().serializeToString(newDocument).replace(/[\s]/gm, '')).toBe(
 				`
 				<html>
 					<head>

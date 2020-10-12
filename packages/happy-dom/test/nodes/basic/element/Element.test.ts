@@ -1,6 +1,6 @@
 import Window from '../../../../src/window/Window';
-import HTMLRenderer from '../../../../src/html-renderer/HTMLRenderer';
-import HTMLParser from '../../../../src/html-parser/HTMLParser';
+import XMLSerializer from '../../../../src/xml-serializer/XMLSerializer';
+import XMLParser from '../../../../src/xml-parser/XMLParser';
 import CustomElement from '../../../CustomElement';
 import ShadowRoot from '../../../../src/nodes/basic/shadow-root/ShadowRoot';
 import Document from '../../../../src/nodes/basic/document/Document';
@@ -113,8 +113,12 @@ describe('Element', () => {
 
 	describe('get innerHTML()', () => {
 		test('Returns HTML of children as a concatenated string.', () => {
-			jest.spyOn(HTMLRenderer, 'getInnerHTML').mockImplementation(renderElement => {
-				expect(renderElement).toBe(element);
+			const div = document.createElement('div');
+
+			element.appendChild(div);
+
+			jest.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation(rootElement => {
+				expect(rootElement).toBe(div);
 				return 'EXPECTED_HTML';
 			});
 
@@ -132,7 +136,7 @@ describe('Element', () => {
 			div.appendChild(textNode);
 			root.appendChild(div);
 
-			jest.spyOn(HTMLParser, 'parse').mockImplementation((parseDocument, html) => {
+			jest.spyOn(XMLParser, 'parse').mockImplementation((parseDocument, html) => {
 				expect(parseDocument).toBe(document);
 				expect(html).toBe('SOME_HTML');
 				return root;

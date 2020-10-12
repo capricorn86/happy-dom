@@ -6,13 +6,14 @@ import Window from '../../../window/Window';
 import Node from '../node/Node';
 import TreeWalker from '../../../tree-walker/TreeWalker';
 import DocumentFragment from '../document-fragment/DocumentFragment';
-import HTMLParser from '../../../html-parser/HTMLParser';
+import XMLParser from '../../../xml-parser/XMLParser';
 import Event from '../../../event/Event';
 import DOMImplementation from '../../../dom-implementation/DOMImplementation';
 import HTMLElementTag from '../../../html-config/HTMLElementTag';
 import INodeFilter from '../../../tree-walker/INodeFilter';
 import Attr from '../../../attribute/Attr';
 import NamespaceURI from '../../../html-config/NamespaceURI';
+import DocumentType from '../document-type/DocumentType';
 
 /**
  * Document.
@@ -36,10 +37,12 @@ export default class Document extends DocumentFragment {
 		this.defaultView = window;
 		this.implementation = new DOMImplementation(window);
 
+		const doctype = this.implementation.createDocumentType('html', '', '');
 		const documentElement = this.createElement('html');
 		const bodyElement = this.createElement('body');
 		const headElement = this.createElement('head');
 
+		this.appendChild(doctype);
 		this.appendChild(documentElement);
 
 		documentElement.appendChild(headElement);
@@ -62,6 +65,20 @@ export default class Document extends DocumentFragment {
 	 */
 	public get documentElement(): HTMLElement {
 		return <HTMLElement>this.querySelector('html');
+	}
+
+	/**
+	 * Returns document type element.
+	 *
+	 * @return Document type.
+	 */
+	public get doctype(): DocumentType {
+		for (const node of this.childNodes) {
+			if (node instanceof DocumentType) {
+				return node;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -88,7 +105,7 @@ export default class Document extends DocumentFragment {
 	 * @param html HTML.
 	 */
 	public write(html: string): void {
-		const root = HTMLParser.parse(this, html);
+		const root = XMLParser.parse(this, html);
 
 		if (this._isFirstWrite || this._isFirstWriteAfterOpen) {
 			if (this._isFirstWrite) {
@@ -100,15 +117,44 @@ export default class Document extends DocumentFragment {
 			}
 
 			this._isFirstWriteAfterOpen = false;
+			let documentElement = null;
+			let documentTypeNode = null;
 
-			const documentElement = root.querySelector('html');
+			for (const node of root.childNodes) {
+				if (node['tagName'] === 'HTML') {
+					documentElement = node;
+				} else if (node.nodeType === Node.DOCUMENT_TYPE_NODE) {
+					documentTypeNode = node;
+				}
+
+				if (documentElement && documentTypeNode) {
+					break;
+				}
+			}
 
 			if (documentElement) {
-				this.appendChild(documentElement);
+				if (!this.documentElement) {
+					if (documentTypeNode) {
+						this.appendChild(documentTypeNode);
+					}
+
+					this.appendChild(documentElement);
+				} else {
+					const rootBody = root.querySelector('body');
+					const body = this.querySelector('body');
+					if (rootBody && body) {
+						for (const child of rootBody.childNodes.slice()) {
+							body.appendChild(child);
+						}
+					}
+				}
+
 				const body = this.querySelector('body');
 				if (body) {
 					for (const child of root.childNodes.slice()) {
-						body.appendChild(child);
+						if (child['tagName'] !== 'HTML' && child.nodeType !== Node.DOCUMENT_TYPE_NODE) {
+							body.appendChild(child);
+						}
 					}
 				}
 			} else {

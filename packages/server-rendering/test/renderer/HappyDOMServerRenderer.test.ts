@@ -11,7 +11,7 @@ describe('HappyDOMServerRenderer', () => {
 		document = window.document;
 	});
 
-	describe('getOuterHTML()', () => {
+	describe('render()', () => {
 		test('Renders a <div> element.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
@@ -25,7 +25,7 @@ describe('HappyDOMServerRenderer', () => {
 			div.setAttribute('attr3', '');
 			div.appendChild(span);
 
-			expect(new HappyDOMServerRenderer().getOuterHTML(div).html).toBe(
+			expect(new HappyDOMServerRenderer().render(div).html).toBe(
 				'<div attr1="value1" attr2="value2" attr3=""><span attr1="value1" attr2="value2" attr3=""></span></div>'
 			);
 		});
@@ -38,9 +38,7 @@ describe('HappyDOMServerRenderer', () => {
 
 			div.appendChild(comment);
 
-			expect(new HappyDOMServerRenderer().getOuterHTML(div).html).toBe(
-				'<div><!--Some comment.--></div>'
-			);
+			expect(new HappyDOMServerRenderer().render(div).html).toBe('<div><!--Some comment.--></div>');
 		});
 
 		test('Renders a text nodes.', () => {
@@ -51,7 +49,7 @@ describe('HappyDOMServerRenderer', () => {
 			div.appendChild(text1);
 			div.appendChild(text2);
 
-			expect(new HappyDOMServerRenderer().getOuterHTML(div).html).toBe('<div>Text 1.Text 2.</div>');
+			expect(new HappyDOMServerRenderer().render(div).html).toBe('<div>Text 1.Text 2.</div>');
 		});
 
 		test('Renders a mix of nodes.', () => {
@@ -78,7 +76,7 @@ describe('HappyDOMServerRenderer', () => {
 			div.appendChild(text2);
 			div.appendChild(span1);
 
-			expect(new HappyDOMServerRenderer().getOuterHTML(div).html).toBe(
+			expect(new HappyDOMServerRenderer().render(div).html).toBe(
 				'<div><!--Comment 1.-->Text 1.<!--Comment 2.-->Text 2.<span attr1="value1" attr2="value2" attr3=""><span attr1="value1">Text 3.</span></span></div>'
 			);
 		});
@@ -96,7 +94,7 @@ describe('HappyDOMServerRenderer', () => {
 			// Connects the custom element to DOM which will trigger connectedCallback() on it
 			document.body.appendChild(div);
 
-			expect(new HappyDOMServerRenderer().getOuterHTML(div).html).toBe(
+			expect(new HappyDOMServerRenderer().render(div).html).toBe(
 				'<div><mocked-html-element attr1="value1" attr2="value2" attr3=""></mocked-html-element></div>'
 			);
 		});
@@ -118,7 +116,7 @@ describe('HappyDOMServerRenderer', () => {
 				openShadowRoots: true,
 				extractCSS: false,
 				scopeCSS: false
-			}).getOuterHTML(div);
+			}).render(div);
 
 			expect(result.html.replace(/\s/gm, '')).toBe(
 				`
@@ -178,7 +176,7 @@ describe('HappyDOMServerRenderer', () => {
 				openShadowRoots: true,
 				extractCSS: false,
 				scopeCSS: true
-			}).getOuterHTML(div);
+			}).render(div);
 
 			expect(result.html.replace(/\s/gm, '')).toBe(
 				`
@@ -240,7 +238,7 @@ describe('HappyDOMServerRenderer', () => {
 				openShadowRoots: true,
 				extractCSS: true,
 				scopeCSS: true
-			}).getOuterHTML(div);
+			}).render(div);
 
 			expect(result.html.replace(/\s/gm, '')).toBe(
 				`

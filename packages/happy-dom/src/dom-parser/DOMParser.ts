@@ -1,5 +1,6 @@
 import Document from '../nodes/basic/document/Document';
-import HTMLParser from '../html-parser/HTMLParser';
+import XMLParser from '../xml-parser/XMLParser';
+import Node from '../nodes/basic/node/Node';
 
 /**
  * HTML parser.
@@ -26,12 +27,29 @@ export default class DOMParser {
 		const ownerDocument = (<typeof DOMParser>(<unknown>this.constructor)).ownerDocument;
 		const newDocument = new Document(ownerDocument.defaultView);
 
-		const root = HTMLParser.parse(newDocument, string);
-		const documentElement = root.querySelector('html');
+		newDocument.childNodes = [];
+		newDocument.children = [];
 
-		newDocument.documentElement.parentNode.removeChild(newDocument.documentElement);
+		const root = XMLParser.parse(newDocument, string);
+		let documentElement = null;
+		let documentTypeNode = null;
+
+		for (const node of root.childNodes) {
+			if (node['tagName'] === 'HTML') {
+				documentElement = node;
+			} else if (node.nodeType === Node.DOCUMENT_TYPE_NODE) {
+				documentTypeNode = node;
+			}
+
+			if (documentElement && documentTypeNode) {
+				break;
+			}
+		}
 
 		if (documentElement) {
+			if (documentTypeNode) {
+				newDocument.appendChild(documentTypeNode);
+			}
 			newDocument.appendChild(documentElement);
 			const body = newDocument.querySelector('body');
 			if (body) {
@@ -44,8 +62,8 @@ export default class DOMParser {
 			const bodyElement = newDocument.createElement('body');
 			const headElement = newDocument.createElement('head');
 
-			for (const child of root.childNodes.slice()) {
-				bodyElement.appendChild(child);
+			for (const node of root.childNodes.slice()) {
+				bodyElement.appendChild(node);
 			}
 
 			documentElement.appendChild(headElement);

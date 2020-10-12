@@ -62,11 +62,9 @@ export default class HappyDOMContext {
 				.whenAsyncComplete()
 				.then(() => {
 					if (customElements.addCSSToHead) {
-						resolve(
-							this.getResultWithCssAddedToHead(renderer.getOuterHTML(document.documentElement))
-						);
+						resolve(this.getResultWithCssAddedToHead(renderer.render(document)));
 					} else {
-						resolve(renderer.getOuterHTML(document.documentElement));
+						resolve(renderer.render(document));
 					}
 				})
 				.catch(reject);

@@ -1,7 +1,8 @@
 import {
+	Node,
 	Element,
 	CommentNode,
-	HTMLTemplateElement,
+	DocumentType,
 	DocumentFragment,
 	ShadowRoot,
 	SelfClosingHTMLElements,
@@ -34,57 +35,49 @@ export default class HappyDOMServerRenderer {
 	/**
 	 * Renders an element as HTML.
 	 *
-	 * @param element Element to render.
+	 * @param node Node to render.
 	 * @return Result.
 	 */
-	public getOuterHTML(element: Element): HappyDOMServerRenderResult {
-		const tagName = element.tagName.toLowerCase();
+	public render(root: Node): HappyDOMServerRenderResult {
 		const result = new HappyDOMServerRenderResult();
 
-		if (UnclosedHTMLElements.includes(tagName)) {
-			result.html = `<${tagName}${this.getAttributes(element)}>`;
-		} else if (SelfClosingHTMLElements.includes(tagName)) {
-			result.html = `<${tagName}${this.getAttributes(element)}/>`;
-		} else {
-			let innerElement: Element | ShadowRoot = element;
-			let outerElement: Element | ShadowRoot = element;
+		if (root instanceof Element) {
+			const tagName = root.tagName.toLowerCase();
+			if (UnclosedHTMLElements.includes(tagName)) {
+				result.html = `<${tagName}${this._getAttributes(root)}>`;
+			} else if (SelfClosingHTMLElements.includes(tagName)) {
+				result.html = `<${tagName}${this._getAttributes(root)}/>`;
+			} else {
+				let innerElement: Element | ShadowRoot = root;
+				let outerElement: Element | ShadowRoot = root;
+				let xml = '';
 
-			if (this.renderOptions.openShadowRoots && element instanceof Element && element.shadowRoot) {
-				outerElement = this.shadowRootRenderer.getScopedClone(element);
-				innerElement = outerElement.shadowRoot;
+				if (this.renderOptions.openShadowRoots && root.shadowRoot) {
+					outerElement = this.shadowRootRenderer.getScopedClone(root);
+					innerElement = outerElement.shadowRoot;
+				}
+
+				for (const node of innerElement.childNodes) {
+					xml += this.render(node).html;
+				}
+
+				result.html = `<${tagName}${this._getAttributes(outerElement)}>${xml}</${tagName}>`;
 			}
-
-			const innerHTML = this.getInnerHTML(innerElement).html;
-			result.html = `<${tagName}${this.getAttributes(outerElement)}>${innerHTML}</${tagName}>`;
-		}
-
-		if (this.renderOptions.openShadowRoots) {
-			result.css = this.shadowRootRenderer.getScopedCSS();
-		}
-
-		return result;
-	}
-
-	/**
-	 * Renders an element as HTML.
-	 *
-	 * @param element Element to render.
-	 * @return Result.
-	 */
-	public getInnerHTML(
-		element: Element | DocumentFragment | ShadowRoot
-	): HappyDOMServerRenderResult {
-		const result = new HappyDOMServerRenderResult();
-		const renderElement = (<HTMLTemplateElement>element).content || element;
-
-		for (const child of renderElement.childNodes.slice()) {
-			if (child instanceof Element) {
-				result.html += this.getOuterHTML(child).html;
-			} else if (child instanceof CommentNode) {
-				result.html += '<!--' + child._textContent + '-->';
-			} else if (child['_textContent']) {
-				result.html += child['_textContent'];
+		} else if (root instanceof DocumentFragment) {
+			let xml = '';
+			for (const node of root.childNodes) {
+				xml += this.render(node).html;
 			}
+			result.html = xml;
+		} else if (root instanceof CommentNode) {
+			result.html = `<!--${root._textContent}-->`;
+		} else if (root instanceof DocumentType) {
+			const identifier = root.publicId ? ' PUBLIC' : root.systemId ? ' SYSTEM' : '';
+			const publicId = root.publicId ? ` "${root.publicId}"` : '';
+			const systemId = root.systemId ? ` "${root.systemId}"` : '';
+			result.html = `<!DOCTYPE ${root.name}${identifier}${publicId}${systemId}>`;
+		} else if (root['_textContent']) {
+			result.html = root['_textContent'];
 		}
 
 		if (this.renderOptions.openShadowRoots) {
@@ -100,11 +93,11 @@ export default class HappyDOMServerRenderer {
 	 * @param element Element.
 	 * @return Attributes.
 	 */
-	private getAttributes(element: Element): string {
+	private _getAttributes(element: Element): string {
 		const attributes = [];
-		for (const name of Object.keys(element._attributes)) {
-			if (element._attributes[name] && element._attributes[name].value !== null) {
-				attributes.push(name + '="' + encode(element._attributes[name].value) + '"');
+		for (const attribute of Object.values(element._attributes)) {
+			if (attribute.value !== null) {
+				attributes.push(attribute.name + '="' + encode(attribute.value) + '"');
 			}
 		}
 		return attributes.length > 0 ? ' ' + attributes.join(' ') : '';

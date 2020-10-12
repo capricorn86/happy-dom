@@ -13,9 +13,11 @@ import ShadowRoot from './nodes/basic/shadow-root/ShadowRoot';
 import Node from './nodes/basic/node/Node';
 import TextNode from './nodes/basic/text-node/TextNode';
 import CommentNode from './nodes/basic/comment-node/CommentNode';
+import DocumentType from './nodes/basic/document-type/DocumentType';
 import TreeWalker from './tree-walker/TreeWalker';
 import CustomElementRegistry from './custom-element/CustomElementRegistry';
-import HTMLRenderer from './html-renderer/HTMLRenderer';
+import XMLParser from './xml-parser/XMLParser';
+import XMLSerializer from './xml-serializer/XMLSerializer';
 import HTMLElementTag from './html-config/HTMLElementTag';
 import SelfClosingHTMLElements from './html-config/SelfClosingHTMLElements';
 import UnclosedHTMLElements from './html-config/UnclosedHTMLElements';
@@ -36,9 +38,11 @@ export {
 	Node,
 	TextNode,
 	CommentNode,
+	DocumentType,
 	TreeWalker,
 	CustomElementRegistry,
-	HTMLRenderer,
+	XMLParser,
+	XMLSerializer,
 	HTMLElementTag,
 	SelfClosingHTMLElements,
 	UnclosedHTMLElements
