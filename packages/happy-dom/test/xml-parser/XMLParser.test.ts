@@ -1,10 +1,11 @@
-import HTMLParser from '../../src/html-parser/HTMLParser';
+import XMLParser from '../../src/xml-parser/XMLParser';
 import Window from '../../src/window/Window';
 import HTMLElement from '../../src/nodes/basic/html-element/HTMLElement';
-import HTMLParserHTML from './data/HTMLParserHTML';
+import XMLParserHTML from './data/XMLParserHTML';
 import NamespaceURI from '../../src/html-config/NamespaceURI';
+import DocumentType from '../../src/nodes/basic/document-type/DocumentType';
 
-describe('HTMLParser', () => {
+describe('XMLParser', () => {
 	let window: Window;
 
 	beforeEach(() => {
@@ -13,14 +14,14 @@ describe('HTMLParser', () => {
 
 	describe('parse()', () => {
 		test('Parses HTML with a single <div>.', () => {
-			const root = HTMLParser.parse(window.document, '<div></div>');
+			const root = XMLParser.parse(window.document, '<div></div>');
 			expect(root.childNodes.length).toBe(1);
 			expect(root.childNodes[0].childNodes.length).toBe(0);
 			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
 		});
 
 		test('Parses HTML with a single <div> with attributes.', () => {
-			const root = HTMLParser.parse(
+			const root = XMLParser.parse(
 				window.document,
 				'<div class="class1 class2" id="id" data-no-value></div>'
 			);
@@ -41,12 +42,38 @@ describe('HTMLParser', () => {
 		});
 
 		test('Parses an entire HTML page.', () => {
-			const root = HTMLParser.parse(window.document, HTMLParserHTML);
-			expect(root.innerHTML).toBe(HTMLParserHTML);
+			const root = XMLParser.parse(window.document, XMLParserHTML);
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(XMLParserHTML.replace(/[\s]/gm, ''));
+		});
+
+		test('Parses a page with document type set to "HTML 4.01".', () => {
+			const pageHTML = XMLParserHTML.trim().replace(
+				'<!DOCTYPE html>',
+				'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">'
+			);
+			const root = XMLParser.parse(window.document, pageHTML);
+			const doctype = <DocumentType>root.childNodes[0];
+			expect(doctype.name).toBe('HTML');
+			expect(doctype.publicId).toBe('-//W3C//DTD HTML 4.01//EN');
+			expect(doctype.systemId).toBe('http://www.w3.org/TR/html4/strict.dtd');
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(pageHTML.replace(/[\s]/gm, ''));
+		});
+
+		test('Parses a page with document type set to "MathML 1.01".', () => {
+			const pageHTML = XMLParserHTML.trim().replace(
+				'<!DOCTYPE html>',
+				'<!DOCTYPE math SYSTEM "http://www.w3.org/Math/DTD/mathml1/mathml.dtd">'
+			);
+			const root = XMLParser.parse(window.document, pageHTML);
+			const doctype = <DocumentType>root.childNodes[0];
+			expect(doctype.name).toBe('math');
+			expect(doctype.publicId).toBe('');
+			expect(doctype.systemId).toBe('http://www.w3.org/Math/DTD/mathml1/mathml.dtd');
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(pageHTML.replace(/[\s]/gm, ''));
 		});
 
 		test('Handles unclosed tags of unnestable elements (e.g. <a>, <li>).', () => {
-			const root = HTMLParser.parse(
+			const root = XMLParser.parse(
 				window.document,
 				`
 				<div class="test" disabled>
@@ -75,7 +102,7 @@ describe('HTMLParser', () => {
 		});
 
 		test('Parses an SVG with "xmlns" set to HTML.', () => {
-			const root = HTMLParser.parse(
+			const root = XMLParser.parse(
 				window.document,
 				`
 				<div>

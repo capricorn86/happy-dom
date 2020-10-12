@@ -4,13 +4,13 @@ import ShadowRoot from '../shadow-root/ShadowRoot';
 import Attr from '../../../attribute/Attr';
 import DOMRect from './DOMRect';
 import Range from './Range';
-import HTMLParser from '../../../html-parser/HTMLParser';
 import ClassList from './ClassList';
 import QuerySelector from '../../../query-selector/QuerySelector';
-import HTMLRenderer from '../../../html-renderer/HTMLRenderer';
 import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import NamespaceURI from '../../../html-config/NamespaceURI';
+import XMLParser from '../../../xml-parser/XMLParser';
+import XMLSerializer from '../../../xml-serializer/XMLSerializer';
 
 /**
  * Element.
@@ -124,7 +124,12 @@ export default class Element extends Node {
 	 * @return HTML.
 	 */
 	public get innerHTML(): string {
-		return HTMLRenderer.getInnerHTML(this);
+		const xmlSerializer = new XMLSerializer();
+		let xml = '';
+		for (const node of this.childNodes) {
+			xml += xmlSerializer.serializeToString(node);
+		}
+		return xml;
 	}
 
 	/**
@@ -137,7 +142,7 @@ export default class Element extends Node {
 			this.removeChild(child);
 		}
 
-		for (const node of HTMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
+		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
 			this.appendChild(node);
 		}
 	}
@@ -148,7 +153,7 @@ export default class Element extends Node {
 	 * @return HTML.
 	 */
 	public get outerHTML(): string {
-		return HTMLRenderer.getOuterHTML(this);
+		return new XMLSerializer().serializeToString(this);
 	}
 
 	/**

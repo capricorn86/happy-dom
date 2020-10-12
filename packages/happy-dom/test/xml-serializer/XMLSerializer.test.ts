@@ -1,16 +1,20 @@
-import HTMLRenderer from '../../src/html-renderer/HTMLRenderer';
+import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
 import Window from '../../src/window/Window';
+import Document from '../../src/nodes/basic/document/Document';
 
-describe('HTMLRenderer', () => {
-	let window, document;
+describe('XMLSerializer', () => {
+	let window: Window;
+	let document: Document;
+	let xmlSerializer: XMLSerializer;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
+		xmlSerializer = new XMLSerializer();
 	});
 
-	describe('getOuterHTML()', () => {
-		test('Renders a <div> element.', () => {
+	describe('serializeToString()', () => {
+		test('Serializes a <div> element.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
@@ -23,23 +27,23 @@ describe('HTMLRenderer', () => {
 			div.setAttribute('attr3', '');
 			div.appendChild(span);
 
-			expect(HTMLRenderer.getOuterHTML(div)).toBe(
+			expect(xmlSerializer.serializeToString(div)).toBe(
 				'<div attr1="value1" attr2="value2" attr3=""><span attr1="value1" attr2="value2" attr3=""></span></div>'
 			);
 		});
 
-		test('Renders a comment node.', () => {
+		test('Serializes a comment node.', () => {
 			const div = document.createElement('div');
-			const comment = document.createComment();
+			const comment = document.createComment('');
 
 			comment.textContent = 'Some comment.';
 
 			div.appendChild(comment);
 
-			expect(HTMLRenderer.getOuterHTML(div)).toBe('<div><!--Some comment.--></div>');
+			expect(xmlSerializer.serializeToString(div)).toBe('<div><!--Some comment.--></div>');
 		});
 
-		test('Renders a text nodes.', () => {
+		test('Serializes a text nodes.', () => {
 			const div = document.createElement('div');
 			const text1 = document.createTextNode('Text 1.');
 			const text2 = document.createTextNode('Text 2.');
@@ -47,10 +51,10 @@ describe('HTMLRenderer', () => {
 			div.appendChild(text1);
 			div.appendChild(text2);
 
-			expect(HTMLRenderer.getOuterHTML(div)).toBe('<div>Text 1.Text 2.</div>');
+			expect(xmlSerializer.serializeToString(div)).toBe('<div>Text 1.Text 2.</div>');
 		});
 
-		test('Renders a mix of nodes.', () => {
+		test('Serializes a mix of nodes.', () => {
 			const div = document.createElement('div');
 			const comment1 = document.createComment('Comment 1.');
 			const comment2 = document.createComment('Comment 2.');
@@ -74,12 +78,12 @@ describe('HTMLRenderer', () => {
 			div.appendChild(text2);
 			div.appendChild(span1);
 
-			expect(HTMLRenderer.getOuterHTML(div)).toBe(
+			expect(xmlSerializer.serializeToString(div)).toBe(
 				'<div><!--Comment 1.-->Text 1.<!--Comment 2.-->Text 2.<span attr1="value1" attr2="value2" attr3=""><span attr1="value1">Text 3.</span></span></div>'
 			);
 		});
 
-		test('Renders a custom element closed.', () => {
+		test('Serializes a closed custom element.', () => {
 			const div = document.createElement('div');
 			const customElement = document.createElement('custom-element');
 
@@ -92,7 +96,7 @@ describe('HTMLRenderer', () => {
 			// Connects the custom element to DOM which will trigger connectedCallback() on it
 			document.body.appendChild(div);
 
-			expect(HTMLRenderer.getOuterHTML(div)).toBe(
+			expect(xmlSerializer.serializeToString(div)).toBe(
 				'<div><custom-element attr1="value1" attr2="value2" attr3=""></custom-element></div>'
 			);
 		});

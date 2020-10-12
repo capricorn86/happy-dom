@@ -7,18 +7,21 @@ import { decode } from 'he';
 import NamespaceURI from '../html-config/NamespaceURI';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
-const ATTRIBUTE_REGEXP = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gi;
+const COMMENT_REGEXP = /<!--(.*?)-->/gi;
+const DOCUMENT_TYPE_REGEXP = /<!DOCTYPE[\s]([a-zA-Z]+)([^>]*)>/gm;
+const DOCUMENT_TYPE_ATTRIBUTE_REGEXP = /"([^"]+)"/gm;
+const ATTRIBUTE_REGEXP = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gms;
 const XMLNS_ATTRIBUTE_REGEXP = /xmlns[ ]*=[ ]*"([^"]+)"/;
 
 /**
- * HTML parser.
+ * XML parser.
  */
-export default class HTMLParser {
+export default class XMLParser {
 	/**
-	 * Parses HTML and returns a root element.
+	 * Parses XML/HTML and returns a root element.
 	 *
-	 * @param  {Document} document Document.
-	 * @param  data HTML data.
+	 * @param {Document} document Document.
+	 * @param data HTML data.
 	 * @return Root element.
 	 */
 	public static parse(document: Document, data: string): Element {
@@ -30,7 +33,9 @@ export default class HTMLParser {
 		let lastTextIndex = 0;
 		let match: RegExpExecArray;
 
-		while ((match = markupRegexp.exec(data))) {
+		data = data.trim();
+
+		while ((match = markupRegexp.exec(data.trim()))) {
 			const tagName = match[2].toLowerCase();
 			const isStartTag = !match[1];
 
@@ -120,11 +125,13 @@ export default class HTMLParser {
 	 */
 	private static getTextAndCommentNodes(document: Document, text: string): Node[] {
 		const nodes = [];
-		const commentRegexp = /<!--(.*?)-->/gms;
+		const commentRegExp = new RegExp(COMMENT_REGEXP, 'gms');
+		const documentTypeRegExp = new RegExp(DOCUMENT_TYPE_REGEXP, 'gm');
+		let hasDocumentType = false;
 		let lastIndex = 0;
 		let match;
 
-		while ((match = commentRegexp.exec(text))) {
+		while ((match = commentRegExp.exec(text))) {
 			if (match.index > 0) {
 				const textNode = document.createTextNode(text.substring(lastIndex, match.index));
 				nodes.push(textNode);
@@ -134,7 +141,33 @@ export default class HTMLParser {
 			lastIndex = match.index + match[0].length;
 		}
 
-		if (lastIndex < text.length) {
+		while ((match = documentTypeRegExp.exec(text))) {
+			let publicId = '';
+			let systemId = '';
+
+			if (match[2]) {
+				const attributes = [];
+				const attributeRegExp = new RegExp(DOCUMENT_TYPE_ATTRIBUTE_REGEXP, 'gm');
+				const isPublic = match[2].includes('PUBLIC');
+				let attributeMatch;
+				while ((attributeMatch = attributeRegExp.exec(match[2]))) {
+					attributes.push(attributeMatch[1]);
+				}
+				publicId = isPublic ? attributes[0] || '' : '';
+				systemId = isPublic ? attributes[1] || '' : attributes[0] || '';
+			}
+
+			const documentTypeNode = document.implementation.createDocumentType(
+				match[1],
+				publicId,
+				systemId
+			);
+
+			nodes.push(documentTypeNode);
+			hasDocumentType = true;
+		}
+
+		if (!hasDocumentType && lastIndex < text.length) {
 			const textNode = document.createTextNode(text.substring(lastIndex));
 			nodes.push(textNode);
 		}

@@ -18,6 +18,7 @@ import EventTypes from '../event/EventTypes.json';
 import MutationObserver from '../mutation-observer/MutationObserver';
 import HTMLElementClass from '../html-config/HTMLElementClass';
 import DOMParser from '../dom-parser/DOMParser';
+import XMLSerializer from '../xml-serializer/XMLSerializer';
 
 /**
  * Handles the Window.
@@ -42,6 +43,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public CustomElementRegistry = CustomElementRegistry;
 	public Window = Window;
 	public Headers = Map;
+	public XMLSerializer = XMLSerializer;
 
 	// Public Properties
 	public document: Document;

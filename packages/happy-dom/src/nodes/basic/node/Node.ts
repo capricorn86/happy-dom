@@ -4,7 +4,7 @@ import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import MutationObserverListener from '../../../mutation-observer/MutationListener';
 import Event from '../../../event/Event';
-import HTMLParser from '../../../html-parser/HTMLParser';
+import XMLParser from '../../../xml-parser/XMLParser';
 
 /**
  * Node
@@ -21,7 +21,7 @@ export default class Node extends EventTarget {
 	public ownerDocument: Document = null;
 	public parentNode: Node = null;
 	public readonly nodeType: number;
-	public readonly childNodes: Node[] = [];
+	public childNodes: Node[] = [];
 
 	// Protected properties
 	protected _isConnected = false;
@@ -401,11 +401,7 @@ export default class Node extends EventTarget {
 			const node = nodes[i];
 
 			if (typeof node === 'string') {
-				parent.childNodes.splice(
-					index,
-					0,
-					...HTMLParser.parse(this.ownerDocument, node).childNodes
-				);
+				parent.childNodes.splice(index, 0, ...XMLParser.parse(this.ownerDocument, node).childNodes);
 			} else {
 				parent.childNodes.splice(index, 0, node);
 			}
