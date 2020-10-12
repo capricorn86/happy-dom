@@ -5,9 +5,10 @@
 
 A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server side rendering of web components.
 
-Happy DOM aims to support all common functionality of a web browser.
+Happy DOM aims to support the most common functionality of a web browser.
 
 [Read more about how to use Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom)
+
 
 
 ### DOM Features
@@ -60,6 +61,24 @@ This package makes it possible to use Happy DOM with [Jest](https://jestjs.io/).
 ### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/server-rendering.svg)](https://www.npmjs.com/package/@happy-dom/server-rendering) [server-rendering](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering)
 
 This package makes it easier to setup servering side rendering of web components by handling the setup of the Node [VM Context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) for you.
+
+
+
+# Performance
+
+| Operation                            | JSDOM   | Happy DOM |
+| ------------------------------------ | ------- | --------- |
+| Import / Require                     | 333 ms  | 45 ms     |
+| Parse HTML                           | 256 ms  | 26 ms     |
+| Serialize HTML                       | 65 ms   | 8 ms      |
+| Render custom element                | 214 ms  | 19 ms     |
+| querySelectorAll('tagname')          | 4.9 ms  | 0.7 ms    |
+| querySelectorAll('.class')           | 6.4 ms  | 3.7 ms    |
+| querySelectorAll('[attribute]')      | 4.0 ms  | 1.7 ms    |
+| querySelectorAll('[class~="name"]')  | 5.5 ms  | 2.9 ms    |
+| querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
+
+[See how the test was done here](https://github.com/capricorn86/happy-dom-performance-test)
 
 
 

@@ -146,6 +146,22 @@ AsyncWindow extends Window and adds support for fetch(). It also has a method ca
 The "window.whenAsyncComplete()" method can be used when executing scripts that contains asynchrounous tasks that has to be completed before the render of the page has been completed.
 
 
+# Performance
+
+| Operation                            | JSDOM   | Happy DOM |
+| ------------------------------------ | ------- | --------- |
+| Import / Require                     | 333 ms  | 45 ms     |
+| Parse HTML                           | 256 ms  | 26 ms     |
+| Serialize HTML                       | 65 ms   | 8 ms      |
+| Render custom element                | 214 ms  | 19 ms     |
+| querySelectorAll('tagname')          | 4.9 ms  | 0.7 ms    |
+| querySelectorAll('.class')           | 6.4 ms  | 3.7 ms    |
+| querySelectorAll('[attribute]')      | 4.0 ms  | 1.7 ms    |
+| querySelectorAll('[class~="name"]')  | 5.5 ms  | 2.9 ms    |
+| querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
+
+[See how the test was done here](https://github.com/capricorn86/happy-dom-performance-test)
+
 
 
 # Jest
