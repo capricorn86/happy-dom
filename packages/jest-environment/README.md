@@ -52,7 +52,7 @@ npm install @happy-dom/jest-environment --save-dev
 
 # Setup
 
-Jest uses [JSDOM](https://github.com/jsdom/jsdom) as test environment by default. In order to tell Jest to use a different environment we will either have to set a CLI attribute, define it in "package.json" or add a property your Jest config file.
+Jest uses [JSDOM](https://github.com/jsdom/jsdom) as test environment by default. In order to tell Jest to use a different environment we will either have to set a CLI attribute, define it in "package.json" or add a property to your Jest config file.
 
 
 
