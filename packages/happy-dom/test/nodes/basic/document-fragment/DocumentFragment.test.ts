@@ -1,5 +1,6 @@
 import NamespaceURI from '../../../../src/html-config/NamespaceURI';
 import Window from '../../../../src/window/Window';
+import Node from '../../../../src/nodes/basic/node/Node';
 
 describe('DocumentFragment', () => {
 	let window, document, documentFragment;
@@ -113,6 +114,41 @@ describe('DocumentFragment', () => {
 			documentFragment.appendChild(div);
 
 			expect(documentFragment.getElementsByClassName('div')).toEqual([div, div2]);
+		});
+	});
+
+	describe('cloneNode', () => {
+		test('Makes a shallow clone of a node (default behaviour).', () => {
+			const text = document.createTextNode('test');
+			const div = document.createElement('div');
+			const comment = document.createComment('test');
+
+			documentFragment.appendChild(text);
+			documentFragment.appendChild(div);
+			documentFragment.appendChild(comment);
+
+			const clone = documentFragment.cloneNode(false);
+
+			expect(clone).toEqual({ ...documentFragment, childNodes: [], children: [] });
+			expect(documentFragment !== clone).toBe(true);
+		});
+
+		test('Makes a deep clone of the document fragment.', () => {
+			const text = document.createTextNode('test');
+			const div = document.createElement('div');
+			const comment = document.createComment('test');
+
+			documentFragment.appendChild(text);
+			documentFragment.appendChild(div);
+			documentFragment.appendChild(comment);
+
+			const clone = documentFragment.cloneNode(true);
+
+			expect(clone).toEqual(documentFragment);
+			expect(clone.childNodes.length).toBe(3);
+			expect(clone.children).toEqual(
+				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
+			);
 		});
 	});
 });

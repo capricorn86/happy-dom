@@ -175,11 +175,9 @@ export default class HTMLTextAreaElement extends HTMLElement {
 				this.selectionEnd = !!attribute.value ? Number(attribute.value) : 0;
 				break;
 			case 'minlength': // number
-				debugger;
 				this.minLength = !!attribute.value ? Number(attribute.value) : -1;
 				break;
 			case 'maxlength': // number
-				debugger;
 				this.maxLength = !!attribute.value ? Number(attribute.value) : -1;
 				break;
 			case 'name': // string

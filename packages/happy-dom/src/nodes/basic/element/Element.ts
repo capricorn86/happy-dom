@@ -188,7 +188,7 @@ export default class Element extends Node {
 
 		if (deep) {
 			clone.children = <Element[]>(
-				this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
+				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
 			);
 		}
 

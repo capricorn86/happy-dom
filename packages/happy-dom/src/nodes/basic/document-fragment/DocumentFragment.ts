@@ -83,7 +83,7 @@ export default class DocumentFragment extends Node {
 
 		if (deep) {
 			clone.children = <Element[]>(
-				this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
+				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
 			);
 		}
 		clone.mode = this.mode;
