@@ -233,13 +233,19 @@ describe('Node', () => {
 			const span = document.createElement('span');
 			const text = document.createTextNode('text');
 			const comment = document.createComment('comment');
+
 			div.appendChild(span);
 			span.appendChild(text);
 			span.appendChild(comment);
+
 			document.body.appendChild(div);
+
 			const clone = div.cloneNode();
+
 			document.body.removeChild(div);
+
 			div.removeChild(span);
+
 			expect(div).toEqual(clone);
 			expect(div !== clone).toBe(true);
 		});
@@ -249,14 +255,23 @@ describe('Node', () => {
 			const span = document.createElement('span');
 			const text = document.createTextNode('text');
 			const comment = document.createComment('comment');
+
 			div.appendChild(span);
 			span.appendChild(text);
 			span.appendChild(comment);
+
 			document.body.appendChild(div);
+
 			const clone = div.cloneNode(true);
+
 			document.body.removeChild(div);
+
 			expect(div).toEqual(clone);
 			expect(div !== clone).toBe(true);
+
+			expect(clone.children).toEqual(
+				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
+			);
 		});
 	});
 

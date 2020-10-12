@@ -191,7 +191,7 @@ export default class Document extends DocumentFragment {
 				: this.defaultView.customElements.get(qualifiedName);
 		const elementClass = customElementClass
 			? customElementClass
-			: this.getElementClass(qualifiedName);
+			: HTMLElementTag[qualifiedName] || HTMLElement;
 
 		elementClass.ownerDocument = this;
 
@@ -301,15 +301,5 @@ export default class Document extends DocumentFragment {
 		const clone = node.cloneNode(true);
 		clone.ownerDocument = this;
 		return clone;
-	}
-
-	/**
-	 * Returns the element class for a tag name.
-	 *
-	 * @param tagName Tag name.
-	 * @returns Element class.
-	 */
-	private getElementClass(tagName: string): typeof Element {
-		return HTMLElementTag[tagName] || HTMLElement;
 	}
 }

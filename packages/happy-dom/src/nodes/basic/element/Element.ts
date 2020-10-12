@@ -19,9 +19,10 @@ export default class Element extends Node {
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
 	public shadowRoot: ShadowRoot = null;
-	public classList = new ClassList(this);
+	public readonly classList = new ClassList(this);
 	public scrollTop = 0;
 	public scrollLeft = 0;
+	public children: Element[] = [];
 	public _attributes: { [k: string]: Attr } = {};
 	public _namespaceURI: string = null;
 
@@ -70,15 +71,6 @@ export default class Element extends Node {
 	 */
 	public set className(className: string) {
 		this.setAttribute('class', className);
-	}
-
-	/**
-	 * Returns children.
-	 *
-	 * @returns Children.
-	 */
-	public get children(): Element[] {
-		return <Element[]>this.childNodes.filter(childNode => childNode instanceof Element);
 	}
 
 	/**
@@ -194,13 +186,50 @@ export default class Element extends Node {
 			clone._attributes[key] = Object.assign(new Attr(), this._attributes[key]);
 		}
 
-		clone.classList = new ClassList(clone);
+		if (deep) {
+			clone.children = <Element[]>(
+				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
+			);
+		}
+
 		clone.tagName = this.tagName;
 		clone.scrollLeft = this.scrollLeft;
 		clone.scrollTop = this.scrollTop;
 		clone._namespaceURI = this._namespaceURI;
 
 		return clone;
+	}
+
+	/**
+	 * Append a child node to childNodes.
+	 *
+	 * @override
+	 * @param  node Node to append.
+	 * @return Appended node.
+	 */
+	public appendChild(node: Node): Node {
+		if (node !== this && node instanceof Element) {
+			this.children.push(node);
+		}
+
+		return super.appendChild(node);
+	}
+
+	/**
+	 * Remove Child element from childNodes array.
+	 *
+	 * @override
+	 * @param node Node to remove
+	 */
+	public removeChild(node: Node): void {
+		if (node instanceof Element) {
+			const index = this.children.indexOf(node);
+			if (index !== -1) {
+				this.children.splice(index, 1);
+			}
+		}
+
+		super.removeChild(node);
 	}
 
 	/**
@@ -398,6 +427,17 @@ export default class Element extends Node {
 	 */
 	public getElementsByTagName(tagName: string): Element[] {
 		return this.querySelectorAll(tagName);
+	}
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching nodes.
+	 */
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): Element[] {
+		return this.querySelectorAll(tagName).filter(element => element._namespaceURI === namespaceURI);
 	}
 
 	/**

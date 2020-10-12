@@ -29,6 +29,18 @@ describe('Element', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('children', () => {
+		test('Returns nodes of type Element.', () => {
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			const textNode = document.createTextNode('text');
+			element.appendChild(div1);
+			element.appendChild(textNode);
+			element.appendChild(div2);
+			expect(element.children).toEqual([div1, div2]);
+		});
+	});
+
 	describe('get id()', () => {
 		test('Returns the element "id" attribute.', () => {
 			element.setAttribute('id', 'id');
@@ -54,18 +66,6 @@ describe('Element', () => {
 		test('Sets the element "class" as an attribute.', () => {
 			element.className = 'class';
 			expect(element.getAttribute('class')).toBe('class');
-		});
-	});
-
-	describe('get children()', () => {
-		test('Returns nodes of type Element.', () => {
-			const div1 = document.createElement('div');
-			const div2 = document.createElement('div');
-			const textNode = document.createTextNode('text');
-			element.appendChild(div1);
-			element.appendChild(textNode);
-			element.appendChild(div2);
-			expect(element.children).toEqual([div1, div2]);
 		});
 	});
 
@@ -368,16 +368,36 @@ describe('Element', () => {
 
 	describe('getElementsByTagName()', () => {
 		test('Returns elements matching a tag name.', () => {
-			const tagName = 'div';
-			const result = [];
-			jest
-				.spyOn(QuerySelector, 'querySelectorAll')
-				.mockImplementation((targetElement, targetSelector) => {
-					expect(targetElement).toBe(element);
-					expect(targetSelector).toBe(tagName);
-					return result;
-				});
-			expect(element.getElementsByTagName(tagName)).toBe(result);
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			const div3 = document.createElement('div');
+			const textNode = document.createTextNode('text');
+
+			element.appendChild(div1);
+
+			div1.appendChild(div2);
+			div2.appendChild(div3);
+			div3.appendChild(textNode);
+
+			expect(element.getElementsByTagName('div')).toEqual([div1, div2, div3]);
+		});
+	});
+
+	describe('getElementsByTagNameNS()', () => {
+		test('Returns elements matching a tag name and namespace.', () => {
+			const div1 = document.createElementNS(NamespaceURI.svg, 'div');
+			const div2 = document.createElement('div');
+			const div3 = document.createElementNS(NamespaceURI.svg, 'div');
+			const textNode = document.createTextNode('text');
+
+			element.appendChild(div1);
+
+			div1.appendChild(div2);
+			div2.appendChild(div3);
+			div3.appendChild(textNode);
+
+			expect(element.getElementsByTagNameNS(NamespaceURI.svg, 'div')).toEqual([div1, div3]);
+			expect(element.getElementsByTagNameNS(NamespaceURI.svg, '*')).toEqual([div1, div3]);
 		});
 	});
 
