@@ -1,5 +1,4 @@
 import Node from '../node/Node';
-import TextNode from '../text-node/TextNode';
 import ShadowRoot from '../shadow-root/ShadowRoot';
 import Attr from '../../../attribute/Attr';
 import DOMRect from './DOMRect';
@@ -11,11 +10,15 @@ import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import NamespaceURI from '../../../html-config/NamespaceURI';
 import XMLParser from '../../../xml-parser/XMLParser';
 import XMLSerializer from '../../../xml-serializer/XMLSerializer';
+import ChildNodeUtility from '../child-node/ChildNodeUtility';
+import ParentNodeUtility from '../parent-node/ParentNodeUtility';
+import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility';
+import IElement from './IElement';
 
 /**
  * Element.
  */
-export default class Element extends Node {
+export default class Element extends Node implements IElement {
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
 	public shadowRoot: ShadowRoot = null;
@@ -24,7 +27,7 @@ export default class Element extends Node {
 	public scrollLeft = 0;
 	public children: Element[] = [];
 	public _attributes: { [k: string]: Attr } = {};
-	public _namespaceURI: string = null;
+	public readonly namespaceURI: string = null;
 
 	/**
 	 * Returns a list of observed attributes.
@@ -83,12 +86,21 @@ export default class Element extends Node {
 	}
 
 	/**
-	 * Returns the namespace URI.
+	 * Previous element sibling.
 	 *
-	 * @return Namespace URI.
+	 * @return Element.
 	 */
-	public get namespaceURI(): string {
-		return this._namespaceURI;
+	public get previousElementSibling(): Element {
+		return NonDocumentChildNodeUtility.previousElementSibling(this);
+	}
+
+	/**
+	 * Next element sibling.
+	 *
+	 * @return Element.
+	 */
+	public get nextElementSibling(): Element {
+		return NonDocumentChildNodeUtility.nextElementSibling(this);
 	}
 
 	/**
@@ -99,7 +111,7 @@ export default class Element extends Node {
 	public get textContent(): string {
 		let result = '';
 		for (const childNode of this.childNodes) {
-			if (childNode instanceof Element || childNode instanceof TextNode) {
+			if (childNode.nodeType === Node.ELEMENT_NODE || childNode.nodeType === Node.TEXT_NODE) {
 				result += childNode.textContent;
 			}
 		}
@@ -169,6 +181,33 @@ export default class Element extends Node {
 	}
 
 	/**
+	 * First element child.
+	 *
+	 * @return Element.
+	 */
+	public get firstElementChild(): Element {
+		return this.children ? this.children[0] || null : null;
+	}
+
+	/**
+	 * Last element child.
+	 *
+	 * @return Element.
+	 */
+	public get lastElementChild(): Element {
+		return this.children ? this.children[this.children.length - 1] || null : null;
+	}
+
+	/**
+	 * Last element child.
+	 *
+	 * @return Element.
+	 */
+	public get childElementCount(): number {
+		return this.children.length;
+	}
+
+	/**
 	 * Attribute changed callback.
 	 *
 	 * @param name Name.
@@ -184,7 +223,7 @@ export default class Element extends Node {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Node {
+	public cloneNode(deep = false): Element {
 		const clone = <Element>super.cloneNode(deep);
 
 		for (const key of Object.keys(this._attributes)) {
@@ -200,7 +239,8 @@ export default class Element extends Node {
 		clone.tagName = this.tagName;
 		clone.scrollLeft = this.scrollLeft;
 		clone.scrollTop = this.scrollTop;
-		clone._namespaceURI = this._namespaceURI;
+		// @ts-ignore
+		clone.namespaceURI = this.namespaceURI;
 
 		return clone;
 	}
@@ -213,8 +253,15 @@ export default class Element extends Node {
 	 * @return Appended node.
 	 */
 	public appendChild(node: Node): Node {
-		if (node !== this && node instanceof Element) {
-			this.children.push(node);
+		if (node.parentNode && node.parentNode['children']) {
+			const index = node.parentNode['children'].indexOf(node);
+			if (index !== -1) {
+				node.parentNode['children'].splice(index, 1);
+			}
+		}
+
+		if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
+			this.children.push(<Element>node);
 		}
 
 		return super.appendChild(node);
@@ -227,14 +274,94 @@ export default class Element extends Node {
 	 * @param node Node to remove
 	 */
 	public removeChild(node: Node): void {
-		if (node instanceof Element) {
-			const index = this.children.indexOf(node);
+		if (node.nodeType === Node.ELEMENT_NODE) {
+			const index = this.children.indexOf(<Element>node);
 			if (index !== -1) {
 				this.children.splice(index, 1);
 			}
 		}
 
 		super.removeChild(node);
+	}
+
+	/**
+	 * Removes the node from its parent.
+	 */
+	public remove(): void {
+		ChildNodeUtility.remove(this);
+	}
+
+	/**
+	 * Inserts a node before another.
+	 *
+	 * @override
+	 * @param newNode Node to insert.
+	 * @param [referenceNode] Node to insert before.
+	 * @return Inserted node.
+	 */
+	public insertBefore(newNode: Node, referenceNode?: Node): Node {
+		if (newNode.parentNode && newNode.parentNode['children']) {
+			const index = newNode.parentNode['children'].indexOf(newNode);
+			if (index !== -1) {
+				newNode.parentNode['children'].splice(index, 1);
+			}
+		}
+
+		return super.insertBefore(newNode, referenceNode);
+	}
+
+	/**
+	 * The Node.replaceWith() method replaces this Node in the children list of its parent with a set of Node or DOMString objects.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public replaceWith(...nodes: (Node | string)[]): void {
+		ChildNodeUtility.replaceWith(this, ...nodes);
+	}
+
+	/**
+	 * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just before this ChildNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public before(...nodes: (string | Node)[]): void {
+		ChildNodeUtility.before(this, ...nodes);
+	}
+
+	/**
+	 * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just after this ChildNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public after(...nodes: (string | Node)[]): void {
+		ChildNodeUtility.after(this, ...nodes);
+	}
+
+	/**
+	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public append(...nodes: (string | Node)[]): void {
+		ParentNodeUtility.append(this, ...nodes);
+	}
+
+	/**
+	 * Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public prepend(...nodes: (string | Node)[]): void {
+		ParentNodeUtility.prepend(this, ...nodes);
+	}
+
+	/**
+	 * Replaces the existing children of a node with a specified new set of children.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public replaceChildren(...nodes: (string | Node)[]): void {
+		ParentNodeUtility.replaceChildren(this, ...nodes);
 	}
 
 	/**
@@ -360,12 +487,17 @@ export default class Element extends Node {
 	 * @param _shadowRootInit Shadow root init.
 	 * @returns Shadow root.
 	 */
-	public attachShadow(_shadowRootInit: { mode: string }): ShadowRoot {
+	public attachShadow(shadowRootInit: { mode: string }): ShadowRoot {
 		if (this.shadowRoot) {
 			throw new Error('Shadow root has already been attached.');
 		}
 		this.shadowRoot = new ShadowRoot();
+		// @ts-ignore
 		this.shadowRoot.ownerDocument = this.ownerDocument;
+		// @ts-ignore
+		this.shadowRoot.host = this;
+		// @ts-ignore
+		this.shadowRoot.mode = shadowRootInit.mode;
 		this.shadowRoot.isConnected = this.isConnected;
 		return this.shadowRoot;
 	}
@@ -418,7 +550,7 @@ export default class Element extends Node {
 	 * Query CSS Selector to find matching node.
 	 *
 	 * @param selector CSS selector.
-	 * @return Matching node.
+	 * @return Matching element.
 	 */
 	public querySelector(selector: string): Element {
 		return QuerySelector.querySelector(this, selector);
@@ -428,7 +560,7 @@ export default class Element extends Node {
 	 * Returns an elements by tag name.
 	 *
 	 * @param tagName Tag name.
-	 * @returns Matching nodes.
+	 * @returns Matching elements.
 	 */
 	public getElementsByTagName(tagName: string): Element[] {
 		return this.querySelectorAll(tagName);
@@ -442,7 +574,7 @@ export default class Element extends Node {
 	 * @returns Matching nodes.
 	 */
 	public getElementsByTagNameNS(namespaceURI: string, tagName: string): Element[] {
-		return this.querySelectorAll(tagName).filter(element => element._namespaceURI === namespaceURI);
+		return this.querySelectorAll(tagName).filter(element => element.namespaceURI === namespaceURI);
 	}
 
 	/**
@@ -558,7 +690,7 @@ export default class Element extends Node {
 	 * @returns Attribute name based on namespace.
 	 */
 	protected _getAttributeName(name): string {
-		if (this._namespaceURI === NamespaceURI.svg) {
+		if (this.namespaceURI === NamespaceURI.svg) {
 			return name;
 		}
 		return name.toLowerCase();

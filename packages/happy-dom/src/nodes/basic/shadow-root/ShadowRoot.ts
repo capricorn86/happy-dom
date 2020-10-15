@@ -1,13 +1,14 @@
 import DocumentFragment from '../document-fragment/DocumentFragment';
-import Node from '../node/Node';
 import XMLParser from '../../../xml-parser/XMLParser';
 import XMLSerializer from '../../../xml-serializer/XMLSerializer';
+import Element from '../element/Element';
 
 /**
  * ShadowRoot.
  */
 export default class ShadowRoot extends DocumentFragment {
-	public mode = 'open';
+	public readonly mode = 'open';
+	public readonly host: Element = null;
 
 	/**
 	 * Returns inner HTML.
@@ -54,8 +55,9 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Node {
+	public cloneNode(deep = false): ShadowRoot {
 		const clone = <ShadowRoot>super.cloneNode(deep);
+		// @ts-ignore
 		clone.mode = this.mode;
 		return clone;
 	}

@@ -1,11 +1,11 @@
 import Element from '../element/Element';
 import Event from '../../../event/Event';
-import Node from '../node/Node';
+import IHTMLElement from './IHTMLElement';
 
 /**
  * HTMLElement.
  */
-export default class HTMLElement extends Element {
+export default class HTMLElement extends Element implements IHTMLElement {
 	public style: { [k: string]: string } = {};
 	public tabIndex = -1;
 	public offsetHeight = 0;
@@ -79,7 +79,7 @@ export default class HTMLElement extends Element {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Node {
+	public cloneNode(deep = false): HTMLElement {
 		const clone = <HTMLElement>super.cloneNode(deep);
 
 		clone.style = this.style;

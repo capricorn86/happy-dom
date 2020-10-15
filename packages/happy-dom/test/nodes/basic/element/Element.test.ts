@@ -8,8 +8,11 @@ import HTMLElement from '../../../../src/nodes/basic/html-element/HTMLElement';
 import TextNode from '../../../../src/nodes/basic/text-node/TextNode';
 import DOMRect from '../../../../src/nodes/basic/element/DOMRect';
 import Range from '../../../../src/nodes/basic/element/Range';
-import QuerySelector from '../../../../src/query-selector/QuerySelector';
 import NamespaceURI from '../../../../src/html-config/NamespaceURI';
+import ParentNodeUtility from '../../../../src/nodes/basic/parent-node/ParentNodeUtility';
+import QuerySelector from '../../../../src/query-selector/QuerySelector';
+import ChildNodeUtility from '../../../../src/nodes/basic/child-node/ChildNodeUtility';
+import NonDocumentChildNodeUtility from '../../../../src/nodes/basic/child-node/NonDocumentChildNodeUtility';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -177,6 +180,299 @@ describe('Element', () => {
 		});
 	});
 
+	describe('get childElementCount()', () => {
+		test('Returns child element count.', () => {
+			document.appendChild(document.createElement('div'));
+			document.appendChild(document.createTextNode('test'));
+			expect(document.childElementCount).toEqual(2);
+		});
+	});
+
+	describe('get firstElementChild()', () => {
+		test('Returns first element child.', () => {
+			const div = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const text1 = document.createTextNode('text1');
+			const text2 = document.createTextNode('text2');
+
+			for (const node of document.childNodes.slice()) {
+				node.parentNode.removeChild(node);
+			}
+
+			div.appendChild(text1);
+			div.appendChild(span1);
+			div.appendChild(span2);
+			div.appendChild(text2);
+
+			expect(div.firstElementChild).toBe(span1);
+		});
+	});
+
+	describe('get lastElementChild()', () => {
+		test('Returns last element child.', () => {
+			const div = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const text1 = document.createTextNode('text1');
+			const text2 = document.createTextNode('text2');
+
+			for (const node of document.childNodes.slice()) {
+				node.parentNode.removeChild(node);
+			}
+
+			div.appendChild(text1);
+			div.appendChild(span1);
+			div.appendChild(span2);
+			div.appendChild(text2);
+
+			expect(div.lastElementChild).toBe(span2);
+		});
+	});
+
+	describe('append()', () => {
+		test('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
+			const node1 = document.createComment('test1');
+			const node2 = document.createComment('test2');
+			let isCalled = false;
+
+			jest.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
+				expect(parentNode).toBe(document);
+				expect(nodes).toEqual([node1, node2]);
+				isCalled = true;
+			});
+
+			document.append(node1, node2);
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('prepend()', () => {
+		test('Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
+			const node1 = document.createComment('test1');
+			const node2 = document.createComment('test2');
+			let isCalled = false;
+
+			jest.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
+				expect(parentNode).toBe(document);
+				expect(nodes).toEqual([node1, node2]);
+				isCalled = true;
+			});
+
+			document.prepend(node1, node2);
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('replaceChildren()', () => {
+		test('Replaces the existing children of a ParentNode with a specified new set of children.', () => {
+			const node1 = document.createComment('test1');
+			const node2 = document.createComment('test2');
+			let isCalled = false;
+
+			jest
+				.spyOn(ParentNodeUtility, 'replaceChildren')
+				.mockImplementation((parentNode, ...nodes) => {
+					expect(parentNode).toBe(document);
+					expect(nodes).toEqual([node1, node2]);
+					isCalled = true;
+				});
+
+			document.replaceChildren(node1, node2);
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('querySelectorAll()', () => {
+		test('Query CSS selector to find matching elements.', () => {
+			const element = document.createElement('div');
+			const expectedSelector = 'selector';
+
+			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+				expect(parentNode).toBe(document);
+				expect(selector).toEqual(expectedSelector);
+				return [element];
+			});
+
+			expect(document.querySelectorAll(expectedSelector)).toEqual([element]);
+		});
+	});
+
+	describe('querySelector()', () => {
+		test('Query CSS selector to find a matching element.', () => {
+			const element = document.createElement('div');
+			const expectedSelector = 'selector';
+
+			jest.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
+				expect(parentNode).toBe(document);
+				expect(selector).toEqual(expectedSelector);
+				return element;
+			});
+
+			expect(document.querySelector(expectedSelector)).toEqual(element);
+		});
+	});
+
+	describe('getElementsByClassName()', () => {
+		test('Returns an elements by class name.', () => {
+			const element = document.createElement('div');
+			const className = 'className';
+
+			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+				expect(parentNode).toBe(document);
+				expect(selector).toEqual(`.${className}`);
+				return [element];
+			});
+
+			expect(document.getElementsByClassName(className)).toEqual([element]);
+		});
+	});
+
+	describe('getElementsByTagName()', () => {
+		test('Returns an elements by tag name.', () => {
+			const element = document.createElement('div');
+			const tagName = 'tag-name';
+
+			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+				expect(parentNode).toBe(document);
+				expect(selector).toEqual(tagName);
+				return [element];
+			});
+
+			expect(document.getElementsByTagName(tagName)).toEqual([element]);
+		});
+	});
+
+	describe('getElementsByTagNameNS()', () => {
+		test('Returns an elements by tag name and namespace.', () => {
+			const element1 = document.createElement('div');
+			const element2 = document.createElement('div');
+			const tagName = 'tag-name';
+
+			// @ts-ignore
+			element1.namespaceURI = '/namespace/';
+
+			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+				expect(parentNode).toBe(document);
+				expect(selector).toEqual(tagName);
+				return [element1, element2];
+			});
+
+			expect(document.getElementsByTagNameNS('/namespace/', tagName)).toEqual([element1]);
+		});
+	});
+
+	describe('getElementById()', () => {
+		test('Returns an element by ID.', () => {
+			const element = document.createElement('div');
+			const id = 'id';
+
+			jest.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
+				expect(parentNode).toBe(document);
+				expect(selector).toEqual(`#${id}`);
+				return element;
+			});
+
+			expect(document.getElementById(id)).toEqual(element);
+		});
+	});
+
+	describe('remove()', () => {
+		test('Removes the node from its parent.', () => {
+			const element = document.createElement('div');
+			let isCalled = false;
+
+			jest.spyOn(ChildNodeUtility, 'remove').mockImplementation(childNode => {
+				expect(childNode).toBe(element);
+				isCalled = true;
+			});
+
+			element.remove();
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('replaceWith()', () => {
+		test('Replaces a Node in the children list of its parent with a set of Node or DOMString objects.', () => {
+			const node1 = document.createComment('test1');
+			const node2 = document.createComment('test2');
+			let isCalled = false;
+
+			jest.spyOn(ChildNodeUtility, 'replaceWith').mockImplementation((childNode, ...nodes) => {
+				expect(childNode).toBe(element);
+				expect(nodes).toEqual([node1, node2]);
+				isCalled = true;
+			});
+
+			element.replaceWith(node1, node2);
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('before()', () => {
+		test("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just before this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
+			const node1 = document.createComment('test1');
+			const node2 = document.createComment('test2');
+			let isCalled = false;
+
+			jest.spyOn(ChildNodeUtility, 'before').mockImplementation((childNode, ...nodes) => {
+				expect(childNode).toBe(element);
+				expect(nodes).toEqual([node1, node2]);
+				isCalled = true;
+			});
+
+			element.before(node1, node2);
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('after()', () => {
+		test("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just after this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
+			const node1 = document.createComment('test1');
+			const node2 = document.createComment('test2');
+			let isCalled = false;
+
+			jest.spyOn(ChildNodeUtility, 'after').mockImplementation((childNode, ...nodes) => {
+				expect(childNode).toBe(element);
+				expect(nodes).toEqual([node1, node2]);
+				isCalled = true;
+			});
+
+			element.after(node1, node2);
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('get previousElementSibling()', () => {
+		test('Returns previous element sibling..', () => {
+			const node = document.createComment('test');
+			const previousElementSibling = document.createElement('div');
+			jest
+				.spyOn(NonDocumentChildNodeUtility, 'previousElementSibling')
+				.mockImplementation(childNode => {
+					expect(childNode).toBe(node);
+					return previousElementSibling;
+				});
+
+			expect(node.previousElementSibling).toBe(previousElementSibling);
+		});
+	});
+
+	describe('get nextElementSibling()', () => {
+		test('Returns next element sibling..', () => {
+			const node = document.createComment('test');
+			const nextElementSibling = document.createElement('div');
+			jest
+				.spyOn(NonDocumentChildNodeUtility, 'nextElementSibling')
+				.mockImplementation(childNode => {
+					expect(childNode).toBe(node);
+					return nextElementSibling;
+				});
+
+			expect(node.nextElementSibling).toBe(nextElementSibling);
+		});
+	});
+
 	describe('attributeChangedCallback()', () => {
 		test('Calls attribute changed callback when it is implemented by a custom element (web component).', () => {
 			const customElement = <CustomElement>document.createElement('custom-element');
@@ -340,83 +636,30 @@ describe('Element', () => {
 		});
 	});
 
-	describe('querySelectorAll()', () => {
-		test('Returns elements matching a CSS selector.', () => {
-			const selector = '*';
-			const result = [];
-			jest
-				.spyOn(QuerySelector, 'querySelectorAll')
-				.mockImplementation((targetElement, targetSelector) => {
-					expect(targetElement).toBe(element);
-					expect(targetSelector).toBe(selector);
-					return result;
-				});
-			expect(element.querySelectorAll(selector)).toBe(result);
-		});
-	});
+	describe('cloneNode()', () => {
+		test('Clones the properties of the element when cloned.', () => {
+			const child = document.createElement('div');
 
-	describe('querySelector()', () => {
-		test('Returns an element matching a CSS selector.', () => {
-			const selector = '*';
-			const result = document.createElement('div');
-			jest
-				.spyOn(QuerySelector, 'querySelector')
-				.mockImplementation((targetElement, targetSelector) => {
-					expect(targetElement).toBe(element);
-					expect(targetSelector).toBe(selector);
-					return result;
-				});
-			expect(element.querySelector(selector)).toBe(result);
-		});
-	});
+			child.className = 'className';
 
-	describe('getElementsByTagName()', () => {
-		test('Returns elements matching a tag name.', () => {
-			const div1 = document.createElement('div');
-			const div2 = document.createElement('div');
-			const div3 = document.createElement('div');
-			const textNode = document.createTextNode('text');
+			element.tagName = 'tagName';
+			element.scrollLeft = 10;
+			element.scrollTop = 10;
 
-			element.appendChild(div1);
+			// @ts-ignore
+			element.namespaceURI = 'namespaceURI';
 
-			div1.appendChild(div2);
-			div2.appendChild(div3);
-			div3.appendChild(textNode);
+			element.appendChild(child);
 
-			expect(element.getElementsByTagName('div')).toEqual([div1, div2, div3]);
-		});
-	});
-
-	describe('getElementsByTagNameNS()', () => {
-		test('Returns elements matching a tag name and namespace.', () => {
-			const div1 = document.createElementNS(NamespaceURI.svg, 'div');
-			const div2 = document.createElement('div');
-			const div3 = document.createElementNS(NamespaceURI.svg, 'div');
-			const textNode = document.createTextNode('text');
-
-			element.appendChild(div1);
-
-			div1.appendChild(div2);
-			div2.appendChild(div3);
-			div3.appendChild(textNode);
-
-			expect(element.getElementsByTagNameNS(NamespaceURI.svg, 'div')).toEqual([div1, div3]);
-			expect(element.getElementsByTagNameNS(NamespaceURI.svg, '*')).toEqual([div1, div3]);
-		});
-	});
-
-	describe('getElementsByClassName()', () => {
-		test('Returns elements matching a class name.', () => {
-			const className = 'class1';
-			const result = [];
-			jest
-				.spyOn(QuerySelector, 'querySelectorAll')
-				.mockImplementation((targetElement, targetSelector) => {
-					expect(targetElement).toBe(element);
-					expect(targetSelector).toBe('.' + className);
-					return result;
-				});
-			expect(element.getElementsByClassName(className)).toBe(result);
+			const clone = element.cloneNode(false);
+			const clone2 = element.cloneNode(true);
+			expect(clone.tagName).toBe('tagName');
+			expect(clone.scrollLeft).toBe(10);
+			expect(clone.scrollTop).toBe(10);
+			expect(clone.namespaceURI).toBe('namespaceURI');
+			expect(clone.children).toEqual([]);
+			expect(clone2.children.length).toBe(1);
+			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
 		});
 	});
 
@@ -537,6 +780,37 @@ describe('Element', () => {
 			element.removeAttributeNode(attribute);
 
 			expect(element.attributes).toEqual({ length: 0 });
+		});
+	});
+
+	describe('replaceWith()', () => {
+		test('Replaces a node with another node.', () => {
+			const parent = document.createElement('div');
+			const newChild = document.createElement('span');
+			newChild.className = 'child4';
+			parent.innerHTML =
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>';
+
+			parent.children[2].replaceWith(newChild);
+			expect(parent.innerHTML).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child4"></span>'
+			);
+		});
+
+		test('Replaces a node with a mixed list of Node and DOMString (string).', () => {
+			const parent = document.createElement('div');
+			const newChildrenParent = document.createElement('div');
+			const newChildrenHtml =
+				'<span class="child4"></span><span class="child5"></span><span class="child6"></span>';
+			newChildrenParent.innerHTML =
+				'<span class="child7"></span><span class="child8"></span><span class="child9"></span>';
+			parent.innerHTML =
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>';
+
+			parent.children[2].replaceWith(...[newChildrenHtml, ...newChildrenParent.children]);
+			expect(parent.innerHTML).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+			);
 		});
 	});
 });

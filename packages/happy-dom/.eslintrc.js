@@ -45,6 +45,7 @@ module.exports = {
                 }
             }
         ],
+        "@typescript-eslint/ban-ts-ignore": OFF,
         '@typescript-eslint/indent': [WARN, 'tab'],
         '@typescript-eslint/interface-name-prefix': [ERROR, "always"],
         '@typescript-eslint/member-delimiter-style': ERROR,

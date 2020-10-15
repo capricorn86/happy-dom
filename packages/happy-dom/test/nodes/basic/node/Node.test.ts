@@ -96,36 +96,6 @@ describe('Node', () => {
 		});
 	});
 
-	describe('get previousElementSibling()', () => {
-		test('Returns previous element sibling.', () => {
-			const div = document.createElement('div');
-			const span1 = document.createElement('span');
-			const span2 = document.createElement('span');
-			const text = document.createTextNode('text');
-
-			div.appendChild(span1);
-			div.appendChild(text);
-			div.appendChild(span2);
-
-			expect(span2.previousElementSibling).toBe(span1);
-		});
-	});
-
-	describe('get nextElementSibling()', () => {
-		test('Returns next element sibling.', () => {
-			const div = document.createElement('div');
-			const span1 = document.createElement('span');
-			const span2 = document.createElement('span');
-			const text = document.createTextNode('text');
-
-			div.appendChild(span1);
-			div.appendChild(text);
-			div.appendChild(span2);
-
-			expect(span1.nextElementSibling).toBe(span2);
-		});
-	});
-
 	describe('get firstChild()', () => {
 		test('Returns the first child node.', () => {
 			const div = document.createElement('div');
@@ -153,40 +123,6 @@ describe('Node', () => {
 			div.appendChild(span2);
 
 			expect(div.lastChild).toBe(span2);
-		});
-	});
-
-	describe('get firstElementChild()', () => {
-		test('Returns first element child.', () => {
-			const div = document.createElement('div');
-			const span1 = document.createElement('span');
-			const span2 = document.createElement('span');
-			const text1 = document.createTextNode('text1');
-			const text2 = document.createTextNode('text2');
-
-			div.appendChild(text1);
-			div.appendChild(span1);
-			div.appendChild(span2);
-			div.appendChild(text2);
-
-			expect(div.firstElementChild).toBe(span1);
-		});
-	});
-
-	describe('get lastElementChild()', () => {
-		test('Returns last element child.', () => {
-			const div = document.createElement('div');
-			const span1 = document.createElement('span');
-			const span2 = document.createElement('span');
-			const text1 = document.createTextNode('text1');
-			const text2 = document.createTextNode('text2');
-
-			div.appendChild(text1);
-			div.appendChild(span1);
-			div.appendChild(span2);
-			div.appendChild(text2);
-
-			expect(div.lastElementChild).toBe(span2);
 		});
 	});
 
@@ -314,23 +250,6 @@ describe('Node', () => {
 		});
 	});
 
-	describe('remove()', () => {
-		test('Removes a Node from its parent.', () => {
-			const child = document.createElement('span');
-			const parent = document.createElement('div');
-
-			parent.appendChild(child);
-
-			expect(child.parentNode).toBe(parent);
-			expect(parent.childNodes).toEqual([child]);
-
-			child.remove();
-
-			expect(child.parentNode).toBe(null);
-			expect(parent.childNodes).toEqual([]);
-		});
-	});
-
 	describe('removeChild()', () => {
 		test('Removes a child Node from its parent.', () => {
 			const child = document.createElement('span');
@@ -414,37 +333,6 @@ describe('Node', () => {
 			document.body.appendChild(parent);
 
 			expect(newNode.isConnected).toBe(true);
-		});
-	});
-
-	describe('replaceWith()', () => {
-		test('Replaces a node another node.', () => {
-			const parent = document.createElement('div');
-			const newChild = document.createElement('span');
-			newChild.className = 'child4';
-			parent.innerHTML =
-				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>';
-
-			parent.children[2].replaceWith(newChild);
-			expect(parent.innerHTML).toBe(
-				'<span class="child1"></span><span class="child2"></span><span class="child4"></span>'
-			);
-		});
-
-		test('Replaces a node with a mixed list of Node and DOMString (string).', () => {
-			const parent = document.createElement('div');
-			const newChildrenParent = document.createElement('div');
-			const newChildrenHtml =
-				'<span class="child4"></span><span class="child5"></span><span class="child6"></span>';
-			newChildrenParent.innerHTML =
-				'<span class="child7"></span><span class="child8"></span><span class="child9"></span>';
-			parent.innerHTML =
-				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>';
-
-			parent.children[2].replaceWith(...[newChildrenHtml, ...newChildrenParent.children]);
-			expect(parent.innerHTML).toBe(
-				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
-			);
 		});
 	});
 

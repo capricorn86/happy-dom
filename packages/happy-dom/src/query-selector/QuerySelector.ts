@@ -1,5 +1,7 @@
 import Element from '../nodes/basic/element/Element';
 import DocumentFragment from '../nodes/basic/document-fragment/DocumentFragment';
+import Document from '../nodes/basic/document/Document';
+import Node from '../nodes/basic/node/Node';
 import SelectorItem from './SelectorItem';
 
 const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#":()\]]+)|([ ,>]+)/g;
@@ -20,7 +22,10 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll(node: Element | DocumentFragment, selector: string): Element[] {
+	public static querySelectorAll(
+		node: Element | DocumentFragment | Document,
+		selector: string
+	): Element[] {
 		const matched = [];
 
 		for (const parts of this.getSelectorParts(selector)) {
@@ -41,7 +46,10 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @return HTML element.
 	 */
-	public static querySelector(node: Element | DocumentFragment, selector: string): Element {
+	public static querySelector(
+		node: Element | DocumentFragment | Document,
+		selector: string
+	): Element {
 		for (const parts of this.getSelectorParts(selector)) {
 			const match = this.findFirst(node, [node], parts);
 
@@ -63,8 +71,8 @@ export default class QuerySelector {
 	 * @returns HTML elements.
 	 */
 	private static findAll(
-		rootNode: Element | DocumentFragment,
-		nodes: (Element | DocumentFragment)[],
+		rootNode: Element | DocumentFragment | Document,
+		nodes: (Element | DocumentFragment | Document)[],
 		selectorParts: string[],
 		selectorItem?: SelectorItem
 	): Element[] {
@@ -76,22 +84,24 @@ export default class QuerySelector {
 		let matched = [];
 
 		for (const node of nodes) {
-			if (node instanceof Element) {
-				if (selector.match(node)) {
+			if (node.nodeType === Node.ELEMENT_NODE) {
+				if (selector.match(<Element>node)) {
 					if (selectorParts.length === 1) {
 						if (rootNode !== node) {
 							matched.push(node);
 						}
 					} else {
 						matched = matched.concat(
-							this.findAll(rootNode, node.children, selectorParts.slice(1), null)
+							this.findAll(rootNode, (<Element>node).children, selectorParts.slice(1), null)
 						);
 					}
 				}
 			}
 
 			if (!isDirectChild) {
-				matched = matched.concat(this.findAll(rootNode, node.children, selectorParts, selector));
+				matched = matched.concat(
+					this.findAll(rootNode, (<Element>node).children, selectorParts, selector)
+				);
 			}
 		}
 
@@ -107,8 +117,8 @@ export default class QuerySelector {
 	 * @return HTML element.
 	 */
 	private static findFirst(
-		rootNode: Element | DocumentFragment,
-		nodes: (Element | DocumentFragment)[],
+		rootNode: Element | DocumentFragment | Document,
+		nodes: (Element | DocumentFragment | Document)[],
 		selectorParts: string[],
 		selectorItem?: SelectorItem
 	): Element {
@@ -119,15 +129,15 @@ export default class QuerySelector {
 		const selector = selectorItem || new SelectorItem(selectorParts[0]);
 
 		for (const node of nodes) {
-			if (node instanceof Element && selector.match(node)) {
+			if (node.nodeType === Node.ELEMENT_NODE && selector.match(<Element>node)) {
 				if (selectorParts.length === 1) {
 					if (rootNode !== node) {
-						return node;
+						return <Element>node;
 					}
 				} else {
 					const childSelector = this.findFirst(
 						rootNode,
-						node.children,
+						(<Element>node).children,
 						selectorParts.slice(1),
 						null
 					);
@@ -138,7 +148,12 @@ export default class QuerySelector {
 			}
 
 			if (!isDirectChild) {
-				const childSelector = this.findFirst(rootNode, node.children, selectorParts, selector);
+				const childSelector = this.findFirst(
+					rootNode,
+					(<Element>node).children,
+					selectorParts,
+					selector
+				);
 
 				if (childSelector) {
 					return childSelector;

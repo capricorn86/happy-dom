@@ -490,5 +490,15 @@ describe('QuerySelector', () => {
 			const div = document.createElement('div');
 			expect(div.querySelector('span')).toBe(null);
 		});
+
+		test('Returns an element by id matching "#id".', () => {
+			const div = document.createElement('div');
+			const div2 = document.createElement('div');
+
+			div2.id = 'id';
+			div.appendChild(div2);
+
+			expect(div.querySelector('#id')).toEqual(div2);
+		});
 	});
 });

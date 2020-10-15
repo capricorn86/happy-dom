@@ -14,28 +14,30 @@ import INodeFilter from '../../../tree-walker/INodeFilter';
 import Attr from '../../../attribute/Attr';
 import NamespaceURI from '../../../html-config/NamespaceURI';
 import DocumentType from '../document-type/DocumentType';
+import ParentNodeUtility from '../parent-node/ParentNodeUtility';
+import QuerySelector from '../../../query-selector/QuerySelector';
+import IDocument from './IDocument';
 
 /**
  * Document.
  */
-export default class Document extends DocumentFragment {
-	public defaultView: Window;
+export default class Document extends Node implements IDocument {
+	public defaultView: Window = null;
 	public nodeType = Node.DOCUMENT_NODE;
 	protected _isConnected = true;
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
 	public implementation: DOMImplementation;
+	public readonly children: Element[] = [];
 
 	/**
 	 * Creates an instance of Document.
-	 *
-	 * @param window Window instance.
 	 */
-	constructor(window: Window) {
+	constructor() {
 		super();
 
-		this.defaultView = window;
-		this.implementation = new DOMImplementation(window);
+		this.implementation = new DOMImplementation();
+		this.implementation._ownerDocument = this;
 
 		const doctype = this.implementation.createDocumentType('html', '', '');
 		const documentElement = this.createElement('html');
@@ -47,6 +49,121 @@ export default class Document extends DocumentFragment {
 
 		documentElement.appendChild(headElement);
 		documentElement.appendChild(bodyElement);
+	}
+
+	/**
+	 * Last element child.
+	 *
+	 * @return Element.
+	 */
+	public get childElementCount(): number {
+		return this.children.length;
+	}
+
+	/**
+	 * First element child.
+	 *
+	 * @return Element.
+	 */
+	public get firstElementChild(): Element {
+		return this.children ? this.children[0] || null : null;
+	}
+
+	/**
+	 * Last element child.
+	 *
+	 * @return Element.
+	 */
+	public get lastElementChild(): Element {
+		return this.children ? this.children[this.children.length - 1] || null : null;
+	}
+
+	/**
+	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public append(...nodes: (Node | string)[]): void {
+		ParentNodeUtility.append(this, ...nodes);
+	}
+
+	/**
+	 * Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public prepend(...nodes: (Node | string)[]): void {
+		ParentNodeUtility.prepend(this, ...nodes);
+	}
+
+	/**
+	 * Replaces the existing children of a node with a specified new set of children.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public replaceChildren(...nodes: (Node | string)[]): void {
+		ParentNodeUtility.replaceChildren(this, ...nodes);
+	}
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): Element[] {
+		return QuerySelector.querySelectorAll(this, selector);
+	}
+
+	/**
+	 * Query CSS Selector to find a matching element.
+	 *
+	 * @param selector CSS selector.
+	 * @return Matching element.
+	 */
+	public querySelector(selector: string): Element {
+		return QuerySelector.querySelector(this, selector);
+	}
+
+	/**
+	 * Returns an elements by class name.
+	 *
+	 * @param className Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByClassName(className: string): Element[] {
+		return this.querySelectorAll('.' + className.split(' ').join('.'));
+	}
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName(tagName: string): Element[] {
+		return this.querySelectorAll(tagName);
+	}
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): Element[] {
+		return this.querySelectorAll(tagName).filter(element => element.namespaceURI === namespaceURI);
+	}
+
+	/**
+	 * Returns an element by ID.
+	 *
+	 * @param id ID.
+	 * @return Matching element.
+	 */
+	public getElementById(id: string): Element {
+		return this.querySelector('#' + id);
 	}
 
 	/**
@@ -97,6 +214,64 @@ export default class Document extends DocumentFragment {
 	 */
 	public get head(): HTMLElement {
 		return <HTMLElement>this.querySelector('head');
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): Document {
+		const clone = <Document>super.cloneNode(deep);
+
+		if (deep) {
+			// @ts-ignore;
+			clone.children = clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE);
+		}
+
+		clone.defaultView = this.defaultView;
+
+		return clone;
+	}
+
+	/**
+	 * Append a child node to childNodes.
+	 *
+	 * @override
+	 * @param  node Node to append.
+	 * @return Appended node.
+	 */
+	public appendChild(node: Node): Node {
+		if (node.parentNode && node.parentNode['children']) {
+			const index = node.parentNode['children'].indexOf(node);
+			if (index !== -1) {
+				node.parentNode['children'].splice(index, 1);
+			}
+		}
+		if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
+			this.children.push(<Element>node);
+		}
+
+		return super.appendChild(node);
+	}
+
+	/**
+	 * Remove Child element from childNodes array.
+	 *
+	 * @override
+	 * @param node Node to remove
+	 */
+	public removeChild(node: Node): void {
+		if (node.nodeType === Node.ELEMENT_NODE) {
+			const index = this.children.indexOf(<Element>node);
+			if (index !== -1) {
+				this.children.splice(index, 1);
+			}
+		}
+
+		super.removeChild(node);
 	}
 
 	/**
@@ -231,10 +406,13 @@ export default class Document extends DocumentFragment {
 		qualifiedName: string,
 		options?: { is: string }
 	): Element {
-		const customElementClass =
-			options && options.is
-				? this.defaultView.customElements.get(options.is)
-				: this.defaultView.customElements.get(qualifiedName);
+		let customElementClass;
+		if (this.defaultView && options && options.is) {
+			customElementClass = this.defaultView.customElements.get(options.is);
+		} else if (this.defaultView) {
+			customElementClass = this.defaultView.customElements.get(qualifiedName);
+		}
+
 		const elementClass = customElementClass
 			? customElementClass
 			: HTMLElementTag[qualifiedName] || HTMLElement;
@@ -244,7 +422,7 @@ export default class Document extends DocumentFragment {
 		const element = new elementClass();
 		element.tagName = qualifiedName.toUpperCase();
 		element.ownerDocument = this;
-		element._namespaceURI = namespaceURI;
+		element.namespaceURI = namespaceURI;
 
 		return element;
 	}
@@ -282,8 +460,7 @@ export default class Document extends DocumentFragment {
 	 */
 	public createDocumentFragment(): DocumentFragment {
 		DocumentFragment.ownerDocument = this;
-		const documentFragment = new DocumentFragment();
-		return documentFragment;
+		return new DocumentFragment();
 	}
 
 	/**
@@ -345,6 +522,7 @@ export default class Document extends DocumentFragment {
 			throw new Error('Parameter 1 was not of type Node.');
 		}
 		const clone = node.cloneNode(true);
+		// @ts-ignore
 		clone.ownerDocument = this;
 		return clone;
 	}

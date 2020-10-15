@@ -2,10 +2,8 @@ import Element from '../nodes/basic/element/Element';
 import Node from '../nodes/basic/node/Node';
 import SelfClosingHTMLElements from '../html-config/SelfClosingHTMLElements';
 import UnclosedHTMLElements from '../html-config/UnclosedHTMLElements';
-import CommentNode from '../nodes/basic/comment-node/CommentNode';
 import DocumentType from '../nodes/basic/document-type/DocumentType';
 import { encode } from 'he';
-import DocumentFragment from '../nodes/basic/document-fragment/DocumentFragment';
 
 /**
  * Utility for converting an element to string.
@@ -20,36 +18,42 @@ export default class XMLSerializer {
 	 * @return Result.
 	 */
 	public serializeToString(root: Node): string {
-		if (root instanceof Element) {
-			const tagName = root.tagName.toLowerCase();
-			if (UnclosedHTMLElements.includes(tagName)) {
-				return `<${tagName}${this._getAttributes(root)}>`;
-			} else if (SelfClosingHTMLElements.includes(tagName)) {
-				return `<${tagName}${this._getAttributes(root)}/>`;
-			}
+		switch (root.nodeType) {
+			case Node.ELEMENT_NODE:
+				const element = <Element>root;
+				const tagName = element.tagName.toLowerCase();
 
-			let xml = '';
-			for (const node of root.childNodes) {
-				xml += this.serializeToString(node);
-			}
+				if (UnclosedHTMLElements.includes(tagName)) {
+					return `<${tagName}${this._getAttributes(element)}>`;
+				} else if (SelfClosingHTMLElements.includes(tagName)) {
+					return `<${tagName}${this._getAttributes(element)}/>`;
+				}
 
-			return `<${tagName}${this._getAttributes(root)}>${xml}</${tagName}>`;
-		} else if (root instanceof DocumentFragment) {
-			let xml = '';
-			for (const node of root.childNodes) {
-				xml += this.serializeToString(node);
-			}
-			return xml;
-		} else if (root instanceof CommentNode) {
-			return `<!--${root._textContent}-->`;
-		} else if (root instanceof DocumentType) {
-			const identifier = root.publicId ? ' PUBLIC' : root.systemId ? ' SYSTEM' : '';
-			const publicId = root.publicId ? ` "${root.publicId}"` : '';
-			const systemId = root.systemId ? ` "${root.systemId}"` : '';
-			return `<!DOCTYPE ${root.name}${identifier}${publicId}${systemId}>`;
-		} else if (root['_textContent']) {
-			return root['_textContent'];
+				let innerHTML = '';
+				for (const node of root.childNodes) {
+					innerHTML += this.serializeToString(node);
+				}
+
+				return `<${tagName}${this._getAttributes(element)}>${innerHTML}</${tagName}>`;
+			case Node.DOCUMENT_FRAGMENT_NODE:
+			case Node.DOCUMENT_NODE:
+				let html = '';
+				for (const node of root.childNodes) {
+					html += this.serializeToString(node);
+				}
+				return html;
+			case Node.COMMENT_NODE:
+				return `<!--${root.textContent}-->`;
+			case Node.TEXT_NODE:
+				return root['textContent'];
+			case Node.DOCUMENT_TYPE_NODE:
+				const doctype = <DocumentType>root;
+				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';
+				const publicId = doctype.publicId ? ` "${doctype.publicId}"` : '';
+				const systemId = doctype.systemId ? ` "${doctype.systemId}"` : '';
+				return `<!DOCTYPE ${doctype.name}${identifier}${publicId}${systemId}>`;
 		}
+
 		return '';
 	}
 

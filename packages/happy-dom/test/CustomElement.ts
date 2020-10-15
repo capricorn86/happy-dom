@@ -1,9 +1,9 @@
-import HTMLElement from '../src/nodes/basic/html-element/HTMLElement';
+import Window from '../src/window/Window';
 
 /**
  * CustomElement test class.
  */
-export default class CustomElement extends HTMLElement {
+export default class CustomElement extends new Window().HTMLElement {
 	public changedAttributes = [];
 
 	/**
@@ -20,7 +20,7 @@ export default class CustomElement extends HTMLElement {
 	 */
 	constructor() {
 		super();
-		this.attachShadow({ mode: 'open' });
+		this.attachShadow({ mode: 'closed' });
 	}
 
 	/**

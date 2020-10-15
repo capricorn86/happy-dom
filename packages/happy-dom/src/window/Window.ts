@@ -27,6 +27,7 @@ import ResizeObserver from '../resize-observer/ResizeObserver';
 export default class Window extends EventTarget implements NodeJS.Global {
 	// Global classes
 	public Node = Node;
+	public HTMLElement = HTMLElement;
 	public TextNode = TextNode;
 	public CommentNode = CommentNode;
 	public ShadowRoot = ShadowRoot;
@@ -124,12 +125,10 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	constructor() {
 		super();
 
-		this.document = new Document(this);
+		this.document = new Document();
+		this.document.defaultView = this;
 
-		DOMParser.ownerDocument = DOMParser.ownerDocument || this.document;
-		HTMLElement.ownerDocument = HTMLElement.ownerDocument || this.document;
-		Node.ownerDocument = Node.ownerDocument || this.document;
-		TextNode.ownerDocument = TextNode.ownerDocument || this.document;
+		DOMParser._ownerDocument = DOMParser._ownerDocument || this.document;
 
 		for (const eventType of EventTypes) {
 			this[eventType] = Event;
