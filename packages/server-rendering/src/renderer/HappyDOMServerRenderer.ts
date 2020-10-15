@@ -39,7 +39,7 @@ export default class HappyDOMServerRenderer {
 	public render(root: Node): HappyDOMServerRenderResult {
 		return {
 			html: this.serializeToString(root),
-			css: this.renderOptions.openShadowRoots ? this.shadowRootRenderer.getScopedCSS() : null
+			css: this.renderOptions.openShadowRoots ? this.shadowRootRenderer.getScopedCSS() : []
 		};
 	}
 
