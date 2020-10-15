@@ -4,12 +4,12 @@ import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import MutationObserverListener from '../../../mutation-observer/MutationListener';
 import Event from '../../../event/Event';
-import XMLParser from '../../../xml-parser/XMLParser';
+import INode from './INode';
 
 /**
  * Node
  */
-export default class Node extends EventTarget {
+export default class Node extends EventTarget implements INode {
 	// Public properties
 	public static readonly ELEMENT_NODE = 1;
 	public static readonly TEXT_NODE = 3;
@@ -18,10 +18,10 @@ export default class Node extends EventTarget {
 	public static readonly DOCUMENT_TYPE_NODE = 10;
 	public static readonly DOCUMENT_FRAGMENT_NODE = 11;
 	public static ownerDocument: Document = null;
-	public ownerDocument: Document = null;
-	public parentNode: Node = null;
+	public readonly ownerDocument: Document = null;
+	public readonly parentNode: Node = null;
 	public readonly nodeType: number;
-	public childNodes: Node[] = [];
+	public readonly childNodes: Node[] = [];
 
 	// Protected properties
 	protected _isConnected = false;
@@ -74,6 +74,24 @@ export default class Node extends EventTarget {
 	}
 
 	/**
+	 * Get text value of children.
+	 *
+	 * @return Text content.
+	 */
+	public get textContent(): string {
+		return null;
+	}
+
+	/**
+	 * Sets text content.
+	 *
+	 * @param textContent Text content.
+	 */
+	public set textContent(_textContent) {
+		// Do nothing.
+	}
+
+	/**
 	 * Node value.
 	 *
 	 * @return Node value.
@@ -122,32 +140,6 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Previous element sibling.
-	 *
-	 * @return {Node} Node.
-	 */
-	public get previousElementSibling(): Node {
-		let sibling = this.previousSibling;
-		while (sibling && sibling.nodeType !== Node.ELEMENT_NODE) {
-			sibling = sibling.previousSibling;
-		}
-		return sibling;
-	}
-
-	/**
-	 * Next element sibling.
-	 *
-	 * @return {Node} Node.
-	 */
-	public get nextElementSibling(): Node {
-		let sibling = this.nextSibling;
-		while (sibling && sibling.nodeType !== Node.ELEMENT_NODE) {
-			sibling = sibling.nextSibling;
-		}
-		return sibling;
-	}
-
-	/**
 	 * First child.
 	 *
 	 * @return Node.
@@ -172,24 +164,6 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * First element child.
-	 *
-	 * @return {Node} Node.
-	 */
-	public get firstElementChild(): Node {
-		return this['children'] ? this['children'][0] || null : null;
-	}
-
-	/**
-	 * Last element child.
-	 *
-	 * @return {Node} Node.
-	 */
-	public get lastElementChild(): Node {
-		return this['children'] ? this['children'][this['children'].length - 1] || null : null;
-	}
-
-	/**
 	 * Connected callback.
 	 */
 	public connectedCallback?(): void;
@@ -208,14 +182,20 @@ export default class Node extends EventTarget {
 	public cloneNode(deep = false): Node {
 		const clone = new (<typeof Node>this.constructor)();
 
+		for (const node of clone.childNodes.slice()) {
+			node.parentNode.removeChild(node);
+		}
+
 		if (deep) {
 			for (const childNode of this.childNodes) {
 				const childClone = childNode.cloneNode(true);
+				// @ts-ignore
 				childClone.parentNode = clone;
 				clone.childNodes.push(childClone);
 			}
 		}
 
+		// @ts-ignore
 		clone.ownerDocument = this.ownerDocument;
 
 		return clone;
@@ -251,6 +231,7 @@ export default class Node extends EventTarget {
 
 		this.childNodes.push(node);
 
+		// @ts-ignore
 		node.parentNode = this;
 		node.isConnected = this.isConnected;
 
@@ -274,15 +255,6 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Removes the node from its parent.
-	 */
-	public remove(): void {
-		if (this.parentNode) {
-			this.parentNode.removeChild(this);
-		}
-	}
-
-	/**
 	 * Remove Child element from childNodes array.
 	 *
 	 * @param node Node to remove
@@ -295,6 +267,7 @@ export default class Node extends EventTarget {
 		}
 
 		this.childNodes.splice(index, 1);
+		// @ts-ignore
 		node.parentNode = null;
 		node.isConnected = false;
 
@@ -317,10 +290,10 @@ export default class Node extends EventTarget {
 	 * Inserts a node before another.
 	 *
 	 * @param newNode Node to insert.
-	 * @param referenceNode Node to insert before.
+	 * @param [referenceNode] Node to insert before.
 	 * @return Inserted node.
 	 */
-	public insertBefore(newNode: Node, referenceNode: Node): Node {
+	public insertBefore(newNode: Node, referenceNode?: Node): Node {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
@@ -330,11 +303,8 @@ export default class Node extends EventTarget {
 			return newNode;
 		}
 
-		const index = this.childNodes.indexOf(referenceNode);
-
-		if (index === -1) {
-			throw new Error('Failed to insert node. Reference node is not child of parent.');
-		}
+		let index = referenceNode ? this.childNodes.indexOf(referenceNode) : 0;
+		index = index === -1 ? 0 : index;
 
 		if (newNode.parentNode) {
 			const index = newNode.parentNode.childNodes.indexOf(newNode);
@@ -345,6 +315,7 @@ export default class Node extends EventTarget {
 
 		this.childNodes.splice(index, 0, newNode);
 
+		// @ts-ignore
 		newNode.parentNode = this;
 		newNode.isConnected = this.isConnected;
 
@@ -379,33 +350,6 @@ export default class Node extends EventTarget {
 		this.removeChild(oldChild);
 
 		return oldChild;
-	}
-
-	/**
-	 * The Node.replaceWith() method replaces this Node in the children list of its parent with a set of Node or DOMString objects.
-	 *
-	 * @param nodes List of Node or DOMString.
-	 */
-	public replaceWith(...nodes: Node[] | string[]): void {
-		const parent = this.parentNode;
-
-		if (!parent) {
-			return;
-		}
-
-		const index = parent.childNodes.indexOf(this);
-
-		parent.removeChild(this);
-
-		for (let i = nodes.length - 1; i >= 0; i--) {
-			const node = nodes[i];
-
-			if (typeof node === 'string') {
-				parent.childNodes.splice(index, 0, ...XMLParser.parse(this.ownerDocument, node).childNodes);
-			} else {
-				parent.childNodes.splice(index, 0, node);
-			}
-		}
 	}
 
 	/**

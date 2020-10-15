@@ -1,20 +1,35 @@
+import Document from '../../src/nodes/basic/document/Document';
 import DOMImplementation from '../../src/dom-implementation/DOMImplementation';
-import Window from '../../src/window/Window';
 
 describe('DOMImplementation', () => {
+	let ownerDocument: Document;
 	let domImplementation: DOMImplementation;
-	let window: Window;
 
 	beforeEach(() => {
-		window = new Window();
-		domImplementation = new DOMImplementation(window);
+		ownerDocument = new Document();
+		domImplementation = new DOMImplementation();
+		domImplementation._ownerDocument = ownerDocument;
 	});
 
 	describe('createHTMLDocument()', () => {
 		test('Returns a new Document.', () => {
 			const document = domImplementation.createHTMLDocument();
 			expect(document.constructor.name).toBe('Document');
-			expect(document.defaultView).toBe(window);
+			expect(document.defaultView).toBe(null);
+		});
+	});
+
+	describe('createDocumentType()', () => {
+		test('Returns a new Document Type.', () => {
+			const documentType = domImplementation.createDocumentType(
+				'qualifiedName',
+				'publicId',
+				'systemId'
+			);
+			expect(documentType.name).toBe('qualifiedName');
+			expect(documentType.publicId).toBe('publicId');
+			expect(documentType.systemId).toBe('systemId');
+			expect(documentType.ownerDocument).toBe(ownerDocument);
 		});
 	});
 });

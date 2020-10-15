@@ -6,7 +6,7 @@ import Node from '../nodes/basic/node/Node';
  * HTML parser.
  */
 export default class DOMParser {
-	public static ownerDocument: Document = null;
+	public static _ownerDocument: Document = null;
 
 	/**
 	 * Parses HTML and returns a root element.
@@ -24,10 +24,14 @@ export default class DOMParser {
 			throw new Error('The DOMParser in Happy DOM only supports the mime type "text/html".');
 		}
 
-		const ownerDocument = (<typeof DOMParser>(<unknown>this.constructor)).ownerDocument;
-		const newDocument = new Document(ownerDocument.defaultView);
+		const ownerDocument = (<typeof DOMParser>(<unknown>this.constructor))._ownerDocument;
+		const newDocument = new Document();
 
+		newDocument.defaultView = ownerDocument.defaultView;
+
+		// @ts-ignore
 		newDocument.childNodes = [];
+		// @ts-ignore
 		newDocument.children = [];
 
 		const root = XMLParser.parse(newDocument, string);

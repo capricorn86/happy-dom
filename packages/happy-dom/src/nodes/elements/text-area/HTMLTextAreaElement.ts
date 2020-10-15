@@ -214,7 +214,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Node {
+	public cloneNode(deep = false): HTMLTextAreaElement {
 		const clone = <HTMLTextAreaElement>super.cloneNode(deep);
 
 		clone.name = this.name;

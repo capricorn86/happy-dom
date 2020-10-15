@@ -1,7 +1,6 @@
 import HTMLElement from '../../basic/html-element/HTMLElement';
 import Element from '../../basic/element/Element';
 import Attr from '../../../attribute/Attr';
-import Node from '../../basic/node/Node';
 
 /**
  * HTMLFormElement.
@@ -127,7 +126,7 @@ export default class HTMLFormElement extends HTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Node {
+	public cloneNode(deep = false): HTMLFormElement {
 		const clone = <HTMLFormElement>super.cloneNode(deep);
 		clone.name = this.name;
 		clone.method = this.method;

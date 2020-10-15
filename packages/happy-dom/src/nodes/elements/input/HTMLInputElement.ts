@@ -2,7 +2,6 @@ import Attr from '../../../attribute/Attr';
 import HTMLElement from '../../basic/html-element/HTMLElement';
 import HTMLFormElement from '../form/HTMLFormElement';
 import ValidityState from './ValidityState';
-import Node from '../../basic/node/Node';
 
 /**
  * HTMLElement.
@@ -294,7 +293,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Node {
+	public cloneNode(deep = false): HTMLInputElement {
 		const clone = <HTMLInputElement>super.cloneNode(deep);
 		clone.formAction = this.formAction;
 		clone.formMethod = this.formMethod;

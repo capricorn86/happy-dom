@@ -243,7 +243,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Node {
+	public cloneNode(deep = false): SVGSVGElement {
 		const clone = <SVGSVGElement>super.cloneNode(deep);
 		clone.preserveAspectRatio = this.preserveAspectRatio;
 		clone.width = this.width;

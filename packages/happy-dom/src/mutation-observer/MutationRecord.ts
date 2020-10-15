@@ -1,4 +1,4 @@
-import Node from '../nodes/basic/node/Node';
+import INode from '../nodes/basic/node/INode';
 
 /**
  * MutationRecord is a model for a mutation.
@@ -7,11 +7,11 @@ import Node from '../nodes/basic/node/Node';
  */
 export default class MutationRecord {
 	public type: string = null;
-	public target: Node = null;
-	public addedNodes: Node[] = [];
-	public removedNodes: Node[] = [];
-	public previousSibling: Node = null;
-	public nextSibling: Node = null;
+	public target: INode = null;
+	public addedNodes: INode[] = [];
+	public removedNodes: INode[] = [];
+	public previousSibling: INode = null;
+	public nextSibling: INode = null;
 	public attributeName: string = null;
 	public attributeNamespace: string = null;
 	public oldValue: string = null;

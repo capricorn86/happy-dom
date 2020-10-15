@@ -8,7 +8,6 @@ export default class DocumentType extends Node {
 	public name: string = null;
 	public publicId = '';
 	public systemId = '';
-	public readonly textContent = null;
 
 	/**
 	 * Node name.

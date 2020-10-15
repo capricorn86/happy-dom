@@ -1,9 +1,7 @@
 import {
 	Node,
 	Element,
-	CommentNode,
 	DocumentType,
-	DocumentFragment,
 	ShadowRoot,
 	SelfClosingHTMLElements,
 	UnclosedHTMLElements
@@ -39,52 +37,64 @@ export default class HappyDOMServerRenderer {
 	 * @return Result.
 	 */
 	public render(root: Node): HappyDOMServerRenderResult {
-		const result = new HappyDOMServerRenderResult();
+		return {
+			html: this.serializeToString(root),
+			css: this.renderOptions.openShadowRoots ? this.shadowRootRenderer.getScopedCSS() : []
+		};
+	}
 
-		if (root instanceof Element) {
-			const tagName = root.tagName.toLowerCase();
-			if (UnclosedHTMLElements.includes(tagName)) {
-				result.html = `<${tagName}${this._getAttributes(root)}>`;
-			} else if (SelfClosingHTMLElements.includes(tagName)) {
-				result.html = `<${tagName}${this._getAttributes(root)}/>`;
-			} else {
-				let innerElement: Element | ShadowRoot = root;
-				let outerElement: Element | ShadowRoot = root;
-				let xml = '';
+	/**
+	 * Renders an element as HTML.
+	 *
+	 * @param element Element to render.
+	 * @return Result.
+	 */
+	private serializeToString(root: Node): string {
+		switch (root.nodeType) {
+			case Node.ELEMENT_NODE:
+				const element = <Element>root;
+				const tagName = element.tagName.toLowerCase();
 
-				if (this.renderOptions.openShadowRoots && root.shadowRoot) {
-					outerElement = this.shadowRootRenderer.getScopedClone(root);
+				if (UnclosedHTMLElements.includes(tagName)) {
+					return `<${tagName}${this._getAttributes(element)}>`;
+				} else if (SelfClosingHTMLElements.includes(tagName)) {
+					return `<${tagName}${this._getAttributes(element)}/>`;
+				}
+
+				let innerElement = <Element | ShadowRoot>element;
+				let outerElement = element;
+				let innerHTML = '';
+
+				if (this.renderOptions.openShadowRoots && element.shadowRoot) {
+					outerElement = this.shadowRootRenderer.getScopedClone(element);
 					innerElement = outerElement.shadowRoot;
 				}
 
 				for (const node of innerElement.childNodes) {
-					xml += this.render(node).html;
+					innerHTML += this.render(node).html;
 				}
 
-				result.html = `<${tagName}${this._getAttributes(outerElement)}>${xml}</${tagName}>`;
-			}
-		} else if (root instanceof DocumentFragment) {
-			let xml = '';
-			for (const node of root.childNodes) {
-				xml += this.render(node).html;
-			}
-			result.html = xml;
-		} else if (root instanceof CommentNode) {
-			result.html = `<!--${root._textContent}-->`;
-		} else if (root instanceof DocumentType) {
-			const identifier = root.publicId ? ' PUBLIC' : root.systemId ? ' SYSTEM' : '';
-			const publicId = root.publicId ? ` "${root.publicId}"` : '';
-			const systemId = root.systemId ? ` "${root.systemId}"` : '';
-			result.html = `<!DOCTYPE ${root.name}${identifier}${publicId}${systemId}>`;
-		} else if (root['_textContent']) {
-			result.html = root['_textContent'];
+				return `<${tagName}${this._getAttributes(outerElement)}>${innerHTML}</${tagName}>`;
+			case Node.DOCUMENT_FRAGMENT_NODE:
+			case Node.DOCUMENT_NODE:
+				let html = '';
+				for (const node of root.childNodes) {
+					html += this.serializeToString(node);
+				}
+				return html;
+			case Node.COMMENT_NODE:
+				return `<!--${root.textContent}-->`;
+			case Node.TEXT_NODE:
+				return root['textContent'];
+			case Node.DOCUMENT_TYPE_NODE:
+				const doctype = <DocumentType>root;
+				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';
+				const publicId = doctype.publicId ? ` "${doctype.publicId}"` : '';
+				const systemId = doctype.systemId ? ` "${doctype.systemId}"` : '';
+				return `<!DOCTYPE ${doctype.name}${identifier}${publicId}${systemId}>`;
 		}
 
-		if (this.renderOptions.openShadowRoots) {
-			result.css = this.shadowRootRenderer.getScopedCSS();
-		}
-
-		return result;
+		return '';
 	}
 
 	/**

@@ -50,13 +50,15 @@ export default class XMLParser {
 
 				// The HTML engine can guess that the namespace is SVG for SVG tags
 				// even if "xmlns" is not set if the parent namespace is HTML.
-				if (tagName === 'svg' && parent._namespaceURI === NamespaceURI.html) {
-					newElement._namespaceURI = xmlnsAttribute || NamespaceURI.svg;
+				if (tagName === 'svg' && parent.namespaceURI === NamespaceURI.html) {
+					// @ts-ignore
+					newElement.namespaceURI = xmlnsAttribute || NamespaceURI.svg;
 				} else {
-					newElement._namespaceURI = xmlnsAttribute || parent._namespaceURI;
+					// @ts-ignore
+					newElement.namespaceURI = xmlnsAttribute || parent.namespaceURI;
 				}
 
-				this.setAttributes(newElement, newElement._namespaceURI, match[3]);
+				this.setAttributes(newElement, newElement.namespaceURI, match[3]);
 
 				if (!SelfClosingHTMLElements.includes(tagName)) {
 					// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).

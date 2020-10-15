@@ -1,27 +1,32 @@
 import DocumentType from '../nodes/basic/document-type/DocumentType';
 import Document from '../nodes/basic/document/Document';
-import Window from '../window/Window';
 
 /**
  * The DOMImplementation interface represents an object providing methods which are not dependent on any particular document. Such an object is returned by the
  */
 export default class DOMImplementation {
-	private _window: Window;
+	public _ownerDocument: Document = null;
 
 	/**
-	 * Constructor.
+	 * Creates and returns an XML Document.
 	 *
-	 * @param window Window.
+	 * @TODO Not fully implemented.
 	 */
-	constructor(window: Window) {
-		this._window = window;
+	public createDocument(): Document {
+		return this.createHTMLDocument();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
 	public createHTMLDocument(): Document {
-		return new Document(this._window);
+		const document = new Document();
+
+		for (const node of document.childNodes.slice()) {
+			node.parentNode.removeChild(node);
+		}
+
+		return document;
 	}
 
 	/**
@@ -36,7 +41,7 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		DocumentType.ownerDocument = this._window.document;
+		DocumentType.ownerDocument = this._ownerDocument;
 		const documentType = new DocumentType();
 		documentType.name = qualifiedName;
 		documentType.publicId = publicId;
