@@ -32,6 +32,9 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span>'
 			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child4"></span>'
+			);
 		});
 
 		test('Replaces a node with a mixed list of Node and DOMString (string).', () => {
@@ -51,6 +54,9 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+			);
 		});
 	});
 
@@ -64,6 +70,9 @@ describe('ChildNodeUtility', () => {
 
 			ChildNodeUtility.before(parent.children[2], newChild);
 			expect(parent.innerHTML).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child3"></span>'
+			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child3"></span>'
 			);
 		});
@@ -85,6 +94,9 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span><span class="child3"></span>'
 			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span><span class="child3"></span>'
+			);
 		});
 	});
 
@@ -100,6 +112,9 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span>'
 			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span>'
+			);
 		});
 
 		test('Inserts a node after the child node by inserting the new node.', () => {
@@ -111,6 +126,9 @@ describe('ChildNodeUtility', () => {
 
 			ChildNodeUtility.after(parent.children[1], newChild);
 			expect(parent.innerHTML).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child3"></span>'
+			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child3"></span>'
 			);
 		});
@@ -130,6 +148,9 @@ describe('ChildNodeUtility', () => {
 				...[newChildrenHtml, ...newChildrenParent.children]
 			);
 			expect(parent.innerHTML).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
 		});

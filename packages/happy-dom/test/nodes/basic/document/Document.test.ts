@@ -239,6 +239,64 @@ describe('Document', () => {
 		});
 	});
 
+	describe('appendChild()', () => {
+		test('Updates the children property when appending an element child.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+
+			for (const node of document.childNodes.slice()) {
+				node.parentNode.removeChild(node);
+			}
+
+			document.appendChild(document.createComment('test'));
+			document.appendChild(div);
+			document.appendChild(document.createComment('test'));
+			document.appendChild(span);
+
+			expect(document.children).toEqual([div, span]);
+		});
+	});
+
+	describe('removeChild()', () => {
+		test('Updates the children property when removing an element child.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+
+			for (const node of document.childNodes.slice()) {
+				node.parentNode.removeChild(node);
+			}
+
+			document.appendChild(document.createComment('test'));
+			document.appendChild(div);
+			document.appendChild(document.createComment('test'));
+			document.appendChild(span);
+
+			document.removeChild(div);
+
+			expect(document.children).toEqual([span]);
+		});
+	});
+
+	describe('insertBefore()', () => {
+		test('Updates the children property when appending an element child.', () => {
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			const span = document.createElement('span');
+
+			for (const node of document.childNodes.slice()) {
+				node.parentNode.removeChild(node);
+			}
+
+			document.appendChild(document.createComment('test'));
+			document.appendChild(div1);
+			document.appendChild(document.createComment('test'));
+			document.appendChild(span);
+			document.insertBefore(div2, div1);
+
+			expect(document.children).toEqual([div2, div1, span]);
+		});
+	});
+
 	describe('write()', () => {
 		test('Replaces the content of documentElement with new content the first time it is called and writes the body part to the body the second time.', () => {
 			const html = `

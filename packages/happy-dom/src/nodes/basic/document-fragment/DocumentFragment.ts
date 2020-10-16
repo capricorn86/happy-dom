@@ -87,16 +87,6 @@ export default class DocumentFragment extends Node implements IParentNode {
 	}
 
 	/**
-	 * Returns an element by ID.
-	 *
-	 * @param id ID.
-	 * @return Matching element.
-	 */
-	public getElementById(id: string): IElement {
-		return this.querySelector('#' + id);
-	}
-
-	/**
 	 * Clones a node.
 	 *
 	 * @override
@@ -166,12 +156,18 @@ export default class DocumentFragment extends Node implements IParentNode {
 	 * @return Inserted node.
 	 */
 	public insertBefore(newNode: Node, referenceNode?: Node): Node {
+		const returnValue = super.insertBefore(newNode, referenceNode);
+
 		if (newNode.parentNode && newNode.parentNode['children']) {
 			const index = newNode.parentNode['children'].indexOf(newNode);
 			if (index !== -1) {
 				newNode.parentNode['children'].splice(index, 1);
 			}
 		}
-		return super.insertBefore(newNode, referenceNode);
+
+		// @ts-ignore
+		this.children = this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE);
+
+		return returnValue;
 	}
 }

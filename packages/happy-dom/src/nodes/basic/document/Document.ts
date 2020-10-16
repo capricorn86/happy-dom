@@ -275,6 +275,30 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Inserts a node before another.
+	 *
+	 * @override
+	 * @param newNode Node to insert.
+	 * @param [referenceNode] Node to insert before.
+	 * @return Inserted node.
+	 */
+	public insertBefore(newNode: Node, referenceNode?: Node): Node {
+		const returnValue = super.insertBefore(newNode, referenceNode);
+
+		if (newNode.parentNode && newNode.parentNode['children']) {
+			const index = newNode.parentNode['children'].indexOf(newNode);
+			if (index !== -1) {
+				newNode.parentNode['children'].splice(index, 1);
+			}
+		}
+
+		// @ts-ignore
+		this.children = this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE);
+
+		return returnValue;
+	}
+
+	/**
 	 * Replaces the document HTML with new HTML.
 	 *
 	 * @param html HTML.

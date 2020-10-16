@@ -21,6 +21,9 @@ describe('ParentNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span>'
 			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span>'
+			);
 		});
 
 		test('Appends a mixed list of Node and DOMString after the last child of the ParentNode', () => {
@@ -35,6 +38,9 @@ describe('ParentNodeUtility', () => {
 
 			ParentNodeUtility.append(parent, ...[newChildrenHtml, ...newChildrenParent.children]);
 			expect(parent.innerHTML).toBe(
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
 		});
@@ -52,6 +58,9 @@ describe('ParentNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child4"></span><span class="child1"></span><span class="child2"></span><span class="child3"></span>'
 			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+				'<span class="child4"></span><span class="child1"></span><span class="child2"></span><span class="child3"></span>'
+			);
 		});
 
 		test('Prepends a mixed list of Node and DOMString before the first child of the ParentNode', () => {
@@ -66,6 +75,9 @@ describe('ParentNodeUtility', () => {
 
 			ParentNodeUtility.prepend(parent, ...[newChildrenHtml, ...newChildrenParent.children]);
 			expect(parent.innerHTML).toBe(
+				'<span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span><span class="child1"></span><span class="child2"></span><span class="child3"></span>'
+			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
 				'<span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span><span class="child1"></span><span class="child2"></span><span class="child3"></span>'
 			);
 		});
@@ -87,6 +99,9 @@ describe('ParentNodeUtility', () => {
 				...[newChildrenHtml, ...newChildrenParent.children]
 			);
 			expect(parent.innerHTML).toBe(
+				'<span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+			);
+			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
 				'<span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
 		});
