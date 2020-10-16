@@ -48,6 +48,7 @@ describe('HappyDOMContext', () => {
 					const customElement = document.querySelector('custom-element');
 					customElement.setAttribute('key1', 'newValue1');
 					customElement.setAttribute('key2', 'newValue2');
+					customElement.setAttribute('key3', 'newValue3');
 					customElement.setAttribute('changedAttributes', customElement.changedAttributes.join(','));
 				}, 1);
 			`);
@@ -102,7 +103,7 @@ describe('HappyDOMContext', () => {
 						<div class="class1 class2" id="id">
 							<b>Bold</b>
 						</div>
-						<custom-element key1="newValue1" key2="newValue2" changedattributes="key1,key2" class="a">
+						<custom-element key1="newValue1" key2="newValue2" key3="newValue3" changedattributes="key1,key2" class="a">
 							<div class="a">
 								<span class="a">
 									Some text.

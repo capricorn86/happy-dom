@@ -300,6 +300,8 @@ export default class Element extends Node implements IElement {
 	 * @return Inserted node.
 	 */
 	public insertBefore(newNode: Node, referenceNode?: Node): Node {
+		const returnValue = super.insertBefore(newNode, referenceNode);
+
 		if (newNode.parentNode && newNode.parentNode['children']) {
 			const index = newNode.parentNode['children'].indexOf(newNode);
 			if (index !== -1) {
@@ -307,7 +309,10 @@ export default class Element extends Node implements IElement {
 			}
 		}
 
-		return super.insertBefore(newNode, referenceNode);
+		// @ts-ignore
+		this.children = this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE);
+
+		return returnValue;
 	}
 
 	/**

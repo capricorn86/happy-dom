@@ -443,6 +443,52 @@ describe('Element', () => {
 		});
 	});
 
+	describe('appendChild()', () => {
+		test('Updates the children property when appending an element child.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+
+			element.appendChild(document.createComment('test'));
+			element.appendChild(div);
+			element.appendChild(document.createComment('test'));
+			element.appendChild(span);
+
+			expect(element.children).toEqual([div, span]);
+		});
+	});
+
+	describe('removeChild()', () => {
+		test('Updates the children property when removing an element child.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+
+			element.appendChild(document.createComment('test'));
+			element.appendChild(div);
+			element.appendChild(document.createComment('test'));
+			element.appendChild(span);
+
+			element.removeChild(div);
+
+			expect(element.children).toEqual([span]);
+		});
+	});
+
+	describe('insertBefore()', () => {
+		test('Updates the children property when appending an element child.', () => {
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			const span = document.createElement('span');
+
+			element.appendChild(document.createComment('test'));
+			element.appendChild(div1);
+			element.appendChild(document.createComment('test'));
+			element.appendChild(span);
+			element.insertBefore(div2, div1);
+
+			expect(element.children).toEqual([div2, div1, span]);
+		});
+	});
+
 	describe('get previousElementSibling()', () => {
 		test('Returns previous element sibling..', () => {
 			const node = document.createComment('test');
