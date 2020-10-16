@@ -42,10 +42,18 @@ describe('HappyDOMContext', () => {
 		});
 
 		test('Renders a page with opened shadow roots, scoped CSS and CSS added to document head.', async () => {
-			const script = new VM.Script(SCRIPT);
+			const script1 = new VM.Script(SCRIPT);
+			const script2 = new VM.Script(`
+				setTimeout(() => {
+					const customElement = document.querySelector('custom-element');
+					customElement.setAttribute('key1', 'newValue1');
+					customElement.setAttribute('key2', 'newValue2');
+					customElement.setAttribute('changedAttributes', customElement.changedAttributes.join(','));
+				}, 1);
+			`);
 			const result = await context.render({
 				html: HappyDOMContextHTML,
-				scripts: [script],
+				scripts: [script1, script2],
 				url: URL,
 				customElements: {
 					openShadowRoots: true,
@@ -94,7 +102,7 @@ describe('HappyDOMContext', () => {
 						<div class="class1 class2" id="id">
 							<b>Bold</b>
 						</div>
-						<custom-element class="a">
+						<custom-element key1="newValue1" key2="newValue2" changedattributes="key1,key2" class="a">
 							<div class="a">
 								<span class="a">
 									Some text.

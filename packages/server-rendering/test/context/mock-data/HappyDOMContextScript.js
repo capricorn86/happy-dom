@@ -1,9 +1,18 @@
 /* eslint-disable */
 
 class CustomElement extends HTMLElement {
+	static get observedAttributes() {
+		return ['key1', 'key2'];
+	}
+
 	constructor() {
-		super();
-		this.attachShadow({ mode: 'open' });
+        super();
+        this.changedAttributes = [];
+		this.attachShadow({ mode: 'closed' });
+	}
+
+	attributeChangedCallback(name, oldValue, newValue) {
+		this.changedAttributes.push(name);
 	}
 
 	connectedCallback() {
