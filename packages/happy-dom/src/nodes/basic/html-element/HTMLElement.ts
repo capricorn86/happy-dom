@@ -2,12 +2,12 @@ import Element from '../element/Element';
 import Event from '../../../event/Event';
 import IHTMLElement from './IHTMLElement';
 import CSSStyleDeclaration from '../../../css/CSSStyleDeclaration';
+import CSSStyleDeclarationFactory from '../../../css/CSSStyleDeclarationFactory';
 
 /**
  * HTMLElement.
  */
 export default class HTMLElement extends Element implements IHTMLElement {
-	public readonly style = new CSSStyleDeclaration();
 	public tabIndex = -1;
 	public offsetHeight = 0;
 	public offsetWidth = 0;
@@ -15,6 +15,10 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public offsetTop = 0;
 	public clientHeight = 0;
 	public clientWidth = 0;
+	private _style: {
+		cssText: string;
+		cssStyleDeclaration: CSSStyleDeclaration;
+	} = null;
 
 	/**
 	 * Returns inner text.
@@ -32,6 +36,22 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 */
 	public set innerText(text: string) {
 		this.textContent = text;
+	}
+
+	/**
+	 * Returns style.
+	 *
+	 * @return Style.
+	 */
+	public get style(): CSSStyleDeclaration {
+		const cssText = this.getAttribute('style');
+		if (!this._style || this._style.cssText !== cssText) {
+			this._style = {
+				cssText,
+				cssStyleDeclaration: CSSStyleDeclarationFactory.createCSSStyleDeclaration(cssText)
+			};
+		}
+		return this._style.cssStyleDeclaration;
 	}
 
 	/**
@@ -83,8 +103,6 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public cloneNode(deep = false): HTMLElement {
 		const clone = <HTMLElement>super.cloneNode(deep);
 
-		// @ts-ignore
-		clone.style = this.style;
 		clone.tabIndex = this.tabIndex;
 		clone.offsetHeight = this.offsetHeight;
 		clone.offsetWidth = this.offsetWidth;

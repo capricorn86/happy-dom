@@ -14,7 +14,6 @@ import ChildNodeUtility from '../child-node/ChildNodeUtility';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility';
 import IElement from './IElement';
-import CSSStyleDeclarationFactory from '../../../css/CSSStyleDeclarationFactory';
 
 /**
  * Element.
@@ -624,11 +623,6 @@ export default class Element extends Node implements IElement {
 		attribute.name = name;
 
 		this._attributes[name] = attribute;
-
-		// Styles
-		if (name === 'style' && this['style']) {
-			this['style'] = CSSStyleDeclarationFactory.createCSSStyleDeclaration(attribute.value);
-		}
 
 		if (
 			this.attributeChangedCallback &&

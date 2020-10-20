@@ -617,16 +617,6 @@ describe('Element', () => {
 				length: 2
 			});
 		});
-
-		test('Sets "style" attribute as a property.', () => {
-			element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
-			expect(element.style.length).toEqual(2);
-			expect(element.style[0]).toEqual('border-radius');
-			expect(element.style[1]).toEqual('padding');
-			expect(element.style['borderRadius']).toEqual('2px');
-			expect(element.style['padding']).toEqual('2px');
-			expect(element.style.cssText).toEqual('border-radius: 2px;padding: 2px;');
-		});
 	});
 
 	describe('setAttributeNS()', () => {
