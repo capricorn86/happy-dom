@@ -1,12 +1,13 @@
 import Element from '../element/Element';
 import Event from '../../../event/Event';
 import IHTMLElement from './IHTMLElement';
+import CSSStyleDeclaration from '../../../css/CSSStyleDeclaration';
 
 /**
  * HTMLElement.
  */
 export default class HTMLElement extends Element implements IHTMLElement {
-	public style: { [k: string]: string } = {};
+	public readonly style = new CSSStyleDeclaration();
 	public tabIndex = -1;
 	public offsetHeight = 0;
 	public offsetWidth = 0;
@@ -82,6 +83,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public cloneNode(deep = false): HTMLElement {
 		const clone = <HTMLElement>super.cloneNode(deep);
 
+		// @ts-ignore
 		clone.style = this.style;
 		clone.tabIndex = this.tabIndex;
 		clone.offsetHeight = this.offsetHeight;

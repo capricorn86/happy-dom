@@ -14,7 +14,7 @@ describe('Vue', () => {
 		document.body.innerHTML = '';
 	});
 
-	test('Tests integration with Vue.', () => {
+	test('Tests integration.', () => {
 		new Vue({
 			el: '#app',
 			data: {

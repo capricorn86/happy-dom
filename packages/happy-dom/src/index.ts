@@ -21,6 +21,7 @@ import XMLSerializer from './xml-serializer/XMLSerializer';
 import HTMLElementTag from './html-config/HTMLElementTag';
 import SelfClosingHTMLElements from './html-config/SelfClosingHTMLElements';
 import UnclosedHTMLElements from './html-config/UnclosedHTMLElements';
+import CSSStyleSheet from './css/CSSStyleSheet';
 
 export {
 	AsyncWindow,
@@ -45,5 +46,6 @@ export {
 	XMLSerializer,
 	HTMLElementTag,
 	SelfClosingHTMLElements,
-	UnclosedHTMLElements
+	UnclosedHTMLElements,
+	CSSStyleSheet
 };

@@ -14,6 +14,7 @@ import ChildNodeUtility from '../child-node/ChildNodeUtility';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility';
 import IElement from './IElement';
+import CSSStyleDeclarationFactory from '../../../css/CSSStyleDeclarationFactory';
 
 /**
  * Element.
@@ -83,6 +84,15 @@ export default class Element extends Node implements IElement {
 	 */
 	public get nodeName(): string {
 		return this.tagName;
+	}
+
+	/**
+	 * Local name.
+	 *
+	 * @return Local name.
+	 */
+	public get localName(): string {
+		return this.tagName.toLowerCase();
 	}
 
 	/**
@@ -253,15 +263,19 @@ export default class Element extends Node implements IElement {
 	 * @return Appended node.
 	 */
 	public appendChild(node: Node): Node {
-		if (node.parentNode && node.parentNode['children']) {
-			const index = node.parentNode['children'].indexOf(node);
-			if (index !== -1) {
-				node.parentNode['children'].splice(index, 1);
+		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+			if (node.parentNode && node.parentNode['children']) {
+				const index = node.parentNode['children'].indexOf(node);
+				if (index !== -1) {
+					node.parentNode['children'].splice(index, 1);
+				}
 			}
-		}
 
-		if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-			this.children.push(<Element>node);
+			if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
+				this.children.push(<Element>node);
+			}
 		}
 
 		return super.appendChild(node);
@@ -302,15 +316,19 @@ export default class Element extends Node implements IElement {
 	public insertBefore(newNode: Node, referenceNode?: Node): Node {
 		const returnValue = super.insertBefore(newNode, referenceNode);
 
-		if (newNode.parentNode && newNode.parentNode['children']) {
-			const index = newNode.parentNode['children'].indexOf(newNode);
-			if (index !== -1) {
-				newNode.parentNode['children'].splice(index, 1);
+		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		if (newNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+			if (newNode.parentNode && newNode.parentNode['children']) {
+				const index = newNode.parentNode['children'].indexOf(newNode);
+				if (index !== -1) {
+					newNode.parentNode['children'].splice(index, 1);
+				}
 			}
-		}
 
-		// @ts-ignore
-		this.children = this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE);
+			// @ts-ignore
+			this.children = this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE);
+		}
 
 		return returnValue;
 	}
@@ -609,12 +627,7 @@ export default class Element extends Node implements IElement {
 
 		// Styles
 		if (name === 'style' && this['style']) {
-			for (const part of attribute.value.split(';')) {
-				const [key, value] = part.split(':');
-				if (key && value) {
-					this['style'][this._kebabToCamelCase(key.trim())] = value.trim();
-				}
-			}
+			this['style'] = CSSStyleDeclarationFactory.createCSSStyleDeclaration(attribute.value);
 		}
 
 		if (
@@ -699,20 +712,5 @@ export default class Element extends Node implements IElement {
 			return name;
 		}
 		return name.toLowerCase();
-	}
-
-	/**
-	 * Kebab case to words.
-	 *
-	 * @param string String to convert.
-	 * @returns Text as kebab case.
-	 */
-	private _kebabToCamelCase(string): string {
-		string = string.split('-');
-		for (let i = 0, max = string.length; i < max; i++) {
-			const firstWord = i > 0 ? string[i].charAt(0).toUpperCase() : string[i].charAt(0);
-			string[i] = firstWord + string[i].slice(1);
-		}
-		return string.join('');
 	}
 }

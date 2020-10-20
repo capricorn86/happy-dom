@@ -20,6 +20,7 @@ import HTMLElementClass from '../html-config/HTMLElementClass';
 import DOMParser from '../dom-parser/DOMParser';
 import XMLSerializer from '../xml-serializer/XMLSerializer';
 import ResizeObserver from '../resize-observer/ResizeObserver';
+import CSSStyleSheet from '../css/CSSStyleSheet';
 
 /**
  * Handles the Window.
@@ -47,6 +48,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public Headers = Map;
 	public XMLSerializer = XMLSerializer;
 	public ResizeObserver = ResizeObserver;
+	public CSSStyleSheet = CSSStyleSheet;
 
 	// Public Properties
 	public document: Document;

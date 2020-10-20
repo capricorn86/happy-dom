@@ -2,6 +2,7 @@ import DocumentFragment from '../document-fragment/DocumentFragment';
 import XMLParser from '../../../xml-parser/XMLParser';
 import XMLSerializer from '../../../xml-serializer/XMLSerializer';
 import Element from '../element/Element';
+import CSSStyleSheet from '../../../css/CSSStyleSheet';
 
 /**
  * ShadowRoot.
@@ -9,6 +10,7 @@ import Element from '../element/Element';
 export default class ShadowRoot extends DocumentFragment {
 	public readonly mode = 'open';
 	public readonly host: Element = null;
+	public adoptedStyleSheets: CSSStyleSheet[] = [];
 
 	/**
 	 * Returns inner HTML.
