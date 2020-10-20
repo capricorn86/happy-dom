@@ -290,6 +290,16 @@ describe('Element', () => {
 		});
 	});
 
+	describe('matches()', () => {
+		test('Checks if the element matches a selector string.', () => {
+			const element = document.createElement('div');
+
+			element.className = 'container active';
+
+			expect(element.matches('.container.active')).toBe(true);
+		});
+	});
+
 	describe('querySelectorAll()', () => {
 		test('Query CSS selector to find matching elements.', () => {
 			const element = document.createElement('div');

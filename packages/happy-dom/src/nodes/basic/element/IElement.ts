@@ -133,6 +133,14 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	createTextRange(): Range;
 
 	/**
+	 * The matches() method checks to see if the Element would be selected by the provided selectorString.
+	 *
+	 * @param selector Selector.
+	 * @returns "true" if matching.
+	 */
+	matches(selector: string): boolean;
+
+	/**
 	 * Returns an elements by tag name.
 	 *
 	 * @param tagName Tag name.

@@ -5,6 +5,7 @@ import DOMRect from './DOMRect';
 import Range from './Range';
 import ClassList from './ClassList';
 import QuerySelector from '../../../query-selector/QuerySelector';
+import SelectorItem from '../../../query-selector/SelectorItem';
 import MutationRecord from '../../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../../mutation-observer/MutationType';
 import NamespaceURI from '../../../html-config/NamespaceURI';
@@ -556,6 +557,16 @@ export default class Element extends Node implements IElement {
 	 */
 	public createTextRange(): Range {
 		return new Range();
+	}
+
+	/**
+	 * The matches() method checks to see if the Element would be selected by the provided selectorString.
+	 *
+	 * @param selector Selector.
+	 * @returns "true" if matching.
+	 */
+	public matches(selector: string): boolean {
+		return new SelectorItem(selector).match(this);
 	}
 
 	/**
