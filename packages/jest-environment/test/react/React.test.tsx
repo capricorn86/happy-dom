@@ -14,7 +14,7 @@ describe('React', () => {
 		document.body.removeChild(appElement);
 	});
 
-	test('Tests integration with React.', () => {
+	test('Tests integration.', () => {
 		ReactDOM.render(<ReactComponent />, appElement);
 		expect(appElement.innerHTML).toBe('<div>Test</div>');
 	});

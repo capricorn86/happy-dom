@@ -17,6 +17,7 @@ import DocumentType from '../document-type/DocumentType';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility';
 import QuerySelector from '../../../query-selector/QuerySelector';
 import IDocument from './IDocument';
+import CSSStyleSheet from '../../../css/CSSStyleSheet';
 
 /**
  * Document.
@@ -24,6 +25,7 @@ import IDocument from './IDocument';
 export default class Document extends Node implements IDocument {
 	public defaultView: Window = null;
 	public nodeType = Node.DOCUMENT_NODE;
+	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	protected _isConnected = true;
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
@@ -244,14 +246,18 @@ export default class Document extends Node implements IDocument {
 	 * @return Appended node.
 	 */
 	public appendChild(node: Node): Node {
-		if (node.parentNode && node.parentNode['children']) {
-			const index = node.parentNode['children'].indexOf(node);
-			if (index !== -1) {
-				node.parentNode['children'].splice(index, 1);
+		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+			if (node.parentNode && node.parentNode['children']) {
+				const index = node.parentNode['children'].indexOf(node);
+				if (index !== -1) {
+					node.parentNode['children'].splice(index, 1);
+				}
 			}
-		}
-		if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-			this.children.push(<Element>node);
+			if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
+				this.children.push(<Element>node);
+			}
 		}
 
 		return super.appendChild(node);
@@ -285,15 +291,19 @@ export default class Document extends Node implements IDocument {
 	public insertBefore(newNode: Node, referenceNode?: Node): Node {
 		const returnValue = super.insertBefore(newNode, referenceNode);
 
-		if (newNode.parentNode && newNode.parentNode['children']) {
-			const index = newNode.parentNode['children'].indexOf(newNode);
-			if (index !== -1) {
-				newNode.parentNode['children'].splice(index, 1);
+		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		if (newNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+			if (newNode.parentNode && newNode.parentNode['children']) {
+				const index = newNode.parentNode['children'].indexOf(newNode);
+				if (index !== -1) {
+					newNode.parentNode['children'].splice(index, 1);
+				}
 			}
-		}
 
-		// @ts-ignore
-		this.children = this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE);
+			// @ts-ignore
+			this.children = this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE);
+		}
 
 		return returnValue;
 	}

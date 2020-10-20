@@ -1,10 +1,11 @@
+import CSSStyleDeclaration from '../../../css/CSSStyleDeclaration';
 import IElement from '../element/IElement';
 
 /**
  * HTMLElement.
  */
 export default interface IHTMLElement extends IElement {
-	style: { [k: string]: string };
+	style: CSSStyleDeclaration;
 	tabIndex: number;
 	offsetHeight: number;
 	offsetWidth: number;

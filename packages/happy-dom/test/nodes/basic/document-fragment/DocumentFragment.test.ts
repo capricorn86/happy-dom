@@ -2,6 +2,7 @@ import Window from '../../../../src/window/Window';
 import Node from '../../../../src/nodes/basic/node/Node';
 import ParentNodeUtility from '../../../../src/nodes/basic/parent-node/ParentNodeUtility';
 import QuerySelector from '../../../../src/query-selector/QuerySelector';
+import HTMLTemplateElement from '../../../../src/nodes/elements/template/HTMLTemplateElement';
 
 describe('DocumentFragment', () => {
 	let window, document, documentFragment;
@@ -159,6 +160,23 @@ describe('DocumentFragment', () => {
 
 			expect(documentFragment.children).toEqual([div, span]);
 		});
+
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		test('Append the children instead of the actual element if the type is DocumentFragment.', () => {
+			const template = <HTMLTemplateElement>document.createElement('template');
+
+			template.innerHTML = '<div>Div</div><span>Span</span>';
+
+			const clone = template.content.cloneNode(true);
+
+			documentFragment.appendChild(clone);
+
+			expect(clone.childNodes).toEqual([]);
+			expect(clone.children).toEqual([]);
+			expect(documentFragment.children.map(child => child.outerHTML).join('')).toBe(
+				'<div>Div</div><span>Span</span>'
+			);
+		});
 	});
 
 	describe('removeChild()', () => {
@@ -190,6 +208,27 @@ describe('DocumentFragment', () => {
 			documentFragment.insertBefore(div2, div1);
 
 			expect(documentFragment.children).toEqual([div2, div1, span]);
+		});
+
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		test('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+			const template = <HTMLTemplateElement>document.createElement('template');
+
+			template.innerHTML = '<div>Template DIV 1</div><span>Template SPAN 1</span>';
+
+			const clone = template.content.cloneNode(true);
+
+			documentFragment.appendChild(child1);
+			documentFragment.appendChild(child2);
+
+			documentFragment.insertBefore(clone, child2);
+
+			expect(documentFragment.children.length).toBe(4);
+			expect(documentFragment.children.map(child => child.outerHTML).join('')).toEqual(
+				'<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>'
+			);
 		});
 	});
 

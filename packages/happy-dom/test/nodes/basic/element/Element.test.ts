@@ -13,6 +13,7 @@ import ParentNodeUtility from '../../../../src/nodes/basic/parent-node/ParentNod
 import QuerySelector from '../../../../src/query-selector/QuerySelector';
 import ChildNodeUtility from '../../../../src/nodes/basic/child-node/ChildNodeUtility';
 import NonDocumentChildNodeUtility from '../../../../src/nodes/basic/child-node/NonDocumentChildNodeUtility';
+import HTMLTemplateElement from '../../../../src/nodes/elements/template/HTMLTemplateElement';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -81,6 +82,12 @@ describe('Element', () => {
 	describe('get nodeName()', () => {
 		test('Returns the "tagName" property of the element.', () => {
 			expect(element.nodeName).toEqual('DIV');
+		});
+	});
+
+	describe('get localName()', () => {
+		test('Returns the "tagName" property of the element in lower case.', () => {
+			expect(element.localName).toEqual('div');
 		});
 	});
 
@@ -455,6 +462,21 @@ describe('Element', () => {
 
 			expect(element.children).toEqual([div, span]);
 		});
+
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		test('Append the children instead of the actual element if the type is DocumentFragment.', () => {
+			const template = <HTMLTemplateElement>document.createElement('template');
+
+			template.innerHTML = '<div>Div</div><span>Span</span>';
+
+			const clone = template.content.cloneNode(true);
+
+			element.appendChild(clone);
+
+			expect(clone.childNodes).toEqual([]);
+			expect(clone.children).toEqual([]);
+			expect(element.innerHTML).toBe('<div>Div</div><span>Span</span>');
+		});
 	});
 
 	describe('removeChild()', () => {
@@ -486,6 +508,27 @@ describe('Element', () => {
 			element.insertBefore(div2, div1);
 
 			expect(element.children).toEqual([div2, div1, span]);
+		});
+
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		test('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+			const template = <HTMLTemplateElement>document.createElement('template');
+
+			template.innerHTML = '<div>Template DIV 1</div><span>Template SPAN 1</span>';
+
+			const clone = template.content.cloneNode(true);
+
+			element.appendChild(child1);
+			element.appendChild(child2);
+
+			element.insertBefore(clone, child2);
+
+			expect(element.children.length).toBe(4);
+			expect(element.innerHTML).toEqual(
+				'<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>'
+			);
 		});
 	});
 
@@ -577,10 +620,12 @@ describe('Element', () => {
 
 		test('Sets "style" attribute as a property.', () => {
 			element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
-			expect(element.style).toEqual({
-				borderRadius: '2px',
-				padding: '2px'
-			});
+			expect(element.style.length).toEqual(2);
+			expect(element.style[0]).toEqual('border-radius');
+			expect(element.style[1]).toEqual('padding');
+			expect(element.style['borderRadius']).toEqual('2px');
+			expect(element.style['padding']).toEqual('2px');
+			expect(element.style.cssText).toEqual('border-radius: 2px;padding: 2px;');
 		});
 	});
 
