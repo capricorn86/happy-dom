@@ -549,13 +549,14 @@ export default class Document extends Node implements IDocument {
 	 * Imports a node.
 	 *
 	 * @param node Node to import.
+	 * @param [deep=false] Set to "true" if the clone should be deep.
 	 * @param Imported node.
 	 */
-	public importNode(node: Node): Node {
+	public importNode(node: Node, deep = false): Node {
 		if (!(node instanceof Node)) {
 			throw new Error('Parameter 1 was not of type Node.');
 		}
-		const clone = node.cloneNode(true);
+		const clone = node.cloneNode(deep);
 		// @ts-ignore
 		clone.ownerDocument = this;
 		return clone;
