@@ -33,9 +33,7 @@ export default class XMLParser {
 		let lastTextIndex = 0;
 		let match: RegExpExecArray;
 
-		data = data.trim();
-
-		while ((match = markupRegexp.exec(data.trim()))) {
+		while ((match = markupRegexp.exec(data))) {
 			const tagName = match[2].toLowerCase();
 			const isStartTag = !match[1];
 

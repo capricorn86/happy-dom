@@ -8,17 +8,35 @@ import CSSStyleDeclarationFactory from '../../../css/CSSStyleDeclarationFactory'
  * HTMLElement.
  */
 export default class HTMLElement extends Element implements IHTMLElement {
-	public tabIndex = -1;
-	public offsetHeight = 0;
-	public offsetWidth = 0;
-	public offsetLeft = 0;
-	public offsetTop = 0;
-	public clientHeight = 0;
-	public clientWidth = 0;
+	public readonly offsetHeight = 0;
+	public readonly offsetWidth = 0;
+	public readonly offsetLeft = 0;
+	public readonly offsetTop = 0;
+	public readonly clientHeight = 0;
+	public readonly clientWidth = 0;
 	private _style: {
 		cssText: string;
 		cssStyleDeclaration: CSSStyleDeclaration;
 	} = null;
+
+	/**
+	 * Returns tab index.
+	 *
+	 * @return Tab index.
+	 */
+	public get tabIndex(): number {
+		const tabIndex = this.getAttribute('tabindex');
+		return tabIndex !== null ? Number(tabIndex) : -1;
+	}
+
+	/**
+	 * Returns tab index.
+	 *
+	 * @param tabIndex Tab index.
+	 */
+	public set tabIndex(tabIndex: number) {
+		this.setAttribute('tabindex', String(tabIndex));
+	}
 
 	/**
 	 * Returns inner text.
@@ -91,26 +109,5 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		event.target = this;
 		event.currentTarget = this;
 		this.dispatchEvent(event);
-	}
-
-	/**
-	 * Clones a node.
-	 *
-	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
-	 */
-	public cloneNode(deep = false): HTMLElement {
-		const clone = <HTMLElement>super.cloneNode(deep);
-
-		clone.tabIndex = this.tabIndex;
-		clone.offsetHeight = this.offsetHeight;
-		clone.offsetWidth = this.offsetWidth;
-		clone.offsetLeft = this.offsetLeft;
-		clone.offsetTop = this.offsetTop;
-		clone.clientHeight = this.clientHeight;
-		clone.clientWidth = this.clientWidth;
-
-		return clone;
 	}
 }
