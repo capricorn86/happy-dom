@@ -87,6 +87,37 @@ export default class DocumentFragment extends Node implements IParentNode {
 	}
 
 	/**
+	 * Returns an elements by class name.
+	 *
+	 * @param className Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByClassName(className: string): IElement[] {
+		return this.querySelectorAll('.' + className.split(' ').join('.'));
+	}
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName(tagName: string): IElement[] {
+		return this.querySelectorAll(tagName);
+	}
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[] {
+		return this.querySelectorAll(tagName).filter(element => element.namespaceURI === namespaceURI);
+	}
+
+	/**
 	 * Clones a node.
 	 *
 	 * @override

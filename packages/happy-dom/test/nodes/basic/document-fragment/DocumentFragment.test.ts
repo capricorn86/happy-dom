@@ -148,6 +148,55 @@ describe('DocumentFragment', () => {
 		});
 	});
 
+	describe('getElementsByClassName()', () => {
+		test('Returns an elements by class name.', () => {
+			const element = document.createElement('div');
+			const className = 'className';
+
+			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+				expect(parentNode).toBe(documentFragment);
+				expect(selector).toEqual(`.${className}`);
+				return [element];
+			});
+
+			expect(documentFragment.getElementsByClassName(className)).toEqual([element]);
+		});
+	});
+
+	describe('getElementsByTagName()', () => {
+		test('Returns an elements by tag name.', () => {
+			const element = document.createElement('div');
+			const tagName = 'tag-name';
+
+			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+				expect(parentNode).toBe(documentFragment);
+				expect(selector).toEqual(tagName);
+				return [element];
+			});
+
+			expect(documentFragment.getElementsByTagName(tagName)).toEqual([element]);
+		});
+	});
+
+	describe('getElementsByTagNameNS()', () => {
+		test('Returns an elements by tag name and namespace.', () => {
+			const element1 = document.createElement('div');
+			const element2 = document.createElement('div');
+			const tagName = 'tag-name';
+
+			// @ts-ignore
+			element1.namespaceURI = '/namespace/';
+
+			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+				expect(parentNode).toBe(documentFragment);
+				expect(selector).toEqual(tagName);
+				return [element1, element2];
+			});
+
+			expect(documentFragment.getElementsByTagNameNS('/namespace/', tagName)).toEqual([element1]);
+		});
+	});
+
 	describe('appendChild()', () => {
 		test('Updates the children property when appending an element child.', () => {
 			const div = document.createElement('div');
