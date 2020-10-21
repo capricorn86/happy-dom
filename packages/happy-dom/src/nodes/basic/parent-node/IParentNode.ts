@@ -38,6 +38,31 @@ export default interface IParentNode extends INode {
 	querySelectorAll(selector: string): IElement[];
 
 	/**
+	 * Returns an elements by class name.
+	 *
+	 * @param className Tag name.
+	 * @returns Matching element.
+	 */
+	getElementsByClassName(className: string): IElement[];
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	getElementsByTagName(tagName: string): IElement[];
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[];
+
+	/**
 	 * Replaces the existing children of a node with a specified new set of children.
 	 *
 	 * @param nodes List of Node or DOMString.
