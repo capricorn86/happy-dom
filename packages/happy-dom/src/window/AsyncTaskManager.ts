@@ -1,12 +1,10 @@
+import AsyncTaskTypeEnum from './AsyncTaskTypeEnum';
+
 /**
  * Handles async tasks.
  */
 export default class AsyncTaskManager {
-	// Private Properties
-	private isDisposed = false;
-	private tasks: { [k: string]: number } = {};
-	private hasError = false;
-	private timeout: NodeJS.Timeout = null;
+	private tasks: { [k: string]: (NodeJS.Timeout | string)[] } = {};
 	private queue: { resolve: () => void; reject: (error: Error) => void }[] = [];
 
 	/**
@@ -17,59 +15,98 @@ export default class AsyncTaskManager {
 	 */
 	public async whenComplete(): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.startTask('complete');
+			const timerID = global.setTimeout(() => {
+				this.endTimer(timerID);
+			}, 0);
+			this.startTimer(timerID);
 			this.queue.push({ resolve, reject });
-			global.clearTimeout(this.timeout);
-			this.timeout = global.setTimeout(() => this.endTask('complete'), 0);
 		});
 	}
 
 	/**
-	 * Disposes the window.
+	 * Cancels all tasks.
+	 *
+	 * @param [error] Error.
 	 */
-	public dispose(): void {
-		this.isDisposed = true;
-		this.hasError = false;
+	public cancelAllTasks(error?: Error): void {
+		if (this.tasks[AsyncTaskTypeEnum.timer]) {
+			for (const id of this.tasks[AsyncTaskTypeEnum.timer]) {
+				global.clearTimeout(<NodeJS.Timeout>id);
+			}
+		}
+
+		const promises = this.queue;
+
 		this.tasks = {};
 		this.queue = [];
-		global.clearTimeout(this.timeout);
+
+		for (const promise of promises) {
+			if (error) {
+				promise.reject(error);
+			} else {
+				promise.resolve();
+			}
+		}
+	}
+
+	/**
+	 * Starts a timer.
+	 *
+	 * @param id Timer ID.
+	 */
+	public startTimer(id: NodeJS.Timeout = null): void {
+		this.tasks[AsyncTaskTypeEnum.timer] = this.tasks[AsyncTaskTypeEnum.timer] || [];
+		this.tasks[AsyncTaskTypeEnum.timer].push(id);
+	}
+
+	/**
+	 * Ends a timer.
+	 *
+	 * @param id Timer ID.
+	 */
+	public endTimer(id: NodeJS.Timeout = null): void {
+		if (this.tasks[AsyncTaskTypeEnum.timer]) {
+			const index = this.tasks[AsyncTaskTypeEnum.timer].indexOf(id);
+			if (index !== -1) {
+				this.tasks[AsyncTaskTypeEnum.timer].splice(index, 1);
+				if (this.tasks[AsyncTaskTypeEnum.timer].length === 0) {
+					delete this.tasks[AsyncTaskTypeEnum.timer];
+
+					if (Object.keys(this.tasks).length === 0) {
+						this.cancelAllTasks();
+					}
+				}
+			}
+		}
 	}
 
 	/**
 	 * Starts an async task.
 	 *
-	 * @param name Name of task.
+	 * @param type Task type.
 	 */
-	public startTask(name: string): void {
-		this.tasks[name] = this.tasks[name] || 0;
-		this.tasks[name]++;
+	public startTask(type: AsyncTaskTypeEnum): void {
+		this.tasks[type] = this.tasks[type] || [];
+		this.tasks[type].push(type);
 	}
 
 	/**
 	 * Ends an async task.
 	 *
-	 * @param name Name of task.
+	 * @param type Task type.
 	 * @param [error] Error.
 	 */
-	public endTask(name: string, error?: Error): void {
-		if (!this.isDisposed && this.tasks[name] !== undefined) {
-			this.tasks[name]--;
+	public endTask(type: AsyncTaskTypeEnum, error?: Error): void {
+		if (error) {
+			this.cancelAllTasks(error);
+		} else if (this.tasks[type]) {
+			this.tasks[type].pop();
 
-			const promises = this.queue;
+			if (this.tasks[type].length === 0) {
+				delete this.tasks[type];
 
-			if (error) {
-				this.hasError = true;
-				this.queue = [];
-				for (const promise of promises) {
-					promise.reject(error);
-				}
-			} else if (this.tasks[name] === 0 && !this.hasError) {
-				delete this.tasks[name];
 				if (Object.keys(this.tasks).length === 0) {
-					this.queue = [];
-					for (const promise of promises) {
-						promise.resolve();
-					}
+					this.cancelAllTasks();
 				}
 			}
 		}

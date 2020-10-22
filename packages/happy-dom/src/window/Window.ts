@@ -159,11 +159,6 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public scrollTo(): void {}
 
 	/**
-	 * Disposes the window.
-	 */
-	public dispose(): void {}
-
-	/**
 	 * Sets a timer which executes a function once the timer expires.
 	 *
 	 * @param callback Function to be executed.
