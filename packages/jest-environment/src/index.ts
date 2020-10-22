@@ -3,7 +3,7 @@ import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
 import { LegacyFakeTimers, ModernFakeTimers } from '@jest/fake-timers';
 import { JestEnvironment, EnvironmentContext } from '@jest/environment';
-import { Window } from 'happy-dom';
+import { AsyncWindow } from 'happy-dom';
 import { Script } from 'vm';
 import { Global, Config } from '@jest/types';
 
@@ -13,7 +13,7 @@ import { Global, Config } from '@jest/types';
 export default class HappyDOMEnvironment implements JestEnvironment {
 	public fakeTimers: LegacyFakeTimers<number> = null;
 	public fakeTimersModern: ModernFakeTimers = null;
-	public global: Global.Global = <Global.Global>(<undefined>new Window());
+	public global: Global.Global = <Global.Global>(<undefined>new AsyncWindow());
 	public moduleMocker: ModuleMocker = new ModuleMocker(<NodeJS.Global>this.global);
 
 	/**
@@ -32,6 +32,10 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.global.Error.stackTraceLimit = 100;
 
 		JestUtil.installCommonGlobals(this.global, config.globals);
+
+		// Removes window.fetch() as it should not be used in a test environment.
+		delete this.global.fetch;
+		delete this.global.window.fetch;
 
 		if (options.console) {
 			this.global.console = options.console;
@@ -69,7 +73,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	public async teardown(): Promise<void> {
 		this.fakeTimers.dispose();
 		this.fakeTimersModern.dispose();
-		this.global.dispose();
+		this.global.cancelAsync();
 
 		this.global = null;
 		this.moduleMocker = null;
