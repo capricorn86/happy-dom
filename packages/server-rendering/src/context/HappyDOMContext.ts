@@ -89,7 +89,7 @@ export default class HappyDOMContext {
 	 * Disposes the render.
 	 */
 	public dispose(): void {
-		this.window.dispose();
+		this.window.cancelAsync();
 	}
 
 	/**
