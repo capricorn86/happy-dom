@@ -141,13 +141,15 @@ Has all the basic functionality of a DOM except for fetch(). This has been exclu
 
 ### AsyncWindow
 
-AsyncWindow extends Window and adds support for fetch(). It also has a method called "window.whenAsyncComplete()" which returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that is resolved when all async tasks has been completed.
+AsyncWindow extends Window and adds support for fetch(). It also exposes two methods that are useful when working with asynchrounous code.
 
 **whenAsyncComplete()**
-The "window.whenAsyncComplete()" method can be used when executing scripts that contains asynchrounous tasks that has to be completed before the render of the page has been completed.
+
+Returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that is resolved when all async tasks has been completed.
 
 **cancelAsync()**
-The "window.cancelAsync()" will cancel all running async tasks.
+
+This method will cancel all running async tasks.
 
 
 # Performance
