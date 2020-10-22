@@ -3,6 +3,7 @@ import { URLSearchParams } from 'url';
 import { Readable } from 'stream';
 import Window from './Window';
 import AsyncTaskManager from './AsyncTaskManager';
+import AsyncTaskTypeEnum from './AsyncTaskTypeEnum';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
 
@@ -11,7 +12,7 @@ const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
  */
 export default class AsyncWindow extends Window {
 	// Private Properties
-	private async = new AsyncTaskManager();
+	private _asyncTaskManager = new AsyncTaskManager();
 
 	/**
 	 * Constructor.
@@ -32,15 +33,16 @@ export default class AsyncWindow extends Window {
 	 *
 	 * @override
 	 * @param callback Function to be executed.
-	 * @param [delay] Delay in ms.
+	 * @param [delay=0] Delay in ms.
 	 * @return Timeout ID.
 	 */
-	public setTimeout(callback: () => void, delay?: number): NodeJS.Timeout {
-		this.async.startTask('timeout');
-		return global.setTimeout(() => {
+	public setTimeout(callback: () => void, delay = 0): NodeJS.Timeout {
+		const id = global.setTimeout(() => {
+			this._asyncTaskManager.endTimer(id);
 			callback();
-			this.async.endTask('timeout');
 		}, delay);
+		this._asyncTaskManager.startTimer(id);
+		return id;
 	}
 
 	/**
@@ -51,7 +53,7 @@ export default class AsyncWindow extends Window {
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
 		global.clearTimeout(id);
-		this.async.endTask('timeout');
+		this._asyncTaskManager.endTimer(id);
 	}
 
 	/**
@@ -59,12 +61,13 @@ export default class AsyncWindow extends Window {
 	 *
 	 * @override
 	 * @param callback Function to be executed.
-	 * @param [delay] Delay in ms.
+	 * @param [delay=0] Delay in ms.
 	 * @return Interval ID.
 	 */
-	public setInterval(callback: () => void, delay?: number): NodeJS.Timeout {
-		this.async.startTask('interval');
-		return global.setInterval(callback, delay);
+	public setInterval(callback: () => void, delay = 0): NodeJS.Timeout {
+		const id = global.setInterval(callback, delay);
+		this._asyncTaskManager.startTimer(id);
+		return id;
 	}
 
 	/**
@@ -75,7 +78,7 @@ export default class AsyncWindow extends Window {
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
 		global.clearInterval(id);
-		this.async.endTask('interval');
+		this._asyncTaskManager.endTimer(id);
 	}
 
 	/**
@@ -88,7 +91,7 @@ export default class AsyncWindow extends Window {
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout {
 		return this.setTimeout(() => {
 			callback(2);
-		}, 0);
+		});
 	}
 
 	/**
@@ -119,7 +122,7 @@ export default class AsyncWindow extends Window {
 		}
 	): Promise<Response> {
 		return new Promise((resolve, reject) => {
-			this.async.startTask('fetch');
+			this._asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
 
 			fetch(url, options)
 				.then(response => {
@@ -127,27 +130,27 @@ export default class AsyncWindow extends Window {
 						const asyncMethod = response[methodName];
 						response[methodName] = () => {
 							return new Promise((resolve, reject) => {
-								this.async.startTask('fetch');
+								this._asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
 
 								asyncMethod
 									.then(response => {
 										resolve(response);
-										this.async.endTask('fetch');
+										this._asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
 									})
 									.catch(error => {
 										reject(error);
-										this.async.endTask('fetch', error);
+										this._asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
 									});
 							});
 						};
 					}
 
 					resolve(response);
-					this.async.endTask('fetch');
+					this._asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
 				})
 				.catch(error => {
 					reject(error);
-					this.async.endTask('fetch', error);
+					this._asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
 				});
 		});
 	}
@@ -159,15 +162,13 @@ export default class AsyncWindow extends Window {
 	 * @returns Promise.
 	 */
 	public async whenAsyncComplete(): Promise<void> {
-		return this.async.whenComplete();
+		return this._asyncTaskManager.whenComplete();
 	}
 
 	/**
-	 * Disposes the window.
+	 * Cancels all async tasks running.
 	 */
-	public dispose(): void {
-		super.dispose();
-		this.async.dispose();
-		this.async = null;
+	public cancelAsync(): void {
+		this._asyncTaskManager.cancelAllTasks();
 	}
 }
