@@ -51,6 +51,15 @@ describe('QuerySelector', () => {
 			expect(elements[3]).toBe(container.children[0].children[1].children[1]);
 		});
 
+		test('Returns all elements matching ".class1 > .class1 > *".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('.class1 > .class1 > *');
+			expect(elements.length).toBe(2);
+			expect(elements[0]).toBe(container.children[0].children[1].children[0]);
+			expect(elements[1]).toBe(container.children[0].children[1].children[1]);
+		});
+
 		test('Returns all elements matching "div > div > span".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
