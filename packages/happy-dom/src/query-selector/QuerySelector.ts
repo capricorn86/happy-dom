@@ -4,7 +4,7 @@ import Document from '../nodes/document/Document';
 import Node from '../nodes/node/Node';
 import SelectorItem from './SelectorItem';
 
-const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#":()\]]+)|([ ,>]+)/g;
+const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#"*:()\]]+)|([ ,>]+)/g;
 
 // The above one seem to work fine and is faster, but this one can be useful if more rules need to be added as it is more "correct".
 // const SELECTOR_PART_REGEXP = /([a-zA-Z0-9-$.]+|\[[a-zA-Z0-9-]+\]|\[[a-zA-Z0-9$-~|^$*]+[ ]*=[ ]*"[^"]+"\])|([ ,]+)/g;
