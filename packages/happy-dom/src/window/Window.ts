@@ -98,6 +98,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public RangeError = global ? global.RangeError : null;
 	public ReferenceError = global ? global.ReferenceError : null;
 	public RegExp = global ? global.RegExp : null;
+	public Reflect = global ? global.Reflect : null;
 	public Set = global ? global.Set : null;
 	public Symbol = global ? global.Symbol : null;
 	public SyntaxError = global ? global.SyntaxError : null;
