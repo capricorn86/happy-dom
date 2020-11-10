@@ -1,4 +1,5 @@
-import Element from '../nodes/basic/element/Element';
+import DOMException from '../exception/DOMException';
+import Element from '../nodes/element/Element';
 
 const ATTRIBUTE_REGEXP = /\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']([^"']+)["']\]/g;
 const ATTRIBUTE_NAME_REGEXP = /[^a-zA-Z0-9-$]/;
@@ -138,7 +139,7 @@ export default class SelectorItem {
 			const aNumber = Number(a);
 			const bNumber = b !== undefined ? Number(b) : 0;
 			if (isNaN(aNumber) || isNaN(bNumber)) {
-				throw new Error(`The selector "${this.selector}" is not valid.`);
+				throw new DOMException(`The selector "${this.selector}" is not valid.`);
 			}
 
 			for (let i = 0, max = children.length; i <= max; i += aNumber) {
@@ -153,7 +154,7 @@ export default class SelectorItem {
 		const number = Number(place);
 
 		if (isNaN(number)) {
-			throw new Error(`The selector "${this.selector}" is not valid.`);
+			throw new DOMException(`The selector "${this.selector}" is not valid.`);
 		}
 
 		return children[number - 1] === element;
@@ -222,7 +223,7 @@ export default class SelectorItem {
 	 */
 	private matchesAttributeName(element, attributeName): boolean {
 		if (ATTRIBUTE_NAME_REGEXP.test(attributeName)) {
-			throw new Error(`The selector "${this.selector}" is not valid.`);
+			throw new DOMException(`The selector "${this.selector}" is not valid.`);
 		}
 
 		return !!element._attributes[attributeName.toLowerCase()];
@@ -248,7 +249,7 @@ export default class SelectorItem {
 		const value = attributeValue;
 
 		if (ATTRIBUTE_NAME_REGEXP.test(attributeName)) {
-			throw new Error(`The selector "${this.selector}" is not valid.`);
+			throw new DOMException(`The selector "${this.selector}" is not valid.`);
 		}
 
 		if (!attribute) {

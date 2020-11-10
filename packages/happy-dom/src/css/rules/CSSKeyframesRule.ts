@@ -1,4 +1,5 @@
 import CSSRule from '../CSSRule';
+import CSSStyleDeclaration from '../CSSStyleDeclaration';
 import CSSStyleDeclarationFactory from '../CSSStyleDeclarationFactory';
 import CSSKeyframeRule from './CSSKeyframeRule';
 
@@ -34,11 +35,12 @@ export default class CSSKeyframesRule extends CSSRule {
 		const match = rule.match(CSS_RULE_REGEXP);
 		if (match) {
 			const cssRule = new CSSKeyframeRule();
-			cssRule.parentRule = this;
-			// @ts-ignore
-			cssRule.keyText = match[1].trim();
-			// @ts-ignore
-			cssRule.style = CSSStyleDeclarationFactory.createCSSStyleDeclaration(match[2].trim(), this);
+			(<CSSRule>cssRule.parentRule) = this;
+			(<string>cssRule.keyText) = match[1].trim();
+			(<CSSStyleDeclaration>cssRule.style) = CSSStyleDeclarationFactory.createCSSStyleDeclaration(
+				match[2].trim(),
+				this
+			);
 		}
 	}
 

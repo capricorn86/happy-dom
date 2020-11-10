@@ -1,6 +1,6 @@
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
 import Window from '../../src/window/Window';
-import Document from '../../src/nodes/basic/document/Document';
+import Document from '../../src/nodes/document/Document';
 
 describe('XMLSerializer', () => {
 	let window: Window;

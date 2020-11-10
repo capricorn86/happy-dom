@@ -1,4 +1,4 @@
-import Document from '../../src/nodes/basic/document/Document';
+import Document from '../../src/nodes/document/Document';
 import DOMImplementation from '../../src/dom-implementation/DOMImplementation';
 
 describe('DOMImplementation', () => {

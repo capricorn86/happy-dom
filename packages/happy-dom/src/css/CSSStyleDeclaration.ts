@@ -417,8 +417,7 @@ export default class CSSStyleDeclaration {
 		const newValue = value + (priority ? ' !' + priority : '');
 
 		if (this._styleMap[propertyName] === undefined) {
-			// @ts-ignore
-			this.length++;
+			(<number>this.length)++;
 		}
 
 		this[this.length - 1] = propertyName;
@@ -437,8 +436,7 @@ export default class CSSStyleDeclaration {
 		const currentIndex = this._styleMap[propertyName];
 
 		if (currentIndex !== undefined) {
-			// @ts-ignore
-			this.length--;
+			(<number>this.length)--;
 
 			delete this[this.length];
 			delete this._styleMap[propertyName];

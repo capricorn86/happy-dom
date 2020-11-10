@@ -1,9 +1,9 @@
 import XMLParser from '../../src/xml-parser/XMLParser';
 import Window from '../../src/window/Window';
-import HTMLElement from '../../src/nodes/basic/html-element/HTMLElement';
+import HTMLElement from '../../src/nodes/html-element/HTMLElement';
 import XMLParserHTML from './data/XMLParserHTML';
-import NamespaceURI from '../../src/html-config/NamespaceURI';
-import DocumentType from '../../src/nodes/basic/document-type/DocumentType';
+import NamespaceURI from '../../src/config/NamespaceURI';
+import DocumentType from '../../src/nodes/document-type/DocumentType';
 
 describe('XMLParser', () => {
 	let window: Window;

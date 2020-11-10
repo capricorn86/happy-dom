@@ -1,4 +1,4 @@
-import INode from '../nodes/basic/node/INode';
+import INode from '../nodes/node/INode';
 
 /**
  * MutationRecord is a model for a mutation.

@@ -1,26 +1,31 @@
 import CustomElementRegistry from '../custom-element/CustomElementRegistry';
-import Document from '../nodes/basic/document/Document';
-import Node from '../nodes/basic/node/Node';
+import Document from '../nodes/document/Document';
+import Node from '../nodes/node/Node';
 import NodeFilter from '../tree-walker/NodeFilter';
-import TextNode from '../nodes/basic/text-node/TextNode';
-import CommentNode from '../nodes/basic/comment-node/CommentNode';
-import ShadowRoot from '../nodes/basic/shadow-root/ShadowRoot';
-import Element from '../nodes/basic/element/Element';
-import HTMLElement from '../nodes/basic/html-element/HTMLElement';
-import DocumentFragment from '../nodes/basic/document-fragment/DocumentFragment';
+import TextNode from '../nodes/text-node/TextNode';
+import CommentNode from '../nodes/comment-node/CommentNode';
+import ShadowRoot from '../nodes/shadow-root/ShadowRoot';
+import Element from '../nodes/element/Element';
+import HTMLElement from '../nodes/html-element/HTMLElement';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
 import TreeWalker from '../tree-walker/TreeWalker';
 import Event from '../event/Event';
-import CustomEvent from '../event/CustomEvent';
+import CustomEvent from '../event/events/CustomEvent';
+import ProgressEvent from '../event/events/ProgressEvent';
 import EventTarget from '../event/EventTarget';
 import URL from '../location/URL';
 import Location from '../location/Location';
 import EventTypes from '../event/EventTypes.json';
 import MutationObserver from '../mutation-observer/MutationObserver';
-import HTMLElementClass from '../html-config/HTMLElementClass';
+import ElementClass from '../config/ElementClass';
 import DOMParser from '../dom-parser/DOMParser';
 import XMLSerializer from '../xml-serializer/XMLSerializer';
 import ResizeObserver from '../resize-observer/ResizeObserver';
 import CSSStyleSheet from '../css/CSSStyleSheet';
+import Blob from '../file/Blob';
+import File from '../file/File';
+import DOMException from '../exception/DOMException';
+import FileReader from '../file/FileReader';
 
 /**
  * Handles the Window.
@@ -41,6 +46,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public Document = Document;
 	public Event = Event;
 	public CustomEvent = CustomEvent;
+	public ProgressEvent = ProgressEvent;
 	public URL = URL;
 	public Location = Location;
 	public CustomElementRegistry = CustomElementRegistry;
@@ -49,6 +55,10 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public XMLSerializer = XMLSerializer;
 	public ResizeObserver = ResizeObserver;
 	public CSSStyleSheet = CSSStyleSheet;
+	public Blob = Blob;
+	public File = File;
+	public FileReader = FileReader;
+	public DOMException = DOMException;
 
 	// Public Properties
 	public document: Document;
@@ -131,13 +141,18 @@ export default class Window extends EventTarget implements NodeJS.Global {
 		this.document.defaultView = this;
 
 		DOMParser._ownerDocument = DOMParser._ownerDocument || this.document;
+		FileReader._ownerDocument = FileReader._ownerDocument || this.document;
 
 		for (const eventType of EventTypes) {
-			this[eventType] = Event;
+			if (!this[eventType]) {
+				this[eventType] = Event;
+			}
 		}
 
-		for (const className of Object.keys(HTMLElementClass)) {
-			this[className] = HTMLElementClass[className];
+		for (const className of Object.keys(ElementClass)) {
+			if (!this[className]) {
+				this[className] = ElementClass[className];
+			}
 		}
 	}
 
@@ -228,7 +243,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	 * @returns Promise.
 	 */
 	public async fetch(_url: string, _options: object): Promise<void> {
-		throw new Error(
+		throw new DOMException(
 			'Fetch is not supported by the synchronous "Window" from Happy DOM. Use "AsyncWindow" instead to get support for fetch.'
 		);
 	}

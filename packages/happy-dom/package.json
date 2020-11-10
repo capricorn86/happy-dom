@@ -43,7 +43,8 @@
 	},
 	"dependencies": {
 		"he": "^1.1.1",
-		"node-fetch": "^2.6.1"
+		"node-fetch": "^2.6.1",
+		"whatwg-mimetype": "^2.3.0"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^2.11.0",

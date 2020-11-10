@@ -1,8 +1,8 @@
 import Window from '../../src/window/Window';
 import NodeFilter from '../../src/tree-walker/NodeFilter';
-import Element from '../../src/nodes/basic/element/Element';
-import CommentNode from '../../src/nodes/basic/comment-node/CommentNode';
-import Node from '../../src/nodes/basic/node/Node';
+import Element from '../../src/nodes/element/Element';
+import CommentNode from '../../src/nodes/comment-node/CommentNode';
+import Node from '../../src/nodes/node/Node';
 import TreeWalkerHTML from './data/TreeWalkerHTML';
 
 const NODE_TO_STRING = (node: Node): string => {

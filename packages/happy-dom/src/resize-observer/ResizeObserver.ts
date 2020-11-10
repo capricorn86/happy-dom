@@ -10,7 +10,7 @@ export default class ResizeObserver {
 	 * Not implemented.
 	 */
 	public observe(): void {
-		// Not implemented
+		// TODO: Not implemented
 	}
 
 	/**
@@ -19,7 +19,7 @@ export default class ResizeObserver {
 	 * Not implemented.
 	 */
 	public unobserve(): void {
-		// Not implemented
+		// TODO: Not implemented
 	}
 
 	/**
@@ -28,6 +28,6 @@ export default class ResizeObserver {
 	 * Not implemented.
 	 */
 	public disconnect(): void {
-		// Not implemented
+		// TODO: Not implemented
 	}
 }

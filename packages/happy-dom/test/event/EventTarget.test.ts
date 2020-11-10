@@ -1,6 +1,6 @@
 import EventTarget from '../../src/event/EventTarget';
 import Event from '../../src/event/Event';
-import CustomEvent from '../../src/event/CustomEvent';
+import CustomEvent from '../../src/event/events/CustomEvent';
 
 const EVENT_TYPE = 'click';
 class TestEventTarget extends EventTarget {}

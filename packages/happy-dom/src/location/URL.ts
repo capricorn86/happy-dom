@@ -1,3 +1,5 @@
+import DOMException from '../exception/DOMException';
+
 const URL_REGEXP = /(https?:)\/\/([-a-zA-Z0-9@:%._\+~#=]{2,256}[a-z]{2,6})(:[0-9]*)?([-a-zA-Z0-9@:%_\+.~c&//=]*)(\?[^#]*)?(#.*)?/;
 
 export default class URL {
@@ -36,7 +38,7 @@ export default class URL {
 	protected parse(url: string): void {
 		const match = url.match(URL_REGEXP);
 		if (!match) {
-			throw new Error('Failed to parse URL "' + url + '". URL is in an invalid format.');
+			throw new DOMException('Failed to parse URL "' + url + '". URL is in an invalid format.');
 		}
 
 		const hostnamePart = match[2] ? match[2].split('@') : '';
