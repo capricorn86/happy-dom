@@ -45,7 +45,6 @@
 		"@jest/environment": "^26.2.0",
 		"@jest/fake-timers": "^26.2.0",
 		"@jest/types": "^26.2.0",
-		"vue": "^2.6.12",
 		"jest-mock": "^26.2.0",
 		"jest-util": "^26.2.0",
 		"happy-dom": "^0.0.0"
@@ -64,6 +63,7 @@
 		"ts-jest": "^26.1.4",
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1",
+		"vue": "^2.6.12",
 		"lit-element": "^2.4.0",
 		"@angular/core": "^10.0.7",
 		"@angular/platform-browser-dynamic": "^10.0.7",
