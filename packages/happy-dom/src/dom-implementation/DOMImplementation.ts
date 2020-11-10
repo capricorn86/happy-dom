@@ -1,5 +1,5 @@
-import DocumentType from '../nodes/basic/document-type/DocumentType';
-import Document from '../nodes/basic/document/Document';
+import DocumentType from '../nodes/document-type/DocumentType';
+import Document from '../nodes/document/Document';
 
 /**
  * The DOMImplementation interface represents an object providing methods which are not dependent on any particular document. Such an object is returned by the

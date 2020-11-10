@@ -34,8 +34,7 @@ export default class MediaList {
 	 */
 	public appendMedium(medium: string): void {
 		this[this.length] = medium;
-		// @ts-ignore
-		this.length++;
+		(<number>this.length)++;
 	}
 
 	/**
@@ -54,8 +53,7 @@ export default class MediaList {
 			}
 		}
 		if (isDeleted) {
-			// @ts-ignore
-			this.length--;
+			(<number>this.length)--;
 		}
 	}
 }

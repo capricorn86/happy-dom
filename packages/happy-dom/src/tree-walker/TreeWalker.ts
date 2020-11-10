@@ -1,7 +1,8 @@
-import Node from '../nodes/basic/node/Node';
+import Node from '../nodes/node/Node';
 import NodeFilter from './NodeFilter';
 import INodeFilter from './INodeFilter';
 import NodeFilterMask from './NodeFilterMask';
+import DOMException from '../exception/DOMException';
 
 /**
  * The TreeWalker object represents the nodes of a document subtree and a position within them.
@@ -21,7 +22,7 @@ export default class TreeWalker {
 	 */
 	constructor(root: Node, whatToShow = -1, filter: INodeFilter = null) {
 		if (!(root instanceof Node)) {
-			throw new Error('Parameter 1 was not of type Node.');
+			throw new DOMException('Parameter 1 was not of type Node.');
 		}
 
 		this.root = root;

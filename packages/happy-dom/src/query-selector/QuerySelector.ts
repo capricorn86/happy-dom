@@ -1,7 +1,7 @@
-import Element from '../nodes/basic/element/Element';
-import DocumentFragment from '../nodes/basic/document-fragment/DocumentFragment';
-import Document from '../nodes/basic/document/Document';
-import Node from '../nodes/basic/node/Node';
+import Element from '../nodes/element/Element';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
+import Document from '../nodes/document/Document';
+import Node from '../nodes/node/Node';
 import SelectorItem from './SelectorItem';
 
 const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#":()\]]+)|([ ,>]+)/g;

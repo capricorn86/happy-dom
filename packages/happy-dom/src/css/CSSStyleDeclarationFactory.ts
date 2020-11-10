@@ -2,7 +2,7 @@ import CSSRule from './CSSRule';
 import CSSStyleDeclaration from './CSSStyleDeclaration';
 
 /**
- * CSSStyleDeclaration interface.
+ * CSSStyleDeclaration factory.
  */
 export default class CSSStyleDeclarationFactory {
 	/**
@@ -16,8 +16,8 @@ export default class CSSStyleDeclarationFactory {
 		parentRule: CSSRule = null
 	): CSSStyleDeclaration {
 		const cssStyleDeclaration = new CSSStyleDeclaration();
-		// @ts-ignore
-		cssStyleDeclaration.parentRule = parentRule;
+
+		(<CSSRule>cssStyleDeclaration.parentRule) = parentRule;
 
 		if (cssText) {
 			for (const part of cssText.replace(/[\n\r]/gm, '').split(';')) {

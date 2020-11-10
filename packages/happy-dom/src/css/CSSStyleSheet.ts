@@ -97,7 +97,6 @@ export default class CSSStyleSheet {
 	 * @returns Promise.
 	 */
 	public replaceSync(text: string): void {
-		// @ts-ignore
-		this.cssRules = CSSParser.parseFromString(this, text);
+		(<CSSRule[]>this.cssRules) = CSSParser.parseFromString(this, text);
 	}
 }

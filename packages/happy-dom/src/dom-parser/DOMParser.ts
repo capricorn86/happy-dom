@@ -1,6 +1,8 @@
-import Document from '../nodes/basic/document/Document';
+import Document from '../nodes/document/Document';
 import XMLParser from '../xml-parser/XMLParser';
-import Node from '../nodes/basic/node/Node';
+import Node from '../nodes/node/Node';
+import Element from '../nodes/element/Element';
+import DOMException from '../exception/DOMException';
 
 /**
  * HTML parser.
@@ -17,11 +19,11 @@ export default class DOMParser {
 	 */
 	public parseFromString(string: string, mimeType: string): Document {
 		if (!mimeType) {
-			throw new Error('Second parameter "mimeType" is mandatory.');
+			throw new DOMException('Second parameter "mimeType" is mandatory.');
 		}
 
 		if (mimeType !== 'text/html') {
-			throw new Error('The DOMParser in Happy DOM only supports the mime type "text/html".');
+			throw new DOMException('The DOMParser in Happy DOM only supports the mime type "text/html".');
 		}
 
 		const ownerDocument = (<typeof DOMParser>(<unknown>this.constructor))._ownerDocument;
@@ -29,10 +31,8 @@ export default class DOMParser {
 
 		newDocument.defaultView = ownerDocument.defaultView;
 
-		// @ts-ignore
-		newDocument.childNodes = [];
-		// @ts-ignore
-		newDocument.children = [];
+		(<Node[]>newDocument.childNodes) = [];
+		(<Element[]>newDocument.children) = [];
 
 		const root = XMLParser.parse(newDocument, string);
 		let documentElement = null;

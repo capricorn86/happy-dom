@@ -5,7 +5,7 @@
 
 A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server side rendering of web components.
 
-Happy DOM aims to support the most common functionality of a web browser.
+Happy DOM aim to support the most common functionality of a web browser.
 
 [Read more about how to use Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom)
 

@@ -26,7 +26,7 @@
 		"compile": "node ./bin/build-lit-ts-config && tsc --project tmp/tsconfig.lit-element.json && tsc --project tmp/tsconfig.lit-html.json && tsc",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'",
-		"test": "jest --runInBand",
+		"test": "jest",
 		"test:watch": "jest --runInBand --watch",
 		"test:update-snapshot": "jest --runInBand --updateSnapshot",
 		"test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand"

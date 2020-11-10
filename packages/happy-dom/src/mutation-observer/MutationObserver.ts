@@ -1,4 +1,5 @@
-import Node from '../nodes/basic/node/Node';
+import DOMException from '../exception/DOMException';
+import Node from '../nodes/node/Node';
 import IMutationObserverInit from './IMutationObserverInit';
 import MutationObserverListener from './MutationListener';
 import MutationRecord from './MutationRecord';
@@ -30,7 +31,9 @@ export default class MutationObserver {
 	 */
 	public observe(target: Node, options: IMutationObserverInit): void {
 		if (!target) {
-			throw new Error('Failed to observer. The first parameter "target" should be of type "Node".');
+			throw new DOMException(
+				'Failed to observer. The first parameter "target" should be of type "Node".'
+			);
 		}
 
 		options = Object.assign({}, options, {

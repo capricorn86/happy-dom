@@ -1,5 +1,6 @@
-import HTMLElement from '../nodes/basic/html-element/HTMLElement';
-import Node from '../nodes/basic/node/Node';
+import DOMException from '../exception/DOMException';
+import HTMLElement from '../nodes/html-element/HTMLElement';
+import Node from '../nodes/node/Node';
 
 /**
  * Custom elements registry.
@@ -22,7 +23,7 @@ export default class CustomElementRegistry {
 	): void {
 		const name = tagName.toLowerCase();
 		if (!name.includes('-')) {
-			throw new Error(
+			throw new DOMException(
 				"Failed to execute 'define' on 'CustomElementRegistry': \"" +
 					name +
 					'" is not a valid custom element name.'

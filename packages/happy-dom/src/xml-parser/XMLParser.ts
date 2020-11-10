@@ -1,10 +1,10 @@
-import Node from '../nodes/basic/node/Node';
-import Element from '../nodes/basic/element/Element';
-import Document from '../nodes/basic/document/Document';
-import SelfClosingHTMLElements from '../html-config/SelfClosingHTMLElements';
-import UnnestableHTMLElements from '../html-config/UnnestableHTMLElements';
+import Node from '../nodes/node/Node';
+import Element from '../nodes/element/Element';
+import Document from '../nodes/document/Document';
+import SelfClosingElements from '../config/SelfClosingElements';
+import UnnestableElements from '../config/UnnestableElements';
 import { decode } from 'he';
-import NamespaceURI from '../html-config/NamespaceURI';
+import NamespaceURI from '../config/NamespaceURI';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->/gi;
@@ -49,16 +49,14 @@ export default class XMLParser {
 				// The HTML engine can guess that the namespace is SVG for SVG tags
 				// even if "xmlns" is not set if the parent namespace is HTML.
 				if (tagName === 'svg' && parent.namespaceURI === NamespaceURI.html) {
-					// @ts-ignore
-					newElement.namespaceURI = xmlnsAttribute || NamespaceURI.svg;
+					(<string>newElement.namespaceURI) = xmlnsAttribute || NamespaceURI.svg;
 				} else {
-					// @ts-ignore
-					newElement.namespaceURI = xmlnsAttribute || parent.namespaceURI;
+					(<string>newElement.namespaceURI) = xmlnsAttribute || parent.namespaceURI;
 				}
 
 				this.setAttributes(newElement, newElement.namespaceURI, match[3]);
 
-				if (!SelfClosingHTMLElements.includes(tagName)) {
+				if (!SelfClosingElements.includes(tagName)) {
 					// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 					// Therefore we will auto-close the tag.
 					if (parentUnnestableTagName === tagName) {
@@ -100,7 +98,7 @@ export default class XMLParser {
 	 */
 	private static getUnnestableTagName(element: Element): string {
 		const tagName = element.tagName.toLowerCase();
-		return tagName && UnnestableHTMLElements.includes(tagName) ? tagName : null;
+		return tagName && UnnestableElements.includes(tagName) ? tagName : null;
 	}
 
 	/**

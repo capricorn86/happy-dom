@@ -1,8 +1,8 @@
-import Element from '../nodes/basic/element/Element';
-import Node from '../nodes/basic/node/Node';
-import SelfClosingHTMLElements from '../html-config/SelfClosingHTMLElements';
-import UnclosedHTMLElements from '../html-config/UnclosedHTMLElements';
-import DocumentType from '../nodes/basic/document-type/DocumentType';
+import Element from '../nodes/element/Element';
+import Node from '../nodes/node/Node';
+import SelfClosingElements from '../config/SelfClosingElements';
+import UnclosedElements from '../config/UnclosedElements';
+import DocumentType from '../nodes/document-type/DocumentType';
 import { encode } from 'he';
 
 /**
@@ -23,9 +23,9 @@ export default class XMLSerializer {
 				const element = <Element>root;
 				const tagName = element.tagName.toLowerCase();
 
-				if (UnclosedHTMLElements.includes(tagName)) {
+				if (UnclosedElements.includes(tagName)) {
 					return `<${tagName}${this._getAttributes(element)}>`;
-				} else if (SelfClosingHTMLElements.includes(tagName)) {
+				} else if (SelfClosingElements.includes(tagName)) {
 					return `<${tagName}${this._getAttributes(element)}/>`;
 				}
 

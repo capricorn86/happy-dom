@@ -5,6 +5,7 @@ import CSSStyleRule from './rules/CSSStyleRule';
 import CSSKeyframeRule from './rules/CSSKeyframeRule';
 import CSSKeyframesRule from './rules/CSSKeyframesRule';
 import CSSMediaRule from './rules/CSSMediaRule';
+import CSSStyleDeclaration from './CSSStyleDeclaration';
 
 const COMMENT_REGEXP = /\/\*[^*]*\*\//gm;
 
@@ -35,8 +36,7 @@ export default class CSSParser {
 				if (selectorText.startsWith('@keyframes')) {
 					const newRule = new CSSKeyframesRule();
 
-					// @ts-ignore
-					newRule.name = selectorText.replace('@keyframes ', '');
+					(<string>newRule.name) = selectorText.replace('@keyframes ', '');
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
@@ -53,8 +53,7 @@ export default class CSSParser {
 					parentRule = newRule;
 				} else if (parentRule && parentRule.type === CSSRule.KEYFRAMES_RULE) {
 					const newRule = new CSSKeyframeRule();
-					// @ts-ignore
-					newRule.keyText = selectorText.trim();
+					(<string>newRule.keyText) = selectorText.trim();
 					newRule.parentStyleSheet = parentStyleSheet;
 					newRule.parentRule = parentRule;
 
@@ -62,16 +61,14 @@ export default class CSSParser {
 					parentRule = newRule;
 				} else if (parentRule && parentRule.type === CSSRule.MEDIA_RULE) {
 					const newRule = new CSSStyleRule();
-					// @ts-ignore
-					newRule.selectorText = selectorText;
+					(<string>newRule.selectorText) = selectorText;
 					newRule.parentStyleSheet = parentStyleSheet;
 					newRule.parentRule = parentRule;
 					(<CSSMediaRule>parentRule).cssRules.push(newRule);
 					parentRule = newRule;
 				} else {
 					const newRule = new CSSStyleRule();
-					// @ts-ignore
-					newRule.selectorText = selectorText;
+					(<string>newRule.selectorText) = selectorText;
 					newRule.parentStyleSheet = parentStyleSheet;
 					newRule.parentRule = parentRule;
 
@@ -90,11 +87,9 @@ export default class CSSParser {
 						case CSSRule.FONT_FACE_RULE:
 						case CSSRule.KEYFRAME_RULE:
 						case CSSRule.STYLE_RULE:
-							// @ts-ignore
-							parentRule.style = CSSStyleDeclarationFactory.createCSSStyleDeclaration(
-								cssText,
-								parentRule
-							);
+							(<CSSStyleDeclaration>(
+								(<CSSStyleRule>parentRule).style
+							)) = CSSStyleDeclarationFactory.createCSSStyleDeclaration(cssText, parentRule);
 							break;
 					}
 				}
