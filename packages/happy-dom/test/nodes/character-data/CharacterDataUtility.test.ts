@@ -9,17 +9,6 @@ describe('CharacterDataTest', () => {
 		document = window.document;
 	});
 
-	describe('remove()', () => {
-		test('Removes a node.', () => {
-			const parent = document.createElement('div');
-			const node = document.createComment('test');
-			parent.appendChild(node);
-			CharacterDataUtility.remove(node);
-			expect(node.parentNode).toBe(null);
-			expect(parent.childNodes.length).toBe(0);
-		});
-	});
-
 	describe('appendData()', () => {
 		test('Appends data.', () => {
 			const node = document.createComment('test');

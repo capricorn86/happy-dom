@@ -1,6 +1,7 @@
+import IChildNode from '../child-node/IChildNode';
 import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode';
 
-export default interface ICharacterData extends INonDocumentTypeChildNode {
+export default interface ICharacterData extends IChildNode, INonDocumentTypeChildNode {
 	data: string;
 	readonly length: number;
 
@@ -26,11 +27,6 @@ export default interface ICharacterData extends INonDocumentTypeChildNode {
 	 * @param data Data.
 	 */
 	insertData(offset: number, data: string): void;
-
-	/**
-	 * Removes the object from its parent children list.
-	 */
-	remove(): void;
 
 	/**
 	 * Replaces the specified amount of characters, starting at the specified offset, with the specified DOMString; when this method returns, data contains the modified DOMString.

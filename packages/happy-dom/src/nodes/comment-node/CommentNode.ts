@@ -5,6 +5,7 @@ import ICharacterData from '../character-data/ICharacterData';
 import CharacterDataUtility from '../character-data/CharacterDataUtility';
 import IElement from '../element/IElement';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility';
+import ChildNodeUtility from '../child-node/ChildNodeUtility';
 
 /**
  * CommentNode.
@@ -158,7 +159,34 @@ export default class CommentNode extends Node implements ICharacterData {
 	 * Removes the object from its parent children list.
 	 */
 	public remove(): void {
-		CharacterDataUtility.remove(this);
+		ChildNodeUtility.remove(this);
+	}
+
+	/**
+	 * The Node.replaceWith() method replaces this Node in the children list of its parent with a set of Node or DOMString objects.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public replaceWith(...nodes: (Node | string)[]): void {
+		ChildNodeUtility.replaceWith(this, ...nodes);
+	}
+
+	/**
+	 * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just before this ChildNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public before(...nodes: (string | Node)[]): void {
+		ChildNodeUtility.before(this, ...nodes);
+	}
+
+	/**
+	 * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just after this ChildNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public after(...nodes: (string | Node)[]): void {
+		ChildNodeUtility.after(this, ...nodes);
 	}
 
 	/**

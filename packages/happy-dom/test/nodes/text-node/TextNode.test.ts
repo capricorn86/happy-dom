@@ -1,6 +1,7 @@
 import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility';
 import CharacterDataUtility from '../../../src/nodes/character-data/CharacterDataUtility';
 import Window from '../../../src/window/Window';
+import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility';
 
 describe('TextNode', () => {
 	let window, document;
@@ -111,19 +112,72 @@ describe('TextNode', () => {
 
 	describe('remove()', () => {
 		test('Removes the node from its parent.', () => {
-			const node = document.createTextNode('test');
+			const text = document.createTextNode('test');
 			let isCalled = false;
 
-			jest.spyOn(CharacterDataUtility, 'remove').mockImplementation(childNode => {
-				expect(childNode).toBe(node);
+			jest.spyOn(ChildNodeUtility, 'remove').mockImplementation(childNode => {
+				expect(childNode).toBe(text);
 				isCalled = true;
 			});
 
-			node.remove();
+			text.remove();
 			expect(isCalled).toBe(true);
 		});
 	});
 
+	describe('replaceWith()', () => {
+		test('Replaces a Node in the children list of its parent with a set of Node or DOMString objects.', () => {
+			const text = document.createTextNode('test');
+			const node1 = document.createComment('test1');
+			const node2 = document.createComment('test2');
+			let isCalled = false;
+
+			jest.spyOn(ChildNodeUtility, 'replaceWith').mockImplementation((childNode, ...nodes) => {
+				expect(childNode).toBe(text);
+				expect(nodes).toEqual([node1, node2]);
+				isCalled = true;
+			});
+
+			text.replaceWith(node1, node2);
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('before()', () => {
+		test("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just before this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
+			const text = document.createTextNode('test');
+			const node1 = document.createComment('test1');
+			const node2 = document.createComment('test2');
+			let isCalled = false;
+
+			jest.spyOn(ChildNodeUtility, 'before').mockImplementation((childNode, ...nodes) => {
+				expect(childNode).toBe(text);
+				expect(nodes).toEqual([node1, node2]);
+				isCalled = true;
+			});
+
+			text.before(node1, node2);
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('after()', () => {
+		test("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just after this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
+			const text = document.createTextNode('test');
+			const node1 = document.createComment('test1');
+			const node2 = document.createComment('test2');
+			let isCalled = false;
+
+			jest.spyOn(ChildNodeUtility, 'after').mockImplementation((childNode, ...nodes) => {
+				expect(childNode).toBe(text);
+				expect(nodes).toEqual([node1, node2]);
+				isCalled = true;
+			});
+
+			text.after(node1, node2);
+			expect(isCalled).toBe(true);
+		});
+	});
 	describe('appendData()', () => {
 		test('Appends data.', () => {
 			const node = document.createTextNode('test');
