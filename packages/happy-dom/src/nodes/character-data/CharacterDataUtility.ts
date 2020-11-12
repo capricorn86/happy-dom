@@ -5,17 +5,6 @@ import ICharacterData from './ICharacterData';
  */
 export default class CharacterDataUtility {
 	/**
-	 * Removes the node from its parent.
-	 *
-	 * @param characterData Character data.
-	 */
-	public static remove(characterData: ICharacterData): void {
-		if (characterData.parentNode) {
-			characterData.parentNode.removeChild(characterData);
-		}
-	}
-
-	/**
 	 * Appends the given DOMString to the CharacterData.data string; when this method returns, data contains the concatenated DOMString.
 	 *
 	 * @param characterData Character data.
