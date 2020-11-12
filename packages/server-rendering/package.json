@@ -1,6 +1,6 @@
 {
 	"name": "@happy-dom/server-rendering",
-	"version": "0.0.0",
+	"version": "1.11.4",
 	"license": "MIT",
 	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering",
 	"repository": "https://github.com/capricorn86/happy-dom",
@@ -43,23 +43,23 @@
 	},
 	"dependencies": {
 		"css-tree": "^1.0.0-alpha.29",
+		"happy-dom": "^1.11.4",
+		"he": "^1.1.1",
 		"memory-fs": "^0.5.0",
-		"webpack": "^4.41.2",
-		"happy-dom": "^0.0.0",
-		"he": "^1.1.1"
+		"webpack": "^4.41.2"
 	},
 	"devDependencies": {
+		"@types/he": "latest",
+		"@types/jest": "^25.1.4",
+		"@types/node": "^13.9.5",
 		"@typescript-eslint/eslint-plugin": "^2.11.0",
 		"@typescript-eslint/parser": "^2.11.0",
-		"@types/node": "^13.9.5",
-		"@types/jest": "^25.1.4",
-		"@types/he": "latest",
 		"eslint": "^6.7.2",
 		"eslint-config-prettier": "^6.7.0",
 		"eslint-plugin-prettier": "^3.1.1",
-		"prettier": "^1.19.1",
-		"typescript": "^3.8.3",
 		"jest": "^25.2.3",
-		"ts-jest": "^25.2.1"
+		"prettier": "^1.19.1",
+		"ts-jest": "^25.2.1",
+		"typescript": "^3.8.3"
 	}
 }
