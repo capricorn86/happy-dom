@@ -31,6 +31,7 @@ export default class Element extends Node implements IElement {
 	public children: Element[] = [];
 	public _attributes: { [k: string]: Attr } = {};
 	public readonly namespaceURI: string = null;
+	public static _observedAttributes: string[] = null;
 
 	/**
 	 * Returns a list of observed attributes.
@@ -636,8 +637,8 @@ export default class Element extends Node implements IElement {
 
 		if (
 			this.attributeChangedCallback &&
-			(<typeof Element>this.constructor).observedAttributes &&
-			(<typeof Element>this.constructor).observedAttributes.includes(name)
+			(<typeof Element>this.constructor)._observedAttributes &&
+			(<typeof Element>this.constructor)._observedAttributes.includes(name)
 		) {
 			this.attributeChangedCallback(name, oldValue, attribute.value);
 		}
@@ -681,8 +682,8 @@ export default class Element extends Node implements IElement {
 
 		if (
 			this.attributeChangedCallback &&
-			(<typeof Element>this.constructor).observedAttributes &&
-			(<typeof Element>this.constructor).observedAttributes.includes(attribute.name)
+			(<typeof Element>this.constructor)._observedAttributes &&
+			(<typeof Element>this.constructor)._observedAttributes.includes(attribute.name)
 		) {
 			this.attributeChangedCallback(attribute.name, attribute.value, null);
 		}
