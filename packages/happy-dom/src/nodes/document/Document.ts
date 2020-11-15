@@ -317,7 +317,7 @@ export default class Document extends Node implements IDocument {
 	 * @param html HTML.
 	 */
 	public write(html: string): void {
-		const root = XMLParser.parse(this, html);
+		const root = XMLParser.parse(this, html, true);
 
 		if (this._isFirstWrite || this._isFirstWriteAfterOpen) {
 			if (this._isFirstWrite) {

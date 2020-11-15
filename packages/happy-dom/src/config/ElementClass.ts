@@ -5,6 +5,7 @@ import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
+import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 
 export default {
 	HTMLTemplateElement: HTMLTemplateElement,
@@ -56,7 +57,7 @@ export default {
 	HTMLPictureElement: HTMLElement,
 	HTMLProgressElement: HTMLElement,
 	HTMLQuoteElement: HTMLElement,
-	HTMLScriptElement: HTMLElement,
+	HTMLScriptElement: HTMLScriptElement,
 	HTMLSelectElement: HTMLElement,
 	HTMLSlotElement: HTMLElement,
 	HTMLSourceElement: HTMLElement,

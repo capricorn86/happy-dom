@@ -34,7 +34,7 @@ export default class DOMParser {
 		(<Node[]>newDocument.childNodes) = [];
 		(<Element[]>newDocument.children) = [];
 
-		const root = XMLParser.parse(newDocument, string);
+		const root = XMLParser.parse(newDocument, string, true);
 		let documentElement = null;
 		let documentTypeNode = null;
 
