@@ -5,6 +5,7 @@ import Window from '../src/window/Window';
  */
 export default class CustomElement extends new Window().HTMLElement {
 	public changedAttributes = [];
+	public static observedAttributesCallCount = 0;
 
 	/**
 	 * Returns a list of observed attributes.
@@ -12,6 +13,7 @@ export default class CustomElement extends new Window().HTMLElement {
 	 * @return Observered attributes.
 	 */
 	public static get observedAttributes(): string[] {
+		this.observedAttributesCallCount++;
 		return ['key1', 'key2'];
 	}
 

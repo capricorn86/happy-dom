@@ -35,6 +35,10 @@ export default class CustomElementRegistry {
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
 
+		if (elementClass.prototype.attributeChangedCallback) {
+			elementClass._observedAttributes = elementClass.observedAttributes || null;
+		}
+
 		if (this._callbacks[name]) {
 			for (const callback of this._callbacks[name]) {
 				callback();
