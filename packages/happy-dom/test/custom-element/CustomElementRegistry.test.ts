@@ -1,13 +1,12 @@
+import CustomElement from '../CustomElement';
 import CustomElementRegistry from '../../src/custom-element/CustomElementRegistry';
-import HTMLElement from '../../src/nodes/html-element/HTMLElement';
-
-class CustomElement extends HTMLElement {}
 
 describe('CustomElementRegistry', () => {
 	let customElements;
 
 	beforeEach(() => {
 		customElements = new CustomElementRegistry();
+		CustomElement.observedAttributesCallCount = 0;
 	});
 
 	describe('define()', () => {
@@ -33,6 +32,12 @@ describe('CustomElementRegistry', () => {
 						'" is not a valid custom element name.'
 				)
 			);
+		});
+
+		test('Calls observed attributes and set _observedAttributes as a property on the element class.', () => {
+			customElements.define('custom-element', CustomElement);
+			expect(CustomElement.observedAttributesCallCount).toBe(1);
+			expect(CustomElement._observedAttributes).toEqual(['key1', 'key2']);
 		});
 	});
 
