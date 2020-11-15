@@ -48,7 +48,6 @@ export default class HTMLScriptElement extends HTMLElement {
 			}
 		}
 	}
-
 	/**
 	 * Returns type.
 	 *
@@ -64,15 +63,6 @@ export default class HTMLScriptElement extends HTMLElement {
 	 * @param type Type.
 	 */
 	public set type(type: string) {
-		this.setAttributeNS(null, 'type', type);
-	}
-
-	/**
-	 * Sets type.
-	 *
-	 * @param type Type.
-	 */
-	public set value(type: string) {
 		this.setAttributeNS(null, 'type', type);
 	}
 

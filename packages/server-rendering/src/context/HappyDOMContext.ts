@@ -27,6 +27,7 @@ export default class HappyDOMContext {
 		html = null,
 		scripts = null,
 		url = null,
+		evaluateScripts = false,
 		customElements = {
 			openShadowRoots: false,
 			extractCSS: false,
@@ -37,6 +38,7 @@ export default class HappyDOMContext {
 		html: string;
 		scripts: VM.Script[];
 		url?: string;
+		evaluateScripts?: boolean;
 		customElements?: {
 			openShadowRoots: boolean;
 			extractCSS: boolean;
@@ -57,6 +59,10 @@ export default class HappyDOMContext {
 				extractCSS: customElements.extractCSS || customElements.addCSSToHead,
 				scopeCSS: customElements.scopeCSS
 			});
+
+			if (!evaluateScripts) {
+				global.eval = () => {};
+			}
 
 			window
 				.whenAsyncComplete()

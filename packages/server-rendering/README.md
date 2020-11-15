@@ -59,6 +59,7 @@ import { Script } from 'vm';
 const context = new HappyDOMContext();
 const result = context.render({
     url: 'http://localhost:8080',
+    evaluateScripts: true,
     html: `
         <html>
             <head>
