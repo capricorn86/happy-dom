@@ -158,7 +158,7 @@ describe('Element', () => {
 	});
 
 	describe('get innerHTML()', () => {
-		test('Returns HTML an element and its children as a concatenated string.', () => {
+		test('Returns HTML of an elements children as a concatenated string.', () => {
 			const div = document.createElement('div');
 			const textNode1 = document.createTextNode('text1');
 
@@ -166,6 +166,34 @@ describe('Element', () => {
 			element.appendChild(textNode1);
 
 			expect(element.outerHTML).toBe('<div><div></div>text1</div>');
+		});
+	});
+
+	describe('get outerHTML()', () => {
+		test('Returns HTML of an element and its children as a concatenated string.', () => {
+			const div = document.createElement('div');
+			const textNode = document.createTextNode('text1');
+
+			div.appendChild(textNode);
+
+			element.appendChild(div);
+
+			expect(element.innerHTML).toBe('<div>text1</div>');
+		});
+	});
+
+	describe('set outerHTML()', () => {
+		test('Sets outer HTML of an element.', () => {
+			const div = document.createElement('div');
+			const textNode = document.createTextNode('text1');
+
+			div.appendChild(textNode);
+
+			element.appendChild(div);
+
+			div.outerHTML = '<span>text2</span>';
+
+			expect(element.innerHTML).toBe('<span>text2</span>');
 		});
 	});
 

@@ -85,10 +85,10 @@ export default class HTMLInputElement extends HTMLElement {
 			case 'image':
 			case 'reset':
 			case 'button':
-				return this.getAttribute('value') || '';
+				return this.getAttributeNS(null, 'value') || '';
 			case 'checkbox':
 			case 'radio':
-				const attritube = this.getAttribute('value');
+				const attritube = this.getAttributeNS(null, 'value');
 				return attritube !== null ? attritube : 'on';
 			case 'file':
 				return this.files.length > 0 ? '/fake/path/' + this.files[0].name : '';
@@ -111,7 +111,7 @@ export default class HTMLInputElement extends HTMLElement {
 			case 'button':
 			case 'checkbox':
 			case 'radio':
-				this.setAttribute('value', value);
+				this.setAttributeNS(null, 'value', value);
 				break;
 			case 'file':
 				if (value !== '') {

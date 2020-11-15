@@ -5,6 +5,7 @@ import SelfClosingElements from '../config/SelfClosingElements';
 import UnnestableElements from '../config/UnnestableElements';
 import { decode } from 'he';
 import NamespaceURI from '../config/NamespaceURI';
+import HTMLScriptElement from 'src/nodes/html-script-element/HTMLScriptElement';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->/gi;
@@ -22,9 +23,10 @@ export default class XMLParser {
 	 *
 	 * @param {Document} document Document.
 	 * @param data HTML data.
+	 * @param [evaluateScripts = false] Set to "true" to enable script execution.
 	 * @return Root element.
 	 */
-	public static parse(document: Document, data: string): Element {
+	public static parse(document: Document, data: string, evaluateScripts = false): Element {
 		const root = document.createElement('root');
 		const stack = [root];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gi');
@@ -45,6 +47,13 @@ export default class XMLParser {
 			if (isStartTag) {
 				const newElement = document.createElement(tagName);
 				const xmlnsAttribute = this.getXmlnsAttribute(match[3]);
+
+				// Scripts are not allowed to be executed when they are parsed using innerHTML, outerHTML, replaceWith() etc.
+				// However, they are allowed to be executed when document.write() is used.
+				// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
+				if (tagName === 'script') {
+					(<HTMLScriptElement>newElement)._evaluateScript = evaluateScripts;
+				}
 
 				// The HTML engine can guess that the namespace is SVG for SVG tags
 				// even if "xmlns" is not set if the parent namespace is HTML.

@@ -182,6 +182,15 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
+	 * Returns outer HTML.
+	 *
+	 * @param html HTML.
+	 */
+	public set outerHTML(html: string) {
+		this.replaceWith(html);
+	}
+
+	/**
 	 * Returns attributes.
 	 *
 	 * @returns Attributes.
