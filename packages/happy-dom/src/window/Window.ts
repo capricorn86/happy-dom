@@ -26,6 +26,7 @@ import Blob from '../file/Blob';
 import File from '../file/File';
 import DOMException from '../exception/DOMException';
 import FileReader from '../file/FileReader';
+import History from '../history/History';
 
 /**
  * Handles the Window.
@@ -59,11 +60,13 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public File = File;
 	public FileReader = FileReader;
 	public DOMException = DOMException;
+	public History = History;
 
 	// Public Properties
 	public document: Document;
 	public customElements: CustomElementRegistry = new CustomElementRegistry();
 	public location = new Location();
+	public history = new History();
 	public navigator = { userAgent: 'happy-dom' };
 	public console = global ? global.console : null;
 	public self: Window = this;
