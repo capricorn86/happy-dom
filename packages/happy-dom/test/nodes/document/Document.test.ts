@@ -93,6 +93,84 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get cookie()', () => {
+		test('Returns cookie string.', () => {
+			document.cookie = 'name=value1';
+			expect(document.cookie).toBe('name=value1');
+		});
+	});
+
+	describe('set cookie()', () => {
+		test('Sets multiple cookies.', () => {
+			document.cookie = 'name1=value1';
+			document.cookie = 'name2=value2';
+			expect(document.cookie).toBe('name1=value1; name2=value2');
+		});
+
+		test('Replaces cookie with the same name, but treats cookies with no value set differently from cookies with a value.', () => {
+			document.cookie = 'name=value1';
+			document.cookie = 'name';
+			document.cookie = 'name=value2';
+			document.cookie = 'name';
+			expect(document.cookie).toBe('name=value2; name');
+		});
+
+		test('Sets a cookie with a domain.', () => {
+			window.location.href = 'https://test.com';
+			document.cookie = 'name=value1; domain=test.com';
+			expect(document.cookie).toBe('name=value1');
+		});
+
+		test('Sets a cookie with an invalid domain.', () => {
+			window.location.href = 'https://test.com';
+			document.cookie = 'name=value1; domain=invalid.com';
+			expect(document.cookie).toBe('');
+		});
+
+		test('Sets a cookie on a top-domain from a sub-domain.', () => {
+			window.location.href = 'https://sub.test.com';
+			document.cookie = 'name=value1; domain=test.com';
+			expect(document.cookie).toBe('name=value1');
+		});
+
+		test('Sets a cookie with a path.', () => {
+			window.location.href = '/path/to/cookie/';
+			document.cookie = 'name1=value1; path=path/to';
+			document.cookie = 'name2=value2; path=/path/to';
+			document.cookie = 'name3=value3; path=/path/to/cookie/';
+			expect(document.cookie).toBe('name1=value1; name2=value2; name3=value3');
+		});
+
+		test('Does not set cookie if the path does not match the current path.', () => {
+			window.location.href = '/path/to/cookie/';
+			document.cookie = 'name1=value1; path=/cookie/';
+			expect(document.cookie).toBe('');
+		});
+
+		test('Sets a cookie if expires is in the future.', () => {
+			const date = new Date();
+			const oneHour = 3600000;
+			date.setTime(date.getTime() + oneHour);
+			const expires = date.getUTCDate();
+			document.cookie = `name=value1; expires=${expires}`;
+			expect(document.cookie).toBe('name=value1');
+		});
+
+		test('Does not set cookie if "expires" is in the past.', () => {
+			document.cookie = 'name=value1; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+			expect(document.cookie).toBe('');
+		});
+
+		test('Removes a previously defined cookie if "expires" is in the past, but treats cookies with no value set differently from cookies with a value.', () => {
+			document.cookie = 'name=value1';
+			document.cookie = 'name';
+			document.cookie = 'name=value1; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+			expect(document.cookie).toBe('name');
+			document.cookie = 'name; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+			expect(document.cookie).toBe('');
+		});
+	});
+
 	describe('append()', () => {
 		test('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');

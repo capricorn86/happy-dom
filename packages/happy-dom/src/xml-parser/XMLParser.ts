@@ -5,7 +5,7 @@ import SelfClosingElements from '../config/SelfClosingElements';
 import UnnestableElements from '../config/UnnestableElements';
 import { decode } from 'he';
 import NamespaceURI from '../config/NamespaceURI';
-import HTMLScriptElement from 'src/nodes/html-script-element/HTMLScriptElement';
+import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->/gi;

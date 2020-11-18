@@ -61,16 +61,7 @@ import { Window } from 'happy-dom';
 const window = new Window();
 const document = window.document;
 
-document.body.innerHTML = `
-    <html>
-        <head>
-             <title>Test page</title>
-        </head>
-        <body>
-             <div class="myContainer"></div>
-        </body>
-    </html>
-`;
+document.body.innerHTML = '<div class="myContainer"></div>';
 
 const myContainer = document.querySelector('.myContainer');
 const button = document.createElement('button');
