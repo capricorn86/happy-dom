@@ -19,6 +19,7 @@ import QuerySelector from '../../query-selector/QuerySelector';
 import IDocument from './IDocument';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import DOMException from '../../exception/DOMException';
+import CookieUtility from '../../cookie/CookieUtility';
 
 /**
  * Document.
@@ -32,6 +33,7 @@ export default class Document extends Node implements IDocument {
 	protected _isFirstWriteAfterOpen = false;
 	public implementation: DOMImplementation;
 	public readonly children: Element[] = [];
+	private _cookie = '';
 
 	/**
 	 * Creates an instance of Document.
@@ -79,6 +81,24 @@ export default class Document extends Node implements IDocument {
 	 */
 	public get lastElementChild(): Element {
 		return this.children ? this.children[this.children.length - 1] || null : null;
+	}
+
+	/**
+	 * Returns cookie string.
+	 *
+	 * @return Cookie.
+	 */
+	public get cookie(): string {
+		return this._cookie;
+	}
+
+	/**
+	 * Sets a cookie string.
+	 *
+	 * @param cookie Cookie string.
+	 */
+	public set cookie(cookie: string) {
+		this._cookie = CookieUtility.getCookieString(this.defaultView.location, this._cookie, cookie);
 	}
 
 	/**
