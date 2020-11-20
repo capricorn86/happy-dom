@@ -1,5 +1,8 @@
+import QuerySelector from '../../query-selector/QuerySelector';
 import XMLParser from '../../xml-parser/XMLParser';
 import Document from '../document/Document';
+import Element from '../element/Element';
+import IElement from '../element/IElement';
 import INode from '../node/INode';
 import IParentNode from './IParentNode';
 
@@ -65,5 +68,89 @@ export default class ParentNodeUtility {
 		}
 
 		this.append(parentNode, ...nodes);
+	}
+
+	/**
+	 * Returns an elements by class name.
+	 *
+	 * @param parentNode Parent node.
+	 * @param className Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByClassName(parentNode: IParentNode, className: string): IElement[] {
+		return QuerySelector.querySelectorAll(
+			<Document | Element>parentNode,
+			'.' + className.split(' ').join('.')
+		);
+	}
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param parentNode Parent node.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName(parentNode: IParentNode, tagName: string): IElement[] {
+		const upperTagName = tagName.toUpperCase();
+		let matches = [];
+
+		for (const child of parentNode.children) {
+			if (child.tagName === upperTagName) {
+				matches.push(child);
+			}
+			matches = matches.concat(this.getElementsByTagName(child, tagName));
+		}
+
+		return matches;
+	}
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param parentNode Parent node.
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS(
+		parentNode: IParentNode,
+		namespaceURI: string,
+		tagName: string
+	): IElement[] {
+		const upperTagName = tagName.toUpperCase();
+		let matches = [];
+
+		for (const child of parentNode.children) {
+			if (child.tagName === upperTagName && child.namespaceURI === namespaceURI) {
+				matches.push(child);
+			}
+			matches = matches.concat(this.getElementsByTagNameNS(child, namespaceURI, tagName));
+		}
+
+		return matches;
+	}
+
+	/**
+	 * Returns an element by ID.
+	 *
+	 * @param parentNode Parent node.
+	 * @param id ID.
+	 * @return Matching element.
+	 */
+	public getElementById(parentNode: IParentNode, id: string): IElement {
+		for (const child of parentNode.children) {
+			if (child.id === id) {
+				return child;
+			}
+
+			const match = this.getElementById(child, id);
+
+			if (match) {
+				return match;
+			}
+		}
+
+		return null;
 	}
 }
