@@ -7,19 +7,140 @@ import SVGAngle from './SVGAngle';
 import SVGNumber from './SVGNumber';
 import SVGTransform from './SVGTransform';
 import SVGAnimatedRect from './SVGAnimatedRect';
-import Attr from '../../attribute/Attr';
 
 /**
  * SVGSVGElement.
  */
 export default class SVGSVGElement extends SVGGraphicsElement {
-	public preserveAspectRatio = 'xMidYMid meet';
-	public width = '';
-	public height = '';
-	public x = '';
-	public y = '';
-	public contentScriptType = '';
-	public currentScale = 1;
+	/**
+	 * Returns preserveAspectRatio.
+	 *
+	 * @return PreserveAspectRatio.
+	 */
+	public get preserveAspectRatio(): string {
+		return this.getAttributeNS(null, 'preserveAspectRatio') || 'xMidYMid meet';
+	}
+
+	/**
+	 * Sets preserveAspectRatio.
+	 *
+	 * @param preserveAspectRatio PreserveAspectRatio.
+	 */
+	public set preserveAspectRatio(preserveAspectRatio: string) {
+		this.setAttributeNS(null, 'preserveAspectRatio', preserveAspectRatio);
+	}
+
+	/**
+	 * Returns width.
+	 *
+	 * @return Width.
+	 */
+	public get width(): string {
+		return this.getAttributeNS(null, 'width') || '';
+	}
+
+	/**
+	 * Sets width.
+	 *
+	 * @param width Width.
+	 */
+	public set width(width: string) {
+		this.setAttributeNS(null, 'width', width);
+	}
+
+	/**
+	 * Returns height.
+	 *
+	 * @return Height.
+	 */
+	public get height(): string {
+		return this.getAttributeNS(null, 'height') || '';
+	}
+
+	/**
+	 * Sets height.
+	 *
+	 * @param height Height.
+	 */
+	public set height(height: string) {
+		this.setAttributeNS(null, 'height', height);
+	}
+
+	/**
+	 * Returns x.
+	 *
+	 * @return X.
+	 */
+	public get x(): string {
+		return this.getAttributeNS(null, 'x') || '';
+	}
+
+	/**
+	 * Sets x.
+	 *
+	 * @param x X.
+	 */
+	public set x(x: string) {
+		this.setAttributeNS(null, 'x', x);
+	}
+
+	/**
+	 * Returns y.
+	 *
+	 * @return Y.
+	 */
+	public get y(): string {
+		return this.getAttributeNS(null, 'y') || '';
+	}
+
+	/**
+	 * Sets y.
+	 *
+	 * @param y Y.
+	 */
+	public set y(y: string) {
+		this.setAttributeNS(null, 'y', y);
+	}
+
+	/**
+	 * Returns contentScriptType.
+	 *
+	 * @return ContentScriptType.
+	 */
+	public get contentScriptType(): string {
+		return this.getAttributeNS(null, 'contentScriptType') || '';
+	}
+
+	/**
+	 * Sets contentScriptType.
+	 *
+	 * @param contentScriptType ContentScriptType.
+	 */
+	public set contentScriptType(contentScriptType: string) {
+		this.setAttributeNS(null, 'contentScriptType', contentScriptType);
+	}
+
+	/**
+	 * Returns currentScale.
+	 *
+	 * @return CurrentScale.
+	 */
+	public get currentScale(): number {
+		const currentScale = this.getAttributeNS(null, 'currentScale');
+		if (currentScale !== null) {
+			return parseFloat(currentScale);
+		}
+		return 1;
+	}
+
+	/**
+	 * Sets currentScale.
+	 *
+	 * @param currentScale CurrentScale.
+	 */
+	public set currentScale(currentScale: number) {
+		this.setAttributeNS(null, 'currentScale', String(currentScale));
+	}
 
 	/**
 	 * Returns viewport.
@@ -134,7 +255,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 *
 	 * @returns Number.
 	 */
-	public get createSVGNumber(): SVGNumber {
+	public createSVGNumber(): SVGNumber {
 		return new SVGNumber();
 	}
 
@@ -143,7 +264,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 *
 	 * @returns Length.
 	 */
-	public get createSVGLength(): SVGLength {
+	public createSVGLength(): SVGLength {
 		return new SVGLength();
 	}
 
@@ -152,7 +273,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 *
 	 * @returns Angle.
 	 */
-	public get createSVGAngle(): SVGAngle {
+	public createSVGAngle(): SVGAngle {
 		return new SVGAngle();
 	}
 
@@ -161,7 +282,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 *
 	 * @returns Point.
 	 */
-	public get createSVGPoint(): SVGPoint {
+	public createSVGPoint(): SVGPoint {
 		return new SVGPoint();
 	}
 
@@ -170,7 +291,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 *
 	 * @returns Rect.
 	 */
-	public get createSVGRect(): SVGRect {
+	public createSVGRect(): SVGRect {
 		return new SVGRect();
 	}
 
@@ -179,79 +300,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 *
 	 * @returns Transform.
 	 */
-	public get createSVGTransform(): SVGTransform {
+	public createSVGTransform(): SVGTransform {
 		return new SVGTransform();
-	}
-
-	/**
-	 * Removes an Attr node.
-	 *
-	 * @override
-	 * @param attribute Attribute.
-	 */
-	public removeAttributeNode(attribute: Attr): void {
-		super.removeAttributeNode(attribute);
-
-		switch (attribute.name) {
-			case 'preserveAspectRatio': // string
-				this[attribute.name] = 'xMidYMid meet';
-				break;
-			case 'width': // string
-			case 'height': // string
-			case 'x': // string
-			case 'y': // string
-			case 'contentScriptType': // string
-				this[attribute.name] = '';
-				break;
-			case 'currentScale': // number
-				this[attribute.name] = 1;
-				break;
-		}
-	}
-
-	/**
-	 * The setAttributeNode() method adds a new Attr node to the specified element.
-	 *
-	 * @override
-	 * @param attribute Attribute.
-	 * @returns Replaced attribute.
-	 */
-	public setAttributeNode(attribute: Attr): Attr {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		switch (attribute.name) {
-			case 'preserveAspectRatio': // string
-			case 'width': // string
-			case 'height': // string
-			case 'x': // string
-			case 'y': // string
-			case 'contentScriptType': // string
-				this[attribute.name] = attribute.value;
-				break;
-			case 'currentScale': // number
-				this[attribute.name] = !!attribute.value ? Number(attribute.value) : 0;
-				break;
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * Clones a node.
-	 *
-	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
-	 */
-	public cloneNode(deep = false): SVGSVGElement {
-		const clone = <SVGSVGElement>super.cloneNode(deep);
-		clone.preserveAspectRatio = this.preserveAspectRatio;
-		clone.width = this.width;
-		clone.height = this.height;
-		clone.x = this.x;
-		clone.y = this.y;
-		clone.contentScriptType = this.contentScriptType;
-		clone.currentScale = this.currentScale;
-		return clone;
 	}
 }

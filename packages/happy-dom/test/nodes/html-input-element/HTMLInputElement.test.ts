@@ -3,36 +3,7 @@ import Document from '../../../src/nodes/document/Document';
 import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement';
 import File from '../../../src/file/File';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
-
-const PROPERTIES = {
-	name: 'name',
-	type: 'type',
-	disabled: true,
-	autofocus: true,
-	required: true,
-	checked: true,
-	indeterminate: true,
-	alt: 'alt',
-	height: 10,
-	src: 'src',
-	value: 'value',
-	width: 10,
-	accept: 'accept',
-	allowdirs: 'allowdirs',
-	autocomplete: 'autocomplete',
-	min: 'min',
-	max: 'max',
-	minLength: 10,
-	maxLength: 10,
-	pattern: 'pattern',
-	placeholder: 'placeholder',
-	readOnly: true,
-	size: 10,
-	defaultValue: 'defaultValue',
-	multiple: true,
-	step: 'step',
-	inputmode: 'inputmode'
-};
+import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
 
 describe('HTMLInputElement', () => {
 	let window: Window;
@@ -127,6 +98,17 @@ describe('HTMLInputElement', () => {
 				element.type = type;
 				element.value = '\n\rVALUE\n\r';
 				expect(element.value).toBe('VALUE');
+				expect(element.selectionStart).toBe(5);
+				expect(element.selectionEnd).toBe(5);
+			});
+
+			test(`Sets selection range.`, () => {
+				element.type = type;
+				element.selectionDirection = HTMLInputElementSelectionDirectionEnum.forward;
+				element.value = 'VALUE';
+				expect(element.selectionStart).toBe(5);
+				expect(element.selectionEnd).toBe(5);
+				expect(element.selectionDirection).toBe(HTMLInputElementSelectionDirectionEnum.none);
 			});
 		}
 
@@ -208,6 +190,186 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get selectionStart()', () => {
+		test('Returns the length of the attribute "value" if value has not been set using the property.', () => {
+			element.setAttribute('value', 'TEST_VALUE');
+			expect(element.selectionStart).toBe(10);
+		});
+
+		test('Returns the length of the value set using the property.', () => {
+			element.setAttribute('value', 'TEST_VALUE');
+			element.selectionStart = 5;
+			expect(element.selectionStart).toBe(5);
+		});
+	});
+
+	describe('set selectionStart()', () => {
+		test('Sets the value to the length of the property "value" if it is out of range.', () => {
+			element.setAttribute('value', 'TEST_VALUE');
+			element.selectionStart = 20;
+			expect(element.selectionStart).toBe(10);
+		});
+
+		test('Sets the property.', () => {
+			element.value = 'TEST_VALUE';
+			element.selectionStart = 5;
+			expect(element.selectionStart).toBe(5);
+		});
+	});
+
+	describe('get selectionEnd()', () => {
+		test('Returns the length of the attribute "value" if value has not been set using the property.', () => {
+			element.setAttribute('value', 'TEST_VALUE');
+			expect(element.selectionEnd).toBe(10);
+		});
+
+		test('Returns the length of the value set using the property.', () => {
+			element.setAttribute('value', 'TEST_VALUE');
+			element.selectionEnd = 5;
+			expect(element.selectionEnd).toBe(5);
+		});
+	});
+
+	describe('set selectionEnd()', () => {
+		test('Sets the value to the length of the property "value" if it is out of range.', () => {
+			element.setAttribute('value', 'TEST_VALUE');
+			element.selectionEnd = 20;
+			expect(element.selectionEnd).toBe(10);
+		});
+
+		test('Sets the property.', () => {
+			element.value = 'TEST_VALUE';
+			element.selectionEnd = 5;
+			expect(element.selectionEnd).toBe(5);
+		});
+	});
+
+	for (const property of [
+		'disabled',
+		'autofocus',
+		'required',
+		'checked',
+		'indeterminate',
+		'multiple',
+		'readOnly'
+	]) {
+		describe(`get ${property}()`, () => {
+			test('Returns attribute value.', () => {
+				expect(element[property]).toBe(false);
+				element.setAttribute(property, '');
+				expect(element[property]).toBe(true);
+			});
+		});
+
+		describe(`set ${property}()`, () => {
+			test('Sets attribute value.', () => {
+				element[property] = true;
+				expect(element.getAttribute(property)).toBe('');
+			});
+		});
+	}
+
+	for (const property of [
+		'name',
+		'alt',
+		'src',
+		'accept',
+		'allowdirs',
+		'autocomplete',
+		'min',
+		'max',
+		'pattern',
+		'placeholder',
+		'step',
+		'inputmode'
+	]) {
+		describe(`get ${property}()`, () => {
+			test('Returns attribute value.', () => {
+				expect(element[property]).toBe('');
+				element.setAttribute(property, 'value');
+				expect(element[property]).toBe('value');
+			});
+		});
+
+		describe(`set ${property}()`, () => {
+			test('Sets attribute value.', () => {
+				element[property] = 'value';
+				expect(element.getAttribute(property)).toBe('value');
+			});
+		});
+	}
+
+	for (const property of ['height', 'width']) {
+		describe(`get ${property}()`, () => {
+			test('Returns attribute value.', () => {
+				expect(element[property]).toBe(0);
+				element[property] = 20;
+				expect(element[property]).toBe(20);
+			});
+		});
+
+		describe(`set ${property}()`, () => {
+			test('Sets attribute value.', () => {
+				element.setAttribute(property, '50');
+				expect(element[property]).toBe(0);
+				element[property] = 50;
+				expect(element[property]).toBe(50);
+				expect(element.getAttribute(property)).toBe('50');
+			});
+		});
+	}
+
+	for (const property of ['minLength', 'maxLength']) {
+		describe(`get ${property}()`, () => {
+			test('Returns attribute value.', () => {
+				expect(element[property]).toBe(-1);
+				element.setAttribute(property, '50');
+				expect(element[property]).toBe(50);
+			});
+		});
+
+		describe(`set ${property}()`, () => {
+			test('Sets attribute value.', () => {
+				element[property] = 50;
+				expect(element[property]).toBe(50);
+				expect(element.getAttribute(property)).toBe('50');
+			});
+		});
+	}
+
+	describe('get type()', () => {
+		test('Returns attribute value.', () => {
+			expect(element.type).toBe('text');
+			element.setAttribute('type', 'date');
+			expect(element.type).toBe('date');
+		});
+	});
+
+	describe('set type()', () => {
+		test('Sets attribute value.', () => {
+			element.type = 'date';
+			expect(element.getAttribute('type')).toBe('date');
+		});
+	});
+
+	describe('get size()', () => {
+		test('Returns attribute value.', () => {
+			expect(element.size).toBe(20);
+			element.size = 50;
+			expect(element.size).toBe(50);
+		});
+	});
+
+	describe('set size()', () => {
+		test('Sets attribute value.', () => {
+			element.setAttribute('size', '50');
+			expect(element.size).toBe(50);
+			element.size = 60;
+			expect(element.size).toBe(60);
+			expect(element.getAttribute('size')).toBe('60');
+		});
+	});
+
 	describe('setSelectionRange()', () => {
 		test('Sets selection range.', () => {
 			element.value = 'TEST_VALUE';
@@ -260,24 +422,63 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
-	describe('removeAttributeNode()', () => {
-		test('Sets properties to its default value.', () => {
-			const newInput = <HTMLInputElement>document.createElement('input');
+	describe('cloneNode()', () => {
+		test('Clones when type is "checkbox".', () => {
+			element.type = 'checkbox';
 
-			for (const key of Object.keys(PROPERTIES)) {
-				element.setAttribute(key, PROPERTIES[key]);
-				element.removeAttribute(key);
-				expect(element[key]).toBe(newInput[key]);
-			}
+			const clone = element.cloneNode(true);
+
+			expect(clone.formAction).toBe(element.formAction);
+			expect(clone.formMethod).toBe(element.formMethod);
+			expect(clone.formNoValidate).toBe(element.formNoValidate);
+			expect(clone.value).toBe(element.value);
+			expect(clone.height).toBe(element.height);
+			expect(clone.width).toBe(element.width);
+			expect(clone.defaultChecked).toBe(element.defaultChecked);
+			expect(clone.files).toEqual(element.files);
+			expect(clone.selectionStart).toBe(element.selectionStart);
+			expect(clone.selectionEnd).toBe(element.selectionEnd);
+			expect(clone.selectionDirection).toBe(element.selectionDirection);
 		});
-	});
 
-	describe('setAttributeNode()', () => {
-		test('Sets attributes as properties.', () => {
-			for (const key of Object.keys(PROPERTIES)) {
-				element.setAttribute(key, PROPERTIES[key]);
-				expect(element[key]).toBe(PROPERTIES[key]);
-			}
+		test('Clones when type is "search".', () => {
+			element.type = 'search';
+			element.value = 'TEST_VALUE';
+			element.selectionStart = 4;
+			element.selectionEnd = 4;
+
+			const clone = element.cloneNode(true);
+
+			expect(clone.formAction).toBe(element.formAction);
+			expect(clone.formMethod).toBe(element.formMethod);
+			expect(clone.formNoValidate).toBe(element.formNoValidate);
+			expect(clone.value).toBe(element.value);
+			expect(clone.height).toBe(element.height);
+			expect(clone.width).toBe(element.width);
+			expect(clone.defaultChecked).toBe(element.defaultChecked);
+			expect(clone.files).toEqual(element.files);
+			expect(clone.selectionStart).toBe(element.selectionStart);
+			expect(clone.selectionEnd).toBe(element.selectionEnd);
+			expect(clone.selectionDirection).toBe(element.selectionDirection);
+		});
+
+		test('Clones when type is "file".', () => {
+			element.type = 'file';
+			element.files.push(new File(['test'], 'file.jpg'));
+
+			const clone = element.cloneNode(true);
+
+			expect(clone.formAction).toBe(element.formAction);
+			expect(clone.formMethod).toBe(element.formMethod);
+			expect(clone.formNoValidate).toBe(element.formNoValidate);
+			expect(clone.value).toBe(element.value);
+			expect(clone.height).toBe(element.height);
+			expect(clone.width).toBe(element.width);
+			expect(clone.defaultChecked).toBe(element.defaultChecked);
+			expect(clone.files).toEqual(element.files);
+			expect(clone.selectionStart).toEqual(element.selectionStart);
+			expect(clone.selectionEnd).toEqual(element.selectionEnd);
+			expect(clone.selectionDirection).toEqual(element.selectionDirection);
 		});
 	});
 });

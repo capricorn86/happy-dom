@@ -1,20 +1,171 @@
 import HTMLElement from '../html-element/HTMLElement';
 import Element from '../element/Element';
-import Attr from '../../attribute/Attr';
 
 /**
  * HTMLFormElement.
  */
 export default class HTMLFormElement extends HTMLElement {
-	public name = '';
-	public method = 'get';
-	public target = '';
-	public action = '';
-	public encoding = '';
-	public enctype = '';
-	public acceptCharset = '';
-	public autocomplete = '';
-	public noValidate = '';
+	/**
+	 * Returns name.
+	 *
+	 * @return Name.
+	 */
+	public get name(): string {
+		return this.getAttributeNS(null, 'name') || '';
+	}
+
+	/**
+	 * Sets name.
+	 *
+	 * @param name Name.
+	 */
+	public set name(name: string) {
+		this.setAttributeNS(null, 'name', name);
+	}
+
+	/**
+	 * Returns method.
+	 *
+	 * @return Method.
+	 */
+	public get method(): string {
+		return this.getAttributeNS(null, 'method') || 'get';
+	}
+
+	/**
+	 * Sets method.
+	 *
+	 * @param method Method.
+	 */
+	public set method(method: string) {
+		this.setAttributeNS(null, 'method', method);
+	}
+
+	/**
+	 * Returns target.
+	 *
+	 * @return Target.
+	 */
+	public get target(): string {
+		return this.getAttributeNS(null, 'target') || '';
+	}
+
+	/**
+	 * Sets target.
+	 *
+	 * @param target Target.
+	 */
+	public set target(target: string) {
+		this.setAttributeNS(null, 'target', target);
+	}
+
+	/**
+	 * Returns action.
+	 *
+	 * @return Action.
+	 */
+	public get action(): string {
+		return this.getAttributeNS(null, 'action') || '';
+	}
+
+	/**
+	 * Sets action.
+	 *
+	 * @param action Action.
+	 */
+	public set action(action: string) {
+		this.setAttributeNS(null, 'action', action);
+	}
+
+	/**
+	 * Returns encoding.
+	 *
+	 * @return Encoding.
+	 */
+	public get encoding(): string {
+		return this.getAttributeNS(null, 'encoding') || '';
+	}
+
+	/**
+	 * Sets encoding.
+	 *
+	 * @param encoding Encoding.
+	 */
+	public set encoding(encoding: string) {
+		this.setAttributeNS(null, 'encoding', encoding);
+	}
+
+	/**
+	 * Returns enctype.
+	 *
+	 * @return Enctype.
+	 */
+	public get enctype(): string {
+		return this.getAttributeNS(null, 'enctype') || '';
+	}
+
+	/**
+	 * Sets enctype.
+	 *
+	 * @param enctype Enctype.
+	 */
+	public set enctype(enctype: string) {
+		this.setAttributeNS(null, 'enctype', enctype);
+	}
+
+	/**
+	 * Returns autocomplete.
+	 *
+	 * @return Autocomplete.
+	 */
+	public get autocomplete(): string {
+		return this.getAttributeNS(null, 'autocomplete') || '';
+	}
+
+	/**
+	 * Sets autocomplete.
+	 *
+	 * @param autocomplete Autocomplete.
+	 */
+	public set autocomplete(autocomplete: string) {
+		this.setAttributeNS(null, 'autocomplete', autocomplete);
+	}
+
+	/**
+	 * Returns accept charset.
+	 *
+	 * @return Accept charset.
+	 */
+	public get acceptCharset(): string {
+		return this.getAttributeNS(null, 'acceptcharset') || '';
+	}
+
+	/**
+	 * Sets accept charset.
+	 *
+	 * @param acceptCharset Accept charset.
+	 */
+	public set acceptCharset(acceptCharset: string) {
+		this.setAttributeNS(null, 'acceptcharset', acceptCharset);
+	}
+
+	/**
+	 * Returns no validate.
+	 *
+	 * @return No validate.
+	 */
+	public get noValidate(): string {
+		return this.getAttributeNS(null, 'novalidate') || '';
+	}
+
+	/**
+	 * Sets no validate.
+	 *
+	 * @param noValidate No validate.
+	 */
+	public set noValidate(noValidate: string) {
+		this.setAttributeNS(null, 'novalidate', noValidate);
+	}
 
 	/**
 	 * Returns input elements.
@@ -56,87 +207,5 @@ export default class HTMLFormElement extends HTMLElement {
 	 */
 	public checkValidity(): boolean {
 		return true;
-	}
-
-	/**
-	 * Removes an Attr node.
-	 *
-	 * @override
-	 * @param attribute Attribute.
-	 */
-	public removeAttributeNode(attribute: Attr): void {
-		super.removeAttributeNode(attribute);
-
-		switch (attribute.name) {
-			case 'method':
-				this[attribute.name] = 'get';
-				break;
-			case 'name':
-			case 'target':
-			case 'action':
-			case 'encoding':
-			case 'enctype':
-			case 'autocomplete':
-				this[attribute.name] = '';
-				break;
-			case 'acceptcharset':
-				this.acceptCharset = '';
-				break;
-			case 'novalidate':
-				this.noValidate = '';
-				break;
-		}
-	}
-
-	/**
-	 * The setAttributeNode() method adds a new Attr node to the specified element.
-	 *
-	 * @override
-	 * @param attribute Attribute.
-	 * @returns Replaced attribute.
-	 */
-	public setAttributeNode(attribute: Attr): Attr {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		switch (attribute.name) {
-			case 'name':
-			case 'method':
-			case 'target':
-			case 'action':
-			case 'encoding':
-			case 'enctype':
-			case 'autocomplete':
-				this[attribute.name] = attribute.value;
-				break;
-			case 'acceptcharset':
-				this.acceptCharset = attribute.value;
-				break;
-			case 'novalidate':
-				this.noValidate = attribute.value;
-				break;
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * Clones a node.
-	 *
-	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
-	 */
-	public cloneNode(deep = false): HTMLFormElement {
-		const clone = <HTMLFormElement>super.cloneNode(deep);
-		clone.name = this.name;
-		clone.method = this.method;
-		clone.target = this.target;
-		clone.action = this.action;
-		clone.encoding = this.encoding;
-		clone.enctype = this.enctype;
-		clone.acceptCharset = this.acceptCharset;
-		clone.autocomplete = this.autocomplete;
-		clone.noValidate = this.noValidate;
-		return clone;
 	}
 }

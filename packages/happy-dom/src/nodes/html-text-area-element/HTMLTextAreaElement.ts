@@ -1,30 +1,245 @@
+import Event from '../../event/Event';
+import DOMException from '../../exception/DOMException';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import HTMLElement from '../html-element/HTMLElement';
-import Node from '../node/Node';
 import HTMLFormElement from '../html-form-element/HTMLFormElement';
-import Attr from '../../attribute/Attr';
+import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum';
+import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
 
 /**
  * HTMLTextAreaElement.
  */
 export default class HTMLTextAreaElement extends HTMLElement {
-	public name = '';
 	public readonly type = 'textarea';
-	public disabled = false;
-	public autofocus = false;
-	public required = false;
-	public _value = '';
-	public autocomplete = '';
-	public cols = '';
-	public rows = '';
-	public minLength = -1;
-	public maxLength = -1;
-	public placeholder = '';
-	public readOnly = false;
-	public selectionStart = 0;
-	public selectionEnd = 0;
-	public selectionDirection = 'forward';
+	public _value = null;
+	public _selectionStart = null;
+	public _selectionEnd = null;
+	public _selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 	public defaultValue = '';
-	public inputmode = '';
+
+	/**
+	 * Returns minlength.
+	 *
+	 * @return Min length.
+	 */
+	public get minLength(): number {
+		const minLength = this.getAttributeNS(null, 'minlength');
+		if (minLength !== null) {
+			return parseInt(minLength);
+		}
+		return -1;
+	}
+
+	/**
+	 * Sets minlength.
+	 *
+	 * @param minLength Min length.
+	 */
+	public set minLength(minlength: number) {
+		this.setAttributeNS(null, 'minlength', String(minlength));
+	}
+
+	/**
+	 * Returns maxlength.
+	 *
+	 * @return Max length.
+	 */
+	public get maxLength(): number {
+		const maxLength = this.getAttributeNS(null, 'maxlength');
+		if (maxLength !== null) {
+			return parseInt(maxLength);
+		}
+		return -1;
+	}
+
+	/**
+	 * Sets maxlength.
+	 *
+	 * @param maxlength Max length.
+	 */
+	public set maxLength(maxLength: number) {
+		this.setAttributeNS(null, 'maxlength', String(maxLength));
+	}
+
+	/**
+	 * Returns name.
+	 *
+	 * @return Name.
+	 */
+	public get name(): string {
+		return this.getAttributeNS(null, 'name') || '';
+	}
+
+	/**
+	 * Sets name.
+	 *
+	 * @param name Name.
+	 */
+	public set name(name: string) {
+		this.setAttributeNS(null, 'name', name);
+	}
+
+	/**
+	 * Returns placeholder.
+	 *
+	 * @return Placeholder.
+	 */
+	public get placeholder(): string {
+		return this.getAttributeNS(null, 'placeholder') || '';
+	}
+
+	/**
+	 * Sets placeholder.
+	 *
+	 * @param placeholder Placeholder.
+	 */
+	public set placeholder(placeholder: string) {
+		this.setAttributeNS(null, 'placeholder', placeholder);
+	}
+
+	/**
+	 * Returns inputmode.
+	 *
+	 * @return Inputmode.
+	 */
+	public get inputmode(): string {
+		return this.getAttributeNS(null, 'inputmode') || '';
+	}
+
+	/**
+	 * Sets inputmode.
+	 *
+	 * @param inputmode Inputmode.
+	 */
+	public set inputmode(inputmode: string) {
+		this.setAttributeNS(null, 'inputmode', inputmode);
+	}
+
+	/**
+	 * Returns cols.
+	 *
+	 * @return Cols.
+	 */
+	public get cols(): string {
+		return this.getAttributeNS(null, 'cols') || '';
+	}
+
+	/**
+	 * Sets cols.
+	 *
+	 * @param cols Cols.
+	 */
+	public set cols(cols: string) {
+		this.setAttributeNS(null, 'cols', cols);
+	}
+
+	/**
+	 * Returns rows.
+	 *
+	 * @return Rows.
+	 */
+	public get rows(): string {
+		return this.getAttributeNS(null, 'rows') || '';
+	}
+
+	/**
+	 * Sets rows.
+	 *
+	 * @param rows Rows.
+	 */
+	public set rows(rows: string) {
+		this.setAttributeNS(null, 'rows', rows);
+	}
+
+	/**
+	 * Returns autocomplete.
+	 *
+	 * @return Autocomplete.
+	 */
+	public get autocomplete(): string {
+		return this.getAttributeNS(null, 'autocomplete') || '';
+	}
+
+	/**
+	 * Sets autocomplete.
+	 *
+	 * @param autocomplete Autocomplete.
+	 */
+	public set autocomplete(autocomplete: string) {
+		this.setAttributeNS(null, 'autocomplete', autocomplete);
+	}
+
+	/**
+	 * Returns readOnly.
+	 *
+	 * @return ReadOnly.
+	 */
+	public get readOnly(): boolean {
+		return this.getAttributeNS(null, 'readonly') !== null;
+	}
+
+	/**
+	 * Sets readOnly.
+	 *
+	 * @param readOnly ReadOnly.
+	 */
+	public set readOnly(readOnly: boolean) {
+		this.setAttributeNS(null, 'readonly', readOnly ? '' : null);
+	}
+
+	/**
+	 * Returns disabled.
+	 *
+	 * @return Disabled.
+	 */
+	public get disabled(): boolean {
+		return this.getAttributeNS(null, 'disabled') !== null;
+	}
+
+	/**
+	 * Sets disabled.
+	 *
+	 * @param disabled Disabled.
+	 */
+	public set disabled(disabled: boolean) {
+		this.setAttributeNS(null, 'disabled', disabled ? '' : null);
+	}
+
+	/**
+	 * Returns autofocus.
+	 *
+	 * @return Autofocus.
+	 */
+	public get autofocus(): boolean {
+		return this.getAttributeNS(null, 'autofocus') !== null;
+	}
+
+	/**
+	 * Sets autofocus.
+	 *
+	 * @param autofocus Autofocus.
+	 */
+	public set autofocus(autofocus: boolean) {
+		this.setAttributeNS(null, 'autofocus', autofocus ? '' : null);
+	}
+
+	/**
+	 * Returns required.
+	 *
+	 * @return Required.
+	 */
+	public get required(): boolean {
+		return this.getAttributeNS(null, 'required') !== null;
+	}
+
+	/**
+	 * Sets required.
+	 *
+	 * @param required Required.
+	 */
+	public set required(required: boolean) {
+		this.setAttributeNS(null, 'required', required ? '' : null);
+	}
 
 	/**
 	 * Returns value.
@@ -32,6 +247,10 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @return Value.
 	 */
 	public get value(): string {
+		if (this._value === null) {
+			return this.getAttributeNS(null, 'value') || '';
+		}
+
 		return this._value;
 	}
 
@@ -41,10 +260,76 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @param value Value.
 	 */
 	public set value(value: string) {
+		const oldValue = this._value;
 		this._value = value;
-		if (this.defaultValue === null) {
-			this.defaultValue = value;
+
+		if (oldValue !== this._value) {
+			this._selectionStart = this._value.length;
+			this._selectionEnd = this._value.length;
+			this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 		}
+	}
+
+	/**
+	 * Returns selection start.
+	 *
+	 * @return Selection start.
+	 */
+	public get selectionStart(): number {
+		if (this._selectionStart === null) {
+			return this.value.length;
+		}
+
+		return this._selectionStart;
+	}
+
+	/**
+	 * Sets selection start.
+	 *
+	 * @param start Start.
+	 */
+	public set selectionStart(start: number) {
+		this.setSelectionRange(start, Math.max(start, this.selectionEnd), this._selectionDirection);
+	}
+
+	/**
+	 * Returns selection end.
+	 *
+	 * @return Selection end.
+	 */
+	public get selectionEnd(): number {
+		if (this._selectionEnd === null) {
+			return this.value.length;
+		}
+
+		return this._selectionEnd;
+	}
+
+	/**
+	 * Sets selection end.
+	 *
+	 * @param end End.
+	 */
+	public set selectionEnd(end: number) {
+		this.setSelectionRange(this.selectionStart, end, this._selectionDirection);
+	}
+
+	/**
+	 * Returns selection direction.
+	 *
+	 * @return Selection direction.
+	 */
+	public get selectionDirection(): string {
+		return this._selectionDirection;
+	}
+
+	/**
+	 * Sets selection direction.
+	 *
+	 * @param direction Direction.
+	 */
+	public set selectionDirection(direction: string) {
+		this.setSelectionRange(this._selectionStart, this._selectionEnd, direction);
 	}
 
 	/**
@@ -70,35 +355,90 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	}
 
 	/**
-	 * @override
+	 * Set selection range.
+	 *
+	 * @param start Start.
+	 * @param end End.
+	 * @param [direction="none"] Direction.
 	 */
-	public appendChild(node: Node): Node {
-		super.appendChild(node);
-		this.value = this.textContent;
-		return node;
+	public setSelectionRange(start: number, end: number, direction = 'none'): void {
+		this._selectionEnd = Math.min(end, this.value.length);
+		this._selectionStart = Math.min(start, this._selectionEnd);
+		this._selectionDirection =
+			direction === HTMLInputElementSelectionDirectionEnum.forward ||
+			direction === HTMLInputElementSelectionDirectionEnum.backward
+				? direction
+				: HTMLInputElementSelectionDirectionEnum.none;
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
 	}
 
 	/**
-	 * Remove Child element from childNodes array.
+	 * Set range text.
 	 *
-	 * @param node Node to remove
+	 * @param replacement Replacement.
+	 * @param [start] Start.
+	 * @param [end] End.
+	 * @param [direction] Direction.
 	 */
-	public removeChild(node: Node): void {
-		super.removeChild(node);
-		this.value = this.textContent;
-	}
+	public setRangeText(
+		replacement,
+		start = null,
+		end = null,
+		selectionMode = HTMLInputElementSelectionModeEnum.preserve
+	): void {
+		if (start === null) {
+			start = this._selectionStart;
+		}
+		if (end === null) {
+			end = this._selectionEnd;
+		}
 
-	/**
-	 * Inserts a node before another.
-	 *
-	 * @param newNode Node to insert.
-	 * @param referenceNode Node to insert before.
-	 * @return Inserted node.
-	 */
-	public insertBefore(newNode: Node, referenceNode: Node): Node {
-		super.insertBefore(newNode, referenceNode);
-		this.value = this.textContent;
-		return newNode;
+		if (start > end) {
+			throw new DOMException(
+				'The index is not in the allowed range.',
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		start = Math.min(start, this.value.length);
+		end = Math.min(end, this.value.length);
+
+		const val = this.value;
+		let selectionStart = this._selectionStart;
+		let selectionEnd = this._selectionEnd;
+
+		this.value = val.slice(0, start) + replacement + val.slice(end);
+
+		const newEnd = start + this.value.length;
+
+		switch (selectionMode) {
+			case HTMLInputElementSelectionModeEnum.select:
+				this.setSelectionRange(start, newEnd);
+				break;
+			case HTMLInputElementSelectionModeEnum.start:
+				this.setSelectionRange(start, start);
+				break;
+			case HTMLInputElementSelectionModeEnum.end:
+				this.setSelectionRange(newEnd, newEnd);
+				break;
+			default:
+				const delta = replacement.length - (end - start);
+
+				if (selectionStart > end) {
+					selectionStart += delta;
+				} else if (selectionStart > start) {
+					selectionStart = start;
+				}
+
+				if (selectionEnd > end) {
+					selectionEnd += delta;
+				} else if (selectionEnd > start) {
+					selectionEnd = newEnd;
+				}
+
+				this.setSelectionRange(selectionStart, selectionEnd);
+				break;
+		}
 	}
 
 	/**
@@ -111,103 +451,6 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	}
 
 	/**
-	 * Removes an Attr node.
-	 *
-	 * @override
-	 * @param attribute Attribute.
-	 */
-	public removeAttributeNode(attribute: Attr): void {
-		super.removeAttributeNode(attribute);
-
-		switch (attribute.name) {
-			case 'selectionstart': // number
-				this.selectionStart = 0;
-				break;
-			case 'selectionend': // number
-				this.selectionEnd = 0;
-				break;
-			case 'minlength': // number
-				this.minLength = -1;
-				break;
-			case 'maxlength': // number
-				this.maxLength = -1;
-				break;
-			case 'name': // string
-			case 'placeholder': // string
-			case 'inputmode': // string
-			case 'cols': // string
-			case 'rows': // string
-			case 'autocomplete': // string
-				this[attribute.name] = '';
-				break;
-			case 'selectiondirection': // string
-				this.selectionDirection = 'forward';
-				break;
-			case 'value': // string
-				this._value = '';
-				break;
-			case 'readonly': //  boolean
-				this.readOnly = false;
-				break;
-			case 'disabled': // boolean
-			case 'autofocus': // boolean
-			case 'required': // boolean
-				this[attribute.name] = false;
-				break;
-		}
-	}
-
-	/**
-	 * The setAttributeNode() method adds a new Attr node to the specified element.
-	 *
-	 * @override
-	 * @param attribute Attribute.
-	 * @returns Replaced attribute.
-	 */
-	public setAttributeNode(attribute: Attr): Attr {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		switch (attribute.name) {
-			case 'selectionstart': // number
-				this.selectionStart = !!attribute.value ? Number(attribute.value) : 0;
-				break;
-			case 'selectionend': // number
-				this.selectionEnd = !!attribute.value ? Number(attribute.value) : 0;
-				break;
-			case 'minlength': // number
-				this.minLength = !!attribute.value ? Number(attribute.value) : -1;
-				break;
-			case 'maxlength': // number
-				this.maxLength = !!attribute.value ? Number(attribute.value) : -1;
-				break;
-			case 'name': // string
-			case 'placeholder': // string
-			case 'inputmode': // string
-			case 'cols': // string
-			case 'rows': // string
-			case 'autocomplete': // string
-				this[attribute.name] = attribute.value || '';
-				break;
-			case 'selectiondirection': // string
-				this.selectionDirection = attribute.value || '';
-				break;
-			case 'value': // string
-				this._value = attribute.value || '';
-				break;
-			case 'readonly': //  boolean
-				this.readOnly = attribute.value != null;
-				break;
-			case 'disabled': // boolean
-			case 'autofocus': // boolean
-			case 'required': // boolean
-				this[attribute.name] = attribute.value != null;
-				break;
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
 	 * Clones a node.
 	 *
 	 * @override
@@ -217,23 +460,11 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	public cloneNode(deep = false): HTMLTextAreaElement {
 		const clone = <HTMLTextAreaElement>super.cloneNode(deep);
 
-		clone.name = this.name;
-		clone.disabled = this.disabled;
-		clone.autofocus = this.autofocus;
-		clone.required = this.required;
 		clone._value = this._value;
-		clone.autocomplete = this.autocomplete;
-		clone.cols = this.cols;
-		clone.rows = this.rows;
-		clone.minLength = this.minLength;
-		clone.maxLength = this.maxLength;
-		clone.placeholder = this.placeholder;
-		clone.readOnly = this.readOnly;
-		clone.selectionStart = this.selectionStart;
-		clone.selectionEnd = this.selectionEnd;
-		clone.selectionDirection = this.selectionDirection;
+		clone._selectionStart = this._selectionStart;
+		clone._selectionEnd = this._selectionEnd;
+		clone._selectionDirection = this._selectionDirection;
 		clone.defaultValue = this.defaultValue;
-		clone.inputmode = this.inputmode;
 
 		return clone;
 	}
