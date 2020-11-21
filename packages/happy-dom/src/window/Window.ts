@@ -27,6 +27,7 @@ import File from '../file/File';
 import DOMException from '../exception/DOMException';
 import FileReader from '../file/FileReader';
 import History from '../history/History';
+import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
 
 /**
  * Handles the Window.
@@ -163,11 +164,14 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	/**
 	 * Returns an object containing the values of all CSS properties of an element.
 	 *
-	 * @note This method has not been implemented. It is just here for compatibility.
-	 * @returns Empty object.
+	 * @param element Element.
+	 * @returns CSS style declaration
 	 */
-	public getComputedStyle(): {} {
-		return {};
+	public getComputedStyle(element: HTMLElement): CSSStyleDeclaration {
+		if (!element.style || !element.isConnected) {
+			return new CSSStyleDeclaration();
+		}
+		return element.style;
 	}
 
 	/**

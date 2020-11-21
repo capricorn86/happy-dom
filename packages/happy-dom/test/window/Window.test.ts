@@ -1,3 +1,4 @@
+import CSSStyleDeclaration from '../../src/css/CSSStyleDeclaration';
 import Window from '../../src/window/Window';
 
 describe('Window', () => {
@@ -5,6 +6,23 @@ describe('Window', () => {
 
 	beforeEach(() => {
 		window = new Window();
+	});
+
+	describe('getComputedStyle()', () => {
+		test('Returns a CSSStyleDeclaration object set in the property HTMLElement.style.', () => {
+			const element = window.document.createElement('div');
+			element.style.direction = 'rtl';
+			window.document.body.appendChild(element);
+			expect(window.getComputedStyle(element) instanceof CSSStyleDeclaration).toBe(true);
+			expect(window.getComputedStyle(element).direction).toBe('rtl');
+		});
+
+		test('Returns an empty CSSStyleDeclaration if the element is not connected to the DOM.', () => {
+			const element = window.document.createElement('div');
+			element.style.direction = 'rtl';
+			expect(window.getComputedStyle(element) instanceof CSSStyleDeclaration).toBe(true);
+			expect(window.getComputedStyle(element).direction).toBe('');
+		});
 	});
 
 	describe('setTimeout()', () => {
