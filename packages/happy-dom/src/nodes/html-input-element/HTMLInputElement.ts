@@ -1,5 +1,4 @@
 import File from '../../file/File';
-import Attr from '../../attribute/Attr';
 import HTMLElement from '../html-element/HTMLElement';
 import HTMLFormElement from '../html-form-element/HTMLFormElement';
 import ValidityState from './ValidityState';
@@ -26,52 +25,504 @@ export default class HTMLInputElement extends HTMLElement {
 	public formNoValidate = false;
 
 	// Any type of input
-	public name = '';
-	public _type = 'text';
-	public disabled = false;
-	public autofocus = false;
-	public required = false;
-	public _value = '';
+	public _value = null;
+	public _height = 0;
+	public _width = 0;
 
 	// Type specific: checkbox/radio
-	public checked = false;
 	public defaultChecked = false;
-	public indeterminate = false;
-
-	// Type specific: image
-	public alt = '';
-	public height = 0;
-	public src = '';
-	public width = 0;
 
 	// Type specific: file
 	public files: File[] = [];
-	public accept = '';
-	public allowdirs = '';
-
-	// Type specific: text/number
-	public autocomplete = '';
-	public min = '';
-	public max = '';
-	public minLength = -1;
-	public maxLength = -1;
-	public pattern = '';
-	public placeholder = '';
-	public readOnly = false;
-	public size = 0;
 
 	// Type specific: text/password/search/tel/url/week/month
-	private _selectionStart = 0;
-	private _selectionEnd = 0;
+	private _selectionStart = null;
+	private _selectionEnd = null;
 	private _selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
-
-	// Email
-	public multiple = false;
 
 	// Not categorized
 	public defaultValue = '';
-	public step = '';
-	public inputmode = '';
+	/**
+	 * Returns height.
+	 *
+	 * @return Height.
+	 */
+	public get height(): number {
+		return this._height;
+	}
+
+	/**
+	 * Sets height.
+	 *
+	 * @param height Height.
+	 */
+	public set height(height: number) {
+		this._height = height;
+		this.setAttributeNS(null, 'height', String(height));
+	}
+
+	/**
+	 * Returns width.
+	 *
+	 * @return Width.
+	 */
+	public get width(): number {
+		return this._width;
+	}
+
+	/**
+	 * Sets width.
+	 *
+	 * @param width Width.
+	 */
+	public set width(width: number) {
+		this._width = width;
+		this.setAttributeNS(null, 'width', String(width));
+	}
+
+	/**
+	 * Returns size.
+	 *
+	 * @return Size.
+	 */
+	public get size(): number {
+		const size = this.getAttributeNS(null, 'size');
+		if (size !== null) {
+			return parseInt(size);
+		}
+		return 20;
+	}
+
+	/**
+	 * Sets size.
+	 *
+	 * @param size Size.
+	 */
+	public set size(size: number) {
+		this.setAttributeNS(null, 'size', String(size));
+	}
+
+	/**
+	 * Returns minlength.
+	 *
+	 * @return Min length.
+	 */
+	public get minLength(): number {
+		const minLength = this.getAttributeNS(null, 'minlength');
+		if (minLength !== null) {
+			return parseInt(minLength);
+		}
+		return -1;
+	}
+
+	/**
+	 * Sets minlength.
+	 *
+	 * @param minLength Min length.
+	 */
+	public set minLength(minlength: number) {
+		this.setAttributeNS(null, 'minlength', String(minlength));
+	}
+
+	/**
+	 * Returns maxlength.
+	 *
+	 * @return Max length.
+	 */
+	public get maxLength(): number {
+		const maxLength = this.getAttributeNS(null, 'maxlength');
+		if (maxLength !== null) {
+			return parseInt(maxLength);
+		}
+		return -1;
+	}
+
+	/**
+	 * Sets maxlength.
+	 *
+	 * @param maxlength Max length.
+	 */
+	public set maxLength(maxLength: number) {
+		this.setAttributeNS(null, 'maxlength', String(maxLength));
+	}
+
+	/**
+	 * Returns type.
+	 *
+	 * @return Type. Defaults to "text".
+	 */
+	public get type(): string {
+		return this.getAttributeNS(null, 'type') || 'text';
+	}
+
+	/**
+	 * Sets type.
+	 *
+	 * @param type Type.
+	 */
+	public set type(type: string) {
+		this.setAttributeNS(null, 'type', type.toLowerCase());
+	}
+
+	/**
+	 * Returns name.
+	 *
+	 * @return Name.
+	 */
+	public get name(): string {
+		return this.getAttributeNS(null, 'name') || '';
+	}
+
+	/**
+	 * Sets name.
+	 *
+	 * @param name Name.
+	 */
+	public set name(name: string) {
+		this.setAttributeNS(null, 'name', name);
+	}
+
+	/**
+	 * Returns alt.
+	 *
+	 * @return Alt.
+	 */
+	public get alt(): string {
+		return this.getAttributeNS(null, 'alt') || '';
+	}
+
+	/**
+	 * Sets alt.
+	 *
+	 * @param alt Alt.
+	 */
+	public set alt(alt: string) {
+		this.setAttributeNS(null, 'alt', alt);
+	}
+
+	/**
+	 * Returns min.
+	 *
+	 * @return Min.
+	 */
+	public get min(): string {
+		return this.getAttributeNS(null, 'min') || '';
+	}
+
+	/**
+	 * Sets min.
+	 *
+	 * @param min Min.
+	 */
+	public set min(min: string) {
+		this.setAttributeNS(null, 'min', min);
+	}
+
+	/**
+	 * Returns max.
+	 *
+	 * @return Max.
+	 */
+	public get max(): string {
+		return this.getAttributeNS(null, 'max') || '';
+	}
+
+	/**
+	 * Sets max.
+	 *
+	 * @param max Max.
+	 */
+	public set max(max: string) {
+		this.setAttributeNS(null, 'max', max);
+	}
+
+	/**
+	 * Returns pattern.
+	 *
+	 * @return Pattern.
+	 */
+	public get pattern(): string {
+		return this.getAttributeNS(null, 'pattern') || '';
+	}
+
+	/**
+	 * Sets pattern.
+	 *
+	 * @param pattern Pattern.
+	 */
+	public set pattern(pattern: string) {
+		this.setAttributeNS(null, 'pattern', pattern);
+	}
+
+	/**
+	 * Returns placeholder.
+	 *
+	 * @return Placeholder.
+	 */
+	public get placeholder(): string {
+		return this.getAttributeNS(null, 'placeholder') || '';
+	}
+
+	/**
+	 * Sets placeholder.
+	 *
+	 * @param placeholder Placeholder.
+	 */
+	public set placeholder(placeholder: string) {
+		this.setAttributeNS(null, 'placeholder', placeholder);
+	}
+
+	/**
+	 * Returns step.
+	 *
+	 * @return Step.
+	 */
+	public get step(): string {
+		return this.getAttributeNS(null, 'step') || '';
+	}
+
+	/**
+	 * Sets step.
+	 *
+	 * @param step Step.
+	 */
+	public set step(step: string) {
+		this.setAttributeNS(null, 'step', step);
+	}
+
+	/**
+	 * Returns inputmode.
+	 *
+	 * @return Inputmode.
+	 */
+	public get inputmode(): string {
+		return this.getAttributeNS(null, 'inputmode') || '';
+	}
+
+	/**
+	 * Sets inputmode.
+	 *
+	 * @param inputmode Inputmode.
+	 */
+	public set inputmode(inputmode: string) {
+		this.setAttributeNS(null, 'inputmode', inputmode);
+	}
+
+	/**
+	 * Returns accept.
+	 *
+	 * @return Accept.
+	 */
+	public get accept(): string {
+		return this.getAttributeNS(null, 'accept') || '';
+	}
+
+	/**
+	 * Sets accept.
+	 *
+	 * @param accept Accept.
+	 */
+	public set accept(accept: string) {
+		this.setAttributeNS(null, 'accept', accept);
+	}
+
+	/**
+	 * Returns allowdirs.
+	 *
+	 * @return Allowdirs.
+	 */
+	public get allowdirs(): string {
+		return this.getAttributeNS(null, 'allowdirs') || '';
+	}
+
+	/**
+	 * Sets allowdirs.
+	 *
+	 * @param allowdirs Allowdirs.
+	 */
+	public set allowdirs(allowdirs: string) {
+		this.setAttributeNS(null, 'allowdirs', allowdirs);
+	}
+
+	/**
+	 * Returns autocomplete.
+	 *
+	 * @return Autocomplete.
+	 */
+	public get autocomplete(): string {
+		return this.getAttributeNS(null, 'autocomplete') || '';
+	}
+
+	/**
+	 * Sets autocomplete.
+	 *
+	 * @param autocomplete Autocomplete.
+	 */
+	public set autocomplete(autocomplete: string) {
+		this.setAttributeNS(null, 'autocomplete', autocomplete);
+	}
+
+	/**
+	 * Returns src.
+	 *
+	 * @return Src.
+	 */
+	public get src(): string {
+		return this.getAttributeNS(null, 'src') || '';
+	}
+
+	/**
+	 * Sets src.
+	 *
+	 * @param src Src.
+	 */
+	public set src(src: string) {
+		this.setAttributeNS(null, 'src', src);
+	}
+
+	/**
+	 * Returns defaultvalue.
+	 *
+	 * @return Defaultvalue.
+	 */
+	public get defaultvalue(): string {
+		return this.getAttributeNS(null, 'defaultvalue') || '';
+	}
+
+	/**
+	 * Sets defaultvalue.
+	 *
+	 * @param defaultvalue Defaultvalue.
+	 */
+	public set defaultvalue(defaultvalue: string) {
+		this.setAttributeNS(null, 'defaultvalue', defaultvalue);
+	}
+
+	/**
+	 * Returns read only.
+	 *
+	 * @return Read only.
+	 */
+	public get readOnly(): boolean {
+		return this.getAttributeNS(null, 'readonly') !== null;
+	}
+
+	/**
+	 * Sets read only.
+	 *
+	 * @param readOnly Read only.
+	 */
+	public set readOnly(readOnly: boolean) {
+		this.setAttributeNS(null, 'readonly', readOnly ? '' : null);
+	}
+
+	/**
+	 * Returns disabled.
+	 *
+	 * @return Disabled.
+	 */
+	public get disabled(): boolean {
+		return this.getAttributeNS(null, 'disabled') !== null;
+	}
+
+	/**
+	 * Sets disabled.
+	 *
+	 * @param disabled Disabled.
+	 */
+	public set disabled(disabled: boolean) {
+		this.setAttributeNS(null, 'disabled', disabled ? '' : null);
+	}
+
+	/**
+	 * Returns autofocus.
+	 *
+	 * @return Autofocus.
+	 */
+	public get autofocus(): boolean {
+		return this.getAttributeNS(null, 'autofocus') !== null;
+	}
+
+	/**
+	 * Sets autofocus.
+	 *
+	 * @param autofocus Autofocus.
+	 */
+	public set autofocus(autofocus: boolean) {
+		this.setAttributeNS(null, 'autofocus', autofocus ? '' : null);
+	}
+
+	/**
+	 * Returns required.
+	 *
+	 * @return Required.
+	 */
+	public get required(): boolean {
+		return this.getAttributeNS(null, 'required') !== null;
+	}
+
+	/**
+	 * Sets required.
+	 *
+	 * @param required Required.
+	 */
+	public set required(required: boolean) {
+		this.setAttributeNS(null, 'required', required ? '' : null);
+	}
+
+	/**
+	 * Returns indeterminate.
+	 *
+	 * @return Indeterminate.
+	 */
+	public get indeterminate(): boolean {
+		return this.getAttributeNS(null, 'indeterminate') !== null;
+	}
+
+	/**
+	 * Sets indeterminate.
+	 *
+	 * @param indeterminate Indeterminate.
+	 */
+	public set indeterminate(indeterminate: boolean) {
+		this.setAttributeNS(null, 'indeterminate', indeterminate ? '' : null);
+	}
+
+	/**
+	 * Returns multiple.
+	 *
+	 * @return Multiple.
+	 */
+	public get multiple(): boolean {
+		return this.getAttributeNS(null, 'multiple') !== null;
+	}
+
+	/**
+	 * Sets multiple.
+	 *
+	 * @param multiple Multiple.
+	 */
+	public set multiple(multiple: boolean) {
+		this.setAttributeNS(null, 'multiple', multiple ? '' : null);
+	}
+
+	/**
+	 * Returns checked.
+	 *
+	 * @return Checked.
+	 */
+	public get checked(): boolean {
+		return this.getAttributeNS(null, 'checked') !== null;
+	}
+
+	/**
+	 * Sets checked.
+	 *
+	 * @param checked Checked.
+	 */
+	public set checked(checked: boolean) {
+		this.setAttributeNS(null, 'checked', checked ? '' : null);
+	}
 
 	/**
 	 * Returns value.
@@ -94,6 +545,10 @@ export default class HTMLInputElement extends HTMLElement {
 				return this.files.length > 0 ? '/fake/path/' + this.files[0].name : '';
 		}
 
+		if (this._value === null) {
+			return this.getAttributeNS(null, 'value') || '';
+		}
+
 		return this._value;
 	}
 
@@ -103,7 +558,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		switch (this._type) {
+		switch (this.type) {
 			case 'hidden':
 			case 'submit':
 			case 'image':
@@ -126,31 +581,13 @@ export default class HTMLInputElement extends HTMLElement {
 				this._value = HTMLInputElementValueSanitizer.sanitize(this, value);
 
 				if (oldValue !== this._value) {
-					this._selectionStart = value.length;
-					this._selectionEnd = value.length;
+					this._selectionStart = this._value.length;
+					this._selectionEnd = this._value.length;
 					this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 				}
 
 				break;
 		}
-	}
-
-	/**
-	 * Sets type.
-	 *
-	 * @param type Type.
-	 */
-	public set type(type: string) {
-		this._type = type.toLowerCase();
-	}
-
-	/**
-	 * Returns type.
-	 *
-	 * @param type Type.
-	 */
-	public get type(): string {
-		return this._type;
 	}
 
 	/**
@@ -161,6 +598,10 @@ export default class HTMLInputElement extends HTMLElement {
 	public get selectionStart(): number {
 		if (!this._isSelectionSupported()) {
 			return null;
+		}
+
+		if (this._selectionStart === null) {
+			return this.value.length;
 		}
 
 		return this._selectionStart;
@@ -179,7 +620,7 @@ export default class HTMLInputElement extends HTMLElement {
 			);
 		}
 
-		this.setSelectionRange(start, Math.max(start, this._selectionEnd), this._selectionDirection);
+		this.setSelectionRange(start, Math.max(start, this.selectionEnd), this._selectionDirection);
 	}
 
 	/**
@@ -190,6 +631,10 @@ export default class HTMLInputElement extends HTMLElement {
 	public get selectionEnd(): number {
 		if (!this._isSelectionSupported()) {
 			return null;
+		}
+
+		if (this._selectionEnd === null) {
+			return this.value.length;
 		}
 
 		return this._selectionEnd;
@@ -208,7 +653,7 @@ export default class HTMLInputElement extends HTMLElement {
 			);
 		}
 
-		this.setSelectionRange(this._selectionStart, end, this._selectionDirection);
+		this.setSelectionRange(this.selectionStart, end, this._selectionDirection);
 	}
 
 	/**
@@ -415,132 +860,6 @@ export default class HTMLInputElement extends HTMLElement {
 	}
 
 	/**
-	 * Removes an Attr node.
-	 *
-	 * @override
-	 * @param attribute Attribute.
-	 */
-	public removeAttributeNode(attribute: Attr): void {
-		super.removeAttributeNode(attribute);
-
-		switch (attribute.name) {
-			case 'height': // number
-			case 'width': // number
-			case 'size': // number
-				this[attribute.name] = 0;
-				break;
-			case 'selectionstart': // number
-				this.selectionStart = 0;
-				break;
-			case 'selectionend': // number
-				this.selectionEnd = 0;
-				break;
-			case 'minlength': // number
-				this.minLength = -1;
-				break;
-			case 'maxlength': // number
-				this.maxLength = -1;
-				break;
-			case 'type': // string
-				this[attribute.name] = 'text';
-				break;
-			case 'name': // string
-			case 'alt': // string
-			case 'min': // string
-			case 'max': // string
-			case 'pattern': // string
-			case 'placeholder': // string
-			case 'step': // string
-			case 'inputmode': // string
-			case 'accept': // string
-			case 'allowdirs': // string
-			case 'autocomplete': // string
-			case 'src': // string
-				this[attribute.name] = '';
-				break;
-			case 'value': // string
-				if (this._value === attribute.value && this._isPrivateValueSupported()) {
-					this.value = '';
-				}
-				break;
-			case 'defaultvalue': // string
-				this.defaultValue = '';
-				break;
-			case 'readonly': //  boolean
-				this.readOnly = false;
-			case 'disabled': // boolean
-			case 'autofocus': // boolean
-			case 'required': // boolean
-			case 'indeterminate': // boolean
-			case 'multiple': // boolean
-			case 'checked': // boolean
-				this[attribute.name] = false;
-				break;
-		}
-	}
-
-	/**
-	 * The setAttributeNode() method adds a new Attr node to the specified element.
-	 *
-	 * @override
-	 * @param attribute Attribute.
-	 * @returns Replaced attribute.
-	 */
-	public setAttributeNode(attribute: Attr): Attr {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		switch (attribute.name) {
-			case 'height': // number
-			case 'width': // number
-			case 'size': // number
-				this[attribute.name] = !!attribute.value ? Number(attribute.value) : 0;
-				break;
-			case 'minlength': // number
-				this.minLength = !!attribute.value ? Number(attribute.value) : -1;
-				break;
-			case 'maxlength': // number
-				this.maxLength = !!attribute.value ? Number(attribute.value) : -1;
-				break;
-			case 'type': // string
-			case 'name': // string
-			case 'alt': // string
-			case 'min': // string
-			case 'max': // string
-			case 'pattern': // string
-			case 'placeholder': // string
-			case 'step': // string
-			case 'inputmode': // string
-			case 'accept': // string
-			case 'allowdirs': // string
-			case 'autocomplete': // string
-			case 'src': // string
-				this[attribute.name] = attribute.value || '';
-				break;
-			case 'value': // string
-				if (!this._value && this._isPrivateValueSupported()) {
-					this.value = attribute.value || '';
-				}
-				break;
-			case 'defaultvalue': // string
-				this.defaultValue = attribute.value || '';
-				break;
-			case 'readonly': //  boolean
-				this.readOnly = attribute.value !== null;
-				break;
-			case 'disabled': // boolean
-			case 'autofocus': // boolean
-			case 'required': // boolean
-			case 'indeterminate': // boolean
-			case 'multiple': // boolean
-			case 'checked': // boolean
-				this[attribute.name] = attribute.value !== null;
-				break;
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
 	 * Clones a node.
 	 *
 	 * @override
@@ -552,37 +871,14 @@ export default class HTMLInputElement extends HTMLElement {
 		clone.formAction = this.formAction;
 		clone.formMethod = this.formMethod;
 		clone.formNoValidate = this.formNoValidate;
-		clone.name = this.name;
-		clone.type = this.type;
-		clone.disabled = this.disabled;
-		clone.autofocus = this.autofocus;
-		clone.required = this.required;
 		clone._value = this._value;
-		clone.checked = this.checked;
+		clone._height = this._height;
+		clone._width = this._width;
 		clone.defaultChecked = this.defaultChecked;
-		clone.indeterminate = this.indeterminate;
-		clone.alt = this.alt;
-		clone.height = this.height;
-		clone.src = this.src;
-		clone.width = this.width;
-		clone.accept = this.accept;
-		clone.allowdirs = this.allowdirs;
-		clone.autocomplete = this.autocomplete;
-		clone.min = this.min;
-		clone.max = this.max;
-		clone.minLength = this.minLength;
-		clone.maxLength = this.maxLength;
-		clone.pattern = this.pattern;
-		clone.placeholder = this.placeholder;
-		clone.readOnly = this.readOnly;
-		clone.size = this.size;
-		clone.selectionStart = this.selectionStart;
-		clone.selectionEnd = this.selectionEnd;
-		clone.selectionDirection = this.selectionDirection;
-		clone.defaultValue = this.defaultValue;
-		clone.multiple = this.multiple;
-		clone.step = this.step;
-		clone.inputmode = this.inputmode;
+		clone.files = this.files.slice();
+		clone._selectionStart = this._selectionStart;
+		clone._selectionEnd = this._selectionEnd;
+		clone._selectionDirection = this._selectionDirection;
 		return clone;
 	}
 
@@ -591,18 +887,18 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @returns "true" if private value is supported.
 	 */
-	private _isPrivateValueSupported(): boolean {
-		return (
-			this.type !== 'hidden' &&
-			this.type !== 'submit' &&
-			this.type !== 'image' &&
-			this.type !== 'reset' &&
-			this.type !== 'button' &&
-			this.type !== 'checkbox' &&
-			this.type !== 'radio' &&
-			this.type !== 'file'
-		);
-	}
+	// private _isPrivateValueSupported(): boolean {
+	// 	return (
+	// 		this.type !== 'hidden' &&
+	// 		this.type !== 'submit' &&
+	// 		this.type !== 'image' &&
+	// 		this.type !== 'reset' &&
+	// 		this.type !== 'button' &&
+	// 		this.type !== 'checkbox' &&
+	// 		this.type !== 'radio' &&
+	// 		this.type !== 'file'
+	// 	);
+	// }
 
 	/**
 	 * Checks is selection is supported.

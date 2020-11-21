@@ -2,18 +2,6 @@ import Window from '../../../src/window/Window';
 import Document from '../../../src/nodes/document/Document';
 import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement';
 
-const PROPERTIES = {
-	name: '',
-	method: 'get',
-	target: '',
-	action: '',
-	encoding: '',
-	enctype: '',
-	acceptCharset: '',
-	autocomplete: '',
-	noValidate: ''
-};
-
 describe('HTMLFormElement', () => {
 	let window: Window;
 	let document: Document;
@@ -25,24 +13,44 @@ describe('HTMLFormElement', () => {
 		element = <HTMLFormElement>document.createElement('form');
 	});
 
-	describe('removeAttributeNode()', () => {
-		test('Sets properties to its default value.', () => {
-			const newForm = <HTMLFormElement>document.createElement('form');
+	for (const property of [
+		'name',
+		'target',
+		'action',
+		'encoding',
+		'enctype',
+		'acceptCharset',
+		'autocomplete',
+		'noValidate'
+	]) {
+		describe(`get ${property}()`, () => {
+			test('Returns attribute value.', () => {
+				expect(element[property]).toBe('');
+				element.setAttribute(property, 'value');
+				expect(element[property]).toBe('value');
+			});
+		});
 
-			for (const key of Object.keys(PROPERTIES)) {
-				element.setAttribute(key, PROPERTIES[key]);
-				element.removeAttribute(key);
-				expect(element[key]).toBe(newForm[key]);
-			}
+		describe(`set ${property}()`, () => {
+			test('Sets attribute value.', () => {
+				element[property] = 'value';
+				expect(element.getAttribute(property)).toBe('value');
+			});
+		});
+	}
+
+	describe('get method()', () => {
+		test('Returns attribute value.', () => {
+			expect(element.method).toBe('get');
+			element.setAttribute('method', 'post');
+			expect(element.method).toBe('post');
 		});
 	});
 
-	describe('setAttributeNode()', () => {
-		test('Sets attributes as properties.', () => {
-			for (const key of Object.keys(PROPERTIES)) {
-				element.setAttribute(key, PROPERTIES[key]);
-				expect(element[key]).toBe(PROPERTIES[key]);
-			}
+	describe('set method()', () => {
+		test('Sets attribute value.', () => {
+			element.method = 'post';
+			expect(element.getAttribute('method')).toBe('post');
 		});
 	});
 });

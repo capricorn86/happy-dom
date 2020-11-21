@@ -1,6 +1,5 @@
 import Window from '../../../src/window/Window';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
-import QuerySelector from '../../../src/query-selector/QuerySelector';
 
 describe('ParentNodeUtility', () => {
 	let window, document;
@@ -105,37 +104,6 @@ describe('ParentNodeUtility', () => {
 			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
 				'<span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
-		});
-	});
-
-	describe('getElementsByClassName()', () => {
-		test('Returns elements by class name.', () => {
-			const parent = document.createElement('div');
-			const element = document.createElement('div');
-			const className = 'className';
-
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(`.${className}`);
-				return [element];
-			});
-
-			expect(parent.getElementsByClassName(className)).toEqual([element]);
-		});
-	});
-
-	describe('getElementsByTagName()', () => {
-		test('Returns elements by tag name.', () => {
-			const element = document.createElement('div');
-			const className = 'className';
-
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(`.${className}`);
-				return [element];
-			});
-
-			expect(document.getElementsByClassName(className)).toEqual([element]);
 		});
 	});
 });
