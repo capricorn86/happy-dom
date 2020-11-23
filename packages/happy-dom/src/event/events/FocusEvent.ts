@@ -9,10 +9,13 @@ export default class FocusEvent extends UIEvent {
 	 * Constructor.
 	 *
 	 * @param type Event type.
-	 * @param eventInit Event init.
+	 * @param [eventInit] Event init.
 	 */
 	constructor(type: string, eventInit: IFocusEventInit = null) {
 		super(type, eventInit);
-		this.relatedTarget = eventInit.relatedTarget || null;
+
+		if (eventInit) {
+			this.relatedTarget = eventInit.relatedTarget || null;
+		}
 	}
 }

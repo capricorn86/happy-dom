@@ -12,13 +12,16 @@ export default class InputEvent extends UIEvent {
 	 * Constructor.
 	 *
 	 * @param type Event type.
-	 * @param eventInit Event init.
+	 * @param [eventInit] Event init.
 	 */
 	constructor(type: string, eventInit: IInputEventInit = null) {
 		super(type, eventInit);
-		this.data = eventInit.data || '';
-		this.dataTransfer = eventInit.dataTransfer || null;
-		this.inputType = eventInit.inputType || '';
-		this.isComposing = eventInit.isComposing || false;
+
+		if (eventInit) {
+			this.data = eventInit.data || '';
+			this.dataTransfer = eventInit.dataTransfer || null;
+			this.inputType = eventInit.inputType || '';
+			this.isComposing = eventInit.isComposing || false;
+		}
 	}
 }
