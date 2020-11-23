@@ -281,7 +281,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('cloneNode', () => {
-		test('Makes a shallow clone of a node (default behaviour).', () => {
+		test('Makes a shallow clone of a node (default behavior).', () => {
 			const text = document.createTextNode('test');
 			const div = document.createElement('div');
 			const comment = document.createComment('test');

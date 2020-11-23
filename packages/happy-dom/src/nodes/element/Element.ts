@@ -535,13 +535,6 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Scrolls to a particular set of coordinates in the document.
-	 *
-	 * @note This method has not been implemented. It is just here for compatibility.
-	 */
-	public scrollTo(): void {}
-
-	/**
 	 * Converts to string.
 	 *
 	 * @return String.
@@ -713,6 +706,50 @@ export default class Element extends Node implements IElement {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Scrolls to a particular set of coordinates.
+	 *
+	 * @param x X position or options object.
+	 * @param y Y position.
+	 */
+	public scroll(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void {
+		if (typeof x === 'object') {
+			if (x.behavior === 'smooth') {
+				this.ownerDocument.defaultView.setTimeout(() => {
+					if (x.top !== undefined) {
+						(<number>this.scrollTop) = x.top;
+					}
+					if (x.left !== undefined) {
+						(<number>this.scrollLeft) = x.left;
+					}
+				});
+			} else {
+				if (x.top !== undefined) {
+					(<number>this.scrollTop) = x.top;
+				}
+				if (x.left !== undefined) {
+					(<number>this.scrollLeft) = x.left;
+				}
+			}
+		} else if (x !== undefined && y !== undefined) {
+			(<number>this.scrollLeft) = x;
+			(<number>this.scrollTop) = y;
+		}
+	}
+
+	/**
+	 * Scrolls to a particular set of coordinates.
+	 *
+	 * @param x X position or options object.
+	 * @param y Y position.
+	 */
+	public scrollTo(
+		x: { top?: number; left?: number; behavior?: string } | number,
+		y?: number
+	): void {
+		this.scroll(x, y);
 	}
 
 	/**

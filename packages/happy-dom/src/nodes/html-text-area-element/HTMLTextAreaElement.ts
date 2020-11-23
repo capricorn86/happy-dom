@@ -184,7 +184,11 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @param readOnly ReadOnly.
 	 */
 	public set readOnly(readOnly: boolean) {
-		this.setAttributeNS(null, 'readonly', readOnly ? '' : null);
+		if (!readOnly) {
+			this.removeAttributeNS(null, 'readonly');
+		} else {
+			this.setAttributeNS(null, 'readonly', '');
+		}
 	}
 
 	/**
@@ -202,7 +206,11 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @param disabled Disabled.
 	 */
 	public set disabled(disabled: boolean) {
-		this.setAttributeNS(null, 'disabled', disabled ? '' : null);
+		if (!disabled) {
+			this.removeAttributeNS(null, 'disabled');
+		} else {
+			this.setAttributeNS(null, 'disabled', '');
+		}
 	}
 
 	/**
@@ -220,7 +228,11 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @param autofocus Autofocus.
 	 */
 	public set autofocus(autofocus: boolean) {
-		this.setAttributeNS(null, 'autofocus', autofocus ? '' : null);
+		if (!autofocus) {
+			this.removeAttributeNS(null, 'autofocus');
+		} else {
+			this.setAttributeNS(null, 'autofocus', '');
+		}
 	}
 
 	/**
@@ -238,7 +250,11 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @param required Required.
 	 */
 	public set required(required: boolean) {
-		this.setAttributeNS(null, 'required', required ? '' : null);
+		if (!required) {
+			this.removeAttributeNS(null, 'required');
+		} else {
+			this.setAttributeNS(null, 'required', '');
+		}
 	}
 
 	/**

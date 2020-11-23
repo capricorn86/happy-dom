@@ -2,22 +2,24 @@ import Element from '../element/Element';
 import Event from '../../event/Event';
 import IHTMLElement from './IHTMLElement';
 import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
-import CSSStyleDeclarationFactory from '../../css/CSSStyleDeclarationFactory';
+import Attr from '../../attribute/Attr';
 
 /**
  * HTMLElement.
  */
 export default class HTMLElement extends Element implements IHTMLElement {
+	public readonly accessKey = '';
+	public readonly accessKeyLabel = '';
+	public readonly contentEditable = 'inherit';
+	public readonly isContentEditable = false;
 	public readonly offsetHeight = 0;
 	public readonly offsetWidth = 0;
 	public readonly offsetLeft = 0;
 	public readonly offsetTop = 0;
 	public readonly clientHeight = 0;
 	public readonly clientWidth = 0;
-	private _style: {
-		cssText: string;
-		cssStyleDeclaration: CSSStyleDeclaration;
-	} = null;
+
+	private _style: CSSStyleDeclaration = null;
 
 	/**
 	 * Returns tab index.
@@ -25,7 +27,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @return Tab index.
 	 */
 	public get tabIndex(): number {
-		const tabIndex = this.getAttribute('tabindex');
+		const tabIndex = this.getAttributeNS(null, 'tabindex');
 		return tabIndex !== null ? Number(tabIndex) : -1;
 	}
 
@@ -35,7 +37,11 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param tabIndex Tab index.
 	 */
 	public set tabIndex(tabIndex: number) {
-		this.setAttribute('tabindex', String(tabIndex));
+		if (tabIndex === -1) {
+			this.removeAttributeNS(null, 'tabindex');
+		} else {
+			this.setAttributeNS(null, 'tabindex', String(tabIndex));
+		}
 	}
 
 	/**
@@ -62,14 +68,101 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @return Style.
 	 */
 	public get style(): CSSStyleDeclaration {
-		const cssText = this.getAttribute('style');
-		if (!this._style || this._style.cssText !== cssText) {
-			this._style = {
-				cssText,
-				cssStyleDeclaration: CSSStyleDeclarationFactory.createCSSStyleDeclaration(cssText)
-			};
+		if (!this._style) {
+			this._style = new CSSStyleDeclaration(this._attributes);
 		}
-		return this._style.cssStyleDeclaration;
+		return this._style;
+	}
+
+	/**
+	 * Returns data set.
+	 *
+	 * @return Data set.
+	 */
+	public get dataset(): { [key: string]: string } {
+		const dataset = {};
+		for (const name of Object.keys(this._attributes)) {
+			if (name.startsWith('data-')) {
+				dataset[name.replace('data-', '')] = this._attributes[name].value;
+			}
+		}
+		return dataset;
+	}
+
+	/**
+	 * Returns direction.
+	 *
+	 * @return Direction.
+	 */
+	public get dir(): string {
+		return this.getAttributeNS(null, 'dir') || '';
+	}
+
+	/**
+	 * Returns direction.
+	 *
+	 * @param direction Direction.
+	 */
+	public set dir(direction: string) {
+		this.setAttributeNS(null, 'dir', direction);
+	}
+
+	/**
+	 * Returns hidden.
+	 *
+	 * @return Hidden.
+	 */
+	public get hidden(): boolean {
+		return this.getAttributeNS(null, 'hidden') !== null;
+	}
+
+	/**
+	 * Returns hidden.
+	 *
+	 * @param hidden Hidden.
+	 */
+	public set hidden(hidden: boolean) {
+		if (!hidden) {
+			this.removeAttributeNS(null, 'hidden');
+		} else {
+			this.setAttributeNS(null, 'hidden', '');
+		}
+	}
+
+	/**
+	 * Returns language.
+	 *
+	 * @return Language.
+	 */
+	public get lang(): string {
+		return this.getAttributeNS(null, 'lang') || '';
+	}
+
+	/**
+	 * Returns language.
+	 *
+	 * @param language Language.
+	 */
+	public set lang(lang: string) {
+		this.setAttributeNS(null, 'lang', lang);
+	}
+
+	/**
+	 * Returns title.
+	 *
+	 * @return Title.
+	 */
+	public get title(): string {
+		return this.getAttributeNS(null, 'title') || '';
+	}
+
+	/**
+	 * Returns title.
+	 *
+	 * @param title Title.
+	 */
+	public set title(title: string) {
+		this.setAttributeNS(null, 'title', title);
 	}
 
 	/**
@@ -109,5 +202,36 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		event.target = this;
 		event.currentTarget = this;
 		this.dispatchEvent(event);
+	}
+
+	/**
+	 * The setAttributeNode() method adds a new Attr node to the specified element.
+	 *
+	 * @override
+	 * @param attribute Attribute.
+	 * @returns Replaced attribute.
+	 */
+	public setAttributeNode(attribute: Attr): Attr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		if (attribute.name === 'style' && this._style) {
+			this._style.cssText = attribute.value;
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * Removes an Attr node.
+	 *
+	 * @override
+	 * @param attribute Attribute.
+	 */
+	public removeAttributeNode(attribute: Attr): void {
+		super.removeAttributeNode(attribute);
+
+		if (attribute.name === 'style' && this._style) {
+			this._style.cssText = '';
+		}
 	}
 }

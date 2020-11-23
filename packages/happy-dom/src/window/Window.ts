@@ -168,18 +168,52 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	 * @returns CSS style declaration
 	 */
 	public getComputedStyle(element: HTMLElement): CSSStyleDeclaration {
-		if (!element.style || !element.isConnected) {
-			return new CSSStyleDeclaration();
-		}
-		return element.style;
+		return new CSSStyleDeclaration(element._attributes, element);
 	}
 
 	/**
-	 * Scrolls to a particular set of coordinates in the document.
+	 * Scrolls to a particular set of coordinates.
 	 *
-	 * @note This method has not been implemented. It is just here for compatibility.
+	 * @param x X position or options object.
+	 * @param y Y position.
 	 */
-	public scrollTo(): void {}
+	public scroll(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void {
+		if (typeof x === 'object') {
+			if (x.behavior === 'smooth') {
+				this.setTimeout(() => {
+					if (x.top !== undefined) {
+						(<number>this.document.documentElement.scrollTop) = x.top;
+					}
+					if (x.left !== undefined) {
+						(<number>this.document.documentElement.scrollLeft) = x.left;
+					}
+				});
+			} else {
+				if (x.top !== undefined) {
+					(<number>this.document.documentElement.scrollTop) = x.top;
+				}
+				if (x.left !== undefined) {
+					(<number>this.document.documentElement.scrollLeft) = x.left;
+				}
+			}
+		} else if (x !== undefined && y !== undefined) {
+			(<number>this.document.documentElement.scrollLeft) = x;
+			(<number>this.document.documentElement.scrollTop) = y;
+		}
+	}
+
+	/**
+	 * Scrolls to a particular set of coordinates.
+	 *
+	 * @param x X position or options object.
+	 * @param y Y position.
+	 */
+	public scrollTo(
+		x: { top?: number; left?: number; behavior?: string } | number,
+		y?: number
+	): void {
+		this.scroll(x, y);
+	}
 
 	/**
 	 * Sets a timer which executes a function once the timer expires.

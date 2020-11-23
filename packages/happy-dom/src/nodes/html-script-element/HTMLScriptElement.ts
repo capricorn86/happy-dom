@@ -135,7 +135,11 @@ export default class HTMLScriptElement extends HTMLElement {
 	 * @param async Async.
 	 */
 	public set async(async: boolean) {
-		this.setAttributeNS(null, 'async', async ? '' : null);
+		if (!async) {
+			this.removeAttributeNS(null, 'async');
+		} else {
+			this.setAttributeNS(null, 'async', '');
+		}
 	}
 
 	/**
@@ -153,7 +157,11 @@ export default class HTMLScriptElement extends HTMLElement {
 	 * @param defer Defer.
 	 */
 	public set defer(defer: boolean) {
-		this.setAttributeNS(null, 'defer', defer ? '' : null);
+		if (!defer) {
+			this.removeAttributeNS(null, 'defer');
+		} else {
+			this.setAttributeNS(null, 'defer', '');
+		}
 	}
 
 	/**

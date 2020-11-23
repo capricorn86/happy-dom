@@ -1,6 +1,5 @@
 import CSSRule from '../CSSRule';
 import CSSStyleDeclaration from '../CSSStyleDeclaration';
-import CSSStyleDeclarationFactory from '../CSSStyleDeclarationFactory';
 import CSSKeyframeRule from './CSSKeyframeRule';
 
 const CSS_RULE_REGEXP = /([^{]+){([^}]+)}/;
@@ -35,12 +34,15 @@ export default class CSSKeyframesRule extends CSSRule {
 		const match = rule.match(CSS_RULE_REGEXP);
 		if (match) {
 			const cssRule = new CSSKeyframeRule();
+			const style = new CSSStyleDeclaration();
+
 			(<CSSRule>cssRule.parentRule) = this;
 			(<string>cssRule.keyText) = match[1].trim();
-			(<CSSStyleDeclaration>cssRule.style) = CSSStyleDeclarationFactory.createCSSStyleDeclaration(
-				match[2].trim(),
-				this
-			);
+
+			style.cssText = match[2].trim();
+
+			(<CSSRule>style.parentRule) = this;
+			(<CSSStyleDeclaration>cssRule.style) = style;
 		}
 	}
 

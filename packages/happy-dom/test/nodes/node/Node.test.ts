@@ -164,7 +164,7 @@ describe('Node', () => {
 	});
 
 	describe('cloneNode()', () => {
-		test('Makes a shallow clone of a node (default behaviour).', () => {
+		test('Makes a shallow clone of a node (default behavior).', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			const text = document.createTextNode('text');

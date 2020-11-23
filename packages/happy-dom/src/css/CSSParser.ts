@@ -1,5 +1,4 @@
 import CSSRule from './CSSRule';
-import CSSStyleDeclarationFactory from './CSSStyleDeclarationFactory';
 import CSSStyleSheet from './CSSStyleSheet';
 import CSSStyleRule from './rules/CSSStyleRule';
 import CSSKeyframeRule from './rules/CSSKeyframeRule';
@@ -87,9 +86,10 @@ export default class CSSParser {
 						case CSSRule.FONT_FACE_RULE:
 						case CSSRule.KEYFRAME_RULE:
 						case CSSRule.STYLE_RULE:
-							(<CSSStyleDeclaration>(
-								(<CSSStyleRule>parentRule).style
-							)) = CSSStyleDeclarationFactory.createCSSStyleDeclaration(cssText, parentRule);
+							const style = new CSSStyleDeclaration();
+							style.cssText = cssText;
+							(<CSSRule>style.parentRule) = parentRule;
+							(<CSSStyleDeclaration>(<CSSStyleRule>parentRule).style) = style;
 							break;
 					}
 				}
