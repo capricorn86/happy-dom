@@ -11,11 +11,12 @@ import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
 import TreeWalker from '../tree-walker/TreeWalker';
 import Event from '../event/Event';
 import CustomEvent from '../event/events/CustomEvent';
+import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
 import EventTarget from '../event/EventTarget';
 import URL from '../location/URL';
 import Location from '../location/Location';
-import EventTypes from '../event/EventTypes.json';
+import NonImplementedEventTypes from '../event/NonImplementedEventTypes';
 import MutationObserver from '../mutation-observer/MutationObserver';
 import ElementClass from '../config/ElementClass';
 import DOMParser from '../dom-parser/DOMParser';
@@ -28,6 +29,15 @@ import DOMException from '../exception/DOMException';
 import FileReader from '../file/FileReader';
 import History from '../history/History';
 import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
+import MouseEvent from '../event/events/MouseEvent';
+import FocusEvent from '../event/events/FocusEvent';
+import WheelEvent from '../event/events/WheelEvent';
+import DataTransfer from '../event/DataTransfer';
+import DataTransferItem from '../event/DataTransferItem';
+import DataTransferItemList from '../event/DataTransferItemList';
+import InputEvent from '../event/events/InputEvent';
+import UIEvent from '../event/UIEvent';
+import ErrorEvent from '../event/ErrorEvent';
 
 /**
  * Handles the Window.
@@ -47,8 +57,18 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public MutationObserver = MutationObserver;
 	public Document = Document;
 	public Event = Event;
+	public UIEvent = UIEvent;
 	public CustomEvent = CustomEvent;
+	public KeyboardEvent = KeyboardEvent;
+	public MouseEvent = MouseEvent;
+	public FocusEvent = FocusEvent;
+	public WheelEvent = WheelEvent;
+	public InputEvent = InputEvent;
+	public ErrorEvent = ErrorEvent;
 	public ProgressEvent = ProgressEvent;
+	public DataTransfer = DataTransfer;
+	public DataTransferItem = DataTransferItem;
+	public DataTransferItemList = DataTransferItemList;
 	public URL = URL;
 	public Location = Location;
 	public CustomElementRegistry = CustomElementRegistry;
@@ -148,7 +168,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 		DOMParser._ownerDocument = DOMParser._ownerDocument || this.document;
 		FileReader._ownerDocument = FileReader._ownerDocument || this.document;
 
-		for (const eventType of EventTypes) {
+		for (const eventType of NonImplementedEventTypes) {
 			if (!this[eventType]) {
 				this[eventType] = Event;
 			}
