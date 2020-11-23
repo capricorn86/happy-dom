@@ -413,7 +413,11 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param readOnly Read only.
 	 */
 	public set readOnly(readOnly: boolean) {
-		this.setAttributeNS(null, 'readonly', readOnly ? '' : null);
+		if (!readOnly) {
+			this.removeAttributeNS(null, 'readonly');
+		} else {
+			this.setAttributeNS(null, 'readonly', '');
+		}
 	}
 
 	/**
@@ -431,7 +435,11 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param disabled Disabled.
 	 */
 	public set disabled(disabled: boolean) {
-		this.setAttributeNS(null, 'disabled', disabled ? '' : null);
+		if (!disabled) {
+			this.removeAttributeNS(null, 'disabled');
+		} else {
+			this.setAttributeNS(null, 'disabled', '');
+		}
 	}
 
 	/**
@@ -449,7 +457,11 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param autofocus Autofocus.
 	 */
 	public set autofocus(autofocus: boolean) {
-		this.setAttributeNS(null, 'autofocus', autofocus ? '' : null);
+		if (!autofocus) {
+			this.removeAttributeNS(null, 'autofocus');
+		} else {
+			this.setAttributeNS(null, 'autofocus', '');
+		}
 	}
 
 	/**
@@ -467,7 +479,11 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param required Required.
 	 */
 	public set required(required: boolean) {
-		this.setAttributeNS(null, 'required', required ? '' : null);
+		if (!required) {
+			this.removeAttributeNS(null, 'required');
+		} else {
+			this.setAttributeNS(null, 'required', '');
+		}
 	}
 
 	/**
@@ -485,7 +501,11 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param indeterminate Indeterminate.
 	 */
 	public set indeterminate(indeterminate: boolean) {
-		this.setAttributeNS(null, 'indeterminate', indeterminate ? '' : null);
+		if (!indeterminate) {
+			this.removeAttributeNS(null, 'indeterminate');
+		} else {
+			this.setAttributeNS(null, 'indeterminate', '');
+		}
 	}
 
 	/**
@@ -503,7 +523,11 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param multiple Multiple.
 	 */
 	public set multiple(multiple: boolean) {
-		this.setAttributeNS(null, 'multiple', multiple ? '' : null);
+		if (!multiple) {
+			this.removeAttributeNS(null, 'multiple');
+		} else {
+			this.setAttributeNS(null, 'multiple', '');
+		}
 	}
 
 	/**
@@ -521,7 +545,11 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param checked Checked.
 	 */
 	public set checked(checked: boolean) {
-		this.setAttributeNS(null, 'checked', checked ? '' : null);
+		if (!checked) {
+			this.removeAttributeNS(null, 'checked');
+		} else {
+			this.setAttributeNS(null, 'checked', '');
+		}
 	}
 
 	/**

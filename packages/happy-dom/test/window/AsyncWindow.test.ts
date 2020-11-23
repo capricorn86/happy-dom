@@ -218,4 +218,17 @@ describe('AsyncWindow', () => {
 			}, 1);
 		});
 	});
+
+	for (const functionName of ['scroll', 'scrollTo']) {
+		describe(`${functionName}()`, () => {
+			test('Sets the properties scrollTop and scrollLeft with animation.', async () => {
+				window[functionName]({ left: 50, top: 60, behavior: 'smooth' });
+				expect(window.document.documentElement.scrollLeft).toBe(0);
+				expect(window.document.documentElement.scrollTop).toBe(0);
+				await window.whenAsyncComplete();
+				expect(window.document.documentElement.scrollLeft).toBe(50);
+				expect(window.document.documentElement.scrollTop).toBe(60);
+			});
+		});
+	}
 });

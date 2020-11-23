@@ -28,6 +28,7 @@
 		"watch": "tsc -w --preserveWatchOutput",
 		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'",
 		"test": "jest",
+		"test:coverage": "jest --collectCoverage",
 		"test:watch": "jest --watch",
 		"test:update-snapshot": "jest --updateSnapshot",
 		"test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand"

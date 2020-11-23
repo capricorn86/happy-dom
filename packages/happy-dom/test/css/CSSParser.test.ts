@@ -19,7 +19,7 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[0]).parentStyleSheet).toBe(cssStyleSheet);
 			expect((<CSSStyleRule>cssRules[0]).selectorText).toBe(':host');
 			expect((<CSSStyleRule>cssRules[0]).cssText).toBe(
-				':host { display: flex;overflow: hidden;width: 100%; }'
+				':host { display: flex; overflow: hidden; width: 100%; }'
 			);
 			expect((<CSSStyleRule>cssRules[0]).style.parentRule).toBe(cssRules[0]);
 			expect((<CSSStyleRule>cssRules[0]).style.length).toBe(3);
@@ -30,7 +30,7 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[0]).style['overflow']).toBe('hidden');
 			expect((<CSSStyleRule>cssRules[0]).style['width']).toBe('100%');
 			expect((<CSSStyleRule>cssRules[0]).style.cssText).toBe(
-				'display: flex;overflow: hidden;width: 100%;'
+				'display: flex; overflow: hidden; width: 100%;'
 			);
 
 			// CSSStyleRule
@@ -38,7 +38,7 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[1]).parentStyleSheet).toBe(cssStyleSheet);
 			expect((<CSSStyleRule>cssRules[1]).selectorText).toBe('.container');
 			expect((<CSSStyleRule>cssRules[1]).cssText).toBe(
-				'.container { flex-grow: 1;display: flex;flex-direction: column;overflow: hidden; }'
+				'.container { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }'
 			);
 			expect((<CSSStyleRule>cssRules[1]).style.length).toBe(4);
 			expect((<CSSStyleRule>cssRules[1]).style.parentRule).toBe(cssRules[1]);
@@ -51,7 +51,7 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[1]).style['flexDirection']).toBe('column');
 			expect((<CSSStyleRule>cssRules[1]).style['overflow']).toBe('hidden');
 			expect((<CSSStyleRule>cssRules[1]).style.cssText).toBe(
-				'flex-grow: 1;display: flex;flex-direction: column;overflow: hidden;'
+				'flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;'
 			);
 
 			// CSSMediaRule
@@ -61,7 +61,7 @@ describe('CSSParser', () => {
 			expect((<CSSMediaRule>cssRules[2]).media[0]).toBe('screen and (max-width: 36rem)');
 			expect((<CSSMediaRule>cssRules[2]).media.mediaText).toBe('screen and (max-width: 36rem)');
 			expect((<CSSMediaRule>cssRules[2]).cssText).toBe(
-				'@media screen and (max-width: 36rem) { .container { height: 0.5rem;animation: keyframes2 2s linear infinite; } }'
+				'@media screen and (max-width: 36rem) { .container { height: 0.5rem; animation: keyframes2 2s linear infinite; } }'
 			);
 			expect((<CSSMediaRule>cssRules[2]).cssRules.length).toBe(1);
 			const children1 = <CSSStyleRule[]>(<CSSMediaRule>cssRules[2]).cssRules;
@@ -75,7 +75,7 @@ describe('CSSParser', () => {
 			expect(children1[0].style['height']).toBe('0.5rem');
 			expect(children1[0].style['animation']).toBe('keyframes2 2s linear infinite');
 			expect(children1[0].cssText).toBe(
-				'.container { height: 0.5rem;animation: keyframes2 2s linear infinite; }'
+				'.container { height: 0.5rem; animation: keyframes2 2s linear infinite; }'
 			);
 
 			// CSSKeyframesRule

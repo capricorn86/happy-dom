@@ -101,7 +101,21 @@ Jest uses [JSDOM](https://github.com/jsdom/jsdom) as test environment by default
 
 3. Save the file.
 
+# Testing Async Code
 
+When testing asynchrounous code it is possible to wait for asynchrounous tasks to finish using the method "whenAsyncComplete()".
+
+```javascript
+describe('scrollToTop()', () => {
+    it('scrolls to top using the built in browser animation', () => {
+        element.scrollToTop();
+        await whenAsyncComplete();
+        expect(document.documentElement.scrollTop).toBe(0);
+    });
+});
+```
+
+3. Save the file.
 
 # Performance
 

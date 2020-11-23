@@ -9,19 +9,19 @@ describe('Window', () => {
 	});
 
 	describe('getComputedStyle()', () => {
-		test('Returns a CSSStyleDeclaration object set in the property HTMLElement.style.', () => {
+		test('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
 			const element = window.document.createElement('div');
-			element.style.direction = 'rtl';
-			window.document.body.appendChild(element);
-			expect(window.getComputedStyle(element) instanceof CSSStyleDeclaration).toBe(true);
-			expect(window.getComputedStyle(element).direction).toBe('rtl');
-		});
+			const computedStyle = window.getComputedStyle(element);
 
-		test('Returns an empty CSSStyleDeclaration if the element is not connected to the DOM.', () => {
-			const element = window.document.createElement('div');
 			element.style.direction = 'rtl';
-			expect(window.getComputedStyle(element) instanceof CSSStyleDeclaration).toBe(true);
-			expect(window.getComputedStyle(element).direction).toBe('');
+
+			expect(computedStyle instanceof CSSStyleDeclaration).toBe(true);
+
+			expect(computedStyle.direction).toBe('');
+
+			window.document.body.appendChild(element);
+
+			expect(computedStyle.direction).toBe('rtl');
 		});
 	});
 
@@ -78,4 +78,38 @@ describe('Window', () => {
 			window.cancelAnimationFrame(timeoutId);
 		});
 	});
+
+	for (const functionName of ['scroll', 'scrollTo']) {
+		describe(`${functionName}()`, () => {
+			test('Sets the properties scrollTop and scrollLeft.', () => {
+				window[functionName](50, 60);
+				expect(window.document.documentElement.scrollLeft).toBe(50);
+				expect(window.document.documentElement.scrollTop).toBe(60);
+			});
+		});
+
+		describe(`${functionName}()`, () => {
+			test('Sets the properties scrollTop and scrollLeft using object.', () => {
+				window[functionName]({ left: 50, top: 60 });
+				expect(window.document.documentElement.scrollLeft).toBe(50);
+				expect(window.document.documentElement.scrollTop).toBe(60);
+			});
+		});
+
+		describe(`${functionName}()`, () => {
+			test('Sets only the property scrollTop.', () => {
+				window[functionName]({ top: 60 });
+				expect(window.document.documentElement.scrollLeft).toBe(0);
+				expect(window.document.documentElement.scrollTop).toBe(60);
+			});
+		});
+
+		describe(`${functionName}()`, () => {
+			test('Sets only the property scrollLeft.', () => {
+				window[functionName]({ left: 60 });
+				expect(window.document.documentElement.scrollLeft).toBe(60);
+				expect(window.document.documentElement.scrollTop).toBe(0);
+			});
+		});
+	}
 });

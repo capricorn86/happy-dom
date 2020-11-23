@@ -1,4 +1,4 @@
-import Window from '../../../src/window/Window';
+import AsyncWindow from '../../../src/window/AsyncWindow';
 import XMLSerializer from '../../../src/xml-serializer/XMLSerializer';
 import XMLParser from '../../../src/xml-parser/XMLParser';
 import CustomElement from '../../CustomElement';
@@ -18,12 +18,12 @@ import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTe
 const NAMESPACE_URI = 'https://test.test';
 
 describe('Element', () => {
-	let window: Window;
+	let window: AsyncWindow;
 	let document: Document;
 	let element: HTMLElement;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new AsyncWindow();
 		document = window.document;
 		element = <HTMLElement>document.createElement('div');
 		window.customElements.define('custom-element', CustomElement);
@@ -727,12 +727,50 @@ describe('Element', () => {
 		});
 	});
 
-	describe('scrollTo()', () => {
-		test('Does nothing as there is no support for scrolling yet.', () => {
-			element.scrollTo();
-			expect(typeof element.scrollTo).toBe('function');
+	for (const functionName of ['scroll', 'scrollTo']) {
+		describe(`${functionName}()`, () => {
+			test('Sets the properties scrollTop and scrollLeft.', () => {
+				element[functionName](50, 60);
+				expect(element.scrollLeft).toBe(50);
+				expect(element.scrollTop).toBe(60);
+			});
 		});
-	});
+
+		describe(`${functionName}()`, () => {
+			test('Sets the properties scrollTop and scrollLeft using object.', () => {
+				element[functionName]({ left: 50, top: 60 });
+				expect(element.scrollLeft).toBe(50);
+				expect(element.scrollTop).toBe(60);
+			});
+		});
+
+		describe(`${functionName}()`, () => {
+			test('Sets only the property scrollTop.', () => {
+				element[functionName]({ top: 60 });
+				expect(element.scrollLeft).toBe(0);
+				expect(element.scrollTop).toBe(60);
+			});
+		});
+
+		describe(`${functionName}()`, () => {
+			test('Sets only the property scrollLeft.', () => {
+				element[functionName]({ left: 60 });
+				expect(element.scrollLeft).toBe(60);
+				expect(element.scrollTop).toBe(0);
+			});
+		});
+
+		describe(`${functionName}()`, () => {
+			test('Sets the properties scrollTop and scrollLeft with animation.', async () => {
+				element[functionName]({ left: 50, top: 60, behavior: 'smooth' });
+				expect(element.scrollLeft).toBe(0);
+				expect(element.scrollTop).toBe(0);
+				await window.whenAsyncComplete();
+				expect(element.scrollLeft).toBe(50);
+				expect(element.scrollTop).toBe(60);
+			});
+		});
+	}
 
 	describe('toString()', () => {
 		test('Returns the same as outerHTML.', () => {
@@ -761,8 +799,8 @@ describe('Element', () => {
 			child.className = 'className';
 
 			element.tagName = 'tagName';
-			element.scrollLeft = 10;
-			element.scrollTop = 10;
+			(<number>element.scrollLeft) = 10;
+			(<number>element.scrollTop) = 10;
 
 			// @ts-ignore
 			element.namespaceURI = 'namespaceURI';
@@ -929,6 +967,15 @@ describe('Element', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
+		});
+	});
+
+	describe('scroll()', () => {
+		test('Sets the properties "scrollTop" and "scrollLeft".', () => {
+			const div = document.createElement('div');
+			div.scroll(10, 15);
+			expect(div.scrollLeft).toBe(10);
+			expect(div.scrollTop).toBe(15);
 		});
 	});
 });

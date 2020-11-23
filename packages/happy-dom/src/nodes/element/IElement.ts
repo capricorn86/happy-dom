@@ -112,11 +112,20 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	attachShadow(_shadowRootInit: { mode: string }): IShadowRoot;
 
 	/**
-	 * Scrolls to a particular set of coordinates in the document.
+	 * Scrolls to a particular set of coordinates.
 	 *
-	 * @note This method has not been implemented. It is just here for compatibility.
+	 * @param x X position or options object.
+	 * @param y Y position.
 	 */
-	scrollTo(): void;
+	scroll(x: { top?: number; left?: number; behavior?: string } | number, y: number): void;
+
+	/**
+	 * Scrolls to a particular set of coordinates.
+	 *
+	 * @param x X position or options object.
+	 * @param y Y position.
+	 */
+	scrollTo(x: { top?: number; left?: number; behavior?: string } | number, y: number): void;
 
 	/**
 	 * Returns the size of an element and its position relative to the viewport.
