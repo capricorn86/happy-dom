@@ -24,21 +24,24 @@ export default class MouseEvent extends UIEvent {
 	 * Constructor.
 	 *
 	 * @param type Event type.
-	 * @param eventInit Event init.
+	 * @param [eventInit] Event init.
 	 */
 	constructor(type: string, eventInit: IMouseEventInit = null) {
 		super(type, eventInit);
-		this.altKey = eventInit.altKey || false;
-		this.button = eventInit.button !== undefined ? eventInit.button : 0;
-		this.buttons = eventInit.buttons !== undefined ? eventInit.buttons : 0;
-		this.clientX = eventInit.clientX !== undefined ? eventInit.clientX : 0;
-		this.clientY = eventInit.clientY !== undefined ? eventInit.clientY : 0;
-		this.ctrlKey = eventInit.ctrlKey || false;
-		this.metaKey = eventInit.metaKey || false;
-		this.region = eventInit.region || '';
-		this.relatedTarget = eventInit.relatedTarget || null;
-		this.screenX = eventInit.screenX !== undefined ? eventInit.screenX : 0;
-		this.screenY = eventInit.screenY !== undefined ? eventInit.screenY : 0;
-		this.shiftKey = eventInit.shiftKey || false;
+
+		if (eventInit) {
+			this.altKey = eventInit.altKey || false;
+			this.button = eventInit.button !== undefined ? eventInit.button : 0;
+			this.buttons = eventInit.buttons !== undefined ? eventInit.buttons : 0;
+			this.clientX = eventInit.clientX !== undefined ? eventInit.clientX : 0;
+			this.clientY = eventInit.clientY !== undefined ? eventInit.clientY : 0;
+			this.ctrlKey = eventInit.ctrlKey || false;
+			this.metaKey = eventInit.metaKey || false;
+			this.region = eventInit.region || '';
+			this.relatedTarget = eventInit.relatedTarget || null;
+			this.screenX = eventInit.screenX !== undefined ? eventInit.screenX : 0;
+			this.screenY = eventInit.screenY !== undefined ? eventInit.screenY : 0;
+			this.shiftKey = eventInit.shiftKey || false;
+		}
 	}
 }

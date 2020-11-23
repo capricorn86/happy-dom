@@ -8,12 +8,13 @@ export default class CustomEvent extends Event {
 	 * Constructor.
 	 *
 	 * @param type Event type.
-	 * @param eventInit Event init.
+	 * @param [eventInit] Event init.
 	 */
 	constructor(type: string, eventInit: ICustomEventInit = null) {
 		super(type, eventInit);
-		if (eventInit && eventInit.detail) {
-			this.detail = eventInit.detail;
+
+		if (eventInit) {
+			this.detail = eventInit.detail || null;
 		}
 	}
 }

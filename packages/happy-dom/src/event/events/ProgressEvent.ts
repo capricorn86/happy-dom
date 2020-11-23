@@ -1,4 +1,5 @@
 import Event from '../Event';
+import IProgressEventInit from './IProgressEvent';
 
 export default class ProgressEvent extends Event {
 	public readonly lengthComputable: boolean = false;
@@ -9,15 +10,15 @@ export default class ProgressEvent extends Event {
 	 * Constructor.
 	 *
 	 * @param type Event type.
-	 * @param customEventInit Custom event init.
+	 * @param [eventInit] Event init.
 	 */
-	constructor(
-		type: string,
-		options?: { lengthComputable: boolean; loaded: number; total: number }
-	) {
+	constructor(type: string, eventInit: IProgressEventInit = null) {
 		super(type);
-		this.lengthComputable = options && options.lengthComputable ? true : false;
-		this.loaded = options && options.loaded ? options.loaded : 0;
-		this.total = options && options.total ? options.total : 0;
+
+		if (eventInit) {
+			this.lengthComputable = eventInit.lengthComputable || false;
+			this.loaded = eventInit.loaded !== undefined ? eventInit.loaded : 0;
+			this.total = eventInit.total !== undefined ? eventInit.total : 0;
+		}
 	}
 }

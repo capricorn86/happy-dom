@@ -1,6 +1,6 @@
-import IUIEventInit from '../IUIEventInit';
+import IEventInit from '../IEventInit';
 
-export default interface IErrorEventInit extends IUIEventInit {
+export default interface IErrorEventInit extends IEventInit {
 	message?: string;
 	filename?: string;
 	lineno?: number;
