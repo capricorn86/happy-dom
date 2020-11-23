@@ -16,13 +16,16 @@ export default class Event {
 	 * Constructor.
 	 *
 	 * @param type Event type.
-	 * @param eventInit Event init.
+	 * @param [eventInit] Event init.
 	 */
 	constructor(type: string, eventInit: IEventInit = null) {
 		this.type = type;
-		this.bubbles = eventInit && eventInit.bubbles ? true : false;
-		this.cancelable = eventInit && eventInit.cancelable ? true : false;
-		this.composed = eventInit && eventInit.composed ? true : false;
+
+		if (eventInit) {
+			this.bubbles = eventInit.bubbles || false;
+			this.cancelable = eventInit.cancelable || false;
+			this.composed = eventInit.composed || false;
+		}
 	}
 
 	/**

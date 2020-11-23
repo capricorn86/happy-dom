@@ -18,13 +18,15 @@ export default class UIEvent extends Event {
 	 * Constructor.
 	 *
 	 * @param type Event type.
-	 * @param eventInit Event init.
+	 * @param [eventInit] Event init.
 	 */
 	constructor(type: string, eventInit: IUIEventInit = null) {
 		super(type, eventInit);
 
-		this.detail = eventInit.detail !== undefined ? eventInit.detail : 0;
-		this.view = eventInit.view || null;
+		if (eventInit) {
+			this.detail = eventInit.detail !== undefined ? eventInit.detail : 0;
+			this.view = eventInit.view || null;
+		}
 	}
 
 	/**
