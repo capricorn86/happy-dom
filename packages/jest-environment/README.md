@@ -115,8 +115,6 @@ describe('scrollToTop()', () => {
 });
 ```
 
-3. Save the file.
-
 # Performance
 
 | Operation                            | JSDOM   | Happy DOM |
