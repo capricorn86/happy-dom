@@ -6,7 +6,7 @@ import DocumentFragment from '../document-fragment/DocumentFragment';
  * HTMLTemplateElement.
  */
 export default class HTMLTemplateElement extends HTMLElement {
-	private contentElement: DocumentFragment = null;
+	private _contentElement: DocumentFragment = null;
 
 	/**
 	 * Returns the content.
@@ -14,10 +14,10 @@ export default class HTMLTemplateElement extends HTMLElement {
 	 * @returns Content.
 	 */
 	public get content(): DocumentFragment {
-		if (!this.contentElement) {
-			this.contentElement = this.ownerDocument.createDocumentFragment();
+		if (!this._contentElement) {
+			this._contentElement = this.ownerDocument.createDocumentFragment();
 		}
-		return this.contentElement;
+		return this._contentElement;
 	}
 
 	/**
