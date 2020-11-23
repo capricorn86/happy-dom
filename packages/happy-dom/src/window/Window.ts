@@ -38,6 +38,7 @@ import DataTransferItemList from '../event/DataTransferItemList';
 import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/ErrorEvent';
+import Screen from '../screen/Screen';
 
 /**
  * Handles the Window.
@@ -82,6 +83,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public FileReader = FileReader;
 	public DOMException = DOMException;
 	public History = History;
+	public Screen = Screen;
 
 	// Public Properties
 	public document: Document;
@@ -93,6 +95,9 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public self: Window = this;
 	public top: Window = this;
 	public window: Window = this;
+	public screen = new Screen();
+	public readonly innerWidth = 1024;
+	public readonly innerHeight = 768;
 
 	// Node.js Globals
 	public Array = global ? global.Array : null;
