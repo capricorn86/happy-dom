@@ -1,4 +1,3 @@
-import Document from '../document/Document';
 import EventTarget from '../../event/EventTarget';
 import MutationRecord from '../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../mutation-observer/MutationType';
@@ -6,6 +5,7 @@ import MutationObserverListener from '../../mutation-observer/MutationListener';
 import Event from '../../event/Event';
 import INode from './INode';
 import DOMException from '../../exception/DOMException';
+import IDocument from '../document/IDocument';
 
 /**
  * Node
@@ -18,8 +18,8 @@ export default class Node extends EventTarget implements INode {
 	public static readonly DOCUMENT_NODE = 9;
 	public static readonly DOCUMENT_TYPE_NODE = 10;
 	public static readonly DOCUMENT_FRAGMENT_NODE = 11;
-	public static ownerDocument: Document = null;
-	public readonly ownerDocument: Document = null;
+	public static ownerDocument: IDocument = null;
+	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: Node = null;
 	public readonly nodeType: number;
 	public readonly childNodes: Node[] = [];
@@ -195,7 +195,7 @@ export default class Node extends EventTarget implements INode {
 			}
 		}
 
-		(<Document>clone.ownerDocument) = this.ownerDocument;
+		(<IDocument>clone.ownerDocument) = this.ownerDocument;
 
 		return clone;
 	}

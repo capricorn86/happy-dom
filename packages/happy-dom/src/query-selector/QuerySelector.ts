@@ -1,6 +1,4 @@
 import Element from '../nodes/element/Element';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
-import Document from '../nodes/document/Document';
 import Node from '../nodes/node/Node';
 import SelectorItem from './SelectorItem';
 
@@ -22,10 +20,7 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll(
-		node: Element | DocumentFragment | Document,
-		selector: string
-	): Element[] {
+	public static querySelectorAll(node: Node, selector: string): Element[] {
 		const matched = [];
 
 		for (const parts of this.getSelectorParts(selector)) {
@@ -46,10 +41,7 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @return HTML element.
 	 */
-	public static querySelector(
-		node: Element | DocumentFragment | Document,
-		selector: string
-	): Element {
+	public static querySelector(node: Node, selector: string): Element {
 		for (const parts of this.getSelectorParts(selector)) {
 			const match = this.findFirst(node, [node], parts);
 
@@ -71,8 +63,8 @@ export default class QuerySelector {
 	 * @returns HTML elements.
 	 */
 	private static findAll(
-		rootNode: Element | DocumentFragment | Document,
-		nodes: (Element | DocumentFragment | Document)[],
+		rootNode: Node,
+		nodes: Node[],
 		selectorParts: string[],
 		selectorItem?: SelectorItem
 	): Element[] {
@@ -98,10 +90,8 @@ export default class QuerySelector {
 				}
 			}
 
-			if (!isDirectChild) {
-				matched = matched.concat(
-					this.findAll(rootNode, (<Element>node).children, selectorParts, selector)
-				);
+			if (!isDirectChild && node['children']) {
+				matched = matched.concat(this.findAll(rootNode, node['children'], selectorParts, selector));
 			}
 		}
 
@@ -117,8 +107,8 @@ export default class QuerySelector {
 	 * @return HTML element.
 	 */
 	private static findFirst(
-		rootNode: Element | DocumentFragment | Document,
-		nodes: (Element | DocumentFragment | Document)[],
+		rootNode: Node,
+		nodes: Node[],
 		selectorParts: string[],
 		selectorItem?: SelectorItem
 	): Element {
@@ -147,13 +137,8 @@ export default class QuerySelector {
 				}
 			}
 
-			if (!isDirectChild) {
-				const childSelector = this.findFirst(
-					rootNode,
-					(<Element>node).children,
-					selectorParts,
-					selector
-				);
+			if (!isDirectChild && node['children']) {
+				const childSelector = this.findFirst(rootNode, node['children'], selectorParts, selector);
 
 				if (childSelector) {
 					return childSelector;

@@ -20,6 +20,7 @@ import IDocument from './IDocument';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import DOMException from '../../exception/DOMException';
 import CookieUtility from '../../cookie/CookieUtility';
+import DocumentUtility from './DocumentUtility';
 
 /**
  * Document.
@@ -155,7 +156,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Matching element.
 	 */
 	public getElementsByClassName(className: string): Element[] {
-		return this.querySelectorAll('.' + className.split(' ').join('.'));
+		return <Element[]>ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
 	/**
@@ -165,7 +166,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Matching element.
 	 */
 	public getElementsByTagName(tagName: string): Element[] {
-		return this.querySelectorAll(tagName);
+		return <Element[]>ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
 	/**
@@ -176,7 +177,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Matching element.
 	 */
 	public getElementsByTagNameNS(namespaceURI: string, tagName: string): Element[] {
-		return this.querySelectorAll(tagName).filter(element => element.namespaceURI === namespaceURI);
+		return <Element[]>ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
 	/**
@@ -186,7 +187,7 @@ export default class Document extends Node implements IDocument {
 	 * @return Matching element.
 	 */
 	public getElementById(id: string): Element {
-		return this.querySelector('#' + id);
+		return <Element>DocumentUtility.getElementById(this, id);
 	}
 
 	/**
@@ -204,7 +205,7 @@ export default class Document extends Node implements IDocument {
 	 * @return Element.
 	 */
 	public get documentElement(): HTMLElement {
-		return <HTMLElement>this.querySelector('html');
+		return <HTMLElement>DocumentUtility.getElementByTagName(this, 'html');
 	}
 
 	/**
@@ -227,7 +228,7 @@ export default class Document extends Node implements IDocument {
 	 * @return Element.
 	 */
 	public get body(): HTMLElement {
-		return <HTMLElement>this.querySelector('body');
+		return <HTMLElement>DocumentUtility.getElementByTagName(this, 'body');
 	}
 
 	/**
@@ -236,7 +237,7 @@ export default class Document extends Node implements IDocument {
 	 * @return Element.
 	 */
 	public get head(): HTMLElement {
-		return <HTMLElement>this.querySelector('head');
+		return <HTMLElement>DocumentUtility.getElementByTagName(this, 'head');
 	}
 
 	/**
