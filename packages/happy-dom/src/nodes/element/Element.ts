@@ -17,6 +17,7 @@ import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtili
 import IElement from './IElement';
 import Document from '../document/Document';
 import DOMException from '../../exception/DOMException';
+import IShadowRoot from '../shadow-root/IShadowRoot';
 
 /**
  * Element.
@@ -24,7 +25,7 @@ import DOMException from '../../exception/DOMException';
 export default class Element extends Node implements IElement {
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
-	public shadowRoot: ShadowRoot = null;
+	public shadowRoot: IShadowRoot = null;
 	public readonly classList = new ClassList(this);
 	public scrollTop = 0;
 	public scrollLeft = 0;
@@ -592,34 +593,34 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Returns an elements by tag name.
-	 *
-	 * @param tagName Tag name.
-	 * @returns Matching elements.
-	 */
-	public getElementsByTagName(tagName: string): Element[] {
-		return this.querySelectorAll(tagName);
-	}
-
-	/**
-	 * Returns an elements by tag name.
-	 *
-	 * @param namespaceURI Namespace URI.
-	 * @param tagName Tag name.
-	 * @returns Matching nodes.
-	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): Element[] {
-		return this.querySelectorAll(tagName).filter(element => element.namespaceURI === namespaceURI);
-	}
-
-	/**
 	 * Returns an elements by class name.
 	 *
 	 * @param className Tag name.
-	 * @returns Matching nodes.
+	 * @returns Matching element.
 	 */
 	public getElementsByClassName(className: string): Element[] {
-		return this.querySelectorAll('.' + className.split(' ').join('.'));
+		return <Element[]>ParentNodeUtility.getElementsByClassName(this, className);
+	}
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName(tagName: string): Element[] {
+		return <Element[]>ParentNodeUtility.getElementsByTagName(this, tagName);
+	}
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): Element[] {
+		return <Element[]>ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
 	/**

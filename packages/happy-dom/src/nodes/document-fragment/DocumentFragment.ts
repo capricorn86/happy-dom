@@ -1,14 +1,14 @@
 import Node from '../node/Node';
 import IElement from '../element/IElement';
 import QuerySelector from '../../query-selector/QuerySelector';
-import IParentNode from '../parent-node/IParentNode';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility';
 import Element from '../element/Element';
+import IDocumentFragment from './IDocumentFragment';
 
 /**
  * DocumentFragment.
  */
-export default class DocumentFragment extends Node implements IParentNode {
+export default class DocumentFragment extends Node implements IDocumentFragment {
 	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
 	public readonly children: IElement[] = [];
 
@@ -72,7 +72,7 @@ export default class DocumentFragment extends Node implements IParentNode {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): IElement[] {
+	public querySelectorAll(selector: string): Element[] {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -82,39 +82,18 @@ export default class DocumentFragment extends Node implements IParentNode {
 	 * @param selector CSS selector.
 	 * @return Matching element.
 	 */
-	public querySelector(selector: string): IElement {
+	public querySelector(selector: string): Element {
 		return QuerySelector.querySelector(this, selector);
 	}
 
 	/**
-	 * Returns an elements by class name.
+	 * Returns an element by ID.
 	 *
-	 * @param className Tag name.
-	 * @returns Matching element.
+	 * @param id ID.
+	 * @return Matching element.
 	 */
-	public getElementsByClassName(className: string): IElement[] {
-		return this.querySelectorAll('.' + className.split(' ').join('.'));
-	}
-
-	/**
-	 * Returns an elements by tag name.
-	 *
-	 * @param tagName Tag name.
-	 * @returns Matching element.
-	 */
-	public getElementsByTagName(tagName: string): IElement[] {
-		return this.querySelectorAll(tagName);
-	}
-
-	/**
-	 * Returns an elements by tag name and namespace.
-	 *
-	 * @param namespaceURI Namespace URI.
-	 * @param tagName Tag name.
-	 * @returns Matching element.
-	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[] {
-		return this.querySelectorAll(tagName).filter(element => element.namespaceURI === namespaceURI);
+	public getElementById(id: string): Element {
+		return <Element>ParentNodeUtility.getElementById(this, id);
 	}
 
 	/**

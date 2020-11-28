@@ -124,4 +124,12 @@ export default interface IDocument extends IParentNode {
 	 * @param Imported node.
 	 */
 	importNode(node: INode): INode;
+
+	/**
+	 * Returns an element by ID.
+	 *
+	 * @param id ID.
+	 * @return Matching element.
+	 */
+	getElementById(id: string): IElement;
 }

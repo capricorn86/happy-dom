@@ -84,18 +84,6 @@ import VM from 'vm';
 
 const window = VM.createContext(new AsyncWindow());
 const document = window.document;
-const html = `
-    <html>
-        <head>
-             <title>Test page</title>
-        </head>
-        <body>
-             <div class="myContainer">
-                  <!–– Content will be added here -->
-             </div>
-        </body>
-    </html>
-`;
 const script = new VM.Script(`
     const element = document.createElement('div');
     const myContainer = document.querySelector('.myContainer');
@@ -111,9 +99,20 @@ window.whenAsyncComplete().then(() => {
     console.log(myContainer.innerHTML);
 });
 
-script.runInContext(context);
+document.write(`
+    <html>
+        <head>
+             <title>Test page</title>
+        </head>
+        <body>
+             <div class="myContainer">
+                  <!–– Content will be added here -->
+             </div>
+        </body>
+    </html>
+`);
 
-document.write(html);
+script.runInContext(context);
 ```
 
 
