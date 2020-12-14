@@ -26,7 +26,7 @@ Happy DOM aim to support the most common functionality of a web browser.
 
 And much more..
 
-  
+
 
 ### Works With
 
