@@ -1,9 +1,9 @@
-import DocumentFragment from '../../nodes/document-fragment/DocumentFragment';
-import Element from '../../nodes/element/Element';
-import Node from '../../nodes/node/Node';
 import QuerySelector from '../../query-selector/QuerySelector';
 import XMLParser from '../../xml-parser/XMLParser';
-import Document from '../document/Document';
+import IDocumentFragment from '../document-fragment/IDocumentFragment';
+import IDocument from '../document/IDocument';
+import IElement from '../element/IElement';
+import INode from '../node/INode';
 
 /**
  * Parent node utility.
@@ -15,11 +15,11 @@ export default class ParentNodeUtility {
 	 * @param parentNode Parent node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static append(parentNode: Node, ...nodes: (Node | string)[]): void {
+	public static append(parentNode: INode, ...nodes: (INode | string)[]): void {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = XMLParser.parse(
-					<Document>parentNode.ownerDocument,
+					<IDocument>parentNode.ownerDocument,
 					node
 				).childNodes.slice();
 				for (const newChildNode of newChildNodes) {
@@ -37,13 +37,13 @@ export default class ParentNodeUtility {
 	 * @param parentNode Parent node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static prepend(parentNode: Node, ...nodes: (string | Node)[]): void {
+	public static prepend(parentNode: INode, ...nodes: (string | INode)[]): void {
 		const firstChild = parentNode.firstChild;
 
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = XMLParser.parse(
-					<Document>parentNode.ownerDocument,
+					<IDocument>parentNode.ownerDocument,
 					node
 				).childNodes.slice();
 				for (const newChildNode of newChildNodes) {
@@ -61,7 +61,7 @@ export default class ParentNodeUtility {
 	 * @param parentNode Parent node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static replaceChildren(parentNode: Node, ...nodes: (string | Node)[]): void {
+	public static replaceChildren(parentNode: INode, ...nodes: (string | INode)[]): void {
 		for (const node of parentNode.childNodes.slice()) {
 			parentNode.removeChild(node);
 		}
@@ -75,7 +75,7 @@ export default class ParentNodeUtility {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public static getElementsByClassName(parentNode: Node, className: string): Element[] {
+	public static getElementsByClassName(parentNode: INode, className: string): IElement[] {
 		return QuerySelector.querySelectorAll(parentNode, '.' + className.split(' ').join('.'));
 	}
 
@@ -87,9 +87,9 @@ export default class ParentNodeUtility {
 	 * @returns Matching element.
 	 */
 	public static getElementsByTagName(
-		parentNode: Element | DocumentFragment | Document,
+		parentNode: IElement | IDocumentFragment | IDocument,
 		tagName: string
-	): Element[] {
+	): IElement[] {
 		const upperTagName = tagName.toUpperCase();
 		let matches = [];
 
@@ -97,7 +97,7 @@ export default class ParentNodeUtility {
 			if (child.tagName === upperTagName) {
 				matches.push(child);
 			}
-			matches = matches.concat(this.getElementsByTagName(<Element>child, tagName));
+			matches = matches.concat(this.getElementsByTagName(<IElement>child, tagName));
 		}
 
 		return matches;
@@ -112,10 +112,10 @@ export default class ParentNodeUtility {
 	 * @returns Matching element.
 	 */
 	public static getElementsByTagNameNS(
-		parentNode: Element | DocumentFragment | Document,
+		parentNode: IElement | IDocumentFragment | IDocument,
 		namespaceURI: string,
 		tagName: string
-	): Element[] {
+	): IElement[] {
 		const upperTagName = tagName.toUpperCase();
 		let matches = [];
 
@@ -123,7 +123,7 @@ export default class ParentNodeUtility {
 			if (child.tagName === upperTagName && child.namespaceURI === namespaceURI) {
 				matches.push(child);
 			}
-			matches = matches.concat(this.getElementsByTagNameNS(<Element>child, namespaceURI, tagName));
+			matches = matches.concat(this.getElementsByTagNameNS(<IElement>child, namespaceURI, tagName));
 		}
 
 		return matches;
@@ -138,16 +138,16 @@ export default class ParentNodeUtility {
 	 * @returns Matching element.
 	 */
 	public static getElementByTagName(
-		parentNode: Element | DocumentFragment | Document,
+		parentNode: IElement | IDocumentFragment | IDocument,
 		tagName: string
-	): Element {
+	): IElement {
 		const upperTagName = tagName.toUpperCase();
 
 		for (const child of parentNode.children) {
 			if (child.tagName === upperTagName) {
-				return <Element>child;
+				return <IElement>child;
 			}
-			const match = this.getElementByTagName(<Element>child, tagName);
+			const match = this.getElementByTagName(<IElement>child, tagName);
 			if (match) {
 				return match;
 			}
@@ -164,15 +164,15 @@ export default class ParentNodeUtility {
 	 * @return Matching element.
 	 */
 	public static getElementById(
-		parentNode: Element | DocumentFragment | Document,
+		parentNode: IElement | IDocumentFragment | IDocument,
 		id: string
-	): Element {
+	): IElement {
 		for (const child of parentNode.children) {
 			if (child.id === id) {
-				return <Element>child;
+				return <IElement>child;
 			}
 
-			const match = this.getElementById(<Element>child, id);
+			const match = this.getElementById(<IElement>child, id);
 
 			if (match) {
 				return match;

@@ -38,15 +38,6 @@ export default interface IDocumentFragment extends INode {
 	querySelectorAll(selector: string): IElement[];
 
 	/**
-	 * Returns an elements by tag name and namespace.
-	 *
-	 * @param namespaceURI Namespace URI.
-	 * @param tagName Tag name.
-	 * @returns Matching element.
-	 */
-	getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[];
-
-	/**
 	 * Replaces the existing children of a node with a specified new set of children.
 	 *
 	 * @param nodes List of Node or DOMString.
@@ -60,4 +51,13 @@ export default interface IDocumentFragment extends INode {
 	 * @return Matching element.
 	 */
 	getElementById(id: string): IElement;
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	cloneNode(deep: boolean): IDocumentFragment;
 }

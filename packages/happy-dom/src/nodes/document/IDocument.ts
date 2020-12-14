@@ -10,6 +10,7 @@ import IDocumentType from '../document-type/IDocumentType';
 import IParentNode from '../parent-node/IParentNode';
 import INode from '../node/INode';
 import ICharacterData from '../character-data/ICharacterData';
+import IDocumentFragment from '../document-fragment/IDocumentFragment';
 
 /**
  * Document.
@@ -80,7 +81,7 @@ export default interface IDocument extends IParentNode {
 	 *
 	 * @returns Document fragment.
 	 */
-	createDocumentFragment(): IParentNode;
+	createDocumentFragment(): IDocumentFragment;
 
 	/**
 	 * Creates a Tree Walker.
@@ -132,4 +133,13 @@ export default interface IDocument extends IParentNode {
 	 * @return Matching element.
 	 */
 	getElementById(id: string): IElement;
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	cloneNode(deep: boolean): IDocument;
 }

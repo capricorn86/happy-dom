@@ -1,4 +1,5 @@
 import Element from '../element/Element';
+import IElement from '../element/IElement';
 import INonDocumentTypeChildNode from './INonDocumentTypeChildNode';
 
 /**
@@ -11,12 +12,12 @@ export default class NonDocumentChildNodeUtility {
 	 * @param childNode Child node.
 	 * @return Element.
 	 */
-	public static previousElementSibling(childNode: INonDocumentTypeChildNode): Element {
+	public static previousElementSibling(childNode: INonDocumentTypeChildNode): IElement {
 		let sibling = childNode.previousSibling;
 		while (sibling && sibling.nodeType !== Element.ELEMENT_NODE) {
 			sibling = sibling.previousSibling;
 		}
-		return <Element>sibling;
+		return <IElement>sibling;
 	}
 
 	/**
@@ -25,11 +26,11 @@ export default class NonDocumentChildNodeUtility {
 	 * @param childNode Child node.
 	 * @return Element.
 	 */
-	public static nextElementSibling(childNode: INonDocumentTypeChildNode): Element {
+	public static nextElementSibling(childNode: INonDocumentTypeChildNode): IElement {
 		let sibling = childNode.nextSibling;
 		while (sibling && sibling.nodeType !== Element.ELEMENT_NODE) {
 			sibling = sibling.nextSibling;
 		}
-		return <Element>sibling;
+		return <IElement>sibling;
 	}
 }

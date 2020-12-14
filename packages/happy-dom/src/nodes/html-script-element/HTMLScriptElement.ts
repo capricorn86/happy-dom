@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement';
+import IHTMLScriptElement from './IHTMLScriptElement';
 
 /**
  * HTML Script Element.
@@ -6,7 +7,7 @@ import HTMLElement from '../html-element/HTMLElement';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
  */
-export default class HTMLScriptElement extends HTMLElement {
+export default class HTMLScriptElement extends HTMLElement implements IHTMLScriptElement {
 	public _evaluateScript = true;
 
 	/**
@@ -180,5 +181,16 @@ export default class HTMLScriptElement extends HTMLElement {
 	 */
 	public set text(text: string) {
 		this.textContent = text;
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): IHTMLScriptElement {
+		return <IHTMLScriptElement>super.cloneNode(deep);
 	}
 }

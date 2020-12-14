@@ -1,5 +1,4 @@
 import SVGGraphicsElement from './SVGGraphicsElement';
-import Node from '../node/Node';
 import SVGRect from './SVGRect';
 import SVGPoint from './SVGPoint';
 import SVGLength from './SVGLength';
@@ -7,11 +6,13 @@ import SVGAngle from './SVGAngle';
 import SVGNumber from './SVGNumber';
 import SVGTransform from './SVGTransform';
 import SVGAnimatedRect from './SVGAnimatedRect';
+import ISVGSVGElement from './ISVGSVGElement';
+import INode from '../node/INode';
 
 /**
  * SVGSVGElement.
  */
-export default class SVGSVGElement extends SVGGraphicsElement {
+export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVGElement {
 	/**
 	 * Returns preserveAspectRatio.
 	 *
@@ -214,7 +215,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 *
 	 * @returns Intersection list.
 	 */
-	public getIntersectionList(): Node[] {
+	public getIntersectionList(): INode[] {
 		return [];
 	}
 
@@ -223,7 +224,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 *
 	 * @returns Enclousure list.
 	 */
-	public getEnclosureList(): Node[] {
+	public getEnclosureList(): INode[] {
 		return [];
 	}
 
@@ -302,5 +303,16 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 */
 	public createSVGTransform(): SVGTransform {
 		return new SVGTransform();
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): ISVGSVGElement {
+		return <ISVGSVGElement>super.cloneNode(deep);
 	}
 }

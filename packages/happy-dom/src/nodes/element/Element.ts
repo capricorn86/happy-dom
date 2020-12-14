@@ -15,9 +15,10 @@ import ChildNodeUtility from '../child-node/ChildNodeUtility';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility';
 import IElement from './IElement';
-import Document from '../document/Document';
 import DOMException from '../../exception/DOMException';
 import IShadowRoot from '../shadow-root/IShadowRoot';
+import INode from '../node/INode';
+import IDocument from '../document/IDocument';
 
 /**
  * Element.
@@ -29,7 +30,7 @@ export default class Element extends Node implements IElement {
 	public readonly classList = new ClassList(this);
 	public scrollTop = 0;
 	public scrollLeft = 0;
-	public children: Element[] = [];
+	public children: IElement[] = [];
 	public _attributes: { [k: string]: Attr } = {};
 	public readonly namespaceURI: string = null;
 	public static _observedAttributes: string[] = null;
@@ -104,7 +105,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @return Element.
 	 */
-	public get previousElementSibling(): Element {
+	public get previousElementSibling(): IElement {
 		return NonDocumentChildNodeUtility.previousElementSibling(this);
 	}
 
@@ -113,7 +114,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @return Element.
 	 */
-	public get nextElementSibling(): Element {
+	public get nextElementSibling(): IElement {
 		return NonDocumentChildNodeUtility.nextElementSibling(this);
 	}
 
@@ -208,7 +209,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @return Element.
 	 */
-	public get firstElementChild(): Element {
+	public get firstElementChild(): IElement {
 		return this.children ? this.children[0] || null : null;
 	}
 
@@ -217,7 +218,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @return Element.
 	 */
-	public get lastElementChild(): Element {
+	public get lastElementChild(): IElement {
 		return this.children ? this.children[this.children.length - 1] || null : null;
 	}
 
@@ -246,25 +247,25 @@ export default class Element extends Node implements IElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Element {
-		const clone = <Element>super.cloneNode(deep);
+	public cloneNode(deep = false): IElement {
+		const clone = <Element | IElement>super.cloneNode(deep);
 
 		for (const key of Object.keys(this._attributes)) {
-			clone._attributes[key] = Object.assign(new Attr(), this._attributes[key]);
+			(<Element>clone)._attributes[key] = Object.assign(new Attr(), this._attributes[key]);
 		}
 
 		if (deep) {
-			clone.children = <Element[]>(
+			(<IElement[]>clone.children) = <IElement[]>(
 				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
 			);
 		}
 
-		clone.tagName = this.tagName;
+		(<string>clone.tagName) = this.tagName;
 		clone.scrollLeft = this.scrollLeft;
 		clone.scrollTop = this.scrollTop;
 		(<string>clone.namespaceURI) = this.namespaceURI;
 
-		return clone;
+		return <IElement>clone;
 	}
 
 	/**
@@ -274,7 +275,7 @@ export default class Element extends Node implements IElement {
 	 * @param  node Node to append.
 	 * @return Appended node.
 	 */
-	public appendChild(node: Node): Node {
+	public appendChild(node: INode): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
@@ -286,7 +287,7 @@ export default class Element extends Node implements IElement {
 			}
 
 			if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-				this.children.push(<Element>node);
+				this.children.push(<IElement>node);
 			}
 		}
 
@@ -299,9 +300,9 @@ export default class Element extends Node implements IElement {
 	 * @override
 	 * @param node Node to remove
 	 */
-	public removeChild(node: Node): void {
+	public removeChild(node: INode): void {
 		if (node.nodeType === Node.ELEMENT_NODE) {
-			const index = this.children.indexOf(<Element>node);
+			const index = this.children.indexOf(<IElement>node);
 			if (index !== -1) {
 				this.children.splice(index, 1);
 			}
@@ -325,7 +326,7 @@ export default class Element extends Node implements IElement {
 	 * @param [referenceNode] Node to insert before.
 	 * @return Inserted node.
 	 */
-	public insertBefore(newNode: Node, referenceNode?: Node): Node {
+	public insertBefore(newNode: INode, referenceNode?: INode): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -338,7 +339,7 @@ export default class Element extends Node implements IElement {
 				}
 			}
 
-			(<Element[]>this.children) = <Element[]>(
+			(<IElement[]>this.children) = <IElement[]>(
 				this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
 			);
 		}
@@ -351,7 +352,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public replaceWith(...nodes: (Node | string)[]): void {
+	public replaceWith(...nodes: (INode | string)[]): void {
 		ChildNodeUtility.replaceWith(this, ...nodes);
 	}
 
@@ -360,7 +361,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public before(...nodes: (string | Node)[]): void {
+	public before(...nodes: (string | INode)[]): void {
 		ChildNodeUtility.before(this, ...nodes);
 	}
 
@@ -369,7 +370,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public after(...nodes: (string | Node)[]): void {
+	public after(...nodes: (string | INode)[]): void {
 		ChildNodeUtility.after(this, ...nodes);
 	}
 
@@ -378,7 +379,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public append(...nodes: (string | Node)[]): void {
+	public append(...nodes: (string | INode)[]): void {
 		ParentNodeUtility.append(this, ...nodes);
 	}
 
@@ -387,7 +388,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public prepend(...nodes: (string | Node)[]): void {
+	public prepend(...nodes: (string | INode)[]): void {
 		ParentNodeUtility.prepend(this, ...nodes);
 	}
 
@@ -396,7 +397,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public replaceChildren(...nodes: (string | Node)[]): void {
+	public replaceChildren(...nodes: (string | INode)[]): void {
 		ParentNodeUtility.replaceChildren(this, ...nodes);
 	}
 
@@ -523,12 +524,12 @@ export default class Element extends Node implements IElement {
 	 * @param _shadowRootInit Shadow root init.
 	 * @returns Shadow root.
 	 */
-	public attachShadow(shadowRootInit: { mode: string }): ShadowRoot {
+	public attachShadow(shadowRootInit: { mode: string }): IShadowRoot {
 		if (this.shadowRoot) {
 			throw new DOMException('Shadow root has already been attached.');
 		}
-		this.shadowRoot = new ShadowRoot();
-		(<Document>this.shadowRoot.ownerDocument) = this.ownerDocument;
+		(<IShadowRoot>this.shadowRoot) = new ShadowRoot();
+		(<IDocument>this.shadowRoot.ownerDocument) = this.ownerDocument;
 		(<Element>this.shadowRoot.host) = this;
 		(<string>this.shadowRoot.mode) = shadowRootInit.mode;
 		this.shadowRoot.isConnected = this.isConnected;
@@ -578,7 +579,7 @@ export default class Element extends Node implements IElement {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): Element[] {
+	public querySelectorAll(selector: string): IElement[] {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -588,7 +589,7 @@ export default class Element extends Node implements IElement {
 	 * @param selector CSS selector.
 	 * @return Matching element.
 	 */
-	public querySelector(selector: string): Element {
+	public querySelector(selector: string): IElement {
 		return QuerySelector.querySelector(this, selector);
 	}
 
@@ -598,8 +599,8 @@ export default class Element extends Node implements IElement {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): Element[] {
-		return <Element[]>ParentNodeUtility.getElementsByClassName(this, className);
+	public getElementsByClassName(className: string): IElement[] {
+		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
 	/**
@@ -608,8 +609,8 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): Element[] {
-		return <Element[]>ParentNodeUtility.getElementsByTagName(this, tagName);
+	public getElementsByTagName(tagName: string): IElement[] {
+		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
 	/**
@@ -619,8 +620,8 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): Element[] {
-		return <Element[]>ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[] {
+		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
 	/**

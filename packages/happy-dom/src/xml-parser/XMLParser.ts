@@ -1,11 +1,13 @@
 import Node from '../nodes/node/Node';
 import Element from '../nodes/element/Element';
-import Document from '../nodes/document/Document';
+import IDocument from '../nodes/document/IDocument';
 import SelfClosingElements from '../config/SelfClosingElements';
 import UnnestableElements from '../config/UnnestableElements';
 import { decode } from 'he';
 import NamespaceURI from '../config/NamespaceURI';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
+import INode from '../nodes/node/INode';
+import IElement from '../nodes/element/IElement';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->/gi;
@@ -21,12 +23,12 @@ export default class XMLParser {
 	/**
 	 * Parses XML/HTML and returns a root element.
 	 *
-	 * @param {Document} document Document.
+	 * @param document Document.
 	 * @param data HTML data.
 	 * @param [evaluateScripts = false] Set to "true" to enable script execution.
 	 * @return Root element.
 	 */
-	public static parse(document: Document, data: string, evaluateScripts = false): Element {
+	public static parse(document: IDocument, data: string, evaluateScripts = false): IElement {
 		const root = document.createElement('root');
 		const stack = [root];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gi');
@@ -105,7 +107,7 @@ export default class XMLParser {
 	 * @param element Element.
 	 * @return Tag name if element is unnestable.
 	 */
-	private static getUnnestableTagName(element: Element): string {
+	private static getUnnestableTagName(element: IElement): string {
 		const tagName = element.tagName.toLowerCase();
 		return tagName && UnnestableElements.includes(tagName) ? tagName : null;
 	}
@@ -117,7 +119,7 @@ export default class XMLParser {
 	 * @param  node Node.
 	 * @param  text Text to search in.
 	 */
-	private static appendTextAndCommentNodes(document: Document, node: Node, text: string): void {
+	private static appendTextAndCommentNodes(document: IDocument, node: INode, text: string): void {
 		for (const innerNode of this.getTextAndCommentNodes(document, text)) {
 			node.appendChild(innerNode);
 		}
@@ -130,7 +132,7 @@ export default class XMLParser {
 	 * @param  text Text to search in.
 	 * @returns Nodes.
 	 */
-	private static getTextAndCommentNodes(document: Document, text: string): Node[] {
+	private static getTextAndCommentNodes(document: IDocument, text: string): Node[] {
 		const nodes = [];
 		const commentRegExp = new RegExp(COMMENT_REGEXP, 'gms');
 		const documentTypeRegExp = new RegExp(DOCUMENT_TYPE_REGEXP, 'gm');
@@ -200,7 +202,7 @@ export default class XMLParser {
 	 * @param attributesString Raw attributes.
 	 */
 	private static setAttributes(
-		element: Element,
+		element: IElement,
 		namespaceURI: string,
 		attributesString: string
 	): void {

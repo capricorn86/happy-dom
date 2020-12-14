@@ -2,8 +2,8 @@ import Node from '../node/Node';
 import IElement from '../element/IElement';
 import QuerySelector from '../../query-selector/QuerySelector';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility';
-import Element from '../element/Element';
 import IDocumentFragment from './IDocumentFragment';
+import INode from '../node/INode';
 
 /**
  * DocumentFragment.
@@ -44,7 +44,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public append(...nodes: (Node | string)[]): void {
+	public append(...nodes: (INode | string)[]): void {
 		ParentNodeUtility.append(this, ...nodes);
 	}
 
@@ -53,7 +53,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public prepend(...nodes: (Node | string)[]): void {
+	public prepend(...nodes: (INode | string)[]): void {
 		ParentNodeUtility.prepend(this, ...nodes);
 	}
 
@@ -62,7 +62,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public replaceChildren(...nodes: (Node | string)[]): void {
+	public replaceChildren(...nodes: (INode | string)[]): void {
 		ParentNodeUtility.replaceChildren(this, ...nodes);
 	}
 
@@ -72,7 +72,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): Element[] {
+	public querySelectorAll(selector: string): IElement[] {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -82,7 +82,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param selector CSS selector.
 	 * @return Matching element.
 	 */
-	public querySelector(selector: string): Element {
+	public querySelector(selector: string): IElement {
 		return QuerySelector.querySelector(this, selector);
 	}
 
@@ -92,8 +92,8 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param id ID.
 	 * @return Matching element.
 	 */
-	public getElementById(id: string): Element {
-		return <Element>ParentNodeUtility.getElementById(this, id);
+	public getElementById(id: string): IElement {
+		return ParentNodeUtility.getElementById(this, id);
 	}
 
 	/**
@@ -103,18 +103,18 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): DocumentFragment {
-		const clone = <DocumentFragment>super.cloneNode(deep);
+	public cloneNode(deep = false): IDocumentFragment {
+		const clone = <IDocumentFragment>super.cloneNode(deep);
 
 		if (deep) {
-			const children = <Element[]>(
+			const children = <IElement[]>(
 				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
 			);
 
-			(<Element[]>clone.children) = children;
+			(<IElement[]>clone.children) = children;
 		}
 
-		return clone;
+		return <IDocumentFragment>clone;
 	}
 
 	/**
@@ -124,7 +124,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param  node Node to append.
 	 * @return Appended node.
 	 */
-	public appendChild(node: Node): Node {
+	public appendChild(node: INode): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
@@ -136,11 +136,11 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 			}
 
 			if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-				this.children.push(<Element>node);
+				this.children.push(<IElement>node);
 			}
 		}
 
-		return super.appendChild(<Node>node);
+		return super.appendChild(<INode>node);
 	}
 
 	/**
@@ -149,9 +149,9 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @override
 	 * @param node Node to remove
 	 */
-	public removeChild(node: Node): void {
+	public removeChild(node: INode): void {
 		if (node.nodeType === Node.ELEMENT_NODE) {
-			const index = this.children.indexOf(<Element>node);
+			const index = this.children.indexOf(<IElement>node);
 			if (index !== -1) {
 				this.children.splice(index, 1);
 			}
@@ -168,7 +168,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param [referenceNode] Node to insert before.
 	 * @return Inserted node.
 	 */
-	public insertBefore(newNode: Node, referenceNode?: Node): Node {
+	public insertBefore(newNode: INode, referenceNode?: INode): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -181,7 +181,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 				}
 			}
 
-			(<Element[]>this.children) = <Element[]>(
+			(<IElement[]>this.children) = <IElement[]>(
 				this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
 			);
 		}

@@ -1,18 +1,31 @@
 import Node from '../node/Node';
 import MutationRecord from '../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../mutation-observer/MutationType';
-import ICharacterData from '../character-data/ICharacterData';
 import CharacterDataUtility from '../character-data/CharacterDataUtility';
-import Element from '../element/Element';
+import IElement from '../element/IElement';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility';
 import ChildNodeUtility from '../child-node/ChildNodeUtility';
+import IComment from './IComment';
 
 /**
- * TextNode.
+ * Comment node.
  */
-export default class TextNode extends Node implements ICharacterData {
-	public readonly nodeType = Node.TEXT_NODE;
-	private _data: string;
+export default class Comment extends Node implements IComment {
+	public readonly nodeType = Node.COMMENT_NODE;
+	private _data = '';
+
+	/**
+	 * Constructor.
+	 *
+	 * @param [comment] Comment.
+	 */
+	constructor(comment?: string) {
+		super();
+
+		if (comment) {
+			this._data = comment;
+		}
+	}
 
 	/**
 	 * Node name.
@@ -20,7 +33,7 @@ export default class TextNode extends Node implements ICharacterData {
 	 * @return Node name.
 	 */
 	public get nodeName(): string {
-		return '#text';
+		return '#comment';
 	}
 
 	/**
@@ -100,20 +113,11 @@ export default class TextNode extends Node implements ICharacterData {
 	}
 
 	/**
-	 * Converts to string.
-	 *
-	 * @return String.
-	 */
-	public toString(): string {
-		return '[object Text]';
-	}
-
-	/**
 	 * Previous element sibling.
 	 *
 	 * @return Element.
 	 */
-	public get previousElementSibling(): Element {
+	public get previousElementSibling(): IElement {
 		return NonDocumentChildNodeUtility.previousElementSibling(this);
 	}
 
@@ -122,8 +126,17 @@ export default class TextNode extends Node implements ICharacterData {
 	 *
 	 * @return Element.
 	 */
-	public get nextElementSibling(): Element {
+	public get nextElementSibling(): IElement {
 		return NonDocumentChildNodeUtility.nextElementSibling(this);
+	}
+
+	/**
+	 * Converts to string.
+	 *
+	 * @return String.
+	 */
+	public toString(): string {
+		return '[object Comment]';
 	}
 
 	/**
@@ -217,8 +230,8 @@ export default class TextNode extends Node implements ICharacterData {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): TextNode {
-		const clone = <TextNode>super.cloneNode(deep);
+	public cloneNode(deep = false): IComment {
+		const clone = <Comment>super.cloneNode(deep);
 		clone._data = this._data;
 		return clone;
 	}

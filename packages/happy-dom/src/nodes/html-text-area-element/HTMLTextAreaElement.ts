@@ -2,14 +2,19 @@ import Event from '../../event/Event';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import HTMLElement from '../html-element/HTMLElement';
-import HTMLFormElement from '../html-form-element/HTMLFormElement';
+import IHTMLElement from '../html-element/IHTMLElement';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
+import IHTMLTextAreaElement from './IHTMLTextAreaElement';
 
 /**
- * HTMLTextAreaElement.
+ * HTML Text Area Element.
+ *
+ * Reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement
  */
-export default class HTMLTextAreaElement extends HTMLElement {
+export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTextAreaElement {
 	public readonly type = 'textarea';
 	public _value = null;
 	public _selectionStart = null;
@@ -353,12 +358,12 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @return Form.
 	 */
-	public get form(): HTMLFormElement {
-		let parent = <HTMLElement>this.parentNode;
+	public get form(): IHTMLFormElement {
+		let parent = <IHTMLElement>this.parentNode;
 		while (parent && parent.tagName !== 'FORM') {
-			parent = <HTMLElement>this.parentNode;
+			parent = <IHTMLElement>this.parentNode;
 		}
-		return <HTMLFormElement>parent;
+		return <IHTMLFormElement>parent;
 	}
 
 	/**
@@ -397,9 +402,9 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @param [direction] Direction.
 	 */
 	public setRangeText(
-		replacement,
-		start = null,
-		end = null,
+		replacement: string,
+		start: number = null,
+		end: number = null,
 		selectionMode = HTMLInputElementSelectionModeEnum.preserve
 	): void {
 		if (start === null) {
@@ -473,7 +478,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLTextAreaElement {
+	public cloneNode(deep = false): IHTMLTextAreaElement {
 		const clone = <HTMLTextAreaElement>super.cloneNode(deep);
 
 		clone._value = this._value;
