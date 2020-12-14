@@ -7634,7 +7634,8 @@
     "vue": {
       "version": "2.6.12",
       "resolved": "https://registry.npmjs.org/vue/-/vue-2.6.12.tgz",
-      "integrity": "sha512-uhmLFETqPPNyuLLbsKz6ioJ4q7AZHzD8ZVFNATNyICSZouqP2Sz0rotWQC8UNBF6VGSCs5abnKJoStA6JbCbfg=="
+      "integrity": "sha512-uhmLFETqPPNyuLLbsKz6ioJ4q7AZHzD8ZVFNATNyICSZouqP2Sz0rotWQC8UNBF6VGSCs5abnKJoStA6JbCbfg==",
+      "dev": true
     },
     "w3c-hr-time": {
       "version": "1.0.2",
