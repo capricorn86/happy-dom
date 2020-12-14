@@ -12,7 +12,7 @@ import IText from './IText';
  */
 export default class Text extends Node implements IText {
 	public readonly nodeType = Node.TEXT_NODE;
-	private _data: string;
+	private _data = '';
 
 	/**
 	 * Constructor.

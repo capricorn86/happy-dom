@@ -636,6 +636,11 @@ describe('Document', () => {
 			expect(textNode.textContent).toBe(textContent);
 			expect(textNode instanceof Text).toBe(true);
 		});
+
+		test('Creates a text node without content.', () => {
+			const textNode = document.createTextNode();
+			expect(textNode.data).toBe('');
+		});
 	});
 
 	describe('createComment()', () => {
@@ -644,6 +649,11 @@ describe('Document', () => {
 			const commentNode = document.createComment(textContent);
 			expect(commentNode.textContent).toBe(textContent);
 			expect(commentNode instanceof Comment).toBe(true);
+		});
+
+		test('Creates a comment node without content.', () => {
+			const commentNode = document.createComment();
+			expect(commentNode.data).toBe('');
 		});
 	});
 
