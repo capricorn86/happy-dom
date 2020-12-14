@@ -1,7 +1,7 @@
 import Element from '../element/Element';
 import HTMLElement from '../html-element/HTMLElement';
-import TextNode from '../text-node/TextNode';
-import CommentNode from '../comment-node/CommentNode';
+import Text from '../text/Text';
+import Comment from '../comment/Comment';
 import Window from '../../window/Window';
 import Node from '../node/Node';
 import TreeWalker from '../../tree-walker/TreeWalker';
@@ -20,6 +20,12 @@ import IDocument from './IDocument';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import DOMException from '../../exception/DOMException';
 import CookieUtility from '../../cookie/CookieUtility';
+import IElement from '../element/IElement';
+import IHTMLElement from '../html-element/IHTMLElement';
+import IDocumentType from '../document-type/IDocumentType';
+import INode from '../node/INode';
+import ICharacterData from '../character-data/ICharacterData';
+import IDocumentFragment from '../document-fragment/IDocumentFragment';
 
 /**
  * Document.
@@ -70,7 +76,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @return Element.
 	 */
-	public get firstElementChild(): Element {
+	public get firstElementChild(): IElement {
 		return this.children ? this.children[0] || null : null;
 	}
 
@@ -79,7 +85,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @return Element.
 	 */
-	public get lastElementChild(): Element {
+	public get lastElementChild(): IElement {
 		return this.children ? this.children[this.children.length - 1] || null : null;
 	}
 
@@ -102,94 +108,6 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
-	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
-	 *
-	 * @param nodes List of Node or DOMString.
-	 */
-	public append(...nodes: (Node | string)[]): void {
-		ParentNodeUtility.append(this, ...nodes);
-	}
-
-	/**
-	 * Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
-	 *
-	 * @param nodes List of Node or DOMString.
-	 */
-	public prepend(...nodes: (Node | string)[]): void {
-		ParentNodeUtility.prepend(this, ...nodes);
-	}
-
-	/**
-	 * Replaces the existing children of a node with a specified new set of children.
-	 *
-	 * @param nodes List of Node or DOMString.
-	 */
-	public replaceChildren(...nodes: (Node | string)[]): void {
-		ParentNodeUtility.replaceChildren(this, ...nodes);
-	}
-
-	/**
-	 * Query CSS selector to find matching elments.
-	 *
-	 * @param selector CSS selector.
-	 * @returns Matching elements.
-	 */
-	public querySelectorAll(selector: string): Element[] {
-		return QuerySelector.querySelectorAll(this, selector);
-	}
-
-	/**
-	 * Query CSS Selector to find a matching element.
-	 *
-	 * @param selector CSS selector.
-	 * @return Matching element.
-	 */
-	public querySelector(selector: string): Element {
-		return QuerySelector.querySelector(this, selector);
-	}
-
-	/**
-	 * Returns an elements by class name.
-	 *
-	 * @param className Tag name.
-	 * @returns Matching element.
-	 */
-	public getElementsByClassName(className: string): Element[] {
-		return this.querySelectorAll('.' + className.split(' ').join('.'));
-	}
-
-	/**
-	 * Returns an elements by tag name.
-	 *
-	 * @param tagName Tag name.
-	 * @returns Matching element.
-	 */
-	public getElementsByTagName(tagName: string): Element[] {
-		return this.querySelectorAll(tagName);
-	}
-
-	/**
-	 * Returns an elements by tag name and namespace.
-	 *
-	 * @param namespaceURI Namespace URI.
-	 * @param tagName Tag name.
-	 * @returns Matching element.
-	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): Element[] {
-		return this.querySelectorAll(tagName).filter(element => element.namespaceURI === namespaceURI);
-	}
-
-	/**
-	 * Returns an element by ID.
-	 *
-	 * @param id ID.
-	 * @return Matching element.
-	 */
-	public getElementById(id: string): Element {
-		return this.querySelector('#' + id);
-	}
-
-	/**
 	 * Node name.
 	 *
 	 * @return Node name.
@@ -203,8 +121,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @return Element.
 	 */
-	public get documentElement(): HTMLElement {
-		return <HTMLElement>this.querySelector('html');
+	public get documentElement(): IHTMLElement {
+		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'html');
 	}
 
 	/**
@@ -212,7 +130,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @return Document type.
 	 */
-	public get doctype(): DocumentType {
+	public get doctype(): IDocumentType {
 		for (const node of this.childNodes) {
 			if (node instanceof DocumentType) {
 				return node;
@@ -226,8 +144,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @return Element.
 	 */
-	public get body(): HTMLElement {
-		return <HTMLElement>this.querySelector('body');
+	public get body(): IHTMLElement {
+		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'body');
 	}
 
 	/**
@@ -235,8 +153,96 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @return Element.
 	 */
-	public get head(): HTMLElement {
-		return <HTMLElement>this.querySelector('head');
+	public get head(): IHTMLElement {
+		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'head');
+	}
+
+	/**
+	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public append(...nodes: (INode | string)[]): void {
+		ParentNodeUtility.append(this, ...nodes);
+	}
+
+	/**
+	 * Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public prepend(...nodes: (INode | string)[]): void {
+		ParentNodeUtility.prepend(this, ...nodes);
+	}
+
+	/**
+	 * Replaces the existing children of a node with a specified new set of children.
+	 *
+	 * @param nodes List of Node or DOMString.
+	 */
+	public replaceChildren(...nodes: (INode | string)[]): void {
+		ParentNodeUtility.replaceChildren(this, ...nodes);
+	}
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): IElement[] {
+		return QuerySelector.querySelectorAll(this, selector);
+	}
+
+	/**
+	 * Query CSS Selector to find a matching element.
+	 *
+	 * @param selector CSS selector.
+	 * @return Matching element.
+	 */
+	public querySelector(selector: string): IElement {
+		return QuerySelector.querySelector(this, selector);
+	}
+
+	/**
+	 * Returns an elements by class name.
+	 *
+	 * @param className Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByClassName(className: string): IElement[] {
+		return <Element[]>ParentNodeUtility.getElementsByClassName(this, className);
+	}
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName(tagName: string): IElement[] {
+		return <Element[]>ParentNodeUtility.getElementsByTagName(this, tagName);
+	}
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[] {
+		return <Element[]>ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
+	}
+
+	/**
+	 * Returns an element by ID.
+	 *
+	 * @param id ID.
+	 * @return Matching element.
+	 */
+	public getElementById(id: string): IElement {
+		return <Element>ParentNodeUtility.getElementById(this, id);
 	}
 
 	/**
@@ -246,7 +252,7 @@ export default class Document extends Node implements IDocument {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Document {
+	public cloneNode(deep = false): IDocument {
 		const clone = <Document>super.cloneNode(deep);
 
 		if (deep) {
@@ -267,7 +273,7 @@ export default class Document extends Node implements IDocument {
 	 * @param  node Node to append.
 	 * @return Appended node.
 	 */
-	public appendChild(node: Node): Node {
+	public appendChild(node: INode): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
@@ -291,7 +297,7 @@ export default class Document extends Node implements IDocument {
 	 * @override
 	 * @param node Node to remove
 	 */
-	public removeChild(node: Node): void {
+	public removeChild(node: INode): void {
 		if (node.nodeType === Node.ELEMENT_NODE) {
 			const index = this.children.indexOf(<Element>node);
 			if (index !== -1) {
@@ -310,7 +316,7 @@ export default class Document extends Node implements IDocument {
 	 * @param [referenceNode] Node to insert before.
 	 * @return Inserted node.
 	 */
-	public insertBefore(newNode: Node, referenceNode?: Node): Node {
+	public insertBefore(newNode: INode, referenceNode?: INode): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -416,7 +422,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Document.
 	 */
-	public open(): Document {
+	public open(): IDocument {
 		this._isFirstWriteAfterOpen = true;
 
 		for (const eventType of Object.keys(this._listeners)) {
@@ -447,7 +453,7 @@ export default class Document extends Node implements IDocument {
 	 * @param [options] Options.
 	 * @return Element.
 	 */
-	public createElement(tagName: string, options?: { is: string }): Element {
+	public createElement(tagName: string, options?: { is: string }): IElement {
 		return this.createElementNS(NamespaceURI.html, tagName, options);
 	}
 
@@ -462,7 +468,7 @@ export default class Document extends Node implements IDocument {
 		namespaceURI: string,
 		qualifiedName: string,
 		options?: { is: string }
-	): Element {
+	): IElement {
 		let customElementClass;
 		if (this.defaultView && options && options.is) {
 			customElementClass = this.defaultView.customElements.get(options.is);
@@ -490,11 +496,9 @@ export default class Document extends Node implements IDocument {
 	 * @param  data Text data.
 	 * @returns Text node.
 	 */
-	public createTextNode(data: string): TextNode {
-		TextNode.ownerDocument = this;
-		const textNode = new TextNode();
-		textNode.textContent = data;
-		return textNode;
+	public createTextNode(data: string): ICharacterData {
+		Text.ownerDocument = this;
+		return new Text(data);
 	}
 
 	/**
@@ -503,11 +507,9 @@ export default class Document extends Node implements IDocument {
 	 * @param  data Text data.
 	 * @returns Text node.
 	 */
-	public createComment(data: string): CommentNode {
-		CommentNode.ownerDocument = this;
-		const commentNode = new CommentNode();
-		commentNode.textContent = data;
-		return commentNode;
+	public createComment(data: string): ICharacterData {
+		Comment.ownerDocument = this;
+		return new Comment(data);
 	}
 
 	/**
@@ -515,7 +517,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Document fragment.
 	 */
-	public createDocumentFragment(): DocumentFragment {
+	public createDocumentFragment(): IDocumentFragment {
 		DocumentFragment.ownerDocument = this;
 		return new DocumentFragment();
 	}
@@ -527,7 +529,7 @@ export default class Document extends Node implements IDocument {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	public createTreeWalker(root: Node, whatToShow = -1, filter: INodeFilter = null): TreeWalker {
+	public createTreeWalker(root: INode, whatToShow = -1, filter: INodeFilter = null): TreeWalker {
 		return new TreeWalker(root, whatToShow, filter);
 	}
 
@@ -575,7 +577,7 @@ export default class Document extends Node implements IDocument {
 	 * @param [deep=false] Set to "true" if the clone should be deep.
 	 * @param Imported node.
 	 */
-	public importNode(node: Node, deep = false): Node {
+	public importNode(node: INode, deep = false): INode {
 		if (!(node instanceof Node)) {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}

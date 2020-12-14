@@ -2,7 +2,10 @@ import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
 import IElement from '../element/IElement';
 
 /**
- * HTMLElement.
+ * HTML Element.
+ *
+ * Reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
  */
 export default interface IHTMLElement extends IElement {
 	style: CSSStyleDeclaration;
@@ -29,4 +32,13 @@ export default interface IHTMLElement extends IElement {
 	 * Triggers a focus event.
 	 */
 	focus(): void;
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	cloneNode(deep: boolean): IHTMLElement;
 }

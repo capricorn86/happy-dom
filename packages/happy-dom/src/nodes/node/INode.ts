@@ -1,6 +1,7 @@
+import IEventTarget from '../../event/IEventTarget';
 import IDocument from '../document/IDocument';
 
-export default interface INode {
+export default interface INode extends IEventTarget {
 	readonly ownerDocument: IDocument;
 	readonly parentNode: INode;
 	readonly nodeType: number;

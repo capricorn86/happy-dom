@@ -5,7 +5,7 @@ import CustomElement from '../../CustomElement';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot';
 import Document from '../../../src/nodes/document/Document';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
-import TextNode from '../../../src/nodes/text-node/TextNode';
+import Text from '../../../src/nodes/text/Text';
 import DOMRect from '../../../src/nodes/element/DOMRect';
 import Range from '../../../src/nodes/element/Range';
 import NamespaceURI from '../../../src/config/NamespaceURI';
@@ -117,7 +117,7 @@ describe('Element', () => {
 
 			expect(element.textContent).toBe('new_text');
 			expect(element.childNodes.length).toBe(1);
-			expect((<TextNode>element.childNodes[0]).textContent).toBe('new_text');
+			expect((<Text>element.childNodes[0]).textContent).toBe('new_text');
 		});
 	});
 
@@ -360,64 +360,54 @@ describe('Element', () => {
 
 	describe('getElementsByClassName()', () => {
 		test('Returns an elements by class name.', () => {
-			const element = document.createElement('div');
+			const child = document.createElement('div');
 			const className = 'className';
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(`.${className}`);
-				return [element];
-			});
+			jest
+				.spyOn(ParentNodeUtility, 'getElementsByClassName')
+				.mockImplementation((parentNode, requestedClassName) => {
+					expect(parentNode).toBe(element);
+					expect(requestedClassName).toEqual(className);
+					return [child];
+				});
 
-			expect(document.getElementsByClassName(className)).toEqual([element]);
+			expect(element.getElementsByClassName(className)).toEqual([child]);
 		});
 	});
 
 	describe('getElementsByTagName()', () => {
 		test('Returns an elements by tag name.', () => {
-			const element = document.createElement('div');
+			const child = document.createElement('div');
 			const tagName = 'tag-name';
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(tagName);
-				return [element];
-			});
+			jest
+				.spyOn(ParentNodeUtility, 'getElementsByTagName')
+				.mockImplementation((parentNode, requestedTagName) => {
+					expect(parentNode).toBe(element);
+					expect(requestedTagName).toEqual(tagName);
+					return [child];
+				});
 
-			expect(document.getElementsByTagName(tagName)).toEqual([element]);
+			expect(element.getElementsByTagName(tagName)).toEqual([child]);
 		});
 	});
 
 	describe('getElementsByTagNameNS()', () => {
 		test('Returns an elements by tag name and namespace.', () => {
-			const element1 = document.createElement('div');
-			const element2 = document.createElement('div');
+			const child = document.createElement('div');
 			const tagName = 'tag-name';
+			const namespaceURI = '/namespace/uri/';
 
-			(<string>element1.namespaceURI) = '/namespace/';
+			jest
+				.spyOn(ParentNodeUtility, 'getElementsByTagNameNS')
+				.mockImplementation((parentNode, requestedNamespaceURI, requestedTagName) => {
+					expect(parentNode).toBe(element);
+					expect(requestedNamespaceURI).toEqual(namespaceURI);
+					expect(requestedTagName).toEqual(tagName);
+					return [child];
+				});
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(tagName);
-				return [element1, element2];
-			});
-
-			expect(document.getElementsByTagNameNS('/namespace/', tagName)).toEqual([element1]);
-		});
-	});
-
-	describe('getElementById()', () => {
-		test('Returns an element by ID.', () => {
-			const element = document.createElement('div');
-			const id = 'id';
-
-			jest.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(`#${id}`);
-				return element;
-			});
-
-			expect(document.getElementById(id)).toEqual(element);
+			expect(element.getElementsByTagNameNS(namespaceURI, tagName)).toEqual([child]);
 		});
 	});
 

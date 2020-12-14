@@ -5,7 +5,10 @@ import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
 import Attr from '../../attribute/Attr';
 
 /**
- * HTMLElement.
+ * HTML Element.
+ *
+ * Reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
  */
 export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly accessKey = '';
@@ -233,5 +236,27 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		if (attribute.name === 'style' && this._style) {
 			this._style.cssText = '';
 		}
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): IHTMLElement {
+		const clone = <HTMLElement>super.cloneNode(deep);
+
+		(<string>clone.accessKey) = this.accessKey;
+		(<string>clone.accessKeyLabel) = this.accessKeyLabel;
+		(<string>clone.contentEditable) = this.contentEditable;
+		(<boolean>clone.isContentEditable) = this.isContentEditable;
+
+		if (this._style) {
+			clone._style.cssText = this._style.cssText;
+		}
+
+		return clone;
 	}
 }

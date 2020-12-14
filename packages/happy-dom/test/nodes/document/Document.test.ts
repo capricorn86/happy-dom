@@ -1,8 +1,8 @@
 import Window from '../../../src/window/Window';
 import CustomElement from '../../CustomElement';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
-import TextNode from '../../../src/nodes/text-node/TextNode';
-import CommentNode from '../../../src/nodes/comment-node/CommentNode';
+import Text from '../../../src/nodes/text/Text';
+import Comment from '../../../src/nodes/comment/Comment';
 import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment';
 import TreeWalker from '../../../src/tree-walker/TreeWalker';
 import Node from '../../../src/nodes/node/Node';
@@ -147,11 +147,11 @@ describe('Document', () => {
 			expect(document.cookie).toBe('');
 		});
 
-		test('Sets a cookie if expires is in the future.', () => {
+		test('Sets a cookie if it expires is in the future.', () => {
 			const date = new Date();
 			const oneHour = 3600000;
 			date.setTime(date.getTime() + oneHour);
-			const expires = date.getUTCDate();
+			const expires = date.toUTCString();
 			document.cookie = `name=value1; expires=${expires}`;
 			expect(document.cookie).toBe('name=value1');
 		});
@@ -168,6 +168,30 @@ describe('Document', () => {
 			expect(document.cookie).toBe('name');
 			document.cookie = 'name; expires=Thu, 01 Jan 1970 00:00:01 GMT';
 			expect(document.cookie).toBe('');
+		});
+	});
+
+	describe('get body()', () => {
+		test('Returns <body> element.', () => {
+			expect(document.body).toBe(document.children[0].children[1]);
+		});
+	});
+
+	describe('get head()', () => {
+		test('Returns <head> element.', () => {
+			expect(document.head).toBe(document.children[0].children[0]);
+		});
+	});
+
+	describe('get documentElement()', () => {
+		test('Returns <html> element.', () => {
+			expect(document.documentElement).toBe(document.children[0]);
+		});
+	});
+
+	describe('get doctype()', () => {
+		test('Returns DocumentType element.', () => {
+			expect(document.doctype).toBe(document.childNodes[0]);
 		});
 	});
 
@@ -259,11 +283,13 @@ describe('Document', () => {
 			const element = document.createElement('div');
 			const className = 'className';
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(`.${className}`);
-				return [element];
-			});
+			jest
+				.spyOn(ParentNodeUtility, 'getElementsByClassName')
+				.mockImplementation((parentNode, requestedClassName) => {
+					expect(parentNode).toBe(document);
+					expect(requestedClassName).toEqual(className);
+					return [element];
+				});
 
 			expect(document.getElementsByClassName(className)).toEqual([element]);
 		});
@@ -274,11 +300,13 @@ describe('Document', () => {
 			const element = document.createElement('div');
 			const tagName = 'tag-name';
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(tagName);
-				return [element];
-			});
+			jest
+				.spyOn(ParentNodeUtility, 'getElementsByTagName')
+				.mockImplementation((parentNode, requestedTagName) => {
+					expect(parentNode).toBe(document);
+					expect(requestedTagName).toEqual(tagName);
+					return [element];
+				});
 
 			expect(document.getElementsByTagName(tagName)).toEqual([element]);
 		});
@@ -286,19 +314,20 @@ describe('Document', () => {
 
 	describe('getElementsByTagNameNS()', () => {
 		test('Returns an elements by tag name and namespace.', () => {
-			const element1 = document.createElement('div');
-			const element2 = document.createElement('div');
+			const element = document.createElement('div');
 			const tagName = 'tag-name';
+			const namespaceURI = '/namespace/uri/';
 
-			(<string>element1.namespaceURI) = '/namespace/';
+			jest
+				.spyOn(ParentNodeUtility, 'getElementsByTagNameNS')
+				.mockImplementation((parentNode, requestedNamespaceURI, requestedTagName) => {
+					expect(parentNode).toBe(document);
+					expect(requestedNamespaceURI).toEqual(namespaceURI);
+					expect(requestedTagName).toEqual(tagName);
+					return [element];
+				});
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(tagName);
-				return [element1, element2];
-			});
-
-			expect(document.getElementsByTagNameNS('/namespace/', tagName)).toEqual([element1]);
+			expect(document.getElementsByTagNameNS(namespaceURI, tagName)).toEqual([element]);
 		});
 	});
 
@@ -307,11 +336,13 @@ describe('Document', () => {
 			const element = document.createElement('div');
 			const id = 'id';
 
-			jest.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
-				expect(selector).toEqual(`#${id}`);
-				return element;
-			});
+			jest
+				.spyOn(ParentNodeUtility, 'getElementById')
+				.mockImplementation((parentNode, requestedID) => {
+					expect(parentNode).toBe(document);
+					expect(requestedID).toEqual(id);
+					return element;
+				});
 
 			expect(document.getElementById(id)).toEqual(element);
 		});
@@ -603,7 +634,7 @@ describe('Document', () => {
 			const textContent = 'text';
 			const textNode = document.createTextNode(textContent);
 			expect(textNode.textContent).toBe(textContent);
-			expect(textNode instanceof TextNode).toBe(true);
+			expect(textNode instanceof Text).toBe(true);
 		});
 	});
 
@@ -612,7 +643,7 @@ describe('Document', () => {
 			const textContent = 'text';
 			const commentNode = document.createComment(textContent);
 			expect(commentNode.textContent).toBe(textContent);
-			expect(commentNode instanceof CommentNode).toBe(true);
+			expect(commentNode instanceof Comment).toBe(true);
 		});
 	});
 

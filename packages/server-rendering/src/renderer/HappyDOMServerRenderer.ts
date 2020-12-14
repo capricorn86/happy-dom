@@ -1,8 +1,11 @@
 import {
 	Node,
+	INode,
+	HTMLElement,
 	Element,
+	IElement,
 	DocumentType,
-	ShadowRoot,
+	IShadowRoot,
 	SelfClosingElements,
 	UnclosedElements
 } from 'happy-dom';
@@ -36,7 +39,7 @@ export default class HappyDOMServerRenderer {
 	 * @param node Node to render.
 	 * @return Result.
 	 */
-	public render(root: Node): HappyDOMServerRenderResult {
+	public render(root: INode): HappyDOMServerRenderResult {
 		return {
 			html: this.serializeToString(root),
 			css: this.renderOptions.openShadowRoots ? this.shadowRootRenderer.getScopedCSS() : []
@@ -49,10 +52,10 @@ export default class HappyDOMServerRenderer {
 	 * @param element Element to render.
 	 * @return Result.
 	 */
-	private serializeToString(root: Node): string {
+	private serializeToString(root: INode): string {
 		switch (root.nodeType) {
 			case Node.ELEMENT_NODE:
-				const element = <Element>root;
+				const element = <HTMLElement>root;
 				const tagName = element.tagName.toLowerCase();
 
 				if (UnclosedElements.includes(tagName)) {
@@ -61,8 +64,8 @@ export default class HappyDOMServerRenderer {
 					return `<${tagName}${this._getAttributes(element)}/>`;
 				}
 
-				let innerElement = <Element | ShadowRoot>element;
-				let outerElement = element;
+				let innerElement = <IElement | IShadowRoot>element;
+				let outerElement = <IElement>element;
 				let innerHTML = '';
 
 				if (this.renderOptions.openShadowRoots && element.shadowRoot) {
@@ -103,9 +106,9 @@ export default class HappyDOMServerRenderer {
 	 * @param element Element.
 	 * @return Attributes.
 	 */
-	private _getAttributes(element: Element): string {
+	private _getAttributes(element: IElement): string {
 		const attributes = [];
-		for (const attribute of Object.values(element._attributes)) {
+		for (const attribute of Object.values((<Element>element)._attributes)) {
 			if (attribute.value !== null) {
 				attributes.push(attribute.name + '="' + encode(attribute.value) + '"');
 			}

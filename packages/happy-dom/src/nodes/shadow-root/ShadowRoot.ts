@@ -1,15 +1,16 @@
 import DocumentFragment from '../document-fragment/DocumentFragment';
 import XMLParser from '../../xml-parser/XMLParser';
 import XMLSerializer from '../../xml-serializer/XMLSerializer';
-import Element from '../element/Element';
+import IElement from '../element/IElement';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
+import IShadowRoot from './IShadowRoot';
 
 /**
  * ShadowRoot.
  */
-export default class ShadowRoot extends DocumentFragment {
+export default class ShadowRoot extends DocumentFragment implements IShadowRoot {
 	public readonly mode = 'open';
-	public readonly host: Element = null;
+	public readonly host: IElement = null;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 
 	/**
@@ -57,7 +58,7 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): ShadowRoot {
+	public cloneNode(deep = false): IShadowRoot {
 		const clone = <ShadowRoot>super.cloneNode(deep);
 		(<string>clone.mode) = this.mode;
 		return clone;

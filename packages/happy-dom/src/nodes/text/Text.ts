@@ -1,18 +1,31 @@
 import Node from '../node/Node';
 import MutationRecord from '../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../mutation-observer/MutationType';
-import ICharacterData from '../character-data/ICharacterData';
 import CharacterDataUtility from '../character-data/CharacterDataUtility';
-import IElement from '../element/IElement';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility';
 import ChildNodeUtility from '../child-node/ChildNodeUtility';
+import IElement from '../element/IElement';
+import IText from './IText';
 
 /**
- * CommentNode.
+ * Text node.
  */
-export default class CommentNode extends Node implements ICharacterData {
-	public readonly nodeType = Node.COMMENT_NODE;
+export default class Text extends Node implements IText {
+	public readonly nodeType = Node.TEXT_NODE;
 	private _data: string;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param [text] Text.
+	 */
+	constructor(text?: string) {
+		super();
+
+		if (text) {
+			this._data = text;
+		}
+	}
 
 	/**
 	 * Node name.
@@ -20,7 +33,7 @@ export default class CommentNode extends Node implements ICharacterData {
 	 * @return Node name.
 	 */
 	public get nodeName(): string {
-		return '#comment';
+		return '#text';
 	}
 
 	/**
@@ -100,6 +113,15 @@ export default class CommentNode extends Node implements ICharacterData {
 	}
 
 	/**
+	 * Converts to string.
+	 *
+	 * @return String.
+	 */
+	public toString(): string {
+		return '[object Text]';
+	}
+
+	/**
 	 * Previous element sibling.
 	 *
 	 * @return Element.
@@ -115,15 +137,6 @@ export default class CommentNode extends Node implements ICharacterData {
 	 */
 	public get nextElementSibling(): IElement {
 		return NonDocumentChildNodeUtility.nextElementSibling(this);
-	}
-
-	/**
-	 * Converts to string.
-	 *
-	 * @return String.
-	 */
-	public toString(): string {
-		return '[object Comment]';
 	}
 
 	/**
@@ -217,8 +230,8 @@ export default class CommentNode extends Node implements ICharacterData {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): CommentNode {
-		const clone = <CommentNode>super.cloneNode(deep);
+	public cloneNode(deep = false): IText {
+		const clone = <Text>super.cloneNode(deep);
 		clone._data = this._data;
 		return clone;
 	}

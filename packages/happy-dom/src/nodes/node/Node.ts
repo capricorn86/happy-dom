@@ -1,4 +1,3 @@
-import Document from '../document/Document';
 import EventTarget from '../../event/EventTarget';
 import MutationRecord from '../../mutation-observer/MutationRecord';
 import MutationTypeConstant from '../../mutation-observer/MutationType';
@@ -6,6 +5,7 @@ import MutationObserverListener from '../../mutation-observer/MutationListener';
 import Event from '../../event/Event';
 import INode from './INode';
 import DOMException from '../../exception/DOMException';
+import IDocument from '../document/IDocument';
 
 /**
  * Node
@@ -18,11 +18,11 @@ export default class Node extends EventTarget implements INode {
 	public static readonly DOCUMENT_NODE = 9;
 	public static readonly DOCUMENT_TYPE_NODE = 10;
 	public static readonly DOCUMENT_FRAGMENT_NODE = 11;
-	public static ownerDocument: Document = null;
-	public readonly ownerDocument: Document = null;
-	public readonly parentNode: Node = null;
+	public static ownerDocument: IDocument = null;
+	public readonly ownerDocument: IDocument = null;
+	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
-	public readonly childNodes: Node[] = [];
+	public readonly childNodes: INode[] = [];
 
 	// Protected properties
 	protected _isConnected = false;
@@ -115,7 +115,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @return Node.
 	 */
-	public get previousSibling(): Node {
+	public get previousSibling(): INode {
 		if (this.parentNode) {
 			const index = this.parentNode.childNodes.indexOf(this);
 			if (index > 0) {
@@ -130,7 +130,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @return Node.
 	 */
-	public get nextSibling(): Node {
+	public get nextSibling(): INode {
 		if (this.parentNode) {
 			const index = this.parentNode.childNodes.indexOf(this);
 			if (index > -1 && index + 1 < this.parentNode.childNodes.length) {
@@ -145,7 +145,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @return Node.
 	 */
-	public get firstChild(): Node {
+	public get firstChild(): INode {
 		if (this.childNodes.length > 0) {
 			return this.childNodes[0];
 		}
@@ -157,7 +157,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @return Node.
 	 */
-	public get lastChild(): Node {
+	public get lastChild(): INode {
 		if (this.childNodes.length > 0) {
 			return this.childNodes[this.childNodes.length - 1];
 		}
@@ -180,7 +180,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): Node {
+	public cloneNode(deep = false): INode {
 		const clone = new (<typeof Node>this.constructor)();
 
 		for (const node of clone.childNodes.slice()) {
@@ -195,7 +195,7 @@ export default class Node extends EventTarget implements INode {
 			}
 		}
 
-		(<Document>clone.ownerDocument) = this.ownerDocument;
+		(<IDocument>clone.ownerDocument) = this.ownerDocument;
 
 		return clone;
 	}
@@ -206,7 +206,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param  node Node to append.
 	 * @return Appended node.
 	 */
-	public appendChild(node: Node): Node {
+	public appendChild(node: INode): INode {
 		if (node === this) {
 			throw new DOMException('Not possible to append a node as a child of itself.');
 		}
@@ -241,7 +241,7 @@ export default class Node extends EventTarget implements INode {
 
 			for (const observer of this._observers) {
 				if (observer.options.subtree) {
-					node._observe(observer);
+					(<Node>node)._observe(observer);
 				}
 				if (observer.options.childList) {
 					observer.callback([record]);
@@ -257,7 +257,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param node Node to remove
 	 */
-	public removeChild(node: Node): void {
+	public removeChild(node: INode): void {
 		const index = this.childNodes.indexOf(node);
 
 		if (index === -1) {
@@ -276,7 +276,7 @@ export default class Node extends EventTarget implements INode {
 			record.removedNodes = [node];
 
 			for (const observer of this._observers) {
-				node._unobserve(observer);
+				(<Node>node)._unobserve(observer);
 				if (observer.options.childList) {
 					observer.callback([record]);
 				}
@@ -291,7 +291,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param [referenceNode] Node to insert before.
 	 * @return Inserted node.
 	 */
-	public insertBefore(newNode: Node, referenceNode?: Node): Node {
+	public insertBefore(newNode: INode, referenceNode?: INode): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
@@ -324,7 +324,7 @@ export default class Node extends EventTarget implements INode {
 
 			for (const observer of this._observers) {
 				if (observer.options.subtree) {
-					newNode._observe(observer);
+					(<Node>newNode)._observe(observer);
 				}
 				if (observer.options.childList) {
 					observer.callback([record]);
@@ -342,7 +342,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param oldChild Old child.
 	 * @return Replaced node.
 	 */
-	public replaceChild(newChild: Node, oldChild: Node): Node {
+	public replaceChild(newChild: INode, oldChild: INode): INode {
 		this.insertBefore(newChild, oldChild);
 		this.removeChild(oldChild);
 
@@ -387,7 +387,7 @@ export default class Node extends EventTarget implements INode {
 		this._observers.push(listener);
 		if (listener.options.subtree) {
 			for (const node of this.childNodes) {
-				node._observe(listener);
+				(<Node>node)._observe(listener);
 			}
 		}
 	}
@@ -405,7 +405,7 @@ export default class Node extends EventTarget implements INode {
 		}
 		if (listener.options.subtree) {
 			for (const node of this.childNodes) {
-				node._unobserve(listener);
+				(<Node>node)._unobserve(listener);
 			}
 		}
 	}

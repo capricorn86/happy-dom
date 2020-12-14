@@ -1,5 +1,5 @@
-import Node from '../nodes/node/Node';
+import INode from '../nodes/node/INode';
 
 export default interface INodeFilter {
-	acceptNode(node: Node): number;
+	acceptNode(node: INode): number;
 }
