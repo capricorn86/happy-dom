@@ -82,7 +82,11 @@ This package makes it easier to setup servering side rendering of web components
 
 
 
-# Whats New in 1.0.0?
+# Whats New in v2.0.0?
+
+- The methods window.whenAsyncComplete() and window.cancelAsync() has been moved to window.happyDOM.whenAsyncComplete() and window.happyDOM.cancelAsync()
+
+# Whats New in v1.0.0?
 
 - [Lerna](https://lerna.js.org/) is used for managing all packages within a single repository
 

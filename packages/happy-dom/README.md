@@ -92,7 +92,7 @@ const script = new VM.Script(`
 `);
 
 window.location.href = 'http://localhost:8080';
-window.whenAsyncComplete().then(() => {
+window.happyDOM.whenAsyncComplete().then(() => {
     const myContainer = document.querySelector('.myContainer div');
 
     // Will output "Test"
@@ -137,10 +137,22 @@ AsyncWindow extends Window and adds support for fetch(). It also exposes two met
 
 Returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that is resolved when all async tasks has been completed.
 
+```javascript
+window.happyDOM.whenAsyncComplete().then(() => {
+    // Do something when all async task are completed.
+});
+```
+
 **cancelAsync()**
 
 This method will cancel all running async tasks.
 
+```javascript
+setTimeout(() => {
+    // This timeout will be canceled
+});
+window.happyDOM.cancelAsync();
+```
 
 # Performance
 

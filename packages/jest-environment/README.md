@@ -109,7 +109,7 @@ When testing asynchrounous code it is possible to wait for asynchrounous tasks t
 describe('scrollToTop()', () => {
     it('scrolls to top using the built in browser animation', async () => {
         element.scrollToTop();
-        await whenAsyncComplete();
+        await happyDOM.whenAsyncComplete();
         expect(document.documentElement.scrollTop).toBe(0);
     });
 });
