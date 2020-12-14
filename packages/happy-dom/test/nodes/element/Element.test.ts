@@ -755,7 +755,7 @@ describe('Element', () => {
 				element[functionName]({ left: 50, top: 60, behavior: 'smooth' });
 				expect(element.scrollLeft).toBe(0);
 				expect(element.scrollTop).toBe(0);
-				await window.whenAsyncComplete();
+				await window.happyDOM.whenAsyncComplete();
 				expect(element.scrollLeft).toBe(50);
 				expect(element.scrollTop).toBe(60);
 			});

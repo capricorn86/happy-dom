@@ -11,6 +11,12 @@ const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
  * The async Window makes it possible to wait for asyncrounous tasks to complete by calling the method whenAsyncComplete(). It also adds support for the method fetch().
  */
 export default class AsyncWindow extends Window {
+	// Public Properties
+	public happyDOM: {
+		whenAsyncComplete: () => Promise<void>;
+		cancelAsync: () => void;
+	} = null;
+
 	// Private Properties
 	private _asyncTaskManager = new AsyncTaskManager();
 
@@ -19,6 +25,15 @@ export default class AsyncWindow extends Window {
 	 */
 	constructor() {
 		super();
+
+		this.happyDOM = {
+			whenAsyncComplete: async () => {
+				return this._asyncTaskManager.whenComplete();
+			},
+			cancelAsync: () => {
+				this._asyncTaskManager.cancelAllTasks();
+			}
+		};
 
 		// Binds all methods to "this", so that it will use the correct context when called globally.
 		for (const key of Object.keys(AsyncWindow.prototype)) {
@@ -153,22 +168,5 @@ export default class AsyncWindow extends Window {
 					this._asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
 				});
 		});
-	}
-
-	/**
-	 * Returns a promise that is fulfilled when async tasks are complete.
-	 * This method is not part of the HTML standard.
-	 *
-	 * @returns Promise.
-	 */
-	public async whenAsyncComplete(): Promise<void> {
-		return this._asyncTaskManager.whenComplete();
-	}
-
-	/**
-	 * Cancels all async tasks running.
-	 */
-	public cancelAsync(): void {
-		this._asyncTaskManager.cancelAllTasks();
 	}
 }

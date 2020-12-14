@@ -115,7 +115,7 @@ describe('AsyncWindow', () => {
 		});
 	});
 
-	describe('whenAsyncComplete()', () => {
+	describe('happyDOM.whenAsyncComplete()', () => {
 		test('Resolves the Promise returned by whenAsyncComplete() when all async tasks has been completed.', async () => {
 			jest.spyOn(window, 'fetch').mockImplementation(() => {
 				return Promise.resolve({
@@ -125,7 +125,7 @@ describe('AsyncWindow', () => {
 			});
 
 			let isFirstWhenAsyncCompleteCalled = false;
-			window.whenAsyncComplete().then(() => {
+			window.happyDOM.whenAsyncComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;
 			});
 			let tasksDone = 0;
@@ -155,13 +155,13 @@ describe('AsyncWindow', () => {
 					tasksDone++;
 				})
 			);
-			await window.whenAsyncComplete();
+			await window.happyDOM.whenAsyncComplete();
 			expect(tasksDone).toBe(6);
 			expect(isFirstWhenAsyncCompleteCalled).toBe(true);
 		});
 	});
 
-	describe('cancelAsync()', () => {
+	describe('happyDOM.cancelAsync()', () => {
 		test('Cancels all ongoing asynchrounous tasks.', done => {
 			jest.spyOn(window, 'fetch').mockImplementation(() => {
 				return Promise.resolve({
@@ -171,7 +171,7 @@ describe('AsyncWindow', () => {
 			});
 
 			let isFirstWhenAsyncCompleteCalled = false;
-			window.whenAsyncComplete().then(() => {
+			window.happyDOM.whenAsyncComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;
 			});
 			let tasksDone = 0;
@@ -203,11 +203,11 @@ describe('AsyncWindow', () => {
 			);
 
 			let isSecondWhenAsyncCompleteCalled = false;
-			window.whenAsyncComplete().then(() => {
+			window.happyDOM.whenAsyncComplete().then(() => {
 				isSecondWhenAsyncCompleteCalled = true;
 			});
 
-			window.cancelAsync();
+			window.happyDOM.cancelAsync();
 
 			expect(tasksDone).toBe(0);
 
@@ -225,7 +225,7 @@ describe('AsyncWindow', () => {
 				window[functionName]({ left: 50, top: 60, behavior: 'smooth' });
 				expect(window.document.documentElement.scrollLeft).toBe(0);
 				expect(window.document.documentElement.scrollTop).toBe(0);
-				await window.whenAsyncComplete();
+				await window.happyDOM.whenAsyncComplete();
 				expect(window.document.documentElement.scrollLeft).toBe(50);
 				expect(window.document.documentElement.scrollTop).toBe(60);
 			});

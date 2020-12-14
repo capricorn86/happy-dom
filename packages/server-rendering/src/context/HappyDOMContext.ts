@@ -64,7 +64,7 @@ export default class HappyDOMContext {
 				global.eval = () => {};
 			}
 
-			window
+			window.happyDOM
 				.whenAsyncComplete()
 				.then(() => {
 					if (customElements.addCSSToHead) {
@@ -95,7 +95,7 @@ export default class HappyDOMContext {
 	 * Disposes the render.
 	 */
 	public dispose(): void {
-		this.window.cancelAsync();
+		this.window.happyDOM.cancelAsync();
 	}
 
 	/**

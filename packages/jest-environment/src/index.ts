@@ -73,7 +73,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	public async teardown(): Promise<void> {
 		this.fakeTimers.dispose();
 		this.fakeTimersModern.dispose();
-		this.global.cancelAsync();
+		this.global.happyDOM.cancelAsync();
 
 		this.global = null;
 		this.moduleMocker = null;
