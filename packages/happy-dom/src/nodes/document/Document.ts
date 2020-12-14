@@ -493,10 +493,10 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Creates a text node.
 	 *
-	 * @param  data Text data.
+	 * @param [data] Text data.
 	 * @returns Text node.
 	 */
-	public createTextNode(data: string): ICharacterData {
+	public createTextNode(data?: string): ICharacterData {
 		Text.ownerDocument = this;
 		return new Text(data);
 	}
@@ -504,10 +504,10 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Creates a comment node.
 	 *
-	 * @param  data Text data.
+	 * @param [data] Text data.
 	 * @returns Text node.
 	 */
-	public createComment(data: string): ICharacterData {
+	public createComment(data?: string): ICharacterData {
 		Comment.ownerDocument = this;
 		return new Comment(data);
 	}
