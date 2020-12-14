@@ -1,10 +1,16 @@
 import SVGElement from './SVGElement';
 import DOMRect from '../element/DOMRect';
+import DOMMatrix from './DOMMatrix';
+import ISVGGraphicsElement from './ISVGGraphicsElement';
 
 /**
- * SVGGraphicsElement.
+ * SVG Graphics Element.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGGraphicsElement
  */
-export default class SVGGraphicsElement extends SVGElement {
+export default class SVGGraphicsElement extends SVGElement implements ISVGGraphicsElement {
+	public readonly transform = {};
+
 	/**
 	 * Returns DOM rect.
 	 *
@@ -12,5 +18,23 @@ export default class SVGGraphicsElement extends SVGElement {
 	 */
 	public getBBox(): DOMRect {
 		return new DOMRect();
+	}
+
+	/**
+	 * Returns CTM.
+	 *
+	 * @returns CTM.
+	 */
+	public getCTM(): DOMMatrix {
+		return new DOMMatrix();
+	}
+
+	/**
+	 * Returns screen CTM.
+	 *
+	 * @returns Screen CTM.
+	 */
+	public getScreenCTM(): DOMMatrix {
+		return new DOMMatrix();
 	}
 }

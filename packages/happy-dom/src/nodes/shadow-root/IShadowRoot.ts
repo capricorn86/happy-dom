@@ -1,11 +1,20 @@
+import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import IElement from '../element/IElement';
-import IParentNode from '../parent-node/IParentNode';
 
 /**
  * ShadowRoot.
  */
-export default interface IShadowRoot extends IParentNode {
+export default interface IShadowRoot extends IDocumentFragment {
 	mode: string;
 	innerHTML: string;
 	host: IElement;
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	cloneNode(deep: boolean): IShadowRoot;
 }

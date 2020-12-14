@@ -1,4 +1,6 @@
 import Element from '../nodes/element/Element';
+import IElement from '../nodes/element/IElement';
+import INode from '../nodes/node/INode';
 import Node from '../nodes/node/Node';
 import SelectorItem from './SelectorItem';
 
@@ -20,7 +22,7 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll(node: Node, selector: string): Element[] {
+	public static querySelectorAll(node: INode, selector: string): IElement[] {
 		const matched = [];
 
 		for (const parts of this.getSelectorParts(selector)) {
@@ -41,7 +43,7 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @return HTML element.
 	 */
-	public static querySelector(node: Node, selector: string): Element {
+	public static querySelector(node: INode, selector: string): IElement {
 		for (const parts of this.getSelectorParts(selector)) {
 			const match = this.findFirst(node, [node], parts);
 
@@ -63,11 +65,11 @@ export default class QuerySelector {
 	 * @returns HTML elements.
 	 */
 	private static findAll(
-		rootNode: Node,
-		nodes: Node[],
+		rootNode: INode,
+		nodes: INode[],
 		selectorParts: string[],
 		selectorItem?: SelectorItem
-	): Element[] {
+	): IElement[] {
 		const isDirectChild = selectorParts[0] === '>';
 		if (isDirectChild) {
 			selectorParts = selectorParts.slice(1);
@@ -107,11 +109,11 @@ export default class QuerySelector {
 	 * @return HTML element.
 	 */
 	private static findFirst(
-		rootNode: Node,
-		nodes: Node[],
+		rootNode: INode,
+		nodes: INode[],
 		selectorParts: string[],
 		selectorItem?: SelectorItem
-	): Element {
+	): IElement {
 		const isDirectChild = selectorParts[0] === '>';
 		if (isDirectChild) {
 			selectorParts = selectorParts.slice(1);

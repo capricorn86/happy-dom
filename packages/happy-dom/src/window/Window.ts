@@ -2,8 +2,8 @@ import CustomElementRegistry from '../custom-element/CustomElementRegistry';
 import Document from '../nodes/document/Document';
 import Node from '../nodes/node/Node';
 import NodeFilter from '../tree-walker/NodeFilter';
-import TextNode from '../nodes/text-node/TextNode';
-import CommentNode from '../nodes/comment-node/CommentNode';
+import Text from '../nodes/text/Text';
+import Comment from '../nodes/comment/Comment';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot';
 import Element from '../nodes/element/Element';
 import HTMLElement from '../nodes/html-element/HTMLElement';
@@ -47,8 +47,8 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	// Global classes
 	public Node = Node;
 	public HTMLElement = HTMLElement;
-	public TextNode = TextNode;
-	public CommentNode = CommentNode;
+	public Text = Text;
+	public Comment = Comment;
 	public ShadowRoot = ShadowRoot;
 	public Element = Element;
 	public DocumentFragment = DocumentFragment;

@@ -5,7 +5,7 @@ import CustomElement from '../../CustomElement';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot';
 import Document from '../../../src/nodes/document/Document';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
-import TextNode from '../../../src/nodes/text-node/TextNode';
+import Text from '../../../src/nodes/text/Text';
 import DOMRect from '../../../src/nodes/element/DOMRect';
 import Range from '../../../src/nodes/element/Range';
 import NamespaceURI from '../../../src/config/NamespaceURI';
@@ -117,7 +117,7 @@ describe('Element', () => {
 
 			expect(element.textContent).toBe('new_text');
 			expect(element.childNodes.length).toBe(1);
-			expect((<TextNode>element.childNodes[0]).textContent).toBe('new_text');
+			expect((<Text>element.childNodes[0]).textContent).toBe('new_text');
 		});
 	});
 

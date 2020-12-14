@@ -1,8 +1,8 @@
 import Window from '../../../src/window/Window';
 import CustomElement from '../../CustomElement';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
-import TextNode from '../../../src/nodes/text-node/TextNode';
-import CommentNode from '../../../src/nodes/comment-node/CommentNode';
+import Text from '../../../src/nodes/text/Text';
+import Comment from '../../../src/nodes/comment/Comment';
 import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment';
 import TreeWalker from '../../../src/tree-walker/TreeWalker';
 import Node from '../../../src/nodes/node/Node';
@@ -147,11 +147,11 @@ describe('Document', () => {
 			expect(document.cookie).toBe('');
 		});
 
-		test('Sets a cookie if expires is in the future.', () => {
+		test('Sets a cookie if it expires is in the future.', () => {
 			const date = new Date();
 			const oneHour = 3600000;
 			date.setTime(date.getTime() + oneHour);
-			const expires = date.getUTCDate();
+			const expires = date.toUTCString();
 			document.cookie = `name=value1; expires=${expires}`;
 			expect(document.cookie).toBe('name=value1');
 		});
@@ -634,7 +634,7 @@ describe('Document', () => {
 			const textContent = 'text';
 			const textNode = document.createTextNode(textContent);
 			expect(textNode.textContent).toBe(textContent);
-			expect(textNode instanceof TextNode).toBe(true);
+			expect(textNode instanceof Text).toBe(true);
 		});
 	});
 
@@ -643,7 +643,7 @@ describe('Document', () => {
 			const textContent = 'text';
 			const commentNode = document.createComment(textContent);
 			expect(commentNode.textContent).toBe(textContent);
-			expect(commentNode instanceof CommentNode).toBe(true);
+			expect(commentNode instanceof Comment).toBe(true);
 		});
 	});
 

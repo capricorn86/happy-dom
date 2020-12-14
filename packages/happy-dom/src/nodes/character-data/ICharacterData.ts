@@ -44,4 +44,13 @@ export default interface ICharacterData extends IChildNode, INonDocumentTypeChil
 	 * @param count Count.
 	 */
 	substringData(offset: number, count: number): string;
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	cloneNode(deep: boolean): ICharacterData;
 }

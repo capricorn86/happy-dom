@@ -20,7 +20,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	id: string;
 	className: string;
 	innerHTML: string;
-	readonly outerHTML: string;
+	outerHTML: string;
 	readonly attributes: { [k: string]: Attr | number };
 
 	/**
@@ -196,4 +196,13 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param attribute Attribute.
 	 */
 	removeAttributeNode(attribute: Attr): void;
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	cloneNode(deep: boolean): IElement;
 }

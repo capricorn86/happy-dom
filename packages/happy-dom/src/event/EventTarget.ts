@@ -1,9 +1,10 @@
 import Event from './Event';
+import IEventTarget from './IEventTarget';
 
 /**
  * Handles events.
  */
-export default abstract class EventTarget {
+export default abstract class EventTarget implements IEventTarget {
 	protected readonly _listeners: { [k: string]: ((event: Event) => void)[] } = {};
 
 	/**

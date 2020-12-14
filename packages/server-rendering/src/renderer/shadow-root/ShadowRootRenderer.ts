@@ -1,4 +1,4 @@
-import { Element, Node, ShadowRoot } from 'happy-dom';
+import { IHTMLElement, IShadowRoot, Node } from 'happy-dom';
 import ShadowRootCSSCache from './ShadowRootCSSCache';
 import ShadowRootCSSRenderer from './ShadowRootCSSRenderer';
 import IHappyDOMServerRenderOptions from '../IHappyDOMServerRenderOptions';
@@ -27,9 +27,9 @@ export default class ShadowRootRenderer {
 	 * @param options Render options.
 	 * @returns Element clone.
 	 */
-	public getScopedClone(element: Element): Element {
-		const clone = <Element>element.cloneNode(true);
-		clone.shadowRoot = <ShadowRoot>element.shadowRoot.cloneNode(true);
+	public getScopedClone(element: IHTMLElement): IHTMLElement {
+		const clone = <IHTMLElement>element.cloneNode(true);
+		(<IShadowRoot>clone.shadowRoot) = element.shadowRoot.cloneNode(true);
 		this.extractAndScopeCSS(clone);
 		this.moveChildNodesIntoSlots(clone);
 		return clone;
@@ -49,7 +49,7 @@ export default class ShadowRootRenderer {
 	 *
 	 * @param element Element.
 	 */
-	private moveChildNodesIntoSlots(element: Element): void {
+	private moveChildNodesIntoSlots(element: IHTMLElement): void {
 		const slotChildren = {};
 		const slots = Array.from(element.shadowRoot.querySelectorAll('slot'));
 
@@ -84,7 +84,7 @@ export default class ShadowRootRenderer {
 	 *
 	 * @param element Element.
 	 */
-	private extractAndScopeCSS(element: Element): void {
+	private extractAndScopeCSS(element: IHTMLElement): void {
 		const options = this.renderOptions;
 		const cache = this.cssCache;
 
@@ -127,7 +127,7 @@ export default class ShadowRootRenderer {
 	 * @param shadowRoot Shadow root.
 	 * @return CSS.
 	 */
-	private extractCSS(shadowRoot: ShadowRoot): string {
+	private extractCSS(shadowRoot: IShadowRoot): string {
 		const styles = Array.from(shadowRoot.querySelectorAll('style'));
 		let css = '';
 
@@ -145,18 +145,18 @@ export default class ShadowRootRenderer {
 	 * @param element Element to scope.
 	 * @param id Unique ID.
 	 */
-	private scopeChildElements(element: Element | ShadowRoot, id: string): void {
+	private scopeChildElements(element: IHTMLElement | IShadowRoot, id: string): void {
 		if (element.nodeType === Node.ELEMENT_NODE) {
-			(<Element>element).classList.add(id);
+			(<IHTMLElement>element).classList.add(id);
 		}
 
 		if (
 			element.nodeType === Node.DOCUMENT_FRAGMENT_NODE ||
-			(element.nodeType === Node.ELEMENT_NODE && (<Element>element).tagName !== 'slot')
+			(element.nodeType === Node.ELEMENT_NODE && (<IHTMLElement>element).tagName !== 'slot')
 		) {
 			for (let i = 0, max = element.children.length; i < max; i++) {
 				const child = element.children[i];
-				this.scopeChildElements(<Element>child, id);
+				this.scopeChildElements(<IHTMLElement>child, id);
 			}
 		}
 	}

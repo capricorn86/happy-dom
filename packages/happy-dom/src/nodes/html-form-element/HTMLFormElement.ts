@@ -1,10 +1,14 @@
 import HTMLElement from '../html-element/HTMLElement';
-import Element from '../element/Element';
+import IElement from '../element/IElement';
+import IHTMLFormElement from './IHTMLFormElement';
 
 /**
- * HTMLFormElement.
+ * HTML Form Element.
+ *
+ * Reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement
  */
-export default class HTMLFormElement extends HTMLElement {
+export default class HTMLFormElement extends HTMLElement implements IHTMLFormElement {
 	/**
 	 * Returns name.
 	 *
@@ -172,7 +176,7 @@ export default class HTMLFormElement extends HTMLElement {
 	 *
 	 * @returns Elements.
 	 */
-	public get elements(): Element[] {
+	public get elements(): IElement[] {
 		return this.querySelectorAll('input,textarea');
 	}
 
@@ -207,5 +211,16 @@ export default class HTMLFormElement extends HTMLElement {
 	 */
 	public checkValidity(): boolean {
 		return true;
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @override
+	 * @param [deep=false] "true" to clone deep.
+	 * @return Cloned node.
+	 */
+	public cloneNode(deep = false): IHTMLFormElement {
+		return <IHTMLFormElement>super.cloneNode(deep);
 	}
 }

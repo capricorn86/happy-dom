@@ -4,6 +4,8 @@ import SelfClosingElements from '../config/SelfClosingElements';
 import UnclosedElements from '../config/UnclosedElements';
 import DocumentType from '../nodes/document-type/DocumentType';
 import { encode } from 'he';
+import INode from '../nodes/node/INode';
+import IElement from '../nodes/element/IElement';
 
 /**
  * Utility for converting an element to string.
@@ -17,7 +19,7 @@ export default class XMLSerializer {
 	 * @param element Element to render.
 	 * @return Result.
 	 */
-	public serializeToString(root: Node): string {
+	public serializeToString(root: INode): string {
 		switch (root.nodeType) {
 			case Node.ELEMENT_NODE:
 				const element = <Element>root;
@@ -63,9 +65,9 @@ export default class XMLSerializer {
 	 * @param element Element.
 	 * @return Attributes.
 	 */
-	private _getAttributes(element: Element): string {
+	private _getAttributes(element: IElement): string {
 		const attributes = [];
-		for (const attribute of Object.values(element._attributes)) {
+		for (const attribute of Object.values((<Element>element)._attributes)) {
 			if (attribute.value !== null) {
 				attributes.push(attribute.name + '="' + encode(attribute.value) + '"');
 			}

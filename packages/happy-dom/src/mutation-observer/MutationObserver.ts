@@ -1,4 +1,5 @@
 import DOMException from '../exception/DOMException';
+import INode from '../nodes/node/INode';
 import Node from '../nodes/node/Node';
 import IMutationObserverInit from './IMutationObserverInit';
 import MutationObserverListener from './MutationListener';
@@ -11,7 +12,7 @@ import MutationRecord from './MutationRecord';
  */
 export default class MutationObserver {
 	private callback: (records: MutationRecord[]) => void;
-	private target: Node = null;
+	private target: INode = null;
 	private listener: MutationObserverListener = null;
 
 	/**
@@ -29,7 +30,7 @@ export default class MutationObserver {
 	 * @param target Target.
 	 * @param options Options.
 	 */
-	public observe(target: Node, options: IMutationObserverInit): void {
+	public observe(target: INode, options: IMutationObserverInit): void {
 		if (!target) {
 			throw new DOMException(
 				'Failed to observer. The first parameter "target" should be of type "Node".'
@@ -47,14 +48,14 @@ export default class MutationObserver {
 		this.listener.options = options;
 		this.listener.callback = this.callback.bind(this);
 
-		target._observe(this.listener);
+		(<Node>target)._observe(this.listener);
 	}
 
 	/**
 	 * Disconnects.
 	 */
 	public disconnect(): void {
-		this.target._unobserve(this.listener);
+		(<Node>this.target)._unobserve(this.listener);
 	}
 
 	/**

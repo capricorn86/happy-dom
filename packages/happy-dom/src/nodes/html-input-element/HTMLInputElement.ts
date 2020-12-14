@@ -1,6 +1,5 @@
 import File from '../../file/File';
 import HTMLElement from '../html-element/HTMLElement';
-import HTMLFormElement from '../html-form-element/HTMLFormElement';
 import ValidityState from './ValidityState';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
@@ -8,6 +7,9 @@ import Event from '../../event/Event';
 import HTMLInputElementValueSanitizer from './HTMLInputElementValueSanitizer';
 import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum';
 import HTMLInputElementSelectionDirectionEnum from './HTMLInputElementSelectionDirectionEnum';
+import IHTMLInputElement from './IHTMLInputElement';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
+import IHTMLElement from '../html-element/IHTMLElement';
 
 /**
  * HTML Input Element.
@@ -18,7 +20,7 @@ import HTMLInputElementSelectionDirectionEnum from './HTMLInputElementSelectionD
  * Used as reference for some of the logic (like selection range):
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/nodes/HTMLInputElement-impl.js (MIT licensed)
  */
-export default class HTMLInputElement extends HTMLElement {
+export default class HTMLInputElement extends HTMLElement implements IHTMLInputElement {
 	// Related to parent form.
 	public formAction = '';
 	public formMethod = '';
@@ -718,12 +720,12 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @return Form.
 	 */
-	public get form(): HTMLFormElement {
-		let parent = <HTMLElement>this.parentNode;
+	public get form(): IHTMLFormElement {
+		let parent = <IHTMLElement>this.parentNode;
 		while (parent && parent.tagName !== 'FORM') {
-			parent = <HTMLElement>this.parentNode;
+			parent = <IHTMLElement>this.parentNode;
 		}
-		return <HTMLFormElement>parent;
+		return <IHTMLFormElement>parent;
 	}
 
 	/**
@@ -811,9 +813,9 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param [direction] Direction.
 	 */
 	public setRangeText(
-		replacement,
-		start = null,
-		end = null,
+		replacement: string,
+		start: number = null,
+		end: number = null,
 		selectionMode = HTMLInputElementSelectionModeEnum.preserve
 	): void {
 		if (!this._isSelectionSupported()) {
@@ -881,7 +883,7 @@ export default class HTMLInputElement extends HTMLElement {
 	/**
 	 * Checks validity.
 	 *
-	 * @return "true" if validation does'nt fail.
+	 * @return "true" if the field is valid.
 	 */
 	public checkValidity(): boolean {
 		return true;
@@ -894,7 +896,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @return Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLInputElement {
+	public cloneNode(deep = false): IHTMLInputElement {
 		const clone = <HTMLInputElement>super.cloneNode(deep);
 		clone.formAction = this.formAction;
 		clone.formMethod = this.formMethod;
