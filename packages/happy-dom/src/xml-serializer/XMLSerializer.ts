@@ -66,12 +66,12 @@ export default class XMLSerializer {
 	 * @return Attributes.
 	 */
 	private _getAttributes(element: IElement): string {
-		const attributes = [];
+		let attributeString = '';
 		for (const attribute of Object.values((<Element>element)._attributes)) {
 			if (attribute.value !== null) {
-				attributes.push(attribute.name + '="' + encode(attribute.value) + '"');
+				attributeString += ' ' + attribute.name + '="' + encode(attribute.value) + '"';
 			}
 		}
-		return attributes.length > 0 ? ' ' + attributes.join(' ') : '';
+		return attributeString;
 	}
 }
