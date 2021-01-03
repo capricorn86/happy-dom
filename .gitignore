@@ -1,7 +1,5 @@
 node_modules
 tmp
-dist.zip
-kompis.code-workspace
 lerna-debug.log
 .vscode
 .idea
