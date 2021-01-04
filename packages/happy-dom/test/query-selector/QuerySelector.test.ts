@@ -108,6 +108,16 @@ describe('QuerySelector', () => {
 			expect(elements[1]).toBe(container.children[0].children[1].children[1]);
 		});
 
+		test('Returns all elements with tag name and matching attributes using "span[attr1=value1]".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('span[attr1=value1]');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0]).toBe(container.children[0].children[1].children[0]);
+			expect(elements[1]).toBe(container.children[0].children[1].children[1]);
+		});
+
 		test('Returns all elements with tag name and matching attributes using "span[attr1=\'value1\']".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;

@@ -1,7 +1,7 @@
 import DOMException from '../exception/DOMException';
 import Element from '../nodes/element/Element';
 
-const ATTRIBUTE_REGEXP = /\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']([^"']+)["']\]/g;
+const ATTRIBUTE_REGEXP = /\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']{0,1}([^"']+)["']{0,1}\]/g;
 const ATTRIBUTE_NAME_REGEXP = /[^a-zA-Z0-9-$]/;
 const PSUEDO_REGEXP = /:([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|:([a-zA-Z-]+)/g;
 const CLASS_REGEXP = /\.([a-zA-Z0-9-_$]+)/g;
