@@ -52,8 +52,7 @@ npm install happy-dom
 
 ## Basic Usage
 
-The example below will show you to Happy DOM can be used for rendering a page.
-
+The example below will show you how to use Happy DOM.
 
 ```javascript
 import { Window } from 'happy-dom';
@@ -61,22 +60,22 @@ import { Window } from 'happy-dom';
 const window = new Window();
 const document = window.document;
 
-document.body.innerHTML = '<div class="myContainer"></div>';
+document.body.innerHTML = '<div class="container"></div>';
 
-const myContainer = document.querySelector('.myContainer');
+const container = document.querySelector('.container');
 const button = document.createElement('button');
 
-myContainer.appendChild(button);
+container.appendChild(button);
 
-// Outputs "<div class="myContainer"><button></button></div>"
-console.log(myContainer.outerHTML);
+// Outputs "<div class="container"><button></button></div>"
+console.log(document.body.innerHTML);
 ```
 
 
 
 ## VM Context
 
-The example below will show you how to setup a Node [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) to render a page in Happy DOM. The [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) can set the Happy DOM window object to be the [global object](https://nodejs.org/api/globals.html) and allows executing code scoped within the context.
+The example below will show you how to setup a Node [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) to render a page in Happy DOM. The [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) can set the Happy DOM window object to be the [global object](https://nodejs.org/api/globals.html) and allow for JavaScript code to be executed scoped within the context.
 
 ```javascript
 import { AsyncWindow } from 'happy-dom';
@@ -86,17 +85,17 @@ const window = VM.createContext(new AsyncWindow());
 const document = window.document;
 const script = new VM.Script(`
     const element = document.createElement('div');
-    const myContainer = document.querySelector('.myContainer');
+    const container = document.querySelector('.container');
     element.innerHTML = 'Test';
-    myContainer.appendChild(element);
+    container.appendChild(element);
 `);
 
 window.location.href = 'http://localhost:8080';
 window.happyDOM.whenAsyncComplete().then(() => {
-    const myContainer = document.querySelector('.myContainer div');
+    const container = document.querySelector('.container div');
 
     // Will output "Test"
-    console.log(myContainer.innerHTML);
+    console.log(container.innerHTML);
 });
 
 document.write(`
@@ -105,7 +104,7 @@ document.write(`
              <title>Test page</title>
         </head>
         <body>
-             <div class="myContainer">
+             <div class="container">
                   <!–– Content will be added here -->
              </div>
         </body>
