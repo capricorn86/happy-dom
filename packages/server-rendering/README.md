@@ -57,7 +57,7 @@ import { HappyDOMContext } from '@happy-dom/server-rendering';
 import { Script } from 'vm';
 
 const context = new HappyDOMContext();
-const result = context.render({
+const result = await context.render({
     url: 'http://localhost:8080',
     evaluateScripts: true,
     html: `
@@ -66,7 +66,7 @@ const result = context.render({
                 <title>Test page</title>
             </head>
             <body>
-                <div class="myContainer">
+                <div class="container">
                     <!–– Content will be added here -->
                 </div>
             </body>
@@ -75,9 +75,9 @@ const result = context.render({
     scripts: [
         new Script(`
             const element = document.createElement('div');
-            const myContainer = document.querySelector('.myContainer');
+            const container = document.querySelector('.container');
             element.innerHTML = 'Test';
-            myContainer.appendChild(element);
+            container.appendChild(element);
         `)
     ],
     customElements: {
@@ -88,7 +88,7 @@ const result = context.render({
     }
 });
 
-// Outputs: <html><head><title>Test page</title></head><body><div class="myContainer">Test</div></body></html>
+// Outputs: <html><head><title>Test page</title></head><body><div class="container"><div>Test</div></div></body></html>
 console.log(result);
 ```
 
