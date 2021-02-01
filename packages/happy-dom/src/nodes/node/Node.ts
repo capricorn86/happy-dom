@@ -6,6 +6,7 @@ import Event from '../../event/Event';
 import INode from './INode';
 import DOMException from '../../exception/DOMException';
 import IDocument from '../document/IDocument';
+import IElement from '../element/IElement';
 
 /**
  * Node
@@ -162,6 +163,19 @@ export default class Node extends EventTarget implements INode {
 			return this.childNodes[this.childNodes.length - 1];
 		}
 		return null;
+	}
+
+	/**
+	 * Returns parent element.
+	 *
+	 * @return Element.
+	 */
+	public get parentElement(): IElement {
+		let parent = this.parentNode;
+		while (parent && parent.nodeType !== Node.ELEMENT_NODE) {
+			parent = this.parentNode;
+		}
+		return <IElement>parent;
 	}
 
 	/**

@@ -126,6 +126,25 @@ describe('Node', () => {
 		});
 	});
 
+	describe('get parentElement()', () => {
+		test('Returns parent element.', () => {
+			const div = document.createElement('div');
+			const span1 = document.createElement('span');
+			const text = document.createTextNode('text');
+
+			span1.appendChild(text);
+			div.appendChild(span1);
+
+			expect(text.parentElement).toBe(span1);
+		});
+
+		test('Returns null if there is no parent node.', () => {
+			const text = document.createTextNode('text');
+
+			expect(text.parentElement).toBe(null);
+		});
+	});
+
 	describe('connectedCallback()', () => {
 		test('Calls connected callback when a custom element is connected to DOM.', () => {
 			const customElement = document.createElement('custom-element');
