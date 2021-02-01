@@ -57,4 +57,11 @@ describe('CSSStyleDeclaration', () => {
 			expect(cssStyleDeclaration.length).toBe(0);
 		});
 	});
+
+	describe('getPropertyValue()', () => {
+		test('Returns a style property.', () => {
+			cssStyleDeclaration.setProperty('background-color', 'green');
+			expect(cssStyleDeclaration.getPropertyValue('background-color')).toBe('green');
+		});
+	});
 });
