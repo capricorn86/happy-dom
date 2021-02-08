@@ -3,6 +3,7 @@ import Node from '../../../src/nodes/node/Node';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
 import QuerySelector from '../../../src/query-selector/QuerySelector';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
+import Text from '../../../src/nodes/text/Text';
 
 describe('DocumentFragment', () => {
 	let window, document, documentFragment;
@@ -62,6 +63,36 @@ describe('DocumentFragment', () => {
 			documentFragment.appendChild(document.createTextNode('test'));
 			documentFragment.appendChild(span);
 			expect(documentFragment.lastElementChild).toEqual(span);
+		});
+	});
+
+	describe('get textContent()', () => {
+		test('Returns text node data of children as a concatenated string.', () => {
+			const div = document.createElement('div');
+			const textNode1 = document.createTextNode('text1');
+			const textNode2 = document.createTextNode('text2');
+			documentFragment.appendChild(div);
+			documentFragment.appendChild(textNode2);
+			div.appendChild(textNode1);
+			expect(documentFragment.textContent).toBe('text1text2');
+		});
+	});
+
+	describe('set textContent()', () => {
+		test('Replaces child nodes with a text node.', () => {
+			const div = document.createElement('div');
+			const textNode1 = document.createTextNode('text1');
+			const textNode2 = document.createTextNode('text2');
+
+			documentFragment.appendChild(div);
+			documentFragment.appendChild(textNode1);
+			documentFragment.appendChild(textNode2);
+
+			documentFragment.textContent = 'new_text';
+
+			expect(documentFragment.textContent).toBe('new_text');
+			expect(documentFragment.childNodes.length).toBe(1);
+			expect((<Text>documentFragment.childNodes[0]).textContent).toBe('new_text');
 		});
 	});
 

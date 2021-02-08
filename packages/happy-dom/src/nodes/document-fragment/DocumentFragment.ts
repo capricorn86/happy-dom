@@ -40,6 +40,33 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	}
 
 	/**
+	 * Get text value of children.
+	 *
+	 * @return Text content.
+	 */
+	public get textContent(): string {
+		let result = '';
+		for (const childNode of this.childNodes) {
+			if (childNode.nodeType === Node.ELEMENT_NODE || childNode.nodeType === Node.TEXT_NODE) {
+				result += childNode.textContent;
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Sets text content.
+	 *
+	 * @param textContent Text content.
+	 */
+	public set textContent(textContent: string) {
+		for (const child of this.childNodes.slice()) {
+			this.removeChild(child);
+		}
+		this.appendChild(this.ownerDocument.createTextNode(textContent));
+	}
+
+	/**
 	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
 	 *
 	 * @param nodes List of Node or DOMString.
