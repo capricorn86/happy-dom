@@ -6,6 +6,7 @@ import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaEle
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
+import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 
 export default {
 	HTMLTemplateElement: HTMLTemplateElement,
@@ -43,7 +44,7 @@ export default {
 	HTMLFieldSetElement: HTMLElement,
 	HTMLFontElement: HTMLElement,
 	HTMLHtmlElement: HTMLElement,
-	HTMLImageElement: HTMLElement,
+	HTMLImageElement: HTMLImageElement,
 	HTMLLabelElement: HTMLElement,
 	HTMLLegendElement: HTMLElement,
 	HTMLMapElement: HTMLElement,
