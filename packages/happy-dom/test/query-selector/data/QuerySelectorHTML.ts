@@ -1,7 +1,7 @@
 export default `
 	<div class="class1 class2">
 		<!-- Comment 1 !-->
-		<b>Bold</b>
+		<h1>Heading1</h1>
 		<!-- Comment 2 !-->
 		<div class="class1 class2">
 			<span class="class1 class2" attr1="value1" attr2="word1 word2" attr3="bracket[]bracket">Span1</span>
@@ -10,7 +10,7 @@ export default `
 	</div>
 	<div>
 		<!-- Comment 1 !-->
-		<b>Bold</b>
+		<h1>Heading1</h1>
 		<!-- Comment 2 !-->
 	</div>
 `.trim();
