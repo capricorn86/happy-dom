@@ -5,7 +5,7 @@ const ATTRIBUTE_REGEXP = /\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[
 const ATTRIBUTE_NAME_REGEXP = /[^a-zA-Z0-9-$]/;
 const PSUEDO_REGEXP = /:([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|:([a-zA-Z-]+)/g;
 const CLASS_REGEXP = /\.([a-zA-Z0-9-_$]+)/g;
-const TAG_NAME_REGEXP = /^[a-zA-Z-]+/;
+const TAG_NAME_REGEXP = /^[a-zA-Z0-9-]+/;
 
 export default class SelectorItem {
 	public isAll: boolean;

@@ -20,10 +20,10 @@ describe('QuerySelector', () => {
 			expect(elements[1]).toBe(container.children[0].children[1].children[1]);
 		});
 
-		test('Returns all b (bold) elements.', () => {
+		test('Returns all h1 (heading 1) elements.', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
-			const elements = container.querySelectorAll('b');
+			const elements = container.querySelectorAll('h1');
 			expect(elements.length).toBe(2);
 			expect(elements[0]).toBe(container.children[0].children[0]);
 			expect(elements[1]).toBe(container.children[1].children[0]);
@@ -221,7 +221,7 @@ describe('QuerySelector', () => {
 		test('Returns all elements with an attribute value that contains a specified value using "[class*="s1 cl"]" or has the tag "b".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
-			const elements = container.querySelectorAll('[class*="s1 cl"], b');
+			const elements = container.querySelectorAll('[class*="s1 cl"], h1');
 
 			expect(elements.length).toBe(6);
 			expect(elements[0]).toBe(container.children[0]);
