@@ -254,7 +254,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		(<boolean>clone.isContentEditable) = this.isContentEditable;
 
 		if (this._style) {
-			clone._style.cssText = this._style.cssText;
+			clone.style.cssText = this._style.cssText;
 		}
 
 		return clone;

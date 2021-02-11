@@ -13,20 +13,14 @@ export default class DOMImplementation {
 	 * @TODO Not fully implemented.
 	 */
 	public createDocument(): Document {
-		return this.createHTMLDocument();
+		return new Document();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
 	public createHTMLDocument(): Document {
-		const document = new Document();
-
-		for (const node of document.childNodes.slice()) {
-			node.parentNode.removeChild(node);
-		}
-
-		return document;
+		return new Document();
 	}
 
 	/**
