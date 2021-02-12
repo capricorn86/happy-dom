@@ -19,6 +19,9 @@ import DOMException from '../../exception/DOMException';
 import IShadowRoot from '../shadow-root/IShadowRoot';
 import INode from '../node/INode';
 import IDocument from '../document/IDocument';
+import IHTMLCollection from './IHTMLCollection';
+import INodeList from '../node/INodeList';
+import HTMLCollectionFactory from './HTMLCollectionFactory';
 
 /**
  * Element.
@@ -30,7 +33,7 @@ export default class Element extends Node implements IElement {
 	public readonly classList = new ClassList(this);
 	public scrollTop = 0;
 	public scrollLeft = 0;
-	public children: IElement[] = [];
+	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public _attributes: { [k: string]: Attr } = {};
 	public readonly namespaceURI: string = null;
 	public static _observedAttributes: string[] = null;
@@ -255,9 +258,11 @@ export default class Element extends Node implements IElement {
 		}
 
 		if (deep) {
-			(<IElement[]>clone.children) = <IElement[]>(
-				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
-			);
+			for (const node of clone.childNodes) {
+				if (node.nodeType === Node.ELEMENT_NODE) {
+					clone.children.push(<IElement>node);
+				}
+			}
 		}
 
 		(<string>clone.tagName) = this.tagName;
@@ -339,9 +344,13 @@ export default class Element extends Node implements IElement {
 				}
 			}
 
-			(<IElement[]>this.children) = <IElement[]>(
-				this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
-			);
+			this.children.length = 0;
+
+			for (const node of this.childNodes) {
+				if (node.nodeType === Node.ELEMENT_NODE) {
+					this.children.push(<IElement>node);
+				}
+			}
 		}
 
 		return returnValue;
@@ -579,7 +588,7 @@ export default class Element extends Node implements IElement {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): IElement[] {
+	public querySelectorAll(selector: string): INodeList<IElement> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -599,7 +608,7 @@ export default class Element extends Node implements IElement {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): IElement[] {
+	public getElementsByClassName(className: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -609,7 +618,7 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IElement[] {
+	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -620,7 +629,7 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[] {
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 

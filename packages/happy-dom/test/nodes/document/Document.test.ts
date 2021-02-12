@@ -16,6 +16,9 @@ import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility'
 import QuerySelector from '../../../src/query-selector/QuerySelector';
 import NodeFilter from '../../../src/tree-walker/NodeFilter';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
+import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
+import IElement from '../../../src/nodes/element/IElement';
+import INodeList from '../../../src/nodes/node/INodeList';
 
 describe('Document', () => {
 	let window: Window;
@@ -256,7 +259,7 @@ describe('Document', () => {
 			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(document);
 				expect(selector).toEqual(expectedSelector);
-				return [element];
+				return <INodeList<IElement>>[element];
 			});
 
 			expect(document.querySelectorAll(expectedSelector)).toEqual([element]);
@@ -288,7 +291,7 @@ describe('Document', () => {
 				.mockImplementation((parentNode, requestedClassName) => {
 					expect(parentNode).toBe(document);
 					expect(requestedClassName).toEqual(className);
-					return [element];
+					return <IHTMLCollection<IElement>>[element];
 				});
 
 			expect(document.getElementsByClassName(className)).toEqual([element]);
@@ -305,7 +308,7 @@ describe('Document', () => {
 				.mockImplementation((parentNode, requestedTagName) => {
 					expect(parentNode).toBe(document);
 					expect(requestedTagName).toEqual(tagName);
-					return [element];
+					return <IHTMLCollection<IElement>>[element];
 				});
 
 			expect(document.getElementsByTagName(tagName)).toEqual([element]);
@@ -324,7 +327,7 @@ describe('Document', () => {
 					expect(parentNode).toBe(document);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return [element];
+					return <IHTMLCollection<IElement>>[element];
 				});
 
 			expect(document.getElementsByTagNameNS(namespaceURI, tagName)).toEqual([element]);

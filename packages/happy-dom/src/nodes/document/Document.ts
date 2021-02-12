@@ -26,6 +26,9 @@ import IDocumentType from '../document-type/IDocumentType';
 import INode from '../node/INode';
 import ICharacterData from '../character-data/ICharacterData';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
+import INodeList from '../node/INodeList';
+import IHTMLCollection from '../element/IHTMLCollection';
+import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 
 /**
  * Document.
@@ -38,7 +41,7 @@ export default class Document extends Node implements IDocument {
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
 	public implementation: DOMImplementation;
-	public readonly children: Element[] = [];
+	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	private _cookie = '';
 
 	/**
@@ -190,7 +193,7 @@ export default class Document extends Node implements IDocument {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): IElement[] {
+	public querySelectorAll(selector: string): INodeList<IElement> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -210,8 +213,8 @@ export default class Document extends Node implements IDocument {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): IElement[] {
-		return <Element[]>ParentNodeUtility.getElementsByClassName(this, className);
+	public getElementsByClassName(className: string): IHTMLCollection<IElement> {
+		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
 	/**
@@ -220,8 +223,8 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IElement[] {
-		return <Element[]>ParentNodeUtility.getElementsByTagName(this, tagName);
+	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
+		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
 	/**
@@ -231,8 +234,8 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[] {
-		return <Element[]>ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement> {
+		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
 	/**
@@ -256,9 +259,11 @@ export default class Document extends Node implements IDocument {
 		const clone = <Document>super.cloneNode(deep);
 
 		if (deep) {
-			(<Element[]>clone.children) = <Element[]>(
-				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
-			);
+			for (const node of clone.childNodes) {
+				if (node.nodeType === Node.ELEMENT_NODE) {
+					clone.children.push(<IElement>node);
+				}
+			}
 		}
 
 		clone.defaultView = this.defaultView;
@@ -329,9 +334,13 @@ export default class Document extends Node implements IDocument {
 				}
 			}
 
-			(<Element[]>this.children) = <Element[]>(
-				this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
-			);
+			this.children.length = 0;
+
+			for (const node of this.childNodes) {
+				if (node.nodeType === Node.ELEMENT_NODE) {
+					this.children.push(<IElement>node);
+				}
+			}
 		}
 
 		return returnValue;

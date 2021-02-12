@@ -150,31 +150,6 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	matches(selector: string): boolean;
 
 	/**
-	 * Returns an elements by tag name.
-	 *
-	 * @param tagName Tag name.
-	 * @returns Matching elements.
-	 */
-	getElementsByTagName(tagName: string): IElement[];
-
-	/**
-	 * Returns an elements by tag name.
-	 *
-	 * @param namespaceURI Namespace URI.
-	 * @param tagName Tag name.
-	 * @returns Matching nodes.
-	 */
-	getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[];
-
-	/**
-	 * Returns an elements by class name.
-	 *
-	 * @param className Tag name.
-	 * @returns Matching nodes.
-	 */
-	getElementsByClassName(className: string): IElement[];
-
-	/**
 	 * The setAttributeNode() method adds a new Attr node to the specified element.
 	 *
 	 * @param attribute Attribute.

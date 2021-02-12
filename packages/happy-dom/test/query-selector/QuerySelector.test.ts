@@ -1,3 +1,4 @@
+import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
 import Window from '../../src/window/Window';
 import QuerySelectorHTML from './data/QuerySelectorHTML';
 import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML';
@@ -18,6 +19,13 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(2);
 			expect(elements[0]).toBe(container.children[0].children[1].children[0]);
 			expect(elements[1]).toBe(container.children[0].children[1].children[1]);
+		});
+
+		test('Returns a NodeList with the method item().', () => {
+			const container = <IHTMLElement>document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('span');
+			expect(elements.item(0)).toBe(container.children[0].children[1].children[0]);
 		});
 
 		test('Returns all h1 (heading 1) elements.', () => {

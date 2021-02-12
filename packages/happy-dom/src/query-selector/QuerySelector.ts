@@ -2,7 +2,9 @@ import Element from '../nodes/element/Element';
 import IElement from '../nodes/element/IElement';
 import INode from '../nodes/node/INode';
 import Node from '../nodes/node/Node';
+import INodeList from '../nodes/node/INodeList';
 import SelectorItem from './SelectorItem';
+import NodeListFactory from '../nodes/node/NodeListFactory';
 
 const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#"*:()\]]+)|([ ,>]+)/g;
 
@@ -22,18 +24,18 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll(node: INode, selector: string): IElement[] {
-		const matched = [];
+	public static querySelectorAll(node: INode, selector: string): INodeList<IElement> {
+		const matches = <INodeList<IElement>>NodeListFactory.create();
 
 		for (const parts of this.getSelectorParts(selector)) {
 			for (const element of this.findAll(node, [node], parts)) {
-				if (!matched.includes(element)) {
-					matched.push(element);
+				if (!matches.includes(element)) {
+					matches.push(element);
 				}
 			}
 		}
 
-		return matched;
+		return matches;
 	}
 
 	/**
