@@ -4,6 +4,8 @@ import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility'
 import QuerySelector from '../../../src/query-selector/QuerySelector';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
 import Text from '../../../src/nodes/text/Text';
+import INodeList from '../../../src/nodes/node/INodeList';
+import IElement from '../../../src/nodes/element/IElement';
 
 describe('DocumentFragment', () => {
 	let window, document, documentFragment;
@@ -157,7 +159,7 @@ describe('DocumentFragment', () => {
 			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(documentFragment);
 				expect(selector).toEqual(expectedSelector);
-				return [element];
+				return <INodeList<IElement>>[element];
 			});
 
 			expect(documentFragment.querySelectorAll(expectedSelector)).toEqual([element]);

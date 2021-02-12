@@ -3,6 +3,8 @@ import Document from '../../../src/nodes/document/Document';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
 import QuerySelector from '../../../src/query-selector/QuerySelector';
 import NamespaceURI from '../../../src/config/NamespaceURI';
+import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
+import IElement from '../../../src/nodes/element/IElement';
 
 describe('ParentNodeUtility', () => {
 	let window: Window;
@@ -120,7 +122,7 @@ describe('ParentNodeUtility', () => {
 			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(parent);
 				expect(selector).toEqual(`.${className}`);
-				return [element];
+				return <IHTMLCollection<IElement>>[element];
 			});
 
 			expect(ParentNodeUtility.getElementsByClassName(parent, className)).toEqual([element]);

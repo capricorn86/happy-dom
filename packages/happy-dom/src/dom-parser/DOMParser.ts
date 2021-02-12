@@ -1,7 +1,6 @@
 import Document from '../nodes/document/Document';
 import XMLParser from '../xml-parser/XMLParser';
 import Node from '../nodes/node/Node';
-import Element from '../nodes/element/Element';
 import DOMException from '../exception/DOMException';
 
 /**
@@ -30,9 +29,8 @@ export default class DOMParser {
 		const newDocument = new Document();
 
 		newDocument.defaultView = ownerDocument.defaultView;
-
-		(<Node[]>newDocument.childNodes) = [];
-		(<Element[]>newDocument.children) = [];
+		newDocument.childNodes.length = 0;
+		newDocument.children.length = 0;
 
 		const root = XMLParser.parse(newDocument, string, true);
 		let documentElement = null;

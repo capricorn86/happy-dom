@@ -7,6 +7,8 @@ import INode from './INode';
 import DOMException from '../../exception/DOMException';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
+import INodeList from './INodeList';
+import NodeListFactory from './NodeListFactory';
 
 /**
  * Node
@@ -23,7 +25,7 @@ export default class Node extends EventTarget implements INode {
 	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
-	public readonly childNodes: INode[] = [];
+	public readonly childNodes: INodeList<INode> = NodeListFactory.create();
 
 	// Protected properties
 	protected _isConnected = false;

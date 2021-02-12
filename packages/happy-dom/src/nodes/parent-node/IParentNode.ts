@@ -1,5 +1,7 @@
+import IHTMLCollection from '../element/IHTMLCollection';
 import IElement from '../element/IElement';
 import INode from '../node/INode';
+import INodeList from '../node/INodeList';
 
 export default interface IParentNode extends INode {
 	readonly childElementCount: number;
@@ -35,7 +37,7 @@ export default interface IParentNode extends INode {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	querySelectorAll(selector: string): IElement[];
+	querySelectorAll(selector: string): INodeList<IElement>;
 
 	/**
 	 * Returns an elements by class name.
@@ -43,7 +45,7 @@ export default interface IParentNode extends INode {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	getElementsByClassName(className: string): IElement[];
+	getElementsByClassName(className: string): IHTMLCollection<IElement>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -51,7 +53,7 @@ export default interface IParentNode extends INode {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	getElementsByTagName(tagName: string): IElement[];
+	getElementsByTagName(tagName: string): IHTMLCollection<IElement>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -60,7 +62,7 @@ export default interface IParentNode extends INode {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	getElementsByTagNameNS(namespaceURI: string, tagName: string): IElement[];
+	getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement>;
 
 	/**
 	 * Replaces the existing children of a node with a specified new set of children.

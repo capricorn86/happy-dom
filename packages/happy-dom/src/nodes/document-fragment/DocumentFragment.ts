@@ -4,13 +4,15 @@ import QuerySelector from '../../query-selector/QuerySelector';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility';
 import IDocumentFragment from './IDocumentFragment';
 import INode from '../node/INode';
+import IHTMLCollection from '../element/IHTMLCollection';
+import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 
 /**
  * DocumentFragment.
  */
 export default class DocumentFragment extends Node implements IDocumentFragment {
 	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
-	public readonly children: IElement[] = [];
+	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 
 	/**
 	 * Last element child.
@@ -134,11 +136,11 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 		const clone = <IDocumentFragment>super.cloneNode(deep);
 
 		if (deep) {
-			const children = <IElement[]>(
-				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
-			);
-
-			(<IElement[]>clone.children) = children;
+			for (const node of clone.childNodes) {
+				if (node.nodeType === Node.ELEMENT_NODE) {
+					clone.children.push(<IElement>node);
+				}
+			}
 		}
 
 		return <IDocumentFragment>clone;
@@ -208,9 +210,13 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 				}
 			}
 
-			(<IElement[]>this.children) = <IElement[]>(
-				this.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
-			);
+			this.children.length = 0;
+
+			for (const node of this.childNodes) {
+				if (node.nodeType === Node.ELEMENT_NODE) {
+					this.children.push(<IElement>node);
+				}
+			}
 		}
 
 		return returnValue;

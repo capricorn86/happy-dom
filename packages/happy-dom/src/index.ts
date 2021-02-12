@@ -4,6 +4,7 @@ import Document from './nodes/document/Document';
 import IDocument from './nodes/document/IDocument';
 import Element from './nodes/element/Element';
 import IElement from './nodes/element/IElement';
+import IHTMLCollection from './nodes/element/IHTMLCollection';
 import HTMLElement from './nodes/html-element/HTMLElement';
 import IHTMLElement from './nodes/html-element/IHTMLElement';
 import HTMLTemplateElement from './nodes/html-template-element/HTMLTemplateElement';
@@ -26,6 +27,7 @@ import ShadowRoot from './nodes/shadow-root/ShadowRoot';
 import IShadowRoot from './nodes/shadow-root/IShadowRoot';
 import Node from './nodes/node/Node';
 import INode from './nodes/node/INode';
+import INodeList from './nodes/node/INodeList';
 import Text from './nodes/text/Text';
 import IText from './nodes/text/IText';
 import Comment from './nodes/comment/Comment';
@@ -48,6 +50,7 @@ export {
 	IDocument,
 	Element,
 	IElement,
+	IHTMLCollection,
 	HTMLElement,
 	IHTMLElement,
 	HTMLTemplateElement,
@@ -70,6 +73,7 @@ export {
 	IShadowRoot,
 	Node,
 	INode,
+	INodeList,
 	Text,
 	IText,
 	Comment,

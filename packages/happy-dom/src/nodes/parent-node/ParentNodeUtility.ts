@@ -3,7 +3,9 @@ import XMLParser from '../../xml-parser/XMLParser';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
+import IHTMLCollection from '../element/IHTMLCollection';
 import INode from '../node/INode';
+import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 
 /**
  * Parent node utility.
@@ -75,7 +77,10 @@ export default class ParentNodeUtility {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public static getElementsByClassName(parentNode: INode, className: string): IElement[] {
+	public static getElementsByClassName(
+		parentNode: INode,
+		className: string
+	): IHTMLCollection<IElement> {
 		return QuerySelector.querySelectorAll(parentNode, '.' + className.split(' ').join('.'));
 	}
 
@@ -89,15 +94,17 @@ export default class ParentNodeUtility {
 	public static getElementsByTagName(
 		parentNode: IElement | IDocumentFragment | IDocument,
 		tagName: string
-	): IElement[] {
+	): IHTMLCollection<IElement> {
 		const upperTagName = tagName.toUpperCase();
-		let matches = [];
+		const matches = HTMLCollectionFactory.create();
 
 		for (const child of parentNode.children) {
 			if (child.tagName === upperTagName) {
 				matches.push(child);
 			}
-			matches = matches.concat(this.getElementsByTagName(<IElement>child, tagName));
+			for (const match of this.getElementsByTagName(<IElement>child, tagName)) {
+				matches.push(match);
+			}
 		}
 
 		return matches;
@@ -115,15 +122,17 @@ export default class ParentNodeUtility {
 		parentNode: IElement | IDocumentFragment | IDocument,
 		namespaceURI: string,
 		tagName: string
-	): IElement[] {
+	): IHTMLCollection<IElement> {
 		const upperTagName = tagName.toUpperCase();
-		let matches = [];
+		const matches = HTMLCollectionFactory.create();
 
 		for (const child of parentNode.children) {
 			if (child.tagName === upperTagName && child.namespaceURI === namespaceURI) {
 				matches.push(child);
 			}
-			matches = matches.concat(this.getElementsByTagNameNS(<IElement>child, namespaceURI, tagName));
+			for (const match of this.getElementsByTagNameNS(<IElement>child, namespaceURI, tagName)) {
+				matches.push(match);
+			}
 		}
 
 		return matches;

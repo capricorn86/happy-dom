@@ -14,6 +14,9 @@ import QuerySelector from '../../../src/query-selector/QuerySelector';
 import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility';
 import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
+import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
+import IElement from '../../../src/nodes/element/IElement';
+import INodeList from '../../../src/nodes/node/INodeList';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -336,7 +339,7 @@ describe('Element', () => {
 			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(document);
 				expect(selector).toEqual(expectedSelector);
-				return [element];
+				return <INodeList<IElement>>[element];
 			});
 
 			expect(document.querySelectorAll(expectedSelector)).toEqual([element]);
@@ -368,7 +371,7 @@ describe('Element', () => {
 				.mockImplementation((parentNode, requestedClassName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedClassName).toEqual(className);
-					return [child];
+					return <IHTMLCollection<IElement>>[child];
 				});
 
 			expect(element.getElementsByClassName(className)).toEqual([child]);
@@ -385,7 +388,7 @@ describe('Element', () => {
 				.mockImplementation((parentNode, requestedTagName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedTagName).toEqual(tagName);
-					return [child];
+					return <IHTMLCollection<IElement>>[child];
 				});
 
 			expect(element.getElementsByTagName(tagName)).toEqual([child]);
@@ -404,7 +407,7 @@ describe('Element', () => {
 					expect(parentNode).toBe(element);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return [child];
+					return <IHTMLCollection<IElement>>[child];
 				});
 
 			expect(element.getElementsByTagNameNS(namespaceURI, tagName)).toEqual([child]);
