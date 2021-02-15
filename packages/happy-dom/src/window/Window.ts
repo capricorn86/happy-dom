@@ -220,8 +220,10 @@ export default class Window extends EventTarget implements NodeJS.Global {
 			vm = require('vm');
 		}
 
-		if (global && vm) {
+		if (global && vm && vm.isContext(this)) {
 			vm.runInContext(code, this);
+		} else if (global && global.eval) {
+			global.eval(code);
 		}
 	}
 
