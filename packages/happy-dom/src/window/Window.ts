@@ -162,7 +162,6 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public encodeURI = global ? global.encodeURI : null;
 	public encodeURIComponent = global ? global.encodeURIComponent : null;
 	public escape = global ? global.escape : null;
-	public eval = global ? global.eval : null;
 	public global = null;
 	public isFinite = global ? global.isFinite : null;
 	public isNaN = global ? global.isNaN : null;
@@ -203,10 +202,34 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	}
 
 	/**
+	 * Evaluates code.
+	 *
+	 * @param code Code.
+	 */
+	public eval(code: string): void {
+		let vmExists = false;
+		let vm = null;
+
+		try {
+			vmExists = !!require.resolve('vm');
+		} catch (error) {
+			// Ignore error;
+		}
+
+		if (vmExists) {
+			vm = require('vm');
+		}
+
+		if (global && vm) {
+			vm.runInContext(code, this);
+		}
+	}
+
+	/**
 	 * Returns an object containing the values of all CSS properties of an element.
 	 *
 	 * @param element Element.
-	 * @returns CSS style declaration
+	 * @returns CSS style declaration.
 	 */
 	public getComputedStyle(element: HTMLElement): CSSStyleDeclaration {
 		return new CSSStyleDeclaration(element._attributes, element);

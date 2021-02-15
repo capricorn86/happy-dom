@@ -39,7 +39,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 			}
 
 			if (this._evaluateScript) {
-				eval(this.textContent);
+				this.ownerDocument.defaultView.eval(this.textContent);
 			}
 
 			if (isConnected && this.connectedCallback) {
