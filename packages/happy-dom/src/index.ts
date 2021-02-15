@@ -15,6 +15,8 @@ import HTMLInputElement from './nodes/html-input-element/HTMLInputElement';
 import IHTMLInputElement from './nodes/html-input-element/IHTMLInputElement';
 import HTMLTextAreaElement from './nodes/html-text-area-element/HTMLTextAreaElement';
 import IHTMLTextAreaElement from './nodes/html-text-area-element/IHTMLTextAreaElement';
+import HTMLImageElement from './nodes/html-image-element/HTMLImageElement';
+import IHTMLImageElement from './nodes/html-image-element/IHTMLImageElement';
 import SVGElement from './nodes/svg-element/SVGElement';
 import ISVGElement from './nodes/svg-element/ISVGElement';
 import SVGGraphicsElement from './nodes/svg-element/SVGGraphicsElement';
@@ -61,6 +63,8 @@ export {
 	IHTMLInputElement,
 	HTMLTextAreaElement,
 	IHTMLTextAreaElement,
+	HTMLImageElement,
+	IHTMLImageElement,
 	SVGElement,
 	ISVGElement,
 	SVGGraphicsElement,
