@@ -4,7 +4,10 @@ import Node from '../nodes/node/Node';
 import DOMException from '../exception/DOMException';
 
 /**
- * HTML parser.
+ * DOM parser.
+ *
+ * Reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser
  */
 export default class DOMParser {
 	public static _ownerDocument: Document = null;
