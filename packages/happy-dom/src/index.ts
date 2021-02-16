@@ -1,5 +1,6 @@
 import Window from './window/Window';
 import AsyncWindow from './window/AsyncWindow';
+import DOMParser from './dom-parser/DOMParser';
 import Document from './nodes/document/Document';
 import IDocument from './nodes/document/IDocument';
 import Element from './nodes/element/Element';
@@ -48,6 +49,7 @@ import CSSStyleSheet from './css/CSSStyleSheet';
 export {
 	AsyncWindow,
 	Window,
+	DOMParser,
 	Document,
 	IDocument,
 	Element,
