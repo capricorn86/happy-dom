@@ -1,5 +1,8 @@
 import CustomElementRegistry from '../custom-element/CustomElementRegistry';
 import Document from '../nodes/document/Document';
+import HTMLDocument from '../nodes/html-document/HTMLDocument';
+import XMLDocument from '../nodes/xml-document/XMLDocument';
+import SVGDocument from '../nodes/svg-document/SVGDocument';
 import Node from '../nodes/node/Node';
 import NodeFilter from '../tree-walker/NodeFilter';
 import Text from '../nodes/text/Text';
@@ -73,6 +76,9 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public DOMParser = DOMParser;
 	public MutationObserver = MutationObserver;
 	public Document = Document;
+	public HTMLDocument = HTMLDocument;
+	public XMLDocument = XMLDocument;
+	public SVGDocument = SVGDocument;
 	public Event = Event;
 	public UIEvent = UIEvent;
 	public CustomEvent = CustomEvent;
@@ -182,7 +188,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	constructor() {
 		super();
 
-		this.document = new Document();
+		this.document = new HTMLDocument();
 		this.document.defaultView = this;
 
 		DOMParser._ownerDocument = DOMParser._ownerDocument || this.document;

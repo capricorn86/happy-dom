@@ -2,6 +2,9 @@ import Document from '../nodes/document/Document';
 import XMLParser from '../xml-parser/XMLParser';
 import Node from '../nodes/node/Node';
 import DOMException from '../exception/DOMException';
+import HTMLDocument from '../nodes/html-document/HTMLDocument';
+import XMLDocument from '../nodes/xml-document/XMLDocument';
+import SVGDocument from '../nodes/svg-document/SVGDocument';
 
 /**
  * DOM parser.
@@ -24,12 +27,8 @@ export default class DOMParser {
 			throw new DOMException('Second parameter "mimeType" is mandatory.');
 		}
 
-		if (mimeType !== 'text/html') {
-			throw new DOMException('The DOMParser in Happy DOM only supports the mime type "text/html".');
-		}
-
 		const ownerDocument = (<typeof DOMParser>(<unknown>this.constructor))._ownerDocument;
-		const newDocument = new Document();
+		const newDocument = this._createDocument(mimeType);
 
 		newDocument.defaultView = ownerDocument.defaultView;
 		newDocument.childNodes.length = 0;
@@ -78,5 +77,25 @@ export default class DOMParser {
 		}
 
 		return newDocument;
+	}
+
+	/**
+	 *
+	 * @param mimeType Mime type.
+	 * @returns Document.
+	 */
+	private _createDocument(mimeType: string): Document {
+		switch (mimeType) {
+			case 'text/html':
+				return new HTMLDocument();
+			case 'image/svg+xml':
+				return new SVGDocument();
+			case 'text/xml':
+			case 'application/xml':
+			case 'application/xhtml+xml':
+				return new XMLDocument();
+			default:
+				throw new DOMException(`Unknown mime type "${mimeType}".`);
+		}
 	}
 }

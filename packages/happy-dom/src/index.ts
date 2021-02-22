@@ -3,6 +3,9 @@ import AsyncWindow from './window/AsyncWindow';
 import DOMParser from './dom-parser/DOMParser';
 import Document from './nodes/document/Document';
 import IDocument from './nodes/document/IDocument';
+import HTMLDocument from './nodes/html-document/HTMLDocument';
+import XMLDocument from './nodes/xml-document/XMLDocument';
+import SVGDocument from './nodes/svg-document/SVGDocument';
 import Element from './nodes/element/Element';
 import IElement from './nodes/element/IElement';
 import IHTMLCollection from './nodes/element/IHTMLCollection';
@@ -52,6 +55,9 @@ export {
 	DOMParser,
 	Document,
 	IDocument,
+	HTMLDocument,
+	XMLDocument,
+	SVGDocument,
 	Element,
 	IElement,
 	IHTMLCollection,
