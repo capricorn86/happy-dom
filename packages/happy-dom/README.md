@@ -112,6 +112,7 @@ console.log(document.querySelector('.container div').innerHTML);
 ```
 
 
+
 ## Additional Features
 
 Happy DOM exposes two functions that may be useful when working with asynchrounous code.
@@ -136,6 +137,7 @@ window.setTimeout(() => {
 });
 window.happyDOM.cancelAsync();
 ```
+
 
 
 # Performance
