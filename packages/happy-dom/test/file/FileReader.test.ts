@@ -1,13 +1,13 @@
 import Blob from '../../src/file/Blob';
 import FileReader from '../../src/file/FileReader';
-import AsyncWindow from '../../src/window/AsyncWindow';
+import Window from '../../src/window/Window';
 
 describe('FileReader', () => {
-	let window: AsyncWindow = null;
+	let window: Window = null;
 	let fileReader: FileReader = null;
 
 	beforeEach(() => {
-		window = new AsyncWindow();
+		window = new Window();
 		FileReader._ownerDocument = window.document;
 		fileReader = new FileReader();
 	});

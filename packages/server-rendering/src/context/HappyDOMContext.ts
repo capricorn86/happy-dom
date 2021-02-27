@@ -1,5 +1,5 @@
 import VM from 'vm';
-import { AsyncWindow } from 'happy-dom';
+import { Window } from 'happy-dom';
 import HappyDOMServerRenderer from '../renderer/HappyDOMServerRenderer';
 import HappyDOMServerRenderResult from '../renderer/HappyDOMServerRenderResult';
 
@@ -7,7 +7,7 @@ import HappyDOMServerRenderResult from '../renderer/HappyDOMServerRenderResult';
  * This class is used for rendering a script server side.
  */
 export default class HappyDOMContext {
-	private window: AsyncWindow = new AsyncWindow();
+	private window: Window = new Window();
 
 	/**
 	 * Returns route HTML.

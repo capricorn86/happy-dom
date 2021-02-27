@@ -3,7 +3,7 @@ import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
 import { LegacyFakeTimers, ModernFakeTimers } from '@jest/fake-timers';
 import { JestEnvironment, EnvironmentContext } from '@jest/environment';
-import { AsyncWindow } from 'happy-dom';
+import { Window } from 'happy-dom';
 import { Script } from 'vm';
 import { Global, Config } from '@jest/types';
 
@@ -13,7 +13,7 @@ import { Global, Config } from '@jest/types';
 export default class HappyDOMEnvironment implements JestEnvironment {
 	public fakeTimers: LegacyFakeTimers<number> = null;
 	public fakeTimersModern: ModernFakeTimers = null;
-	public global: Global.Global = <Global.Global>(<undefined>new AsyncWindow());
+	public global: Global.Global = <Global.Global>(<undefined>new Window());
 	public moduleMocker: ModuleMocker = new ModuleMocker(<NodeJS.Global>this.global);
 
 	/**

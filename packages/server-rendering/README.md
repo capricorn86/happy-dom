@@ -72,6 +72,7 @@ const result = await context.render({
             </body>
         </html>
     `,
+    // Optional scripts
     scripts: [
         new Script(`
             const element = document.createElement('div');
@@ -80,10 +81,15 @@ const result = await context.render({
             container.appendChild(element);
         `)
     ],
+    // Optional custom element settings
     customElements: {
+        // Converts custom-elements to normal elements
         openShadowRoots: true,
+        // Extracts CSS from shadow roots
         extractCSS: true,
+        // Scopes extracted CSS
         scopeCSS: true,
+        // Adds CSS to head
         addCSSToHead: true
     }
 });
@@ -91,6 +97,11 @@ const result = await context.render({
 // Outputs: <html><head><title>Test page</title></head><body><div class="container"><div>Test</div></div></body></html>
 console.log(result);
 ```
+
+
+# Known Issues
+
+The functionality of CSS scoping has not been completed, so you may encounter some problem where CSS is not scoped correctly.
 
 
 # Performance

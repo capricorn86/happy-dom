@@ -101,16 +101,41 @@ Jest uses [JSDOM](https://github.com/jsdom/jsdom) as test environment by default
 
 3. Save the file.
 
-# Testing Async Code
+# Additional Features
 
-When testing asynchrounous code it is possible to wait for asynchrounous tasks to finish using the method "whenAsyncComplete()".
+Happy DOM exposes two functions that may be useful when testing asynchrounous code.
+
+
+**whenAsyncComplete()**
+
+Returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that is resolved when all async tasks has been completed.
 
 ```javascript
 describe('scrollToTop()', () => {
     it('scrolls to top using the built in browser animation', async () => {
         element.scrollToTop();
+
+        // Waits for asynchronous tasks like setTimeout(), requestAnimationFrame() etc. to complete
         await happyDOM.whenAsyncComplete();
+
         expect(document.documentElement.scrollTop).toBe(0);
+    });
+});
+```
+
+**cancelAsync()**
+
+This method will cancel all running async tasks.
+
+```javascript
+describe('runAnimation()', () => {
+    it('runs animation', () => {
+        element.runAnimation();
+
+        // Cancels all asynchronous tasks like setTimeout(), requestAnimationFrame() etc.
+        happyDOM.cancelAsync();
+
+        expect(element.animationCompleted).toBe(true);
     });
 });
 ```

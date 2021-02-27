@@ -1,5 +1,7 @@
+import Attr from '../../attribute/Attr';
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLScriptElement from './IHTMLScriptElement';
+import ScriptUtility from './ScriptUtility';
 
 /**
  * HTML Script Element.
@@ -38,8 +40,21 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 				this.shadowRoot.isConnected = isConnected;
 			}
 
-			if (this._evaluateScript) {
-				this.ownerDocument.defaultView.eval(this.textContent);
+			if (isConnected && this._evaluateScript) {
+				const src = this.getAttributeNS(null, 'src');
+
+				if (src !== null) {
+					ScriptUtility.loadExternalScript({
+						window: this.ownerDocument.defaultView,
+						url: src,
+						async: this.getAttributeNS(null, 'async') !== null
+					});
+				} else {
+					const textContent = this.textContent;
+					if (textContent) {
+						this.ownerDocument.defaultView.eval(textContent);
+					}
+				}
 			}
 
 			if (isConnected && this.connectedCallback) {
@@ -49,6 +64,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 			}
 		}
 	}
+
 	/**
 	 * Returns type.
 	 *
@@ -181,6 +197,27 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 */
 	public set text(text: string) {
 		this.textContent = text;
+	}
+
+	/**
+	 * The setAttributeNode() method adds a new Attr node to the specified element.
+	 *
+	 * @override
+	 * @param attribute Attribute.
+	 * @returns Replaced attribute.
+	 */
+	public setAttributeNode(attribute: Attr): Attr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		if (attribute.name === 'src' && attribute.value !== null && this.isConnected) {
+			ScriptUtility.loadExternalScript({
+				window: this.ownerDocument.defaultView,
+				url: attribute.value,
+				async: this.getAttributeNS(null, 'async') !== null
+			});
+		}
+
+		return replacedAttribute;
 	}
 
 	/**
