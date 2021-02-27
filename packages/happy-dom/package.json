@@ -45,6 +45,7 @@
 	"dependencies": {
 		"he": "^1.1.1",
 		"node-fetch": "^2.6.1",
+        "sync-request": "^6.1.0",
         "whatwg-mimetype": "^2.3.0",
         "whatwg-encoding": "^1.0.5"
 	},

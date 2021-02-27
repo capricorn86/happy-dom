@@ -78,10 +78,10 @@ console.log(document.body.innerHTML);
 The example below will show you how to setup a Node [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) to render a page in Happy DOM. The [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) can set the Happy DOM window object to be the [global object](https://nodejs.org/api/globals.html) and allow for JavaScript code to be executed scoped within the context.
 
 ```javascript
-import { AsyncWindow } from 'happy-dom';
+import { Window } from 'happy-dom';
 import VM from 'vm';
 
-const window = VM.createContext(new AsyncWindow());
+const window = VM.createContext(new Window());
 const document = window.document;
 const script = new VM.Script(`
     const element = document.createElement('div');
@@ -91,12 +91,6 @@ const script = new VM.Script(`
 `);
 
 window.location.href = 'http://localhost:8080';
-window.happyDOM.whenAsyncComplete().then(() => {
-    const container = document.querySelector('.container div');
-
-    // Will output "Test"
-    console.log(container.innerHTML);
-});
 
 document.write(`
     <html>
@@ -112,25 +106,15 @@ document.write(`
 `);
 
 script.runInContext(context);
+
+// Will output "Test"
+console.log(document.querySelector('.container div').innerHTML);
 ```
 
 
+## Additional Features
 
-## Window vs AsyncWindow
-
-Happy DOM exports two window objects: "Window" and "AsyncWindow". Read more about the differences between them below.
-
-
-
-### Window
-
-Has all the basic functionality of a DOM except for fetch(). This has been excluded to make it possible to use Happy DOM client side without the dependencies to server side Node packages.
-
-
-
-### AsyncWindow
-
-AsyncWindow extends Window and adds support for fetch(). It also exposes two methods that are useful when working with asynchrounous code.
+Happy DOM exposes two functions that may be useful when working with asynchrounous code.
 
 **whenAsyncComplete()**
 
@@ -147,11 +131,12 @@ window.happyDOM.whenAsyncComplete().then(() => {
 This method will cancel all running async tasks.
 
 ```javascript
-setTimeout(() => {
+window.setTimeout(() => {
     // This timeout will be canceled
 });
 window.happyDOM.cancelAsync();
 ```
+
 
 # Performance
 

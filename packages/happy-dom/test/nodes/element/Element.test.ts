@@ -1,4 +1,4 @@
-import AsyncWindow from '../../../src/window/AsyncWindow';
+import Window from '../../../src/window/Window';
 import XMLSerializer from '../../../src/xml-serializer/XMLSerializer';
 import XMLParser from '../../../src/xml-parser/XMLParser';
 import CustomElement from '../../CustomElement';
@@ -21,12 +21,12 @@ import INodeList from '../../../src/nodes/node/INodeList';
 const NAMESPACE_URI = 'https://test.test';
 
 describe('Element', () => {
-	let window: AsyncWindow;
+	let window: Window;
 	let document: Document;
 	let element: HTMLElement;
 
 	beforeEach(() => {
-		window = new AsyncWindow();
+		window = new Window();
 		document = window.document;
 		element = <HTMLElement>document.createElement('div');
 		window.customElements.define('custom-element', CustomElement);

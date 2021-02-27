@@ -50,11 +50,29 @@ import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/ErrorEvent';
 import Screen from '../screen/Screen';
+import AsyncTaskManager from './AsyncTaskManager';
+import IResponse from './IResponse';
+import { URLSearchParams } from 'url';
+import AsyncTaskTypeEnum from './AsyncTaskTypeEnum';
+import RelativeURL from '../location/RelativeURL';
+
+const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
 
 /**
  * Handles the Window.
  */
 export default class Window extends EventTarget implements NodeJS.Global {
+	// Public Properties
+	public happyDOM = {
+		whenAsyncComplete: async () => {
+			return this.happyDOM.asyncTaskManager.whenComplete();
+		},
+		cancelAsync: () => {
+			this.happyDOM.asyncTaskManager.cancelAllTasks();
+		},
+		asyncTaskManager: new AsyncTaskManager()
+	};
+
 	// Global classes
 	public Node = Node;
 	public HTMLElement = HTMLElement;
@@ -205,6 +223,13 @@ export default class Window extends EventTarget implements NodeJS.Global {
 				this[className] = ElementClass[className];
 			}
 		}
+
+		// Binds all methods to "this", so that it will use the correct context when called globally.
+		for (const key of Object.keys(Window.prototype)) {
+			if (typeof this[key] === 'function') {
+				this[key] = this[key].bind(this);
+			}
+		}
 	}
 
 	/**
@@ -290,58 +315,73 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	/**
 	 * Sets a timer which executes a function once the timer expires.
 	 *
+	 * @override
 	 * @param callback Function to be executed.
-	 * @param [delay] Delay in ms.
+	 * @param [delay=0] Delay in ms.
 	 * @return Timeout ID.
 	 */
-	public setTimeout(callback: () => void, delay?: number): NodeJS.Timeout {
-		return global.setTimeout(callback, delay);
+	public setTimeout(callback: () => void, delay = 0): NodeJS.Timeout {
+		const id = global.setTimeout(() => {
+			this.happyDOM.asyncTaskManager.endTimer(id);
+			callback();
+		}, delay);
+		this.happyDOM.asyncTaskManager.startTimer(id);
+		return id;
 	}
 
 	/**
 	 * Cancels a timeout previously established by calling setTimeout().
 	 *
+	 * @override
 	 * @param id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
 		global.clearTimeout(id);
+		this.happyDOM.asyncTaskManager.endTimer(id);
 	}
 
 	/**
 	 * Calls a function with a fixed time delay between each call.
 	 *
+	 * @override
 	 * @param callback Function to be executed.
-	 * @param [delay] Delay in ms.
+	 * @param [delay=0] Delay in ms.
 	 * @return Interval ID.
 	 */
-	public setInterval(callback: () => void, delay?: number): NodeJS.Timeout {
-		return global.setInterval(callback, delay);
+	public setInterval(callback: () => void, delay = 0): NodeJS.Timeout {
+		const id = global.setInterval(callback, delay);
+		this.happyDOM.asyncTaskManager.startTimer(id);
+		return id;
 	}
 
 	/**
 	 * Cancels a timed repeating action which was previously established by a call to setInterval().
 	 *
+	 * @override
 	 * @param id ID of the interval.
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
 		global.clearInterval(id);
+		this.happyDOM.asyncTaskManager.endTimer(id);
 	}
 
 	/**
 	 * Mock animation frames with timeouts.
 	 *
+	 * @override
 	 * @param {function} callback Callback.
 	 * @returns {NodeJS.Timeout} Timeout ID.
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout {
 		return this.setTimeout(() => {
 			callback(2);
-		}, 0);
+		});
 	}
 
 	/**
 	 * Mock animation frames with timeouts.
 	 *
+	 * @override
 	 * @param {NodeJS.Timeout} id Timeout ID.
 	 */
 	public cancelAnimationFrame(id): void {
@@ -349,16 +389,61 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	}
 
 	/**
-	 * Fetch is not supported by the synchronous "Window". Use "AsyncWindow" instead to get support for fetch.
+	 * Provides a global fetch() method that provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
-	 * @throws Error.
-	 * @param _url URL to resource.
-	 * @param [_options] Options.
+	 * @override
+	 * @param url URL to resource.
+	 * @param [options] Options.
 	 * @returns Promise.
 	 */
-	public async fetch(_url: string, _options: object): Promise<void> {
-		throw new DOMException(
-			'Fetch is not supported by the synchronous "Window" from Happy DOM. Use "AsyncWindow" instead to get support for fetch.'
-		);
+	public async fetch(
+		url: string,
+		options?: {
+			method?: string;
+			headers?: Map<string, string> | { [k: string]: string };
+			body?: URLSearchParams | string;
+			redirect?: string;
+		}
+	): Promise<IResponse> {
+		return new Promise((resolve, reject) => {
+			let fetch = null;
+
+			try {
+				fetch = require('node-fetch');
+			} catch (error) {
+				throw new Error('Failed to perform fetch. "node-fetch" could not be loaded.');
+			}
+
+			this.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
+
+			fetch(RelativeURL.getAbsoluteURL(this.location, url), options)
+				.then(response => {
+					for (const methodName of FETCH_RESPONSE_TYPE_METHODS) {
+						const asyncMethod = response[methodName];
+						response[methodName] = () => {
+							return new Promise((resolve, reject) => {
+								this.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
+
+								asyncMethod
+									.then(response => {
+										resolve(response);
+										this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
+									})
+									.catch(error => {
+										reject(error);
+										this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
+									});
+							});
+						};
+					}
+
+					resolve(response);
+					this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
+				})
+				.catch(error => {
+					reject(error);
+					this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
+				});
+		});
 	}
 }
