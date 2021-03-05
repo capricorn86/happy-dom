@@ -1,3 +1,4 @@
+import IEventListener from './IEventListener';
 import Event from './Event';
 
 /**
@@ -10,7 +11,7 @@ export default interface IEventTarget {
 	 * @param type Event type.
 	 * @param listener Listener.
 	 */
-	addEventListener(type: string, listener: (event: Event) => void): void;
+	addEventListener(type: string, listener: ((event: Event) => void) | IEventListener): void;
 
 	/**
 	 * Adds an event listener.
@@ -18,7 +19,7 @@ export default interface IEventTarget {
 	 * @param type Event type.
 	 * @param listener Listener.
 	 */
-	removeEventListener(type: string, listener: (event: Event) => void): void;
+	removeEventListener(type: string, listener: ((event: Event) => void) | IEventListener): void;
 
 	/**
 	 * Dispatches an event.

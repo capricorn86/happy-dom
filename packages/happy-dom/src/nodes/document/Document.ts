@@ -435,10 +435,10 @@ export default class Document extends Node implements IDocument {
 		this._isFirstWriteAfterOpen = true;
 
 		for (const eventType of Object.keys(this._listeners)) {
-			const callbacks = this._listeners[eventType];
-			if (callbacks) {
-				for (const callback of callbacks) {
-					this.removeEventListener(eventType, callback);
+			const listeners = this._listeners[eventType];
+			if (listeners) {
+				for (const listener of listeners) {
+					this.removeEventListener(eventType, listener);
 				}
 			}
 		}
