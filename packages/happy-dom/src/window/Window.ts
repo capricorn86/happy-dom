@@ -48,7 +48,7 @@ import DataTransferItem from '../event/DataTransferItem';
 import DataTransferItemList from '../event/DataTransferItemList';
 import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
-import ErrorEvent from '../event/ErrorEvent';
+import ErrorEvent from '../event/events/ErrorEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from './AsyncTaskManager';
 import IResponse from './IResponse';
@@ -107,6 +107,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public InputEvent = InputEvent;
 	public ErrorEvent = ErrorEvent;
 	public ProgressEvent = ProgressEvent;
+	public EventTarget = EventTarget;
 	public DataTransfer = DataTransfer;
 	public DataTransferItem = DataTransferItem;
 	public DataTransferItemList = DataTransferItemList;

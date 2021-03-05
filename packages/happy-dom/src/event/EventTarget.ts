@@ -1,3 +1,4 @@
+import IEventListener from './IEventListener';
 import Event from './Event';
 import IEventTarget from './IEventTarget';
 
@@ -5,7 +6,9 @@ import IEventTarget from './IEventTarget';
  * Handles events.
  */
 export default abstract class EventTarget implements IEventTarget {
-	protected readonly _listeners: { [k: string]: ((event: Event) => void)[] } = {};
+	protected readonly _listeners: {
+		[k: string]: (((event: Event) => void) | IEventListener)[];
+	} = {};
 
 	/**
 	 * Adds an event listener.
@@ -13,7 +16,7 @@ export default abstract class EventTarget implements IEventTarget {
 	 * @param type Event type.
 	 * @param listener Listener.
 	 */
-	public addEventListener(type: string, listener: (event: Event) => void): void {
+	public addEventListener(type: string, listener: ((event: Event) => void) | IEventListener): void {
 		this._listeners[type] = this._listeners[type] || [];
 		this._listeners[type].push(listener);
 	}
@@ -24,7 +27,10 @@ export default abstract class EventTarget implements IEventTarget {
 	 * @param type Event type.
 	 * @param listener Listener.
 	 */
-	public removeEventListener(type: string, listener: (event: Event) => void): void {
+	public removeEventListener(
+		type: string,
+		listener: ((event: Event) => void) | IEventListener
+	): void {
 		if (this._listeners[type]) {
 			const index = this._listeners[type].indexOf(listener);
 			if (index !== -1) {
@@ -48,7 +54,11 @@ export default abstract class EventTarget implements IEventTarget {
 
 		if (this._listeners[event.type]) {
 			for (const listener of this._listeners[event.type]) {
-				listener(event);
+				if ((<IEventListener>listener).handleEvent) {
+					(<IEventListener>listener).handleEvent(event);
+				} else {
+					(<(event: Event) => void>listener)(event);
+				}
 				if (event._immediatePropagationStopped) {
 					return !(event.cancelable && event.defaultPrevented);
 				}

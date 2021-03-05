@@ -1,4 +1,28 @@
 import Window from './window/Window';
+import DataTransfer from './event/DataTransfer';
+import DataTransferItem from './event/DataTransferItem';
+import DataTransferItemList from './event/DataTransferItemList';
+import Event from './event/Event';
+import EventTarget from './event/EventTarget';
+import IEventInit from './event/IEventInit';
+import IEventListener from './event/IEventListener';
+import IUIEventInit from './event/IUIEventInit';
+import UIEvent from './event/UIEvent';
+import ErrorEvent from './event/events/ErrorEvent';
+import FocusEvent from './event/events/FocusEvent';
+import ICustomEventInit from './event/events/ICustomEventInit';
+import IErrorEventInit from './event/events/IErrorEventInit';
+import IFocusEventInit from './event/events/IFocusEventInit';
+import IInputEventInit from './event/events/IInputEventInit';
+import IKeyboardEventInit from './event/events/IKeyboardEventInit';
+import IMouseEventInit from './event/events/IMouseEventInit';
+import IProgressEvent from './event/events/IProgressEvent';
+import IWheelEventInit from './event/events/IWheelEventInit';
+import InputEvent from './event/events/InputEvent';
+import KeyboardEvent from './event/events/KeyboardEvent';
+import MouseEvent from './event/events/MouseEvent';
+import ProgressEvent from './event/events/ProgressEvent';
+import WheelEvent from './event/events/WheelEvent';
 import AsyncWindow from './window/AsyncWindow';
 import DOMParser from './dom-parser/DOMParser';
 import Document from './nodes/document/Document';
@@ -52,6 +76,30 @@ import CSSStyleSheet from './css/CSSStyleSheet';
 export {
 	AsyncWindow,
 	Window,
+	DataTransfer,
+	DataTransferItem,
+	DataTransferItemList,
+	Event,
+	EventTarget,
+	IEventInit,
+	IEventListener,
+	IUIEventInit,
+	UIEvent,
+	ErrorEvent,
+	FocusEvent,
+	ICustomEventInit,
+	IErrorEventInit,
+	IFocusEventInit,
+	IInputEventInit,
+	IKeyboardEventInit,
+	IMouseEventInit,
+	IProgressEvent,
+	IWheelEventInit,
+	InputEvent,
+	KeyboardEvent,
+	MouseEvent,
+	ProgressEvent,
+	WheelEvent,
 	DOMParser,
 	Document,
 	IDocument,
