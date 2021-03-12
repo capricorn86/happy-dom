@@ -2,6 +2,7 @@ import IEventTarget from '../../event/IEventTarget';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 
+export type TInsertAdjacentPositions = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 export default interface INode extends IEventTarget {
 	readonly ownerDocument: IDocument;
 	readonly parentNode: INode;
@@ -22,6 +23,7 @@ export default interface INode extends IEventTarget {
 	appendChild(node: INode): INode;
 	removeChild(node: INode): void;
 	insertBefore(newNode: INode, referenceNode?: INode | null): INode;
+	insertAdjacentElement(position: TInsertAdjacentPositions, node: INode): INode | null;
 	replaceChild(newChild: INode, oldChild: INode): INode;
 	toString(): string;
 }
