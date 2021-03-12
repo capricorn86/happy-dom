@@ -520,6 +520,77 @@ describe('Node', () => {
 		});
 	});
 
+	describe('insertAdjacentText()', () => {
+		test('Inserts the given text right before the reference element.', () => {
+			const parent = document.createElement('div');
+			const text = 'lorem';
+
+			document.body.appendChild(parent);
+			parent.insertAdjacentText('beforebegin', text);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0].nodeType).toBe(Node.TEXT_NODE);
+			expect(document.body.childNodes[0].textContent).toEqual(text);
+		});
+
+		test('Inserts the given text inside the reference element before the first child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const text = 'lorem';
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			parent.insertAdjacentText('afterbegin', text);
+
+			expect(parent.childNodes[0].nodeType).toBe(Node.TEXT_NODE);
+			expect(parent.childNodes[0].textContent).toEqual(text);
+			expect(parent.childNodes[1]).toBe(child);
+		});
+
+		test('Inserts the given text inside the reference element after the last child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const text = 'lorem';
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			parent.insertAdjacentText('beforeend', text);
+
+			expect(parent.childNodes[0]).toBe(child);
+			expect(parent.childNodes[1].nodeType).toBe(Node.TEXT_NODE);
+			expect(parent.childNodes[1].textContent).toEqual(text);
+		});
+
+		test('Inserts the given text right after the reference element.', () => {
+			const parent = document.createElement('div');
+			const text = 'lorem';
+
+			document.body.appendChild(parent);
+			parent.insertAdjacentText('afterend', text);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect(document.body.childNodes[1].nodeType).toBe(Node.TEXT_NODE);
+			expect(document.body.childNodes[1].textContent).toEqual(text);
+		});
+
+		test('Inserts the given text right after the reference element.', () => {
+			const parent = document.createElement('div');
+			const sibling = document.createElement('div');
+			const text = 'lorem';
+
+			document.body.appendChild(parent);
+			document.body.appendChild(sibling);
+			parent.insertAdjacentText('afterend', text);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect(document.body.childNodes[1].nodeType).toBe(Node.TEXT_NODE);
+			expect(document.body.childNodes[1].textContent).toEqual(text);
+			expect(document.body.childNodes[2]).toBe(sibling);
+		});
+	});
+
 	describe('replaceChild()', () => {
 		test('Inserts a Node before another reference Node.', () => {
 			const child1 = document.createElement('span');

@@ -9,6 +9,7 @@ import DOMException from '../../exception/DOMException';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import IHTMLTemplateElement from '../html-template-element/IHTMLTemplateElement';
+import IText from '../text/IText';
 import INodeList from './INodeList';
 import NodeListFactory from './NodeListFactory';
 
@@ -398,6 +399,18 @@ export default class Node extends EventTarget implements INode {
 		const templateElement = <IHTMLTemplateElement>this.ownerDocument.createElement('template');
 		templateElement.innerHTML = text;
 		this.insertAdjacentElement(position, templateElement.content);
+	}
+
+	/**
+	 * Inserts text to the given position.
+	 *
+	 * @param position Position to insert text.
+	 * @param text String to insert.
+	 * @return Inserted node or null if couldn't insert.
+	 */
+	public insertAdjacentText(position: TInsertAdjacentPositions, text: string): void {
+		const textNode = <IText>this.ownerDocument.createTextNode(text);
+		this.insertAdjacentElement(position, textNode);
 	}
 
 	/**
