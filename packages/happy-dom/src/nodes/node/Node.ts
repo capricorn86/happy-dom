@@ -8,6 +8,7 @@ import { TInsertAdjacentPositions } from './INode';
 import DOMException from '../../exception/DOMException';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
+import IHTMLTemplateElement from '../html-template-element/IHTMLTemplateElement';
 import INodeList from './INodeList';
 import NodeListFactory from './NodeListFactory';
 
@@ -384,6 +385,19 @@ export default class Node extends EventTarget implements INode {
 		}
 
 		return element;
+	}
+
+	/**
+	 * Inserts an HTML string to the given position.
+	 *
+	 * @param position Position to insert text.
+	 * @param text HTML string to insert.
+	 * @return Inserted node or null if couldn't insert.
+	 */
+	public insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void {
+		const templateElement = <IHTMLTemplateElement>this.ownerDocument.createElement('template');
+		templateElement.innerHTML = text;
+		this.insertAdjacentElement(position, templateElement.content);
 	}
 
 	/**

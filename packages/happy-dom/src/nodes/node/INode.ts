@@ -24,6 +24,7 @@ export default interface INode extends IEventTarget {
 	removeChild(node: INode): void;
 	insertBefore(newNode: INode, referenceNode?: INode | null): INode;
 	insertAdjacentElement(position: TInsertAdjacentPositions, node: INode): INode | null;
+	insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void;
 	replaceChild(newChild: INode, oldChild: INode): INode;
 	toString(): string;
 }

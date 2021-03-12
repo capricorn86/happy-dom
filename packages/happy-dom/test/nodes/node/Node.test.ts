@@ -454,6 +454,72 @@ describe('Node', () => {
 		});
 	});
 
+	describe('insertAdjacentHTML()', () => {
+		test('Inserts the given HTML right before the reference element.', () => {
+			const parent = document.createElement('div');
+			const markup = '<span>markup</span>';
+
+			document.body.appendChild(parent);
+			parent.insertAdjacentHTML('beforebegin', markup);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0].outerHTML).toEqual(markup);
+		});
+
+		test('Inserts the given HTML inside the reference element before the first child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const markup = '<span>markup</span>';
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			parent.insertAdjacentHTML('afterbegin', markup);
+
+			expect(parent.childNodes[0].outerHTML).toEqual(markup);
+			expect(parent.childNodes[1]).toBe(child);
+		});
+
+		test('Inserts the given HTML inside the reference element after the last child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const markup = '<span>markup</span>';
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			parent.insertAdjacentHTML('beforeend', markup);
+
+			expect(parent.childNodes[0]).toBe(child);
+			expect(parent.childNodes[1].outerHTML).toEqual(markup);
+		});
+
+		test('Inserts the given HTML right after the reference element.', () => {
+			const parent = document.createElement('div');
+			const markup = '<span>markup</span>';
+
+			document.body.appendChild(parent);
+			parent.insertAdjacentHTML('afterend', markup);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect(document.body.childNodes[1].outerHTML).toEqual(markup);
+		});
+
+		test('Inserts the given HTML right after the reference element if it has a sibling.', () => {
+			const parent = document.createElement('div');
+			const sibling = document.createElement('div');
+			const markup = '<span>markup</span>';
+
+			document.body.appendChild(parent);
+			document.body.appendChild(sibling);
+			parent.insertAdjacentHTML('afterend', markup);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect(document.body.childNodes[1].outerHTML).toEqual(markup);
+			expect(document.body.childNodes[2]).toBe(sibling);
+		});
+	});
+
 	describe('replaceChild()', () => {
 		test('Inserts a Node before another reference Node.', () => {
 			const child1 = document.createElement('span');
