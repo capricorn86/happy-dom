@@ -1,15 +1,55 @@
 import Window from '../../../src/window/Window';
-import CustomElement from '../../CustomElement';
 import Node from '../../../src/nodes/node/Node';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
 import Event from '../../../src/event/Event';
 
+class CustomCounterElement extends HTMLElement {
+	public static output = [];
+
+	/**
+	 * Connected
+	 */
+	public connectedCallback(): void {
+		(<typeof CustomCounterElement>this.constructor).output.push('Counter:connected');
+	}
+
+	/**
+	 * Disconnected
+	 */
+	public disconnectedCallback(): void {
+		(<typeof CustomCounterElement>this.constructor).output.push('Counter:disconnected');
+	}
+}
+
+class CustomButtonElement extends HTMLElement {
+	public static output = [];
+
+	/**
+	 * Connected
+	 */
+	public connectedCallback(): void {
+		(<typeof CustomButtonElement>this.constructor).output.push('Button:connected');
+	}
+
+	/**
+	 * Disconnected
+	 */
+	public disconnectedCallback(): void {
+		(<typeof CustomButtonElement>this.constructor).output.push('Button:disconnected');
+	}
+}
+
 describe('Node', () => {
-	let window, document;
+	let window, document, customElementOutput;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		window.customElements.define('custom-element', CustomElement);
+		customElementOutput = [];
+		CustomCounterElement.output = customElementOutput;
+		CustomButtonElement.output = customElementOutput;
+		window.customElements.define('custom-counter', CustomCounterElement);
+		window.customElements.define('custom-button', CustomButtonElement);
 	});
 
 	afterEach(() => {
@@ -147,19 +187,20 @@ describe('Node', () => {
 
 	describe('connectedCallback()', () => {
 		test('Calls connected callback when a custom element is connected to DOM.', () => {
-			const customElement = document.createElement('custom-element');
-
-			expect(customElement.shadowRoot.innerHTML === '').toBe(true);
-
-			document.body.appendChild(customElement);
-
-			expect(customElement.shadowRoot.innerHTML === '').toBe(false);
+			document.body.innerHTML = '<custom-counter><custom-button></custom-button></custom-counter>';
+			document.body.innerHTML = '';
+			expect(customElementOutput).toEqual([
+				'Counter:connected',
+				'Button:connected',
+				'Counter:disconnected',
+				'Button:disconnected'
+			]);
 		});
 	});
 
 	describe('disconnectedCallback()', () => {
 		test('Calls disconnected callback when a custom element is connected to DOM.', () => {
-			const customElement = document.createElement('custom-element');
+			const customElement = document.createElement('custom-counter');
 			let isConnected = false;
 			let isDisconnected = false;
 

@@ -59,6 +59,12 @@ export default class Node extends EventTarget implements INode {
 		if (this._isConnected !== isConnected) {
 			this._isConnected = isConnected;
 
+			if (isConnected && this.connectedCallback) {
+				this.connectedCallback();
+			} else if (!isConnected && this.disconnectedCallback) {
+				this.disconnectedCallback();
+			}
+
 			for (const child of this.childNodes) {
 				child.isConnected = isConnected;
 			}
@@ -67,12 +73,6 @@ export default class Node extends EventTarget implements INode {
 			if ((<any>this).shadowRoot) {
 				// eslint-disable-next-line
 				(<any>this).shadowRoot.isConnected = isConnected;
-			}
-
-			if (isConnected && this.connectedCallback) {
-				this.connectedCallback();
-			} else if (!isConnected && this.disconnectedCallback) {
-				this.disconnectedCallback();
 			}
 		}
 	}
