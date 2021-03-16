@@ -1050,80 +1050,82 @@ describe('Element', () => {
 		});
 	});
 
-	describe('setAttributeNode()', () => {
-		test('Sets an Attr node on a <div> element.', () => {
-			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
-			const attribute2 = document.createAttribute('KEY2');
+	for (const method of ['setAttributeNode', 'setAttributeNodeNS']) {
+		describe(`${method}()`, () => {
+			test('Sets an Attr node on a <div> element.', () => {
+				const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
+				const attribute2 = document.createAttribute('KEY2');
 
-			attribute1.value = 'value1';
-			attribute2.value = 'value2';
+				attribute1.value = 'value1';
+				attribute2.value = 'value2';
 
-			element.setAttributeNode(attribute1);
-			element.setAttributeNode(attribute2);
+				element[method](attribute1);
+				element[method](attribute2);
 
-			expect(element.attributes).toEqual({
-				'0': {
-					name: 'key1',
-					namespaceURI: NamespaceURI.svg,
-					value: 'value1'
-				},
-				'1': {
-					name: 'key2',
-					namespaceURI: null,
-					value: 'value2'
-				},
-				key1: {
-					name: 'key1',
-					namespaceURI: NamespaceURI.svg,
-					value: 'value1'
-				},
-				key2: {
-					name: 'key2',
-					namespaceURI: null,
-					value: 'value2'
-				},
-				length: 2
+				expect(element.attributes).toEqual({
+					'0': {
+						name: 'key1',
+						namespaceURI: NamespaceURI.svg,
+						value: 'value1'
+					},
+					'1': {
+						name: 'key2',
+						namespaceURI: null,
+						value: 'value2'
+					},
+					key1: {
+						name: 'key1',
+						namespaceURI: NamespaceURI.svg,
+						value: 'value1'
+					},
+					key2: {
+						name: 'key2',
+						namespaceURI: null,
+						value: 'value2'
+					},
+					length: 2
+				});
+			});
+
+			test('Sets an Attr node on an <svg> element.', () => {
+				const svg = document.createElementNS(NamespaceURI.svg, 'svg');
+				const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
+				const attribute2 = document.createAttribute('KEY2');
+
+				attribute1.value = 'value1';
+				attribute2.value = 'value2';
+
+				svg[method](attribute1);
+				svg[method](attribute2);
+
+				expect(svg.attributes).toEqual({
+					'0': {
+						name: 'KEY1',
+						namespaceURI: NamespaceURI.svg,
+						value: 'value1'
+					},
+					'1': {
+						name: 'key2',
+						namespaceURI: null,
+						value: 'value2'
+					},
+					KEY1: {
+						name: 'KEY1',
+						namespaceURI: NamespaceURI.svg,
+						value: 'value1'
+					},
+					key2: {
+						name: 'key2',
+						namespaceURI: null,
+						value: 'value2'
+					},
+					length: 2
+				});
 			});
 		});
+	}
 
-		test('Sets an Attr node on an <svg> element.', () => {
-			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
-			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
-			const attribute2 = document.createAttribute('KEY2');
-
-			attribute1.value = 'value1';
-			attribute2.value = 'value2';
-
-			svg.setAttributeNode(attribute1);
-			svg.setAttributeNode(attribute2);
-
-			expect(svg.attributes).toEqual({
-				'0': {
-					name: 'KEY1',
-					namespaceURI: NamespaceURI.svg,
-					value: 'value1'
-				},
-				'1': {
-					name: 'key2',
-					namespaceURI: null,
-					value: 'value2'
-				},
-				KEY1: {
-					name: 'KEY1',
-					namespaceURI: NamespaceURI.svg,
-					value: 'value1'
-				},
-				key2: {
-					name: 'key2',
-					namespaceURI: null,
-					value: 'value2'
-				},
-				length: 2
-			});
-		});
-	});
-
-	describe('getAttributeNode()', () => {
+	describe(`getAttributeNode()`, () => {
 		test('Returns an Attr node from a <div> element.', () => {
 			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 			const attribute2 = document.createAttribute('KEY2');
@@ -1158,17 +1160,45 @@ describe('Element', () => {
 		});
 	});
 
-	describe('removeAttributeNode()', () => {
-		test('Removes an Attr node.', () => {
-			const attribute = document.createAttribute('KEY1');
+	describe(`getAttributeNode()`, () => {
+		test('Returns a namespaced Attr node from a <div> element.', () => {
+			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 
-			attribute.value = 'value1';
-			element.setAttributeNode(attribute);
-			element.removeAttributeNode(attribute);
+			attribute1.value = 'value1';
 
-			expect(element.attributes).toEqual({ length: 0 });
+			element.setAttributeNode(attribute1);
+
+			expect(element.getAttributeNodeNS(NamespaceURI.svg, 'key1')).toBe(attribute1);
+			expect(element.getAttributeNodeNS(NamespaceURI.svg, 'KEY1')).toBe(attribute1);
+		});
+
+		test('Returns an Attr node from an <svg> element.', () => {
+			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
+			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
+
+			attribute1.value = 'value1';
+
+			svg.setAttributeNode(attribute1);
+
+			expect(svg.getAttributeNodeNS(NamespaceURI.svg, 'key1')).toBe(null);
+			expect(svg.getAttributeNodeNS(NamespaceURI.svg, 'KEY1')).toBe(attribute1);
+			expect(svg.getAttributeNodeNS(NamespaceURI.svg, 'KEY2')).toBe(null);
 		});
 	});
+
+	for (const method of ['removeAttributeNode', 'removeAttributeNodeNS']) {
+		describe(`${method}()`, () => {
+			test('Removes an Attr node.', () => {
+				const attribute = document.createAttribute('KEY1');
+
+				attribute.value = 'value1';
+				element.setAttributeNode(attribute);
+				element[method](attribute);
+
+				expect(element.attributes).toEqual({ length: 0 });
+			});
+		});
+	}
 
 	describe('replaceWith()', () => {
 		test('Replaces a node with another node.', () => {
