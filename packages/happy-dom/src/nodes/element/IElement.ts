@@ -3,6 +3,7 @@ import Attr from '../../attribute/Attr';
 import DOMRect from './DOMRect';
 import Range from './Range';
 import ClassList from './ClassList';
+import INode from './../node/INode';
 import IChildNode from '../child-node/IChildNode';
 import IParentNode from '../parent-node/IParentNode';
 import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode';
