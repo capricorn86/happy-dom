@@ -511,11 +511,9 @@ export default class Element extends Node implements IElement {
 	 * @param localName Local name.
 	 */
 	public getAttributeNS(namespace: string, localName: string): string {
-		for (const name of Object.keys(this._attributes)) {
-			const attribute = this._attributes[name];
-			if (attribute.namespaceURI === namespace && attribute.localName === localName) {
-				return attribute.value;
-			}
+		const attribute = this.getAttributeNodeNS(namespace, localName);
+		if (attribute) {
+			return attribute.value;
 		}
 		return null;
 	}
@@ -732,6 +730,16 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
+	 * The setAttributeNodeNS() method adds a new Attr node to the specified element.
+	 *
+	 * @param attribute Attribute.
+	 * @returns Replaced attribute.
+	 */
+	public setAttributeNodeNS(attribute: Attr): Attr {
+		return this.setAttributeNode(attribute);
+	}
+
+	/**
 	 * Returns an Attr node.
 	 *
 	 * @param name Name.
@@ -739,6 +747,24 @@ export default class Element extends Node implements IElement {
 	 */
 	public getAttributeNode(name: string): Attr {
 		return this._attributes[this._getAttributeName(name)] || null;
+	}
+
+	/**
+	 * Returns a namespaced Attr node.
+	 *
+	 * @param namespace Namespace.
+	 * @param name Name.
+	 * @returns Replaced attribute.
+	 */
+	public getAttributeNodeNS(namespace: string, name: string): Attr {
+		const attributeName = this._getAttributeName(name);
+		for (const name of Object.keys(this._attributes)) {
+			const attribute = this._attributes[name];
+			if (attribute.namespaceURI === namespace && attribute.localName === attributeName) {
+				return attribute;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -773,6 +799,15 @@ export default class Element extends Node implements IElement {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Removes an Attr node.
+	 *
+	 * @param attribute Attribute.
+	 */
+	public removeAttributeNodeNS(attribute: Attr): void {
+		this.removeAttributeNode(attribute);
 	}
 
 	/**

@@ -161,6 +161,14 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	setAttributeNode(attribute: Attr): Attr;
 
 	/**
+	 * The setAttributeNodeNS() method adds a new Attr node to the specified element.
+	 *
+	 * @param attribute Attribute.
+	 * @returns Replaced attribute.
+	 */
+	setAttributeNodeNS(attribute: Attr): Attr;
+
+	/**
 	 * Returns an Attr node.
 	 *
 	 * @param name Name.
@@ -169,11 +177,27 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	getAttributeNode(name: string): Attr;
 
 	/**
+	 * Returns a namespaced Attr node.
+	 *
+	 * @param namespace Namespace.
+	 * @param nodeName Node name.
+	 * @returns Replaced attribute.
+	 */
+	getAttributeNodeNS(namespace: string, nodeName: string): Attr;
+
+	/**
 	 * Removes an Attr node.
 	 *
 	 * @param attribute Attribute.
 	 */
 	removeAttributeNode(attribute: Attr): void;
+
+	/**
+	 * Removes an Attr node.
+	 *
+	 * @param attribute Attribute.
+	 */
+	removeAttributeNodeNS(attribute: Attr): void;
 
 	/**
 	 * Clones a node.
