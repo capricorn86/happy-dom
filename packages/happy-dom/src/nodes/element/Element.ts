@@ -23,7 +23,6 @@ import IHTMLCollection from './IHTMLCollection';
 import INodeList from '../node/INodeList';
 import HTMLCollectionFactory from './HTMLCollectionFactory';
 import { TInsertAdjacentPositions } from './IElement';
-import IHTMLTemplateElement from '../html-template-element/IHTMLTemplateElement';
 import IText from '../text/IText';
 
 /**
@@ -450,9 +449,9 @@ export default class Element extends Node implements IElement {
 	 * @return Inserted node or null if couldn't insert.
 	 */
 	public insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void {
-		const templateElement = <IHTMLTemplateElement>this.ownerDocument.createElement('template');
-		templateElement.innerHTML = text;
-		this.insertAdjacentElement(position, templateElement.content);
+		for (const node of XMLParser.parse(this.ownerDocument, text).childNodes.slice()) {
+			this.insertAdjacentElement(position, node);
+		}
 	}
 
 	/**
