@@ -723,7 +723,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	public get form(): IHTMLFormElement {
 		let parent = <IHTMLElement>this.parentNode;
 		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>this.parentNode;
+			parent = <IHTMLElement>parent.parentNode;
 		}
 		return <IHTMLFormElement>parent;
 	}

@@ -230,6 +230,16 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get form()', () => {
+		test('Returns parent form element.', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			div.appendChild(element);
+			form.appendChild(div);
+			expect(element.form).toBe(form);
+		});
+	});
+
 	describe('set selectionEnd()', () => {
 		test('Sets the value to the length of the property "value" if it is out of range.', () => {
 			element.setAttribute('value', 'TEST_VALUE');
