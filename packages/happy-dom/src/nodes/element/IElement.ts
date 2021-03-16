@@ -7,6 +7,8 @@ import IChildNode from '../child-node/IChildNode';
 import IParentNode from '../parent-node/IParentNode';
 import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode';
 
+export type TInsertAdjacentPositions = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
+
 /**
  * Element.
  */
@@ -180,4 +182,31 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @return Cloned node.
 	 */
 	cloneNode(deep: boolean): IElement;
+
+	/**
+	 * Inserts a node to the given position.
+	 *
+	 * @param position Position to insert element.
+	 * @param element Node to insert.
+	 * @return Inserted node or null if couldn't insert.
+	 */
+	insertAdjacentElement(position: TInsertAdjacentPositions, node: INode): INode | null;
+
+	/**
+	 * Inserts an HTML string to the given position.
+	 *
+	 * @param position Position to insert text.
+	 * @param text HTML string to insert.
+	 * @return Inserted node or null if couldn't insert.
+	 */
+	insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void;
+
+	/**
+	 * Inserts text to the given position.
+	 *
+	 * @param position Position to insert text.
+	 * @param text String to insert.
+	 * @return Inserted node or null if couldn't insert.
+	 */
+	insertAdjacentText(position: TInsertAdjacentPositions, text: string): void;
 }

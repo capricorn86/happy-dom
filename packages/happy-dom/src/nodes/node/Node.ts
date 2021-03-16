@@ -4,12 +4,9 @@ import MutationTypeConstant from '../../mutation-observer/MutationType';
 import MutationObserverListener from '../../mutation-observer/MutationListener';
 import Event from '../../event/Event';
 import INode from './INode';
-import { TInsertAdjacentPositions } from './INode';
 import DOMException from '../../exception/DOMException';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
-import IHTMLTemplateElement from '../html-template-element/IHTMLTemplateElement';
-import IText from '../text/IText';
 import INodeList from './INodeList';
 import NodeListFactory from './NodeListFactory';
 
@@ -357,60 +354,6 @@ export default class Node extends EventTarget implements INode {
 		}
 
 		return newNode;
-	}
-
-	/**
-	 * Inserts a node to the given position.
-	 *
-	 * @param position Position to insert element.
-	 * @param element Node to insert.
-	 * @return Inserted node or null if couldn't insert.
-	 */
-	public insertAdjacentElement(position: TInsertAdjacentPositions, element: INode): INode | null {
-		if (position === 'beforebegin') {
-			if (!this.parentElement) {
-				return null;
-			}
-
-			this.parentElement.insertBefore(element, this);
-		} else if (position === 'afterbegin') {
-			this.insertBefore(element, this.firstChild);
-		} else if (position === 'beforeend') {
-			this.appendChild(element);
-		} else if (position === 'afterend') {
-			if (!this.parentElement) {
-				return null;
-			}
-
-			this.parentElement.insertBefore(element, this.nextSibling);
-		}
-
-		return element;
-	}
-
-	/**
-	 * Inserts an HTML string to the given position.
-	 *
-	 * @param position Position to insert text.
-	 * @param text HTML string to insert.
-	 * @return Inserted node or null if couldn't insert.
-	 */
-	public insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void {
-		const templateElement = <IHTMLTemplateElement>this.ownerDocument.createElement('template');
-		templateElement.innerHTML = text;
-		this.insertAdjacentElement(position, templateElement.content);
-	}
-
-	/**
-	 * Inserts text to the given position.
-	 *
-	 * @param position Position to insert text.
-	 * @param text String to insert.
-	 * @return Inserted node or null if couldn't insert.
-	 */
-	public insertAdjacentText(position: TInsertAdjacentPositions, text: string): void {
-		const textNode = <IText>this.ownerDocument.createTextNode(text);
-		this.insertAdjacentElement(position, textNode);
 	}
 
 	/**
