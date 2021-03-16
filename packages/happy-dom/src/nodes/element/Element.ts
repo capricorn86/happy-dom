@@ -22,6 +22,8 @@ import IDocument from '../document/IDocument';
 import IHTMLCollection from './IHTMLCollection';
 import INodeList from '../node/INodeList';
 import HTMLCollectionFactory from './HTMLCollectionFactory';
+import { TInsertAdjacentPositions } from './IElement';
+import IText from '../text/IText';
 
 /**
  * Element.
@@ -408,6 +410,60 @@ export default class Element extends Node implements IElement {
 	 */
 	public replaceChildren(...nodes: (string | INode)[]): void {
 		ParentNodeUtility.replaceChildren(this, ...nodes);
+	}
+
+	/**
+	 * Inserts a node to the given position.
+	 *
+	 * @param position Position to insert element.
+	 * @param element Node to insert.
+	 * @return Inserted node or null if couldn't insert.
+	 */
+	public insertAdjacentElement(position: TInsertAdjacentPositions, element: INode): INode | null {
+		if (position === 'beforebegin') {
+			if (!this.parentElement) {
+				return null;
+			}
+
+			this.parentElement.insertBefore(element, this);
+		} else if (position === 'afterbegin') {
+			this.insertBefore(element, this.firstChild);
+		} else if (position === 'beforeend') {
+			this.appendChild(element);
+		} else if (position === 'afterend') {
+			if (!this.parentElement) {
+				return null;
+			}
+
+			this.parentElement.insertBefore(element, this.nextSibling);
+		}
+
+		return element;
+	}
+
+	/**
+	 * Inserts an HTML string to the given position.
+	 *
+	 * @param position Position to insert text.
+	 * @param text HTML string to insert.
+	 * @return Inserted node or null if couldn't insert.
+	 */
+	public insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void {
+		for (const node of XMLParser.parse(this.ownerDocument, text).childNodes.slice()) {
+			this.insertAdjacentElement(position, node);
+		}
+	}
+
+	/**
+	 * Inserts text to the given position.
+	 *
+	 * @param position Position to insert text.
+	 * @param text String to insert.
+	 * @return Inserted node or null if couldn't insert.
+	 */
+	public insertAdjacentText(position: TInsertAdjacentPositions, text: string): void {
+		const textNode = <IText>this.ownerDocument.createTextNode(text);
+		this.insertAdjacentElement(position, textNode);
 	}
 
 	/**

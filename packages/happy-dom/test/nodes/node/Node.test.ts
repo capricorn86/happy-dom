@@ -332,6 +332,26 @@ describe('Node', () => {
 				'<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>'
 			);
 		});
+
+		test('Inserts a Node after all children if no reference given.', () => {
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+			const newNode = document.createElement('span');
+			const parent = document.createElement('div');
+
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+			parent.insertBefore(newNode, null);
+
+			expect(parent.childNodes[0]).toBe(child1);
+			expect(parent.childNodes[1]).toBe(child2);
+			expect(parent.childNodes[2]).toBe(newNode);
+			expect(newNode.isConnected).toBe(false);
+
+			document.body.appendChild(parent);
+
+			expect(newNode.isConnected).toBe(true);
+		});
 	});
 
 	describe('replaceChild()', () => {

@@ -14,6 +14,7 @@ import QuerySelector from '../../../src/query-selector/QuerySelector';
 import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility';
 import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
+import Node from '../../../src/nodes/node/Node';
 import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
 import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
@@ -299,6 +300,243 @@ describe('Element', () => {
 
 			document.prepend(node1, node2);
 			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('insertAdjacentElement()', () => {
+		test('Inserts a Node right before the reference element and returns with it.', () => {
+			const parent = document.createElement('div');
+			const newNode = document.createElement('span');
+
+			document.body.appendChild(parent);
+
+			const insertedNode = parent.insertAdjacentElement('beforebegin', newNode);
+
+			expect(insertedNode).toBe(newNode);
+			expect(parent.childNodes).toEqual([]);
+			expect(insertedNode.isConnected).toBe(true);
+			expect(document.body.childNodes[0]).toBe(newNode);
+		});
+
+		test('Returns with null if cannot insert with "beforebegin".', () => {
+			const parent = document.createElement('div');
+			const newNode = document.createElement('span');
+			const insertedNode = parent.insertAdjacentElement('beforebegin', newNode);
+
+			expect(insertedNode).toBe(null);
+			expect(newNode.isConnected).toBe(false);
+		});
+
+		test('Inserts a Node inside the reference element before the first child and returns with it.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const newNode = document.createElement('span');
+
+			parent.appendChild(child);
+
+			document.body.appendChild(parent);
+
+			const insertedNode = parent.insertAdjacentElement('afterbegin', newNode);
+
+			expect(insertedNode).toBe(newNode);
+			expect(parent.childNodes[0]).toBe(insertedNode);
+			expect(insertedNode.isConnected).toBe(true);
+		});
+
+		test('Inserts a Node inside the reference element after the last child and returns with it.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const newNode = document.createElement('span');
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+
+			const insertedNode = parent.insertAdjacentElement('beforeend', newNode);
+
+			expect(insertedNode).toBe(newNode);
+			expect(parent.childNodes[1]).toBe(insertedNode);
+			expect(insertedNode.isConnected).toBe(true);
+		});
+
+		test('Inserts a Node right after the reference element and returns with it.', () => {
+			const parent = document.createElement('div');
+			const newNode = document.createElement('span');
+
+			document.body.appendChild(parent);
+
+			const insertedNode = parent.insertAdjacentElement('afterend', newNode);
+
+			expect(insertedNode).toBe(newNode);
+			expect(parent.childNodes).toEqual([]);
+			expect(insertedNode.isConnected).toBe(true);
+
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect(document.body.childNodes[1]).toBe(insertedNode);
+		});
+
+		test('Inserts a Node right after the reference element and returns with it.', () => {
+			const parent = document.createElement('div');
+			const sibling = document.createElement('div');
+			const newNode = document.createElement('span');
+
+			document.body.appendChild(parent);
+			document.body.appendChild(sibling);
+
+			const insertedNode = parent.insertAdjacentElement('afterend', newNode);
+
+			expect(insertedNode).toBe(newNode);
+			expect(parent.childNodes).toEqual([]);
+			expect(newNode.isConnected).toBe(true);
+
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect(document.body.childNodes[1]).toBe(insertedNode);
+			expect(document.body.childNodes[2]).toBe(sibling);
+		});
+
+		test('Returns with null if cannot insert with "afterend".', () => {
+			const parent = document.createElement('div');
+			const newNode = document.createElement('span');
+			const insertedNode = parent.insertAdjacentElement('afterend', newNode);
+
+			expect(insertedNode).toBe(null);
+			expect(newNode.isConnected).toBe(false);
+		});
+	});
+
+	describe('insertAdjacentHTML()', () => {
+		test('Inserts the given HTML right before the reference element.', () => {
+			const parent = document.createElement('div');
+			const markup = '<span>markup</span>';
+
+			document.body.appendChild(parent);
+			parent.insertAdjacentHTML('beforebegin', markup);
+
+			expect(parent.childNodes).toEqual([]);
+			expect((<IElement>document.body.childNodes[0]).outerHTML).toEqual(markup);
+		});
+
+		test('Inserts the given HTML inside the reference element before the first child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const markup = '<span>markup</span>';
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			parent.insertAdjacentHTML('afterbegin', markup);
+
+			expect((<IElement>parent.childNodes[0]).outerHTML).toEqual(markup);
+			expect(parent.childNodes[1]).toBe(child);
+		});
+
+		test('Inserts the given HTML inside the reference element after the last child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const markup = '<span>markup</span>';
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			parent.insertAdjacentHTML('beforeend', markup);
+
+			expect(parent.childNodes[0]).toBe(child);
+			expect((<IElement>parent.childNodes[1]).outerHTML).toEqual(markup);
+		});
+
+		test('Inserts the given HTML right after the reference element.', () => {
+			const parent = document.createElement('div');
+			const markup = '<span>markup</span>';
+
+			document.body.appendChild(parent);
+			parent.insertAdjacentHTML('afterend', markup);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect((<IElement>document.body.childNodes[1]).outerHTML).toEqual(markup);
+		});
+
+		test('Inserts the given HTML right after the reference element if it has a sibling.', () => {
+			const parent = document.createElement('div');
+			const sibling = document.createElement('div');
+			const markup = '<span>markup</span>';
+
+			document.body.appendChild(parent);
+			document.body.appendChild(sibling);
+			parent.insertAdjacentHTML('afterend', markup);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect((<IElement>document.body.childNodes[1]).outerHTML).toEqual(markup);
+			expect(document.body.childNodes[2]).toBe(sibling);
+		});
+	});
+
+	describe('insertAdjacentText()', () => {
+		test('Inserts the given text right before the reference element.', () => {
+			const parent = document.createElement('div');
+			const text = 'lorem';
+
+			document.body.appendChild(parent);
+			parent.insertAdjacentText('beforebegin', text);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0].nodeType).toBe(Node.TEXT_NODE);
+			expect(document.body.childNodes[0].textContent).toEqual(text);
+		});
+
+		test('Inserts the given text inside the reference element before the first child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const text = 'lorem';
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			parent.insertAdjacentText('afterbegin', text);
+
+			expect(parent.childNodes[0].nodeType).toBe(Node.TEXT_NODE);
+			expect(parent.childNodes[0].textContent).toEqual(text);
+			expect(parent.childNodes[1]).toBe(child);
+		});
+
+		test('Inserts the given text inside the reference element after the last child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const text = 'lorem';
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			parent.insertAdjacentText('beforeend', text);
+
+			expect(parent.childNodes[0]).toBe(child);
+			expect(parent.childNodes[1].nodeType).toBe(Node.TEXT_NODE);
+			expect(parent.childNodes[1].textContent).toEqual(text);
+		});
+
+		test('Inserts the given text right after the reference element.', () => {
+			const parent = document.createElement('div');
+			const text = 'lorem';
+
+			document.body.appendChild(parent);
+			parent.insertAdjacentText('afterend', text);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect(document.body.childNodes[1].nodeType).toBe(Node.TEXT_NODE);
+			expect(document.body.childNodes[1].textContent).toEqual(text);
+		});
+
+		test('Inserts the given text right after the reference element.', () => {
+			const parent = document.createElement('div');
+			const sibling = document.createElement('div');
+			const text = 'lorem';
+
+			document.body.appendChild(parent);
+			document.body.appendChild(sibling);
+			parent.insertAdjacentText('afterend', text);
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect(document.body.childNodes[1].nodeType).toBe(Node.TEXT_NODE);
+			expect(document.body.childNodes[1].textContent).toEqual(text);
+			expect(document.body.childNodes[2]).toBe(sibling);
 		});
 	});
 
