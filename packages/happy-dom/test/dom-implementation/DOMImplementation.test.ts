@@ -14,7 +14,7 @@ describe('DOMImplementation', () => {
 	describe('createHTMLDocument()', () => {
 		test('Returns a new Document.', () => {
 			const document = domImplementation.createHTMLDocument();
-			expect(document.constructor.name).toBe('Document');
+			expect(document instanceof Document).toBe(true);
 			expect(document.defaultView).toBe(null);
 		});
 	});

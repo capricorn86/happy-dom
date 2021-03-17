@@ -1,26 +1,28 @@
 import DocumentType from '../nodes/document-type/DocumentType';
-import Document from '../nodes/document/Document';
+import IDocument from '../nodes/document/IDocument';
 
 /**
  * The DOMImplementation interface represents an object providing methods which are not dependent on any particular document. Such an object is returned by the
  */
 export default class DOMImplementation {
-	public _ownerDocument: Document = null;
+	public _ownerDocument: IDocument = null;
 
 	/**
 	 * Creates and returns an XML Document.
 	 *
 	 * @TODO Not fully implemented.
 	 */
-	public createDocument(): Document {
-		return new Document();
+	public createDocument(): IDocument {
+		const documentClass = this._ownerDocument.constructor;
+		// @ts-ignore
+		return new documentClass();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
-	public createHTMLDocument(): Document {
-		return new Document();
+	public createHTMLDocument(): IDocument {
+		return this.createDocument();
 	}
 
 	/**
