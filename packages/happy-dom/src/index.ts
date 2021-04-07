@@ -72,6 +72,7 @@ import ElementTag from './config/ElementTag';
 import SelfClosingElements from './config/SelfClosingElements';
 import UnclosedElements from './config/UnclosedElements';
 import CSSStyleSheet from './css/CSSStyleSheet';
+import Storage from './storage/Storage';
 
 export {
 	AsyncWindow,
@@ -147,5 +148,6 @@ export {
 	ElementTag,
 	SelfClosingElements,
 	UnclosedElements,
-	CSSStyleSheet
+	CSSStyleSheet,
+	Storage
 };

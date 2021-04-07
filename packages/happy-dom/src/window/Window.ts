@@ -55,6 +55,7 @@ import IResponse from './IResponse';
 import { URLSearchParams } from 'url';
 import AsyncTaskTypeEnum from './AsyncTaskTypeEnum';
 import RelativeURL from '../location/RelativeURL';
+import Storage from '../storage/Storage';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
 
@@ -125,6 +126,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public DOMException = DOMException;
 	public History = History;
 	public Screen = Screen;
+	public Storage = Storage;
 
 	// Public Properties
 	public document: Document;
@@ -139,6 +141,8 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public screen = new Screen();
 	public readonly innerWidth = 1024;
 	public readonly innerHeight = 768;
+	public readonly sessionStorage = new Storage();
+	public readonly localStorage = new Storage();
 
 	// Node.js Globals
 	public Array = global ? global.Array : null;
