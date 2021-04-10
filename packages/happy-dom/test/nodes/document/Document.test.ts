@@ -728,4 +728,27 @@ describe('Document', () => {
 			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
 		});
 	});
+
+	describe('adoptNode()', () => {
+		test('Removes node from its original document and sets the ownerDocument to be the current document.', () => {
+			const originalDocument = new Window().document;
+			const node = originalDocument.createElement('div');
+			originalDocument.body.append(node);
+			const adopted = <Element>document.adoptNode(node);
+
+			expect(adopted.tagName).toBe('DIV');
+			expect(adopted instanceof HTMLElement).toBe(true);
+			expect(adopted.ownerDocument).toBe(document);
+			expect(originalDocument.querySelector('div')).toBe(null);
+		});
+
+		test('Just change the ownerDocument of the node to be the current document, if the original document does not have node inside tree.', () => {
+			const node = new Window().document.createElement('div');
+			const adopted = <Element>document.adoptNode(node);
+
+			expect(adopted.tagName).toBe('DIV');
+			expect(adopted instanceof HTMLElement).toBe(true);
+			expect(adopted.ownerDocument).toBe(document);
+		});
+	});
 });

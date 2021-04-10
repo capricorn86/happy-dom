@@ -594,4 +594,20 @@ export default class Document extends Node implements IDocument {
 		(<Document>clone.ownerDocument) = this;
 		return clone;
 	}
+
+	/**
+	 * Adopts a node.
+	 *
+	 * @param node Node to adopt.
+	 * @return Adopted node.
+	 */
+	public adoptNode(node: INode): INode {
+		if (!(node instanceof Node)) {
+			throw new DOMException('Parameter 1 was not of type Node.');
+		}
+
+		const adopted = node.parentNode ? node.parentNode.removeChild(node) : node;
+		(<Document>adopted.ownerDocument) = this;
+		return adopted;
+	}
 }

@@ -272,8 +272,9 @@ export default class Node extends EventTarget implements INode {
 	 * Remove Child element from childNodes array.
 	 *
 	 * @param node Node to remove
+	 * @return Removed node.
 	 */
-	public removeChild(node: INode): void {
+	public removeChild(node: INode): INode {
 		const index = this.childNodes.indexOf(node);
 
 		if (index === -1) {
@@ -298,6 +299,8 @@ export default class Node extends EventTarget implements INode {
 				}
 			}
 		}
+
+		return node;
 	}
 
 	/**
