@@ -20,7 +20,7 @@ export default interface INode extends IEventTarget {
 	disconnectedCallback?(): void;
 	cloneNode(deep: boolean): INode;
 	appendChild(node: INode): INode;
-	removeChild(node: INode): void;
+	removeChild(node: INode): INode;
 	insertBefore(newNode: INode, referenceNode?: INode | null): INode;
 	replaceChild(newChild: INode, oldChild: INode): INode;
 	toString(): string;

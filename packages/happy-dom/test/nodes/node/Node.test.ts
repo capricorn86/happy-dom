@@ -311,7 +311,7 @@ describe('Node', () => {
 	});
 
 	describe('removeChild()', () => {
-		test('Removes a child Node from its parent.', () => {
+		test('Removes a child Node from its parent and returns a reference to a removed node.', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 
@@ -325,11 +325,12 @@ describe('Node', () => {
 
 			expect(child.isConnected).toBe(true);
 
-			parent.removeChild(child);
+			const removed = parent.removeChild(child);
 
 			expect(child.parentNode).toBe(null);
 			expect(parent.childNodes).toEqual([]);
 			expect(child.isConnected).toBe(false);
+			expect(removed).toEqual(child);
 		});
 	});
 
