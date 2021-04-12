@@ -178,7 +178,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @override
 	 * @param node Node to remove
 	 */
-	public removeChild(node: INode): void {
+	public removeChild(node: INode): INode {
 		if (node.nodeType === Node.ELEMENT_NODE) {
 			const index = this.children.indexOf(<IElement>node);
 			if (index !== -1) {
@@ -186,7 +186,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 			}
 		}
 
-		super.removeChild(<Node>node);
+		return super.removeChild(<Node>node);
 	}
 
 	/**

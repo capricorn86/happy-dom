@@ -307,7 +307,7 @@ export default class Element extends Node implements IElement {
 	 * @override
 	 * @param node Node to remove
 	 */
-	public removeChild(node: INode): void {
+	public removeChild(node: INode): INode {
 		if (node.nodeType === Node.ELEMENT_NODE) {
 			const index = this.children.indexOf(<IElement>node);
 			if (index !== -1) {
@@ -315,7 +315,7 @@ export default class Element extends Node implements IElement {
 			}
 		}
 
-		super.removeChild(node);
+		return super.removeChild(node);
 	}
 
 	/**

@@ -302,7 +302,7 @@ export default class Document extends Node implements IDocument {
 	 * @override
 	 * @param node Node to remove
 	 */
-	public removeChild(node: INode): void {
+	public removeChild(node: INode): INode {
 		if (node.nodeType === Node.ELEMENT_NODE) {
 			const index = this.children.indexOf(<Element>node);
 			if (index !== -1) {
@@ -310,7 +310,7 @@ export default class Document extends Node implements IDocument {
 			}
 		}
 
-		super.removeChild(node);
+		return super.removeChild(node);
 	}
 
 	/**
