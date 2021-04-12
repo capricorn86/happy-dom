@@ -76,7 +76,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 *
 	 * @param node Node to remove
 	 */
-	public removeChild(node: Node): void {
+	public removeChild(node: Node): INode {
 		return this.content.removeChild(node);
 	}
 
