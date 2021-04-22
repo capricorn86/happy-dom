@@ -1,5 +1,4 @@
 export default [
-	'AnimationEvent',
 	'AudioProcessingEvent',
 	'BeforeInputEvent',
 	'BeforeUnloadEvent',

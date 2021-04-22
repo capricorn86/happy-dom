@@ -22,6 +22,7 @@ import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
 import TreeWalker from '../tree-walker/TreeWalker';
 import Event from '../event/Event';
 import CustomEvent from '../event/events/CustomEvent';
+import AnimationEvent from '../event/events/AnimationEvent';
 import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
 import EventTarget from '../event/EventTarget';
@@ -101,6 +102,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public Event = Event;
 	public UIEvent = UIEvent;
 	public CustomEvent = CustomEvent;
+	public AnimationEvent = AnimationEvent;
 	public KeyboardEvent = KeyboardEvent;
 	public MouseEvent = MouseEvent;
 	public FocusEvent = FocusEvent;
