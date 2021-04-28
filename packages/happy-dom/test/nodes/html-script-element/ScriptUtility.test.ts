@@ -1,6 +1,8 @@
 import Window from '../../../src/window/Window';
 import ScriptUtility from '../../../src/nodes/html-script-element/ScriptUtility';
 import IResponse from '../../../src/window/IResponse';
+import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement';
+import ResourceFetcher from '../../../src/fetch/ResourceFetcher';
 
 describe('ScriptUtility', () => {
 	let window: Window;
@@ -16,47 +18,106 @@ describe('ScriptUtility', () => {
 	describe('loadExternalScript()', () => {
 		test('Loads external script asynchronously.', async () => {
 			let fetchedURL = null;
+			let loadEvent = null;
 
 			jest.spyOn(window, 'fetch').mockImplementation(url => {
 				fetchedURL = url;
 				return Promise.resolve(<IResponse>{
-					text: () => Promise.resolve('global.test = "test";')
+					text: () => Promise.resolve('global.test = "test";'),
+					ok: true
 				});
 			});
 
-			ScriptUtility.loadExternalScript({ window, url: 'path/to/script/', async: true });
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.async = true;
+			script.addEventListener('load', event => {
+				loadEvent = event;
+			});
 
+			await ScriptUtility.loadExternalScript(script);
+
+			expect(loadEvent.target).toBe(script);
 			expect(fetchedURL).toBe('path/to/script/');
-
-			await window.happyDOM.whenAsyncComplete();
-
 			expect(global['test']).toBe('test');
 
 			delete global['test'];
 		});
 
-		test('Loads external script synchronously with relative URL.', () => {
-			let fetchedMethod = null;
-			let fetchedURL = null;
-			window.location.href = 'https://localhost:8080/base/';
+		test('Triggers error event when loading external script asynchronously.', async () => {
+			let errorEvent = null;
 
-			jest.mock('sync-request', () => {
-				return (method: string, url: string) => {
-					fetchedMethod = method;
-					fetchedURL = url;
-					return {
-						getBody: () => 'global.test = "test";'
-					};
-				};
+			jest.spyOn(window, 'fetch').mockImplementation(() => {
+				return Promise.resolve(<IResponse>{
+					text: () => null,
+					ok: false,
+					status: 404
+				});
 			});
 
-			ScriptUtility.loadExternalScript({ window, url: 'path/to/script/', async: false });
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.async = true;
+			script.addEventListener('error', event => {
+				errorEvent = event;
+			});
 
-			expect(fetchedMethod).toBe('GET');
-			expect(fetchedURL).toBe('https://localhost:8080/base/path/to/script/');
+			await ScriptUtility.loadExternalScript(script);
+
+			expect(errorEvent.message).toBe(
+				'Failed to perform request to "path/to/script/". Status code: 404'
+			);
+		});
+
+		test('Loads external script synchronously with relative URL.', async () => {
+			let fetchedOptions = null;
+			let loadEvent = null;
+
+			window.location.href = 'https://localhost:8080/base/';
+
+			jest.spyOn(ResourceFetcher, 'fetchSync').mockImplementation(options => {
+				fetchedOptions = options;
+				return 'global.test = "test";';
+			});
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.addEventListener('load', event => {
+				loadEvent = event;
+			});
+
+			await ScriptUtility.loadExternalScript(script);
+
+			expect(loadEvent.target).toBe(script);
+			expect(fetchedOptions).toEqual({
+				window,
+				url: 'path/to/script/'
+			});
 			expect(global['test']).toBe('test');
 
 			delete global['test'];
+		});
+
+		test('Triggers error event when loading external script synchronously with relative URL.', () => {
+			const thrownError = new Error('error');
+			let errorEvent = null;
+
+			window.location.href = 'https://localhost:8080/base/';
+
+			jest.spyOn(ResourceFetcher, 'fetchSync').mockImplementation(() => {
+				throw thrownError;
+			});
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.addEventListener('error', event => {
+				errorEvent = event;
+			});
+
+			ScriptUtility.loadExternalScript(script);
+
+			expect(errorEvent.message).toBe('error');
+			expect(errorEvent.error).toBe(thrownError);
 		});
 	});
 });

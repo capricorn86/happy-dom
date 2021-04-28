@@ -1,3 +1,5 @@
+import Blob from '../file/Blob';
+
 /**
  * Fetch response.
  */
@@ -22,4 +24,19 @@ export default interface IResponse {
 	 * @returns Text.
 	 */
 	text(): Promise<string>;
+
+	/**
+	 * Returns blob.
+	 *
+	 * @returns Blob.
+	 */
+	blob(): Promise<Blob>;
+
+	/**
+	 * Returns form data.
+	 *
+	 * @returns Form data.
+	 */
+	/* eslint-disable @typescript-eslint/no-explicit-any*/
+	formData(): Promise<any>;
 }

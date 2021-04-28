@@ -8,6 +8,7 @@ import NamespaceURI from '../config/NamespaceURI';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import INode from '../nodes/node/INode';
 import IElement from '../nodes/element/IElement';
+import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->/gi;
@@ -55,6 +56,11 @@ export default class XMLParser {
 				// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
 				if (tagName === 'script') {
 					(<HTMLScriptElement>newElement)._evaluateScript = evaluateScripts;
+				}
+
+				// An assumption that the same rule should be applied for the HTMLLinkElement is made here.
+				if (tagName === 'link') {
+					(<HTMLLinkElement>newElement)._evaluateCSS = evaluateScripts;
 				}
 
 				// The HTML engine can guess that the namespace is SVG for SVG tags

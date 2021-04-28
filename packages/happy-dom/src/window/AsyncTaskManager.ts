@@ -111,4 +111,17 @@ export default class AsyncTaskManager {
 			}
 		}
 	}
+
+	/**
+	 * Returns the amount of running tasks by type.
+	 *
+	 * @param type Task type.
+	 * @returns Count.
+	 */
+	public getRunningCount(type: AsyncTaskTypeEnum): number {
+		if (this.tasks[type]) {
+			return this.tasks[type].length;
+		}
+		return 0;
+	}
 }
