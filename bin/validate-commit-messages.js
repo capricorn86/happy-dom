@@ -20,7 +20,7 @@ async function main() {
 			console.log(Chalk.green('✓ ' + commitMessage));
 		} else {
 			console.log(Chalk.red('✖' + commitMessage));
-			for(const error of info.errors) {
+			for(const error of parsed.errors) {
 				console.log(Chalk.red(`    - ${error}`));
 			}
 			hasErrors = true;

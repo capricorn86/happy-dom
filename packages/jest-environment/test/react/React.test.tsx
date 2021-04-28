@@ -18,4 +18,10 @@ describe('React', () => {
 		ReactDOM.render(<ReactComponent />, appElement);
 		expect(appElement.innerHTML).toBe('<div>Test</div>');
 	});
+
+	test('Can unmount a component.', () => {
+		ReactDOM.render(<ReactComponent />, appElement);
+		ReactDOM.unmountComponentAtNode(appElement);
+		expect(appElement.innerHTML).toBe('');
+	});
 });

@@ -37,6 +37,13 @@ class GitUtility {
 	 * @returns {{ errors: string[]; commit: { taskId: string; versionType: string; description: string; } }} Parsed commit information.
 	 */
 	static parseCommitMessage(commitMessage) {
+        if(commitMessage.startsWith('Merge')) {
+            return {
+                errors: [],
+                commit: null
+            };
+        }
+
 		const match = commitMessage.match(COMMIT_MESSAGE_REGEXP);
 		const errors = [];
 

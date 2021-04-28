@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14]
+        node-version: [15]
     outputs:
       next_version: ${{ steps.versionCheck.outputs.next_version }}
       latest_version: ${{ steps.versionCheck.outputs.latest_version }}
@@ -33,7 +33,7 @@ jobs:
     if: ${{ needs.check-next-version.outputs.next_version != needs.check-next-version.outputs.latest_version }}
     strategy:
       matrix:
-        node-version: [14]
+        node-version: [15]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -63,7 +63,7 @@ jobs:
     needs: [publish, check-next-version]
     strategy:
       matrix:
-        node-version: [14]
+        node-version: [15]
     steps:
       - uses: actions/checkout@v2
         with:

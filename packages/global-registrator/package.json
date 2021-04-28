@@ -1,0 +1,48 @@
+{
+	"name": "@happy-dom/global-registrator",
+	"version": "0.0.0",
+	"license": "MIT",
+	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator",
+	"repository": "https://github.com/capricorn86/happy-dom",
+	"author": "David Ortner",
+	"description": "A utility that registers Happy DOM globally, which makes it possible to use Happy DOM for testing in a Node environment.",
+	"main": "lib/index.js",
+	"keywords": [
+		"jsdom",
+		"happy",
+		"dom",
+		"webcomponents",
+		"web",
+		"component",
+		"custom",
+		"elements",
+		"global",
+		"register",
+		"registrator"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"compile": "tsc",
+		"watch": "npm run compile && tsc -w --preserveWatchOutput",
+		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'",
+		"test": "tsc --project ./test && node ./tmp/react/React.test.js",
+		"test:debug": "tsc --project ./test && node --inspect-brk ./tmp/react/React.test.js"
+	},
+	"dependencies": {
+		"happy-dom": "^0.0.0"
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^1.9.0",
+		"@typescript-eslint/parser": "^1.9.0",
+		"@types/node": "^12.6.8",
+		"eslint": "^5.16.0",
+		"eslint-config-prettier": "^4.1.0",
+		"eslint-plugin-prettier": "^3.0.1",
+		"prettier": "^1.16.4",
+		"typescript": "^3.4.5",
+		"react": "^16.13.1",
+		"react-dom": "^16.13.1"
+	}
+}
