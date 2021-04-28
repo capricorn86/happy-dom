@@ -59,17 +59,18 @@ import Storage from '../storage/Storage';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import IFetchOptions from './IFetchOptions';
+import IWindow from './IWindow';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
 
 /**
  * Handles the Window.
  */
-export default class Window extends EventTarget implements NodeJS.Global {
+export default class Window extends EventTarget implements IWindow, NodeJS.Global {
 	// Public Properties
 	public happyDOM = {
 		whenAsyncComplete: async () => {
-			return this.happyDOM.asyncTaskManager.whenComplete();
+			return await this.happyDOM.asyncTaskManager.whenComplete();
 		},
 		cancelAsync: () => {
 			this.happyDOM.asyncTaskManager.cancelAllTasks();
@@ -141,9 +142,9 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public history = new History();
 	public navigator = { userAgent: 'happy-dom' };
 	public console = global ? global.console : null;
-	public self: Window = this;
-	public top: Window = this;
-	public window: Window = this;
+	public self = this;
+	public top = this;
+	public window = this;
 	public screen = new Screen();
 	public readonly innerWidth = 1024;
 	public readonly innerHeight = 768;
@@ -395,7 +396,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	 * @override
 	 * @param {NodeJS.Timeout} id Timeout ID.
 	 */
-	public cancelAnimationFrame(id): void {
+	public cancelAnimationFrame(id: NodeJS.Timeout): void {
 		this.clearTimeout(id);
 	}
 

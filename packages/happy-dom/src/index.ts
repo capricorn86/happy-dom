@@ -1,7 +1,23 @@
 import Window from './window/Window';
+import IWindow from './window/IWindow';
 import DataTransfer from './event/DataTransfer';
 import DataTransferItem from './event/DataTransferItem';
 import DataTransferItemList from './event/DataTransferItemList';
+import URL from './location/URL';
+import Location from './location/Location';
+import MutationObserver from './mutation-observer/MutationObserver';
+import ResizeObserver from './resize-observer/ResizeObserver';
+import Blob from './file/Blob';
+import File from './file/File';
+import FileReader from './file/FileReader';
+import DOMException from './exception/DOMException';
+import History from './history/History';
+import CSSStyleDeclaration from './css/CSSStyleDeclaration';
+import Screen from './screen/Screen';
+import AsyncTaskManager from './window/AsyncTaskManager';
+import IResponse from './window/IResponse';
+import IFetchOptions from './window/IFetchOptions';
+import NodeFilter from './tree-walker/NodeFilter';
 import Event from './event/Event';
 import EventTarget from './event/EventTarget';
 import IEventInit from './event/IEventInit';
@@ -10,6 +26,7 @@ import IUIEventInit from './event/IUIEventInit';
 import UIEvent from './event/UIEvent';
 import ErrorEvent from './event/events/ErrorEvent';
 import FocusEvent from './event/events/FocusEvent';
+import CustomEvent from './event/events/CustomEvent';
 import AnimationEvent from './event/events/AnimationEvent';
 import IAnimationEventInit from './event/events/IAnimationEventInit';
 import ICustomEventInit from './event/events/ICustomEventInit';
@@ -47,6 +64,7 @@ import HTMLTextAreaElement from './nodes/html-text-area-element/HTMLTextAreaElem
 import IHTMLTextAreaElement from './nodes/html-text-area-element/IHTMLTextAreaElement';
 import HTMLImageElement from './nodes/html-image-element/HTMLImageElement';
 import IHTMLImageElement from './nodes/html-image-element/IHTMLImageElement';
+import HTMLScriptElement from './nodes/html-script-element/HTMLScriptElement';
 import HTMLLinkElement from './nodes/html-link-element/HTMLLinkElement';
 import IHTMLLinkElement from './nodes/html-link-element/IHTMLLinkElement';
 import HTMLStyleElement from './nodes/html-style-element/HTMLStyleElement';
@@ -83,9 +101,25 @@ import Storage from './storage/Storage';
 export {
 	AsyncWindow,
 	Window,
+	IWindow,
 	DataTransfer,
 	DataTransferItem,
 	DataTransferItemList,
+	URL,
+	Location,
+	MutationObserver,
+	ResizeObserver,
+	Blob,
+	File,
+	FileReader,
+	DOMException,
+	History,
+	CSSStyleDeclaration,
+	Screen,
+	AsyncTaskManager,
+	IResponse,
+	IFetchOptions,
+	NodeFilter,
 	Event,
 	EventTarget,
 	IEventInit,
@@ -97,6 +131,7 @@ export {
 	AnimationEvent,
 	IAnimationEventInit,
 	ICustomEventInit,
+	CustomEvent,
 	IErrorEventInit,
 	IFocusEventInit,
 	IInputEventInit,
@@ -130,6 +165,7 @@ export {
 	IHTMLTextAreaElement,
 	HTMLImageElement,
 	IHTMLImageElement,
+	HTMLScriptElement,
 	HTMLLinkElement,
 	IHTMLLinkElement,
 	HTMLStyleElement,

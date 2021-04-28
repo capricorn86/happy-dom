@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14]
+        node-version: [15]
     outputs:
       sha_short: ${{ steps.vars.outputs.sha_short }}}
     steps:

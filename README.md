@@ -61,6 +61,11 @@ This package makes it possible to use Happy DOM with [Jest](https://jestjs.io/).
 ### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/server-rendering.svg)](https://www.npmjs.com/package/@happy-dom/server-rendering) [server-rendering](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering)
 
 This package makes it easier to setup servering side rendering of web components by handling the setup of the Node [VM Context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) for you.
+---
+
+### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/global-registrator.svg)](https://www.npmjs.com/package/@happy-dom/global-registrator) [global-registrator](https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator)
+
+A utility that registers Happy DOM globally, which makes it possible to use Happy DOM for testing in a Node environment.
 
 
 
