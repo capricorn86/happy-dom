@@ -1,6 +1,6 @@
 {
 	"name": "@happy-dom/global-registrator",
-	"version": "0.0.0",
+	"version": "2.16.3",
 	"license": "MIT",
 	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator",
 	"repository": "https://github.com/capricorn86/happy-dom",
@@ -31,18 +31,18 @@
 		"test:debug": "tsc --project ./test && node --inspect-brk ./tmp/react/React.test.js"
 	},
 	"dependencies": {
-		"happy-dom": "^0.0.0"
+		"happy-dom": "^2.16.3"
 	},
 	"devDependencies": {
+		"@types/node": "^12.6.8",
 		"@typescript-eslint/eslint-plugin": "^1.9.0",
 		"@typescript-eslint/parser": "^1.9.0",
-		"@types/node": "^12.6.8",
 		"eslint": "^5.16.0",
 		"eslint-config-prettier": "^4.1.0",
 		"eslint-plugin-prettier": "^3.0.1",
 		"prettier": "^1.16.4",
-		"typescript": "^3.4.5",
 		"react": "^16.13.1",
-		"react-dom": "^16.13.1"
+		"react-dom": "^16.13.1",
+		"typescript": "^3.4.5"
 	}
 }
