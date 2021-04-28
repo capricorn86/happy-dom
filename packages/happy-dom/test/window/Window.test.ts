@@ -1,10 +1,37 @@
+import { HTMLElement } from '../../src';
 import CSSStyleDeclaration from '../../src/css/CSSStyleDeclaration';
+import IFetchOptions from '../../src/window/IFetchOptions';
+import IResponse from '../../src/window/IResponse';
 import Window from '../../src/window/Window';
 
 describe('Window', () => {
-	let window;
+	let window: Window;
+	let fetchedUrl: string;
+	let fetchedOptions: IFetchOptions;
+	let fetchResponseBody: string;
+	let fetchError: Error;
+
+	beforeAll(() => {
+		jest.mock('node-fetch', () => (url: string, options: IFetchOptions) => {
+			fetchedUrl = url;
+			fetchedOptions = options;
+			if (fetchError) {
+				return Promise.reject(fetchError);
+			}
+			return <Promise<IResponse>>Promise.resolve({
+				text: () => Promise.resolve(fetchResponseBody),
+				json: () => Promise.resolve(JSON.parse(fetchResponseBody)),
+				blob: () => Promise.resolve(null),
+				formData: () => Promise.resolve(null)
+			});
+		});
+	});
 
 	beforeEach(() => {
+		fetchedUrl = null;
+		fetchedOptions = null;
+		fetchResponseBody = null;
+		fetchError = null;
 		window = new Window();
 	});
 
@@ -14,7 +41,7 @@ describe('Window', () => {
 
 	describe('getComputedStyle()', () => {
 		test('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
-			const element = window.document.createElement('div');
+			const element = <HTMLElement>window.document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
 
 			element.style.direction = 'rtl';
@@ -85,63 +112,62 @@ describe('Window', () => {
 
 	describe('fetch()', () => {
 		test('Handles successful JSON request.', async () => {
-			const expectedUrl = '/url/';
+			const expectedUrl = 'https://localhost:8080/path/';
 			const expectedOptions = {};
-			const expectedJsonResponse = {};
-			jest.spyOn(window, 'fetch').mockImplementation((url, options) => {
-				expect(url).toBe(expectedUrl);
-				expect(options).toBe(expectedOptions);
-				return Promise.resolve({
-					json: () => Promise.resolve(expectedJsonResponse)
-				});
-			});
+
+			fetchResponseBody = '{}';
+
 			const response = await window.fetch(expectedUrl, expectedOptions);
 			const jsonResponse = await response.json();
-			expect(jsonResponse).toBe(expectedJsonResponse);
+
+			expect(fetchedUrl).toBe(expectedUrl);
+			expect(fetchedOptions).toBe(expectedOptions);
+			expect(jsonResponse).toEqual({});
 		});
 
 		test('Handles successful Text request.', async () => {
-			const expectedUrl = '/url/';
+			const expectedUrl = 'https://localhost:8080/path/';
 			const expectedOptions = {};
-			const expectedTextResponse = 'response';
-			jest.spyOn(window, 'fetch').mockImplementation((url, options) => {
-				expect(url).toBe(expectedUrl);
-				expect(options).toBe(expectedOptions);
-				return Promise.resolve({
-					text: () => Promise.resolve(expectedTextResponse)
-				});
-			});
+
+			fetchResponseBody = 'text';
+
 			const response = await window.fetch(expectedUrl, expectedOptions);
 			const textResponse = await response.text();
-			expect(textResponse).toBe(expectedTextResponse);
+
+			expect(fetchedUrl).toBe(expectedUrl);
+			expect(fetchedOptions).toBe(expectedOptions);
+			expect(textResponse).toEqual(fetchResponseBody);
+		});
+
+		test('Handles relative URL.', async () => {
+			const expectedPath = '/path/';
+			const expectedOptions = {};
+
+			window.location.href = 'https://localhost:8080';
+
+			fetchResponseBody = 'text';
+
+			const response = await window.fetch(expectedPath, expectedOptions);
+			const textResponse = await response.text();
+
+			expect(fetchedUrl).toBe('https://localhost:8080' + expectedPath);
+			expect(fetchedOptions).toBe(expectedOptions);
+			expect(textResponse).toEqual(fetchResponseBody);
 		});
 
 		test('Handles error JSON request.', async () => {
-			const expectedUrl = '/url/';
-			const expectedOptions = {};
-			const expectedError = new Error('error');
-			jest.spyOn(window, 'fetch').mockImplementation((url, options) => {
-				expect(url).toBe(expectedUrl);
-				expect(options).toBe(expectedOptions);
-				return Promise.reject(expectedError);
-			});
+			fetchError = new Error('error');
+
 			try {
-				await window.fetch(expectedUrl, expectedOptions);
+				await window.fetch('/url/', {});
 			} catch (error) {
-				expect(error).toBe(expectedError);
+				expect(error).toBe(fetchError);
 			}
 		});
 	});
 
 	describe('happyDOM.whenAsyncComplete()', () => {
 		test('Resolves the Promise returned by whenAsyncComplete() when all async tasks has been completed.', async () => {
-			jest.spyOn(window, 'fetch').mockImplementation(() => {
-				return Promise.resolve({
-					json: () => Promise.resolve({}),
-					text: () => Promise.resolve({})
-				});
-			});
-
 			let isFirstWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;
@@ -181,13 +207,6 @@ describe('Window', () => {
 
 	describe('happyDOM.cancelAsync()', () => {
 		test('Cancels all ongoing asynchrounous tasks.', done => {
-			jest.spyOn(window, 'fetch').mockImplementation(() => {
-				return Promise.resolve({
-					json: () => Promise.resolve({}),
-					text: () => Promise.resolve({})
-				});
-			});
-
 			let isFirstWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;
@@ -209,16 +228,30 @@ describe('Window', () => {
 			window.requestAnimationFrame(() => {
 				tasksDone++;
 			});
-			window.fetch('/url/').then(response =>
-				response.json().then(() => {
-					tasksDone++;
-				})
-			);
-			window.fetch('/url/').then(response =>
-				response.text().then(() => {
-					tasksDone++;
-				})
-			);
+
+			window
+				.fetch('/url/')
+				.then(response =>
+					response
+						.json()
+						.then(() => {
+							tasksDone++;
+						})
+						.catch(() => {})
+				)
+				.catch(() => {});
+
+			window
+				.fetch('/url/')
+				.then(response =>
+					response
+						.json()
+						.then(() => {
+							tasksDone++;
+						})
+						.catch(() => {})
+				)
+				.catch(() => {});
 
 			let isSecondWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {

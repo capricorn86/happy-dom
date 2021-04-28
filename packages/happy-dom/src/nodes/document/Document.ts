@@ -29,6 +29,8 @@ import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INodeList from '../node/INodeList';
 import IHTMLCollection from '../element/IHTMLCollection';
 import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
+import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement';
+import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement';
 
 /**
  * Document.
@@ -158,6 +160,25 @@ export default class Document extends Node implements IDocument {
 	 */
 	public get head(): IHTMLElement {
 		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'head');
+	}
+
+	/**
+	 * Returns CSS style sheets.
+	 *
+	 * @return CSS style sheets.
+	 */
+	public get styleSheets(): CSSStyleSheet[] {
+		const styles = <(IHTMLLinkElement | IHTMLStyleElement)[]>(
+			(<unknown>this.querySelectorAll('link,style'))
+		);
+		const styleSheets = [];
+		for (const style of styles) {
+			const sheet = style.sheet;
+			if (sheet) {
+				styleSheets.push(sheet);
+			}
+		}
+		return styleSheets;
 	}
 
 	/**

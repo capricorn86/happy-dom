@@ -52,10 +52,12 @@ import ErrorEvent from '../event/events/ErrorEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from './AsyncTaskManager';
 import IResponse from './IResponse';
-import { URLSearchParams } from 'url';
 import AsyncTaskTypeEnum from './AsyncTaskTypeEnum';
 import RelativeURL from '../location/RelativeURL';
 import Storage from '../storage/Storage';
+import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
+import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
+import IFetchOptions from './IFetchOptions';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
 
@@ -83,6 +85,8 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	public HTMLTextAreaElement = HTMLTextAreaElement;
 	public HTMLImageElement = HTMLImageElement;
 	public HTMLScriptElement = HTMLScriptElement;
+	public HTMLLinkElement = HTMLLinkElement;
+	public HTMLStyleElement = HTMLStyleElement;
 	public SVGSVGElement = SVGSVGElement;
 	public SVGElement = SVGElement;
 	public Text = Text;
@@ -401,15 +405,7 @@ export default class Window extends EventTarget implements NodeJS.Global {
 	 * @param [options] Options.
 	 * @returns Promise.
 	 */
-	public async fetch(
-		url: string,
-		options?: {
-			method?: string;
-			headers?: Map<string, string> | { [k: string]: string };
-			body?: URLSearchParams | string;
-			redirect?: string;
-		}
-	): Promise<IResponse> {
+	public async fetch(url: string, options?: IFetchOptions): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
 			let fetch = null;
 
@@ -423,27 +419,38 @@ export default class Window extends EventTarget implements NodeJS.Global {
 
 			fetch(RelativeURL.getAbsoluteURL(this.location, url), options)
 				.then(response => {
-					for (const methodName of FETCH_RESPONSE_TYPE_METHODS) {
-						const asyncMethod = response[methodName];
-						response[methodName] = () => {
-							return new Promise((resolve, reject) => {
-								this.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
+					if (this.happyDOM.asyncTaskManager.getRunningCount(AsyncTaskTypeEnum.fetch) === 0) {
+						reject(new Error('Failed to complete fetch request. Task was canceled.'));
+					} else {
+						for (const methodName of FETCH_RESPONSE_TYPE_METHODS) {
+							const asyncMethod = response[methodName];
+							response[methodName] = () => {
+								return new Promise((resolve, reject) => {
+									this.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
 
-								asyncMethod
-									.then(response => {
-										resolve(response);
-										this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
-									})
-									.catch(error => {
-										reject(error);
-										this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
-									});
-							});
-						};
+									asyncMethod()
+										.then(response => {
+											if (
+												this.happyDOM.asyncTaskManager.getRunningCount(AsyncTaskTypeEnum.fetch) ===
+												0
+											) {
+												reject(new Error('Failed to complete fetch request. Task was canceled.'));
+											} else {
+												resolve(response);
+												this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
+											}
+										})
+										.catch(error => {
+											reject(error);
+											this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
+										});
+								});
+							};
+						}
+
+						resolve(response);
+						this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
 					}
-
-					resolve(response);
-					this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
 				})
 				.catch(error => {
 					reject(error);
