@@ -10,6 +10,8 @@ import IUIEventInit from './event/IUIEventInit';
 import UIEvent from './event/UIEvent';
 import ErrorEvent from './event/events/ErrorEvent';
 import FocusEvent from './event/events/FocusEvent';
+import AnimationEvent from './event/events/AnimationEvent';
+import IAnimationEventInit from './event/events/IAnimationEventInit';
 import ICustomEventInit from './event/events/ICustomEventInit';
 import IErrorEventInit from './event/events/IErrorEventInit';
 import IFocusEventInit from './event/events/IFocusEventInit';
@@ -92,6 +94,8 @@ export {
 	UIEvent,
 	ErrorEvent,
 	FocusEvent,
+	AnimationEvent,
+	IAnimationEventInit,
 	ICustomEventInit,
 	IErrorEventInit,
 	IFocusEventInit,
