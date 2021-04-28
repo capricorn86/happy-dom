@@ -69,35 +69,32 @@ describe('HTMLScriptElement', () => {
 
 		test('Loads and evaluates an external script when the attribute "src" is set and the element is connected to DOM.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
-			let loadedOptions = null;
+			let loadedElement = null;
 
-			jest
-				.spyOn(ScriptUtility, 'loadExternalScript')
-				.mockImplementation(options => (loadedOptions = options));
+			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async element => {
+				loadedElement = element;
+			});
 
 			document.body.appendChild(element);
 
 			element.async = true;
 			element.src = 'test';
 
-			expect(Object.keys(loadedOptions).length).toBe(3);
-			expect(loadedOptions.window).toBe(window);
-			expect(loadedOptions.url).toBe('test');
-			expect(loadedOptions.async).toBe(true);
+			expect(loadedElement).toBe(element);
 		});
 
 		test('Does not evaluate script if the element is not connected to DOM.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
-			let loadedOptions = null;
+			let loadedElement = null;
 
-			jest
-				.spyOn(ScriptUtility, 'loadExternalScript')
-				.mockImplementation(options => (loadedOptions = options));
+			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async element => {
+				loadedElement = element;
+			});
 
 			element.async = true;
 			element.src = 'test';
 
-			expect(loadedOptions).toBe(null);
+			expect(loadedElement).toBe(null);
 		});
 	});
 
@@ -181,11 +178,11 @@ describe('HTMLScriptElement', () => {
 
 		test('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
-			let loadedOptions = null;
+			let loadedElement = null;
 
-			jest
-				.spyOn(ScriptUtility, 'loadExternalScript')
-				.mockImplementation(options => (loadedOptions = options));
+			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async element => {
+				loadedElement = element;
+			});
 
 			element.src = 'test';
 			element.text = 'global.test = "test";';
@@ -193,25 +190,22 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(element);
 
 			expect(global['test']).toBe(undefined);
-			expect(Object.keys(loadedOptions).length).toBe(3);
-			expect(loadedOptions.window).toBe(window);
-			expect(loadedOptions.url).toBe('test');
-			expect(loadedOptions.async).toBe(false);
+			expect(loadedElement).toBe(element);
 		});
 
 		test('Does not load external scripts when "src" attribute has been set if the element is not connected to DOM.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
-			let loadedOptions = null;
+			let loadedElement = null;
 
-			jest
-				.spyOn(ScriptUtility, 'loadExternalScript')
-				.mockImplementation(options => (loadedOptions = options));
+			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async element => {
+				loadedElement = element;
+			});
 
 			element.src = 'test';
 			element.text = 'global.test = "test";';
 
 			expect(global['test']).toBe(undefined);
-			expect(loadedOptions).toBe(null);
+			expect(loadedElement).toBe(null);
 		});
 	});
 });

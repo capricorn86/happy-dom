@@ -6,6 +6,8 @@ import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
+import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
+import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 
 export default {
 	template: HTMLTemplateElement,
@@ -14,6 +16,8 @@ export default {
 	textarea: HTMLTextAreaElement,
 	script: HTMLScriptElement,
 	img: HTMLImageElement,
+	link: HTMLLinkElement,
+	style: HTMLStyleElement,
 	svg: SVGSVGElement,
 	circle: SVGElement,
 	ellipse: SVGElement,

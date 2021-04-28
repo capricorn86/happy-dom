@@ -19,6 +19,8 @@ import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTe
 import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
 import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
+import { IHTMLLinkElement } from '../../../src';
+import IResponse from '../../../src/window/IResponse';
 
 describe('Document', () => {
 	let window: Window;
@@ -195,6 +197,51 @@ describe('Document', () => {
 	describe('get doctype()', () => {
 		test('Returns DocumentType element.', () => {
 			expect(document.doctype).toBe(document.childNodes[0]);
+		});
+	});
+
+	describe('get styleSheets()', () => {
+		test('Returns all stylesheets loaded to the document.', done => {
+			const textNode = document.createTextNode(
+				'body { background-color: red }\ndiv { background-color: green }'
+			);
+			const style = document.createElement('style');
+			const link = <IHTMLLinkElement>document.createElement('link');
+			let fetchedUrl = null;
+			let fetchedOptions = null;
+
+			link.rel = 'stylesheet';
+			link.href = '/path/to/file.css';
+
+			jest.spyOn(window, 'fetch').mockImplementation((url, options) => {
+				fetchedUrl = url;
+				fetchedOptions = options;
+				return <Promise<IResponse>>Promise.resolve({
+					text: () => Promise.resolve('button { background-color: red }'),
+					ok: true
+				});
+			});
+
+			style.appendChild(textNode);
+
+			document.appendChild(style);
+			document.appendChild(link);
+
+			setTimeout(() => {
+				expect(fetchedUrl).toBe('/path/to/file.css');
+				expect(fetchedOptions).toBe(undefined);
+
+				const styleSheets = document.styleSheets;
+
+				expect(styleSheets.length).toBe(2);
+				expect(styleSheets[0].cssRules.length).toBe(1);
+				expect(styleSheets[0].cssRules[0].cssText).toBe('button { background-color: red; }');
+				expect(styleSheets[1].cssRules.length).toBe(2);
+				expect(styleSheets[1].cssRules[0].cssText).toBe('body { background-color: red; }');
+				expect(styleSheets[1].cssRules[1].cssText).toBe('div { background-color: green; }');
+
+				done();
+			}, 0);
 		});
 	});
 

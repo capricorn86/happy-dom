@@ -7,6 +7,8 @@ import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
+import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
+import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 
 export default {
 	HTMLTemplateElement: HTMLTemplateElement,
@@ -17,9 +19,9 @@ export default {
 	HTMLHeadElement: HTMLElement,
 	HTMLTitleElement: HTMLElement,
 	HTMLBaseElement: HTMLElement,
-	HTMLLinkElement: HTMLElement,
+	HTMLLinkElement: HTMLLinkElement,
 	HTMLMetaElement: HTMLElement,
-	HTMLStyleElement: HTMLElement,
+	HTMLStyleElement: HTMLStyleElement,
 	HTMLBodyElement: HTMLElement,
 	HTMLHeadingElement: HTMLElement,
 	HTMLParagraphElement: HTMLElement,

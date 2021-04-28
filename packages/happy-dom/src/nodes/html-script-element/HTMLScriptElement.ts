@@ -2,6 +2,8 @@ import Attr from '../../attribute/Attr';
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLScriptElement from './IHTMLScriptElement';
 import ScriptUtility from './ScriptUtility';
+import Event from '../../event/Event';
+import ErrorEvent from '../../event/events/ErrorEvent';
 
 /**
  * HTML Script Element.
@@ -10,6 +12,8 @@ import ScriptUtility from './ScriptUtility';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
  */
 export default class HTMLScriptElement extends HTMLElement implements IHTMLScriptElement {
+	public onerror: (event: ErrorEvent) => void = null;
+	public onload: (event: Event) => void = null;
 	public _evaluateScript = true;
 
 	/**
@@ -44,11 +48,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 				const src = this.getAttributeNS(null, 'src');
 
 				if (src !== null) {
-					ScriptUtility.loadExternalScript({
-						window: this.ownerDocument.defaultView,
-						url: src,
-						async: this.getAttributeNS(null, 'async') !== null
-					});
+					ScriptUtility.loadExternalScript(this);
 				} else {
 					const textContent = this.textContent;
 					if (textContent) {
@@ -210,11 +210,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'src' && attribute.value !== null && this.isConnected) {
-			ScriptUtility.loadExternalScript({
-				window: this.ownerDocument.defaultView,
-				url: attribute.value,
-				async: this.getAttributeNS(null, 'async') !== null
-			});
+			ScriptUtility.loadExternalScript(this);
 		}
 
 		return replacedAttribute;
