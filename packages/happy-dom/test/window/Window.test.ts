@@ -24,8 +24,7 @@ describe('Window', () => {
 			return <Promise<IResponse>>Promise.resolve({
 				text: () => Promise.resolve(fetchResponseBody),
 				json: () => Promise.resolve(JSON.parse(fetchResponseBody)),
-				blob: () => Promise.resolve(null),
-				formData: () => Promise.resolve(null)
+				blob: () => Promise.resolve(null)
 			});
 		});
 	});
