@@ -1,3 +1,4 @@
+import { Document } from '../..';
 import Event from '../../event/Event';
 import ErrorEvent from '../../event/events/ErrorEvent';
 import ResourceFetcher from '../../fetch/ResourceFetcher';
@@ -18,6 +19,7 @@ export default class ScriptUtility {
 		const async = element.getAttributeNS(null, 'async') !== null;
 		if (async) {
 			let code = null;
+			(<Document>element.ownerDocument)._readyStateManager.startTask();
 			try {
 				code = await ResourceFetcher.fetch({
 					window: element.ownerDocument.defaultView,
@@ -30,11 +32,24 @@ export default class ScriptUtility {
 						error
 					})
 				);
+				element.ownerDocument.defaultView.dispatchEvent(
+					new ErrorEvent('error', {
+						message: error.message,
+						error
+					})
+				);
+				if (
+					!element._listeners['error'] &&
+					!element.ownerDocument.defaultView._listeners['error']
+				) {
+					element.ownerDocument.defaultView.console.error(error);
+				}
 			}
 			if (code) {
 				element.ownerDocument.defaultView.eval(code);
 				element.dispatchEvent(new Event('load'));
 			}
+			(<Document>element.ownerDocument)._readyStateManager.endTask();
 		} else {
 			let code = null;
 			try {
@@ -49,6 +64,18 @@ export default class ScriptUtility {
 						error
 					})
 				);
+				element.ownerDocument.defaultView.dispatchEvent(
+					new ErrorEvent('error', {
+						message: error.message,
+						error
+					})
+				);
+				if (
+					!element._listeners['error'] &&
+					!element.ownerDocument.defaultView._listeners['error']
+				) {
+					element.ownerDocument.defaultView.console.error(error);
+				}
 			}
 			if (code) {
 				element.ownerDocument.defaultView.eval(code);

@@ -31,12 +31,14 @@ import IHTMLCollection from '../element/IHTMLCollection';
 import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement';
 import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement';
+import DocumentReadyStateEnum from './DocumentReadyStateEnum';
+import DocumentReadyStateManager from './DocumentReadyStateManager';
 
 /**
  * Document.
  */
 export default class Document extends Node implements IDocument {
-	public defaultView: Window = null;
+	public onreadystatechange: (event: Event) => void = null;
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	protected _isConnected = true;
@@ -44,6 +46,9 @@ export default class Document extends Node implements IDocument {
 	protected _isFirstWriteAfterOpen = false;
 	public implementation: DOMImplementation;
 	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
+	public readonly readyState = DocumentReadyStateEnum.interactive;
+	public _readyStateManager: DocumentReadyStateManager = null;
+	private _defaultView: Window = null;
 	private _cookie = '';
 
 	/**
@@ -65,6 +70,29 @@ export default class Document extends Node implements IDocument {
 
 		documentElement.appendChild(headElement);
 		documentElement.appendChild(bodyElement);
+	}
+
+	/**
+	 * Returns default view.
+	 *
+	 * @return Default view.
+	 */
+	public get defaultView(): Window {
+		return this._defaultView;
+	}
+
+	/**
+	 * Sets a default view.
+	 *
+	 * @param defaultView Default view.
+	 */
+	public set defaultView(defaultView: Window) {
+		this._defaultView = defaultView;
+		this._readyStateManager = new DocumentReadyStateManager(defaultView);
+		this._readyStateManager.whenComplete().then(() => {
+			(<DocumentReadyStateEnum>this.readyState) = DocumentReadyStateEnum.complete;
+			this.dispatchEvent(new Event('readystatechange'));
+		});
 	}
 
 	/**
@@ -168,8 +196,8 @@ export default class Document extends Node implements IDocument {
 	 * @return CSS style sheets.
 	 */
 	public get styleSheets(): CSSStyleSheet[] {
-		const styles = <(IHTMLLinkElement | IHTMLStyleElement)[]>(
-			(<unknown>this.querySelectorAll('link,style'))
+		const styles = <INodeList<IHTMLLinkElement | IHTMLStyleElement>>(
+			this.querySelectorAll('link[rel="stylesheet"][href],style')
 		);
 		const styleSheets = [];
 		for (const style of styles) {

@@ -21,6 +21,9 @@ import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
 import { IHTMLLinkElement } from '../../../src';
 import IResponse from '../../../src/window/IResponse';
+import ResourceFetcher from '../../../src/fetch/ResourceFetcher';
+import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement';
+import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum';
 
 describe('Document', () => {
 	let window: Window;
@@ -796,6 +799,78 @@ describe('Document', () => {
 			expect(adopted.tagName).toBe('DIV');
 			expect(adopted instanceof HTMLElement).toBe(true);
 			expect(adopted.ownerDocument).toBe(document);
+		});
+	});
+
+	describe('addEventListener()', () => {
+		test('Triggers "readystatechange" event if no resources needs to be loaded.', done => {
+			let readyChangeEvent = null;
+
+			document.addEventListener('readystatechange', event => {
+				readyChangeEvent = event;
+			});
+
+			expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
+
+			setTimeout(() => {
+				expect(readyChangeEvent.target).toBe(document);
+				expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
+				done();
+			}, 1);
+		});
+
+		test('Triggers "readystatechange" event when all resources have been loaded.', done => {
+			const cssURL = '/path/to/file.css';
+			const jsURL = '/path/to/file.js';
+			const cssResponse = 'body { background-color: red; }';
+			const jsResponse = 'global.test = "test";';
+			let resourceFetchCSSOptions = null;
+			let resourceFetchJSOptions = null;
+			let readyChangeEvent = null;
+
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+				if (options.url.endsWith('.css')) {
+					resourceFetchCSSOptions = options;
+					return cssResponse;
+				}
+
+				resourceFetchJSOptions = options;
+				return jsResponse;
+			});
+
+			document.addEventListener('readystatechange', event => {
+				readyChangeEvent = event;
+			});
+
+			const script = <IHTMLScriptElement>document.createElement('script');
+			script.async = true;
+			script.src = jsURL;
+
+			const link = <IHTMLLinkElement>document.createElement('link');
+			link.href = cssURL;
+			link.rel = 'stylesheet';
+
+			document.body.appendChild(script);
+			document.body.appendChild(link);
+
+			expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
+
+			setTimeout(() => {
+				expect(resourceFetchCSSOptions.window).toBe(window);
+				expect(resourceFetchCSSOptions.url).toBe(cssURL);
+				expect(resourceFetchJSOptions.window).toBe(window);
+				expect(resourceFetchJSOptions.url).toBe(jsURL);
+				expect(readyChangeEvent.target).toBe(document);
+				expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
+				expect(document.styleSheets.length).toBe(1);
+				expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
+
+				expect(global['test']).toBe('test');
+
+				delete global['test'];
+
+				done();
+			}, 0);
 		});
 	});
 });

@@ -1,11 +1,14 @@
-import { HTMLElement } from '../../src';
+import { Document, HTMLElement, IHTMLLinkElement } from '../../src';
 import CSSStyleDeclaration from '../../src/css/CSSStyleDeclaration';
+import ResourceFetcher from '../../src/fetch/ResourceFetcher';
+import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement';
 import IFetchOptions from '../../src/window/IFetchOptions';
 import IResponse from '../../src/window/IResponse';
 import Window from '../../src/window/Window';
 
 describe('Window', () => {
 	let window: Window;
+	let document: Document;
 	let fetchedUrl: string;
 	let fetchedOptions: IFetchOptions;
 	let fetchResponseBody: string;
@@ -33,6 +36,7 @@ describe('Window', () => {
 		fetchResponseBody = null;
 		fetchError = null;
 		window = new Window();
+		document = window.document;
 	});
 
 	afterEach(() => {
@@ -306,4 +310,105 @@ describe('Window', () => {
 			});
 		});
 	}
+
+	describe('addEventListener()', () => {
+		test('Triggers "load" event if no resources needs to be loaded.', done => {
+			let loadEvent = null;
+
+			window.addEventListener('load', event => {
+				loadEvent = event;
+			});
+
+			setTimeout(() => {
+				expect(loadEvent.target).toBe(window);
+				done();
+			}, 1);
+		});
+
+		test('Triggers "load" event when all resources have been loaded.', done => {
+			const cssURL = '/path/to/file.css';
+			const jsURL = '/path/to/file.js';
+			const cssResponse = 'body { background-color: red; }';
+			const jsResponse = 'global.test = "test";';
+			let resourceFetchCSSOptions = null;
+			let resourceFetchJSOptions = null;
+			let loadEvent = null;
+
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+				if (options.url.endsWith('.css')) {
+					resourceFetchCSSOptions = options;
+					return cssResponse;
+				}
+
+				resourceFetchJSOptions = options;
+				return jsResponse;
+			});
+
+			window.addEventListener('load', event => {
+				loadEvent = event;
+			});
+
+			const script = <IHTMLScriptElement>document.createElement('script');
+			script.async = true;
+			script.src = jsURL;
+
+			const link = <IHTMLLinkElement>document.createElement('link');
+			link.href = cssURL;
+			link.rel = 'stylesheet';
+
+			document.body.appendChild(script);
+			document.body.appendChild(link);
+
+			setTimeout(() => {
+				expect(resourceFetchCSSOptions.window).toBe(window);
+				expect(resourceFetchCSSOptions.url).toBe(cssURL);
+				expect(resourceFetchJSOptions.window).toBe(window);
+				expect(resourceFetchJSOptions.url).toBe(jsURL);
+				expect(loadEvent.target).toBe(window);
+				expect(document.styleSheets.length).toBe(1);
+				expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
+
+				expect(global['test']).toBe('test');
+
+				delete global['test'];
+
+				done();
+			}, 0);
+		});
+
+		test('Triggers "error" event if there are problems loading resources.', done => {
+			const cssURL = '/path/to/file.css';
+			const jsURL = '/path/to/file.js';
+			const errorEvents = [];
+
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+				throw new Error(options.url);
+			});
+
+			window.addEventListener('error', event => {
+				errorEvents.push(event);
+			});
+
+			const script = <IHTMLScriptElement>document.createElement('script');
+			script.async = true;
+			script.src = jsURL;
+
+			const link = <IHTMLLinkElement>document.createElement('link');
+			link.href = cssURL;
+			link.rel = 'stylesheet';
+
+			document.body.appendChild(script);
+			document.body.appendChild(link);
+
+			setTimeout(() => {
+				expect(errorEvents.length).toBe(2);
+				expect(errorEvents[0].target).toBe(window);
+				expect(errorEvents[0].error.message).toBe(jsURL);
+				expect(errorEvents[1].target).toBe(window);
+				expect(errorEvents[1].error.message).toBe(cssURL);
+
+				done();
+			}, 0);
+		});
+	});
 });
