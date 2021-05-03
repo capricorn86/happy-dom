@@ -105,7 +105,7 @@ document.write(`
     </html>
 `);
 
-script.runInContext(context);
+script.runInContext(window);
 
 // Will output "Test"
 console.log(document.querySelector('.container div').innerHTML);
