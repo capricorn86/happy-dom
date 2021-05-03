@@ -125,6 +125,10 @@ export default interface IWindow {
 	Screen: typeof Screen;
 	Storage: typeof Storage;
 
+	// Events
+	onload: (event: Event) => void;
+	onerror: (event: ErrorEvent) => void;
+
 	// Public Properties
 	document: Document;
 	customElements: CustomElementRegistry;

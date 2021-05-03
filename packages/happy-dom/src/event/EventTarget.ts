@@ -6,7 +6,7 @@ import IEventTarget from './IEventTarget';
  * Handles events.
  */
 export default abstract class EventTarget implements IEventTarget {
-	protected readonly _listeners: {
+	public readonly _listeners: {
 		[k: string]: (((event: Event) => void) | IEventListener)[];
 	} = {};
 

@@ -16,6 +16,7 @@ import IDocumentFragment from '../document-fragment/IDocumentFragment';
  * Document.
  */
 export default interface IDocument extends IParentNode {
+	onreadystatechange: (event: Event) => void;
 	readonly defaultView: Window;
 	readonly implementation: DOMImplementation;
 	readonly documentElement: IHTMLElement;

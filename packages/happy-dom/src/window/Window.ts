@@ -135,6 +135,10 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public Screen = Screen;
 	public Storage = Storage;
 
+	// Events
+	public onload: (event: Event) => void = null;
+	public onerror: (event: ErrorEvent) => void = null;
+
 	// Public Properties
 	public document: Document;
 	public customElements: CustomElementRegistry = new CustomElementRegistry();
@@ -220,6 +224,9 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 
 		this.document = new HTMLDocument();
 		this.document.defaultView = this;
+		this.document._readyStateManager.whenComplete().then(() => {
+			this.dispatchEvent(new Event('load'));
+		});
 
 		DOMParser._ownerDocument = DOMParser._ownerDocument || this.document;
 		FileReader._ownerDocument = FileReader._ownerDocument || this.document;

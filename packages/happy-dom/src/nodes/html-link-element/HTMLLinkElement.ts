@@ -2,6 +2,7 @@ import Attr from '../../attribute/Attr';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import ResourceFetcher from '../../fetch/ResourceFetcher';
 import HTMLElement from '../html-element/HTMLElement';
+import Document from '../document/Document';
 import IHTMLLinkElement from './IHTMLLinkElement';
 import Event from '../../event/Event';
 import ErrorEvent from '../../event/events/ErrorEvent';
@@ -50,12 +51,14 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 				const href = this.getAttributeNS(null, 'href');
 				const rel = this.getAttributeNS(null, 'rel');
 				if (href !== null && rel && rel.toLowerCase() === 'stylesheet') {
+					(<Document>this.ownerDocument)._readyStateManager.startTask();
 					ResourceFetcher.fetch({ window: this.ownerDocument.defaultView, url: href })
 						.then(code => {
 							const styleSheet = new CSSStyleSheet();
 							styleSheet.replaceSync(code);
 							(<CSSStyleSheet>this.sheet) = styleSheet;
 							this.dispatchEvent(new Event('load'));
+							(<Document>this.ownerDocument)._readyStateManager.endTask();
 						})
 						.catch(error => {
 							this.dispatchEvent(
@@ -64,6 +67,19 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 									error
 								})
 							);
+							this.ownerDocument.defaultView.dispatchEvent(
+								new ErrorEvent('error', {
+									message: error.message,
+									error
+								})
+							);
+							(<Document>this.ownerDocument)._readyStateManager.endTask();
+							if (
+								!this._listeners['error'] &&
+								!this.ownerDocument.defaultView._listeners['error']
+							) {
+								this.ownerDocument.defaultView.console.error(error);
+							}
 						});
 				}
 			}
@@ -239,12 +255,14 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 			rel.toLowerCase() === 'stylesheet' &&
 			this.isConnected
 		) {
+			(<Document>this.ownerDocument)._readyStateManager.startTask();
 			ResourceFetcher.fetch({ window: this.ownerDocument.defaultView, url: href })
 				.then(code => {
 					const styleSheet = new CSSStyleSheet();
 					styleSheet.replaceSync(code);
 					(<CSSStyleSheet>this.sheet) = styleSheet;
 					this.dispatchEvent(new Event('load'));
+					(<Document>this.ownerDocument)._readyStateManager.endTask();
 				})
 				.catch(error => {
 					this.dispatchEvent(
@@ -253,6 +271,16 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 							error
 						})
 					);
+					this.ownerDocument.defaultView.dispatchEvent(
+						new ErrorEvent('error', {
+							message: error.message,
+							error
+						})
+					);
+					(<Document>this.ownerDocument)._readyStateManager.endTask();
+					if (!this._listeners['error'] && !this.ownerDocument.defaultView._listeners['error']) {
+						this.ownerDocument.defaultView.console.error(error);
+					}
 				});
 		}
 
