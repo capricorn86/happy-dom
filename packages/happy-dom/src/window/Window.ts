@@ -61,7 +61,7 @@ import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import IFetchOptions from './IFetchOptions';
 import IWindow from './IWindow';
 
-const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'formData', 'text'];
+const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'text'];
 
 /**
  * Handles the Window.
@@ -438,7 +438,8 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 								return new Promise((resolve, reject) => {
 									this.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
 
-									asyncMethod()
+									asyncMethod
+										.call(response)
 										.then(response => {
 											if (
 												this.happyDOM.asyncTaskManager.getRunningCount(AsyncTaskTypeEnum.fetch) ===

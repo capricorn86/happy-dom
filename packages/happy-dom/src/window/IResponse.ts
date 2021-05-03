@@ -31,12 +31,4 @@ export default interface IResponse {
 	 * @returns Blob.
 	 */
 	blob(): Promise<Blob>;
-
-	/**
-	 * Returns form data.
-	 *
-	 * @returns Form data.
-	 */
-	/* eslint-disable @typescript-eslint/no-explicit-any*/
-	formData(): Promise<any>;
 }
