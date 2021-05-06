@@ -83,12 +83,6 @@ import VM from 'vm';
 
 const window = VM.createContext(new Window());
 const document = window.document;
-const script = new VM.Script(`
-    const element = document.createElement('div');
-    const container = document.querySelector('.container');
-    element.innerHTML = 'Test';
-    container.appendChild(element);
-`);
 
 window.location.href = 'http://localhost:8080';
 
@@ -102,10 +96,14 @@ document.write(`
                   <!–– Content will be added here -->
              </div>
         </body>
+        <script>
+            const element = document.createElement('div');
+            const container = document.querySelector('.container');
+            element.innerHTML = 'Test';
+            container.appendChild(element);
+        </script>
     </html>
 `);
-
-script.runInContext(window);
 
 // Will output "Test"
 console.log(document.querySelector('.container div').innerHTML);
@@ -123,7 +121,7 @@ Returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 ```javascript
 window.happyDOM.whenAsyncComplete().then(() => {
-    // Do something when all async task are completed.
+    // Do something when all async tasks are completed.
 });
 ```
 
