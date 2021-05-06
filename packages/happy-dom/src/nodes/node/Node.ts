@@ -9,6 +9,7 @@ import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import INodeList from './INodeList';
 import NodeListFactory from './NodeListFactory';
+import { IShadowRoot } from '../..';
 
 /**
  * Node
@@ -189,6 +190,31 @@ export default class Node extends EventTarget implements INode {
 	 * Disconnected callback.
 	 */
 	public disconnectedCallback?(): void;
+
+	/**
+	 * Returns closest root node (Document or ShadowRoot).
+	 *
+	 * @param options Options.
+	 * @param options.composed A Boolean that indicates whether the shadow root should be returned (false, the default), or a root node beyond shadow root (true).
+	 * @returns Node.
+	 */
+	public getRootNode(options?: { composed: boolean }): INode {
+		// eslint-disable-next-line
+        let parent: INode = this;
+
+		while (!!parent) {
+			if (!parent.parentNode) {
+				if (!options?.composed || !(<IShadowRoot>parent).host) {
+					return parent;
+				}
+				parent = (<IShadowRoot>parent).host;
+			} else {
+				parent = parent.parentNode;
+			}
+		}
+
+		return null;
+	}
 
 	/**
 	 * Clones a node.

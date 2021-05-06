@@ -18,6 +18,7 @@ export default interface INode extends IEventTarget {
 	textContent: string;
 	connectedCallback?(): void;
 	disconnectedCallback?(): void;
+	getRootNode(options?: { composed: boolean }): INode;
 	cloneNode(deep: boolean): INode;
 	appendChild(node: INode): INode;
 	removeChild(node: INode): INode;
