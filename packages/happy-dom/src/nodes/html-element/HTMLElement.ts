@@ -185,26 +185,30 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * Triggers a blur event.
 	 */
 	public blur(): void {
-		const event = new Event('blur', {
-			bubbles: true,
-			composed: true
-		});
-		event.target = this;
-		event.currentTarget = this;
-		this.dispatchEvent(event);
+		for (const eventType of ['blur', 'focusout']) {
+			const event = new Event(eventType, {
+				bubbles: true,
+				composed: true
+			});
+			event.target = this;
+			event.currentTarget = this;
+			this.dispatchEvent(event);
+		}
 	}
 
 	/**
 	 * Triggers a focus event.
 	 */
 	public focus(): void {
-		const event = new Event('focus', {
-			bubbles: true,
-			composed: true
-		});
-		event.target = this;
-		event.currentTarget = this;
-		this.dispatchEvent(event);
+		for (const eventType of ['focus', 'focusin']) {
+			const event = new Event(eventType, {
+				bubbles: true,
+				composed: true
+			});
+			event.target = this;
+			event.currentTarget = this;
+			this.dispatchEvent(event);
+		}
 	}
 
 	/**

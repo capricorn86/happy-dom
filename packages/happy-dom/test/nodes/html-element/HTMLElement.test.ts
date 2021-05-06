@@ -240,14 +240,22 @@ describe('HTMLElement', () => {
 		});
 	}
 
-	for (const eventType of ['click', 'blur', 'focus']) {
+	for (const eventType of ['click', 'blur', 'focus', 'focusin', 'focusout']) {
 		describe(`${eventType}()`, () => {
 			test(`Dispatches a "${eventType}" event.`, () => {
+				let methodName = eventType;
 				let triggeredEvent = null;
+
+				if (eventType === 'focusin') {
+					methodName = 'focus';
+				} else if (eventType === 'focusout') {
+					methodName = 'blur';
+				}
+
 				element.addEventListener(eventType, event => {
 					triggeredEvent = event;
 				});
-				element[eventType]();
+				element[methodName]();
 				expect(triggeredEvent).toEqual({
 					_immediatePropagationStopped: false,
 					_propagationStopped: false,
