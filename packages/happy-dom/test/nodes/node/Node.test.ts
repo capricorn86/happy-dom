@@ -7,9 +7,18 @@ class CustomCounterElement extends HTMLElement {
 	public static output = [];
 
 	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		this.attachShadow({ mode: 'open' });
+	}
+
+	/**
 	 * Connected
 	 */
 	public connectedCallback(): void {
+		this.shadowRoot.innerHTML = '<div><span>Test</span></div>';
 		(<typeof CustomCounterElement>this.constructor).output.push('Counter:connected');
 	}
 
@@ -220,6 +229,42 @@ describe('Node', () => {
 			document.body.removeChild(customElement);
 
 			expect(isDisconnected).toBe(true);
+		});
+	});
+
+	describe('getRootNode()', () => {
+		test('Returns ShadowRoot when used on a node inside a ShadowRoot.', () => {
+			const customElement = document.createElement('custom-counter');
+
+			document.body.appendChild(customElement);
+
+			const rootNode = customElement.shadowRoot.querySelector('span').getRootNode();
+
+			expect(rootNode).toBe(customElement.shadowRoot);
+		});
+
+		test('Returns Document when used on a node inside a ShadowRoot and the option "composed" is set to "true".', () => {
+			const customElement = document.createElement('custom-counter');
+
+			document.body.appendChild(customElement);
+
+			const rootNode = customElement.shadowRoot
+				.querySelector('span')
+				.getRootNode({ composed: true });
+
+			expect(rootNode).toBe(document);
+		});
+
+		test('Returns Document when the node is not inside a ShadowRoot.', () => {
+			const divElement = document.createElement('div');
+			const spanElement = document.createElement('span');
+
+			divElement.appendChild(spanElement);
+			document.body.appendChild(divElement);
+
+			const rootNode = spanElement.getRootNode();
+
+			expect(rootNode).toBe(document);
 		});
 	});
 
