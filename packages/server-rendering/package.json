@@ -9,16 +9,17 @@
 	"main": "lib/index.js",
 	"keywords": [
 		"jsdom",
-		"happy",
 		"dom",
-		"webcomponents",
-		"web",
-		"component",
-		"server",
-		"side",
-		"rendering",
+		"browser",
 		"custom",
-		"elements"
+		"elements",
+		"web",
+		"components",
+		"html",
+		"whatwg",
+		"w3c",
+		"server",
+		"render"
 	],
 	"publishConfig": {
 		"access": "public"

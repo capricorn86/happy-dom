@@ -11,13 +11,15 @@
 		"jest",
 		"environment",
 		"jsdom",
-		"happy",
 		"dom",
-		"webcomponents",
-		"web",
-		"component",
+		"browser",
 		"custom",
-		"elements"
+		"elements",
+		"web",
+		"components",
+		"html",
+		"whatwg",
+		"w3c"
 	],
 	"publishConfig": {
 		"access": "public"
