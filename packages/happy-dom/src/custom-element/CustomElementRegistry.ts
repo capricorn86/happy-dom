@@ -35,8 +35,9 @@ export default class CustomElementRegistry {
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
 
+		// observedAttributes should only be called once by CustomElementRegistry (see #117)
 		if (elementClass.prototype.attributeChangedCallback) {
-			elementClass._observedAttributes = elementClass.observedAttributes || null;
+			elementClass._observedAttributes = elementClass.observedAttributes;
 		}
 
 		if (this._callbacks[name]) {
