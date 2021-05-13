@@ -38,16 +38,10 @@ export default class Element extends Node implements IElement {
 	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public _attributes: { [k: string]: Attr } = {};
 	public readonly namespaceURI: string = null;
-	public static _observedAttributes: string[] = null;
-
-	/**
-	 * Returns a list of observed attributes.
-	 *
-	 * @return Observered attributes.
-	 */
-	public static get observedAttributes(): string[] {
-		return undefined;
-	}
+	// observedAttributes should only be called once by CustomElementRegistry (see #117)
+	// CustomElementRegistry will therefore populate _observedAttributes when CustomElementRegistry.define() is called
+	public static _observedAttributes: string[];
+	public static observedAttributes: string[];
 
 	/**
 	 * Returns ID.
