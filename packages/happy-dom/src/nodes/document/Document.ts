@@ -615,6 +615,7 @@ export default class Document extends Node implements IDocument {
 	public createAttribute(name: string): Attr {
 		const attribute = new Attr();
 		attribute.name = name.toLowerCase();
+		(<IDocument>attribute.ownerDocument) = this;
 		return attribute;
 	}
 
@@ -629,6 +630,7 @@ export default class Document extends Node implements IDocument {
 		const attribute = new Attr();
 		attribute.namespaceURI = namespaceURI;
 		attribute.name = qualifiedName;
+		(<IDocument>attribute.ownerDocument) = this;
 		return attribute;
 	}
 
