@@ -3,7 +3,8 @@ import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
 import DOMParserHTML from './data/DOMParserHTML';
 
 describe('DOMParser', () => {
-	let domParser, window;
+	let domParser;
+	let window;
 
 	beforeEach(() => {
 		window = new Window();
@@ -11,21 +12,21 @@ describe('DOMParser', () => {
 	});
 
 	describe('parseFromString()', () => {
-		test('Parses HTML of a page and returns a new document.', () => {
+		it('Parses HTML of a page and returns a new document.', () => {
 			const newDocument = domParser.parseFromString(DOMParserHTML, 'text/html');
 			expect(new XMLSerializer().serializeToString(newDocument).replace(/[\s]/gm, '')).toBe(
 				DOMParserHTML.replace(/[\s]/gm, '')
 			);
 		});
 
-		test('Parses HTML with just a string and returns a new document with <html>, <head> and <body> tags.', () => {
+		it('Parses HTML with just a string and returns a new document with <html>, <head> and <body> tags.', () => {
 			const newDocument = domParser.parseFromString('Test', 'text/html');
 			expect(new XMLSerializer().serializeToString(newDocument)).toBe(
 				'<html><head></head><body>Test</body></html>'
 			);
 		});
 
-		test('Adds elements outside of the <html> tag to the <body> tag.', () => {
+		it('Adds elements outside of the <html> tag to the <body> tag.', () => {
 			const newDocument = domParser.parseFromString(
 				`
 				<html>

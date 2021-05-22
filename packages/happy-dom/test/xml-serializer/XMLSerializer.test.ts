@@ -14,7 +14,7 @@ describe('XMLSerializer', () => {
 	});
 
 	describe('serializeToString()', () => {
-		test('Serializes a <div> element.', () => {
+		it('Serializes a <div> element.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
@@ -32,7 +32,7 @@ describe('XMLSerializer', () => {
 			);
 		});
 
-		test('Serializes a comment node.', () => {
+		it('Serializes a comment node.', () => {
 			const div = document.createElement('div');
 			const comment = document.createComment('');
 
@@ -43,7 +43,7 @@ describe('XMLSerializer', () => {
 			expect(xmlSerializer.serializeToString(div)).toBe('<div><!--Some comment.--></div>');
 		});
 
-		test('Serializes a text nodes.', () => {
+		it('Serializes a text nodes.', () => {
 			const div = document.createElement('div');
 			const text1 = document.createTextNode('Text 1.');
 			const text2 = document.createTextNode('Text 2.');
@@ -54,7 +54,7 @@ describe('XMLSerializer', () => {
 			expect(xmlSerializer.serializeToString(div)).toBe('<div>Text 1.Text 2.</div>');
 		});
 
-		test('Serializes a mix of nodes.', () => {
+		it('Serializes a mix of nodes.', () => {
 			const div = document.createElement('div');
 			const comment1 = document.createComment('Comment 1.');
 			const comment2 = document.createComment('Comment 2.');
@@ -83,7 +83,7 @@ describe('XMLSerializer', () => {
 			);
 		});
 
-		test('Serializes a closed custom element.', () => {
+		it('Serializes a closed custom element.', () => {
 			const div = document.createElement('div');
 			const customElement = document.createElement('custom-element');
 

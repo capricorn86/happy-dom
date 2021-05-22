@@ -16,7 +16,8 @@ const NODE_TO_STRING = (node: Node): string => {
 };
 
 describe('TreeWalker', () => {
-	let window, document;
+	let window;
+	let document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -25,7 +26,7 @@ describe('TreeWalker', () => {
 	});
 
 	describe('nextNode()', () => {
-		test('Walks into each node in the DOM tree.', () => {
+		it('Walks into each node in the DOM tree.', () => {
 			const treeWalker = document.createTreeWalker(document.body);
 			const html = [];
 			let currentNode;
@@ -62,7 +63,7 @@ describe('TreeWalker', () => {
 			]);
 		});
 
-		test('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT.', () => {
+		it('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT.', () => {
 			const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
 			const html = [];
 			let currentNode;
@@ -80,7 +81,7 @@ describe('TreeWalker', () => {
 			]);
 		});
 
-		test('Walks into each HTMLElement and Comment in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_COMMENT.', () => {
+		it('Walks into each HTMLElement and Comment in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_COMMENT.', () => {
 			const treeWalker = document.createTreeWalker(
 				document.body,
 				NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_COMMENT
@@ -105,7 +106,7 @@ describe('TreeWalker', () => {
 			]);
 		});
 
-		test('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ALL and provided filter function returns NodeFilter.FILTER_SKIP if not an HTMLElement and NodeFilter.FILTER_ACCEPT if it is.', () => {
+		it('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ALL and provided filter function returns NodeFilter.FILTER_SKIP if not an HTMLElement and NodeFilter.FILTER_ACCEPT if it is.', () => {
 			const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ALL, {
 				acceptNode: (node: Node) =>
 					node.nodeType === Node.ELEMENT_NODE ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
@@ -126,7 +127,7 @@ describe('TreeWalker', () => {
 			]);
 		});
 
-		test('Rejects the two first nodes when provided filter function returns NodeFilter.FILTER_REJECT on the two first nodes.', () => {
+		it('Rejects the two first nodes when provided filter function returns NodeFilter.FILTER_REJECT on the two first nodes.', () => {
 			let rejected = 0;
 			const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ALL, {
 				acceptNode: () => {
@@ -161,7 +162,7 @@ describe('TreeWalker', () => {
 	});
 
 	describe('previousNode()', () => {
-		test('Returns the previous node when executed after a nextNode() call.', () => {
+		it('Returns the previous node when executed after a nextNode() call.', () => {
 			const treeWalker = document.createTreeWalker(document.body);
 			let expectedPreviousNode = null;
 			let previousNode = null;
@@ -179,7 +180,7 @@ describe('TreeWalker', () => {
 	});
 
 	describe('parentNode()', () => {
-		test('Returns the parent node.', () => {
+		it('Returns the parent node.', () => {
 			const treeWalker = document.createTreeWalker(document.body);
 			const node = treeWalker.nextNode();
 			expect(node.parentNode).not.toBe(null);
@@ -188,7 +189,7 @@ describe('TreeWalker', () => {
 	});
 
 	describe('firstChild()', () => {
-		test('Returns the first child node.', () => {
+		it('Returns the first child node.', () => {
 			const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
 			const node = treeWalker.nextNode();
 			expect(node.firstChild).not.toBe(null);

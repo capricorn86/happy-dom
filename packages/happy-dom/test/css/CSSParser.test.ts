@@ -8,7 +8,7 @@ import CSSKeyframesRule from '../../src/css/rules/CSSKeyframesRule';
 
 describe('CSSParser', () => {
 	describe('parseFromString()', () => {
-		test('Parses CSS into an Array of CSSRule.', () => {
+		it('Parses CSS into an Array of CSSRule.', () => {
 			const cssStyleSheet = new CSSStyleSheet();
 			const cssRules = CSSParser.parseFromString(cssStyleSheet, CSSParserInput);
 

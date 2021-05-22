@@ -18,8 +18,8 @@ describe('HTMLElement', () => {
 	});
 
 	for (const property of ['accessKey', 'accessKeyLabel']) {
-		describe(property, () => {
-			test('Returns "".', () => {
+		describe(`${property}`, () => {
+			it('Returns "".', () => {
 				const div = document.createElement('div');
 				expect(div[property]).toBe('');
 			});
@@ -34,8 +34,8 @@ describe('HTMLElement', () => {
 		'clientHeight',
 		'clientWidth'
 	]) {
-		describe(property, () => {
-			test('Returns "0".', () => {
+		describe(`${property}`, () => {
+			it('Returns "0".', () => {
 				const div = document.createElement('div');
 				expect(div[property]).toBe(0);
 			});
@@ -43,21 +43,21 @@ describe('HTMLElement', () => {
 	}
 
 	describe('contentEditable', () => {
-		test('Returns "inherit".', () => {
+		it('Returns "inherit".', () => {
 			const div = <HTMLElement>document.createElement('div');
 			expect(div.contentEditable).toBe('inherit');
 		});
 	});
 
 	describe('isContentEditable', () => {
-		test('Returns "false".', () => {
+		it('Returns "false".', () => {
 			const div = <HTMLElement>document.createElement('div');
 			expect(div.isContentEditable).toBe(false);
 		});
 	});
 
 	describe('get tabIndex()', () => {
-		test('Returns the attribute "tabindex" as a number.', () => {
+		it('Returns the attribute "tabindex" as a number.', () => {
 			const div = <HTMLElement>document.createElement('div');
 			div.setAttribute('tabindex', '5');
 			expect(div.tabIndex).toBe(5);
@@ -65,13 +65,13 @@ describe('HTMLElement', () => {
 	});
 
 	describe('set tabIndex()', () => {
-		test('Sets the attribute "tabindex".', () => {
+		it('Sets the attribute "tabindex".', () => {
 			const div = <HTMLElement>document.createElement('div');
 			div.tabIndex = 5;
 			expect(div.getAttribute('tabindex')).toBe('5');
 		});
 
-		test('Removes the attribute "tabindex" when set to "-1".', () => {
+		it('Removes the attribute "tabindex" when set to "-1".', () => {
 			const div = <HTMLElement>document.createElement('div');
 			div.tabIndex = 5;
 			div.tabIndex = -1;
@@ -80,7 +80,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('get innerText()', () => {
-		test('Returns the as the textContent property.', () => {
+		it('Returns the as the textContent property.', () => {
 			const div = document.createElement('div');
 			const textNode1 = document.createTextNode('text1');
 			const textNode2 = document.createTextNode('text2');
@@ -93,7 +93,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('set innerText()', () => {
-		test('Sets the value of the textContent property.', () => {
+		it('Sets the value of the textContent property.', () => {
 			const div = document.createElement('div');
 			const textNode1 = document.createTextNode('text1');
 			const textNode2 = document.createTextNode('text2');
@@ -112,7 +112,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('get style()', () => {
-		test('Returns styles.', () => {
+		it('Returns styles.', () => {
 			element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
 			expect(element.style.length).toEqual(2);
 			expect(element.style[0]).toEqual('border-radius');
@@ -130,7 +130,7 @@ describe('HTMLElement', () => {
 			expect(element.style.cssText).toEqual('border-radius: 4px; padding: 4px;');
 		});
 
-		test('Setting a property changes the "style" attribute.', () => {
+		it('Setting a property changes the "style" attribute.', () => {
 			element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
 
 			element.style.borderRadius = '4rem';
@@ -154,7 +154,7 @@ describe('HTMLElement', () => {
 			);
 		});
 
-		test('Settings a property to empty string also removes it.', () => {
+		it('Settings a property to empty string also removes it.', () => {
 			element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
 
 			element.style.borderRadius = '';
@@ -176,7 +176,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('get dataset()', () => {
-		test('Returns attributes prefixed with "data-" as an object.', () => {
+		it('Returns attributes prefixed with "data-" as an object.', () => {
 			element.setAttribute('test1', 'value1');
 			element.setAttribute('data-test2', 'value2');
 			element.setAttribute('test3', 'value3');
@@ -189,7 +189,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('get dir()', () => {
-		test('Returns the attribute "dir".', () => {
+		it('Returns the attribute "dir".', () => {
 			const div = <HTMLElement>document.createElement('div');
 			div.setAttribute('dir', 'rtl');
 			expect(div.dir).toBe('rtl');
@@ -197,7 +197,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('set dir()', () => {
-		test('Sets the attribute "tabindex".', () => {
+		it('Sets the attribute "tabindex".', () => {
 			const div = <HTMLElement>document.createElement('div');
 			div.dir = 'rtl';
 			expect(div.getAttribute('dir')).toBe('rtl');
@@ -205,7 +205,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('get hidden()', () => {
-		test('Returns the attribute "hidden".', () => {
+		it('Returns the attribute "hidden".', () => {
 			const div = <HTMLElement>document.createElement('div');
 			div.setAttribute('hidden', '');
 			expect(div.hidden).toBe(true);
@@ -213,7 +213,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('set hidden()', () => {
-		test('Sets the attribute "hidden".', () => {
+		it('Sets the attribute "hidden".', () => {
 			const div = <HTMLElement>document.createElement('div');
 			div.hidden = true;
 			expect(div.getAttribute('hidden')).toBe('');
@@ -224,7 +224,7 @@ describe('HTMLElement', () => {
 
 	for (const property of ['lang', 'title']) {
 		describe(`get ${property}`, () => {
-			test(`Returns the attribute "${property}".`, () => {
+			it(`Returns the attribute "${property}".`, () => {
 				const div = document.createElement('div');
 				div.setAttribute(property, 'value');
 				expect(div[property]).toBe('value');
@@ -232,7 +232,7 @@ describe('HTMLElement', () => {
 		});
 
 		describe(`set ${property}()`, () => {
-			test(`Sets the attribute "${property}".`, () => {
+			it(`Sets the attribute "${property}".`, () => {
 				const div = document.createElement('div');
 				div[property] = 'value';
 				expect(div.getAttribute(property)).toBe('value');
@@ -242,7 +242,7 @@ describe('HTMLElement', () => {
 
 	for (const eventType of ['click', 'blur', 'focus', 'focusin', 'focusout']) {
 		describe(`${eventType}()`, () => {
-			test(`Dispatches a "${eventType}" event.`, () => {
+			it(`Dispatches a "${eventType}" event.`, () => {
 				let methodName = eventType;
 				let triggeredEvent = null;
 
@@ -272,7 +272,7 @@ describe('HTMLElement', () => {
 	}
 
 	describe('setAttributeNode()', () => {
-		test('Sets css text of existing CSSStyleDeclaration.', () => {
+		it('Sets css text of existing CSSStyleDeclaration.', () => {
 			element.style.background = 'green';
 			element.style.color = 'black';
 			element.setAttribute('style', 'color: green');
@@ -283,7 +283,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('removeAttributeNode()', () => {
-		test('Removes property from CSSStyleDeclaration.', () => {
+		it('Removes property from CSSStyleDeclaration.', () => {
 			element.style.background = 'green';
 			element.style.color = 'black';
 			element.removeAttribute('style');

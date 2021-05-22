@@ -11,7 +11,7 @@ describe('LitElementComponent', () => {
 		document.body.innerHTML = '';
 	});
 
-	test('Tests integration.', () => {
+	it('Tests integration.', () => {
 		const shadowRoot = document.body.querySelector('lit-element-component').shadowRoot;
 
 		expect(document.body.innerHTML).toBe(

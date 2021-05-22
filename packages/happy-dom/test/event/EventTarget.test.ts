@@ -3,6 +3,9 @@ import Event from '../../src/event/Event';
 import CustomEvent from '../../src/event/events/CustomEvent';
 
 const EVENT_TYPE = 'click';
+/**
+ *
+ */
 class TestEventTarget extends EventTarget {}
 
 describe('EventTarget', () => {
@@ -13,7 +16,7 @@ describe('EventTarget', () => {
 	});
 
 	describe('addEventListener()', () => {
-		test('Adds an event listener and triggers it when calling dispatchEvent().', () => {
+		it('Adds an event listener and triggers it when calling dispatchEvent().', () => {
 			let recievedEvent: Event = null;
 			const listener = (event: Event): void => {
 				recievedEvent = event;
@@ -26,7 +29,7 @@ describe('EventTarget', () => {
 			expect(recievedEvent.currentTarget).toBe(eventTarget);
 		});
 
-		test('Adds a custom event listener and triggers it when calling dispatchEvent().', () => {
+		it('Adds a custom event listener and triggers it when calling dispatchEvent().', () => {
 			let recievedEvent: CustomEvent = null;
 			const DETAIL = {};
 			const listener = (event: CustomEvent): void => {
@@ -41,7 +44,7 @@ describe('EventTarget', () => {
 			expect(recievedEvent.currentTarget).toBe(eventTarget);
 		});
 
-		test('Adds an event listener using object with handleEvent as property and triggers it when calling dispatchEvent().', () => {
+		it('Adds an event listener using object with handleEvent as property and triggers it when calling dispatchEvent().', () => {
 			let recievedEvent: CustomEvent = null;
 			const listener = {
 				handleEvent: (event: CustomEvent): void => {
@@ -58,7 +61,7 @@ describe('EventTarget', () => {
 	});
 
 	describe('removeEventListener()', () => {
-		test('Removes an event listener and does not call it when calling dispatchEvent().', () => {
+		it('Removes an event listener and does not call it when calling dispatchEvent().', () => {
 			let recievedEvent: Event = null;
 			const listener = (event: Event): void => {
 				recievedEvent = event;

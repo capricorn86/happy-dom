@@ -2,7 +2,8 @@ import Window from '../../../src/window/Window';
 import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility';
 
 describe('NonDocumentChildNodeUtility', () => {
-	let window, document;
+	let window;
+	let document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -10,7 +11,7 @@ describe('NonDocumentChildNodeUtility', () => {
 	});
 
 	describe('previousElementSibling()', () => {
-		test('Returns the previous element sibling.', () => {
+		it('Returns the previous element sibling.', () => {
 			const parent = document.createElement('div');
 			const comment = document.createComment('test');
 			const element1 = document.createElement('div');
@@ -25,7 +26,7 @@ describe('NonDocumentChildNodeUtility', () => {
 	});
 
 	describe('nextElementSibling()', () => {
-		test('Returns the next element sibling.', () => {
+		it('Returns the next element sibling.', () => {
 			const parent = document.createElement('div');
 			const comment = document.createComment('test');
 			const element1 = document.createElement('div');

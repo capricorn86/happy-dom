@@ -3,7 +3,10 @@ import ResourceFetcher from '../../src/fetch/ResourceFetcher';
 import IResponse from '../../src/window/IResponse';
 
 describe('ResourceFetcher', () => {
-	let window: Window, syncRequestStatusCode, syncRequestBody, syncRequestOptions;
+	let window: Window;
+	let syncRequestStatusCode;
+	let syncRequestBody;
+	let syncRequestOptions;
 
 	beforeAll(() => {
 		jest.mock('sync-request', () => (method: string, url: string) => {
@@ -31,7 +34,7 @@ describe('ResourceFetcher', () => {
 	});
 
 	describe('fetch()', () => {
-		test('Returns resource data asynchrounously.', async () => {
+		it('Returns resource data asynchrounously.', async () => {
 			let fetchedURL = null;
 
 			jest.spyOn(window, 'fetch').mockImplementation(url => {
@@ -53,7 +56,7 @@ describe('ResourceFetcher', () => {
 	});
 
 	describe('fetchSync()', () => {
-		test('Returns resource data synchrounously.', () => {
+		it('Returns resource data synchrounously.', () => {
 			window.location.href = 'https://localhost:8080/base/';
 
 			const test = ResourceFetcher.fetchSync({
@@ -68,7 +71,7 @@ describe('ResourceFetcher', () => {
 			expect(test).toBe('test');
 		});
 
-		test('Handles error when resource is fetched synchrounously.', () => {
+		it('Handles error when resource is fetched synchrounously.', () => {
 			window.location.href = 'https://localhost:8080/base/';
 
 			syncRequestStatusCode = 404;

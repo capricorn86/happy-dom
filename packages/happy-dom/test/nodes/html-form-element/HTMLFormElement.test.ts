@@ -24,7 +24,7 @@ describe('HTMLFormElement', () => {
 		'noValidate'
 	]) {
 		describe(`get ${property}()`, () => {
-			test('Returns attribute value.', () => {
+			it('Returns attribute value.', () => {
 				expect(element[property]).toBe('');
 				element.setAttribute(property, 'value');
 				expect(element[property]).toBe('value');
@@ -32,7 +32,7 @@ describe('HTMLFormElement', () => {
 		});
 
 		describe(`set ${property}()`, () => {
-			test('Sets attribute value.', () => {
+			it('Sets attribute value.', () => {
 				element[property] = 'value';
 				expect(element.getAttribute(property)).toBe('value');
 			});
@@ -40,7 +40,7 @@ describe('HTMLFormElement', () => {
 	}
 
 	describe('get method()', () => {
-		test('Returns attribute value.', () => {
+		it('Returns attribute value.', () => {
 			expect(element.method).toBe('get');
 			element.setAttribute('method', 'post');
 			expect(element.method).toBe('post');
@@ -48,7 +48,7 @@ describe('HTMLFormElement', () => {
 	});
 
 	describe('set method()', () => {
-		test('Sets attribute value.', () => {
+		it('Sets attribute value.', () => {
 			element.method = 'post';
 			expect(element.getAttribute('method')).toBe('post');
 		});

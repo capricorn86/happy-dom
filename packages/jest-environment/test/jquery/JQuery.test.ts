@@ -21,7 +21,7 @@ describe('JQuery', () => {
 		document.body.innerHTML = '';
 	});
 
-	test('Tests integration.', () => {
+	it('Tests integration.', () => {
 		JQuery('span').addClass('test-span');
 		expect(document.body.children[0].children[1].getAttribute('class')).toBe('test-span');
 	});

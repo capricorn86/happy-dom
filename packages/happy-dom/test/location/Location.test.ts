@@ -10,21 +10,21 @@ describe('Location', () => {
 	});
 
 	describe('replace()', () => {
-		test('Replaces the url.', () => {
+		it('Replaces the url.', () => {
 			location.replace(HREF);
 			expect(location.href).toBe(HREF);
 		});
 	});
 
 	describe('assign()', () => {
-		test('Replaces the url.', () => {
+		it('Replaces the url.', () => {
 			location.replace(HREF);
 			expect(location.href).toBe(HREF);
 		});
 	});
 
 	describe('reload()', () => {
-		test('Does nothing.', () => {
+		it('Does nothing.', () => {
 			location.replace(HREF);
 			location.reload();
 			expect(location.href).toBe(HREF);

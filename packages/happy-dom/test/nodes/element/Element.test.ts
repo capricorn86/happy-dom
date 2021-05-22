@@ -38,7 +38,7 @@ describe('Element', () => {
 	});
 
 	describe('children', () => {
-		test('Returns nodes of type Element.', () => {
+		it('Returns nodes of type Element.', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
 			const textNode = document.createTextNode('text');
@@ -50,53 +50,53 @@ describe('Element', () => {
 	});
 
 	describe('get id()', () => {
-		test('Returns the element "id" attribute.', () => {
+		it('Returns the element "id" attribute.', () => {
 			element.setAttribute('id', 'id');
 			expect(element.id).toBe('id');
 		});
 	});
 
 	describe('set id()', () => {
-		test('Sets the element "id" as an attribute.', () => {
+		it('Sets the element "id" as an attribute.', () => {
 			element.id = 'id';
 			expect(element.getAttribute('id')).toBe('id');
 		});
 	});
 
 	describe('get className()', () => {
-		test('Returns the element "class" attribute.', () => {
+		it('Returns the element "class" attribute.', () => {
 			element.setAttribute('class', 'class');
 			expect(element.className).toBe('class');
 		});
 	});
 
 	describe('set id()', () => {
-		test('Sets the element "class" as an attribute.', () => {
+		it('Sets the element "class" as an attribute.', () => {
 			element.className = 'class';
 			expect(element.getAttribute('class')).toBe('class');
 		});
 	});
 
 	describe('get namespaceURI()', () => {
-		test('Returns the "namespaceURI" property of the element.', () => {
+		it('Returns the "namespaceURI" property of the element.', () => {
 			expect(element.namespaceURI).toEqual(NamespaceURI.html);
 		});
 	});
 
 	describe('get nodeName()', () => {
-		test('Returns the "tagName" property of the element.', () => {
+		it('Returns the "tagName" property of the element.', () => {
 			expect(element.nodeName).toEqual('DIV');
 		});
 	});
 
 	describe('get localName()', () => {
-		test('Returns the "tagName" property of the element in lower case.', () => {
+		it('Returns the "tagName" property of the element in lower case.', () => {
 			expect(element.localName).toEqual('div');
 		});
 	});
 
 	describe('get textContent()', () => {
-		test('Returns text node data of children as a concatenated string.', () => {
+		it('Returns text node data of children as a concatenated string.', () => {
 			const div = document.createElement('div');
 			const textNode1 = document.createTextNode('text1');
 			const textNode2 = document.createTextNode('text2');
@@ -108,7 +108,7 @@ describe('Element', () => {
 	});
 
 	describe('set textContent()', () => {
-		test('Replaces child nodes with a text node.', () => {
+		it('Replaces child nodes with a text node.', () => {
 			const div = document.createElement('div');
 			const textNode1 = document.createTextNode('text1');
 			const textNode2 = document.createTextNode('text2');
@@ -126,7 +126,7 @@ describe('Element', () => {
 	});
 
 	describe('get innerHTML()', () => {
-		test('Returns HTML of children as a concatenated string.', () => {
+		it('Returns HTML of children as a concatenated string.', () => {
 			const div = document.createElement('div');
 
 			element.appendChild(div);
@@ -141,7 +141,7 @@ describe('Element', () => {
 	});
 
 	describe('set innerHTML()', () => {
-		test('Creates child nodes from provided HTML.', () => {
+		it('Creates child nodes from provided HTML.', () => {
 			const root = document.createElement('div');
 			const div = document.createElement('div');
 			const textNode = document.createTextNode('text1');
@@ -162,7 +162,7 @@ describe('Element', () => {
 	});
 
 	describe('get innerHTML()', () => {
-		test('Returns HTML of an elements children as a concatenated string.', () => {
+		it('Returns HTML of an elements children as a concatenated string.', () => {
 			const div = document.createElement('div');
 			const textNode1 = document.createTextNode('text1');
 
@@ -174,7 +174,7 @@ describe('Element', () => {
 	});
 
 	describe('get outerHTML()', () => {
-		test('Returns HTML of an element and its children as a concatenated string.', () => {
+		it('Returns HTML of an element and its children as a concatenated string.', () => {
 			const div = document.createElement('div');
 			const textNode = document.createTextNode('text1');
 
@@ -187,7 +187,7 @@ describe('Element', () => {
 	});
 
 	describe('set outerHTML()', () => {
-		test('Sets outer HTML of an element.', () => {
+		it('Sets outer HTML of an element.', () => {
 			const div = document.createElement('div');
 			const textNode = document.createTextNode('text1');
 
@@ -202,25 +202,67 @@ describe('Element', () => {
 	});
 
 	describe('get attributes()', () => {
-		test('Returns all attributes as an object.', () => {
+		it('Returns all attributes as an object.', () => {
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', 'value2');
 			element.setAttribute('key3', 'value3');
 
 			expect(element.attributes).toEqual({
-				'0': { name: 'key1', value: 'value1', namespaceURI: null },
-				'1': { name: 'key2', value: 'value2', namespaceURI: null },
-				'2': { name: 'key3', value: 'value3', namespaceURI: null },
-				key1: { name: 'key1', value: 'value1', namespaceURI: null },
-				key2: { name: 'key2', value: 'value2', namespaceURI: null },
-				key3: { name: 'key3', value: 'value3', namespaceURI: null },
+				'0': {
+					name: 'key1',
+					value: 'value1',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				'1': {
+					name: 'key2',
+					value: 'value2',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				'2': {
+					name: 'key3',
+					value: 'value3',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				key1: {
+					name: 'key1',
+					value: 'value1',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				key2: {
+					name: 'key2',
+					value: 'value2',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				key3: {
+					name: 'key3',
+					value: 'value3',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
 				length: 3
 			});
 		});
 	});
 
 	describe('get childElementCount()', () => {
-		test('Returns child element count.', () => {
+		it('Returns child element count.', () => {
 			document.appendChild(document.createElement('div'));
 			document.appendChild(document.createTextNode('test'));
 			expect(document.childElementCount).toEqual(2);
@@ -228,7 +270,7 @@ describe('Element', () => {
 	});
 
 	describe('get firstElementChild()', () => {
-		test('Returns first element child.', () => {
+		it('Returns first element child.', () => {
 			const div = document.createElement('div');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
@@ -249,7 +291,7 @@ describe('Element', () => {
 	});
 
 	describe('get lastElementChild()', () => {
-		test('Returns last element child.', () => {
+		it('Returns last element child.', () => {
 			const div = document.createElement('div');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
@@ -270,7 +312,7 @@ describe('Element', () => {
 	});
 
 	describe('append()', () => {
-		test('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
+		it('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -287,7 +329,7 @@ describe('Element', () => {
 	});
 
 	describe('prepend()', () => {
-		test('Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
+		it('Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -304,7 +346,7 @@ describe('Element', () => {
 	});
 
 	describe('insertAdjacentElement()', () => {
-		test('Inserts a Node right before the reference element and returns with it.', () => {
+		it('Inserts a Node right before the reference element and returns with it.', () => {
 			const parent = document.createElement('div');
 			const newNode = document.createElement('span');
 
@@ -318,7 +360,7 @@ describe('Element', () => {
 			expect(document.body.childNodes[0]).toBe(newNode);
 		});
 
-		test('Returns with null if cannot insert with "beforebegin".', () => {
+		it('Returns with null if cannot insert with "beforebegin".', () => {
 			const parent = document.createElement('div');
 			const newNode = document.createElement('span');
 			const insertedNode = parent.insertAdjacentElement('beforebegin', newNode);
@@ -327,7 +369,7 @@ describe('Element', () => {
 			expect(newNode.isConnected).toBe(false);
 		});
 
-		test('Inserts a Node inside the reference element before the first child and returns with it.', () => {
+		it('Inserts a Node inside the reference element before the first child and returns with it.', () => {
 			const parent = document.createElement('div');
 			const child = document.createElement('span');
 			const newNode = document.createElement('span');
@@ -343,7 +385,7 @@ describe('Element', () => {
 			expect(insertedNode.isConnected).toBe(true);
 		});
 
-		test('Inserts a Node inside the reference element after the last child and returns with it.', () => {
+		it('Inserts a Node inside the reference element after the last child and returns with it.', () => {
 			const parent = document.createElement('div');
 			const child = document.createElement('span');
 			const newNode = document.createElement('span');
@@ -358,7 +400,7 @@ describe('Element', () => {
 			expect(insertedNode.isConnected).toBe(true);
 		});
 
-		test('Inserts a Node right after the reference element and returns with it.', () => {
+		it('Inserts a Node right after the reference element and returns with it.', () => {
 			const parent = document.createElement('div');
 			const newNode = document.createElement('span');
 
@@ -374,7 +416,7 @@ describe('Element', () => {
 			expect(document.body.childNodes[1]).toBe(insertedNode);
 		});
 
-		test('Inserts a Node right after the reference element and returns with it.', () => {
+		it('Inserts a Node right after the reference element and returns with it.', () => {
 			const parent = document.createElement('div');
 			const sibling = document.createElement('div');
 			const newNode = document.createElement('span');
@@ -393,7 +435,7 @@ describe('Element', () => {
 			expect(document.body.childNodes[2]).toBe(sibling);
 		});
 
-		test('Returns with null if cannot insert with "afterend".', () => {
+		it('Returns with null if cannot insert with "afterend".', () => {
 			const parent = document.createElement('div');
 			const newNode = document.createElement('span');
 			const insertedNode = parent.insertAdjacentElement('afterend', newNode);
@@ -404,7 +446,7 @@ describe('Element', () => {
 	});
 
 	describe('insertAdjacentHTML()', () => {
-		test('Inserts the given HTML right before the reference element.', () => {
+		it('Inserts the given HTML right before the reference element.', () => {
 			const parent = document.createElement('div');
 			const markup = '<span>markup</span>';
 
@@ -415,7 +457,7 @@ describe('Element', () => {
 			expect((<IElement>document.body.childNodes[0]).outerHTML).toEqual(markup);
 		});
 
-		test('Inserts the given HTML inside the reference element before the first child.', () => {
+		it('Inserts the given HTML inside the reference element before the first child.', () => {
 			const parent = document.createElement('div');
 			const child = document.createElement('span');
 			const markup = '<span>markup</span>';
@@ -428,7 +470,7 @@ describe('Element', () => {
 			expect(parent.childNodes[1]).toBe(child);
 		});
 
-		test('Inserts the given HTML inside the reference element after the last child.', () => {
+		it('Inserts the given HTML inside the reference element after the last child.', () => {
 			const parent = document.createElement('div');
 			const child = document.createElement('span');
 			const markup = '<span>markup</span>';
@@ -441,7 +483,7 @@ describe('Element', () => {
 			expect((<IElement>parent.childNodes[1]).outerHTML).toEqual(markup);
 		});
 
-		test('Inserts the given HTML right after the reference element.', () => {
+		it('Inserts the given HTML right after the reference element.', () => {
 			const parent = document.createElement('div');
 			const markup = '<span>markup</span>';
 
@@ -453,7 +495,7 @@ describe('Element', () => {
 			expect((<IElement>document.body.childNodes[1]).outerHTML).toEqual(markup);
 		});
 
-		test('Inserts the given HTML right after the reference element if it has a sibling.', () => {
+		it('Inserts the given HTML right after the reference element if it has a sibling.', () => {
 			const parent = document.createElement('div');
 			const sibling = document.createElement('div');
 			const markup = '<span>markup</span>';
@@ -470,7 +512,7 @@ describe('Element', () => {
 	});
 
 	describe('insertAdjacentText()', () => {
-		test('Inserts the given text right before the reference element.', () => {
+		it('Inserts the given text right before the reference element.', () => {
 			const parent = document.createElement('div');
 			const text = 'lorem';
 
@@ -482,7 +524,7 @@ describe('Element', () => {
 			expect(document.body.childNodes[0].textContent).toEqual(text);
 		});
 
-		test('Inserts the given text inside the reference element before the first child.', () => {
+		it('Inserts the given text inside the reference element before the first child.', () => {
 			const parent = document.createElement('div');
 			const child = document.createElement('span');
 			const text = 'lorem';
@@ -496,7 +538,7 @@ describe('Element', () => {
 			expect(parent.childNodes[1]).toBe(child);
 		});
 
-		test('Inserts the given text inside the reference element after the last child.', () => {
+		it('Inserts the given text inside the reference element after the last child.', () => {
 			const parent = document.createElement('div');
 			const child = document.createElement('span');
 			const text = 'lorem';
@@ -510,7 +552,7 @@ describe('Element', () => {
 			expect(parent.childNodes[1].textContent).toEqual(text);
 		});
 
-		test('Inserts the given text right after the reference element.', () => {
+		it('Inserts the given text right after the reference element.', () => {
 			const parent = document.createElement('div');
 			const text = 'lorem';
 
@@ -523,7 +565,7 @@ describe('Element', () => {
 			expect(document.body.childNodes[1].textContent).toEqual(text);
 		});
 
-		test('Inserts the given text right after the reference element.', () => {
+		it('Inserts the given text right after the reference element.', () => {
 			const parent = document.createElement('div');
 			const sibling = document.createElement('div');
 			const text = 'lorem';
@@ -541,7 +583,7 @@ describe('Element', () => {
 	});
 
 	describe('replaceChildren()', () => {
-		test('Replaces the existing children of a ParentNode with a specified new set of children.', () => {
+		it('Replaces the existing children of a ParentNode with a specified new set of children.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -560,7 +602,7 @@ describe('Element', () => {
 	});
 
 	describe('matches()', () => {
-		test('Checks if the element matches a selector string.', () => {
+		it('Checks if the element matches a selector string.', () => {
 			const element = document.createElement('div');
 
 			element.className = 'container active';
@@ -570,7 +612,7 @@ describe('Element', () => {
 	});
 
 	describe('querySelectorAll()', () => {
-		test('Query CSS selector to find matching elements.', () => {
+		it('Query CSS selector to find matching elements.', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
@@ -585,7 +627,7 @@ describe('Element', () => {
 	});
 
 	describe('querySelector()', () => {
-		test('Query CSS selector to find a matching element.', () => {
+		it('Query CSS selector to find a matching element.', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
@@ -600,7 +642,7 @@ describe('Element', () => {
 	});
 
 	describe('getElementsByClassName()', () => {
-		test('Returns an elements by class name.', () => {
+		it('Returns an elements by class name.', () => {
 			const child = document.createElement('div');
 			const className = 'className';
 
@@ -617,7 +659,7 @@ describe('Element', () => {
 	});
 
 	describe('getElementsByTagName()', () => {
-		test('Returns an elements by tag name.', () => {
+		it('Returns an elements by tag name.', () => {
 			const child = document.createElement('div');
 			const tagName = 'tag-name';
 
@@ -634,7 +676,7 @@ describe('Element', () => {
 	});
 
 	describe('getElementsByTagNameNS()', () => {
-		test('Returns an elements by tag name and namespace.', () => {
+		it('Returns an elements by tag name and namespace.', () => {
 			const child = document.createElement('div');
 			const tagName = 'tag-name';
 			const namespaceURI = '/namespace/uri/';
@@ -653,7 +695,7 @@ describe('Element', () => {
 	});
 
 	describe('remove()', () => {
-		test('Removes the node from its parent.', () => {
+		it('Removes the node from its parent.', () => {
 			const element = document.createElement('div');
 			let isCalled = false;
 
@@ -668,7 +710,7 @@ describe('Element', () => {
 	});
 
 	describe('replaceWith()', () => {
-		test('Replaces a Node in the children list of its parent with a set of Node or DOMString objects.', () => {
+		it('Replaces a Node in the children list of its parent with a set of Node or DOMString objects.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -685,7 +727,7 @@ describe('Element', () => {
 	});
 
 	describe('before()', () => {
-		test("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just before this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
+		it("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just before this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -702,7 +744,7 @@ describe('Element', () => {
 	});
 
 	describe('after()', () => {
-		test("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just after this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
+		it("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just after this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -719,7 +761,7 @@ describe('Element', () => {
 	});
 
 	describe('appendChild()', () => {
-		test('Updates the children property when appending an element child.', () => {
+		it('Updates the children property when appending an element child.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
@@ -732,7 +774,7 @@ describe('Element', () => {
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		test('Append the children instead of the actual element if the type is DocumentFragment.', () => {
+		it('Append the children instead of the actual element if the type is DocumentFragment.', () => {
 			const template = <HTMLTemplateElement>document.createElement('template');
 
 			template.innerHTML = '<div>Div</div><span>Span</span>';
@@ -748,7 +790,7 @@ describe('Element', () => {
 	});
 
 	describe('removeChild()', () => {
-		test('Updates the children property when removing an element child.', () => {
+		it('Updates the children property when removing an element child.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
@@ -764,7 +806,7 @@ describe('Element', () => {
 	});
 
 	describe('insertBefore()', () => {
-		test('Updates the children property when appending an element child.', () => {
+		it('Updates the children property when appending an element child.', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
 			const span = document.createElement('span');
@@ -779,7 +821,7 @@ describe('Element', () => {
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		test('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
+		it('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
 			const template = <HTMLTemplateElement>document.createElement('template');
@@ -801,7 +843,7 @@ describe('Element', () => {
 	});
 
 	describe('get previousElementSibling()', () => {
-		test('Returns previous element sibling..', () => {
+		it('Returns previous element sibling..', () => {
 			const node = document.createComment('test');
 			const previousElementSibling = document.createElement('div');
 			jest
@@ -816,7 +858,7 @@ describe('Element', () => {
 	});
 
 	describe('get nextElementSibling()', () => {
-		test('Returns next element sibling..', () => {
+		it('Returns next element sibling..', () => {
 			const node = document.createComment('test');
 			const nextElementSibling = document.createElement('div');
 			jest
@@ -831,7 +873,7 @@ describe('Element', () => {
 	});
 
 	describe('attributeChangedCallback()', () => {
-		test('Calls attribute changed callback when it is implemented by a custom element (web component).', () => {
+		it('Calls attribute changed callback when it is implemented by a custom element (web component).', () => {
 			const customElement = <CustomElement>document.createElement('custom-element');
 
 			element.appendChild(customElement);
@@ -860,7 +902,7 @@ describe('Element', () => {
 			]);
 		});
 
-		test('Does not call the attribute changed callback when the attribute name is not available in the observedAttributes() getter method.', () => {
+		it('Does not call the attribute changed callback when the attribute name is not available in the observedAttributes() getter method.', () => {
 			const customElement = <CustomElement>document.createElement('custom-element');
 
 			element.appendChild(customElement);
@@ -874,35 +916,91 @@ describe('Element', () => {
 	});
 
 	describe('setAttribute()', () => {
-		test('Sets an attribute on an element.', () => {
+		it('Sets an attribute on an element.', () => {
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', '');
 			expect(element.attributes).toEqual({
-				'0': { name: 'key1', value: 'value1', namespaceURI: null },
-				'1': { name: 'key2', value: '', namespaceURI: null },
-				key1: { name: 'key1', value: 'value1', namespaceURI: null },
-				key2: { name: 'key2', value: '', namespaceURI: null },
+				'0': {
+					name: 'key1',
+					value: 'value1',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				'1': {
+					name: 'key2',
+					value: '',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				key1: {
+					name: 'key1',
+					value: 'value1',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				key2: {
+					name: 'key2',
+					value: '',
+					namespaceURI: null,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
 				length: 2
 			});
 		});
 	});
 
 	describe('setAttributeNS()', () => {
-		test('Sets a namespace attribute on an element.', () => {
+		it('Sets a namespace attribute on an element.', () => {
 			element.setAttributeNS(NAMESPACE_URI, 'global:local1', 'value1');
 			element.setAttributeNS(NAMESPACE_URI, 'global:local2', '');
 			expect(element.attributes).toEqual({
-				'0': { name: 'global:local1', value: 'value1', namespaceURI: NAMESPACE_URI },
-				'1': { name: 'global:local2', value: '', namespaceURI: NAMESPACE_URI },
-				'global:local1': { name: 'global:local1', value: 'value1', namespaceURI: NAMESPACE_URI },
-				'global:local2': { name: 'global:local2', value: '', namespaceURI: NAMESPACE_URI },
+				'0': {
+					name: 'global:local1',
+					value: 'value1',
+					namespaceURI: NAMESPACE_URI,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				'1': {
+					name: 'global:local2',
+					value: '',
+					namespaceURI: NAMESPACE_URI,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				'global:local1': {
+					name: 'global:local1',
+					value: 'value1',
+					namespaceURI: NAMESPACE_URI,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
+				'global:local2': {
+					name: 'global:local2',
+					value: '',
+					namespaceURI: NAMESPACE_URI,
+					specified: true,
+					ownerElement: element,
+					ownerDocument: document
+				},
 				length: 2
 			});
 		});
 	});
 
 	describe('hasAttribute()', () => {
-		test('Returns "true" if an element has an attribute.', () => {
+		it('Returns "true" if an element has an attribute.', () => {
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', '');
 			expect(element.hasAttribute('key1')).toBe(true);
@@ -915,7 +1013,7 @@ describe('Element', () => {
 	});
 
 	describe('hasAttributeNS()', () => {
-		test('Returns "true" if an element has a namespace attribute.', () => {
+		it('Returns "true" if an element has a namespace attribute.', () => {
 			element.setAttributeNS(NAMESPACE_URI, 'global:local1', 'value1');
 			element.setAttributeNS(NAMESPACE_URI, 'global:local2', '');
 			expect(element.hasAttributeNS(NAMESPACE_URI, 'local1')).toBe(true);
@@ -928,7 +1026,7 @@ describe('Element', () => {
 	});
 
 	describe('removeAttribute()', () => {
-		test('Removes an attribute.', () => {
+		it('Removes an attribute.', () => {
 			element.setAttribute('key1', 'value1');
 			element.removeAttribute('key1');
 			expect(element.attributes).toEqual({
@@ -938,7 +1036,7 @@ describe('Element', () => {
 	});
 
 	describe('removeAttributeNS()', () => {
-		test('Removes a namespace attribute.', () => {
+		it('Removes a namespace attribute.', () => {
 			element.setAttributeNS(NAMESPACE_URI, 'global:local', 'value');
 			element.removeAttributeNS(NAMESPACE_URI, 'local');
 			expect(element.attributes).toEqual({
@@ -948,7 +1046,7 @@ describe('Element', () => {
 	});
 
 	describe('attachShadow()', () => {
-		test('Creates a new ShadowRoot node and sets it to the shadowRoot property.', () => {
+		it('Creates a new ShadowRoot node and sets it to the shadowRoot property.', () => {
 			element.attachShadow({ mode: 'open' });
 			expect(element.shadowRoot instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot.ownerDocument).toBe(document);
@@ -960,7 +1058,7 @@ describe('Element', () => {
 
 	for (const functionName of ['scroll', 'scrollTo']) {
 		describe(`${functionName}()`, () => {
-			test('Sets the properties scrollTop and scrollLeft.', () => {
+			it('Sets the properties scrollTop and scrollLeft.', () => {
 				element[functionName](50, 60);
 				expect(element.scrollLeft).toBe(50);
 				expect(element.scrollTop).toBe(60);
@@ -968,7 +1066,7 @@ describe('Element', () => {
 		});
 
 		describe(`${functionName}()`, () => {
-			test('Sets the properties scrollTop and scrollLeft using object.', () => {
+			it('Sets the properties scrollTop and scrollLeft using object.', () => {
 				element[functionName]({ left: 50, top: 60 });
 				expect(element.scrollLeft).toBe(50);
 				expect(element.scrollTop).toBe(60);
@@ -976,7 +1074,7 @@ describe('Element', () => {
 		});
 
 		describe(`${functionName}()`, () => {
-			test('Sets only the property scrollTop.', () => {
+			it('Sets only the property scrollTop.', () => {
 				element[functionName]({ top: 60 });
 				expect(element.scrollLeft).toBe(0);
 				expect(element.scrollTop).toBe(60);
@@ -984,7 +1082,7 @@ describe('Element', () => {
 		});
 
 		describe(`${functionName}()`, () => {
-			test('Sets only the property scrollLeft.', () => {
+			it('Sets only the property scrollLeft.', () => {
 				element[functionName]({ left: 60 });
 				expect(element.scrollLeft).toBe(60);
 				expect(element.scrollTop).toBe(0);
@@ -992,7 +1090,7 @@ describe('Element', () => {
 		});
 
 		describe(`${functionName}()`, () => {
-			test('Sets the properties scrollTop and scrollLeft with animation.', async () => {
+			it('Sets the properties scrollTop and scrollLeft with animation.', async () => {
 				element[functionName]({ left: 50, top: 60, behavior: 'smooth' });
 				expect(element.scrollLeft).toBe(0);
 				expect(element.scrollTop).toBe(0);
@@ -1004,27 +1102,27 @@ describe('Element', () => {
 	}
 
 	describe('toString()', () => {
-		test('Returns the same as outerHTML.', () => {
+		it('Returns the same as outerHTML.', () => {
 			expect(element.toString()).toBe(element.outerHTML);
 		});
 	});
 
 	describe('getBoundingClientRect()', () => {
-		test('Returns an instance of DOMRect.', () => {
+		it('Returns an instance of DOMRect.', () => {
 			const domRect = element.getBoundingClientRect();
 			expect(domRect instanceof DOMRect).toBe(true);
 		});
 	});
 
 	describe('createTextRange()', () => {
-		test('Returns an instance of Range.', () => {
+		it('Returns an instance of Range.', () => {
 			const range = element.createTextRange();
 			expect(range instanceof Range).toBe(true);
 		});
 	});
 
 	describe('cloneNode()', () => {
-		test('Clones the properties of the element when cloned.', () => {
+		it('Clones the properties of the element when cloned.', () => {
 			const child = document.createElement('div');
 
 			child.className = 'className';
@@ -1052,7 +1150,7 @@ describe('Element', () => {
 
 	for (const method of ['setAttributeNode', 'setAttributeNodeNS']) {
 		describe(`${method}()`, () => {
-			test('Sets an Attr node on a <div> element.', () => {
+			it('Sets an Attr node on a <div> element.', () => {
 				const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 				const attribute2 = document.createAttribute('KEY2');
 
@@ -1066,28 +1164,40 @@ describe('Element', () => {
 					'0': {
 						name: 'key1',
 						namespaceURI: NamespaceURI.svg,
-						value: 'value1'
+						value: 'value1',
+						specified: true,
+						ownerElement: element,
+						ownerDocument: document
 					},
 					'1': {
 						name: 'key2',
 						namespaceURI: null,
-						value: 'value2'
+						value: 'value2',
+						specified: true,
+						ownerElement: element,
+						ownerDocument: document
 					},
 					key1: {
 						name: 'key1',
 						namespaceURI: NamespaceURI.svg,
-						value: 'value1'
+						value: 'value1',
+						specified: true,
+						ownerElement: element,
+						ownerDocument: document
 					},
 					key2: {
 						name: 'key2',
 						namespaceURI: null,
-						value: 'value2'
+						value: 'value2',
+						specified: true,
+						ownerElement: element,
+						ownerDocument: document
 					},
 					length: 2
 				});
 			});
 
-			test('Sets an Attr node on an <svg> element.', () => {
+			it('Sets an Attr node on an <svg> element.', () => {
 				const svg = document.createElementNS(NamespaceURI.svg, 'svg');
 				const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 				const attribute2 = document.createAttribute('KEY2');
@@ -1102,22 +1212,34 @@ describe('Element', () => {
 					'0': {
 						name: 'KEY1',
 						namespaceURI: NamespaceURI.svg,
-						value: 'value1'
+						value: 'value1',
+						specified: true,
+						ownerElement: svg,
+						ownerDocument: document
 					},
 					'1': {
 						name: 'key2',
 						namespaceURI: null,
-						value: 'value2'
+						value: 'value2',
+						specified: true,
+						ownerElement: svg,
+						ownerDocument: document
 					},
 					KEY1: {
 						name: 'KEY1',
 						namespaceURI: NamespaceURI.svg,
-						value: 'value1'
+						value: 'value1',
+						specified: true,
+						ownerElement: svg,
+						ownerDocument: document
 					},
 					key2: {
 						name: 'key2',
 						namespaceURI: null,
-						value: 'value2'
+						value: 'value2',
+						specified: true,
+						ownerElement: svg,
+						ownerDocument: document
 					},
 					length: 2
 				});
@@ -1126,7 +1248,7 @@ describe('Element', () => {
 	}
 
 	describe(`getAttributeNode()`, () => {
-		test('Returns an Attr node from a <div> element.', () => {
+		it('Returns an Attr node from a <div> element.', () => {
 			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 			const attribute2 = document.createAttribute('KEY2');
 
@@ -1142,7 +1264,7 @@ describe('Element', () => {
 			expect(element.getAttributeNode('KEY2')).toBe(attribute2);
 		});
 
-		test('Returns an Attr node from an <svg> element.', () => {
+		it('Returns an Attr node from an <svg> element.', () => {
 			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
 			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 			const attribute2 = document.createAttribute('KEY2');
@@ -1161,7 +1283,7 @@ describe('Element', () => {
 	});
 
 	describe(`getAttributeNode()`, () => {
-		test('Returns a namespaced Attr node from a <div> element.', () => {
+		it('Returns a namespaced Attr node from a <div> element.', () => {
 			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 
 			attribute1.value = 'value1';
@@ -1172,7 +1294,7 @@ describe('Element', () => {
 			expect(element.getAttributeNodeNS(NamespaceURI.svg, 'KEY1')).toBe(attribute1);
 		});
 
-		test('Returns an Attr node from an <svg> element.', () => {
+		it('Returns an Attr node from an <svg> element.', () => {
 			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
 			const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 
@@ -1188,7 +1310,7 @@ describe('Element', () => {
 
 	for (const method of ['removeAttributeNode', 'removeAttributeNodeNS']) {
 		describe(`${method}()`, () => {
-			test('Removes an Attr node.', () => {
+			it('Removes an Attr node.', () => {
 				const attribute = document.createAttribute('KEY1');
 
 				attribute.value = 'value1';
@@ -1201,7 +1323,7 @@ describe('Element', () => {
 	}
 
 	describe('replaceWith()', () => {
-		test('Replaces a node with another node.', () => {
+		it('Replaces a node with another node.', () => {
 			const parent = document.createElement('div');
 			const newChild = document.createElement('span');
 			newChild.className = 'child4';
@@ -1214,7 +1336,7 @@ describe('Element', () => {
 			);
 		});
 
-		test('Replaces a node with a mixed list of Node and DOMString (string).', () => {
+		it('Replaces a node with a mixed list of Node and DOMString (string).', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
 			const newChildrenHtml =
@@ -1232,7 +1354,7 @@ describe('Element', () => {
 	});
 
 	describe('scroll()', () => {
-		test('Sets the properties "scrollTop" and "scrollLeft".', () => {
+		it('Sets the properties "scrollTop" and "scrollLeft".', () => {
 			const div = document.createElement('div');
 			div.scroll(10, 15);
 			expect(div.scrollLeft).toBe(10);

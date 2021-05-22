@@ -3,6 +3,9 @@ import Node from '../../../src/nodes/node/Node';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
 import Event from '../../../src/event/Event';
 
+/**
+ *
+ */
 class CustomCounterElement extends HTMLElement {
 	public static output = [];
 
@@ -15,7 +18,7 @@ class CustomCounterElement extends HTMLElement {
 	}
 
 	/**
-	 * Connected
+	 * Connected.
 	 */
 	public connectedCallback(): void {
 		this.shadowRoot.innerHTML = '<div><span>Test</span></div>';
@@ -23,25 +26,28 @@ class CustomCounterElement extends HTMLElement {
 	}
 
 	/**
-	 * Disconnected
+	 * Disconnected.
 	 */
 	public disconnectedCallback(): void {
 		(<typeof CustomCounterElement>this.constructor).output.push('Counter:disconnected');
 	}
 }
 
+/**
+ *
+ */
 class CustomButtonElement extends HTMLElement {
 	public static output = [];
 
 	/**
-	 * Connected
+	 * Connected.
 	 */
 	public connectedCallback(): void {
 		(<typeof CustomButtonElement>this.constructor).output.push('Button:connected');
 	}
 
 	/**
-	 * Disconnected
+	 * Disconnected.
 	 */
 	public disconnectedCallback(): void {
 		(<typeof CustomButtonElement>this.constructor).output.push('Button:disconnected');
@@ -49,7 +55,9 @@ class CustomButtonElement extends HTMLElement {
 }
 
 describe('Node', () => {
-	let window, document, customElementOutput;
+	let window;
+	let document;
+	let customElementOutput;
 
 	beforeEach(() => {
 		window = new Window();
@@ -66,7 +74,7 @@ describe('Node', () => {
 	});
 
 	describe('get isConnected()', () => {
-		test('Returns "true" if the node is connected to the document.', () => {
+		it('Returns "true" if the node is connected to the document.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			const text = document.createTextNode('text');
@@ -87,7 +95,7 @@ describe('Node', () => {
 	});
 
 	describe('set isConnected()', () => {
-		test('Sets an element and all its children to be connected.', () => {
+		it('Sets an element and all its children to be connected.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			const text = document.createTextNode('text');
@@ -104,19 +112,19 @@ describe('Node', () => {
 	});
 
 	describe('get nodeValue()', () => {
-		test('Returns null.', () => {
+		it('Returns null.', () => {
 			expect(new Node().nodeValue).toBe(null);
 		});
 	});
 
 	describe('get nodeName()', () => {
-		test('Returns emptry string.', () => {
+		it('Returns emptry string.', () => {
 			expect(new Node().nodeName).toBe('');
 		});
 	});
 
 	describe('get previousSibling()', () => {
-		test('Returns previous sibling.', () => {
+		it('Returns previous sibling.', () => {
 			const div = document.createElement('div');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
@@ -131,7 +139,7 @@ describe('Node', () => {
 	});
 
 	describe('get nextSibling()', () => {
-		test('Returns next sibling.', () => {
+		it('Returns next sibling.', () => {
 			const div = document.createElement('div');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
@@ -146,7 +154,7 @@ describe('Node', () => {
 	});
 
 	describe('get firstChild()', () => {
-		test('Returns the first child node.', () => {
+		it('Returns the first child node.', () => {
 			const div = document.createElement('div');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
@@ -161,7 +169,7 @@ describe('Node', () => {
 	});
 
 	describe('get lastChild()', () => {
-		test('Returns the last child node.', () => {
+		it('Returns the last child node.', () => {
 			const div = document.createElement('div');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
@@ -176,7 +184,7 @@ describe('Node', () => {
 	});
 
 	describe('get parentElement()', () => {
-		test('Returns parent element.', () => {
+		it('Returns parent element.', () => {
 			const div = document.createElement('div');
 			const span1 = document.createElement('span');
 			const text = document.createTextNode('text');
@@ -187,7 +195,7 @@ describe('Node', () => {
 			expect(text.parentElement).toBe(span1);
 		});
 
-		test('Returns null if there is no parent node.', () => {
+		it('Returns null if there is no parent node.', () => {
 			const text = document.createTextNode('text');
 
 			expect(text.parentElement).toBe(null);
@@ -195,7 +203,7 @@ describe('Node', () => {
 	});
 
 	describe('connectedCallback()', () => {
-		test('Calls connected callback when a custom element is connected to DOM.', () => {
+		it('Calls connected callback when a custom element is connected to DOM.', () => {
 			document.body.innerHTML = '<custom-counter><custom-button></custom-button></custom-counter>';
 			document.body.innerHTML = '';
 			expect(customElementOutput).toEqual([
@@ -208,7 +216,7 @@ describe('Node', () => {
 	});
 
 	describe('disconnectedCallback()', () => {
-		test('Calls disconnected callback when a custom element is connected to DOM.', () => {
+		it('Calls disconnected callback when a custom element is connected to DOM.', () => {
 			const customElement = document.createElement('custom-counter');
 			let isConnected = false;
 			let isDisconnected = false;
@@ -233,7 +241,7 @@ describe('Node', () => {
 	});
 
 	describe('getRootNode()', () => {
-		test('Returns ShadowRoot when used on a node inside a ShadowRoot.', () => {
+		it('Returns ShadowRoot when used on a node inside a ShadowRoot.', () => {
 			const customElement = document.createElement('custom-counter');
 
 			document.body.appendChild(customElement);
@@ -243,7 +251,7 @@ describe('Node', () => {
 			expect(rootNode).toBe(customElement.shadowRoot);
 		});
 
-		test('Returns Document when used on a node inside a ShadowRoot and the option "composed" is set to "true".', () => {
+		it('Returns Document when used on a node inside a ShadowRoot and the option "composed" is set to "true".', () => {
 			const customElement = document.createElement('custom-counter');
 
 			document.body.appendChild(customElement);
@@ -255,7 +263,7 @@ describe('Node', () => {
 			expect(rootNode).toBe(document);
 		});
 
-		test('Returns Document when the node is not inside a ShadowRoot.', () => {
+		it('Returns Document when the node is not inside a ShadowRoot.', () => {
 			const divElement = document.createElement('div');
 			const spanElement = document.createElement('span');
 
@@ -269,7 +277,7 @@ describe('Node', () => {
 	});
 
 	describe('cloneNode()', () => {
-		test('Makes a shallow clone of a node (default behavior).', () => {
+		it('Makes a shallow clone of a node (default behavior).', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			const text = document.createTextNode('text');
@@ -291,7 +299,7 @@ describe('Node', () => {
 			expect(div !== clone).toBe(true);
 		});
 
-		test('Makes a deep clone of a node.', () => {
+		it('Makes a deep clone of a node.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			const text = document.createTextNode('text');
@@ -317,7 +325,7 @@ describe('Node', () => {
 	});
 
 	describe('appendChild()', () => {
-		test('Appends an Node to another Node.', () => {
+		it('Appends an Node to another Node.', () => {
 			const child = document.createElement('span');
 			const parent1 = document.createElement('div');
 			const parent2 = document.createElement('div');
@@ -340,7 +348,7 @@ describe('Node', () => {
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		test('Append the child nodes instead of the actual node if the type is DocumentFragment.', () => {
+		it('Append the child nodes instead of the actual node if the type is DocumentFragment.', () => {
 			const template = document.createElement('template');
 
 			template.innerHTML = '<div>Div</div><span>Span</span>';
@@ -356,7 +364,7 @@ describe('Node', () => {
 	});
 
 	describe('removeChild()', () => {
-		test('Removes a child Node from its parent and returns a reference to a removed node.', () => {
+		it('Removes a child Node from its parent and returns a reference to a removed node.', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 
@@ -380,7 +388,7 @@ describe('Node', () => {
 	});
 
 	describe('insertBefore()', () => {
-		test('Inserts a Node before another reference Node.', () => {
+		it('Inserts a Node before another reference Node.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
 			const newNode = document.createElement('span');
@@ -400,7 +408,7 @@ describe('Node', () => {
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		test('Insert the child nodes instead of the actual node before another reference Node if the type is DocumentFragment.', () => {
+		it('Insert the child nodes instead of the actual node before another reference Node if the type is DocumentFragment.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
 			const template = document.createElement('template');
@@ -420,7 +428,7 @@ describe('Node', () => {
 			);
 		});
 
-		test('Inserts a Node after all children if no reference given.', () => {
+		it('Inserts a Node after all children if no reference given.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
 			const newNode = document.createElement('span');
@@ -442,7 +450,7 @@ describe('Node', () => {
 	});
 
 	describe('replaceChild()', () => {
-		test('Inserts a Node before another reference Node.', () => {
+		it('Inserts a Node before another reference Node.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
 			const newNode = document.createElement('span');
@@ -463,7 +471,7 @@ describe('Node', () => {
 	});
 
 	describe('dispatchEvent()', () => {
-		test('Dispatches an event that is set to not bubble.', () => {
+		it('Dispatches an event that is set to not bubble.', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: false });
@@ -483,7 +491,7 @@ describe('Node', () => {
 			expect(parentEvent).toBe(null);
 		});
 
-		test('Dispatches an event that is set to bubble.', () => {
+		it('Dispatches an event that is set to bubble.', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: true });
@@ -503,7 +511,7 @@ describe('Node', () => {
 			expect(parentEvent.currentTarget).toBe(parent);
 		});
 
-		test('Does not bubble to parent if propagation is stopped.', () => {
+		it('Does not bubble to parent if propagation is stopped.', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: false });
@@ -524,7 +532,7 @@ describe('Node', () => {
 			expect(parentEvent).toBe(null);
 		});
 
-		test('Returns false if preventDefault() is called and the event is cancelable.', () => {
+		it('Returns false if preventDefault() is called and the event is cancelable.', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: true, cancelable: true });

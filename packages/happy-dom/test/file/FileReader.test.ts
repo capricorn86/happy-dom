@@ -13,7 +13,7 @@ describe('FileReader', () => {
 	});
 
 	describe('readAsDataURL()', () => {
-		test('Reads Blob as data URL.', async () => {
+		it('Reads Blob as data URL.', async () => {
 			const blob = new Blob(['TEST'], {
 				type: 'text/plain;charset=utf-8'
 			});

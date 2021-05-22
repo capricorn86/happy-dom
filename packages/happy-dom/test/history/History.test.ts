@@ -9,31 +9,31 @@ describe('History', () => {
 	});
 
 	describe('get length()', () => {
-		test('Returns "0".', () => {
+		it('Returns "0".', () => {
 			expect(history.length).toBe(0);
 		});
 	});
 
 	describe('get state()', () => {
-		test('Returns "null".', () => {
+		it('Returns "null".', () => {
 			expect(history.state).toBe(null);
 		});
 	});
 
 	describe('get scrollRestoration()', () => {
-		test('Returns "auto" by default.', () => {
+		it('Returns "auto" by default.', () => {
 			expect(history.scrollRestoration).toBe(HistoryScrollRestorationEnum.auto);
 		});
 	});
 
 	describe('set scrollRestoration()', () => {
-		test('Is not possible to set an invalid value.', () => {
+		it('Is not possible to set an invalid value.', () => {
 			// @ts-ignore
 			history.scrollRestoration = 'invalid';
 			expect(history.scrollRestoration).toBe(HistoryScrollRestorationEnum.auto);
 		});
 
-		test('Is possible to set to "manual".', () => {
+		it('Is possible to set to "manual".', () => {
 			history.scrollRestoration = HistoryScrollRestorationEnum.manual;
 			expect(history.scrollRestoration).toBe(HistoryScrollRestorationEnum.manual);
 		});
@@ -41,7 +41,7 @@ describe('History', () => {
 
 	for (const method of ['back', 'forward', 'go', 'pushState', 'replaceState']) {
 		describe(`${method}()`, () => {
-			test('Method exists and does nothing.', () => {
+			it('Method exists and does nothing.', () => {
 				expect(typeof history[method]).toBe('function');
 				history[method]();
 			});

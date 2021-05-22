@@ -8,7 +8,7 @@ describe('Storage', () => {
 	});
 
 	describe('get length()', () => {
-		test('Returns length.', () => {
+		it('Returns length.', () => {
 			storage.setItem('key1', 'value1');
 			storage.setItem('key2', 'value2');
 			expect(storage.length).toBe(2);
@@ -18,7 +18,7 @@ describe('Storage', () => {
 	});
 
 	describe('key()', () => {
-		test('Returns name of the nth name.', () => {
+		it('Returns name of the nth name.', () => {
 			storage.setItem('key1', 'value1');
 			storage.setItem('key2', 'value2');
 			expect(storage.key(0)).toBe('key1');
@@ -28,7 +28,7 @@ describe('Storage', () => {
 	});
 
 	describe('getItem()', () => {
-		test('Returns item.', () => {
+		it('Returns item.', () => {
 			storage.setItem('key1', 'value1');
 			storage.setItem('key2', 'value2');
 			expect(storage.getItem('key1')).toBe('value1');
@@ -37,7 +37,7 @@ describe('Storage', () => {
 	});
 
 	describe('setItem()', () => {
-		test('Returns item.', () => {
+		it('Returns item.', () => {
 			storage.setItem('key1', 'value1');
 			storage.setItem('key2', 'value2');
 			expect(storage.getItem('key1')).toBe('value1');
@@ -46,7 +46,7 @@ describe('Storage', () => {
 	});
 
 	describe('removeItem()', () => {
-		test('Removes an item.', () => {
+		it('Removes an item.', () => {
 			storage.setItem('key1', 'value1');
 			storage.setItem('key2', 'value2');
 			storage.removeItem('key2');

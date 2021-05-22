@@ -7,6 +7,9 @@ import {
 	property
 } from '../../lib/node_modules/lit-element/lit-element';
 
+/**
+ *
+ */
 @customElement('lit-element-component')
 export class LitElementComponent extends LitElement {
 	public static styles = css`

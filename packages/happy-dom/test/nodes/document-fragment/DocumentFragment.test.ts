@@ -8,7 +8,9 @@ import INodeList from '../../../src/nodes/node/INodeList';
 import IElement from '../../../src/nodes/element/IElement';
 
 describe('DocumentFragment', () => {
-	let window, document, documentFragment;
+	let window;
+	let document;
+	let documentFragment;
 
 	beforeEach(() => {
 		window = new Window();
@@ -21,7 +23,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('get children()', () => {
-		test('Returns Element child nodes.', () => {
+		it('Returns Element child nodes.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			documentFragment.appendChild(document.createTextNode('test'));
@@ -33,7 +35,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('get childElementCount()', () => {
-		test('Returns child element count.', () => {
+		it('Returns child element count.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			documentFragment.appendChild(document.createTextNode('test'));
@@ -45,7 +47,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('get firstElementChild()', () => {
-		test('Returns first element child.', () => {
+		it('Returns first element child.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			documentFragment.appendChild(document.createTextNode('test'));
@@ -57,7 +59,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('get lastElementChild()', () => {
-		test('Returns last element child.', () => {
+		it('Returns last element child.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			documentFragment.appendChild(document.createTextNode('test'));
@@ -69,7 +71,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('get textContent()', () => {
-		test('Returns text node data of children as a concatenated string.', () => {
+		it('Returns text node data of children as a concatenated string.', () => {
 			const div = document.createElement('div');
 			const textNode1 = document.createTextNode('text1');
 			const textNode2 = document.createTextNode('text2');
@@ -81,7 +83,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('set textContent()', () => {
-		test('Replaces child nodes with a text node.', () => {
+		it('Replaces child nodes with a text node.', () => {
 			const div = document.createElement('div');
 			const textNode1 = document.createTextNode('text1');
 			const textNode2 = document.createTextNode('text2');
@@ -99,7 +101,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('append()', () => {
-		test('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
+		it('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -116,7 +118,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('prepend()', () => {
-		test('Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
+		it('Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -133,7 +135,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('replaceChildren()', () => {
-		test('Replaces the existing children of a ParentNode with a specified new set of children.', () => {
+		it('Replaces the existing children of a ParentNode with a specified new set of children.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -152,7 +154,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('querySelectorAll()', () => {
-		test('Query CSS selector to find matching elements.', () => {
+		it('Query CSS selector to find matching elements.', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
@@ -167,7 +169,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('querySelector()', () => {
-		test('Query CSS selector to find a matching element.', () => {
+		it('Query CSS selector to find a matching element.', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
@@ -182,7 +184,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('appendChild()', () => {
-		test('Updates the children property when appending an element child.', () => {
+		it('Updates the children property when appending an element child.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
@@ -195,7 +197,7 @@ describe('DocumentFragment', () => {
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		test('Append the children instead of the actual element if the type is DocumentFragment.', () => {
+		it('Append the children instead of the actual element if the type is DocumentFragment.', () => {
 			const template = <HTMLTemplateElement>document.createElement('template');
 
 			template.innerHTML = '<div>Div</div><span>Span</span>';
@@ -213,7 +215,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('removeChild()', () => {
-		test('Updates the children property when removing an element child.', () => {
+		it('Updates the children property when removing an element child.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
@@ -229,7 +231,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('insertBefore()', () => {
-		test('Updates the children property when appending an element child.', () => {
+		it('Updates the children property when appending an element child.', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
 			const span = document.createElement('span');
@@ -244,7 +246,7 @@ describe('DocumentFragment', () => {
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		test('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
+		it('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
 			const template = <HTMLTemplateElement>document.createElement('template');
@@ -266,7 +268,7 @@ describe('DocumentFragment', () => {
 	});
 
 	describe('cloneNode', () => {
-		test('Makes a shallow clone of a node (default behavior).', () => {
+		it('Makes a shallow clone of a node (default behavior).', () => {
 			const text = document.createTextNode('test');
 			const div = document.createElement('div');
 			const comment = document.createComment('test');
@@ -281,7 +283,7 @@ describe('DocumentFragment', () => {
 			expect(documentFragment !== clone).toBe(true);
 		});
 
-		test('Makes a deep clone of the document fragment.', () => {
+		it('Makes a deep clone of the document fragment.', () => {
 			const text = document.createTextNode('test');
 			const div = document.createElement('div');
 			const comment = document.createComment('test');

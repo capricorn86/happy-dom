@@ -25,7 +25,8 @@
 	"scripts": {
 		"compile": "tsc",
 		"watch": "tsc -w --preserveWatchOutput",
-		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'",
+		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
+		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
 		"test": "jest",
 		"test:coverage": "jest --collectCoverage",
 		"test:watch": "jest --watch",
