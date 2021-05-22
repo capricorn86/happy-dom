@@ -21,7 +21,9 @@ export default class HappyDOMContext {
 	 * @param [options.customElements.extractCSS] Set to "true" to extract CSS when opening shadow roots.
 	 * @param [options.customElements.scopeCSS] Set to "true" to enable scoping of CSS when opening shadow roots.
 	 * @param [options.customElements.applyCSSToHead] Set to "true" to extract the CSS and add it to the document head.
-	 * @return Render result.
+	 * @param options.evaluateScripts
+	 * @param options.customElements.addCSSToHead
+	 * @returns Render result.
 	 */
 	public async render({
 		html = null,
@@ -102,7 +104,7 @@ export default class HappyDOMContext {
 	 * Returns a new result with CSS added as a style tag to the document head.
 	 *
 	 * @param result Result.
-	 * @return New result.
+	 * @returns New result.
 	 */
 	private getResultWithCssAddedToHead(
 		result: HappyDOMServerRenderResult

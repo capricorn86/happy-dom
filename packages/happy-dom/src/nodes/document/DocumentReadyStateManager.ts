@@ -12,6 +12,8 @@ export default class DocumentReadyStateManager {
 
 	/**
 	 * Constructor.
+	 *
+	 * @param window
 	 */
 	constructor(window: IWindow) {
 		this.window = window;

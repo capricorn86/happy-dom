@@ -183,7 +183,7 @@ export default interface IWindow {
 	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
-	 * @return Timeout ID.
+	 * @returns Timeout ID.
 	 */
 	setTimeout(callback: () => void, delay?: number): NodeJS.Timeout;
 
@@ -201,7 +201,7 @@ export default interface IWindow {
 	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
-	 * @return Interval ID.
+	 * @returns Interval ID.
 	 */
 	setInterval(callback: () => void, delay?: number): NodeJS.Timeout;
 
@@ -217,7 +217,7 @@ export default interface IWindow {
 	 * Mock animation frames with timeouts.
 	 *
 	 * @override
-	 * @param {function} callback Callback.
+	 * @param {Function} callback Callback.
 	 * @returns {NodeJS.Timeout} Timeout ID.
 	 */
 	requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout;

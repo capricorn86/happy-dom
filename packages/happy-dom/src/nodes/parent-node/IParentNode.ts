@@ -27,7 +27,7 @@ export default interface IParentNode extends INode {
 	 * Query CSS Selector to find matching node.
 	 *
 	 * @param selector CSS selector.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	querySelector(selector: string): IElement;
 

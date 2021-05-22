@@ -69,10 +69,10 @@ const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'text'];
 export default class Window extends EventTarget implements IWindow, NodeJS.Global {
 	// Public Properties
 	public readonly happyDOM = {
-		whenAsyncComplete: async () => {
+		whenAsyncComplete: async (): Promise<void> => {
 			return await this.happyDOM.asyncTaskManager.whenComplete();
 		},
-		cancelAsync: () => {
+		cancelAsync: (): void => {
 			this.happyDOM.asyncTaskManager.cancelAllTasks();
 		},
 		asyncTaskManager: new AsyncTaskManager()
@@ -216,6 +216,8 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public unescape = global ? global.unescape : null;
 	public gc = null;
 	public v8debug = null;
+	public AbortController = global ? global.AbortController : null;
+	public AbortSignal = global ? global.AbortSignal : null;
 
 	/**
 	 * Constructor.
@@ -338,7 +340,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
-	 * @return Timeout ID.
+	 * @returns Timeout ID.
 	 */
 	public setTimeout(callback: () => void, delay = 0): NodeJS.Timeout {
 		const id = global.setTimeout(() => {
@@ -366,7 +368,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
-	 * @return Interval ID.
+	 * @returns Interval ID.
 	 */
 	public setInterval(callback: () => void, delay = 0): NodeJS.Timeout {
 		const id = global.setInterval(callback, delay);
@@ -389,8 +391,8 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * Mock animation frames with timeouts.
 	 *
 	 * @override
-	 * @param {function} callback Callback.
-	 * @returns {NodeJS.Timeout} Timeout ID.
+	 * @param callback Callback.
+	 * @returns Timeout ID.
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout {
 		return this.setTimeout(() => {
@@ -402,7 +404,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * Mock animation frames with timeouts.
 	 *
 	 * @override
-	 * @param {NodeJS.Timeout} id Timeout ID.
+	 * @param id Timeout ID.
 	 */
 	public cancelAnimationFrame(id: NodeJS.Timeout): void {
 		this.clearTimeout(id);

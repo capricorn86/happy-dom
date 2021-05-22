@@ -12,12 +12,13 @@ import FileReaderEventTypeEnum from './FileReaderEventTypeEnum';
 
 /**
  * Reference:
- * https://developer.mozilla.org/sv-SE/docs/Web/API/FileReader
+ * https://developer.mozilla.org/sv-SE/docs/Web/API/FileReader.
  *
  * Based on:
- * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/FileReader-impl.js (MIT licensed)
+ * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/FileReader-impl.js (MIT licensed).
  */
 export default class FileReader extends EventTarget {
+	public static _ownerDocument: Document = null;
 	public readonly error: Error = null;
 	public readonly result: Buffer | ArrayBuffer | string = null;
 	public readonly readyState: number = FileReaderReadyStateEnum.empty;
@@ -27,7 +28,6 @@ export default class FileReader extends EventTarget {
 	public readonly onloadstart: (event: ProgressEvent) => void = null;
 	public readonly onloadend: (event: ProgressEvent) => void = null;
 	public readonly onprogress: (event: ProgressEvent) => void = null;
-	public static _ownerDocument: Document = null;
 	private _isTerminated = false;
 	private _loadTimeout: NodeJS.Timeout = null;
 	private _parseTimeout: NodeJS.Timeout = null;

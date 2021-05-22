@@ -15,10 +15,10 @@ import IHTMLElement from '../html-element/IHTMLElement';
  * HTML Input Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement.
  *
  * Used as reference for some of the logic (like selection range):
- * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/nodes/HTMLInputElement-impl.js (MIT licensed)
+ * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/nodes/HTMLInputElement-impl.js (MIT licensed).
  */
 export default class HTMLInputElement extends HTMLElement implements IHTMLInputElement {
 	// Related to parent form.
@@ -37,17 +37,18 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	// Type specific: file
 	public files: File[] = [];
 
+	// Not categorized
+	public defaultValue = '';
+
 	// Type specific: text/password/search/tel/url/week/month
 	private _selectionStart = null;
 	private _selectionEnd = null;
 	private _selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 
-	// Not categorized
-	public defaultValue = '';
 	/**
 	 * Returns height.
 	 *
-	 * @return Height.
+	 * @returns Height.
 	 */
 	public get height(): number {
 		return this._height;
@@ -66,7 +67,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns width.
 	 *
-	 * @return Width.
+	 * @returns Width.
 	 */
 	public get width(): number {
 		return this._width;
@@ -85,7 +86,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns size.
 	 *
-	 * @return Size.
+	 * @returns Size.
 	 */
 	public get size(): number {
 		const size = this.getAttributeNS(null, 'size');
@@ -107,7 +108,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns minlength.
 	 *
-	 * @return Min length.
+	 * @returns Min length.
 	 */
 	public get minLength(): number {
 		const minLength = this.getAttributeNS(null, 'minlength');
@@ -129,7 +130,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns maxlength.
 	 *
-	 * @return Max length.
+	 * @returns Max length.
 	 */
 	public get maxLength(): number {
 		const maxLength = this.getAttributeNS(null, 'maxlength');
@@ -151,7 +152,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns type.
 	 *
-	 * @return Type. Defaults to "text".
+	 * @returns Type. Defaults to "text".
 	 */
 	public get type(): string {
 		return this.getAttributeNS(null, 'type') || 'text';
@@ -169,7 +170,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns name.
 	 *
-	 * @return Name.
+	 * @returns Name.
 	 */
 	public get name(): string {
 		return this.getAttributeNS(null, 'name') || '';
@@ -187,7 +188,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns alt.
 	 *
-	 * @return Alt.
+	 * @returns Alt.
 	 */
 	public get alt(): string {
 		return this.getAttributeNS(null, 'alt') || '';
@@ -205,7 +206,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns min.
 	 *
-	 * @return Min.
+	 * @returns Min.
 	 */
 	public get min(): string {
 		return this.getAttributeNS(null, 'min') || '';
@@ -223,7 +224,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns max.
 	 *
-	 * @return Max.
+	 * @returns Max.
 	 */
 	public get max(): string {
 		return this.getAttributeNS(null, 'max') || '';
@@ -241,7 +242,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns pattern.
 	 *
-	 * @return Pattern.
+	 * @returns Pattern.
 	 */
 	public get pattern(): string {
 		return this.getAttributeNS(null, 'pattern') || '';
@@ -259,7 +260,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns placeholder.
 	 *
-	 * @return Placeholder.
+	 * @returns Placeholder.
 	 */
 	public get placeholder(): string {
 		return this.getAttributeNS(null, 'placeholder') || '';
@@ -277,7 +278,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns step.
 	 *
-	 * @return Step.
+	 * @returns Step.
 	 */
 	public get step(): string {
 		return this.getAttributeNS(null, 'step') || '';
@@ -295,7 +296,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns inputmode.
 	 *
-	 * @return Inputmode.
+	 * @returns Inputmode.
 	 */
 	public get inputmode(): string {
 		return this.getAttributeNS(null, 'inputmode') || '';
@@ -313,7 +314,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns accept.
 	 *
-	 * @return Accept.
+	 * @returns Accept.
 	 */
 	public get accept(): string {
 		return this.getAttributeNS(null, 'accept') || '';
@@ -331,7 +332,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns allowdirs.
 	 *
-	 * @return Allowdirs.
+	 * @returns Allowdirs.
 	 */
 	public get allowdirs(): string {
 		return this.getAttributeNS(null, 'allowdirs') || '';
@@ -349,7 +350,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns autocomplete.
 	 *
-	 * @return Autocomplete.
+	 * @returns Autocomplete.
 	 */
 	public get autocomplete(): string {
 		return this.getAttributeNS(null, 'autocomplete') || '';
@@ -367,7 +368,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns src.
 	 *
-	 * @return Src.
+	 * @returns Src.
 	 */
 	public get src(): string {
 		return this.getAttributeNS(null, 'src') || '';
@@ -385,7 +386,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns defaultvalue.
 	 *
-	 * @return Defaultvalue.
+	 * @returns Defaultvalue.
 	 */
 	public get defaultvalue(): string {
 		return this.getAttributeNS(null, 'defaultvalue') || '';
@@ -403,7 +404,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns read only.
 	 *
-	 * @return Read only.
+	 * @returns Read only.
 	 */
 	public get readOnly(): boolean {
 		return this.getAttributeNS(null, 'readonly') !== null;
@@ -425,7 +426,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns disabled.
 	 *
-	 * @return Disabled.
+	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
 		return this.getAttributeNS(null, 'disabled') !== null;
@@ -447,7 +448,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns autofocus.
 	 *
-	 * @return Autofocus.
+	 * @returns Autofocus.
 	 */
 	public get autofocus(): boolean {
 		return this.getAttributeNS(null, 'autofocus') !== null;
@@ -469,7 +470,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns required.
 	 *
-	 * @return Required.
+	 * @returns Required.
 	 */
 	public get required(): boolean {
 		return this.getAttributeNS(null, 'required') !== null;
@@ -491,7 +492,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns indeterminate.
 	 *
-	 * @return Indeterminate.
+	 * @returns Indeterminate.
 	 */
 	public get indeterminate(): boolean {
 		return this.getAttributeNS(null, 'indeterminate') !== null;
@@ -513,7 +514,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns multiple.
 	 *
-	 * @return Multiple.
+	 * @returns Multiple.
 	 */
 	public get multiple(): boolean {
 		return this.getAttributeNS(null, 'multiple') !== null;
@@ -535,7 +536,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns checked.
 	 *
-	 * @return Checked.
+	 * @returns Checked.
 	 */
 	public get checked(): boolean {
 		return this.getAttributeNS(null, 'checked') !== null;
@@ -557,7 +558,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns value.
 	 *
-	 * @return Value.
+	 * @returns Value.
 	 */
 	public get value(): string {
 		switch (this.type) {
@@ -623,7 +624,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns selection start.
 	 *
-	 * @return Selection start.
+	 * @returns Selection start.
 	 */
 	public get selectionStart(): number {
 		if (!this._isSelectionSupported()) {
@@ -656,7 +657,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns selection end.
 	 *
-	 * @return Selection end.
+	 * @returns Selection end.
 	 */
 	public get selectionEnd(): number {
 		if (!this._isSelectionSupported()) {
@@ -689,7 +690,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns selection direction.
 	 *
-	 * @return Selection direction.
+	 * @returns Selection direction.
 	 */
 	public get selectionDirection(): string {
 		if (!this._isSelectionSupported()) {
@@ -718,7 +719,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns the parent form element.
 	 *
-	 * @return Form.
+	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
 		let parent = <IHTMLElement>this.parentNode;
@@ -740,7 +741,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns validity message.
 	 *
-	 * @return Validation message.
+	 * @returns Validation message.
 	 */
 	public get validationMessage(): string {
 		return null;
@@ -749,7 +750,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns "true" if it will validate.
 	 *
-	 * @return "true" if it will validate.
+	 * @returns "true" if it will validate.
 	 */
 	public get willValidate(): boolean {
 		return (
@@ -773,7 +774,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns value as number.
 	 *
-	 * @return Number.
+	 * @returns Number.
 	 */
 	public get valueAsNumber(): number {
 		return this.value ? parseFloat(this.value) : NaN;
@@ -811,6 +812,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param [start] Start.
 	 * @param [end] End.
 	 * @param [direction] Direction.
+	 * @param selectionMode
 	 */
 	public setRangeText(
 		replacement: string,
@@ -883,7 +885,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Checks validity.
 	 *
-	 * @return "true" if the field is valid.
+	 * @returns "true" if the field is valid.
 	 */
 	public checkValidity(): boolean {
 		return true;
@@ -894,7 +896,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLInputElement {
 		const clone = <HTMLInputElement>super.cloneNode(deep);
@@ -917,16 +919,16 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 *
 	 * @returns "true" if private value is supported.
 	 */
-	// private _isPrivateValueSupported(): boolean {
-	// 	return (
-	// 		this.type !== 'hidden' &&
-	// 		this.type !== 'submit' &&
-	// 		this.type !== 'image' &&
-	// 		this.type !== 'reset' &&
-	// 		this.type !== 'button' &&
-	// 		this.type !== 'checkbox' &&
-	// 		this.type !== 'radio' &&
-	// 		this.type !== 'file'
+	// Private _isPrivateValueSupported(): boolean {
+	// 	Return (
+	// 		This.type !== 'hidden' &&
+	// 		This.type !== 'submit' &&
+	// 		This.type !== 'image' &&
+	// 		This.type !== 'reset' &&
+	// 		This.type !== 'button' &&
+	// 		This.type !== 'checkbox' &&
+	// 		This.type !== 'radio' &&
+	// 		This.type !== 'file'
 	// 	);
 	// }
 

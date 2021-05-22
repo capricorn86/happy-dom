@@ -12,7 +12,7 @@ export default class DocumentType extends Node {
 	/**
 	 * Node name.
 	 *
-	 * @return Node name.
+	 * @returns Node name.
 	 */
 	public get nodeName(): string {
 		return this.name;
@@ -21,7 +21,7 @@ export default class DocumentType extends Node {
 	/**
 	 * Converts to string.
 	 *
-	 * @return String.
+	 * @returns String.
 	 */
 	public toString(): string {
 		return '[object DocumentType]';
@@ -32,7 +32,7 @@ export default class DocumentType extends Node {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): DocumentType {
 		const clone = <DocumentType>super.cloneNode(deep);

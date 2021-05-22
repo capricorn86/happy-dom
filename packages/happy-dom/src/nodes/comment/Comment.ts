@@ -1,6 +1,6 @@
 import Node from '../node/Node';
 import MutationRecord from '../../mutation-observer/MutationRecord';
-import MutationTypeConstant from '../../mutation-observer/MutationType';
+import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
 import CharacterDataUtility from '../character-data/CharacterDataUtility';
 import IElement from '../element/IElement';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility';
@@ -30,7 +30,7 @@ export default class Comment extends Node implements IComment {
 	/**
 	 * Node name.
 	 *
-	 * @return Node name.
+	 * @returns Node name.
 	 */
 	public get nodeName(): string {
 		return '#comment';
@@ -39,7 +39,7 @@ export default class Comment extends Node implements IComment {
 	/**
 	 * Returns text content.
 	 *
-	 * @return Text content.
+	 * @returns Text content.
 	 */
 	public get length(): number {
 		return this._data.length;
@@ -48,7 +48,7 @@ export default class Comment extends Node implements IComment {
 	/**
 	 * Returns text content.
 	 *
-	 * @return Text content.
+	 * @returns Text content.
 	 */
 	public get data(): string {
 		return this._data;
@@ -68,7 +68,7 @@ export default class Comment extends Node implements IComment {
 			for (const observer of this._observers) {
 				if (observer.options.characterData) {
 					const record = new MutationRecord();
-					record.type = MutationTypeConstant.characterData;
+					record.type = MutationTypeEnum.characterData;
 					record.oldValue = observer.options.characterDataOldValue ? oldValue : null;
 					observer.callback([record]);
 				}
@@ -79,7 +79,7 @@ export default class Comment extends Node implements IComment {
 	/**
 	 * Returns text content.
 	 *
-	 * @return Text content.
+	 * @returns Text content.
 	 */
 	public get textContent(): string {
 		return this._data;
@@ -97,7 +97,7 @@ export default class Comment extends Node implements IComment {
 	/**
 	 * Returns node value.
 	 *
-	 * @return Node value.
+	 * @returns Node value.
 	 */
 	public get nodeValue(): string {
 		return this._data;
@@ -115,7 +115,7 @@ export default class Comment extends Node implements IComment {
 	/**
 	 * Previous element sibling.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get previousElementSibling(): IElement {
 		return NonDocumentChildNodeUtility.previousElementSibling(this);
@@ -124,7 +124,7 @@ export default class Comment extends Node implements IComment {
 	/**
 	 * Next element sibling.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get nextElementSibling(): IElement {
 		return NonDocumentChildNodeUtility.nextElementSibling(this);
@@ -133,7 +133,7 @@ export default class Comment extends Node implements IComment {
 	/**
 	 * Converts to string.
 	 *
-	 * @return String.
+	 * @returns String.
 	 */
 	public toString(): string {
 		return '[object Comment]';
@@ -228,7 +228,7 @@ export default class Comment extends Node implements IComment {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IComment {
 		const clone = <Comment>super.cloneNode(deep);

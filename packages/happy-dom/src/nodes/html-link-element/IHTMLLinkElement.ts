@@ -5,7 +5,7 @@ import IHTMLElement from '../html-element/IHTMLElement';
  * HTML Link Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement.
  */
 export default interface IHTMLLinkElement extends IHTMLElement {
 	readonly sheet: CSSStyleSheet;

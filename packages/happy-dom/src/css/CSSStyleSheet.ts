@@ -23,7 +23,7 @@ export default class CSSStyleSheet {
 	 * Constructor.
 	 *
 	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/
+	 * https://wicg.github.io/construct-stylesheets/.
 	 *
 	 * @param [options] Options.
 	 * @param [options.media] Media.
@@ -47,7 +47,7 @@ export default class CSSStyleSheet {
 	 * Inserts a rule.
 	 *
 	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/
+	 * https://wicg.github.io/construct-stylesheets/.
 	 *
 	 * @param rule Rule.
 	 * @param [index] Index.
@@ -66,7 +66,7 @@ export default class CSSStyleSheet {
 	 * Removes a rule.
 	 *
 	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/
+	 * https://wicg.github.io/construct-stylesheets/.
 	 *
 	 * @param index Index.
 	 */
@@ -78,7 +78,7 @@ export default class CSSStyleSheet {
 	 * Replaces all CSS rules.
 	 *
 	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/
+	 * https://wicg.github.io/construct-stylesheets/.
 	 *
 	 * @param text CSS text.
 	 * @returns Promise.
@@ -91,10 +91,9 @@ export default class CSSStyleSheet {
 	 * Replaces all CSS rules.
 	 *
 	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/
+	 * https://wicg.github.io/construct-stylesheets/.
 	 *
 	 * @param text CSS text.
-	 * @returns Promise.
 	 */
 	public replaceSync(text: string): void {
 		(<CSSRule[]>this.cssRules) = CSSParser.parseFromString(this, text);

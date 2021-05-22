@@ -1,9 +1,9 @@
 /**
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/Blob
+ * https://developer.mozilla.org/en-US/docs/Web/API/Blob.
  *
  * Based on:
- * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/Blob-impl.js (MIT licensed)
+ * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/Blob-impl.js (MIT licensed).
  */
 export default class Blob {
 	public readonly _buffer: Buffer = null;
@@ -91,8 +91,8 @@ export default class Blob {
 		if (contentType === undefined) {
 			relativeContentType = '';
 		} else {
-			// sanitization (lower case and invalid char check) is done in the
-			// constructor
+			// Sanitization (lower case and invalid char check) is done in the
+			// Constructor
 			relativeContentType = contentType;
 		}
 

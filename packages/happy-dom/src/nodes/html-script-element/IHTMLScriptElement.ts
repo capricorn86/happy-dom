@@ -4,7 +4,7 @@ import IHTMLElement from '../html-element/IHTMLElement';
  * HTML Script Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement.
  */
 export default interface IHTMLScriptElement extends IHTMLElement {
 	type: string;
@@ -20,7 +20,7 @@ export default interface IHTMLScriptElement extends IHTMLElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IHTMLScriptElement;
 }

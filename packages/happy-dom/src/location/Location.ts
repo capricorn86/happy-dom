@@ -1,5 +1,8 @@
 import URL from './URL';
 
+/**
+ *
+ */
 export default class Location extends URL {
 	/**
 	 * Constructor.
@@ -22,6 +25,7 @@ export default class Location extends URL {
 	 *
 	 * Note: Will do the same thing as "replace()" as server-dom does not support loading the URL.
 	 *
+	 * @param url
 	 * @see this.replace()
 	 */
 	public assign(url: string): void {

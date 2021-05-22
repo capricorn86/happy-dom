@@ -5,7 +5,7 @@ import IHTMLImageElement from './IHTMLImageElement';
  * HTML Image Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement.
  */
 export default class HTMLImageElement extends HTMLElement implements IHTMLImageElement {
 	public readonly complete = false;
@@ -20,7 +20,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns alt.
 	 *
-	 * @return Alt.
+	 * @returns Alt.
 	 */
 	public get alt(): string {
 		return this.getAttributeNS(null, 'alt') || '';
@@ -38,7 +38,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns current src.
 	 *
-	 * @return Current src.
+	 * @returns Current src.
 	 */
 	public get currentSrc(): string {
 		return this.src;
@@ -47,7 +47,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns height.
 	 *
-	 * @return Height.
+	 * @returns Height.
 	 */
 	public get height(): string {
 		return this.getAttributeNS(null, 'height') || '';
@@ -65,7 +65,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns is map.
 	 *
-	 * @return Is map.
+	 * @returns Is map.
 	 */
 	public get isMap(): boolean {
 		return this.getAttributeNS(null, 'ismap') !== null;
@@ -87,7 +87,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns referrer policy.
 	 *
-	 * @return Referrer policy.
+	 * @returns Referrer policy.
 	 */
 	public get referrerPolicy(): string {
 		return this.getAttributeNS(null, 'referrerpolicy') || '';
@@ -105,7 +105,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns sizes.
 	 *
-	 * @return Sizes.
+	 * @returns Sizes.
 	 */
 	public get sizes(): string {
 		return this.getAttributeNS(null, 'sizes') || '';
@@ -123,7 +123,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns source.
 	 *
-	 * @return Source.
+	 * @returns Source.
 	 */
 	public get src(): string {
 		return this.getAttributeNS(null, 'src') || '';
@@ -141,7 +141,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns srcset.
 	 *
-	 * @return Source.
+	 * @returns Source.
 	 */
 	public get srcset(): string {
 		return this.getAttributeNS(null, 'srcset') || '';
@@ -159,7 +159,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns use map.
 	 *
-	 * @return Use map.
+	 * @returns Use map.
 	 */
 	public get useMap(): string {
 		return this.getAttributeNS(null, 'usemap') || '';
@@ -177,7 +177,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * Returns width.
 	 *
-	 * @return Width.
+	 * @returns Width.
 	 */
 	public get width(): string {
 		return this.getAttributeNS(null, 'width') || '';
@@ -195,7 +195,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	/**
 	 * The decode() method of the HTMLImageElement interface returns a Promise that resolves when the image is decoded and it is safe to append the image to the DOM.
 	 *
-	 * @return Promise.
+	 * @returns Promise.
 	 */
 	public decode(): Promise<void> {
 		return Promise.resolve();
@@ -206,7 +206,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLImageElement {
 		return <IHTMLImageElement>super.cloneNode(deep);

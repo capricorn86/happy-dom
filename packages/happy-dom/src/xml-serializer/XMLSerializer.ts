@@ -17,7 +17,8 @@ export default class XMLSerializer {
 	 * Renders an element as HTML.
 	 *
 	 * @param element Element to render.
-	 * @return Result.
+	 * @param root
+	 * @returns Result.
 	 */
 	public serializeToString(root: INode): string {
 		switch (root.nodeType) {
@@ -63,7 +64,7 @@ export default class XMLSerializer {
 	 * Returns attributes as a string.
 	 *
 	 * @param element Element.
-	 * @return Attributes.
+	 * @returns Attributes.
 	 */
 	private _getAttributes(element: IElement): string {
 		let attributeString = '';

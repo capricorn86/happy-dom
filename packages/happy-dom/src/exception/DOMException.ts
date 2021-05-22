@@ -2,7 +2,7 @@
  * DOM Exception.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/DOMException/DOMException
+ * https://developer.mozilla.org/en-US/docs/Web/API/DOMException/DOMException.
  */
 export default class DOMException extends Error {
 	/**

@@ -1,6 +1,9 @@
 import IEventInit from './IEventInit';
 import EventTarget from './EventTarget';
 
+/**
+ *
+ */
 export default class Event {
 	public composed = false;
 	public currentTarget: EventTarget = null;
@@ -31,7 +34,7 @@ export default class Event {
 	/**
 	 * Init event.
 	 *
-	 * @legacy
+	 * @deprecated
 	 * @param type Type.
 	 * @param [bubbles=false] "true" if it bubbles.
 	 * @param [cancelable=false] "true" if it cancelable.

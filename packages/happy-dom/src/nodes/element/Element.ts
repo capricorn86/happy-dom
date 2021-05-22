@@ -7,7 +7,7 @@ import ClassList from './ClassList';
 import QuerySelector from '../../query-selector/QuerySelector';
 import SelectorItem from '../../query-selector/SelectorItem';
 import MutationRecord from '../../mutation-observer/MutationRecord';
-import MutationTypeConstant from '../../mutation-observer/MutationType';
+import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
 import NamespaceURI from '../../config/NamespaceURI';
 import XMLParser from '../../xml-parser/XMLParser';
 import XMLSerializer from '../../xml-serializer/XMLSerializer';
@@ -29,6 +29,10 @@ import IText from '../text/IText';
  * Element.
  */
 export default class Element extends Node implements IElement {
+	// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
+	// CustomElementRegistry will therefore populate _observedAttributes when CustomElementRegistry.define() is called
+	public static _observedAttributes: string[];
+	public static observedAttributes: string[];
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
 	public shadowRoot: IShadowRoot = null;
@@ -38,15 +42,11 @@ export default class Element extends Node implements IElement {
 	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public _attributes: { [k: string]: Attr } = {};
 	public readonly namespaceURI: string = null;
-	// observedAttributes should only be called once by CustomElementRegistry (see #117)
-	// CustomElementRegistry will therefore populate _observedAttributes when CustomElementRegistry.define() is called
-	public static _observedAttributes: string[];
-	public static observedAttributes: string[];
 
 	/**
 	 * Returns ID.
 	 *
-	 * @return ID.
+	 * @returns ID.
 	 */
 	public get id(): string {
 		return this.getAttribute('id') || '';
@@ -56,7 +56,6 @@ export default class Element extends Node implements IElement {
 	 * Sets ID.
 	 *
 	 * @param id ID.
-	 * @return HTML.
 	 */
 	public set id(id: string) {
 		this.setAttribute('id', id);
@@ -65,7 +64,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Returns class name.
 	 *
-	 * @return Class name.
+	 * @returns Class name.
 	 */
 	public get className(): string {
 		return this.getAttribute('class') || '';
@@ -75,7 +74,6 @@ export default class Element extends Node implements IElement {
 	 * Sets class name.
 	 *
 	 * @param className Class name.
-	 * @return Class name.
 	 */
 	public set className(className: string) {
 		this.setAttribute('class', className);
@@ -84,7 +82,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Node name.
 	 *
-	 * @return Node name.
+	 * @returns Node name.
 	 */
 	public get nodeName(): string {
 		return this.tagName;
@@ -93,7 +91,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Local name.
 	 *
-	 * @return Local name.
+	 * @returns Local name.
 	 */
 	public get localName(): string {
 		return this.tagName.toLowerCase();
@@ -102,7 +100,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Previous element sibling.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get previousElementSibling(): IElement {
 		return NonDocumentChildNodeUtility.previousElementSibling(this);
@@ -111,7 +109,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Next element sibling.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get nextElementSibling(): IElement {
 		return NonDocumentChildNodeUtility.nextElementSibling(this);
@@ -120,7 +118,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Get text value of children.
 	 *
-	 * @return Text content.
+	 * @returns Text content.
 	 */
 	public get textContent(): string {
 		let result = '';
@@ -147,7 +145,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Returns inner HTML.
 	 *
-	 * @return HTML.
+	 * @returns HTML.
 	 */
 	public get innerHTML(): string {
 		const xmlSerializer = new XMLSerializer();
@@ -176,7 +174,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Returns outer HTML.
 	 *
-	 * @return HTML.
+	 * @returns HTML.
 	 */
 	public get outerHTML(): string {
 		return new XMLSerializer().serializeToString(this);
@@ -206,7 +204,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * First element child.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
 		return this.children ? this.children[0] || null : null;
@@ -215,7 +213,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Last element child.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
 		return this.children ? this.children[this.children.length - 1] || null : null;
@@ -224,7 +222,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Last element child.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get childElementCount(): number {
 		return this.children.length;
@@ -244,7 +242,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IElement {
 		const clone = <Element | IElement>super.cloneNode(deep);
@@ -274,7 +272,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @override
 	 * @param  node Node to append.
-	 * @return Appended node.
+	 * @returns Appended node.
 	 */
 	public appendChild(node: INode): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -299,7 +297,7 @@ export default class Element extends Node implements IElement {
 	 * Remove Child element from childNodes array.
 	 *
 	 * @override
-	 * @param node Node to remove
+	 * @param node Node to remove.
 	 */
 	public removeChild(node: INode): INode {
 		if (node.nodeType === Node.ELEMENT_NODE) {
@@ -325,7 +323,7 @@ export default class Element extends Node implements IElement {
 	 * @override
 	 * @param newNode Node to insert.
 	 * @param [referenceNode] Node to insert before.
-	 * @return Inserted node.
+	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode?: INode): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);
@@ -411,7 +409,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param position Position to insert element.
 	 * @param element Node to insert.
-	 * @return Inserted node or null if couldn't insert.
+	 * @returns Inserted node or null if couldn't insert.
 	 */
 	public insertAdjacentElement(position: TInsertAdjacentPositions, element: INode): INode | null {
 		if (position === 'beforebegin') {
@@ -440,7 +438,6 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param position Position to insert text.
 	 * @param text HTML string to insert.
-	 * @return Inserted node or null if couldn't insert.
 	 */
 	public insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void {
 		for (const node of XMLParser.parse(this.ownerDocument, text).childNodes.slice()) {
@@ -453,7 +450,6 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param position Position to insert text.
 	 * @param text String to insert.
-	 * @return Inserted node or null if couldn't insert.
 	 */
 	public insertAdjacentText(position: TInsertAdjacentPositions, text: string): void {
 		const textNode = <IText>this.ownerDocument.createTextNode(text);
@@ -542,7 +538,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Returns "true" if the element has attributes.
 	 *
-	 * @return "true" if the element has attributes.
+	 * @returns "true" if the element has attributes.
 	 */
 	public hasAttributes(): boolean {
 		return Object.keys(this._attributes).length > 0;
@@ -579,6 +575,8 @@ export default class Element extends Node implements IElement {
 	 * Attaches a shadow root.
 	 *
 	 * @param _shadowRootInit Shadow root init.
+	 * @param shadowRootInit
+	 * @param shadowRootInit.mode
 	 * @returns Shadow root.
 	 */
 	public attachShadow(shadowRootInit: { mode: string }): IShadowRoot {
@@ -596,7 +594,7 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Converts to string.
 	 *
-	 * @return String.
+	 * @returns String.
 	 */
 	public toString(): string {
 		return this.outerHTML;
@@ -644,7 +642,7 @@ export default class Element extends Node implements IElement {
 	 * Query CSS Selector to find matching node.
 	 *
 	 * @param selector CSS selector.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	public querySelector(selector: string): IElement {
 		return QuerySelector.querySelector(this, selector);
@@ -712,7 +710,7 @@ export default class Element extends Node implements IElement {
 					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(name))
 				) {
 					const record = new MutationRecord();
-					record.type = MutationTypeConstant.attributes;
+					record.type = MutationTypeEnum.attributes;
 					record.attributeName = name;
 					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
 					observer.callback([record]);
@@ -786,7 +784,7 @@ export default class Element extends Node implements IElement {
 						observer.options.attributeFilter.includes(attribute.name))
 				) {
 					const record = new MutationRecord();
-					record.type = MutationTypeConstant.attributes;
+					record.type = MutationTypeEnum.attributes;
 					record.attributeName = attribute.name;
 					record.oldValue = observer.options.attributeOldValue ? attribute.value : null;
 					observer.callback([record]);

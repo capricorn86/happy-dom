@@ -20,8 +20,8 @@
 		"baseUrl": ".",
 		"composite": true,
 		"incremental": true,
-		"typeRoots": [
-			"node_modules/@types"
+		"types": [
+			"node"
 		],
 		"lib": [
 			"es2015",

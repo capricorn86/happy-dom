@@ -1,3 +1,6 @@
+/**
+ *
+ */
 export default class Storage {
 	private _store: { [k: string]: string } = {};
 

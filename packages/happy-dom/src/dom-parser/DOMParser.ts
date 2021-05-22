@@ -10,7 +10,7 @@ import SVGDocument from '../nodes/svg-document/SVGDocument';
  * DOM parser.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser
+ * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser.
  */
 export default class DOMParser {
 	public static _ownerDocument: Document = null;
@@ -20,7 +20,7 @@ export default class DOMParser {
 	 *
 	 * @param string HTML data.
 	 * @param mimeType Mime type.
-	 * @return Root element.
+	 * @returns Root element.
 	 */
 	public parseFromString(string: string, mimeType: string): Document {
 		if (!mimeType) {

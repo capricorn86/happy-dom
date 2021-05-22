@@ -125,7 +125,7 @@ export default class ShadowRootRenderer {
 	 * Extracts CSS.
 	 *
 	 * @param shadowRoot Shadow root.
-	 * @return CSS.
+	 * @returns CSS.
 	 */
 	private extractCSS(shadowRoot: IShadowRoot): string {
 		const styles = Array.from(shadowRoot.querySelectorAll('style'));

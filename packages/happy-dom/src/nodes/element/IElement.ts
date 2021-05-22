@@ -87,7 +87,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	/**
 	 * Returns "true" if the element has attributes.
 	 *
-	 * @return "true" if the element has attributes.
+	 * @returns "true" if the element has attributes.
 	 */
 	hasAttributes(): boolean;
 
@@ -204,7 +204,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IElement;
 
@@ -213,7 +213,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 *
 	 * @param position Position to insert element.
 	 * @param element Node to insert.
-	 * @return Inserted node or null if couldn't insert.
+	 * @returns Inserted node or null if couldn't insert.
 	 */
 	insertAdjacentElement(position: TInsertAdjacentPositions, node: INode): INode | null;
 
@@ -222,7 +222,6 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 *
 	 * @param position Position to insert text.
 	 * @param text HTML string to insert.
-	 * @return Inserted node or null if couldn't insert.
 	 */
 	insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void;
 
@@ -231,7 +230,6 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 *
 	 * @param position Position to insert text.
 	 * @param text String to insert.
-	 * @return Inserted node or null if couldn't insert.
 	 */
 	insertAdjacentText(position: TInsertAdjacentPositions, text: string): void;
 }

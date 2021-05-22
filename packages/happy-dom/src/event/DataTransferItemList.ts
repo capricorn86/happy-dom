@@ -1,8 +1,11 @@
 import File from '../file/File';
 import DataTransferItem from './DataTransferItem';
 
+/**
+ *
+ */
 export default class DataTransferItemList {
-	private readonly DataTransferItem: DataTransferItem[] = [];
+	public readonly DataTransferItem: DataTransferItem[] = [];
 
 	/**
 	 * Adds an item.

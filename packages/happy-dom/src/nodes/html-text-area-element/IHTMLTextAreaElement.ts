@@ -6,7 +6,7 @@ import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputEl
  * HTML Text Area Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement.
  */
 export default interface IHTMLTextAreaElement extends IHTMLElement {
 	readonly type: string;
@@ -57,7 +57,7 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	/**
 	 * Checks validity.
 	 *
-	 * @return "true" if the field is valid.
+	 * @returns "true" if the field is valid.
 	 */
 	checkValidity(): boolean;
 
@@ -66,7 +66,7 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IHTMLTextAreaElement;
 }

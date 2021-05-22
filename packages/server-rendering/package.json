@@ -40,6 +40,11 @@
 		"testMatch": [
 			"**/test/**/*.test.ts"
 		],
+		"globals": {
+			"ts-jest": {
+				"tsconfig": "./test/tsconfig.json"
+			}
+		},
 		"testEnvironment": "node"
 	},
 	"dependencies": {
@@ -50,17 +55,22 @@
 		"he": "^1.1.1"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^2.11.0",
-		"@typescript-eslint/parser": "^2.11.0",
-		"@types/node": "^13.9.5",
-		"@types/jest": "^25.1.4",
+		"@typescript-eslint/eslint-plugin": "^4.24.0",
+		"@typescript-eslint/parser": "^4.24.0",
+		"@types/node": "^15.6.0",
+		"@types/jest": "^26.0.23",
 		"@types/he": "latest",
-		"eslint": "^6.7.2",
+		"eslint": "^7.27.0",
 		"eslint-config-prettier": "^6.7.0",
-		"eslint-plugin-prettier": "^3.1.1",
+		"eslint-plugin-prettier": "^3.4.0",
+		"eslint-plugin-filenames": "^1.3.2",
+		"eslint-plugin-import": "^2.22.1",
+		"eslint-plugin-jest": "^24.1.0",
+		"eslint-plugin-jsdoc": "^30.4.0",
+		"eslint-plugin-json": "^2.0.1",
 		"prettier": "^1.19.1",
-		"typescript": "^3.8.3",
-		"jest": "^25.2.3",
-		"ts-jest": "^25.2.1"
+		"typescript": "^4.2.4",
+		"jest": "^26.6.3",
+		"ts-jest": "^26.5.6"
 	}
 }

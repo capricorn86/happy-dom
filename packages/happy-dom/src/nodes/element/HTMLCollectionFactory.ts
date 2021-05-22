@@ -1,9 +1,13 @@
 import IElement from './IElement';
 import IHTMLCollection from './IHTMLCollection';
 
+/**
+ *
+ */
 export default class HTMLCollectionFactory {
 	/**
 	 * Creates an HTMLCollection.
+	 *
 	 * @param nodes Nodes.
 	 * @returns HTMLCollection.
 	 */
@@ -18,6 +22,7 @@ export default class HTMLCollectionFactory {
 	/**
 	 * Returns node by index.
 	 *
+	 * @param nodes
 	 * @param index Index.
 	 */
 	private static getItem(nodes: IElement[], index: number): IElement {

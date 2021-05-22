@@ -4,8 +4,9 @@
 		"outDir": "../tmp",
 		"rootDir": "../",
 		"tsBuildInfoFile": "../tmp/.tsbuildinfo-test",
-		"typeRoots": [
-			"../node_modules/@types"
+		"types": [
+			"node",
+			"jest"
 		]
 	},
 	"include": [

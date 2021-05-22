@@ -4,7 +4,7 @@ import IHTMLElement from '../html-element/IHTMLElement';
  * HTML Image Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement.
  */
 export default interface IHTMLImageElement extends IHTMLElement {
 	alt: string;
@@ -29,7 +29,7 @@ export default interface IHTMLImageElement extends IHTMLElement {
 	/**
 	 * The decode() method of the HTMLImageElement interface returns a Promise that resolves when the image is decoded and it is safe to append the image to the DOM.
 	 *
-	 * @return Promise.
+	 * @returns Promise.
 	 */
 	decode(): Promise<void>;
 
@@ -38,7 +38,7 @@ export default interface IHTMLImageElement extends IHTMLElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IHTMLImageElement;
 }

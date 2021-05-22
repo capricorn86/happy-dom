@@ -134,7 +134,7 @@ export default interface ISVGSVGElement extends ISVGGraphicsElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): ISVGSVGElement;
 }

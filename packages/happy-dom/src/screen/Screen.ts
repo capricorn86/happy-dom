@@ -1,3 +1,6 @@
+/**
+ *
+ */
 export default class Screen {
 	public readonly width = 1024;
 	public readonly height = 768;

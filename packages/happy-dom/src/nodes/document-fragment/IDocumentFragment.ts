@@ -25,7 +25,7 @@ export default interface IDocumentFragment extends INode {
 	 * Query CSS Selector to find matching node.
 	 *
 	 * @param selector CSS selector.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	querySelector(selector: string): IElement;
 
@@ -48,7 +48,7 @@ export default interface IDocumentFragment extends INode {
 	 * Returns an element by ID.
 	 *
 	 * @param id ID.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	getElementById(id: string): IElement;
 
@@ -57,7 +57,7 @@ export default interface IDocumentFragment extends INode {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IDocumentFragment;
 }

@@ -6,13 +6,13 @@ import IHTMLFormElement from './IHTMLFormElement';
  * HTML Form Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement.
  */
 export default class HTMLFormElement extends HTMLElement implements IHTMLFormElement {
 	/**
 	 * Returns name.
 	 *
-	 * @return Name.
+	 * @returns Name.
 	 */
 	public get name(): string {
 		return this.getAttributeNS(null, 'name') || '';
@@ -30,7 +30,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Returns method.
 	 *
-	 * @return Method.
+	 * @returns Method.
 	 */
 	public get method(): string {
 		return this.getAttributeNS(null, 'method') || 'get';
@@ -48,7 +48,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Returns target.
 	 *
-	 * @return Target.
+	 * @returns Target.
 	 */
 	public get target(): string {
 		return this.getAttributeNS(null, 'target') || '';
@@ -66,7 +66,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Returns action.
 	 *
-	 * @return Action.
+	 * @returns Action.
 	 */
 	public get action(): string {
 		return this.getAttributeNS(null, 'action') || '';
@@ -84,7 +84,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Returns encoding.
 	 *
-	 * @return Encoding.
+	 * @returns Encoding.
 	 */
 	public get encoding(): string {
 		return this.getAttributeNS(null, 'encoding') || '';
@@ -102,7 +102,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Returns enctype.
 	 *
-	 * @return Enctype.
+	 * @returns Enctype.
 	 */
 	public get enctype(): string {
 		return this.getAttributeNS(null, 'enctype') || '';
@@ -120,7 +120,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Returns autocomplete.
 	 *
-	 * @return Autocomplete.
+	 * @returns Autocomplete.
 	 */
 	public get autocomplete(): string {
 		return this.getAttributeNS(null, 'autocomplete') || '';
@@ -138,7 +138,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Returns accept charset.
 	 *
-	 * @return Accept charset.
+	 * @returns Accept charset.
 	 */
 	public get acceptCharset(): string {
 		return this.getAttributeNS(null, 'acceptcharset') || '';
@@ -156,7 +156,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Returns no validate.
 	 *
-	 * @return No validate.
+	 * @returns No validate.
 	 */
 	public get noValidate(): string {
 		return this.getAttributeNS(null, 'novalidate') || '';
@@ -183,7 +183,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Returns number of input elements.
 	 *
-	 * @return Length.
+	 * @returns Length.
 	 */
 	public get length(): number {
 		return this.elements.length;
@@ -207,7 +207,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Checks validity.
 	 *
-	 * @return "true" if validation does'nt fail.
+	 * @returns "true" if validation does'nt fail.
 	 */
 	public checkValidity(): boolean {
 		return true;
@@ -218,7 +218,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLFormElement {
 		return <IHTMLFormElement>super.cloneNode(deep);

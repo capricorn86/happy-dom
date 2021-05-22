@@ -1,6 +1,9 @@
 import Event from '../Event';
 import ICustomEventInit from './ICustomEventInit';
 
+/**
+ *
+ */
 export default class CustomEvent extends Event {
 	public detail: object = null;
 

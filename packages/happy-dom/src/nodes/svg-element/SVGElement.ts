@@ -6,7 +6,7 @@ import ISVGSVGElement from './ISVGSVGElement';
  * SVG Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/SVGElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/SVGElement.
  */
 export default class SVGElement extends Element implements ISVGElement {
 	/**
@@ -36,7 +36,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	/**
 	 * Returns data set.
 	 *
-	 * @return Data set.
+	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
 		const dataset = {};

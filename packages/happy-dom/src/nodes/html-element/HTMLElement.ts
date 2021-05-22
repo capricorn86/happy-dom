@@ -8,7 +8,7 @@ import Attr from '../../attribute/Attr';
  * HTML Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement.
  */
 export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly accessKey = '';
@@ -27,7 +27,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * Returns tab index.
 	 *
-	 * @return Tab index.
+	 * @returns Tab index.
 	 */
 	public get tabIndex(): number {
 		const tabIndex = this.getAttributeNS(null, 'tabindex');
@@ -50,7 +50,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * Returns inner text.
 	 *
-	 * @return Text.
+	 * @returns Text.
 	 */
 	public get innerText(): string {
 		return this.textContent;
@@ -68,7 +68,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * Returns style.
 	 *
-	 * @return Style.
+	 * @returns Style.
 	 */
 	public get style(): CSSStyleDeclaration {
 		if (!this._style) {
@@ -80,7 +80,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * Returns data set.
 	 *
-	 * @return Data set.
+	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
 		const dataset = {};
@@ -95,7 +95,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * Returns direction.
 	 *
-	 * @return Direction.
+	 * @returns Direction.
 	 */
 	public get dir(): string {
 		return this.getAttributeNS(null, 'dir') || '';
@@ -113,7 +113,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * Returns hidden.
 	 *
-	 * @return Hidden.
+	 * @returns Hidden.
 	 */
 	public get hidden(): boolean {
 		return this.getAttributeNS(null, 'hidden') !== null;
@@ -135,7 +135,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * Returns language.
 	 *
-	 * @return Language.
+	 * @returns Language.
 	 */
 	public get lang(): string {
 		return this.getAttributeNS(null, 'lang') || '';
@@ -153,7 +153,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * Returns title.
 	 *
-	 * @return Title.
+	 * @returns Title.
 	 */
 	public get title(): string {
 		return this.getAttributeNS(null, 'title') || '';
@@ -247,7 +247,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLElement {
 		const clone = <HTMLElement>super.cloneNode(deep);

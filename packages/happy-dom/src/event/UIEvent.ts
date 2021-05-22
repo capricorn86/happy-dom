@@ -2,17 +2,20 @@ import Window from '../window/Window';
 import Event from './Event';
 import IUIEventInit from './IUIEventInit';
 
+/**
+ *
+ */
 export default class UIEvent extends Event {
+	public static NONE = 0;
+	public static CAPTURING_PHASE = 1;
+	public static AT_TARGET = 2;
+	public static BUBBLING_PHASE = 3;
 	public readonly detail: number = 0;
 	public readonly layerX: number = 0;
 	public readonly layerY: number = 0;
 	public readonly pageX: number = 0;
 	public readonly pageY: number = 0;
 	public readonly view: Window = null;
-	public static NONE = 0;
-	public static CAPTURING_PHASE = 1;
-	public static AT_TARGET = 2;
-	public static BUBBLING_PHASE = 3;
 
 	/**
 	 * Constructor.
@@ -32,7 +35,7 @@ export default class UIEvent extends Event {
 	/**
 	 * Init event.
 	 *
-	 * @legacy
+	 * @deprecated
 	 * @param type Type.
 	 * @param [bubbles=false] "true" if it bubbles.
 	 * @param [cancelable=false] "true" if it cancelable.

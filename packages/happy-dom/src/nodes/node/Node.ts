@@ -1,6 +1,6 @@
 import EventTarget from '../../event/EventTarget';
 import MutationRecord from '../../mutation-observer/MutationRecord';
-import MutationTypeConstant from '../../mutation-observer/MutationType';
+import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
 import MutationObserverListener from '../../mutation-observer/MutationListener';
 import Event from '../../event/Event';
 import INode from './INode';
@@ -12,7 +12,7 @@ import NodeListFactory from './NodeListFactory';
 import { IShadowRoot } from '../..';
 
 /**
- * Node
+ * Node.
  */
 export default class Node extends EventTarget implements INode {
 	// Public properties
@@ -43,9 +43,9 @@ export default class Node extends EventTarget implements INode {
 	}
 
 	/**
-	 * "true" if connected to DOM.
+	 * Returns "true" if connected to DOM.
 	 *
-	 * @return "true" if connected.
+	 * @returns "true" if connected.
 	 */
 	public get isConnected(): boolean {
 		return this._isConnected;
@@ -81,7 +81,7 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * Get text value of children.
 	 *
-	 * @return Text content.
+	 * @returns Text content.
 	 */
 	public get textContent(): string {
 		return null;
@@ -99,7 +99,7 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * Node value.
 	 *
-	 * @return Node value.
+	 * @returns Node value.
 	 */
 	public get nodeValue(): string {
 		return null;
@@ -108,7 +108,7 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * Node name.
 	 *
-	 * @return Node name.
+	 * @returns Node name.
 	 */
 	public get nodeName(): string {
 		return '';
@@ -117,7 +117,7 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * Previous sibling.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get previousSibling(): INode {
 		if (this.parentNode) {
@@ -132,7 +132,7 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * Next sibling.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get nextSibling(): INode {
 		if (this.parentNode) {
@@ -147,7 +147,7 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * First child.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get firstChild(): INode {
 		if (this.childNodes.length > 0) {
@@ -159,7 +159,7 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * Last child.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get lastChild(): INode {
 		if (this.childNodes.length > 0) {
@@ -171,7 +171,7 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * Returns parent element.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get parentElement(): IElement {
 		let parent = this.parentNode;
@@ -220,7 +220,7 @@ export default class Node extends EventTarget implements INode {
 	 * Clones a node.
 	 *
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): INode {
 		const clone = new (<typeof Node>this.constructor)();
@@ -246,7 +246,7 @@ export default class Node extends EventTarget implements INode {
 	 * Append a child node to childNodes.
 	 *
 	 * @param  node Node to append.
-	 * @return Appended node.
+	 * @returns Appended node.
 	 */
 	public appendChild(node: INode): INode {
 		if (node === this) {
@@ -278,7 +278,7 @@ export default class Node extends EventTarget implements INode {
 		// MutationObserver
 		if (this._observers.length > 0) {
 			const record = new MutationRecord();
-			record.type = MutationTypeConstant.childList;
+			record.type = MutationTypeEnum.childList;
 			record.addedNodes = [node];
 
 			for (const observer of this._observers) {
@@ -297,8 +297,8 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * Remove Child element from childNodes array.
 	 *
-	 * @param node Node to remove
-	 * @return Removed node.
+	 * @param node Node to remove.
+	 * @returns Removed node.
 	 */
 	public removeChild(node: INode): INode {
 		const index = this.childNodes.indexOf(node);
@@ -315,7 +315,7 @@ export default class Node extends EventTarget implements INode {
 		// MutationObserver
 		if (this._observers.length > 0) {
 			const record = new MutationRecord();
-			record.type = MutationTypeConstant.childList;
+			record.type = MutationTypeEnum.childList;
 			record.removedNodes = [node];
 
 			for (const observer of this._observers) {
@@ -334,7 +334,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param newNode Node to insert.
 	 * @param [referenceNode] Node to insert before.
-	 * @return Inserted node.
+	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode?: INode | null): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -369,7 +369,7 @@ export default class Node extends EventTarget implements INode {
 		// MutationObserver
 		if (this._observers.length > 0) {
 			const record = new MutationRecord();
-			record.type = MutationTypeConstant.childList;
+			record.type = MutationTypeEnum.childList;
 			record.addedNodes = [newNode];
 
 			for (const observer of this._observers) {
@@ -390,7 +390,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param newChild New child.
 	 * @param oldChild Old child.
-	 * @return Replaced node.
+	 * @returns Replaced node.
 	 */
 	public replaceChild(newChild: INode, oldChild: INode): INode {
 		this.insertBefore(newChild, oldChild);

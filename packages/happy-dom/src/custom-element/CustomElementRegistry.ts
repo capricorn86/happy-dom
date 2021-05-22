@@ -15,6 +15,7 @@ export default class CustomElementRegistry {
 	 * @param tagName Tag name of element.
 	 * @param elementClass Element class.
 	 * @param [options] Options.
+	 * @param options.extends
 	 */
 	public define(
 		tagName: string,
@@ -35,7 +36,7 @@ export default class CustomElementRegistry {
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
 
-		// observedAttributes should only be called once by CustomElementRegistry (see #117)
+		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
 		if (elementClass.prototype.attributeChangedCallback) {
 			elementClass._observedAttributes = elementClass.observedAttributes;
 		}
@@ -52,7 +53,7 @@ export default class CustomElementRegistry {
 	 * Returns a defined element class.
 	 *
 	 * @param tagName Tag name of element.
-	 * @param HTMLElement class defined.
+	 * @param HTMLElement Class defined.
 	 */
 	public get(tagName: string): typeof HTMLElement {
 		const name = tagName.toLowerCase();

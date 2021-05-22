@@ -16,7 +16,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	/**
 	 * Returns preserveAspectRatio.
 	 *
-	 * @return PreserveAspectRatio.
+	 * @returns PreserveAspectRatio.
 	 */
 	public get preserveAspectRatio(): string {
 		return this.getAttributeNS(null, 'preserveAspectRatio') || 'xMidYMid meet';
@@ -34,7 +34,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	/**
 	 * Returns width.
 	 *
-	 * @return Width.
+	 * @returns Width.
 	 */
 	public get width(): string {
 		return this.getAttributeNS(null, 'width') || '';
@@ -52,7 +52,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	/**
 	 * Returns height.
 	 *
-	 * @return Height.
+	 * @returns Height.
 	 */
 	public get height(): string {
 		return this.getAttributeNS(null, 'height') || '';
@@ -70,7 +70,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	/**
 	 * Returns x.
 	 *
-	 * @return X.
+	 * @returns X.
 	 */
 	public get x(): string {
 		return this.getAttributeNS(null, 'x') || '';
@@ -88,7 +88,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	/**
 	 * Returns y.
 	 *
-	 * @return Y.
+	 * @returns Y.
 	 */
 	public get y(): string {
 		return this.getAttributeNS(null, 'y') || '';
@@ -106,7 +106,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	/**
 	 * Returns contentScriptType.
 	 *
-	 * @return ContentScriptType.
+	 * @returns ContentScriptType.
 	 */
 	public get contentScriptType(): string {
 		return this.getAttributeNS(null, 'contentScriptType') || '';
@@ -124,7 +124,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	/**
 	 * Returns currentScale.
 	 *
-	 * @return CurrentScale.
+	 * @returns CurrentScale.
 	 */
 	public get currentScale(): number {
 		const currentScale = this.getAttributeNS(null, 'currentScale');
@@ -310,7 +310,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): ISVGSVGElement {
 		return <ISVGSVGElement>super.cloneNode(deep);

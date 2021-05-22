@@ -35,7 +35,7 @@ import IFocusEventInit from './event/events/IFocusEventInit';
 import IInputEventInit from './event/events/IInputEventInit';
 import IKeyboardEventInit from './event/events/IKeyboardEventInit';
 import IMouseEventInit from './event/events/IMouseEventInit';
-import IProgressEvent from './event/events/IProgressEvent';
+import IProgressEventInit from './event/events/IProgressEventInit';
 import IWheelEventInit from './event/events/IWheelEventInit';
 import InputEvent from './event/events/InputEvent';
 import KeyboardEvent from './event/events/KeyboardEvent';
@@ -137,7 +137,7 @@ export {
 	IInputEventInit,
 	IKeyboardEventInit,
 	IMouseEventInit,
-	IProgressEvent,
+	IProgressEventInit,
 	IWheelEventInit,
 	InputEvent,
 	KeyboardEvent,

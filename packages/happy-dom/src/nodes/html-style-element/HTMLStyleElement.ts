@@ -6,13 +6,13 @@ import IHTMLStyleElement from './IHTMLStyleElement';
  * HTML Style Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLStyleElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLStyleElement.
  */
 export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleElement {
 	/**
 	 * Returns CSS style sheet.
 	 *
-	 * @return CSS style sheet.
+	 * @returns CSS style sheet.
 	 */
 	public get sheet(): CSSStyleSheet {
 		if (!this._isConnected) {
@@ -26,7 +26,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	/**
 	 * Returns media.
 	 *
-	 * @return media.
+	 * @returns Media.
 	 */
 	public get media(): string {
 		return this.getAttributeNS(null, 'media') || '';
@@ -35,7 +35,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	/**
 	 * Sets media.
 	 *
-	 * @param media media.
+	 * @param media Media.
 	 */
 	public set media(media: string) {
 		this.setAttributeNS(null, 'media', media);
@@ -44,7 +44,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	/**
 	 * Returns type.
 	 *
-	 * @return type.
+	 * @returns Type.
 	 */
 	public get type(): string {
 		return this.getAttributeNS(null, 'type') || '';
@@ -53,7 +53,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	/**
 	 * Sets type.
 	 *
-	 * @param type type.
+	 * @param type Type.
 	 */
 	public set type(type: string) {
 		this.setAttributeNS(null, 'type', type);
@@ -62,7 +62,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	/**
 	 * Returns disabled.
 	 *
-	 * @return Disabled.
+	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
 		return this.getAttributeNS(null, 'disabled') !== null;

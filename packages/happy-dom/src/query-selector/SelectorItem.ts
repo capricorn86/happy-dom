@@ -7,6 +7,9 @@ const PSUEDO_REGEXP = /:([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|:([a-zA-Z-]+)/g;
 const CLASS_REGEXP = /\.([a-zA-Z0-9-_$]+)/g;
 const TAG_NAME_REGEXP = /^[a-zA-Z0-9-]+/;
 
+/**
+ *
+ */
 export default class SelectorItem {
 	public isAll: boolean;
 	public isID: boolean;
@@ -40,7 +43,7 @@ export default class SelectorItem {
 	 * Matches a selector against an element.
 	 *
 	 * @param element HTML element.
-	 * @return TRUE if matching.
+	 * @returns TRUE if matching.
 	 */
 	public match(element: Element): boolean {
 		const selector = this.selector;
@@ -110,7 +113,7 @@ export default class SelectorItem {
 	 * @param element Element.
 	 * @param psuedo Psuedo name.
 	 * @param place Place.
-	 * @returns {boolean} True if it is a match.
+	 * @returns True if it is a match.
 	 */
 	private matchesNthChild(element: Element, psuedo: string, place: string): boolean {
 		let children = element.parentNode ? (<Element>element.parentNode).children : [];
@@ -165,7 +168,7 @@ export default class SelectorItem {
 	 *
 	 * @param element Element.
 	 * @param psuedo Psuedo name.
-	 * @returns {boolean} True if it is a match.
+	 * @returns True if it is a match.
 	 */
 	private matchesPsuedo(element: Element, psuedo: string): boolean {
 		const parent = <Element>element.parentNode;
@@ -219,7 +222,7 @@ export default class SelectorItem {
 	 *
 	 * @param element Element.
 	 * @param attributeName Attribute name.
-	 * @returns {boolean} True if it is a match.
+	 * @returns True if it is a match.
 	 */
 	private matchesAttributeName(element, attributeName): boolean {
 		if (ATTRIBUTE_NAME_REGEXP.test(attributeName)) {
@@ -237,7 +240,7 @@ export default class SelectorItem {
 	 * @param attributeName Attribute name.
 	 * @param attributeValue Attribute value.
 	 * @param [matchType] Match type.
-	 * @returns {boolean} True if it is a match.
+	 * @returns True if it is a match.
 	 */
 	private matchesAttributeNameAndValue(
 		element,

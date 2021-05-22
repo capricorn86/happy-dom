@@ -1,6 +1,9 @@
 import File from '../file/File';
 import DataTransferItemList from './DataTransferItemList';
 
+/**
+ *
+ */
 export default class DataTransfer {
 	public dropEffect = 'none';
 	public effectAllowed = 'none';
