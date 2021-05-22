@@ -14,7 +14,7 @@ export default interface IShadowRoot extends IDocumentFragment {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IShadowRoot;
 }

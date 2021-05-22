@@ -8,7 +8,7 @@ import IHTMLTemplateElement from './IHTMLTemplateElement';
  * HTML Template Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement.
  */
 export default class HTMLTemplateElement extends HTMLElement implements IHTMLTemplateElement {
 	private _contentElement: IDocumentFragment = null;
@@ -28,7 +28,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	/**
 	 * Previous sibling.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get previousSibling(): INode {
 		return this.content.previousSibling;
@@ -37,7 +37,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	/**
 	 * Next sibling.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get nextSibling(): INode {
 		return this.content.nextSibling;
@@ -46,7 +46,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	/**
 	 * First child.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get firstChild(): INode {
 		return this.content.firstChild;
@@ -55,7 +55,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	/**
 	 * Last child.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get lastChild(): INode {
 		return this.content.lastChild;
@@ -65,7 +65,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 * Append a child node to childNodes.
 	 *
 	 * @param  node Node to append.
-	 * @return Appended node.
+	 * @returns Appended node.
 	 */
 	public appendChild(node: INode): INode {
 		return this.content.appendChild(node);
@@ -74,7 +74,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	/**
 	 * Remove Child element from childNodes array.
 	 *
-	 * @param node Node to remove
+	 * @param node Node to remove.
 	 */
 	public removeChild(node: Node): INode {
 		return this.content.removeChild(node);
@@ -85,7 +85,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 *
 	 * @param newNode Node to insert.
 	 * @param referenceNode Node to insert before.
-	 * @return Inserted node.
+	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode: INode): INode {
 		return this.content.insertBefore(newNode, referenceNode);
@@ -96,7 +96,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 *
 	 * @param newChild New child.
 	 * @param oldChild Old child.
-	 * @return Replaced node.
+	 * @returns Replaced node.
 	 */
 	public replaceChild(newChild: INode, oldChild: INode): INode {
 		return this.content.replaceChild(newChild, oldChild);
@@ -107,7 +107,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLTemplateElement {
 		return <IHTMLTemplateElement>super.cloneNode(deep);

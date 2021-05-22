@@ -16,7 +16,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	/**
 	 * Returns inner HTML.
 	 *
-	 * @return HTML.
+	 * @returns HTML.
 	 */
 	public get innerHTML(): string {
 		const xmlSerializer = new XMLSerializer();
@@ -45,7 +45,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	/**
 	 * Converts to string.
 	 *
-	 * @return String.
+	 * @returns String.
 	 */
 	public toString(): string {
 		return this.innerHTML;
@@ -56,7 +56,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IShadowRoot {
 		const clone = <ShadowRoot>super.cloneNode(deep);

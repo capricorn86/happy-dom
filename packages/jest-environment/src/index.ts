@@ -1,3 +1,5 @@
+/* eslint-disable filenames/match-exported */
+
 import VM from 'vm';
 import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
@@ -35,11 +37,11 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 
 		// Removes window.fetch() as it should not be used in a test environment.
 		delete this.global.fetch;
-		delete this.global.window.fetch;
+		delete this.global.window['fetch'];
 
 		if (options.console) {
 			this.global.console = options.console;
-			this.global.window.console = options.console;
+			this.global.window['console'] = options.console;
 		}
 
 		this.fakeTimers = new LegacyFakeTimers({
@@ -61,19 +63,19 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	/**
 	 * Setup.
 	 *
-	 * @return Promise.
+	 * @returns Promise.
 	 */
 	public async setup(): Promise<void> {}
 
 	/**
 	 * Teardown.
 	 *
-	 * @return Promise.
+	 * @returns Promise.
 	 */
 	public async teardown(): Promise<void> {
 		this.fakeTimers.dispose();
 		this.fakeTimersModern.dispose();
-		this.global.happyDOM.cancelAsync();
+		this.global.happyDOM['cancelAsync']();
 
 		this.global = null;
 		this.moduleMocker = null;
@@ -94,7 +96,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	/**
 	 * Returns the VM context.
 	 *
-	 * @return Context.
+	 * @returns Context.
 	 */
 	public getVmContext(): VM.Context {
 		return this.global;

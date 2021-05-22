@@ -9,7 +9,7 @@ import ErrorEvent from '../../event/events/ErrorEvent';
  * HTML Script Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement.
  */
 export default class HTMLScriptElement extends HTMLElement implements IHTMLScriptElement {
 	public onerror: (event: ErrorEvent) => void = null;
@@ -17,9 +17,9 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	public _evaluateScript = true;
 
 	/**
-	 * "true" if connected to DOM.
+	 * Returns "true" if connected to DOM.
 	 *
-	 * @return "true" if connected.
+	 * @returns "true" if connected.
 	 */
 	public get isConnected(): boolean {
 		return this._isConnected;
@@ -68,7 +68,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * Returns type.
 	 *
-	 * @return Type.
+	 * @returns Type.
 	 */
 	public get type(): string {
 		return this.getAttributeNS(null, 'type') || '';
@@ -86,7 +86,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * Returns source.
 	 *
-	 * @return Source.
+	 * @returns Source.
 	 */
 	public get src(): string {
 		return this.getAttributeNS(null, 'src') || '';
@@ -104,7 +104,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * Returns charset.
 	 *
-	 * @return Charset.
+	 * @returns Charset.
 	 */
 	public get charset(): string {
 		return this.getAttributeNS(null, 'charset') || '';
@@ -122,7 +122,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * Returns lang.
 	 *
-	 * @return Lang.
+	 * @returns Lang.
 	 */
 	public get lang(): string {
 		return this.getAttributeNS(null, 'lang') || '';
@@ -140,7 +140,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * Returns async.
 	 *
-	 * @return Async.
+	 * @returns Async.
 	 */
 	public get async(): boolean {
 		return this.getAttributeNS(null, 'async') !== null;
@@ -162,7 +162,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * Returns defer.
 	 *
-	 * @return Defer.
+	 * @returns Defer.
 	 */
 	public get defer(): boolean {
 		return this.getAttributeNS(null, 'defer') !== null;
@@ -184,7 +184,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * Returns text.
 	 *
-	 * @return Text.
+	 * @returns Text.
 	 */
 	public get text(): string {
 		return this.textContent;
@@ -221,7 +221,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLScriptElement {
 		return <IHTMLScriptElement>super.cloneNode(deep);

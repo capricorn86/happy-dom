@@ -58,7 +58,7 @@ export default class ClassList {
 	 * Check if the list contains a class.
 	 *
 	 * @param className Class name.
-	 * @return TRUE if it contains.
+	 * @returns TRUE if it contains.
 	 */
 	public contains(className: string): boolean {
 		const attr = this._ownerElement.getAttribute('class');

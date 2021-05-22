@@ -11,7 +11,7 @@ import ErrorEvent from '../../event/events/ErrorEvent';
  * HTML Link Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement.
  */
 export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkElement {
 	public onerror: (event: ErrorEvent) => void = null;
@@ -20,9 +20,9 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	public _evaluateCSS = true;
 
 	/**
-	 * "true" if connected to DOM.
+	 * Returns "true" if connected to DOM.
 	 *
-	 * @return "true" if connected.
+	 * @returns "true" if connected.
 	 */
 	public get isConnected(): boolean {
 		return this._isConnected;
@@ -95,7 +95,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Returns as.
 	 *
-	 * @return as.
+	 * @returns As.
 	 */
 	public get as(): string {
 		return this.getAttributeNS(null, 'as') || '';
@@ -104,7 +104,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Sets crossOrigin.
 	 *
-	 * @param crossOrigin crossOrigin.
+	 * @param crossOrigin CrossOrigin.
 	 */
 	public set as(as: string) {
 		this.setAttributeNS(null, 'as', as);
@@ -113,7 +113,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Returns crossOrigin.
 	 *
-	 * @return crossOrigin.
+	 * @returns CrossOrigin.
 	 */
 	public get crossOrigin(): string {
 		return this.getAttribute('crossorigin') || '';
@@ -122,7 +122,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Sets crossOrigin.
 	 *
-	 * @param crossOrigin crossOrigin.
+	 * @param crossOrigin CrossOrigin.
 	 */
 	public set crossOrigin(crossOrigin: string) {
 		this.setAttributeNS(null, 'crossorigin', crossOrigin);
@@ -131,7 +131,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Returns href.
 	 *
-	 * @return Href.
+	 * @returns Href.
 	 */
 	public get href(): string {
 		return this.getAttributeNS(null, 'href') || '';
@@ -149,7 +149,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Returns hreflang.
 	 *
-	 * @return hreflang.
+	 * @returns Hreflang.
 	 */
 	public get hreflang(): string {
 		return this.getAttributeNS(null, 'hreflang') || '';
@@ -158,7 +158,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Sets hreflang.
 	 *
-	 * @param hreflang hreflang.
+	 * @param hreflang Hreflang.
 	 */
 	public set hreflang(hreflang: string) {
 		this.setAttributeNS(null, 'hreflang', hreflang);
@@ -167,7 +167,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Returns media.
 	 *
-	 * @return media.
+	 * @returns Media.
 	 */
 	public get media(): string {
 		return this.getAttributeNS(null, 'media') || '';
@@ -176,7 +176,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Sets media.
 	 *
-	 * @param media media.
+	 * @param media Media.
 	 */
 	public set media(media: string) {
 		this.setAttributeNS(null, 'media', media);
@@ -185,7 +185,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Returns referrerPolicy.
 	 *
-	 * @return referrerPolicy.
+	 * @returns ReferrerPolicy.
 	 */
 	public get referrerPolicy(): string {
 		return this.getAttribute('referrerPolicy') || '';
@@ -194,7 +194,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Sets referrerPolicy.
 	 *
-	 * @param referrerPolicy referrerPolicy.
+	 * @param referrerPolicy ReferrerPolicy.
 	 */
 	public set referrerPolicy(referrerPolicy: string) {
 		this.setAttributeNS(null, 'referrerPolicy', referrerPolicy);
@@ -203,7 +203,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Returns rel.
 	 *
-	 * @return rel.
+	 * @returns Rel.
 	 */
 	public get rel(): string {
 		return this.getAttributeNS(null, 'rel') || '';
@@ -212,7 +212,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Sets rel.
 	 *
-	 * @param rel rel.
+	 * @param rel Rel.
 	 */
 	public set rel(rel: string) {
 		this.setAttributeNS(null, 'rel', rel);
@@ -221,7 +221,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Returns type.
 	 *
-	 * @return type.
+	 * @returns Type.
 	 */
 	public get type(): string {
 		return this.getAttributeNS(null, 'type') || '';
@@ -230,7 +230,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * Sets type.
 	 *
-	 * @param type type.
+	 * @param type Type.
 	 */
 	public set type(type: string) {
 		this.setAttributeNS(null, 'type', type);

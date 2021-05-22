@@ -24,6 +24,9 @@
 		"typeRoots": [
 			"node_modules/@types"
 		],
+		"types": [
+			"node"
+		],
 		"lib": [
 			"es2015",
 			"es2016",

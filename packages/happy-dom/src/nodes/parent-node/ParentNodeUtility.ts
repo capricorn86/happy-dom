@@ -170,7 +170,7 @@ export default class ParentNodeUtility {
 	 *
 	 * @param parentNode Parent node.
 	 * @param id ID.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	public static getElementById(
 		parentNode: IElement | IDocumentFragment | IDocument,

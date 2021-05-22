@@ -4,7 +4,7 @@ import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum';
  * History API.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/History
+ * https://developer.mozilla.org/en-US/docs/Web/API/History.
  */
 export default class History {
 	public readonly length = 0;
@@ -49,6 +49,7 @@ export default class History {
 	 * Load a specific page from the session history.
 	 *
 	 * @param delta Delta.
+	 * @param _delta
 	 */
 	public go(_delta: number): void {
 		// Do nothing.
@@ -60,6 +61,9 @@ export default class History {
 	 * @param state State.
 	 * @param title Title.
 	 * @param [url] URL.
+	 * @param _state
+	 * @param _title
+	 * @param _url
 	 */
 	public pushState(_state: object, _title, _url?: string): void {
 		// Do nothing.
@@ -71,6 +75,9 @@ export default class History {
 	 * @param state State.
 	 * @param title Title.
 	 * @param [url] URL.
+	 * @param _state
+	 * @param _title
+	 * @param _url
 	 */
 	public replaceState(_state: object, _title, _url?: string): void {
 		// Do nothing.

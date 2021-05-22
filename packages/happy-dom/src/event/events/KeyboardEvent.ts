@@ -1,7 +1,14 @@
 import UIEvent from '../UIEvent';
 import IKeyboardEventInit from './IKeyboardEventInit';
 
+/**
+ *
+ */
 export default class KeyboardEvent extends UIEvent {
+	public static DOM_KEY_LOCATION_STANDARD = 0;
+	public static DOM_KEY_LOCATION_LEFT = 1;
+	public static DOM_KEY_LOCATION_RIGHT = 2;
+	public static DOM_KEY_LOCATION_NUMPAD = 3;
 	public readonly altKey: boolean = false;
 	public readonly code: string = '';
 	public readonly ctrlKey: boolean = false;
@@ -11,10 +18,6 @@ export default class KeyboardEvent extends UIEvent {
 	public readonly metaKey: boolean = false;
 	public readonly repeat: boolean = false;
 	public readonly shiftKey: boolean = false;
-	public static DOM_KEY_LOCATION_STANDARD = 0;
-	public static DOM_KEY_LOCATION_LEFT = 1;
-	public static DOM_KEY_LOCATION_RIGHT = 2;
-	public static DOM_KEY_LOCATION_NUMPAD = 3;
 
 	/**
 	 * Constructor.

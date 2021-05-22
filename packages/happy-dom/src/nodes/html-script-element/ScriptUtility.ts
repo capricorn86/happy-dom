@@ -13,6 +13,7 @@ export default class ScriptUtility {
 	 *
 	 * @param options Options.
 	 * @param options.element Element.
+	 * @param element
 	 */
 	public static async loadExternalScript(element: HTMLScriptElement): Promise<void> {
 		const src = element.getAttributeNS(null, 'src');

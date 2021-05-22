@@ -2,6 +2,9 @@ import DataTransfer from '../DataTransfer';
 import UIEvent from '../UIEvent';
 import IInputEventInit from './IInputEventInit';
 
+/**
+ *
+ */
 export default class InputEvent extends UIEvent {
 	public readonly data: string = '';
 	public readonly dataTransfer: DataTransfer = null;

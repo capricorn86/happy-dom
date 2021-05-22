@@ -27,7 +27,7 @@ export default class XMLParser {
 	 * @param document Document.
 	 * @param data HTML data.
 	 * @param [evaluateScripts = false] Set to "true" to enable script execution.
-	 * @return Root element.
+	 * @returns Root element.
 	 */
 	public static parse(document: IDocument, data: string, evaluateScripts = false): IElement {
 		const root = document.createElement('root');
@@ -64,7 +64,7 @@ export default class XMLParser {
 				}
 
 				// The HTML engine can guess that the namespace is SVG for SVG tags
-				// even if "xmlns" is not set if the parent namespace is HTML.
+				// Even if "xmlns" is not set if the parent namespace is HTML.
 				if (tagName === 'svg' && parent.namespaceURI === NamespaceURI.html) {
 					(<string>newElement.namespaceURI) = xmlnsAttribute || NamespaceURI.svg;
 				} else {
@@ -111,7 +111,7 @@ export default class XMLParser {
 	 * Returns a tag name if element is unnestable.
 	 *
 	 * @param element Element.
-	 * @return Tag name if element is unnestable.
+	 * @returns Tag name if element is unnestable.
 	 */
 	private static getUnnestableTagName(element: IElement): string {
 		const tagName = element.tagName.toLowerCase();
@@ -121,9 +121,9 @@ export default class XMLParser {
 	/**
 	 * Appends text and comment nodes.
 	 *
-	 * @param  {Document} document Document.
-	 * @param  node Node.
-	 * @param  text Text to search in.
+	 * @param document Document.
+	 * @param node Node.
+	 * @param text Text to search in.
 	 */
 	private static appendTextAndCommentNodes(document: IDocument, node: INode, text: string): void {
 		for (const innerNode of this.getTextAndCommentNodes(document, text)) {
@@ -134,8 +134,8 @@ export default class XMLParser {
 	/**
 	 * Returns text and comment nodes from a text.
 	 *
-	 * @param  {Document} document Document.
-	 * @param  text Text to search in.
+	 * @param document Document.
+	 * @param text Text to search in.
 	 * @returns Nodes.
 	 */
 	private static getTextAndCommentNodes(document: IDocument, text: string): Node[] {

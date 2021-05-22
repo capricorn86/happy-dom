@@ -1,6 +1,9 @@
 const URL_REGEXP = /(https?:)\/\/([-a-zA-Z0-9@:%._\+~#=]{2,256}[a-z]{2,6})(:[0-9]*)?([-a-zA-Z0-9@:%_\+.~c&//=]*)(\?[^#]*)?(#.*)?/;
 const PATH_REGEXP = /([-a-zA-Z0-9@:%_\+.~c&//=]*)(\?[^#]*)?(#.*)?/;
 
+/**
+ *
+ */
 export default class URL {
 	public protocol = '';
 	public hostname = '';
@@ -62,7 +65,7 @@ export default class URL {
 	/**
 	 * Returns the entire URL as a string.
 	 *
-	 * @return Href.
+	 * @returns Href.
 	 */
 	public get href(): string {
 		const credentials = this.username ? `${this.username}:${this.password}@` : '';
@@ -81,7 +84,7 @@ export default class URL {
 	/**
 	 * Returns the origin.
 	 *
-	 * @return HREF.
+	 * @returns HREF.
 	 */
 	public get origin(): string {
 		return this.protocol + '//' + this.host;
@@ -90,7 +93,7 @@ export default class URL {
 	/**
 	 * Returns the entire URL as a string.
 	 *
-	 * @return Host.
+	 * @returns Host.
 	 */
 	public get host(): string {
 		return this.hostname + this.port;

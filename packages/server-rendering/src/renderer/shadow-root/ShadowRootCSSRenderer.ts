@@ -10,7 +10,7 @@ export default class ShadowRootCSSRenderer {
 	 * @param css CSS code.
 	 * @param id Unique id to use.
 	 * @param tagName Tag name.
-	 * @return Scoped CSS.
+	 * @returns Scoped CSS.
 	 */
 	public static scope(css: string, id: string, tagName: string): string {
 		const ast = CSSTree.parse(css);

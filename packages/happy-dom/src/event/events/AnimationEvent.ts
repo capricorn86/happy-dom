@@ -1,6 +1,9 @@
 import Event from '../Event';
 import IAnimationEventInit from './IAnimationEventInit';
 
+/**
+ *
+ */
 export default class AnimationEvent extends Event {
 	public animationName = '';
 	public elapsedTime = 0;

@@ -8,7 +8,7 @@ import ValidityState from './ValidityState';
  * HTML Input Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement.
  */
 export default interface IHTMLInputElement extends IHTMLElement {
 	formAction: string;
@@ -81,7 +81,7 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	/**
 	 * Checks validity.
 	 *
-	 * @return "true" if the field is valid.
+	 * @returns "true" if the field is valid.
 	 */
 	checkValidity(): boolean;
 
@@ -90,7 +90,7 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IHTMLInputElement;
 }

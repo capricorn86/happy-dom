@@ -9,7 +9,7 @@ import NodeListFactory from '../nodes/node/NodeListFactory';
 const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#"*:()\]]+)|([ ,>]+)/g;
 
 // The above one seem to work fine and is faster, but this one can be useful if more rules need to be added as it is more "correct".
-// const SELECTOR_PART_REGEXP = /([a-zA-Z0-9-$.]+|\[[a-zA-Z0-9-]+\]|\[[a-zA-Z0-9$-~|^$*]+[ ]*=[ ]*"[^"]+"\])|([ ,]+)/g;
+// Const SELECTOR_PART_REGEXP = /([a-zA-Z0-9-$.]+|\[[a-zA-Z0-9-]+\]|\[[a-zA-Z0-9$-~|^$*]+[ ]*=[ ]*"[^"]+"\])|([ ,]+)/g;
 
 /**
  * Utility for query selection in an HTML element.
@@ -43,7 +43,7 @@ export default class QuerySelector {
 	 *
 	 * @param node Node to search in.
 	 * @param selector Selector.
-	 * @return HTML element.
+	 * @returns HTML element.
 	 */
 	public static querySelector(node: INode, selector: string): IElement {
 		for (const parts of this.getSelectorParts(selector)) {
@@ -105,10 +105,12 @@ export default class QuerySelector {
 	/**
 	 * Finds an element based on a query selector for a part of a list of selectors separated with comma.
 	 *
+	 * @param rootNode
 	 * @param nodes Nodes.
 	 * @param selector Selector.
+	 * @param selectorParts
 	 * @param [selectorItem] Selector item.
-	 * @return HTML element.
+	 * @returns HTML element.
 	 */
 	private static findFirst(
 		rootNode: INode,
@@ -157,7 +159,7 @@ export default class QuerySelector {
 	 * Splits a selector string into groups and parts.
 	 *
 	 * @param selector Selector.
-	 * @return HTML element.
+	 * @returns HTML element.
 	 */
 	private static getSelectorParts(selector: string): string[][] {
 		if (selector === '*' || (!selector.includes(',') && !selector.includes(' '))) {

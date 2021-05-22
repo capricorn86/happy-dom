@@ -5,7 +5,7 @@ import IHTMLElement from '../html-element/IHTMLElement';
  * HTML Form Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement.
  */
 export default interface IHTMLFormElement extends IHTMLElement {
 	name: string;
@@ -38,7 +38,7 @@ export default interface IHTMLFormElement extends IHTMLElement {
 	/**
 	 * Checks validity.
 	 *
-	 * @return "true" if validation does'nt fail.
+	 * @returns "true" if validation does'nt fail.
 	 */
 	checkValidity(): boolean;
 
@@ -47,7 +47,7 @@ export default interface IHTMLFormElement extends IHTMLElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IHTMLFormElement;
 }

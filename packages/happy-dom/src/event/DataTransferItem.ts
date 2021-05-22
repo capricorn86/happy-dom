@@ -1,5 +1,8 @@
 import File from '../file/File';
 
+/**
+ *
+ */
 export default class DataTransferItem {
 	public readonly kind: string = '';
 	public readonly type: string = '';

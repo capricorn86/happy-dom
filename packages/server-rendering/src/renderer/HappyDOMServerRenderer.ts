@@ -37,7 +37,8 @@ export default class HappyDOMServerRenderer {
 	 * Renders an element as HTML.
 	 *
 	 * @param node Node to render.
-	 * @return Result.
+	 * @param root
+	 * @returns Result.
 	 */
 	public render(root: INode): HappyDOMServerRenderResult {
 		return {
@@ -50,7 +51,8 @@ export default class HappyDOMServerRenderer {
 	 * Renders an element as HTML.
 	 *
 	 * @param element Element to render.
-	 * @return Result.
+	 * @param root
+	 * @returns Result.
 	 */
 	private serializeToString(root: INode): string {
 		switch (root.nodeType) {
@@ -104,7 +106,7 @@ export default class HappyDOMServerRenderer {
 	 * Returns attributes as a string.
 	 *
 	 * @param element Element.
-	 * @return Attributes.
+	 * @returns Attributes.
 	 */
 	private _getAttributes(element: IElement): string {
 		const attributes = [];

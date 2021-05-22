@@ -13,7 +13,7 @@ export default interface IDocumentType extends INode {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IDocumentType;
 }

@@ -48,7 +48,7 @@ export default interface IDocument extends IParentNode {
 	 *
 	 * @param tagName Tag name.
 	 * @param [options] Options.
-	 * @return Element.
+	 * @returns Element.
 	 */
 	createElement(tagName: string, options?: { is: string }): IElement;
 
@@ -57,7 +57,7 @@ export default interface IDocument extends IParentNode {
 	 *
 	 * @param tagName Tag name.
 	 * @param [options] Options.
-	 * @return Element.
+	 * @returns Element.
 	 */
 	createElementNS(namespaceURI: string, qualifiedName: string, options?: { is: string }): IElement;
 
@@ -96,7 +96,7 @@ export default interface IDocument extends IParentNode {
 	/**
 	 * Creates an event.
 	 *
-	 * @legacy
+	 * @deprecated
 	 * @param _type Type.
 	 * @returns Event.
 	 */
@@ -106,7 +106,7 @@ export default interface IDocument extends IParentNode {
 	 * Creates an Attr node.
 	 *
 	 * @param name Name.
-	 * @return Attribute.
+	 * @returns Attribute.
 	 */
 	createAttribute(name: string): Attr;
 
@@ -115,7 +115,7 @@ export default interface IDocument extends IParentNode {
 	 *
 	 * @param namespaceURI Namespace URI.
 	 * @param qualifiedName Qualified name.
-	 * @return Element.
+	 * @returns Element.
 	 */
 	createAttributeNS(namespaceURI: string, qualifiedName: string): Attr;
 
@@ -123,7 +123,7 @@ export default interface IDocument extends IParentNode {
 	 * Imports a node.
 	 *
 	 * @param node Node to import.
-	 * @param Imported node.
+	 * @param Imported Node.
 	 */
 	importNode(node: INode): INode;
 
@@ -131,7 +131,7 @@ export default interface IDocument extends IParentNode {
 	 * Returns an element by ID.
 	 *
 	 * @param id ID.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	getElementById(id: string): IElement;
 
@@ -140,7 +140,7 @@ export default interface IDocument extends IParentNode {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IDocument;
 
@@ -148,7 +148,7 @@ export default interface IDocument extends IParentNode {
 	 * Adopts a node.
 	 *
 	 * @param node Node to adopt.
-	 * @return Adopted node.
+	 * @returns Adopted node.
 	 */
 	adoptNode(node: INode): INode;
 }

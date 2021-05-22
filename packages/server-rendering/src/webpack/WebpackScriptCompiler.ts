@@ -19,7 +19,7 @@ export default class WebpackScriptCompiler {
 	 * Setup of scripts.
 	 *
 	 * @param [config] Webpack config.
-	 * @return Promise.
+	 * @returns Promise.
 	 */
 	public static compile(config: IWebpackConfig = null): Promise<VM.Script> {
 		return new Promise((resolve, reject) => {

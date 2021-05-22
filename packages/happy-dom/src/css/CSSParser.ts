@@ -15,9 +15,9 @@ export default class CSSParser {
 	/**
 	 * Parses HTML and returns a root element.
 	 *
-	 * @param parentStyleSheet parent style sheet.
+	 * @param parentStyleSheet Parent style sheet.
 	 * @param cssText CSS code.
-	 * @return Root element.
+	 * @returns Root element.
 	 */
 	public static parseFromString(parentStyleSheet: CSSStyleSheet, cssText: string): CSSRule[] {
 		const css = cssText.replace(COMMENT_REGEXP, '');

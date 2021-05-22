@@ -21,8 +21,8 @@
 		"composite": true,
 		"incremental": true,
 		"jsx": "react",
-		"typeRoots": [
-			"node_modules/@types"
+		"types": [
+			"node"
 		],
 		"lib": [
 			"es2015",

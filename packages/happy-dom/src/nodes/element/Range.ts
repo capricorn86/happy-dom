@@ -17,7 +17,7 @@ export default class Range {
 	/**
 	 * Returns collapsed.
 	 *
-	 * @return "true" if collapsed.
+	 * @returns "true" if collapsed.
 	 */
 	public get collapsed(): boolean {
 		return this._collapsed;
@@ -26,7 +26,7 @@ export default class Range {
 	/**
 	 * Returns common ancestor container.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get commonAncestorContainer(): Node {
 		return null;
@@ -35,7 +35,7 @@ export default class Range {
 	/**
 	 * Returns end container.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get endContainer(): Node {
 		return this._endContainer;
@@ -44,7 +44,7 @@ export default class Range {
 	/**
 	 * Returns start container.
 	 *
-	 * @return Node.
+	 * @returns Node.
 	 */
 	public get startContainer(): Node {
 		return this._startContainer;
@@ -53,7 +53,7 @@ export default class Range {
 	/**
 	 * Returns end offset.
 	 *
-	 * @return Offset.
+	 * @returns Offset.
 	 */
 	public get endOffset(): number {
 		return this._endOffset;
@@ -62,7 +62,7 @@ export default class Range {
 	/**
 	 * Returns start offset.
 	 *
-	 * @return Offset.
+	 * @returns Offset.
 	 */
 	public get startOffset(): number {
 		return this._startOffset;

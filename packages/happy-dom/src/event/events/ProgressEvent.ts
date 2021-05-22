@@ -1,6 +1,9 @@
 import Event from '../Event';
-import IProgressEventInit from './IProgressEvent';
+import IProgressEventInit from './IProgressEventInit';
 
+/**
+ *
+ */
 export default class ProgressEvent extends Event {
 	public readonly lengthComputable: boolean = false;
 	public readonly loaded: number = 0;

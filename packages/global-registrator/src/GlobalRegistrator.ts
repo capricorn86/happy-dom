@@ -1,5 +1,8 @@
 import { Window } from 'happy-dom';
 
+/**
+ *
+ */
 export default class GlobalRegistrator {
 	private static registered = [];
 

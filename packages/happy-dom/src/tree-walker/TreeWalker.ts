@@ -35,7 +35,7 @@ export default class TreeWalker {
 	/**
 	 * Moves the current Node to the next visible node in the document order.
 	 *
-	 * @return Current node.
+	 * @returns Current node.
 	 */
 	public nextNode(): INode {
 		if (!this.firstChild()) {
@@ -48,7 +48,7 @@ export default class TreeWalker {
 	/**
 	 * Moves the current Node to the previous visible node in the document order, and returns the found node. It also moves the current node to this one. If no such node exists, or if it is before that the root node defined at the object construction, returns null and the current node is not changed.
 	 *
-	 * @return Current node.
+	 * @returns Current node.
 	 */
 	public previousNode(): INode {
 		while (!this.previousSibling() && this.parentNode()) {}
@@ -59,7 +59,7 @@ export default class TreeWalker {
 	/**
 	 * Moves the current Node to the first visible ancestor node in the document order, and returns the found node. It also moves the current node to this one. If no such node exists, or if it is before that the root node defined at the object construction, returns null and the current node is not changed.
 	 *
-	 * @return Current node.
+	 * @returns Current node.
 	 */
 	public parentNode(): INode {
 		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
@@ -78,7 +78,7 @@ export default class TreeWalker {
 	/**
 	 * Moves the current Node to the first visible child of the current node, and returns the found child. It also moves the current node to this child. If no such child exists, returns null and the current node is not changed.
 	 *
-	 * @return Current node.
+	 * @returns Current node.
 	 */
 	public firstChild(): INode {
 		const childNodes = this.currentNode ? this.currentNode.childNodes : [];
@@ -99,7 +99,7 @@ export default class TreeWalker {
 	/**
 	 * Moves the current Node to the last visible child of the current node, and returns the found child. It also moves the current node to this child. If no such child exists, null is returned and the current node is not changed.
 	 *
-	 * @return Current node.
+	 * @returns Current node.
 	 */
 	public lastChild(): INode {
 		const childNodes = this.currentNode ? this.currentNode.childNodes : [];
@@ -120,7 +120,7 @@ export default class TreeWalker {
 	/**
 	 * Moves the current Node to its previous sibling, if any, and returns the found sibling. If there is no such node, return null and the current node is not changed.
 	 *
-	 * @return Current node.
+	 * @returns Current node.
 	 */
 	public previousSibling(): INode {
 		if (this.currentNode !== this.root && this.currentNode) {
@@ -144,7 +144,7 @@ export default class TreeWalker {
 	/**
 	 * Moves the current Node to its next sibling, if any, and returns the found sibling. If there is no such node, null is returned and the current node is not changed.
 	 *
-	 * @return Current node.
+	 * @returns Current node.
 	 */
 	public nextSibling(): INode {
 		if (this.currentNode !== this.root && this.currentNode) {
@@ -169,10 +169,10 @@ export default class TreeWalker {
 	 * Filters a node.
 	 *
 	 * Based on solution:
-	 * https://gist.github.com/shawndumas/1132009
+	 * https://gist.github.com/shawndumas/1132009.
 	 *
 	 * @param node Node.
-	 * @return Child nodes.
+	 * @returns Child nodes.
 	 */
 	private filterNode(node: INode): number {
 		const mask = NodeFilterMask[node.nodeType];

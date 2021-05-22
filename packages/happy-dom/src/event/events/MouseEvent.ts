@@ -2,6 +2,9 @@ import UIEvent from '../UIEvent';
 import EventTarget from '../EventTarget';
 import IMouseEventInit from './IMouseEventInit';
 
+/**
+ *
+ */
 export default class MouseEvent extends UIEvent {
 	public readonly altKey: boolean = false;
 	public readonly button: number = 0;

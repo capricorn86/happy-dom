@@ -1,6 +1,9 @@
 import UIEvent from '../UIEvent';
 import IErrorEventInit from './IErrorEventInit';
 
+/**
+ *
+ */
 export default class ErrorEvent extends UIEvent {
 	public readonly message: string = '';
 	public readonly filename: string = '';

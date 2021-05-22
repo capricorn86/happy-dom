@@ -5,7 +5,7 @@ import IElement from '../element/IElement';
  * HTML Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement.
  */
 export default interface IHTMLElement extends IElement {
 	style: CSSStyleDeclaration;
@@ -38,7 +38,7 @@ export default interface IHTMLElement extends IElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IHTMLElement;
 }

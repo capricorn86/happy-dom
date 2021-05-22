@@ -25,7 +25,7 @@ export default interface IEventTarget {
 	 * Dispatches an event.
 	 *
 	 * @param event Event.
-	 * @return The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault()
+	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	dispatchEvent(event: Event): boolean;
 }

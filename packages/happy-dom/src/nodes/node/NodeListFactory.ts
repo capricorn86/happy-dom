@@ -1,9 +1,13 @@
 import INode from './INode';
 import INodeList from './INodeList';
 
+/**
+ *
+ */
 export default class NodeListFactory {
 	/**
 	 * Creates a NodeList.
+	 *
 	 * @param nodes Nodes.
 	 * @returns NodeList.
 	 */
@@ -18,6 +22,7 @@ export default class NodeListFactory {
 	/**
 	 * Returns node by index.
 	 *
+	 * @param nodes
 	 * @param index Index.
 	 */
 	private static getItem(nodes: INode[], index: number): INode {

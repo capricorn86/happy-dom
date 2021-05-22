@@ -41,13 +41,13 @@ export default class Document extends Node implements IDocument {
 	public onreadystatechange: (event: Event) => void = null;
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
-	protected _isConnected = true;
-	protected _isFirstWrite = true;
-	protected _isFirstWriteAfterOpen = false;
 	public implementation: DOMImplementation;
 	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public _readyStateManager: DocumentReadyStateManager = null;
+	protected _isConnected = true;
+	protected _isFirstWrite = true;
+	protected _isFirstWriteAfterOpen = false;
 	private _defaultView: Window = null;
 	private _cookie = '';
 
@@ -75,7 +75,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns default view.
 	 *
-	 * @return Default view.
+	 * @returns Default view.
 	 */
 	public get defaultView(): Window {
 		return this._defaultView;
@@ -98,7 +98,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Last element child.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get childElementCount(): number {
 		return this.children.length;
@@ -107,7 +107,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * First element child.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
 		return this.children ? this.children[0] || null : null;
@@ -116,7 +116,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Last element child.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
 		return this.children ? this.children[this.children.length - 1] || null : null;
@@ -125,7 +125,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns cookie string.
 	 *
-	 * @return Cookie.
+	 * @returns Cookie.
 	 */
 	public get cookie(): string {
 		return this._cookie;
@@ -143,7 +143,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Node name.
 	 *
-	 * @return Node name.
+	 * @returns Node name.
 	 */
 	public get nodeName(): string {
 		return '#document';
@@ -152,7 +152,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns <html> element.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get documentElement(): IHTMLElement {
 		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'html');
@@ -161,7 +161,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns document type element.
 	 *
-	 * @return Document type.
+	 * @returns Document type.
 	 */
 	public get doctype(): IDocumentType {
 		for (const node of this.childNodes) {
@@ -175,7 +175,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns <body> element.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get body(): IHTMLElement {
 		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'body');
@@ -184,7 +184,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns <head> element.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get head(): IHTMLElement {
 		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'head');
@@ -193,7 +193,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns CSS style sheets.
 	 *
-	 * @return CSS style sheets.
+	 * @returns CSS style sheets.
 	 */
 	public get styleSheets(): CSSStyleSheet[] {
 		const styles = <INodeList<IHTMLLinkElement | IHTMLStyleElement>>(
@@ -250,7 +250,7 @@ export default class Document extends Node implements IDocument {
 	 * Query CSS Selector to find a matching element.
 	 *
 	 * @param selector CSS selector.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	public querySelector(selector: string): IElement {
 		return QuerySelector.querySelector(this, selector);
@@ -291,7 +291,7 @@ export default class Document extends Node implements IDocument {
 	 * Returns an element by ID.
 	 *
 	 * @param id ID.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	public getElementById(id: string): IElement {
 		return <Element>ParentNodeUtility.getElementById(this, id);
@@ -302,7 +302,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IDocument {
 		const clone = <Document>super.cloneNode(deep);
@@ -325,7 +325,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @override
 	 * @param  node Node to append.
-	 * @return Appended node.
+	 * @returns Appended node.
 	 */
 	public appendChild(node: INode): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -349,7 +349,7 @@ export default class Document extends Node implements IDocument {
 	 * Remove Child element from childNodes array.
 	 *
 	 * @override
-	 * @param node Node to remove
+	 * @param node Node to remove.
 	 */
 	public removeChild(node: INode): INode {
 		if (node.nodeType === Node.ELEMENT_NODE) {
@@ -368,7 +368,7 @@ export default class Document extends Node implements IDocument {
 	 * @override
 	 * @param newNode Node to insert.
 	 * @param [referenceNode] Node to insert before.
-	 * @return Inserted node.
+	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode?: INode): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);
@@ -509,7 +509,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param tagName Tag name.
 	 * @param [options] Options.
-	 * @return Element.
+	 * @param options.is
+	 * @returns Element.
 	 */
 	public createElement(tagName: string, options?: { is: string }): IElement {
 		return this.createElementNS(NamespaceURI.html, tagName, options);
@@ -520,7 +521,10 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param tagName Tag name.
 	 * @param [options] Options.
-	 * @return Element.
+	 * @param namespaceURI
+	 * @param qualifiedName
+	 * @param options.is
+	 * @returns Element.
 	 */
 	public createElementNS(
 		namespaceURI: string,
@@ -594,7 +598,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Creates an event.
 	 *
-	 * @legacy
+	 * @deprecated
 	 * @param _type Type.
 	 * @returns Event.
 	 */
@@ -606,7 +610,7 @@ export default class Document extends Node implements IDocument {
 	 * Creates an Attr node.
 	 *
 	 * @param name Name.
-	 * @return Attribute.
+	 * @returns Attribute.
 	 */
 	public createAttribute(name: string): Attr {
 		const attribute = new Attr();
@@ -619,7 +623,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param namespaceURI Namespace URI.
 	 * @param qualifiedName Qualified name.
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
 		const attribute = new Attr();
@@ -633,7 +637,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param node Node to import.
 	 * @param [deep=false] Set to "true" if the clone should be deep.
-	 * @param Imported node.
+	 * @param Imported Node.
 	 */
 	public importNode(node: INode, deep = false): INode {
 		if (!(node instanceof Node)) {
@@ -648,7 +652,7 @@ export default class Document extends Node implements IDocument {
 	 * Adopts a node.
 	 *
 	 * @param node Node to adopt.
-	 * @return Adopted node.
+	 * @returns Adopted node.
 	 */
 	public adoptNode(node: INode): INode {
 		if (!(node instanceof Node)) {

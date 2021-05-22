@@ -10,7 +10,7 @@ export default class NonDocumentChildNodeUtility {
 	 * Previous element sibling.
 	 *
 	 * @param childNode Child node.
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public static previousElementSibling(childNode: INonDocumentTypeChildNode): IElement {
 		let sibling = childNode.previousSibling;
@@ -24,7 +24,7 @@ export default class NonDocumentChildNodeUtility {
 	 * Next element sibling.
 	 *
 	 * @param childNode Child node.
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public static nextElementSibling(childNode: INonDocumentTypeChildNode): IElement {
 		let sibling = childNode.nextSibling;

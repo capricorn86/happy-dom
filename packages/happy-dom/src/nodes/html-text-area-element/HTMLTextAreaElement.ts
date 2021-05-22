@@ -12,7 +12,7 @@ import IHTMLTextAreaElement from './IHTMLTextAreaElement';
  * HTML Text Area Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement.
  */
 export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTextAreaElement {
 	public readonly type = 'textarea';
@@ -25,7 +25,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns minlength.
 	 *
-	 * @return Min length.
+	 * @returns Min length.
 	 */
 	public get minLength(): number {
 		const minLength = this.getAttributeNS(null, 'minlength');
@@ -47,7 +47,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns maxlength.
 	 *
-	 * @return Max length.
+	 * @returns Max length.
 	 */
 	public get maxLength(): number {
 		const maxLength = this.getAttributeNS(null, 'maxlength');
@@ -69,7 +69,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns name.
 	 *
-	 * @return Name.
+	 * @returns Name.
 	 */
 	public get name(): string {
 		return this.getAttributeNS(null, 'name') || '';
@@ -87,7 +87,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns placeholder.
 	 *
-	 * @return Placeholder.
+	 * @returns Placeholder.
 	 */
 	public get placeholder(): string {
 		return this.getAttributeNS(null, 'placeholder') || '';
@@ -105,7 +105,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns inputmode.
 	 *
-	 * @return Inputmode.
+	 * @returns Inputmode.
 	 */
 	public get inputmode(): string {
 		return this.getAttributeNS(null, 'inputmode') || '';
@@ -123,7 +123,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns cols.
 	 *
-	 * @return Cols.
+	 * @returns Cols.
 	 */
 	public get cols(): string {
 		return this.getAttributeNS(null, 'cols') || '';
@@ -141,7 +141,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns rows.
 	 *
-	 * @return Rows.
+	 * @returns Rows.
 	 */
 	public get rows(): string {
 		return this.getAttributeNS(null, 'rows') || '';
@@ -159,7 +159,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns autocomplete.
 	 *
-	 * @return Autocomplete.
+	 * @returns Autocomplete.
 	 */
 	public get autocomplete(): string {
 		return this.getAttributeNS(null, 'autocomplete') || '';
@@ -177,7 +177,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns readOnly.
 	 *
-	 * @return ReadOnly.
+	 * @returns ReadOnly.
 	 */
 	public get readOnly(): boolean {
 		return this.getAttributeNS(null, 'readonly') !== null;
@@ -199,7 +199,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns disabled.
 	 *
-	 * @return Disabled.
+	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
 		return this.getAttributeNS(null, 'disabled') !== null;
@@ -221,7 +221,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns autofocus.
 	 *
-	 * @return Autofocus.
+	 * @returns Autofocus.
 	 */
 	public get autofocus(): boolean {
 		return this.getAttributeNS(null, 'autofocus') !== null;
@@ -243,7 +243,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns required.
 	 *
-	 * @return Required.
+	 * @returns Required.
 	 */
 	public get required(): boolean {
 		return this.getAttributeNS(null, 'required') !== null;
@@ -265,7 +265,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns value.
 	 *
-	 * @return Value.
+	 * @returns Value.
 	 */
 	public get value(): string {
 		if (this._value === null) {
@@ -294,7 +294,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns selection start.
 	 *
-	 * @return Selection start.
+	 * @returns Selection start.
 	 */
 	public get selectionStart(): number {
 		if (this._selectionStart === null) {
@@ -316,7 +316,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns selection end.
 	 *
-	 * @return Selection end.
+	 * @returns Selection end.
 	 */
 	public get selectionEnd(): number {
 		if (this._selectionEnd === null) {
@@ -338,7 +338,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns selection direction.
 	 *
-	 * @return Selection direction.
+	 * @returns Selection direction.
 	 */
 	public get selectionDirection(): string {
 		return this._selectionDirection;
@@ -356,7 +356,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns the parent form element.
 	 *
-	 * @return Form.
+	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
 		let parent = <IHTMLElement>this.parentNode;
@@ -369,7 +369,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Returns text length.
 	 *
-	 * @param Text length.
+	 * @param Text Length.
 	 */
 	public get textLength(): number {
 		return this.value.length;
@@ -400,6 +400,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param [start] Start.
 	 * @param [end] End.
 	 * @param [direction] Direction.
+	 * @param selectionMode
 	 */
 	public setRangeText(
 		replacement: string,
@@ -465,7 +466,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Checks validity.
 	 *
-	 * @return "true" if validation does'nt fail.
+	 * @returns "true" if validation does'nt fail.
 	 */
 	public checkValidity(): boolean {
 		return true;
@@ -476,7 +477,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLTextAreaElement {
 		const clone = <HTMLTextAreaElement>super.cloneNode(deep);

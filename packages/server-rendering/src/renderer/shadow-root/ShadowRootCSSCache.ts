@@ -10,7 +10,7 @@ export default class ShadowRootCSSCache {
 	/**
 	 * Returns the scoped CSS.
 	 *
-	 * @return Scoped style.
+	 * @returns Scoped style.
 	 */
 	public getAllScoped(): string[] {
 		return this.scoped.concat();
@@ -20,7 +20,7 @@ export default class ShadowRootCSSCache {
 	 * Returns scoped CSS.
 	 *
 	 * @param original Original CSS.
-	 * @return Cached scoped CSS.
+	 * @returns Cached scoped CSS.
 	 */
 	public getScoped(original: string): string {
 		const index = this.original.indexOf(original);
@@ -64,7 +64,7 @@ export default class ShadowRootCSSCache {
 	 * Returns scope ID.
 	 *
 	 * @param original Original CSS.
-	 * @return string Scope ID.
+	 * @returns String Scope ID.
 	 */
 	public getScopeID(original: string): string {
 		const index = this.original.indexOf(original);
@@ -86,7 +86,7 @@ export default class ShadowRootCSSCache {
 	 * Returns an unique ID.
 	 *
 	 * @param index Index.
-	 * @return ID.
+	 * @returns ID.
 	 */
 	private getIdByIndex(index: number): string {
 		return ABC[index] !== undefined ? ABC[index] : 'a' + index;

@@ -17,7 +17,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	/**
 	 * Last element child.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get childElementCount(): number {
 		return this.children.length;
@@ -26,7 +26,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	/**
 	 * First element child.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
 		return this.children ? this.children[0] || null : null;
@@ -35,7 +35,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	/**
 	 * Last element child.
 	 *
-	 * @return Element.
+	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
 		return this.children ? this.children[this.children.length - 1] || null : null;
@@ -44,7 +44,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	/**
 	 * Get text value of children.
 	 *
-	 * @return Text content.
+	 * @returns Text content.
 	 */
 	public get textContent(): string {
 		let result = '';
@@ -109,7 +109,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * Query CSS Selector to find matching node.
 	 *
 	 * @param selector CSS selector.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	public querySelector(selector: string): IElement {
 		return QuerySelector.querySelector(this, selector);
@@ -119,7 +119,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * Returns an element by ID.
 	 *
 	 * @param id ID.
-	 * @return Matching element.
+	 * @returns Matching element.
 	 */
 	public getElementById(id: string): IElement {
 		return ParentNodeUtility.getElementById(this, id);
@@ -130,7 +130,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IDocumentFragment {
 		const clone = <IDocumentFragment>super.cloneNode(deep);
@@ -151,7 +151,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @override
 	 * @param  node Node to append.
-	 * @return Appended node.
+	 * @returns Appended node.
 	 */
 	public appendChild(node: INode): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -176,7 +176,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * Remove Child element from childNodes array.
 	 *
 	 * @override
-	 * @param node Node to remove
+	 * @param node Node to remove.
 	 */
 	public removeChild(node: INode): INode {
 		if (node.nodeType === Node.ELEMENT_NODE) {
@@ -195,7 +195,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @override
 	 * @param newNode Node to insert.
 	 * @param [referenceNode] Node to insert before.
-	 * @return Inserted node.
+	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode?: INode): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);

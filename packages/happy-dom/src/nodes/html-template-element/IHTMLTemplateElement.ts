@@ -5,7 +5,7 @@ import IHTMLElement from '../html-element/IHTMLElement';
  * HTML Template Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement.
  */
 export default interface IHTMLTemplateElement extends IHTMLElement {
 	content: IDocumentFragment;
@@ -15,7 +15,7 @@ export default interface IHTMLTemplateElement extends IHTMLElement {
 	 *
 	 * @override
 	 * @param [deep=false] "true" to clone deep.
-	 * @return Cloned node.
+	 * @returns Cloned node.
 	 */
 	cloneNode(deep: boolean): IHTMLTemplateElement;
 }
