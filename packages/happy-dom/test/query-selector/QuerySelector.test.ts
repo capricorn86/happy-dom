@@ -165,6 +165,19 @@ describe('QuerySelector', () => {
 			expect(elements[0]).toBe(container.children[0].children[1].children[0]);
 		});
 
+		it('Returns all elements with tag name and multiple matching attributes using "span[attr1="application/ld+json"]".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML.replace(
+				/ attr1="value1"/gm,
+				' attr1="application/ld+json"'
+			);
+			const elements = container.querySelectorAll('span[attr1="application/ld+json"]');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0]).toBe(container.children[0].children[1].children[0]);
+			expect(elements[1]).toBe(container.children[0].children[1].children[1]);
+		});
+
 		it('Returns all elements with an attribute value containing a specified word using "[class~="class2"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
