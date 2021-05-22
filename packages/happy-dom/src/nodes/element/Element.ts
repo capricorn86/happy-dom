@@ -248,7 +248,9 @@ export default class Element extends Node implements IElement {
 		const clone = <Element | IElement>super.cloneNode(deep);
 
 		for (const key of Object.keys(this._attributes)) {
-			(<Element>clone)._attributes[key] = Object.assign(new Attr(), this._attributes[key]);
+			const attr = Object.assign(new Attr(), this._attributes[key]);
+			(<IElement>attr.ownerElement) = clone;
+			(<Element>clone)._attributes[key] = attr;
 		}
 
 		if (deep) {
@@ -691,6 +693,8 @@ export default class Element extends Node implements IElement {
 		const oldValue = replacedAttribute ? replacedAttribute.value : null;
 
 		attribute.name = name;
+		(<IElement>attribute.ownerElement) = this;
+		(<IDocument>attribute.ownerDocument) = this.ownerDocument;
 
 		this._attributes[name] = attribute;
 

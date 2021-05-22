@@ -2,7 +2,8 @@ import Window from '../../../src/window/Window';
 import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility';
 
 describe('ChildNodeUtility', () => {
-	let window, document;
+	let window;
+	let document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -10,7 +11,7 @@ describe('ChildNodeUtility', () => {
 	});
 
 	describe('remove()', () => {
-		test('Removes a node.', () => {
+		it('Removes a node.', () => {
 			const parent = document.createElement('div');
 			const node = document.createComment('test');
 			parent.appendChild(node);
@@ -21,7 +22,7 @@ describe('ChildNodeUtility', () => {
 	});
 
 	describe('replaceWith()', () => {
-		test('Replaces a node with another node.', () => {
+		it('Replaces a node with another node.', () => {
 			const parent = document.createElement('div');
 			const newChild = document.createElement('span');
 			newChild.className = 'child4';
@@ -37,7 +38,7 @@ describe('ChildNodeUtility', () => {
 			);
 		});
 
-		test('Replaces a node with a mixed list of Node and DOMString (string).', () => {
+		it('Replaces a node with a mixed list of Node and DOMString (string).', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
 			const newChildrenHtml =
@@ -61,7 +62,7 @@ describe('ChildNodeUtility', () => {
 	});
 
 	describe('before()', () => {
-		test('Inserts a node before the child node.', () => {
+		it('Inserts a node before the child node.', () => {
 			const parent = document.createElement('div');
 			const newChild = document.createElement('span');
 			newChild.className = 'child4';
@@ -77,7 +78,7 @@ describe('ChildNodeUtility', () => {
 			);
 		});
 
-		test('Inserts a mixed list of Node and DOMString (string) before the child node.', () => {
+		it('Inserts a mixed list of Node and DOMString (string) before the child node.', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
 			const newChildrenHtml =
@@ -101,7 +102,7 @@ describe('ChildNodeUtility', () => {
 	});
 
 	describe('after()', () => {
-		test('Inserts a node after the child node by appending the new node.', () => {
+		it('Inserts a node after the child node by appending the new node.', () => {
 			const parent = document.createElement('div');
 			const newChild = document.createElement('span');
 			newChild.className = 'child4';
@@ -117,7 +118,7 @@ describe('ChildNodeUtility', () => {
 			);
 		});
 
-		test('Inserts a node after the child node by inserting the new node.', () => {
+		it('Inserts a node after the child node by inserting the new node.', () => {
 			const parent = document.createElement('div');
 			const newChild = document.createElement('span');
 			newChild.className = 'child4';
@@ -133,7 +134,7 @@ describe('ChildNodeUtility', () => {
 			);
 		});
 
-		test('Inserts a mixed list of Node and DOMString (string) after the child node by appending the new nodes.', () => {
+		it('Inserts a mixed list of Node and DOMString (string) after the child node by appending the new nodes.', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
 			const newChildrenHtml =

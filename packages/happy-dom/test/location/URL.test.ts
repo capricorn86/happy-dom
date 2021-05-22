@@ -2,7 +2,7 @@ import URL from '../../src/location/URL';
 
 describe('URL', () => {
 	describe('constructor()', () => {
-		test('Parses "https://google.com/some-path/?key=value&key2=value2#hash".', () => {
+		it('Parses "https://google.com/some-path/?key=value&key2=value2#hash".', () => {
 			const href = 'https://google.com/some-path/?key=value&key2=value2#hash';
 			const url = new URL(href);
 			expect(url.href).toBe(href);
@@ -18,7 +18,7 @@ describe('URL', () => {
 			expect(url.origin).toBe('https://google.com');
 		});
 
-		test('Parses "https://user:password@google.com/some-path/".', () => {
+		it('Parses "https://user:password@google.com/some-path/".', () => {
 			const href = 'https://user:password@google.com/some-path/';
 			const url = new URL(href);
 			expect(url.href).toBe(href);
@@ -34,7 +34,7 @@ describe('URL', () => {
 			expect(url.origin).toBe('https://google.com');
 		});
 
-		test('Parses "https://google.com:8080/some-path/".', () => {
+		it('Parses "https://google.com:8080/some-path/".', () => {
 			const href = 'https://google.com:8080/some-path/';
 			const url = new URL(href);
 			expect(url.href).toBe(href);

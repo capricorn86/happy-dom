@@ -18,7 +18,7 @@ describe('HTMLScriptElement', () => {
 
 	for (const property of ['type', 'charset', 'lang']) {
 		describe(`get ${property}()`, () => {
-			test(`Returns the "${property}" attribute.`, () => {
+			it(`Returns the "${property}" attribute.`, () => {
 				const element = document.createElement('script');
 				element.setAttribute(property, 'test');
 				expect(element[property]).toBe('test');
@@ -26,7 +26,7 @@ describe('HTMLScriptElement', () => {
 		});
 
 		describe(`set ${property}()`, () => {
-			test(`Sets the attribute "${property}".`, () => {
+			it(`Sets the attribute "${property}".`, () => {
 				const element = document.createElement('script');
 				element[property] = 'test';
 				expect(element.getAttribute(property)).toBe('test');
@@ -36,7 +36,7 @@ describe('HTMLScriptElement', () => {
 
 	for (const property of ['async', 'defer']) {
 		describe(`get ${property}()`, () => {
-			test(`Returns "true" if the "${property}" attribute is defined.`, () => {
+			it(`Returns "true" if the "${property}" attribute is defined.`, () => {
 				const element = document.createElement('script');
 				element.setAttribute(property, '');
 				expect(element[property]).toBe(true);
@@ -44,7 +44,7 @@ describe('HTMLScriptElement', () => {
 		});
 
 		describe(`set ${property}()`, () => {
-			test(`Sets the "${property}" attribute to an empty string if set to "true".`, () => {
+			it(`Sets the "${property}" attribute to an empty string if set to "true".`, () => {
 				const element = document.createElement('script');
 				element[property] = true;
 				expect(element.getAttribute(property)).toBe('');
@@ -53,7 +53,7 @@ describe('HTMLScriptElement', () => {
 	}
 
 	describe('get src()', () => {
-		test('Returns the "src" attribute.', () => {
+		it('Returns the "src" attribute.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			element.setAttribute('src', 'test');
 			expect(element.src).toBe('test');
@@ -61,13 +61,13 @@ describe('HTMLScriptElement', () => {
 	});
 
 	describe('set src()', () => {
-		test('Sets the attribute "src".', () => {
+		it('Sets the attribute "src".', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			element.src = 'test';
 			expect(element.getAttribute('src')).toBe('test');
 		});
 
-		test('Loads and evaluates an external script when the attribute "src" is set and the element is connected to DOM.', () => {
+		it('Loads and evaluates an external script when the attribute "src" is set and the element is connected to DOM.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			let loadedElement = null;
 
@@ -83,7 +83,7 @@ describe('HTMLScriptElement', () => {
 			expect(loadedElement).toBe(element);
 		});
 
-		test('Does not evaluate script if the element is not connected to DOM.', () => {
+		it('Does not evaluate script if the element is not connected to DOM.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			let loadedElement = null;
 
@@ -99,14 +99,14 @@ describe('HTMLScriptElement', () => {
 	});
 
 	describe('get text()', () => {
-		test('Returns the data of text nodes.', () => {
+		it('Returns the data of text nodes.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			const text = document.createTextNode('test');
 			element.appendChild(text);
 			expect(element.text).toBe('test');
 		});
 
-		test('Replaces all child nodes with a text node.', () => {
+		it('Replaces all child nodes with a text node.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			const text = document.createTextNode('test');
 			element.appendChild(text);
@@ -116,7 +116,7 @@ describe('HTMLScriptElement', () => {
 	});
 
 	describe('set isConnected()', () => {
-		test('Evaluates the text content as code when appended to an element that is connected to the document.', () => {
+		it('Evaluates the text content as code when appended to an element that is connected to the document.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			element.text = 'global.test = "test";';
 			document.body.appendChild(element);
@@ -124,7 +124,7 @@ describe('HTMLScriptElement', () => {
 			delete global['test'];
 		});
 
-		test('Evaluates the text content as code when inserted before an element that is connected to the document.', () => {
+		it('Evaluates the text content as code when inserted before an element that is connected to the document.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
@@ -141,21 +141,21 @@ describe('HTMLScriptElement', () => {
 			delete global['test'];
 		});
 
-		test('Does not evaluate code when added as innerHTML.', () => {
+		it('Does not evaluate code when added as innerHTML.', () => {
 			const div = document.createElement('div');
 			div.innerHTML = '<script>global.test = "test";</script>';
 			document.body.appendChild(div);
 			expect(global['test']).toBe(undefined);
 		});
 
-		test('Does not evaluate code when added as outerHTML.', () => {
+		it('Does not evaluate code when added as outerHTML.', () => {
 			const div = document.createElement('div');
 			document.body.appendChild(div);
 			div.outerHTML = '<script>global.test = "test";</script>';
 			expect(global['test']).toBe(undefined);
 		});
 
-		test('Does not evaluate code if the element is not connected to DOM.', () => {
+		it('Does not evaluate code if the element is not connected to DOM.', () => {
 			const div = document.createElement('div');
 			const element = <HTMLScriptElement>document.createElement('script');
 			element.text = 'global.test = "test";';
@@ -163,20 +163,20 @@ describe('HTMLScriptElement', () => {
 			expect(global['test']).toBe(undefined);
 		});
 
-		test('Evaluates the text content as code when using document.write().', () => {
+		it('Evaluates the text content as code when using document.write().', () => {
 			document.write('<script>global.test = "test";</script>');
 			expect(global['test']).toBe('test');
 			delete global['test'];
 		});
 
-		test('Evaluates the text content as code when using DOMParser.parseFromString().', () => {
+		it('Evaluates the text content as code when using DOMParser.parseFromString().', () => {
 			const domParser = new window.DOMParser();
 			domParser.parseFromString('<script>global.test = "test";</script>', 'text/html');
 			expect(global['test']).toBe('test');
 			delete global['test'];
 		});
 
-		test('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {
+		it('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			let loadedElement = null;
 
@@ -193,7 +193,7 @@ describe('HTMLScriptElement', () => {
 			expect(loadedElement).toBe(element);
 		});
 
-		test('Does not load external scripts when "src" attribute has been set if the element is not connected to DOM.', () => {
+		it('Does not load external scripts when "src" attribute has been set if the element is not connected to DOM.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			let loadedElement = null;
 

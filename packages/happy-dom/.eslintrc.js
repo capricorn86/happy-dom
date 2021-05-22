@@ -18,7 +18,7 @@ const COMMON_CONFIG = {
 		'wrap-iife': OFF,
 		'no-self-assign': ERROR,
 		'no-self-compare': ERROR,
-		'no-loop-func': WARN,
+		'no-loop-func': OFF,
 		'array-callback-return': ERROR,
 		curly: ERROR,
 		'no-fallthrough': OFF,
@@ -57,7 +57,7 @@ const COMMON_CONFIG = {
 			WARN,
 			{
 				mustMatch: {
-					describe: '^[A-Z][a-zA-Z0-9]+$|^[a-z][a-zA-Z0-9]+\\(\\)$',
+					// Describe: '^[A-Z][a-zA-Z0-9]+$|^[a-z][a-zA-Z0-9]+\\(\\)$',
 					it: '^[A-Z](.+).$'
 				}
 			}

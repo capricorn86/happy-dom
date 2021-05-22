@@ -39,20 +39,20 @@ describe('Document', () => {
 	});
 
 	describe('get nodeName()', () => {
-		test('Returns "#document".', () => {
+		it('Returns "#document".', () => {
 			expect(document.nodeName).toBe('#document');
 		});
 	});
 
 	describe('get children()', () => {
-		test('Returns Element child nodes.', () => {
+		it('Returns Element child nodes.', () => {
 			document.appendChild(document.createTextNode('test'));
 			expect(document.children).toEqual([document.documentElement]);
 		});
 	});
 
 	describe('get childElementCount()', () => {
-		test('Returns child element count.', () => {
+		it('Returns child element count.', () => {
 			document.appendChild(document.createElement('div'));
 			document.appendChild(document.createTextNode('test'));
 			expect(document.childElementCount).toEqual(2);
@@ -60,7 +60,7 @@ describe('Document', () => {
 	});
 
 	describe('get firstElementChild()', () => {
-		test('Returns first element child.', () => {
+		it('Returns first element child.', () => {
 			const div = document.createElement('div');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
@@ -81,7 +81,7 @@ describe('Document', () => {
 	});
 
 	describe('get lastElementChild()', () => {
-		test('Returns last element child.', () => {
+		it('Returns last element child.', () => {
 			const div = document.createElement('div');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
@@ -102,20 +102,20 @@ describe('Document', () => {
 	});
 
 	describe('get cookie()', () => {
-		test('Returns cookie string.', () => {
+		it('Returns cookie string.', () => {
 			document.cookie = 'name=value1';
 			expect(document.cookie).toBe('name=value1');
 		});
 	});
 
 	describe('set cookie()', () => {
-		test('Sets multiple cookies.', () => {
+		it('Sets multiple cookies.', () => {
 			document.cookie = 'name1=value1';
 			document.cookie = 'name2=value2';
 			expect(document.cookie).toBe('name1=value1; name2=value2');
 		});
 
-		test('Replaces cookie with the same name, but treats cookies with no value set differently from cookies with a value.', () => {
+		it('Replaces cookie with the same name, but treats cookies with no value set differently from cookies with a value.', () => {
 			document.cookie = 'name=value1';
 			document.cookie = 'name';
 			document.cookie = 'name=value2';
@@ -123,25 +123,25 @@ describe('Document', () => {
 			expect(document.cookie).toBe('name=value2; name');
 		});
 
-		test('Sets a cookie with a domain.', () => {
+		it('Sets a cookie with a domain.', () => {
 			window.location.href = 'https://test.com';
 			document.cookie = 'name=value1; domain=test.com';
 			expect(document.cookie).toBe('name=value1');
 		});
 
-		test('Sets a cookie with an invalid domain.', () => {
+		it('Sets a cookie with an invalid domain.', () => {
 			window.location.href = 'https://test.com';
 			document.cookie = 'name=value1; domain=invalid.com';
 			expect(document.cookie).toBe('');
 		});
 
-		test('Sets a cookie on a top-domain from a sub-domain.', () => {
+		it('Sets a cookie on a top-domain from a sub-domain.', () => {
 			window.location.href = 'https://sub.test.com';
 			document.cookie = 'name=value1; domain=test.com';
 			expect(document.cookie).toBe('name=value1');
 		});
 
-		test('Sets a cookie with a path.', () => {
+		it('Sets a cookie with a path.', () => {
 			window.location.href = '/path/to/cookie/';
 			document.cookie = 'name1=value1; path=path/to';
 			document.cookie = 'name2=value2; path=/path/to';
@@ -149,13 +149,13 @@ describe('Document', () => {
 			expect(document.cookie).toBe('name1=value1; name2=value2; name3=value3');
 		});
 
-		test('Does not set cookie if the path does not match the current path.', () => {
+		it('Does not set cookie if the path does not match the current path.', () => {
 			window.location.href = '/path/to/cookie/';
 			document.cookie = 'name1=value1; path=/cookie/';
 			expect(document.cookie).toBe('');
 		});
 
-		test('Sets a cookie if it expires is in the future.', () => {
+		it('Sets a cookie if it expires is in the future.', () => {
 			const date = new Date();
 			const oneHour = 3600000;
 			date.setTime(date.getTime() + oneHour);
@@ -164,12 +164,12 @@ describe('Document', () => {
 			expect(document.cookie).toBe('name=value1');
 		});
 
-		test('Does not set cookie if "expires" is in the past.', () => {
+		it('Does not set cookie if "expires" is in the past.', () => {
 			document.cookie = 'name=value1; expires=Thu, 01 Jan 1970 00:00:01 GMT';
 			expect(document.cookie).toBe('');
 		});
 
-		test('Removes a previously defined cookie if "expires" is in the past, but treats cookies with no value set differently from cookies with a value.', () => {
+		it('Removes a previously defined cookie if "expires" is in the past, but treats cookies with no value set differently from cookies with a value.', () => {
 			document.cookie = 'name=value1';
 			document.cookie = 'name';
 			document.cookie = 'name=value1; expires=Thu, 01 Jan 1970 00:00:01 GMT';
@@ -180,31 +180,31 @@ describe('Document', () => {
 	});
 
 	describe('get body()', () => {
-		test('Returns <body> element.', () => {
+		it('Returns <body> element.', () => {
 			expect(document.body).toBe(document.children[0].children[1]);
 		});
 	});
 
 	describe('get head()', () => {
-		test('Returns <head> element.', () => {
+		it('Returns <head> element.', () => {
 			expect(document.head).toBe(document.children[0].children[0]);
 		});
 	});
 
 	describe('get documentElement()', () => {
-		test('Returns <html> element.', () => {
+		it('Returns <html> element.', () => {
 			expect(document.documentElement).toBe(document.children[0]);
 		});
 	});
 
 	describe('get doctype()', () => {
-		test('Returns DocumentType element.', () => {
+		it('Returns DocumentType element.', () => {
 			expect(document.doctype).toBe(document.childNodes[0]);
 		});
 	});
 
 	describe('get styleSheets()', () => {
-		test('Returns all stylesheets loaded to the document.', done => {
+		it('Returns all stylesheets loaded to the document.', done => {
 			const textNode = document.createTextNode(
 				'body { background-color: red }\ndiv { background-color: green }'
 			);
@@ -249,7 +249,7 @@ describe('Document', () => {
 	});
 
 	describe('append()', () => {
-		test('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
+		it('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -266,7 +266,7 @@ describe('Document', () => {
 	});
 
 	describe('prepend()', () => {
-		test('Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
+		it('Inserts a set of Node objects or DOMString objects before the first child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -283,7 +283,7 @@ describe('Document', () => {
 	});
 
 	describe('replaceChildren()', () => {
-		test('Replaces the existing children of a ParentNode with a specified new set of children.', () => {
+		it('Replaces the existing children of a ParentNode with a specified new set of children.', () => {
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
 			let isCalled = false;
@@ -302,7 +302,7 @@ describe('Document', () => {
 	});
 
 	describe('querySelectorAll()', () => {
-		test('Query CSS selector to find matching elements.', () => {
+		it('Query CSS selector to find matching elements.', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
@@ -317,7 +317,7 @@ describe('Document', () => {
 	});
 
 	describe('querySelector()', () => {
-		test('Query CSS selector to find a matching element.', () => {
+		it('Query CSS selector to find a matching element.', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
@@ -332,7 +332,7 @@ describe('Document', () => {
 	});
 
 	describe('getElementsByClassName()', () => {
-		test('Returns an elements by class name.', () => {
+		it('Returns an elements by class name.', () => {
 			const element = document.createElement('div');
 			const className = 'className';
 
@@ -349,7 +349,7 @@ describe('Document', () => {
 	});
 
 	describe('getElementsByTagName()', () => {
-		test('Returns an elements by tag name.', () => {
+		it('Returns an elements by tag name.', () => {
 			const element = document.createElement('div');
 			const tagName = 'tag-name';
 
@@ -366,7 +366,7 @@ describe('Document', () => {
 	});
 
 	describe('getElementsByTagNameNS()', () => {
-		test('Returns an elements by tag name and namespace.', () => {
+		it('Returns an elements by tag name and namespace.', () => {
 			const element = document.createElement('div');
 			const tagName = 'tag-name';
 			const namespaceURI = '/namespace/uri/';
@@ -385,7 +385,7 @@ describe('Document', () => {
 	});
 
 	describe('getElementById()', () => {
-		test('Returns an element by ID.', () => {
+		it('Returns an element by ID.', () => {
 			const element = document.createElement('div');
 			const id = 'id';
 
@@ -402,7 +402,7 @@ describe('Document', () => {
 	});
 
 	describe('appendChild()', () => {
-		test('Updates the children property when appending an element child.', () => {
+		it('Updates the children property when appending an element child.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
@@ -419,7 +419,7 @@ describe('Document', () => {
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		test('Append the children instead of the actual element if the type is DocumentFragment.', () => {
+		it('Append the children instead of the actual element if the type is DocumentFragment.', () => {
 			const template = <HTMLTemplateElement>document.createElement('template');
 
 			template.innerHTML = '<div>Div</div><span>Span</span>';
@@ -441,7 +441,7 @@ describe('Document', () => {
 	});
 
 	describe('removeChild()', () => {
-		test('Updates the children property when removing an element child.', () => {
+		it('Updates the children property when removing an element child.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
@@ -461,7 +461,7 @@ describe('Document', () => {
 	});
 
 	describe('insertBefore()', () => {
-		test('Updates the children property when appending an element child.', () => {
+		it('Updates the children property when appending an element child.', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
 			const span = document.createElement('span');
@@ -480,7 +480,7 @@ describe('Document', () => {
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		test('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
+		it('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
 			const template = <HTMLTemplateElement>document.createElement('template');
@@ -506,7 +506,7 @@ describe('Document', () => {
 	});
 
 	describe('write()', () => {
-		test('Replaces the content of documentElement with new content the first time it is called and writes the body part to the body the second time.', () => {
+		it('Replaces the content of documentElement with new content the first time it is called and writes the body part to the body the second time.', () => {
 			const html = `
 				<html>
 					<head>
@@ -534,7 +534,7 @@ describe('Document', () => {
 			);
 		});
 
-		test('Adds elements outside of the <html> tag to the <body> tag.', () => {
+		it('Adds elements outside of the <html> tag to the <body> tag.', () => {
 			const html = `
 				<html>
 					<head>
@@ -564,7 +564,7 @@ describe('Document', () => {
 	});
 
 	describe('open()', () => {
-		test('Clears the document and opens it for writing.', () => {
+		it('Clears the document and opens it for writing.', () => {
 			const html = `
 				<html>
 					<head>
@@ -585,28 +585,28 @@ describe('Document', () => {
 	});
 
 	describe('close()', () => {
-		test('Has a close method.', () => {
+		it('Has a close method.', () => {
 			document.close();
 			expect(typeof document.close).toBe('function');
 		});
 	});
 
 	describe('createElement()', () => {
-		test('Creates an element.', () => {
+		it('Creates an element.', () => {
 			const div = document.createElement('div');
 			expect(div.tagName).toBe('DIV');
 			expect(div.namespaceURI).toBe(NamespaceURI.html);
 			expect(div instanceof HTMLElement).toBe(true);
 		});
 
-		test('Creates an svg element.', () => {
+		it('Creates an svg element.', () => {
 			const div = document.createElement('svg');
 			expect(div.tagName).toBe('SVG');
 			expect(div.namespaceURI).toBe(NamespaceURI.html);
 			expect(div instanceof SVGSVGElement).toBe(true);
 		});
 
-		test('Creates a custom element.', () => {
+		it('Creates a custom element.', () => {
 			window.customElements.define('custom-element', CustomElement);
 			const div = document.createElement('custom-element');
 			expect(div.tagName).toBe('CUSTOM-ELEMENT');
@@ -614,7 +614,7 @@ describe('Document', () => {
 			expect(div instanceof CustomElement).toBe(true);
 		});
 
-		test('Creates a custom element that has been extended from an "li" element.', () => {
+		it('Creates a custom element that has been extended from an "li" element.', () => {
 			window.customElements.define('custom-element', CustomElement, { extends: 'li' });
 			const div = document.createElement('li', { is: 'custom-element' });
 			expect(div.tagName).toBe('LI');
@@ -624,14 +624,14 @@ describe('Document', () => {
 	});
 
 	describe('createElementNS()', () => {
-		test('Creates an svg element with namespace set to SVG.', () => {
+		it('Creates an svg element with namespace set to SVG.', () => {
 			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
 			expect(svg.tagName).toBe('SVG');
 			expect(svg.namespaceURI).toBe(NamespaceURI.svg);
 			expect(svg instanceof SVGSVGElement).toBe(true);
 		});
 
-		test('Creates a custom element with namespace set to SVG.', () => {
+		it('Creates a custom element with namespace set to SVG.', () => {
 			window.customElements.define('custom-element', CustomElement);
 			const div = document.createElementNS(NamespaceURI.svg, 'custom-element');
 			expect(div.tagName).toBe('CUSTOM-ELEMENT');
@@ -639,7 +639,7 @@ describe('Document', () => {
 			expect(div instanceof CustomElement).toBe(true);
 		});
 
-		test('Creates a custom element that has been extended from an "li" element with namespace set to SVG.', () => {
+		it('Creates a custom element that has been extended from an "li" element with namespace set to SVG.', () => {
 			window.customElements.define('custom-element', CustomElement, { extends: 'li' });
 			const div = document.createElementNS(NamespaceURI.svg, 'li', { is: 'custom-element' });
 			expect(div.tagName).toBe('LI');
@@ -649,69 +649,78 @@ describe('Document', () => {
 	});
 
 	describe('createAttribute()', () => {
-		test('Creates an Attr node.', () => {
+		it('Creates an Attr node.', () => {
 			const attribute = document.createAttribute('KEY1');
 			expect(attribute instanceof Attr).toBe(true);
 			expect(attribute).toEqual({
 				value: null,
 				name: 'key1',
-				namespaceURI: null
+				namespaceURI: null,
+				specified: true,
+				ownerElement: null,
+				ownerDocument: document
 			});
 		});
 	});
 
 	describe('createAttributeNS()', () => {
-		test('Creates an Attr node with namespace set to HTML.', () => {
+		it('Creates an Attr node with namespace set to HTML.', () => {
 			const attribute = document.createAttributeNS(NamespaceURI.html, 'KEY1');
 			expect(attribute instanceof Attr).toBe(true);
 			expect(attribute).toEqual({
 				value: null,
 				name: 'KEY1',
-				namespaceURI: NamespaceURI.html
+				namespaceURI: NamespaceURI.html,
+				specified: true,
+				ownerElement: null,
+				ownerDocument: document
 			});
 		});
 
-		test('Creates an Attr node with namespace set to SVG.', () => {
+		it('Creates an Attr node with namespace set to SVG.', () => {
 			const attribute = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 			expect(attribute instanceof Attr).toBe(true);
 			expect(attribute).toEqual({
 				value: null,
 				name: 'KEY1',
-				namespaceURI: NamespaceURI.svg
+				namespaceURI: NamespaceURI.svg,
+				specified: true,
+				ownerElement: null,
+				ownerDocument: document
 			});
 		});
 	});
 
 	describe('createTextNode()', () => {
-		test('Creates a text node.', () => {
+		it('Creates a text node.', () => {
 			const textContent = 'text';
 			const textNode = document.createTextNode(textContent);
 			expect(textNode.textContent).toBe(textContent);
 			expect(textNode instanceof Text).toBe(true);
 		});
 
-		test('Creates a text node without content.', () => {
+		it('Creates a text node without content.', () => {
 			const textNode = document.createTextNode();
 			expect(textNode.data).toBe('');
 		});
 	});
 
 	describe('createComment()', () => {
-		test('Creates a comment node.', () => {
+		it('Creates a comment node.', () => {
 			const textContent = 'text';
 			const commentNode = document.createComment(textContent);
 			expect(commentNode.textContent).toBe(textContent);
 			expect(commentNode instanceof Comment).toBe(true);
 		});
 
-		test('Creates a comment node without content.', () => {
+		it('Creates a comment node without content.', () => {
 			const commentNode = document.createComment();
 			expect(commentNode.data).toBe('');
 		});
 	});
 
 	describe('createDocumentFragment()', () => {
-		test('Creates a document fragment.', () => {
+		it('Creates a document fragment.', () => {
 			const documentFragment = document.createDocumentFragment();
 			expect(documentFragment.ownerDocument).toBe(document);
 			expect(documentFragment instanceof DocumentFragment).toBe(true);
@@ -719,7 +728,7 @@ describe('Document', () => {
 	});
 
 	describe('createTreeWalker()', () => {
-		test('Creates a document fragment.', () => {
+		it('Creates a document fragment.', () => {
 			const root = document.createElement('div');
 			const whatToShow = 1;
 			const filter = {
@@ -739,7 +748,7 @@ describe('Document', () => {
 	});
 
 	describe('createEvent()', () => {
-		test('Creates a legacy event.', () => {
+		it('Creates a legacy event.', () => {
 			const event = document.createEvent('Event');
 			event.initEvent('click', true, true);
 			expect(event.type).toBe('click');
@@ -750,7 +759,7 @@ describe('Document', () => {
 	});
 
 	describe('importNode()', () => {
-		test('Creates a clone of a Node and sets the ownerDocument to be the current document.', () => {
+		it('Creates a clone of a Node and sets the ownerDocument to be the current document.', () => {
 			const node = new Window().document.createElement('div');
 			const clone = <Element>document.importNode(node);
 			expect(clone.tagName).toBe('DIV');
@@ -760,7 +769,7 @@ describe('Document', () => {
 	});
 
 	describe('cloneNode()', () => {
-		test('Clones the properties of the document when cloned.', () => {
+		it('Clones the properties of the document when cloned.', () => {
 			const child = document.createElement('div');
 			child.className = 'className';
 
@@ -780,7 +789,7 @@ describe('Document', () => {
 	});
 
 	describe('adoptNode()', () => {
-		test('Removes node from its original document and sets the ownerDocument to be the current document.', () => {
+		it('Removes node from its original document and sets the ownerDocument to be the current document.', () => {
 			const originalDocument = new Window().document;
 			const node = originalDocument.createElement('div');
 			originalDocument.body.append(node);
@@ -792,7 +801,7 @@ describe('Document', () => {
 			expect(originalDocument.querySelector('div')).toBe(null);
 		});
 
-		test('Just change the ownerDocument of the node to be the current document, if the original document does not have node inside tree.', () => {
+		it('Just change the ownerDocument of the node to be the current document, if the original document does not have node inside tree.', () => {
 			const node = new Window().document.createElement('div');
 			const adopted = <Element>document.adoptNode(node);
 
@@ -803,7 +812,7 @@ describe('Document', () => {
 	});
 
 	describe('addEventListener()', () => {
-		test('Triggers "readystatechange" event if no resources needs to be loaded.', done => {
+		it('Triggers "readystatechange" event if no resources needs to be loaded.', done => {
 			let readyChangeEvent = null;
 
 			document.addEventListener('readystatechange', event => {
@@ -819,7 +828,7 @@ describe('Document', () => {
 			}, 1);
 		});
 
-		test('Triggers "readystatechange" event when all resources have been loaded.', done => {
+		it('Triggers "readystatechange" event when all resources have been loaded.', done => {
 			const cssURL = '/path/to/file.css';
 			const jsURL = '/path/to/file.js';
 			const cssResponse = 'body { background-color: red; }';

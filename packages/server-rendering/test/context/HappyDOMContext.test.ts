@@ -14,7 +14,7 @@ describe('HappyDOMContext', () => {
 	});
 
 	describe('render()', () => {
-		test('Renders a page without opening shadow roots.', async () => {
+		it('Renders a page without opening shadow roots.', async () => {
 			const script = new VM.Script(SCRIPT);
 			const result = await context.render({
 				html: HappyDOMContextHTML,
@@ -41,7 +41,7 @@ describe('HappyDOMContext', () => {
 			);
 		});
 
-		test('Renders a page with opened shadow roots, scoped CSS and CSS added to document head.', async () => {
+		it('Renders a page with opened shadow roots, scoped CSS and CSS added to document head.', async () => {
 			const script1 = new VM.Script(SCRIPT);
 			const script2 = new VM.Script(`
 				setTimeout(() => {

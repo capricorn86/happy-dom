@@ -3,7 +3,8 @@ import HappyDOMServerRendererHTMLElement from './mock-data/HappyDOMServerRendere
 import { Window } from 'happy-dom';
 
 describe('HappyDOMServerRenderer', () => {
-	let window, document;
+	let window;
+	let document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -12,7 +13,7 @@ describe('HappyDOMServerRenderer', () => {
 	});
 
 	describe('render()', () => {
-		test('Renders a <div> element.', () => {
+		it('Renders a <div> element.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
@@ -30,7 +31,7 @@ describe('HappyDOMServerRenderer', () => {
 			);
 		});
 
-		test('Renders a comment node.', () => {
+		it('Renders a comment node.', () => {
 			const div = document.createElement('div');
 			const comment = document.createComment();
 
@@ -41,7 +42,7 @@ describe('HappyDOMServerRenderer', () => {
 			expect(new HappyDOMServerRenderer().render(div).html).toBe('<div><!--Some comment.--></div>');
 		});
 
-		test('Renders a text nodes.', () => {
+		it('Renders a text nodes.', () => {
 			const div = document.createElement('div');
 			const text1 = document.createTextNode('Text 1.');
 			const text2 = document.createTextNode('Text 2.');
@@ -52,7 +53,7 @@ describe('HappyDOMServerRenderer', () => {
 			expect(new HappyDOMServerRenderer().render(div).html).toBe('<div>Text 1.Text 2.</div>');
 		});
 
-		test('Renders a mix of nodes.', () => {
+		it('Renders a mix of nodes.', () => {
 			const div = document.createElement('div');
 			const comment1 = document.createComment('Comment 1.');
 			const comment2 = document.createComment('Comment 2.');
@@ -81,7 +82,7 @@ describe('HappyDOMServerRenderer', () => {
 			);
 		});
 
-		test('Renders a custom element closed.', () => {
+		it('Renders a custom element closed.', () => {
 			const div = document.createElement('div');
 			const customElement = document.createElement('mocked-html-element');
 
@@ -99,7 +100,7 @@ describe('HappyDOMServerRenderer', () => {
 			);
 		});
 
-		test('Renders a custom element opened.', () => {
+		it('Renders a custom element opened.', () => {
 			const div = document.createElement('div');
 			const customElement = document.createElement('mocked-html-element');
 
@@ -159,7 +160,7 @@ describe('HappyDOMServerRenderer', () => {
 			expect(result.css).toEqual([]);
 		});
 
-		test('Renders a custom element opened with scoped CSS.', () => {
+		it('Renders a custom element opened with scoped CSS.', () => {
 			const div = document.createElement('div');
 			const customElement = document.createElement('mocked-html-element');
 
@@ -221,7 +222,7 @@ describe('HappyDOMServerRenderer', () => {
 			]);
 		});
 
-		test('Renders a custom element opened with scoped & extracted CSS.', () => {
+		it('Renders a custom element opened with scoped & extracted CSS.', () => {
 			const div = document.createElement('div');
 			const customElement = document.createElement('mocked-html-element');
 

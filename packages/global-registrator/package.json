@@ -26,7 +26,8 @@
 	"scripts": {
 		"compile": "tsc",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
-		"lint": "eslint --max-warnings 0 --fix './src/**/*.ts'",
+		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
+		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
 		"test": "tsc --project ./test && node ./tmp/react/React.test.js",
 		"test:debug": "tsc --project ./test && node --inspect-brk ./tmp/react/React.test.js"
 	},

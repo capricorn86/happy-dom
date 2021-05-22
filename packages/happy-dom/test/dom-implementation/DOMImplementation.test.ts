@@ -12,7 +12,7 @@ describe('DOMImplementation', () => {
 	});
 
 	describe('createHTMLDocument()', () => {
-		test('Returns a new Document.', () => {
+		it('Returns a new Document.', () => {
 			const document = domImplementation.createHTMLDocument();
 			expect(document instanceof Document).toBe(true);
 			expect(document.defaultView).toBe(null);
@@ -20,7 +20,7 @@ describe('DOMImplementation', () => {
 	});
 
 	describe('createDocumentType()', () => {
-		test('Returns a new Document Type.', () => {
+		it('Returns a new Document Type.', () => {
 			const documentType = domImplementation.createDocumentType(
 				'qualifiedName',
 				'publicId',

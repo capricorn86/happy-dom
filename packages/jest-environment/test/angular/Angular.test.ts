@@ -15,7 +15,7 @@ describe('React', () => {
 		document.body.removeChild(appElement);
 	});
 
-	test('Tests integration with Angular.', async () => {
+	it('Tests integration with Angular.', async () => {
 		enableProdMode();
 		await platformBrowserDynamic().bootstrapModule(AngularModule);
 		expect(appElement.innerHTML).toBe('<div>Test</div>');

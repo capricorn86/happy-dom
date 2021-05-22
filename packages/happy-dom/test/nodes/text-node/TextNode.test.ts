@@ -4,7 +4,8 @@ import Window from '../../../src/window/Window';
 import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility';
 
 describe('TextNode', () => {
-	let window, document;
+	let window;
+	let document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -16,27 +17,27 @@ describe('TextNode', () => {
 	});
 
 	describe('get nodeName()', () => {
-		test('Returns "#text".', () => {
+		it('Returns "#text".', () => {
 			const node = document.createTextNode('test');
 			expect(node.nodeName).toBe('#text');
 		});
 	});
 	describe('get length()', () => {
-		test('Returns "#comment".', () => {
+		it('Returns "#comment".', () => {
 			const node = document.createTextNode('test');
 			expect(node.length).toBe(4);
 		});
 	});
 
 	describe('get textContent()', () => {
-		test('Returns text content.', () => {
+		it('Returns text content.', () => {
 			const node = document.createTextNode('test');
 			expect(node.textContent).toBe('test');
 		});
 	});
 
 	describe('set textContent()', () => {
-		test('Sets text content.', () => {
+		it('Sets text content.', () => {
 			const node = document.createTextNode('test');
 			node.textContent = 'new text';
 			expect(node.textContent).toBe('new text');
@@ -44,14 +45,14 @@ describe('TextNode', () => {
 	});
 
 	describe('get nodeValue()', () => {
-		test('Returns text content.', () => {
+		it('Returns text content.', () => {
 			const node = document.createTextNode('test');
 			expect(node.nodeValue).toBe('test');
 		});
 	});
 
 	describe('set nodeValue()', () => {
-		test('Sets text content.', () => {
+		it('Sets text content.', () => {
 			const node = document.createTextNode('test');
 			node.nodeValue = 'new text';
 			expect(node.nodeValue).toBe('new text');
@@ -59,14 +60,14 @@ describe('TextNode', () => {
 	});
 
 	describe('get data()', () => {
-		test('Returns text content.', () => {
+		it('Returns text content.', () => {
 			const node = document.createTextNode('test');
 			expect(node.data).toBe('test');
 		});
 	});
 
 	describe('set data()', () => {
-		test('Sets text content.', () => {
+		it('Sets text content.', () => {
 			const node = document.createTextNode('test');
 			node.data = 'new text';
 			expect(node.data).toBe('new text');
@@ -74,7 +75,7 @@ describe('TextNode', () => {
 	});
 
 	describe('get previousElementSibling()', () => {
-		test('Returns previous element sibling..', () => {
+		it('Returns previous element sibling..', () => {
 			const node = document.createTextNode('test');
 			const previousElementSibling = document.createElement('div');
 			jest
@@ -89,7 +90,7 @@ describe('TextNode', () => {
 	});
 
 	describe('get nextElementSibling()', () => {
-		test('Returns next element sibling..', () => {
+		it('Returns next element sibling..', () => {
 			const node = document.createTextNode('test');
 			const nextElementSibling = document.createElement('div');
 			jest
@@ -104,14 +105,14 @@ describe('TextNode', () => {
 	});
 
 	describe('toString()', () => {
-		test('Returns "[object Text]".', () => {
+		it('Returns "[object Text]".', () => {
 			const node = document.createTextNode('test');
 			expect(node.toString()).toBe('[object Text]');
 		});
 	});
 
 	describe('remove()', () => {
-		test('Removes the node from its parent.', () => {
+		it('Removes the node from its parent.', () => {
 			const text = document.createTextNode('test');
 			let isCalled = false;
 
@@ -126,7 +127,7 @@ describe('TextNode', () => {
 	});
 
 	describe('replaceWith()', () => {
-		test('Replaces a Node in the children list of its parent with a set of Node or DOMString objects.', () => {
+		it('Replaces a Node in the children list of its parent with a set of Node or DOMString objects.', () => {
 			const text = document.createTextNode('test');
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
@@ -144,7 +145,7 @@ describe('TextNode', () => {
 	});
 
 	describe('before()', () => {
-		test("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just before this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
+		it("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just before this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
 			const text = document.createTextNode('test');
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
@@ -162,7 +163,7 @@ describe('TextNode', () => {
 	});
 
 	describe('after()', () => {
-		test("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just after this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
+		it("Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just after this ChildNode. DOMString objects are inserted as equivalent Text nodes.", () => {
 			const text = document.createTextNode('test');
 			const node1 = document.createComment('test1');
 			const node2 = document.createComment('test2');
@@ -179,7 +180,7 @@ describe('TextNode', () => {
 		});
 	});
 	describe('appendData()', () => {
-		test('Appends data.', () => {
+		it('Appends data.', () => {
 			const node = document.createTextNode('test');
 			const expectedData = 'data';
 			let isCalled = false;
@@ -196,7 +197,7 @@ describe('TextNode', () => {
 	});
 
 	describe('deleteData()', () => {
-		test('Deletes data.', () => {
+		it('Deletes data.', () => {
 			const node = document.createTextNode('test');
 			const expectedOffset = -1;
 			const expectedCount = -1;
@@ -217,7 +218,7 @@ describe('TextNode', () => {
 	});
 
 	describe('insertData()', () => {
-		test('Inserts data.', () => {
+		it('Inserts data.', () => {
 			const node = document.createTextNode('test');
 			const expectedOffset = -1;
 			const expectedData = 'data';
@@ -238,7 +239,7 @@ describe('TextNode', () => {
 	});
 
 	describe('replaceData()', () => {
-		test('Replaces data.', () => {
+		it('Replaces data.', () => {
 			const node = document.createTextNode('test');
 			const expectedOffset = -1;
 			const expectedCount = -1;
@@ -261,7 +262,7 @@ describe('TextNode', () => {
 	});
 
 	describe('substringData()', () => {
-		test('Returns a sub-string.', () => {
+		it('Returns a sub-string.', () => {
 			const node = document.createTextNode('test');
 			const expectedOffset = -1;
 			const expectedCount = -1;
@@ -280,7 +281,7 @@ describe('TextNode', () => {
 	});
 
 	describe('cloneNode()', () => {
-		test('Clones the node.', () => {
+		it('Clones the node.', () => {
 			const node = document.createTextNode('test');
 			const clone = node.cloneNode();
 			expect(clone.data).toBe(node.data);

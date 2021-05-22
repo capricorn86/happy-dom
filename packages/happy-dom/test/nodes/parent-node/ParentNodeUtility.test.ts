@@ -16,7 +16,7 @@ describe('ParentNodeUtility', () => {
 	});
 
 	describe('append()', () => {
-		test('Appends a node after the last child of the ParentNode.', () => {
+		it('Appends a node after the last child of the ParentNode.', () => {
 			const parent = document.createElement('div');
 			const newChild = document.createElement('span');
 			newChild.className = 'child4';
@@ -32,7 +32,7 @@ describe('ParentNodeUtility', () => {
 			);
 		});
 
-		test('Appends a mixed list of Node and DOMString after the last child of the ParentNode', () => {
+		it('Appends a mixed list of Node and DOMString after the last child of the ParentNode', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
 			const newChildrenHtml =
@@ -53,7 +53,7 @@ describe('ParentNodeUtility', () => {
 	});
 
 	describe('prepend()', () => {
-		test('Prepends a node after the before the first child of the ParentNode.', () => {
+		it('Prepends a node after the before the first child of the ParentNode.', () => {
 			const parent = document.createElement('div');
 			const newChild = document.createElement('span');
 			newChild.className = 'child4';
@@ -69,7 +69,7 @@ describe('ParentNodeUtility', () => {
 			);
 		});
 
-		test('Prepends a mixed list of Node and DOMString before the first child of the ParentNode', () => {
+		it('Prepends a mixed list of Node and DOMString before the first child of the ParentNode', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
 			const newChildrenHtml =
@@ -90,7 +90,7 @@ describe('ParentNodeUtility', () => {
 	});
 
 	describe('replaceChildren()', () => {
-		test('Replaces the existing children of a ParentNode with a mixed list of Node and DOMString.', () => {
+		it('Replaces the existing children of a ParentNode with a mixed list of Node and DOMString.', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
 			const newChildrenHtml =
@@ -114,7 +114,7 @@ describe('ParentNodeUtility', () => {
 	});
 
 	describe('getElementsByClassName()', () => {
-		test('Returns elements by class name.', () => {
+		it('Returns elements by class name.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('div');
 			const className = 'className';
@@ -130,7 +130,7 @@ describe('ParentNodeUtility', () => {
 	});
 
 	describe('getElementsByTagName()', () => {
-		test('Returns elements by tag name.', () => {
+		it('Returns elements by tag name.', () => {
 			const parent = document.createElement('div');
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
@@ -158,7 +158,7 @@ describe('ParentNodeUtility', () => {
 	});
 
 	describe('getElementsByTagNameNS()', () => {
-		test('Returns elements by tag name.', () => {
+		it('Returns elements by tag name.', () => {
 			const parent = document.createElement('div');
 			const div1 = document.createElementNS(NamespaceURI.svg, 'div');
 			const div2 = document.createElement('div');
@@ -184,7 +184,7 @@ describe('ParentNodeUtility', () => {
 	});
 
 	describe('getElementByTagName()', () => {
-		test('Returns the first element matching a tag name.', () => {
+		it('Returns the first element matching a tag name.', () => {
 			const parent = document.createElement('div');
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
@@ -207,7 +207,7 @@ describe('ParentNodeUtility', () => {
 	});
 
 	describe('getElementById()', () => {
-		test('Returns the first element matching an id.', () => {
+		it('Returns the first element matching an id.', () => {
 			const parent = document.createElement('div');
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');

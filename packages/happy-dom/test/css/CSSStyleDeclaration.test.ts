@@ -17,14 +17,14 @@ describe('CSSStyleDeclaration', () => {
 
 	for (const property of CSSStyleDeclarationStyleProperties) {
 		describe(`get ${property}()`, () => {
-			test('Returns style property.', () => {
+			it('Returns style property.', () => {
 				attributes.style.value = `${CAMEL_TO_KEBAB_CASE(property)}: test;`;
 				expect(cssStyleDeclaration[property]).toBe('test');
 			});
 		});
 
 		describe(`set ${property}()`, () => {
-			test('Sets style property.', () => {
+			it('Sets style property.', () => {
 				cssStyleDeclaration[property] = 'test';
 				expect(attributes.style.value).toBe(`${CAMEL_TO_KEBAB_CASE(property)}: test;`);
 			});
@@ -32,14 +32,14 @@ describe('CSSStyleDeclaration', () => {
 	}
 
 	describe('item()', () => {
-		test('Returns an item by index.', () => {
+		it('Returns an item by index.', () => {
 			cssStyleDeclaration.setProperty('background-color', 'green');
 			expect(cssStyleDeclaration.item(0)).toBe('background-color');
 		});
 	});
 
 	describe('setProperty()', () => {
-		test('Sets a style property.', () => {
+		it('Sets a style property.', () => {
 			cssStyleDeclaration.setProperty('background-color', 'green');
 			expect(attributes.style.value).toBe('background-color: green;');
 			expect(cssStyleDeclaration.backgroundColor).toBe('green');
@@ -49,7 +49,7 @@ describe('CSSStyleDeclaration', () => {
 	});
 
 	describe('removeProperty()', () => {
-		test('Removes a style property.', () => {
+		it('Removes a style property.', () => {
 			cssStyleDeclaration.setProperty('background-color', 'green');
 			cssStyleDeclaration.removeProperty('background-color');
 			expect(attributes.style).toBe(undefined);
@@ -59,7 +59,7 @@ describe('CSSStyleDeclaration', () => {
 	});
 
 	describe('getPropertyValue()', () => {
-		test('Returns a style property.', () => {
+		it('Returns a style property.', () => {
 			cssStyleDeclaration.setProperty('background-color', 'green');
 			expect(cssStyleDeclaration.getPropertyValue('background-color')).toBe('green');
 		});

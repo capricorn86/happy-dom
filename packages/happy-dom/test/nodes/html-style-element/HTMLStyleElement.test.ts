@@ -19,14 +19,14 @@ describe('HTMLStyleElement', () => {
 
 	for (const property of ['media', 'type']) {
 		describe(`get ${property}()`, () => {
-			test(`Returns the "${property}" attribute.`, () => {
+			it(`Returns the "${property}" attribute.`, () => {
 				element.setAttribute(property, 'test');
 				expect(element[property]).toBe('test');
 			});
 		});
 
 		describe(`set ${property}()`, () => {
-			test(`Sets the attribute "${property}".`, () => {
+			it(`Sets the attribute "${property}".`, () => {
 				element[property] = 'test';
 				expect(element.getAttribute(property)).toBe('test');
 			});
@@ -34,7 +34,7 @@ describe('HTMLStyleElement', () => {
 	}
 
 	describe(`get disabled()`, () => {
-		test('Returns attribute value.', () => {
+		it('Returns attribute value.', () => {
 			expect(element.disabled).toBe(false);
 			element.setAttribute('disabled', '');
 			expect(element.disabled).toBe(true);
@@ -42,18 +42,18 @@ describe('HTMLStyleElement', () => {
 	});
 
 	describe(`set disabled()`, () => {
-		test('Sets attribute value.', () => {
+		it('Sets attribute value.', () => {
 			element.disabled = true;
 			expect(element.getAttribute('disabled')).toBe('');
 		});
 	});
 
 	describe(`get sheet()`, () => {
-		test('Returns "null" if not connected to DOM.', () => {
+		it('Returns "null" if not connected to DOM.', () => {
 			expect(element.sheet).toBe(null);
 		});
 
-		test('Returns an CSSStyleSheet instance with its text content as style rules.', () => {
+		it('Returns an CSSStyleSheet instance with its text content as style rules.', () => {
 			const textNode = document.createTextNode(
 				'body { background-color: red }\ndiv { background-color: green }'
 			);

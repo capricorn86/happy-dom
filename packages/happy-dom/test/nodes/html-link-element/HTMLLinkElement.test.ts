@@ -27,7 +27,7 @@ describe('HTMLLinkElement', () => {
 		'type'
 	]) {
 		describe(`get ${property}()`, () => {
-			test(`Returns the "${property}" attribute.`, () => {
+			it(`Returns the "${property}" attribute.`, () => {
 				const element = document.createElement('link');
 				element.setAttribute(property, 'test');
 				expect(element[property]).toBe('test');
@@ -35,7 +35,7 @@ describe('HTMLLinkElement', () => {
 		});
 
 		describe(`set ${property}()`, () => {
-			test(`Sets the attribute "${property}".`, () => {
+			it(`Sets the attribute "${property}".`, () => {
 				const element = document.createElement('link');
 				element[property] = 'test';
 				expect(element.getAttribute(property)).toBe('test');
@@ -44,7 +44,7 @@ describe('HTMLLinkElement', () => {
 	}
 
 	describe('get href()', () => {
-		test('Returns the "href" attribute.', () => {
+		it('Returns the "href" attribute.', () => {
 			const element = <HTMLLinkElement>document.createElement('link');
 			element.setAttribute('href', 'test');
 			expect(element.href).toBe('test');
@@ -52,13 +52,13 @@ describe('HTMLLinkElement', () => {
 	});
 
 	describe('set href()', () => {
-		test('Sets the attribute "href".', () => {
+		it('Sets the attribute "href".', () => {
 			const element = <HTMLLinkElement>document.createElement('link');
 			element.href = 'test';
 			expect(element.getAttribute('href')).toBe('test');
 		});
 
-		test('Loads and evaluates an external CSS file when the attribute "href" and "rel" is set and the element is connected to DOM.', done => {
+		it('Loads and evaluates an external CSS file when the attribute "href" and "rel" is set and the element is connected to DOM.', done => {
 			const element = <HTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadedOptions = null;
@@ -89,7 +89,7 @@ describe('HTMLLinkElement', () => {
 			}, 0);
 		});
 
-		test('Triggers error event when fetching a CSS file fails during setting the "href" and "rel" attributes.', done => {
+		it('Triggers error event when fetching a CSS file fails during setting the "href" and "rel" attributes.', done => {
 			const element = <HTMLLinkElement>document.createElement('link');
 			const thrownError = new Error('error');
 			let errorEvent = null;
@@ -114,7 +114,7 @@ describe('HTMLLinkElement', () => {
 			}, 0);
 		});
 
-		test('Does not load and evaluate external CSS files if the element is not connected to DOM.', () => {
+		it('Does not load and evaluate external CSS files if the element is not connected to DOM.', () => {
 			const element = <HTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadedOptions = null;
@@ -132,7 +132,7 @@ describe('HTMLLinkElement', () => {
 	});
 
 	describe('set isConnected()', () => {
-		test('Loads and evaluates an external script when "href" attribute has been set, but does not evaluate text content.', done => {
+		it('Loads and evaluates an external script when "href" attribute has been set, but does not evaluate text content.', done => {
 			const element = <HTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadEvent = null;
@@ -162,7 +162,7 @@ describe('HTMLLinkElement', () => {
 			}, 0);
 		});
 
-		test('Triggers error event when fetching a CSS file fails while appending the element to the document.', done => {
+		it('Triggers error event when fetching a CSS file fails while appending the element to the document.', done => {
 			const element = <HTMLLinkElement>document.createElement('link');
 			const thrownError = new Error('error');
 			let errorEvent = null;
@@ -186,7 +186,7 @@ describe('HTMLLinkElement', () => {
 			}, 0);
 		});
 
-		test('Does not load external scripts when "href" attribute has been set if the element is not connected to DOM.', () => {
+		it('Does not load external scripts when "href" attribute has been set if the element is not connected to DOM.', () => {
 			const element = <HTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadedOptions = null;

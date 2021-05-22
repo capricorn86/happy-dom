@@ -2,7 +2,8 @@ import Window from '../../src/window/Window';
 import MutationObserver from '../../src/mutation-observer/MutationObserver';
 
 describe('MutationObserver', () => {
-	let window, document;
+	let window;
+	let document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -10,7 +11,7 @@ describe('MutationObserver', () => {
 	});
 
 	describe('observe()', () => {
-		test('Observes attributes.', () => {
+		it('Observes attributes.', () => {
 			let records = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver(mutationRecords => {
@@ -33,7 +34,7 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		test('Observes attributes and old attribute values.', () => {
+		it('Observes attributes and old attribute values.', () => {
 			let records = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver(mutationRecords => {
@@ -57,7 +58,7 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		test('Only observes a list of filtered attributes if defined.', () => {
+		it('Only observes a list of filtered attributes if defined.', () => {
 			const records = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver(mutationRecords => {
@@ -65,7 +66,11 @@ describe('MutationObserver', () => {
 			});
 			div.setAttribute('attr1', 'old');
 			div.setAttribute('attr2', 'old');
-			observer.observe(div, { attributeFilter: ['attr1'], attributeOldValue: true, attributes: true });
+			observer.observe(div, {
+				attributeFilter: ['attr1'],
+				attributeOldValue: true,
+				attributes: true
+			});
 			div.setAttribute('attr1', 'new');
 			div.setAttribute('attr2', 'new');
 			expect(records).toEqual([
@@ -85,7 +90,7 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		test('Observers character data changes on text node.', () => {
+		it('Observers character data changes on text node.', () => {
 			const records = [];
 			const text = document.createTextNode('old');
 			const observer = new MutationObserver(mutationRecords => {
@@ -110,7 +115,7 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		test('Observers character data changes to child text nodes.', () => {
+		it('Observers character data changes to child text nodes.', () => {
 			const records = [];
 			const div = document.createElement('div');
 			const text = document.createTextNode('old');

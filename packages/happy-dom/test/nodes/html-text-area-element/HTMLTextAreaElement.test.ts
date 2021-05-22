@@ -16,19 +16,19 @@ describe('HTMLTextAreaElement', () => {
 	});
 
 	describe('get value()', () => {
-		test('Returns the attribute "value" if it has not been set using the property.', () => {
+		it('Returns the attribute "value" if it has not been set using the property.', () => {
 			element.setAttribute('value', 'TEST_VALUE');
 			expect(element.value).toBe('TEST_VALUE');
 		});
 
-		test('Returns value set using the property.', () => {
+		it('Returns value set using the property.', () => {
 			element.value = 'TEST_VALUE';
 			expect(element.value).toBe('TEST_VALUE');
 		});
 	});
 
 	describe('set value()', () => {
-		test('Sets a value and selection range.', () => {
+		it('Sets a value and selection range.', () => {
 			element.selectionDirection = HTMLInputElementSelectionDirectionEnum.forward;
 			element.value = 'TEST_VALUE';
 			expect(element.value).toBe('TEST_VALUE');
@@ -39,12 +39,12 @@ describe('HTMLTextAreaElement', () => {
 	});
 
 	describe('get selectionStart()', () => {
-		test('Returns the length of the attribute "value" if value has not been set using the property.', () => {
+		it('Returns the length of the attribute "value" if value has not been set using the property.', () => {
 			element.setAttribute('value', 'TEST_VALUE');
 			expect(element.selectionStart).toBe(10);
 		});
 
-		test('Returns the length of the value set using the property.', () => {
+		it('Returns the length of the value set using the property.', () => {
 			element.setAttribute('value', 'TEST_VALUE');
 			element.selectionStart = 5;
 			expect(element.selectionStart).toBe(5);
@@ -52,13 +52,13 @@ describe('HTMLTextAreaElement', () => {
 	});
 
 	describe('set selectionStart()', () => {
-		test('Sets the value to the length of the property "value" if it is out of range.', () => {
+		it('Sets the value to the length of the property "value" if it is out of range.', () => {
 			element.setAttribute('value', 'TEST_VALUE');
 			element.selectionStart = 20;
 			expect(element.selectionStart).toBe(10);
 		});
 
-		test('Sets the property.', () => {
+		it('Sets the property.', () => {
 			element.value = 'TEST_VALUE';
 			element.selectionStart = 5;
 			expect(element.selectionStart).toBe(5);
@@ -66,12 +66,12 @@ describe('HTMLTextAreaElement', () => {
 	});
 
 	describe('get selectionEnd()', () => {
-		test('Returns the length of the attribute "value" if value has not been set using the property.', () => {
+		it('Returns the length of the attribute "value" if value has not been set using the property.', () => {
 			element.setAttribute('value', 'TEST_VALUE');
 			expect(element.selectionEnd).toBe(10);
 		});
 
-		test('Returns the length of the value set using the property.', () => {
+		it('Returns the length of the value set using the property.', () => {
 			element.setAttribute('value', 'TEST_VALUE');
 			element.selectionEnd = 5;
 			expect(element.selectionEnd).toBe(5);
@@ -79,13 +79,13 @@ describe('HTMLTextAreaElement', () => {
 	});
 
 	describe('set selectionEnd()', () => {
-		test('Sets the value to the length of the property "value" if it is out of range.', () => {
+		it('Sets the value to the length of the property "value" if it is out of range.', () => {
 			element.setAttribute('value', 'TEST_VALUE');
 			element.selectionEnd = 20;
 			expect(element.selectionEnd).toBe(10);
 		});
 
-		test('Sets the property.', () => {
+		it('Sets the property.', () => {
 			element.value = 'TEST_VALUE';
 			element.selectionEnd = 5;
 			expect(element.selectionEnd).toBe(5);
@@ -94,7 +94,7 @@ describe('HTMLTextAreaElement', () => {
 
 	for (const property of ['disabled', 'autofocus', 'required', 'readOnly']) {
 		describe(`get ${property}()`, () => {
-			test('Returns attribute value.', () => {
+			it('Returns attribute value.', () => {
 				expect(element[property]).toBe(false);
 				element.setAttribute(property, '');
 				expect(element[property]).toBe(true);
@@ -102,7 +102,7 @@ describe('HTMLTextAreaElement', () => {
 		});
 
 		describe(`set ${property}()`, () => {
-			test('Sets attribute value.', () => {
+			it('Sets attribute value.', () => {
 				element[property] = true;
 				expect(element.getAttribute(property)).toBe('');
 			});
@@ -111,7 +111,7 @@ describe('HTMLTextAreaElement', () => {
 
 	for (const property of ['name', 'autocomplete', 'cols', 'rows', 'placeholder']) {
 		describe(`get ${property}()`, () => {
-			test('Returns attribute value.', () => {
+			it('Returns attribute value.', () => {
 				expect(element[property]).toBe('');
 				element.setAttribute(property, 'value');
 				expect(element[property]).toBe('value');
@@ -119,7 +119,7 @@ describe('HTMLTextAreaElement', () => {
 		});
 
 		describe(`set ${property}()`, () => {
-			test('Sets attribute value.', () => {
+			it('Sets attribute value.', () => {
 				element[property] = 'value';
 				expect(element.getAttribute(property)).toBe('value');
 			});
@@ -128,7 +128,7 @@ describe('HTMLTextAreaElement', () => {
 
 	for (const property of ['minLength', 'maxLength']) {
 		describe(`get ${property}()`, () => {
-			test('Returns attribute value.', () => {
+			it('Returns attribute value.', () => {
 				expect(element[property]).toBe(-1);
 				element.setAttribute(property, '50');
 				expect(element[property]).toBe(50);
@@ -136,7 +136,7 @@ describe('HTMLTextAreaElement', () => {
 		});
 
 		describe(`set ${property}()`, () => {
-			test('Sets attribute value.', () => {
+			it('Sets attribute value.', () => {
 				element[property] = 50;
 				expect(element[property]).toBe(50);
 				expect(element.getAttribute(property)).toBe('50');
@@ -145,7 +145,7 @@ describe('HTMLTextAreaElement', () => {
 	}
 
 	describe('setSelectionRange()', () => {
-		test('Sets selection range.', () => {
+		it('Sets selection range.', () => {
 			element.value = 'TEST_VALUE';
 			element.setSelectionRange(1, 5, 'forward');
 			expect(element.selectionStart).toBe(1);
@@ -153,7 +153,7 @@ describe('HTMLTextAreaElement', () => {
 			expect(element.selectionDirection).toBe('forward');
 		});
 
-		test('Sets selection end to the value length if out of range.', () => {
+		it('Sets selection end to the value length if out of range.', () => {
 			element.value = 'TEST_VALUE';
 			element.setSelectionRange(1, 100, 'backward');
 			expect(element.selectionStart).toBe(1);
@@ -163,7 +163,7 @@ describe('HTMLTextAreaElement', () => {
 	});
 
 	describe('setRangeText()', () => {
-		test('Sets a range text with selection mode set to "preserve".', () => {
+		it('Sets a range text with selection mode set to "preserve".', () => {
 			element.value = 'TEST_VALUE';
 			element.setRangeText('_NEW_', 4, 5);
 			expect(element.selectionStart).toBe(14);
@@ -171,7 +171,7 @@ describe('HTMLTextAreaElement', () => {
 			expect(element.value).toBe('TEST_NEW_VALUE');
 		});
 
-		test('Sets a range text with selection mode set to "select".', () => {
+		it('Sets a range text with selection mode set to "select".', () => {
 			element.value = 'TEST_VALUE';
 			element.setRangeText('_NEW_', 4, 5, HTMLInputElementSelectionModeEnum.select);
 			expect(element.selectionStart).toBe(4);
@@ -179,7 +179,7 @@ describe('HTMLTextAreaElement', () => {
 			expect(element.value).toBe('TEST_NEW_VALUE');
 		});
 
-		test('Sets a range text with selection mode set to "start".', () => {
+		it('Sets a range text with selection mode set to "start".', () => {
 			element.value = 'TEST_VALUE';
 			element.setRangeText('_NEW_', 4, 5, HTMLInputElementSelectionModeEnum.start);
 			expect(element.selectionStart).toBe(4);
@@ -187,7 +187,7 @@ describe('HTMLTextAreaElement', () => {
 			expect(element.value).toBe('TEST_NEW_VALUE');
 		});
 
-		test('Sets a range text with selection mode set to "end".', () => {
+		it('Sets a range text with selection mode set to "end".', () => {
 			element.value = 'TEST_VALUE';
 			element.setRangeText('_NEW_', 4, 5, HTMLInputElementSelectionModeEnum.end);
 			expect(element.selectionStart).toBe(14);
@@ -197,7 +197,7 @@ describe('HTMLTextAreaElement', () => {
 	});
 
 	describe('cloneNode()', () => {
-		test('Clones node.', () => {
+		it('Clones node.', () => {
 			element.value = 'TEST_VALUE';
 			element.selectionStart = 4;
 			element.selectionEnd = 4;

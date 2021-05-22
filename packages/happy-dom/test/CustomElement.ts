@@ -4,13 +4,13 @@ import Window from '../src/window/Window';
  * CustomElement test class.
  */
 export default class CustomElement extends new Window().HTMLElement {
-	public changedAttributes = [];
 	public static observedAttributesCallCount = 0;
+	public changedAttributes = [];
 
 	/**
 	 * Returns a list of observed attributes.
 	 *
-	 * @return Observered attributes.
+	 * @returns Observered attributes.
 	 */
 	public static get observedAttributes(): string[] {
 		this.observedAttributesCallCount++;

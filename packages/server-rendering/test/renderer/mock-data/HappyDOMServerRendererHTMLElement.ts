@@ -3,7 +3,7 @@ import { HTMLElement } from 'happy-dom';
 /**
  * CustomElement test class.
  */
-export default class CustomElement extends HTMLElement {
+export default class HappyDOMServerRendererHTMLElement extends HTMLElement {
 	public changedAttributes = [];
 
 	/**

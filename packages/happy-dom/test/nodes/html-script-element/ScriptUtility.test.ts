@@ -16,7 +16,7 @@ describe('ScriptUtility', () => {
 	});
 
 	describe('loadExternalScript()', () => {
-		test('Loads external script asynchronously.', async () => {
+		it('Loads external script asynchronously.', async () => {
 			let fetchedURL = null;
 			let loadEvent = null;
 
@@ -44,7 +44,7 @@ describe('ScriptUtility', () => {
 			delete global['test'];
 		});
 
-		test('Triggers error event when loading external script asynchronously.', async () => {
+		it('Triggers error event when loading external script asynchronously.', async () => {
 			let errorEvent = null;
 
 			jest.spyOn(window, 'fetch').mockImplementation(() => {
@@ -69,7 +69,7 @@ describe('ScriptUtility', () => {
 			);
 		});
 
-		test('Loads external script synchronously with relative URL.', async () => {
+		it('Loads external script synchronously with relative URL.', async () => {
 			let fetchedOptions = null;
 			let loadEvent = null;
 
@@ -98,7 +98,7 @@ describe('ScriptUtility', () => {
 			delete global['test'];
 		});
 
-		test('Triggers error event when loading external script synchronously with relative URL.', () => {
+		it('Triggers error event when loading external script synchronously with relative URL.', () => {
 			const thrownError = new Error('error');
 			let errorEvent = null;
 

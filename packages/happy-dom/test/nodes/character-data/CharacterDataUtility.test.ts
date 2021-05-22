@@ -2,7 +2,8 @@ import Window from '../../../src/window/Window';
 import CharacterDataUtility from '../../../src/nodes/character-data/CharacterDataUtility';
 
 describe('CharacterDataTest', () => {
-	let window, document;
+	let window;
+	let document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -10,7 +11,7 @@ describe('CharacterDataTest', () => {
 	});
 
 	describe('appendData()', () => {
-		test('Appends data.', () => {
+		it('Appends data.', () => {
 			const node = document.createComment('test');
 			CharacterDataUtility.appendData(node, 'appended');
 			expect(node.data).toBe('testappended');
@@ -18,7 +19,7 @@ describe('CharacterDataTest', () => {
 	});
 
 	describe('deleteData()', () => {
-		test('Deletes data.', () => {
+		it('Deletes data.', () => {
 			const node = document.createComment('longstring');
 			CharacterDataUtility.deleteData(node, 1, 3);
 			expect(node.data).toBe('lstring');
@@ -26,7 +27,7 @@ describe('CharacterDataTest', () => {
 	});
 
 	describe('insertData()', () => {
-		test('Inserts data.', () => {
+		it('Inserts data.', () => {
 			const node = document.createComment('longstring');
 			CharacterDataUtility.insertData(node, 1, 'test');
 			expect(node.data).toBe('ltestongstring');
@@ -34,7 +35,7 @@ describe('CharacterDataTest', () => {
 	});
 
 	describe('replaceData()', () => {
-		test('Replaces data.', () => {
+		it('Replaces data.', () => {
 			const node = document.createComment('longstring');
 			CharacterDataUtility.replaceData(node, 1, 3, 'test');
 			expect(node.data).toBe('lteststring');
@@ -42,7 +43,7 @@ describe('CharacterDataTest', () => {
 	});
 
 	describe('substringData()', () => {
-		test('Returns a sub-string.', () => {
+		it('Returns a sub-string.', () => {
 			const node = document.createComment('longstring');
 			expect(CharacterDataUtility.substringData(node, 1, 3)).toBe('ong');
 		});
