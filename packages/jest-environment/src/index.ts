@@ -24,7 +24,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	 * @param config Jest config.
 	 * @param options Options.
 	 */
-	constructor(config: Config.ProjectConfig, options: EnvironmentContext = {}) {
+	constructor(config: Config.ProjectConfig, options?: EnvironmentContext) {
 		VM.createContext(this.global);
 
 		// Functions are not an instanceof the "Function" class in the VM context, so therefore we set it to the used "Function" class.
@@ -33,13 +33,19 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		// Node's error-message stack size is limited to 10, but it's pretty useful to see more than that when a test fails.
 		this.global.Error.stackTraceLimit = 100;
 
+		// TODO: Remove this ASAP as it currently causes tests to run really slow.
+		this.global.Buffer = Buffer;
+
+		// Needed as Jest is using it
+		this.global.global = this.global;
+
 		JestUtil.installCommonGlobals(this.global, config.globals);
 
 		// Removes window.fetch() as it should not be used in a test environment.
 		delete this.global.fetch;
 		delete this.global.window['fetch'];
 
-		if (options.console) {
+		if (options && options.console) {
 			this.global.console = options.console;
 			this.global.window['console'] = options.console;
 		}
