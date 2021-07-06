@@ -41,10 +41,6 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 
 		JestUtil.installCommonGlobals(this.global, config.globals);
 
-		// Removes window.fetch() as it should not be used in a test environment.
-		delete this.global.fetch;
-		delete this.global.window['fetch'];
-
 		if (options && options.console) {
 			this.global.console = options.console;
 			this.global.window['console'] = options.console;
