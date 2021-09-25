@@ -484,6 +484,15 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
+	 * Returns attribute names.
+	 *
+	 * @returns Attribute names.
+	 */
+	public getAttributeNames(): string[] {
+		return Object.keys(this._attributes);
+	}
+
+	/**
 	 * Returns attribute value.
 	 *
 	 * @param name Name.

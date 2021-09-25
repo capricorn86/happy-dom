@@ -999,6 +999,15 @@ describe('Element', () => {
 		});
 	});
 
+	describe('getAttributeNames()', () => {
+		it('Returns attribute names.', () => {
+			element.setAttributeNS(NAMESPACE_URI, 'global:local1', 'value1');
+			element.setAttribute('key1', 'value1');
+			element.setAttribute('key2', '');
+			expect(element.getAttributeNames()).toEqual(['global:local1', 'key1', 'key2']);
+		});
+	});
+
 	describe('hasAttribute()', () => {
 		it('Returns "true" if an element has an attribute.', () => {
 			element.setAttribute('key1', 'value1');
