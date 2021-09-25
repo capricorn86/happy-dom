@@ -57,7 +57,7 @@ export default class CustomElementRegistry {
 	 */
 	public get(tagName: string): typeof HTMLElement {
 		const name = tagName.toLowerCase();
-		return this._registry[name] ? this._registry[name].elementClass : null;
+		return this._registry[name] ? this._registry[name].elementClass : undefined;
 	}
 
 	/**

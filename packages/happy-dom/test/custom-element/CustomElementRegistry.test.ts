@@ -41,6 +41,17 @@ describe('CustomElementRegistry', () => {
 		});
 	});
 
+	describe('get()', () => {
+		it('Returns element class if the tag name has been defined..', () => {
+			customElements.define('custom-element', CustomElement);
+			expect(customElements.get('custom-element')).toBe(CustomElement);
+		});
+
+		it('Returns undefined if the tag name has not been defined.', () => {
+			expect(customElements.get('custom-element')).toBe(undefined);
+		});
+	});
+
 	describe('whenDefined()', () => {
 		it('Returns a promise which is fulfilled when an element is defined.', done => {
 			customElements.whenDefined('custom-element').then(done);
