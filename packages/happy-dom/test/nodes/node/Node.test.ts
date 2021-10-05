@@ -428,7 +428,7 @@ describe('Node', () => {
 			);
 		});
 
-		it('Inserts a Node after all children if no reference given.', () => {
+		it('Inserts a Node after all children if reference node is "null".', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
 			const newNode = document.createElement('span');
@@ -446,6 +446,30 @@ describe('Node', () => {
 			document.body.appendChild(parent);
 
 			expect(newNode.isConnected).toBe(true);
+		});
+
+		it('Throws an exception if reference node is node sent.', () => {
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+			const newNode = document.createElement('span');
+			const parent = document.createElement('div');
+
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+
+			expect(() => parent.insertBefore(newNode)).toThrow(
+				"Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 1 present."
+			);
+		});
+
+		it('Throws an exception if reference node is not child of parent node.', () => {
+			const referenceNode = document.createElement('span');
+			const newNode = document.createElement('span');
+			const parent = document.createElement('div');
+
+			expect(() => parent.insertBefore(newNode, referenceNode)).toThrow(
+				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
+			);
 		});
 	});
 
