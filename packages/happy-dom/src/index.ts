@@ -97,6 +97,7 @@ import SelfClosingElements from './config/SelfClosingElements';
 import UnclosedElements from './config/UnclosedElements';
 import CSSStyleSheet from './css/CSSStyleSheet';
 import Storage from './storage/Storage';
+import URLSearchParams from './url-search-params/URLSearchParams';
 
 export {
 	AsyncWindow,
@@ -197,5 +198,6 @@ export {
 	SelfClosingElements,
 	UnclosedElements,
 	CSSStyleSheet,
-	Storage
+	Storage,
+	URLSearchParams
 };
