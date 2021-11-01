@@ -21,11 +21,14 @@ describe('LitElementComponent', () => {
 		);
 
 		expect(shadowRoot.querySelector('span').innerText).toBe(PROP1);
-		expect(shadowRoot.innerHTML.replace(/[\s]/gm, '')).toBe(
+		expect(
+			shadowRoot.innerHTML
+				.replace(/[\s]/gm, '')
+				.replace(/<!--\?lit\$[0-9]+\$-->/gm, '<!--?lit$123456$-->')
+		).toBe(
 			`
 			<!---->Some text
-			<span><!---->${PROP1}<!----></span>!
-			<!---->
+			<span><!--?lit$123456$-->${PROP1}</span>!
 			<style>
 				span {
 					color: green;

@@ -11,8 +11,7 @@ import IElement from '../nodes/element/IElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
-const COMMENT_REGEXP = /<!--(.*?)-->/gi;
-const DOCUMENT_TYPE_REGEXP = /<!DOCTYPE[\s]([a-zA-Z]+)([^>]*)>/gm;
+const COMMENT_REGEXP = /<!--(.*?)-->|<([!?])([^>]*)>/gi;
 const DOCUMENT_TYPE_ATTRIBUTE_REGEXP = /"([^"]+)"/gm;
 const ATTRIBUTE_REGEXP = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gms;
 const XMLNS_ATTRIBUTE_REGEXP = /xmlns[ ]*=[ ]*"([^"]+)"/;
@@ -141,7 +140,6 @@ export default class XMLParser {
 	private static getTextAndCommentNodes(document: IDocument, text: string): Node[] {
 		const nodes = [];
 		const commentRegExp = new RegExp(COMMENT_REGEXP, 'gms');
-		const documentTypeRegExp = new RegExp(DOCUMENT_TYPE_REGEXP, 'gm');
 		let hasDocumentType = false;
 		let lastIndex = 0;
 		let match;
@@ -151,35 +149,38 @@ export default class XMLParser {
 				const textNode = document.createTextNode(text.substring(lastIndex, match.index));
 				nodes.push(textNode);
 			}
-			const commentNode = document.createComment(match[1]);
-			nodes.push(commentNode);
-			lastIndex = match.index + match[0].length;
-		}
+			if (match[3] && match[3].toUpperCase().startsWith('DOCTYPE')) {
+				const docTypeSplit = match[3].split(' ');
 
-		while ((match = documentTypeRegExp.exec(text))) {
-			let publicId = '';
-			let systemId = '';
+				if (docTypeSplit.length > 1) {
+					const docTypeString = docTypeSplit.slice(1).join(' ');
+					const attributes = [];
+					const attributeRegExp = new RegExp(DOCUMENT_TYPE_ATTRIBUTE_REGEXP, 'gm');
+					const isPublic = docTypeString.includes('PUBLIC');
+					let attributeMatch;
 
-			if (match[2]) {
-				const attributes = [];
-				const attributeRegExp = new RegExp(DOCUMENT_TYPE_ATTRIBUTE_REGEXP, 'gm');
-				const isPublic = match[2].includes('PUBLIC');
-				let attributeMatch;
-				while ((attributeMatch = attributeRegExp.exec(match[2]))) {
-					attributes.push(attributeMatch[1]);
+					while ((attributeMatch = attributeRegExp.exec(docTypeString))) {
+						attributes.push(attributeMatch[1]);
+					}
+
+					const publicId = isPublic ? attributes[0] || '' : '';
+					const systemId = isPublic ? attributes[1] || '' : attributes[0] || '';
+
+					const documentTypeNode = document.implementation.createDocumentType(
+						docTypeSplit[1],
+						publicId,
+						systemId
+					);
+
+					nodes.push(documentTypeNode);
+					hasDocumentType = true;
 				}
-				publicId = isPublic ? attributes[0] || '' : '';
-				systemId = isPublic ? attributes[1] || '' : attributes[0] || '';
+			} else {
+				const comment = match[1] ? match[1] : match[2] === '?' ? '?' + match[3] : match[3];
+				const commentNode = document.createComment(comment);
+				nodes.push(commentNode);
+				lastIndex = match.index + match[0].length;
 			}
-
-			const documentTypeNode = document.implementation.createDocumentType(
-				match[1],
-				publicId,
-				systemId
-			);
-
-			nodes.push(documentTypeNode);
-			hasDocumentType = true;
 		}
 
 		if (!hasDocumentType && lastIndex < text.length) {
