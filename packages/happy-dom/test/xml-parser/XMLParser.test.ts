@@ -6,6 +6,12 @@ import XMLParserHTML from './data/XMLParserHTML';
 import NamespaceURI from '../../src/config/NamespaceURI';
 import DocumentType from '../../src/nodes/document-type/DocumentType';
 
+const GET_EXPECTED_HTML = (html: string): string =>
+	html
+		.replace('<?Question mark comment>', '<!--?Question mark comment-->')
+		.replace('<!Exclamation mark comment>', '<!--Exclamation mark comment-->')
+		.replace(/[\s]/gm, '');
+
 describe('XMLParser', () => {
 	let window: Window;
 	let document: Document;
@@ -88,7 +94,7 @@ describe('XMLParser', () => {
 
 		it('Parses an entire HTML page.', () => {
 			const root = XMLParser.parse(window.document, XMLParserHTML);
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(XMLParserHTML.replace(/[\s]/gm, ''));
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(GET_EXPECTED_HTML(XMLParserHTML));
 		});
 
 		it('Parses a page with document type set to "HTML 4.01".', () => {
@@ -101,7 +107,7 @@ describe('XMLParser', () => {
 			expect(doctype.name).toBe('HTML');
 			expect(doctype.publicId).toBe('-//W3C//DTD HTML 4.01//EN');
 			expect(doctype.systemId).toBe('http://www.w3.org/TR/html4/strict.dtd');
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(pageHTML.replace(/[\s]/gm, ''));
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(GET_EXPECTED_HTML(pageHTML));
 		});
 
 		it('Parses a page with document type set to "MathML 1.01".', () => {
@@ -114,7 +120,7 @@ describe('XMLParser', () => {
 			expect(doctype.name).toBe('math');
 			expect(doctype.publicId).toBe('');
 			expect(doctype.systemId).toBe('http://www.w3.org/Math/DTD/mathml1/mathml.dtd');
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(pageHTML.replace(/[\s]/gm, ''));
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(GET_EXPECTED_HTML(pageHTML));
 		});
 
 		it('Handles unclosed tags of unnestable elements (e.g. <a>, <li>).', () => {

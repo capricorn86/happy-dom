@@ -1,92 +1,74 @@
-/* eslint-disable */
+/* eslint-disable no-console*/
+/* eslint-disable @typescript-eslint/no-var-requires*/
 
 const Fs = require('fs');
 const Path = require('path');
-const litElementPath = Path.dirname(require.resolve('lit-element/package.json'));
-const litHTMLPath = Path.dirname(require.resolve('lit-html/package.json'));
-const litElementTSConfig = {
-	"compilerOptions": {
-		"module": "CommonJS",
-		"sourceMap": false,
-		"target": "ES5",
-		"preserveSymlinks": true,
-		"preserveWatchOutput": true,
-		"experimentalDecorators": true,
-		"allowSyntheticDefaultImports": false,
-		"allowJs": true,
-		"checkJs": false,
-		"skipLibCheck": true,
-		"resolveJsonModule": true,
-		"moduleResolution": "node",
-		"noResolve": true,
-		"incremental": true,
-		"tsBuildInfoFile": "lit-element-tsbuildinfo",
-		"lib": [
-			"dom",
-			"es2015",
-			"es2016"
-		],
-		"outDir": "../lib/node_modules/lit-element",
-		"baseUrl": ".",
-		"removeComments": true,
-		"rootDir": litElementPath
-	},
-	"include": [litElementPath],
-	"exclude": [litElementPath + '/src']
-};
-const litHTMLTSConfig = {
-	"compilerOptions": {
-		"module": "CommonJS",
-		"sourceMap": false,
-		"target": "ES5",
-		"preserveSymlinks": true,
-		"preserveWatchOutput": true,
-		"experimentalDecorators": true,
-		"allowSyntheticDefaultImports": false,
-		"allowJs": true,
-		"checkJs": false,
-		"skipLibCheck": true,
-		"resolveJsonModule": true,
-		"moduleResolution": "node",
-		"noResolve": true,
-		"incremental": true,
-		"tsBuildInfoFile": "lit-html-tsbuildinfo",
-		"lib": [
-			"dom",
-			"es2015",
-			"es2016"
-		],
-		"outDir": "../lib/node_modules/lit-html",
-		"baseUrl": ".",
-		"removeComments": true,
-		"rootDir": litHTMLPath
-	},
-	"include": [litHTMLPath],
-	"exclude": [litHTMLPath + '/src']
-};
 
-function writeFile() {
-	return Fs.promises
-		.writeFile(Path.resolve('tmp/tsconfig.lit-element.json'), JSON.stringify(litElementTSConfig, null, 4))
-		.then(() => {
-			return Fs.promises
-					.writeFile(Path.resolve('tmp/tsconfig.lit-html.json'), JSON.stringify(litHTMLTSConfig, null, 4))
-					.catch(error => {
-						// eslint-disable-next-line
-						console.error('Failed to create "tmp/tsconfig.lit-html.json". Error: ' + error);
-					});
-		})
-		.catch(error => {
-			// eslint-disable-next-line
-			console.error('Failed to create "tmp/tsconfig.lit-element.json". Error: ' + error);
-		});
+const LIBS = ['@lit/reactive-element', 'lit', 'lit-element', 'lit-html'];
+
+function getTsConfig(lib) {
+	const split = require.resolve(lib).split('node_modules');
+	const modulePathSplit = split[1].split(Path.sep);
+	const modulePath = modulePathSplit[1].startsWith('@')
+		? modulePathSplit[1] + Path.sep + modulePathSplit[2]
+		: modulePathSplit[1];
+	const path = Path.join(split[0], 'node_modules', modulePath);
+
+	return {
+		compilerOptions: {
+			module: 'CommonJS',
+			sourceMap: false,
+			target: 'es5',
+			preserveSymlinks: true,
+			preserveWatchOutput: true,
+			experimentalDecorators: true,
+			allowSyntheticDefaultImports: false,
+			allowJs: true,
+			checkJs: false,
+			skipLibCheck: true,
+			resolveJsonModule: true,
+			moduleResolution: 'node',
+			noResolve: true,
+			incremental: true,
+			tsBuildInfoFile: lib.replace('@', '').replace(/[/\\]/g, '-') + '-tsbuildinfo',
+			lib: ['es2015', 'es2016', 'es2017'],
+			outDir: '../lib/node_modules/' + lib,
+			baseUrl: '.',
+			removeComments: true,
+			rootDir: path
+		},
+		include: [path],
+		exclude: [path + '/src']
+	};
 }
 
-function createTmpDirectory() {
-	return Fs.promises.mkdir(Path.resolve('tmp'));
+async function writeTsConfigFile(lib) {
+	await Fs.promises.writeFile(
+		Path.resolve(`tmp/tsconfig.${lib.replace('@', '').replace(/[/\\]/g, '-')}.json`),
+		JSON.stringify(getTsConfig(lib), null, 4)
+	);
 }
 
-Fs.promises
-	.access(Path.resolve('tmp'))
-	.then(writeFile)
-	.catch(() => createTmpDirectory().then(writeFile));
+async function createTmpDirectory() {
+	await Fs.promises.mkdir(Path.resolve('tmp'));
+}
+
+async function writeLibFiles() {
+	await Promise.all(LIBS.map(lib => writeTsConfigFile(lib)));
+}
+
+async function main() {
+	try {
+		await Fs.promises.access(Path.resolve('tmp'));
+	} catch (error) {
+		await createTmpDirectory();
+	}
+	await writeLibFiles();
+}
+
+process.on('unhandledRejection', reason => {
+	console.error(reason);
+	process.exit(1);
+});
+
+main();

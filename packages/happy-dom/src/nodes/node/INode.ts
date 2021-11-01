@@ -22,6 +22,7 @@ export default interface INode extends IEventTarget {
 	cloneNode(deep: boolean): INode;
 	appendChild(node: INode): INode;
 	removeChild(node: INode): INode;
+	hasChildNodes(): boolean;
 	insertBefore(newNode: INode, referenceNode?: INode | null): INode;
 	replaceChild(newChild: INode, oldChild: INode): INode;
 	toString(): string;

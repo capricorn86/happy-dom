@@ -7,6 +7,8 @@ export default `
 		<body>
 			<div class="class1 class2" id="id">
 				<!-- Comment 1 !-->
+				<?Question mark comment>
+				<!Exclamation mark comment>
 				<b>Bold</b>
 				<!-- Comment 2 !-->
 				<span>Span</span>

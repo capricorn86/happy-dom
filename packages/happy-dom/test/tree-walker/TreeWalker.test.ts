@@ -171,7 +171,7 @@ describe('TreeWalker', () => {
 			while ((currentNode = treeWalker.nextNode())) {
 				if (previousNode) {
 					previousNode = treeWalker.previousNode();
-					expect(previousNode).toBe(expectedPreviousNode);
+					expect(previousNode === expectedPreviousNode).toBe(true);
 					treeWalker.nextNode();
 				}
 				expectedPreviousNode = currentNode;
@@ -183,8 +183,16 @@ describe('TreeWalker', () => {
 		it('Returns the parent node.', () => {
 			const treeWalker = document.createTreeWalker(document.body);
 			const node = treeWalker.nextNode();
-			expect(node.parentNode).not.toBe(null);
-			expect(treeWalker.parentNode()).toBe(node.parentNode);
+			expect(treeWalker.parentNode() === node.parentNode).toBe(true);
+		});
+	});
+
+	describe('parentNode()', () => {
+		it('Returns null if there is no parent.', () => {
+			const treeWalker = document.createTreeWalker(document.body);
+			treeWalker.nextNode();
+			treeWalker.parentNode();
+			expect(treeWalker.parentNode() === null).toBe(true);
 		});
 	});
 
@@ -192,8 +200,8 @@ describe('TreeWalker', () => {
 		it('Returns the first child node.', () => {
 			const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
 			const node = treeWalker.nextNode();
-			expect(node.firstChild).not.toBe(null);
-			expect(treeWalker.firstChild()).toBe(node.firstElementChild);
+			expect(node.firstChild !== null).toBe(true);
+			expect(treeWalker.firstChild() === node.firstElementChild).toBe(true);
 		});
 	});
 });

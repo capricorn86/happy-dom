@@ -72,6 +72,8 @@ export default class TreeWalker {
 			this.parentNode();
 		}
 
+		this.currentNode = null;
+
 		return null;
 	}
 

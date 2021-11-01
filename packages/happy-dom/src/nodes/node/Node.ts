@@ -192,6 +192,15 @@ export default class Node extends EventTarget implements INode {
 	public disconnectedCallback?(): void;
 
 	/**
+	 * Returns "true" if the node has child nodes.
+	 *
+	 * @returns "true" if the node has child nodes.
+	 */
+	public hasChildNodes(): boolean {
+		return this.childNodes.length > 0;
+	}
+
+	/**
 	 * Returns closest root node (Document or ShadowRoot).
 	 *
 	 * @param options Options.
