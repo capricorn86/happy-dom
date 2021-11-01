@@ -15,8 +15,9 @@ import { Global, Config } from '@jest/types';
 export default class HappyDOMEnvironment implements JestEnvironment {
 	public fakeTimers: LegacyFakeTimers<number> = null;
 	public fakeTimersModern: ModernFakeTimers = null;
-	public global: Global.Global = <Global.Global>(<undefined>new Window());
-	public moduleMocker: ModuleMocker = new ModuleMocker(<NodeJS.Global>this.global);
+	public window = new Window();
+	public global: Global.Global = <Global.Global>(<unknown>this.window);
+	public moduleMocker: ModuleMocker = new ModuleMocker(<typeof globalThis>(<unknown>this.window));
 
 	/**
 	 * Constructor.
@@ -37,9 +38,9 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.global.Buffer = Buffer;
 
 		// Needed as Jest is using it
-		this.global.global = this.global;
+		this.window.global = this.global;
 
-		JestUtil.installCommonGlobals(this.global, config.globals);
+		JestUtil.installCommonGlobals(<typeof globalThis>(<unknown>this.window), config.globals);
 
 		if (options && options.console) {
 			this.global.console = options.console;
@@ -48,7 +49,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 
 		this.fakeTimers = new LegacyFakeTimers({
 			config,
-			global: this.global,
+			global: <typeof globalThis>(<unknown>this.window),
 			moduleMocker: this.moduleMocker,
 			timerConfig: {
 				idToRef: (id: number) => id,
@@ -58,7 +59,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 
 		this.fakeTimersModern = new ModernFakeTimers({
 			config,
-			global: this.global
+			global: <typeof globalThis>(<unknown>this.window)
 		});
 	}
 

@@ -25,7 +25,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "node ./bin/build-lit-ts-config && tsc --project tmp/tsconfig.lit-element.json && tsc --project tmp/tsconfig.lit-html.json && tsc",
+		"compile": "node ./bin/build-lit-ts-config && tsc --project tmp/tsconfig.lit-reactive-element.json && tsc --project tmp/tsconfig.lit-element.json && tsc --project tmp/tsconfig.lit-html.json && tsc --project tmp/tsconfig.lit.json && node ./bin/transform-lit-require.js && node ./bin/copy-tsdef-for-lit.js && node ./bin/copy-package-json-for-lit.js && tsc",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
@@ -77,13 +77,18 @@
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1",
 		"vue": "^2.6.12",
-		"lit-element": "^2.4.0",
+        "lit": "^2.0.2",
+        "@lit/reactive-element": "^1.0.1",
+        "lit-element": "^3.0.0",
+        "lit-html": "^2.0.0",
 		"@angular/core": "^10.0.7",
 		"@angular/platform-browser-dynamic": "^10.0.7",
 		"@angular/platform-browser": "^10.0.7",
 		"@angular/compiler": "^10.0.7",
         "@angular/common": "^10.0.7",
         "jquery": "^3.5.1",
-		"zone.js": "^0.10.3"
+		"zone.js": "^0.10.3",
+        "glob": "^7.1.6",
+        "cpy": "^8.1.2"
 	}
 }

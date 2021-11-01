@@ -1,3 +1,4 @@
+import LitElementComponent from './LitElementComponent';
 import './LitElementComponent';
 
 const PROP1 = 'PROP1';
@@ -12,7 +13,8 @@ describe('LitElementComponent', () => {
 	});
 
 	it('Tests integration.', () => {
-		const shadowRoot = document.body.querySelector('lit-element-component').shadowRoot;
+		const litElement = <LitElementComponent>document.body.querySelector('lit-element-component');
+		const shadowRoot = litElement.shadowRoot;
 
 		expect(document.body.innerHTML).toBe(
 			`<lit-element-component prop1="${PROP1}"></lit-element-component>`
