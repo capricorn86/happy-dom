@@ -10,6 +10,8 @@ const GET_EXPECTED_HTML = (html: string): string =>
 	html
 		.replace('<?Question mark comment>', '<!--?Question mark comment-->')
 		.replace('<!Exclamation mark comment>', '<!--Exclamation mark comment-->')
+		.replace('<img>', '<img/>')
+		.replace('<self-closing-custom-tag />', '<self-closing-custom-tag></self-closing-custom-tag>')
 		.replace(/[\s]/gm, '');
 
 describe('XMLParser', () => {
