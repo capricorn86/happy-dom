@@ -18,6 +18,8 @@ export default `
 				<b>Bold</b>
 				<!-- Comment 2 !-->
 			</article>
+			<img>
+			<self-closing-custom-tag />
 		</body>
 	</html>
 `.trim();
