@@ -1,3 +1,5 @@
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import CSSParser from './CSSParser';
 import CSSRule from './CSSRule';
 import MediaList from './MediaList';
@@ -51,15 +53,27 @@ export default class CSSStyleSheet {
 	 *
 	 * @param rule Rule.
 	 * @param [index] Index.
+	 * @returns The newly inserterted rule's index.
 	 */
-	public insertRule(rule: string, index?: number): void {
+	public insertRule(rule: string, index?: number): number {
 		const rules = CSSParser.parseFromString(this, rule);
 
 		if (index !== undefined) {
+			if (index > this.cssRules.length) {
+				throw new DOMException(
+					'Index is more than the length of CSSRuleList.',
+					DOMExceptionNameEnum.indexSizeError
+				);
+			}
 			this.cssRules.splice(index, 0, ...rules);
-		} else {
-			this.cssRules.push(...rules);
+			return index;
 		}
+
+		const newIndex = this.cssRules.length;
+
+		this.cssRules.push(...rules);
+
+		return newIndex;
 	}
 
 	/**
