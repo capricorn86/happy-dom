@@ -1,9 +1,14 @@
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import CSSParser from './CSSParser';
 import CSSRule from './CSSRule';
 import MediaList from './MediaList';
 
 /**
  * Attr node interface.
+ *
+ * Reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet.
  */
 export default class CSSStyleSheet {
 	public value: string = null;
@@ -51,15 +56,39 @@ export default class CSSStyleSheet {
 	 *
 	 * @param rule Rule.
 	 * @param [index] Index.
+	 * @returns The newly inserterted rule's index.
 	 */
-	public insertRule(rule: string, index?: number): void {
+	public insertRule(rule: string, index?: number): number {
 		const rules = CSSParser.parseFromString(this, rule);
 
-		if (index !== undefined) {
-			this.cssRules.splice(index, 0, ...rules);
-		} else {
-			this.cssRules.push(...rules);
+		if (rules.length === 0) {
+			throw new DOMException('Invalid CSS rule.', DOMExceptionNameEnum.hierarchyRequestError);
 		}
+
+		if (rules.length > 1) {
+			throw new DOMException(
+				'Only one rule is allowed to be added.',
+				DOMExceptionNameEnum.syntaxError
+			);
+		}
+
+		if (index !== undefined) {
+			if (index > this.cssRules.length) {
+				throw new DOMException(
+					'Index is more than the length of CSSRuleList.',
+					DOMExceptionNameEnum.indexSizeError
+				);
+			}
+			this.cssRules.splice(index, 0);
+			this.cssRules.push(rules[0]);
+			return index;
+		}
+
+		const newIndex = this.cssRules.length;
+
+		this.cssRules.push(rules[0]);
+
+		return newIndex;
 	}
 
 	/**
