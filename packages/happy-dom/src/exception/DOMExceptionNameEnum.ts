@@ -1,5 +1,7 @@
 enum DOMExceptionNameEnum {
 	invalidStateError = 'InvalidStateError',
-	indexSizeError = 'IndexSizeError'
+	indexSizeError = 'IndexSizeError',
+	syntaxError = 'SyntaxError',
+	hierarchyRequestError = 'HierarchyRequestError'
 }
 export default DOMExceptionNameEnum;
