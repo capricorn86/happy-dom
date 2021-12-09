@@ -195,6 +195,19 @@ describe('Node', () => {
 			expect(text.parentElement).toBe(span1);
 		});
 
+		it('Returns document element.', () => {
+			const text1 = document.createTextNode('text1');
+			const text2 = document.createTextNode('text2');
+			const text3 = document.createTextNode('text3');
+
+			text1.appendChild(text2);
+			text2.appendChild(text3);
+
+			document.documentElement.appendChild(text1);
+
+			expect(text3.parentElement).toBe(document.documentElement);
+		});
+
 		it('Returns null if there is no parent node.', () => {
 			const text = document.createTextNode('text');
 

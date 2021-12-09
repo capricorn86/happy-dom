@@ -176,7 +176,7 @@ export default class Node extends EventTarget implements INode {
 	public get parentElement(): IElement {
 		let parent = this.parentNode;
 		while (parent && parent.nodeType !== Node.ELEMENT_NODE) {
-			parent = this.parentNode;
+			parent = parent.parentNode;
 		}
 		return <IElement>parent;
 	}
