@@ -609,6 +609,56 @@ describe('Element', () => {
 
 			expect(element.matches('.container.active')).toBe(true);
 		});
+
+		it('Checks if the element matches any selector in a string separated by comma.', () => {
+			const element = document.createElement('div');
+
+			element.className = 'container active';
+
+			expect(element.matches('.container, .active')).toBe(true);
+		});
+	});
+
+	describe('closest()', () => {
+		it('Finds the closest matching element when connected to DOM.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			const article = document.createElement('article');
+			const b = document.createElement('b');
+
+			span.className = 'span';
+
+			article.appendChild(b);
+			span.appendChild(article);
+			div.appendChild(span);
+
+			document.body.appendChild(div);
+
+			expect(b.closest('div') === div).toBe(true);
+			expect(b.closest('div span') === span).toBe(true);
+			expect(b.closest('div .span') === span).toBe(true);
+			expect(b.closest('div .span b') === b).toBe(true);
+			expect(b.closest('div .span article b') === b).toBe(true);
+		});
+
+		it('Finds the closest matching element when not connected to DOM.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			const article = document.createElement('article');
+			const b = document.createElement('b');
+
+			span.className = 'span';
+
+			article.appendChild(b);
+			span.appendChild(article);
+			div.appendChild(span);
+
+			expect(b.closest('div') === div).toBe(true);
+			expect(b.closest('div span') === span).toBe(true);
+			expect(b.closest('div .span') === span).toBe(true);
+			expect(b.closest('div .span b') === b).toBe(true);
+			expect(b.closest('div .span article b') === b).toBe(true);
+		});
 	});
 
 	describe('querySelectorAll()', () => {

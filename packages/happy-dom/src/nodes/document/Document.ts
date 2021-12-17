@@ -44,8 +44,9 @@ export default class Document extends Node implements IDocument {
 	public implementation: DOMImplementation;
 	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
+	public readonly isConnected: boolean = true;
 	public _readyStateManager: DocumentReadyStateManager = null;
-	protected _isConnected = true;
+	public _activeElement: IHTMLElement = null;
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
 	private _defaultView: Window = null;
@@ -207,6 +208,15 @@ export default class Document extends Node implements IDocument {
 			}
 		}
 		return styleSheets;
+	}
+
+	/**
+	 * Returns active element.
+	 *
+	 * @returns Active element.
+	 */
+	public get activeElement(): IHTMLElement {
+		return this._activeElement || this.body || this.documentElement || null;
 	}
 
 	/**

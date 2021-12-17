@@ -15,7 +15,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	 * @returns CSS style sheet.
 	 */
 	public get sheet(): CSSStyleSheet {
-		if (!this._isConnected) {
+		if (!this.isConnected) {
 			return null;
 		}
 		const styleSheet = new CSSStyleSheet();

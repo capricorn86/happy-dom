@@ -3,7 +3,7 @@ import Element from '../nodes/element/Element';
 
 const ATTRIBUTE_REGEXP = /\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']{0,1}([^"']+)["']{0,1}\]/g;
 const ATTRIBUTE_NAME_REGEXP = /[^a-zA-Z0-9-_$]/;
-const PSUEDO_REGEXP = /:([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|:([a-zA-Z-]+)/g;
+const PSUEDO_REGEXP = /:([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|:not\(([^)]+)\)|:([a-zA-Z-]+)/g;
 const CLASS_REGEXP = /\.([a-zA-Z0-9-_$]+)/g;
 const TAG_NAME_REGEXP = /^[a-zA-Z0-9-]+/;
 
@@ -29,7 +29,8 @@ export default class SelectorItem {
 	constructor(selector: string) {
 		this.isAll = selector === '*';
 		this.isID = !this.isAll ? selector.startsWith('#') : false;
-		this.isAttribute = !this.isAll && !this.isID && selector.includes('[');
+		this.isAttribute =
+			!this.isAll && !this.isID && selector.includes('[') && !selector.includes(':not(');
 		this.isPseudo = !this.isAll && !this.isID && selector.includes(':');
 		this.isClass = !this.isAll && !this.isID && new RegExp(CLASS_REGEXP, 'g').test(selector);
 		this.tagName = !this.isAll && !this.isID ? selector.match(TAG_NAME_REGEXP) : null;
@@ -84,24 +85,17 @@ export default class SelectorItem {
 			while ((match = regexp.exec(selector))) {
 				if (match[1] && !this.matchesNthChild(element, match[1], match[2])) {
 					return false;
-				} else if (match[3] && !this.matchesPsuedo(element, match[3])) {
+				} else if (match[3] && this.matchesAttribute(element, match[3])) {
+					return false;
+				} else if (match[4] && !this.matchesPsuedo(element, match[4])) {
 					return false;
 				}
 			}
 		}
 
 		// Attribute match
-		if (this.isAttribute) {
-			const regexp = new RegExp(ATTRIBUTE_REGEXP, 'g');
-
-			while ((match = regexp.exec(selector))) {
-				if (
-					(match[1] && !this.matchesAttributeName(element, match[1])) ||
-					(match[2] && !this.matchesAttributeNameAndValue(element, match[2], match[4], match[3]))
-				) {
-					return false;
-				}
-			}
+		if (this.isAttribute && !this.matchesAttribute(element, selector)) {
+			return false;
 		}
 
 		return true;
@@ -218,13 +212,38 @@ export default class SelectorItem {
 	}
 
 	/**
+	 * Matches attribute.
+	 *
+	 * @param element Element.
+	 * @param selector Selector.
+	 * @returns True if it is a match.
+	 */
+	private matchesAttribute(element: Element, selector: string): boolean {
+		const regexp = new RegExp(ATTRIBUTE_REGEXP, 'g');
+		let match;
+
+		while ((match = regexp.exec(selector))) {
+			const isPsuedo = match.index > 0 && selector[match.index] === '(';
+			if (
+				!isPsuedo &&
+				((match[1] && !this.matchesAttributeName(element, match[1])) ||
+					(match[2] && !this.matchesAttributeNameAndValue(element, match[2], match[4], match[3])))
+			) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Matches attribute name only.
 	 *
 	 * @param element Element.
 	 * @param attributeName Attribute name.
 	 * @returns True if it is a match.
 	 */
-	private matchesAttributeName(element, attributeName): boolean {
+	private matchesAttributeName(element: Element, attributeName: string): boolean {
 		if (ATTRIBUTE_NAME_REGEXP.test(attributeName)) {
 			throw new DOMException(`The selector "${this.selector}" is not valid.`);
 		}
@@ -243,10 +262,10 @@ export default class SelectorItem {
 	 * @returns True if it is a match.
 	 */
 	private matchesAttributeNameAndValue(
-		element,
-		attributeName,
-		attributeValue,
-		matchType = null
+		element: Element,
+		attributeName: string,
+		attributeValue: string,
+		matchType: string = null
 	): boolean {
 		const attribute = element._attributes[attributeName.toLowerCase()];
 		const value = attributeValue;

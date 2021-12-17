@@ -19,7 +19,8 @@ import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTe
 import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
 import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
-import { IHTMLLinkElement } from '../../../src';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
+import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement';
 import IResponse from '../../../src/window/IResponse';
 import ResourceFetcher from '../../../src/fetch/ResourceFetcher';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement';
@@ -245,6 +246,30 @@ describe('Document', () => {
 
 				done();
 			}, 0);
+		});
+	});
+
+	describe('get activeElement()', () => {
+		it('Returns the currently active element.', () => {
+			const div = <IHTMLElement>document.createElement('div');
+			const span = <IHTMLElement>document.createElement('span');
+
+			document.appendChild(div);
+			document.appendChild(span);
+
+			expect(document.activeElement === document.body).toBe(true);
+
+			div.focus();
+
+			expect(document.activeElement === div).toBe(true);
+
+			span.focus();
+
+			expect(document.activeElement === span).toBe(true);
+
+			span.blur();
+
+			expect(document.activeElement === document.body).toBe(true);
 		});
 	});
 

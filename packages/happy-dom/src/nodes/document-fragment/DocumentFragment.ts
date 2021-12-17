@@ -13,6 +13,7 @@ import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 export default class DocumentFragment extends Node implements IDocumentFragment {
 	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
 	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
+	public _rootNode: INode = this;
 
 	/**
 	 * Last element child.

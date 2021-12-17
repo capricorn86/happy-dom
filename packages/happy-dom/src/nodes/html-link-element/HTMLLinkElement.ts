@@ -6,6 +6,7 @@ import Document from '../document/Document';
 import IHTMLLinkElement from './IHTMLLinkElement';
 import Event from '../../event/Event';
 import ErrorEvent from '../../event/events/ErrorEvent';
+import INode from '../../nodes/node/INode';
 
 /**
  * HTML Link Element.
@@ -18,79 +19,6 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	public onload: (event: Event) => void = null;
 	public readonly sheet: CSSStyleSheet = null;
 	public _evaluateCSS = true;
-
-	/**
-	 * Returns "true" if connected to DOM.
-	 *
-	 * @returns "true" if connected.
-	 */
-	public get isConnected(): boolean {
-		return this._isConnected;
-	}
-
-	/**
-	 * Sets the connected state.
-	 *
-	 * @param isConnected "true" if connected.
-	 */
-	public set isConnected(isConnected) {
-		if (this._isConnected !== isConnected) {
-			this._isConnected = isConnected;
-
-			for (const child of this.childNodes) {
-				child.isConnected = isConnected;
-			}
-
-			// eslint-disable-next-line
-			if (this.shadowRoot) {
-				// eslint-disable-next-line
-				this.shadowRoot.isConnected = isConnected;
-			}
-
-			if (isConnected && this._evaluateCSS) {
-				const href = this.getAttributeNS(null, 'href');
-				const rel = this.getAttributeNS(null, 'rel');
-				if (href !== null && rel && rel.toLowerCase() === 'stylesheet') {
-					(<Document>this.ownerDocument)._readyStateManager.startTask();
-					ResourceFetcher.fetch({ window: this.ownerDocument.defaultView, url: href })
-						.then(code => {
-							const styleSheet = new CSSStyleSheet();
-							styleSheet.replaceSync(code);
-							(<CSSStyleSheet>this.sheet) = styleSheet;
-							this.dispatchEvent(new Event('load'));
-							(<Document>this.ownerDocument)._readyStateManager.endTask();
-						})
-						.catch(error => {
-							this.dispatchEvent(
-								new ErrorEvent('error', {
-									message: error.message,
-									error
-								})
-							);
-							this.ownerDocument.defaultView.dispatchEvent(
-								new ErrorEvent('error', {
-									message: error.message,
-									error
-								})
-							);
-							(<Document>this.ownerDocument)._readyStateManager.endTask();
-							if (
-								!this._listeners['error'] &&
-								!this.ownerDocument.defaultView._listeners['error']
-							) {
-								this.ownerDocument.defaultView.console.error(error);
-							}
-						});
-				}
-			}
-
-			if (isConnected && this.connectedCallback) {
-				this.connectedCallback();
-			} else if (!isConnected && this.disconnectedCallback) {
-				this.disconnectedCallback();
-			}
-		}
-	}
 
 	/**
 	 * Returns as.
@@ -285,5 +213,50 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 		}
 
 		return replacedAttribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public _connectToNode(parentNode: INode = null): void {
+		const isConnected = this.isConnected;
+		const isParentConnected = parentNode ? parentNode.isConnected : false;
+
+		super._connectToNode(parentNode);
+
+		if (isConnected !== isParentConnected && this._evaluateCSS) {
+			const href = this.getAttributeNS(null, 'href');
+			const rel = this.getAttributeNS(null, 'rel');
+
+			if (href !== null && rel && rel.toLowerCase() === 'stylesheet') {
+				(<Document>this.ownerDocument)._readyStateManager.startTask();
+				ResourceFetcher.fetch({ window: this.ownerDocument.defaultView, url: href })
+					.then(code => {
+						const styleSheet = new CSSStyleSheet();
+						styleSheet.replaceSync(code);
+						(<CSSStyleSheet>this.sheet) = styleSheet;
+						this.dispatchEvent(new Event('load'));
+						(<Document>this.ownerDocument)._readyStateManager.endTask();
+					})
+					.catch(error => {
+						this.dispatchEvent(
+							new ErrorEvent('error', {
+								message: error.message,
+								error
+							})
+						);
+						this.ownerDocument.defaultView.dispatchEvent(
+							new ErrorEvent('error', {
+								message: error.message,
+								error
+							})
+						);
+						(<Document>this.ownerDocument)._readyStateManager.endTask();
+						if (!this._listeners['error'] && !this.ownerDocument.defaultView._listeners['error']) {
+							this.ownerDocument.defaultView.console.error(error);
+						}
+					});
+			}
+		}
 	}
 }

@@ -1,3 +1,4 @@
+import PointerEvent from '../../../src/event/events/PointerEvent';
 import Document from '../../../src/nodes/document/Document';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
 import Window from '../../../src/window/Window';
@@ -240,36 +241,165 @@ describe('HTMLElement', () => {
 		});
 	}
 
-	for (const eventType of ['click', 'blur', 'focus', 'focusin', 'focusout']) {
-		describe(`${eventType}()`, () => {
-			it(`Dispatches a "${eventType}" event.`, () => {
-				let methodName = eventType;
-				let triggeredEvent = null;
+	describe('click()', () => {
+		it('Dispatches "click" event.', () => {
+			let triggeredEvent = null;
 
-				if (eventType === 'focusin') {
-					methodName = 'focus';
-				} else if (eventType === 'focusout') {
-					methodName = 'blur';
-				}
-
-				element.addEventListener(eventType, event => {
-					triggeredEvent = event;
-				});
-				element[methodName]();
-				expect(triggeredEvent).toEqual({
-					_immediatePropagationStopped: false,
-					_propagationStopped: false,
-					bubbles: true,
-					cancelable: false,
-					composed: true,
-					currentTarget: element,
-					defaultPrevented: false,
-					target: element,
-					type: eventType
-				});
+			element.addEventListener('click', event => {
+				triggeredEvent = event;
 			});
+
+			element.click();
+
+			const event = new PointerEvent('click', {
+				bubbles: true,
+				composed: true
+			});
+			event.target = element;
+			event.currentTarget = element;
+
+			expect(triggeredEvent).toEqual(event);
 		});
-	}
+	});
+
+	describe('blur()', () => {
+		it('Dispatches "blur" and "focusout" event.', () => {
+			let triggeredBlurEvent = null;
+			let triggeredFocusOutEvent = null;
+
+			document.body.appendChild(element);
+
+			element.addEventListener('blur', event => {
+				triggeredBlurEvent = event;
+			});
+
+			element.addEventListener('focusout', event => {
+				triggeredFocusOutEvent = event;
+			});
+
+			element.focus();
+			element.blur();
+
+			expect(triggeredBlurEvent.type).toBe('blur');
+			expect(triggeredBlurEvent.bubbles).toBe(true);
+			expect(triggeredBlurEvent.composed).toBe(true);
+			expect(triggeredBlurEvent.target === element).toBe(true);
+
+			expect(triggeredFocusOutEvent.type).toBe('focusout');
+			expect(triggeredFocusOutEvent.bubbles).toBe(true);
+			expect(triggeredFocusOutEvent.composed).toBe(true);
+			expect(triggeredFocusOutEvent.target === element).toBe(true);
+
+			expect(document.activeElement).toEqual(document.body);
+		});
+
+		it('Does not dispatch "blur" event if not connected to the DOM.', () => {
+			let triggeredEvent = null;
+
+			element.addEventListener('blur', event => {
+				triggeredEvent = event;
+			});
+
+			element.focus();
+			element.blur();
+
+			expect(triggeredEvent).toBe(null);
+		});
+
+		it('Does not dispatch "blur" event if it is not in focus.', () => {
+			let triggeredEvent = null;
+
+			document.body.appendChild(element);
+
+			element.addEventListener('blur', event => {
+				triggeredEvent = event;
+			});
+
+			element.blur();
+
+			expect(triggeredEvent).toBe(null);
+		});
+	});
+
+	describe('focus()', () => {
+		it('Dispatches "focus" and "focusin" event.', () => {
+			let triggeredFocusEvent = null;
+			let triggeredFocusInEvent = null;
+
+			document.body.appendChild(element);
+
+			element.addEventListener('focus', event => {
+				triggeredFocusEvent = event;
+			});
+
+			element.addEventListener('focusin', event => {
+				triggeredFocusInEvent = event;
+			});
+
+			element.focus();
+
+			expect(triggeredFocusEvent.type).toBe('focus');
+			expect(triggeredFocusEvent.bubbles).toBe(true);
+			expect(triggeredFocusEvent.composed).toBe(true);
+			expect(triggeredFocusEvent.target === element).toBe(true);
+
+			expect(triggeredFocusInEvent.type).toBe('focusin');
+			expect(triggeredFocusInEvent.bubbles).toBe(true);
+			expect(triggeredFocusInEvent.composed).toBe(true);
+			expect(triggeredFocusInEvent.target === element).toBe(true);
+
+			expect(document.activeElement).toEqual(element);
+		});
+
+		it('Does not dispatch "focus" event if not connected to the DOM.', () => {
+			let triggeredEvent = null;
+
+			element.addEventListener('focus', event => {
+				triggeredEvent = event;
+			});
+
+			element.focus();
+
+			expect(triggeredEvent).toBe(null);
+		});
+
+		it('Does not dispatch "focus" event if it is already focused.', () => {
+			let triggeredEvent = null;
+
+			document.body.appendChild(element);
+
+			element.focus();
+
+			element.addEventListener('focus', event => {
+				triggeredEvent = event;
+			});
+
+			element.focus();
+
+			expect(triggeredEvent).toBe(null);
+		});
+
+		it('Dispatches "blur" event on the previously focused element.', () => {
+			const previousElement = <HTMLElement>document.createElement('div');
+			let triggeredEvent = null;
+
+			document.body.appendChild(element);
+			document.body.appendChild(previousElement);
+
+			previousElement.focus();
+
+			previousElement.addEventListener('blur', event => {
+				triggeredEvent = event;
+			});
+
+			element.focus();
+
+			expect(triggeredEvent.type).toBe('blur');
+			expect(triggeredEvent.bubbles).toBe(true);
+			expect(triggeredEvent.composed).toBe(true);
+			expect(triggeredEvent.target === previousElement).toBe(true);
+		});
+	});
 
 	describe('setAttributeNode()', () => {
 		it('Sets css text of existing CSSStyleDeclaration.', () => {

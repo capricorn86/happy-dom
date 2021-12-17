@@ -42,6 +42,7 @@ import FileReader from '../file/FileReader';
 import History from '../history/History';
 import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
 import MouseEvent from '../event/events/MouseEvent';
+import PointerEvent from '../event/events/PointerEvent';
 import FocusEvent from '../event/events/FocusEvent';
 import WheelEvent from '../event/events/WheelEvent';
 import DataTransfer from '../event/DataTransfer';
@@ -111,6 +112,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly AnimationEvent = AnimationEvent;
 	public readonly KeyboardEvent = KeyboardEvent;
 	public readonly MouseEvent = MouseEvent;
+	public readonly PointerEvent = PointerEvent;
 	public readonly FocusEvent = FocusEvent;
 	public readonly WheelEvent = WheelEvent;
 	public readonly InputEvent = InputEvent;

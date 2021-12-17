@@ -598,7 +598,7 @@ export default class Element extends Node implements IElement {
 		(<IDocument>this.shadowRoot.ownerDocument) = this.ownerDocument;
 		(<Element>this.shadowRoot.host) = this;
 		(<string>this.shadowRoot.mode) = shadowRootInit.mode;
-		this.shadowRoot.isConnected = this.isConnected;
+		(<ShadowRoot>this.shadowRoot)._connectToNode(this);
 		return this.shadowRoot;
 	}
 
@@ -636,7 +636,46 @@ export default class Element extends Node implements IElement {
 	 * @returns "true" if matching.
 	 */
 	public matches(selector: string): boolean {
-		return new SelectorItem(selector).match(this);
+		for (const part of selector.split(',')) {
+			if (new SelectorItem(part.trim()).match(this)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Traverses the Element and its parents (heading toward the document root) until it finds a node that matches the provided selector string.
+	 *
+	 * @param selector Selector.
+	 * @returns Closest matching element.
+	 */
+	public closest(selector: string): IElement {
+		let rootElement: IElement = this.ownerDocument.documentElement;
+		if (!this.isConnected) {
+			rootElement = this;
+			while (rootElement.parentNode) {
+				rootElement = <IElement>rootElement.parentNode;
+			}
+		}
+		const elements = rootElement.querySelectorAll(selector);
+
+		// eslint-disable-next-line
+		let parent: IElement = this;
+		while (parent) {
+			if (elements.includes(parent)) {
+				return parent;
+			}
+			parent = parent.parentElement;
+		}
+
+		// QuerySelectorAll() will not match the element it is looking in when searched for
+		// Therefore we need to check if it matches the root
+		if (rootElement.matches(selector)) {
+			return rootElement;
+		}
+
+		return null;
 	}
 
 	/**

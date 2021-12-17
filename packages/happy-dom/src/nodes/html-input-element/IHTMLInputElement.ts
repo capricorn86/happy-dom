@@ -35,7 +35,6 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	allowdirs: string;
 	autocomplete: string;
 	src: string;
-	defaultvalue: string;
 	readOnly: boolean;
 	disabled: boolean;
 	autofocus: boolean;

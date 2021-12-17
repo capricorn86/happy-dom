@@ -4,6 +4,7 @@ import XMLSerializer from '../../xml-serializer/XMLSerializer';
 import IElement from '../element/IElement';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import IShadowRoot from './IShadowRoot';
+import IHTMLElement from '../../nodes/html-element/IHTMLElement';
 
 /**
  * ShadowRoot.
@@ -40,6 +41,19 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
 			this.appendChild(node);
 		}
+	}
+
+	/**
+	 * Returns active element.
+	 *
+	 * @returns Active element.
+	 */
+	public get activeElement(): IHTMLElement {
+		const activeElement: IHTMLElement = this.ownerDocument['_activeElement'];
+		if (activeElement && activeElement.getRootNode() === this) {
+			return activeElement;
+		}
+		return null;
 	}
 
 	/**
