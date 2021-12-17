@@ -9,7 +9,6 @@ import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import INodeList from './INodeList';
 import NodeListFactory from './NodeListFactory';
-import { IShadowRoot } from '../..';
 
 /**
  * Node.
@@ -27,9 +26,8 @@ export default class Node extends EventTarget implements INode {
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
 	public readonly childNodes: INodeList<INode> = NodeListFactory.create();
-
-	// Protected properties
-	protected _isConnected = false;
+	public readonly isConnected: boolean = false;
+	public _rootNode: INode = null;
 
 	// Custom Properties (not part of HTML standard)
 	protected _observers: MutationObserverListener[] = [];
@@ -40,42 +38,6 @@ export default class Node extends EventTarget implements INode {
 	constructor() {
 		super();
 		this.ownerDocument = (<typeof Node>this.constructor).ownerDocument;
-	}
-
-	/**
-	 * Returns "true" if connected to DOM.
-	 *
-	 * @returns "true" if connected.
-	 */
-	public get isConnected(): boolean {
-		return this._isConnected;
-	}
-
-	/**
-	 * Sets the connected state.
-	 *
-	 * @param isConnected "true" if connected.
-	 */
-	public set isConnected(isConnected) {
-		if (this._isConnected !== isConnected) {
-			this._isConnected = isConnected;
-
-			if (isConnected && this.connectedCallback) {
-				this.connectedCallback();
-			} else if (!isConnected && this.disconnectedCallback) {
-				this.disconnectedCallback();
-			}
-
-			for (const child of this.childNodes) {
-				child.isConnected = isConnected;
-			}
-
-			// eslint-disable-next-line
-			if ((<any>this).shadowRoot) {
-				// eslint-disable-next-line
-				(<any>this).shadowRoot.isConnected = isConnected;
-			}
-		}
 	}
 
 	/**
@@ -208,21 +170,15 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public getRootNode(options?: { composed: boolean }): INode {
-		// eslint-disable-next-line
-        let parent: INode = this;
-
-		while (!!parent) {
-			if (!parent.parentNode) {
-				if (!options?.composed || !(<IShadowRoot>parent).host) {
-					return parent;
-				}
-				parent = (<IShadowRoot>parent).host;
-			} else {
-				parent = parent.parentNode;
-			}
+		if (!this.isConnected) {
+			return this;
 		}
 
-		return null;
+		if (this._rootNode && !options?.composed) {
+			return this._rootNode;
+		}
+
+		return this.ownerDocument;
 	}
 
 	/**
@@ -234,8 +190,11 @@ export default class Node extends EventTarget implements INode {
 	public cloneNode(deep = false): INode {
 		const clone = new (<typeof Node>this.constructor)();
 
-		for (const node of clone.childNodes.slice()) {
-			node.parentNode.removeChild(node);
+		// Document has childNodes directly when it is created
+		if (clone.childNodes.length) {
+			for (const node of clone.childNodes.slice()) {
+				node.parentNode.removeChild(node);
+			}
 		}
 
 		if (deep) {
@@ -281,8 +240,7 @@ export default class Node extends EventTarget implements INode {
 
 		this.childNodes.push(node);
 
-		(<Node>node.parentNode) = this;
-		node.isConnected = this.isConnected;
+		(<Node>node)._connectToNode(this);
 
 		// MutationObserver
 		if (this._observers.length > 0) {
@@ -318,8 +276,7 @@ export default class Node extends EventTarget implements INode {
 
 		this.childNodes.splice(index, 1);
 
-		(<Node>node.parentNode) = null;
-		node.isConnected = false;
+		(<Node>node)._connectToNode(null);
 
 		// MutationObserver
 		if (this._observers.length > 0) {
@@ -384,8 +341,7 @@ export default class Node extends EventTarget implements INode {
 
 		this.childNodes.splice(index, 0, newNode);
 
-		(<Node>newNode.parentNode) = this;
-		newNode.isConnected = this.isConnected;
+		(<Node>newNode)._connectToNode(this);
 
 		// MutationObserver
 		if (this._observers.length > 0) {
@@ -432,8 +388,16 @@ export default class Node extends EventTarget implements INode {
 
 		const returnValue = super.dispatchEvent(event);
 
-		if (event.bubbles && this.parentNode !== null && !event._propagationStopped) {
-			return this.parentNode.dispatchEvent(event);
+		if (event.bubbles && !event._propagationStopped) {
+			if (this.parentNode) {
+				return this.parentNode.dispatchEvent(event);
+			}
+
+			// eslint-disable-next-line
+			if(event.composed && (<any>this).host) {
+				// eslint-disable-next-line
+				return (<any>this).host.dispatchEvent(event);
+			}
 		}
 
 		return returnValue;
@@ -477,6 +441,40 @@ export default class Node extends EventTarget implements INode {
 		if (listener.options.subtree) {
 			for (const node of this.childNodes) {
 				(<Node>node)._unobserve(listener);
+			}
+		}
+	}
+
+	/**
+	 * Connects this element to another element.
+	 *
+	 * @param parentNode Parent node.
+	 */
+	public _connectToNode(parentNode: INode = null): void {
+		const isConnected = !!parentNode && parentNode.isConnected;
+
+		if (this.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+			(<INode>this.parentNode) = parentNode;
+			(<Node>this)._rootNode = isConnected && parentNode ? (<Node>parentNode)._rootNode : null;
+		}
+
+		if (this.isConnected !== isConnected) {
+			(<boolean>this.isConnected) = isConnected;
+
+			if (isConnected && this.connectedCallback) {
+				this.connectedCallback();
+			} else if (!isConnected && this.disconnectedCallback) {
+				this.disconnectedCallback();
+			}
+
+			for (const child of this.childNodes) {
+				(<Node>child)._connectToNode(this);
+			}
+
+			// eslint-disable-next-line
+			if ((<any>this).shadowRoot) {
+				// eslint-disable-next-line
+				(<any>this).shadowRoot._connectToNode(this);
 			}
 		}
 	}

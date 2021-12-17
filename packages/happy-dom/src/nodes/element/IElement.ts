@@ -153,6 +153,14 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	matches(selector: string): boolean;
 
 	/**
+	 * Traverses the Element and its parents (heading toward the document root) until it finds a node that matches the provided selector string.
+	 *
+	 * @param selector Selector.
+	 * @returns Closest matching element.
+	 */
+	closest(selector: string): IElement;
+
+	/**
 	 * The setAttributeNode() method adds a new Attr node to the specified element.
 	 *
 	 * @param attribute Attribute.

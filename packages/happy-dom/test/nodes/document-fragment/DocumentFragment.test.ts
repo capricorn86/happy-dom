@@ -279,8 +279,10 @@ describe('DocumentFragment', () => {
 
 			const clone = documentFragment.cloneNode(false);
 
-			expect(clone).toEqual({ ...documentFragment, childNodes: [], children: [] });
-			expect(documentFragment !== clone).toBe(true);
+			expect(clone.nodeType).toBe(Node.DOCUMENT_FRAGMENT_NODE);
+			expect(clone._rootNode).toBe(clone);
+			expect(clone.childNodes.length).toBe(0);
+			expect(clone.children.length).toBe(0);
 		});
 
 		it('Makes a deep clone of the document fragment.', () => {
@@ -294,7 +296,8 @@ describe('DocumentFragment', () => {
 
 			const clone = documentFragment.cloneNode(true);
 
-			expect(clone).toEqual(documentFragment);
+			expect(clone.nodeType).toBe(Node.DOCUMENT_FRAGMENT_NODE);
+			expect(clone._rootNode).toBe(clone);
 			expect(clone.childNodes.length).toBe(3);
 			expect(clone.children).toEqual(
 				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)

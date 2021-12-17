@@ -350,6 +350,15 @@ describe('QuerySelector', () => {
 			expect(elements[4]).toBe(container.children[1].children[0]);
 		});
 
+		it('Returns all elements matching "span:not([type=hidden])".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('span:not([type=hidden])');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0]).toBe(container.children[0].children[1].children[1]);
+		});
+
 		it('Returns all span elements matching span:nth-child(1) or span:nth-child(2).', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;

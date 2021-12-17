@@ -25,7 +25,6 @@ export default [
 	'OverconstrainedError',
 	'PageTransitionEvent',
 	'PaymentRequestUpdateEvent',
-	'PointerEvent',
 	'PopStateEvent',
 	'ProgressEvent',
 	'RelatedEvent',

@@ -8,7 +8,7 @@ export default interface INode extends IEventTarget {
 	readonly parentElement: IElement;
 	readonly nodeType: number;
 	readonly childNodes: INode[];
-	isConnected: boolean;
+	readonly isConnected: boolean;
 	readonly nodeValue: string;
 	readonly nodeName: string;
 	readonly previousSibling: INode;

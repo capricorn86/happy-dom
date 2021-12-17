@@ -37,9 +37,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	// Type specific: file
 	public files: File[] = [];
 
-	// Not categorized
-	public defaultValue = '';
-
 	// Type specific: text/password/search/tel/url/week/month
 	private _selectionStart = null;
 	private _selectionEnd = null;
@@ -384,21 +381,21 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
-	 * Returns defaultvalue.
+	 * Returns defaultValue.
 	 *
 	 * @returns Defaultvalue.
 	 */
-	public get defaultvalue(): string {
+	public get defaultValue(): string {
 		return this.getAttributeNS(null, 'defaultvalue') || '';
 	}
 
 	/**
-	 * Sets defaultvalue.
+	 * Sets defaultValue.
 	 *
-	 * @param defaultvalue Defaultvalue.
+	 * @param defaultValue Defaultvalue.
 	 */
-	public set defaultvalue(defaultvalue: string) {
-		this.setAttributeNS(null, 'defaultvalue', defaultvalue);
+	public set defaultValue(defaultValue: string) {
+		this.setAttributeNS(null, 'defaultvalue', defaultValue);
 	}
 
 	/**
@@ -778,6 +775,21 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public get valueAsNumber(): number {
 		return this.value ? parseFloat(this.value) : NaN;
+	}
+
+	/**
+	 * Selects the text.
+	 */
+	public select(): void {
+		if (!this._isSelectionSupported()) {
+			return null;
+		}
+
+		this._selectionStart = 0;
+		this._selectionEnd = this.value.length;
+		this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
 	}
 
 	/**

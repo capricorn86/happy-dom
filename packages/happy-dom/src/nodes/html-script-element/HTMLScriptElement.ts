@@ -4,6 +4,7 @@ import IHTMLScriptElement from './IHTMLScriptElement';
 import ScriptUtility from './ScriptUtility';
 import Event from '../../event/Event';
 import ErrorEvent from '../../event/events/ErrorEvent';
+import INode from '../../nodes/node/INode';
 
 /**
  * HTML Script Element.
@@ -15,55 +16,6 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
 	public _evaluateScript = true;
-
-	/**
-	 * Returns "true" if connected to DOM.
-	 *
-	 * @returns "true" if connected.
-	 */
-	public get isConnected(): boolean {
-		return this._isConnected;
-	}
-
-	/**
-	 * Sets the connected state.
-	 *
-	 * @param isConnected "true" if connected.
-	 */
-	public set isConnected(isConnected) {
-		if (this._isConnected !== isConnected) {
-			this._isConnected = isConnected;
-
-			for (const child of this.childNodes) {
-				child.isConnected = isConnected;
-			}
-
-			// eslint-disable-next-line
-			if (this.shadowRoot) {
-				// eslint-disable-next-line
-				this.shadowRoot.isConnected = isConnected;
-			}
-
-			if (isConnected && this._evaluateScript) {
-				const src = this.getAttributeNS(null, 'src');
-
-				if (src !== null) {
-					ScriptUtility.loadExternalScript(this);
-				} else {
-					const textContent = this.textContent;
-					if (textContent) {
-						this.ownerDocument.defaultView.eval(textContent);
-					}
-				}
-			}
-
-			if (isConnected && this.connectedCallback) {
-				this.connectedCallback();
-			} else if (!isConnected && this.disconnectedCallback) {
-				this.disconnectedCallback();
-			}
-		}
-	}
 
 	/**
 	 * Returns type.
@@ -225,5 +177,28 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 */
 	public cloneNode(deep = false): IHTMLScriptElement {
 		return <IHTMLScriptElement>super.cloneNode(deep);
+	}
+
+	/**
+	 * @override
+	 */
+	public _connectToNode(parentNode: INode = null): void {
+		const isConnected = this.isConnected;
+		const isParentConnected = parentNode ? parentNode.isConnected : false;
+
+		super._connectToNode(parentNode);
+
+		if (isConnected !== isParentConnected && this._evaluateScript) {
+			const src = this.getAttributeNS(null, 'src');
+
+			if (src !== null) {
+				ScriptUtility.loadExternalScript(this);
+			} else {
+				const textContent = this.textContent;
+				if (textContent) {
+					this.ownerDocument.defaultView.eval(textContent);
+				}
+			}
+		}
 	}
 }

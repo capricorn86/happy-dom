@@ -94,23 +94,6 @@ describe('Node', () => {
 		});
 	});
 
-	describe('set isConnected()', () => {
-		it('Sets an element and all its children to be connected.', () => {
-			const div = document.createElement('div');
-			const span = document.createElement('span');
-			const text = document.createTextNode('text');
-
-			div.appendChild(span);
-			span.appendChild(text);
-
-			div.isConnected = true;
-
-			expect(div.isConnected).toBe(true);
-			expect(span.isConnected).toBe(true);
-			expect(text.isConnected).toBe(true);
-		});
-	});
-
 	describe('get nodeValue()', () => {
 		it('Returns null.', () => {
 			expect(new Node().nodeValue).toBe(null);
@@ -261,7 +244,7 @@ describe('Node', () => {
 
 			const rootNode = customElement.shadowRoot.querySelector('span').getRootNode();
 
-			expect(rootNode).toBe(customElement.shadowRoot);
+			expect(rootNode === customElement.shadowRoot).toBe(true);
 		});
 
 		it('Returns Document when used on a node inside a ShadowRoot and the option "composed" is set to "true".', () => {
@@ -273,7 +256,7 @@ describe('Node', () => {
 				.querySelector('span')
 				.getRootNode({ composed: true });
 
-			expect(rootNode).toBe(document);
+			expect(rootNode === document).toBe(true);
 		});
 
 		it('Returns Document when the node is not inside a ShadowRoot.', () => {
@@ -285,7 +268,7 @@ describe('Node', () => {
 
 			const rootNode = spanElement.getRootNode();
 
-			expect(rootNode).toBe(document);
+			expect(rootNode === document).toBe(true);
 		});
 	});
 

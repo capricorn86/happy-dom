@@ -23,6 +23,7 @@ export default interface IDocument extends IParentNode {
 	readonly doctype: IDocumentType;
 	readonly body: IHTMLElement;
 	readonly head: IHTMLElement;
+	readonly activeElement: IHTMLElement;
 
 	/**
 	 * Replaces the document HTML with new HTML.
