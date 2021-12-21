@@ -94,7 +94,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Local name.
 	 */
 	public get localName(): string {
-		return this.tagName.toLowerCase();
+		return this.tagName ? this.tagName.toLowerCase() : 'unknown';
 	}
 
 	/**
