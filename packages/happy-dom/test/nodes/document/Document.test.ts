@@ -674,7 +674,6 @@ describe('Document', () => {
 
 		it('Creates a custom element with namespece set to SVG and can set the style.', () => {
 			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
-			console.log(svg);
 			svg.style.cssText = 'user-select:none;';
 			expect(svg.style.cssText).toBe('user-select:none;');
 		});
