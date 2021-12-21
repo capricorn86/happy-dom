@@ -189,4 +189,33 @@ describe('SVGSVGElement', () => {
 			expect(element.createSVGTransform() instanceof SVGTransform).toBe(true);
 		});
 	});
+
+	describe('get style()', () => {
+		it('Returns styles.', () => {
+            element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
+			expect(element.style.length).toEqual(2);
+			expect(element.style[0]).toEqual('border-radius');
+			expect(element.style[1]).toEqual('padding');
+			expect(element.style.borderRadius).toEqual('2px');
+			expect(element.style.padding).toEqual('2px');
+			expect(element.style.cssText).toEqual('border-radius: 2px; padding: 2px;');
+
+			element.setAttribute('style', 'border-radius: 4px; padding: 4px;');
+			expect(element.style.length).toEqual(2);
+			expect(element.style[0]).toEqual('border-radius');
+			expect(element.style[1]).toEqual('padding');
+			expect(element.style.borderRadius).toEqual('4px');
+			expect(element.style.padding).toEqual('4px');
+			expect(element.style.cssText).toEqual('border-radius: 4px; padding: 4px;');
+		});
+	});
+	describe('removeAttributeNode()', () => {
+		it('Removes property from CSSStyleDeclaration.', () => {
+			element.style.background = 'green';
+			element.style.color = 'black';
+			element.removeAttribute('style');
+			expect(element.style.length).toEqual(0);
+			expect(element.style.cssText).toEqual('');
+		});
+	});
 });
