@@ -1,6 +1,8 @@
+import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
 import Element from '../element/Element';
 import ISVGElement from './ISVGElement';
 import ISVGSVGElement from './ISVGSVGElement';
+import Attr from '../../attribute/Attr';
 
 /**
  * SVG Element.
@@ -9,6 +11,8 @@ import ISVGSVGElement from './ISVGSVGElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/SVGElement.
  */
 export default class SVGElement extends Element implements ISVGElement {
+	private _style: CSSStyleDeclaration = null;
+
 	/**
 	 * Returns viewport.
 	 *
@@ -47,4 +51,48 @@ export default class SVGElement extends Element implements ISVGElement {
 		}
 		return dataset;
 	}
+
+	/**
+	 * Returns style.
+	 *
+	 * @returns Style.
+	 */
+	public get style(): CSSStyleDeclaration {
+		if (!this._style) {
+			this._style = new CSSStyleDeclaration(this._attributes);
+		}
+		return this._style;
+	}
+
+	/**
+	 * The setAttributeNode() method adds a new Attr node to the specified element.
+	 *
+	 * @override
+	 * @param attribute Attribute.
+	 * @returns Replaced attribute.
+	 */
+	public setAttributeNode(attribute: Attr): Attr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		if (attribute.name === 'style' && this._style) {
+			this._style.cssText = attribute.value;
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * Removes an Attr node.
+	 *
+	 * @override
+	 * @param attribute Attribute.
+	 */
+	public removeAttributeNode(attribute: Attr): void {
+		super.removeAttributeNode(attribute);
+
+		if (attribute.name === 'style' && this._style) {
+			this._style.cssText = '';
+		}
+	}
+
 }
