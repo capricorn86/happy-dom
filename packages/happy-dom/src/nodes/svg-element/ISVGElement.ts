@@ -11,5 +11,5 @@ export default interface ISVGElement extends IElement {
 	readonly viewportElement: ISVGElement;
 	readonly ownerSVGElement: ISVGSVGElement;
 	readonly dataset: { [key: string]: string };
-	style: CSSStyleDeclaration;
+	readonly style: CSSStyleDeclaration;
 }

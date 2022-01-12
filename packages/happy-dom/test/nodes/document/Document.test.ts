@@ -25,6 +25,7 @@ import IResponse from '../../../src/window/IResponse';
 import ResourceFetcher from '../../../src/fetch/ResourceFetcher';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement';
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum';
+import { ISVGElement } from '../../../src';
 
 describe('Document', () => {
 	let window: Window;
@@ -673,9 +674,9 @@ describe('Document', () => {
 		});
 
 		it('Creates a custom element with namespace set to SVG and can set the style.', () => {
-			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
+			const svg = <ISVGElement>document.createElementNS(NamespaceURI.svg, 'svg');
 			svg.style.cssText = 'user-select:none;';
-			expect(svg.style.cssText).toBe('user-select:none;');
+			expect(svg.style.cssText).toBe('user-select: none;');
 		});
 	});
 

@@ -123,6 +123,20 @@ describe('Element', () => {
 			expect(element.childNodes.length).toBe(1);
 			expect((<Text>element.childNodes[0]).textContent).toBe('new_text');
 		});
+
+		it('Removes all child nodes if textContent is set to empty string.', () => {
+			const div = document.createElement('div');
+			const textNode1 = document.createTextNode('text1');
+			const textNode2 = document.createTextNode('text2');
+
+			element.appendChild(div);
+			element.appendChild(textNode1);
+			element.appendChild(textNode2);
+
+			element.textContent = '';
+
+			expect(element.childNodes.length).toBe(0);
+		});
 	});
 
 	describe('get innerHTML()', () => {
@@ -579,6 +593,19 @@ describe('Element', () => {
 			expect(document.body.childNodes[1].nodeType).toBe(Node.TEXT_NODE);
 			expect(document.body.childNodes[1].textContent).toEqual(text);
 			expect(document.body.childNodes[2]).toBe(sibling);
+		});
+
+		it('Does nothing is an emptry string is sent.', () => {
+			const parent = document.createElement('div');
+			const sibling = document.createElement('div');
+
+			document.body.appendChild(parent);
+			document.body.appendChild(sibling);
+			parent.insertAdjacentText('afterend', '');
+
+			expect(parent.childNodes).toEqual([]);
+			expect(document.body.childNodes[0]).toBe(parent);
+			expect(document.body.childNodes[1]).toBe(sibling);
 		});
 	});
 

@@ -139,7 +139,9 @@ export default class Element extends Node implements IElement {
 		for (const child of this.childNodes.slice()) {
 			this.removeChild(child);
 		}
-		this.appendChild(this.ownerDocument.createTextNode(textContent));
+		if (textContent) {
+			this.appendChild(this.ownerDocument.createTextNode(textContent));
+		}
 	}
 
 	/**
@@ -454,6 +456,9 @@ export default class Element extends Node implements IElement {
 	 * @param text String to insert.
 	 */
 	public insertAdjacentText(position: TInsertAdjacentPositions, text: string): void {
+		if (!text) {
+			return;
+		}
 		const textNode = <IText>this.ownerDocument.createTextNode(text);
 		this.insertAdjacentElement(position, textNode);
 	}

@@ -192,7 +192,7 @@ describe('SVGSVGElement', () => {
 
 	describe('get style()', () => {
 		it('Returns styles.', () => {
-            element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
+			element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
 			expect(element.style.length).toEqual(2);
 			expect(element.style[0]).toEqual('border-radius');
 			expect(element.style[1]).toEqual('padding');
