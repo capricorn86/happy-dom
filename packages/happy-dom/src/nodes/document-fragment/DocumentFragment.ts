@@ -66,7 +66,9 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 		for (const child of this.childNodes.slice()) {
 			this.removeChild(child);
 		}
-		this.appendChild(this.ownerDocument.createTextNode(textContent));
+		if (textContent) {
+			this.appendChild(this.ownerDocument.createTextNode(textContent));
+		}
 	}
 
 	/**

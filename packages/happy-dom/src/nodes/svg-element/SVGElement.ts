@@ -94,5 +94,4 @@ export default class SVGElement extends Element implements ISVGElement {
 			this._style.cssText = '';
 		}
 	}
-
 }

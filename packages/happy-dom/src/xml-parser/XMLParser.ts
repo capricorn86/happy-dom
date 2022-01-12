@@ -145,7 +145,7 @@ export default class XMLParser {
 		let match;
 
 		while ((match = commentRegExp.exec(text))) {
-			if (match.index > 0) {
+			if (match.index > 0 && lastIndex !== match.index) {
 				const textNode = document.createTextNode(text.substring(lastIndex, match.index));
 				nodes.push(textNode);
 			}

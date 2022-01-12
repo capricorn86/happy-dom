@@ -98,6 +98,20 @@ describe('DocumentFragment', () => {
 			expect(documentFragment.childNodes.length).toBe(1);
 			expect((<Text>documentFragment.childNodes[0]).textContent).toBe('new_text');
 		});
+
+		it('Removes all child nodes if textContent is set to empty string.', () => {
+			const div = document.createElement('div');
+			const textNode1 = document.createTextNode('text1');
+			const textNode2 = document.createTextNode('text2');
+
+			documentFragment.appendChild(div);
+			documentFragment.appendChild(textNode1);
+			documentFragment.appendChild(textNode2);
+
+			documentFragment.textContent = '';
+
+			expect(documentFragment.childNodes.length).toBe(0);
+		});
 	});
 
 	describe('append()', () => {
