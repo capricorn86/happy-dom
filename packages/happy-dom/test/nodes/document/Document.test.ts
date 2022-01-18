@@ -274,6 +274,12 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get location()', () => {
+		it('Returns the current location', () => {
+			expect(document.location === window.location).toBe(true);
+		});
+	});
+
 	describe('append()', () => {
 		it('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');
