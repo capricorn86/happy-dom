@@ -33,6 +33,7 @@ import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement';
 import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum';
 import DocumentReadyStateManager from './DocumentReadyStateManager';
+import Location from '../../location/Location';
 
 /**
  * Document.
@@ -217,6 +218,15 @@ export default class Document extends Node implements IDocument {
 	 */
 	public get activeElement(): IHTMLElement {
 		return this._activeElement || this.body || this.documentElement || null;
+	}
+
+	/**
+	 * Returns location.
+	 *
+	 * @returns Location.
+	 */
+	public get location(): Location {
+		return this._defaultView.location;
 	}
 
 	/**
