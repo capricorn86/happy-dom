@@ -9,6 +9,8 @@ import IHTMLStyleElement from './IHTMLStyleElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLStyleElement.
  */
 export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleElement {
+	private _styleSheet: CSSStyleSheet | null = null;
+
 	/**
 	 * Returns CSS style sheet.
 	 *
@@ -18,9 +20,11 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 		if (!this.isConnected) {
 			return null;
 		}
-		const styleSheet = new CSSStyleSheet();
-		styleSheet.replaceSync(this.innerText);
-		return styleSheet;
+		if (!this._styleSheet) {
+			this._styleSheet = new CSSStyleSheet();
+			this._styleSheet.replaceSync(this.innerText);
+		}
+		return this._styleSheet
 	}
 
 	/**
