@@ -43,4 +43,28 @@ describe('ClassList', () => {
 			expect(classList.contains('class')).toBe(true);
 		});
 	});
+
+	describe('toggle()', () => {
+		it('Adds a class from the list when not existing.', () => {
+			expect(classList.toggle('class')).toBe(true);
+			expect(element.className).toBe('class');
+		});
+		it('Adds a class from the list when force is set.', () => {
+			classList.add('classA');
+			expect(classList.toggle('classA', true)).toBe(true);
+			expect(classList.toggle('classB', true)).toBe(true);
+			expect(element.className).toBe('classA classB');
+		});
+		it('Removes a class from the list when existing.', () => {
+			classList.add('class');
+			expect(classList.toggle('class')).toBe(false);
+			expect(element.className).toBe('');
+		});
+		it('Adds a class from the list when force is set.', () => {
+			classList.add('classA');
+			expect(classList.toggle('classA', false)).toBe(false);
+			expect(classList.toggle('classB', false)).toBe(false);
+			expect(element.className).toBe('');
+		});
+	});
 });

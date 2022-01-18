@@ -65,4 +65,28 @@ export default class ClassList {
 		const list = attr ? attr.split(' ') : [];
 		return list.includes(className);
 	}
+
+	/**
+	 * Toggle a class name.
+	 *
+	 * @param className A string representing the class name you want to toggle.
+	 * @param force If included, turns the toggle into a one way-only operation. If set to `false`, then class name will only be removed, but not added. If set to `true`, then class name will only be added, but not removed.
+	 * @returns A boolean value, `true` or `false`, indicating whether class name is in the list after the call or not.
+	 */
+	public toggle(className: string, force?: boolean): boolean {
+		let shouldAdd: boolean;
+		if (force !== undefined) {
+			shouldAdd = force;
+		} else {
+			shouldAdd = !this.contains(className);
+		}
+
+		if (shouldAdd) {
+			this.add(className);
+			return true;
+		}
+
+		this.remove(className);
+		return false;
+	}
 }
