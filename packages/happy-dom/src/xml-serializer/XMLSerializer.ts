@@ -3,7 +3,7 @@ import Node from '../nodes/node/Node';
 import SelfClosingElements from '../config/SelfClosingElements';
 import UnclosedElements from '../config/UnclosedElements';
 import DocumentType from '../nodes/document-type/DocumentType';
-import { encode } from 'he';
+import { escape } from 'he';
 import INode from '../nodes/node/INode';
 import IElement from '../nodes/element/IElement';
 
@@ -70,7 +70,7 @@ export default class XMLSerializer {
 		let attributeString = '';
 		for (const attribute of Object.values((<Element>element)._attributes)) {
 			if (attribute.value !== null) {
-				attributeString += ' ' + attribute.name + '="' + encode(attribute.value) + '"';
+				attributeString += ' ' + attribute.name + '="' + escape(attribute.value) + '"';
 			}
 		}
 		return attributeString;
