@@ -100,5 +100,17 @@ describe('XMLSerializer', () => {
 				'<div><custom-element attr1="value1" attr2="value2" attr3=""></custom-element></div>'
 			);
 		});
+
+		it('Does not escape unicode attributes.', () => {
+			const div = document.createElement('div');
+
+			div.setAttribute('attr1', 'Hello \u{2068}John\u{2069}');
+			div.setAttribute('attr2', '<span> test');
+			div.setAttribute('attr3', '');
+
+			expect(xmlSerializer.serializeToString(div)).toBe(
+				'<div attr1="Hello \u{2068}John\u{2069}" attr2="&lt;span&gt; test" attr3=""></div>'
+			);
+		});
 	});
 });
