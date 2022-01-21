@@ -19,6 +19,7 @@ import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
+import CharacterData from '../nodes/character-data/CharacterData';
 import TreeWalker from '../tree-walker/TreeWalker';
 import Event from '../event/Event';
 import CustomEvent from '../event/events/CustomEvent';
@@ -98,6 +99,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly ShadowRoot = ShadowRoot;
 	public readonly Element = Element;
 	public readonly DocumentFragment = DocumentFragment;
+	public readonly CharacterData = CharacterData;
 	public readonly NodeFilter = NodeFilter;
 	public readonly TreeWalker = TreeWalker;
 	public readonly DOMParser = DOMParser;

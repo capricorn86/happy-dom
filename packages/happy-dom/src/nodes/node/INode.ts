@@ -9,12 +9,12 @@ export default interface INode extends IEventTarget {
 	readonly nodeType: number;
 	readonly childNodes: INode[];
 	readonly isConnected: boolean;
-	readonly nodeValue: string;
 	readonly nodeName: string;
 	readonly previousSibling: INode;
 	readonly nextSibling: INode;
 	readonly firstChild: INode;
 	readonly lastChild: INode;
+	nodeValue: string;
 	textContent: string;
 	connectedCallback?(): void;
 	disconnectedCallback?(): void;
