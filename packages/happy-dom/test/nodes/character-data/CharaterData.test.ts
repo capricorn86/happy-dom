@@ -1,11 +1,13 @@
-import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility';
 import CharacterDataUtility from '../../../src/nodes/character-data/CharacterDataUtility';
-import Window from '../../../src/window/Window';
+import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility';
 import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility';
+import CharacterData from '../../../src/nodes/character-data/CharacterData';
+import Window from '../../../src/window/Window';
+import Document from '../../../src/nodes/document/Document';
 
-describe('CommentNode', () => {
-	let window;
-	let document;
+describe('CharaterData', () => {
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -16,17 +18,40 @@ describe('CommentNode', () => {
 		jest.restoreAllMocks();
 	});
 
-	describe('get nodeName()', () => {
-		it('Returns "#comment".', () => {
-			const node = document.createComment('test');
-			expect(node.nodeName).toBe('#comment');
-		});
-	});
-
 	describe('get length()', () => {
 		it('Returns "#comment".', () => {
 			const node = document.createComment('test');
 			expect(node.length).toBe(4);
+		});
+	});
+
+	describe('get data()', () => {
+		it('Returns text content.', () => {
+			const node = <CharacterData>document.createComment('test');
+			expect(node.data).toBe('test');
+		});
+	});
+
+	describe('set data()', () => {
+		it('Sets text content.', () => {
+			const node = <CharacterData>document.createComment('test');
+			node.data = 'new text';
+			expect(node.data).toBe('new text');
+		});
+	});
+
+	describe('get nodeValue()', () => {
+		it('Returns text content.', () => {
+			const node = document.createTextNode('test');
+			expect(node.nodeValue).toBe('test');
+		});
+	});
+
+	describe('set nodeValue()', () => {
+		it('Sets text content.', () => {
+			const node = document.createTextNode('test');
+			node.nodeValue = 'new text';
+			expect(node.nodeValue).toBe('new text');
 		});
 	});
 
@@ -45,33 +70,104 @@ describe('CommentNode', () => {
 		});
 	});
 
-	describe('get nodeValue()', () => {
-		it('Returns text content.', () => {
-			const node = document.createComment('test');
-			expect(node.nodeValue).toBe('test');
+	describe('appendData()', () => {
+		it('Appends data.', () => {
+			const node = <CharacterData>document.createComment('test');
+			const expectedData = 'data';
+			let isCalled = false;
+
+			jest.spyOn(CharacterDataUtility, 'appendData').mockImplementation((characterData, data) => {
+				expect(characterData).toBe(node);
+				expect(data).toBe(expectedData);
+				isCalled = true;
+			});
+
+			node.appendData(expectedData);
+			expect(isCalled).toBe(true);
 		});
 	});
 
-	describe('set nodeValue()', () => {
-		it('Sets text content.', () => {
-			const node = document.createComment('test');
-			node.nodeValue = 'new text';
-			expect(node.nodeValue).toBe('new text');
+	describe('deleteData()', () => {
+		it('Deletes data.', () => {
+			const node = <CharacterData>document.createComment('test');
+			const expectedOffset = -1;
+			const expectedCount = -1;
+			let isCalled = false;
+
+			jest
+				.spyOn(CharacterDataUtility, 'deleteData')
+				.mockImplementation((characterData, offset, count) => {
+					expect(characterData).toBe(node);
+					expect(offset).toBe(expectedOffset);
+					expect(count).toBe(expectedCount);
+					isCalled = true;
+				});
+
+			node.deleteData(expectedOffset, expectedCount);
+			expect(isCalled).toBe(true);
 		});
 	});
 
-	describe('get data()', () => {
-		it('Returns text content.', () => {
-			const node = document.createComment('test');
-			expect(node.data).toBe('test');
+	describe('insertData()', () => {
+		it('Inserts data.', () => {
+			const node = <CharacterData>document.createComment('test');
+			const expectedOffset = -1;
+			const expectedData = 'data';
+			let isCalled = false;
+
+			jest
+				.spyOn(CharacterDataUtility, 'insertData')
+				.mockImplementation((characterData, offset, data) => {
+					expect(characterData).toBe(node);
+					expect(offset).toBe(expectedOffset);
+					expect(data).toBe(expectedData);
+					isCalled = true;
+				});
+
+			node.insertData(expectedOffset, expectedData);
+			expect(isCalled).toBe(true);
 		});
 	});
 
-	describe('set data()', () => {
-		it('Sets text content.', () => {
+	describe('replaceData()', () => {
+		it('Replaces data.', () => {
+			const node = <CharacterData>document.createComment('test');
+			const expectedOffset = -1;
+			const expectedCount = -1;
+			const expectedData = 'data';
+			let isCalled = false;
+
+			jest
+				.spyOn(CharacterDataUtility, 'replaceData')
+				.mockImplementation((characterData, offset, count, data) => {
+					expect(characterData).toBe(node);
+					expect(offset).toBe(expectedOffset);
+					expect(count).toBe(expectedCount);
+					expect(data).toBe(expectedData);
+					isCalled = true;
+				});
+
+			node.replaceData(expectedOffset, expectedCount, expectedData);
+			expect(isCalled).toBe(true);
+		});
+	});
+
+	describe('substringData()', () => {
+		it('Returns a sub-string.', () => {
 			const node = document.createComment('test');
-			node.data = 'new text';
-			expect(node.data).toBe('new text');
+			const expectedOffset = -1;
+			const expectedCount = -1;
+
+			jest
+				.spyOn(CharacterDataUtility, 'substringData')
+				.mockImplementation((characterData, offset, count) => {
+					expect(characterData).toBe(node);
+					expect(offset).toBe(expectedOffset);
+					expect(count).toBe(expectedCount);
+					return 'substring';
+				});
+
+			expect(node.substringData(expectedOffset, expectedCount)).toBe('substring');
 		});
 	});
 
@@ -102,13 +198,6 @@ describe('CommentNode', () => {
 				});
 
 			expect(node.nextElementSibling).toBe(nextElementSibling);
-		});
-	});
-
-	describe('toString()', () => {
-		it('Returns "[object Comment]".', () => {
-			const node = document.createComment('test');
-			expect(node.toString()).toBe('[object Comment]');
 		});
 	});
 
@@ -178,107 +267,6 @@ describe('CommentNode', () => {
 
 			comment.after(node1, node2);
 			expect(isCalled).toBe(true);
-		});
-	});
-
-	describe('appendData()', () => {
-		it('Appends data.', () => {
-			const node = document.createComment('test');
-			const expectedData = 'data';
-			let isCalled = false;
-
-			jest.spyOn(CharacterDataUtility, 'appendData').mockImplementation((characterData, data) => {
-				expect(characterData).toBe(node);
-				expect(data).toBe(expectedData);
-				isCalled = true;
-			});
-
-			node.appendData(expectedData);
-			expect(isCalled).toBe(true);
-		});
-	});
-
-	describe('deleteData()', () => {
-		it('Deletes data.', () => {
-			const node = document.createComment('test');
-			const expectedOffset = -1;
-			const expectedCount = -1;
-			let isCalled = false;
-
-			jest
-				.spyOn(CharacterDataUtility, 'deleteData')
-				.mockImplementation((characterData, offset, count) => {
-					expect(characterData).toBe(node);
-					expect(offset).toBe(expectedOffset);
-					expect(count).toBe(expectedCount);
-					isCalled = true;
-				});
-
-			node.deleteData(expectedOffset, expectedCount);
-			expect(isCalled).toBe(true);
-		});
-	});
-
-	describe('insertData()', () => {
-		it('Inserts data.', () => {
-			const node = document.createComment('test');
-			const expectedOffset = -1;
-			const expectedData = 'data';
-			let isCalled = false;
-
-			jest
-				.spyOn(CharacterDataUtility, 'insertData')
-				.mockImplementation((characterData, offset, data) => {
-					expect(characterData).toBe(node);
-					expect(offset).toBe(expectedOffset);
-					expect(data).toBe(expectedData);
-					isCalled = true;
-				});
-
-			node.insertData(expectedOffset, expectedData);
-			expect(isCalled).toBe(true);
-		});
-	});
-
-	describe('replaceData()', () => {
-		it('Replaces data.', () => {
-			const node = document.createComment('test');
-			const expectedOffset = -1;
-			const expectedCount = -1;
-			const expectedData = 'data';
-			let isCalled = false;
-
-			jest
-				.spyOn(CharacterDataUtility, 'replaceData')
-				.mockImplementation((characterData, offset, count, data) => {
-					expect(characterData).toBe(node);
-					expect(offset).toBe(expectedOffset);
-					expect(count).toBe(expectedCount);
-					expect(data).toBe(expectedData);
-					isCalled = true;
-				});
-
-			node.replaceData(expectedOffset, expectedCount, expectedData);
-			expect(isCalled).toBe(true);
-		});
-	});
-
-	describe('substringData()', () => {
-		it('Returns a sub-string.', () => {
-			const node = document.createComment('test');
-			const expectedOffset = -1;
-			const expectedCount = -1;
-
-			jest
-				.spyOn(CharacterDataUtility, 'substringData')
-				.mockImplementation((characterData, offset, count) => {
-					expect(characterData).toBe(node);
-					expect(offset).toBe(expectedOffset);
-					expect(count).toBe(expectedCount);
-					return 'substring';
-				});
-
-			expect(node.substringData(expectedOffset, expectedCount)).toBe('substring');
 		});
 	});
 

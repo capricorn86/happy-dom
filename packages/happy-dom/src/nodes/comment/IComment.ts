@@ -8,5 +8,5 @@ export default interface IComment extends ICharacterData {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IComment;
+	cloneNode(deep?: boolean): IComment;
 }

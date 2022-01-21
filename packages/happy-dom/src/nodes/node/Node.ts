@@ -68,6 +68,13 @@ export default class Node extends EventTarget implements INode {
 	}
 
 	/**
+	 * Sets node value.
+	 */
+	public set nodeValue(_nodeValue: string) {
+		// Do nothing
+	}
+
+	/**
 	 * Node name.
 	 *
 	 * @returns Node name.

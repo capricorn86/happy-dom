@@ -24,7 +24,8 @@ import IElement from '../element/IElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IDocumentType from '../document-type/IDocumentType';
 import INode from '../node/INode';
-import ICharacterData from '../character-data/ICharacterData';
+import IComment from '../comment/IComment';
+import IText from '../text/IText';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INodeList from '../node/INodeList';
 import IHTMLCollection from '../element/IHTMLCollection';
@@ -578,7 +579,7 @@ export default class Document extends Node implements IDocument {
 	 * @param [data] Text data.
 	 * @returns Text node.
 	 */
-	public createTextNode(data?: string): ICharacterData {
+	public createTextNode(data?: string): IText {
 		Text.ownerDocument = this;
 		return new Text(data);
 	}
@@ -589,7 +590,7 @@ export default class Document extends Node implements IDocument {
 	 * @param [data] Text data.
 	 * @returns Text node.
 	 */
-	public createComment(data?: string): ICharacterData {
+	public createComment(data?: string): IComment {
 		Comment.ownerDocument = this;
 		return new Comment(data);
 	}
