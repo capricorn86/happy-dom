@@ -18,6 +18,7 @@ import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
+import CharacterData from '../nodes/character-data/CharacterData';
 import TreeWalker from '../tree-walker/TreeWalker';
 import Event from '../event/Event';
 import CustomEvent from '../event/events/CustomEvent';
@@ -38,6 +39,7 @@ import DOMException from '../exception/DOMException';
 import FileReader from '../file/FileReader';
 import History from '../history/History';
 import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
+import PointerEvent from '../event/events/PointerEvent';
 import MouseEvent from '../event/events/MouseEvent';
 import FocusEvent from '../event/events/FocusEvent';
 import WheelEvent from '../event/events/WheelEvent';
@@ -56,6 +58,9 @@ import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import IFetchOptions from './IFetchOptions';
 import NodeFilter from '../tree-walker/NodeFilter';
 import Window from './Window';
+import URLSearchParams from '../url-search-params/URLSearchParams';
+import HTMLCollection from '../nodes/element/HTMLCollection';
+import NodeList from '../nodes/node/NodeList';
 
 /**
  * Window.
@@ -86,6 +91,7 @@ export default interface IWindow {
 	readonly ShadowRoot: typeof ShadowRoot;
 	readonly Element: typeof Element;
 	readonly DocumentFragment: typeof DocumentFragment;
+	readonly CharacterData: typeof CharacterData;
 	readonly NodeFilter: typeof NodeFilter;
 	readonly TreeWalker: typeof TreeWalker;
 	readonly DOMParser: typeof DOMParser;
@@ -99,6 +105,7 @@ export default interface IWindow {
 	readonly CustomEvent: typeof CustomEvent;
 	readonly AnimationEvent: typeof AnimationEvent;
 	readonly KeyboardEvent: typeof KeyboardEvent;
+	readonly PointerEvent: typeof PointerEvent;
 	readonly MouseEvent: typeof MouseEvent;
 	readonly FocusEvent: typeof FocusEvent;
 	readonly WheelEvent: typeof WheelEvent;
@@ -124,6 +131,9 @@ export default interface IWindow {
 	readonly History: typeof History;
 	readonly Screen: typeof Screen;
 	readonly Storage: typeof Storage;
+	readonly URLSearchParams: typeof URLSearchParams;
+	readonly HTMLCollection: typeof HTMLCollection;
+	readonly NodeList: typeof NodeList;
 
 	// Events
 	onload: (event: Event) => void;

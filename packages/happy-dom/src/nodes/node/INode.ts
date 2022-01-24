@@ -1,13 +1,14 @@
 import IEventTarget from '../../event/IEventTarget';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
+import INodeList from './INodeList';
 
 export default interface INode extends IEventTarget {
 	readonly ownerDocument: IDocument;
 	readonly parentNode: INode;
 	readonly parentElement: IElement;
 	readonly nodeType: number;
-	readonly childNodes: INode[];
+	readonly childNodes: INodeList<INode>;
 	readonly isConnected: boolean;
 	readonly nodeName: string;
 	readonly previousSibling: INode;

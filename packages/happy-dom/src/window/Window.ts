@@ -63,6 +63,8 @@ import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import IFetchOptions from './IFetchOptions';
 import IWindow from './IWindow';
 import URLSearchParams from '../url-search-params/URLSearchParams';
+import HTMLCollection from '../nodes/element/HTMLCollection';
+import NodeList from '../nodes/node/NodeList';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'text'];
 
@@ -140,6 +142,8 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly Screen = Screen;
 	public readonly Storage = Storage;
 	public readonly URLSearchParams = URLSearchParams;
+	public readonly HTMLCollection = HTMLCollection;
+	public readonly NodeList = NodeList;
 
 	// Events
 	public onload: (event: Event) => void = null;
