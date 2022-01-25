@@ -25,7 +25,8 @@ import IResponse from '../../../src/window/IResponse';
 import ResourceFetcher from '../../../src/fetch/ResourceFetcher';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement';
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum';
-import { ISVGElement } from '../../../src';
+import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
+import CustomEvent from '../../../src/event/events/CustomEvent';
 
 describe('Document', () => {
 	let window: Window;
@@ -793,6 +794,17 @@ describe('Document', () => {
 			expect(event.bubbles).toBe(true);
 			expect(event.cancelable).toBe(true);
 			expect(event instanceof Event).toBe(true);
+		});
+
+		it('Creates a legacy custom event.', () => {
+			const event = <CustomEvent>document.createEvent('CustomEvent');
+			const detail = {};
+			event.initCustomEvent('click', true, true, detail);
+			expect(event.type).toBe('click');
+			expect(event.bubbles).toBe(true);
+			expect(event.cancelable).toBe(true);
+			expect(event.detail).toBe(detail);
+			expect(event instanceof CustomEvent).toBe(true);
 		});
 	});
 
