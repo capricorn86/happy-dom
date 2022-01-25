@@ -20,4 +20,25 @@ export default class CustomEvent extends Event {
 			this.detail = eventInit.detail || null;
 		}
 	}
+
+	/**
+	 * Init event.
+	 *
+	 * @deprecated
+	 * @param type Type.
+	 * @param [bubbles=false] "true" if it bubbles.
+	 * @param [cancelable=false] "true" if it cancelable.
+	 * @param [detail=null] Custom event detail.
+	 */
+	public initCustomEvent(
+		type: string,
+		bubbles = false,
+		cancelable = false,
+		detail: object = null
+	): void {
+		this.type = type;
+		this.bubbles = bubbles;
+		this.cancelable = cancelable;
+		this.detail = detail;
+	}
 }

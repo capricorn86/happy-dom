@@ -620,10 +620,13 @@ export default class Document extends Node implements IDocument {
 	 * Creates an event.
 	 *
 	 * @deprecated
-	 * @param _type Type.
+	 * @param type Type.
 	 * @returns Event.
 	 */
-	public createEvent(_type: string): Event {
+	public createEvent(type: string): Event {
+		if (this.defaultView[type]) {
+			return new this.defaultView[type]('init');
+		}
 		return new Event('init');
 	}
 
