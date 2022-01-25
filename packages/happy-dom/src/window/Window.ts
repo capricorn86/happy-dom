@@ -52,6 +52,7 @@ import DataTransferItemList from '../event/DataTransferItemList';
 import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/events/ErrorEvent';
+import StorageEvent from '../event/events/StorageEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from './AsyncTaskManager';
 import IResponse from './IResponse';
@@ -121,6 +122,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly WheelEvent = WheelEvent;
 	public readonly InputEvent = InputEvent;
 	public readonly ErrorEvent = ErrorEvent;
+	public readonly StorageEvent = StorageEvent;
 	public readonly ProgressEvent = ProgressEvent;
 	public readonly EventTarget = EventTarget;
 	public readonly DataTransfer = DataTransfer;

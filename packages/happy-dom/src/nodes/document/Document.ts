@@ -689,4 +689,17 @@ export default class Document extends Node implements IDocument {
 		(<Document>adopted.ownerDocument) = this;
 		return adopted;
 	}
+
+	/**
+	 * @override
+	 */
+	public dispatchEvent(event: Event): boolean {
+		const returnValue = super.dispatchEvent(event);
+
+		if (event.bubbles && !event._propagationStopped) {
+			return this.defaultView.dispatchEvent(event);
+		}
+
+		return returnValue;
+	}
 }
