@@ -33,7 +33,6 @@ export default [
 	'RTCIdentityEvent',
 	'RTCPeerConnectionIceEvent',
 	'SensorEvent',
-	'StorageEvent',
 	'SVGEvent',
 	'SVGZoomEvent',
 	'TimeEvent',

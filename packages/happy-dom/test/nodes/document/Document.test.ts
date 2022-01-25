@@ -932,4 +932,16 @@ describe('Document', () => {
 			}, 0);
 		});
 	});
+
+	describe('dispatchEvent()', () => {
+		it('Bubbles events to Window.', () => {
+			const event = new Event('click', { bubbles: true });
+			let emittedEvent = null;
+
+			window.addEventListener('click', event => (emittedEvent = event));
+			document.dispatchEvent(event);
+
+			expect(emittedEvent).toBe(event);
+		});
+	});
 });

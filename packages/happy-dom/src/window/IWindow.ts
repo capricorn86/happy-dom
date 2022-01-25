@@ -49,6 +49,7 @@ import DataTransferItemList from '../event/DataTransferItemList';
 import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/events/ErrorEvent';
+import StorageEvent from '../event/events/StorageEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from './AsyncTaskManager';
 import IResponse from './IResponse';
@@ -111,6 +112,7 @@ export default interface IWindow {
 	readonly WheelEvent: typeof WheelEvent;
 	readonly InputEvent: typeof InputEvent;
 	readonly ErrorEvent: typeof ErrorEvent;
+	readonly StorageEvent: typeof StorageEvent;
 	readonly ProgressEvent: typeof ProgressEvent;
 	readonly EventTarget: typeof EventTarget;
 	readonly DataTransfer: typeof DataTransfer;
