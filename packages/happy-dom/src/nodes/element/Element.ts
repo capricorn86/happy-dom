@@ -231,6 +231,24 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
+	 * Returns slot.
+	 *
+	 * @returns Slot.
+	 */
+	public get slot(): string {
+		return this.getAttributeNS(null, 'slot') || '';
+	}
+
+	/**
+	 * Returns slot.
+	 *
+	 * @param slot Slot.
+	 */
+	public set slot(title: string) {
+		this.setAttributeNS(null, 'slot', title);
+	}
+
+	/**
 	 * Attribute changed callback.
 	 *
 	 * @param name Name.

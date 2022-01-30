@@ -22,7 +22,7 @@ export default class CustomElement extends new Window().HTMLElement {
 	 */
 	constructor() {
 		super();
-		this.attachShadow({ mode: 'closed' });
+		this.attachShadow({ mode: 'open' });
 	}
 
 	/**

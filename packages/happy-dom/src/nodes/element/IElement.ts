@@ -24,6 +24,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	className: string;
 	innerHTML: string;
 	outerHTML: string;
+	slot: string;
 	readonly attributes: { [k: string]: Attr | number };
 
 	/**

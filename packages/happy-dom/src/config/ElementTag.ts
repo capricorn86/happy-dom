@@ -8,6 +8,7 @@ import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
+import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
 
 export default {
 	template: HTMLTemplateElement,
@@ -18,6 +19,7 @@ export default {
 	img: HTMLImageElement,
 	link: HTMLLinkElement,
 	style: HTMLStyleElement,
+	slot: HTMLSlotElement,
 	svg: SVGSVGElement,
 	circle: SVGElement,
 	ellipse: SVGElement,

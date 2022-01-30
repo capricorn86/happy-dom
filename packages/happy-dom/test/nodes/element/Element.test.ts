@@ -63,6 +63,20 @@ describe('Element', () => {
 		});
 	});
 
+	describe('get slot()', () => {
+		it('Returns the element "slot" attribute.', () => {
+			element.setAttribute('slot', 'slot');
+			expect(element.slot).toBe('slot');
+		});
+	});
+
+	describe('set slot()', () => {
+		it('Sets the element "slot" as an attribute.', () => {
+			element.slot = 'slot';
+			expect(element.getAttribute('slot')).toBe('slot');
+		});
+	});
+
 	describe('get className()', () => {
 		it('Returns the element "class" attribute.', () => {
 			element.setAttribute('class', 'class');
