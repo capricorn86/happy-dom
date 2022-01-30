@@ -83,8 +83,8 @@ describe('ShadowRoot', () => {
 		it('Clones the value of the "mode" property when cloned.', () => {
 			const shadowRoot = document.createElement('custom-element').shadowRoot;
 			const clone = shadowRoot.cloneNode();
-			expect(shadowRoot.mode).toBe('closed');
-			expect(clone.mode).toBe('closed');
+			expect(shadowRoot.mode).toBe('open');
+			expect(clone.mode).toBe('open');
 		});
 	});
 });
