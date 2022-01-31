@@ -34,7 +34,7 @@ export default abstract class EventTarget implements IEventTarget {
 		if (this._listeners[type]) {
 			const index = this._listeners[type].indexOf(listener);
 			if (index !== -1) {
-				this._listeners[type].splice(index);
+				this._listeners[type].splice(index, 1);
 			}
 		}
 	}
