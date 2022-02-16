@@ -73,4 +73,19 @@ describe('EventTarget', () => {
 			expect(recievedEvent).toBe(null);
 		});
 	});
+
+	describe('dispatchEvent()', () => {
+		it('Triggers callback properties with "on" as prefix.', () => {
+			let recievedEvent: Event = null;
+			const listener = (event: Event): void => {
+				recievedEvent = event;
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+			eventTarget[`on${EVENT_TYPE}`] = listener;
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(recievedEvent).toBe(dispatchedEvent);
+			expect(recievedEvent.target).toBe(eventTarget);
+			expect(recievedEvent.currentTarget).toBe(eventTarget);
+		});
+	});
 });

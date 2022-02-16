@@ -387,12 +387,6 @@ export default class Node extends EventTarget implements INode {
 	 * @override
 	 */
 	public dispatchEvent(event: Event): boolean {
-		const onEventName = 'on' + event.type.toLowerCase();
-
-		if (typeof this[onEventName] === 'function') {
-			this[onEventName].call(this, event);
-		}
-
 		const returnValue = super.dispatchEvent(event);
 
 		if (event.bubbles && !event._propagationStopped) {

@@ -52,6 +52,12 @@ export default abstract class EventTarget implements IEventTarget {
 
 		event.currentTarget = this;
 
+		const onEventName = 'on' + event.type.toLowerCase();
+
+		if (typeof this[onEventName] === 'function') {
+			this[onEventName].call(this, event);
+		}
+
 		if (this._listeners[event.type]) {
 			for (const listener of this._listeners[event.type]) {
 				if ((<IEventListener>listener).handleEvent) {

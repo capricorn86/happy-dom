@@ -3,7 +3,7 @@
 
 # About
 
-A [JSDOM](https://github.com/jsdom/jsdom) alternative with support for server side rendering of web components.
+A [JSDOM](https://github.com/jsdom/jsdom) alternative with focus on performance.
 
 Happy DOM aim to support the most common functionality of a web browser.
 
