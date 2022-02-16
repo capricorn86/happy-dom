@@ -1,27 +1,11 @@
-import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement';
-import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
-import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
-import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
-import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
-import SVGElement from '../nodes/svg-element/SVGElement';
-import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
-import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
-import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
-import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 
 export default {
-	HTMLTemplateElement: HTMLTemplateElement,
-	HTMLFormElement: HTMLFormElement,
-	HTMLInputElement: HTMLInputElement,
-	HTMLTextAreaElement: HTMLTextAreaElement,
 	HTMLElement: HTMLElement,
 	HTMLHeadElement: HTMLElement,
 	HTMLTitleElement: HTMLElement,
 	HTMLBaseElement: HTMLElement,
-	HTMLLinkElement: HTMLLinkElement,
 	HTMLMetaElement: HTMLElement,
-	HTMLStyleElement: HTMLStyleElement,
 	HTMLBodyElement: HTMLElement,
 	HTMLHeadingElement: HTMLElement,
 	HTMLParagraphElement: HTMLElement,
@@ -46,8 +30,6 @@ export default {
 	HTMLFieldSetElement: HTMLElement,
 	HTMLFontElement: HTMLElement,
 	HTMLHtmlElement: HTMLElement,
-	HTMLImageElement: HTMLImageElement,
-	HTMLLabelElement: HTMLElement,
 	HTMLLegendElement: HTMLElement,
 	HTMLMapElement: HTMLElement,
 	HTMLMarqueeElement: HTMLElement,
@@ -60,9 +42,7 @@ export default {
 	HTMLPictureElement: HTMLElement,
 	HTMLProgressElement: HTMLElement,
 	HTMLQuoteElement: HTMLElement,
-	HTMLScriptElement: HTMLScriptElement,
 	HTMLSelectElement: HTMLElement,
-	HTMLSlotElement: HTMLElement,
 	HTMLSourceElement: HTMLElement,
 	HTMLSpanElement: HTMLElement,
 	HTMLTableCaptionElement: HTMLElement,
@@ -81,7 +61,5 @@ export default {
 	HTMLParamElement: HTMLElement,
 	HTMLVideoElement: HTMLElement,
 	HTMLAudioElement: HTMLElement,
-	HTMLTrackElement: HTMLElement,
-	SVGSVGElement: SVGSVGElement,
-	SVGElement: SVGElement
+	HTMLTrackElement: HTMLElement
 };

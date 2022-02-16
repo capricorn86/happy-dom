@@ -92,6 +92,16 @@ describe('HTMLTextAreaElement', () => {
 		});
 	});
 
+	describe('get form()', () => {
+		it('Returns parent form element.', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			div.appendChild(element);
+			form.appendChild(div);
+			expect(element.form).toBe(form);
+		});
+	});
+
 	for (const property of ['disabled', 'autofocus', 'required', 'readOnly']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {

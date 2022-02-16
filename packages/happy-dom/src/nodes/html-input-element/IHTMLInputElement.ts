@@ -11,6 +11,7 @@ import ValidityState from './ValidityState';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement.
  */
 export default interface IHTMLInputElement extends IHTMLElement {
+	readonly form: IHTMLFormElement;
 	formAction: string;
 	formMethod: string;
 	formNoValidate: boolean;
@@ -46,7 +47,6 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	selectionStart: number;
 	selectionEnd: number;
 	selectionDirection: string;
-	form: IHTMLFormElement;
 	validity: ValidityState;
 	validationMessage: string;
 	willValidate: boolean;
