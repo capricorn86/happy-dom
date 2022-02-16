@@ -5,7 +5,7 @@
 	"homepage": "https://github.com/capricorn86/happy-dom",
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
-	"description": "A jsdom alternative with support for server side rendering of web components.",
+	"description": "A jsdom alternative with focus on performance.",
 	"main": "lib/index.js",
 	"keywords": [
 		"jsdom",

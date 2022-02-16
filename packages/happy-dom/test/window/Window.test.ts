@@ -113,6 +113,18 @@ describe('Window', () => {
 		});
 	});
 
+	describe('matchMedia()', () => {
+		it('Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.', () => {
+			const mediaQueryString = '(max-width: 600px)';
+			const mediaQueryList = window.matchMedia(mediaQueryString);
+			expect(mediaQueryList.matches).toBe(false);
+			expect(mediaQueryList.media).toBe(mediaQueryString);
+			expect(mediaQueryList.onchange).toBe(null);
+			expect(typeof mediaQueryList.addEventListener).toBe('function');
+			expect(typeof mediaQueryList.removeEventListener).toBe('function');
+		});
+	});
+
 	describe('fetch()', () => {
 		it('Handles successful JSON request.', async () => {
 			const expectedUrl = 'https://localhost:8080/path/';

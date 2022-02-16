@@ -66,6 +66,7 @@ import IWindow from './IWindow';
 import URLSearchParams from '../url-search-params/URLSearchParams';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
+import MediaQueryList from '../match-media/MediaQueryList';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'text'];
 
@@ -165,6 +166,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly screen = new Screen();
 	public readonly innerWidth = 1024;
 	public readonly innerHeight = 768;
+	public readonly devicePixelRatio = 1;
 	public readonly sessionStorage = new Storage();
 	public readonly localStorage = new Storage();
 
@@ -344,6 +346,18 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 		y?: number
 	): void {
 		this.scroll(x, y);
+	}
+
+	/**
+	 * Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.
+	 *
+	 * @param mediaQueryString A string specifying the media query to parse into a MediaQueryList.
+	 * @returns A new MediaQueryList.
+	 */
+	public matchMedia(mediaQueryString: string): MediaQueryList {
+		const mediaQueryList = new MediaQueryList();
+		mediaQueryList._media = mediaQueryString;
+		return mediaQueryList;
 	}
 
 	/**
