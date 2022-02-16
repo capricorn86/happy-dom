@@ -41,7 +41,15 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 */
 	public get control(): IHTMLElement {
 		const htmlFor = this.htmlFor;
-		return htmlFor ? <IHTMLElement>this.ownerDocument.getElementById(htmlFor) : null;
+		if (htmlFor) {
+			return <IHTMLElement>this.ownerDocument.getElementById(htmlFor);
+		}
+		for (const child of this.children) {
+			if (child.tagName === 'INPUT') {
+				return <IHTMLElement>child;
+			}
+		}
+		return null;
 	}
 
 	/**
