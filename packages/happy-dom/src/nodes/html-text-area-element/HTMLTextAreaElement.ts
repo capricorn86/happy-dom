@@ -361,7 +361,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	public get form(): IHTMLFormElement {
 		let parent = <IHTMLElement>this.parentNode;
 		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>this.parentNode;
+			parent = <IHTMLElement>parent.parentNode;
 		}
 		return <IHTMLFormElement>parent;
 	}

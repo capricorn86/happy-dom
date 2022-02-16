@@ -8,6 +8,7 @@ import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
+import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
 
 export default {
@@ -19,6 +20,7 @@ export default {
 	img: HTMLImageElement,
 	link: HTMLLinkElement,
 	style: HTMLStyleElement,
+	label: HTMLLabelElement,
 	slot: HTMLSlotElement,
 	svg: SVGSVGElement,
 	circle: SVGElement,

@@ -69,6 +69,10 @@ import HTMLLinkElement from './nodes/html-link-element/HTMLLinkElement';
 import IHTMLLinkElement from './nodes/html-link-element/IHTMLLinkElement';
 import HTMLStyleElement from './nodes/html-style-element/HTMLStyleElement';
 import IHTMLStyleElement from './nodes/html-style-element/IHTMLStyleElement';
+import HTMLSlotElement from './nodes/html-slot-element/HTMLSlotElement';
+import IHTMLSlotElement from './nodes/html-slot-element/IHTMLSlotElement';
+import HTMLLabelElement from './nodes/html-label-element/HTMLLabelElement';
+import IHTMLLabelElement from './nodes/html-label-element/IHTMLLabelElement';
 import SVGElement from './nodes/svg-element/SVGElement';
 import ISVGElement from './nodes/svg-element/ISVGElement';
 import SVGGraphicsElement from './nodes/svg-element/SVGGraphicsElement';
@@ -171,6 +175,10 @@ export {
 	IHTMLLinkElement,
 	HTMLStyleElement,
 	IHTMLStyleElement,
+	HTMLSlotElement,
+	IHTMLSlotElement,
+	HTMLLabelElement,
+	IHTMLLabelElement,
 	SVGElement,
 	ISVGElement,
 	SVGGraphicsElement,

@@ -14,6 +14,10 @@ import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
+import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
+import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
+import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
+import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
@@ -59,8 +63,6 @@ import IResponse from './IResponse';
 import AsyncTaskTypeEnum from './AsyncTaskTypeEnum';
 import RelativeURL from '../location/RelativeURL';
 import Storage from '../storage/Storage';
-import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
-import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import IFetchOptions from './IFetchOptions';
 import IWindow from './IWindow';
 import URLSearchParams from '../url-search-params/URLSearchParams';
@@ -96,6 +98,8 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly HTMLScriptElement = HTMLScriptElement;
 	public readonly HTMLLinkElement = HTMLLinkElement;
 	public readonly HTMLStyleElement = HTMLStyleElement;
+	public readonly HTMLLabelElement = HTMLLabelElement;
+	public readonly HTMLSlotElement = HTMLSlotElement;
 	public readonly SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement = SVGElement;
 	public readonly Text = Text;
@@ -147,6 +151,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly URLSearchParams = URLSearchParams;
 	public readonly HTMLCollection = HTMLCollection;
 	public readonly NodeList = NodeList;
+	public readonly MediaQueryList = MediaQueryList;
 
 	// Events
 	public onload: (event: Event) => void = null;
