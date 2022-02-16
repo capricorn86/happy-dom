@@ -29,12 +29,18 @@ describe('HTMLLabelElement', () => {
 	});
 
 	describe('get control()', () => {
-		it('Returns element controlling the label.', () => {
+		it('Returns element controlling the label when "for" attribute has been defined.', () => {
 			const input = document.createElement('input');
 			input.id = 'inputId';
 			element.htmlFor = 'inputId';
 			document.appendChild(input);
 			document.appendChild(element);
+			expect(element.control === input).toBe(true);
+		});
+
+		it('Returns input appended as a child if "for" attribute is not defined.', () => {
+			const input = document.createElement('input');
+			element.appendChild(input);
 			expect(element.control === input).toBe(true);
 		});
 	});
