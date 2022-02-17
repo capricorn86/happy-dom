@@ -1,6 +1,7 @@
 import Window from '../../../src/window/Window';
 import Document from '../../../src/nodes/document/Document';
 import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement';
+import DOMException from '../../../src/exception/DOMException';
 import File from '../../../src/file/File';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
@@ -429,6 +430,54 @@ describe('HTMLInputElement', () => {
 			expect(element.selectionStart).toBe(14);
 			expect(element.selectionEnd).toBe(14);
 			expect(element.value).toBe('TEST_NEW_VALUE');
+		});
+	});
+
+	describe('checkValidity()', () => {
+		it('Returns "true".', () => {
+			expect(element.checkValidity()).toBe(true);
+		});
+	});
+
+	describe('stepUp()', () => {
+		it('Steps up with default value.', () => {
+			element.type = 'number';
+			element.stepUp();
+			expect(element.value).toBe('1');
+		});
+
+		it('Steps up with defined increment value.', () => {
+			element.type = 'number';
+			element.value = '1';
+			element.stepUp(3);
+			expect(element.value).toBe('4');
+		});
+
+		it('Throws exception when invalid type.', () => {
+			expect(() => element.stepUp()).toThrowError(
+				new DOMException('This form element is not steppable.')
+			);
+		});
+	});
+
+	describe('stepDown()', () => {
+		it('Steps up with default value.', () => {
+			element.type = 'number';
+			element.stepDown();
+			expect(element.value).toBe('-1');
+		});
+
+		it('Steps up with defined increment value.', () => {
+			element.type = 'number';
+			element.value = '1';
+			element.stepDown(3);
+			expect(element.value).toBe('-2');
+		});
+
+		it('Throws exception when invalid type.', () => {
+			expect(() => element.stepDown()).toThrowError(
+				new DOMException('This form element is not steppable.')
+			);
 		});
 	});
 

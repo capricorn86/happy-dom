@@ -85,6 +85,20 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	checkValidity(): boolean;
 
 	/**
+	 * Steps up.
+	 *
+	 * @param [increment] Increment.
+	 */
+	stepUp(increment?: number): void;
+
+	/**
+	 * Steps up.
+	 *
+	 * @param [increment] Increment.
+	 */
+	stepDown(increment?: number): void;
+
+	/**
 	 * Clones a node.
 	 *
 	 * @override
