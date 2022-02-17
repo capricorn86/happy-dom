@@ -42,6 +42,12 @@ describe('Window', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('get performance()', () => {
+		it('Exposes "performance" from the NodeJS perf_hooks package.', () => {
+			expect(typeof window.performance.now()).toBe('number');
+		});
+	});
+
 	describe('getComputedStyle()', () => {
 		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
 			const element = <HTMLElement>window.document.createElement('div');
