@@ -22,6 +22,7 @@ import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
+import Image from '../nodes/html-image-element/Image';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
 import CharacterData from '../nodes/character-data/CharacterData';
 import TreeWalker from '../tree-walker/TreeWalker';
@@ -95,6 +96,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly HTMLInputElement = HTMLInputElement;
 	public readonly HTMLTextAreaElement = HTMLTextAreaElement;
 	public readonly HTMLImageElement = HTMLImageElement;
+	public readonly Image = Image;
 	public readonly HTMLScriptElement = HTMLScriptElement;
 	public readonly HTMLLinkElement = HTMLLinkElement;
 	public readonly HTMLStyleElement = HTMLStyleElement;
@@ -252,6 +254,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 
 		DOMParser._ownerDocument = DOMParser._ownerDocument || this.document;
 		FileReader._ownerDocument = FileReader._ownerDocument || this.document;
+		Image.ownerDocument = Image.ownerDocument || this.document;
 
 		for (const eventType of NonImplementedEventTypes) {
 			if (!this[eventType]) {

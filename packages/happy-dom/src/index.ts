@@ -64,6 +64,7 @@ import HTMLTextAreaElement from './nodes/html-text-area-element/HTMLTextAreaElem
 import IHTMLTextAreaElement from './nodes/html-text-area-element/IHTMLTextAreaElement';
 import HTMLImageElement from './nodes/html-image-element/HTMLImageElement';
 import IHTMLImageElement from './nodes/html-image-element/IHTMLImageElement';
+import Image from './nodes/html-image-element/Image';
 import HTMLScriptElement from './nodes/html-script-element/HTMLScriptElement';
 import HTMLLinkElement from './nodes/html-link-element/HTMLLinkElement';
 import IHTMLLinkElement from './nodes/html-link-element/IHTMLLinkElement';
@@ -170,6 +171,7 @@ export {
 	IHTMLTextAreaElement,
 	HTMLImageElement,
 	IHTMLImageElement,
+	Image,
 	HTMLScriptElement,
 	HTMLLinkElement,
 	IHTMLLinkElement,
