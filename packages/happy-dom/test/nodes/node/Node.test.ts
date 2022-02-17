@@ -236,6 +236,37 @@ describe('Node', () => {
 		});
 	});
 
+	describe('hasChildNodes()', () => {
+		it('Returns "true" if the Node has child nodes.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+
+			expect(parent.hasChildNodes()).toBe(false);
+
+			parent.appendChild(child);
+
+			expect(parent.hasChildNodes()).toBe(true);
+		});
+	});
+
+	describe('contains()', () => {
+		it('Returns "true" if a node contains another node.', () => {
+			const div = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const text = document.createTextNode('text');
+
+			div.appendChild(span1);
+			div.appendChild(span2);
+
+			expect(div.contains(text)).toBe(false);
+
+			span2.appendChild(text);
+
+			expect(div.contains(text)).toBe(true);
+		});
+	});
+
 	describe('getRootNode()', () => {
 		it('Returns ShadowRoot when used on a node inside a ShadowRoot.', () => {
 			const customElement = document.createElement('custom-counter');

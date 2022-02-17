@@ -170,6 +170,21 @@ export default class Node extends EventTarget implements INode {
 	}
 
 	/**
+	 * Returns "true" if this node contains the other node.
+	 *
+	 * @param otherNode Node to test with.
+	 * @returns "true" if this node contains the other node.
+	 */
+	public contains(otherNode: INode): boolean {
+		for (const childNode of this.childNodes) {
+			if (childNode === otherNode || childNode.contains(otherNode)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Returns closest root node (Document or ShadowRoot).
 	 *
 	 * @param options Options.
