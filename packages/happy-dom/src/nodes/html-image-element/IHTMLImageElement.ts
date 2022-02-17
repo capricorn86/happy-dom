@@ -12,7 +12,7 @@ export default interface IHTMLImageElement extends IHTMLElement {
 	crossOrigin: string;
 	readonly currentSrc: string;
 	decoding: string;
-	height: string;
+	height: number;
 	isMap: boolean;
 	loading: string;
 	readonly naturalHeight: number;
@@ -22,7 +22,7 @@ export default interface IHTMLImageElement extends IHTMLElement {
 	src: string;
 	srcset: string;
 	useMap: string;
-	width: string;
+	width: number;
 	readonly x: number;
 	readonly y: number;
 

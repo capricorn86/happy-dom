@@ -8,6 +8,7 @@ import IHTMLImageElement from './IHTMLImageElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement.
  */
 export default class HTMLImageElement extends HTMLElement implements IHTMLImageElement {
+	public readonly tagName: string = 'IMG';
 	public readonly complete = false;
 	public readonly naturalHeight = 0;
 	public readonly naturalWidth = 0;
@@ -49,8 +50,9 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 *
 	 * @returns Height.
 	 */
-	public get height(): string {
-		return this.getAttributeNS(null, 'height') || '';
+	public get height(): number {
+		const height = this.getAttributeNS(null, 'height');
+		return height !== null ? Number(height) : 0;
 	}
 
 	/**
@@ -58,8 +60,8 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 *
 	 * @param height Height.
 	 */
-	public set height(height: string) {
-		this.setAttributeNS(null, 'height', height);
+	public set height(height: number) {
+		this.setAttributeNS(null, 'height', String(height));
 	}
 
 	/**
@@ -179,8 +181,9 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 *
 	 * @returns Width.
 	 */
-	public get width(): string {
-		return this.getAttributeNS(null, 'width') || '';
+	public get width(): number {
+		const width = this.getAttributeNS(null, 'width');
+		return width !== null ? Number(width) : 0;
 	}
 
 	/**
@@ -188,8 +191,8 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 *
 	 * @param width Width.
 	 */
-	public set width(width: string) {
-		this.setAttributeNS(null, 'width', width);
+	public set width(width: number) {
+		this.setAttributeNS(null, 'width', String(width));
 	}
 
 	/**

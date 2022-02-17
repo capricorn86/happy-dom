@@ -11,16 +11,7 @@ describe('HTMLImageElement', () => {
 		document = window.document;
 	});
 
-	for (const property of [
-		'alt',
-		'height',
-		'referrerPolicy',
-		'sizes',
-		'src',
-		'srcset',
-		'useMap',
-		'width'
-	]) {
+	for (const property of ['alt', 'referrerPolicy', 'sizes', 'src', 'srcset', 'useMap']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				const element = document.createElement('img');
@@ -34,6 +25,24 @@ describe('HTMLImageElement', () => {
 				const element = document.createElement('img');
 				element[property] = 'test';
 				expect(element.getAttribute(property)).toBe('test');
+			});
+		});
+	}
+
+	for (const property of ['height', 'width']) {
+		describe(`get ${property}()`, () => {
+			it(`Returns the "${property}" attribute.`, () => {
+				const element = document.createElement('img');
+				element.setAttribute(property, '100');
+				expect(element[property]).toBe(100);
+			});
+		});
+
+		describe(`set ${property}()`, () => {
+			it(`Sets the attribute "${property}".`, () => {
+				const element = document.createElement('img');
+				element[property] = 100;
+				expect(element.getAttribute(property)).toBe('100');
 			});
 		});
 	}

@@ -21,6 +21,7 @@ import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
+import Image from '../nodes/html-image-element/Image';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
 import CharacterData from '../nodes/character-data/CharacterData';
 import TreeWalker from '../tree-walker/TreeWalker';
@@ -91,6 +92,7 @@ export default interface IWindow {
 	readonly HTMLLabelElement: typeof HTMLLabelElement;
 	readonly SVGSVGElement: typeof SVGSVGElement;
 	readonly SVGElement: typeof SVGElement;
+	readonly Image: typeof Image;
 	readonly Text: typeof Text;
 	readonly Comment: typeof Comment;
 	readonly ShadowRoot: typeof ShadowRoot;
