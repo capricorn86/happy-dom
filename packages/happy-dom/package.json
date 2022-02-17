@@ -53,7 +53,8 @@
 		"sync-request": "^6.1.0",
 		"whatwg-encoding": "^1.0.5",
 		"whatwg-mimetype": "^2.3.0",
-		"webidl-conversions": "^7.0.0"
+		"webidl-conversions": "^7.0.0",
+		"css.escape": "^1.5.1"
 	},
 	"devDependencies": {
 		"@types/he": "latest",

@@ -37,13 +37,15 @@ import MutationObserver from '../mutation-observer/MutationObserver';
 import DOMParser from '../dom-parser/DOMParser';
 import XMLSerializer from '../xml-serializer/XMLSerializer';
 import ResizeObserver from '../resize-observer/ResizeObserver';
-import CSSStyleSheet from '../css/CSSStyleSheet';
 import Blob from '../file/Blob';
 import File from '../file/File';
 import DOMException from '../exception/DOMException';
 import FileReader from '../file/FileReader';
 import History from '../history/History';
+import CSSStyleSheet from '../css/CSSStyleSheet';
 import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
+import CSS from '../css/CSS';
+import CSSUnitValue from '../css/CSSUnitValue';
 import PointerEvent from '../event/events/PointerEvent';
 import MouseEvent from '../event/events/MouseEvent';
 import FocusEvent from '../event/events/FocusEvent';
@@ -142,6 +144,8 @@ export default interface IWindow {
 	readonly URLSearchParams: typeof URLSearchParams;
 	readonly HTMLCollection: typeof HTMLCollection;
 	readonly NodeList: typeof NodeList;
+	readonly CSSUnitValue: typeof CSSUnitValue;
+	readonly CSS: CSS;
 
 	// Events
 	onload: (event: Event) => void;
