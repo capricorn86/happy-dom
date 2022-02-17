@@ -40,13 +40,15 @@ import ElementClass from '../config/ElementClass';
 import DOMParser from '../dom-parser/DOMParser';
 import XMLSerializer from '../xml-serializer/XMLSerializer';
 import ResizeObserver from '../resize-observer/ResizeObserver';
-import CSSStyleSheet from '../css/CSSStyleSheet';
 import Blob from '../file/Blob';
 import File from '../file/File';
 import DOMException from '../exception/DOMException';
 import FileReader from '../file/FileReader';
 import History from '../history/History';
+import CSSStyleSheet from '../css/CSSStyleSheet';
 import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
+import CSS from '../css/CSS';
+import CSSUnitValue from '../css/CSSUnitValue';
 import MouseEvent from '../event/events/MouseEvent';
 import PointerEvent from '../event/events/PointerEvent';
 import FocusEvent from '../event/events/FocusEvent';
@@ -155,6 +157,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly HTMLCollection = HTMLCollection;
 	public readonly NodeList = NodeList;
 	public readonly MediaQueryList = MediaQueryList;
+	public readonly CSSUnitValue = CSSUnitValue;
 
 	// Events
 	public onload: (event: Event) => void = null;
@@ -276,6 +279,15 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 				this[key] = this[key].bind(this);
 			}
 		}
+	}
+
+	/**
+	 * The CSS interface holds useful CSS-related methods.
+	 *
+	 * @returns CSS interface.
+	 */
+	public get CSS(): CSS {
+		return new CSS();
 	}
 
 	/**
