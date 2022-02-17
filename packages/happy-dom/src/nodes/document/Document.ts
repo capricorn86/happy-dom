@@ -222,6 +222,15 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns scrolling element.
+	 *
+	 * @returns Scrolling element.
+	 */
+	public get scrollingElement(): IHTMLElement {
+		return this.documentElement;
+	}
+
+	/**
 	 * Returns location.
 	 *
 	 * @returns Location.

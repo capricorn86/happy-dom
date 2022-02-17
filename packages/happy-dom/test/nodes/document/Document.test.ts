@@ -275,6 +275,12 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get scrollingElement()', () => {
+		it('Returns document element as scrolling element.', () => {
+			expect(document.scrollingElement === document.documentElement).toBe(true);
+		});
+	});
+
 	describe('get location()', () => {
 		it('Returns the current location', () => {
 			expect(document.location === window.location).toBe(true);
