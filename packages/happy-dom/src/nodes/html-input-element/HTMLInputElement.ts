@@ -10,6 +10,7 @@ import HTMLInputElementSelectionDirectionEnum from './HTMLInputElementSelectionD
 import IHTMLInputElement from './IHTMLInputElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import IHTMLElement from '../html-element/IHTMLElement';
+import HTMLInputElementValueStepping from './HTMLInputElementValueStepping';
 
 /**
  * HTML Input Element.
@@ -901,6 +902,30 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public checkValidity(): boolean {
 		return true;
+	}
+
+	/**
+	 * Steps up.
+	 *
+	 * @param [increment] Increment.
+	 */
+	public stepUp(increment?: number): void {
+		const newValue = HTMLInputElementValueStepping.step(this.type, this.value, 1, increment);
+		if (newValue !== null) {
+			this.value = newValue;
+		}
+	}
+
+	/**
+	 * Steps down.
+	 *
+	 * @param [increment] Increment.
+	 */
+	public stepDown(increment?: number): void {
+		const newValue = HTMLInputElementValueStepping.step(this.type, this.value, -1, increment);
+		if (newValue !== null) {
+			this.value = newValue;
+		}
 	}
 
 	/**
