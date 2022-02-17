@@ -70,6 +70,7 @@ import URLSearchParams from '../url-search-params/URLSearchParams';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
 import MediaQueryList from '../match-media/MediaQueryList';
+import * as PerfHooks from 'perf_hooks';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'text'];
 
@@ -176,6 +177,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly devicePixelRatio = 1;
 	public readonly sessionStorage = new Storage();
 	public readonly localStorage = new Storage();
+	public readonly performance = PerfHooks.performance;
 
 	// Node.js Globals
 	public Array = global ? global.Array : null;
