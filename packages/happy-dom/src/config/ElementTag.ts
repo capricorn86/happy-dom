@@ -10,6 +10,7 @@ import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
+import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
 
 export default {
 	template: HTMLTemplateElement,
@@ -31,5 +32,6 @@ export default {
 	polyline: SVGElement,
 	rect: SVGElement,
 	stop: SVGElement,
-	use: SVGElement
+	use: SVGElement,
+	meta: HTMLMetaElement
 };

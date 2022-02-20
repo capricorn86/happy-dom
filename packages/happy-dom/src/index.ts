@@ -74,6 +74,8 @@ import HTMLSlotElement from './nodes/html-slot-element/HTMLSlotElement';
 import IHTMLSlotElement from './nodes/html-slot-element/IHTMLSlotElement';
 import HTMLLabelElement from './nodes/html-label-element/HTMLLabelElement';
 import IHTMLLabelElement from './nodes/html-label-element/IHTMLLabelElement';
+import HTMLMetaElement from './nodes/html-meta-element/HTMLMetaElement';
+import IHTMLMetaElement from './nodes/html-meta-element/IHTMLMetaElement';
 import SVGElement from './nodes/svg-element/SVGElement';
 import ISVGElement from './nodes/svg-element/ISVGElement';
 import SVGGraphicsElement from './nodes/svg-element/SVGGraphicsElement';
@@ -181,6 +183,8 @@ export {
 	IHTMLSlotElement,
 	HTMLLabelElement,
 	IHTMLLabelElement,
+	HTMLMetaElement,
+	IHTMLMetaElement,
 	SVGElement,
 	ISVGElement,
 	SVGGraphicsElement,
