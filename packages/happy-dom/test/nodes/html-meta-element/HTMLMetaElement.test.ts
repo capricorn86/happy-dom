@@ -31,7 +31,7 @@ describe('HTMLMetaElement', () => {
 	describe('get httpEquiv()', () => {
 		it('Returns attribute value.', () => {
 			expect(element.httpEquiv).toBe('');
-			element.setAttribute('httpEquiv', 'value');
+			element.setAttribute('http-equiv', 'value');
 			expect(element.httpEquiv).toBe('value');
 		});
 	});
@@ -39,7 +39,7 @@ describe('HTMLMetaElement', () => {
 	describe('set httpEquiv()', () => {
 		it('Sets attribute value.', () => {
 			element.httpEquiv = 'value';
-			expect(element.getAttribute('httpEquiv')).toBe('value');
+			expect(element.getAttribute('http-equiv')).toBe('value');
 		});
 	});
 

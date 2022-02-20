@@ -32,7 +32,7 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @returns HttpEquiv.
 	 */
 	public get httpEquiv(): string {
-		return this.getAttributeNS(null, 'httpEquiv') || '';
+		return this.getAttributeNS(null, 'http-equiv') || '';
 	}
 
 	/**
@@ -41,7 +41,7 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @param httpEquiv HttpEquiv.
 	 */
 	public set httpEquiv(httpEquiv: string) {
-		this.setAttributeNS(null, 'httpEquiv', httpEquiv);
+		this.setAttributeNS(null, 'http-equiv', httpEquiv);
 	}
 
 	/**
