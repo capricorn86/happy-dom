@@ -2,7 +2,7 @@ import IHTMLMetaElement from './IHTMLMetaElement';
 import HTMLElement from '../html-element/HTMLElement';
 
 /**
- * HTML Form Element.
+ * HTML Meta Element.
  *
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLMetaElement.
