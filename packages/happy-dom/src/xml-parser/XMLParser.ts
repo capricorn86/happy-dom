@@ -3,6 +3,7 @@ import Element from '../nodes/element/Element';
 import IDocument from '../nodes/document/IDocument';
 import SelfClosingElements from '../config/SelfClosingElements';
 import UnnestableElements from '../config/UnnestableElements';
+import ChildLessElements from '../config/ChildLessElements';
 import { decode } from 'he';
 import NamespaceURI from '../config/NamespaceURI';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
@@ -36,6 +37,7 @@ export default class XMLParser {
 		let parentUnnestableTagName = null;
 		let lastTextIndex = 0;
 		let match: RegExpExecArray;
+		let childLessIndex = 0;
 
 		while ((match = markupRegexp.exec(data))) {
 			const tagName = match[2].toLowerCase();
@@ -86,8 +88,16 @@ export default class XMLParser {
 				} else {
 					parent.appendChild(newElement);
 				}
+				lastTextIndex = childLessIndex = markupRegexp.lastIndex;
 
-				lastTextIndex = markupRegexp.lastIndex;
+				// Tags which contain non-parsed content
+				// For example: <script> JavaScript should not be parsed
+				if (ChildLessElements.includes(tagName)) {
+					while (markupRegexp.exec(data)[2].toLowerCase() != tagName) {
+						childLessIndex = markupRegexp.lastIndex;
+					}
+					markupRegexp.lastIndex = childLessIndex;
+				}
 			} else {
 				stack.pop();
 				parent = stack[stack.length - 1] || root;

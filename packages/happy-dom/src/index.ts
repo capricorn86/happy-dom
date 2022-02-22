@@ -102,6 +102,7 @@ import XMLSerializer from './xml-serializer/XMLSerializer';
 import ElementTag from './config/ElementTag';
 import SelfClosingElements from './config/SelfClosingElements';
 import UnclosedElements from './config/UnclosedElements';
+import ChildLessElements from './config/ChildLessElements';
 import CSSStyleSheet from './css/CSSStyleSheet';
 import Storage from './storage/Storage';
 import URLSearchParams from './url-search-params/URLSearchParams';
@@ -211,6 +212,7 @@ export {
 	ElementTag,
 	SelfClosingElements,
 	UnclosedElements,
+	ChildLessElements,
 	CSSStyleSheet,
 	Storage,
 	URLSearchParams
