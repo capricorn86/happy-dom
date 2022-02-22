@@ -35,6 +35,7 @@ import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum';
 import DocumentReadyStateManager from './DocumentReadyStateManager';
 import Location from '../../location/Location';
+import Selection from '../../selection/Selection';
 
 /**
  * Document.
@@ -697,6 +698,15 @@ export default class Document extends Node implements IDocument {
 		const adopted = node.parentNode ? node.parentNode.removeChild(node) : node;
 		(<Document>adopted.ownerDocument) = this;
 		return adopted;
+	}
+
+	/**
+	 * Returns selection.
+	 *
+	 * @returns Selection.
+	 */
+	public getSelection(): Selection {
+		return new Selection();
 	}
 
 	/**

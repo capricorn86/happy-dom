@@ -68,6 +68,7 @@ import Window from './Window';
 import URLSearchParams from '../url-search-params/URLSearchParams';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
+import Selection from '../selection/Selection';
 
 /**
  * Window.
@@ -148,6 +149,7 @@ export default interface IWindow {
 	readonly NodeList: typeof NodeList;
 	readonly CSSUnitValue: typeof CSSUnitValue;
 	readonly CSS: CSS;
+	readonly Selection: typeof Selection;
 
 	// Events
 	onload: (event: Event) => void;
