@@ -83,13 +83,16 @@ describe('HTMLElement', () => {
 	describe('get innerText()', () => {
 		it('Returns the as the textContent property.', () => {
 			const div = document.createElement('div');
-			const textNode1 = document.createTextNode('text1');
-			const textNode2 = document.createTextNode('text2');
+			const script = document.createElement('script');
+			const style = document.createElement('script');
 			element.appendChild(div);
-			element.appendChild(textNode2);
-			div.appendChild(textNode1);
+			element.appendChild(script);
+			element.appendChild(style);
+			element.appendChild(document.createTextNode('text2'));
+			div.appendChild(document.createTextNode('text1'));
+			script.appendChild(document.createTextNode('var key = "value";'));
+			style.appendChild(document.createTextNode('button { background: red; }'));
 			expect(element.innerText).toBe('text1text2');
-			expect(element.innerText).toBe(element.textContent);
 		});
 	});
 
