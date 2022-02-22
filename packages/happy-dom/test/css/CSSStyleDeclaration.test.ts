@@ -31,6 +31,30 @@ describe('CSSStyleDeclaration', () => {
 		});
 	}
 
+	describe('get cssText()', () => {
+		it('Returns CSS text.', () => {
+			attributes['style'] = new Attr();
+			attributes['style'].name = 'style';
+			attributes['style'].value = 'background: red; color: blue;';
+
+			expect(cssStyleDeclaration.cssText).toBe('background: red; color: blue;');
+		});
+	});
+
+	describe('set cssText()', () => {
+		it('Sets CSS text.', () => {
+			cssStyleDeclaration.cssText = 'line-height: 2; font-size: 12px; background';
+
+			// Test if setProperty() crashes when a single property is used in the style
+			cssStyleDeclaration.lineHeight = '3';
+
+			expect(cssStyleDeclaration.lineHeight).toBe('3');
+			expect(cssStyleDeclaration.fontSize).toBe('12px');
+			expect(cssStyleDeclaration.background).toBe('');
+			expect(attributes['style'].value).toBe('line-height: 3; font-size: 12px; background;');
+		});
+	});
+
 	describe('item()', () => {
 		it('Returns an item by index.', () => {
 			cssStyleDeclaration.setProperty('background-color', 'green');

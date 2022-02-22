@@ -10,7 +10,36 @@ export default class CSSStyleDeclaration {
 	private _attributes: { [k: string]: Attr } = null;
 	private _computedStyleElement: { isConnected: boolean } = null;
 
-	/* eslint-disable require-jsdoc */
+	/**
+	 * Constructor.
+	 *
+	 * @param [attributes] Attributes.
+	 * @param [computedStyleElement] Computed style element.
+	 * @param computedStyleElement.isConnected
+	 */
+	constructor(
+		attributes: { [k: string]: Attr } = {},
+		computedStyleElement: { isConnected: boolean } = null
+	) {
+		const style = attributes['style'];
+		let index = 0;
+
+		this._attributes = attributes;
+		this._computedStyleElement = computedStyleElement;
+
+		if (style && style.value) {
+			const parts = style.value.split(';');
+			for (const part of parts) {
+				if (part) {
+					const [name] = part.trim().split(':');
+					this[index] = name;
+					index++;
+				}
+			}
+		}
+
+		(<number>this.length) = index;
+	}
 
 	/**
 	 *
@@ -4809,8 +4838,6 @@ export default class CSSStyleDeclaration {
 		this.setProperty('zoom', zoom);
 	}
 
-	/* eslint-enable require-jsdoc */
-
 	/**
 	 * Returns the style decleration as a CSS text.
 	 *
@@ -4844,7 +4871,11 @@ export default class CSSStyleDeclaration {
 			for (const part of parts) {
 				if (part) {
 					const [name, value] = part.trim().split(':');
-					newStyle.push(`${name}: ${value.trim()};`);
+					if (value) {
+						newStyle.push(`${name}: ${value.trim()};`);
+					} else {
+						newStyle.push(name);
+					}
 					this[index] = name;
 					index++;
 				}
@@ -4858,37 +4889,6 @@ export default class CSSStyleDeclaration {
 			}
 			(<number>this.length) = 0;
 		}
-	}
-
-	/**
-	 * Constructor.
-	 *
-	 * @param [attributes] Attributes.
-	 * @param [computedStyleElement] Computed style element.
-	 * @param computedStyleElement.isConnected
-	 */
-	constructor(
-		attributes: { [k: string]: Attr } = {},
-		computedStyleElement: { isConnected: boolean } = null
-	) {
-		const style = attributes['style'];
-		let index = 0;
-
-		this._attributes = attributes;
-		this._computedStyleElement = computedStyleElement;
-
-		if (style && style.value) {
-			const parts = style.value.split(';');
-			for (const part of parts) {
-				if (part) {
-					const [name] = part.trim().split(':');
-					this[index] = name;
-					index++;
-				}
-			}
-		}
-
-		(<number>this.length) = index;
 	}
 
 	/**
@@ -4932,8 +4932,10 @@ export default class CSSStyleDeclaration {
 					if (name === propertyName) {
 						newStyle.push(`${name}: ${value};`);
 						isExisting = true;
-					} else {
+					} else if (existingValue) {
 						newStyle.push(`${name}: ${existingValue.trim()};`);
+					} else {
+						newStyle.push(`${name};`);
 					}
 
 					this[index] = name;
@@ -5011,6 +5013,9 @@ export default class CSSStyleDeclaration {
 				if (part) {
 					const [name, value] = part.trim().split(':');
 					if (name === propertyName) {
+						if (!value) {
+							return '';
+						}
 						return value.trim();
 					}
 				}
