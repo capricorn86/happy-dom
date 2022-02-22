@@ -106,6 +106,7 @@ import ChildLessElements from './config/ChildLessElements';
 import CSSStyleSheet from './css/CSSStyleSheet';
 import Storage from './storage/Storage';
 import URLSearchParams from './url-search-params/URLSearchParams';
+import Selection from './selection/Selection';
 
 export {
 	AsyncWindow,
@@ -215,5 +216,6 @@ export {
 	ChildLessElements,
 	CSSStyleSheet,
 	Storage,
-	URLSearchParams
+	URLSearchParams,
+	Selection
 };

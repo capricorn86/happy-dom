@@ -73,6 +73,7 @@ import URLSearchParams from '../url-search-params/URLSearchParams';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
 import MediaQueryList from '../match-media/MediaQueryList';
+import Selection from '../selection/Selection';
 import * as PerfHooks from 'perf_hooks';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'text'];
@@ -160,6 +161,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly NodeList = NodeList;
 	public readonly MediaQueryList = MediaQueryList;
 	public readonly CSSUnitValue = CSSUnitValue;
+	public readonly Selection = Selection;
 
 	// Events
 	public onload: (event: Event) => void = null;

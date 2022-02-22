@@ -27,6 +27,7 @@ import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScri
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum';
 import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
 import CustomEvent from '../../../src/event/events/CustomEvent';
+import Selection from '../../../src/selection/Selection';
 
 describe('Document', () => {
 	let window: Window;
@@ -936,6 +937,12 @@ describe('Document', () => {
 
 				done();
 			}, 0);
+		});
+	});
+
+	describe('getSelection()', () => {
+		it('Returns selection.', () => {
+			expect(document.getSelection() instanceof Selection).toBe(true);
 		});
 	});
 

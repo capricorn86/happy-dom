@@ -11,6 +11,7 @@ import IParentNode from '../parent-node/IParentNode';
 import INode from '../node/INode';
 import ICharacterData from '../character-data/ICharacterData';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
+import Selection from '../../selection/Selection';
 
 /**
  * Document.
@@ -152,4 +153,11 @@ export default interface IDocument extends IParentNode {
 	 * @returns Adopted node.
 	 */
 	adoptNode(node: INode): INode;
+
+	/**
+	 * Returns selection.
+	 *
+	 * @returns Selection.
+	 */
+	getSelection(): Selection;
 }
