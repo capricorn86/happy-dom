@@ -4,6 +4,7 @@ import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
 import Attr from '../../attribute/Attr';
 import FocusEvent from '../../event/events/FocusEvent';
 import PointerEvent from '../../event/events/PointerEvent';
+import Node from '../node/Node';
 
 /**
  * HTML Element.
@@ -49,21 +50,34 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	}
 
 	/**
-	 * Returns inner text.
+	 * Returns inner text, which is the rendered appearance of text.
 	 *
-	 * @returns Text.
+	 * @returns Inner text.
 	 */
 	public get innerText(): string {
-		return this.textContent;
+		let result = '';
+		for (const childNode of this.childNodes) {
+			if (childNode instanceof HTMLElement) {
+				if (childNode.tagName !== 'SCRIPT' && childNode.tagName !== 'STYLE') {
+					result += childNode.innerText;
+				}
+			} else if (
+				childNode.nodeType === Node.ELEMENT_NODE ||
+				childNode.nodeType === Node.TEXT_NODE
+			) {
+				result += childNode.textContent;
+			}
+		}
+		return result;
 	}
 
 	/**
-	 * Sets inner text.
+	 * Sets the inner text, which is the rendered appearance of text.
 	 *
-	 * @param text Text.
+	 * @param innerText Inner text.
 	 */
-	public set innerText(text: string) {
-		this.textContent = text;
+	public set innerText(innerText: string) {
+		this.textContent = innerText;
 	}
 
 	/**

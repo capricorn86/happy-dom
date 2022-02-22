@@ -37,7 +37,6 @@ export default class XMLParser {
 		let parentUnnestableTagName = null;
 		let lastTextIndex = 0;
 		let match: RegExpExecArray;
-		let childLessIndex = 0;
 
 		while ((match = markupRegexp.exec(data))) {
 			const tagName = match[2].toLowerCase();
@@ -88,15 +87,18 @@ export default class XMLParser {
 				} else {
 					parent.appendChild(newElement);
 				}
-				lastTextIndex = childLessIndex = markupRegexp.lastIndex;
+				lastTextIndex = markupRegexp.lastIndex;
 
 				// Tags which contain non-parsed content
 				// For example: <script> JavaScript should not be parsed
 				if (ChildLessElements.includes(tagName)) {
-					while (markupRegexp.exec(data)[2].toLowerCase() != tagName) {
-						childLessIndex = markupRegexp.lastIndex;
+					let childLessMatch = null;
+					while ((childLessMatch = markupRegexp.exec(data))) {
+						if (childLessMatch[2] === match[2] && childLessMatch[1]) {
+							markupRegexp.lastIndex -= childLessMatch[0].length;
+							break;
+						}
 					}
-					markupRegexp.lastIndex = childLessIndex;
 				}
 			} else {
 				stack.pop();

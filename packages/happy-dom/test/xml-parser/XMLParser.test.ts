@@ -1,7 +1,8 @@
 import XMLParser from '../../src/xml-parser/XMLParser';
 import Window from '../../src/window/Window';
 import Document from '../../src/nodes/document/Document';
-import HTMLElement from '../../src/nodes/html-element/HTMLElement';
+import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
+import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTemplateElement';
 import XMLParserHTML from './data/XMLParserHTML';
 import NamespaceURI from '../../src/config/NamespaceURI';
 import DocumentType from '../../src/nodes/document-type/DocumentType';
@@ -28,7 +29,7 @@ describe('XMLParser', () => {
 			const root = XMLParser.parse(window.document, '<div></div>');
 			expect(root.childNodes.length).toBe(1);
 			expect(root.childNodes[0].childNodes.length).toBe(0);
-			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
+			expect((<IHTMLElement>root.childNodes[0]).tagName).toBe('DIV');
 		});
 
 		it('Parses HTML with a single <div> with attributes.', () => {
@@ -38,10 +39,10 @@ describe('XMLParser', () => {
 			);
 			expect(root.childNodes.length).toBe(1);
 			expect(root.childNodes[0].childNodes.length).toBe(0);
-			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
-			expect((<HTMLElement>root.childNodes[0]).id).toBe('id');
-			expect((<HTMLElement>root.childNodes[0]).className).toBe('class1 class2');
-			expect((<HTMLElement>root.childNodes[0]).attributes).toEqual({
+			expect((<IHTMLElement>root.childNodes[0]).tagName).toBe('DIV');
+			expect((<IHTMLElement>root.childNodes[0]).id).toBe('id');
+			expect((<IHTMLElement>root.childNodes[0]).className).toBe('class1 class2');
+			expect((<IHTMLElement>root.childNodes[0]).attributes).toEqual({
 				'0': {
 					name: 'class',
 					value: 'class1 class2',
@@ -151,6 +152,37 @@ describe('XMLParser', () => {
 					<a></a><a>Test</a>
 				</div>
 				`.replace(/[\s]/gm, '')
+			);
+		});
+
+		it('Does not parse the content of script, style and template elements.', () => {
+			const root = XMLParser.parse(
+				window.document,
+				`<div>
+					<script>if(1<Math['random']()){else if(Math['random']()>1){console.log("1")}</script>
+					<script><b></b></script>
+					<style><b></b></style>
+					<template><b></b></template>
+				</div>`
+			);
+
+			expect((<IHTMLElement>root.children[0].children[0]).innerText).toBe(
+				`if(1<Math['random']()){else if(Math['random']()>1){console.log("1")}`
+			);
+
+			expect((<IHTMLElement>root.children[0].children[1]).innerText).toBe('<b></b>');
+			expect((<IHTMLElement>root.children[0].children[2]).innerText).toBe('<b></b>');
+			expect((<IHTMLTemplateElement>root.children[0].children[3]).content.textContent).toBe(
+				'<b></b>'
+			);
+
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(
+				`<div>
+					<script>if(1<Math['random']()){else if(Math['random']()>1){console.log("1")}</script>
+					<script><b></b></script>
+					<style><b></b></style>
+					<template></template>
+				</div>`.replace(/[\s]/gm, '')
 			);
 		});
 
