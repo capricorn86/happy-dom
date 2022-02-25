@@ -3,7 +3,7 @@ import ShadowRoot from '../shadow-root/ShadowRoot';
 import Attr from '../../attribute/Attr';
 import DOMRect from './DOMRect';
 import Range from './Range';
-import ClassList from './ClassList';
+import DOMTokenList from './DOMTokenList';
 import QuerySelector from '../../query-selector/QuerySelector';
 import SelectorItem from '../../query-selector/SelectorItem';
 import MutationRecord from '../../mutation-observer/MutationRecord';
@@ -36,11 +36,12 @@ export default class Element extends Node implements IElement {
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
 	public shadowRoot: IShadowRoot = null;
-	public readonly classList = new ClassList(this);
+	public _attributes: { [k: string]: Attr } = {};
+	public readonly classList = new DOMTokenList(this);
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
-	public _attributes: { [k: string]: Attr } = {};
+
 	public readonly namespaceURI: string = null;
 
 	/**

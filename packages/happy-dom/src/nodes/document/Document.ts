@@ -241,6 +241,15 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns scripts.
+	 *
+	 * @returns Scripts.
+	 */
+	public get scripts(): IHTMLCollection<IElement> {
+		return this.getElementsByTagName('script');
+	}
+
+	/**
 	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
 	 *
 	 * @param nodes List of Node or DOMString.
