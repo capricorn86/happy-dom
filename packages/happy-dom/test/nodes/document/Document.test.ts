@@ -1,4 +1,5 @@
 import Window from '../../../src/window/Window';
+import IWindow from '../../../src/window/IWindow';
 import CustomElement from '../../CustomElement';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
 import Text from '../../../src/nodes/text/Text';
@@ -6,7 +7,7 @@ import Comment from '../../../src/nodes/comment/Comment';
 import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment';
 import TreeWalker from '../../../src/tree-walker/TreeWalker';
 import Node from '../../../src/nodes/node/Node';
-import Document from '../../../src/nodes/document/Document';
+import IDocument from '../../../src/nodes/document/IDocument';
 import Element from '../../../src/nodes/element/Element';
 import Event from '../../../src/event/Event';
 import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement';
@@ -30,8 +31,8 @@ import CustomEvent from '../../../src/event/events/CustomEvent';
 import Selection from '../../../src/selection/Selection';
 
 describe('Document', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window();
@@ -52,6 +53,26 @@ describe('Document', () => {
 		it('Returns Element child nodes.', () => {
 			document.appendChild(document.createTextNode('test'));
 			expect(document.children).toEqual([document.documentElement]);
+		});
+	});
+
+	describe('get scripts()', () => {
+		it('Returns script elements.', () => {
+			const div = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const script1 = document.createElement('script');
+			const script2 = document.createElement('script');
+
+			span1.appendChild(script1);
+			span2.appendChild(script2);
+
+			div.appendChild(span1);
+			div.appendChild(span2);
+
+			document.body.appendChild(div);
+
+			expect(Array.from(document.scripts)).toEqual([script1, script2]);
 		});
 	});
 

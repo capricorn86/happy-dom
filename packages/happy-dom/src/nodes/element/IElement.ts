@@ -2,7 +2,7 @@ import IShadowRoot from '../shadow-root/IShadowRoot';
 import Attr from '../../attribute/Attr';
 import DOMRect from './DOMRect';
 import Range from './Range';
-import DOMTokenList from './DOMTokenList';
+import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import INode from './../node/INode';
 import IChildNode from '../child-node/IChildNode';
 import IParentNode from '../parent-node/IParentNode';
@@ -16,7 +16,7 @@ export type TInsertAdjacentPositions = 'beforebegin' | 'afterbegin' | 'beforeend
 export default interface IElement extends IChildNode, INonDocumentTypeChildNode, IParentNode {
 	readonly tagName: string;
 	readonly shadowRoot: IShadowRoot;
-	readonly classList: DOMTokenList;
+	readonly classList: IDOMTokenList;
 	readonly namespaceURI: string;
 	scrollTop: number;
 	scrollLeft: number;

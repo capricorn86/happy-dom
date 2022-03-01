@@ -3,7 +3,8 @@ import ShadowRoot from '../shadow-root/ShadowRoot';
 import Attr from '../../attribute/Attr';
 import DOMRect from './DOMRect';
 import Range from './Range';
-import DOMTokenList from './DOMTokenList';
+import DOMTokenList from '../../dom-token-list/DOMTokenList';
+import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import QuerySelector from '../../query-selector/QuerySelector';
 import SelectorItem from '../../query-selector/SelectorItem';
 import MutationRecord from '../../mutation-observer/MutationRecord';
@@ -37,12 +38,24 @@ export default class Element extends Node implements IElement {
 	public nodeType = Node.ELEMENT_NODE;
 	public shadowRoot: IShadowRoot = null;
 	public _attributes: { [k: string]: Attr } = {};
-	public readonly classList = new DOMTokenList(this);
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
-
 	public readonly namespaceURI: string = null;
+
+	private _classList: DOMTokenList = null;
+
+	/**
+	 * Returns class list.
+	 *
+	 * @returns Class list.
+	 */
+	public get classList(): IDOMTokenList {
+		if (!this._classList) {
+			this._classList = new DOMTokenList(this, 'class');
+		}
+		return <IDOMTokenList>this._classList;
+	}
 
 	/**
 	 * Returns ID.
@@ -770,6 +783,8 @@ export default class Element extends Node implements IElement {
 
 		this._attributes[name] = attribute;
 
+		this._updateDomListIndices();
+
 		if (
 			this.attributeChangedCallback &&
 			(<typeof Element>this.constructor)._observedAttributes &&
@@ -842,6 +857,8 @@ export default class Element extends Node implements IElement {
 	 */
 	public removeAttributeNode(attribute: Attr): void {
 		delete this._attributes[attribute.name];
+
+		this._updateDomListIndices();
 
 		if (
 			this.attributeChangedCallback &&
@@ -933,5 +950,14 @@ export default class Element extends Node implements IElement {
 			return name;
 		}
 		return name.toLowerCase();
+	}
+
+	/**
+	 * Updates DOM list indices.
+	 */
+	protected _updateDomListIndices(): void {
+		if (this._classList) {
+			this._classList._updateIndices();
+		}
 	}
 }

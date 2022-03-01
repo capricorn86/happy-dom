@@ -21,6 +21,7 @@ import CSSStyleSheet from '../../css/CSSStyleSheet';
 import DOMException from '../../exception/DOMException';
 import CookieUtility from '../../cookie/CookieUtility';
 import IElement from '../element/IElement';
+import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IDocumentType from '../document-type/IDocumentType';
 import INode from '../node/INode';
@@ -245,8 +246,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Scripts.
 	 */
-	public get scripts(): IHTMLCollection<IElement> {
-		return this.getElementsByTagName('script');
+	public get scripts(): IHTMLCollection<IHTMLScriptElement> {
+		return <IHTMLCollection<IHTMLScriptElement>>this.getElementsByTagName('script');
 	}
 
 	/**

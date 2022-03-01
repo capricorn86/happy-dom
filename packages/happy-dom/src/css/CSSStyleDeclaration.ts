@@ -4898,7 +4898,7 @@ export default class CSSStyleDeclaration {
 	 * @returns Item.
 	 */
 	public item(index: number): string {
-		return this[String(index)] || '';
+		return this[index] || '';
 	}
 
 	/**

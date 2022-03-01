@@ -10,8 +10,6 @@ import IHTMLLabelElement from './IHTMLLabelElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement.
  */
 export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelElement {
-	public _htmlFor: string = null;
-
 	/**
 	 * Returns a string containing the ID of the labeled control. This reflects the "for" attribute.
 	 *
@@ -73,8 +71,6 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLLabelElement {
-		const clone = <HTMLLabelElement>super.cloneNode(deep);
-		clone._htmlFor = this._htmlFor;
-		return clone;
+		return <HTMLLabelElement>super.cloneNode(deep);
 	}
 }
