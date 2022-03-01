@@ -178,6 +178,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly top = this;
 	public readonly parent = this;
 	public readonly window = this;
+	public readonly globalThis = this;
 	public readonly screen = new Screen();
 	public readonly innerWidth = 1024;
 	public readonly innerHeight = 768;

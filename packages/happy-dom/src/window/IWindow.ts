@@ -166,6 +166,7 @@ export default interface IWindow {
 	readonly top: IWindow;
 	readonly parent: IWindow;
 	readonly window: IWindow;
+	readonly globalThis: IWindow;
 	readonly screen: Screen;
 	readonly innerWidth: number;
 	readonly innerHeight: number;
