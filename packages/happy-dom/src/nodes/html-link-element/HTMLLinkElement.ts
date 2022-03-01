@@ -7,6 +7,8 @@ import IHTMLLinkElement from './IHTMLLinkElement';
 import Event from '../../event/Event';
 import ErrorEvent from '../../event/events/ErrorEvent';
 import INode from '../../nodes/node/INode';
+import DOMTokenList from '../../dom-token-list/DOMTokenList';
+import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 
 /**
  * HTML Link Element.
@@ -19,6 +21,19 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	public onload: (event: Event) => void = null;
 	public readonly sheet: CSSStyleSheet = null;
 	public _evaluateCSS = true;
+	private _relList: DOMTokenList = null;
+
+	/**
+	 * Returns rel list.
+	 *
+	 * @returns Rel list.
+	 */
+	public get relList(): IDOMTokenList {
+		if (!this._relList) {
+			this._relList = new DOMTokenList(this, 'rel');
+		}
+		return <IDOMTokenList>this._relList;
+	}
 
 	/**
 	 * Returns as.
@@ -257,6 +272,17 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 						}
 					});
 			}
+		}
+	}
+
+	/**
+	 * Updates DOM list indices.
+	 */
+	protected _updateDomListIndices(): void {
+		super._updateDomListIndices();
+
+		if (this._relList) {
+			this._relList._updateIndices();
 		}
 	}
 }

@@ -69,11 +69,12 @@ import URLSearchParams from '../url-search-params/URLSearchParams';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
 import Selection from '../selection/Selection';
+import IEventTarget from '../event/IEventTarget';
 
 /**
  * Window.
  */
-export default interface IWindow {
+export default interface IWindow extends IEventTarget {
 	// Public Properties
 	readonly happyDOM: {
 		whenAsyncComplete: () => Promise<void>;

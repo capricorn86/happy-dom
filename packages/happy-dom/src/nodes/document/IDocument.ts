@@ -12,6 +12,11 @@ import INode from '../node/INode';
 import ICharacterData from '../character-data/ICharacterData';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import Selection from '../../selection/Selection';
+import IHTMLCollection from '../element/IHTMLCollection';
+import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement';
+import CSSStyleSheet from '../../css/CSSStyleSheet';
+import Location from '../../location/Location';
+import DocumentReadyStateEnum from './DocumentReadyStateEnum';
 
 /**
  * Document.
@@ -24,7 +29,13 @@ export default interface IDocument extends IParentNode {
 	readonly doctype: IDocumentType;
 	readonly body: IHTMLElement;
 	readonly head: IHTMLElement;
+	readonly scripts: IHTMLCollection<IHTMLScriptElement>;
 	readonly activeElement: IHTMLElement;
+	readonly styleSheets: CSSStyleSheet[];
+	readonly scrollingElement: IHTMLElement;
+	readonly location: Location;
+	readonly readyState: DocumentReadyStateEnum;
+	cookie: string;
 
 	/**
 	 * Replaces the document HTML with new HTML.
@@ -69,7 +80,7 @@ export default interface IDocument extends IParentNode {
 	 * @param  data Text data.
 	 * @returns Text node.
 	 */
-	createTextNode(data: string): ICharacterData;
+	createTextNode(data?: string): ICharacterData;
 
 	/**
 	 * Creates a comment node.
@@ -77,7 +88,7 @@ export default interface IDocument extends IParentNode {
 	 * @param  data Text data.
 	 * @returns Text node.
 	 */
-	createComment(data: string): ICharacterData;
+	createComment(data?: string): ICharacterData;
 
 	/**
 	 * Creates a document fragment.
