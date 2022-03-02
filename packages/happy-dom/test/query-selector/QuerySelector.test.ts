@@ -359,6 +359,45 @@ describe('QuerySelector', () => {
 			expect(elements[0]).toBe(container.children[0].children[1].children[1]);
 		});
 
+		it('Returns all elements matching ".foo:not(.bar)".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div data-foo data-bar class="foo bar"></div>
+				<div data-foo class="foo"></div>
+				<div data-bar class="bar"></div>
+			`;
+			const elements = container.querySelectorAll('.foo:not(.bar)');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0]).toBe(container.children[1]);
+		});
+
+		it('Returns all elements matching ".bar:not(.foo)".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div data-foo data-bar class="foo bar"></div>
+				<div data-foo class="foo"></div>
+				<div data-bar class="bar"></div>
+			`;
+			const elements = container.querySelectorAll('.bar:not(.foo)');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0]).toBe(container.children[2]);
+		});
+
+		it('Returns all elements matching "[data-foo]:not([data-bar])".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div data-foo data-bar class="foo bar"></div>
+				<div data-foo class="foo"></div>
+				<div data-bar class="bar"></div>
+			`;
+			const elements = container.querySelectorAll('[data-foo]:not([data-bar])');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0]).toBe(container.children[1]);
+		});
+
 		it('Returns all span elements matching span:nth-child(1) or span:nth-child(2).', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
