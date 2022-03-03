@@ -75,6 +75,11 @@ import NodeList from '../nodes/node/NodeList';
 import MediaQueryList from '../match-media/MediaQueryList';
 import Selection from '../selection/Selection';
 import * as PerfHooks from 'perf_hooks';
+import Navigator from '../navigator/Navigator';
+import MimeType from '../navigator/MimeType';
+import MimeTypeArray from '../navigator/MimeTypeArray';
+import Plugin from '../navigator/Plugin';
+import PluginArray from '../navigator/PluginArray';
 
 const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'text'];
 
@@ -162,6 +167,11 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly MediaQueryList = MediaQueryList;
 	public readonly CSSUnitValue = CSSUnitValue;
 	public readonly Selection = Selection;
+	public readonly Navigator = Navigator;
+	public readonly MimeType = MimeType;
+	public readonly MimeTypeArray = MimeTypeArray;
+	public readonly Plugin = Plugin;
+	public readonly PluginArray = PluginArray;
 
 	// Events
 	public onload: (event: Event) => void = null;
@@ -172,7 +182,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly customElements: CustomElementRegistry = new CustomElementRegistry();
 	public readonly location = new Location();
 	public readonly history = new History();
-	public readonly navigator = { userAgent: 'happy-dom' };
+	public readonly navigator = new Navigator();
 	public readonly console = global ? global.console : null;
 	public readonly self = this;
 	public readonly top = this;
