@@ -70,6 +70,11 @@ import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
 import Selection from '../selection/Selection';
 import IEventTarget from '../event/IEventTarget';
+import Navigator from '../navigator/Navigator';
+import MimeType from '../navigator/MimeType';
+import MimeTypeArray from '../navigator/MimeTypeArray';
+import Plugin from '../navigator/Plugin';
+import PluginArray from '../navigator/PluginArray';
 
 /**
  * Window.
@@ -151,6 +156,11 @@ export default interface IWindow extends IEventTarget {
 	readonly CSSUnitValue: typeof CSSUnitValue;
 	readonly CSS: CSS;
 	readonly Selection: typeof Selection;
+	readonly Navigator: typeof Navigator;
+	readonly MimeType: typeof MimeType;
+	readonly MimeTypeArray: typeof MimeTypeArray;
+	readonly Plugin: typeof Plugin;
+	readonly PluginArray: typeof PluginArray;
 
 	// Events
 	onload: (event: Event) => void;
@@ -161,7 +171,7 @@ export default interface IWindow extends IEventTarget {
 	readonly customElements: CustomElementRegistry;
 	readonly location: Location;
 	readonly history: History;
-	readonly navigator: { userAgent: string };
+	readonly navigator: Navigator;
 	readonly console: Console;
 	readonly self: IWindow;
 	readonly top: IWindow;
