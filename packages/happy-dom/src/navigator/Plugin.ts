@@ -5,15 +5,30 @@ import MimeType from './MimeType';
  */
 export default class Plugin {
 	[n: number]: MimeType;
-	public readonly _description: string;
-	public readonly _filename: string;
-	public readonly _name: string;
-	public readonly _length: number;
+	public readonly length: number = 0;
+	public readonly description: string;
+	public readonly filename: string;
+	public readonly name: string;
 
 	/**
 	 * Constructor.
+	 *
+	 * @param mimeTypes Mime types.
+	 * @param description Description.
+	 * @param filename Filename.
+	 * @param name Name.
 	 */
-	constructor() {}
+	constructor(mimeTypes: MimeType[], description: string, filename: string, name: string) {
+		this.description = description;
+		this.filename = filename;
+		this.name = name;
+
+		for (let i = 0, max = mimeTypes.length; i < max; i++) {
+			this[i] = mimeTypes[i];
+			this[mimeTypes[i].type] = mimeTypes[i];
+		}
+		this.length = mimeTypes.length;
+	}
 
 	/**
 	 * Item.
@@ -22,7 +37,7 @@ export default class Plugin {
 	 * @returns IMimeType.
 	 */
 	public item(index: number): MimeType {
-		return this[index];
+		return this[index] || null;
 	}
 
 	/**
@@ -32,34 +47,11 @@ export default class Plugin {
 	 * @returns IMimeType.
 	 */
 	public namedItem(name: string): MimeType {
-		return this[name];
+		return this[name] || null;
 	}
 
 	/**
-	 *
-	 */
-	public get description(): string {
-		return this._description ? this._description : '';
-	}
-	/**
-	 *
-	 */
-	public get filename(): string {
-		return this._filename ? this._filename : '';
-	}
-	/**
-	 *
-	 */
-	public get length(): number {
-		return this._length ? this._length : 0;
-	}
-	/**
-	 *
-	 */
-	public get name(): string {
-		return this._name ? this._name : '';
-	}
-	/**
+	 * Returns the object as a string.
 	 *
 	 * @returns String.
 	 */

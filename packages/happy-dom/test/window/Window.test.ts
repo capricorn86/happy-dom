@@ -5,6 +5,7 @@ import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptE
 import IFetchOptions from '../../src/window/IFetchOptions';
 import IResponse from '../../src/window/IResponse';
 import Window from '../../src/window/Window';
+import Navigator from '../../src/navigator/Navigator';
 
 describe('Window', () => {
 	let window: Window;
@@ -45,6 +46,41 @@ describe('Window', () => {
 	describe('get performance()', () => {
 		it('Exposes "performance" from the NodeJS perf_hooks package.', () => {
 			expect(typeof window.performance.now()).toBe('number');
+		});
+	});
+
+	describe('get navigator()', () => {
+		it('Returns an instance of Navigator with browser data.', () => {
+			expect(window.navigator instanceof Navigator).toBe(true);
+			expect(window.navigator).toEqual({
+				appCodeName: 'Mozilla',
+				appName: 'Netscape',
+				appVersion: '5.0 (Windows)',
+				cookieEnabled: true,
+				credentials: null,
+				doNotTrack: 'unspecified',
+				geolocation: null,
+				hardwareConcurrency: 8,
+				language: 'en-US',
+				languages: ['en-US', 'en'],
+				locks: null,
+				maxTouchPoints: 0,
+				mimeTypes: {
+					length: 0
+				},
+				onLine: true,
+				permissions: null,
+				platform: 'Win32',
+				plugins: {
+					length: 0
+				},
+				product: 'Gecko',
+				productSub: '20100101',
+				userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0',
+				vendor: '',
+				vendorSub: '',
+				webdriver: true
+			});
 		});
 	});
 

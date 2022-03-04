@@ -5,45 +5,51 @@ import Plugin from './Plugin';
  */
 export default class PluginArray {
 	[n: number]: Plugin;
-	public readonly _length: number;
+	public readonly length: number;
 
 	/**
 	 * Constructor.
-	 */
-	constructor() {}
-	/**
-	 * Item.
 	 *
-	 * @param index Number.
+	 * @param plugins Plugins.
+	 */
+	constructor(plugins: Plugin[]) {
+		for (let i = 0, max = plugins.length; i < max; i++) {
+			this[i] = plugins[i];
+			this[plugins[i].name] = plugins[i];
+		}
+		this.length = plugins.length;
+	}
+
+	/**
+	 * Returns an item.
+	 *
+	 * @param index Index.
 	 * @returns Plugin.
 	 */
 	public item(index: number): Plugin {
-		return this[index];
+		return this[index] || null;
 	}
 
 	/**
-	 * NamedItem.
+	 * Returns an item.
 	 *
-	 * @param name String.
+	 * @param name Name.
 	 * @returns Plugin.
 	 */
 	public namedItem(name: string): Plugin {
-		return this[name];
-	}
-	/**
-	 * @returns Undefined.
-	 */
-	public refresh(): undefined {
-		return undefined;
-	}
-	/**
-	 * @returns Number.
-	 */
-	public get length(): number {
-		return this._length ? this._length : 0;
+		return this[name] || null;
 	}
 
 	/**
+	 * Refreshes the list.
+	 */
+	public refresh(): void {
+		// Do nothing
+	}
+
+	/**
+	 * Returns the object as a string.
+	 *
 	 * @returns String.
 	 */
 	public toString(): string {
