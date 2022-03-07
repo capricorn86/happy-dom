@@ -8,7 +8,7 @@ const CLASS_REGEXP = /\.([a-zA-Z0-9-_$]+)/g;
 const TAG_NAME_REGEXP = /^[a-zA-Z0-9-]+/;
 
 /**
- *
+ * Selector item.
  */
 export default class SelectorItem {
 	public isAll: boolean;
@@ -27,11 +27,9 @@ export default class SelectorItem {
 	 * @param selector Selector.
 	 */
 	constructor(selector: string) {
-		const isNotPseudo = selector.includes(':not(');
-
 		this.isAll = selector === '*';
 		this.isID = !this.isAll ? selector.startsWith('#') : false;
-		this.isAttribute = !this.isAll && !this.isID && selector.includes('[') && !isNotPseudo;
+		this.isAttribute = !this.isAll && !this.isID && selector.includes('[');
 		this.isPseudo = !this.isAll && !this.isID && selector.includes(':');
 		this.isClass = !this.isAll && !this.isID && new RegExp(CLASS_REGEXP, 'g').test(selector);
 		this.tagName = !this.isAll && !this.isID ? selector.match(TAG_NAME_REGEXP) : null;
@@ -236,7 +234,7 @@ export default class SelectorItem {
 		let match: RegExpMatchArray;
 
 		while ((match = regexp.exec(selector))) {
-			const isPsuedo = match.index > 0 && selector[match.index] === '(';
+			const isPsuedo = match.index > 0 && selector[match.index - 1] === '(';
 			if (
 				!isPsuedo &&
 				((match[1] && !this.matchesAttributeName(element, match[1])) ||
