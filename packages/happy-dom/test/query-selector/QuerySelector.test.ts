@@ -1,11 +1,13 @@
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
 import Window from '../../src/window/Window';
+import IWindow from '../../src/window/IWindow';
+import IDocument from '../../src/nodes/document/IDocument';
 import QuerySelectorHTML from './data/QuerySelectorHTML';
 import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML';
 
 describe('QuerySelector', () => {
-	let window;
-	let document;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window();
@@ -386,16 +388,15 @@ describe('QuerySelector', () => {
 		});
 
 		it('Returns all elements matching "[data-foo]:not([data-bar])".', () => {
-			const container = document.createElement('div');
-			container.innerHTML = `
+			document.body.innerHTML = `
 				<div data-foo data-bar class="foo bar"></div>
 				<div data-foo class="foo"></div>
 				<div data-bar class="bar"></div>
 			`;
-			const elements = container.querySelectorAll('[data-foo]:not([data-bar])');
+			const elements = document.querySelectorAll('[data-foo]:not([data-bar])');
 
 			expect(elements.length).toBe(1);
-			expect(elements[0]).toBe(container.children[1]);
+			expect(elements[0]).toBe(document.body.children[1]);
 		});
 
 		it('Returns all span elements matching span:nth-child(1) or span:nth-child(2).', () => {
