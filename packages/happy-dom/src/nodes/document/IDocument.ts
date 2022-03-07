@@ -171,4 +171,11 @@ export default interface IDocument extends IParentNode {
 	 * @returns Selection.
 	 */
 	getSelection(): Selection;
+
+	/**
+	 * Returns a boolean value indicating whether the document or any element inside the document has focus.
+	 *
+	 * @returns "true" if the document has focus.
+	 */
+	hasFocus(): boolean;
 }
