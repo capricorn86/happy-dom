@@ -720,6 +720,15 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns a boolean value indicating whether the document or any element inside the document has focus.
+	 *
+	 * @returns "true" if the document has focus.
+	 */
+	public hasFocus(): boolean {
+		return !!this.activeElement;
+	}
+
+	/**
 	 * @override
 	 */
 	public dispatchEvent(event: Event): boolean {

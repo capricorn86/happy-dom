@@ -967,6 +967,14 @@ describe('Document', () => {
 		});
 	});
 
+	describe('hasFocus()', () => {
+		it('Returns "true" if activeElement has focus.', () => {
+			expect(document.hasFocus()).toBe(true);
+			document.documentElement.remove();
+			expect(document.hasFocus()).toBe(false);
+		});
+	});
+
 	describe('dispatchEvent()', () => {
 		it('Bubbles events to Window.', () => {
 			const event = new Event('click', { bubbles: true });
