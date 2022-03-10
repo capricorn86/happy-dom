@@ -801,6 +801,7 @@ export default class Element extends Node implements IElement {
 					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(name))
 				) {
 					const record = new MutationRecord();
+					record.target = this;
 					record.type = MutationTypeEnum.attributes;
 					record.attributeName = name;
 					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
@@ -877,6 +878,7 @@ export default class Element extends Node implements IElement {
 						observer.options.attributeFilter.includes(attribute.name))
 				) {
 					const record = new MutationRecord();
+					record.target = this;
 					record.type = MutationTypeEnum.attributes;
 					record.attributeName = attribute.name;
 					record.oldValue = observer.options.attributeOldValue ? attribute.value : null;
