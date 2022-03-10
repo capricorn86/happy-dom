@@ -309,8 +309,9 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * Evaluates code.
 	 *
 	 * @param code Code.
+	 * @returns Result.
 	 */
-	public eval(code: string): void {
+	public eval(code: string): unknown {
 		let vmExists = false;
 		let vm = null;
 
@@ -325,10 +326,10 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 		}
 
 		if (global && vm && vm.isContext(this)) {
-			vm.runInContext(code, this);
-		} else if (global && global.eval) {
-			global.eval(code);
+			return vm.runInContext(code, this);
 		}
+
+		return global.eval(code);
 	}
 
 	/**
