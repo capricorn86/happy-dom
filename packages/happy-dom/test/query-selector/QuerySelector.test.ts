@@ -90,6 +90,16 @@ describe('QuerySelector', () => {
 			expect(elements[2]).toBe(container.children[0].children[1].children[1]);
 		});
 
+		it('Returns all elements with tag name and class "span.class1".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('span.class1');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0]).toBe(container.children[0].children[1].children[0]);
+			expect(elements[1]).toBe(container.children[0].children[1].children[1]);
+		});
+
 		it('Returns all elements with matching attributes using "[attr1="value1"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -548,6 +558,21 @@ describe('QuerySelector', () => {
 			div1.appendChild(div2);
 			div2.appendChild(span);
 			expect(div1.querySelector('span.spanClass')).toBe(span);
+		});
+
+		it('Returns span with a specific class name and tag name matching "custom-element.class1".', () => {
+			const div = document.createElement('div');
+			const customElement1 = document.createElement('custom-element');
+			const customElement2 = document.createElement('custom-element');
+			const customElement3 = document.createElement('custom-element');
+			customElement1.className = 'class1';
+			customElement2.className = 'class2';
+			customElement3.className = 'class3';
+			div.appendChild(customElement1);
+			div.appendChild(customElement2);
+			div.appendChild(customElement3);
+
+			expect(div.querySelector('custom-element.class2') === customElement2).toBe(true);
 		});
 
 		it('Returns span with a specific tag name and attribute matching "span[attr1="value1"]".', () => {

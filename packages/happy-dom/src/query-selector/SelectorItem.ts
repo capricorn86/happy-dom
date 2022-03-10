@@ -27,16 +27,18 @@ export default class SelectorItem {
 	 * @param selector Selector.
 	 */
 	constructor(selector: string) {
-		this.isAll = selector === '*';
+		const [baseSelector, psuedoSelector] = selector.split(':');
+
+		this.isAll = baseSelector === '*';
 		this.isID = !this.isAll ? selector.startsWith('#') : false;
-		this.isAttribute = !this.isAll && !this.isID && selector.includes('[');
-		this.isPseudo = !this.isAll && !this.isID && selector.includes(':');
-		this.isClass = !this.isAll && !this.isID && new RegExp(CLASS_REGEXP, 'g').test(selector);
-		this.tagName = !this.isAll && !this.isID ? selector.match(TAG_NAME_REGEXP) : null;
+		this.isAttribute = !this.isAll && !this.isID && baseSelector.includes('[');
+		this.isPseudo = !this.isAll && !this.isID && psuedoSelector !== undefined;
+		this.isClass = !this.isAll && !this.isID && new RegExp(CLASS_REGEXP, 'g').test(baseSelector);
+		this.tagName = !this.isAll && !this.isID ? baseSelector.match(TAG_NAME_REGEXP) : null;
 		this.tagName = this.tagName ? this.tagName[0].toUpperCase() : null;
 		this.isTagName = this.tagName !== null;
 		this.selector = selector;
-		this.id = !this.isAll && this.isID ? this.selector.replace('#', '') : null;
+		this.id = !this.isAll && this.isID ? baseSelector.replace('#', '') : null;
 	}
 
 	/**
@@ -257,14 +259,12 @@ export default class SelectorItem {
 	private matchesClass(element: Element, selector: string): boolean {
 		const regexp = new RegExp(CLASS_REGEXP, 'g');
 		const classList = element.className.split(' ');
-		let previousIndex = 0;
 		let match: RegExpMatchArray;
 
-		while ((match = regexp.exec(selector)) && match.index === previousIndex) {
+		while ((match = regexp.exec(selector.split(':')[0]))) {
 			if (!classList.includes(match[1])) {
 				return false;
 			}
-			previousIndex = match.index + match[0].length - 1;
 		}
 
 		return true;
