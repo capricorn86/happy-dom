@@ -188,8 +188,9 @@ export default interface IWindow extends IEventTarget {
 	 * Evaluates code.
 	 *
 	 * @param code Code.
+	 * @returns Result.
 	 */
-	eval(code: string): void;
+	eval(code: string): unknown;
 
 	/**
 	 * Returns an object containing the values of all CSS properties of an element.

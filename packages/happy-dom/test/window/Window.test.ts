@@ -101,6 +101,13 @@ describe('Window', () => {
 		});
 	});
 
+	describe('eval()', () => {
+		it('Evaluates code and returns the result.', () => {
+			const result = <() => number>window.eval('() => 5');
+			expect(result()).toBe(5);
+		});
+	});
+
 	describe('setTimeout()', () => {
 		it('Sets a timeout.', done => {
 			const timeoutId = window.setTimeout(() => done());
