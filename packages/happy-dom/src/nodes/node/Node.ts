@@ -267,6 +267,7 @@ export default class Node extends EventTarget implements INode {
 		// MutationObserver
 		if (this._observers.length > 0) {
 			const record = new MutationRecord();
+			record.target = this;
 			record.type = MutationTypeEnum.childList;
 			record.addedNodes = [node];
 
@@ -303,6 +304,7 @@ export default class Node extends EventTarget implements INode {
 		// MutationObserver
 		if (this._observers.length > 0) {
 			const record = new MutationRecord();
+			record.target = this;
 			record.type = MutationTypeEnum.childList;
 			record.removedNodes = [node];
 
@@ -368,6 +370,7 @@ export default class Node extends EventTarget implements INode {
 		// MutationObserver
 		if (this._observers.length > 0) {
 			const record = new MutationRecord();
+			record.target = this;
 			record.type = MutationTypeEnum.childList;
 			record.addedNodes = [newNode];
 

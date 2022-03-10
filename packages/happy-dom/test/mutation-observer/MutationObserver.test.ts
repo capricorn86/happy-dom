@@ -28,7 +28,7 @@ describe('MutationObserver', () => {
 					oldValue: null,
 					previousSibling: null,
 					removedNodes: [],
-					target: null,
+					target: div,
 					type: 'attributes'
 				}
 			]);
@@ -52,7 +52,7 @@ describe('MutationObserver', () => {
 					oldValue: 'old',
 					previousSibling: null,
 					removedNodes: [],
-					target: null,
+					target: div,
 					type: 'attributes'
 				}
 			]);
@@ -83,7 +83,7 @@ describe('MutationObserver', () => {
 						oldValue: 'old',
 						previousSibling: null,
 						removedNodes: [],
-						target: null,
+						target: div,
 						type: 'attributes'
 					}
 				]
@@ -108,7 +108,7 @@ describe('MutationObserver', () => {
 						oldValue: 'old',
 						previousSibling: null,
 						removedNodes: [],
-						target: null,
+						target: text,
 						type: 'characterData'
 					}
 				]
@@ -135,8 +135,79 @@ describe('MutationObserver', () => {
 						oldValue: 'old',
 						previousSibling: null,
 						removedNodes: [],
-						target: null,
+						target: text,
 						type: 'characterData'
+					}
+				]
+			]);
+		});
+
+		it('Observers added and removed nodes.', () => {
+			const records = [];
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			const article = document.createElement('article');
+			const text = document.createTextNode('old');
+			const observer = new MutationObserver(mutationRecords => {
+				records.push(mutationRecords);
+			});
+			observer.observe(div, { subtree: true, childList: true });
+			div.appendChild(text);
+			div.appendChild(span);
+			span.appendChild(article);
+			span.removeChild(article);
+
+			expect(records).toEqual([
+				[
+					{
+						addedNodes: [text],
+						attributeName: null,
+						attributeNamespace: null,
+						nextSibling: null,
+						oldValue: null,
+						previousSibling: null,
+						removedNodes: [],
+						target: div,
+						type: 'childList'
+					}
+				],
+				[
+					{
+						addedNodes: [span],
+						attributeName: null,
+						attributeNamespace: null,
+						nextSibling: null,
+						oldValue: null,
+						previousSibling: null,
+						removedNodes: [],
+						target: div,
+						type: 'childList'
+					}
+				],
+				[
+					{
+						addedNodes: [article],
+						attributeName: null,
+						attributeNamespace: null,
+						nextSibling: null,
+						oldValue: null,
+						previousSibling: null,
+						removedNodes: [],
+						target: span,
+						type: 'childList'
+					}
+				],
+				[
+					{
+						addedNodes: [],
+						attributeName: null,
+						attributeNamespace: null,
+						nextSibling: null,
+						oldValue: null,
+						previousSibling: null,
+						removedNodes: [article],
+						target: span,
+						type: 'childList'
 					}
 				]
 			]);
