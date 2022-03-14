@@ -1,11 +1,16 @@
+:warning: **This package is deprecated. Happy DOM now supports [Declarative Shadow DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom#server-side-rendering-of-web-components) which can be used for server-side rendering of web components instead.** :warning:
+
+
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
 
 # About
 
-A [JSDOM](https://github.com/jsdom/jsdom) alternative with focus on performance.
+[Happy DOM](https://github.com/capricorn86/happy-dom) is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG [DOM](https://dom.spec.whatwg.org/) and [HTML](https://html.spec.whatwg.org/multipage/).
 
-[Happy DOM](https://github.com/capricorn86/happy-dom) aim to support the most common functionality of a web browser.
+The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate enough of a web browser to be useful for testing, scraping web sites and server-side rendering.
+
+[Happy DOM](https://github.com/capricorn86/happy-dom) focuses heavily on performance and can be used as an alternative to [JSDOM](https://github.com/jsdom/jsdom).
 
 This package makes it easier to setup servering side rendering of web components by handling the setup of the Node [VM Context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) for you.
 
@@ -16,6 +21,8 @@ This package makes it easier to setup servering side rendering of web components
 - Custom Elements (Web Components)
 
 - Shadow Root (Shadow DOM)
+
+- Declarative Shadow DOM
 
 - Mutation Observer
 

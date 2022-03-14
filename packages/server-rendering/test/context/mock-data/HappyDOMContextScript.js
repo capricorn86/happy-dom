@@ -8,7 +8,7 @@ class CustomElement extends HTMLElement {
 	constructor() {
         super();
         this.changedAttributes = [];
-		this.attachShadow({ mode: 'closed' });
+		this.attachShadow({ mode: 'open' });
 	}
 
 	attributeChangedCallback(name, oldValue, newValue) {

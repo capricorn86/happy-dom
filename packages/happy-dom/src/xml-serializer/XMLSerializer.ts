@@ -9,18 +9,17 @@ import IElement from '../nodes/element/IElement';
 
 /**
  * Utility for converting an element to string.
- *
- * @class QuerySelector
  */
 export default class XMLSerializer {
 	/**
 	 * Renders an element as HTML.
 	 *
-	 * @param element Element to render.
-	 * @param root
+	 * @param root Root element.
+	 * @param [options] Options.
+	 * @param [options.includeShadowRoots] Set to "true" to include shadow roots.
 	 * @returns Result.
 	 */
-	public serializeToString(root: INode): string {
+	public serializeToString(root: INode, options?: { includeShadowRoots?: boolean }): string {
 		switch (root.nodeType) {
 			case Node.ELEMENT_NODE:
 				const element = <Element>root;
@@ -33,8 +32,19 @@ export default class XMLSerializer {
 				}
 
 				let innerHTML = '';
+
 				for (const node of root.childNodes) {
-					innerHTML += this.serializeToString(node);
+					innerHTML += this.serializeToString(node, options);
+				}
+
+				if (options?.includeShadowRoots && element.shadowRoot) {
+					innerHTML += `<template shadowroot="${element.shadowRoot.mode}">`;
+
+					for (const node of element.shadowRoot.childNodes) {
+						innerHTML += this.serializeToString(node, options);
+					}
+
+					innerHTML += '</template>';
 				}
 
 				return `<${tagName}${this._getAttributes(element)}>${innerHTML}</${tagName}>`;
@@ -42,7 +52,7 @@ export default class XMLSerializer {
 			case Node.DOCUMENT_NODE:
 				let html = '';
 				for (const node of root.childNodes) {
-					html += this.serializeToString(node);
+					html += this.serializeToString(node, options);
 				}
 				return html;
 			case Node.COMMENT_NODE:

@@ -37,11 +37,15 @@ export default class Element extends Node implements IElement {
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
 	public shadowRoot: IShadowRoot = null;
-	public _attributes: { [k: string]: Attr } = {};
+
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public readonly namespaceURI: string = null;
+
+	// Used for being able to access closed shadow roots
+	public _shadowRoot: IShadowRoot = null;
+	public _attributes: { [k: string]: Attr } = {};
 
 	private _classList: DOMTokenList = null;
 
@@ -270,6 +274,26 @@ export default class Element extends Node implements IElement {
 	 * @param newValue New value.
 	 */
 	public attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
+
+	/**
+	 * Returns inner HTML and optionally the content of shadow roots.
+	 *
+	 * This is a feature implemented in Chromium, but not supported by Mozilla yet.
+	 *
+	 * @see https://web.dev/declarative-shadow-dom/
+	 * @see https://chromestatus.com/feature/5191745052606464
+	 * @param [options] Options.
+	 * @param [options.includeShadowRoots] Set to "true" to include shadow roots.
+	 * @returns HTML.
+	 */
+	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
+		const xmlSerializer = new XMLSerializer();
+		let xml = '';
+		for (const node of this.childNodes) {
+			xml += xmlSerializer.serializeToString(node, options);
+		}
+		return xml;
+	}
 
 	/**
 	 * Clones a node.
@@ -628,15 +652,21 @@ export default class Element extends Node implements IElement {
 	 * @returns Shadow root.
 	 */
 	public attachShadow(shadowRootInit: { mode: string }): IShadowRoot {
-		if (this.shadowRoot) {
+		if (this._shadowRoot) {
 			throw new DOMException('Shadow root has already been attached.');
 		}
-		(<IShadowRoot>this.shadowRoot) = new ShadowRoot();
-		(<IDocument>this.shadowRoot.ownerDocument) = this.ownerDocument;
-		(<Element>this.shadowRoot.host) = this;
-		(<string>this.shadowRoot.mode) = shadowRootInit.mode;
-		(<ShadowRoot>this.shadowRoot)._connectToNode(this);
-		return this.shadowRoot;
+
+		(<IShadowRoot>this._shadowRoot) = new ShadowRoot();
+		(<IDocument>this._shadowRoot.ownerDocument) = this.ownerDocument;
+		(<Element>this._shadowRoot.host) = this;
+		(<string>this._shadowRoot.mode) = shadowRootInit.mode;
+		(<ShadowRoot>this._shadowRoot)._connectToNode(this);
+
+		if (this._shadowRoot.mode === 'open') {
+			(<IShadowRoot>this.shadowRoot) = this._shadowRoot;
+		}
+
+		return this._shadowRoot;
 	}
 
 	/**

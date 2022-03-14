@@ -7,6 +7,7 @@
 	"author": "David Ortner",
 	"description": "Server side rendering of web components with happy-dom.",
 	"main": "lib/index.js",
+	"deprecated": "This package is deprecated. Happy DOM now supports Declarative Shadow DOM which can be used for server-side rendering of web components instead.",
 	"keywords": [
 		"jsdom",
 		"dom",
