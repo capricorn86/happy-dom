@@ -1,10 +1,10 @@
 import Window from '../../../src/window/Window';
+import IWindow from '../../../src/window/IWindow';
 import XMLSerializer from '../../../src/xml-serializer/XMLSerializer';
 import XMLParser from '../../../src/xml-parser/XMLParser';
 import CustomElement from '../../CustomElement';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot';
-import Document from '../../../src/nodes/document/Document';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
+import IDocument from '../../../src/nodes/document/IDocument';
 import Text from '../../../src/nodes/text/Text';
 import DOMRect from '../../../src/nodes/element/DOMRect';
 import Range from '../../../src/nodes/element/Range';
@@ -22,14 +22,14 @@ import INodeList from '../../../src/nodes/node/INodeList';
 const NAMESPACE_URI = 'https://test.test';
 
 describe('Element', () => {
-	let window: Window;
-	let document: Document;
-	let element: HTMLElement;
+	let window: IWindow;
+	let document: IDocument;
+	let element: IElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLElement>document.createElement('div');
+		element = <IElement>document.createElement('div');
 		window.customElements.define('custom-element', CustomElement);
 	});
 
@@ -343,6 +343,37 @@ describe('Element', () => {
 			div.appendChild(text2);
 
 			expect(div.lastElementChild).toBe(span2);
+		});
+	});
+
+	describe('getInnerHTML()', () => {
+		it('Returns HTML of children as a concatenated string.', () => {
+			const div = document.createElement('div');
+
+			element.appendChild(div);
+
+			jest.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation(rootElement => {
+				expect(rootElement).toBe(div);
+				return 'EXPECTED_HTML';
+			});
+
+			expect(element.getInnerHTML()).toBe('EXPECTED_HTML');
+		});
+
+		it('Returns HTML of children and shadow roots of custom elements as a concatenated string.', () => {
+			const div = document.createElement('div');
+
+			element.appendChild(div);
+
+			jest
+				.spyOn(XMLSerializer.prototype, 'serializeToString')
+				.mockImplementation((rootElement, options) => {
+					expect(rootElement).toBe(div);
+					expect(options).toEqual({ includeShadowRoots: true });
+					return 'EXPECTED_HTML';
+				});
+
+			expect(element.getInnerHTML({ includeShadowRoots: true })).toBe('EXPECTED_HTML');
 		});
 	});
 
@@ -1153,13 +1184,24 @@ describe('Element', () => {
 	});
 
 	describe('attachShadow()', () => {
-		it('Creates a new ShadowRoot node and sets it to the shadowRoot property.', () => {
+		it('Creates a new open ShadowRoot node and sets it to the "shadowRoot" property.', () => {
 			element.attachShadow({ mode: 'open' });
+			expect(element['_shadowRoot'] instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot.ownerDocument).toBe(document);
 			expect(element.shadowRoot.isConnected).toBe(false);
 			document.appendChild(element);
 			expect(element.shadowRoot.isConnected).toBe(true);
+		});
+
+		it('Creates a new closed ShadowRoot node and sets it to the internal "_shadowRoot" property.', () => {
+			element.attachShadow({ mode: 'closed' });
+			expect(element.shadowRoot).toBe(null);
+			expect(element['_shadowRoot'] instanceof ShadowRoot).toBe(true);
+			expect(element['_shadowRoot'].ownerDocument).toBe(document);
+			expect(element['_shadowRoot'].isConnected).toBe(false);
+			document.appendChild(element);
+			expect(element['_shadowRoot'].isConnected).toBe(true);
 		});
 	});
 
@@ -1234,7 +1276,7 @@ describe('Element', () => {
 
 			child.className = 'className';
 
-			element.tagName = 'tagName';
+			(<string>element.tagName) = 'tagName';
 			(<number>element.scrollLeft) = 10;
 			(<number>element.scrollTop) = 10;
 

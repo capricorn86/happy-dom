@@ -25,6 +25,8 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	innerHTML: string;
 	outerHTML: string;
 	slot: string;
+	readonly nodeName: string;
+	readonly localName: string;
 	readonly attributes: { [k: string]: Attr | number };
 
 	/**
@@ -35,6 +37,19 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param newValue New value.
 	 */
 	attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
+
+	/**
+	 * Returns inner HTML and optionally the content of shadow roots.
+	 *
+	 * This is a feature implemented in Chromium, but not supported by Mozilla yet.
+	 *
+	 * @see https://web.dev/declarative-shadow-dom/
+	 * @see https://chromestatus.com/feature/5191745052606464
+	 * @param [options] Options.
+	 * @param [options.includeShadowRoots] Set to "true" to include shadow roots.
+	 * @returns HTML.
+	 */
+	getInnerHTML(options?: { includeShadowRoots?: boolean }): string;
 
 	/**
 	 * Sets an attribute.
@@ -52,6 +67,13 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param value Value.
 	 */
 	setAttributeNS(namespaceURI: string, name: string, value: string): void;
+
+	/**
+	 * Returns attribute names.
+	 *
+	 * @returns Attribute names.
+	 */
+	getAttributeNames(): string[];
 
 	/**
 	 * Returns attribute value.

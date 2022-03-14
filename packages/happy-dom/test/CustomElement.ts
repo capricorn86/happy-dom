@@ -1,11 +1,14 @@
 import Window from '../src/window/Window';
+import IShadowRoot from '../src/nodes/shadow-root/IShadowRoot';
 
 /**
  * CustomElement test class.
  */
 export default class CustomElement extends new Window().HTMLElement {
 	public static observedAttributesCallCount = 0;
+	public static shadowRootMode = 'open';
 	public changedAttributes = [];
+	private internalShadowRoot: IShadowRoot = null;
 
 	/**
 	 * Returns a list of observed attributes.
@@ -22,7 +25,7 @@ export default class CustomElement extends new Window().HTMLElement {
 	 */
 	constructor() {
 		super();
-		this.attachShadow({ mode: 'open' });
+		this.internalShadowRoot = this.attachShadow({ mode: CustomElement.shadowRootMode });
 	}
 
 	/**
@@ -36,7 +39,7 @@ export default class CustomElement extends new Window().HTMLElement {
 	 * @override
 	 */
 	public connectedCallback(): void {
-		this.shadowRoot.innerHTML = `
+		this.internalShadowRoot.innerHTML = `
             <style>
                 :host {
                     display: block;
@@ -59,8 +62,11 @@ export default class CustomElement extends new Window().HTMLElement {
             </style>
             <div>
                 <span>
-                    Some text.
+                    key1 is "${this.getAttribute('key1')}" and key2 is "${this.getAttribute(
+			'key2'
+		)}".
                 </span>
+                <span><slot></slot></span>
             </div>
         `;
 	}

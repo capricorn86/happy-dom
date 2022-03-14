@@ -491,9 +491,9 @@ export default class Node extends EventTarget implements INode {
 			}
 
 			// eslint-disable-next-line
-			if ((<any>this).shadowRoot) {
+			if ((<any>this)._shadowRoot) {
 				// eslint-disable-next-line
-				(<any>this).shadowRoot._connectToNode(this);
+				(<any>this)._shadowRoot._connectToNode(this);
 			}
 		}
 	}
