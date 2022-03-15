@@ -1,13 +1,11 @@
 name: Commit
-on: [push]
+on: push
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [16]
-    outputs:
-      sha_short: ${{ steps.vars.outputs.sha_short }}}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -22,11 +20,7 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/npm-shrinkwrap.json') }}-${{ hashFiles('./npm-shrinkwrap.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
       - run: npm ci --ignore-scripts
       - run: npm run bootstrap-ci
       - run: npm run validate-commit-messages

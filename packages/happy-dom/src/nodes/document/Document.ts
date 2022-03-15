@@ -1,5 +1,5 @@
 import Element from '../element/Element';
-import HTMLElement from '../html-element/HTMLElement';
+import HTMLUnknownElement from '../html-unknown-element/HTMLUnknownElement';
 import Text from '../text/Text';
 import Comment from '../comment/Comment';
 import Window from '../../window/Window';
@@ -572,21 +572,21 @@ export default class Document extends Node implements IDocument {
 		qualifiedName: string,
 		options?: { is: string }
 	): IElement {
+		const tagName = qualifiedName.toUpperCase();
+
 		let customElementClass;
 		if (this.defaultView && options && options.is) {
 			customElementClass = this.defaultView.customElements.get(options.is);
 		} else if (this.defaultView) {
-			customElementClass = this.defaultView.customElements.get(qualifiedName);
+			customElementClass = this.defaultView.customElements.get(tagName);
 		}
 
-		const elementClass = customElementClass
-			? customElementClass
-			: ElementTag[qualifiedName] || HTMLElement;
+		const elementClass = customElementClass || ElementTag[tagName] || HTMLUnknownElement;
 
 		elementClass.ownerDocument = this;
 
 		const element = new elementClass();
-		element.tagName = qualifiedName.toUpperCase();
+		element.tagName = tagName;
 		element.ownerDocument = this;
 		element.namespaceURI = namespaceURI;
 

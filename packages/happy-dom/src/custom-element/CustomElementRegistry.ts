@@ -7,7 +7,7 @@ import Node from '../nodes/node/Node';
  */
 export default class CustomElementRegistry {
 	public _registry: { [k: string]: { elementClass: typeof HTMLElement; extends: string } } = {};
-	private _callbacks: { [k: string]: (() => void)[] } = {};
+	public _callbacks: { [k: string]: (() => void)[] } = {};
 
 	/**
 	 * Defines a custom element class.
@@ -22,16 +22,17 @@ export default class CustomElementRegistry {
 		elementClass: typeof HTMLElement,
 		options?: { extends: string }
 	): void {
-		const name = tagName.toLowerCase();
-		if (!name.includes('-')) {
+		const upperTagName = tagName.toUpperCase();
+
+		if (!upperTagName.includes('-')) {
 			throw new DOMException(
 				"Failed to execute 'define' on 'CustomElementRegistry': \"" +
-					name +
+					tagName +
 					'" is not a valid custom element name.'
 			);
 		}
 
-		this._registry[name] = {
+		this._registry[upperTagName] = {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
@@ -41,11 +42,12 @@ export default class CustomElementRegistry {
 			elementClass._observedAttributes = elementClass.observedAttributes;
 		}
 
-		if (this._callbacks[name]) {
-			for (const callback of this._callbacks[name]) {
+		if (this._callbacks[upperTagName]) {
+			const callbacks = this._callbacks[upperTagName];
+			delete this._callbacks[upperTagName];
+			for (const callback of callbacks) {
 				callback();
 			}
-			delete this._callbacks[name];
 		}
 	}
 
@@ -56,8 +58,8 @@ export default class CustomElementRegistry {
 	 * @param HTMLElement Class defined.
 	 */
 	public get(tagName: string): typeof HTMLElement {
-		const name = tagName.toLowerCase();
-		return this._registry[name] ? this._registry[name].elementClass : undefined;
+		const upperTagName = tagName.toUpperCase();
+		return this._registry[upperTagName] ? this._registry[upperTagName].elementClass : undefined;
 	}
 
 	/**
@@ -78,13 +80,13 @@ export default class CustomElementRegistry {
 	 * @returns Promise.
 	 */
 	public whenDefined(tagName: string): Promise<void> {
-		const name = tagName.toLowerCase();
-		if (this.get(name)) {
+		const upperTagName = tagName.toUpperCase();
+		if (this.get(upperTagName)) {
 			return Promise.resolve();
 		}
 		return new Promise(resolve => {
-			this._callbacks[name] = this._callbacks[name] || [];
-			this._callbacks[name].push(resolve);
+			this._callbacks[upperTagName] = this._callbacks[upperTagName] || [];
+			this._callbacks[upperTagName].push(resolve);
 		});
 	}
 }

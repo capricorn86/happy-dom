@@ -99,10 +99,6 @@ import TreeWalker from './tree-walker/TreeWalker';
 import CustomElementRegistry from './custom-element/CustomElementRegistry';
 import XMLParser from './xml-parser/XMLParser';
 import XMLSerializer from './xml-serializer/XMLSerializer';
-import ElementTag from './config/ElementTag';
-import SelfClosingElements from './config/SelfClosingElements';
-import UnclosedElements from './config/UnclosedElements';
-import ChildLessElements from './config/ChildLessElements';
 import CSSStyleSheet from './css/CSSStyleSheet';
 import Storage from './storage/Storage';
 import URLSearchParams from './url-search-params/URLSearchParams';
@@ -210,10 +206,6 @@ export {
 	CustomElementRegistry,
 	XMLParser,
 	XMLSerializer,
-	ElementTag,
-	SelfClosingElements,
-	UnclosedElements,
-	ChildLessElements,
 	CSSStyleSheet,
 	Storage,
 	URLSearchParams,
