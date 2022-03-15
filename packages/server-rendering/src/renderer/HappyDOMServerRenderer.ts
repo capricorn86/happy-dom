@@ -1,14 +1,6 @@
-import {
-	Node,
-	INode,
-	HTMLElement,
-	Element,
-	IElement,
-	DocumentType,
-	IShadowRoot,
-	SelfClosingElements,
-	UnclosedElements
-} from 'happy-dom';
+import { Node, INode, HTMLElement, Element, IElement, DocumentType, IShadowRoot } from 'happy-dom';
+import SelfClosingElements from 'happy-dom/lib/config/SelfClosingElements';
+import UnclosedElements from 'happy-dom/lib/config/UnclosedElements';
 import ShadowRootRenderer from './shadow-root/ShadowRootRenderer';
 import IHappyDOMServerRenderOptions from './IHappyDOMServerRenderOptions';
 import HappyDOMServerRenderResult from './HappyDOMServerRenderResult';

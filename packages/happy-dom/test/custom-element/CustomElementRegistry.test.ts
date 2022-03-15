@@ -20,7 +20,7 @@ describe('CustomElementRegistry', () => {
 				extends: 'ul'
 			});
 			expect(customElements.get('custom-element')).toBe(CustomElement);
-			expect(customElements._registry['custom-element'].extends).toBe('ul');
+			expect(customElements._registry['CUSTOM-ELEMENT'].extends).toBe('ul');
 		});
 
 		it('Throws an error if tag name does not contain "-".', () => {

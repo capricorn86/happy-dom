@@ -12,6 +12,7 @@ import Element from '../nodes/element/Element';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
+import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
@@ -37,7 +38,7 @@ import URL from '../location/URL';
 import Location from '../location/Location';
 import NonImplementedEventTypes from '../event/NonImplementedEventTypes';
 import MutationObserver from '../mutation-observer/MutationObserver';
-import ElementClass from '../config/ElementClass';
+import NonImplemenetedElementClasses from '../config/NonImplemenetedElementClasses';
 import DOMParser from '../dom-parser/DOMParser';
 import XMLSerializer from '../xml-serializer/XMLSerializer';
 import ResizeObserver from '../resize-observer/ResizeObserver';
@@ -101,6 +102,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	// Global classes
 	public readonly Node = Node;
 	public readonly HTMLElement = HTMLElement;
+	public readonly HTMLUnknownElement = HTMLUnknownElement;
 	public readonly HTMLTemplateElement = HTMLTemplateElement;
 	public readonly HTMLFormElement = HTMLFormElement;
 	public readonly HTMLInputElement = HTMLInputElement;
@@ -282,9 +284,9 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 			}
 		}
 
-		for (const className of Object.keys(ElementClass)) {
+		for (const className of NonImplemenetedElementClasses) {
 			if (!this[className]) {
-				this[className] = ElementClass[className];
+				this[className] = HTMLElement;
 			}
 		}
 
