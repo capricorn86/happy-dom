@@ -78,6 +78,26 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns character set.
+	 *
+	 * @deprecated
+	 * @returns Character set.
+	 */
+	public get charset(): string {
+		return this.characterSet;
+	}
+
+	/**
+	 * Returns character set.
+	 *
+	 * @returns Character set.
+	 */
+	public get characterSet(): string {
+		const charset = this.querySelector('meta[charset]')?.getAttributeNS(null, 'charset');
+		return charset ? charset : 'UTF-8';
+	}
+
+	/**
 	 * Returns default view.
 	 *
 	 * @returns Default view.
