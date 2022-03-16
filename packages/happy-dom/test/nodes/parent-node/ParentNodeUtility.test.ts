@@ -183,12 +183,26 @@ describe('ParentNodeUtility', () => {
 		});
 	});
 
-	describe('getElementsByName()', () => {
-		it('Returns elements by name.', () => {
+	describe('getElementByTagName()', () => {
+		it('Returns the first element matching a tag name.', () => {
 			const parent = document.createElement('div');
-			parent.innerHTML = `<img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><meta name="test"><p name="test"><span name="test">test</span></p></meta>`;
-			expect(ParentNodeUtility.getElementsByName(parent, 'image').length).toBe(4);
-			expect(ParentNodeUtility.getElementsByName(parent, 'test').length).toBe(3);
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			const div3 = document.createElement('div');
+			const div4 = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const span3 = document.createElement('span');
+
+			parent.appendChild(div1);
+			div1.appendChild(div2);
+			div2.appendChild(span1);
+			span1.appendChild(div3);
+			div3.appendChild(span2);
+			div3.appendChild(span3);
+			span3.appendChild(div4);
+
+			expect(ParentNodeUtility.getElementByTagName(parent, 'div')).toEqual(div1);
 		});
 	});
 
@@ -217,6 +231,15 @@ describe('ParentNodeUtility', () => {
 			div4.id = 'div4';
 
 			expect(ParentNodeUtility.getElementById(parent, 'div3')).toEqual(div3);
+		});
+	});
+
+	describe('getElementsByName()', () => {
+		it('Returns elements by name.', () => {
+			const parent = document.createElement('div');
+			parent.innerHTML = `<img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><meta name="test"><p name="test"><span name="test">test</span></p></meta>`;
+			expect(ParentNodeUtility.getElementsByName(parent, 'image').length).toBe(4);
+			expect(ParentNodeUtility.getElementsByName(parent, 'test').length).toBe(3);
 		});
 	});
 });
