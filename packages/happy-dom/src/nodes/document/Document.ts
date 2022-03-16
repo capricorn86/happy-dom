@@ -359,6 +359,31 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns an element by Name.
+	 *
+	 * @returns Matching element.
+	 * @param name
+	 */
+	public getElementsByName(name: string): INodeList<IElement> {
+		const _getElementsByName = (
+			_parentNode: IElement | IDocumentFragment | IDocument,
+			_name: string
+		): INodeList<IElement> => {
+			const matches = HTMLCollectionFactory.create();
+			for (const child of _parentNode.children) {
+				if ((child.getAttributeNS(null, 'name') || '') === _name) {
+					matches.push(child);
+				}
+				for (const match of _getElementsByName(<IElement>child, _name)) {
+					matches.push(match);
+				}
+			}
+			return matches;
+		};
+		return _getElementsByName(this, name);
+	}
+
+	/**
 	 * Clones a node.
 	 *
 	 * @override

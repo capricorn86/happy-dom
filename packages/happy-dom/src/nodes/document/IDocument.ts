@@ -17,6 +17,7 @@ import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import Location from '../../location/Location';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum';
+import INodeList from '../node/INodeList';
 
 /**
  * Document.
@@ -149,6 +150,14 @@ export default interface IDocument extends IParentNode {
 	 * @returns Matching element.
 	 */
 	getElementById(id: string): IElement;
+
+	/**
+	 * Returns an elements by name.
+	 *
+	 * @param name Name.
+	 * @returns Matching element.
+	 */
+	getElementsByName(name: string): INodeList<IElement>;
 
 	/**
 	 * Clones a node.
