@@ -339,6 +339,16 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns an element by Name.
+	 *
+	 * @returns Matching element.
+	 * @param name
+	 */
+	public getElementsByName(name: string): IHTMLCollection<IElement> {
+		return ParentNodeUtility.getElementsByName(this, name);
+	}
+
+	/**
 	 * Clones a node.
 	 *
 	 * @override

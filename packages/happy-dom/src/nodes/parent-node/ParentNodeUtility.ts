@@ -190,4 +190,29 @@ export default class ParentNodeUtility {
 
 		return null;
 	}
+
+	/**
+	 * Returns an element by Name.
+	 *
+	 * @param parentNode
+	 * @param name Name.
+	 * @returns Matching element.
+	 */
+	public static getElementsByName(
+		parentNode: IElement | IDocumentFragment | IDocument,
+		name: string
+	): IHTMLCollection<IElement> {
+		const matches = HTMLCollectionFactory.create();
+
+		for (const child of parentNode.children) {
+			if ((child.getAttributeNS(null, 'name') || '') === name) {
+				matches.push(child);
+			}
+			for (const match of this.getElementsByName(<IElement>child, name)) {
+				matches.push(match);
+			}
+		}
+
+		return matches;
+	}
 }
