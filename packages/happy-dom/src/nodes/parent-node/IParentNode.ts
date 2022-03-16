@@ -70,12 +70,4 @@ export default interface IParentNode extends INode {
 	 * @param nodes List of Node or DOMString.
 	 */
 	replaceChildren(...nodes: (INode | string)[]): void;
-
-	/**
-	 * Returns an elements by name.
-	 *
-	 * @param name Name.
-	 * @returns Matching element.
-	 */
-	getElementsByName(name: string): IHTMLCollection<IElement>;
 }
