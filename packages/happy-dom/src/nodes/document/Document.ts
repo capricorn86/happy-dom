@@ -344,7 +344,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Matching element.
 	 * @param name
 	 */
-	public getElementsByName(name: string): IHTMLCollection<IElement> {
+	public getElementsByName(name: string): INodeList<IElement> {
 		return ParentNodeUtility.getElementsByName(this, name);
 	}
 

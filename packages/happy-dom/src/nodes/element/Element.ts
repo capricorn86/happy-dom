@@ -797,15 +797,6 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Returns an elements by name.
-	 *
-	 * @returns Matching element.
-	 * @param name
-	 */
-	public getElementsByName(name: string): IHTMLCollection<IElement> {
-		return ParentNodeUtility.getElementsByName(this, name);
-	}
-	/**
 	 * The setAttributeNode() method adds a new Attr node to the specified element.
 	 *
 	 * @param attribute Attribute.

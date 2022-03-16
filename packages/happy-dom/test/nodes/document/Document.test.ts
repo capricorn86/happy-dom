@@ -462,6 +462,16 @@ describe('Document', () => {
 		});
 	});
 
+	describe('getElementsByName()', () => {
+		it('Returns elements by name.', () => {
+			const parent = document.createElement('div');
+			parent.innerHTML = `<img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><meta name="test"><p name="test"><span name="test">test</span></p></meta>`;
+			document.appendChild(parent);
+			expect(document.getElementsByName('image').length).toBe(4);
+			expect(document.getElementsByName('test').length).toBe(3);
+		});
+	});
+
 	describe('appendChild()', () => {
 		it('Updates the children property when appending an element child.', () => {
 			const div = document.createElement('div');

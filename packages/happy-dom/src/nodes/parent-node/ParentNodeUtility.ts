@@ -5,6 +5,7 @@ import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import IHTMLCollection from '../element/IHTMLCollection';
 import INode from '../node/INode';
+import INodeList from '../node/INodeList';
 import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 
 /**
@@ -201,7 +202,7 @@ export default class ParentNodeUtility {
 	public static getElementsByName(
 		parentNode: IElement | IDocumentFragment | IDocument,
 		name: string
-	): IHTMLCollection<IElement> {
+	): INodeList<IElement> {
 		const matches = HTMLCollectionFactory.create();
 
 		for (const child of parentNode.children) {

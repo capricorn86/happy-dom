@@ -233,13 +233,4 @@ describe('ParentNodeUtility', () => {
 			expect(ParentNodeUtility.getElementById(parent, 'div3')).toEqual(div3);
 		});
 	});
-
-	describe('getElementsByName()', () => {
-		it('Returns elements by name.', () => {
-			const parent = document.createElement('div');
-			parent.innerHTML = `<img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><meta name="test"><p name="test"><span name="test">test</span></p></meta>`;
-			expect(ParentNodeUtility.getElementsByName(parent, 'image').length).toBe(4);
-			expect(ParentNodeUtility.getElementsByName(parent, 'test').length).toBe(3);
-		});
-	});
 });
