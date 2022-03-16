@@ -5,7 +5,6 @@ import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import IHTMLCollection from '../element/IHTMLCollection';
 import INode from '../node/INode';
-import INodeList from '../node/INodeList';
 import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 
 /**
@@ -190,30 +189,5 @@ export default class ParentNodeUtility {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Returns an element by Name.
-	 *
-	 * @param parentNode
-	 * @param name Name.
-	 * @returns Matching element.
-	 */
-	public static getElementsByName(
-		parentNode: IElement | IDocumentFragment | IDocument,
-		name: string
-	): INodeList<IElement> {
-		const matches = HTMLCollectionFactory.create();
-
-		for (const child of parentNode.children) {
-			if ((child.getAttributeNS(null, 'name') || '') === name) {
-				matches.push(child);
-			}
-			for (const match of this.getElementsByName(<IElement>child, name)) {
-				matches.push(match);
-			}
-		}
-
-		return matches;
 	}
 }
