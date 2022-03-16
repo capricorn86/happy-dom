@@ -36,6 +36,8 @@ export default interface IDocument extends IParentNode {
 	readonly scrollingElement: IHTMLElement;
 	readonly location: Location;
 	readonly readyState: DocumentReadyStateEnum;
+	readonly charset: string;
+	readonly characterSet: string;
 	cookie: string;
 
 	/**

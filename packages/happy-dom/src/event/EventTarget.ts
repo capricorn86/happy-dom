@@ -63,7 +63,7 @@ export default abstract class EventTarget implements IEventTarget {
 				if ((<IEventListener>listener).handleEvent) {
 					(<IEventListener>listener).handleEvent(event);
 				} else {
-					(<(event: Event) => void>listener)(event);
+					(<(event: Event) => void>listener).call(this, event);
 				}
 				if (event._immediatePropagationStopped) {
 					return !(event.cancelable && event.defaultPrevented);

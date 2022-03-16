@@ -58,6 +58,17 @@ describe('EventTarget', () => {
 			expect(recievedEvent.target).toBe(eventTarget);
 			expect(recievedEvent.currentTarget).toBe(eventTarget);
 		});
+
+		it('Event listener is called in the scope of the EventTarget when calling dispatchEvent().', () => {
+			let scope = null;
+			const listener = function(): void {
+				scope = this;
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+			eventTarget.addEventListener(EVENT_TYPE, listener);
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(scope).toBe(eventTarget);
+		});
 	});
 
 	describe('removeEventListener()', () => {

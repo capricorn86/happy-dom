@@ -43,6 +43,20 @@ describe('Document', () => {
 		jest.restoreAllMocks();
 	});
 
+	for (const property of ['charset', 'characterSet']) {
+		describe(`get ${property}()`, () => {
+			it('Returns the value of a "charset" attribute set in a meta element.', () => {
+				const meta = document.createElement('meta');
+
+				meta.setAttribute('charset', 'windows-1252');
+
+				document.head.appendChild(meta);
+
+				expect(document[property]).toBe('windows-1252');
+			});
+		});
+	}
+
 	describe('get nodeName()', () => {
 		it('Returns "#document".', () => {
 			expect(document.nodeName).toBe('#document');
