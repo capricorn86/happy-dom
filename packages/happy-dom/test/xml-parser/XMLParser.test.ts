@@ -1,6 +1,8 @@
 import XMLParser from '../../src/xml-parser/XMLParser';
 import Window from '../../src/window/Window';
-import Document from '../../src/nodes/document/Document';
+import IWindow from '../../src/window/IWindow';
+import IDocument from '../../src/nodes/document/IDocument';
+import Node from '../../src/nodes/node/Node';
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
 import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTemplateElement';
 import XMLParserHTML from './data/XMLParserHTML';
@@ -16,8 +18,8 @@ const GET_EXPECTED_HTML = (html: string): string =>
 		.replace(/[\s]/gm, '');
 
 describe('XMLParser', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window();
@@ -184,6 +186,14 @@ describe('XMLParser', () => {
 					<template></template>
 				</div>`.replace(/[\s]/gm, '')
 			);
+		});
+
+		it('Handles unclosed regular elements.', () => {
+			const root = XMLParser.parse(window.document, `<div>test`);
+
+			expect(root.childNodes.length).toBe(1);
+			expect((<IHTMLElement>root.childNodes[0]).tagName).toBe('DIV');
+			expect(root.childNodes[0].childNodes[0].nodeType).toBe(Node.TEXT_NODE);
 		});
 
 		it('Parses an SVG with "xmlns" set to HTML.', () => {
