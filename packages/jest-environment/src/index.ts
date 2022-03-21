@@ -28,8 +28,11 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	constructor(config: Config.ProjectConfig, options?: EnvironmentContext) {
 		VM.createContext(this.global);
 
-		// Functions are not an instanceof the "Function" class in the VM context, so therefore we set it to the used "Function" class.
-		VM.runInContext('window.Function = (() => {}).constructor;', this.global);
+		// Functions and Objects are not instances the "Function" and "Object" classes in the VM context for some reason
+		VM.runInContext(
+			'window.Function = (() => {}).constructor;window.Object = ({}).constructor;',
+			this.global
+		);
 
 		// Node's error-message stack size is limited to 10, but it's pretty useful to see more than that when a test fails.
 		this.global.Error.stackTraceLimit = 100;
