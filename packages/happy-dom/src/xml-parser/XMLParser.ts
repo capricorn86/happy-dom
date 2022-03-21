@@ -112,7 +112,7 @@ export default class XMLParser {
 		// Text after last element
 		if ((!match && data.length > 0) || (match && lastTextIndex !== match.index)) {
 			const text = data.substring(lastTextIndex);
-			this.appendTextAndCommentNodes(document, root, text);
+			this.appendTextAndCommentNodes(document, parent || root, text);
 		}
 
 		return root;
