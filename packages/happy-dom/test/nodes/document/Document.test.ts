@@ -243,7 +243,7 @@ describe('Document', () => {
 	});
 
 	describe('get styleSheets()', () => {
-		it('Returns all stylesheets loaded to the document.', done => {
+		it('Returns all stylesheets loaded to the document.', (done) => {
 			const textNode = document.createTextNode(
 				'body { background-color: red }\ndiv { background-color: green }'
 			);
@@ -519,7 +519,7 @@ describe('Document', () => {
 
 			expect(clone.childNodes).toEqual([]);
 			expect(clone.children).toEqual([]);
-			expect(document.children.map(child => child.outerHTML).join('')).toBe(
+			expect(document.children.map((child) => child.outerHTML).join('')).toBe(
 				'<div>Div</div><span>Span</span>'
 			);
 		});
@@ -584,7 +584,7 @@ describe('Document', () => {
 			document.insertBefore(clone, child2);
 
 			expect(document.children.length).toBe(4);
-			expect(document.children.map(child => child.outerHTML).join('')).toBe(
+			expect(document.children.map((child) => child.outerHTML).join('')).toBe(
 				'<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>'
 			);
 		});
@@ -823,7 +823,7 @@ describe('Document', () => {
 			const root = document.createElement('div');
 			const whatToShow = 1;
 			const filter = {
-				acceptNode: node => {
+				acceptNode: (node) => {
 					if (node === Node.ELEMENT_NODE) {
 						return NodeFilter.FILTER_ACCEPT;
 					}
@@ -914,10 +914,10 @@ describe('Document', () => {
 	});
 
 	describe('addEventListener()', () => {
-		it('Triggers "readystatechange" event if no resources needs to be loaded.', done => {
+		it('Triggers "readystatechange" event if no resources needs to be loaded.', (done) => {
 			let readyChangeEvent = null;
 
-			document.addEventListener('readystatechange', event => {
+			document.addEventListener('readystatechange', (event) => {
 				readyChangeEvent = event;
 			});
 
@@ -930,7 +930,7 @@ describe('Document', () => {
 			}, 1);
 		});
 
-		it('Triggers "readystatechange" event when all resources have been loaded.', done => {
+		it('Triggers "readystatechange" event when all resources have been loaded.', (done) => {
 			const cssURL = '/path/to/file.css';
 			const jsURL = '/path/to/file.js';
 			const cssResponse = 'body { background-color: red; }';
@@ -939,7 +939,7 @@ describe('Document', () => {
 			let resourceFetchJSOptions = null;
 			let readyChangeEvent = null;
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
 				if (options.url.endsWith('.css')) {
 					resourceFetchCSSOptions = options;
 					return cssResponse;
@@ -949,7 +949,7 @@ describe('Document', () => {
 				return jsResponse;
 			});
 
-			document.addEventListener('readystatechange', event => {
+			document.addEventListener('readystatechange', (event) => {
 				readyChangeEvent = event;
 			});
 
@@ -1004,7 +1004,7 @@ describe('Document', () => {
 			const event = new Event('click', { bubbles: true });
 			let emittedEvent = null;
 
-			window.addEventListener('click', event => (emittedEvent = event));
+			window.addEventListener('click', (event) => (emittedEvent = event));
 			document.dispatchEvent(event);
 
 			expect(emittedEvent).toBe(event);

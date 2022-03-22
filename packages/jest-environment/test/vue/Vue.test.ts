@@ -1,4 +1,4 @@
-import Vue from 'vue/dist/vue.common.prod.js';
+import { createApp } from 'vue';
 
 describe('Vue', () => {
 	let appElement: Element;
@@ -15,12 +15,14 @@ describe('Vue', () => {
 	});
 
 	it('Tests integration.', () => {
-		new Vue({
-			el: '#app',
-			data: {
-				message: 'Test'
+		const app = createApp({
+			data() {
+				return {
+					message: 'Test'
+				};
 			}
 		});
-		expect(document.body.innerHTML).toBe('<div id="app">Test</div>');
+		app.mount('#app');
+		expect(document.body.innerHTML).toBe('<div id="app" data-v-app="">Test</div>');
 	});
 });

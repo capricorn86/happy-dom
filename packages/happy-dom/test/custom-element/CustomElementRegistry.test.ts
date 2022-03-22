@@ -53,12 +53,12 @@ describe('CustomElementRegistry', () => {
 	});
 
 	describe('whenDefined()', () => {
-		it('Returns a promise which is fulfilled when an element is defined.', done => {
+		it('Returns a promise which is fulfilled when an element is defined.', (done) => {
 			customElements.whenDefined('custom-element').then(done);
 			customElements.define('custom-element', CustomElement);
 		});
 
-		it('Resolves directly if the element is already defined.', done => {
+		it('Resolves directly if the element is already defined.', (done) => {
 			customElements.define('custom-element', CustomElement);
 			customElements.whenDefined('custom-element').then(done);
 		});

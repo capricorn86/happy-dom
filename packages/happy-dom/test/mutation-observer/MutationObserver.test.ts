@@ -14,7 +14,7 @@ describe('MutationObserver', () => {
 		it('Observes attributes.', () => {
 			let records = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver(mutationRecords => {
+			const observer = new MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
 			observer.observe(div, { attributes: true });
@@ -37,7 +37,7 @@ describe('MutationObserver', () => {
 		it('Observes attributes and old attribute values.', () => {
 			let records = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver(mutationRecords => {
+			const observer = new MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
 			div.setAttribute('attr', 'old');
@@ -61,7 +61,7 @@ describe('MutationObserver', () => {
 		it('Only observes a list of filtered attributes if defined.', () => {
 			const records = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver(mutationRecords => {
+			const observer = new MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
 			});
 			div.setAttribute('attr1', 'old');
@@ -93,7 +93,7 @@ describe('MutationObserver', () => {
 		it('Observers character data changes on text node.', () => {
 			const records = [];
 			const text = document.createTextNode('old');
-			const observer = new MutationObserver(mutationRecords => {
+			const observer = new MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
 			});
 			observer.observe(text, { characterData: true, characterDataOldValue: true });
@@ -119,7 +119,7 @@ describe('MutationObserver', () => {
 			const records = [];
 			const div = document.createElement('div');
 			const text = document.createTextNode('old');
-			const observer = new MutationObserver(mutationRecords => {
+			const observer = new MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
 			});
 			div.appendChild(text);
@@ -148,7 +148,7 @@ describe('MutationObserver', () => {
 			const span = document.createElement('span');
 			const article = document.createElement('article');
 			const text = document.createTextNode('old');
-			const observer = new MutationObserver(mutationRecords => {
+			const observer = new MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
 			});
 			observer.observe(div, { subtree: true, childList: true });

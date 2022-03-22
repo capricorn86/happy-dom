@@ -1,7 +1,8 @@
 import DOMException from '../exception/DOMException';
 import Element from '../nodes/element/Element';
 
-const ATTRIBUTE_REGEXP = /\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']{0,1}([^"']+)["']{0,1}\]/g;
+const ATTRIBUTE_REGEXP =
+	/\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']{0,1}([^"']+)["']{0,1}\]/g;
 const ATTRIBUTE_NAME_REGEXP = /[^a-zA-Z0-9-_$]/;
 const PSUEDO_REGEXP = /:([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|:not\(([^)]+)\)|:([a-zA-Z-]+)/g;
 const CLASS_REGEXP = /\.([a-zA-Z0-9-_$]+)/g;
@@ -127,13 +128,13 @@ export default class SelectorItem {
 
 		switch (psuedo.toLowerCase()) {
 			case 'nth-of-type':
-				children = children.filter(child => child.tagName === element.tagName);
+				children = children.filter((child) => child.tagName === element.tagName);
 				break;
 			case 'nth-last-child':
 				children = children.reverse();
 				break;
 			case 'nth-last-of-type':
-				children = children.filter(child => child.tagName === element.tagName).reverse();
+				children = children.filter((child) => child.tagName === element.tagName).reverse();
 				break;
 		}
 
@@ -285,7 +286,7 @@ export default class SelectorItem {
 		return !!element._attributes[attributeName.toLowerCase()];
 	}
 
-	/**
+	/** .
 	 *
 	 * Matches attribute name and value.
 	 *
@@ -294,6 +295,13 @@ export default class SelectorItem {
 	 * @param attributeValue Attribute value.
 	 * @param [matchType] Match type.
 	 * @returns True if it is a match.
+	 */
+	/**
+	 *
+	 * @param element
+	 * @param attributeName
+	 * @param attributeValue
+	 * @param matchType
 	 */
 	private matchesAttributeNameAndValue(
 		element: Element,

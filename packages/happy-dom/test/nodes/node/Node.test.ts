@@ -346,7 +346,7 @@ describe('Node', () => {
 			expect(div !== clone).toBe(true);
 
 			expect(clone.children).toEqual(
-				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
+				clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE)
 			);
 		});
 	});
@@ -531,8 +531,8 @@ describe('Node', () => {
 
 			parent.appendChild(child);
 
-			child.addEventListener('click', event => (childEvent = event));
-			parent.addEventListener('click', event => (parentEvent = event));
+			child.addEventListener('click', (event) => (childEvent = event));
+			parent.addEventListener('click', (event) => (parentEvent = event));
 
 			expect(child.dispatchEvent(event)).toBe(true);
 
@@ -551,8 +551,8 @@ describe('Node', () => {
 
 			parent.appendChild(child);
 
-			child.addEventListener('click', event => (childEvent = event));
-			parent.addEventListener('click', event => (parentEvent = event));
+			child.addEventListener('click', (event) => (childEvent = event));
+			parent.addEventListener('click', (event) => (parentEvent = event));
 
 			expect(child.dispatchEvent(event)).toBe(true);
 
@@ -571,11 +571,11 @@ describe('Node', () => {
 
 			parent.appendChild(child);
 
-			child.addEventListener('click', event => {
+			child.addEventListener('click', (event) => {
 				event.stopPropagation();
 				childEvent = event;
 			});
-			parent.addEventListener('click', event => (parentEvent = event));
+			parent.addEventListener('click', (event) => (parentEvent = event));
 
 			expect(child.dispatchEvent(event)).toBe(true);
 
@@ -592,11 +592,11 @@ describe('Node', () => {
 
 			parent.appendChild(child);
 
-			child.addEventListener('click', event => {
+			child.addEventListener('click', (event) => {
 				event.preventDefault();
 				childEvent = event;
 			});
-			parent.addEventListener('click', event => (parentEvent = event));
+			parent.addEventListener('click', (event) => (parentEvent = event));
 
 			expect(child.dispatchEvent(event)).toBe(false);
 

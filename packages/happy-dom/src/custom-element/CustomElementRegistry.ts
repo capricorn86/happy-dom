@@ -84,7 +84,7 @@ export default class CustomElementRegistry {
 		if (this.get(upperTagName)) {
 			return Promise.resolve();
 		}
-		return new Promise(resolve => {
+		return new Promise((resolve) => {
 			this._callbacks[upperTagName] = this._callbacks[upperTagName] || [];
 			this._callbacks[upperTagName].push(resolve);
 		});

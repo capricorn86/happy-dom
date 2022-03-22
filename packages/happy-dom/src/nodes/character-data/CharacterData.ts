@@ -107,6 +107,24 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	}
 
 	/**
+	 * Previous element sibling.
+	 *
+	 * @returns Element.
+	 */
+	public get previousElementSibling(): IElement {
+		return NonDocumentChildNodeUtility.previousElementSibling(this);
+	}
+
+	/**
+	 * Next element sibling.
+	 *
+	 * @returns Element.
+	 */
+	public get nextElementSibling(): IElement {
+		return NonDocumentChildNodeUtility.nextElementSibling(this);
+	}
+
+	/**
 	 * Appends the given DOMString to the CharacterData.data string; when this method returns, data contains the concatenated DOMString.
 	 *
 	 * @param data Data.
@@ -154,23 +172,6 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 */
 	public substringData(offset: number, count: number): string {
 		return CharacterDataUtility.substringData(this, offset, count);
-	}
-	/**
-	 * Previous element sibling.
-	 *
-	 * @returns Element.
-	 */
-	public get previousElementSibling(): IElement {
-		return NonDocumentChildNodeUtility.previousElementSibling(this);
-	}
-
-	/**
-	 * Next element sibling.
-	 *
-	 * @returns Element.
-	 */
-	public get nextElementSibling(): IElement {
-		return NonDocumentChildNodeUtility.nextElementSibling(this);
 	}
 
 	/**

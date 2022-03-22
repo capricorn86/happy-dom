@@ -84,8 +84,6 @@ export default class DOMTokenList implements IDOMTokenList {
 
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
-	 *
-	 *
 	 */
 	public values(): IterableIterator<string> {
 		const attr = this._ownerElement.getAttributeNS(null, this._attributeName);
@@ -94,8 +92,6 @@ export default class DOMTokenList implements IDOMTokenList {
 
 	/**
 	 * Returns an iterator, allowing you to go through all key/value pairs contained in this object.
-	 *
-	 *
 	 */
 	public entries(): IterableIterator<[number, string]> {
 		const attr = this._ownerElement.getAttributeNS(null, this._attributeName);

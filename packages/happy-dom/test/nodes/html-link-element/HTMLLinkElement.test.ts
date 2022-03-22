@@ -66,20 +66,20 @@ describe('HTMLLinkElement', () => {
 			expect(element.getAttribute('href')).toBe('test');
 		});
 
-		it('Loads and evaluates an external CSS file when the attribute "href" and "rel" is set and the element is connected to DOM.', done => {
+		it('Loads and evaluates an external CSS file when the attribute "href" and "rel" is set and the element is connected to DOM.', (done) => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadedOptions = null;
 			let loadEvent = null;
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
 				loadedOptions = options;
 				return css;
 			});
 
 			document.body.appendChild(element);
 
-			element.addEventListener('load', event => {
+			element.addEventListener('load', (event) => {
 				loadEvent = event;
 			});
 
@@ -97,7 +97,7 @@ describe('HTMLLinkElement', () => {
 			}, 0);
 		});
 
-		it('Triggers error event when fetching a CSS file fails during setting the "href" and "rel" attributes.', done => {
+		it('Triggers error event when fetching a CSS file fails during setting the "href" and "rel" attributes.', (done) => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const thrownError = new Error('error');
 			let errorEvent = null;
@@ -108,7 +108,7 @@ describe('HTMLLinkElement', () => {
 
 			document.body.appendChild(element);
 
-			element.addEventListener('error', event => {
+			element.addEventListener('error', (event) => {
 				errorEvent = event;
 			});
 
@@ -127,7 +127,7 @@ describe('HTMLLinkElement', () => {
 			const css = 'div { background: red; }';
 			let loadedOptions = null;
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
 				loadedOptions = options;
 				return css;
 			});
@@ -140,20 +140,20 @@ describe('HTMLLinkElement', () => {
 	});
 
 	describe('set isConnected()', () => {
-		it('Loads and evaluates an external script when "href" attribute has been set, but does not evaluate text content.', done => {
+		it('Loads and evaluates an external script when "href" attribute has been set, but does not evaluate text content.', (done) => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadEvent = null;
 			let loadedOptions = null;
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
 				loadedOptions = options;
 				return css;
 			});
 
 			element.rel = 'stylesheet';
 			element.href = 'test';
-			element.addEventListener('load', event => {
+			element.addEventListener('load', (event) => {
 				loadEvent = event;
 			});
 
@@ -170,7 +170,7 @@ describe('HTMLLinkElement', () => {
 			}, 0);
 		});
 
-		it('Triggers error event when fetching a CSS file fails while appending the element to the document.', done => {
+		it('Triggers error event when fetching a CSS file fails while appending the element to the document.', (done) => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const thrownError = new Error('error');
 			let errorEvent = null;
@@ -181,7 +181,7 @@ describe('HTMLLinkElement', () => {
 
 			element.rel = 'stylesheet';
 			element.href = 'test';
-			element.addEventListener('error', event => {
+			element.addEventListener('error', (event) => {
 				errorEvent = event;
 			});
 
@@ -199,7 +199,7 @@ describe('HTMLLinkElement', () => {
 			const css = 'div { background: red; }';
 			let loadedOptions = null;
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
 				loadedOptions = options;
 				return css;
 			});

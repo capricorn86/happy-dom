@@ -53,10 +53,10 @@ async function transformLib(lib) {
 }
 
 async function main() {
-	await Promise.all(LIBS.map(lib => transformLib(lib)));
+	await Promise.all(LIBS.map((lib) => transformLib(lib)));
 }
 
-process.on('unhandledRejection', reason => {
+process.on('unhandledRejection', (reason) => {
 	console.error(reason);
 	process.exit(1);
 });

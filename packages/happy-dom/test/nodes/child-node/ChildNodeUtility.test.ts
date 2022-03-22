@@ -33,7 +33,7 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span>'
 			);
-			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+			expect(parent.children.map((element) => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span>'
 			);
 		});
@@ -55,7 +55,7 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
-			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+			expect(parent.children.map((element) => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
 		});
@@ -73,7 +73,7 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child3"></span>'
 			);
-			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+			expect(parent.children.map((element) => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child3"></span>'
 			);
 		});
@@ -95,7 +95,7 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span><span class="child3"></span>'
 			);
-			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+			expect(parent.children.map((element) => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span><span class="child3"></span>'
 			);
 		});
@@ -113,7 +113,7 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span>'
 			);
-			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+			expect(parent.children.map((element) => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span>'
 			);
 		});
@@ -129,7 +129,7 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child3"></span>'
 			);
-			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+			expect(parent.children.map((element) => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child4"></span><span class="child3"></span>'
 			);
 		});
@@ -151,7 +151,7 @@ describe('ChildNodeUtility', () => {
 			expect(parent.innerHTML).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
-			expect(parent.children.map(element => element.outerHTML).join('')).toBe(
+			expect(parent.children.map((element) => element.outerHTML).join('')).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
 			);
 		});

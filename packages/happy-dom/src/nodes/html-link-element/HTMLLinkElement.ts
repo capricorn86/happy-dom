@@ -200,14 +200,14 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 		) {
 			(<Document>this.ownerDocument)._readyStateManager.startTask();
 			ResourceFetcher.fetch({ window: this.ownerDocument.defaultView, url: href })
-				.then(code => {
+				.then((code) => {
 					const styleSheet = new CSSStyleSheet();
 					styleSheet.replaceSync(code);
 					(<CSSStyleSheet>this.sheet) = styleSheet;
 					this.dispatchEvent(new Event('load'));
 					(<Document>this.ownerDocument)._readyStateManager.endTask();
 				})
-				.catch(error => {
+				.catch((error) => {
 					this.dispatchEvent(
 						new ErrorEvent('error', {
 							message: error.message,
@@ -246,14 +246,14 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 			if (href !== null && rel && rel.toLowerCase() === 'stylesheet') {
 				(<Document>this.ownerDocument)._readyStateManager.startTask();
 				ResourceFetcher.fetch({ window: this.ownerDocument.defaultView, url: href })
-					.then(code => {
+					.then((code) => {
 						const styleSheet = new CSSStyleSheet();
 						styleSheet.replaceSync(code);
 						(<CSSStyleSheet>this.sheet) = styleSheet;
 						this.dispatchEvent(new Event('load'));
 						(<Document>this.ownerDocument)._readyStateManager.endTask();
 					})
-					.catch(error => {
+					.catch((error) => {
 						this.dispatchEvent(
 							new ErrorEvent('error', {
 								message: error.message,

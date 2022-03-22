@@ -4,11 +4,7 @@ const OFF = 'off';
 
 const COMMON_CONFIG = {
 	plugins: ['jsdoc', 'filenames', 'jest', 'import', 'prettier'],
-	extends: [
-		'plugin:@typescript-eslint/recommended',
-		'prettier/@typescript-eslint',
-		'plugin:prettier/recommended'
-	],
+	extends: ['plugin:@typescript-eslint/recommended', 'prettier', 'plugin:prettier/recommended'],
 	rules: {
 		'prettier/prettier': WARN,
 		'no-underscore-dangle': OFF,
@@ -145,7 +141,12 @@ module.exports = {
 				'@typescript-eslint/no-empty-function': OFF,
 				'@typescript-eslint/no-use-before-define': OFF,
 				'@typescript-eslint/explicit-function-return-type': [ERROR, { allowExpressions: true }],
-				'@typescript-eslint/member-ordering': WARN,
+				'@typescript-eslint/member-ordering': [
+					WARN,
+					{
+						default: ['signature', 'field', 'constructor', ['get', 'set'], 'method']
+					}
+				],
 				'@typescript-eslint/ban-ts-comment': OFF,
 				'jsdoc/no-types': WARN,
 				'import/named': WARN,

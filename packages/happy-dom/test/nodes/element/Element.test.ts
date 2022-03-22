@@ -166,7 +166,7 @@ describe('Element', () => {
 
 			element.appendChild(div);
 
-			jest.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation(rootElement => {
+			jest.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
 				expect(rootElement).toBe(div);
 				return 'EXPECTED_HTML';
 			});
@@ -352,7 +352,7 @@ describe('Element', () => {
 
 			element.appendChild(div);
 
-			jest.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation(rootElement => {
+			jest.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
 				expect(rootElement).toBe(div);
 				return 'EXPECTED_HTML';
 			});
@@ -828,7 +828,7 @@ describe('Element', () => {
 			const element = document.createElement('div');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'remove').mockImplementation(childNode => {
+			jest.spyOn(ChildNodeUtility, 'remove').mockImplementation((childNode) => {
 				expect(childNode).toBe(element);
 				isCalled = true;
 			});
@@ -977,7 +977,7 @@ describe('Element', () => {
 			const previousElementSibling = document.createElement('div');
 			jest
 				.spyOn(NonDocumentChildNodeUtility, 'previousElementSibling')
-				.mockImplementation(childNode => {
+				.mockImplementation((childNode) => {
 					expect(childNode).toBe(node);
 					return previousElementSibling;
 				});
@@ -992,7 +992,7 @@ describe('Element', () => {
 			const nextElementSibling = document.createElement('div');
 			jest
 				.spyOn(NonDocumentChildNodeUtility, 'nextElementSibling')
-				.mockImplementation(childNode => {
+				.mockImplementation((childNode) => {
 					expect(childNode).toBe(node);
 					return nextElementSibling;
 				});

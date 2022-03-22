@@ -18,7 +18,7 @@ function getLibPath(lib) {
 
 async function main() {
 	await Promise.all(
-		LIBS.map(lib =>
+		LIBS.map((lib) =>
 			CPY(
 				[Path.join(getLibPath(lib), '*.d.ts')],
 				Path.resolve(Path.join('lib', 'node_modules', lib))
@@ -27,7 +27,7 @@ async function main() {
 	);
 }
 
-process.on('unhandledRejection', reason => {
+process.on('unhandledRejection', (reason) => {
 	console.error(reason);
 	process.exit(1);
 });

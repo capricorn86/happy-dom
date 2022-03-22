@@ -11,6 +11,14 @@ export default class CustomElement extends new Window().HTMLElement {
 	private internalShadowRoot: IShadowRoot = null;
 
 	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		this.internalShadowRoot = this.attachShadow({ mode: CustomElement.shadowRootMode });
+	}
+
+	/**
 	 * Returns a list of observed attributes.
 	 *
 	 * @returns Observered attributes.
@@ -18,14 +26,6 @@ export default class CustomElement extends new Window().HTMLElement {
 	public static get observedAttributes(): string[] {
 		this.observedAttributesCallCount++;
 		return ['key1', 'key2'];
-	}
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this.internalShadowRoot = this.attachShadow({ mode: CustomElement.shadowRootMode });
 	}
 
 	/**

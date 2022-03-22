@@ -28,7 +28,7 @@ export default class HTMLInputElementValueSanitizer {
 				if (input.multiple) {
 					return value
 						.split(',')
-						.map(token => token.trim())
+						.map((token) => token.trim())
 						.join(',');
 				}
 				return value.trim().replace(NEW_LINES_REGEXP, '');

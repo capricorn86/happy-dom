@@ -248,7 +248,7 @@ describe('HTMLElement', () => {
 		it('Dispatches "click" event.', () => {
 			let triggeredEvent = null;
 
-			element.addEventListener('click', event => {
+			element.addEventListener('click', (event) => {
 				triggeredEvent = event;
 			});
 
@@ -272,11 +272,11 @@ describe('HTMLElement', () => {
 
 			document.body.appendChild(element);
 
-			element.addEventListener('blur', event => {
+			element.addEventListener('blur', (event) => {
 				triggeredBlurEvent = event;
 			});
 
-			element.addEventListener('focusout', event => {
+			element.addEventListener('focusout', (event) => {
 				triggeredFocusOutEvent = event;
 			});
 
@@ -299,7 +299,7 @@ describe('HTMLElement', () => {
 		it('Does not dispatch "blur" event if not connected to the DOM.', () => {
 			let triggeredEvent = null;
 
-			element.addEventListener('blur', event => {
+			element.addEventListener('blur', (event) => {
 				triggeredEvent = event;
 			});
 
@@ -314,7 +314,7 @@ describe('HTMLElement', () => {
 
 			document.body.appendChild(element);
 
-			element.addEventListener('blur', event => {
+			element.addEventListener('blur', (event) => {
 				triggeredEvent = event;
 			});
 
@@ -331,11 +331,11 @@ describe('HTMLElement', () => {
 
 			document.body.appendChild(element);
 
-			element.addEventListener('focus', event => {
+			element.addEventListener('focus', (event) => {
 				triggeredFocusEvent = event;
 			});
 
-			element.addEventListener('focusin', event => {
+			element.addEventListener('focusin', (event) => {
 				triggeredFocusInEvent = event;
 			});
 
@@ -357,7 +357,7 @@ describe('HTMLElement', () => {
 		it('Does not dispatch "focus" event if not connected to the DOM.', () => {
 			let triggeredEvent = null;
 
-			element.addEventListener('focus', event => {
+			element.addEventListener('focus', (event) => {
 				triggeredEvent = event;
 			});
 
@@ -373,7 +373,7 @@ describe('HTMLElement', () => {
 
 			element.focus();
 
-			element.addEventListener('focus', event => {
+			element.addEventListener('focus', (event) => {
 				triggeredEvent = event;
 			});
 
@@ -391,7 +391,7 @@ describe('HTMLElement', () => {
 
 			previousElement.focus();
 
-			previousElement.addEventListener('blur', event => {
+			previousElement.addEventListener('blur', (event) => {
 				triggeredEvent = event;
 			});
 
