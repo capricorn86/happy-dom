@@ -36,7 +36,7 @@
 		"eslint-plugin-jsdoc": "^38.0.6",
 		"eslint-plugin-json": "^3.1.0",
 		"eslint-plugin-prettier": "^4.0.0",
-		"husky": "7.0.4",
+		"husky": "2.3.0",
 		"jest": "^27.5.1",
 		"lerna": "^4.0.0",
 		"prettier": "^2.6.0",
