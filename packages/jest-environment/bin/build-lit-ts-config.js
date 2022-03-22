@@ -54,7 +54,7 @@ async function createTmpDirectory() {
 }
 
 async function writeLibFiles() {
-	await Promise.all(LIBS.map(lib => writeTsConfigFile(lib)));
+	await Promise.all(LIBS.map((lib) => writeTsConfigFile(lib)));
 }
 
 async function main() {
@@ -66,7 +66,7 @@ async function main() {
 	await writeLibFiles();
 }
 
-process.on('unhandledRejection', reason => {
+process.on('unhandledRejection', (reason) => {
 	console.error(reason);
 	process.exit(1);
 });

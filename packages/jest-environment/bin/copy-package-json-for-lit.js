@@ -25,7 +25,7 @@ async function writePackageJson(from, to) {
 
 async function main() {
 	await Promise.all(
-		LIBS.map(lib =>
+		LIBS.map((lib) =>
 			writePackageJson(
 				Path.join(getLibPath(lib), 'package.json'),
 				Path.resolve(Path.join('lib', 'node_modules', lib, 'package.json'))
@@ -34,7 +34,7 @@ async function main() {
 	);
 }
 
-process.on('unhandledRejection', reason => {
+process.on('unhandledRejection', (reason) => {
 	console.error(reason);
 	process.exit(1);
 });

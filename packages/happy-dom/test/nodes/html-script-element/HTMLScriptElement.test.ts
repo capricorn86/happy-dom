@@ -71,7 +71,7 @@ describe('HTMLScriptElement', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			let loadedElement = null;
 
-			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async element => {
+			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async (element) => {
 				loadedElement = element;
 			});
 
@@ -87,7 +87,7 @@ describe('HTMLScriptElement', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			let loadedElement = null;
 
-			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async element => {
+			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async (element) => {
 				loadedElement = element;
 			});
 
@@ -180,7 +180,7 @@ describe('HTMLScriptElement', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			let loadedElement = null;
 
-			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async element => {
+			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async (element) => {
 				loadedElement = element;
 			});
 
@@ -197,7 +197,7 @@ describe('HTMLScriptElement', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
 			let loadedElement = null;
 
-			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async element => {
+			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async (element) => {
 				loadedElement = element;
 			});
 

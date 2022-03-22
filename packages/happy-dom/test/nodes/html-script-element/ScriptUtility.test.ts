@@ -20,7 +20,7 @@ describe('ScriptUtility', () => {
 			let fetchedURL = null;
 			let loadEvent = null;
 
-			jest.spyOn(window, 'fetch').mockImplementation(url => {
+			jest.spyOn(window, 'fetch').mockImplementation((url) => {
 				fetchedURL = url;
 				return Promise.resolve(<IResponse>{
 					text: () => Promise.resolve('global.test = "test";'),
@@ -31,7 +31,7 @@ describe('ScriptUtility', () => {
 			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script/';
 			script.async = true;
-			script.addEventListener('load', event => {
+			script.addEventListener('load', (event) => {
 				loadEvent = event;
 			});
 
@@ -58,7 +58,7 @@ describe('ScriptUtility', () => {
 			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script/';
 			script.async = true;
-			script.addEventListener('error', event => {
+			script.addEventListener('error', (event) => {
 				errorEvent = event;
 			});
 
@@ -75,14 +75,14 @@ describe('ScriptUtility', () => {
 
 			window.location.href = 'https://localhost:8080/base/';
 
-			jest.spyOn(ResourceFetcher, 'fetchSync').mockImplementation(options => {
+			jest.spyOn(ResourceFetcher, 'fetchSync').mockImplementation((options) => {
 				fetchedOptions = options;
 				return 'global.test = "test";';
 			});
 
 			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script/';
-			script.addEventListener('load', event => {
+			script.addEventListener('load', (event) => {
 				loadEvent = event;
 			});
 
@@ -110,7 +110,7 @@ describe('ScriptUtility', () => {
 
 			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script/';
-			script.addEventListener('error', event => {
+			script.addEventListener('error', (event) => {
 				errorEvent = event;
 			});
 

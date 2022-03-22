@@ -37,7 +37,7 @@ describe('ResourceFetcher', () => {
 		it('Returns resource data asynchrounously.', async () => {
 			let fetchedURL = null;
 
-			jest.spyOn(window, 'fetch').mockImplementation(url => {
+			jest.spyOn(window, 'fetch').mockImplementation((url) => {
 				fetchedURL = url;
 				return Promise.resolve(<IResponse>{
 					text: () => Promise.resolve('test'),

@@ -590,32 +590,33 @@ export default class Document extends Node implements IDocument {
 	 */
 	public close(): void {}
 
+	/* eslint-disable jsdoc/valid-types */
+
 	/**
 	 * Creates an element.
 	 *
-	 * @param tagName Tag name.
+	 * @param qualifiedName Tag name.
 	 * @param [options] Options.
-	 * @param options.is
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
 	 * @returns Element.
 	 */
-	public createElement(tagName: string, options?: { is: string }): IElement {
-		return this.createElementNS(NamespaceURI.html, tagName, options);
+	public createElement(qualifiedName: string, options?: { is?: string }): IElement {
+		return this.createElementNS(NamespaceURI.html, qualifiedName, options);
 	}
 
 	/**
 	 * Creates an element with the specified namespace URI and qualified name.
 	 *
-	 * @param tagName Tag name.
+	 * @param namespaceURI Namespace URI.
+	 * @param qualifiedName Tag name.
 	 * @param [options] Options.
-	 * @param namespaceURI
-	 * @param qualifiedName
-	 * @param options.is
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
 	 * @returns Element.
 	 */
 	public createElementNS(
 		namespaceURI: string,
 		qualifiedName: string,
-		options?: { is: string }
+		options?: { is?: string }
 	): IElement {
 		const tagName = qualifiedName.toUpperCase();
 
@@ -637,6 +638,8 @@ export default class Document extends Node implements IDocument {
 
 		return element;
 	}
+
+	/* eslint-enable jsdoc/valid-types */
 
 	/**
 	 * Creates a text node.

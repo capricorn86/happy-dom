@@ -19,8 +19,6 @@ export default class LitElementComponent extends LitElement {
 	 * Renders the component.
 	 */
 	public render(): TemplateResult {
-		return html`
-			Some text <span>${this.prop1}</span>!
-		`;
+		return html` Some text <span>${this.prop1}</span>! `;
 	}
 }

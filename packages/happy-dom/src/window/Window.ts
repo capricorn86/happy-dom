@@ -210,7 +210,6 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public EvalError = global ? global.EvalError : null;
 	public Float32Array = global ? global.Float32Array : null;
 	public Float64Array = global ? global.Float64Array : null;
-	public Function = global ? global.Function : null;
 	public GLOBAL = null;
 	public Infinity = global ? global.Infinity : null;
 	public Int16Array = global ? global.Int16Array : null;
@@ -221,7 +220,6 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public Map = global ? global.Map : null;
 	public Math = global ? global.Math : null;
 	public NaN = global ? global.NaN : null;
-	public Object = global ? global.Object : null;
 	public Number = global ? global.Number : null;
 	public Promise = global ? global.Promise : null;
 	public RangeError = global ? global.RangeError : null;
@@ -262,6 +260,10 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public AbortController = global ? global.AbortController : null;
 	public AbortSignal = global ? global.AbortSignal : null;
 
+	// Private properties
+	private _objectClass: typeof globalThis.Object = null;
+	private _functionClass: typeof globalThis.Function = null;
+
 	/**
 	 * Constructor.
 	 */
@@ -299,6 +301,36 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	}
 
 	/**
+	 * Returns Object class.
+	 *
+	 * @returns Object class.
+	 */
+	public get Object(): typeof globalThis.Object {
+		if (this._objectClass) {
+			return this._objectClass;
+		}
+		// When inside a VM global.Object is not the same as ({}).constructor
+		// We will therefore run the code inside the VM to get the real constructor
+		this._objectClass = <typeof globalThis.Object>this.eval('({}).constructor');
+		return this._objectClass;
+	}
+
+	/**
+	 * Returns Function class.
+	 *
+	 * @returns Function class.
+	 */
+	public get Function(): typeof globalThis.Function {
+		if (this._functionClass) {
+			return this._functionClass;
+		}
+		// When inside a VM global.Function is not the same as (() => {}).constructor
+		// We will therefore run the code inside the VM to get the real constructor
+		this._functionClass = <typeof globalThis.Function>this.eval('(() => {}).constructor');
+		return this._functionClass;
+	}
+
+	/**
 	 * The CSS interface holds useful CSS-related methods.
 	 *
 	 * @returns CSS interface.
@@ -327,7 +359,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 			vm = require('vm');
 		}
 
-		if (global && vm && vm.isContext(this)) {
+		if (vm && vm.isContext(this)) {
 			return vm.runInContext(code, this);
 		}
 
@@ -497,7 +529,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 			this.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
 
 			fetch(RelativeURL.getAbsoluteURL(this.location, url), options)
-				.then(response => {
+				.then((response) => {
 					if (this.happyDOM.asyncTaskManager.getRunningCount(AsyncTaskTypeEnum.fetch) === 0) {
 						reject(new Error('Failed to complete fetch request. Task was canceled.'));
 					} else {
@@ -509,7 +541,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 
 									asyncMethod
 										.call(response)
-										.then(response => {
+										.then((response) => {
 											if (
 												this.happyDOM.asyncTaskManager.getRunningCount(AsyncTaskTypeEnum.fetch) ===
 												0
@@ -520,7 +552,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 												this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
 											}
 										})
-										.catch(error => {
+										.catch((error) => {
 											reject(error);
 											this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
 										});
@@ -532,7 +564,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 						this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
 					}
 				})
-				.catch(error => {
+				.catch((error) => {
 					reject(error);
 					this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
 				});

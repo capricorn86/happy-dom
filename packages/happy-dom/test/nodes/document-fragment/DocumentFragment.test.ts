@@ -222,7 +222,7 @@ describe('DocumentFragment', () => {
 
 			expect(clone.childNodes).toEqual([]);
 			expect(clone.children).toEqual([]);
-			expect(documentFragment.children.map(child => child.outerHTML).join('')).toBe(
+			expect(documentFragment.children.map((child) => child.outerHTML).join('')).toBe(
 				'<div>Div</div><span>Span</span>'
 			);
 		});
@@ -275,7 +275,7 @@ describe('DocumentFragment', () => {
 			documentFragment.insertBefore(clone, child2);
 
 			expect(documentFragment.children.length).toBe(4);
-			expect(documentFragment.children.map(child => child.outerHTML).join('')).toEqual(
+			expect(documentFragment.children.map((child) => child.outerHTML).join('')).toEqual(
 				'<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>'
 			);
 		});
@@ -314,7 +314,7 @@ describe('DocumentFragment', () => {
 			expect(clone._rootNode).toBe(clone);
 			expect(clone.childNodes.length).toBe(3);
 			expect(clone.children).toEqual(
-				clone.childNodes.filter(node => node.nodeType === Node.ELEMENT_NODE)
+				clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE)
 			);
 		});
 	});

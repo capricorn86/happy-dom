@@ -61,7 +61,7 @@ describe('EventTarget', () => {
 
 		it('Event listener is called in the scope of the EventTarget when calling dispatchEvent().', () => {
 			let scope = null;
-			const listener = function(): void {
+			const listener = function (): void {
 				scope = this;
 			};
 			const dispatchedEvent = new Event(EVENT_TYPE);

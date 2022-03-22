@@ -177,7 +177,7 @@ describe('CharaterData', () => {
 			const previousElementSibling = document.createElement('div');
 			jest
 				.spyOn(NonDocumentChildNodeUtility, 'previousElementSibling')
-				.mockImplementation(childNode => {
+				.mockImplementation((childNode) => {
 					expect(childNode).toBe(node);
 					return previousElementSibling;
 				});
@@ -192,7 +192,7 @@ describe('CharaterData', () => {
 			const nextElementSibling = document.createElement('div');
 			jest
 				.spyOn(NonDocumentChildNodeUtility, 'nextElementSibling')
-				.mockImplementation(childNode => {
+				.mockImplementation((childNode) => {
 					expect(childNode).toBe(node);
 					return nextElementSibling;
 				});
@@ -206,7 +206,7 @@ describe('CharaterData', () => {
 			const comment = document.createComment('test');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'remove').mockImplementation(childNode => {
+			jest.spyOn(ChildNodeUtility, 'remove').mockImplementation((childNode) => {
 				expect(childNode).toBe(comment);
 				isCalled = true;
 			});

@@ -6,6 +6,7 @@ import IFetchOptions from '../../src/window/IFetchOptions';
 import IResponse from '../../src/window/IResponse';
 import Window from '../../src/window/Window';
 import Navigator from '../../src/navigator/Navigator';
+import VM from 'vm';
 
 describe('Window', () => {
 	let window: Window;
@@ -41,6 +42,24 @@ describe('Window', () => {
 
 	afterEach(() => {
 		jest.restoreAllMocks();
+	});
+
+	describe('get Object()', () => {
+		it('Is the same as {}.constructor.', () => {
+			expect({}.constructor).toBe(window.Object);
+
+			const context = VM.createContext(new Window());
+			expect(context.eval('({}).constructor === window.Object')).toBe(true);
+		});
+	});
+
+	describe('get Function()', () => {
+		it('Is the same as (() => {}).constructor.', () => {
+			expect((() => {}).constructor).toBe(window.Function);
+
+			const context = VM.createContext(new Window());
+			expect(context.eval('(() => {}).constructor === window.Function')).toBe(true);
+		});
 	});
 
 	describe('get performance()', () => {
@@ -109,7 +128,7 @@ describe('Window', () => {
 	});
 
 	describe('setTimeout()', () => {
-		it('Sets a timeout.', done => {
+		it('Sets a timeout.', (done) => {
 			const timeoutId = window.setTimeout(() => done());
 			expect(timeoutId.constructor.name).toBe('Timeout');
 		});
@@ -125,7 +144,7 @@ describe('Window', () => {
 	});
 
 	describe('setInterval()', () => {
-		it('Sets an interval.', done => {
+		it('Sets an interval.', (done) => {
 			let count = 0;
 			const intervalId = window.setInterval(() => {
 				count++;
@@ -147,7 +166,7 @@ describe('Window', () => {
 	});
 
 	describe('requestAnimationFrame()', () => {
-		it('Requests an animation frame.', done => {
+		it('Requests an animation frame.', (done) => {
 			const timeoutId = window.requestAnimationFrame(() => done());
 			expect(timeoutId.constructor.name).toBe('Timeout');
 		});
@@ -253,12 +272,12 @@ describe('Window', () => {
 			window.requestAnimationFrame(() => {
 				tasksDone++;
 			});
-			window.fetch('/url/').then(response =>
+			window.fetch('/url/').then((response) =>
 				response.json().then(() => {
 					tasksDone++;
 				})
 			);
-			window.fetch('/url/').then(response =>
+			window.fetch('/url/').then((response) =>
 				response.text().then(() => {
 					tasksDone++;
 				})
@@ -270,7 +289,7 @@ describe('Window', () => {
 	});
 
 	describe('happyDOM.cancelAsync()', () => {
-		it('Cancels all ongoing asynchrounous tasks.', done => {
+		it('Cancels all ongoing asynchrounous tasks.', (done) => {
 			let isFirstWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;
@@ -295,7 +314,7 @@ describe('Window', () => {
 
 			window
 				.fetch('/url/')
-				.then(response =>
+				.then((response) =>
 					response
 						.json()
 						.then(() => {
@@ -307,7 +326,7 @@ describe('Window', () => {
 
 			window
 				.fetch('/url/')
-				.then(response =>
+				.then((response) =>
 					response
 						.json()
 						.then(() => {
@@ -372,10 +391,10 @@ describe('Window', () => {
 	}
 
 	describe('addEventListener()', () => {
-		it('Triggers "load" event if no resources needs to be loaded.', done => {
+		it('Triggers "load" event if no resources needs to be loaded.', (done) => {
 			let loadEvent = null;
 
-			window.addEventListener('load', event => {
+			window.addEventListener('load', (event) => {
 				loadEvent = event;
 			});
 
@@ -385,7 +404,7 @@ describe('Window', () => {
 			}, 1);
 		});
 
-		it('Triggers "load" event when all resources have been loaded.', done => {
+		it('Triggers "load" event when all resources have been loaded.', (done) => {
 			const cssURL = '/path/to/file.css';
 			const jsURL = '/path/to/file.js';
 			const cssResponse = 'body { background-color: red; }';
@@ -394,7 +413,7 @@ describe('Window', () => {
 			let resourceFetchJSOptions = null;
 			let loadEvent = null;
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
 				if (options.url.endsWith('.css')) {
 					resourceFetchCSSOptions = options;
 					return cssResponse;
@@ -404,7 +423,7 @@ describe('Window', () => {
 				return jsResponse;
 			});
 
-			window.addEventListener('load', event => {
+			window.addEventListener('load', (event) => {
 				loadEvent = event;
 			});
 
@@ -436,16 +455,16 @@ describe('Window', () => {
 			}, 0);
 		});
 
-		it('Triggers "error" event if there are problems loading resources.', done => {
+		it('Triggers "error" event if there are problems loading resources.', (done) => {
 			const cssURL = '/path/to/file.css';
 			const jsURL = '/path/to/file.js';
 			const errorEvents = [];
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async options => {
+			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
 				throw new Error(options.url);
 			});
 
-			window.addEventListener('error', event => {
+			window.addEventListener('error', (event) => {
 				errorEvents.push(event);
 			});
 
