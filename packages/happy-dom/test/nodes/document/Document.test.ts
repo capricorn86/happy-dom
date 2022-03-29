@@ -22,8 +22,8 @@ import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement';
-import IResponse from '../../../src/window/IResponse';
-import ResourceFetcher from '../../../src/fetch/ResourceFetcher';
+import IResponse from '../../../src/fetch/IResponse';
+import ResourceFetchHandler from '../../../src/fetch/ResourceFetchHandler';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement';
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum';
 import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
@@ -250,14 +250,14 @@ describe('Document', () => {
 			const style = document.createElement('style');
 			const link = <IHTMLLinkElement>document.createElement('link');
 			let fetchedUrl = null;
-			let fetchedOptions = null;
+			let fetchedInit = null;
 
 			link.rel = 'stylesheet';
 			link.href = '/path/to/file.css';
 
-			jest.spyOn(window, 'fetch').mockImplementation((url, options) => {
+			jest.spyOn(window, 'fetch').mockImplementation((url, init) => {
 				fetchedUrl = url;
-				fetchedOptions = options;
+				fetchedInit = init;
 				return <Promise<IResponse>>Promise.resolve({
 					text: () => Promise.resolve('button { background-color: red }'),
 					ok: true
@@ -271,7 +271,7 @@ describe('Document', () => {
 
 			setTimeout(() => {
 				expect(fetchedUrl).toBe('/path/to/file.css');
-				expect(fetchedOptions).toBe(undefined);
+				expect(fetchedInit).toBe(undefined);
 
 				const styleSheets = document.styleSheets;
 
@@ -935,19 +935,25 @@ describe('Document', () => {
 			const jsURL = '/path/to/file.js';
 			const cssResponse = 'body { background-color: red; }';
 			const jsResponse = 'global.test = "test";';
-			let resourceFetchCSSOptions = null;
-			let resourceFetchJSOptions = null;
+			let resourceFetchCSSDocument = null;
+			let resourceFetchCSSURL = null;
+			let resourceFetchJSDocument = null;
+			let resourceFetchJSURL = null;
 			let readyChangeEvent = null;
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
-				if (options.url.endsWith('.css')) {
-					resourceFetchCSSOptions = options;
-					return cssResponse;
-				}
+			jest
+				.spyOn(ResourceFetchHandler, 'fetch')
+				.mockImplementation(async (document: IDocument, url: string) => {
+					if (url.endsWith('.css')) {
+						resourceFetchCSSDocument = document;
+						resourceFetchCSSURL = url;
+						return cssResponse;
+					}
 
-				resourceFetchJSOptions = options;
-				return jsResponse;
-			});
+					resourceFetchJSDocument = document;
+					resourceFetchJSURL = url;
+					return jsResponse;
+				});
 
 			document.addEventListener('readystatechange', (event) => {
 				readyChangeEvent = event;
@@ -967,10 +973,10 @@ describe('Document', () => {
 			expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
 
 			setTimeout(() => {
-				expect(resourceFetchCSSOptions.window).toBe(window);
-				expect(resourceFetchCSSOptions.url).toBe(cssURL);
-				expect(resourceFetchJSOptions.window).toBe(window);
-				expect(resourceFetchJSOptions.url).toBe(jsURL);
+				expect(resourceFetchCSSDocument).toBe(document);
+				expect(resourceFetchCSSURL).toBe(cssURL);
+				expect(resourceFetchJSDocument).toBe(document);
+				expect(resourceFetchJSURL).toBe(jsURL);
 				expect(readyChangeEvent.target).toBe(document);
 				expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
 				expect(document.styleSheets.length).toBe(1);

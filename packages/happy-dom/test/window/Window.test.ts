@@ -1,40 +1,76 @@
-import { Document, HTMLElement, IHTMLLinkElement } from '../../src';
+import { Document, HTMLElement, IDocument, IHTMLLinkElement } from '../../src';
 import CSSStyleDeclaration from '../../src/css/CSSStyleDeclaration';
-import ResourceFetcher from '../../src/fetch/ResourceFetcher';
+import ResourceFetchHandler from '../../src/fetch/ResourceFetchHandler';
 import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement';
-import IFetchOptions from '../../src/window/IFetchOptions';
-import IResponse from '../../src/window/IResponse';
+import IRequestInit from '../../src/fetch/IRequestInit';
 import Window from '../../src/window/Window';
 import Navigator from '../../src/navigator/Navigator';
 import VM from 'vm';
+
+const MOCKED_RESPONSES = {
+	arrayBuffer: Symbol('arrayBuffer'),
+	blob: Symbol('blob'),
+	buffer: Symbol('buffer'),
+	json: Symbol('json'),
+	text: Symbol('text'),
+	textConverted: Symbol('textConverted')
+};
+
+/* eslint-disable jsdoc/require-jsdoc */
+class NodeFetchResponse {
+	public arrayBuffer(): Promise<symbol> {
+		return Promise.resolve(MOCKED_RESPONSES.arrayBuffer);
+	}
+	public blob(): Promise<symbol> {
+		return Promise.resolve(MOCKED_RESPONSES.blob);
+	}
+	public buffer(): Promise<symbol> {
+		return Promise.resolve(MOCKED_RESPONSES.buffer);
+	}
+	public json(): Promise<symbol> {
+		return Promise.resolve(MOCKED_RESPONSES.json);
+	}
+	public text(): Promise<symbol> {
+		return Promise.resolve(MOCKED_RESPONSES.text);
+	}
+	public textConverted(): Promise<symbol> {
+		return Promise.resolve(MOCKED_RESPONSES.textConverted);
+	}
+}
+
+class NodeFetchRequest extends NodeFetchResponse {}
+class NodeFetchHeaders {}
 
 describe('Window', () => {
 	let window: Window;
 	let document: Document;
 	let fetchedUrl: string;
-	let fetchedOptions: IFetchOptions;
-	let fetchResponseBody: string;
+	let fetchedInit: IRequestInit;
 	let fetchError: Error;
 
 	beforeAll(() => {
-		jest.mock('node-fetch', () => (url: string, options: IFetchOptions) => {
-			fetchedUrl = url;
-			fetchedOptions = options;
-			if (fetchError) {
-				return Promise.reject(fetchError);
-			}
-			return <Promise<IResponse>>Promise.resolve({
-				text: () => Promise.resolve(fetchResponseBody),
-				json: () => Promise.resolve(JSON.parse(fetchResponseBody)),
-				blob: () => Promise.resolve(null)
-			});
-		});
+		jest.mock('node-fetch', () =>
+			Object.assign(
+				(url: string, options: IRequestInit) => {
+					fetchedUrl = url;
+					fetchedInit = options;
+					if (fetchError) {
+						return Promise.reject(fetchError);
+					}
+					return Promise.resolve(new NodeFetchResponse());
+				},
+				{
+					Response: NodeFetchResponse,
+					Request: NodeFetchRequest,
+					Headers: NodeFetchHeaders
+				}
+			)
+		);
 	});
 
 	beforeEach(() => {
 		fetchedUrl = null;
-		fetchedOptions = null;
-		fetchResponseBody = null;
+		fetchedInit = null;
 		fetchError = null;
 		window = new Window();
 		document = window.document;
@@ -60,6 +96,51 @@ describe('Window', () => {
 			const context = VM.createContext(new Window());
 			expect(context.eval('(() => {}).constructor === window.Function')).toBe(true);
 		});
+	});
+
+	describe('get Array()', () => {
+		it('Is the same as [].constructor.', () => {
+			expect((() => {}).constructor).toBe(window.Function);
+
+			const context = VM.createContext(new Window());
+			expect(context.eval('[].constructor === window.Array')).toBe(true);
+		});
+	});
+
+	describe('get Headers()', () => {
+		it('Returns Headers class.', () => {
+			expect(window.Headers).toBe(require('../../src/fetch/Headers').default);
+		});
+	});
+
+	describe('get Response()', () => {
+		it('Returns Response class.', () => {
+			expect(window.Response['_ownerDocument']).toBe(document);
+			expect(window.Response).toBe(require('../../src/fetch/Response').default);
+		});
+
+		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
+			it(`Handles the "${method}" method with the async task manager.`, async () => {
+				const response = new window.Response();
+				const result = await response[method]();
+				expect(result).toBe(MOCKED_RESPONSES[method]);
+			});
+		}
+	});
+
+	describe('get Request()', () => {
+		it('Returns Request class.', () => {
+			expect(window.Request['_ownerDocument']).toBe(document);
+			expect(window.Request).toBe(require('../../src/fetch/Request').default);
+		});
+
+		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
+			it(`Handles the "${method}" method with the async task manager.`, async () => {
+				const request = new window.Request('test');
+				const result = await request[method]();
+				expect(result).toBe(MOCKED_RESPONSES[method]);
+			});
+		}
 	});
 
 	describe('get performance()', () => {
@@ -194,33 +275,19 @@ describe('Window', () => {
 	});
 
 	describe('fetch()', () => {
-		it('Handles successful JSON request.', async () => {
-			const expectedUrl = 'https://localhost:8080/path/';
-			const expectedOptions = {};
+		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
+			it(`Handles successful "${method}" request.`, async () => {
+				const expectedUrl = 'https://localhost:8080/path/';
+				const expectedOptions = {};
 
-			fetchResponseBody = '{}';
+				const response = await window.fetch(expectedUrl, expectedOptions);
+				const result = await response[method]();
 
-			const response = await window.fetch(expectedUrl, expectedOptions);
-			const jsonResponse = await response.json();
-
-			expect(fetchedUrl).toBe(expectedUrl);
-			expect(fetchedOptions).toBe(expectedOptions);
-			expect(jsonResponse).toEqual({});
-		});
-
-		it('Handles successful Text request.', async () => {
-			const expectedUrl = 'https://localhost:8080/path/';
-			const expectedOptions = {};
-
-			fetchResponseBody = 'text';
-
-			const response = await window.fetch(expectedUrl, expectedOptions);
-			const textResponse = await response.text();
-
-			expect(fetchedUrl).toBe(expectedUrl);
-			expect(fetchedOptions).toBe(expectedOptions);
-			expect(textResponse).toEqual(fetchResponseBody);
-		});
+				expect(fetchedUrl).toBe(expectedUrl);
+				expect(fetchedInit).toBe(expectedOptions);
+				expect(result).toEqual(MOCKED_RESPONSES[method]);
+			});
+		}
 
 		it('Handles relative URL.', async () => {
 			const expectedPath = '/path/';
@@ -228,14 +295,12 @@ describe('Window', () => {
 
 			window.location.href = 'https://localhost:8080';
 
-			fetchResponseBody = 'text';
-
 			const response = await window.fetch(expectedPath, expectedOptions);
 			const textResponse = await response.text();
 
 			expect(fetchedUrl).toBe('https://localhost:8080' + expectedPath);
-			expect(fetchedOptions).toBe(expectedOptions);
-			expect(textResponse).toEqual(fetchResponseBody);
+			expect(fetchedInit).toBe(expectedOptions);
+			expect(textResponse).toEqual(MOCKED_RESPONSES.text);
 		});
 
 		it('Handles error JSON request.', async () => {
@@ -409,19 +474,25 @@ describe('Window', () => {
 			const jsURL = '/path/to/file.js';
 			const cssResponse = 'body { background-color: red; }';
 			const jsResponse = 'global.test = "test";';
-			let resourceFetchCSSOptions = null;
-			let resourceFetchJSOptions = null;
+			let resourceFetchCSSDocument = null;
+			let resourceFetchCSSURL = null;
+			let resourceFetchJSDocument = null;
+			let resourceFetchJSURL = null;
 			let loadEvent = null;
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
-				if (options.url.endsWith('.css')) {
-					resourceFetchCSSOptions = options;
-					return cssResponse;
-				}
+			jest
+				.spyOn(ResourceFetchHandler, 'fetch')
+				.mockImplementation(async (document: IDocument, url: string) => {
+					if (url.endsWith('.css')) {
+						resourceFetchCSSDocument = document;
+						resourceFetchCSSURL = url;
+						return cssResponse;
+					}
 
-				resourceFetchJSOptions = options;
-				return jsResponse;
-			});
+					resourceFetchJSDocument = document;
+					resourceFetchJSURL = url;
+					return jsResponse;
+				});
 
 			window.addEventListener('load', (event) => {
 				loadEvent = event;
@@ -439,10 +510,10 @@ describe('Window', () => {
 			document.body.appendChild(link);
 
 			setTimeout(() => {
-				expect(resourceFetchCSSOptions.window).toBe(window);
-				expect(resourceFetchCSSOptions.url).toBe(cssURL);
-				expect(resourceFetchJSOptions.window).toBe(window);
-				expect(resourceFetchJSOptions.url).toBe(jsURL);
+				expect(resourceFetchCSSDocument).toBe(document);
+				expect(resourceFetchCSSURL).toBe(cssURL);
+				expect(resourceFetchJSDocument).toBe(document);
+				expect(resourceFetchJSURL).toBe(jsURL);
 				expect(loadEvent.target).toBe(window);
 				expect(document.styleSheets.length).toBe(1);
 				expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
@@ -460,9 +531,11 @@ describe('Window', () => {
 			const jsURL = '/path/to/file.js';
 			const errorEvents = [];
 
-			jest.spyOn(ResourceFetcher, 'fetch').mockImplementation(async (options) => {
-				throw new Error(options.url);
-			});
+			jest
+				.spyOn(ResourceFetchHandler, 'fetch')
+				.mockImplementation(async (_document: IDocument, url: string) => {
+					throw new Error(url);
+				});
 
 			window.addEventListener('error', (event) => {
 				errorEvents.push(event);

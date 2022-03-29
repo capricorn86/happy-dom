@@ -1,14 +1,18 @@
 import Window from '../../../src/window/Window';
+import IWindow from '../../../src/window/IWindow';
+import IDocument from '../../../src/nodes/document/IDocument';
 import ScriptUtility from '../../../src/nodes/html-script-element/ScriptUtility';
-import IResponse from '../../../src/window/IResponse';
+import IResponse from '../../../src/fetch/IResponse';
 import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement';
-import ResourceFetcher from '../../../src/fetch/ResourceFetcher';
+import ResourceFetchHandler from '../../../src/fetch/ResourceFetchHandler';
 
 describe('ScriptUtility', () => {
-	let window: Window;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window();
+		document = window.document;
 	});
 
 	afterEach(() => {
@@ -20,7 +24,7 @@ describe('ScriptUtility', () => {
 			let fetchedURL = null;
 			let loadEvent = null;
 
-			jest.spyOn(window, 'fetch').mockImplementation((url) => {
+			jest.spyOn(window, 'fetch').mockImplementation((url: string) => {
 				fetchedURL = url;
 				return Promise.resolve(<IResponse>{
 					text: () => Promise.resolve('global.test = "test";'),
@@ -70,15 +74,19 @@ describe('ScriptUtility', () => {
 		});
 
 		it('Loads external script synchronously with relative URL.', async () => {
-			let fetchedOptions = null;
+			let fetchedDocument = null;
+			let fetchedURL = null;
 			let loadEvent = null;
 
 			window.location.href = 'https://localhost:8080/base/';
 
-			jest.spyOn(ResourceFetcher, 'fetchSync').mockImplementation((options) => {
-				fetchedOptions = options;
-				return 'global.test = "test";';
-			});
+			jest
+				.spyOn(ResourceFetchHandler, 'fetchSync')
+				.mockImplementation((document: IDocument, url: string) => {
+					fetchedDocument = document;
+					fetchedURL = url;
+					return 'global.test = "test";';
+				});
 
 			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script/';
@@ -89,10 +97,8 @@ describe('ScriptUtility', () => {
 			await ScriptUtility.loadExternalScript(script);
 
 			expect(loadEvent.target).toBe(script);
-			expect(fetchedOptions).toEqual({
-				window,
-				url: 'path/to/script/'
-			});
+			expect(fetchedDocument).toBe(document);
+			expect(fetchedURL).toBe('path/to/script/');
 			expect(global['test']).toBe('test');
 
 			delete global['test'];
@@ -104,7 +110,7 @@ describe('ScriptUtility', () => {
 
 			window.location.href = 'https://localhost:8080/base/';
 
-			jest.spyOn(ResourceFetcher, 'fetchSync').mockImplementation(() => {
+			jest.spyOn(ResourceFetchHandler, 'fetchSync').mockImplementation(() => {
 				throw thrownError;
 			});
 

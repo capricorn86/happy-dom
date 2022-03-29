@@ -14,9 +14,7 @@ import DOMException from './exception/DOMException';
 import History from './history/History';
 import CSSStyleDeclaration from './css/CSSStyleDeclaration';
 import Screen from './screen/Screen';
-import AsyncTaskManager from './window/AsyncTaskManager';
-import IResponse from './window/IResponse';
-import IFetchOptions from './window/IFetchOptions';
+import AsyncTaskManager from './async-task-manager/AsyncTaskManager';
 import NodeFilter from './tree-walker/NodeFilter';
 import Event from './event/Event';
 import EventTarget from './event/EventTarget';
@@ -101,7 +99,7 @@ import XMLParser from './xml-parser/XMLParser';
 import XMLSerializer from './xml-serializer/XMLSerializer';
 import CSSStyleSheet from './css/CSSStyleSheet';
 import Storage from './storage/Storage';
-import URLSearchParams from './url-search-params/URLSearchParams';
+import { URLSearchParams } from 'url';
 import Selection from './selection/Selection';
 
 export {
@@ -123,8 +121,6 @@ export {
 	CSSStyleDeclaration,
 	Screen,
 	AsyncTaskManager,
-	IResponse,
-	IFetchOptions,
 	NodeFilter,
 	Event,
 	EventTarget,
