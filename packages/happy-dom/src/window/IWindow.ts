@@ -271,11 +271,11 @@ export default interface IWindow extends IEventTarget {
 	cancelAnimationFrame(id: NodeJS.Timeout): void;
 
 	/**
-	 * Provides a global fetch() method that provides an easy, logical way to fetch resources asynchronously across the network.
+	 * This method provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
-	 * @param url URL to resource.
-	 * @param [init] Custom settings.
+	 * @param url URL.
+	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	fetch(url: string, options?: IRequestInit): Promise<IResponse>;
+	fetch(url: string, init?: IRequestInit): Promise<IResponse>;
 }

@@ -561,10 +561,10 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	}
 
 	/**
-	 * Provides a global fetch() method that provides an easy, logical way to fetch resources asynchronously across the network.
+	 * This method provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
 	 * @override
-	 * @param url URL to resource.
+	 * @param url URL.
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
