@@ -1,117 +1,54 @@
 import RelativeURL from '../location/RelativeURL';
-import Window from '../window/Window';
-import DOMException from '../exception/DOMException';
+import IRequestInit from './IRequestInit';
+import IDocument from '../nodes/document/IDocument';
+import IResponse from './IResponse';
 
 /**
- * Helper class for performing an asynchonous or synchrounous request to a resource.
+ * Helper class for performing fetch.
  */
 export default class FetchHandler {
 	/**
 	 * Returns resource data asynchonously.
 	 *
-	 * @param window Window.
+	 * @param document Document.
 	 * @param url URL to resource.
 	 * @param [init] Init.
 	 * @returns Response.
 	 */
-	public static async fetch(window: Window, url: string, init?: IFetchInit): Promise<string> {
+	public static fetch(document: IDocument, url: string, init?: IRequestInit): Promise<IResponse> {
+		// We want to only load NodeFetch when it is needed to improve performance and not have direct dependencies to server side packages.
+		const nodeFetch = require('node-fetch');
+		const Response = require('./Response').default;
+		const taskManager = document.defaultView.happyDOM.asyncTaskManager;
+
 		return new Promise((resolve, reject) => {
-			const fetch = require('node-fetch');
+			const taskID = taskManager.startTask();
 
-			window.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
-
-			fetch(RelativeURL.getAbsoluteURL(window.location, url), init)
+			nodeFetch(RelativeURL.getAbsoluteURL(document.defaultView.location, url), init)
 				.then((response) => {
-					if (window.happyDOM.asyncTaskManager.getRunningCount(AsyncTaskTypeEnum.fetch) === 0) {
+					if (taskManager.getTaskCount() === 0) {
 						reject(new Error('Failed to complete fetch request. Task was canceled.'));
 					} else {
-						for (const methodName of FETCH_RESPONSE_TYPE_METHODS) {
-							const asyncMethod = response[methodName];
-							response[methodName] = () => {
-								return new Promise((resolve, reject) => {
-									window.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
+						response.constructor['_ownerDocument'] = document;
 
-									asyncMethod
-										.call(response)
-										.then((response) => {
-											if (
-												window.happyDOM.asyncTaskManager.getRunningCount(
-													AsyncTaskTypeEnum.fetch
-												) === 0
-											) {
-												reject(new Error('Failed to complete fetch request. Task was canceled.'));
-											} else {
-												resolve(response);
-												window.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
-											}
-										})
-										.catch((error) => {
-											reject(error);
-											window.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
-										});
-								});
-							};
+						for (const key of Object.keys(Response.prototype)) {
+							if (Response.prototype.hasOwnProperty(key) && key !== 'constructor') {
+								if (typeof Response.prototype[key] === 'function') {
+									response[key] = Response.prototype[key].bind(response);
+								} else {
+									response[key] = Response.prototype[key];
+								}
+							}
 						}
 
+						taskManager.endTask(taskID);
 						resolve(response);
-						window.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
 					}
 				})
 				.catch((error) => {
 					reject(error);
-					window.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
+					taskManager.cancelAll(error);
 				});
 		});
-	}
-
-	/**
-	 * Returns resource data asynchonously.
-	 *
-	 * @param options Options.
-	 * @param options.window Location.
-	 * @param options.url URL.
-	 * @param window
-	 * @param url
-	 * @returns Response.
-	 */
-	public static async fetchResource(window: Window, url: string): Promise<string> {
-		const response = await this.fetch(window, url);
-		if (!response.ok) {
-			throw new DOMException(
-				`Failed to perform request to "${url}". Status code: ${response.status}`
-			);
-		}
-		return await response.text();
-	}
-
-	/**
-	 * Returns resource data synchonously.
-	 *
-	 * @param options Options.
-	 * @param options.window Location.
-	 * @param options.url URL.
-	 * @param window
-	 * @param url
-	 * @returns Response.
-	 */
-	private static fetchResourceSync(window: Window, url: string): string {
-		const url = RelativeURL.getAbsoluteURL(window.location, url);
-		let request = null;
-
-		try {
-			request = require('sync-request');
-		} catch (error) {
-			throw new DOMException('Failed to load script. "sync-request" could not be loaded.');
-		}
-
-		const response = request('GET', url);
-
-		if (response.isError()) {
-			throw new DOMException(
-				`Failed to perform request to "${url}". Status code: ${response.statusCode}`
-			);
-		}
-
-		return response.getBody();
 	}
 }

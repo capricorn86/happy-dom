@@ -1,10 +1,10 @@
-import AsyncTaskTypeEnum from './AsyncTaskTypeEnum';
-
 /**
  * Handles async tasks.
  */
 export default class AsyncTaskManager {
-	private tasks: { [k: string]: (NodeJS.Timeout | string)[] } = {};
+	private static taskID = 0;
+	private runningTasks: number[] = [];
+	private runningTimers: NodeJS.Timeout[] = [];
 	private queue: { resolve: () => void; reject: (error: Error) => void }[] = [];
 
 	/**
@@ -28,16 +28,15 @@ export default class AsyncTaskManager {
 	 *
 	 * @param [error] Error.
 	 */
-	public cancelAllTasks(error?: Error): void {
-		if (this.tasks[AsyncTaskTypeEnum.timer]) {
-			for (const id of this.tasks[AsyncTaskTypeEnum.timer]) {
-				global.clearTimeout(<NodeJS.Timeout>id);
-			}
+	public cancelAll(error?: Error): void {
+		for (const timerID of this.runningTimers) {
+			global.clearTimeout(timerID);
 		}
 
 		const promises = this.queue;
 
-		this.tasks = {};
+		this.runningTasks = [];
+		this.runningTimers = [];
 		this.queue = [];
 
 		for (const promise of promises) {
@@ -52,76 +51,78 @@ export default class AsyncTaskManager {
 	/**
 	 * Starts a timer.
 	 *
-	 * @param id Timer ID.
+	 * @param timerID Timer ID.
 	 */
-	public startTimer(id: NodeJS.Timeout = null): void {
-		this.tasks[AsyncTaskTypeEnum.timer] = this.tasks[AsyncTaskTypeEnum.timer] || [];
-		this.tasks[AsyncTaskTypeEnum.timer].push(id);
+	public startTimer(timerID: NodeJS.Timeout): void {
+		this.runningTimers.push(timerID);
 	}
 
 	/**
 	 * Ends a timer.
 	 *
-	 * @param id Timer ID.
+	 * @param timerID Timer ID.
 	 */
-	public endTimer(id: NodeJS.Timeout = null): void {
-		if (this.tasks[AsyncTaskTypeEnum.timer]) {
-			const index = this.tasks[AsyncTaskTypeEnum.timer].indexOf(id);
-			if (index !== -1) {
-				this.tasks[AsyncTaskTypeEnum.timer].splice(index, 1);
-				if (this.tasks[AsyncTaskTypeEnum.timer].length === 0) {
-					delete this.tasks[AsyncTaskTypeEnum.timer];
-
-					if (Object.keys(this.tasks).length === 0) {
-						this.cancelAllTasks();
-					}
-				}
-			}
+	public endTimer(timerID: NodeJS.Timeout): void {
+		const index = this.runningTimers.indexOf(timerID);
+		if (index !== -1) {
+			this.runningTimers.splice(index, 1);
+		}
+		if (!this.runningTasks.length && !this.runningTimers.length) {
+			this.cancelAll();
 		}
 	}
 
 	/**
 	 * Starts an async task.
 	 *
-	 * @param type Task type.
+	 * @returns Task ID.
 	 */
-	public startTask(type: AsyncTaskTypeEnum): void {
-		this.tasks[type] = this.tasks[type] || [];
-		this.tasks[type].push(type);
+	public startTask(): number {
+		const taskID = this.newTaskID();
+		this.runningTasks.push(taskID);
+		return taskID;
 	}
 
 	/**
 	 * Ends an async task.
 	 *
-	 * @param type Task type.
-	 * @param [error] Error.
+	 * @param taskID Task ID.
 	 */
-	public endTask(type: AsyncTaskTypeEnum, error?: Error): void {
-		if (error) {
-			this.cancelAllTasks(error);
-		} else if (this.tasks[type]) {
-			this.tasks[type].pop();
-
-			if (this.tasks[type].length === 0) {
-				delete this.tasks[type];
-
-				if (Object.keys(this.tasks).length === 0) {
-					this.cancelAllTasks();
-				}
-			}
+	public endTask(taskID: number): void {
+		const index = this.runningTasks.indexOf(taskID);
+		if (index !== -1) {
+			this.runningTasks.splice(index, 1);
+		}
+		if (!this.runningTasks.length && !this.runningTimers.length) {
+			this.cancelAll();
 		}
 	}
 
 	/**
-	 * Returns the amount of running tasks by type.
+	 * Returns the amount of running tasks.
 	 *
-	 * @param type Task type.
 	 * @returns Count.
 	 */
-	public getRunningCount(type: AsyncTaskTypeEnum): number {
-		if (this.tasks[type]) {
-			return this.tasks[type].length;
-		}
-		return 0;
+	public getTaskCount(): number {
+		return this.runningTasks.length;
+	}
+
+	/**
+	 * Returns the amount of running timers.
+	 *
+	 * @returns Count.
+	 */
+	public getTimerCount(): number {
+		return this.runningTimers.length;
+	}
+
+	/**
+	 * Returns a new task ID.
+	 *
+	 * @returns Task ID.
+	 */
+	private newTaskID(): number {
+		(<typeof AsyncTaskManager>this.constructor).taskID++;
+		return (<typeof AsyncTaskManager>this.constructor).taskID;
 	}
 }

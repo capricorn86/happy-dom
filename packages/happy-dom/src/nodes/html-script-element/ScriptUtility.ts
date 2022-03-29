@@ -1,7 +1,7 @@
 import { Document } from '../..';
 import Event from '../../event/Event';
 import ErrorEvent from '../../event/events/ErrorEvent';
-import ResourceFetcher from '../../fetch/ResourceFetcher';
+import ResourceFetchHandler from '../../fetch/ResourceFetchHandler';
 import HTMLScriptElement from './HTMLScriptElement';
 
 /**
@@ -22,10 +22,7 @@ export default class ScriptUtility {
 			let code = null;
 			(<Document>element.ownerDocument)._readyStateManager.startTask();
 			try {
-				code = await ResourceFetcher.fetch({
-					window: element.ownerDocument.defaultView,
-					url: src
-				});
+				code = await ResourceFetchHandler.fetch(element.ownerDocument, src);
 			} catch (error) {
 				element.dispatchEvent(
 					new ErrorEvent('error', {
@@ -54,10 +51,7 @@ export default class ScriptUtility {
 		} else {
 			let code = null;
 			try {
-				code = ResourceFetcher.fetchSync({
-					window: element.ownerDocument.defaultView,
-					url: src
-				});
+				code = ResourceFetchHandler.fetchSync(element.ownerDocument, src);
 			} catch (error) {
 				element.dispatchEvent(
 					new ErrorEvent('error', {

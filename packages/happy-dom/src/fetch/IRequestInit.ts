@@ -1,5 +1,6 @@
 import IHeadersInit from './IHeadersInit';
-import URLSearchParams from '../url-search-params/URLSearchParams';
+import IAbortSignal from './IAbortSignal';
+import { URLSearchParams } from 'url';
 import IFormData from '../form-data/IFormData';
 
 /**
@@ -17,7 +18,7 @@ export default interface IRequestInit {
 	headers?: IHeadersInit;
 	method?: string;
 	redirect?: 'error' | 'manual' | 'follow';
-	signal?: AbortSignal | null;
+	signal?: IAbortSignal | null;
 
 	// Not implemented:
 	// Cache?: 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload';

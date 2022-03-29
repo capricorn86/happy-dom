@@ -99,7 +99,7 @@ import XMLParser from './xml-parser/XMLParser';
 import XMLSerializer from './xml-serializer/XMLSerializer';
 import CSSStyleSheet from './css/CSSStyleSheet';
 import Storage from './storage/Storage';
-import URLSearchParams from './url-search-params/URLSearchParams';
+import { URLSearchParams } from 'url';
 import Selection from './selection/Selection';
 
 export {

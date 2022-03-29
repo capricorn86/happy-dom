@@ -1,9 +1,12 @@
 import Window from '../../src/window/Window';
-import ResourceFetcher from '../../src/fetch/ResourceFetcher';
-import IResponse from '../../src/window/IResponse';
+import IWindow from '../../src/window/IWindow';
+import IDocument from '../../src/nodes/document/IDocument';
+import ResourceFetchHandler from '../../src/fetch/ResourceFetchHandler';
+import IResponse from '../../src/fetch/IResponse';
 
-describe('ResourceFetcher', () => {
-	let window: Window;
+describe('ResourceFetchHandler', () => {
+	let window: IWindow;
+	let document: IDocument;
 	let syncRequestStatusCode;
 	let syncRequestBody;
 	let syncRequestOptions;
@@ -27,6 +30,7 @@ describe('ResourceFetcher', () => {
 		syncRequestStatusCode = 200;
 		syncRequestBody = 'test';
 		window = new Window();
+		document = window.document;
 	});
 
 	afterEach(() => {
@@ -37,7 +41,7 @@ describe('ResourceFetcher', () => {
 		it('Returns resource data asynchrounously.', async () => {
 			let fetchedURL = null;
 
-			jest.spyOn(window, 'fetch').mockImplementation((url) => {
+			jest.spyOn(window, 'fetch').mockImplementation((url: string) => {
 				fetchedURL = url;
 				return Promise.resolve(<IResponse>{
 					text: () => Promise.resolve('test'),
@@ -45,10 +49,7 @@ describe('ResourceFetcher', () => {
 				});
 			});
 
-			const test = await ResourceFetcher.fetch({
-				window,
-				url: 'path/to/script/'
-			});
+			const test = await ResourceFetchHandler.fetch(document, 'path/to/script/');
 
 			expect(fetchedURL).toBe('path/to/script/');
 			expect(test).toBe('test');
@@ -59,10 +60,7 @@ describe('ResourceFetcher', () => {
 		it('Returns resource data synchrounously.', () => {
 			window.location.href = 'https://localhost:8080/base/';
 
-			const test = ResourceFetcher.fetchSync({
-				window,
-				url: 'path/to/script/'
-			});
+			const test = ResourceFetchHandler.fetchSync(document, 'path/to/script/');
 
 			expect(syncRequestOptions).toEqual({
 				method: 'GET',
@@ -77,10 +75,7 @@ describe('ResourceFetcher', () => {
 			syncRequestStatusCode = 404;
 
 			expect(() => {
-				ResourceFetcher.fetchSync({
-					window,
-					url: 'path/to/script/'
-				});
+				ResourceFetchHandler.fetchSync(document, 'path/to/script/');
 			}).toThrowError(
 				'Failed to perform request to "https://localhost:8080/base/path/to/script/". Status code: 404'
 			);

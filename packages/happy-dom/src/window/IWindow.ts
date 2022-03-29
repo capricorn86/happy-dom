@@ -67,10 +67,8 @@ import IRequest from '../fetch/IRequest';
 import IRequestInit from '../fetch/IRequestInit';
 import IHeaders from '../fetch/IHeaders';
 import Storage from '../storage/Storage';
-import IFetchInit from '../fetch/IFetchInit';
 import NodeFilter from '../tree-walker/NodeFilter';
 import Window from './Window';
-import URLSearchParams from '../url-search-params/URLSearchParams';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
 import Selection from '../selection/Selection';
@@ -80,6 +78,7 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
+import { URLSearchParams } from 'url';
 
 /**
  * Window.
@@ -278,5 +277,5 @@ export default interface IWindow extends IEventTarget {
 	 * @param [init] Custom settings.
 	 * @returns Promise.
 	 */
-	fetch(url: string, options?: IFetchInit): Promise<IResponse>;
+	fetch(url: string, options?: IRequestInit): Promise<IResponse>;
 }

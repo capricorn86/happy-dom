@@ -70,12 +70,8 @@ import IRequest from '../fetch/IRequest';
 import IRequestInit from '../fetch/IRequestInit';
 import IHeaders from '../fetch/IHeaders';
 import IHeadersInit from '../fetch/IHeadersInit';
-import AsyncTaskTypeEnum from './AsyncTaskTypeEnum';
-import RelativeURL from '../location/RelativeURL';
 import Storage from '../storage/Storage';
-import IFetchInit from '../fetch/IFetchInit';
 import IWindow from './IWindow';
-import URLSearchParams from '../url-search-params/URLSearchParams';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
 import MediaQueryList from '../match-media/MediaQueryList';
@@ -86,8 +82,8 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
-
-const FETCH_RESPONSE_TYPE_METHODS = ['blob', 'json', 'text'];
+import FetchHandler from '../fetch/FetchHandler';
+import { URLSearchParams } from 'url';
 
 /**
  * Handles the Window.
@@ -99,7 +95,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 			return await this.happyDOM.asyncTaskManager.whenComplete();
 		},
 		cancelAsync: (): void => {
-			this.happyDOM.asyncTaskManager.cancelAllTasks();
+			this.happyDOM.asyncTaskManager.cancelAll();
 		},
 		asyncTaskManager: new AsyncTaskManager()
 	};
@@ -204,7 +200,6 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly performance = PerfHooks.performance;
 
 	// Node.js Globals
-	public Array = global ? global.Array : null;
 	public ArrayBuffer = global ? global.ArrayBuffer : null;
 	public Boolean = global ? global.Boolean : null;
 	public Buffer = null;
@@ -266,6 +261,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 
 	// Private properties
 	private _objectClass: typeof globalThis.Object = null;
+	private _arrayClass: typeof globalThis.Array = null;
 	private _functionClass: typeof globalThis.Function = null;
 
 	/**
@@ -320,6 +316,21 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	}
 
 	/**
+	 * Returns Array class.
+	 *
+	 * @returns Array class.
+	 */
+	public get Array(): typeof globalThis.Array {
+		if (this._arrayClass) {
+			return this._arrayClass;
+		}
+		// When inside a VM global.Object is not the same as [].constructor
+		// We will therefore run the code inside the VM to get the real constructor
+		this._arrayClass = <typeof globalThis.Array>this.eval('[].constructor');
+		return this._arrayClass;
+	}
+
+	/**
 	 * Returns Function class.
 	 *
 	 * @returns Function class.
@@ -351,7 +362,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public get Headers(): {
 		new (init?: IHeadersInit): IHeaders;
 	} {
-		return require('../fetch/Headers');
+		return require('../fetch/Headers').default;
 	}
 
 	/**
@@ -362,7 +373,9 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public get Request(): {
 		new (input: string | { href: string } | IRequest, init?: IRequestInit): IRequest;
 	} {
-		return require('../fetch/Request');
+		const Request = require('../fetch/Request').default;
+		Request._ownerDocument = Request._ownerDocument || this.document;
+		return Request;
 	}
 
 	/**
@@ -373,7 +386,9 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public get Response(): {
 		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
 	} {
-		return require('../fetch/Response');
+		const Response = require('../fetch/Response').default;
+		Response._ownerDocument = Response._ownerDocument || this.document;
+		return Response;
 	}
 
 	/**
@@ -553,52 +568,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	public async fetch(url: string, init?: IFetchInit): Promise<IResponse> {
-		return new Promise((resolve, reject) => {
-			const fetch = require('node-fetch');
-
-			this.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
-
-			fetch(RelativeURL.getAbsoluteURL(this.location, url), init)
-				.then((response) => {
-					if (this.happyDOM.asyncTaskManager.getRunningCount(AsyncTaskTypeEnum.fetch) === 0) {
-						reject(new Error('Failed to complete fetch request. Task was canceled.'));
-					} else {
-						for (const methodName of FETCH_RESPONSE_TYPE_METHODS) {
-							const asyncMethod = response[methodName];
-							response[methodName] = () => {
-								return new Promise((resolve, reject) => {
-									this.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
-
-									asyncMethod
-										.call(response)
-										.then((response) => {
-											if (
-												this.happyDOM.asyncTaskManager.getRunningCount(AsyncTaskTypeEnum.fetch) ===
-												0
-											) {
-												reject(new Error('Failed to complete fetch request. Task was canceled.'));
-											} else {
-												resolve(response);
-												this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
-											}
-										})
-										.catch((error) => {
-											reject(error);
-											this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
-										});
-								});
-							};
-						}
-
-						resolve(response);
-						this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch);
-					}
-				})
-				.catch((error) => {
-					reject(error);
-					this.happyDOM.asyncTaskManager.endTask(AsyncTaskTypeEnum.fetch, error);
-				});
-		});
+	public async fetch(url: string, init?: IRequestInit): Promise<IResponse> {
+		return await FetchHandler.fetch(this.document, url, init);
 	}
 }

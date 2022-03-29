@@ -1,13 +1,12 @@
-import * as Fetch from 'node-fetch';
 import IResponse from './IResponse';
 import IBlob from '../file/IBlob';
-import AsyncTaskTypeEnum from '../async-task-manager/AsyncTaskTypeEnum';
 import IDocument from '../nodes/document/IDocument';
+import * as NodeFetch from 'node-fetch';
 
 /**
  * Fetch response.
  */
-export default class Response extends Fetch.Response implements IResponse {
+export default class Response extends NodeFetch.Response implements IResponse {
 	public static _ownerDocument: IDocument = null;
 
 	/**
@@ -17,10 +16,10 @@ export default class Response extends Fetch.Response implements IResponse {
 	 */
 	public arrayBuffer(): Promise<ArrayBuffer> {
 		return new Promise((resolve, reject) => {
-			this._handlePromiseStart();
+			const taskID = this._handlePromiseStart();
 			super
 				.arrayBuffer()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject))
+				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
 				.catch(this._handlePromiseError.bind(this, reject));
 		});
 	}
@@ -32,10 +31,10 @@ export default class Response extends Fetch.Response implements IResponse {
 	 */
 	public blob(): Promise<IBlob> {
 		return new Promise((resolve, reject) => {
-			this._handlePromiseStart();
+			const taskID = this._handlePromiseStart();
 			super
 				.blob()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject))
+				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
 				.catch(this._handlePromiseError.bind(this, reject));
 		});
 	}
@@ -47,10 +46,10 @@ export default class Response extends Fetch.Response implements IResponse {
 	 */
 	public buffer(): Promise<Buffer> {
 		return new Promise((resolve, reject) => {
-			this._handlePromiseStart();
+			const taskID = this._handlePromiseStart();
 			super
 				.buffer()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject))
+				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
 				.catch(this._handlePromiseError.bind(this, reject));
 		});
 	}
@@ -62,10 +61,10 @@ export default class Response extends Fetch.Response implements IResponse {
 	 */
 	public json(): Promise<unknown> {
 		return new Promise((resolve, reject) => {
-			this._handlePromiseStart();
+			const taskID = this._handlePromiseStart();
 			super
 				.json()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject))
+				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
 				.catch(this._handlePromiseError.bind(this, reject));
 		});
 	}
@@ -77,10 +76,10 @@ export default class Response extends Fetch.Response implements IResponse {
 	 */
 	public text(): Promise<string> {
 		return new Promise((resolve, reject) => {
-			this._handlePromiseStart();
+			const taskID = this._handlePromiseStart();
 			super
 				.text()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject))
+				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
 				.catch(this._handlePromiseError.bind(this, reject));
 		});
 	}
@@ -92,42 +91,46 @@ export default class Response extends Fetch.Response implements IResponse {
 	 */
 	public textConverted(): Promise<string> {
 		return new Promise((resolve, reject) => {
-			this._handlePromiseStart();
+			const taskID = this._handlePromiseStart();
 			super
 				.textConverted()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject))
+				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
 				.catch(this._handlePromiseError.bind(this, reject));
 		});
 	}
 
 	/**
 	 * Handles promise start.
+	 *
+	 * @returns Task ID.
 	 */
-	private _handlePromiseStart(): void {
+	private _handlePromiseStart(): number {
 		const taskManager = (<typeof Response>this.constructor)._ownerDocument.defaultView.happyDOM
 			.asyncTaskManager;
-		taskManager.startTask(AsyncTaskTypeEnum.fetch);
+		return taskManager.startTask();
 	}
 
 	/**
 	 * Handles promise end.
 	 *
-	 * @param response
-	 * @param resolve
-	 * @param reject
+	 * @param resolve Resolve.
+	 * @param reject Reject.
+	 * @param taskID Task ID.
+	 * @param response Response.
 	 */
 	private _handlePromiseEnd(
-		response: ArrayBuffer,
-		resolve: (response: ArrayBuffer) => void,
-		reject: (error: Error) => void
+		resolve: (response: unknown) => void,
+		reject: (error: Error) => void,
+		taskID: number,
+		response: unknown
 	): void {
 		const taskManager = (<typeof Response>this.constructor)._ownerDocument.defaultView.happyDOM
 			.asyncTaskManager;
-		if (taskManager.getRunningCount(AsyncTaskTypeEnum.fetch) === 0) {
+		if (taskManager.getTaskCount() === 0) {
 			reject(new Error('Failed to complete fetch request. Task was canceled.'));
 		} else {
 			resolve(response);
-			taskManager.endTask(AsyncTaskTypeEnum.fetch);
+			taskManager.endTask(taskID);
 		}
 	}
 
@@ -137,10 +140,10 @@ export default class Response extends Fetch.Response implements IResponse {
 	 * @param error
 	 * @param reject
 	 */
-	private _handlePromiseError(error: Error, reject: (error: Error) => void): void {
+	private _handlePromiseError(reject: (error: Error) => void, error: Error): void {
 		const taskManager = (<typeof Response>this.constructor)._ownerDocument.defaultView.happyDOM
 			.asyncTaskManager;
 		reject(error);
-		taskManager.endTask(AsyncTaskTypeEnum.fetch, error);
+		taskManager.cancelAll(error);
 	}
 }
