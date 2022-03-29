@@ -60,10 +60,14 @@ import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
 import Screen from '../screen/Screen';
-import AsyncTaskManager from './AsyncTaskManager';
-import IResponse from './IResponse';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
+import IResponse from '../fetch/IResponse';
+import IResponseInit from '../fetch/IResponseInit';
+import IRequest from '../fetch/IRequest';
+import IRequestInit from '../fetch/IRequestInit';
+import IHeaders from '../fetch/IHeaders';
 import Storage from '../storage/Storage';
-import IFetchOptions from './IFetchOptions';
+import IFetchInit from '../fetch/IFetchInit';
 import NodeFilter from '../tree-walker/NodeFilter';
 import Window from './Window';
 import URLSearchParams from '../url-search-params/URLSearchParams';
@@ -141,7 +145,9 @@ export default interface IWindow extends IEventTarget {
 	readonly Location: typeof Location;
 	readonly CustomElementRegistry: typeof CustomElementRegistry;
 	readonly Window: typeof Window;
-	readonly Headers: typeof Map;
+	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
+	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
+	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
 	readonly XMLSerializer: typeof XMLSerializer;
 	readonly ResizeObserver: typeof ResizeObserver;
 	readonly CSSStyleSheet: typeof CSSStyleSheet;
@@ -221,7 +227,6 @@ export default interface IWindow extends IEventTarget {
 	/**
 	 * Sets a timer which executes a function once the timer expires.
 	 *
-	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
 	 * @returns Timeout ID.
@@ -231,7 +236,6 @@ export default interface IWindow extends IEventTarget {
 	/**
 	 * Cancels a timeout previously established by calling setTimeout().
 	 *
-	 * @override
 	 * @param id ID of the timeout.
 	 */
 	clearTimeout(id: NodeJS.Timeout): void;
@@ -239,7 +243,6 @@ export default interface IWindow extends IEventTarget {
 	/**
 	 * Calls a function with a fixed time delay between each call.
 	 *
-	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
 	 * @returns Interval ID.
@@ -249,7 +252,6 @@ export default interface IWindow extends IEventTarget {
 	/**
 	 * Cancels a timed repeating action which was previously established by a call to setInterval().
 	 *
-	 * @override
 	 * @param id ID of the interval.
 	 */
 	clearInterval(id: NodeJS.Timeout): void;
@@ -257,7 +259,6 @@ export default interface IWindow extends IEventTarget {
 	/**
 	 * Mock animation frames with timeouts.
 	 *
-	 * @override
 	 * @param {Function} callback Callback.
 	 * @returns {NodeJS.Timeout} Timeout ID.
 	 */
@@ -266,7 +267,6 @@ export default interface IWindow extends IEventTarget {
 	/**
 	 * Mock animation frames with timeouts.
 	 *
-	 * @override
 	 * @param {NodeJS.Timeout} id Timeout ID.
 	 */
 	cancelAnimationFrame(id: NodeJS.Timeout): void;
@@ -274,10 +274,9 @@ export default interface IWindow extends IEventTarget {
 	/**
 	 * Provides a global fetch() method that provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
-	 * @override
 	 * @param url URL to resource.
-	 * @param [options] Options.
+	 * @param [init] Custom settings.
 	 * @returns Promise.
 	 */
-	fetch(url: string, options?: IFetchOptions): Promise<IResponse>;
+	fetch(url: string, options?: IFetchInit): Promise<IResponse>;
 }

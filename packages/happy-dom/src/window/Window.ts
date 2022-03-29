@@ -63,12 +63,17 @@ import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
 import Screen from '../screen/Screen';
-import AsyncTaskManager from './AsyncTaskManager';
-import IResponse from './IResponse';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
+import IResponse from '../fetch/IResponse';
+import IResponseInit from '../fetch/IResponseInit';
+import IRequest from '../fetch/IRequest';
+import IRequestInit from '../fetch/IRequestInit';
+import IHeaders from '../fetch/IHeaders';
+import IHeadersInit from '../fetch/IHeadersInit';
 import AsyncTaskTypeEnum from './AsyncTaskTypeEnum';
 import RelativeURL from '../location/RelativeURL';
 import Storage from '../storage/Storage';
-import IFetchOptions from './IFetchOptions';
+import IFetchInit from '../fetch/IFetchInit';
 import IWindow from './IWindow';
 import URLSearchParams from '../url-search-params/URLSearchParams';
 import HTMLCollection from '../nodes/element/HTMLCollection';
@@ -152,7 +157,6 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly Location = Location;
 	public readonly CustomElementRegistry = CustomElementRegistry;
 	public readonly Window = Window;
-	public readonly Headers = Map;
 	public readonly XMLSerializer = XMLSerializer;
 	public readonly ResizeObserver = ResizeObserver;
 	public readonly CSSStyleSheet = CSSStyleSheet;
@@ -340,6 +344,39 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	}
 
 	/**
+	 * Returns Headers class.
+	 *
+	 * @returns Headers.
+	 */
+	public get Headers(): {
+		new (init?: IHeadersInit): IHeaders;
+	} {
+		return require('../fetch/Headers');
+	}
+
+	/**
+	 * Returns Request class.
+	 *
+	 * @returns Request.
+	 */
+	public get Request(): {
+		new (input: string | { href: string } | IRequest, init?: IRequestInit): IRequest;
+	} {
+		return require('../fetch/Request');
+	}
+
+	/**
+	 * Returns Response class.
+	 *
+	 * @returns Response.
+	 */
+	public get Response(): {
+		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
+	} {
+		return require('../fetch/Response');
+	}
+
+	/**
 	 * Evaluates code.
 	 *
 	 * @param code Code.
@@ -513,22 +550,16 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 *
 	 * @override
 	 * @param url URL to resource.
-	 * @param [options] Options.
+	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	public async fetch(url: string, options?: IFetchOptions): Promise<IResponse> {
+	public async fetch(url: string, init?: IFetchInit): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
-			let fetch = null;
-
-			try {
-				fetch = require('node-fetch');
-			} catch (error) {
-				throw new Error('Failed to perform fetch. "node-fetch" could not be loaded.');
-			}
+			const fetch = require('node-fetch');
 
 			this.happyDOM.asyncTaskManager.startTask(AsyncTaskTypeEnum.fetch);
 
-			fetch(RelativeURL.getAbsoluteURL(this.location, url), options)
+			fetch(RelativeURL.getAbsoluteURL(this.location, url), init)
 				.then((response) => {
 					if (this.happyDOM.asyncTaskManager.getRunningCount(AsyncTaskTypeEnum.fetch) === 0) {
 						reject(new Error('Failed to complete fetch request. Task was canceled.'));

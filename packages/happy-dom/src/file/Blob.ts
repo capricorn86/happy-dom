@@ -1,3 +1,5 @@
+import IBlob from './IBlob';
+
 /**
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/Blob.
@@ -5,7 +7,7 @@
  * Based on:
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/Blob-impl.js (MIT licensed).
  */
-export default class Blob {
+export default class Blob implements IBlob {
 	public readonly _buffer: Buffer = null;
 	public readonly type: string = '';
 
@@ -106,6 +108,15 @@ export default class Blob {
 		(<Buffer>blob._buffer) = slicedBuffer;
 
 		return blob;
+	}
+
+	/**
+	 * Returns a Promise that resolves to a text.
+	 *
+	 * @returns Text.
+	 */
+	public async text(): Promise<string> {
+		return this._buffer.toString();
 	}
 
 	/**

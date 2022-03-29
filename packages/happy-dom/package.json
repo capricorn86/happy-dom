@@ -60,6 +60,7 @@
 		"@types/he": "^1.1.2",
 		"@types/jest": "^27.4.1",
 		"@types/node": "^15.6.0",
+		"@types/node-fetch": "^2.6.1",
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
 		"@typescript-eslint/parser": "^5.16.0",
 		"eslint": "^8.11.0",

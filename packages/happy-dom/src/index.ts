@@ -14,9 +14,7 @@ import DOMException from './exception/DOMException';
 import History from './history/History';
 import CSSStyleDeclaration from './css/CSSStyleDeclaration';
 import Screen from './screen/Screen';
-import AsyncTaskManager from './window/AsyncTaskManager';
-import IResponse from './window/IResponse';
-import IFetchOptions from './window/IFetchOptions';
+import AsyncTaskManager from './async-task-manager/AsyncTaskManager';
 import NodeFilter from './tree-walker/NodeFilter';
 import Event from './event/Event';
 import EventTarget from './event/EventTarget';
@@ -123,8 +121,6 @@ export {
 	CSSStyleDeclaration,
 	Screen,
 	AsyncTaskManager,
-	IResponse,
-	IFetchOptions,
 	NodeFilter,
 	Event,
 	EventTarget,
