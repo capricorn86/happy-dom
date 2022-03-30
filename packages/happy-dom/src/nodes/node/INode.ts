@@ -4,6 +4,12 @@ import IElement from '../element/IElement';
 import INodeList from './INodeList';
 
 export default interface INode extends IEventTarget {
+	readonly ELEMENT_NODE: number;
+	readonly TEXT_NODE: number;
+	readonly COMMENT_NODE: number;
+	readonly DOCUMENT_NODE: number;
+	readonly DOCUMENT_TYPE_NODE: number;
+	readonly DOCUMENT_FRAGMENT_NODE: number;
 	readonly ownerDocument: IDocument;
 	readonly parentNode: INode;
 	readonly parentElement: IElement;
