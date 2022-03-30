@@ -22,6 +22,12 @@ export default class Node extends EventTarget implements INode {
 	public static readonly DOCUMENT_TYPE_NODE = 10;
 	public static readonly DOCUMENT_FRAGMENT_NODE = 11;
 	public static ownerDocument: IDocument = null;
+	public readonly ELEMENT_NODE = 1;
+	public readonly TEXT_NODE = 3;
+	public readonly COMMENT_NODE = 8;
+	public readonly DOCUMENT_NODE = 9;
+	public readonly DOCUMENT_TYPE_NODE = 10;
+	public readonly DOCUMENT_FRAGMENT_NODE = 11;
 	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
