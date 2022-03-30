@@ -30,6 +30,8 @@ import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
 import CustomEvent from '../../../src/event/events/CustomEvent';
 import Selection from '../../../src/selection/Selection';
 
+/* eslint-disable jsdoc/require-jsdoc */
+
 describe('Document', () => {
 	let window: IWindow;
 	let document: IDocument;
@@ -308,6 +310,60 @@ describe('Document', () => {
 			span.blur();
 
 			expect(document.activeElement === document.body).toBe(true);
+		});
+
+		it('Returns the first custom element that has document as root node when the focused element is nestled in multiple shadow roots.', () => {
+			class CustomElementA extends window.HTMLElement {
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+				}
+
+				public connectedCallback(): void {
+					this.shadowRoot.innerHTML = `
+						<div>
+							<custom-element-b></custom-element-b>
+						</div>
+					`;
+				}
+			}
+			class CustomElementB extends window.HTMLElement {
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+				}
+
+				public connectedCallback(): void {
+					this.shadowRoot.innerHTML = `
+						<div>
+							<button tabindex="0"></button>
+						</div>
+					`;
+				}
+			}
+
+			window.customElements.define('custom-element-a', CustomElementA);
+			window.customElements.define('custom-element-b', CustomElementB);
+
+			const customElementA = document.createElement('custom-element-a');
+			const div = document.createElement('div');
+			div.appendChild(customElementA);
+			document.body.appendChild(div);
+
+			const button = <IHTMLElement>(
+				(<IHTMLElement>(
+					customElementA.shadowRoot.querySelector('custom-element-b')
+				)).shadowRoot.querySelector('button')
+			);
+
+			let focusCalls = 0;
+			button.addEventListener('focus', () => focusCalls++);
+
+			button.focus();
+			button.focus();
+
+			expect(document.activeElement).toBe(customElementA);
+			expect(focusCalls).toBe(1);
 		});
 	});
 

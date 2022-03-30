@@ -37,6 +37,7 @@ import DocumentReadyStateEnum from './DocumentReadyStateEnum';
 import DocumentReadyStateManager from './DocumentReadyStateManager';
 import Location from '../../location/Location';
 import Selection from '../../selection/Selection';
+import IShadowRoot from '../shadow-root/IShadowRoot';
 
 /**
  * Document.
@@ -240,6 +241,17 @@ export default class Document extends Node implements IDocument {
 	 * @returns Active element.
 	 */
 	public get activeElement(): IHTMLElement {
+		if (this._activeElement) {
+			let rootNode: IShadowRoot | IDocument = <IShadowRoot | IDocument>(
+				this._activeElement.getRootNode()
+			);
+			let activeElement: IHTMLElement = this._activeElement;
+			while (rootNode !== this) {
+				activeElement = <IHTMLElement>(<IShadowRoot>rootNode).host;
+				rootNode = <IShadowRoot | IDocument>activeElement.getRootNode();
+			}
+			return activeElement;
+		}
 		return this._activeElement || this.body || this.documentElement || null;
 	}
 
