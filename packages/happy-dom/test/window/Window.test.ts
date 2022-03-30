@@ -100,7 +100,7 @@ describe('Window', () => {
 
 	describe('get Array()', () => {
 		it('Is the same as [].constructor.', () => {
-			expect((() => {}).constructor).toBe(window.Function);
+			expect([].constructor).toBe(window.Array);
 
 			const context = VM.createContext(new Window());
 			expect(context.eval('[].constructor === window.Array')).toBe(true);
