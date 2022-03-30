@@ -872,6 +872,13 @@ export default class Element extends Node implements IElement {
 	 */
 	public getAttributeNodeNS(namespace: string, name: string): Attr {
 		const attributeName = this._getAttributeName(name);
+		if (
+			this._attributes[attributeName] &&
+			this._attributes[attributeName].namespaceURI === namespace &&
+			this._attributes[attributeName].localName === attributeName
+		) {
+			return this._attributes[attributeName];
+		}
 		for (const name of Object.keys(this._attributes)) {
 			const attribute = this._attributes[name];
 			if (attribute.namespaceURI === namespace && attribute.localName === attributeName) {

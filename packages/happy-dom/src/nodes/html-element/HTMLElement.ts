@@ -5,6 +5,7 @@ import Attr from '../../attribute/Attr';
 import FocusEvent from '../../event/events/FocusEvent';
 import PointerEvent from '../../event/events/PointerEvent';
 import Node from '../node/Node';
+import DatasetUtility from './DatasetUtility';
 
 /**
  * HTML Element.
@@ -25,6 +26,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly clientWidth = 0;
 
 	private _style: CSSStyleDeclaration = null;
+	private _dataset: { [key: string]: string } = null;
 
 	/**
 	 * Returns tab index.
@@ -98,13 +100,61 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
-		const dataset = {};
+		if (this._dataset) {
+			return this._dataset;
+		}
+
+		const dataset: { [key: string]: string } = {};
+		/* eslint-disable @typescript-eslint/no-this-alias */
+		const self = this;
+		/* eslint-enable @typescript-eslint/no-this-alias */
+
 		for (const name of Object.keys(this._attributes)) {
 			if (name.startsWith('data-')) {
-				dataset[name.replace('data-', '')] = this._attributes[name].value;
+				const key = DatasetUtility.kebabToCamelCase(name.replace('data-', ''));
+				dataset[key] = this._attributes[name].value;
 			}
 		}
-		return dataset;
+
+		this._dataset = new Proxy(dataset, {
+			get: (dataset: { [key: string]: string }, property: string): string => {
+				const name = DatasetUtility.camelCaseToKebab(property);
+				if (this._attributes[name]) {
+					dataset[property] = this._attributes[name].value;
+					return this._attributes[name].value;
+				}
+				if (dataset[property] !== undefined) {
+					delete dataset[property];
+				}
+				return undefined;
+			},
+			set: (dataset: { [key: string]: string }, property: string, value: string): boolean => {
+				this.setAttribute('data-' + DatasetUtility.camelCaseToKebab(property), value);
+				dataset[property] = value;
+				return true;
+			},
+			deleteProperty: (dataset: { [key: string]: string }, property: string) => {
+				const name = 'data-' + DatasetUtility.camelCaseToKebab(property);
+				const exists = !!this._attributes[name];
+				delete this._attributes[name];
+				delete dataset[property];
+				return exists;
+			},
+			ownKeys: () => {
+				const keys = [];
+				for (const name of Object.keys(self._attributes)) {
+					if (name.startsWith('data-')) {
+						keys.push(name);
+					}
+				}
+				return keys;
+			},
+			has: (_dataset: { [key: string]: string }, property: string) => {
+				return !!self._attributes['data-' + DatasetUtility.camelCaseToKebab(property)];
+			}
+		});
+
+		return this._dataset;
 	}
 
 	/**
