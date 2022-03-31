@@ -5,6 +5,7 @@ import Attr from '../../attribute/Attr';
 import FocusEvent from '../../event/events/FocusEvent';
 import PointerEvent from '../../event/events/PointerEvent';
 import Node from '../node/Node';
+import DatasetUtility from './DatasetUtility';
 
 /**
  * HTML Element.
@@ -25,6 +26,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly clientWidth = 0;
 
 	private _style: CSSStyleDeclaration = null;
+	private _dataset: { [key: string]: string } = null;
 
 	/**
 	 * Returns tab index.
@@ -98,13 +100,73 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
-		const dataset = {};
-		for (const name of Object.keys(this._attributes)) {
+		if (this._dataset) {
+			return this._dataset;
+		}
+
+		const dataset: { [key: string]: string } = {};
+		const attributes = this._attributes;
+
+		for (const name of Object.keys(attributes)) {
 			if (name.startsWith('data-')) {
-				dataset[name.replace('data-', '')] = this._attributes[name].value;
+				const key = DatasetUtility.kebabToCamelCase(name.replace('data-', ''));
+				dataset[key] = attributes[name].value;
 			}
 		}
-		return dataset;
+
+		// Documentation for Proxy:
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+		this._dataset = new Proxy(dataset, {
+			get: (dataset: { [key: string]: string }, key: string): string => {
+				const name = 'data-' + DatasetUtility.camelCaseToKebab(key);
+				if (this._attributes[name]) {
+					dataset[key] = this._attributes[name].value;
+					return this._attributes[name].value;
+				}
+				if (dataset[key] !== undefined) {
+					delete dataset[key];
+				}
+				return undefined;
+			},
+			set: (dataset: { [key: string]: string }, key: string, value: string): boolean => {
+				this.setAttribute('data-' + DatasetUtility.camelCaseToKebab(key), value);
+				dataset[key] = value;
+				return true;
+			},
+			deleteProperty: (dataset: { [key: string]: string }, key: string) => {
+				const name = 'data-' + DatasetUtility.camelCaseToKebab(key);
+				const exists = !!attributes[name];
+				delete attributes[name];
+				delete dataset[key];
+				return exists;
+			},
+			ownKeys: (dataset: { [key: string]: string }) => {
+				// According to Mozilla we have to update the dataset object (target) to contain the same keys as what we return:
+				// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/ownKeys
+				// "The result List must contain the keys of all non-configurable own properties of the target object."
+				const keys = [];
+				const deleteKeys = [];
+				for (const name of Object.keys(attributes)) {
+					if (name.startsWith('data-')) {
+						const key = DatasetUtility.kebabToCamelCase(name.replace('data-', ''));
+						keys.push(key);
+						dataset[key] = attributes[name].value;
+						if (!dataset[key]) {
+							deleteKeys.push(key);
+						}
+					}
+				}
+				for (const key of deleteKeys) {
+					delete dataset[key];
+				}
+				return keys;
+			},
+			has: (_dataset: { [key: string]: string }, key: string) => {
+				return !!attributes['data-' + DatasetUtility.camelCaseToKebab(key)];
+			}
+		});
+
+		return this._dataset;
 	}
 
 	/**
