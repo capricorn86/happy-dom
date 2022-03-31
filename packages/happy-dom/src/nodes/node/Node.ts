@@ -7,6 +7,7 @@ import INode from './INode';
 import DOMException from '../../exception/DOMException';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
+import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
 import INodeList from './INodeList';
 import NodeListFactory from './NodeListFactory';
 
@@ -154,6 +155,19 @@ export default class Node extends EventTarget implements INode {
 			parent = parent.parentNode;
 		}
 		return <IElement>parent;
+	}
+
+	/**
+	 * Returns base URI.
+	 *
+	 * @returns Base URI.
+	 */
+	public get baseURI(): string {
+		const base = <IHTMLBaseElement>this.ownerDocument.querySelector('base');
+		if (base) {
+			return base.href;
+		}
+		return this.ownerDocument.location.href;
 	}
 
 	/**

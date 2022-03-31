@@ -21,6 +21,7 @@ export default interface INode extends IEventTarget {
 	readonly nextSibling: INode;
 	readonly firstChild: INode;
 	readonly lastChild: INode;
+	readonly baseURI: string;
 	nodeValue: string;
 	textContent: string;
 	connectedCallback?(): void;

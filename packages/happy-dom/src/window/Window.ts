@@ -20,6 +20,7 @@ import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
 import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
+import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
@@ -116,6 +117,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly HTMLLabelElement = HTMLLabelElement;
 	public readonly HTMLSlotElement = HTMLSlotElement;
 	public readonly HTMLMetaElement = HTMLMetaElement;
+	public readonly HTMLBaseElement = HTMLBaseElement;
 	public readonly SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement = SVGElement;
 	public readonly Text = Text;
