@@ -3,6 +3,7 @@ import Document from '../../../src/nodes/document/Document';
 import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement';
 import DOMException from '../../../src/exception/DOMException';
 import File from '../../../src/file/File';
+import Event from '../../../src/event/Event';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
 
@@ -378,6 +379,43 @@ describe('HTMLInputElement', () => {
 			element.size = 60;
 			expect(element.size).toBe(60);
 			expect(element.getAttribute('size')).toBe('60');
+		});
+	});
+
+	describe('get validationMessage()', () => {
+		it('Returns validation message.', () => {
+			element.setCustomValidity('Error message');
+			expect(element.validationMessage).toBe('Error message');
+		});
+	});
+
+	describe('setCustomValidity()', () => {
+		it('Returns validation message.', () => {
+			element.setCustomValidity('Error message');
+			expect(element.validationMessage).toBe('Error message');
+			element.setCustomValidity(null);
+			expect(element.validationMessage).toBe('null');
+			element.setCustomValidity('');
+			expect(element.validationMessage).toBe('');
+		});
+	});
+
+	describe('reportValidity()', () => {
+		it('Dispatches an "invalid" event.', () => {
+			let dispatchedEvent: Event = null;
+			element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
+			element.setCustomValidity('Error message');
+			element.reportValidity();
+			expect(dispatchedEvent.cancelable).toBe(true);
+			expect(dispatchedEvent.bubbles).toBe(true);
+		});
+
+		it('Does not dispatch an "invalid" event if the validation message is an empty string.', () => {
+			let dispatchedEvent: Event = null;
+			element.setCustomValidity('');
+			element.reportValidity();
+			element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
+			expect(dispatchedEvent).toBe(null);
 		});
 	});
 

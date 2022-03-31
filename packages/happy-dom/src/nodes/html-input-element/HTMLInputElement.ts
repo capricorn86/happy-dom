@@ -39,9 +39,11 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	public files: File[] = [];
 
 	// Type specific: text/password/search/tel/url/week/month
-	private _selectionStart = null;
-	private _selectionEnd = null;
-	private _selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+	private _selectionStart: number = null;
+	private _selectionEnd: number = null;
+	private _selectionDirection: HTMLInputElementSelectionDirectionEnum =
+		HTMLInputElementSelectionDirectionEnum.none;
+	private _validationMessage = '';
 
 	/**
 	 * Returns height.
@@ -737,15 +739,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
-	 * Returns validity message.
-	 *
-	 * @returns Validation message.
-	 */
-	public get validationMessage(): string {
-		return null;
-	}
-
-	/**
 	 * Returns "true" if it will validate.
 	 *
 	 * @returns "true" if it will validate.
@@ -776,6 +769,38 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public get valueAsNumber(): number {
 		return this.value ? parseFloat(this.value) : NaN;
+	}
+
+	/**
+	 * Returns validation message.
+	 *
+	 * @returns Validation message.
+	 */
+	public get validationMessage(): string {
+		return this._validationMessage;
+	}
+
+	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	public setCustomValidity(message: string): void {
+		this._validationMessage = String(message);
+	}
+
+	/**
+	 * Reports validity by dispatching an "invalid" event.
+	 */
+	public reportValidity(): void {
+		if (this._validationMessage) {
+			this.dispatchEvent(
+				new Event('invalid', {
+					bubbles: true,
+					cancelable: true
+				})
+			);
+		}
 	}
 
 	/**

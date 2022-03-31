@@ -48,10 +48,22 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	selectionEnd: number;
 	selectionDirection: string;
 	validity: ValidityState;
-	validationMessage: string;
 	willValidate: boolean;
 	valueAsDate: Date;
 	valueAsNumber: number;
+	validationMessage: string;
+
+	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	setCustomValidity(message: string): void;
+
+	/**
+	 * Reports validity by dispatching an "invalid" event.
+	 */
+	reportValidity(): void;
 
 	/**
 	 * Set selection range.
