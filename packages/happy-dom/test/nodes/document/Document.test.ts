@@ -793,6 +793,11 @@ describe('Document', () => {
 			svg.style.cssText = 'user-select:none;';
 			expect(svg.style.cssText).toBe('user-select: none;');
 		});
+
+		it("Creates an element when tag name isn't a string.", () => {
+			const element = <ISVGElement>document.createElementNS(null, <string>(<unknown>true));
+			expect(element.tagName).toBe('TRUE');
+		});
 	});
 
 	describe('createAttribute()', () => {
