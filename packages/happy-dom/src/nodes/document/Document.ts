@@ -630,11 +630,11 @@ export default class Document extends Node implements IDocument {
 		qualifiedName: string,
 		options?: { is?: string }
 	): IElement {
-		const tagName = qualifiedName.toUpperCase();
+		const tagName = String(qualifiedName).toUpperCase();
 
 		let customElementClass;
 		if (this.defaultView && options && options.is) {
-			customElementClass = this.defaultView.customElements.get(options.is);
+			customElementClass = this.defaultView.customElements.get(String(options.is));
 		} else if (this.defaultView) {
 			customElementClass = this.defaultView.customElements.get(tagName);
 		}
