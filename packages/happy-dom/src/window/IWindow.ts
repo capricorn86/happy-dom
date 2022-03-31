@@ -19,6 +19,7 @@ import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
 import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
+import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
@@ -106,6 +107,7 @@ export default interface IWindow extends IEventTarget {
 	readonly HTMLSlotElement: typeof HTMLSlotElement;
 	readonly HTMLLabelElement: typeof HTMLLabelElement;
 	readonly HTMLMetaElement: typeof HTMLMetaElement;
+	readonly HTMLBaseElement: typeof HTMLBaseElement;
 	readonly SVGSVGElement: typeof SVGSVGElement;
 	readonly SVGElement: typeof SVGElement;
 	readonly Image: typeof Image;

@@ -12,6 +12,7 @@ import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
+import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 
 export default {
 	A: HTMLElement,
@@ -22,7 +23,7 @@ export default {
 	ASIDE: HTMLElement,
 	AUDIO: HTMLElement,
 	B: HTMLElement,
-	BASE: HTMLElement,
+	BASE: HTMLBaseElement,
 	BDI: HTMLElement,
 	BDO: HTMLElement,
 	BLOCKQUAOTE: HTMLElement,

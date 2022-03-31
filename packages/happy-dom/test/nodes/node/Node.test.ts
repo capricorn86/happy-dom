@@ -198,6 +198,26 @@ describe('Node', () => {
 		});
 	});
 
+	describe('get baseURI()', () => {
+		it('Returns location.href.', () => {
+			document.location.href = 'https://localhost:8080/base/path/to/script/?key=value=1#test';
+
+			const div = document.createElement('div');
+			expect(div.baseURI).toBe('https://localhost:8080/base/path/to/script/?key=value=1#test');
+		});
+
+		it('Returns the "href" attribute set on a <base> element.', () => {
+			document.location.href = 'https://localhost:8080/base/path/to/script/?key=value=1#test';
+
+			const base = document.createElement('base');
+			base.setAttribute('href', 'https://www.test.test/base/path/to/script/?key=value=1#test');
+			document.documentElement.appendChild(base);
+
+			const div = document.createElement('div');
+			expect(div.baseURI).toBe('https://www.test.test/base/path/to/script/?key=value=1#test');
+		});
+	});
+
 	describe('connectedCallback()', () => {
 		it('Calls connected callback when a custom element is connected to DOM.', () => {
 			document.body.innerHTML = '<custom-counter><custom-button></custom-button></custom-counter>';

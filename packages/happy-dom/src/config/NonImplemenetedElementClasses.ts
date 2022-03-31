@@ -1,7 +1,6 @@
 export default [
 	'HTMLHeadElement',
 	'HTMLTitleElement',
-	'HTMLBaseElement',
 	'HTMLMetaElement',
 	'HTMLBodyElement',
 	'HTMLHeadingElement',

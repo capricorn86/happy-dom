@@ -74,6 +74,8 @@ import HTMLLabelElement from './nodes/html-label-element/HTMLLabelElement';
 import IHTMLLabelElement from './nodes/html-label-element/IHTMLLabelElement';
 import HTMLMetaElement from './nodes/html-meta-element/HTMLMetaElement';
 import IHTMLMetaElement from './nodes/html-meta-element/IHTMLMetaElement';
+import HTMLBaseElement from './nodes/html-base-element/HTMLBaseElement';
+import IHTMLBaseElement from './nodes/html-base-element/IHTMLBaseElement';
 import SVGElement from './nodes/svg-element/SVGElement';
 import ISVGElement from './nodes/svg-element/ISVGElement';
 import SVGGraphicsElement from './nodes/svg-element/SVGGraphicsElement';
@@ -179,6 +181,8 @@ export {
 	IHTMLLabelElement,
 	HTMLMetaElement,
 	IHTMLMetaElement,
+	HTMLBaseElement,
+	IHTMLBaseElement,
 	SVGElement,
 	ISVGElement,
 	SVGGraphicsElement,
