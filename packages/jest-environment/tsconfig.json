@@ -3,7 +3,7 @@
 		"outDir": "lib",
 		"rootDir": "src",
 		"tsBuildInfoFile": "tmp/.tsbuildinfo",
-		"target": "es5",
+		"target": "es2020",
 		"declaration": true,
 		"module": "CommonJS",
 		"moduleResolution": "node",
