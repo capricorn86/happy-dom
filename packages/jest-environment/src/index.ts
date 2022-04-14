@@ -26,8 +26,6 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	 * @param options Options.
 	 */
 	constructor(config: Config.ProjectConfig, options?: EnvironmentContext) {
-		VM.createContext(this.global);
-
 		// Node's error-message stack size is limited to 10, but it's pretty useful to see more than that when a test fails.
 		this.global.Error.stackTraceLimit = 100;
 
@@ -35,7 +33,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.global.Buffer = Buffer;
 
 		// Needed as Jest is using it
-		this.window.global = this.global;
+		this.window['global'] = this.global;
 
 		JestUtil.installCommonGlobals(<typeof globalThis>(<unknown>this.window), config.globals);
 

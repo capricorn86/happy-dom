@@ -27,7 +27,7 @@ describe('ScriptUtility', () => {
 			jest.spyOn(window, 'fetch').mockImplementation((url: string) => {
 				fetchedURL = url;
 				return Promise.resolve(<IResponse>{
-					text: () => Promise.resolve('global.test = "test";'),
+					text: () => Promise.resolve('globalThis.test = "test";'),
 					ok: true
 				});
 			});
@@ -43,9 +43,7 @@ describe('ScriptUtility', () => {
 
 			expect(loadEvent.target).toBe(script);
 			expect(fetchedURL).toBe('path/to/script/');
-			expect(global['test']).toBe('test');
-
-			delete global['test'];
+			expect(window['test']).toBe('test');
 		});
 
 		it('Triggers error event when loading external script asynchronously.', async () => {
@@ -85,7 +83,7 @@ describe('ScriptUtility', () => {
 				.mockImplementation((document: IDocument, url: string) => {
 					fetchedDocument = document;
 					fetchedURL = url;
-					return 'global.test = "test";';
+					return 'globalThis.test = "test";';
 				});
 
 			const script = <HTMLScriptElement>window.document.createElement('script');
@@ -99,9 +97,7 @@ describe('ScriptUtility', () => {
 			expect(loadEvent.target).toBe(script);
 			expect(fetchedDocument).toBe(document);
 			expect(fetchedURL).toBe('path/to/script/');
-			expect(global['test']).toBe('test');
-
-			delete global['test'];
+			expect(window['test']).toBe('test');
 		});
 
 		it('Triggers error event when loading external script synchronously with relative URL.', () => {

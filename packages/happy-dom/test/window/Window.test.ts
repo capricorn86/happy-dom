@@ -1,11 +1,13 @@
-import { Document, HTMLElement, IDocument, IHTMLLinkElement } from '../../src';
 import CSSStyleDeclaration from '../../src/css/CSSStyleDeclaration';
+import IDocument from '../../src/nodes/document/IDocument';
+import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement';
+import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
 import ResourceFetchHandler from '../../src/fetch/ResourceFetchHandler';
 import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement';
 import IRequestInit from '../../src/fetch/IRequestInit';
 import Window from '../../src/window/Window';
+import IWindow from '../../src/window/IWindow';
 import Navigator from '../../src/navigator/Navigator';
-import VM from 'vm';
 
 const MOCKED_RESPONSES = {
 	arrayBuffer: Symbol('arrayBuffer'),
@@ -42,8 +44,8 @@ class NodeFetchRequest extends NodeFetchResponse {}
 class NodeFetchHeaders {}
 
 describe('Window', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 	let fetchedUrl: string;
 	let fetchedInit: IRequestInit;
 	let fetchError: Error;
@@ -82,28 +84,19 @@ describe('Window', () => {
 
 	describe('get Object()', () => {
 		it('Is the same as {}.constructor.', () => {
-			expect({}.constructor).toBe(window.Object);
-
-			const context = VM.createContext(new Window());
-			expect(context.eval('({}).constructor === window.Object')).toBe(true);
+			expect(window.eval('({}).constructor === window.Object')).toBe(true);
 		});
 	});
 
 	describe('get Function()', () => {
 		it('Is the same as (() => {}).constructor.', () => {
-			expect((() => {}).constructor).toBe(window.Function);
-
-			const context = VM.createContext(new Window());
-			expect(context.eval('(() => {}).constructor === window.Function')).toBe(true);
+			expect(window.eval('(() => {}).constructor === window.Function')).toBe(true);
 		});
 	});
 
 	describe('get Array()', () => {
 		it('Is the same as [].constructor.', () => {
-			expect([].constructor).toBe(window.Array);
-
-			const context = VM.createContext(new Window());
-			expect(context.eval('[].constructor === window.Array')).toBe(true);
+			expect(window.eval('[].constructor === window.Array')).toBe(true);
 		});
 	});
 
@@ -186,7 +179,7 @@ describe('Window', () => {
 
 	describe('getComputedStyle()', () => {
 		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
-			const element = <HTMLElement>window.document.createElement('div');
+			const element = <IHTMLElement>window.document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
 
 			element.style.direction = 'rtl';
@@ -473,7 +466,7 @@ describe('Window', () => {
 			const cssURL = '/path/to/file.css';
 			const jsURL = '/path/to/file.js';
 			const cssResponse = 'body { background-color: red; }';
-			const jsResponse = 'global.test = "test";';
+			const jsResponse = 'globalThis.test = "test";';
 			let resourceFetchCSSDocument = null;
 			let resourceFetchCSSURL = null;
 			let resourceFetchJSDocument = null;
@@ -518,9 +511,7 @@ describe('Window', () => {
 				expect(document.styleSheets.length).toBe(1);
 				expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
 
-				expect(global['test']).toBe('test');
-
-				delete global['test'];
+				expect(window['test']).toBe('test');
 
 				done();
 			}, 0);

@@ -41,6 +41,7 @@ import MouseEvent from './event/events/MouseEvent';
 import ProgressEvent from './event/events/ProgressEvent';
 import WheelEvent from './event/events/WheelEvent';
 import AsyncWindow from './window/AsyncWindow';
+import GlobalWindow from './window/GlobalWindow';
 import DOMParser from './dom-parser/DOMParser';
 import Document from './nodes/document/Document';
 import IDocument from './nodes/document/IDocument';
@@ -108,6 +109,7 @@ export {
 	AsyncWindow,
 	Window,
 	IWindow,
+	GlobalWindow,
 	DataTransfer,
 	DataTransferItem,
 	DataTransferItemList,

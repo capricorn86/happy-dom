@@ -11,6 +11,7 @@ import Element from '../nodes/element/Element';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
+import IHTMLElement from '../nodes/html-element/IHTMLElement';
 import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
@@ -80,11 +81,13 @@ import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
 import { URLSearchParams } from 'url';
+import { Performance } from 'perf_hooks';
+import MediaQueryList from '../match-media/MediaQueryList';
 
 /**
  * Window.
  */
-export default interface IWindow extends IEventTarget {
+export default interface IWindow extends IEventTarget, NodeJS.Global {
 	// Public Properties
 	readonly happyDOM: {
 		whenAsyncComplete: () => Promise<void>;
@@ -192,6 +195,7 @@ export default interface IWindow extends IEventTarget {
 	readonly innerHeight: number;
 	readonly sessionStorage: Storage;
 	readonly localStorage: Storage;
+	readonly performance: Performance;
 
 	/**
 	 * Evaluates code.
@@ -207,7 +211,7 @@ export default interface IWindow extends IEventTarget {
 	 * @param element Element.
 	 * @returns CSS style declaration.
 	 */
-	getComputedStyle(element: HTMLElement): CSSStyleDeclaration;
+	getComputedStyle(element: IHTMLElement): CSSStyleDeclaration;
 
 	/**
 	 * Scrolls to a particular set of coordinates.
@@ -224,6 +228,14 @@ export default interface IWindow extends IEventTarget {
 	 * @param y Y position.
 	 */
 	scrollTo(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void;
+
+	/**
+	 * Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.
+	 *
+	 * @param mediaQueryString A string specifying the media query to parse into a MediaQueryList.
+	 * @returns A new MediaQueryList.
+	 */
+	matchMedia(mediaQueryString: string): MediaQueryList;
 
 	/**
 	 * Sets a timer which executes a function once the timer expires.

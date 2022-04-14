@@ -93,7 +93,7 @@ import GlobalProperties from './GlobalProperties';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/Window.
  */
-export default class Window extends EventTarget implements IWindow {
+export default class ClientSideWindow extends EventTarget implements IWindow {
 	// Public Properties
 	public readonly happyDOM = {
 		whenAsyncComplete: async (): Promise<void> => {
