@@ -1,6 +1,6 @@
 import IElement from '../element/IElement';
 import IHTMLElement from '../html-element/IHTMLElement';
-import Window from '../../window/Window';
+import IWindow from '../../window/IWindow';
 import TreeWalker from '../../tree-walker/TreeWalker';
 import Event from '../../event/Event';
 import DOMImplementation from '../../dom-implementation/DOMImplementation';
@@ -24,7 +24,7 @@ import INodeList from '../node/INodeList';
  */
 export default interface IDocument extends IParentNode {
 	onreadystatechange: (event: Event) => void;
-	readonly defaultView: Window;
+	readonly defaultView: IWindow;
 	readonly implementation: DOMImplementation;
 	readonly documentElement: IHTMLElement;
 	readonly doctype: IDocumentType;

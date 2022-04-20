@@ -2,7 +2,7 @@ import Element from '../element/Element';
 import HTMLUnknownElement from '../html-unknown-element/HTMLUnknownElement';
 import Text from '../text/Text';
 import Comment from '../comment/Comment';
-import Window from '../../window/Window';
+import IWindow from '../../window/IWindow';
 import Node from '../node/Node';
 import TreeWalker from '../../tree-walker/TreeWalker';
 import DocumentFragment from '../document-fragment/DocumentFragment';
@@ -54,7 +54,7 @@ export default class Document extends Node implements IDocument {
 	public _activeElement: IHTMLElement = null;
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
-	private _defaultView: Window = null;
+	private _defaultView: IWindow = null;
 	private _cookie = '';
 
 	/**
@@ -103,7 +103,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Default view.
 	 */
-	public get defaultView(): Window {
+	public get defaultView(): IWindow {
 		return this._defaultView;
 	}
 
@@ -112,7 +112,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param defaultView Default view.
 	 */
-	public set defaultView(defaultView: Window) {
+	public set defaultView(defaultView: IWindow) {
 		this._defaultView = defaultView;
 		this._readyStateManager = new DocumentReadyStateManager(defaultView);
 		this._readyStateManager.whenComplete().then(() => {

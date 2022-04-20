@@ -63,14 +63,8 @@ import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
-import IResponse from '../fetch/IResponse';
-import IResponseInit from '../fetch/IResponseInit';
-import IRequest from '../fetch/IRequest';
-import IRequestInit from '../fetch/IRequestInit';
-import IHeaders from '../fetch/IHeaders';
 import Storage from '../storage/Storage';
 import NodeFilter from '../tree-walker/NodeFilter';
-import Window from './Window';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
 import Selection from '../selection/Selection';
@@ -80,12 +74,18 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
+import IResponseInit from '../fetch/IResponseInit';
+import IRequest from '../fetch/IRequest';
+import IHeaders from '../fetch/IHeaders';
+import IRequestInit from '../fetch/IRequestInit';
+import IResponse from '../fetch/IResponse';
+import MediaQueryList from '../match-media/MediaQueryList';
+import GlobalWindow from './GlobalWindow';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
-import MediaQueryList from '../match-media/MediaQueryList';
 
 /**
- * Window.
+ * Window without dependencies to server side specific packages.
  */
 export default interface IWindow extends IEventTarget, NodeJS.Global {
 	// Public Properties
@@ -148,10 +148,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly URL: typeof URL;
 	readonly Location: typeof Location;
 	readonly CustomElementRegistry: typeof CustomElementRegistry;
-	readonly Window: typeof Window;
-	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
-	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
-	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
+	readonly Window: typeof GlobalWindow;
 	readonly XMLSerializer: typeof XMLSerializer;
 	readonly ResizeObserver: typeof ResizeObserver;
 	readonly CSSStyleSheet: typeof CSSStyleSheet;
@@ -173,6 +170,9 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly MimeTypeArray: typeof MimeTypeArray;
 	readonly Plugin: typeof Plugin;
 	readonly PluginArray: typeof PluginArray;
+	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
+	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
+	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
 
 	// Events
 	onload: (event: Event) => void;
