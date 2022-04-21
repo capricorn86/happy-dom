@@ -4,26 +4,25 @@ import IDocument from '../../src/nodes/document/IDocument';
 import ResourceFetchHandler from '../../src/fetch/ResourceFetchHandler';
 import IResponse from '../../src/fetch/IResponse';
 
+let syncRequestStatusCode;
+let syncRequestBody;
+let syncRequestOptions;
+
+jest.mock('sync-request', () => (method: string, url: string) => {
+	syncRequestOptions = {
+		method,
+		url
+	};
+	return {
+		getBody: () => syncRequestBody,
+		isError: () => syncRequestStatusCode !== 200,
+		statusCode: syncRequestStatusCode
+	};
+});
+
 describe('ResourceFetchHandler', () => {
 	let window: IWindow;
 	let document: IDocument;
-	let syncRequestStatusCode;
-	let syncRequestBody;
-	let syncRequestOptions;
-
-	beforeAll(() => {
-		jest.mock('sync-request', () => (method: string, url: string) => {
-			syncRequestOptions = {
-				method,
-				url
-			};
-			return {
-				getBody: () => syncRequestBody,
-				isError: () => syncRequestStatusCode !== 200,
-				statusCode: syncRequestStatusCode
-			};
-		});
-	});
 
 	beforeEach(() => {
 		syncRequestOptions = null;

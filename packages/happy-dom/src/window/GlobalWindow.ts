@@ -292,6 +292,8 @@ export default class GlobalWindow extends EventTarget implements IWindow {
 		DOMParser._ownerDocument = this.document;
 		FileReader._ownerDocument = this.document;
 		Image.ownerDocument = this.document;
+		Request._ownerDocument = this.document;
+		Response._ownerDocument = this.document;
 
 		for (const eventType of NonImplementedEventTypes) {
 			if (!this[eventType]) {
