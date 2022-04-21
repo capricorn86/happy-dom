@@ -4,7 +4,6 @@ import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
 import ResourceFetchHandler from '../../src/fetch/ResourceFetchHandler';
 import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement';
-import IRequestInit from '../../src/fetch/IRequestInit';
 import GlobalWindow from '../../src/window/GlobalWindow';
 import IWindow from '../../src/window/IWindow';
 import Navigator from '../../src/navigator/Navigator';
@@ -12,70 +11,16 @@ import Headers from '../../src/fetch/Headers';
 import Response from '../../src/fetch/Response';
 import Request from '../../src/fetch/Request';
 
-const MOCKED_RESPONSES = {
-	arrayBuffer: Symbol('arrayBuffer'),
-	blob: Symbol('blob'),
-	buffer: Symbol('buffer'),
-	json: Symbol('json'),
-	text: Symbol('text'),
-	textConverted: Symbol('textConverted')
-};
-
-/* eslint-disable jsdoc/require-jsdoc */
-class NodeFetchResponse {
-	public arrayBuffer(): Promise<symbol> {
-		return Promise.resolve(MOCKED_RESPONSES.arrayBuffer);
-	}
-	public blob(): Promise<symbol> {
-		return Promise.resolve(MOCKED_RESPONSES.blob);
-	}
-	public buffer(): Promise<symbol> {
-		return Promise.resolve(MOCKED_RESPONSES.buffer);
-	}
-	public json(): Promise<symbol> {
-		return Promise.resolve(MOCKED_RESPONSES.json);
-	}
-	public text(): Promise<symbol> {
-		return Promise.resolve(MOCKED_RESPONSES.text);
-	}
-	public textConverted(): Promise<symbol> {
-		return Promise.resolve(MOCKED_RESPONSES.textConverted);
-	}
-}
-
-class NodeFetchRequest extends NodeFetchResponse {}
-class NodeFetchHeaders {}
-
-let fetchedUrl: string;
-let fetchedInit: IRequestInit;
-let fetchError: Error;
-
-jest.mock('node-fetch', () => {
-	return Object.assign(
-		(url: string, options: IRequestInit) => {
-			fetchedUrl = url;
-			fetchedInit = options;
-			if (fetchError) {
-				return Promise.reject(fetchError);
-			}
-			return Promise.resolve(new NodeFetchResponse());
-		},
-		{
-			Response: NodeFetchResponse,
-			Request: NodeFetchRequest,
-			Headers: NodeFetchHeaders
-		}
-	);
-});
+const MOCKED_NODE_FETCH = global['mockedModules']['node-fetch'];
 
 describe('GlobalWindow', () => {
 	let window: IWindow;
 	let document: IDocument;
 
 	beforeEach(() => {
-		fetchedUrl = null;
-		fetchedInit = null;
-		fetchError = null;
+		MOCKED_NODE_FETCH.url = null;
+		MOCKED_NODE_FETCH.init = null;
+		MOCKED_NODE_FETCH.error = null;
 		window = new GlobalWindow();
 		document = window.document;
 	});
@@ -136,7 +81,7 @@ describe('GlobalWindow', () => {
 			it(`Handles the "${method}" method with the async task manager.`, async () => {
 				const response = new window.Response();
 				const result = await response[method]();
-				expect(result).toBe(MOCKED_RESPONSES[method]);
+				expect(result).toBe(MOCKED_NODE_FETCH.response[method]);
 			});
 		}
 	});
@@ -151,7 +96,7 @@ describe('GlobalWindow', () => {
 			it(`Handles the "${method}" method with the async task manager.`, async () => {
 				const request = new window.Request('test');
 				const result = await request[method]();
-				expect(result).toBe(MOCKED_RESPONSES[method]);
+				expect(result).toBe(MOCKED_NODE_FETCH.response[method]);
 			});
 		}
 	});
@@ -296,9 +241,9 @@ describe('GlobalWindow', () => {
 				const response = await window.fetch(expectedUrl, expectedOptions);
 				const result = await response[method]();
 
-				expect(fetchedUrl).toBe(expectedUrl);
-				expect(fetchedInit).toBe(expectedOptions);
-				expect(result).toEqual(MOCKED_RESPONSES[method]);
+				expect(MOCKED_NODE_FETCH.url).toBe(expectedUrl);
+				expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
+				expect(result).toEqual(MOCKED_NODE_FETCH.response[method]);
 			});
 		}
 
@@ -311,18 +256,18 @@ describe('GlobalWindow', () => {
 			const response = await window.fetch(expectedPath, expectedOptions);
 			const textResponse = await response.text();
 
-			expect(fetchedUrl).toBe('https://localhost:8080' + expectedPath);
-			expect(fetchedInit).toBe(expectedOptions);
-			expect(textResponse).toEqual(MOCKED_RESPONSES.text);
+			expect(MOCKED_NODE_FETCH.url).toBe('https://localhost:8080' + expectedPath);
+			expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
+			expect(textResponse).toEqual(MOCKED_NODE_FETCH.response.text);
 		});
 
 		it('Handles error JSON request.', async () => {
-			fetchError = new Error('error');
+			MOCKED_NODE_FETCH.error = new Error('error');
 
 			try {
 				await window.fetch('/url/', {});
 			} catch (error) {
-				expect(error).toBe(fetchError);
+				expect(error).toBe(MOCKED_NODE_FETCH.error);
 			}
 		});
 	});

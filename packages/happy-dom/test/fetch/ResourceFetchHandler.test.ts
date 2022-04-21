@@ -4,30 +4,16 @@ import IDocument from '../../src/nodes/document/IDocument';
 import ResourceFetchHandler from '../../src/fetch/ResourceFetchHandler';
 import IResponse from '../../src/fetch/IResponse';
 
-let syncRequestStatusCode;
-let syncRequestBody;
-let syncRequestOptions;
-
-jest.mock('sync-request', () => (method: string, url: string) => {
-	syncRequestOptions = {
-		method,
-		url
-	};
-	return {
-		getBody: () => syncRequestBody,
-		isError: () => syncRequestStatusCode !== 200,
-		statusCode: syncRequestStatusCode
-	};
-});
+const MOCKED_SYNC_REQUEST = global['mockedModules']['sync-request'];
 
 describe('ResourceFetchHandler', () => {
 	let window: IWindow;
 	let document: IDocument;
 
 	beforeEach(() => {
-		syncRequestOptions = null;
-		syncRequestStatusCode = 200;
-		syncRequestBody = 'test';
+		MOCKED_SYNC_REQUEST.options = null;
+		MOCKED_SYNC_REQUEST.statusCode = 200;
+		MOCKED_SYNC_REQUEST.body = 'test';
 		window = new Window();
 		document = window.document;
 	});
@@ -61,7 +47,7 @@ describe('ResourceFetchHandler', () => {
 
 			const test = ResourceFetchHandler.fetchSync(document, 'path/to/script/');
 
-			expect(syncRequestOptions).toEqual({
+			expect(MOCKED_SYNC_REQUEST.options).toEqual({
 				method: 'GET',
 				url: 'https://localhost:8080/base/path/to/script/'
 			});
@@ -71,7 +57,7 @@ describe('ResourceFetchHandler', () => {
 		it('Handles error when resource is fetched synchrounously.', () => {
 			window.location.href = 'https://localhost:8080/base/';
 
-			syncRequestStatusCode = 404;
+			MOCKED_SYNC_REQUEST.statusCode = 404;
 
 			expect(() => {
 				ResourceFetchHandler.fetchSync(document, 'path/to/script/');

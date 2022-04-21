@@ -27,11 +27,10 @@
 		"watch": "tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
-		"test": "jest",
-		"test:coverage": "jest --collectCoverage",
-		"test:watch": "jest --watch",
-		"test:update-snapshot": "jest --updateSnapshot",
-		"test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand"
+		"test": "jest --setupFilesAfterEnv ./test/setup.js",
+		"test:coverage": "jest --setupFilesAfterEnv ./test/setup.js --collectCoverage",
+		"test:watch": "jest --setupFilesAfterEnv ./test/setup.js --watch",
+		"test:debug": "node --inspect-brk ./node_modules/.bin/jest --setupFilesAfterEnv ./test/setup.js --runInBand"
 	},
 	"jest": {
 		"transform": {
