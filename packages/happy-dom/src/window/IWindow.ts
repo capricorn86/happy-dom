@@ -80,7 +80,7 @@ import IHeaders from '../fetch/IHeaders';
 import IRequestInit from '../fetch/IRequestInit';
 import IResponse from '../fetch/IResponse';
 import MediaQueryList from '../match-media/MediaQueryList';
-import GlobalWindow from './GlobalWindow';
+import Window from './Window';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
 
@@ -148,7 +148,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly URL: typeof URL;
 	readonly Location: typeof Location;
 	readonly CustomElementRegistry: typeof CustomElementRegistry;
-	readonly Window: typeof GlobalWindow;
+	readonly Window: typeof Window;
 	readonly XMLSerializer: typeof XMLSerializer;
 	readonly ResizeObserver: typeof ResizeObserver;
 	readonly CSSStyleSheet: typeof CSSStyleSheet;
