@@ -87,8 +87,10 @@ import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
 import { URLSearchParams } from 'url';
 import FetchHandler from '../fetch/FetchHandler';
+import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
+import { Buffer } from 'buffer';
 
 /**
  * Browser window.
@@ -218,7 +220,7 @@ export default class Window extends EventTarget implements IWindow {
 	// Node.js Globals
 	public ArrayBuffer;
 	public Boolean;
-	public Buffer;
+	public Buffer = Buffer;
 	public DataView;
 	public Date;
 	public Error;
@@ -309,8 +311,8 @@ export default class Window extends EventTarget implements IWindow {
 		}
 
 		// Binds all methods to "this", so that it will use the correct context when called globally.
-		for (const key of Object.keys(Window.prototype)) {
-			if (typeof this[key] === 'function') {
+		for (const key of Object.getOwnPropertyNames(this.constructor.prototype)) {
+			if (key !== 'constructor' && key !== 'CSS' && typeof this[key] === 'function') {
 				this[key] = this[key].bind(this);
 			}
 		}
@@ -318,6 +320,10 @@ export default class Window extends EventTarget implements IWindow {
 		// Only contextify if there isn't any sub-class handling globals (like GlobalWindow)
 		if (this.Array === undefined && !VM.isContext(this)) {
 			VM.createContext(this);
+
+			// Sets global properties from the VM to the Window object.
+			// Otherwise "this.Array" will be undefined for example.
+			VM.runInContext(VMGlobalPropertyScript, this);
 		}
 	}
 

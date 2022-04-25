@@ -18,7 +18,7 @@ function getTsConfig(lib) {
 		compilerOptions: {
 			module: 'CommonJS',
 			sourceMap: false,
-			target: 'es5',
+			target: 'es2020',
 			preserveSymlinks: true,
 			preserveWatchOutput: true,
 			experimentalDecorators: true,

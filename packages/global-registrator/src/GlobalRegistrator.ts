@@ -1,4 +1,4 @@
-import { Window } from 'happy-dom';
+import { GlobalWindow } from 'happy-dom';
 
 /**
  *
@@ -13,7 +13,7 @@ export default class GlobalRegistrator {
 		if (this.registered.length) {
 			throw new Error('Failed to registered. Happy DOM has already been globally registered.');
 		}
-		const window = new Window();
+		const window = new GlobalWindow();
 		for (const key of Object.keys(window)) {
 			if (global[key] === undefined && key !== 'undefined') {
 				global[key] = window[key];

@@ -31,6 +31,7 @@ describe('Window', () => {
 
 	describe('get Object()', () => {
 		it('Is not the same as {}.constructor when inside the VM.', () => {
+			expect(typeof window.Object).toBe('function');
 			expect({}.constructor).not.toBe(window.Object);
 		});
 
@@ -41,6 +42,7 @@ describe('Window', () => {
 
 	describe('get Function()', () => {
 		it('Is not the same as (() => {}).constructorr when inside the VM.', () => {
+			expect(typeof window.Function).toBe('function');
 			expect((() => {}).constructor).not.toBe(window.Function);
 		});
 
@@ -51,11 +53,24 @@ describe('Window', () => {
 
 	describe('get Array()', () => {
 		it('Is not the same as [].constructorr when inside the VM.', () => {
+			expect(typeof window.Array).toBe('function');
 			expect([].constructor).not.toBe(window.Array);
 		});
 
 		it('Is the same as [].constructor when using eval().', () => {
 			expect(window.eval('[].constructor === window.Array')).toBe(true);
+		});
+	});
+
+	describe('get ArrayBuffer()', () => {
+		it('Is defined.', () => {
+			expect(typeof window.ArrayBuffer).toBe('function');
+		});
+	});
+
+	describe('get Buffer()', () => {
+		it('Is defined.', () => {
+			expect(typeof window.Buffer).toBe('function');
 		});
 	});
 
