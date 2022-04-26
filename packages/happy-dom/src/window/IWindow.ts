@@ -11,6 +11,7 @@ import Element from '../nodes/element/Element';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
+import IHTMLElement from '../nodes/html-element/IHTMLElement';
 import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
@@ -62,14 +63,8 @@ import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
-import IResponse from '../fetch/IResponse';
-import IResponseInit from '../fetch/IResponseInit';
-import IRequest from '../fetch/IRequest';
-import IRequestInit from '../fetch/IRequestInit';
-import IHeaders from '../fetch/IHeaders';
 import Storage from '../storage/Storage';
 import NodeFilter from '../tree-walker/NodeFilter';
-import Window from './Window';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
 import Selection from '../selection/Selection';
@@ -79,12 +74,20 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
+import IResponseInit from '../fetch/IResponseInit';
+import IRequest from '../fetch/IRequest';
+import IHeaders from '../fetch/IHeaders';
+import IRequestInit from '../fetch/IRequestInit';
+import IResponse from '../fetch/IResponse';
+import MediaQueryList from '../match-media/MediaQueryList';
+import Window from './Window';
 import { URLSearchParams } from 'url';
+import { Performance } from 'perf_hooks';
 
 /**
- * Window.
+ * Window without dependencies to server side specific packages.
  */
-export default interface IWindow extends IEventTarget {
+export default interface IWindow extends IEventTarget, NodeJS.Global {
 	// Public Properties
 	readonly happyDOM: {
 		whenAsyncComplete: () => Promise<void>;
@@ -146,9 +149,6 @@ export default interface IWindow extends IEventTarget {
 	readonly Location: typeof Location;
 	readonly CustomElementRegistry: typeof CustomElementRegistry;
 	readonly Window: typeof Window;
-	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
-	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
-	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
 	readonly XMLSerializer: typeof XMLSerializer;
 	readonly ResizeObserver: typeof ResizeObserver;
 	readonly CSSStyleSheet: typeof CSSStyleSheet;
@@ -170,6 +170,9 @@ export default interface IWindow extends IEventTarget {
 	readonly MimeTypeArray: typeof MimeTypeArray;
 	readonly Plugin: typeof Plugin;
 	readonly PluginArray: typeof PluginArray;
+	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
+	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
+	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
 
 	// Events
 	onload: (event: Event) => void;
@@ -192,6 +195,7 @@ export default interface IWindow extends IEventTarget {
 	readonly innerHeight: number;
 	readonly sessionStorage: Storage;
 	readonly localStorage: Storage;
+	readonly performance: Performance;
 
 	/**
 	 * Evaluates code.
@@ -207,7 +211,7 @@ export default interface IWindow extends IEventTarget {
 	 * @param element Element.
 	 * @returns CSS style declaration.
 	 */
-	getComputedStyle(element: HTMLElement): CSSStyleDeclaration;
+	getComputedStyle(element: IHTMLElement): CSSStyleDeclaration;
 
 	/**
 	 * Scrolls to a particular set of coordinates.
@@ -224,6 +228,14 @@ export default interface IWindow extends IEventTarget {
 	 * @param y Y position.
 	 */
 	scrollTo(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void;
+
+	/**
+	 * Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.
+	 *
+	 * @param mediaQueryString A string specifying the media query to parse into a MediaQueryList.
+	 * @returns A new MediaQueryList.
+	 */
+	matchMedia(mediaQueryString: string): MediaQueryList;
 
 	/**
 	 * Sets a timer which executes a function once the timer expires.

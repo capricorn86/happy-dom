@@ -56,7 +56,7 @@ npm install happy-dom
 
 ## Basic Usage
 
-The example below will show you how to use Happy DOM.
+A simple example of how you can use Happy DOM.
 
 ```javascript
 import { Window } from 'happy-dom';
@@ -79,13 +79,12 @@ console.log(document.body.innerHTML);
 
 ## VM Context
 
-The example below will show you how to setup a Node [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) to render a page in Happy DOM. The [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) can set the Happy DOM window object to be the [global object](https://nodejs.org/api/globals.html) and allow for JavaScript code to be executed scoped within the context.
+The default Window class is a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options). A [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) will execute JavaScript code scoped within the context where the Window instance will be the global object.
 
 ```javascript
 import { Window } from 'happy-dom';
-import VM from 'vm';
 
-const window = VM.createContext(new Window());
+const window = new Window();
 const document = window.document;
 
 window.location.href = 'http://localhost:8080';
@@ -113,6 +112,28 @@ document.write(`
 console.log(document.querySelector('.container div').innerHTML);
 ```
 
+## Global Context
+
+Happy DOM exports a class called GlobalWindow, which can be used to run Happy DOM in the global context instead of the default behaviour of running in a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options).
+
+```javascript
+import { Window, GlobalWindow } from 'happy-dom';
+
+const vmWindow = new Window();
+const globalWindow = new GlobalWindow();
+
+// Will output "false"
+console.log(vmWindow.Array === global.Array);
+
+// Will output "true"
+console.log(globalWindow.Array === global.Array);
+
+globalWindow.eval('global.test = 1');
+
+// Will output "1"
+console.log(global.test);
+```
+
 ## Server-Side Rendering of Web Components
 
 The example below will show you how to setup a Node [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) to render a page with custom elements (web components) in Happy DOM. We can then use a new web feature called [Declarative Shadow DOM](https://chromestatus.com/feature/5191745052606464) to include the shadow roots in the HTML output.
@@ -121,9 +142,8 @@ The example below will show you how to setup a Node [VM context](https://nodejs.
 
 ```javascript
 import { Window } from 'happy-dom';
-import VM from 'vm';
 
-const window = VM.createContext(new Window());
+const window = new Window();
 const document = window.document;
 
 window.location.href = 'http://localhost:8080';

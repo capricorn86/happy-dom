@@ -71,25 +71,34 @@ import IRequest from '../fetch/IRequest';
 import IRequestInit from '../fetch/IRequestInit';
 import IHeaders from '../fetch/IHeaders';
 import IHeadersInit from '../fetch/IHeadersInit';
+import Headers from '../fetch/Headers';
+import Request from '../fetch/Request';
+import Response from '../fetch/Response';
 import Storage from '../storage/Storage';
 import IWindow from './IWindow';
 import HTMLCollection from '../nodes/element/HTMLCollection';
 import NodeList from '../nodes/node/NodeList';
 import MediaQueryList from '../match-media/MediaQueryList';
 import Selection from '../selection/Selection';
-import * as PerfHooks from 'perf_hooks';
 import Navigator from '../navigator/Navigator';
 import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
-import FetchHandler from '../fetch/FetchHandler';
 import { URLSearchParams } from 'url';
+import FetchHandler from '../fetch/FetchHandler';
+import VMGlobalPropertyScript from './VMGlobalPropertyScript';
+import * as PerfHooks from 'perf_hooks';
+import VM from 'vm';
+import { Buffer } from 'buffer';
 
 /**
- * Handles the Window.
+ * Browser window.
+ *
+ * Reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/Window.
  */
-export default class Window extends EventTarget implements IWindow, NodeJS.Global {
+export default class Window extends EventTarget implements IWindow {
 	// Public Properties
 	public readonly happyDOM = {
 		whenAsyncComplete: async (): Promise<void> => {
@@ -154,7 +163,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly URL = URL;
 	public readonly Location = Location;
 	public readonly CustomElementRegistry = CustomElementRegistry;
-	public readonly Window = Window;
+	public readonly Window = <typeof Window>this.constructor;
 	public readonly XMLSerializer = XMLSerializer;
 	public readonly ResizeObserver = ResizeObserver;
 	public readonly CSSStyleSheet = CSSStyleSheet;
@@ -176,6 +185,13 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly MimeTypeArray = MimeTypeArray;
 	public readonly Plugin = Plugin;
 	public readonly PluginArray = PluginArray;
+	public readonly Headers: { new (init?: IHeadersInit): IHeaders } = Headers;
+	public readonly Request: {
+		new (input: string | { href: string } | IRequest, init?: IRequestInit): IRequest;
+	} = Request;
+	public readonly Response: {
+		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
+	} = Response;
 
 	// Events
 	public onload: (event: Event) => void = null;
@@ -187,7 +203,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly location = new Location();
 	public readonly history = new History();
 	public readonly navigator = new Navigator();
-	public readonly console = global ? global.console : null;
+	public readonly console = console;
 	public readonly self = this;
 	public readonly top = this;
 	public readonly parent = this;
@@ -202,69 +218,67 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	public readonly performance = PerfHooks.performance;
 
 	// Node.js Globals
-	public ArrayBuffer = global ? global.ArrayBuffer : null;
-	public Boolean = global ? global.Boolean : null;
-	public Buffer = null;
-	public DataView = global ? global.DataView : null;
-	public Date = global ? global.Date : null;
-	public Error = global ? global.Error : null;
-	public EvalError = global ? global.EvalError : null;
-	public Float32Array = global ? global.Float32Array : null;
-	public Float64Array = global ? global.Float64Array : null;
-	public GLOBAL = null;
-	public Infinity = global ? global.Infinity : null;
-	public Int16Array = global ? global.Int16Array : null;
-	public Int32Array = global ? global.Int32Array : null;
-	public Int8Array = global ? global.Int8Array : null;
-	public Intl = global ? global.Intl : null;
-	public JSON = global ? global.JSON : null;
-	public Map = global ? global.Map : null;
-	public Math = global ? global.Math : null;
-	public NaN = global ? global.NaN : null;
-	public Number = global ? global.Number : null;
-	public Promise = global ? global.Promise : null;
-	public RangeError = global ? global.RangeError : null;
-	public ReferenceError = global ? global.ReferenceError : null;
-	public RegExp = global ? global.RegExp : null;
-	public Reflect = global ? global.Reflect : null;
-	public Set = global ? global.Set : null;
-	public Symbol = global ? global.Symbol : null;
-	public SyntaxError = global ? global.SyntaxError : null;
-	public String = global ? global.String : null;
-	public TypeError = global ? global.TypeError : null;
-	public URIError = global ? global.URIError : null;
-	public Uint16Array = global ? global.Uint16Array : null;
-	public Uint32Array = global ? global.Uint32Array : null;
-	public Uint8Array = global ? global.Uint8Array : null;
-	public Uint8ClampedArray = global ? global.Uint8ClampedArray : null;
-	public WeakMap = global ? global.WeakMap : null;
-	public WeakSet = global ? global.WeakSet : null;
-	public clearImmediate = null;
-	public decodeURI = global ? global.decodeURI : null;
-	public decodeURIComponent = global ? global.decodeURIComponent : null;
-	public encodeURI = global ? global.encodeURI : null;
-	public encodeURIComponent = global ? global.encodeURIComponent : null;
-	public escape = global ? global.escape : null;
-	public global = null;
-	public isFinite = global ? global.isFinite : null;
-	public isNaN = global ? global.isNaN : null;
-	public parseFloat = global ? global.parseFloat : null;
-	public parseInt = global ? global.parseInt : null;
-	public process = null;
-	public root = null;
-	public setImmediate = null;
-	public queueMicrotask = global ? global.queueMicrotask : null;
-	public undefined = global ? global.undefined : null;
-	public unescape = global ? global.unescape : null;
-	public gc = null;
-	public v8debug = null;
-	public AbortController = global ? global.AbortController : null;
-	public AbortSignal = global ? global.AbortSignal : null;
-
-	// Private properties
-	private _objectClass: typeof globalThis.Object = null;
-	private _arrayClass: typeof globalThis.Array = null;
-	private _functionClass: typeof globalThis.Function = null;
+	public ArrayBuffer;
+	public Boolean;
+	public Buffer = Buffer;
+	public DataView;
+	public Date;
+	public Error;
+	public EvalError;
+	public Float32Array;
+	public Float64Array;
+	public GLOBAL;
+	public Infinity;
+	public Int16Array;
+	public Int32Array;
+	public Int8Array;
+	public Intl;
+	public JSON;
+	public Map;
+	public Math;
+	public NaN;
+	public Number;
+	public Promise;
+	public RangeError;
+	public ReferenceError;
+	public RegExp;
+	public Reflect;
+	public Set;
+	public Symbol;
+	public SyntaxError;
+	public String;
+	public TypeError;
+	public URIError;
+	public Uint16Array;
+	public Uint32Array;
+	public Uint8Array;
+	public Uint8ClampedArray;
+	public WeakMap;
+	public WeakSet;
+	public clearImmediate;
+	public decodeURI;
+	public decodeURIComponent;
+	public encodeURI;
+	public encodeURIComponent;
+	public escape;
+	public global;
+	public isFinite;
+	public isNaN;
+	public parseFloat;
+	public parseInt;
+	public process;
+	public root;
+	public setImmediate;
+	public queueMicrotask;
+	public undefined;
+	public unescape;
+	public gc;
+	public v8debug;
+	public AbortController;
+	public AbortSignal;
+	public Array;
+	public Object;
+	public Function;
 
 	/**
 	 * Constructor.
@@ -278,9 +292,11 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 			this.dispatchEvent(new Event('load'));
 		});
 
-		DOMParser._ownerDocument = DOMParser._ownerDocument || this.document;
-		FileReader._ownerDocument = FileReader._ownerDocument || this.document;
-		Image.ownerDocument = Image.ownerDocument || this.document;
+		DOMParser._ownerDocument = this.document;
+		FileReader._ownerDocument = this.document;
+		Image.ownerDocument = this.document;
+		Request._ownerDocument = this.document;
+		Response._ownerDocument = this.document;
 
 		for (const eventType of NonImplementedEventTypes) {
 			if (!this[eventType]) {
@@ -295,56 +311,20 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 		}
 
 		// Binds all methods to "this", so that it will use the correct context when called globally.
-		for (const key of Object.keys(Window.prototype)) {
-			if (typeof this[key] === 'function') {
+		for (const key of Object.getOwnPropertyNames(this.constructor.prototype)) {
+			if (key !== 'constructor' && key !== 'CSS' && typeof this[key] === 'function') {
 				this[key] = this[key].bind(this);
 			}
 		}
-	}
 
-	/**
-	 * Returns Object class.
-	 *
-	 * @returns Object class.
-	 */
-	public get Object(): typeof globalThis.Object {
-		if (this._objectClass) {
-			return this._objectClass;
-		}
-		// When inside a VM global.Object is not the same as ({}).constructor
-		// We will therefore run the code inside the VM to get the real constructor
-		this._objectClass = <typeof globalThis.Object>this.eval('({}).constructor');
-		return this._objectClass;
-	}
+		// Only contextify if there isn't any sub-class handling globals (like GlobalWindow)
+		if (this.Array === undefined && !VM.isContext(this)) {
+			VM.createContext(this);
 
-	/**
-	 * Returns Array class.
-	 *
-	 * @returns Array class.
-	 */
-	public get Array(): typeof globalThis.Array {
-		if (this._arrayClass) {
-			return this._arrayClass;
+			// Sets global properties from the VM to the Window object.
+			// Otherwise "this.Array" will be undefined for example.
+			VM.runInContext(VMGlobalPropertyScript, this);
 		}
-		// When inside a VM global.Object is not the same as [].constructor
-		// We will therefore run the code inside the VM to get the real constructor
-		this._arrayClass = <typeof globalThis.Array>this.eval('[].constructor');
-		return this._arrayClass;
-	}
-
-	/**
-	 * Returns Function class.
-	 *
-	 * @returns Function class.
-	 */
-	public get Function(): typeof globalThis.Function {
-		if (this._functionClass) {
-			return this._functionClass;
-		}
-		// When inside a VM global.Function is not the same as (() => {}).constructor
-		// We will therefore run the code inside the VM to get the real constructor
-		this._functionClass = <typeof globalThis.Function>this.eval('(() => {}).constructor');
-		return this._functionClass;
 	}
 
 	/**
@@ -357,67 +337,18 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	}
 
 	/**
-	 * Returns Headers class.
-	 *
-	 * @returns Headers.
-	 */
-	public get Headers(): {
-		new (init?: IHeadersInit): IHeaders;
-	} {
-		return require('../fetch/Headers').default;
-	}
-
-	/**
-	 * Returns Request class.
-	 *
-	 * @returns Request.
-	 */
-	public get Request(): {
-		new (input: string | { href: string } | IRequest, init?: IRequestInit): IRequest;
-	} {
-		const Request = require('../fetch/Request').default;
-		Request._ownerDocument = Request._ownerDocument || this.document;
-		return Request;
-	}
-
-	/**
-	 * Returns Response class.
-	 *
-	 * @returns Response.
-	 */
-	public get Response(): {
-		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
-	} {
-		const Response = require('../fetch/Response').default;
-		Response._ownerDocument = Response._ownerDocument || this.document;
-		return Response;
-	}
-
-	/**
 	 * Evaluates code.
 	 *
+	 * @override
 	 * @param code Code.
 	 * @returns Result.
 	 */
 	public eval(code: string): unknown {
-		let vmExists = false;
-		let vm = null;
-
-		try {
-			vmExists = !!require.resolve('vm');
-		} catch (error) {
-			// Ignore error;
+		if (VM.isContext(this)) {
+			return VM.runInContext(code, this);
 		}
 
-		if (vmExists) {
-			vm = require('vm');
-		}
-
-		if (vm && vm.isContext(this)) {
-			return vm.runInContext(code, this);
-		}
-
-		return global.eval(code);
+		return eval(code);
 	}
 
 	/**
@@ -495,7 +426,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * @returns Timeout ID.
 	 */
 	public setTimeout(callback: () => void, delay = 0): NodeJS.Timeout {
-		const id = global.setTimeout(() => {
+		const id = setTimeout(() => {
 			this.happyDOM.asyncTaskManager.endTimer(id);
 			callback();
 		}, delay);
@@ -510,7 +441,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * @param id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
-		global.clearTimeout(id);
+		clearTimeout(id);
 		this.happyDOM.asyncTaskManager.endTimer(id);
 	}
 
@@ -523,7 +454,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * @returns Interval ID.
 	 */
 	public setInterval(callback: () => void, delay = 0): NodeJS.Timeout {
-		const id = global.setInterval(callback, delay);
+		const id = setInterval(callback, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
 	}
@@ -535,7 +466,7 @@ export default class Window extends EventTarget implements IWindow, NodeJS.Globa
 	 * @param id ID of the interval.
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
-		global.clearInterval(id);
+		clearInterval(id);
 		this.happyDOM.asyncTaskManager.endTimer(id);
 	}
 

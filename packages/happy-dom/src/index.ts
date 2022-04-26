@@ -1,5 +1,6 @@
-import Window from './window/Window';
+import GlobalWindow from './window/GlobalWindow';
 import IWindow from './window/IWindow';
+import Window from './window/Window';
 import DataTransfer from './event/DataTransfer';
 import DataTransferItem from './event/DataTransferItem';
 import DataTransferItemList from './event/DataTransferItemList';
@@ -40,7 +41,6 @@ import KeyboardEvent from './event/events/KeyboardEvent';
 import MouseEvent from './event/events/MouseEvent';
 import ProgressEvent from './event/events/ProgressEvent';
 import WheelEvent from './event/events/WheelEvent';
-import AsyncWindow from './window/AsyncWindow';
 import DOMParser from './dom-parser/DOMParser';
 import Document from './nodes/document/Document';
 import IDocument from './nodes/document/IDocument';
@@ -105,7 +105,7 @@ import { URLSearchParams } from 'url';
 import Selection from './selection/Selection';
 
 export {
-	AsyncWindow,
+	GlobalWindow,
 	Window,
 	IWindow,
 	DataTransfer,

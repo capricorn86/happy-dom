@@ -221,7 +221,10 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 						})
 					);
 					(<Document>this.ownerDocument)._readyStateManager.endTask();
-					if (!this._listeners['error'] && !this.ownerDocument.defaultView._listeners['error']) {
+					if (
+						!this['_listeners']['error'] &&
+						!this.ownerDocument.defaultView['_listeners']['error']
+					) {
 						this.ownerDocument.defaultView.console.error(error);
 					}
 				});
@@ -267,7 +270,10 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 							})
 						);
 						(<Document>this.ownerDocument)._readyStateManager.endTask();
-						if (!this._listeners['error'] && !this.ownerDocument.defaultView._listeners['error']) {
+						if (
+							!this['_listeners']['error'] &&
+							!this.ownerDocument.defaultView['_listeners']['error']
+						) {
 							this.ownerDocument.defaultView.console.error(error);
 						}
 					});

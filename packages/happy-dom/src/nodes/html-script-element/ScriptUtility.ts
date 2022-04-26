@@ -37,8 +37,8 @@ export default class ScriptUtility {
 					})
 				);
 				if (
-					!element._listeners['error'] &&
-					!element.ownerDocument.defaultView._listeners['error']
+					!element['_listeners']['error'] &&
+					!element.ownerDocument.defaultView['_listeners']['error']
 				) {
 					element.ownerDocument.defaultView.console.error(error);
 				}
@@ -66,8 +66,8 @@ export default class ScriptUtility {
 					})
 				);
 				if (
-					!element._listeners['error'] &&
-					!element.ownerDocument.defaultView._listeners['error']
+					!element['_listeners']['error'] &&
+					!element.ownerDocument.defaultView['_listeners']['error']
 				) {
 					element.ownerDocument.defaultView.console.error(error);
 				}

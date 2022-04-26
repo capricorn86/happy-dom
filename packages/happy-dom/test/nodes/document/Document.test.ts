@@ -995,7 +995,7 @@ describe('Document', () => {
 			const cssURL = '/path/to/file.css';
 			const jsURL = '/path/to/file.js';
 			const cssResponse = 'body { background-color: red; }';
-			const jsResponse = 'global.test = "test";';
+			const jsResponse = 'globalThis.test = "test";';
 			let resourceFetchCSSDocument = null;
 			let resourceFetchCSSURL = null;
 			let resourceFetchJSDocument = null;
@@ -1043,9 +1043,9 @@ describe('Document', () => {
 				expect(document.styleSheets.length).toBe(1);
 				expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
 
-				expect(global['test']).toBe('test');
+				expect(window['test']).toBe('test');
 
-				delete global['test'];
+				delete window['test'];
 
 				done();
 			}, 0);

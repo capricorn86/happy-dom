@@ -1,4 +1,4 @@
-import Window from '../window/Window';
+import IWindow from '../window/IWindow';
 import Event from './Event';
 import IUIEventInit from './IUIEventInit';
 
@@ -15,7 +15,7 @@ export default class UIEvent extends Event {
 	public readonly layerY: number = 0;
 	public readonly pageX: number = 0;
 	public readonly pageY: number = 0;
-	public readonly view: Window = null;
+	public readonly view: IWindow = null;
 
 	/**
 	 * Constructor.

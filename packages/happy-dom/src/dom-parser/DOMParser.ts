@@ -66,14 +66,13 @@ export default class DOMParser {
 			const bodyElement = newDocument.createElement('body');
 			const headElement = newDocument.createElement('head');
 
+			documentElement.appendChild(headElement);
+			documentElement.appendChild(bodyElement);
+			newDocument.appendChild(documentElement);
+
 			for (const node of root.childNodes.slice()) {
 				bodyElement.appendChild(node);
 			}
-
-			documentElement.appendChild(headElement);
-			documentElement.appendChild(bodyElement);
-
-			newDocument.appendChild(documentElement);
 		}
 
 		return newDocument;
