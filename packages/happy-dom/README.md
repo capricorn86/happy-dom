@@ -77,9 +77,9 @@ console.log(document.body.innerHTML);
 
 
 
-## Run in a VM Context
+## VM Context
 
-The default Window class is a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options). A [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) will execute JavaScript code scoped within the context and the Window instance will be the global object.
+The default Window class is a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options). A [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) will execute JavaScript code scoped within the context where the Window instance will be the global object.
 
 ```javascript
 import { Window } from 'happy-dom';
@@ -112,11 +112,9 @@ document.write(`
 console.log(document.querySelector('.container div').innerHTML);
 ```
 
-## Run in the Global Context
+## Global Context
 
 Happy DOM exports a class called GlobalWindow, which can be used to run Happy DOM in the global context instead of the default behaviour of running in a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options).
-
-This is useful if you want to run Happy DOM directly in a Node environment.
 
 ```javascript
 import { Window, GlobalWindow } from 'happy-dom';
@@ -129,6 +127,11 @@ console.log(vmWindow.Array === global.Array);
 
 // Will output "true"
 console.log(globalWindow.Array === global.Array);
+
+globalWindow.eval('global.test = 1');
+
+// Will output "1"
+console.log(global.test);
 ```
 
 ## Server-Side Rendering of Web Components
