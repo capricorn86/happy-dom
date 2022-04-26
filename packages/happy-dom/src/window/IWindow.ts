@@ -214,6 +214,13 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	getComputedStyle(element: IHTMLElement): CSSStyleDeclaration;
 
 	/**
+	 * Returns selection.
+	 *
+	 * @returns Selection.
+	 */
+	getSelection(): Selection;
+
+	/**
 	 * Scrolls to a particular set of coordinates.
 	 *
 	 * @param x X position or options object.
