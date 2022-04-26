@@ -10,6 +10,7 @@ import Navigator from '../../src/navigator/Navigator';
 import Headers from '../../src/fetch/Headers';
 import Response from '../../src/fetch/Response';
 import Request from '../../src/fetch/Request';
+import Selection from '../../src/selection/Selection';
 
 const MOCKED_NODE_FETCH = global['mockedModules']['node-fetch'];
 
@@ -421,6 +422,12 @@ describe('Window', () => {
 			});
 		});
 	}
+
+	describe('getSelection()', () => {
+		it('Returns selection.', () => {
+			expect(window.getSelection() instanceof Selection).toBe(true);
+		});
+	});
 
 	describe('addEventListener()', () => {
 		it('Triggers "load" event if no resources needs to be loaded.', (done) => {

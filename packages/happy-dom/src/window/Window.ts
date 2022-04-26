@@ -362,6 +362,15 @@ export default class Window extends EventTarget implements IWindow {
 	}
 
 	/**
+	 * Returns selection.
+	 *
+	 * @returns Selection.
+	 */
+	public getSelection(): Selection {
+		return this.document.getSelection();
+	}
+
+	/**
 	 * Scrolls to a particular set of coordinates.
 	 *
 	 * @param x X position or options object.
