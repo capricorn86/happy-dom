@@ -280,6 +280,12 @@ export default class Window extends EventTarget implements IWindow {
 	public Object;
 	public Function;
 
+	// Private properties
+	private _setTimeout = setTimeout;
+	private _clearTimeout = clearTimeout;
+	private _setInterval = setInterval;
+	private _clearInterval = clearInterval;
+
 	/**
 	 * Constructor.
 	 */
@@ -317,14 +323,7 @@ export default class Window extends EventTarget implements IWindow {
 			}
 		}
 
-		// Only contextify if there isn't any sub-class handling globals (like GlobalWindow)
-		if (this.Array === undefined && !VM.isContext(this)) {
-			VM.createContext(this);
-
-			// Sets global properties from the VM to the Window object.
-			// Otherwise "this.Array" will be undefined for example.
-			VM.runInContext(VMGlobalPropertyScript, this);
-		}
+		this._setupVMContext();
 	}
 
 	/**
@@ -435,7 +434,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Timeout ID.
 	 */
 	public setTimeout(callback: () => void, delay = 0): NodeJS.Timeout {
-		const id = setTimeout(() => {
+		const id = this._setTimeout(() => {
 			this.happyDOM.asyncTaskManager.endTimer(id);
 			callback();
 		}, delay);
@@ -450,7 +449,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
-		clearTimeout(id);
+		this._clearTimeout(id);
 		this.happyDOM.asyncTaskManager.endTimer(id);
 	}
 
@@ -463,7 +462,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Interval ID.
 	 */
 	public setInterval(callback: () => void, delay = 0): NodeJS.Timeout {
-		const id = setInterval(callback, delay);
+		const id = this._setInterval(callback, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
 	}
@@ -475,7 +474,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param id ID of the interval.
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
-		clearInterval(id);
+		this._clearInterval(id);
 		this.happyDOM.asyncTaskManager.endTimer(id);
 	}
 
@@ -512,5 +511,18 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public async fetch(url: string, init?: IRequestInit): Promise<IResponse> {
 		return await FetchHandler.fetch(this.document, url, init);
+	}
+
+	/**
+	 * Setup of VM context.
+	 */
+	protected _setupVMContext(): void {
+		if (!VM.isContext(this)) {
+			VM.createContext(this);
+
+			// Sets global properties from the VM to the Window object.
+			// Otherwise "this.Array" will be undefined for example.
+			VM.runInContext(VMGlobalPropertyScript, this);
+		}
 	}
 }

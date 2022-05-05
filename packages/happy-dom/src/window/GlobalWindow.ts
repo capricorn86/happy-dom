@@ -79,4 +79,13 @@ export default class GlobalWindow extends Window {
 	public eval(code: string): unknown {
 		return eval(code);
 	}
+
+	/**
+	 * Setup of VM context.
+	 *
+	 * @override
+	 */
+	protected _setupVMContext(): void {
+		// Do nothing
+	}
 }

@@ -1,7 +1,6 @@
 import RelativeURL from '../location/RelativeURL';
 import DOMException from '../exception/DOMException';
 import IDocument from '../nodes/document/IDocument';
-import SyncRequest from 'sync-request';
 
 /**
  * Helper class for performing fetch of resources.
@@ -34,7 +33,8 @@ export default class ResourceFetchHandler {
 	public static fetchSync(document: IDocument, url: string): string {
 		// We want to only load SyncRequest when it is needed to improve performance and not have direct dependencies to server side packages.
 		const absoluteURL = RelativeURL.getAbsoluteURL(document.defaultView.location, url);
-		const response = SyncRequest('GET', absoluteURL);
+		const syncRequest = require('sync-request');
+		const response = syncRequest('GET', absoluteURL);
 
 		if (response.isError()) {
 			throw new DOMException(
