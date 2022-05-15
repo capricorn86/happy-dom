@@ -1,8 +1,12 @@
 import IEventInit from './IEventInit';
 import EventTarget from './EventTarget';
+import INode from '../nodes/node/INode';
+import IWindow from '../window/IWindow';
+import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
+import IEventTarget from './IEventTarget';
 
 /**
- *
+ * Event.
  */
 export default class Event {
 	public composed = false;
@@ -29,6 +33,36 @@ export default class Event {
 			this.cancelable = eventInit.cancelable || false;
 			this.composed = eventInit.composed || false;
 		}
+	}
+
+	/**
+	 * Returns composed path.
+	 *
+	 * @returns Composed path.
+	 */
+	public composedPath(): IEventTarget[] {
+		if (!this.target) {
+			return [];
+		}
+
+		const composedPath = [];
+		let eventTarget: INode | IShadowRoot | IWindow = <INode | IShadowRoot>(<unknown>this.target);
+
+		while (eventTarget) {
+			composedPath.push(eventTarget);
+
+			if (this.bubbles) {
+				if (this.composed && (<IShadowRoot>eventTarget).host) {
+					eventTarget = (<IShadowRoot>eventTarget).host;
+				} else if ((<INode>(<unknown>this.target)).ownerDocument === eventTarget) {
+					eventTarget = (<INode>(<unknown>this.target)).ownerDocument.defaultView;
+				} else {
+					eventTarget = (<INode>(<unknown>eventTarget)).parentNode || null;
+				}
+			}
+		}
+
+		return composedPath;
 	}
 
 	/**
