@@ -1,6 +1,6 @@
 {
 	"name": "happy-dom",
-	"version": "0.0.0",
+	"version": "3.2.1",
 	"license": "MIT",
 	"homepage": "https://github.com/capricorn86/happy-dom",
 	"repository": "https://github.com/capricorn86/happy-dom",
@@ -47,13 +47,13 @@
 		"testEnvironment": "node"
 	},
 	"dependencies": {
+		"css.escape": "^1.5.1",
 		"he": "^1.2.0",
 		"node-fetch": "^2.x.x",
 		"sync-request": "^6.1.0",
-		"whatwg-encoding": "^2.0.0",
-		"whatwg-mimetype": "^3.0.0",
 		"webidl-conversions": "^7.0.0",
-		"css.escape": "^1.5.1"
+		"whatwg-encoding": "^2.0.0",
+		"whatwg-mimetype": "^3.0.0"
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
@@ -64,15 +64,15 @@
 		"@typescript-eslint/parser": "^5.16.0",
 		"eslint": "^8.11.0",
 		"eslint-config-prettier": "^8.5.0",
-		"eslint-plugin-prettier": "^4.0.0",
 		"eslint-plugin-filenames": "^1.3.2",
 		"eslint-plugin-import": "^2.25.4",
 		"eslint-plugin-jest": "^26.1.2",
 		"eslint-plugin-jsdoc": "^38.0.6",
 		"eslint-plugin-json": "^3.1.0",
+		"eslint-plugin-prettier": "^4.0.0",
 		"jest": "^27.5.1",
-		"ts-jest": "^27.1.3",
 		"prettier": "^2.6.0",
+		"ts-jest": "^27.1.3",
 		"typescript": "^4.6.2"
 	}
 }
