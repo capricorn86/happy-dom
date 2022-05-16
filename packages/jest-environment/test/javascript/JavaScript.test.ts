@@ -25,4 +25,11 @@ describe('JavaScript', () => {
 
 		expect(body.includes('node_modules')).toBe(true);
 	});
+
+	it('Binds global methods to the Window context', () => {
+		const eventListener = (): void => {};
+		addEventListener('click', eventListener);
+		removeEventListener('click', eventListener);
+		clearTimeout(setTimeout(eventListener));
+	});
 });
