@@ -317,8 +317,15 @@ export default class Window extends EventTarget implements IWindow {
 		}
 
 		// Binds all methods to "this", so that it will use the correct context when called globally.
-		for (const key of Object.getOwnPropertyNames(this.constructor.prototype)) {
-			if (key !== 'constructor' && key !== 'CSS' && typeof this[key] === 'function') {
+		for (const key of Object.getOwnPropertyNames(Window.prototype).concat(
+			Object.getOwnPropertyNames(EventTarget.prototype)
+		)) {
+			if (
+				key !== 'constructor' &&
+				key[0] !== '_' &&
+				key[0] === key[0].toLowerCase() &&
+				typeof this[key] === 'function'
+			) {
 				this[key] = this[key].bind(this);
 			}
 		}
