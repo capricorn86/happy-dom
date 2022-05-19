@@ -1,5 +1,4 @@
 export default [
-	// Standard Elements
 	'area',
 	'base',
 	'br',
@@ -14,15 +13,5 @@ export default [
 	'source',
 	'track',
 	'wbr',
-
-	// SVG Elements
-	'circle',
-	'ellipse',
-	'line',
-	'path',
-	'polygon',
-	'polyline',
-	'rect',
-	'stop',
-	'use'
+	'meta'
 ];

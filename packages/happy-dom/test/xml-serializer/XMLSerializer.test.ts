@@ -39,6 +39,19 @@ describe('XMLSerializer', () => {
 			);
 		});
 
+		it('Serializes void elements elements like img correctly.', () => {
+			const div = document.createElement('div');
+			const img = document.createElement('img');
+
+			img.setAttribute('src', 'https://localhost/img.jpg');
+
+			div.appendChild(img);
+
+			expect(xmlSerializer.serializeToString(div)).toBe(
+				'<div><img src="https://localhost/img.jpg"></div>'
+			);
+		});
+
 		it('Serializes a comment node.', () => {
 			const div = document.createElement('div');
 			const comment = document.createComment('');
