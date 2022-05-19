@@ -13,7 +13,6 @@ const GET_EXPECTED_HTML = (html: string): string =>
 	html
 		.replace('<?Question mark comment>', '<!--?Question mark comment-->')
 		.replace('<!Exclamation mark comment>', '<!--Exclamation mark comment-->')
-		.replace('<img>', '<img/>')
 		.replace('<self-closing-custom-tag />', '<self-closing-custom-tag></self-closing-custom-tag>')
 		.replace(/[\s]/gm, '');
 
@@ -218,13 +217,13 @@ describe('XMLParser', () => {
 			const circle = svg.children[0];
 
 			expect(div.namespaceURI).toBe(NamespaceURI.html);
-			expect(svg.namespaceURI).toBe(NamespaceURI.html);
-			expect(circle.namespaceURI).toBe(NamespaceURI.html);
+			expect(svg.namespaceURI).toBe(NamespaceURI.svg);
+			expect(circle.namespaceURI).toBe(NamespaceURI.svg);
 
 			// Attributes should be in lower-case now as the namespace is HTML
 			expect(svg.attributes).toEqual({
 				'0': {
-					name: 'viewbox',
+					name: 'viewBox',
 					value: '0 0 300 100',
 					namespaceURI: null,
 					specified: true,
@@ -250,13 +249,13 @@ describe('XMLParser', () => {
 				'3': {
 					name: 'xmlns',
 					value: NamespaceURI.html,
-					namespaceURI: null,
+					namespaceURI: NamespaceURI.html,
 					specified: true,
 					ownerElement: svg,
 					ownerDocument: document
 				},
-				viewbox: {
-					name: 'viewbox',
+				viewBox: {
+					name: 'viewBox',
 					value: '0 0 300 100',
 					namespaceURI: null,
 					specified: true,
@@ -282,7 +281,7 @@ describe('XMLParser', () => {
 				xmlns: {
 					name: 'xmlns',
 					value: NamespaceURI.html,
-					namespaceURI: null,
+					namespaceURI: NamespaceURI.html,
 					specified: true,
 					ownerElement: svg,
 					ownerDocument: document
@@ -293,14 +292,61 @@ describe('XMLParser', () => {
 			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(
 				`
 				<div>
-					<svg viewbox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
-						<circle cx="50" cy="50" r="40" />
-						<circle cx="150" cy="50" r="4" />
+					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
+						<circle cx="50" cy="50" r="40"></circle>
+						<circle cx="150" cy="50" r="4"></circle>
+					
+						<svg viewBox="0 0 10 10" x="200" width="100">
+							<circle cx="5" cy="5" r="4"></circle>
+						</svg>
+					</svg>
+				</div>
+			`.replace(/[\s]/gm, '')
+			);
+		});
+
+		it('Parses a malformed SVG with "xmlns" set to HTML.', () => {
+			const root = XMLParser.parse(
+				window.document,
+				`
+				<div>
+					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
+						<ellipse cx="50" cy="50" r="40">
+						<line cx="50" cy="50" r="40">
+						<path cx="50" cy="50" r="40">
+						<polygon cx="50" cy="50" r="40">
+						<polyline cx="50" cy="50" r="40" />
+						<rect cx="50" cy="50" r="40" />
+						<stop cx="50" cy="50" r="40" />
+						<use cx="50" cy="50" r="40" />
+						<circle cx="150" cy="50" r="4"><test></test></circle>
 					
 						<svg viewBox="0 0 10 10" x="200" width="100">
 							<circle cx="5" cy="5" r="4" />
 						</svg>
 					</svg>
+				</div>
+			`
+			);
+
+			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(
+				`
+				<div>
+					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
+						<ellipse cx="50" cy="50" r="40">
+						<line cx="50" cy="50" r="40">
+						<path cx="50" cy="50" r="40">
+						<polygon cx="50" cy="50" r="40">
+						<polyline cx="50" cy="50" r="40"></polyline>
+						<rect cx="50" cy="50" r="40"></rect>
+						<stop cx="50" cy="50" r="40"></stop>
+						<use cx="50" cy="50" r="40"></use>
+						<circle cx="150" cy="50" r="4"><test></test></circle>
+					
+						<svg viewBox="0 0 10 10" x="200" width="100">
+							<circle cx="5" cy="5" r="4"></circle>
+						</svg>
+					</polygon></path></line></ellipse></svg>
 				</div>
 			`.replace(/[\s]/gm, '')
 			);

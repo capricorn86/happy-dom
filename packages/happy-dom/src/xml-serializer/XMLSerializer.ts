@@ -1,7 +1,6 @@
 import Element from '../nodes/element/Element';
 import Node from '../nodes/node/Node';
-import SelfClosingElements from '../config/SelfClosingElements';
-import UnclosedElements from '../config/UnclosedElements';
+import VoidElements from '../config/VoidElements';
 import DocumentType from '../nodes/document-type/DocumentType';
 import { escape } from 'he';
 import INode from '../nodes/node/INode';
@@ -25,10 +24,8 @@ export default class XMLSerializer {
 				const element = <Element>root;
 				const tagName = element.tagName.toLowerCase();
 
-				if (UnclosedElements.includes(tagName)) {
+				if (VoidElements.includes(tagName)) {
 					return `<${tagName}${this._getAttributes(element)}>`;
-				} else if (SelfClosingElements.includes(tagName)) {
-					return `<${tagName}${this._getAttributes(element)}/>`;
 				}
 
 				let innerHTML = '';

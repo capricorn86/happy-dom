@@ -1,7 +1,7 @@
 import Node from '../nodes/node/Node';
 import Element from '../nodes/element/Element';
 import IDocument from '../nodes/document/IDocument';
-import SelfClosingElements from '../config/SelfClosingElements';
+import VoidElements from '../config/VoidElements';
 import UnnestableElements from '../config/UnnestableElements';
 import ChildLessElements from '../config/ChildLessElements';
 import { decode } from 'he';
@@ -15,7 +15,6 @@ const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->|<([!?])([^>]*)>/gi;
 const DOCUMENT_TYPE_ATTRIBUTE_REGEXP = /"([^"]+)"/gm;
 const ATTRIBUTE_REGEXP = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))/gms;
-const XMLNS_ATTRIBUTE_REGEXP = /xmlns[ ]*=[ ]*"([^"]+)"/;
 
 /**
  * XML parser.
@@ -48,8 +47,8 @@ export default class XMLParser {
 			}
 
 			if (isStartTag) {
-				const newElement = document.createElement(tagName);
-				const xmlnsAttribute = this.getXmlnsAttribute(match[3]);
+				const namespaceURI = tagName === 'svg' ? NamespaceURI.svg : parent.namespaceURI;
+				const newElement = document.createElementNS(namespaceURI, tagName);
 
 				// Scripts are not allowed to be executed when they are parsed using innerHTML, outerHTML, replaceWith() etc.
 				// However, they are allowed to be executed when document.write() is used.
@@ -63,17 +62,9 @@ export default class XMLParser {
 					(<HTMLLinkElement>newElement)._evaluateCSS = evaluateScripts;
 				}
 
-				// The HTML engine can guess that the namespace is SVG for SVG tags
-				// Even if "xmlns" is not set if the parent namespace is HTML.
-				if (tagName === 'svg' && parent.namespaceURI === NamespaceURI.html) {
-					(<string>newElement.namespaceURI) = xmlnsAttribute || NamespaceURI.svg;
-				} else {
-					(<string>newElement.namespaceURI) = xmlnsAttribute || parent.namespaceURI;
-				}
+				this.setAttributes(newElement, match[3]);
 
-				this.setAttributes(newElement, newElement.namespaceURI, match[3]);
-
-				if (!SelfClosingElements.includes(tagName)) {
+				if (!match[4] && !VoidElements.includes(tagName)) {
 					// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 					// Therefore we will auto-close the tag.
 					if (parentUnnestableTagName === tagName) {
@@ -204,27 +195,12 @@ export default class XMLParser {
 	}
 
 	/**
-	 * Returns XMLNS attribute.
-	 *
-	 * @param attributesString Raw attributes.
-	 */
-	private static getXmlnsAttribute(attributesString: string): string {
-		const match = attributesString.match(XMLNS_ATTRIBUTE_REGEXP);
-		return match ? match[1] : null;
-	}
-
-	/**
 	 * Sets raw attributes.
 	 *
 	 * @param element Element.
-	 * @param namespaceURI Namespace URI.
 	 * @param attributesString Raw attributes.
 	 */
-	private static setAttributes(
-		element: IElement,
-		namespaceURI: string,
-		attributesString: string
-	): void {
+	private static setAttributes(element: IElement, attributesString: string): void {
 		const attributes = attributesString.trim();
 		if (attributes) {
 			const regExp = new RegExp(ATTRIBUTE_REGEXP, 'gi');
@@ -233,18 +209,17 @@ export default class XMLParser {
 			// Attributes with value
 			while ((match = regExp.exec(attributes))) {
 				if (match[1]) {
-					element.setAttributeNS(
-						null,
-						this._getAttributeName(namespaceURI, match[1]),
-						decode(match[2] || match[3] || match[4] || '')
-					);
+					const value = decode(match[2] || match[3] || match[4] || '');
+					const name = this._getAttributeName(element.namespaceURI, match[1]);
+					const namespaceURI = element.tagName === 'SVG' && name === 'xmlns' ? value : null;
+					element.setAttributeNS(namespaceURI, name, value);
 				}
 			}
 
 			// Attributes with no value
 			for (const name of attributes.replace(ATTRIBUTE_REGEXP, '').trim().split(' ')) {
 				if (name) {
-					element.setAttributeNS(null, this._getAttributeName(namespaceURI, name), '');
+					element.setAttributeNS(null, this._getAttributeName(element.namespaceURI, name), '');
 				}
 			}
 		}
