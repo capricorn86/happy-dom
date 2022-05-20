@@ -195,7 +195,14 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 				ScriptUtility.loadExternalScript(this);
 			} else {
 				const textContent = this.textContent;
-				if (textContent) {
+				const type = this.getAttributeNS(null, 'type');
+				if (
+					textContent &&
+					(type === null ||
+						type === 'application/x-ecmascript' ||
+						type === 'application/x-javascript' ||
+						type.startsWith('text/javascript'))
+				) {
 					this.ownerDocument.defaultView.eval(textContent);
 				}
 			}

@@ -139,6 +139,15 @@ describe('HTMLScriptElement', () => {
 			expect(window['test']).toBe('test');
 		});
 
+		it('Does not evaluate types that are not supported.', () => {
+			const div = document.createElement('div');
+			const element = <HTMLScriptElement>document.createElement('script');
+			element.type = 'application/json';
+			element.textContent = '{"key": "value"}';
+			div.appendChild(element);
+			expect(element.textContent).toBe('{"key": "value"}');
+		});
+
 		it('Does not evaluate code when added as innerHTML.', () => {
 			const div = document.createElement('div');
 			div.innerHTML = '<script>globalThis.test = "test";</script>';
