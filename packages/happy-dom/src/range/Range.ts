@@ -1,6 +1,7 @@
 import INode from '../nodes/node/INode';
 import IDocument from '../nodes/document/IDocument';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
+import DOMRect from '../nodes/element/DOMRect';
 
 /**
  * Range.
@@ -38,8 +39,32 @@ export default class Range {
 	 * @returns Node.
 	 */
 	public get commonAncestorContainer(): INode {
-		// TODO: Implement
-		return null;
+		if (this.startContainer === this.endContainer) {
+			return this.startContainer;
+		}
+
+		const startAncestors = [];
+		const endAncestors = [];
+		let parent = this.startContainer;
+
+		while (parent !== null) {
+			startAncestors.push(parent);
+			parent = parent.parentNode;
+		}
+
+		parent = this.endContainer;
+
+		while (parent !== null) {
+			endAncestors.push(parent);
+			parent = parent.parentNode;
+		}
+
+		for (const ancestor of startAncestors) {
+			if (endAncestors.includes(ancestor)) {
+				return ancestor;
+			}
+		}
+		return (<typeof Range>this.constructor)._ownerDocument;
 	}
 
 	/**
@@ -86,7 +111,170 @@ export default class Range {
 	}
 
 	/**
-	 * Returns string currently being represented by the selection object.
+	 * Removes the contents of the Range from the Document.
+	 */
+	public deleteContents(): void {
+		// TODO: Implement
+	}
+
+	/**
+	 * Does nothing. It used to disable the Range object and enable the browser to release associated resources. The method has been kept for compatibility.
+	 */
+	public detach(): void {
+		// Do nothing
+	}
+
+	/**
+	 * Moves contents of the Range from the document tree into a DocumentFragment.
+	 *
+	 * @returns Document fragment.
+	 */
+	public extractContents(): IDocumentFragment {
+		// TODO: Implement
+		return null;
+	}
+
+	/**
+	 * Returns a DOMRect object that bounds the contents of the range; this is a rectangle enclosing the union of the bounding rectangles for all the elements in the range.
+	 *
+	 * @returns DOMRect object.
+	 */
+	public getBoundingClientRect(): DOMRect {
+		// TODO: Implement
+		return null;
+	}
+
+	/**
+	 * The Range.getClientRects() method returns a list of DOMRect objects representing the area of the screen occupied by the range. This is created by aggregating the results of calls to Element.getClientRects() for all the elements in the range.
+	 *
+	 * @returns DOMRect objects.
+	 */
+	public getClientRects(): DOMRect[] {
+		// TODO: Implement
+		return null;
+	}
+
+	/**
+	 * Returns a boolean indicating whether the given point is in the Range.
+	 *
+	 * @param _referenceNode Reference node.
+	 * @param _offset Offset.
+	 * @returns "true" if in range.
+	 */
+	public isPointInRange(_referenceNode: INode, _offset = 0): boolean {
+		// TODO: Implement
+		return false;
+	}
+
+	/**
+	 * Inserts a node at the start of the Range.
+	 *
+	 * @param _newNode New node.
+	 */
+	public insertNode(_newNode: INode): void {
+		// TODO: Implement
+		return null;
+	}
+
+	/**
+	 * Returns a boolean indicating whether the given Node intersects the Range.
+	 *
+	 * @param _referenceNode Reference node.
+	 * @returns "true" if it intersects.
+	 */
+	public intersectsNode(_referenceNode: INode): boolean {
+		// TODO: Implement
+		return false;
+	}
+
+	/**
+	 * Sets the Range to contain the Node and its contents.
+	 *
+	 * @param _referenceNode Reference node.
+	 */
+	public selectNode(_referenceNode: INode): void {
+		// TODO: Implement
+	}
+
+	/**
+	 * Sets the Range to contain the contents of a Node.
+	 *
+	 * @param referenceNode Reference node.
+	 */
+	public selectNodeContents(referenceNode: INode): void {
+		(<INode>this.startContainer) = referenceNode;
+		(<INode>this.endContainer) = referenceNode;
+		(<number>this.startOffset) = 0;
+		(<number>this.endOffset) = referenceNode.textContent.length > 0 ? 1 : 0;
+	}
+
+	/**
+	 * Sets the end position of a Range to be located at the given offset into the specified node x.
+	 *
+	 * @param _endNode End node.
+	 * @param _endOffset End offset.
+	 */
+	public setEnd(_endNode: INode, _endOffset = 0): void {
+		// TODO: Implement
+	}
+
+	/**
+	 * Sets the start position of a Range.
+	 *
+	 * @param _startNode Start node.
+	 * @param _startOffset Start offset.
+	 */
+	public setStart(_startNode: INode, _startOffset = 0): void {
+		// TODO: Implement
+	}
+
+	/**
+	 * Sets the end position of a Range relative to another Node.
+	 *
+	 * @param _referenceNode Reference node.
+	 */
+	public setEndAfter(_referenceNode: INode): void {
+		// TODO: Implement
+	}
+
+	/**
+	 * Sets the end position of a Range relative to another Node.
+	 *
+	 * @param _referenceNode Reference node.
+	 */
+	public setEndBefore(_referenceNode: INode): void {
+		// TODO: Implement
+	}
+
+	/**
+	 * Sets the start position of a Range relative to a Node.
+	 *
+	 * @param _referenceNode Reference node.
+	 */
+	public setStartAfter(_referenceNode: INode): void {
+		// TODO: Implement
+	}
+
+	/**
+	 * Sets the start position of a Range relative to another Node.
+	 *
+	 * @param _referenceNode Reference node.
+	 */
+	public setStartBefore(_referenceNode: INode): void {
+		// TODO: Implement
+	}
+
+	/**
+	 * Moves content of the Range into a new node, placing the new node at the start of the specified range.
+	 *
+	 * @param _newParent New parent.
+	 */
+	public surroundContents(_newParent: INode): void {
+		// TODO: Implement
+	}
+
+	/**
+	 * Returns the text of the Range.
 	 */
 	public toString(): string {
 		return '';
