@@ -101,6 +101,7 @@ import XMLParser from './xml-parser/XMLParser';
 import XMLSerializer from './xml-serializer/XMLSerializer';
 import CSSStyleSheet from './css/CSSStyleSheet';
 import Storage from './storage/Storage';
+import DOMRect from './nodes/element/DOMRect';
 import { URLSearchParams } from 'url';
 import Selection from './selection/Selection';
 
@@ -208,6 +209,7 @@ export {
 	XMLSerializer,
 	CSSStyleSheet,
 	Storage,
+	DOMRect,
 	URLSearchParams,
 	Selection
 };
