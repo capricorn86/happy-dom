@@ -140,6 +140,7 @@ module.exports = {
 				'@typescript-eslint/no-explicit-any': ERROR,
 				'@typescript-eslint/no-empty-function': OFF,
 				'@typescript-eslint/no-use-before-define': OFF,
+				'@typescript-eslint/no-this-alias': OFF,
 				'@typescript-eslint/explicit-function-return-type': [ERROR, { allowExpressions: true }],
 				'@typescript-eslint/member-ordering': [
 					WARN,
