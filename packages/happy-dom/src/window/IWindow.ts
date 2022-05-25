@@ -80,6 +80,7 @@ import IHeaders from '../fetch/IHeaders';
 import IRequestInit from '../fetch/IRequestInit';
 import IResponse from '../fetch/IResponse';
 import MediaQueryList from '../match-media/MediaQueryList';
+import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
@@ -173,6 +174,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
 	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
 	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
+	readonly DOMRect: typeof DOMRect;
 
 	// Events
 	onload: (event: Event) => void;

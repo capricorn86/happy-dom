@@ -87,6 +87,7 @@ import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
 import { URLSearchParams } from 'url';
 import FetchHandler from '../fetch/FetchHandler';
+import DOMRect from '../nodes/element/DOMRect';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
@@ -192,6 +193,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Response: {
 		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
 	} = Response;
+	public readonly DOMRect: typeof DOMRect;
 
 	// Events
 	public onload: (event: Event) => void = null;
