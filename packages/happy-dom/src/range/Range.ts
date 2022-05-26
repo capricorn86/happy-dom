@@ -2,6 +2,7 @@ import INode from '../nodes/node/INode';
 import IDocument from '../nodes/document/IDocument';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
 import DOMRect from '../nodes/element/DOMRect';
+import RangeHowEnum from './RangeHowEnum';
 
 /**
  * Range.
@@ -11,6 +12,14 @@ import DOMRect from '../nodes/element/DOMRect';
  */
 export default class Range {
 	public static _ownerDocument: IDocument = null;
+	public static readonly END_TO_END = RangeHowEnum.endToEnd;
+	public static readonly END_TO_START = RangeHowEnum.endToStart;
+	public static readonly START_TO_END = RangeHowEnum.startToEnd;
+	public static readonly START_TO_START = RangeHowEnum.startToStart;
+	public readonly END_TO_END = RangeHowEnum.endToEnd;
+	public readonly END_TO_START = RangeHowEnum.endToStart;
+	public readonly START_TO_END = RangeHowEnum.startToEnd;
+	public readonly START_TO_START = RangeHowEnum.startToStart;
 	public readonly startOffset: number = 0;
 	public readonly endOffset: number = 0;
 	public readonly startContainer: INode = null;
