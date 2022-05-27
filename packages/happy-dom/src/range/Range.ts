@@ -12,14 +12,14 @@ import RangeHowEnum from './RangeHowEnum';
  */
 export default class Range {
 	public static _ownerDocument: IDocument = null;
-	public static readonly END_TO_END = RangeHowEnum.endToEnd;
-	public static readonly END_TO_START = RangeHowEnum.endToStart;
-	public static readonly START_TO_END = RangeHowEnum.startToEnd;
-	public static readonly START_TO_START = RangeHowEnum.startToStart;
-	public readonly END_TO_END = RangeHowEnum.endToEnd;
-	public readonly END_TO_START = RangeHowEnum.endToStart;
-	public readonly START_TO_END = RangeHowEnum.startToEnd;
-	public readonly START_TO_START = RangeHowEnum.startToStart;
+	public static readonly END_TO_END: number = RangeHowEnum.endToEnd;
+	public static readonly END_TO_START: number = RangeHowEnum.endToStart;
+	public static readonly START_TO_END: number = RangeHowEnum.startToEnd;
+	public static readonly START_TO_START: number = RangeHowEnum.startToStart;
+	public readonly END_TO_END: number = RangeHowEnum.endToEnd;
+	public readonly END_TO_START: number = RangeHowEnum.endToStart;
+	public readonly START_TO_END: number = RangeHowEnum.startToEnd;
+	public readonly START_TO_START: number = RangeHowEnum.startToStart;
 	public readonly startOffset: number = 0;
 	public readonly endOffset: number = 0;
 	public readonly startContainer: INode = null;
@@ -52,28 +52,51 @@ export default class Range {
 			return this.startContainer;
 		}
 
-		const startAncestors = [];
 		const endAncestors = [];
-		let parent = this.startContainer;
+		let parent = this.endContainer;
 
-		while (parent !== null) {
-			startAncestors.push(parent);
-			parent = parent.parentNode;
-		}
-
-		parent = this.endContainer;
-
-		while (parent !== null) {
+		while (parent) {
 			endAncestors.push(parent);
 			parent = parent.parentNode;
 		}
 
-		for (const ancestor of startAncestors) {
-			if (endAncestors.includes(ancestor)) {
-				return ancestor;
+		parent = this.startContainer;
+
+		while (parent) {
+			if (endAncestors.includes(parent)) {
+				return parent;
 			}
+			parent = parent.parentNode;
 		}
-		return (<typeof Range>this.constructor)._ownerDocument;
+
+		return this.endContainer || this.startContainer;
+	}
+
+	/**
+	 * Returns -1, 0, or 1 depending on whether the referenceNode is before, the same as, or after the Range.
+	 *
+	 * @param toStart A boolean value: true collapses the Range to its start, false to its end. If omitted, it defaults to false.
+	 */
+	public collapse(toStart = false): void {
+		if (toStart) {
+			(<INode>this.endContainer) = this.startContainer;
+			(<number>this.endOffset) = this.startOffset;
+		} else {
+			(<INode>this.startContainer) = this.endContainer;
+			(<number>this.startOffset) = this.endOffset;
+		}
+	}
+
+	/**
+	 * Compares the boundary points of the Range with those of another range.
+	 *
+	 * @param _how How.
+	 * @param _sourceRange Range.
+	 * @returns A number, -1, 0, or 1, indicating whether the corresponding boundary-point of the Range is respectively before, equal to, or after the corresponding boundary-point of sourceRange.
+	 */
+	public compareBoundaryPoints(_how: RangeHowEnum, _sourceRange: Range): number {
+		// TODO: Implement
+		return 0;
 	}
 
 	/**
@@ -220,57 +243,83 @@ export default class Range {
 	/**
 	 * Sets the end position of a Range to be located at the given offset into the specified node x.
 	 *
-	 * @param _endNode End node.
-	 * @param _endOffset End offset.
+	 * @param endNode End node.
+	 * @param endOffset End offset.
 	 */
-	public setEnd(_endNode: INode, _endOffset = 0): void {
-		// TODO: Implement
+	public setEnd(endNode: INode, endOffset = 0): void {
+		(<INode>this.endContainer) = endNode;
+		(<number>this.endOffset) = endOffset;
 	}
 
 	/**
 	 * Sets the start position of a Range.
 	 *
-	 * @param _startNode Start node.
-	 * @param _startOffset Start offset.
+	 * @param startNode Start node.
+	 * @param startOffset Start offset.
 	 */
-	public setStart(_startNode: INode, _startOffset = 0): void {
-		// TODO: Implement
+	public setStart(startNode: INode, startOffset = 0): void {
+		(<INode>this.startContainer) = startNode;
+		(<number>this.startOffset) = startOffset;
 	}
 
 	/**
 	 * Sets the end position of a Range relative to another Node.
 	 *
-	 * @param _referenceNode Reference node.
+	 * @param referenceNode Reference node.
 	 */
-	public setEndAfter(_referenceNode: INode): void {
-		// TODO: Implement
+	public setEndAfter(referenceNode: INode): void {
+		const sibling = referenceNode.nextSibling;
+		if (!sibling) {
+			throw new Error(
+				'Failed to set range end. "referenceNode" does not have any nodes after itself.'
+			);
+		}
+		this.setEnd(sibling);
 	}
 
 	/**
 	 * Sets the end position of a Range relative to another Node.
 	 *
-	 * @param _referenceNode Reference node.
+	 * @param referenceNode Reference node.
 	 */
-	public setEndBefore(_referenceNode: INode): void {
-		// TODO: Implement
+	public setEndBefore(referenceNode: INode): void {
+		const sibling = referenceNode.previousSibling;
+		if (!sibling) {
+			throw new Error(
+				'Failed to set range end. "referenceNode" does not have any nodes before itself.'
+			);
+		}
+		this.setEnd(sibling);
 	}
 
 	/**
 	 * Sets the start position of a Range relative to a Node.
 	 *
-	 * @param _referenceNode Reference node.
+	 * @param referenceNode Reference node.
 	 */
-	public setStartAfter(_referenceNode: INode): void {
-		// TODO: Implement
+	public setStartAfter(referenceNode: INode): void {
+		const sibling = referenceNode.nextSibling;
+		if (!sibling) {
+			throw new Error(
+				'Failed to set range start. "referenceNode" does not have any nodes after itself.'
+			);
+		}
+		this.setStart(sibling);
 	}
 
 	/**
 	 * Sets the start position of a Range relative to another Node.
 	 *
-	 * @param _referenceNode Reference node.
+	 * @param referenceNode Reference node.
 	 */
-	public setStartBefore(_referenceNode: INode): void {
-		// TODO: Implement
+	public setStartBefore(referenceNode: INode): void {
+		const sibling = referenceNode.previousSibling;
+		if (!sibling) {
+			throw new Error(
+				'Failed to set range start. "referenceNode" does not have any nodes before itself.'
+			);
+		}
+		this.setStart(sibling);
 	}
 
 	/**
