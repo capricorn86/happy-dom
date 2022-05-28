@@ -662,6 +662,9 @@ export default class Document extends Node implements IDocument {
 		element.tagName = tagName;
 		element.ownerDocument = this;
 		element.namespaceURI = namespaceURI;
+		if (element instanceof Element && options && options.is) {
+			element._isValue = String(options.is);
+		}
 
 		return element;
 	}
