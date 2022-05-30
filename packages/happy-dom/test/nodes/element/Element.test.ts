@@ -7,7 +7,7 @@ import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot';
 import IDocument from '../../../src/nodes/document/IDocument';
 import Text from '../../../src/nodes/text/Text';
 import DOMRect from '../../../src/nodes/element/DOMRect';
-import Range from '../../../src/nodes/element/Range';
+import Range from '../../../src/range/Range';
 import NamespaceURI from '../../../src/config/NamespaceURI';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
 import QuerySelector from '../../../src/query-selector/QuerySelector';

@@ -38,6 +38,7 @@ import DocumentReadyStateManager from './DocumentReadyStateManager';
 import Location from '../../location/Location';
 import Selection from '../../selection/Selection';
 import IShadowRoot from '../shadow-root/IShadowRoot';
+import Range from '../../range/Range';
 
 /**
  * Document.
@@ -752,6 +753,15 @@ export default class Document extends Node implements IDocument {
 		const clone = node.cloneNode(deep);
 		(<Document>clone.ownerDocument) = this;
 		return clone;
+	}
+
+	/**
+	 * Creates a range.
+	 *
+	 * @returns Range.
+	 */
+	public createRange(): Range {
+		return new Range();
 	}
 
 	/**

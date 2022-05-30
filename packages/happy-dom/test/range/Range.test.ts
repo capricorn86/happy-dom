@@ -11,8 +11,7 @@ describe('Range', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		Range._ownerDocument = document;
-		range = new Range();
+		range = document.createRange();
 	});
 
 	describe('get collapsed()', () => {
@@ -47,6 +46,7 @@ describe('Range', () => {
 	describe('get commonAncestorContainer()', () => {
 		it('Returns ancestor parent container when end container is set to a child of start container.', () => {
 			const container = document.createElement('div');
+			container.innerHTML = `Hello <u>world</u>!`;
 
 			range.setStart(container, 0);
 			range.setEnd(container.children[0], 0);
@@ -134,6 +134,73 @@ describe('Range', () => {
 			expect(range.startOffset).toBe(1);
 			expect(range.endOffset).toBe(1);
 			expect(range.collapsed).toBe(true);
+		});
+
+		it('Collapses the Range to the start container if the toStart parameter is set to true.', () => {
+			const container = document.createElement('div');
+			const span = document.createElement('span');
+			const span2 = document.createElement('span');
+
+			span.textContent = 'hello';
+			span2.textContent = 'world';
+
+			container.appendChild(span);
+			container.appendChild(span2);
+
+			range.setStart(span.childNodes[0], 1);
+			range.setEnd(span2.childNodes[0], 2);
+
+			range.collapse(true);
+
+			expect(range.startContainer === span.childNodes[0]).toBe(true);
+			expect(range.endContainer === span.childNodes[0]).toBe(true);
+			expect(range.startOffset).toBe(1);
+			expect(range.endOffset).toBe(1);
+			expect(range.collapsed).toBe(true);
+		});
+	});
+
+	describe('compareBoundaryPoints()', () => {
+		it('Returns -1 when pointB is after pointA and "how" is set to "START_TO_END".', () => {
+			const sourceRange = document.createRange();
+
+			document.body.innerHTML = `
+				<div>This is the Range 1 Content</div>
+				<div>This is the Range 2 Content</div>
+			`;
+
+			range.selectNode(document.body.children[0]);
+			sourceRange.selectNode(document.body.children[1]);
+
+			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(-1);
+		});
+
+		it('Returns 1 when pointA is after pointB and "how" is set to "START_TO_END".', () => {
+			const sourceRange = document.createRange();
+
+			document.body.innerHTML = `
+				<div>This is the Range 1 Content</div>
+				<div>This is the Range 2 Content</div>
+			`.trim();
+
+			range.selectNode(document.body.children[1]);
+			sourceRange.selectNode(document.body.children[0]);
+
+			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(1);
+		});
+
+		it('Returns 1 when pointA is the same as pointB and "how" is set to "START_TO_END".', () => {
+			const sourceRange = document.createRange();
+
+			document.body.innerHTML = `
+				<div>This is the Range 1 Content</div>
+				<div>This is the Range 2 Content</div>
+			`.trim();
+
+			range.selectNode(document.body.children[0]);
+			sourceRange.selectNode(document.body.children[0]);
+
+			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(1);
 		});
 	});
 });

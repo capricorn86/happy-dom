@@ -3,6 +3,9 @@ import IDocument from '../nodes/document/IDocument';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
 import DOMRect from '../nodes/element/DOMRect';
 import RangeHowEnum from './RangeHowEnum';
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import RangeUtility from './RangeUtility';
 
 /**
  * Range.
@@ -24,13 +27,15 @@ export default class Range {
 	public readonly endOffset: number = 0;
 	public readonly startContainer: INode = null;
 	public readonly endContainer: INode = null;
+	public readonly _ownerDocument: IDocument = null;
 
 	/**
 	 * Constructor.
 	 */
 	constructor() {
-		this.startContainer = (<typeof Range>this.constructor)._ownerDocument;
-		this.endContainer = (<typeof Range>this.constructor)._ownerDocument;
+		this._ownerDocument = (<typeof Range>this.constructor)._ownerDocument;
+		this.startContainer = this._ownerDocument;
+		this.endContainer = this._ownerDocument;
 	}
 
 	/**
@@ -78,7 +83,7 @@ export default class Range {
 	 * @param toStart A boolean value: true collapses the Range to its start, false to its end. If omitted, it defaults to false.
 	 */
 	public collapse(toStart = false): void {
-		if (toStart) {
+		if (toStart && !this.startContainer.contains(this.endContainer)) {
 			(<INode>this.endContainer) = this.startContainer;
 			(<number>this.endOffset) = this.startOffset;
 		} else {
@@ -90,13 +95,67 @@ export default class Range {
 	/**
 	 * Compares the boundary points of the Range with those of another range.
 	 *
-	 * @param _how How.
-	 * @param _sourceRange Range.
+	 * @param how How.
+	 * @param sourceRange Range.
 	 * @returns A number, -1, 0, or 1, indicating whether the corresponding boundary-point of the Range is respectively before, equal to, or after the corresponding boundary-point of sourceRange.
 	 */
-	public compareBoundaryPoints(_how: RangeHowEnum, _sourceRange: Range): number {
-		// TODO: Implement
-		return 0;
+	public compareBoundaryPoints(how: RangeHowEnum, sourceRange: Range): number {
+		if (
+			how !== RangeHowEnum.startToStart &&
+			how !== RangeHowEnum.startToEnd &&
+			how !== RangeHowEnum.endToEnd &&
+			how !== RangeHowEnum.endToStart
+		) {
+			throw new DOMException(
+				`The comparison method provided must be one of 'START_TO_START', 'START_TO_END', 'END_TO_END' or 'END_TO_START'.`,
+				DOMExceptionNameEnum.notSupportedError
+			);
+		}
+
+		if (this._ownerDocument !== sourceRange._ownerDocument) {
+			throw new DOMException(
+				`The two Ranges are not in the same tree.`,
+				DOMExceptionNameEnum.wrongDocumentError
+			);
+		}
+
+		const thisPoint: { node: INode; offset: number } = {
+			node: null,
+			offset: 0
+		};
+		const sourcePoint: { node: INode; offset: number } = {
+			node: null,
+			offset: 0
+		};
+
+		switch (how) {
+			case RangeHowEnum.startToStart:
+				thisPoint.node = this.startContainer;
+				thisPoint.offset = this.startOffset;
+				sourcePoint.node = sourceRange.startContainer;
+				sourcePoint.offset = sourceRange.startOffset;
+				break;
+			case RangeHowEnum.startToEnd:
+				thisPoint.node = this.endContainer;
+				thisPoint.offset = this.endOffset;
+				sourcePoint.node = sourceRange.startContainer;
+				sourcePoint.offset = sourceRange.startOffset;
+				break;
+			case RangeHowEnum.endToEnd:
+				thisPoint.node = this.endContainer;
+				thisPoint.offset = this.endOffset;
+				sourcePoint.node = sourceRange.endContainer;
+				sourcePoint.offset = sourceRange.endOffset;
+				break;
+			case RangeHowEnum.endToStart:
+				thisPoint.node = this.startContainer;
+				thisPoint.offset = this.startOffset;
+				sourcePoint.node = sourceRange.endContainer;
+				sourcePoint.offset = sourceRange.endOffset;
+				break;
+		}
+
+		return RangeUtility.compareBoundaryPointsPosition(thisPoint, sourcePoint);
 	}
 
 	/**
@@ -222,10 +281,22 @@ export default class Range {
 	/**
 	 * Sets the Range to contain the Node and its contents.
 	 *
-	 * @param _referenceNode Reference node.
+	 * @param referenceNode Reference node.
 	 */
-	public selectNode(_referenceNode: INode): void {
-		// TODO: Implement
+	public selectNode(referenceNode: INode): void {
+		if (!referenceNode.parentNode) {
+			throw new DOMException(
+				`Failed to select node. Reference node is missing a parent node.`,
+				DOMExceptionNameEnum.invalidNodeTypeError
+			);
+		}
+
+		const index = referenceNode.parentNode.childNodes.indexOf(referenceNode);
+
+		(<INode>this.startContainer) = referenceNode.parentNode;
+		(<INode>this.endContainer) = referenceNode.parentNode;
+		(<number>this.startOffset) = index;
+		(<number>this.endOffset) = index + 1;
 	}
 
 	/**
@@ -237,7 +308,7 @@ export default class Range {
 		(<INode>this.startContainer) = referenceNode;
 		(<INode>this.endContainer) = referenceNode;
 		(<number>this.startOffset) = 0;
-		(<number>this.endOffset) = referenceNode.textContent.length > 0 ? 1 : 0;
+		(<number>this.endOffset) = referenceNode.childNodes.length;
 	}
 
 	/**
@@ -247,6 +318,20 @@ export default class Range {
 	 * @param endOffset End offset.
 	 */
 	public setEnd(endNode: INode, endOffset = 0): void {
+		if (!endNode) {
+			throw new DOMException(
+				`Failed to execute 'endNode' on 'Range': parameter 1 is not of type 'Node'.`
+			);
+		}
+		if (
+			endNode.nodeType !== endNode.TEXT_NODE &&
+			endOffset > 0 &&
+			endNode.childNodes.length < endOffset
+		) {
+			throw new DOMException(
+				`Failed to execute 'setEnd' on 'Range': There is no child at offset ${endOffset}.`
+			);
+		}
 		(<INode>this.endContainer) = endNode;
 		(<number>this.endOffset) = endOffset;
 	}
@@ -258,6 +343,20 @@ export default class Range {
 	 * @param startOffset Start offset.
 	 */
 	public setStart(startNode: INode, startOffset = 0): void {
+		if (!startNode) {
+			throw new DOMException(
+				`Failed to execute 'setStart' on 'Range': parameter 1 is not of type 'Node'.`
+			);
+		}
+		if (
+			startNode.nodeType !== startNode.TEXT_NODE &&
+			startOffset > 0 &&
+			startNode.childNodes.length < startOffset
+		) {
+			throw new DOMException(
+				`Failed to execute 'setStart' on 'Range': There is no child at offset ${startOffset}.`
+			);
+		}
 		(<INode>this.startContainer) = startNode;
 		(<number>this.startOffset) = startOffset;
 	}
@@ -270,7 +369,7 @@ export default class Range {
 	public setEndAfter(referenceNode: INode): void {
 		const sibling = referenceNode.nextSibling;
 		if (!sibling) {
-			throw new Error(
+			throw new DOMException(
 				'Failed to set range end. "referenceNode" does not have any nodes after itself.'
 			);
 		}
@@ -285,7 +384,7 @@ export default class Range {
 	public setEndBefore(referenceNode: INode): void {
 		const sibling = referenceNode.previousSibling;
 		if (!sibling) {
-			throw new Error(
+			throw new DOMException(
 				'Failed to set range end. "referenceNode" does not have any nodes before itself.'
 			);
 		}
@@ -300,7 +399,7 @@ export default class Range {
 	public setStartAfter(referenceNode: INode): void {
 		const sibling = referenceNode.nextSibling;
 		if (!sibling) {
-			throw new Error(
+			throw new DOMException(
 				'Failed to set range start. "referenceNode" does not have any nodes after itself.'
 			);
 		}
@@ -315,7 +414,7 @@ export default class Range {
 	public setStartBefore(referenceNode: INode): void {
 		const sibling = referenceNode.previousSibling;
 		if (!sibling) {
-			throw new Error(
+			throw new DOMException(
 				'Failed to set range start. "referenceNode" does not have any nodes before itself.'
 			);
 		}
