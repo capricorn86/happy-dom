@@ -163,44 +163,64 @@ describe('Range', () => {
 	describe('compareBoundaryPoints()', () => {
 		it('Returns -1 when pointB is after pointA and "how" is set to "START_TO_END".', () => {
 			const sourceRange = document.createRange();
+			const container = document.createElement('div');
 
-			document.body.innerHTML = `
+			container.innerHTML = `
 				<div>This is the Range 1 Content</div>
 				<div>This is the Range 2 Content</div>
 			`;
 
-			range.selectNode(document.body.children[0]);
-			sourceRange.selectNode(document.body.children[1]);
+			range.selectNode(container.children[0]);
+			sourceRange.selectNode(container.children[1]);
 
 			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(-1);
 		});
 
 		it('Returns 1 when pointA is after pointB and "how" is set to "START_TO_END".', () => {
 			const sourceRange = document.createRange();
+			const container = document.createElement('div');
 
-			document.body.innerHTML = `
+			container.innerHTML = `
 				<div>This is the Range 1 Content</div>
 				<div>This is the Range 2 Content</div>
-			`.trim();
+			`;
 
-			range.selectNode(document.body.children[1]);
-			sourceRange.selectNode(document.body.children[0]);
+			range.selectNode(container.children[1]);
+			sourceRange.selectNode(container.children[0]);
 
 			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(1);
 		});
 
-		it('Returns 1 when pointA is the same as pointB and "how" is set to "START_TO_END".', () => {
+		it('Returns -1 when pointA comes before pointB and the selection are text nodes and "how" is set to "START_TO_END".', () => {
 			const sourceRange = document.createRange();
+			const container = document.createElement('div');
 
-			document.body.innerHTML = `
+			container.innerHTML = `
 				<div>This is the Range 1 Content</div>
 				<div>This is the Range 2 Content</div>
-			`.trim();
+			`;
 
-			range.selectNode(document.body.children[0]);
-			sourceRange.selectNode(document.body.children[0]);
+			range.setStart(container.children[0].childNodes[0], 1);
+			sourceRange.setEnd(container.children[1].childNodes[0], 10);
 
-			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(1);
+			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(-1);
+		});
+
+		it('Returns 0 when pointA are the same as pointB and "how" is set to "START_TO_END".', () => {
+			const sourceRange = document.createRange();
+			const container = document.createElement('div');
+
+			container.innerHTML = `
+				<div>This is the Range 1 Content</div>
+				<div>This is the Range 2 Content</div>
+			`;
+
+			range.setStart(container.children[0].childNodes[0], 1);
+			range.setEnd(container.children[1].childNodes[0], 10);
+			sourceRange.setStart(container.children[0].childNodes[0], 1);
+			sourceRange.setEnd(container.children[1].childNodes[0], 10);
+
+			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(0);
 		});
 	});
 });
