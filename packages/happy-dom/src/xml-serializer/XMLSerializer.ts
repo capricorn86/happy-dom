@@ -75,6 +75,11 @@ export default class XMLSerializer {
 	 */
 	private _getAttributes(element: IElement): string {
 		let attributeString = '';
+
+		if (!(<Element>element)._attributes.is && (<Element>element)._isValue) {
+			attributeString += ' is="' + escape((<Element>element)._isValue) + '"';
+		}
+
 		for (const attribute of Object.values((<Element>element)._attributes)) {
 			if (attribute.value !== null) {
 				attributeString += ' ' + attribute.name + '="' + escape(attribute.value) + '"';
