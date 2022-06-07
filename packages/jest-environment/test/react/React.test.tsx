@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ReactComponent from './ReactComponent';
+import ReactComponent, { ReactSelectComponent } from './ReactComponent';
 
 describe('React', () => {
 	let appElement: Element;
@@ -14,14 +14,22 @@ describe('React', () => {
 		document.body.removeChild(appElement);
 	});
 
-	it('Tests integration.', () => {
+	it.skip('Tests integration.', () => {
 		ReactDOM.render(<ReactComponent />, appElement);
 		expect(appElement.innerHTML).toBe('<div>Test</div>');
 	});
 
-	it('Can unmount a component.', () => {
+	it.skip('Can unmount a component.', () => {
 		ReactDOM.render(<ReactComponent />, appElement);
 		ReactDOM.unmountComponentAtNode(appElement);
+		ReactDOM.render(<ReactSelectComponent />, appElement);
 		expect(appElement.innerHTML).toBe('');
+	});
+
+	it('Select tests integration.', () => {
+		ReactDOM.render(<ReactSelectComponent />, appElement);
+		expect(appElement.innerHTML).toBe(
+			'<select><option value="t1">test 1</option><option value="t2">test 2</option></select>'
+		);
 	});
 });
