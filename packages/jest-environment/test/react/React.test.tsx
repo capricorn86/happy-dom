@@ -28,7 +28,7 @@ describe('React', () => {
 	it('Select tests integration.', () => {
 		ReactDOM.render(<ReactSelectComponent />, appElement);
 		expect(appElement.innerHTML).toBe(
-			'<select><option value="t1">test 1</option><option value="t2">test 2</option></select>'
+			'<select><option value="t1">test 1</option><option value="t2" selected="">test 2</option></select>'
 		);
 	});
 });
