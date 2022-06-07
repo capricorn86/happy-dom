@@ -14,15 +14,14 @@ describe('React', () => {
 		document.body.removeChild(appElement);
 	});
 
-	it.skip('Tests integration.', () => {
+	it('Tests integration.', () => {
 		ReactDOM.render(<ReactComponent />, appElement);
 		expect(appElement.innerHTML).toBe('<div>Test</div>');
 	});
 
-	it.skip('Can unmount a component.', () => {
+	it('Can unmount a component.', () => {
 		ReactDOM.render(<ReactComponent />, appElement);
 		ReactDOM.unmountComponentAtNode(appElement);
-		ReactDOM.render(<ReactSelectComponent />, appElement);
 		expect(appElement.innerHTML).toBe('');
 	});
 

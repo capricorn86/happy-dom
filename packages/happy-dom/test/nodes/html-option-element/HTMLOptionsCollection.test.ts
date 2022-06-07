@@ -17,7 +17,7 @@ describe('HTMLOptionsCollection', () => {
 		jest.restoreAllMocks();
 	});
 
-	describe.skip('item()', () => {
+	describe('item()', () => {
 		it('Returns node at index.', () => {
 			const select = <HTMLSelectElement>document.createElement('select');
 			const option = document.createElement('option');
