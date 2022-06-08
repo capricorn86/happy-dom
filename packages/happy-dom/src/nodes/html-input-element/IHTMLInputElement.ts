@@ -2,7 +2,7 @@ import File from '../../file/File';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum';
-import ValidityState from './ValidityState';
+import ValidityState from '../validity-state/ValidityState';
 
 /**
  * HTML Input Element.

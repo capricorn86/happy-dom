@@ -1,6 +1,6 @@
 import File from '../../file/File';
 import HTMLElement from '../html-element/HTMLElement';
-import ValidityState from './ValidityState';
+import ValidityState from '../validity-state/ValidityState';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import Event from '../../event/Event';

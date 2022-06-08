@@ -1,4 +1,5 @@
-import HTMLInputElement from './HTMLInputElement';
+import HTMLInputElement from '../html-input-element/HTMLInputElement';
+import HTMLSelectElement from '../html-select-element/HTMLSelectElement';
 
 /**
  * Input validity state.
@@ -12,14 +13,14 @@ export default class ValidityState {
 	public rangeOverflow = false;
 	public rangeUnderflow = false;
 	public stepMismatch = false;
-	private element: HTMLInputElement = null;
+	private element: HTMLInputElement | HTMLSelectElement = null;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param element Input element.
 	 */
-	constructor(element: HTMLInputElement) {
+	constructor(element: HTMLInputElement | HTMLSelectElement) {
 		this.element = element;
 	}
 
@@ -29,7 +30,10 @@ export default class ValidityState {
 	 * @returns "true" if valid.
 	 */
 	public get tooLong(): boolean {
-		return this.element.maxLength && this.element.value.length > this.element.maxLength;
+		if (this.element instanceof HTMLInputElement) {
+			return this.element.maxLength && this.element.value.length > this.element.maxLength;
+		}
+		return false;
 	}
 
 	/**
@@ -38,7 +42,11 @@ export default class ValidityState {
 	 * @returns "true" if valid.
 	 */
 	public get tooShort(): boolean {
-		return this.element.minLength && this.element.value.length < this.element.minLength;
+		if (this.element instanceof HTMLInputElement) {
+			return this.element.minLength && this.element.value.length < this.element.minLength;
+		}
+
+		return false;
 	}
 
 	/**
