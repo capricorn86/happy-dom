@@ -217,6 +217,6 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * Returns DOMTokenList value.
 	 */
 	public toString(): string {
-		return this.value;
+		return this.value || '';
 	}
 }
