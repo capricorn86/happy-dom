@@ -13,6 +13,9 @@ import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
+import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement';
+import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement';
+import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement';
 
 export default {
 	A: HTMLElement,
@@ -102,8 +105,8 @@ export default {
 	NOSCRIPT: HTMLElement,
 	OBJECT: HTMLElement,
 	OL: HTMLElement,
-	OPTGROUP: HTMLElement,
-	OPTION: HTMLElement,
+	OPTGROUP: HTMLOptGroupElement,
+	OPTION: HTMLOptionElement,
 	OUTPUT: HTMLElement,
 	P: HTMLElement,
 	PARAM: HTMLElement,
@@ -119,7 +122,7 @@ export default {
 	S: HTMLElement,
 	SAMP: HTMLElement,
 	SECTION: HTMLElement,
-	SELECT: HTMLElement,
+	SELECT: HTMLSelectElement,
 	SMALL: HTMLElement,
 	SOURCE: HTMLElement,
 	SPAN: HTMLElement,
