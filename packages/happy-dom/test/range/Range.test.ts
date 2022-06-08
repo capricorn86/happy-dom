@@ -153,7 +153,7 @@ describe('Range', () => {
 			range.collapse(true);
 
 			expect(range.startContainer === span.childNodes[0]).toBe(true);
-			expect(range.endContainer === span.childNodes[0]).toBe(true);
+			expect(range.endContainer === span2.childNodes[0]).toBe(true);
 			expect(range.startOffset).toBe(1);
 			expect(range.endOffset).toBe(1);
 			expect(range.collapsed).toBe(true);
@@ -221,6 +221,34 @@ describe('Range', () => {
 			sourceRange.setEnd(container.children[1].childNodes[0], 10);
 
 			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(0);
+		});
+	});
+
+	describe('comparePoint()', () => {
+		it('Returns 1 when referenceNode is after range.', () => {
+			const container = document.createElement('div');
+
+			container.innerHTML = `
+				<div>This is the Range 1 Content</div>
+				<div>This is the Range 2 Content</div>
+			`;
+
+			range.selectNode(container.children[0]);
+
+			expect(range.comparePoint(container.children[1], 0)).toBe(1);
+		});
+
+		it('Returns -1 when referenceNode is before range.', () => {
+			const container = document.createElement('div');
+
+			container.innerHTML = `
+				<div>This is the Range 1 Content</div>
+				<div>This is the Range 2 Content</div>
+			`;
+
+			range.selectNode(container.children[1]);
+
+			expect(range.comparePoint(container.children[0], 0)).toBe(-1);
 		});
 	});
 });

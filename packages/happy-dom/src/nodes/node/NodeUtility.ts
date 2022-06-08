@@ -1,4 +1,7 @@
+import IText from '../text/IText';
+import IComment from '../comment/IComment';
 import INode from './INode';
+import NodeTypeEnum from './NodeTypeEnum';
 
 /**
  * Node utility.
@@ -32,14 +35,44 @@ export default class NodeUtility {
 	 * @returns "true" if following.
 	 */
 	public static isFollowing(nodeA: INode, nodeB: INode): boolean {
-		let current: INode = nodeA.nextSibling;
+		if (nodeA === nodeB) {
+			return false;
+		}
+
+		let current: INode = nodeB;
+
 		while (current) {
-			if (current === nodeB) {
+			const nextSibling = current.nextSibling;
+
+			if (nextSibling === nodeA) {
 				return true;
 			}
-			const nextSibling = current.nextSibling;
+
 			current = nextSibling ? nextSibling : current.parentNode;
 		}
+
 		return false;
+	}
+
+	/**
+	 * Node length.
+	 *
+	 * @see https://dom.spec.whatwg.org/#concept-node-length
+	 * @param node Node.
+	 * @returns Node length.
+	 */
+	public static getNodeLength(node: INode): number {
+		switch (node.nodeType) {
+			case NodeTypeEnum.documentTypeNode:
+				return 0;
+
+			case NodeTypeEnum.textNode:
+			case NodeTypeEnum.processingInstructionNode:
+			case NodeTypeEnum.commentNode:
+				return (<IText | IComment>node).data.length;
+
+			default:
+				return node.childNodes.length;
+		}
 	}
 }

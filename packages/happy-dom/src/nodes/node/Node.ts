@@ -10,25 +10,28 @@ import IElement from '../element/IElement';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
 import INodeList from './INodeList';
 import NodeListFactory from './NodeListFactory';
+import NodeTypeEnum from './NodeTypeEnum';
 
 /**
  * Node.
  */
 export default class Node extends EventTarget implements INode {
 	// Public properties
-	public static readonly ELEMENT_NODE = 1;
-	public static readonly TEXT_NODE = 3;
-	public static readonly COMMENT_NODE = 8;
-	public static readonly DOCUMENT_NODE = 9;
-	public static readonly DOCUMENT_TYPE_NODE = 10;
-	public static readonly DOCUMENT_FRAGMENT_NODE = 11;
+	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
+	public static readonly TEXT_NODE = NodeTypeEnum.textNode;
+	public static readonly COMMENT_NODE = NodeTypeEnum.commentNode;
+	public static readonly DOCUMENT_NODE = NodeTypeEnum.documentNode;
+	public static readonly DOCUMENT_TYPE_NODE = NodeTypeEnum.documentTypeNode;
+	public static readonly DOCUMENT_FRAGMENT_NODE = NodeTypeEnum.documentFragmentNode;
+	public static readonly PROCESSING_INSTRUCTION_NODE = NodeTypeEnum.processingInstructionNode;
 	public static ownerDocument: IDocument = null;
-	public readonly ELEMENT_NODE = 1;
-	public readonly TEXT_NODE = 3;
-	public readonly COMMENT_NODE = 8;
-	public readonly DOCUMENT_NODE = 9;
-	public readonly DOCUMENT_TYPE_NODE = 10;
-	public readonly DOCUMENT_FRAGMENT_NODE = 11;
+	public readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
+	public readonly TEXT_NODE = NodeTypeEnum.textNode;
+	public readonly COMMENT_NODE = NodeTypeEnum.commentNode;
+	public readonly DOCUMENT_NODE = NodeTypeEnum.documentNode;
+	public readonly DOCUMENT_TYPE_NODE = NodeTypeEnum.documentTypeNode;
+	public readonly DOCUMENT_FRAGMENT_NODE = NodeTypeEnum.documentFragmentNode;
+	public readonly PROCESSING_INSTRUCTION_NODE = NodeTypeEnum.processingInstructionNode;
 	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;

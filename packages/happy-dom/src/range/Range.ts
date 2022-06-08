@@ -6,6 +6,8 @@ import RangeHowEnum from './RangeHowEnum';
 import DOMException from '../exception/DOMException';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import RangeUtility from './RangeUtility';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
+import NodeUtility from '../nodes/node/NodeUtility';
 
 /**
  * Range.
@@ -161,12 +163,47 @@ export default class Range {
 	/**
 	 * Returns -1, 0, or 1 depending on whether the referenceNode is before, the same as, or after the Range.
 	 *
-	 * @param _referenceNode Reference node.
-	 * @param [_offset=0] Offset.
+	 * @param referenceNode Reference node.
+	 * @param offset Offset.
 	 * @returns -1,0, or 1.
 	 */
-	public comparePoint(_referenceNode: INode, _offset = 0): number {
-		// TODO: Implement
+	public comparePoint(referenceNode: INode, offset): number {
+		if (referenceNode.ownerDocument !== this._ownerDocument) {
+			throw new DOMException(
+				`The two Ranges are not in the same tree.`,
+				DOMExceptionNameEnum.wrongDocumentError
+			);
+		}
+
+		if (referenceNode.nodeType === NodeTypeEnum.documentTypeNode) {
+			throw new DOMException(
+				`DocumentType Node can't be used as boundary point.`,
+				DOMExceptionNameEnum.invalidNodeTypeError
+			);
+		}
+
+		if (offset > NodeUtility.getNodeLength(referenceNode)) {
+			throw new DOMException(`'Offset out of bound.`, DOMExceptionNameEnum.indexSizeError);
+		}
+
+		const boundaryPoint = { node: referenceNode, offset };
+
+		if (
+			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
+				node: this.startContainer,
+				offset: this.startOffset
+			}) === -1
+		) {
+			return -1;
+		} else if (
+			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
+				node: this.endContainer,
+				offset: this.endOffset
+			}) === 1
+		) {
+			return 1;
+		}
+
 		return 0;
 	}
 
@@ -324,13 +361,28 @@ export default class Range {
 			);
 		}
 		if (
-			endNode.nodeType !== endNode.TEXT_NODE &&
+			endNode.nodeType !== NodeTypeEnum.textNode &&
 			endOffset > 0 &&
 			endNode.childNodes.length < endOffset
 		) {
 			throw new DOMException(
 				`Failed to execute 'setEnd' on 'Range': There is no child at offset ${endOffset}.`
 			);
+		}
+		if (
+			endNode.ownerDocument !== this._ownerDocument ||
+			RangeUtility.compareBoundaryPointsPosition(
+				{
+					node: endNode,
+					offset: endOffset
+				},
+				{
+					node: this.startContainer,
+					offset: this.startOffset
+				}
+			) === -1
+		) {
+			this.setStart(endNode, endOffset);
 		}
 		(<INode>this.endContainer) = endNode;
 		(<number>this.endOffset) = endOffset;
@@ -349,13 +401,28 @@ export default class Range {
 			);
 		}
 		if (
-			startNode.nodeType !== startNode.TEXT_NODE &&
+			startNode.nodeType !== NodeTypeEnum.textNode &&
 			startOffset > 0 &&
 			startNode.childNodes.length < startOffset
 		) {
 			throw new DOMException(
 				`Failed to execute 'setStart' on 'Range': There is no child at offset ${startOffset}.`
 			);
+		}
+		if (
+			startNode.ownerDocument !== this._ownerDocument ||
+			RangeUtility.compareBoundaryPointsPosition(
+				{
+					node: startNode,
+					offset: startOffset
+				},
+				{
+					node: this.endContainer,
+					offset: this.endOffset
+				}
+			) === 1
+		) {
+			this.setEnd(startNode, startOffset);
 		}
 		(<INode>this.startContainer) = startNode;
 		(<number>this.startOffset) = startOffset;

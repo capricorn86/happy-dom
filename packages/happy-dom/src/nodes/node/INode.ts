@@ -2,14 +2,16 @@ import IEventTarget from '../../event/IEventTarget';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import INodeList from './INodeList';
+import NodeTypeEnum from './NodeTypeEnum';
 
 export default interface INode extends IEventTarget {
-	readonly ELEMENT_NODE: number;
-	readonly TEXT_NODE: number;
-	readonly COMMENT_NODE: number;
-	readonly DOCUMENT_NODE: number;
-	readonly DOCUMENT_TYPE_NODE: number;
-	readonly DOCUMENT_FRAGMENT_NODE: number;
+	readonly ELEMENT_NODE: NodeTypeEnum;
+	readonly TEXT_NODE: NodeTypeEnum;
+	readonly COMMENT_NODE: NodeTypeEnum;
+	readonly DOCUMENT_NODE: NodeTypeEnum;
+	readonly DOCUMENT_TYPE_NODE: NodeTypeEnum;
+	readonly DOCUMENT_FRAGMENT_NODE: NodeTypeEnum;
+	readonly PROCESSING_INSTRUCTION_NODE: NodeTypeEnum;
 	readonly ownerDocument: IDocument;
 	readonly parentNode: INode;
 	readonly parentElement: IElement;
