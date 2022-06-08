@@ -212,4 +212,11 @@ export default class DOMTokenList implements IDOMTokenList {
 
 		(<number>this.length) = list.length;
 	}
+
+	/**
+	 * Returns DOMTokenList value.
+	 */
+	public toString(): string {
+		return this.value;
+	}
 }
