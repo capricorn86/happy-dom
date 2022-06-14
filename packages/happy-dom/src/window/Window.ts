@@ -92,6 +92,7 @@ import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
+import { atob, btoa } from './WindowBase64';
 
 /**
  * Browser window.
@@ -218,6 +219,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly sessionStorage = new Storage();
 	public readonly localStorage = new Storage();
 	public readonly performance = PerfHooks.performance;
+
+	// Atob & btoa
+	public atob = atob;
+	public btoa = btoa;
 
 	// Node.js Globals
 	public ArrayBuffer;
