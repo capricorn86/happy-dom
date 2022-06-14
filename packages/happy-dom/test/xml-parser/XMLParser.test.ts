@@ -189,19 +189,17 @@ describe('XMLParser', () => {
 			const root2 = XMLParser.parse(
 				window.document,
 				`<html>
-								<head>
-									<title>Title</title>
-								</head>
-								<body>
-									<script type="text/javascript">var vars = []; for (var i=0;i<vars.length;i++) {}</script>
-								</body>
-							</html>`
+	<head>
+		<title>Title</title>
+	</head>
+	<body>
+		<script type="text/javascript">var vars = []; for (var i=0;i<vars.length;i++) {}</script>
+	</body>
+</html>`
 			);
 			expect((<IHTMLElement>root2.children[0].children[1].children[0]).innerText).toBe(
 				'var vars = []; for (var i=0;i<vars.length;i++) {}'
 			);
-			
-			
 		});
 
 		it('Handles unclosed regular elements.', () => {
