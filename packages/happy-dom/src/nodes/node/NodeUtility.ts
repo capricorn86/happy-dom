@@ -10,15 +10,18 @@ export default class NodeUtility {
 	/**
 	 * Returns boolean indicating if nodeB is an inclusive ancestor of nodeA.
 	 *
+	 * Based on:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/helpers/node.js
+	 *
 	 * @see https://dom.spec.whatwg.org/#concept-tree-inclusive-ancestor
-	 * @param nodeA Node A.
-	 * @param nodeB Node B.
+	 * @param ancestorNode Ancestor node.
+	 * @param referenceNode Reference node.
 	 * @returns "true" if following.
 	 */
-	public static isInclusiveAncestor(nodeA: INode, nodeB: INode): boolean {
-		let parent: INode = nodeA;
+	public static isInclusiveAncestor(ancestorNode: INode, referenceNode: INode): boolean {
+		let parent: INode = referenceNode;
 		while (parent) {
-			if (parent === nodeB) {
+			if (ancestorNode === parent) {
 				return true;
 			}
 			parent = parent.parentNode;
@@ -28,6 +31,9 @@ export default class NodeUtility {
 
 	/**
 	 * Returns boolean indicating if nodeB is following nodeA in the document tree.
+	 *
+	 * Based on:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/helpers/node.js
 	 *
 	 * @see https://dom.spec.whatwg.org/#concept-tree-following
 	 * @param nodeA Node A.
@@ -42,13 +48,11 @@ export default class NodeUtility {
 		let current: INode = nodeB;
 
 		while (current) {
-			const nextSibling = current.nextSibling;
+			current = this.following(current);
 
-			if (nextSibling === nodeA) {
+			if (current === nodeA) {
 				return true;
 			}
-
-			current = nextSibling ? nextSibling : current.parentNode;
 		}
 
 		return false;
@@ -56,6 +60,9 @@ export default class NodeUtility {
 
 	/**
 	 * Node length.
+	 *
+	 * Based on:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/helpers/node.js
 	 *
 	 * @see https://dom.spec.whatwg.org/#concept-node-length
 	 * @param node Node.
@@ -74,5 +81,41 @@ export default class NodeUtility {
 			default:
 				return node.childNodes.length;
 		}
+	}
+
+	/**
+	 * Returns boolean indicating if nodeB is following nodeA in the document tree.
+	 *
+	 * Based on:
+	 * https://github.com/jsdom/js-symbol-tree/blob/master/lib/SymbolTree.js#L220
+	 *
+	 * @param node Node.
+	 * @param [root] Root.
+	 * @returns Following node.
+	 */
+	private static following(node: INode, root?: INode): INode {
+		const firstChild = node.firstChild;
+
+		if (firstChild) {
+			return firstChild;
+		}
+
+		let current = node;
+
+		while (current) {
+			if (current === root) {
+				return null;
+			}
+
+			const nextSibling = current.nextSibling;
+
+			if (nextSibling) {
+				return nextSibling;
+			}
+
+			current = current.parentNode;
+		}
+
+		return null;
 	}
 }

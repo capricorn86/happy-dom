@@ -5,6 +5,9 @@ type BoundaryPoint = { node: INode; offset: number };
 
 /**
  * Range utility.
+ *
+ * Based on:
+ * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/boundary-point.js.
  */
 export default class RangeUtility {
 	/**

@@ -11,7 +11,6 @@ import Headers from '../../src/fetch/Headers';
 import Response from '../../src/fetch/Response';
 import Request from '../../src/fetch/Request';
 import Selection from '../../src/selection/Selection';
-import { atob, btoa } from '../../lib/window/WindowBase64';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 
@@ -542,14 +541,14 @@ describe('Window', () => {
 	describe('atob()', () => {
 		it('Decode "hello my happy dom!"', function () {
 			const encoded = 'aGVsbG8gbXkgaGFwcHkgZG9tIQ==';
-			const decoded = atob(encoded);
+			const decoded = window.atob(encoded);
 			expect(decoded).toBe('hello my happy dom!');
 		});
 
 		it('Decode Unicode (throw error)', function () {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
-				atob(data);
+				window.atob(data);
 			}).toThrowError(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded contains characters outside of the Latin1 range.",
@@ -561,7 +560,7 @@ describe('Window', () => {
 		it('Data not in base64list', function () {
 			expect(() => {
 				const data = '\x11GVsbG8gbXkgaGFwcHkgZG9tIQ==';
-				atob(data);
+				window.atob(data);
 			}).toThrowError(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
@@ -572,7 +571,7 @@ describe('Window', () => {
 		it('Data length not valid', function () {
 			expect(() => {
 				const data = 'aGVsbG8gbXkgaGFwcHkgZG9tI';
-				atob(data);
+				window.atob(data);
 			}).toThrowError(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
@@ -585,14 +584,14 @@ describe('Window', () => {
 	describe('btoa()', () => {
 		it('Encode "hello my happy dom!"', function () {
 			const data = 'hello my happy dom!';
-			const encoded = btoa(data);
+			const encoded = window.btoa(data);
 			expect(encoded).toBe('aGVsbG8gbXkgaGFwcHkgZG9tIQ==');
 		});
 
 		it('Encode Unicode (throw error)', function () {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
-				btoa(data);
+				window.btoa(data);
 			}).toThrowError(
 				new DOMException(
 					"Failed to execute 'btoa' on 'Window': The string to be encoded contains characters outside of the Latin1 range.",

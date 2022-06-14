@@ -93,7 +93,7 @@ import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
-import { atob, btoa } from './WindowBase64';
+import Base64 from '../base64/Base64';
 
 /**
  * Browser window.
@@ -221,10 +221,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly sessionStorage = new Storage();
 	public readonly localStorage = new Storage();
 	public readonly performance = PerfHooks.performance;
-
-	// Atob & btoa
-	public atob = atob;
-	public btoa = btoa;
 
 	// Node.js Globals
 	public ArrayBuffer;
@@ -528,6 +524,30 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public async fetch(url: string, init?: IRequestInit): Promise<IResponse> {
 		return await FetchHandler.fetch(this.document, url, init);
+	}
+
+	/**
+	 * Creates a Base64-encoded ASCII string from a binary string (i.e., a string in which each character in the string is treated as a byte of binary data).
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/btoa
+	 * @param data Binay data.
+	 * @returns Base64-encoded string.
+	 */
+	public btoa(data: unknown): string {
+		return Base64.btoa(data);
+	}
+
+	/**
+	 * Decodes a string of data which has been encoded using Base64 encoding.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/atob
+	 * @see https://infra.spec.whatwg.org/#forgiving-base64-encode.
+	 * @see Https://html.spec.whatwg.org/multipage/webappapis.html#btoa.
+	 * @param data Binay string.
+	 * @returns An ASCII string containing decoded data from encodedData.
+	 */
+	public atob(data: unknown): string {
+		return Base64.atob(data);
 	}
 
 	/**
