@@ -16,4 +16,5 @@ export default interface IDOMTokenList {
 	entries(): IterableIterator<[number, string]>;
 	forEach(callback: (currentValue, currentIndex, listObj) => void, thisArg?: this): void;
 	keys(): IterableIterator<number>;
+	toString(): string;
 }

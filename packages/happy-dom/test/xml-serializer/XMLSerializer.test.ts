@@ -194,5 +194,18 @@ describe('XMLSerializer', () => {
 				'<div attr1="Hello \u{2068}John\u{2069}" attr2="&lt;span&gt; test" attr3=""></div>'
 			);
 		});
+
+		it('Serializes the is value.', () => {
+			const div = document.createElement('div', { is: 'custom-element' });
+
+			expect(xmlSerializer.serializeToString(div)).toBe('<div is="custom-element"></div>');
+		});
+
+		it('Ignores the is value if the is attribute is present.', () => {
+			const div = document.createElement('div', { is: 'custom-element' });
+			div.setAttribute('is', 'custom-replacement');
+
+			expect(xmlSerializer.serializeToString(div)).toBe('<div is="custom-replacement"></div>');
+		});
 	});
 });

@@ -88,10 +88,12 @@ import PluginArray from '../navigator/PluginArray';
 import { URLSearchParams } from 'url';
 import FetchHandler from '../fetch/FetchHandler';
 import Range from '../range/Range';
+import DOMRect from '../nodes/element/DOMRect';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
+import { atob, btoa } from './WindowBase64';
 
 /**
  * Browser window.
@@ -194,6 +196,7 @@ export default class Window extends EventTarget implements IWindow {
 		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
 	} = Response;
 	public readonly Range = Range;
+	public readonly DOMRect: typeof DOMRect;
 
 	// Events
 	public onload: (event: Event) => void = null;
@@ -218,6 +221,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly sessionStorage = new Storage();
 	public readonly localStorage = new Storage();
 	public readonly performance = PerfHooks.performance;
+
+	// Atob & btoa
+	public atob = atob;
+	public btoa = btoa;
 
 	// Node.js Globals
 	public ArrayBuffer;
