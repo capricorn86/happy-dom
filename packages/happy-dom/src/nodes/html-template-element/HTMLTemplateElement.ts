@@ -3,6 +3,7 @@ import HTMLElement from '../html-element/HTMLElement';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INode from '../node/INode';
 import IHTMLTemplateElement from './IHTMLTemplateElement';
+import XMLSerializer from '../../xml-serializer/XMLSerializer';
 
 /**
  * HTML Template Element.
@@ -12,6 +13,29 @@ import IHTMLTemplateElement from './IHTMLTemplateElement';
  */
 export default class HTMLTemplateElement extends HTMLElement implements IHTMLTemplateElement {
 	private _contentElement: IDocumentFragment = null;
+
+	/**
+	 * Sets inner HTML.
+	 *
+	 * @param html HTML.
+	 */
+	public set innerHTML(html: string) {
+		super.innerHTML = html;
+	}
+
+	/**
+	 * Returns inner HTML.
+	 *
+	 * @returns HTML.
+	 */
+	public get innerHTML(): string {
+		const xmlSerializer = new XMLSerializer();
+		let xml = '';
+		for (const node of this.content.childNodes) {
+			xml += xmlSerializer.serializeToString(node);
+		}
+		return xml;
+	}
 
 	/**
 	 * Returns the content.
