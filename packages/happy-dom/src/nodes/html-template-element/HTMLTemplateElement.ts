@@ -4,6 +4,7 @@ import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INode from '../node/INode';
 import IHTMLTemplateElement from './IHTMLTemplateElement';
 import XMLSerializer from '../../xml-serializer/XMLSerializer';
+import XMLParser from '../../xml-parser/XMLParser';
 
 /**
  * HTML Template Element.
@@ -20,7 +21,13 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		super.innerHTML = html;
+		for (const child of this.content.childNodes.slice()) {
+			this.content.removeChild(child);
+		}
+
+		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
+			this.content.appendChild(node);
+		}
 	}
 
 	/**

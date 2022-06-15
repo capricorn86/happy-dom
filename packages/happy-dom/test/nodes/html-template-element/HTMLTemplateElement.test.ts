@@ -19,7 +19,11 @@ describe('HTMLTemplateElement', () => {
 
 	it('InnerHTML', () => {
 		const div = '<div>happy-dom is cool!</div>';
+		expect(element.content.childNodes.length).toBe(0);
 		element.innerHTML = div;
 		expect(element.innerHTML).toBe(div);
+		expect(element.content.childNodes.length).toBe(1);
+		element.innerHTML = '';
+		expect(element.content.childNodes.length).toBe(0);
 	});
 });
