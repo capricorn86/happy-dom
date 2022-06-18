@@ -11,7 +11,7 @@ export default class GlobalRegistrator {
 	 */
 	public static register(): void {
 		if (this.registered.length) {
-			throw new Error('Failed to registered. Happy DOM has already been globally registered.');
+			throw new Error('Failed to register. Happy DOM has already been globally registered.');
 		}
 		const window = new GlobalWindow();
 		for (const key of Object.keys(window)) {
@@ -26,9 +26,9 @@ export default class GlobalRegistrator {
 	 * Registers Happy DOM globally.
 	 */
 	public static unregister(): void {
-		if (this.registered.length) {
+		if (!this.registered.length) {
 			throw new Error(
-				'Failed to unregistered. Happy DOM has not previously been globally registered.'
+				'Failed to unregister. Happy DOM has not previously been globally registered.'
 			);
 		}
 		for (const key of this.registered) {
