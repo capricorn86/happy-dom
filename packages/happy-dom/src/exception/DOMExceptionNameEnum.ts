@@ -5,6 +5,7 @@ enum DOMExceptionNameEnum {
 	hierarchyRequestError = 'HierarchyRequestError',
 	notSupportedError = 'NotSupportedError',
 	wrongDocumentError = 'WrongDocumentError',
-	invalidNodeTypeError = 'InvalidNodeTypeError'
+	invalidNodeTypeError = 'InvalidNodeTypeError',
+	invalidCharacterError = 'InvalidCharacterError'
 }
 export default DOMExceptionNameEnum;

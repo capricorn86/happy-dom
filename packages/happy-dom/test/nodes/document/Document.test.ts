@@ -379,6 +379,24 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get baseURI()', () => {
+		it('Returns location.href.', () => {
+			document.location.href = 'https://localhost:8080/base/path/to/script/?key=value=1#test';
+
+			expect(document.baseURI).toBe('https://localhost:8080/base/path/to/script/?key=value=1#test');
+		});
+
+		it('Returns the "href" attribute set on a <base> element.', () => {
+			document.location.href = 'https://localhost:8080/base/path/to/script/?key=value=1#test';
+
+			const base = document.createElement('base');
+			base.setAttribute('href', 'https://www.test.test/base/path/to/script/?key=value=1#test');
+			document.documentElement.appendChild(base);
+
+			expect(document.baseURI).toBe('https://www.test.test/base/path/to/script/?key=value=1#test');
+		});
+	});
+
 	describe('append()', () => {
 		it('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ReactComponent from './ReactComponent';
+import ReactComponent, { ReactSelectComponent } from './ReactComponent';
 
 describe('React', () => {
 	let appElement: Element;
@@ -23,5 +23,12 @@ describe('React', () => {
 		ReactDOM.render(<ReactComponent />, appElement);
 		ReactDOM.unmountComponentAtNode(appElement);
 		expect(appElement.innerHTML).toBe('');
+	});
+
+	it('Select tests integration.', () => {
+		ReactDOM.render(<ReactSelectComponent />, appElement);
+		expect(appElement.innerHTML).toBe(
+			'<select><option value="t1">test 1</option><option value="t2" selected="">test 2</option></select>'
+		);
 	});
 });

@@ -153,7 +153,7 @@ describe('Range', () => {
 			range.collapse(true);
 
 			expect(range.startContainer === span.childNodes[0]).toBe(true);
-			expect(range.endContainer === span2.childNodes[0]).toBe(true);
+			expect(range.endContainer === span.childNodes[0]).toBe(true);
 			expect(range.startOffset).toBe(1);
 			expect(range.endOffset).toBe(1);
 			expect(range.collapsed).toBe(true);
@@ -220,7 +220,7 @@ describe('Range', () => {
 			sourceRange.setStart(container.children[0].childNodes[0], 1);
 			sourceRange.setEnd(container.children[1].childNodes[0], 10);
 
-			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(0);
+			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(1);
 		});
 	});
 

@@ -48,6 +48,7 @@ export default class Element extends Node implements IElement {
 	public _attributes: { [k: string]: Attr } = {};
 
 	private _classList: DOMTokenList = null;
+	public _isValue?: string;
 
 	/**
 	 * Returns class list.

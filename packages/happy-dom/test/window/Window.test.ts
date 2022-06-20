@@ -11,6 +11,8 @@ import Headers from '../../src/fetch/Headers';
 import Response from '../../src/fetch/Response';
 import Request from '../../src/fetch/Request';
 import Selection from '../../src/selection/Selection';
+import DOMException from '../../src/exception/DOMException';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 
 const MOCKED_NODE_FETCH = global['mockedModules']['node-fetch'];
 
@@ -533,6 +535,69 @@ describe('Window', () => {
 
 				done();
 			}, 0);
+		});
+	});
+
+	describe('atob()', () => {
+		it('Decode "hello my happy dom!"', function () {
+			const encoded = 'aGVsbG8gbXkgaGFwcHkgZG9tIQ==';
+			const decoded = window.atob(encoded);
+			expect(decoded).toBe('hello my happy dom!');
+		});
+
+		it('Decode Unicode (throw error)', function () {
+			expect(() => {
+				const data = '😄 hello my happy dom! 🐛';
+				window.atob(data);
+			}).toThrowError(
+				new DOMException(
+					"Failed to execute 'atob' on 'Window': The string to be decoded contains characters outside of the Latin1 range.",
+					DOMExceptionNameEnum.invalidCharacterError
+				)
+			);
+		});
+
+		it('Data not in base64list', function () {
+			expect(() => {
+				const data = '\x11GVsbG8gbXkgaGFwcHkgZG9tIQ==';
+				window.atob(data);
+			}).toThrowError(
+				new DOMException(
+					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
+					DOMExceptionNameEnum.invalidCharacterError
+				)
+			);
+		});
+		it('Data length not valid', function () {
+			expect(() => {
+				const data = 'aGVsbG8gbXkgaGFwcHkgZG9tI';
+				window.atob(data);
+			}).toThrowError(
+				new DOMException(
+					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
+					DOMExceptionNameEnum.invalidCharacterError
+				)
+			);
+		});
+	});
+
+	describe('btoa()', () => {
+		it('Encode "hello my happy dom!"', function () {
+			const data = 'hello my happy dom!';
+			const encoded = window.btoa(data);
+			expect(encoded).toBe('aGVsbG8gbXkgaGFwcHkgZG9tIQ==');
+		});
+
+		it('Encode Unicode (throw error)', function () {
+			expect(() => {
+				const data = '😄 hello my happy dom! 🐛';
+				window.btoa(data);
+			}).toThrowError(
+				new DOMException(
+					"Failed to execute 'btoa' on 'Window': The string to be encoded contains characters outside of the Latin1 range.",
+					DOMExceptionNameEnum.invalidCharacterError
+				)
+			);
 		});
 	});
 });

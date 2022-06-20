@@ -203,4 +203,11 @@ describe('DOMTokenList', () => {
 			expect(Array.from(classList.keys())).toEqual([0, 1, 2]);
 		});
 	});
+
+	describe('toString()', () => {
+		it('Returns list value as string', () => {
+			element.className = 'class1 class2  class3';
+			expect(element.classList.toString()).toEqual('class1 class2  class3');
+		});
+	});
 });

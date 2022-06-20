@@ -39,6 +39,7 @@ import Location from '../../location/Location';
 import Selection from '../../selection/Selection';
 import IShadowRoot from '../shadow-root/IShadowRoot';
 import Range from '../../range/Range';
+import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
 
 /**
  * Document.
@@ -281,6 +282,20 @@ export default class Document extends Node implements IDocument {
 	 */
 	public get scripts(): IHTMLCollection<IHTMLScriptElement> {
 		return <IHTMLCollection<IHTMLScriptElement>>this.getElementsByTagName('script');
+	}
+
+	/**
+	 * Returns base URI.
+	 *
+	 * @override
+	 * @returns Base URI.
+	 */
+	public get baseURI(): string {
+		const base = <IHTMLBaseElement>this.querySelector('base');
+		if (base) {
+			return base.href;
+		}
+		return this.defaultView.location.href;
 	}
 
 	/**
@@ -648,6 +663,9 @@ export default class Document extends Node implements IDocument {
 		element.tagName = tagName;
 		element.ownerDocument = this;
 		element.namespaceURI = namespaceURI;
+		if (element instanceof Element && options && options.is) {
+			element._isValue = String(options.is);
+		}
 
 		return element;
 	}

@@ -88,10 +88,12 @@ import PluginArray from '../navigator/PluginArray';
 import { URLSearchParams } from 'url';
 import FetchHandler from '../fetch/FetchHandler';
 import Range from '../range/Range';
+import DOMRect from '../nodes/element/DOMRect';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
+import Base64 from '../base64/Base64';
 
 /**
  * Browser window.
@@ -194,6 +196,7 @@ export default class Window extends EventTarget implements IWindow {
 		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
 	} = Response;
 	public readonly Range = Range;
+	public readonly DOMRect: typeof DOMRect;
 
 	// Events
 	public onload: (event: Event) => void = null;
@@ -521,6 +524,30 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public async fetch(url: string, init?: IRequestInit): Promise<IResponse> {
 		return await FetchHandler.fetch(this.document, url, init);
+	}
+
+	/**
+	 * Creates a Base64-encoded ASCII string from a binary string (i.e., a string in which each character in the string is treated as a byte of binary data).
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/btoa
+	 * @param data Binay data.
+	 * @returns Base64-encoded string.
+	 */
+	public btoa(data: unknown): string {
+		return Base64.btoa(data);
+	}
+
+	/**
+	 * Decodes a string of data which has been encoded using Base64 encoding.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/atob
+	 * @see https://infra.spec.whatwg.org/#forgiving-base64-encode.
+	 * @see Https://html.spec.whatwg.org/multipage/webappapis.html#btoa.
+	 * @param data Binay string.
+	 * @returns An ASCII string containing decoded data from encodedData.
+	 */
+	public atob(data: unknown): string {
+		return Base64.atob(data);
 	}
 
 	/**

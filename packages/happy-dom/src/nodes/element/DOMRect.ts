@@ -12,4 +12,19 @@ export default class DOMRect {
 	public right = 0;
 	public bottom = 0;
 	public left = 0;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param [x] X position.
+	 * @param [y] Y position.
+	 * @param [width] Width.
+	 * @param [height] Height.
+	 */
+	constructor(x?, y?, width?, height?) {
+		this.x = x || 0;
+		this.y = y || 0;
+		this.width = width || 0;
+		this.height = height || 0;
+	}
 }

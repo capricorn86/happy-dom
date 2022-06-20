@@ -81,6 +81,7 @@ import IRequestInit from '../fetch/IRequestInit';
 import IResponse from '../fetch/IResponse';
 import Range from '../range/Range';
 import MediaQueryList from '../match-media/MediaQueryList';
+import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
@@ -175,6 +176,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
 	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
 	readonly Range: typeof Range;
+	readonly DOMRect: typeof DOMRect;
 
 	// Events
 	onload: (event: Event) => void;
@@ -301,4 +303,24 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * @returns Promise.
 	 */
 	fetch(url: string, init?: IRequestInit): Promise<IResponse>;
+
+	/**
+	 * Creates a Base64-encoded ASCII string from a binary string (i.e., a string in which each character in the string is treated as a byte of binary data).
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/btoa
+	 * @param data Binay data.
+	 * @returns Base64-encoded string.
+	 */
+	btoa(data: unknown): string;
+
+	/**
+	 * Decodes a string of data which has been encoded using Base64 encoding.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/atob
+	 * @see https://infra.spec.whatwg.org/#forgiving-base64-encode.
+	 * @see Https://html.spec.whatwg.org/multipage/webappapis.html#btoa.
+	 * @param data Binay string.
+	 * @returns An ASCII string containing decoded data from encodedData.
+	 */
+	atob(data: unknown): string;
 }
