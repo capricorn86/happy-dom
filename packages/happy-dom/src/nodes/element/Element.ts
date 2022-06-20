@@ -25,6 +25,8 @@ import INodeList from '../node/INodeList';
 import HTMLCollectionFactory from './HTMLCollectionFactory';
 import { TInsertAdjacentPositions } from './IElement';
 import IText from '../text/IText';
+import IDOMRectList from './IDOMRectList';
+import DOMRectListFactory from './DOMRectListFactory';
 
 /**
  * Element.
@@ -680,16 +682,19 @@ export default class Element extends Node implements IElement {
 	 * @returns DOM rect.
 	 */
 	public getBoundingClientRect(): DOMRect {
+		// TODO: Not full implementation
 		return new DOMRect();
 	}
 
 	/**
-	 * Returns a range.
+	 * Returns a collection of DOMRect objects that indicate the bounding rectangles for each CSS border box in a client.
 	 *
-	 * @returns Range.
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/getClientRects
+	 * @returns DOM rect list.
 	 */
-	public createTextRange(): Range {
-		return new Range();
+	public getClientRects(): IDOMRectList<DOMRect> {
+		// TODO: Not full implementation
+		return DOMRectListFactory.create([this.getBoundingClientRect()]);
 	}
 
 	/**

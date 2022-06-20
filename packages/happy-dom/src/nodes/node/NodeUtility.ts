@@ -93,7 +93,7 @@ export default class NodeUtility {
 	 * @param [root] Root.
 	 * @returns Following node.
 	 */
-	private static following(node: INode, root?: INode): INode {
+	public static following(node: INode, root?: INode): INode {
 		const firstChild = node.firstChild;
 
 		if (firstChild) {
@@ -117,5 +117,23 @@ export default class NodeUtility {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns the next sibling or parents sibling.
+	 *
+	 * @param node Node.
+	 * @returns Next decentant node.
+	 */
+	public static nextDecendantNode(node: INode): INode {
+		while (node && !node.nextSibling) {
+			node = node.parentNode;
+		}
+
+		if (!node) {
+			return null;
+		}
+
+		return node.nextSibling;
 	}
 }

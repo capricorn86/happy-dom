@@ -8,6 +8,13 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import RangeUtility from './RangeUtility';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
 import NodeUtility from '../nodes/node/NodeUtility';
+import XMLParser from '../xml-parser/XMLParser';
+import IComment from '../nodes/comment/IComment';
+import IText from '../nodes/text/IText';
+import MutationListener from '../mutation-observer/MutationListener';
+import Node from '../nodes/node/Node';
+import DOMRectListFactory from '../nodes/element/DOMRectListFactory';
+import IDOMRectList from '../nodes/element/IDOMRectList';
 
 /**
  * Range.
@@ -29,6 +36,8 @@ export default class Range {
 	public readonly endOffset: number = 0;
 	public readonly startContainer: INode = null;
 	public readonly endContainer: INode = null;
+	public _startObserver: MutationListener = null;
+	public _endObserver: MutationListener = null;
 	public readonly _ownerDocument: IDocument = null;
 
 	/**
@@ -36,8 +45,8 @@ export default class Range {
 	 */
 	constructor() {
 		this._ownerDocument = (<typeof Range>this.constructor)._ownerDocument;
-		this.startContainer = this._ownerDocument;
-		this.endContainer = this._ownerDocument;
+		this._setStartContainer(this._ownerDocument, 0);
+		this._setEndContainer(this._ownerDocument, 0);
 	}
 
 	/**
@@ -86,11 +95,9 @@ export default class Range {
 	 */
 	public collapse(toStart = false): void {
 		if (toStart && !this.startContainer.contains(this.endContainer)) {
-			(<INode>this.endContainer) = this.startContainer;
-			(<number>this.endOffset) = this.startOffset;
+			this._setEndContainer(this.startContainer, this.startOffset);
 		} else {
-			(<INode>this.startContainer) = this.endContainer;
-			(<number>this.startOffset) = this.endOffset;
+			this._setStartContainer(this.endContainer, this.endOffset);
 		}
 	}
 
@@ -210,11 +217,135 @@ export default class Range {
 	/**
 	 * Returns a DocumentFragment copying the objects of type Node included in the Range.
 	 *
+	 * Based on:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js#L306
+	 *
+	 * @see https://dom.spec.whatwg.org/#concept-range-clone
 	 * @returns Document fragment.
 	 */
 	public cloneContents(): IDocumentFragment {
-		// TODO: Implement
-		return null;
+		const fragment = this._ownerDocument.createDocumentFragment();
+
+		if (this.collapsed) {
+			return fragment;
+		}
+
+		if (
+			this.startContainer === this.endContainer &&
+			(this.startContainer.nodeType === NodeTypeEnum.textNode ||
+				this.startContainer.nodeType === NodeTypeEnum.processingInstructionNode ||
+				this.startContainer.nodeType === NodeTypeEnum.commentNode)
+		) {
+			const clone = (<IText | IComment>this.startContainer).cloneNode(false);
+			clone['_data'] = clone.substringData(this.startOffset, this.endOffset - this.startOffset);
+			fragment.appendChild(clone);
+			return fragment;
+		}
+
+		let commonAncestor = this.startContainer;
+		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this.endContainer)) {
+			commonAncestor = commonAncestor.parentNode;
+		}
+
+		let firstPartialContainedChild = null;
+		if (!NodeUtility.isInclusiveAncestor(this.startContainer, this.endContainer)) {
+			let candidate = commonAncestor.firstChild;
+			while (!firstPartialContainedChild) {
+				if (RangeUtility.isPartiallyContained(candidate, this)) {
+					firstPartialContainedChild = candidate;
+				}
+
+				candidate = candidate.nextSibling;
+			}
+		}
+
+		let lastPartiallyContainedChild = null;
+		if (!NodeUtility.isInclusiveAncestor(this.endContainer, this.startContainer)) {
+			let candidate = commonAncestor.lastChild;
+			while (!lastPartiallyContainedChild) {
+				if (RangeUtility.isPartiallyContained(candidate, this)) {
+					lastPartiallyContainedChild = candidate;
+				}
+
+				candidate = candidate.previousSibling;
+			}
+		}
+
+		const containedChildren = [];
+		let hasDoctypeChildren = false;
+
+		for (const node of commonAncestor.childNodes) {
+			if (RangeUtility.isContained(node, this)) {
+				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
+					hasDoctypeChildren = true;
+				}
+				containedChildren.push(node);
+			}
+		}
+
+		if (hasDoctypeChildren) {
+			throw new DOMException(
+				'Invalid document type element.',
+				DOMExceptionNameEnum.hierarchyRequestError
+			);
+		}
+
+		if (
+			firstPartialContainedChild !== null &&
+			(firstPartialContainedChild.nodeType === NodeTypeEnum.textNode ||
+				firstPartialContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
+				firstPartialContainedChild.nodeType === NodeTypeEnum.commentNode)
+		) {
+			const clone = (<IText | IComment>this.startContainer).cloneNode(false);
+			clone['_data'] = clone.substringData(
+				this.startOffset,
+				this.startContainer.childNodes.length - this.startOffset
+			);
+
+			fragment.appendChild(clone);
+		} else if (firstPartialContainedChild !== null) {
+			const clone = firstPartialContainedChild.cloneNode();
+			fragment.appendChild(clone);
+
+			const subRange = new Range();
+			subRange._setStartContainer(this.startContainer, this.startOffset);
+			subRange._setEndContainer(
+				firstPartialContainedChild,
+				firstPartialContainedChild.childNodes.length
+			);
+
+			const subDocumentFragment = subRange.cloneContents();
+			clone.appendChild(subDocumentFragment);
+		}
+
+		for (const containedChild of containedChildren) {
+			const clone = containedChild.cloneNode(true);
+			fragment.appendChild(clone);
+		}
+
+		if (
+			lastPartiallyContainedChild !== null &&
+			(lastPartiallyContainedChild.nodeType === NodeTypeEnum.textNode ||
+				lastPartiallyContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
+				lastPartiallyContainedChild.nodeType === NodeTypeEnum.commentNode)
+		) {
+			const clone = (<IText | IComment>this.endContainer).cloneNode(false);
+			clone['_data'] = clone.substringData(0, this.endOffset);
+
+			fragment.appendChild(clone);
+		} else if (lastPartiallyContainedChild !== null) {
+			const clone = lastPartiallyContainedChild.cloneNode(false);
+			fragment.appendChild(clone);
+
+			const subRange = new Range();
+			subRange._setStartContainer(lastPartiallyContainedChild, 0);
+			subRange._setEndContainer(this.endContainer, this.endOffset);
+
+			const subFragment = subRange.cloneContents();
+			clone.appendChild(subFragment);
+		}
+
+		return fragment;
 	}
 
 	/**
@@ -223,33 +354,119 @@ export default class Range {
 	 * @returns Range.
 	 */
 	public cloneRange(): Range {
-		// TODO: Implement
-		return null;
+		const clone = new Range();
+
+		(<INode>clone.startContainer) = this.startContainer;
+		(<number>clone.startOffset) = this.startOffset;
+		(<INode>clone.endContainer) = this.endContainer;
+		(<number>clone.endOffset) = this.endOffset;
+
+		return clone;
 	}
 
 	/**
 	 * Returns a DocumentFragment by invoking the HTML fragment parsing algorithm or the XML fragment parsing algorithm with the start of the range (the parent of the selected node) as the context node. The HTML fragment parsing algorithm is used if the range belongs to a Document whose HTMLness bit is set. In the HTML case, if the context node would be html, for historical reasons the fragment parsing algorithm is invoked with body as the context instead.
 	 *
-	 * @param _tagString Tag string.
+	 * @see https://w3c.github.io/DOM-Parsing/#dfn-fragment-parsing-algorithm
+	 * @param tagString Tag string.
 	 * @returns Document fragment.
 	 */
-	public createContextualFragment(_tagString: string): IDocumentFragment {
-		// TODO: Implement
-		return null;
+	public createContextualFragment(tagString: string): IDocumentFragment {
+		// TODO: We only have support for HTML in the parser currently, so it is not necessary to check which context it is
+		return XMLParser.parse(this._ownerDocument, tagString);
 	}
 
 	/**
 	 * Removes the contents of the Range from the Document.
 	 */
 	public deleteContents(): void {
-		// TODO: Implement
+		if (this.collapsed) {
+			return;
+		}
+
+		if (
+			this.startContainer === this.endContainer &&
+			(this.startContainer.nodeType === NodeTypeEnum.textNode ||
+				this.startContainer.nodeType === NodeTypeEnum.processingInstructionNode ||
+				this.startContainer.nodeType === NodeTypeEnum.commentNode)
+		) {
+			(<IText | IComment>this.startContainer).replaceData(
+				this.startOffset,
+				this.endOffset - this.startOffset,
+				''
+			);
+			return;
+		}
+
+		const nodesToRemove = [];
+		let currentNode = this.startContainer;
+		const endNode = NodeUtility.nextDecendantNode(this.endContainer);
+		while (currentNode && currentNode !== endNode) {
+			if (
+				RangeUtility.isContained(currentNode, this) &&
+				!RangeUtility.isContained(currentNode.parentNode, this)
+			) {
+				nodesToRemove.push(currentNode);
+			}
+
+			currentNode = NodeUtility.following(currentNode);
+		}
+
+		let newNode;
+		let newOffset;
+		if (NodeUtility.isInclusiveAncestor(this.startContainer, this.endContainer)) {
+			newNode = this.startContainer;
+			newOffset = this.startOffset;
+		} else {
+			let referenceNode = this.startContainer;
+
+			while (
+				referenceNode &&
+				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this.endContainer)
+			) {
+				referenceNode = referenceNode.parentNode;
+			}
+
+			newNode = referenceNode.parentNode;
+			newOffset = referenceNode.parentNode.childNodes.indexOf(referenceNode) + 1;
+		}
+
+		if (
+			this.startContainer.nodeType === NodeTypeEnum.textNode ||
+			this.startContainer.nodeType === NodeTypeEnum.processingInstructionNode ||
+			this.startContainer.nodeType === NodeTypeEnum.commentNode
+		) {
+			(<IText | IComment>this.startContainer).replaceData(
+				this.startOffset,
+				this.startContainer.childNodes.length - this.startOffset,
+				''
+			);
+		}
+
+		for (const node of nodesToRemove) {
+			const parent = node.parentNode;
+			parent.removeChild(node);
+		}
+
+		if (
+			this.endContainer.nodeType === NodeTypeEnum.textNode ||
+			this.endContainer.nodeType === NodeTypeEnum.processingInstructionNode ||
+			this.endContainer.nodeType === NodeTypeEnum.commentNode
+		) {
+			(<IText | IComment>this.endContainer).replaceData(0, this.endOffset, '');
+		}
+
+		this._setStartContainer(newNode, newOffset);
+		this._setEndContainer(newNode, newOffset);
 	}
 
 	/**
 	 * Does nothing. It used to disable the Range object and enable the browser to release associated resources. The method has been kept for compatibility.
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-detach
 	 */
 	public detach(): void {
-		// Do nothing
+		// Do nothing by spec
 	}
 
 	/**
@@ -258,8 +475,165 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public extractContents(): IDocumentFragment {
-		// TODO: Implement
-		return null;
+		const fragment = this._ownerDocument.createDocumentFragment();
+
+		if (this.collapsed) {
+			return fragment;
+		}
+
+		if (
+			this.startContainer === this.endContainer &&
+			(this.startContainer.nodeType === NodeTypeEnum.textNode ||
+				this.startContainer.nodeType === NodeTypeEnum.processingInstructionNode ||
+				this.startContainer.nodeType === NodeTypeEnum.commentNode)
+		) {
+			const clone = <IText | IComment>this.startContainer.cloneNode(false);
+			clone['_data'] = clone.substringData(this.startOffset, this.endOffset - this.startOffset);
+
+			fragment.appendChild(clone);
+
+			(<IText | IComment>this.startContainer).replaceData(
+				this.startOffset,
+				this.endOffset - this.startOffset,
+				''
+			);
+
+			return fragment;
+		}
+
+		let commonAncestor = this.startContainer;
+		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this.endContainer)) {
+			commonAncestor = commonAncestor.parentNode;
+		}
+
+		let firstPartialContainedChild = null;
+		if (!NodeUtility.isInclusiveAncestor(this.startContainer, this.endContainer)) {
+			let candidate = commonAncestor.firstChild;
+			while (!firstPartialContainedChild) {
+				if (RangeUtility.isPartiallyContained(candidate, this)) {
+					firstPartialContainedChild = candidate;
+				}
+
+				candidate = candidate.nextSibling;
+			}
+		}
+
+		let lastPartiallyContainedChild = null;
+		if (!NodeUtility.isInclusiveAncestor(this.endContainer, this.startContainer)) {
+			let candidate = commonAncestor.lastChild;
+			while (!lastPartiallyContainedChild) {
+				if (RangeUtility.isPartiallyContained(candidate, this)) {
+					lastPartiallyContainedChild = candidate;
+				}
+
+				candidate = candidate.previousSibling;
+			}
+		}
+
+		const containedChildren = [];
+		let hasDoctypeChildren = false;
+
+		for (const node of commonAncestor.childNodes) {
+			if (RangeUtility.isContained(node, this)) {
+				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
+					hasDoctypeChildren = true;
+				}
+				containedChildren.push(node);
+			}
+		}
+
+		if (hasDoctypeChildren) {
+			throw new DOMException(
+				'Invalid document type element.',
+				DOMExceptionNameEnum.hierarchyRequestError
+			);
+		}
+
+		let newNode;
+		let newOffset;
+		if (NodeUtility.isInclusiveAncestor(this.startContainer, this.endContainer)) {
+			newNode = this.startContainer;
+			newOffset = this.startOffset;
+		} else {
+			let referenceNode = this.startContainer;
+
+			while (
+				referenceNode &&
+				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this.endContainer)
+			) {
+				referenceNode = referenceNode.parentNode;
+			}
+
+			newNode = referenceNode.parentNode;
+			newOffset = referenceNode.parentNode.childNodes.indexOf(referenceNode) + 1;
+		}
+
+		if (
+			firstPartialContainedChild !== null &&
+			(firstPartialContainedChild.nodeType === NodeTypeEnum.textNode ||
+				firstPartialContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
+				firstPartialContainedChild.nodeType === NodeTypeEnum.commentNode)
+		) {
+			const clone = <IText | IComment>this.startContainer.cloneNode(false);
+			clone['_data'] = clone.substringData(
+				this.startOffset,
+				this.startContainer.childNodes.length - this.startOffset
+			);
+
+			fragment.appendChild(clone);
+
+			(<IText | IComment>this.startContainer).replaceData(
+				this.startOffset,
+				this.startContainer.childNodes.length - this.startOffset,
+				''
+			);
+		} else if (firstPartialContainedChild !== null) {
+			const clone = firstPartialContainedChild.cloneNode(false);
+			fragment.appendChild(clone);
+
+			const subRange = new Range();
+			subRange._setStartContainer(this.startContainer, this.startOffset);
+			subRange._setEndContainer(
+				firstPartialContainedChild,
+				firstPartialContainedChild.childNodes.length
+			);
+
+			const subFragment = subRange.extractContents();
+			clone.appendChild(subFragment);
+		}
+
+		for (const containedChild of containedChildren) {
+			fragment.appendChild(containedChild);
+		}
+
+		if (
+			lastPartiallyContainedChild !== null &&
+			(lastPartiallyContainedChild.nodeType === NodeTypeEnum.textNode ||
+				lastPartiallyContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
+				lastPartiallyContainedChild.nodeType === NodeTypeEnum.commentNode)
+		) {
+			const clone = <IText | IComment>this.endContainer.cloneNode(false);
+			clone['_data'] = clone.substringData(0, this.endOffset);
+
+			fragment.appendChild(clone);
+
+			(<IText | IComment>this.endContainer).replaceData(0, this.endOffset, '');
+		} else if (lastPartiallyContainedChild !== null) {
+			const clone = lastPartiallyContainedChild.cloneNode(false);
+			fragment.appendChild(clone);
+
+			const subRange = new Range();
+			subRange._setStartContainer(lastPartiallyContainedChild, 0);
+			subRange._setEndContainer(this.endContainer, this.endOffset);
+
+			const subFragment = subRange.extractContents();
+			clone.appendChild(subFragment);
+		}
+
+		this._setStartContainer(newNode, newOffset);
+		this._setEndContainer(newNode, newOffset);
+
+		return fragment;
 	}
 
 	/**
@@ -268,8 +642,8 @@ export default class Range {
 	 * @returns DOMRect object.
 	 */
 	public getBoundingClientRect(): DOMRect {
-		// TODO: Implement
-		return null;
+		// TODO: Not full implementation
+		return new DOMRect();
 	}
 
 	/**
@@ -277,9 +651,9 @@ export default class Range {
 	 *
 	 * @returns DOMRect objects.
 	 */
-	public getClientRects(): DOMRect[] {
-		// TODO: Implement
-		return null;
+	public getClientRects(): IDOMRectList<DOMRect> {
+		// TODO: Not full implementation
+		return DOMRectListFactory.create();
 	}
 
 	/**
@@ -290,8 +664,22 @@ export default class Range {
 	 * @returns "true" if in range.
 	 */
 	public isPointInRange(_referenceNode: INode, _offset = 0): boolean {
-		// TODO: Implement
-		return false;
+		if (node.ownerDocument !== this._ownerDocument) {
+			return false;
+		}
+
+		validateSetBoundaryPoint(node, offset);
+
+		const bp = { node, offset };
+
+		if (
+			compareBoundaryPointsPosition(bp, this._start) === -1 ||
+			compareBoundaryPointsPosition(bp, this._end) === 1
+		) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -330,10 +718,8 @@ export default class Range {
 
 		const index = referenceNode.parentNode.childNodes.indexOf(referenceNode);
 
-		(<INode>this.startContainer) = referenceNode.parentNode;
-		(<INode>this.endContainer) = referenceNode.parentNode;
-		(<number>this.startOffset) = index;
-		(<number>this.endOffset) = index + 1;
+		this._setStartContainer(referenceNode.parentNode, index);
+		this._setEndContainer(referenceNode.parentNode, index + 1);
 	}
 
 	/**
@@ -342,10 +728,8 @@ export default class Range {
 	 * @param referenceNode Reference node.
 	 */
 	public selectNodeContents(referenceNode: INode): void {
-		(<INode>this.startContainer) = referenceNode;
-		(<INode>this.endContainer) = referenceNode;
-		(<number>this.startOffset) = 0;
-		(<number>this.endOffset) = referenceNode.childNodes.length;
+		this._setStartContainer(referenceNode, 0);
+		this._setEndContainer(referenceNode, referenceNode.childNodes.length);
 	}
 
 	/**
@@ -384,8 +768,7 @@ export default class Range {
 		) {
 			this.setStart(endNode, endOffset);
 		}
-		(<INode>this.endContainer) = endNode;
-		(<number>this.endOffset) = endOffset;
+		this._setEndContainer(endNode, endOffset);
 	}
 
 	/**
@@ -424,8 +807,7 @@ export default class Range {
 		) {
 			this.setEnd(startNode, startOffset);
 		}
-		(<INode>this.startContainer) = startNode;
-		(<number>this.startOffset) = startOffset;
+		this._setStartContainer(startNode, startOffset);
 	}
 
 	/**
@@ -502,5 +884,98 @@ export default class Range {
 	 */
 	public toString(): string {
 		return '';
+	}
+
+	/**
+	 * Sets start container.
+	 *
+	 * @param container Container.
+	 * @param offset Offset.
+	 */
+	public _setStartContainer(container: INode, offset: number): void {
+		if (
+			this.startContainer &&
+			this._startObserver &&
+			(this.startContainer !== container || this.startOffset !== offset)
+		) {
+			(<Node>this.startContainer)._unobserve(this._startObserver);
+		}
+
+		(<INode>this.startContainer) = container;
+		(<number>this.startOffset) = offset;
+
+		if (offset !== 0) {
+			this._startObserver = this._getMutationListener(container, 'startOffset');
+			(<Node>container)._observe(this._startObserver);
+		}
+	}
+
+	/**
+	 * Sets end container.
+	 *
+	 * @param container Container.
+	 * @param offset Offset.
+	 */
+	public _setEndContainer(container: INode, offset: number): void {
+		if (
+			this.endContainer &&
+			this._endObserver &&
+			(this.endContainer !== container || this.endOffset !== offset)
+		) {
+			(<Node>this.endContainer)._unobserve(this._endObserver);
+		}
+
+		(<INode>this.endContainer) = container;
+		(<number>this.endOffset) = offset;
+
+		if (offset !== 0) {
+			this._endObserver = this._getMutationListener(container, 'endOffset');
+			(<Node>container)._observe(this._endObserver);
+		}
+	}
+
+	/**
+	 * Returns a mutation listener based on node type.
+	 *
+	 * @param node Node to observe.
+	 * @param offsetProperty
+	 */
+	protected _getMutationListener(
+		node: INode,
+		offsetProperty: 'startOffset' | 'endOffset'
+	): MutationListener {
+		if (
+			node.nodeType === NodeTypeEnum.textNode ||
+			node.nodeType === NodeTypeEnum.processingInstructionNode ||
+			node.nodeType === NodeTypeEnum.commentNode
+		) {
+			return {
+				options: {
+					characterData: true
+				},
+				callback: () => {
+					const length = (<IText | IComment>node).data.length;
+					if (this[offsetProperty] > length - 1) {
+						(<number>this[offsetProperty]) = length - 1;
+					} else if (length === 0 && this[offsetProperty] > 0) {
+						(<number>this[offsetProperty]) = 0;
+					}
+				}
+			};
+		}
+
+		return {
+			options: {
+				childList: true
+			},
+			callback: () => {
+				const length = node.childNodes.length;
+				if (this[offsetProperty] > length - 1) {
+					(<number>this[offsetProperty]) = length - 1;
+				} else if (length === 0 && this[offsetProperty] > 0) {
+					(<number>this[offsetProperty]) = 0;
+				}
+			}
+		};
 	}
 }

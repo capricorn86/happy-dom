@@ -1,12 +1,12 @@
 import IShadowRoot from '../shadow-root/IShadowRoot';
 import Attr from '../../attribute/Attr';
 import DOMRect from './DOMRect';
-import Range from './Range';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import INode from './../node/INode';
 import IChildNode from '../child-node/IChildNode';
 import IParentNode from '../parent-node/IParentNode';
 import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode';
+import IDOMRectList from './IDOMRectList';
 
 export type TInsertAdjacentPositions = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -161,11 +161,12 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	getBoundingClientRect(): DOMRect;
 
 	/**
-	 * Returns a range.
+	 * Returns a collection of DOMRect objects that indicate the bounding rectangles for each CSS border box in a client.
 	 *
-	 * @returns Range.
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/getClientRects
+	 * @returns DOM rect list.
 	 */
-	createTextRange(): Range;
+	getClientRects(): IDOMRectList<DOMRect>;
 
 	/**
 	 * The matches() method checks to see if the Element would be selected by the provided selectorString.
