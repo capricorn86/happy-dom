@@ -3,6 +3,9 @@ import HTMLElement from '../html-element/HTMLElement';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INode from '../node/INode';
 import IHTMLTemplateElement from './IHTMLTemplateElement';
+import XMLParser from '../../xml-parser/XMLParser';
+import XMLSerializer from '../../xml-serializer/XMLSerializer';
+import DOMException from '../../exception/DOMException';
 
 /**
  * HTML Template Element.
@@ -11,18 +14,48 @@ import IHTMLTemplateElement from './IHTMLTemplateElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement.
  */
 export default class HTMLTemplateElement extends HTMLElement implements IHTMLTemplateElement {
-	private _contentElement: IDocumentFragment = null;
+	public readonly content: IDocumentFragment = this.ownerDocument.createDocumentFragment();
 
 	/**
-	 * Returns the content.
-	 *
-	 * @returns Content.
+	 * @override
 	 */
-	public get content(): IDocumentFragment {
-		if (!this._contentElement) {
-			this._contentElement = this.ownerDocument.createDocumentFragment();
+	public get innerHTML(): string {
+		return this.getInnerHTML();
+	}
+
+	/**
+	 * Sets inner HTML.
+	 *
+	 * @param html HTML.
+	 */
+	public set innerHTML(html: string) {
+		for (const child of this.content.childNodes.slice()) {
+			this.content.removeChild(child);
 		}
-		return this._contentElement;
+
+		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
+			this.content.appendChild(node);
+		}
+	}
+
+	/**
+	 * Returns outer HTML.
+	 *
+	 * @returns HTML.
+	 */
+	public get outerHTML(): string {
+		return new XMLSerializer().serializeToString(this);
+	}
+
+	/**
+	 * Returns outer HTML.
+	 *
+	 * @param html HTML.
+	 */
+	public set outerHTML(_html: string) {
+		throw new DOMException(
+			`Failed to set the 'outerHTML' property on 'Element': This element has no parent node.`
+		);
 	}
 
 	/**
@@ -59,6 +92,18 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 */
 	public get lastChild(): INode {
 		return this.content.lastChild;
+	}
+
+	/**
+	 * @override
+	 */
+	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
+		const xmlSerializer = new XMLSerializer();
+		let xml = '';
+		for (const node of this.content.childNodes) {
+			xml += xmlSerializer.serializeToString(node, options);
+		}
+		return xml;
 	}
 
 	/**
@@ -110,6 +155,8 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLTemplateElement {
-		return <IHTMLTemplateElement>super.cloneNode(deep);
+		const clone = <IHTMLTemplateElement>super.cloneNode(deep);
+		(<IDocumentFragment>clone.content) = this.content.cloneNode(deep);
+		return clone;
 	}
 }

@@ -168,12 +168,7 @@ export default class Element extends Node implements IElement {
 	 * @returns HTML.
 	 */
 	public get innerHTML(): string {
-		const xmlSerializer = new XMLSerializer();
-		let xml = '';
-		for (const node of this.childNodes) {
-			xml += xmlSerializer.serializeToString(node);
-		}
-		return xml;
+		return this.getInnerHTML();
 	}
 
 	/**
