@@ -57,7 +57,7 @@ export default class RangeUtility {
 		return -1;
 	}
 
-	/** ....................
+	/** ..............................
 	 * Returns a DocumentFragment copying the objects of type Node included in the Range.
 	 *
 	 * Based on:
