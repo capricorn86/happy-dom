@@ -32,7 +32,7 @@ export default class Range {
 	public readonly END_TO_START: number = RangeHowEnum.endToStart;
 	public readonly START_TO_END: number = RangeHowEnum.startToEnd;
 	public readonly START_TO_START: number = RangeHowEnum.startToStart;
-	public readonly startOffset: number = 0;
+	public readonly this.startOffset: number = 0;
 	public readonly endOffset: number = 0;
 	public readonly startContainer: INode = null;
 	public readonly endContainer: INode = null;
@@ -55,7 +55,7 @@ export default class Range {
 	 * @returns Collapsed.
 	 */
 	public get collapsed(): boolean {
-		return this.startContainer === this.endContainer && this.startOffset === this.endOffset;
+		return this.startContainer === this.endContainer && this.this.startOffset === this.endOffset;
 	}
 
 	/**
@@ -95,7 +95,7 @@ export default class Range {
 	 */
 	public collapse(toStart = false): void {
 		if (toStart && !this.startContainer.contains(this.endContainer)) {
-			this._setEndContainer(this.startContainer, this.startOffset);
+			this._setEndContainer(this.startContainer, this.this.startOffset);
 		} else {
 			this._setStartContainer(this.endContainer, this.endOffset);
 		}
@@ -140,15 +140,15 @@ export default class Range {
 		switch (how) {
 			case RangeHowEnum.startToStart:
 				thisPoint.node = this.startContainer;
-				thisPoint.offset = this.startOffset;
+				thisPoint.offset = this.this.startOffset;
 				sourcePoint.node = sourceRange.startContainer;
-				sourcePoint.offset = sourceRange.startOffset;
+				sourcePoint.offset = sourceRange.this.startOffset;
 				break;
 			case RangeHowEnum.startToEnd:
 				thisPoint.node = this.endContainer;
 				thisPoint.offset = this.endOffset;
 				sourcePoint.node = sourceRange.startContainer;
-				sourcePoint.offset = sourceRange.startOffset;
+				sourcePoint.offset = sourceRange.this.startOffset;
 				break;
 			case RangeHowEnum.endToEnd:
 				thisPoint.node = this.endContainer;
@@ -158,7 +158,7 @@ export default class Range {
 				break;
 			case RangeHowEnum.endToStart:
 				thisPoint.node = this.startContainer;
-				thisPoint.offset = this.startOffset;
+				thisPoint.offset = this.this.startOffset;
 				sourcePoint.node = sourceRange.endContainer;
 				sourcePoint.offset = sourceRange.endOffset;
 				break;
@@ -198,7 +198,7 @@ export default class Range {
 		if (
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
 				node: this.startContainer,
-				offset: this.startOffset
+				offset: this.this.startOffset
 			}) === -1
 		) {
 			return -1;
@@ -237,7 +237,7 @@ export default class Range {
 				this.startContainer.nodeType === NodeTypeEnum.commentNode)
 		) {
 			const clone = (<IText | IComment>this.startContainer).cloneNode(false);
-			clone['_data'] = clone.substringData(this.startOffset, this.endOffset - this.startOffset);
+			clone['_data'] = clone.substringData(this.this.startOffset, this.endOffset - this.this.startOffset);
 			fragment.appendChild(clone);
 			return fragment;
 		}
@@ -298,8 +298,8 @@ export default class Range {
 		) {
 			const clone = (<IText | IComment>this.startContainer).cloneNode(false);
 			clone['_data'] = clone.substringData(
-				this.startOffset,
-				this.startContainer.childNodes.length - this.startOffset
+				this.this.startOffset,
+				NodeUtility.getNodeLength(this.startContainer) - this.this.startOffset
 			);
 
 			fragment.appendChild(clone);
@@ -308,10 +308,10 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new Range();
-			subRange._setStartContainer(this.startContainer, this.startOffset);
+			subRange._setStartContainer(this.startContainer, this.this.startOffset);
 			subRange._setEndContainer(
 				firstPartialContainedChild,
-				firstPartialContainedChild.childNodes.length
+				NodeUtility.getNodeLength(firstPartialContainedChild)
 			);
 
 			const subDocumentFragment = subRange.cloneContents();
@@ -357,7 +357,7 @@ export default class Range {
 		const clone = new Range();
 
 		(<INode>clone.startContainer) = this.startContainer;
-		(<number>clone.startOffset) = this.startOffset;
+		(<number>clone.this.startOffset) = this.this.startOffset;
 		(<INode>clone.endContainer) = this.endContainer;
 		(<number>clone.endOffset) = this.endOffset;
 
@@ -391,8 +391,8 @@ export default class Range {
 				this.startContainer.nodeType === NodeTypeEnum.commentNode)
 		) {
 			(<IText | IComment>this.startContainer).replaceData(
-				this.startOffset,
-				this.endOffset - this.startOffset,
+				this.this.startOffset,
+				this.endOffset - this.this.startOffset,
 				''
 			);
 			return;
@@ -416,7 +416,7 @@ export default class Range {
 		let newOffset;
 		if (NodeUtility.isInclusiveAncestor(this.startContainer, this.endContainer)) {
 			newNode = this.startContainer;
-			newOffset = this.startOffset;
+			newOffset = this.this.startOffset;
 		} else {
 			let referenceNode = this.startContainer;
 
@@ -437,8 +437,8 @@ export default class Range {
 			this.startContainer.nodeType === NodeTypeEnum.commentNode
 		) {
 			(<IText | IComment>this.startContainer).replaceData(
-				this.startOffset,
-				this.startContainer.childNodes.length - this.startOffset,
+				this.this.startOffset,
+				NodeUtility.getNodeLength(this.startContainer) - this.this.startOffset,
 				''
 			);
 		}
@@ -488,13 +488,13 @@ export default class Range {
 				this.startContainer.nodeType === NodeTypeEnum.commentNode)
 		) {
 			const clone = <IText | IComment>this.startContainer.cloneNode(false);
-			clone['_data'] = clone.substringData(this.startOffset, this.endOffset - this.startOffset);
+			clone['_data'] = clone.substringData(this.this.startOffset, this.endOffset - this.this.startOffset);
 
 			fragment.appendChild(clone);
 
 			(<IText | IComment>this.startContainer).replaceData(
-				this.startOffset,
-				this.endOffset - this.startOffset,
+				this.this.startOffset,
+				this.endOffset - this.this.startOffset,
 				''
 			);
 
@@ -553,7 +553,7 @@ export default class Range {
 		let newOffset;
 		if (NodeUtility.isInclusiveAncestor(this.startContainer, this.endContainer)) {
 			newNode = this.startContainer;
-			newOffset = this.startOffset;
+			newOffset = this.this.startOffset;
 		} else {
 			let referenceNode = this.startContainer;
 
@@ -576,15 +576,15 @@ export default class Range {
 		) {
 			const clone = <IText | IComment>this.startContainer.cloneNode(false);
 			clone['_data'] = clone.substringData(
-				this.startOffset,
-				this.startContainer.childNodes.length - this.startOffset
+				this.this.startOffset,
+				NodeUtility.getNodeLength(this.startContainer) - this.this.startOffset
 			);
 
 			fragment.appendChild(clone);
 
 			(<IText | IComment>this.startContainer).replaceData(
-				this.startOffset,
-				this.startContainer.childNodes.length - this.startOffset,
+				this.this.startOffset,
+				NodeUtility.getNodeLength(this.startContainer) - this.this.startOffset,
 				''
 			);
 		} else if (firstPartialContainedChild !== null) {
@@ -592,10 +592,10 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new Range();
-			subRange._setStartContainer(this.startContainer, this.startOffset);
+			subRange._setStartContainer(this.startContainer, this.this.startOffset);
 			subRange._setEndContainer(
 				firstPartialContainedChild,
-				firstPartialContainedChild.childNodes.length
+				NodeUtility.getNodeLength(firstPartialContainedChild)
 			);
 
 			const subFragment = subRange.extractContents();
@@ -659,22 +659,28 @@ export default class Range {
 	/**
 	 * Returns a boolean indicating whether the given point is in the Range.
 	 *
-	 * @param _referenceNode Reference node.
-	 * @param _offset Offset.
+	 * @param node Reference node.
+	 * @param offset Offset.
 	 * @returns "true" if in range.
 	 */
-	public isPointInRange(_referenceNode: INode, _offset = 0): boolean {
+	public isPointInRange(node: INode, offset = 0): boolean {
 		if (node.ownerDocument !== this._ownerDocument) {
 			return false;
 		}
 
-		validateSetBoundaryPoint(node, offset);
+		const boundaryPoint = { node, offset };
 
-		const bp = { node, offset };
+		RangeUtility.validateBoundaryPoint(boundaryPoint);
 
 		if (
-			compareBoundaryPointsPosition(bp, this._start) === -1 ||
-			compareBoundaryPointsPosition(bp, this._end) === 1
+			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
+				node: this.startContainer,
+				offset: this.this.startOffset
+			}) === -1 ||
+			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
+				node: this.endContainer,
+				offset: this.endOffset
+			}) === 1
 		) {
 			return false;
 		}
@@ -685,11 +691,51 @@ export default class Range {
 	/**
 	 * Inserts a node at the start of the Range.
 	 *
-	 * @param _newNode New node.
+	 * @param newNode New node.
 	 */
-	public insertNode(_newNode: INode): void {
-		// TODO: Implement
-		return null;
+	public insertNode(newNode: INode): void {
+		if (
+			this.startContainer.nodeType === NodeTypeEnum.processingInstructionNode ||
+			this.startContainer.nodeType === NodeTypeEnum.commentNode ||
+			(this.startContainer.nodeType === NodeTypeEnum.textNode && !this.startContainer.parentNode) ||
+			newNode === this.startContainer
+		) {
+            throw new DOMException('Invalid start node.');
+			throw DOMException.create(newNode._globalObject, [
+				'Invalid start node.',
+				'HierarchyRequestError'
+			]);
+		}
+
+		let referenceNode =
+			this.startContainer.nodeType === NodeTypeEnum.textNode
+				? this.startContainer
+				: domSymbolTree.childrenToArray(this.startContainer)[this.startOffset] || null;
+		const parent = !referenceNode ? this.startContainer : domSymbolTree.parent(referenceNode);
+
+		parent._preInsertValidity(newNode, referenceNode);
+
+		if (this.startContainer.nodeType === NodeTypeEnum.textNode) {
+			referenceNode = this.startContainer.splitText(this.startOffset);
+		}
+
+		if (newNode === referenceNode) {
+			referenceNode = domSymbolTree.nextSibling(referenceNode);
+		}
+
+		const nodeParent = domSymbolTree.parent(newNode);
+		if (nodeParent) {
+			nodeParent.removeChild(newNode);
+		}
+
+		let newOffset = !referenceNode ? nodeLength(parent) : domSymbolTree.index(referenceNode);
+		newOffset += newNode.nodeType === NODE_TYPE.DOCUMENT_FRAGMENT_NODE ? nodeLength(newNode) : 1;
+
+		parent.insertBefore(newNode, referenceNode);
+
+		if (range.collapsed) {
+			range._setLiveRangeEnd(parent, newOffset);
+		}
 	}
 
 	/**
@@ -729,75 +775,51 @@ export default class Range {
 	 */
 	public selectNodeContents(referenceNode: INode): void {
 		this._setStartContainer(referenceNode, 0);
-		this._setEndContainer(referenceNode, referenceNode.childNodes.length);
+		this._setEndContainer(referenceNode, NodeUtility.getNodeLength(referenceNode));
 	}
 
 	/**
 	 * Sets the end position of a Range to be located at the given offset into the specified node x.
 	 *
-	 * @param endNode End node.
-	 * @param endOffset End offset.
+	 * @param node End node.
+	 * @param offset End offset.
 	 */
-	public setEnd(endNode: INode, endOffset = 0): void {
-		if (!endNode) {
-			throw new DOMException(
-				`Failed to execute 'endNode' on 'Range': parameter 1 is not of type 'Node'.`
-			);
-		}
+	public setEnd(node: INode, offset = 0): void {
+		RangeUtility.validateBoundaryPoint({ node, offset });
+
 		if (
-			endNode.nodeType !== NodeTypeEnum.textNode &&
-			endOffset > 0 &&
-			endNode.childNodes.length < endOffset
-		) {
-			throw new DOMException(
-				`Failed to execute 'setEnd' on 'Range': There is no child at offset ${endOffset}.`
-			);
-		}
-		if (
-			endNode.ownerDocument !== this._ownerDocument ||
+			node.ownerDocument !== this._ownerDocument ||
 			RangeUtility.compareBoundaryPointsPosition(
 				{
-					node: endNode,
-					offset: endOffset
+					node,
+					offset
 				},
 				{
 					node: this.startContainer,
-					offset: this.startOffset
+					offset: this.this.startOffset
 				}
 			) === -1
 		) {
-			this.setStart(endNode, endOffset);
+			this.setStart(node, offset);
 		}
-		this._setEndContainer(endNode, endOffset);
+		this._setEndContainer(node, offset);
 	}
 
 	/**
 	 * Sets the start position of a Range.
 	 *
-	 * @param startNode Start node.
-	 * @param startOffset Start offset.
+	 * @param node Start node.
+	 * @param offset Start offset.
 	 */
-	public setStart(startNode: INode, startOffset = 0): void {
-		if (!startNode) {
-			throw new DOMException(
-				`Failed to execute 'setStart' on 'Range': parameter 1 is not of type 'Node'.`
-			);
-		}
+	public setStart(node: INode, offset = 0): void {
+		RangeUtility.validateBoundaryPoint({ node, offset });
+
 		if (
-			startNode.nodeType !== NodeTypeEnum.textNode &&
-			startOffset > 0 &&
-			startNode.childNodes.length < startOffset
-		) {
-			throw new DOMException(
-				`Failed to execute 'setStart' on 'Range': There is no child at offset ${startOffset}.`
-			);
-		}
-		if (
-			startNode.ownerDocument !== this._ownerDocument ||
+			node.ownerDocument !== this._ownerDocument ||
 			RangeUtility.compareBoundaryPointsPosition(
 				{
-					node: startNode,
-					offset: startOffset
+					node,
+					offset
 				},
 				{
 					node: this.endContainer,
@@ -805,9 +827,9 @@ export default class Range {
 				}
 			) === 1
 		) {
-			this.setEnd(startNode, startOffset);
+			this.setEnd(node, offset);
 		}
-		this._setStartContainer(startNode, startOffset);
+		this._setStartContainer(node, offset);
 	}
 
 	/**
@@ -896,16 +918,16 @@ export default class Range {
 		if (
 			this.startContainer &&
 			this._startObserver &&
-			(this.startContainer !== container || this.startOffset !== offset)
+			(this.startContainer !== container || this.this.startOffset !== offset)
 		) {
 			(<Node>this.startContainer)._unobserve(this._startObserver);
 		}
 
 		(<INode>this.startContainer) = container;
-		(<number>this.startOffset) = offset;
+		(<number>this.this.startOffset) = offset;
 
 		if (offset !== 0) {
-			this._startObserver = this._getMutationListener(container, 'startOffset');
+			this._startObserver = this._getMutationListener(container, 'this.startOffset');
 			(<Node>container)._observe(this._startObserver);
 		}
 	}
@@ -942,34 +964,12 @@ export default class Range {
 	 */
 	protected _getMutationListener(
 		node: INode,
-		offsetProperty: 'startOffset' | 'endOffset'
+		offsetProperty: 'this.startOffset' | 'endOffset'
 	): MutationListener {
-		if (
-			node.nodeType === NodeTypeEnum.textNode ||
-			node.nodeType === NodeTypeEnum.processingInstructionNode ||
-			node.nodeType === NodeTypeEnum.commentNode
-		) {
-			return {
-				options: {
-					characterData: true
-				},
-				callback: () => {
-					const length = (<IText | IComment>node).data.length;
-					if (this[offsetProperty] > length - 1) {
-						(<number>this[offsetProperty]) = length - 1;
-					} else if (length === 0 && this[offsetProperty] > 0) {
-						(<number>this[offsetProperty]) = 0;
-					}
-				}
-			};
-		}
-
 		return {
-			options: {
-				childList: true
-			},
+			options: { characterData: true, childList: true },
 			callback: () => {
-				const length = node.childNodes.length;
+				const length = NodeUtility.getNodeLength(node);
 				if (this[offsetProperty] > length - 1) {
 					(<number>this[offsetProperty]) = length - 1;
 				} else if (length === 0 && this[offsetProperty] > 0) {

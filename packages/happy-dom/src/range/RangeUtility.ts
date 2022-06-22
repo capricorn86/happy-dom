@@ -1,3 +1,6 @@
+import DOMException from 'src/exception/DOMException';
+import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
+import NodeTypeEnum from 'src/nodes/node/NodeTypeEnum';
 import INode from '../nodes/node/INode';
 import NodeUtility from '../nodes/node/NodeUtility';
 import Range from './Range';
@@ -58,6 +61,25 @@ export default class RangeUtility {
 	}
 
 	/**
+	 * Validates a boundary point.
+	 *
+	 * @throws DOMException
+	 * @param point Boundary point.
+	 */
+	public static validateBoundaryPoint(point: BoundaryPoint): void {
+		if (point.node.nodeType === NodeTypeEnum.documentTypeNode) {
+			throw new DOMException(
+				`DocumentType Node can't be used as boundary point.`,
+				DOMExceptionNameEnum.invalidNodeTypeError
+			);
+		}
+
+		if (point.offset > NodeUtility.getNodeLength(point.node)) {
+			throw new DOMException(`Offset out of bound.`, DOMExceptionNameEnum.indexSizeError);
+		}
+	}
+
+	/**
 	 * Returns "true" if contained.
 	 *
 	 * @param node Node.
@@ -71,7 +93,7 @@ export default class RangeUtility {
 				{ node: range.startContainer, offset: range.startOffset }
 			) === 1 &&
 			this.compareBoundaryPointsPosition(
-				{ node, offset: node.childNodes.length },
+				{ node, offset: NodeUtility.getNodeLength(node) },
 				{ node: range.endContainer, offset: range.endOffset }
 			) === -1
 		);
