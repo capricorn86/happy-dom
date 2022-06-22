@@ -2,7 +2,6 @@ import Node from '../node/Node';
 import ShadowRoot from '../shadow-root/ShadowRoot';
 import Attr from '../../attribute/Attr';
 import DOMRect from './DOMRect';
-import Range from '../../range/Range';
 import DOMTokenList from '../../dom-token-list/DOMTokenList';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import QuerySelector from '../../query-selector/QuerySelector';

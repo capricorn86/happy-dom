@@ -32,7 +32,7 @@ export default class Range {
 	public readonly END_TO_START: number = RangeHowEnum.endToStart;
 	public readonly START_TO_END: number = RangeHowEnum.startToEnd;
 	public readonly START_TO_START: number = RangeHowEnum.startToStart;
-	public readonly this.startOffset: number = 0;
+	public readonly startOffset: number = 0;
 	public readonly endOffset: number = 0;
 	public readonly startContainer: INode = null;
 	public readonly endContainer: INode = null;
@@ -52,50 +52,41 @@ export default class Range {
 	/**
 	 * Returns a boolean value indicating whether the range's start and end points are at the same position.
 	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-collapsed
 	 * @returns Collapsed.
 	 */
 	public get collapsed(): boolean {
-		return this.startContainer === this.endContainer && this.this.startOffset === this.endOffset;
+		return this.startContainer === this.endContainer && this.startOffset === this.endOffset;
 	}
 
 	/**
 	 * Returns the deepest Node that contains the startContainer and endContainer nodes.
 	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-commonancestorcontainer
 	 * @returns Node.
 	 */
 	public get commonAncestorContainer(): INode {
-		if (this.startContainer === this.endContainer) {
-			return this.startContainer;
-		}
+		let container = this.startContainer;
 
-		const endAncestors = [];
-		let parent = this.endContainer;
-
-		while (parent) {
-			endAncestors.push(parent);
-			parent = parent.parentNode;
-		}
-
-		parent = this.startContainer;
-
-		while (parent) {
-			if (endAncestors.includes(parent)) {
-				return parent;
+		while (container) {
+			if (NodeUtility.isInclusiveAncestor(container, this.endContainer)) {
+				return container;
 			}
-			parent = parent.parentNode;
+			container = container.parentNode;
 		}
 
-		return this.endContainer || this.startContainer;
+		return null;
 	}
 
 	/**
 	 * Returns -1, 0, or 1 depending on whether the referenceNode is before, the same as, or after the Range.
 	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-collapse
 	 * @param toStart A boolean value: true collapses the Range to its start, false to its end. If omitted, it defaults to false.
 	 */
 	public collapse(toStart = false): void {
-		if (toStart && !this.startContainer.contains(this.endContainer)) {
-			this._setEndContainer(this.startContainer, this.this.startOffset);
+		if (toStart) {
+			this._setEndContainer(this.startContainer, this.startOffset);
 		} else {
 			this._setStartContainer(this.endContainer, this.endOffset);
 		}
@@ -104,6 +95,10 @@ export default class Range {
 	/**
 	 * Compares the boundary points of the Range with those of another range.
 	 *
+	 * Based on logic from:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-compareboundarypoints
 	 * @param how How.
 	 * @param sourceRange Range.
 	 * @returns A number, -1, 0, or 1, indicating whether the corresponding boundary-point of the Range is respectively before, equal to, or after the corresponding boundary-point of sourceRange.
@@ -116,7 +111,7 @@ export default class Range {
 			how !== RangeHowEnum.endToStart
 		) {
 			throw new DOMException(
-				`The comparison method provided must be one of 'START_TO_START', 'START_TO_END', 'END_TO_END' or 'END_TO_START'.`,
+				`The comparison method provided must be one of '${RangeHowEnum.startToStart}', '${RangeHowEnum.startToEnd}', '${RangeHowEnum.endToEnd}' or '${RangeHowEnum.endToStart}'.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
 		}
@@ -140,15 +135,15 @@ export default class Range {
 		switch (how) {
 			case RangeHowEnum.startToStart:
 				thisPoint.node = this.startContainer;
-				thisPoint.offset = this.this.startOffset;
+				thisPoint.offset = this.startOffset;
 				sourcePoint.node = sourceRange.startContainer;
-				sourcePoint.offset = sourceRange.this.startOffset;
+				sourcePoint.offset = sourceRange.startOffset;
 				break;
 			case RangeHowEnum.startToEnd:
 				thisPoint.node = this.endContainer;
 				thisPoint.offset = this.endOffset;
 				sourcePoint.node = sourceRange.startContainer;
-				sourcePoint.offset = sourceRange.this.startOffset;
+				sourcePoint.offset = sourceRange.startOffset;
 				break;
 			case RangeHowEnum.endToEnd:
 				thisPoint.node = this.endContainer;
@@ -158,7 +153,7 @@ export default class Range {
 				break;
 			case RangeHowEnum.endToStart:
 				thisPoint.node = this.startContainer;
-				thisPoint.offset = this.this.startOffset;
+				thisPoint.offset = this.startOffset;
 				sourcePoint.node = sourceRange.endContainer;
 				sourcePoint.offset = sourceRange.endOffset;
 				break;
@@ -170,35 +165,30 @@ export default class Range {
 	/**
 	 * Returns -1, 0, or 1 depending on whether the referenceNode is before, the same as, or after the Range.
 	 *
-	 * @param referenceNode Reference node.
+	 * Based on logic from:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-comparepoint
+	 * @param node Reference node.
 	 * @param offset Offset.
 	 * @returns -1,0, or 1.
 	 */
-	public comparePoint(referenceNode: INode, offset): number {
-		if (referenceNode.ownerDocument !== this._ownerDocument) {
+	public comparePoint(node: INode, offset): number {
+		if (node.ownerDocument !== this._ownerDocument) {
 			throw new DOMException(
 				`The two Ranges are not in the same tree.`,
 				DOMExceptionNameEnum.wrongDocumentError
 			);
 		}
 
-		if (referenceNode.nodeType === NodeTypeEnum.documentTypeNode) {
-			throw new DOMException(
-				`DocumentType Node can't be used as boundary point.`,
-				DOMExceptionNameEnum.invalidNodeTypeError
-			);
-		}
+		RangeUtility.validateBoundaryPoint({ node, offset });
 
-		if (offset > NodeUtility.getNodeLength(referenceNode)) {
-			throw new DOMException(`'Offset out of bound.`, DOMExceptionNameEnum.indexSizeError);
-		}
-
-		const boundaryPoint = { node: referenceNode, offset };
+		const boundaryPoint = { node, offset };
 
 		if (
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
 				node: this.startContainer,
-				offset: this.this.startOffset
+				offset: this.startOffset
 			}) === -1
 		) {
 			return -1;
@@ -217,8 +207,8 @@ export default class Range {
 	/**
 	 * Returns a DocumentFragment copying the objects of type Node included in the Range.
 	 *
-	 * Based on:
-	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js#L306
+	 * Based on logic from:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js
 	 *
 	 * @see https://dom.spec.whatwg.org/#concept-range-clone
 	 * @returns Document fragment.
@@ -237,7 +227,7 @@ export default class Range {
 				this.startContainer.nodeType === NodeTypeEnum.commentNode)
 		) {
 			const clone = (<IText | IComment>this.startContainer).cloneNode(false);
-			clone['_data'] = clone.substringData(this.this.startOffset, this.endOffset - this.this.startOffset);
+			clone['_data'] = clone.substringData(this.startOffset, this.endOffset - this.startOffset);
 			fragment.appendChild(clone);
 			return fragment;
 		}
@@ -272,22 +262,17 @@ export default class Range {
 		}
 
 		const containedChildren = [];
-		let hasDoctypeChildren = false;
 
 		for (const node of commonAncestor.childNodes) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
-					hasDoctypeChildren = true;
+					throw new DOMException(
+						'Invalid document type element.',
+						DOMExceptionNameEnum.hierarchyRequestError
+					);
 				}
 				containedChildren.push(node);
 			}
-		}
-
-		if (hasDoctypeChildren) {
-			throw new DOMException(
-				'Invalid document type element.',
-				DOMExceptionNameEnum.hierarchyRequestError
-			);
 		}
 
 		if (
@@ -298,8 +283,8 @@ export default class Range {
 		) {
 			const clone = (<IText | IComment>this.startContainer).cloneNode(false);
 			clone['_data'] = clone.substringData(
-				this.this.startOffset,
-				NodeUtility.getNodeLength(this.startContainer) - this.this.startOffset
+				this.startOffset,
+				NodeUtility.getNodeLength(this.startContainer) - this.startOffset
 			);
 
 			fragment.appendChild(clone);
@@ -308,7 +293,7 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new Range();
-			subRange._setStartContainer(this.startContainer, this.this.startOffset);
+			subRange._setStartContainer(this.startContainer, this.startOffset);
 			subRange._setEndContainer(
 				firstPartialContainedChild,
 				NodeUtility.getNodeLength(firstPartialContainedChild)
@@ -351,15 +336,14 @@ export default class Range {
 	/**
 	 * Returns a Range object with boundary points identical to the cloned Range.
 	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-clonerange
 	 * @returns Range.
 	 */
 	public cloneRange(): Range {
 		const clone = new Range();
 
-		(<INode>clone.startContainer) = this.startContainer;
-		(<number>clone.this.startOffset) = this.this.startOffset;
-		(<INode>clone.endContainer) = this.endContainer;
-		(<number>clone.endOffset) = this.endOffset;
+		clone._setStartContainer(this.startContainer, this.startOffset);
+		clone._setEndContainer(this.startContainer, this.endOffset);
 
 		return clone;
 	}
@@ -378,6 +362,11 @@ export default class Range {
 
 	/**
 	 * Removes the contents of the Range from the Document.
+	 *
+	 * Based on logic from:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-deletecontents
 	 */
 	public deleteContents(): void {
 		if (this.collapsed) {
@@ -391,8 +380,8 @@ export default class Range {
 				this.startContainer.nodeType === NodeTypeEnum.commentNode)
 		) {
 			(<IText | IComment>this.startContainer).replaceData(
-				this.this.startOffset,
-				this.endOffset - this.this.startOffset,
+				this.startOffset,
+				this.endOffset - this.startOffset,
 				''
 			);
 			return;
@@ -416,7 +405,7 @@ export default class Range {
 		let newOffset;
 		if (NodeUtility.isInclusiveAncestor(this.startContainer, this.endContainer)) {
 			newNode = this.startContainer;
-			newOffset = this.this.startOffset;
+			newOffset = this.startOffset;
 		} else {
 			let referenceNode = this.startContainer;
 
@@ -437,8 +426,8 @@ export default class Range {
 			this.startContainer.nodeType === NodeTypeEnum.commentNode
 		) {
 			(<IText | IComment>this.startContainer).replaceData(
-				this.this.startOffset,
-				NodeUtility.getNodeLength(this.startContainer) - this.this.startOffset,
+				this.startOffset,
+				NodeUtility.getNodeLength(this.startContainer) - this.startOffset,
 				''
 			);
 		}
@@ -472,6 +461,10 @@ export default class Range {
 	/**
 	 * Moves contents of the Range from the document tree into a DocumentFragment.
 	 *
+	 * Based on logic from:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-extractcontents
 	 * @returns Document fragment.
 	 */
 	public extractContents(): IDocumentFragment {
@@ -488,13 +481,13 @@ export default class Range {
 				this.startContainer.nodeType === NodeTypeEnum.commentNode)
 		) {
 			const clone = <IText | IComment>this.startContainer.cloneNode(false);
-			clone['_data'] = clone.substringData(this.this.startOffset, this.endOffset - this.this.startOffset);
+			clone['_data'] = clone.substringData(this.startOffset, this.endOffset - this.startOffset);
 
 			fragment.appendChild(clone);
 
 			(<IText | IComment>this.startContainer).replaceData(
-				this.this.startOffset,
-				this.endOffset - this.this.startOffset,
+				this.startOffset,
+				this.endOffset - this.startOffset,
 				''
 			);
 
@@ -531,29 +524,24 @@ export default class Range {
 		}
 
 		const containedChildren = [];
-		let hasDoctypeChildren = false;
 
 		for (const node of commonAncestor.childNodes) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
-					hasDoctypeChildren = true;
+					throw new DOMException(
+						'Invalid document type element.',
+						DOMExceptionNameEnum.hierarchyRequestError
+					);
 				}
 				containedChildren.push(node);
 			}
-		}
-
-		if (hasDoctypeChildren) {
-			throw new DOMException(
-				'Invalid document type element.',
-				DOMExceptionNameEnum.hierarchyRequestError
-			);
 		}
 
 		let newNode;
 		let newOffset;
 		if (NodeUtility.isInclusiveAncestor(this.startContainer, this.endContainer)) {
 			newNode = this.startContainer;
-			newOffset = this.this.startOffset;
+			newOffset = this.startOffset;
 		} else {
 			let referenceNode = this.startContainer;
 
@@ -576,15 +564,15 @@ export default class Range {
 		) {
 			const clone = <IText | IComment>this.startContainer.cloneNode(false);
 			clone['_data'] = clone.substringData(
-				this.this.startOffset,
-				NodeUtility.getNodeLength(this.startContainer) - this.this.startOffset
+				this.startOffset,
+				NodeUtility.getNodeLength(this.startContainer) - this.startOffset
 			);
 
 			fragment.appendChild(clone);
 
 			(<IText | IComment>this.startContainer).replaceData(
-				this.this.startOffset,
-				NodeUtility.getNodeLength(this.startContainer) - this.this.startOffset,
+				this.startOffset,
+				NodeUtility.getNodeLength(this.startContainer) - this.startOffset,
 				''
 			);
 		} else if (firstPartialContainedChild !== null) {
@@ -592,7 +580,7 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new Range();
-			subRange._setStartContainer(this.startContainer, this.this.startOffset);
+			subRange._setStartContainer(this.startContainer, this.startOffset);
 			subRange._setEndContainer(
 				firstPartialContainedChild,
 				NodeUtility.getNodeLength(firstPartialContainedChild)
@@ -659,6 +647,10 @@ export default class Range {
 	/**
 	 * Returns a boolean indicating whether the given point is in the Range.
 	 *
+	 * Based on logic from:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-ispointinrange
 	 * @param node Reference node.
 	 * @param offset Offset.
 	 * @returns "true" if in range.
@@ -675,7 +667,7 @@ export default class Range {
 		if (
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
 				node: this.startContainer,
-				offset: this.this.startOffset
+				offset: this.startOffset
 			}) === -1 ||
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
 				node: this.endContainer,
@@ -691,6 +683,10 @@ export default class Range {
 	/**
 	 * Inserts a node at the start of the Range.
 	 *
+	 * Based on logic from:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js
+	 *
+	 * @see https://dom.spec.whatwg.org/#concept-range-insert
 	 * @param newNode New node.
 	 */
 	public insertNode(newNode: INode): void {
@@ -700,212 +696,315 @@ export default class Range {
 			(this.startContainer.nodeType === NodeTypeEnum.textNode && !this.startContainer.parentNode) ||
 			newNode === this.startContainer
 		) {
-            throw new DOMException('Invalid start node.');
-			throw DOMException.create(newNode._globalObject, [
-				'Invalid start node.',
-				'HierarchyRequestError'
-			]);
+			throw new DOMException('Invalid start node.', DOMExceptionNameEnum.hierarchyRequestError);
 		}
 
 		let referenceNode =
 			this.startContainer.nodeType === NodeTypeEnum.textNode
 				? this.startContainer
-				: domSymbolTree.childrenToArray(this.startContainer)[this.startOffset] || null;
-		const parent = !referenceNode ? this.startContainer : domSymbolTree.parent(referenceNode);
-
-		parent._preInsertValidity(newNode, referenceNode);
+				: this.startContainer.childNodes[this.startOffset] || null;
+		const parent = !referenceNode ? this.startContainer : referenceNode.parentNode;
 
 		if (this.startContainer.nodeType === NodeTypeEnum.textNode) {
-			referenceNode = this.startContainer.splitText(this.startOffset);
+			referenceNode = (<IText>this.startContainer).splitText(this.startOffset);
 		}
 
 		if (newNode === referenceNode) {
-			referenceNode = domSymbolTree.nextSibling(referenceNode);
+			referenceNode = referenceNode.nextSibling;
 		}
 
-		const nodeParent = domSymbolTree.parent(newNode);
+		const nodeParent = newNode.parentNode;
 		if (nodeParent) {
 			nodeParent.removeChild(newNode);
 		}
 
-		let newOffset = !referenceNode ? nodeLength(parent) : domSymbolTree.index(referenceNode);
-		newOffset += newNode.nodeType === NODE_TYPE.DOCUMENT_FRAGMENT_NODE ? nodeLength(newNode) : 1;
+		let newOffset = !referenceNode
+			? NodeUtility.getNodeLength(parent)
+			: referenceNode.parentNode.childNodes.indexOf(referenceNode);
+		newOffset +=
+			newNode.nodeType === NodeTypeEnum.documentFragmentNode
+				? NodeUtility.getNodeLength(newNode)
+				: 1;
 
 		parent.insertBefore(newNode, referenceNode);
 
-		if (range.collapsed) {
-			range._setLiveRangeEnd(parent, newOffset);
+		if (this.collapsed) {
+			this._setEndContainer(parent, newOffset);
 		}
 	}
 
 	/**
 	 * Returns a boolean indicating whether the given Node intersects the Range.
 	 *
-	 * @param _referenceNode Reference node.
+	 * Based on logic from:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-intersectsnode
+	 * @param node Reference node.
 	 * @returns "true" if it intersects.
 	 */
-	public intersectsNode(_referenceNode: INode): boolean {
-		// TODO: Implement
-		return false;
+	public intersectsNode(node: INode): boolean {
+		if (node.ownerDocument !== this._ownerDocument) {
+			return false;
+		}
+
+		const parent = node.parentNode;
+
+		if (!parent) {
+			return true;
+		}
+
+		const offset = parent.childNodes.indexOf(node);
+
+		return (
+			RangeUtility.compareBoundaryPointsPosition(
+				{ node: parent, offset },
+				{ node: this.endContainer, offset: this.endOffset }
+			) === -1 &&
+			RangeUtility.compareBoundaryPointsPosition(
+				{ node: parent, offset: offset + 1 },
+				{ node: this.startContainer, offset: this.startOffset }
+			) === 1
+		);
 	}
 
 	/**
 	 * Sets the Range to contain the Node and its contents.
 	 *
-	 * @param referenceNode Reference node.
+	 * @see https://dom.spec.whatwg.org/#concept-range-select
+	 * @param node Reference node.
 	 */
-	public selectNode(referenceNode: INode): void {
-		if (!referenceNode.parentNode) {
+	public selectNode(node: INode): void {
+		if (!node.parentNode) {
 			throw new DOMException(
-				`Failed to select node. Reference node is missing a parent node.`,
+				`The given Node has no parent.`,
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
 
-		const index = referenceNode.parentNode.childNodes.indexOf(referenceNode);
+		const index = node.parentNode.childNodes.indexOf(node);
 
-		this._setStartContainer(referenceNode.parentNode, index);
-		this._setEndContainer(referenceNode.parentNode, index + 1);
+		this._setStartContainer(node.parentNode, index);
+		this._setEndContainer(node.parentNode, index + 1);
 	}
 
 	/**
 	 * Sets the Range to contain the contents of a Node.
 	 *
-	 * @param referenceNode Reference node.
+	 * @see https://dom.spec.whatwg.org/#dom-range-selectnodecontents
+	 * @param node Reference node.
 	 */
-	public selectNodeContents(referenceNode: INode): void {
-		this._setStartContainer(referenceNode, 0);
-		this._setEndContainer(referenceNode, NodeUtility.getNodeLength(referenceNode));
+	public selectNodeContents(node: INode): void {
+		if (node.nodeType === NodeTypeEnum.documentTypeNode) {
+			throw new DOMException(
+				"DocumentType Node can't be used as boundary point.",
+				DOMExceptionNameEnum.invalidNodeTypeError
+			);
+		}
+
+		this._setStartContainer(node, 0);
+		this._setEndContainer(node, NodeUtility.getNodeLength(node));
 	}
 
 	/**
 	 * Sets the end position of a Range to be located at the given offset into the specified node x.
 	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-setend
 	 * @param node End node.
 	 * @param offset End offset.
 	 */
 	public setEnd(node: INode, offset = 0): void {
 		RangeUtility.validateBoundaryPoint({ node, offset });
 
+		const boundaryPoint = { node, offset };
+
 		if (
 			node.ownerDocument !== this._ownerDocument ||
-			RangeUtility.compareBoundaryPointsPosition(
-				{
-					node,
-					offset
-				},
-				{
-					node: this.startContainer,
-					offset: this.this.startOffset
-				}
-			) === -1
+			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
+				node: this.startContainer,
+				offset: this.startOffset
+			}) === -1
 		) {
-			this.setStart(node, offset);
+			this._setStartContainer(node, offset);
 		}
+
 		this._setEndContainer(node, offset);
 	}
 
 	/**
 	 * Sets the start position of a Range.
 	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-setstart
 	 * @param node Start node.
 	 * @param offset Start offset.
 	 */
 	public setStart(node: INode, offset = 0): void {
 		RangeUtility.validateBoundaryPoint({ node, offset });
 
+		const boundaryPoint = { node, offset };
+
 		if (
 			node.ownerDocument !== this._ownerDocument ||
-			RangeUtility.compareBoundaryPointsPosition(
-				{
-					node,
-					offset
-				},
-				{
-					node: this.endContainer,
-					offset: this.endOffset
-				}
-			) === 1
+			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
+				node: this.endContainer,
+				offset: this.endOffset
+			}) === 1
 		) {
-			this.setEnd(node, offset);
+			this._setEndContainer(node, offset);
 		}
+
 		this._setStartContainer(node, offset);
 	}
 
 	/**
 	 * Sets the end position of a Range relative to another Node.
 	 *
-	 * @param referenceNode Reference node.
+	 * @see https://dom.spec.whatwg.org/#dom-range-setendafter
+	 * @param node Reference node.
 	 */
-	public setEndAfter(referenceNode: INode): void {
-		const sibling = referenceNode.nextSibling;
-		if (!sibling) {
+	public setEndAfter(node: INode): void {
+		if (!node.parentNode) {
 			throw new DOMException(
-				'Failed to set range end. "referenceNode" does not have any nodes after itself.'
+				'The given Node has no parent.',
+				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setEnd(sibling);
+		this.setEnd(node.parentNode, node.parentNode.childNodes.indexOf(node) + 1);
 	}
 
 	/**
 	 * Sets the end position of a Range relative to another Node.
 	 *
-	 * @param referenceNode Reference node.
+	 * @see https://dom.spec.whatwg.org/#dom-range-setendbefore
+	 * @param node Reference node.
 	 */
-	public setEndBefore(referenceNode: INode): void {
-		const sibling = referenceNode.previousSibling;
-		if (!sibling) {
+	public setEndBefore(node: INode): void {
+		if (!node.parentNode) {
 			throw new DOMException(
-				'Failed to set range end. "referenceNode" does not have any nodes before itself.'
+				'The given Node has no parent.',
+				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setEnd(sibling);
+		this.setEnd(node.parentNode, node.parentNode.childNodes.indexOf(node));
 	}
 
 	/**
 	 * Sets the start position of a Range relative to a Node.
 	 *
-	 * @param referenceNode Reference node.
+	 * @see https://dom.spec.whatwg.org/#dom-range-setstartafter
+	 * @param node Reference node.
 	 */
-	public setStartAfter(referenceNode: INode): void {
-		const sibling = referenceNode.nextSibling;
-		if (!sibling) {
+	public setStartAfter(node: INode): void {
+		if (!node.parentNode) {
 			throw new DOMException(
-				'Failed to set range start. "referenceNode" does not have any nodes after itself.'
+				'The given Node has no parent.',
+				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(sibling);
+		this.setStart(node.parentNode, node.parentNode.childNodes.indexOf(node) + 1);
 	}
 
 	/**
 	 * Sets the start position of a Range relative to another Node.
 	 *
-	 * @param referenceNode Reference node.
+	 * @see https://dom.spec.whatwg.org/#dom-range-setstartbefore
+	 * @param node Reference node.
 	 */
-	public setStartBefore(referenceNode: INode): void {
-		const sibling = referenceNode.previousSibling;
-		if (!sibling) {
+	public setStartBefore(node: INode): void {
+		if (!node.parentNode) {
 			throw new DOMException(
-				'Failed to set range start. "referenceNode" does not have any nodes before itself.'
+				'The given Node has no parent.',
+				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(sibling);
+		this.setStart(node.parentNode, node.parentNode.childNodes.indexOf(node));
 	}
 
 	/**
 	 * Moves content of the Range into a new node, placing the new node at the start of the specified range.
 	 *
-	 * @param _newParent New parent.
+	 * Based on logic from:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/Range-impl.js
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-surroundcontents
+	 * @param newParent New parent.
 	 */
-	public surroundContents(_newParent: INode): void {
-		// TODO: Implement
+	public surroundContents(newParent: INode): void {
+		let node = this.commonAncestorContainer;
+		const endNode = NodeUtility.nextDecendantNode(node);
+		while (node !== endNode) {
+			if (
+				node.nodeType !== NodeTypeEnum.textNode &&
+				RangeUtility.isPartiallyContained(node, this)
+			) {
+				throw new DOMException(
+					'The Range has partially contains a non-Text node.',
+					DOMExceptionNameEnum.invalidStateError
+				);
+			}
+
+			node = NodeUtility.following(node);
+		}
+
+		if (
+			newParent.nodeType === NodeTypeEnum.documentNode ||
+			newParent.nodeType === NodeTypeEnum.documentTypeNode ||
+			newParent.nodeType === NodeTypeEnum.documentFragmentNode
+		) {
+			throw new DOMException('Invalid element type.', DOMExceptionNameEnum.invalidNodeTypeError);
+		}
+
+		const fragment = this.extractContents();
+
+		while (newParent.firstChild) {
+			newParent.removeChild(newParent.firstChild);
+		}
+
+		this.insertNode(newParent);
+
+		newParent.appendChild(fragment);
+
+		this.selectNode(newParent);
 	}
 
 	/**
 	 * Returns the text of the Range.
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-range-stringifier
 	 */
 	public toString(): string {
-		return '';
+		let string = '';
+
+		if (
+			this.startContainer === this.endContainer &&
+			this.startContainer.nodeType === NodeTypeEnum.textNode
+		) {
+			return (<IText>this.startContainer).data.slice(this.startOffset, this.endOffset);
+		}
+
+		if (this.startContainer.nodeType === NodeTypeEnum.textNode) {
+			string += (<IText>this.startContainer).data.slice(this.startOffset);
+		}
+
+		const endNode = NodeUtility.nextDecendantNode(this.endContainer);
+		let currentNode = this.startContainer;
+
+		while (currentNode && currentNode !== endNode) {
+			if (
+				currentNode.nodeType === NodeTypeEnum.textNode &&
+				RangeUtility.isContained(currentNode, this)
+			) {
+				string += (<IText>currentNode).data;
+			}
+
+			currentNode = NodeUtility.following(currentNode);
+		}
+
+		if (this.endContainer.nodeType === NodeTypeEnum.textNode) {
+			string += (<IText>this.endContainer).data.slice(0, this.endOffset);
+		}
+
+		return string;
 	}
 
 	/**
@@ -918,13 +1017,13 @@ export default class Range {
 		if (
 			this.startContainer &&
 			this._startObserver &&
-			(this.startContainer !== container || this.this.startOffset !== offset)
+			(this.startContainer !== container || this.startOffset !== offset)
 		) {
 			(<Node>this.startContainer)._unobserve(this._startObserver);
 		}
 
 		(<INode>this.startContainer) = container;
-		(<number>this.this.startOffset) = offset;
+		(<number>this.startOffset) = offset;
 
 		if (offset !== 0) {
 			this._startObserver = this._getMutationListener(container, 'this.startOffset');

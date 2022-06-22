@@ -8,6 +8,7 @@ import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTem
 import XMLParserHTML from './data/XMLParserHTML';
 import NamespaceURI from '../../src/config/NamespaceURI';
 import DocumentType from '../../src/nodes/document-type/DocumentType';
+import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
 
 const GET_EXPECTED_HTML = (html: string): string =>
 	html
@@ -98,7 +99,9 @@ describe('XMLParser', () => {
 
 		it('Parses an entire HTML page.', () => {
 			const root = XMLParser.parse(window.document, XMLParserHTML);
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(GET_EXPECTED_HTML(XMLParserHTML));
+			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
+				GET_EXPECTED_HTML(XMLParserHTML)
+			);
 		});
 
 		it('Parses a page with document type set to "HTML 4.01".', () => {
@@ -111,7 +114,9 @@ describe('XMLParser', () => {
 			expect(doctype.name).toBe('HTML');
 			expect(doctype.publicId).toBe('-//W3C//DTD HTML 4.01//EN');
 			expect(doctype.systemId).toBe('http://www.w3.org/TR/html4/strict.dtd');
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(GET_EXPECTED_HTML(pageHTML));
+			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
+				GET_EXPECTED_HTML(pageHTML)
+			);
 		});
 
 		it('Parses a page with document type set to "MathML 1.01".', () => {
@@ -124,7 +129,9 @@ describe('XMLParser', () => {
 			expect(doctype.name).toBe('math');
 			expect(doctype.publicId).toBe('');
 			expect(doctype.systemId).toBe('http://www.w3.org/Math/DTD/mathml1/mathml.dtd');
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(GET_EXPECTED_HTML(pageHTML));
+			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
+				GET_EXPECTED_HTML(pageHTML)
+			);
 		});
 
 		it('Handles unclosed tags of unnestable elements (e.g. <a>, <li>).', () => {
@@ -142,7 +149,7 @@ describe('XMLParser', () => {
 				`
 			);
 
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(
+			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
 				`
 				<div class="test" disabled="">
 					<ul>
@@ -177,7 +184,7 @@ describe('XMLParser', () => {
 				'<b></b>'
 			);
 
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(
+			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
 				`<div>
 					<script>if(1<Math['random']()){else if(Math['random']()>1){console.log("1")}</script>
 					<script><b></b></script>
@@ -289,7 +296,7 @@ describe('XMLParser', () => {
 				length: 4
 			});
 
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(
+			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
 				`
 				<div>
 					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
@@ -329,7 +336,7 @@ describe('XMLParser', () => {
 			`
 			);
 
-			expect(root.innerHTML.replace(/[\s]/gm, '')).toBe(
+			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
 				`
 				<div>
 					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">

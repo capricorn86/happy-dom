@@ -1,6 +1,6 @@
-import DOMException from 'src/exception/DOMException';
-import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
-import NodeTypeEnum from 'src/nodes/node/NodeTypeEnum';
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
 import INode from '../nodes/node/INode';
 import NodeUtility from '../nodes/node/NodeUtility';
 import Range from './Range';
@@ -17,7 +17,7 @@ export default class RangeUtility {
 	/**
 	 * Compares boundary points.
 	 *
-	 * Based on:
+	 * Based on logic from:
 	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/range/boundary-point.js
 	 *
 	 * @see https://dom.spec.whatwg.org/#concept-range-bp-after
@@ -50,9 +50,7 @@ export default class RangeUtility {
 				child = child.parentNode;
 			}
 
-			const index = child.parentNode.childNodes.indexOf(child);
-
-			if (index < pointA.offset) {
+			if (child.parentNode.childNodes.indexOf(child) < pointA.offset) {
 				return 1;
 			}
 		}
