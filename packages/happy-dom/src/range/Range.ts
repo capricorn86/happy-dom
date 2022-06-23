@@ -343,7 +343,7 @@ export default class Range {
 		const clone = new Range();
 
 		clone._setStartContainer(this.startContainer, this.startOffset);
-		clone._setEndContainer(this.startContainer, this.endOffset);
+		clone._setEndContainer(this.endContainer, this.endOffset);
 
 		return clone;
 	}

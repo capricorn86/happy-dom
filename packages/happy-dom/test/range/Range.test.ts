@@ -2,6 +2,9 @@ import Window from '../../src/window/Window';
 import IWindow from '../../src/window/IWindow';
 import IDocument from '../../src/nodes/document/IDocument';
 import Range from '../../src/range/Range';
+import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum';
+import IText from '../../src/nodes/text/IText';
+import DOMRect from '../../src/nodes/element/DOMRect';
 
 describe('Range', () => {
 	let window: IWindow;
@@ -147,13 +150,13 @@ describe('Range', () => {
 			container.appendChild(span);
 			container.appendChild(span2);
 
-			range.setStart(span.childNodes[0], 1);
-			range.setEnd(span2.childNodes[0], 2);
+			range.setStart(span.firstChild, 1);
+			range.setEnd(span2.firstChild, 2);
 
 			range.collapse(true);
 
-			expect(range.startContainer === span.childNodes[0]).toBe(true);
-			expect(range.endContainer === span.childNodes[0]).toBe(true);
+			expect(range.startContainer === span.firstChild).toBe(true);
+			expect(range.endContainer === span.firstChild).toBe(true);
 			expect(range.startOffset).toBe(1);
 			expect(range.endOffset).toBe(1);
 			expect(range.collapsed).toBe(true);
@@ -200,8 +203,8 @@ describe('Range', () => {
 				<div>This is the Range 2 Content</div>
 			`;
 
-			range.setStart(container.children[0].childNodes[0], 1);
-			sourceRange.setEnd(container.children[1].childNodes[0], 10);
+			range.setStart(container.children[0].firstChild, 1);
+			sourceRange.setEnd(container.children[1].firstChild, 10);
 
 			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(-1);
 		});
@@ -215,10 +218,10 @@ describe('Range', () => {
 				<div>This is the Range 2 Content</div>
 			`;
 
-			range.setStart(container.children[0].childNodes[0], 1);
-			range.setEnd(container.children[1].childNodes[0], 10);
-			sourceRange.setStart(container.children[0].childNodes[0], 1);
-			sourceRange.setEnd(container.children[1].childNodes[0], 10);
+			range.setStart(container.children[0].firstChild, 1);
+			range.setEnd(container.children[1].firstChild, 10);
+			sourceRange.setStart(container.children[0].firstChild, 1);
+			sourceRange.setEnd(container.children[1].firstChild, 10);
 
 			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(1);
 		});
@@ -249,6 +252,250 @@ describe('Range', () => {
 			range.selectNode(container.children[1]);
 
 			expect(range.comparePoint(container.children[0], 0)).toBe(-1);
+		});
+	});
+
+	describe('cloneContents()', () => {
+		it('Clones text in a paragraph.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'My text';
+
+			const referenceNode = paragraph.firstChild;
+
+			range.selectNode(referenceNode);
+
+			const documentFragment = range.cloneContents();
+
+			expect(documentFragment.nodeType).toBe(NodeTypeEnum.documentFragmentNode);
+			expect(documentFragment.childNodes.length).toBe(1);
+			expect(documentFragment.firstChild.nodeType).toBe(NodeTypeEnum.textNode);
+			expect((<IText>documentFragment.firstChild).data).toBe('My text');
+
+			document.body.appendChild(documentFragment);
+
+			expect(documentFragment.childNodes.length).toBe(0);
+		});
+
+		it('Clones multiple elements inside a paragraph.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
+
+			range.setStart(paragraph.firstChild, 2);
+			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+
+			const documentFragment = range.cloneContents();
+
+			document.body.appendChild(documentFragment);
+
+			expect(document.body.innerHTML).toBe('ample: <i>italic</i> and <b>bol</b>');
+		});
+	});
+
+	describe('cloneRange()', () => {
+		it('Returns a new range with the same start and end as the original.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
+
+			range.setStart(paragraph.firstChild, 2);
+			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+
+			const clone = range.cloneRange();
+
+			expect(clone.startContainer === range.startContainer).toBe(true);
+			expect(clone.startOffset).toBe(range.startOffset);
+			expect(clone.endContainer === range.endContainer).toBe(true);
+			expect(clone.endOffset).toBe(range.endOffset);
+		});
+	});
+
+	describe('createContextualFragment()', () => {
+		it('Returns a document fragment with the tag string parsed as nodes.', () => {
+			const paragraph = document.createElement('p');
+
+			document.body.appendChild(paragraph);
+
+			range.selectNode(paragraph);
+
+			const fragment = range.createContextualFragment('<div>Test</div>');
+
+			document.body.appendChild(fragment);
+
+			expect(document.body.innerHTML).toBe('<p></p><div>Test</div>');
+		});
+	});
+
+	describe('deleteContents()', () => {
+		it('Deletes the selected content.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
+
+			range.setStart(paragraph.firstChild, 2);
+			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+
+			range.deleteContents();
+
+			expect(paragraph.innerHTML).toBe('Ex<b>d</b>');
+		});
+	});
+
+	describe('detach()', () => {
+		it('Do nothing.', () => {
+			expect(range.detach()).toBe(undefined);
+		});
+	});
+
+	describe('extractContents()', () => {
+		it('Extracts the selected content.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
+
+			document.body.appendChild(paragraph);
+
+			range.setStart(paragraph.firstChild, 2);
+			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+
+			const documentFragment = range.extractContents();
+
+			document.body.appendChild(documentFragment);
+
+			expect(document.body.innerHTML).toBe('<p>Ex<b>d</b></p>ample: <i>italic</i> and <b>bol</b>');
+		});
+	});
+
+	describe('getBoundingClientRect()', () => {
+		it('Returns an instance of DOMRect.', () => {
+			const domRect = range.getBoundingClientRect();
+			expect(domRect instanceof DOMRect).toBe(true);
+		});
+	});
+
+	describe('getClientRects()', () => {
+		it('Returns an empty IDOMRectList.', () => {
+			const clientRects = range.getClientRects();
+			expect(Array.isArray(clientRects)).toBe(true);
+			expect(typeof clientRects.item).toBe('function');
+		});
+	});
+
+	describe('isPointInRange()', () => {
+		it('Returns "true" if point is in Range.', () => {
+			document.body.innerHTML = '<p>Example: <i>italic</i> and <b>bold</b></p><span>Test</span>';
+
+			const paragraph = document.body.children[0];
+
+			range.setStart(paragraph.firstChild, 2);
+			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+
+			expect(range.isPointInRange(paragraph.querySelector('i').firstChild, 2)).toBe(true);
+			expect(range.isPointInRange(document.body.children[1], 1)).toBe(false);
+			expect(range.isPointInRange(document.body.children[1].firstChild, 2)).toBe(false);
+		});
+	});
+
+	describe('insertNode()', () => {
+		it('Inserts a node into the Range.', () => {
+			document.body.innerHTML = '<p>Example: <i>italic</i> and <b>bold</b></p><span>Test</span>';
+
+			const paragraph = document.body.children[0];
+
+			range.setStart(paragraph.firstChild, 2);
+			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+
+			const newNode = document.createElement('u');
+			newNode.innerHTML = 'New node';
+
+			range.insertNode(newNode);
+
+			expect(document.body.innerHTML).toBe(
+				'<p>Ex<u>New node</u>ample: <i>italic</i> and <b>bold</b></p><span>Test</span>'
+			);
+		});
+	});
+
+	describe('intersectsNode()', () => {
+		it('Returns "true" if a node intersects the Range.', () => {
+			document.body.innerHTML = '<p>Example: <i>italic</i> and <b>bold</b></p><span>Test</span>';
+
+			const paragraph = document.body.children[0];
+
+			range.setStart(paragraph.firstChild, 2);
+			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+
+			expect(range.intersectsNode(paragraph.querySelector('i'))).toBe(true);
+			expect(range.intersectsNode(paragraph.querySelector('i').firstChild)).toBe(true);
+			expect(range.intersectsNode(document.body.children[1])).toBe(false);
+			expect(range.intersectsNode(document.body.children[1].firstChild)).toBe(false);
+		});
+	});
+
+	describe('selectNode()', () => {
+		it('Sets the start and end Node to the parent of the provided Node and offset to its corresponding index.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
+
+			const italic = paragraph.querySelector('i');
+
+			range.selectNode(italic);
+
+			expect(range.startContainer === paragraph).toBe(true);
+			expect(range.endContainer === paragraph).toBe(true);
+			expect(range.startOffset).toBe(1);
+			expect(range.endOffset).toBe(2);
+		});
+	});
+
+	describe('selectNodeContents()', () => {
+		it('Selects the content of an element.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
+
+			const italic = paragraph.querySelector('i');
+
+			range.selectNodeContents(italic);
+
+			expect(range.startContainer === italic).toBe(true);
+			expect(range.endContainer === italic).toBe(true);
+			expect(range.startOffset).toBe(0);
+			expect(range.endOffset).toBe(1);
+		});
+
+		it('Selects the content of a text node.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
+
+			const text = paragraph.querySelector('i').firstChild;
+
+			range.selectNodeContents(text);
+
+			expect(range.startContainer === text).toBe(true);
+			expect(range.endContainer === text).toBe(true);
+			expect(range.startOffset).toBe(0);
+			expect(range.endOffset).toBe(6);
+		});
+	});
+
+	describe('setStart()', () => {
+		it('Selects the content of an element.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
+
+			const italic = paragraph.querySelector('i');
+
+			range.selectNodeContents(italic);
+
+			expect(range.startContainer === italic).toBe(true);
+			expect(range.endContainer === italic).toBe(true);
+			expect(range.startOffset).toBe(0);
+			expect(range.endOffset).toBe(1);
 		});
 	});
 });
