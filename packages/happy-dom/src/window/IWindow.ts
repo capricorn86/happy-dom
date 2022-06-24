@@ -24,6 +24,7 @@ import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
+import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import Image from '../nodes/html-image-element/Image';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
@@ -112,6 +113,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLLabelElement: typeof HTMLLabelElement;
 	readonly HTMLMetaElement: typeof HTMLMetaElement;
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
+	readonly HTMLDialogElement: typeof HTMLDialogElement;
 	readonly SVGSVGElement: typeof SVGSVGElement;
 	readonly SVGElement: typeof SVGElement;
 	readonly Image: typeof Image;

@@ -16,6 +16,7 @@ import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement';
 import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement';
 import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement';
+import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
 
 export default {
 	A: HTMLElement,
@@ -67,7 +68,7 @@ export default {
 	DEL: HTMLElement,
 	DETAILS: HTMLElement,
 	DFN: HTMLElement,
-	DIALOG: HTMLElement,
+	DIALOG: HTMLDialogElement,
 	DIV: HTMLElement,
 	DL: HTMLElement,
 	DT: HTMLElement,
