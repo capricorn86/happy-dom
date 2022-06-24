@@ -1,5 +1,5 @@
 const URL_REGEXP =
-	/(https?:)\/\/([-a-zA-Z0-9@:%._\+~#=]{2,256}[a-z]{2,6})(:[0-9]*)?([-a-zA-Z0-9@:%_\+.~c&//=]*)(\?[^#]*)?(#.*)?/;
+	/(https?:)*\/\/([-a-zA-Z0-9@:%._\+~#=]{2,256}[a-z]{2,6})(:[0-9]*)?([-a-zA-Z0-9@:%_\+.~c&//=]*)(\?[^#]*)?(#.*)?/;
 const PATH_REGEXP = /([-a-zA-Z0-9@:%_\+.~c&//=]*)(\?[^#]*)?(#.*)?/;
 
 /**
@@ -85,7 +85,7 @@ export default class URL {
 			this.protocol = match[1] || '';
 			this.hostname = hostnamePart.length > 1 ? hostnamePart[1] : hostnamePart[0];
 			this.port = match[3] || '';
-			this.pathname = match[4] || '';
+			this.pathname = match[4] || '/';
 			this.search = match[5] || '';
 			this.hash = match[6] || '';
 			this.username = credentialsPart ? credentialsPart[0] : '';
