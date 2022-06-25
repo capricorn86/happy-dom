@@ -93,6 +93,9 @@ import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
 import { atob, btoa } from './WindowBase64';
+import XMLHttpRequest from '../xml-http-request/XMLHttpRequest';
+import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload';
+import { XMLHttpRequestEventTarget } from '../xml-http-request/XMLHttpRequestEventTarget';
 
 /**
  * Browser window.
@@ -195,6 +198,11 @@ export default class Window extends EventTarget implements IWindow {
 		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
 	} = Response;
 	public readonly DOMRect: typeof DOMRect;
+
+	// XMLHttpRequest
+	public XMLHttpRequest = XMLHttpRequest;
+	public XMLHttpRequestUpload = XMLHttpRequestUpload;
+	public XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
 
 	// Events
 	public onload: (event: Event) => void = null;
@@ -305,6 +313,7 @@ export default class Window extends EventTarget implements IWindow {
 			this.dispatchEvent(new Event('load'));
 		});
 
+		XMLHttpRequest._defaultView = this;
 		DOMParser._ownerDocument = this.document;
 		FileReader._ownerDocument = this.document;
 		Image.ownerDocument = this.document;
