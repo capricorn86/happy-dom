@@ -37,18 +37,18 @@ export default class XMLHttpRequestUpload extends XMLHttpRequestEventTarget {
 			if (data.length !== 0) {
 				this._contentType = 'text/plain;charset=UTF-8';
 			}
-			this._body = new Buffer(data, 'utf-8');
+			this._body = Buffer.from(data, 'utf-8');
 		} else if (Buffer.isBuffer(data)) {
 			this._body = data;
 		} else if (data instanceof ArrayBuffer) {
-			const body = new Buffer(data.byteLength);
+			const body = Buffer.alloc(data.byteLength);
 			const view = new Uint8Array(data);
 			for (let i = 0; i < data.byteLength; i++) {
 				body[i] = view[i];
 			}
 			this._body = body;
 		} else if (data.buffer && data.buffer instanceof ArrayBuffer) {
-			const body = new Buffer(data.byteLength);
+			const body = Buffer.alloc(data.byteLength);
 			const offset = data.byteOffset;
 			const view = new Uint8Array(data.buffer);
 			for (let i = 0; i < data.byteLength; i++) {

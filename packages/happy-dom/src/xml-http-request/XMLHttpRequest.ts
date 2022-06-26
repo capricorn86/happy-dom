@@ -57,6 +57,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	private mimeOverride: string | null = null; // TODO: is type right?
 	private _request: ClientRequest | null = null;
 	private _response: IncomingMessage | null = null;
+	// @ts-ignore
+	private _error: Error | null = null;
 	private responseParts: Buffer[] | null = null;
 	private responseHeaders: { [lowercaseHeader: string]: string } | null = null;
 	private loadedBytes = 0;
@@ -72,6 +74,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		connection: true,
 		'content-length': true,
 		cookie: true,
+		cookie2: true,
 		date: true,
 		dnt: true,
 		expect: true,
@@ -86,7 +89,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		'user-agent': true,
 		via: true
 	};
-	private privateHeaders = { 'set-cookie': true };
+	private privateHeaders = { 'set-cookie': true, 'set-cookie2': true };
 	private userAgent = XMLHttpRequest._defaultView.navigator.userAgent;
 
 	/**
@@ -409,7 +412,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			return;
 		}
 
-		this.responseParts.push(new Buffer(<string>data));
+		this.responseParts.push(Buffer.from(<string>data));
 		this.loadedBytes += data.length;
 
 		if (this.readyState !== XMLHttpRequest.LOADING) {
@@ -475,9 +478,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	/**
 	 *
 	 * @param request
-	 * @param _error
+	 * @param error
 	 */
-	private onHttpRequestError(request: ClientRequest, _error: Error): void {
+	private onHttpRequestError(request: ClientRequest, error: Error): void {
+		this._error = error;
 		if (this._request !== request) {
 			return;
 		}
@@ -575,6 +579,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 */
 	private parseResponseEncoding(): string {
-		return /;\s*charset=(.*)$/.exec(this.responseHeaders['content-type'] || '')[1] || 'utf-8';
+		const charset = /;\s*charset=(.*)$/.exec(this.responseHeaders['content-type'] || '');
+		return Array.isArray(charset) ? charset[1] : 'utf-8';
 	}
 }
