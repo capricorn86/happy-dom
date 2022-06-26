@@ -33,7 +33,7 @@ export default class RelativeURL {
 
 			return (
 				location.origin +
-				(/(.*)\/(.*)[^\/]$/.test(pathname) ? pathname.match(/(.*)\/(.*)[^\/]$/)[1] : pathname) +
+				(/(.*)\/.*/.test(pathname) ? pathname.match(/(.*)\/.*/)[1] : '') +
 				'/' +
 				url
 			);
