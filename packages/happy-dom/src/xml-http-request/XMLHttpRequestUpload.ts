@@ -2,14 +2,14 @@ import { XMLHttpRequestEventTarget } from './XMLHttpRequestEventTarget';
 import { ClientRequest } from 'http';
 
 /**
- *
+ * References: https://xhr.spec.whatwg.org/#xmlhttprequestupload.
  */
 export default class XMLHttpRequestUpload extends XMLHttpRequestEventTarget {
 	private _contentType: string | null = null;
 	private _body = null;
 
 	/**
-	 *
+	 * Create a new XMLHttpRequestUpload object.
 	 */
 	constructor() {
 		super();
@@ -17,7 +17,7 @@ export default class XMLHttpRequestUpload extends XMLHttpRequestEventTarget {
 	}
 
 	/**
-	 *
+	 * Reset the upload.
 	 */
 	public reset(): void {
 		this._contentType = null;
@@ -25,8 +25,9 @@ export default class XMLHttpRequestUpload extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Set data to be sent.
 	 *
-	 * @param data
+	 * @param data The data to be sent.
 	 */
 	public setData(data?: string | Buffer | ArrayBuffer | ArrayBufferView): void {
 		if (data == null) {
@@ -61,9 +62,10 @@ export default class XMLHttpRequestUpload extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Finalize headers.
 	 *
-	 * @param headers
-	 * @param loweredHeaders
+	 * @param headers The headers to be finalized.
+	 * @param loweredHeaders The lowered headers to be finalized.
 	 */
 	public finalizeHeaders(headers: object, loweredHeaders: object): void {
 		if (this._contentType && !loweredHeaders['content-type']) {
@@ -75,8 +77,9 @@ export default class XMLHttpRequestUpload extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Start upload.
 	 *
-	 * @param request
+	 * @param request The request.
 	 */
 	public startUpload(request: ClientRequest): void {
 		if (this._body) {
