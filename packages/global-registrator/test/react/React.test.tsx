@@ -26,3 +26,5 @@ function unmountReactComponent(): void {
 
 mountReactComponent();
 unmountReactComponent();
+
+GlobalRegistrator.unregister();
