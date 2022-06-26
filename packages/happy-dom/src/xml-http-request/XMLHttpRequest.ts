@@ -21,7 +21,7 @@ interface IXMLHttpRequestOptions {
 }
 
 /**
- *
+ * References: https://github.com/souldreamer/xhr2-cookies.
  */
 export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public static readonly UNSENT = 0;
@@ -38,13 +38,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public response: string | ArrayBuffer | Buffer | object | null = null;
 	public responseText = '';
 	public responseType = '';
-	public status = 0; // TODO: UNSENT?
+	public status = 0;
 	public statusText = '';
 	public timeout = 0;
 	public upload = new XMLHttpRequestUpload();
 	public responseUrl = '';
 	public withCredentials = false;
-	// Todo: need rewrite.
+	// TODO: another way to set proxy?
 	public nodejsHttpAgent: HttpAgent = http.globalAgent;
 	public nodejsHttpsAgent: HttpsAgent = https.globalAgent;
 
@@ -90,9 +90,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		via: true
 	};
 	private privateHeaders = { 'set-cookie': true, 'set-cookie2': true };
-	private userAgent = XMLHttpRequest._defaultView.navigator.userAgent;
 
 	/**
+	 * News a request.
 	 *
 	 * @param options
 	 */
@@ -102,12 +102,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Initializes a newly-created request, or re-initializes an existing one.
 	 *
-	 * @param method
-	 * @param url
-	 * @param async
-	 * @param user
-	 * @param password
+	 * @param method The HTTP request method to use.
+	 * @param url The URL to request.
+	 * @param async Whether the request is synchronous or asynchronous.
+	 * @param user The username to use for authentication purposes.
+	 * @param password The password to use for authentication purposes.
 	 */
 	public open(method: string, url: string, async = true, user?: string, password?: string): void {
 		method = method.toUpperCase();
@@ -117,9 +118,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				DOMExceptionNameEnum.securityError
 			);
 		}
+		// If _defaultView is not defined, then we can't set the URL.
+		if (!XMLHttpRequest._defaultView) {
+			throw new Error('need set defaultView');
+		}
+		// Get and Parse the URL relative to the given Location object.
 		const xhrUrl = new XMLHttpRequest._defaultView.URL(
 			RelativeURL.getAbsoluteURL(XMLHttpRequest._defaultView.location, url)
 		);
+		// Set username and password if given.
 		xhrUrl.username = user ? user : xhrUrl.username;
 		xhrUrl.password = password ? password : xhrUrl.password;
 
@@ -149,9 +156,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Sets the value of an HTTP request header.
 	 *
-	 * @param name
-	 * @param value
+	 * @param name The name of the header whose value is to be set.
+	 * @param value The value to set as the body of the header.
 	 */
 	public setRequestHeader(name: string, value: unknown): void {
 		if (this.readyState !== XMLHttpRequest.OPENED) {
@@ -167,8 +175,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			/^sec-/.test(loweredName) ||
 			/^proxy-/.test(loweredName)
 		) {
-			// eslint-disable-next-line no-console
-			console.warn(`Refused to set unsafe header "${name}"`);
+			XMLHttpRequest._defaultView.console.warn(`Refused to set unsafe header "${name}"`);
 			return;
 		}
 
@@ -183,8 +190,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Sends the request. If the request is asynchronous (which is the default), this method returns as soon as the request is sent.
 	 *
-	 * @param data
+	 * @param data The data to send with the request.
 	 */
 	public send(data?: string | Buffer | ArrayBuffer | ArrayBufferView): void {
 		if (this.readyState !== XMLHttpRequest.OPENED) {
@@ -211,7 +219,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
-	 *
+	 * Aborts the request if it has already been sent.
 	 */
 	public abort(): void {
 		if (this._request == null) {
@@ -226,8 +234,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Returns the string containing the text of the specified header, or null if either the response has not yet been received or the header doesn't exist in the response.
 	 *
-	 * @param name
+	 * @param name The name of the header.
 	 */
 	public getResponseHeader(name: string): string {
 		if (this.responseHeaders == null || name == null) {
@@ -240,6 +249,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Returns all the response headers, separated by CRLF, as a string, or null if no response has been received.
 	 *
 	 */
 	public getAllResponseHeaders(): string {
@@ -252,8 +262,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Overrides the MIME type returned by the server.
 	 *
-	 * @param mimeType
+	 * @param mimeType The MIME type to use.
 	 */
 	public overrideMimeType(mimeType: string): void {
 		if (this.readyState === XMLHttpRequest.LOADING || this.readyState === XMLHttpRequest.DONE) {
@@ -266,8 +277,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Sets the value of the ReadyState.
 	 *
-	 * @param readyState
+	 * @param readyState The new value of the ReadyState.
 	 */
 	private setReadyState(readyState: number): void {
 		this.readyState = readyState;
@@ -275,25 +287,28 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Send request with file.
 	 *
-	 * @param _data
+	 * @param _data File body to send.
 	 */
 	private sendFile(_data: unknown): void {
-		// TODO
+		// TODO: sendFile() not implemented.
 		throw new Error('Protocol file: not implemented');
 	}
 
 	/**
+	 * Send request with http.
 	 *
-	 * @param data
+	 * @param data Data to send.
 	 */
 	private sendHttp(data?: string | Buffer | ArrayBuffer | ArrayBufferView): void {
 		if (this.sync) {
 			throw new Error('Synchronous XHR processing not implemented');
 		}
 		if (data && (this.method === 'GET' || this.method === 'HEAD')) {
-			// eslint-disable-next-line no-console
-			console.warn(`Discarding entity body for ${this.method} requests`);
+			XMLHttpRequest._defaultView.console.warn(
+				`Discarding entity body for ${this.method} requests`
+			);
 			data = null;
 		} else {
 			data = data || '';
@@ -305,12 +320,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * SendHxxpRequest sends the actual request.
 	 *
 	 */
 	private sendHxxpRequest(): void {
 		if (this.withCredentials) {
-			// Todo: need to verify same origin.
-			this.headers.cookie = XMLHttpRequest._defaultView.document.cookie;
+			// Set cookie if URL is same-origin.
+			if (XMLHttpRequest._defaultView.location.origin === this.url.origin) {
+				this.headers.cookie = XMLHttpRequest._defaultView.document.cookie;
+			}
 		}
 
 		const [hxxp, agent] =
@@ -340,6 +358,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Finalize headers.
 	 *
 	 */
 	private finalizeHeaders(): void {
@@ -347,16 +366,17 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			...this.headers,
 			Connection: 'keep-alive',
 			Host: this.url.host,
-			'User-Agent': this.userAgent,
+			'User-Agent': XMLHttpRequest._defaultView.navigator.userAgent,
 			...(this.anonymous ? { Referer: 'about:blank' } : {})
 		};
 		this.upload.finalizeHeaders(this.headers, this.loweredHeaders);
 	}
 
 	/**
+	 * OnHttpResponse handles the response.
 	 *
-	 * @param request
-	 * @param response
+	 * @param request The request.
+	 * @param response The response.
 	 */
 	private onHttpResponse(request: ClientRequest, response: IncomingMessage): void {
 		if (this._request !== request) {
@@ -403,9 +423,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * OnHttpResponseData handles the response data.
 	 *
-	 * @param response
-	 * @param data
+	 * @param response The response.
+	 * @param data The data.
 	 */
 	private onHttpResponseData(response: IncomingMessage, data: string | Buffer): void {
 		if (this._response !== response) {
@@ -423,8 +444,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * OnHttpResponseEnd handles the response end.
 	 *
-	 * @param response
+	 * @param response The response.
 	 */
 	private onHttpResponseEnd(response: IncomingMessage): void {
 		if (this._response !== response) {
@@ -441,8 +463,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * OnHttpResponseClose handles the response close.
 	 *
-	 * @param response
+	 * @param response The response.
 	 */
 	private onHttpResponseClose(response: IncomingMessage): void {
 		if (this._response !== response) {
@@ -459,8 +482,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * OnHttpRequestError handles the request error.
 	 *
-	 * @param request
+	 * @param request The request.
 	 */
 	private onHttpTimeout(request: ClientRequest): void {
 		if (this._request !== request) {
@@ -476,9 +500,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * OnHttpRequestError handles the request error.
 	 *
-	 * @param request
-	 * @param error
+	 * @param request The request.
+	 * @param error The error.
 	 */
 	private onHttpRequestError(request: ClientRequest, error: Error): void {
 		this._error = error;
@@ -495,8 +520,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Dispatches the progress event.
 	 *
-	 * @param eventType
+	 * @param eventType The event type.
 	 */
 	private dispatchProgress(eventType: string): void {
 		const event = new ProgressEvent(eventType, {
@@ -508,6 +534,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Sets the error.
 	 *
 	 */
 	private setError(): void {
@@ -518,8 +545,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Parses the response headers.
 	 *
-	 * @param response
+	 * @param response The response.
 	 */
 	private parseResponseHeaders(response: IncomingMessage): void {
 		this.responseHeaders = {};
@@ -536,6 +564,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Parses the response.
 	 *
 	 */
 	private parseResponse(): void {
@@ -576,6 +605,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Parses the response encoding.
 	 *
 	 */
 	private parseResponseEncoding(): string {
