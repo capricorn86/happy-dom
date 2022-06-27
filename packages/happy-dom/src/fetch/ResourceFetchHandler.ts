@@ -34,7 +34,14 @@ export default class ResourceFetchHandler {
 		// We want to only load SyncRequest when it is needed to improve performance and not have direct dependencies to server side packages.
 		const absoluteURL = RelativeURL.getAbsoluteURL(document.defaultView.location, url);
 		const syncRequest = require('sync-request');
-		const response = syncRequest('GET', absoluteURL);
+		const response = syncRequest('GET', absoluteURL, {
+			headers: {
+				'user-agent': document.defaultView.navigator.userAgent,
+				cookie: document.defaultView.document.cookie,
+				referer: document.defaultView.location.href,
+				pragma: 'no-cache'
+			}
+		});
 
 		if (response.isError()) {
 			throw new DOMException(
