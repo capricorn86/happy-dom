@@ -167,7 +167,7 @@ describe('XMLParser', () => {
 			const root = XMLParser.parse(
 				window.document,
 				`<div>
-					<script>if(1<Math['random']()){else if(Math['random']()>1){console.log("1")}</script>
+					<script>if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}</script>
 					<script><b></b></script>
 					<style><b></b></style>
 					<template><b></b></template>
@@ -175,7 +175,7 @@ describe('XMLParser', () => {
 			);
 
 			expect((<IHTMLElement>root.children[0].children[0]).innerText).toBe(
-				`if(1<Math['random']()){else if(Math['random']()>1){console.log("1")}`
+				`if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}`
 			);
 
 			expect((<IHTMLElement>root.children[0].children[1]).innerText).toBe('<b></b>');
@@ -186,10 +186,10 @@ describe('XMLParser', () => {
 
 			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
 				`<div>
-					<script>if(1<Math['random']()){else if(Math['random']()>1){console.log("1")}</script>
+					<script>if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}</script>
 					<script><b></b></script>
 					<style><b></b></style>
-					<template></template>
+					<template><b></b></template>
 				</div>`.replace(/[\s]/gm, '')
 			);
 
