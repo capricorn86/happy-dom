@@ -24,9 +24,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	}
 
 	/**
-	 * Sets inner HTML.
-	 *
-	 * @param html HTML.
+	 * @override
 	 */
 	public set innerHTML(html: string) {
 		for (const child of this.content.childNodes.slice()) {
@@ -39,18 +37,14 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	}
 
 	/**
-	 * Returns outer HTML.
-	 *
-	 * @returns HTML.
+	 * @override
 	 */
 	public get outerHTML(): string {
-		return new XMLSerializer().serializeToString(this);
+		return new XMLSerializer().serializeToString(this.content);
 	}
 
 	/**
-	 * Returns outer HTML.
-	 *
-	 * @param html HTML.
+	 * @override
 	 */
 	public set outerHTML(_html: string) {
 		throw new DOMException(
@@ -59,36 +53,28 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	}
 
 	/**
-	 * Previous sibling.
-	 *
-	 * @returns Node.
+	 * @override
 	 */
 	public get previousSibling(): INode {
 		return this.content.previousSibling;
 	}
 
 	/**
-	 * Next sibling.
-	 *
-	 * @returns Node.
+	 * @override
 	 */
 	public get nextSibling(): INode {
 		return this.content.nextSibling;
 	}
 
 	/**
-	 * First child.
-	 *
-	 * @returns Node.
+	 * @override
 	 */
 	public get firstChild(): INode {
 		return this.content.firstChild;
 	}
 
 	/**
-	 * Last child.
-	 *
-	 * @returns Node.
+	 * @override
 	 */
 	public get lastChild(): INode {
 		return this.content.lastChild;
@@ -107,52 +93,35 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	}
 
 	/**
-	 * Append a child node to childNodes.
-	 *
-	 * @param  node Node to append.
-	 * @returns Appended node.
+	 * @override
 	 */
 	public appendChild(node: INode): INode {
 		return this.content.appendChild(node);
 	}
 
 	/**
-	 * Remove Child element from childNodes array.
-	 *
-	 * @param node Node to remove.
+	 * @override
 	 */
 	public removeChild(node: Node): INode {
 		return this.content.removeChild(node);
 	}
 
 	/**
-	 * Inserts a node before another.
-	 *
-	 * @param newNode Node to insert.
-	 * @param referenceNode Node to insert before.
-	 * @returns Inserted node.
+	 * @override
 	 */
 	public insertBefore(newNode: INode, referenceNode: INode): INode {
 		return this.content.insertBefore(newNode, referenceNode);
 	}
 
 	/**
-	 * Replaces a node with another.
-	 *
-	 * @param newChild New child.
-	 * @param oldChild Old child.
-	 * @returns Replaced node.
+	 * @override
 	 */
 	public replaceChild(newChild: INode, oldChild: INode): INode {
 		return this.content.replaceChild(newChild, oldChild);
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLTemplateElement {
 		const clone = <IHTMLTemplateElement>super.cloneNode(deep);
