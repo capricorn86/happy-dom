@@ -7,7 +7,17 @@ import * as NodeFetch from 'node-fetch';
  * Fetch response.
  */
 export default class Response extends NodeFetch.Response implements IResponse {
+	// Owner document is set by a sub-class in the Window constructor
 	public static _ownerDocument: IDocument = null;
+	public readonly _ownerDocument: IDocument = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		this._ownerDocument = (<typeof Response>this.constructor)._ownerDocument;
+	}
 
 	/**
 	 * Returns array buffer.
@@ -105,8 +115,7 @@ export default class Response extends NodeFetch.Response implements IResponse {
 	 * @returns Task ID.
 	 */
 	private _handlePromiseStart(): number {
-		const taskManager = (<typeof Response>this.constructor)._ownerDocument.defaultView.happyDOM
-			.asyncTaskManager;
+		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
 		return taskManager.startTask();
 	}
 
@@ -124,8 +133,7 @@ export default class Response extends NodeFetch.Response implements IResponse {
 		taskID: number,
 		response: unknown
 	): void {
-		const taskManager = (<typeof Response>this.constructor)._ownerDocument.defaultView.happyDOM
-			.asyncTaskManager;
+		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
 		if (taskManager.getTaskCount() === 0) {
 			reject(new Error('Failed to complete fetch request. Task was canceled.'));
 		} else {
@@ -141,8 +149,7 @@ export default class Response extends NodeFetch.Response implements IResponse {
 	 * @param reject
 	 */
 	private _handlePromiseError(reject: (error: Error) => void, error: Error): void {
-		const taskManager = (<typeof Response>this.constructor)._ownerDocument.defaultView.happyDOM
-			.asyncTaskManager;
+		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
 		reject(error);
 		taskManager.cancelAll(error);
 	}

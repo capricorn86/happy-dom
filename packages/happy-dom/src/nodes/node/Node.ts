@@ -16,6 +16,9 @@ import NodeTypeEnum from './NodeTypeEnum';
  * Node.
  */
 export default class Node extends EventTarget implements INode {
+	// Owner document is set when the Node is created by the Document
+	public static _ownerDocument: IDocument = null;
+
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
 	public static readonly TEXT_NODE = NodeTypeEnum.textNode;
@@ -24,7 +27,6 @@ export default class Node extends EventTarget implements INode {
 	public static readonly DOCUMENT_TYPE_NODE = NodeTypeEnum.documentTypeNode;
 	public static readonly DOCUMENT_FRAGMENT_NODE = NodeTypeEnum.documentFragmentNode;
 	public static readonly PROCESSING_INSTRUCTION_NODE = NodeTypeEnum.processingInstructionNode;
-	public static ownerDocument: IDocument = null;
 	public readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
 	public readonly TEXT_NODE = NodeTypeEnum.textNode;
 	public readonly COMMENT_NODE = NodeTypeEnum.commentNode;
@@ -47,7 +49,7 @@ export default class Node extends EventTarget implements INode {
 	 */
 	constructor() {
 		super();
-		this.ownerDocument = (<typeof Node>this.constructor).ownerDocument;
+		this.ownerDocument = (<typeof Node>this.constructor)._ownerDocument;
 	}
 
 	/**

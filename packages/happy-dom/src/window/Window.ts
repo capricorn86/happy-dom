@@ -25,7 +25,7 @@ import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
-import Image from '../nodes/html-image-element/Image';
+import { default as ImageImplementation } from '../nodes/html-image-element/Image';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
 import CharacterData from '../nodes/character-data/CharacterData';
 import TreeWalker from '../tree-walker/TreeWalker';
@@ -40,13 +40,13 @@ import Location from '../location/Location';
 import NonImplementedEventTypes from '../event/NonImplementedEventTypes';
 import MutationObserver from '../mutation-observer/MutationObserver';
 import NonImplemenetedElementClasses from '../config/NonImplemenetedElementClasses';
-import DOMParser from '../dom-parser/DOMParser';
+import { default as DOMParserImplementation } from '../dom-parser/DOMParser';
 import XMLSerializer from '../xml-serializer/XMLSerializer';
 import ResizeObserver from '../resize-observer/ResizeObserver';
 import Blob from '../file/Blob';
 import File from '../file/File';
 import DOMException from '../exception/DOMException';
-import FileReader from '../file/FileReader';
+import { default as FileReaderImplementation } from '../file/FileReader';
 import History from '../history/History';
 import CSSStyleSheet from '../css/CSSStyleSheet';
 import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
@@ -72,8 +72,8 @@ import IRequestInit from '../fetch/IRequestInit';
 import IHeaders from '../fetch/IHeaders';
 import IHeadersInit from '../fetch/IHeadersInit';
 import Headers from '../fetch/Headers';
-import Request from '../fetch/Request';
-import Response from '../fetch/Response';
+import { default as RequestImplementation } from '../fetch/Request';
+import { default as ResponseImplementation } from '../fetch/Response';
 import Storage from '../storage/Storage';
 import IWindow from './IWindow';
 import HTMLCollection from '../nodes/element/HTMLCollection';
@@ -87,13 +87,14 @@ import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
 import { URLSearchParams } from 'url';
 import FetchHandler from '../fetch/FetchHandler';
-import Range from '../range/Range';
+import { default as RangeImplementation } from '../range/Range';
 import DOMRect from '../nodes/element/DOMRect';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
 import Base64 from '../base64/Base64';
+import IDocument from '../nodes/document/IDocument';
 
 /**
  * Browser window.
@@ -102,7 +103,7 @@ import Base64 from '../base64/Base64';
  * https://developer.mozilla.org/en-US/docs/Web/API/Window.
  */
 export default class Window extends EventTarget implements IWindow {
-	// Public Properties
+	// The Happy DOM property
 	public readonly happyDOM = {
 		whenAsyncComplete: async (): Promise<void> => {
 			return await this.happyDOM.asyncTaskManager.whenComplete();
@@ -122,7 +123,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLInputElement = HTMLInputElement;
 	public readonly HTMLTextAreaElement = HTMLTextAreaElement;
 	public readonly HTMLImageElement = HTMLImageElement;
-	public readonly Image = Image;
 	public readonly HTMLScriptElement = HTMLScriptElement;
 	public readonly HTMLLinkElement = HTMLLinkElement;
 	public readonly HTMLStyleElement = HTMLStyleElement;
@@ -140,7 +140,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly CharacterData = CharacterData;
 	public readonly NodeFilter = NodeFilter;
 	public readonly TreeWalker = TreeWalker;
-	public readonly DOMParser = DOMParser;
 	public readonly MutationObserver = MutationObserver;
 	public readonly Document = Document;
 	public readonly HTMLDocument = HTMLDocument;
@@ -172,7 +171,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly CSSStyleSheet = CSSStyleSheet;
 	public readonly Blob = Blob;
 	public readonly File = File;
-	public readonly FileReader = FileReader;
 	public readonly DOMException = DOMException;
 	public readonly History = History;
 	public readonly Screen = Screen;
@@ -189,14 +187,17 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Plugin = Plugin;
 	public readonly PluginArray = PluginArray;
 	public readonly Headers: { new (init?: IHeadersInit): IHeaders } = Headers;
+	public readonly DOMRect: typeof DOMRect;
 	public readonly Request: {
 		new (input: string | { href: string } | IRequest, init?: IRequestInit): IRequest;
-	} = Request;
+	};
 	public readonly Response: {
 		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
-	} = Response;
-	public readonly Range = Range;
-	public readonly DOMRect: typeof DOMRect;
+	};
+	public readonly DOMParser;
+	public readonly Range;
+	public readonly FileReader;
+	public readonly Image;
 
 	// Events
 	public onload: (event: Event) => void = null;
@@ -297,25 +298,50 @@ export default class Window extends EventTarget implements IWindow {
 	constructor() {
 		super();
 
-		this.document = new HTMLDocument();
+		const document = new HTMLDocument();
+
+		this.document = document;
 		this.document.defaultView = this;
 		this.document._readyStateManager.whenComplete().then(() => {
 			this.dispatchEvent(new Event('load'));
 		});
 
-		DOMParser._ownerDocument = this.document;
-		FileReader._ownerDocument = this.document;
-		Image.ownerDocument = this.document;
-		Request._ownerDocument = this.document;
-		Response._ownerDocument = this.document;
-		Range._ownerDocument = this.document;
+		// We need to set the correct owner document when the class is constructed.
+		// To achieve this we will extend the original implementation with a class that sets the owner document.
 
+		ResponseImplementation._ownerDocument = document;
+		RequestImplementation._ownerDocument = document;
+		ImageImplementation._ownerDocument = document;
+		FileReaderImplementation._ownerDocument = document;
+		DOMParserImplementation._ownerDocument = document;
+		RangeImplementation._ownerDocument = document;
+		this.Response = class Response extends ResponseImplementation {
+			public static _ownerDocument: IDocument = document;
+		};
+		this.Request = class Request extends RequestImplementation {
+			public static _ownerDocument: IDocument = document;
+		};
+		this.Image = class Image extends ImageImplementation {
+			public static _ownerDocument: IDocument = document;
+		};
+		this.FileReader = class FileReader extends FileReaderImplementation {
+			public static _ownerDocument: IDocument = document;
+		};
+		this.DOMParser = class DOMParser extends DOMParserImplementation {
+			public static _ownerDocument: IDocument = document;
+		};
+		this.Range = class Range extends RangeImplementation {
+			public static _ownerDocument: IDocument = document;
+		};
+
+		// Non-implemented event types
 		for (const eventType of NonImplementedEventTypes) {
 			if (!this[eventType]) {
 				this[eventType] = Event;
 			}
 		}
 
+		// Non implemented element classes
 		for (const className of NonImplemenetedElementClasses) {
 			if (!this[className]) {
 				this[className] = HTMLElement;

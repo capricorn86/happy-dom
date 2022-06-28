@@ -6,6 +6,7 @@ enum DOMExceptionNameEnum {
 	notSupportedError = 'NotSupportedError',
 	wrongDocumentError = 'WrongDocumentError',
 	invalidNodeTypeError = 'InvalidNodeTypeError',
-	invalidCharacterError = 'InvalidCharacterError'
+	invalidCharacterError = 'InvalidCharacterError',
+	notFoundError = 'NotFoundError'
 }
 export default DOMExceptionNameEnum;

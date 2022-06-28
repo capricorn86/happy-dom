@@ -58,6 +58,7 @@ export default class Document extends Node implements IDocument {
 	protected _isFirstWriteAfterOpen = false;
 	private _defaultView: IWindow = null;
 	private _cookie = '';
+	private _selection: Selection = null;
 
 	/**
 	 * Creates an instance of Document.
@@ -65,8 +66,7 @@ export default class Document extends Node implements IDocument {
 	constructor() {
 		super();
 
-		this.implementation = new DOMImplementation();
-		this.implementation._ownerDocument = this;
+		this.implementation = new DOMImplementation(this);
 
 		const doctype = this.implementation.createDocumentType('html', '', '');
 		const documentElement = this.createElement('html');
@@ -655,14 +655,15 @@ export default class Document extends Node implements IDocument {
 			customElementClass = this.defaultView.customElements.get(tagName);
 		}
 
-		const elementClass = customElementClass || ElementTag[tagName] || HTMLUnknownElement;
+		const elementClass: typeof Element =
+			customElementClass || ElementTag[tagName] || HTMLUnknownElement;
 
-		elementClass.ownerDocument = this;
+		elementClass._ownerDocument = this;
 
 		const element = new elementClass();
 		element.tagName = tagName;
-		element.ownerDocument = this;
-		element.namespaceURI = namespaceURI;
+		(<IDocument>element.ownerDocument) = this;
+		(<string>element.namespaceURI) = namespaceURI;
 		if (element instanceof Element && options && options.is) {
 			element._isValue = String(options.is);
 		}
@@ -679,7 +680,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createTextNode(data?: string): IText {
-		Text.ownerDocument = this;
+		Text._ownerDocument = this;
 		return new Text(data);
 	}
 
@@ -690,7 +691,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createComment(data?: string): IComment {
-		Comment.ownerDocument = this;
+		Comment._ownerDocument = this;
 		return new Comment(data);
 	}
 
@@ -700,7 +701,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document fragment.
 	 */
 	public createDocumentFragment(): IDocumentFragment {
-		DocumentFragment.ownerDocument = this;
+		DocumentFragment._ownerDocument = this;
 		return new DocumentFragment();
 	}
 
@@ -723,7 +724,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Event.
 	 */
 	public createEvent(type: string): Event {
-		if (this.defaultView[type]) {
+		if (typeof this.defaultView[type] === 'function') {
 			return new this.defaultView[type]('init');
 		}
 		return new Event('init');
@@ -779,7 +780,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Range.
 	 */
 	public createRange(): Range {
-		return new Range();
+		return new this.defaultView.Range();
 	}
 
 	/**
@@ -804,7 +805,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Selection.
 	 */
 	public getSelection(): Selection {
-		return new Selection();
+		if (!this._selection) {
+			this._selection = new Selection(this);
+		}
+		return this._selection;
 	}
 
 	/**

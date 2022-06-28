@@ -1,10 +1,11 @@
-import Document from '../nodes/document/Document';
+import IDocument from '../nodes/document/IDocument';
 import XMLParser from '../xml-parser/XMLParser';
 import Node from '../nodes/node/Node';
 import DOMException from '../exception/DOMException';
 import HTMLDocument from '../nodes/html-document/HTMLDocument';
 import XMLDocument from '../nodes/xml-document/XMLDocument';
 import SVGDocument from '../nodes/svg-document/SVGDocument';
+import IWindow from '../window/IWindow';
 
 /**
  * DOM parser.
@@ -13,7 +14,16 @@ import SVGDocument from '../nodes/svg-document/SVGDocument';
  * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser.
  */
 export default class DOMParser {
-	public static _ownerDocument: Document = null;
+	// Owner document is set by a sub-class in the Window constructor
+	public static _ownerDocument: IDocument = null;
+	public readonly _ownerDocument: IDocument = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		this._ownerDocument = (<typeof DOMParser>this.constructor)._ownerDocument;
+	}
 
 	/**
 	 * Parses HTML and returns a root element.
@@ -22,15 +32,15 @@ export default class DOMParser {
 	 * @param mimeType Mime type.
 	 * @returns Root element.
 	 */
-	public parseFromString(string: string, mimeType: string): Document {
+	public parseFromString(string: string, mimeType: string): IDocument {
 		if (!mimeType) {
 			throw new DOMException('Second parameter "mimeType" is mandatory.');
 		}
 
-		const ownerDocument = (<typeof DOMParser>(<unknown>this.constructor))._ownerDocument;
+		const ownerDocument = this._ownerDocument;
 		const newDocument = this._createDocument(mimeType);
 
-		newDocument.defaultView = ownerDocument.defaultView;
+		(<IWindow>newDocument.defaultView) = ownerDocument.defaultView;
 		newDocument.childNodes.length = 0;
 		newDocument.children.length = 0;
 
@@ -81,9 +91,9 @@ export default class DOMParser {
 	/**
 	 *
 	 * @param mimeType Mime type.
-	 * @returns Document.
+	 * @returns IDocument.
 	 */
-	private _createDocument(mimeType: string): Document {
+	private _createDocument(mimeType: string): IDocument {
 		switch (mimeType) {
 			case 'text/html':
 				return new HTMLDocument();

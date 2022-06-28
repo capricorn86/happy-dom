@@ -4,8 +4,7 @@ import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
 import INode from '../nodes/node/INode';
 import NodeUtility from '../nodes/node/NodeUtility';
 import Range from './Range';
-
-type BoundaryPoint = { node: INode; offset: number };
+import IRangeBoundaryPoint from './IRangeBoundaryPoint';
 
 /**
  * Range utility.
@@ -26,8 +25,8 @@ export default class RangeUtility {
 	 * @returns A number, -1, 0, or 1, indicating whether the corresponding boundary-point of the Range is respectively before, equal to, or after the corresponding boundary-point of sourceRange.
 	 */
 	public static compareBoundaryPointsPosition(
-		pointA: BoundaryPoint,
-		pointB: BoundaryPoint
+		pointA: IRangeBoundaryPoint,
+		pointB: IRangeBoundaryPoint
 	): number {
 		if (pointA.node === pointB.node) {
 			if (pointA.offset === pointB.offset) {
@@ -64,7 +63,7 @@ export default class RangeUtility {
 	 * @throws DOMException
 	 * @param point Boundary point.
 	 */
-	public static validateBoundaryPoint(point: BoundaryPoint): void {
+	public static validateBoundaryPoint(point: IRangeBoundaryPoint): void {
 		if (point.node.nodeType === NodeTypeEnum.documentTypeNode) {
 			throw new DOMException(
 				`DocumentType Node can't be used as boundary point.`,
