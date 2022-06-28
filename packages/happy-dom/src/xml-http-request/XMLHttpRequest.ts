@@ -19,7 +19,8 @@ import RelativeURL from '../location/RelativeURL';
 interface IXMLHttpRequestOptions {
 	anon?: boolean;
 }
-
+const NodeVersion = process.version.replace('v', '').split('.');
+const MajorNodeVersion = Number.parseInt(NodeVersion[0]);
 /**
  * References: https://github.com/souldreamer/xhr2-cookies.
  */
@@ -225,8 +226,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (this._request == null) {
 			return;
 		}
+		// ClientRequest.destroy breaks the test suite for versions 10 and 12,
+		// Hence the version check
+		if (MajorNodeVersion > 13) {
+			this._request.destroy();
+		} else {
+			this._request.abort();
+		}
 
-		this._request.destroy();
 		this.setError();
 
 		this.dispatchProgress('abort');
@@ -474,7 +481,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		const request = this._request;
 		this.setError();
-		request.destroy();
+		// ClientRequest.destroy breaks the test suite for versions 10 and 12,
+		// Hence the version check
+		if (MajorNodeVersion > 13) {
+			request.destroy();
+		} else {
+			request.abort();
+		}
 		this.setReadyState(XMLHttpRequest.DONE);
 
 		this.dispatchProgress('error');
@@ -482,7 +495,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
-	 * OnHttpRequestError handles the request error.
+	 * OnHttpTimeout handles the timeout.
 	 *
 	 * @param request The request.
 	 */
@@ -492,7 +505,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		this.setError();
-		request.destroy();
+		// ClientRequest.destroy breaks the test suite for versions 10 and 12,
+		// Hence the version check
+		if (MajorNodeVersion > 13) {
+			request.destroy();
+		} else {
+			request.abort();
+		}
 		this.setReadyState(XMLHttpRequest.DONE);
 
 		this.dispatchProgress('timeout');
@@ -512,7 +531,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		this.setError();
-		request.destroy();
+		// ClientRequest.destroy breaks the test suite for versions 10 and 12,
+		// Hence the version check
+		if (MajorNodeVersion > 13) {
+			request.destroy();
+		} else {
+			request.abort();
+		}
 		this.setReadyState(XMLHttpRequest.DONE);
 
 		this.dispatchProgress('error');
