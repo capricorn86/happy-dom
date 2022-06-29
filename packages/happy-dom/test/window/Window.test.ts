@@ -8,8 +8,6 @@ import Window from '../../src/window/Window';
 import IWindow from '../../src/window/IWindow';
 import Navigator from '../../src/navigator/Navigator';
 import Headers from '../../src/fetch/Headers';
-import Response from '../../src/fetch/Response';
-import Request from '../../src/fetch/Request';
 import Selection from '../../src/selection/Selection';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
@@ -86,7 +84,7 @@ describe('Window', () => {
 	describe('get Response()', () => {
 		it('Returns Response class.', () => {
 			expect(window.Response['_ownerDocument']).toBe(document);
-			expect(window.Response).toBe(Response);
+			expect(window.Response.name).toBe('Response');
 		});
 
 		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
@@ -101,7 +99,7 @@ describe('Window', () => {
 	describe('get Request()', () => {
 		it('Returns Request class.', () => {
 			expect(window.Request['_ownerDocument']).toBe(document);
-			expect(window.Request).toBe(Request);
+			expect(window.Request.name).toBe('Request');
 		});
 
 		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
@@ -440,7 +438,7 @@ describe('Window', () => {
 			});
 
 			setTimeout(() => {
-				expect(loadEvent.target).toBe(window);
+				expect(loadEvent.target).toBe(document);
 				done();
 			}, 1);
 		});
@@ -490,7 +488,7 @@ describe('Window', () => {
 				expect(resourceFetchCSSURL).toBe(cssURL);
 				expect(resourceFetchJSDocument).toBe(document);
 				expect(resourceFetchJSURL).toBe(jsURL);
-				expect(loadEvent.target).toBe(window);
+				expect(loadEvent.target).toBe(document);
 				expect(document.styleSheets.length).toBe(1);
 				expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
 

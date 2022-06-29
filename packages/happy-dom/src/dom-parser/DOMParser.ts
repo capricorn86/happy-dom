@@ -96,12 +96,15 @@ export default class DOMParser {
 	private _createDocument(mimeType: string): IDocument {
 		switch (mimeType) {
 			case 'text/html':
+				HTMLDocument._defaultView = this._ownerDocument.defaultView;
 				return new HTMLDocument();
 			case 'image/svg+xml':
+				SVGDocument._defaultView = this._ownerDocument.defaultView;
 				return new SVGDocument();
 			case 'text/xml':
 			case 'application/xml':
 			case 'application/xhtml+xml':
+				XMLDocument._defaultView = this._ownerDocument.defaultView;
 				return new XMLDocument();
 			default:
 				throw new DOMException(`Unknown mime type "${mimeType}".`);

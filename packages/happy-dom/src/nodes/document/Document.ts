@@ -45,6 +45,7 @@ import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
  * Document.
  */
 export default class Document extends Node implements IDocument {
+	public static _defaultView: IWindow = null;
 	public onreadystatechange: (event: Event) => void = null;
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
@@ -52,21 +53,26 @@ export default class Document extends Node implements IDocument {
 	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
-	public _readyStateManager: DocumentReadyStateManager = null;
+	public readonly defaultView: IWindow;
+	public readonly _readyStateManager: DocumentReadyStateManager;
 	public _activeElement: IHTMLElement = null;
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
-	private _defaultView: IWindow = null;
 	private _cookie = '';
 	private _selection: Selection = null;
 
 	/**
 	 * Creates an instance of Document.
+	 *
+	 * @param defaultView Default view.
 	 */
 	constructor() {
 		super();
 
+		this.defaultView = (<typeof Document>this.constructor)._defaultView;
 		this.implementation = new DOMImplementation(this);
+
+		this._readyStateManager = new DocumentReadyStateManager(this.defaultView);
 
 		const doctype = this.implementation.createDocumentType('html', '', '');
 		const documentElement = this.createElement('html');
@@ -98,29 +104,6 @@ export default class Document extends Node implements IDocument {
 	public get characterSet(): string {
 		const charset = this.querySelector('meta[charset]')?.getAttributeNS(null, 'charset');
 		return charset ? charset : 'UTF-8';
-	}
-
-	/**
-	 * Returns default view.
-	 *
-	 * @returns Default view.
-	 */
-	public get defaultView(): IWindow {
-		return this._defaultView;
-	}
-
-	/**
-	 * Sets a default view.
-	 *
-	 * @param defaultView Default view.
-	 */
-	public set defaultView(defaultView: IWindow) {
-		this._defaultView = defaultView;
-		this._readyStateManager = new DocumentReadyStateManager(defaultView);
-		this._readyStateManager.whenComplete().then(() => {
-			(<DocumentReadyStateEnum>this.readyState) = DocumentReadyStateEnum.complete;
-			this.dispatchEvent(new Event('readystatechange'));
-		});
 	}
 
 	/**
@@ -272,7 +255,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Location.
 	 */
 	public get location(): Location {
-		return this._defaultView.location;
+		return this.defaultView.location;
 	}
 
 	/**
@@ -419,6 +402,8 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IDocument {
+		(<typeof Document>this.constructor)._defaultView = this.defaultView;
+
 		const clone = <Document>super.cloneNode(deep);
 
 		if (deep) {
@@ -428,8 +413,6 @@ export default class Document extends Node implements IDocument {
 				}
 			}
 		}
-
-		clone.defaultView = this.defaultView;
 
 		return clone;
 	}
@@ -831,5 +814,16 @@ export default class Document extends Node implements IDocument {
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * Triggered by window when it is ready.
+	 */
+	public _onWindowReady(): void {
+		this._readyStateManager.whenComplete().then(() => {
+			(<DocumentReadyStateEnum>this.readyState) = DocumentReadyStateEnum.complete;
+			this.dispatchEvent(new Event('readystatechange'));
+			this.dispatchEvent(new Event('load', { bubbles: true }));
+		});
 	}
 }

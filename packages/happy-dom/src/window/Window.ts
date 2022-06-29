@@ -96,6 +96,11 @@ import { Buffer } from 'buffer';
 import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
 
+const ORIGINAL_SET_TIMEOUT = setTimeout;
+const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
+const ORIGINAL_SET_INTERVAL = setInterval;
+const ORIGINAL_CLEAR_INTERVAL = clearInterval;
+
 /**
  * Browser window.
  *
@@ -287,10 +292,10 @@ export default class Window extends EventTarget implements IWindow {
 	public Function;
 
 	// Private properties
-	private _setTimeout = setTimeout;
-	private _clearTimeout = clearTimeout;
-	private _setInterval = setInterval;
-	private _clearInterval = clearInterval;
+	private _setTimeout;
+	private _clearTimeout;
+	private _setInterval;
+	private _clearInterval;
 
 	/**
 	 * Constructor.
@@ -298,41 +303,10 @@ export default class Window extends EventTarget implements IWindow {
 	constructor() {
 		super();
 
-		const document = new HTMLDocument();
-
-		this.document = document;
-		this.document.defaultView = this;
-		this.document._readyStateManager.whenComplete().then(() => {
-			this.dispatchEvent(new Event('load'));
-		});
-
-		// We need to set the correct owner document when the class is constructed.
-		// To achieve this we will extend the original implementation with a class that sets the owner document.
-
-		ResponseImplementation._ownerDocument = document;
-		RequestImplementation._ownerDocument = document;
-		ImageImplementation._ownerDocument = document;
-		FileReaderImplementation._ownerDocument = document;
-		DOMParserImplementation._ownerDocument = document;
-		RangeImplementation._ownerDocument = document;
-		this.Response = class Response extends ResponseImplementation {
-			public static _ownerDocument: IDocument = document;
-		};
-		this.Request = class Request extends RequestImplementation {
-			public static _ownerDocument: IDocument = document;
-		};
-		this.Image = class Image extends ImageImplementation {
-			public static _ownerDocument: IDocument = document;
-		};
-		this.FileReader = class FileReader extends FileReaderImplementation {
-			public static _ownerDocument: IDocument = document;
-		};
-		this.DOMParser = class DOMParser extends DOMParserImplementation {
-			public static _ownerDocument: IDocument = document;
-		};
-		this.Range = class Range extends RangeImplementation {
-			public static _ownerDocument: IDocument = document;
-		};
+		this._setTimeout = ORIGINAL_SET_TIMEOUT;
+		this._clearTimeout = ORIGINAL_CLEAR_TIMEOUT;
+		this._setInterval = ORIGINAL_SET_INTERVAL;
+		this._clearInterval = ORIGINAL_CLEAR_INTERVAL;
 
 		// Non-implemented event types
 		for (const eventType of NonImplementedEventTypes) {
@@ -362,7 +336,54 @@ export default class Window extends EventTarget implements IWindow {
 			}
 		}
 
+		HTMLDocument._defaultView = this;
+
+		const document = new HTMLDocument();
+
+		this.document = document;
+
+		// We need to set the correct owner document when the class is constructed.
+		// To achieve this we will extend the original implementation with a class that sets the owner document.
+
+		ResponseImplementation._ownerDocument = document;
+		RequestImplementation._ownerDocument = document;
+		ImageImplementation._ownerDocument = document;
+		FileReaderImplementation._ownerDocument = document;
+		DOMParserImplementation._ownerDocument = document;
+		RangeImplementation._ownerDocument = document;
+
+		/* eslint-disable jsdoc/require-jsdoc */
+		class Response extends ResponseImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
+		class Request extends RequestImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
+		class Image extends ImageImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
+		class FileReader extends FileReaderImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
+		class DOMParser extends DOMParserImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
+		class Range extends RangeImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
+
+		/* eslint-enable jsdoc/require-jsdoc */
+
+		this.Response = Response;
+		this.Request = Request;
+		this.Image = Image;
+		this.FileReader = FileReader;
+		this.DOMParser = DOMParser;
+		this.Range = Range;
+
 		this._setupVMContext();
+
+		this.document._onWindowReady();
 	}
 
 	/**

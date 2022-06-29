@@ -24,6 +24,8 @@ export default class DOMImplementation {
 	public createDocument(): IDocument {
 		const documentClass = this._ownerDocument.constructor;
 		// @ts-ignore
+		documentClass._defaultView = this._ownerDocument.defaultView;
+		// @ts-ignore
 		return new documentClass();
 	}
 

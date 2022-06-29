@@ -7,8 +7,7 @@ describe('DOMImplementation', () => {
 
 	beforeEach(() => {
 		ownerDocument = new Document();
-		domImplementation = new DOMImplementation();
-		domImplementation._ownerDocument = ownerDocument;
+		domImplementation = new DOMImplementation(ownerDocument);
 	});
 
 	describe('createHTMLDocument()', () => {
