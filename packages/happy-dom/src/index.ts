@@ -104,6 +104,7 @@ import Storage from './storage/Storage';
 import DOMRect from './nodes/element/DOMRect';
 import { URLSearchParams } from 'url';
 import Selection from './selection/Selection';
+import Range from './range/Range';
 
 export {
 	GlobalWindow,
@@ -211,5 +212,6 @@ export {
 	Storage,
 	DOMRect,
 	URLSearchParams,
-	Selection
+	Selection,
+	Range
 };

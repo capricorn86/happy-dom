@@ -30,6 +30,55 @@ describe('Window', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('constructor()', () => {
+		it('Is able to handle multiple instances of Window', () => {
+			const secondWindow = new Window();
+			const thirdWindow = new Window();
+
+			for (const className of [
+				'Response',
+				'Request',
+				'Image',
+				'FileReader',
+				'DOMParser',
+				'Range'
+			]) {
+				const thirdInstance = new thirdWindow[className]();
+				const firstInstance = new window[className]();
+				const secondInstance = new secondWindow[className]();
+				const property = className === 'Image' ? 'ownerDocument' : '_ownerDocument';
+
+				expect(firstInstance[property] === window.document).toBe(true);
+				expect(secondInstance[property] === secondWindow.document).toBe(true);
+				expect(thirdInstance[property] === thirdWindow.document).toBe(true);
+			}
+
+			const thirdElement = thirdWindow.document.createElement('div');
+			const firstElement = window.document.createElement('div');
+			const secondElement = secondWindow.document.createElement('div');
+
+			expect(firstElement.ownerDocument === window.document).toBe(true);
+			expect(secondElement.ownerDocument === secondWindow.document).toBe(true);
+			expect(thirdElement.ownerDocument === thirdWindow.document).toBe(true);
+
+			const thirdText = thirdWindow.document.createTextNode('Test');
+			const firstText = window.document.createTextNode('Test');
+			const secondText = secondWindow.document.createTextNode('Test');
+
+			expect(firstText.ownerDocument === window.document).toBe(true);
+			expect(secondText.ownerDocument === secondWindow.document).toBe(true);
+			expect(thirdText.ownerDocument === thirdWindow.document).toBe(true);
+
+			const thirdComment = thirdWindow.document.createComment('Test');
+			const firstComment = window.document.createComment('Test');
+			const secondComment = secondWindow.document.createComment('Test');
+
+			expect(firstComment.ownerDocument === window.document).toBe(true);
+			expect(secondComment.ownerDocument === secondWindow.document).toBe(true);
+			expect(thirdComment.ownerDocument === thirdWindow.document).toBe(true);
+		});
+	});
+
 	describe('get Object()', () => {
 		it('Is not the same as {}.constructor when inside the VM.', () => {
 			expect(typeof window.Object).toBe('function');

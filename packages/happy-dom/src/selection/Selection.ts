@@ -102,7 +102,7 @@ export default class Selection {
 	 * Returns anchor node.
 	 *
 	 * @deprecated
-	 * @alias this.anchorNode
+	 * @alias anchorNode
 	 * @returns Node.
 	 */
 	public get baseNode(): INode {
@@ -113,7 +113,7 @@ export default class Selection {
 	 * Returns anchor offset.
 	 *
 	 * @deprecated
-	 * @alias this.anchorOffset
+	 * @alias anchorOffset
 	 * @returns Node.
 	 */
 	public get baseOffset(): number {
@@ -127,12 +127,7 @@ export default class Selection {
 	 * @returns Node.
 	 */
 	public get focusNode(): INode {
-		if (!this._range) {
-			return null;
-		}
-		return this._direction === SelectionDirectionEnum.forwards
-			? this._range.startContainer
-			: this._range.endContainer;
+		return this.anchorNode;
 	}
 
 	/**
@@ -142,19 +137,14 @@ export default class Selection {
 	 * @returns Node.
 	 */
 	public get focusOffset(): number {
-		if (!this._range) {
-			return null;
-		}
-		return this._direction === SelectionDirectionEnum.forwards
-			? this._range.startOffset
-			: this._range.endOffset;
+		return this.anchorOffset;
 	}
 
 	/**
 	 * Returns focus node.
 	 *
 	 * @deprecated
-	 * @alias this.focusNode
+	 * @alias focusNode
 	 * @returns Node.
 	 */
 	public get extentNode(): INode {
@@ -165,7 +155,7 @@ export default class Selection {
 	 * Returns focus offset.
 	 *
 	 * @deprecated
-	 * @alias this.focusOffset
+	 * @alias focusOffset
 	 * @returns Node.
 	 */
 	public get extentOffset(): number {
@@ -225,7 +215,7 @@ export default class Selection {
 	/**
 	 * Removes all ranges.
 	 *
-	 * @alias this.removeAllRanges()
+	 * @alias removeAllRanges()
 	 */
 	public empty(): void {
 		this.removeAllRanges();
@@ -273,7 +263,7 @@ export default class Selection {
 	 * Collapses the current selection to a single point.
 	 *
 	 * @see https://w3c.github.io/selection-api/#dom-selection-setposition
-	 * @alias this.collapse()
+	 * @alias collapse()
 	 * @param node Node.
 	 * @param offset Offset.
 	 */
@@ -528,12 +518,7 @@ export default class Selection {
 
 		if (oldRange !== this._range) {
 			// https://w3c.github.io/selection-api/#selectionchange-event
-			this._ownerDocument.dispatchEvent(
-				new Event('selectionchange', {
-					bubbles: false,
-					cancelable: false
-				})
-			);
+			this._ownerDocument.dispatchEvent(new Event('selectionchange'));
 		}
 	}
 }
