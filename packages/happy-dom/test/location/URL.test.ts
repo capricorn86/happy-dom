@@ -49,5 +49,21 @@ describe('URL', () => {
 			expect(url.host).toBe('google.com:8080');
 			expect(url.origin).toBe('https://google.com:8080');
 		});
+		it('Parses "https://google.com".', () => {
+			const formatHref = 'https://google.com/';
+			const href = 'https://google.com';
+			const url = new URL(href);
+			expect(url.href).toBe(formatHref);
+			expect(url.protocol).toBe('https:');
+			expect(url.hostname).toBe('google.com');
+			expect(url.port).toBe('');
+			expect(url.pathname).toBe('/');
+			expect(url.search).toBe('');
+			expect(url.hash).toBe('');
+			expect(url.username).toBe('');
+			expect(url.password).toBe('');
+			expect(url.host).toBe('google.com');
+			expect(url.origin).toBe('https://google.com');
+		});
 	});
 });
