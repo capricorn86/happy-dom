@@ -21,7 +21,6 @@ export default [
 	'HTMLDataElement',
 	'HTMLDataListElement',
 	'HTMLDetailsElement',
-	'HTMLDialogElement',
 	'HTMLDirectoryElement',
 	'HTMLFieldSetElement',
 	'HTMLFontElement',

@@ -9,7 +9,21 @@ import IHTMLElement from '../html-element/IHTMLElement';
 export default interface IHTMLDialogElement extends IHTMLElement {
 	open: boolean;
 	returnValue: string;
+
+	/**
+	 * Closes the dialog.
+	 *
+	 * @param [returnValue] ReturnValue.
+	 */
 	close(returnValue?: string): void;
+
+	/**
+	 * Shows the modal.
+	 */
 	showModal(): void;
+
+	/**
+	 * Shows the dialog.
+	 */
 	show(): void;
 }
