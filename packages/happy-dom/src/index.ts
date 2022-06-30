@@ -104,6 +104,7 @@ import Storage from './storage/Storage';
 import DOMRect from './nodes/element/DOMRect';
 import { URLSearchParams } from 'url';
 import Selection from './selection/Selection';
+import Range from './range/Range';
 import HTMLDialogElement from './nodes/html-dialog-element/HTMLDialogElement';
 import IHTMLDialogElement from './nodes/html-dialog-element/IHTMLDialogElement';
 
@@ -214,6 +215,7 @@ export {
 	DOMRect,
 	URLSearchParams,
 	Selection,
+	Range,
 	HTMLDialogElement,
 	IHTMLDialogElement
 };

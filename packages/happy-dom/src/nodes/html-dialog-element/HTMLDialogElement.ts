@@ -9,12 +9,7 @@ import IHTMLDialogElement from './IHTMLDialogElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement.
  */
 export default class HTMLDialogElement extends HTMLElement implements IHTMLDialogElement {
-	/**
-	 * Returns returnValue.
-	 *
-	 * @returns ReturnValue.
-	 */
-	public returnValue: string;
+	public returnValue = '';
 
 	/**
 	 * Returns open.
@@ -28,12 +23,12 @@ export default class HTMLDialogElement extends HTMLElement implements IHTMLDialo
 	/**
 	 * Closes the dialog.
 	 *
-	 * @param returnValue ReturnValue.
+	 * @param [returnValue] ReturnValue.
 	 */
-	public close(returnValue?: string): void {
+	public close(returnValue = ''): void {
 		this.removeAttributeNS(null, 'open');
 		this.returnValue = returnValue;
-		this.dispatchEvent(new Event('close', { bubbles: false, cancelable: false }));
+		this.dispatchEvent(new Event('close'));
 	}
 
 	/**

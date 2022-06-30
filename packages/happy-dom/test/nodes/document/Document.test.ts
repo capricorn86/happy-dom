@@ -29,6 +29,7 @@ import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadySta
 import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
 import CustomEvent from '../../../src/event/events/CustomEvent';
 import Selection from '../../../src/selection/Selection';
+import Range from '../../../src/range/Range';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -1071,8 +1072,20 @@ describe('Document', () => {
 	});
 
 	describe('getSelection()', () => {
-		it('Returns selection.', () => {
+		it('Returns an instance of Selection.', () => {
 			expect(document.getSelection() instanceof Selection).toBe(true);
+		});
+
+		it('Returns the same instance when called multiple times.', () => {
+			const selection1 = document.getSelection();
+			const selection2 = document.getSelection();
+			expect(selection1 === selection2).toBe(true);
+		});
+	});
+
+	describe('createRange()', () => {
+		it('Returns an instance of Range.', () => {
+			expect(document.createRange() instanceof Range).toBe(true);
 		});
 	});
 

@@ -38,12 +38,14 @@ import DocumentReadyStateManager from './DocumentReadyStateManager';
 import Location from '../../location/Location';
 import Selection from '../../selection/Selection';
 import IShadowRoot from '../shadow-root/IShadowRoot';
+import Range from '../../range/Range';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
 
 /**
  * Document.
  */
 export default class Document extends Node implements IDocument {
+	public static _defaultView: IWindow = null;
 	public onreadystatechange: (event: Event) => void = null;
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
@@ -51,21 +53,26 @@ export default class Document extends Node implements IDocument {
 	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
-	public _readyStateManager: DocumentReadyStateManager = null;
+	public readonly defaultView: IWindow;
+	public readonly _readyStateManager: DocumentReadyStateManager;
 	public _activeElement: IHTMLElement = null;
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
-	private _defaultView: IWindow = null;
 	private _cookie = '';
+	private _selection: Selection = null;
 
 	/**
 	 * Creates an instance of Document.
+	 *
+	 * @param defaultView Default view.
 	 */
 	constructor() {
 		super();
 
-		this.implementation = new DOMImplementation();
-		this.implementation._ownerDocument = this;
+		this.defaultView = (<typeof Document>this.constructor)._defaultView;
+		this.implementation = new DOMImplementation(this);
+
+		this._readyStateManager = new DocumentReadyStateManager(this.defaultView);
 
 		const doctype = this.implementation.createDocumentType('html', '', '');
 		const documentElement = this.createElement('html');
@@ -97,29 +104,6 @@ export default class Document extends Node implements IDocument {
 	public get characterSet(): string {
 		const charset = this.querySelector('meta[charset]')?.getAttributeNS(null, 'charset');
 		return charset ? charset : 'UTF-8';
-	}
-
-	/**
-	 * Returns default view.
-	 *
-	 * @returns Default view.
-	 */
-	public get defaultView(): IWindow {
-		return this._defaultView;
-	}
-
-	/**
-	 * Sets a default view.
-	 *
-	 * @param defaultView Default view.
-	 */
-	public set defaultView(defaultView: IWindow) {
-		this._defaultView = defaultView;
-		this._readyStateManager = new DocumentReadyStateManager(defaultView);
-		this._readyStateManager.whenComplete().then(() => {
-			(<DocumentReadyStateEnum>this.readyState) = DocumentReadyStateEnum.complete;
-			this.dispatchEvent(new Event('readystatechange'));
-		});
 	}
 
 	/**
@@ -271,7 +255,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Location.
 	 */
 	public get location(): Location {
-		return this._defaultView.location;
+		return this.defaultView.location;
 	}
 
 	/**
@@ -418,6 +402,8 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IDocument {
+		(<typeof Document>this.constructor)._defaultView = this.defaultView;
+
 		const clone = <Document>super.cloneNode(deep);
 
 		if (deep) {
@@ -427,8 +413,6 @@ export default class Document extends Node implements IDocument {
 				}
 			}
 		}
-
-		clone.defaultView = this.defaultView;
 
 		return clone;
 	}
@@ -654,14 +638,15 @@ export default class Document extends Node implements IDocument {
 			customElementClass = this.defaultView.customElements.get(tagName);
 		}
 
-		const elementClass = customElementClass || ElementTag[tagName] || HTMLUnknownElement;
+		const elementClass: typeof Element =
+			customElementClass || ElementTag[tagName] || HTMLUnknownElement;
 
-		elementClass.ownerDocument = this;
+		elementClass._ownerDocument = this;
 
 		const element = new elementClass();
 		element.tagName = tagName;
-		element.ownerDocument = this;
-		element.namespaceURI = namespaceURI;
+		(<IDocument>element.ownerDocument) = this;
+		(<string>element.namespaceURI) = namespaceURI;
 		if (element instanceof Element && options && options.is) {
 			element._isValue = String(options.is);
 		}
@@ -678,7 +663,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createTextNode(data?: string): IText {
-		Text.ownerDocument = this;
+		Text._ownerDocument = this;
 		return new Text(data);
 	}
 
@@ -689,7 +674,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createComment(data?: string): IComment {
-		Comment.ownerDocument = this;
+		Comment._ownerDocument = this;
 		return new Comment(data);
 	}
 
@@ -699,7 +684,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document fragment.
 	 */
 	public createDocumentFragment(): IDocumentFragment {
-		DocumentFragment.ownerDocument = this;
+		DocumentFragment._ownerDocument = this;
 		return new DocumentFragment();
 	}
 
@@ -722,7 +707,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Event.
 	 */
 	public createEvent(type: string): Event {
-		if (this.defaultView[type]) {
+		if (typeof this.defaultView[type] === 'function') {
 			return new this.defaultView[type]('init');
 		}
 		return new Event('init');
@@ -773,6 +758,15 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Creates a range.
+	 *
+	 * @returns Range.
+	 */
+	public createRange(): Range {
+		return new this.defaultView.Range();
+	}
+
+	/**
 	 * Adopts a node.
 	 *
 	 * @param node Node to adopt.
@@ -794,7 +788,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Selection.
 	 */
 	public getSelection(): Selection {
-		return new Selection();
+		if (!this._selection) {
+			this._selection = new Selection(this);
+		}
+		return this._selection;
 	}
 
 	/**
@@ -817,5 +814,16 @@ export default class Document extends Node implements IDocument {
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * Triggered by window when it is ready.
+	 */
+	public _onWindowReady(): void {
+		this._readyStateManager.whenComplete().then(() => {
+			(<DocumentReadyStateEnum>this.readyState) = DocumentReadyStateEnum.complete;
+			this.dispatchEvent(new Event('readystatechange'));
+			this.dispatchEvent(new Event('load', { bubbles: true }));
+		});
 	}
 }

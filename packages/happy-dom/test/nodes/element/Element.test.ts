@@ -7,7 +7,6 @@ import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot';
 import IDocument from '../../../src/nodes/document/IDocument';
 import Text from '../../../src/nodes/text/Text';
 import DOMRect from '../../../src/nodes/element/DOMRect';
-import Range from '../../../src/nodes/element/Range';
 import NamespaceURI from '../../../src/config/NamespaceURI';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
 import QuerySelector from '../../../src/query-selector/QuerySelector';
@@ -177,7 +176,7 @@ describe('Element', () => {
 
 	describe('set innerHTML()', () => {
 		it('Creates child nodes from provided HTML.', () => {
-			const root = document.createElement('div');
+			const root = document.createDocumentFragment();
 			const div = document.createElement('div');
 			const textNode = document.createTextNode('text1');
 
@@ -1260,13 +1259,6 @@ describe('Element', () => {
 		it('Returns an instance of DOMRect.', () => {
 			const domRect = element.getBoundingClientRect();
 			expect(domRect instanceof DOMRect).toBe(true);
-		});
-	});
-
-	describe('createTextRange()', () => {
-		it('Returns an instance of Range.', () => {
-			const range = element.createTextRange();
-			expect(range instanceof Range).toBe(true);
 		});
 	});
 

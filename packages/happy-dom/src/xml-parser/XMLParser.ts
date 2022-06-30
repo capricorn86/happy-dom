@@ -10,6 +10,7 @@ import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import INode from '../nodes/node/INode';
 import IElement from '../nodes/element/IElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
+import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^<>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->|<([!?])([^>]*)>/gi;
@@ -28,11 +29,15 @@ export default class XMLParser {
 	 * @param [evaluateScripts = false] Set to "true" to enable script execution.
 	 * @returns Root element.
 	 */
-	public static parse(document: IDocument, data: string, evaluateScripts = false): IElement {
-		const root = document.createElement('root');
-		const stack = [root];
+	public static parse(
+		document: IDocument,
+		data: string,
+		evaluateScripts = false
+	): IDocumentFragment {
+		const root = document.createDocumentFragment();
+		const stack: Array<IElement | IDocumentFragment> = [root];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gi');
-		let parent = root;
+		let parent: IDocumentFragment | IElement = root;
 		let parentUnnestableTagName = null;
 		let lastTextIndex = 0;
 		let match: RegExpExecArray;
@@ -47,7 +52,10 @@ export default class XMLParser {
 			}
 
 			if (isStartTag) {
-				const namespaceURI = tagName === 'svg' ? NamespaceURI.svg : parent.namespaceURI;
+				const namespaceURI =
+					tagName === 'svg'
+						? NamespaceURI.svg
+						: (<IElement>parent).namespaceURI || NamespaceURI.html;
 				const newElement = document.createElementNS(namespaceURI, tagName);
 
 				// Scripts are not allowed to be executed when they are parsed using innerHTML, outerHTML, replaceWith() etc.
@@ -115,8 +123,8 @@ export default class XMLParser {
 	 * @param element Element.
 	 * @returns Tag name if element is unnestable.
 	 */
-	private static getUnnestableTagName(element: IElement): string {
-		const tagName = element.tagName.toLowerCase();
+	private static getUnnestableTagName(element: IElement | IDocumentFragment): string {
+		const tagName = (<IElement>element).tagName ? (<IElement>element).tagName.toLowerCase() : null;
 		return tagName && UnnestableElements.includes(tagName) ? tagName : null;
 	}
 

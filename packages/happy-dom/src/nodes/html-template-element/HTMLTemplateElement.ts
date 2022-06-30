@@ -1,11 +1,9 @@
-import Node from '../node/Node';
 import HTMLElement from '../html-element/HTMLElement';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INode from '../node/INode';
 import IHTMLTemplateElement from './IHTMLTemplateElement';
 import XMLParser from '../../xml-parser/XMLParser';
 import XMLSerializer from '../../xml-serializer/XMLSerializer';
-import DOMException from '../../exception/DOMException';
 
 /**
  * HTML Template Element.
@@ -39,31 +37,15 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	/**
 	 * @override
 	 */
-	public get outerHTML(): string {
-		return new XMLSerializer().serializeToString(this.content);
-	}
-
-	/**
-	 * @override
-	 */
-	public set outerHTML(_html: string) {
-		throw new DOMException(
-			`Failed to set the 'outerHTML' property on 'Element': This element has no parent node.`
-		);
-	}
-
-	/**
-	 * @override
-	 */
 	public get previousSibling(): INode {
-		return this.content.previousSibling;
+		return null;
 	}
 
 	/**
 	 * @override
 	 */
 	public get nextSibling(): INode {
-		return this.content.nextSibling;
+		return null;
 	}
 
 	/**
@@ -102,7 +84,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	/**
 	 * @override
 	 */
-	public removeChild(node: Node): INode {
+	public removeChild(node: INode): INode {
 		return this.content.removeChild(node);
 	}
 

@@ -3,6 +3,10 @@ enum DOMExceptionNameEnum {
 	indexSizeError = 'IndexSizeError',
 	syntaxError = 'SyntaxError',
 	hierarchyRequestError = 'HierarchyRequestError',
-	invalidCharacterError = 'InvalidCharacterError'
+	notSupportedError = 'NotSupportedError',
+	wrongDocumentError = 'WrongDocumentError',
+	invalidNodeTypeError = 'InvalidNodeTypeError',
+	invalidCharacterError = 'InvalidCharacterError',
+	notFoundError = 'NotFoundError'
 }
 export default DOMExceptionNameEnum;

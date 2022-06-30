@@ -18,6 +18,7 @@ import CSSStyleSheet from '../../css/CSSStyleSheet';
 import Location from '../../location/Location';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum';
 import INodeList from '../node/INodeList';
+import Range from '../../range/Range';
 
 /**
  * Document.
@@ -142,6 +143,13 @@ export default interface IDocument extends IParentNode {
 	 * @param Imported Node.
 	 */
 	importNode(node: INode): INode;
+
+	/**
+	 * Creates a range.
+	 *
+	 * @returns Range.
+	 */
+	createRange(): Range;
 
 	/**
 	 * Returns an element by ID.

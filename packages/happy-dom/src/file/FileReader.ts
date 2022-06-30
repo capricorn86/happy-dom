@@ -1,6 +1,6 @@
 import WhatwgMIMEType from 'whatwg-mimetype';
 import WhatwgEncoding from 'whatwg-encoding';
-import Document from '../nodes/document/Document';
+import IDocument from '../nodes/document/IDocument';
 import ProgressEvent from '../event/events/ProgressEvent';
 import DOMException from '../exception/DOMException';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
@@ -18,7 +18,8 @@ import FileReaderEventTypeEnum from './FileReaderEventTypeEnum';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/FileReader-impl.js (MIT licensed).
  */
 export default class FileReader extends EventTarget {
-	public static _ownerDocument: Document = null;
+	// Owner document is set by a sub-class in the Window constructor
+	public static _ownerDocument: IDocument = null;
 	public readonly error: Error = null;
 	public readonly result: Buffer | ArrayBuffer | string = null;
 	public readonly readyState: number = FileReaderReadyStateEnum.empty;
@@ -28,9 +29,18 @@ export default class FileReader extends EventTarget {
 	public readonly onloadstart: (event: ProgressEvent) => void = null;
 	public readonly onloadend: (event: ProgressEvent) => void = null;
 	public readonly onprogress: (event: ProgressEvent) => void = null;
+	public readonly _ownerDocument: IDocument = null;
 	private _isTerminated = false;
 	private _loadTimeout: NodeJS.Timeout = null;
 	private _parseTimeout: NodeJS.Timeout = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		this._ownerDocument = (<typeof FileReader>this.constructor)._ownerDocument;
+	}
 
 	/**
 	 * Reads as ArrayBuffer.
@@ -77,7 +87,7 @@ export default class FileReader extends EventTarget {
 	 * Aborts the file reader.
 	 */
 	public abort(): void {
-		const window = (<typeof FileReader>this.constructor)._ownerDocument.defaultView;
+		const window = this._ownerDocument.defaultView;
 
 		window.clearTimeout(this._loadTimeout);
 		window.clearTimeout(this._parseTimeout);
@@ -108,7 +118,7 @@ export default class FileReader extends EventTarget {
 	 * @param [encoding] Encoding.
 	 */
 	private _readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string = null): void {
-		const window = (<typeof FileReader>this.constructor)._ownerDocument.defaultView;
+		const window = this._ownerDocument.defaultView;
 
 		if (this.readyState === FileReaderReadyStateEnum.loading) {
 			throw new DOMException(

@@ -1,20 +1,21 @@
-import { Event } from 'src';
-import Document from '../../../src/nodes/document/Document';
-import HTMLDialogElement from '../../../src/nodes/html-dialog-element/HTMLDialogElement';
+import Event from '../../../src/event/Event';
+import IHTMLDialogElement from '../../../src/nodes/html-dialog-element/IHTMLDialogElement';
 import Window from '../../../src/window/Window';
+import IWindow from '../../../src/window/IWindow';
+import IDocument from '../../../src/nodes/document/IDocument';
 
 describe('HTMLDialogElement', () => {
-	let window: Window;
-	let document: Document;
-	let element: HTMLDialogElement;
+	let window: IWindow;
+	let document: IDocument;
+	let element: IHTMLDialogElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLDialogElement>document.createElement('dialog');
+		element = <IHTMLDialogElement>document.createElement('dialog');
 	});
 
-	describe('open', () => {
+	describe('get open()', () => {
 		it('Should be closed by default', () => {
 			expect(element.open).toBe(false);
 		});
@@ -30,23 +31,25 @@ describe('HTMLDialogElement', () => {
 		});
 	});
 
-	describe('returnValue', () => {
-		it('Should be undefined by default', () => {
-			expect(element.returnValue).toBe(undefined);
+	describe('get returnValue()', () => {
+		it('Should be empty string by default', () => {
+			expect(element.returnValue).toBe('');
 		});
 
 		it('Should be set when close has been called with a return value', () => {
 			element.close('foo');
 			expect(element.returnValue).toBe('foo');
 		});
+	});
 
+	describe('set returnValue()', () => {
 		it('Should be possible to set manually', () => {
 			element.returnValue = 'foo';
 			expect(element.returnValue).toBe('foo');
 		});
 	});
 
-	describe('close', () => {
+	describe('close()', () => {
 		it('Should be possible to close an open dialog', () => {
 			element.show();
 			element.close();
@@ -92,7 +95,7 @@ describe('HTMLDialogElement', () => {
 		});
 	});
 
-	describe('showModal', () => {
+	describe('showModal()', () => {
 		it('Should be possible to show a modal dialog', () => {
 			element.showModal();
 			expect(element.open).toBe(true);
@@ -100,7 +103,7 @@ describe('HTMLDialogElement', () => {
 		});
 	});
 
-	describe('show', () => {
+	describe('show()', () => {
 		it('Should be possible to show a dialog', () => {
 			element.show();
 			expect(element.open).toBe(true);

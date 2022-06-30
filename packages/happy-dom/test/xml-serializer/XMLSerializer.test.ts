@@ -74,6 +74,14 @@ describe('XMLSerializer', () => {
 			expect(xmlSerializer.serializeToString(div)).toBe('<div>Text 1.Text 2.</div>');
 		});
 
+		it('Serializes a template node.', () => {
+			const template = document.createElement('template');
+			template.innerHTML = '<div>Test</div>';
+			expect(xmlSerializer.serializeToString(template)).toBe(
+				'<template><div>Test</div></template>'
+			);
+		});
+
 		it('Serializes a mix of nodes.', () => {
 			const div = document.createElement('div');
 			const comment1 = document.createComment('Comment 1.');
