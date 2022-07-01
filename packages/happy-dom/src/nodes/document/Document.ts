@@ -282,6 +282,24 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns URL.
+	 *
+	 * @returns the URL of the current document.
+	 * */
+	public get URL(): string {
+		return this.defaultView.location.href;
+	}
+
+	/**
+	 * Returns document URI.
+	 *
+	 * @returns the URL of the current document.
+	 * */
+	public get documentURI(): string {
+		return this.URL;
+	}
+
+	/**
 	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
 	 *
 	 * @param nodes List of Node or DOMString.

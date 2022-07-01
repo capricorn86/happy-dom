@@ -398,6 +398,19 @@ describe('Document', () => {
 		});
 	});
 
+	describe('URL', () => {
+		it('Returns the URL of the document.', () => {
+			document.location.href = 'http://localhost:8080/path/to/file.html';
+			expect(document.URL).toBe('http://localhost:8080/path/to/file.html');
+		});
+	});
+	describe('documentURI', () => {
+		it('Returns the documentURI of the document.', () => {
+			document.location.href = 'http://localhost:8080/path/to/file.html';
+			expect(document.documentURI).toBe('http://localhost:8080/path/to/file.html');
+		});
+	});
+
 	describe('append()', () => {
 		it('Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.', () => {
 			const node1 = document.createComment('test1');
