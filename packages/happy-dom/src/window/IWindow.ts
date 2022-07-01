@@ -24,6 +24,7 @@ import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
+import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import Image from '../nodes/html-image-element/Image';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
@@ -79,6 +80,7 @@ import IRequest from '../fetch/IRequest';
 import IHeaders from '../fetch/IHeaders';
 import IRequestInit from '../fetch/IRequestInit';
 import IResponse from '../fetch/IResponse';
+import Range from '../range/Range';
 import MediaQueryList from '../match-media/MediaQueryList';
 import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
@@ -112,6 +114,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLLabelElement: typeof HTMLLabelElement;
 	readonly HTMLMetaElement: typeof HTMLMetaElement;
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
+	readonly HTMLDialogElement: typeof HTMLDialogElement;
 	readonly SVGSVGElement: typeof SVGSVGElement;
 	readonly SVGElement: typeof SVGElement;
 	readonly Image: typeof Image;
@@ -174,6 +177,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
 	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
 	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
+	readonly Range: typeof Range;
 	readonly DOMRect: typeof DOMRect;
 
 	// Events
@@ -301,4 +305,24 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * @returns Promise.
 	 */
 	fetch(url: string, init?: IRequestInit): Promise<IResponse>;
+
+	/**
+	 * Creates a Base64-encoded ASCII string from a binary string (i.e., a string in which each character in the string is treated as a byte of binary data).
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/btoa
+	 * @param data Binay data.
+	 * @returns Base64-encoded string.
+	 */
+	btoa(data: unknown): string;
+
+	/**
+	 * Decodes a string of data which has been encoded using Base64 encoding.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/atob
+	 * @see https://infra.spec.whatwg.org/#forgiving-base64-encode.
+	 * @see Https://html.spec.whatwg.org/multipage/webappapis.html#btoa.
+	 * @param data Binay string.
+	 * @returns An ASCII string containing decoded data from encodedData.
+	 */
+	atob(data: unknown): string;
 }

@@ -5,7 +5,16 @@ import IDocument from '../nodes/document/IDocument';
  * The DOMImplementation interface represents an object providing methods which are not dependent on any particular document. Such an object is returned by the.
  */
 export default class DOMImplementation {
-	public _ownerDocument: IDocument = null;
+	protected _ownerDocument: IDocument = null;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param ownerDocument
+	 */
+	constructor(ownerDocument: IDocument) {
+		this._ownerDocument = ownerDocument;
+	}
 
 	/**
 	 * Creates and returns an XML Document.
@@ -14,6 +23,8 @@ export default class DOMImplementation {
 	 */
 	public createDocument(): IDocument {
 		const documentClass = this._ownerDocument.constructor;
+		// @ts-ignore
+		documentClass._defaultView = this._ownerDocument.defaultView;
 		// @ts-ignore
 		return new documentClass();
 	}
@@ -37,7 +48,7 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		DocumentType.ownerDocument = this._ownerDocument;
+		DocumentType._ownerDocument = this._ownerDocument;
 		const documentType = new DocumentType();
 		documentType.name = qualifiedName;
 		documentType.publicId = publicId;

@@ -8,10 +8,7 @@ import Window from '../../src/window/Window';
 import IWindow from '../../src/window/IWindow';
 import Navigator from '../../src/navigator/Navigator';
 import Headers from '../../src/fetch/Headers';
-import Response from '../../src/fetch/Response';
-import Request from '../../src/fetch/Request';
 import Selection from '../../src/selection/Selection';
-import { atob, btoa } from '../../lib/window/WindowBase64';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 
@@ -31,6 +28,55 @@ describe('Window', () => {
 
 	afterEach(() => {
 		jest.restoreAllMocks();
+	});
+
+	describe('constructor()', () => {
+		it('Is able to handle multiple instances of Window', () => {
+			const secondWindow = new Window();
+			const thirdWindow = new Window();
+
+			for (const className of [
+				'Response',
+				'Request',
+				'Image',
+				'FileReader',
+				'DOMParser',
+				'Range'
+			]) {
+				const thirdInstance = new thirdWindow[className]();
+				const firstInstance = new window[className]();
+				const secondInstance = new secondWindow[className]();
+				const property = className === 'Image' ? 'ownerDocument' : '_ownerDocument';
+
+				expect(firstInstance[property] === window.document).toBe(true);
+				expect(secondInstance[property] === secondWindow.document).toBe(true);
+				expect(thirdInstance[property] === thirdWindow.document).toBe(true);
+			}
+
+			const thirdElement = thirdWindow.document.createElement('div');
+			const firstElement = window.document.createElement('div');
+			const secondElement = secondWindow.document.createElement('div');
+
+			expect(firstElement.ownerDocument === window.document).toBe(true);
+			expect(secondElement.ownerDocument === secondWindow.document).toBe(true);
+			expect(thirdElement.ownerDocument === thirdWindow.document).toBe(true);
+
+			const thirdText = thirdWindow.document.createTextNode('Test');
+			const firstText = window.document.createTextNode('Test');
+			const secondText = secondWindow.document.createTextNode('Test');
+
+			expect(firstText.ownerDocument === window.document).toBe(true);
+			expect(secondText.ownerDocument === secondWindow.document).toBe(true);
+			expect(thirdText.ownerDocument === thirdWindow.document).toBe(true);
+
+			const thirdComment = thirdWindow.document.createComment('Test');
+			const firstComment = window.document.createComment('Test');
+			const secondComment = secondWindow.document.createComment('Test');
+
+			expect(firstComment.ownerDocument === window.document).toBe(true);
+			expect(secondComment.ownerDocument === secondWindow.document).toBe(true);
+			expect(thirdComment.ownerDocument === thirdWindow.document).toBe(true);
+		});
 	});
 
 	describe('get Object()', () => {
@@ -87,7 +133,7 @@ describe('Window', () => {
 	describe('get Response()', () => {
 		it('Returns Response class.', () => {
 			expect(window.Response['_ownerDocument']).toBe(document);
-			expect(window.Response).toBe(Response);
+			expect(window.Response.name).toBe('Response');
 		});
 
 		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
@@ -102,7 +148,7 @@ describe('Window', () => {
 	describe('get Request()', () => {
 		it('Returns Request class.', () => {
 			expect(window.Request['_ownerDocument']).toBe(document);
-			expect(window.Request).toBe(Request);
+			expect(window.Request.name).toBe('Request');
 		});
 
 		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
@@ -441,7 +487,7 @@ describe('Window', () => {
 			});
 
 			setTimeout(() => {
-				expect(loadEvent.target).toBe(window);
+				expect(loadEvent.target).toBe(document);
 				done();
 			}, 1);
 		});
@@ -491,7 +537,7 @@ describe('Window', () => {
 				expect(resourceFetchCSSURL).toBe(cssURL);
 				expect(resourceFetchJSDocument).toBe(document);
 				expect(resourceFetchJSURL).toBe(jsURL);
-				expect(loadEvent.target).toBe(window);
+				expect(loadEvent.target).toBe(document);
 				expect(document.styleSheets.length).toBe(1);
 				expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
 
@@ -542,14 +588,14 @@ describe('Window', () => {
 	describe('atob()', () => {
 		it('Decode "hello my happy dom!"', function () {
 			const encoded = 'aGVsbG8gbXkgaGFwcHkgZG9tIQ==';
-			const decoded = atob(encoded);
+			const decoded = window.atob(encoded);
 			expect(decoded).toBe('hello my happy dom!');
 		});
 
 		it('Decode Unicode (throw error)', function () {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
-				atob(data);
+				window.atob(data);
 			}).toThrowError(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded contains characters outside of the Latin1 range.",
@@ -561,7 +607,7 @@ describe('Window', () => {
 		it('Data not in base64list', function () {
 			expect(() => {
 				const data = '\x11GVsbG8gbXkgaGFwcHkgZG9tIQ==';
-				atob(data);
+				window.atob(data);
 			}).toThrowError(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
@@ -572,7 +618,7 @@ describe('Window', () => {
 		it('Data length not valid', function () {
 			expect(() => {
 				const data = 'aGVsbG8gbXkgaGFwcHkgZG9tI';
-				atob(data);
+				window.atob(data);
 			}).toThrowError(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
@@ -585,14 +631,14 @@ describe('Window', () => {
 	describe('btoa()', () => {
 		it('Encode "hello my happy dom!"', function () {
 			const data = 'hello my happy dom!';
-			const encoded = btoa(data);
+			const encoded = window.btoa(data);
 			expect(encoded).toBe('aGVsbG8gbXkgaGFwcHkgZG9tIQ==');
 		});
 
 		it('Encode Unicode (throw error)', function () {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
-				btoa(data);
+				window.btoa(data);
 			}).toThrowError(
 				new DOMException(
 					"Failed to execute 'btoa' on 'Window': The string to be encoded contains characters outside of the Latin1 range.",

@@ -1,8 +1,9 @@
-import Node from '../node/Node';
 import HTMLElement from '../html-element/HTMLElement';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INode from '../node/INode';
 import IHTMLTemplateElement from './IHTMLTemplateElement';
+import XMLParser from '../../xml-parser/XMLParser';
+import XMLSerializer from '../../xml-serializer/XMLSerializer';
 
 /**
  * HTML Template Element.
@@ -11,105 +12,102 @@ import IHTMLTemplateElement from './IHTMLTemplateElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement.
  */
 export default class HTMLTemplateElement extends HTMLElement implements IHTMLTemplateElement {
-	private _contentElement: IDocumentFragment = null;
+	public readonly content: IDocumentFragment = this.ownerDocument.createDocumentFragment();
 
 	/**
-	 * Returns the content.
-	 *
-	 * @returns Content.
+	 * @override
 	 */
-	public get content(): IDocumentFragment {
-		if (!this._contentElement) {
-			this._contentElement = this.ownerDocument.createDocumentFragment();
-		}
-		return this._contentElement;
+	public get innerHTML(): string {
+		return this.getInnerHTML();
 	}
 
 	/**
-	 * Previous sibling.
-	 *
-	 * @returns Node.
+	 * @override
+	 */
+	public set innerHTML(html: string) {
+		for (const child of this.content.childNodes.slice()) {
+			this.content.removeChild(child);
+		}
+
+		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
+			this.content.appendChild(node);
+		}
+	}
+
+	/**
+	 * @override
 	 */
 	public get previousSibling(): INode {
-		return this.content.previousSibling;
+		return null;
 	}
 
 	/**
-	 * Next sibling.
-	 *
-	 * @returns Node.
+	 * @override
 	 */
 	public get nextSibling(): INode {
-		return this.content.nextSibling;
+		return null;
 	}
 
 	/**
-	 * First child.
-	 *
-	 * @returns Node.
+	 * @override
 	 */
 	public get firstChild(): INode {
 		return this.content.firstChild;
 	}
 
 	/**
-	 * Last child.
-	 *
-	 * @returns Node.
+	 * @override
 	 */
 	public get lastChild(): INode {
 		return this.content.lastChild;
 	}
 
 	/**
-	 * Append a child node to childNodes.
-	 *
-	 * @param  node Node to append.
-	 * @returns Appended node.
+	 * @override
+	 */
+	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
+		const xmlSerializer = new XMLSerializer();
+		let xml = '';
+		for (const node of this.content.childNodes) {
+			xml += xmlSerializer.serializeToString(node, options);
+		}
+		return xml;
+	}
+
+	/**
+	 * @override
 	 */
 	public appendChild(node: INode): INode {
 		return this.content.appendChild(node);
 	}
 
 	/**
-	 * Remove Child element from childNodes array.
-	 *
-	 * @param node Node to remove.
+	 * @override
 	 */
-	public removeChild(node: Node): INode {
+	public removeChild(node: INode): INode {
 		return this.content.removeChild(node);
 	}
 
 	/**
-	 * Inserts a node before another.
-	 *
-	 * @param newNode Node to insert.
-	 * @param referenceNode Node to insert before.
-	 * @returns Inserted node.
+	 * @override
 	 */
 	public insertBefore(newNode: INode, referenceNode: INode): INode {
 		return this.content.insertBefore(newNode, referenceNode);
 	}
 
 	/**
-	 * Replaces a node with another.
-	 *
-	 * @param newChild New child.
-	 * @param oldChild Old child.
-	 * @returns Replaced node.
+	 * @override
 	 */
 	public replaceChild(newChild: INode, oldChild: INode): INode {
 		return this.content.replaceChild(newChild, oldChild);
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLTemplateElement {
-		return <IHTMLTemplateElement>super.cloneNode(deep);
+		const clone = <IHTMLTemplateElement>super.cloneNode(deep);
+		(<IDocumentFragment>clone.content) = this.content.cloneNode(deep);
+		return clone;
 	}
 }

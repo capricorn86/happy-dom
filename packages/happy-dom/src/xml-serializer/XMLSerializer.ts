@@ -5,6 +5,7 @@ import DocumentType from '../nodes/document-type/DocumentType';
 import { escape } from 'he';
 import INode from '../nodes/node/INode';
 import IElement from '../nodes/element/IElement';
+import IHTMLTemplateElement from '../nodes/html-template-element/IHTMLTemplateElement';
 
 /**
  * Utility for converting an element to string.
@@ -28,9 +29,13 @@ export default class XMLSerializer {
 					return `<${tagName}${this._getAttributes(element)}>`;
 				}
 
+				const childNodes =
+					element.tagName === 'TEMPLATE'
+						? (<IHTMLTemplateElement>root).content.childNodes
+						: root.childNodes;
 				let innerHTML = '';
 
-				for (const node of root.childNodes) {
+				for (const node of childNodes) {
 					innerHTML += this.serializeToString(node, options);
 				}
 
