@@ -44,17 +44,13 @@ export default class XMLHttpRequestUpload extends XMLHttpRequestEventTarget {
 		} else if (data instanceof ArrayBuffer) {
 			const body = Buffer.alloc(data.byteLength);
 			const view = new Uint8Array(data);
-			for (let i = 0; i < data.byteLength; i++) {
-				body[i] = view[i];
-			}
+			body.set(view);
 			this._body = body;
 		} else if (data.buffer && data.buffer instanceof ArrayBuffer) {
 			const body = Buffer.alloc(data.byteLength);
 			const offset = data.byteOffset;
 			const view = new Uint8Array(data.buffer);
-			for (let i = 0; i < data.byteLength; i++) {
-				body[i] = view[i + offset];
-			}
+			body.set(view, offset);
 			this._body = body;
 		} else {
 			throw new Error(`Unsupported send() data ${data}`);

@@ -15,12 +15,13 @@ import DOMException from '../exception/DOMException';
 import IWindow from '../window/IWindow';
 import URL from '../location/URL';
 import RelativeURL from '../location/RelativeURL';
+import Blob from '../file/Blob';
+import {
+	copyToArrayBuffer,
+	MajorNodeVersion,
+	IXMLHttpRequestOptions
+} from './XMLHttpReqeustUtility';
 
-interface IXMLHttpRequestOptions {
-	anon?: boolean;
-}
-const NodeVersion = process.version.replace('v', '').split('.');
-const MajorNodeVersion = Number.parseInt(NodeVersion[0]);
 /**
  * References: https://github.com/souldreamer/xhr2-cookies.
  */
@@ -112,6 +113,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param password The password to use for authentication purposes.
 	 */
 	public open(method: string, url: string, async = true, user?: string, password?: string): void {
+		const { _defaultView } = XMLHttpRequest;
+		// If _defaultView is not defined, then we can't set the URL.
+		if (!_defaultView) {
+			throw new Error('need set defaultView');
+		}
 		method = method.toUpperCase();
 		if (this.restrictedMethods[method]) {
 			throw new DOMException(
@@ -119,14 +125,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				DOMExceptionNameEnum.securityError
 			);
 		}
-		// If _defaultView is not defined, then we can't set the URL.
-		if (!XMLHttpRequest._defaultView) {
-			throw new Error('need set defaultView');
-		}
+
 		// Get and Parse the URL relative to the given Location object.
-		const xhrUrl = new XMLHttpRequest._defaultView.URL(
-			RelativeURL.getAbsoluteURL(XMLHttpRequest._defaultView.location, url)
-		);
+		const xhrUrl = RelativeURL.getAbsoluteURL(XMLHttpRequest._defaultView.location, url);
 		// Set username and password if given.
 		xhrUrl.username = user ? user : xhrUrl.username;
 		xhrUrl.password = password ? password : xhrUrl.password;
@@ -163,6 +164,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param value The value to set as the body of the header.
 	 */
 	public setRequestHeader(name: string, value: unknown): void {
+		const { _defaultView } = XMLHttpRequest;
 		if (this.readyState !== XMLHttpRequest.OPENED) {
 			throw new DOMException(
 				'XHR readyState must be OPENED',
@@ -176,7 +178,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			/^sec-/.test(loweredName) ||
 			/^proxy-/.test(loweredName)
 		) {
-			XMLHttpRequest._defaultView.console.warn(`Refused to set unsafe header "${name}"`);
+			_defaultView.console.warn(`Refused to set unsafe header "${name}"`);
 			return;
 		}
 
@@ -196,14 +198,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param data The data to send with the request.
 	 */
 	public send(data?: string | Buffer | ArrayBuffer | ArrayBufferView): void {
+		const { invalidStateError, networkError } = DOMExceptionNameEnum;
 		if (this.readyState !== XMLHttpRequest.OPENED) {
-			throw new DOMException(
-				'XHR readyState must be OPENED',
-				DOMExceptionNameEnum.invalidStateError
-			);
+			throw new DOMException('XHR readyState must be OPENED', invalidStateError);
 		}
 		if (this._request) {
-			throw new DOMException('send() already called', DOMExceptionNameEnum.invalidStateError);
+			throw new DOMException('send() already called', invalidStateError);
 		}
 		switch (this.url.protocol) {
 			case 'file:':
@@ -212,10 +212,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			case 'https:':
 				return this.sendHttp(data);
 			default:
-				throw new DOMException(
-					`Unsupported protocol ${this.url.protocol}`,
-					DOMExceptionNameEnum.networkError
-				);
+				throw new DOMException(`Unsupported protocol ${this.url.protocol}`, networkError);
 		}
 	}
 
@@ -233,7 +230,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		} else {
 			this._request.abort();
 		}
-
+		this.setReadyState(XMLHttpRequest.DONE);
 		this.setError();
 
 		this.dispatchProgress('abort');
@@ -246,7 +243,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param name The name of the header.
 	 */
 	public getResponseHeader(name: string): string {
-		if (this.responseHeaders == null || name == null) {
+		if (
+			this.responseHeaders == null ||
+			name == null ||
+			this.readyState in [XMLHttpRequest.OPENED, XMLHttpRequest.UNSENT]
+		) {
 			return null;
 		}
 		const loweredName = name.toLowerCase();
@@ -260,7 +261,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 */
 	public getAllResponseHeaders(): string {
-		if (this.responseHeaders == null) {
+		if (
+			this.responseHeaders == null ||
+			this.readyState in [XMLHttpRequest.OPENED, XMLHttpRequest.UNSENT]
+		) {
 			return '';
 		}
 		return Object.keys(this.responseHeaders)
@@ -274,7 +278,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param mimeType The MIME type to use.
 	 */
 	public overrideMimeType(mimeType: string): void {
-		if (this.readyState === XMLHttpRequest.LOADING || this.readyState === XMLHttpRequest.DONE) {
+		if (this.readyState in [XMLHttpRequest.LOADING, XMLHttpRequest.DONE]) {
 			throw new DOMException(
 				'overrideMimeType() not allowed in LOADING or DONE',
 				DOMExceptionNameEnum.invalidStateError
@@ -296,6 +300,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	/**
 	 * Send request with file.
 	 *
+	 * @todo Not implemented.
 	 * @param _data File body to send.
 	 */
 	private sendFile(_data: unknown): void {
@@ -309,13 +314,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param data Data to send.
 	 */
 	private sendHttp(data?: string | Buffer | ArrayBuffer | ArrayBufferView): void {
+		const { _defaultView } = XMLHttpRequest;
 		if (this.sync) {
+			// TODO: sync not implemented.
 			throw new Error('Synchronous XHR processing not implemented');
 		}
 		if (data && (this.method === 'GET' || this.method === 'HEAD')) {
-			XMLHttpRequest._defaultView.console.warn(
-				`Discarding entity body for ${this.method} requests`
-			);
+			_defaultView.console.warn(`Discarding entity body for ${this.method} requests`);
 			data = null;
 		} else {
 			data = data || '';
@@ -331,10 +336,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 */
 	private sendHxxpRequest(): void {
+		const { _defaultView } = XMLHttpRequest;
 		if (this.withCredentials) {
 			// Set cookie if URL is same-origin.
-			if (XMLHttpRequest._defaultView.location.origin === this.url.origin) {
-				this.headers.cookie = XMLHttpRequest._defaultView.document.cookie;
+			if (_defaultView.location.origin === this.url.origin) {
+				this.headers.cookie = _defaultView.document.cookie;
 			}
 		}
 
@@ -369,11 +375,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 */
 	private finalizeHeaders(): void {
+		const { _defaultView } = XMLHttpRequest;
 		this.headers = {
 			...this.headers,
 			Connection: 'keep-alive',
 			Host: this.url.host,
-			'User-Agent': XMLHttpRequest._defaultView.navigator.userAgent,
+			'User-Agent': _defaultView.navigator.userAgent,
 			...(this.anonymous ? { Referer: 'about:blank' } : {})
 		};
 		this.upload.finalizeHeaders(this.headers, this.loweredHeaders);
@@ -389,13 +396,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (this._request !== request) {
 			return;
 		}
+		const { _defaultView } = XMLHttpRequest;
 
 		if (this.withCredentials && response.headers['set-cookie']) {
-			XMLHttpRequest._defaultView.document.cookie = response.headers['set-cookie'].join('; ');
+			_defaultView.document.cookie = response.headers['set-cookie'].join('; ');
 		}
 
 		if ([301, 302, 303, 307, 308].indexOf(response.statusCode) >= 0) {
-			this.url = new XMLHttpRequest._defaultView.URL(response.headers.location);
+			this.url = new _defaultView.URL(response.headers.location);
 			this.method = 'GET';
 			if (this.loweredHeaders['content-type']) {
 				delete this.headers[this.loweredHeaders['content-type']];
@@ -604,20 +612,24 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				} catch {
 					this.response = null;
 				}
-				return;
+				break;
 			case 'buffer':
 				this.responseText = null;
 				this.response = buffer;
-				return;
+				break;
 			case 'arraybuffer':
 				this.responseText = null;
-				const arrayBuffer = new ArrayBuffer(buffer.length);
-				const view = new Uint8Array(arrayBuffer);
-				for (let i = 0; i < buffer.length; i++) {
-					view[i] = buffer[i];
-				}
-				this.response = arrayBuffer;
-				return;
+				this.response = copyToArrayBuffer(buffer);
+				break;
+			case 'blob':
+				this.responseText = null;
+				this.response = new Blob([new Uint8Array(buffer)], {
+					type: this.mimeOverride || this.responseHeaders['content-type'] || ''
+				});
+				break;
+			case 'document':
+				// TODO: MimeType parse not yet supported.
+				break;
 			case 'text':
 			default:
 				try {
@@ -626,7 +638,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					this.responseText = buffer.toString('binary');
 				}
 				this.response = this.responseText;
+				break;
 		}
+		return;
 	}
 
 	/**

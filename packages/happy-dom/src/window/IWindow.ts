@@ -37,6 +37,7 @@ import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
 import EventTarget from '../event/EventTarget';
 import URL from '../location/URL';
+import URLSearchParams from '../location/URLSearchParams';
 import Location from '../location/Location';
 import MutationObserver from '../mutation-observer/MutationObserver';
 import DOMParser from '../dom-parser/DOMParser';
@@ -84,7 +85,6 @@ import Range from '../range/Range';
 import MediaQueryList from '../match-media/MediaQueryList';
 import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
-import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
 
 /**
@@ -150,6 +150,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly DataTransferItem: typeof DataTransferItem;
 	readonly DataTransferItemList: typeof DataTransferItemList;
 	readonly URL: typeof URL;
+	readonly URLSearchParams: typeof URLSearchParams;
 	readonly Location: typeof Location;
 	readonly CustomElementRegistry: typeof CustomElementRegistry;
 	readonly Window: typeof Window;
@@ -163,7 +164,6 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly History: typeof History;
 	readonly Screen: typeof Screen;
 	readonly Storage: typeof Storage;
-	readonly URLSearchParams: typeof URLSearchParams;
 	readonly HTMLCollection: typeof HTMLCollection;
 	readonly NodeList: typeof NodeList;
 	readonly CSSUnitValue: typeof CSSUnitValue;

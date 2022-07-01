@@ -37,6 +37,7 @@ import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
 import EventTarget from '../event/EventTarget';
 import URL from '../location/URL';
+import URLSearchParams from '../location/URLSearchParams';
 import Location from '../location/Location';
 import NonImplementedEventTypes from '../event/NonImplementedEventTypes';
 import MutationObserver from '../mutation-observer/MutationObserver';
@@ -86,7 +87,6 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
-import { URLSearchParams } from 'url';
 import FetchHandler from '../fetch/FetchHandler';
 import { default as RangeImplementation } from '../range/Range';
 import DOMRect from '../nodes/element/DOMRect';
@@ -209,11 +209,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly FileReader;
 	public readonly Image;
 
-	// XMLHttpRequest
-	public XMLHttpRequest = XMLHttpRequest;
-	public XMLHttpRequestUpload = XMLHttpRequestUpload;
-	public XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
-
 	// Events
 	public onload: (event: Event) => void = null;
 	public onerror: (event: ErrorEvent) => void = null;
@@ -237,6 +232,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly sessionStorage = new Storage();
 	public readonly localStorage = new Storage();
 	public readonly performance = PerfHooks.performance;
+
+	public XMLHttpRequest = XMLHttpRequest;
+	public XMLHttpRequestUpload = XMLHttpRequestUpload;
+	public XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
 
 	// Node.js Globals
 	public ArrayBuffer;

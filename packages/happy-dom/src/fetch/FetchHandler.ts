@@ -24,7 +24,7 @@ export default class FetchHandler {
 		return new Promise((resolve, reject) => {
 			const taskID = taskManager.startTask();
 
-			NodeFetch(RelativeURL.getAbsoluteURL(document.defaultView.location, url), init)
+			NodeFetch(RelativeURL.getAbsoluteURL(document.defaultView.location, url).href, init)
 				.then((response) => {
 					if (taskManager.getTaskCount() === 0) {
 						reject(new Error('Failed to complete fetch request. Task was canceled.'));

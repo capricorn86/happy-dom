@@ -8,7 +8,7 @@ export default class Location extends URL {
 	 * Constructor.
 	 */
 	constructor() {
-		super('');
+		super('about:blank');
 	}
 
 	/**
@@ -17,7 +17,7 @@ export default class Location extends URL {
 	 * @param url URL.
 	 */
 	public replace(url: string): void {
-		this.parse(url);
+		this.href = url;
 	}
 
 	/**
