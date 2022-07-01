@@ -40,7 +40,7 @@ describe('URL', () => {
 			expect(url.href).toBe(href);
 			expect(url.protocol).toBe('https:');
 			expect(url.hostname).toBe('google.com');
-			expect(url.port).toBe(':8080');
+			expect(url.port).toBe('8080');
 			expect(url.pathname).toBe('/some-path/');
 			expect(url.search).toBe('');
 			expect(url.hash).toBe('');

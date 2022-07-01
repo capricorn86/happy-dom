@@ -184,7 +184,7 @@ describe('Document', () => {
 		});
 
 		it('Sets a cookie with a path.', () => {
-			window.location.href = '/path/to/cookie/';
+			window.location.href = 'https://sub.test.com/path/to/cookie/';
 			document.cookie = 'name1=value1; path=path/to';
 			document.cookie = 'name2=value2; path=/path/to';
 			document.cookie = 'name3=value3; path=/path/to/cookie/';
@@ -192,7 +192,7 @@ describe('Document', () => {
 		});
 
 		it('Does not set cookie if the path does not match the current path.', () => {
-			window.location.href = '/path/to/cookie/';
+			window.location.href = 'https://sub.test.com/path/to/cookie/';
 			document.cookie = 'name1=value1; path=/cookie/';
 			expect(document.cookie).toBe('');
 		});

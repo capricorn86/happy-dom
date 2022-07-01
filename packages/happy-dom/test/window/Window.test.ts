@@ -24,6 +24,7 @@ describe('Window', () => {
 		MOCKED_NODE_FETCH.error = null;
 		window = new Window();
 		document = window.document;
+		window.location.href = 'http://localhost:8080/';
 	});
 
 	afterEach(() => {
@@ -322,7 +323,6 @@ describe('Window', () => {
 
 		it('Handles error JSON request.', async () => {
 			MOCKED_NODE_FETCH.error = new Error('error');
-
 			try {
 				await window.fetch('/url/', {});
 			} catch (error) {
