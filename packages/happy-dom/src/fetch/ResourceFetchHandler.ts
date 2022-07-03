@@ -7,7 +7,7 @@ import IDocument from '../nodes/document/IDocument';
  */
 export default class ResourceFetchHandler {
 	/**
-	 * Returns resource data asynchonously.
+	 * Returns resource data asynchronously.
 	 *
 	 * @param document Document.
 	 * @param url URL.
@@ -24,7 +24,7 @@ export default class ResourceFetchHandler {
 	}
 
 	/**
-	 * Returns resource data synchonously.
+	 * Returns resource data synchronously.
 	 *
 	 * @param document Document.
 	 * @param url URL.

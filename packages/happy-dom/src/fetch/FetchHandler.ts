@@ -10,7 +10,7 @@ import NodeFetch from 'node-fetch';
  */
 export default class FetchHandler {
 	/**
-	 * Returns resource data asynchonously.
+	 * Returns resource data asynchronously.
 	 *
 	 * @param document Document.
 	 * @param url URL to resource.
@@ -20,7 +20,13 @@ export default class FetchHandler {
 	public static fetch(document: IDocument, url: string, init?: IRequestInit): Promise<IResponse> {
 		// We want to only load NodeFetch when it is needed to improve performance and not have direct dependencies to server side packages.
 		const taskManager = document.defaultView.happyDOM.asyncTaskManager;
-
+		// We need set referer to solve anti-hotlinking.
+		// And the browser will set the referer to the origin of the page.
+		if (init) {
+			if (!init.headers['referer']) {
+				init.headers['referer'] = document.defaultView.location.origin;
+			}
+		}
 		return new Promise((resolve, reject) => {
 			const taskID = taskManager.startTask();
 

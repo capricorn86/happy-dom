@@ -21,6 +21,8 @@ import {
 	MajorNodeVersion,
 	IXMLHttpRequestOptions
 } from './XMLHttpReqeustUtility';
+import { spawnSync } from "child_process";
+const SyncWorkerFile = require.resolve ? require.resolve('./XMLHttpRequestSyncWorker') : null;
 
 /**
  * References: https://github.com/souldreamer/xhr2-cookies.
@@ -46,13 +48,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public upload = new XMLHttpRequestUpload();
 	public responseUrl = '';
 	public withCredentials = false;
-	// TODO: another way to set proxy?
+
 	public nodejsHttpAgent: HttpAgent = http.globalAgent;
 	public nodejsHttpsAgent: HttpsAgent = https.globalAgent;
 
 	private readonly anonymous: boolean;
 	private method: string | null = null;
 	private url: URL | null = null;
+	private auth: string | null = null;
+	private body: string | Buffer | ArrayBuffer | ArrayBufferView;
 	private sync = false;
 	private headers: { [header: string]: string } = {};
 	private loweredHeaders: { [lowercaseHeader: string]: string } = {};
@@ -60,7 +64,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	private _request: ClientRequest | null = null;
 	private _response: IncomingMessage | null = null;
 	// @ts-ignore
-	private _error: Error | null = null;
+	private _error: Error | string | null = null;
 	private responseParts: Buffer[] | null = null;
 	private responseHeaders: { [lowercaseHeader: string]: string } | null = null;
 	private loadedBytes = 0;
@@ -141,10 +145,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.method = method;
 		this.url = xhrUrl;
+		this.auth = `${this.url.username || ''}:${this.url.password || ''}`
 		this.sync = !async;
-		this.headers = {};
+		// this.headers = {};
 		this.loweredHeaders = {};
-		this.mimeOverride = null;
+		// this.mimeOverride = null;
 		this.setReadyState(XMLHttpRequest.OPENED);
 		this._request = null;
 		this._response = null;
@@ -155,6 +160,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.loadedBytes = 0;
 		this.totalBytes = 0;
 		this.lengthComputable = false;
+
 	}
 
 	/**
@@ -246,7 +252,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (
 			this.responseHeaders == null ||
 			name == null ||
-			this.readyState in [XMLHttpRequest.OPENED, XMLHttpRequest.UNSENT]
+			this.readyState === XMLHttpRequest.OPENED ||
+			this.readyState === XMLHttpRequest.UNSENT
 		) {
 			return null;
 		}
@@ -263,7 +270,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public getAllResponseHeaders(): string {
 		if (
 			this.responseHeaders == null ||
-			this.readyState in [XMLHttpRequest.OPENED, XMLHttpRequest.UNSENT]
+			this.readyState === XMLHttpRequest.OPENED ||
+			this.readyState === XMLHttpRequest.UNSENT
 		) {
 			return '';
 		}
@@ -278,7 +286,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param mimeType The MIME type to use.
 	 */
 	public overrideMimeType(mimeType: string): void {
-		if (this.readyState in [XMLHttpRequest.LOADING, XMLHttpRequest.DONE]) {
+		if (this.readyState === XMLHttpRequest.LOADING || this.readyState === XMLHttpRequest.DONE) {
 			throw new DOMException(
 				'overrideMimeType() not allowed in LOADING or DONE',
 				DOMExceptionNameEnum.invalidStateError
@@ -315,7 +323,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	private sendHttp(data?: string | Buffer | ArrayBuffer | ArrayBufferView): void {
 		const { _defaultView } = XMLHttpRequest;
+		this.body = data;
+
 		if (this.sync) {
+			const params = this._serialParams();
+			const res = spawnSync(process.execPath, [SyncWorkerFile], { input: params, maxBuffer: Infinity });
+			res;
 			// TODO: sync not implemented.
 			throw new Error('Synchronous XHR processing not implemented');
 		}
@@ -351,7 +364,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			hostname: this.url.hostname,
 			port: +this.url.port,
 			path: this.url.pathname,
-			auth: `${this.url.username || ''}:${this.url.password || ''}`,
+			auth: this.auth,
 			method: this.method,
 			headers: this.headers,
 			agent
@@ -381,7 +394,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			Connection: 'keep-alive',
 			Host: this.url.host,
 			'User-Agent': _defaultView.navigator.userAgent,
-			...(this.anonymous ? { Referer: 'about:blank' } : {})
+			...(this.anonymous ? { Referer: 'about:blank' } : { Referer: _defaultView.location.origin })
 		};
 		this.upload.finalizeHeaders(this.headers, this.loweredHeaders);
 	}
@@ -650,5 +663,34 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	private parseResponseEncoding(): string {
 		const charset = /;\s*charset=(.*)$/.exec(this.responseHeaders['content-type'] || '');
 		return Array.isArray(charset) ? charset[1] : 'utf-8';
+	}
+
+	public _syncGetError(): Error {
+		return <Error>this._error;
+	}
+	public _syncSetErrorString(error: string): void {
+		this._error = error;
+	}
+
+	private _serialParams(): string {
+		const { _defaultView } = XMLHttpRequest;
+		const serials = {
+			sync: this.sync,
+			withCredentials: this.withCredentials,
+			mimeType: this.mimeOverride,
+			username: this.url.username,
+			password: this.url.password,
+			auth: this.auth,
+			method: this.method,
+			responseType: this.responseType,
+			headers: this.headers,
+			uri: this.url.href,
+			timeout: this.timeout,
+			body: this.body,
+
+			cookie: _defaultView.document.cookie,
+			origin: _defaultView.location.href
+		};
+		return JSON.stringify(serials);
 	}
 }

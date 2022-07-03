@@ -64,7 +64,6 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Creates an instance of Document.
 	 *
-	 * @param defaultView Default view.
 	 */
 	constructor() {
 		super();
@@ -764,7 +763,6 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param node Node to import.
 	 * @param [deep=false] Set to "true" if the clone should be deep.
-	 * @param Imported Node.
 	 */
 	public importNode(node: INode, deep = false): INode {
 		if (!(node instanceof Node)) {

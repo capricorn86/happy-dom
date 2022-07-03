@@ -310,7 +310,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * Creates a Base64-encoded ASCII string from a binary string (i.e., a string in which each character in the string is treated as a byte of binary data).
 	 *
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/btoa
-	 * @param data Binay data.
+	 * @param data Binary data.
 	 * @returns Base64-encoded string.
 	 */
 	btoa(data: unknown): string;
@@ -321,7 +321,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/atob
 	 * @see https://infra.spec.whatwg.org/#forgiving-base64-encode.
 	 * @see Https://html.spec.whatwg.org/multipage/webappapis.html#btoa.
-	 * @param data Binay string.
+	 * @param data Binary string.
 	 * @returns An ASCII string containing decoded data from encodedData.
 	 */
 	atob(data: unknown): string;
