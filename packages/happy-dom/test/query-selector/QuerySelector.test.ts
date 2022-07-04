@@ -625,5 +625,14 @@ describe('QuerySelector', () => {
 
 			expect(div.querySelector('#id')).toEqual(div2);
 		});
+
+		it('Does not find input with selector of input:not([list])[type="search"]', () => {
+			const div = document.createElement('div');
+			const input = document.createElement('input');
+			input.setAttribute('type', 'text');
+			div.appendChild(input);
+
+			expect(div.querySelector('input:not([list])[type="search"]')).toBeNull();
+		});
 	});
 });

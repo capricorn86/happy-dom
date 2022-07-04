@@ -28,12 +28,13 @@ export default class SelectorItem {
 	 * @param selector Selector.
 	 */
 	constructor(selector: string) {
-		const [baseSelector, psuedoSelector] = selector.split(':');
+		const baseSelector = selector.replace(new RegExp(PSUEDO_REGEXP, 'g'), '');
 
 		this.isAll = baseSelector === '*';
 		this.isID = !this.isAll ? selector.startsWith('#') : false;
 		this.isAttribute = !this.isAll && !this.isID && baseSelector.includes('[');
-		this.isPseudo = !this.isAll && !this.isID && psuedoSelector !== undefined;
+		// If baseSelector !== selector then some psuedo selector was replaced above
+		this.isPseudo = !this.isAll && !this.isID && baseSelector !== selector;
 		this.isClass = !this.isAll && !this.isID && new RegExp(CLASS_REGEXP, 'g').test(baseSelector);
 		this.tagName = !this.isAll && !this.isID ? baseSelector.match(TAG_NAME_REGEXP) : null;
 		this.tagName = this.tagName ? this.tagName[0].toUpperCase() : null;
