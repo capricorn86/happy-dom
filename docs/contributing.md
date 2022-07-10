@@ -73,6 +73,6 @@ The release process in Happy DOM is completely automated. In order to determine 
 | ------- | ------------------------------------------------------------ |
 | trivial | Use this version type if the change doesn't affect the end user. The change will not be displayed in the release notes. |
 | patch   | Bug fixes should use this version type.                      |
-| minor   | New features that doesn' break anything for the end user should have this version type. |
+| minor   | New features that doesn't break anything for the end user should have this version type. |
 | major   | Braking changes should use this version type.                |
 
