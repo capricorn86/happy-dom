@@ -22,6 +22,20 @@ describe('Blob', () => {
 		});
 	});
 
+	// Reference:
+	// https://github.com/web-std/io/blob/c88170bf24f064adfbb3586a21fb76650ca5a9ab/packages/blob/test/blob.spec.js#L35-L44
+	describe('arrayBuffer()', () => {
+		it('Returns "Promise<ArrayBuffer>".', async () => {
+			const str = 'TEST';
+			const blob = new Blob([str]);
+			const buffer = await blob.arrayBuffer();
+			const result = new Uint8Array(buffer);
+			for (let i = 0; i < result.length; ++i) {
+				expect(result[i]).toBe(str[i].charCodeAt(0));
+			}
+		});
+	});
+
 	describe('toString()', () => {
 		it('Returns "[object Blob]".', () => {
 			const blob = new Blob(['TEST']);
