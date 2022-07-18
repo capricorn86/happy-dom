@@ -47,7 +47,10 @@ export default abstract class EventTarget implements IEventTarget {
 	 */
 	public dispatchEvent(event: Event): boolean {
 		if (!event.target) {
-			event.target = this;
+			Object.defineProperty(event, "target", {
+				value: this,
+				writable: false
+			});
 		}
 
 		Object.defineProperty(event, "currentTarget", {
