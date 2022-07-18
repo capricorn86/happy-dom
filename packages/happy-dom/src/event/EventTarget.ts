@@ -50,7 +50,10 @@ export default abstract class EventTarget implements IEventTarget {
 			event.target = this;
 		}
 
-		event.currentTarget = this;
+		Object.defineProperty(event, "currentTarget", {
+			value: this,
+			writable: false
+		});
 
 		const onEventName = 'on' + event.type.toLowerCase();
 
