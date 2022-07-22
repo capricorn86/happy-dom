@@ -1,4 +1,4 @@
-import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
 import IElement from '../element/IElement';
 
 /**
@@ -9,6 +9,7 @@ import IElement from '../element/IElement';
  */
 export default interface IHTMLElement extends IElement {
 	style: CSSStyleDeclaration;
+	dataset: { [key: string]: string };
 	tabIndex: number;
 	offsetHeight: number;
 	offsetWidth: number;
@@ -17,6 +18,7 @@ export default interface IHTMLElement extends IElement {
 	clientHeight: number;
 	clientWidth: number;
 	innerText: string;
+	outerText: string;
 
 	/**
 	 * Triggers a click event.

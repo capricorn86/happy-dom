@@ -12,7 +12,7 @@ import Element from '../../../src/nodes/element/Element';
 import Event from '../../../src/event/Event';
 import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement';
 import NamespaceURI from '../../../src/config/NamespaceURI';
-import Attr from '../../../src/attribute/Attr';
+import Attr from '../../../src/nodes/attr/Attr';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
 import QuerySelector from '../../../src/query-selector/QuerySelector';
 import NodeFilter from '../../../src/tree-walker/NodeFilter';

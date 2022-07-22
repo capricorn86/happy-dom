@@ -13,7 +13,7 @@ import File from './file/File';
 import FileReader from './file/FileReader';
 import DOMException from './exception/DOMException';
 import History from './history/History';
-import CSSStyleDeclaration from './css/CSSStyleDeclaration';
+import CSSStyleDeclaration from './css/declaration/CSSStyleDeclaration';
 import Screen from './screen/Screen';
 import AsyncTaskManager from './async-task-manager/AsyncTaskManager';
 import NodeFilter from './tree-walker/NodeFilter';

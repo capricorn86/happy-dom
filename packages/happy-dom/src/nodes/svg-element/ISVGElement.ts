@@ -1,4 +1,4 @@
-import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
 import IElement from '../element/IElement';
 import ISVGSVGElement from './ISVGSVGElement';
 

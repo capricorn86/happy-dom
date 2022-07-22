@@ -1,17 +1,19 @@
 import PointerEvent from '../../../src/event/events/PointerEvent';
-import Document from '../../../src/nodes/document/Document';
+import IDocument from '../../../src/nodes/document/IDocument';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
+import IWindow from '../../../src/window/IWindow';
 import Window from '../../../src/window/Window';
 
 describe('HTMLElement', () => {
-	let window: Window = null;
-	let document: Document = null;
-	let element: HTMLElement = null;
+	let window: IWindow = null;
+	let document: IDocument = null;
+	let element: IHTMLElement = null;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLElement>document.createElement('div');
+		element = <IHTMLElement>document.createElement('div');
 	});
 
 	afterEach(() => {
@@ -81,7 +83,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('get innerText()', () => {
-		it('Returns the as the textContent property.', () => {
+		it('Returns the as the textContent property if element is not connected to document, but does not return script and style content.', () => {
 			const div = document.createElement('div');
 			const script = document.createElement('script');
 			const style = document.createElement('script');
@@ -93,6 +95,16 @@ describe('HTMLElement', () => {
 			script.appendChild(document.createTextNode('var key = "value";'));
 			style.appendChild(document.createTextNode('button { background: red; }'));
 			expect(element.innerText).toBe('text1text2');
+		});
+
+		it('Returns the as the textContent property without any line breaks if element is not connected to document.', () => {
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><div>Jumped over the lazy dog</div>`;
+			expect(element.innerText).toBe('The quick brown foxJumped over the lazy dog');
+		});
+
+		it('Returns the as the textContent property with line breaks between block elements if element is connected to document.', () => {
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><div>Jumped over the lazy dog</div>`;
+			expect(element.innerText).toBe('The quick brown fox\nJumped over the lazy dog');
 		});
 	});
 

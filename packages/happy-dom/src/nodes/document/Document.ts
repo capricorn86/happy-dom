@@ -11,7 +11,7 @@ import Event from '../../event/Event';
 import DOMImplementation from '../../dom-implementation/DOMImplementation';
 import ElementTag from '../../config/ElementTag';
 import INodeFilter from '../../tree-walker/INodeFilter';
-import Attr from '../../attribute/Attr';
+import Attr from '../attr/Attr';
 import NamespaceURI from '../../config/NamespaceURI';
 import DocumentType from '../document-type/DocumentType';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility';
@@ -40,6 +40,7 @@ import Selection from '../../selection/Selection';
 import IShadowRoot from '../shadow-root/IShadowRoot';
 import Range from '../../range/Range';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
+import IAttr from '../attr/IAttr';
 
 /**
  * Document.
@@ -716,14 +717,11 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Creates an Attr node.
 	 *
-	 * @param name Name.
+	 * @param qualifiedName Name.
 	 * @returns Attribute.
 	 */
-	public createAttribute(name: string): Attr {
-		const attribute = new Attr();
-		attribute.name = name.toLowerCase();
-		(<IDocument>attribute.ownerDocument) = this;
-		return attribute;
+	public createAttribute(qualifiedName: string): IAttr {
+		return this.createAttributeNS(null, qualifiedName);
 	}
 
 	/**
@@ -733,12 +731,12 @@ export default class Document extends Node implements IDocument {
 	 * @param qualifiedName Qualified name.
 	 * @returns Element.
 	 */
-	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
+	public createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr {
+		Attr._ownerDocument = this;
 		const attribute = new Attr();
 		attribute.namespaceURI = namespaceURI;
 		attribute.name = qualifiedName;
-		(<IDocument>attribute.ownerDocument) = this;
-		return attribute;
+		return <IAttr>attribute;
 	}
 
 	/**

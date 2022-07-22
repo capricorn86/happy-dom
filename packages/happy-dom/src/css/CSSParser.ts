@@ -4,7 +4,7 @@ import CSSStyleRule from './rules/CSSStyleRule';
 import CSSKeyframeRule from './rules/CSSKeyframeRule';
 import CSSKeyframesRule from './rules/CSSKeyframesRule';
 import CSSMediaRule from './rules/CSSMediaRule';
-import CSSStyleDeclaration from './CSSStyleDeclaration';
+import CSSStyleDeclaration from './declaration/CSSStyleDeclaration';
 
 const COMMENT_REGEXP = /\/\*[^*]*\*\//gm;
 

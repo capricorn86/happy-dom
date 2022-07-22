@@ -50,7 +50,7 @@ import DOMException from '../exception/DOMException';
 import { default as FileReaderImplementation } from '../file/FileReader';
 import History from '../history/History';
 import CSSStyleSheet from '../css/CSSStyleSheet';
-import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../css/declaration/CSSStyleDeclaration';
 import CSS from '../css/CSS';
 import CSSUnitValue from '../css/CSSUnitValue';
 import MouseEvent from '../event/events/MouseEvent';
@@ -96,6 +96,9 @@ import VM from 'vm';
 import { Buffer } from 'buffer';
 import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
+import Attr from '../nodes/attr/Attr';
+import ComputedStyle from '../css/computed-style/ComputedStyle';
+import IElement from '../nodes/element/IElement';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -137,6 +140,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLMetaElement = HTMLMetaElement;
 	public readonly HTMLBaseElement = HTMLBaseElement;
 	public readonly HTMLDialogElement = HTMLDialogElement;
+	public readonly Attr = Attr;
 	public readonly SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement = SVGElement;
 	public readonly Text = Text;
@@ -418,8 +422,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param element Element.
 	 * @returns CSS style declaration.
 	 */
-	public getComputedStyle(element: HTMLElement): CSSStyleDeclaration {
-		return new CSSStyleDeclaration(element._attributes, element);
+	public getComputedStyle(element: IElement): CSSStyleDeclaration {
+		return ComputedStyle.getComputedStyle(element);
 	}
 
 	/**

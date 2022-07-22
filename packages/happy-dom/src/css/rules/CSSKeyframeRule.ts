@@ -1,5 +1,5 @@
 import CSSRule from '../CSSRule';
-import CSSStyleDeclaration from '../CSSStyleDeclaration';
+import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration';
 
 /**
  * CSSRule interface.

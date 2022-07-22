@@ -1,4 +1,4 @@
-import CSSStyleDeclaration from '../../src/css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration';
 import IDocument from '../../src/nodes/document/IDocument';
 import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement';
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';

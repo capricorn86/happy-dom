@@ -17,6 +17,7 @@ import Node from '../../../src/nodes/node/Node';
 import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
 import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
+import IAttr from '../../../src/nodes/attr/IAttr';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -1301,6 +1302,36 @@ describe('Element', () => {
 				element[method](attribute1);
 				element[method](attribute2);
 
+				expect((<IAttr>element.attributes[0]).name).toBe('key1');
+				expect((<IAttr>element.attributes[0]).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<IAttr>element.attributes[0]).value).toBe('value1');
+				expect((<IAttr>element.attributes[0]).specified).toBe(true);
+				expect((<IAttr>element.attributes[0]).ownerElement).toBe(element);
+				expect((<IAttr>element.attributes[0]).ownerDocument).toBe(document);
+
+				expect((<IAttr>element.attributes[1]).name).toBe('key2');
+				expect((<IAttr>element.attributes[1]).namespaceURI).toBe(null);
+				expect((<IAttr>element.attributes[1]).value).toBe('value2');
+				expect((<IAttr>element.attributes[1]).specified).toBe(true);
+				expect((<IAttr>element.attributes[1]).ownerElement).toBe(element);
+				expect((<IAttr>element.attributes[1]).ownerDocument).toBe(document);
+
+				expect((<IAttr>element.attributes.key1).name).toBe('key1');
+				expect((<IAttr>element.attributes.key1).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<IAttr>element.attributes.key1).value).toBe('value1');
+				expect((<IAttr>element.attributes.key1).specified).toBe(true);
+				expect((<IAttr>element.attributes.key1).ownerElement).toBe(element);
+				expect((<IAttr>element.attributes.key1).ownerDocument).toBe(document);
+
+				expect((<IAttr>element.attributes.key2).name).toBe('key2');
+				expect((<IAttr>element.attributes.key2).namespaceURI).toBe(null);
+				expect((<IAttr>element.attributes.key2).value).toBe('value2');
+				expect((<IAttr>element.attributes.key2).specified).toBe(true);
+				expect((<IAttr>element.attributes.key2).ownerElement).toBe(element);
+				expect((<IAttr>element.attributes.key2).ownerDocument).toBe(document);
+
+				expect(element.attributes.length).toBe(2);
+
 				expect(element.attributes).toEqual({
 					'0': {
 						name: 'key1',
@@ -1349,41 +1380,35 @@ describe('Element', () => {
 				svg[method](attribute1);
 				svg[method](attribute2);
 
-				expect(svg.attributes).toEqual({
-					'0': {
-						name: 'KEY1',
-						namespaceURI: NamespaceURI.svg,
-						value: 'value1',
-						specified: true,
-						ownerElement: svg,
-						ownerDocument: document
-					},
-					'1': {
-						name: 'key2',
-						namespaceURI: null,
-						value: 'value2',
-						specified: true,
-						ownerElement: svg,
-						ownerDocument: document
-					},
-					KEY1: {
-						name: 'KEY1',
-						namespaceURI: NamespaceURI.svg,
-						value: 'value1',
-						specified: true,
-						ownerElement: svg,
-						ownerDocument: document
-					},
-					key2: {
-						name: 'key2',
-						namespaceURI: null,
-						value: 'value2',
-						specified: true,
-						ownerElement: svg,
-						ownerDocument: document
-					},
-					length: 2
-				});
+				expect((<IAttr>svg.attributes[0]).name).toBe('KEY1');
+				expect((<IAttr>svg.attributes[0]).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<IAttr>svg.attributes[0]).value).toBe('value1');
+				expect((<IAttr>svg.attributes[0]).specified).toBe(true);
+				expect((<IAttr>svg.attributes[0]).ownerElement).toBe(svg);
+				expect((<IAttr>svg.attributes[0]).ownerDocument).toBe(document);
+
+				expect((<IAttr>svg.attributes[1]).name).toBe('key2');
+				expect((<IAttr>svg.attributes[1]).namespaceURI).toBe(null);
+				expect((<IAttr>svg.attributes[1]).value).toBe('value2');
+				expect((<IAttr>svg.attributes[1]).specified).toBe(true);
+				expect((<IAttr>svg.attributes[1]).ownerElement).toBe(svg);
+				expect((<IAttr>svg.attributes[1]).ownerDocument).toBe(document);
+
+				expect((<IAttr>svg.attributes.KEY1).name).toBe('KEY1');
+				expect((<IAttr>svg.attributes.KEY1).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<IAttr>svg.attributes.KEY1).value).toBe('value1');
+				expect((<IAttr>svg.attributes.KEY1).specified).toBe(true);
+				expect((<IAttr>svg.attributes.KEY1).ownerElement).toBe(svg);
+				expect((<IAttr>svg.attributes.KEY1).ownerDocument).toBe(document);
+
+				expect((<IAttr>svg.attributes.key2).name).toBe('key2');
+				expect((<IAttr>svg.attributes.key2).namespaceURI).toBe(null);
+				expect((<IAttr>svg.attributes.key2).value).toBe('value2');
+				expect((<IAttr>svg.attributes.key2).specified).toBe(true);
+				expect((<IAttr>svg.attributes.key2).ownerElement).toBe(svg);
+				expect((<IAttr>svg.attributes.key2).ownerDocument).toBe(document);
+
+				expect(svg.attributes.length).toBe(2);
 			});
 		});
 	}

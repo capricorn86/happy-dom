@@ -48,7 +48,7 @@ import DOMException from '../exception/DOMException';
 import FileReader from '../file/FileReader';
 import History from '../history/History';
 import CSSStyleSheet from '../css/CSSStyleSheet';
-import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../css/declaration/CSSStyleDeclaration';
 import CSS from '../css/CSS';
 import CSSUnitValue from '../css/CSSUnitValue';
 import PointerEvent from '../event/events/PointerEvent';
@@ -84,6 +84,7 @@ import Range from '../range/Range';
 import MediaQueryList from '../match-media/MediaQueryList';
 import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
+import Attr from '../nodes/attr/Attr';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
 
@@ -115,6 +116,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLMetaElement: typeof HTMLMetaElement;
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
 	readonly HTMLDialogElement: typeof HTMLDialogElement;
+	readonly Attr: typeof Attr;
 	readonly SVGSVGElement: typeof SVGSVGElement;
 	readonly SVGElement: typeof SVGElement;
 	readonly Image: typeof Image;
