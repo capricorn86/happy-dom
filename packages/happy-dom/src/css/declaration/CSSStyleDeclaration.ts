@@ -1485,10 +1485,117 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 	public get 368(): string {
 		return this.item(368) || undefined;
 	}
+	public get 369(): string {
+		return this.item(369) || undefined;
+	}
+
+	public get 370(): string {
+		return this.item(370) || undefined;
+	}
+
+	public get 371(): string {
+		return this.item(371) || undefined;
+	}
+
+	public get 372(): string {
+		return this.item(372) || undefined;
+	}
+
+	public get 373(): string {
+		return this.item(373) || undefined;
+	}
+
+	public get 374(): string {
+		return this.item(374) || undefined;
+	}
+
+	public get 375(): string {
+		return this.item(375) || undefined;
+	}
+
+	public get 376(): string {
+		return this.item(376) || undefined;
+	}
+
+	public get 377(): string {
+		return this.item(377) || undefined;
+	}
+
+	public get 378(): string {
+		return this.item(378) || undefined;
+	}
+
+	public get 379(): string {
+		return this.item(379) || undefined;
+	}
+
+	public get 380(): string {
+		return this.item(380) || undefined;
+	}
+
+	public get 381(): string {
+		return this.item(381) || undefined;
+	}
+
+	public get 382(): string {
+		return this.item(382) || undefined;
+	}
+
+	public get 383(): string {
+		return this.item(383) || undefined;
+	}
+
+	public get 384(): string {
+		return this.item(384) || undefined;
+	}
+
+	public get 385(): string {
+		return this.item(385) || undefined;
+	}
+
+	public get 386(): string {
+		return this.item(386) || undefined;
+	}
+
+	public get 387(): string {
+		return this.item(387) || undefined;
+	}
+
+	public get 388(): string {
+		return this.item(388) || undefined;
+	}
+
+	public get 389(): string {
+		return this.item(389) || undefined;
+	}
+
+	public get 390(): string {
+		return this.item(390) || undefined;
+	}
+
+	public get 391(): string {
+		return this.item(391) || undefined;
+	}
 
 	/**
 	 * CSS properties
 	 */
+
+	public get accentColor(): string {
+		return this.getPropertyValue('accent-color');
+	}
+
+	public set accentColor(value: string) {
+		this.setProperty('accent-color', value);
+	}
+
+	public get appRegion(): string {
+		return this.getPropertyValue('app-region');
+	}
+
+	public set appRegion(value: string) {
+		this.setProperty('app-region', value);
+	}
 
 	public get alignContent(): string {
 		return this.getPropertyValue('align-content');
@@ -2146,6 +2253,38 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 		this.setProperty('border-width', value);
 	}
 
+	public get borderEndEndRadius(): string {
+		return this.getPropertyValue('border-end-end-radius');
+	}
+
+	public set borderEndEndRadius(value: string) {
+		this.setProperty('border-end-end-radius', value);
+	}
+
+	public get borderEndStartRadius(): string {
+		return this.getPropertyValue('border-end-start-radius');
+	}
+
+	public set borderEndStartRadius(value: string) {
+		this.setProperty('border-end-start-radius', value);
+	}
+
+	public get borderStartEndRadius(): string {
+		return this.getPropertyValue('border-start-end-radius');
+	}
+
+	public set borderStartEndRadius(value: string) {
+		this.setProperty('border-start-end-radius', value);
+	}
+
+	public get borderStartStartRadius(): string {
+		return this.getPropertyValue('border-start-start-radius');
+	}
+
+	public set borderStartStartRadius(value: string) {
+		this.setProperty('border-start-start-radius', value);
+	}
+
 	public get bottom(): string {
 		return this.getPropertyValue('bottom');
 	}
@@ -2424,6 +2563,38 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 
 	public set counterSet(value: string) {
 		this.setProperty('counter-set', value);
+	}
+
+	public get containIntrinsicBlockSize(): string {
+		return this.getPropertyValue('contain-intrinsic-block-size');
+	}
+
+	public set containIntrinsicBlockSize(value: string) {
+		this.setProperty('contain-intrinsic-block-size', value);
+	}
+
+	public get containIntrinsicHeight(): string {
+		return this.getPropertyValue('contain-intrinsic-height');
+	}
+
+	public set containIntrinsicHeight(value: string) {
+		this.setProperty('contain-intrinsic-height', value);
+	}
+
+	public get containIntrinsicInlineSize(): string {
+		return this.getPropertyValue('contain-intrinsic-inline-size');
+	}
+
+	public set containIntrinsicInlineSize(value: string) {
+		this.setProperty('contain-intrinsic-inline-size', value);
+	}
+
+	public get containIntrinsicWidth(): string {
+		return this.getPropertyValue('contain-intrinsic-width');
+	}
+
+	public set containIntrinsicWidth(value: string) {
+		this.setProperty('contain-intrinsic-width', value);
 	}
 
 	public get cssFloat(): string {
@@ -2730,6 +2901,38 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 		this.setProperty('font-variation-settings', value);
 	}
 
+	public get fontPalette(): string {
+		return this.getPropertyValue('font-palette');
+	}
+
+	public set fontPalette(value: string) {
+		this.setProperty('font-palette', value);
+	}
+
+	public get fontSynthesisSmallCaps(): string {
+		return this.getPropertyValue('font-synthesis-small-caps');
+	}
+
+	public set fontSynthesisSmallCaps(value: string) {
+		this.setProperty('font-synthesis-small-caps', value);
+	}
+
+	public get fontSynthesisStyle(): string {
+		return this.getPropertyValue('font-synthesis-style');
+	}
+
+	public set fontSynthesisStyle(value: string) {
+		this.setProperty('font-synthesis-style', value);
+	}
+
+	public get fontSynthesisWeight(): string {
+		return this.getPropertyValue('font-synthesis-weight');
+	}
+
+	public set fontSynthesisWeight(value: string) {
+		this.setProperty('font-synthesis-weight', value);
+	}
+
 	public get fontWeight(): string {
 		return this.getPropertyValue('font-weight');
 	}
@@ -2952,6 +3155,38 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 
 	public set isolation(value: string) {
 		this.setProperty('isolation', value);
+	}
+
+	public get insetBlockEnd(): string {
+		return this.getPropertyValue('inset-block-end');
+	}
+
+	public set insetBlockEnd(value: string) {
+		this.setProperty('inset-block-end', value);
+	}
+
+	public get insetBlockStart(): string {
+		return this.getPropertyValue('inset-block-start');
+	}
+
+	public set insetBlockStart(value: string) {
+		this.setProperty('inset-block-start', value);
+	}
+
+	public get insetInlineEnd(): string {
+		return this.getPropertyValue('inset-inline-end');
+	}
+
+	public set insetInlineEnd(value: string) {
+		this.setProperty('inset-inline-end', value);
+	}
+
+	public get insetInlineStart(): string {
+		return this.getPropertyValue('inset-inline-start');
+	}
+
+	public set insetInlineStart(value: string) {
+		this.setProperty('inset-inline-start', value);
 	}
 
 	public get justifyContent(): string {
@@ -3456,6 +3691,14 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 
 	public set overscrollBehaviorY(value: string) {
 		this.setProperty('overscroll-behavior-y', value);
+	}
+
+	public get overflowClipMargin(): string {
+		return this.getPropertyValue('overflow-clip-margin');
+	}
+
+	public set overflowClipMargin(value: string) {
+		this.setProperty('overflow-clip-margin', value);
 	}
 
 	public get padding(): string {
@@ -4050,6 +4293,14 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 		this.setProperty('syntax', value);
 	}
 
+	public get scrollbarGutter(): string {
+		return this.getPropertyValue('scrollbar-gutter');
+	}
+
+	public set scrollbarGutter(value: string) {
+		this.setProperty('scrollbar-gutter', value);
+	}
+
 	public get tabSize(): string {
 		return this.getPropertyValue('tab-size');
 	}
@@ -4288,6 +4539,30 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 
 	public set transitionTimingFunction(value: string) {
 		this.setProperty('transition-timing-function', value);
+	}
+
+	public get textEmphasisColor(): string {
+		return this.getPropertyValue('text-emphasis-color');
+	}
+
+	public set textEmphasisColor(value: string) {
+		this.setProperty('text-emphasis-color', value);
+	}
+
+	public get textEmphasisPosition(): string {
+		return this.getPropertyValue('text-emphasis-position');
+	}
+
+	public set textEmphasisPosition(value: string) {
+		this.setProperty('text-emphasis-position', value);
+	}
+
+	public get textEmphasisStyle(): string {
+		return this.getPropertyValue('text-emphasis-style');
+	}
+
+	public set textEmphasisStyle(value: string) {
+		this.setProperty('text-emphasis-style', value);
 	}
 
 	public get unicodeBidi(): string {

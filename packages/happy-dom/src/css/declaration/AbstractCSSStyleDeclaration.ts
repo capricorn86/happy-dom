@@ -3,7 +3,9 @@ import Attr from '../../nodes/attr/Attr';
 import CSSRule from '../CSSRule';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import DOMException from '../../exception/DOMException';
-import CSSStyleDeclarationUtility from './CSSStyleDeclarationUtility';
+import CSSStyleDeclarationUtility from './utilities/CSSStyleDeclarationUtility';
+import CSSStyleDeclarationDefaultValues from './config/CSSStyleDeclarationDefaultValues';
+import ICSSStyleDeclarationProperty from './ICSSStyleDeclarationProperty';
 
 /**
  * CSS Style Declaration.
@@ -11,17 +13,19 @@ import CSSStyleDeclarationUtility from './CSSStyleDeclarationUtility';
 export default abstract class AbstractCSSStyleDeclaration {
 	// Other properties
 	public readonly parentRule: CSSRule = null;
-	public _readonly = false;
-	protected _styles: { [k: string]: string } = {};
+	protected _styles: { [k: string]: ICSSStyleDeclarationProperty } = {};
 	protected _ownerElement: IElement;
+	protected _computed: boolean;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param [ownerElement] Computed style element.
+	 * @param [computed] Computed.
 	 */
-	constructor(ownerElement: IElement = null) {
+	constructor(ownerElement: IElement = null, computed = false) {
 		this._ownerElement = ownerElement;
+		this._computed = computed;
 	}
 
 	/**
@@ -31,17 +35,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public get length(): number {
 		if (this._ownerElement) {
-			if (
-				this._ownerElement['_attributes']['style'] &&
-				this._ownerElement['_attributes']['style'].value
-			) {
-				return Object.keys(
-					CSSStyleDeclarationUtility.styleStringToObject(
-						this._ownerElement['_attributes']['style'].value
-					)
-				).length;
-			}
-			return 0;
+			return CSSStyleDeclarationUtility.getElementStyleProperties(this._ownerElement).length;
 		}
 
 		return Object.keys(this._styles).length;
@@ -54,17 +48,13 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public get cssText(): string {
 		if (this._ownerElement) {
-			if (
-				this._ownerElement['_attributes']['style'] &&
-				this._ownerElement['_attributes']['style'].value
-			) {
-				return CSSStyleDeclarationUtility.styleObjectToString(
-					CSSStyleDeclarationUtility.styleStringToObject(
-						this._ownerElement['_attributes']['style'].value
-					)
-				);
+			if (this._computed) {
+				return '';
 			}
-			return '';
+
+			return CSSStyleDeclarationUtility.styleObjectToString(
+				CSSStyleDeclarationUtility.getElementStyle(this._ownerElement)
+			);
 		}
 
 		return CSSStyleDeclarationUtility.styleObjectToString(this._styles);
@@ -76,7 +66,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @param cssText CSS text.
 	 */
 	public set cssText(cssText: string) {
-		if (this._readonly) {
+		if (this._computed) {
 			throw new DOMException(
 				`Failed to execute 'cssText' on 'CSSStyleDeclaration': These styles are computed, and the properties are therefore read-only.`,
 				DOMExceptionNameEnum.domException
@@ -111,19 +101,12 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public item(index: number): string {
 		if (this._ownerElement) {
-			if (
-				this._ownerElement['_attributes']['style'] &&
-				this._ownerElement['_attributes']['style'].value
-			) {
-				return (
-					Object.keys(
-						CSSStyleDeclarationUtility.styleStringToObject(
-							this._ownerElement['_attributes']['style'].value
-						)
-					)[index] || ''
-				);
+			if (this._computed) {
+				return Object.keys(CSSStyleDeclarationDefaultValues)[index] || '';
 			}
-			return '';
+			return (
+				Object.keys(CSSStyleDeclarationUtility.getElementStyle(this._ownerElement))[index] || ''
+			);
 		}
 		return Object.keys(this._styles)[index] || '';
 	}
@@ -140,7 +123,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 		value: string,
 		priority?: 'important' | '' | undefined
 	): void {
-		if (this._readonly) {
+		if (this._computed) {
 			throw new DOMException(
 				`Failed to execute 'setProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${propertyName}' property is read-only.`,
 				DOMExceptionNameEnum.domException
@@ -183,7 +166,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @param [priority] Can be "important", or an empty string.
 	 */
 	public removeProperty(propertyName: string): void {
-		if (this._readonly) {
+		if (this._computed) {
 			throw new DOMException(
 				`Failed to execute 'removeProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${propertyName}' property is read-only.`,
 				DOMExceptionNameEnum.domException
@@ -219,15 +202,8 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public getPropertyValue(propertyName: string): string {
 		if (this._ownerElement) {
-			if (
-				!this._ownerElement['_attributes']['style'] ||
-				!this._ownerElement['_attributes']['style'].value
-			) {
-				return '';
-			}
-			const value = CSSStyleDeclarationUtility.styleStringToObject(
-				this._ownerElement['_attributes']['style'].value
-			)[propertyName];
+			const elementStyle = CSSStyleDeclarationUtility.getElementStyle(this._ownerElement);
+			const value = elementStyle[propertyName];
 			return value ? value.replace(' !important', '') : '';
 		}
 

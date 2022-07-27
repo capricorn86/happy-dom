@@ -66,24 +66,24 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		let result = '';
 
 		for (const childNode of this.childNodes) {
-			if (childNode instanceof HTMLElement) {
-				if (childNode.tagName !== 'SCRIPT' && childNode.tagName !== 'STYLE') {
-					result += childNode.innerText;
-				}
-			} else if (
-				childNode.nodeType === NodeTypeEnum.elementNode ||
-				childNode.nodeType === NodeTypeEnum.textNode
-			) {
-				result += childNode.textContent.replace(/[\n\r]/, '');
-			}
-
 			if (childNode.nodeType === NodeTypeEnum.elementNode) {
-				const computedStyle = this.ownerDocument.defaultView.getComputedStyle(
-					<IHTMLElement>childNode
-				);
-				if (computedStyle.display === 'block') {
+				const element = <IHTMLElement>childNode;
+				const computedStyle = this.ownerDocument.defaultView.getComputedStyle(element);
+				const display = computedStyle.display;
+
+				if (display === 'block') {
 					result += '\n';
 				}
+
+				if (element.tagName !== 'SCRIPT' && element.tagName !== 'STYLE') {
+					result += element.innerText;
+				}
+
+				if (display === 'block') {
+					result += '\n';
+				}
+			} else if (childNode.nodeType === NodeTypeEnum.textNode) {
+				result += childNode.textContent.replace(/[\n\r]/, '');
 			}
 		}
 

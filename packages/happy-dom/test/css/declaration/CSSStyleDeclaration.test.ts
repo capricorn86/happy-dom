@@ -1,12 +1,16 @@
-import CSSStyleDeclarationCamelCaseKeys from './data/CSSStyleDeclarationCamelCaseKeys';
 import CSSStyleDeclaration from '../../../src/css/declaration/CSSStyleDeclaration';
 import Window from '../../../src/window/Window';
 import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import IElement from '../../../src/nodes/element/IElement';
+import CSSStyleDeclarationDefaultValues from '../../../src/css/computed-style/config/CSSStyleDeclarationDefaultValues';
 
-function CAMEL_TO_KEBAB_CASE(string): string {
-	return string.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
+function KEBAB_TO_CAMEL_CASE(text: string): string {
+	const parts = text.split('-');
+	for (let i = 0, max = parts.length; i < max; i++) {
+		parts[i] = i > 0 ? parts[i].charAt(0).toUpperCase() + parts[i].slice(1) : parts[i];
+	}
+	return parts.join('');
 }
 
 describe('CSSStyleDeclaration', () => {
@@ -28,7 +32,7 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration[0]).toBe('border');
 			expect(declaration[1]).toBe('border-radius');
-			expect(declaration[2]).toBe('border-style');
+			expect(declaration[2]).toBe('font-size');
 			expect(declaration[3]).toBe(undefined);
 		});
 
@@ -41,37 +45,43 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration[0]).toBe('border');
 			expect(declaration[1]).toBe('border-radius');
-			expect(declaration[2]).toBe('border-style');
+			expect(declaration[2]).toBe('font-size');
 			expect(declaration[3]).toBe(undefined);
 		});
 	});
 
-	for (const property of CSSStyleDeclarationCamelCaseKeys) {
-		describe(`get ${property}()`, () => {
+	for (const property of Object.keys(CSSStyleDeclarationDefaultValues)) {
+		const camelCaseProperty = KEBAB_TO_CAMEL_CASE(property);
+		describe(`get ${camelCaseProperty}()`, () => {
 			it('Returns style property on element.', () => {
 				const declaration = new CSSStyleDeclaration(element);
-				element.setAttribute('style', `${property}: test;`);
-				expect(declaration[property]).toBe('test');
+				element.setAttribute(
+					'style',
+					`${property}: ${CSSStyleDeclarationDefaultValues[property]};`
+				);
+				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationDefaultValues[property]);
 			});
 
 			it('Returns style property without element.', () => {
 				const declaration = new CSSStyleDeclaration();
-				declaration[property] = 'test';
-				expect(declaration[property]).toBe('test');
+				declaration[camelCaseProperty] = CSSStyleDeclarationDefaultValues[property];
+				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationDefaultValues[property]);
 			});
 		});
 
-		describe(`set ${property}()`, () => {
+		describe(`set ${camelCaseProperty}()`, () => {
 			it('Sets style property on element.', () => {
 				const declaration = new CSSStyleDeclaration(element);
-				declaration[property] = 'test';
-				expect(element.getAttribute('style')).toBe(`${CAMEL_TO_KEBAB_CASE(property)}: test;`);
+				declaration[camelCaseProperty] = CSSStyleDeclarationDefaultValues[property];
+				expect(element.getAttribute('style')).toBe(
+					`${property}: ${CSSStyleDeclarationDefaultValues[property]};`
+				);
 			});
 
 			it('Sets style property without element.', () => {
-				const declaration = new CSSStyleDeclaration(element);
-				declaration[property] = 'test';
-				expect(declaration[property]).toBe('test');
+				const declaration = new CSSStyleDeclaration();
+				declaration[camelCaseProperty] = CSSStyleDeclarationDefaultValues[property];
+				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationDefaultValues[property]);
 			});
 		});
 	}
