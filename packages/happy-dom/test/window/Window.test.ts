@@ -647,4 +647,11 @@ describe('Window', () => {
 			);
 		});
 	});
+
+	describe('CSSMediaRule', () => {
+		it('CSSMediaRule is defined', () => {
+			// This also tests that the Window's TypeScript definition is correct
+			expect(window.CSSMediaRule).toBeDefined();
+		});
+	});
 });

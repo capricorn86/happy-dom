@@ -96,6 +96,7 @@ import VM from 'vm';
 import { Buffer } from 'buffer';
 import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
+import CSSMediaRule from '../css/rules/CSSMediaRule';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -176,6 +177,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly XMLSerializer = XMLSerializer;
 	public readonly ResizeObserver = ResizeObserver;
 	public readonly CSSStyleSheet = CSSStyleSheet;
+	public readonly CSSMediaRule = CSSMediaRule;
 	public readonly Blob = Blob;
 	public readonly File = File;
 	public readonly DOMException = DOMException;

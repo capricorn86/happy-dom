@@ -86,6 +86,7 @@ import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
+import CSSMediaRule from '../css/rules/CSSMediaRule';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -179,6 +180,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
 	readonly Range: typeof Range;
 	readonly DOMRect: typeof DOMRect;
+	readonly CSSMediaRule: typeof CSSMediaRule;
 
 	// Events
 	onload: (event: Event) => void;
