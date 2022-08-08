@@ -3,7 +3,7 @@ import Window from '../../../src/window/Window';
 import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import IElement from '../../../src/nodes/element/IElement';
-import CSSStyleDeclarationDefaultValues from '../../../src/css/computed-style/config/CSSStyleDeclarationDefaultValues';
+import CSSStyleDeclarationDefaultValues from './data/CSSStyleDeclarationDefaultValues';
 
 function KEBAB_TO_CAMEL_CASE(text: string): string {
 	const parts = text.split('-');
