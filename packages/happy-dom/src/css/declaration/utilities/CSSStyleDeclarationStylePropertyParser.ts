@@ -1,9 +1,6 @@
 import ICSSStyleDeclarationProperty from '../ICSSStyleDeclarationProperty';
 import CSSStyleDeclarationPropertyValidator from './CSSStyleDeclarationStylePropertyValidator';
 
-const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
-const BACKGROUND_POSITIONS = ['top', 'center', 'bottom', 'left', 'right', 'inherit'];
-
 /**
  * Computed style property parser.
  */
@@ -53,7 +50,7 @@ export default class CSSStyleDeclarationStylePropertyParser {
 				) {
 					return '';
 				}
-				return `${style['border-top-width']?.value} ${style['border-top-style']?.value} ${style['border-top-color']?.value}`;
+				return `${style['border-top-width'].value} ${style['border-top-style'].value} ${style['border-top-color'].value}`;
 			case 'border-left':
 				if (
 					!style['border-left-width']?.value ||
@@ -62,7 +59,7 @@ export default class CSSStyleDeclarationStylePropertyParser {
 				) {
 					return '';
 				}
-				return `${style['border-left-width']?.value} ${style['border-left-style']?.value} ${style['border-left-color']?.value}`;
+				return `${style['border-left-width'].value} ${style['border-left-style'].value} ${style['border-left-color'].value}`;
 			case 'border-right':
 				if (
 					!style['border-right-width']?.value ||
@@ -71,7 +68,7 @@ export default class CSSStyleDeclarationStylePropertyParser {
 				) {
 					return '';
 				}
-				return `${style['border-right-width']?.value} ${style['border-right-style']?.value} ${style['border-right-color']?.value}`;
+				return `${style['border-right-width'].value} ${style['border-right-style'].value} ${style['border-right-color'].value}`;
 			case 'border-top':
 				if (
 					!style['border-top-width']?.value ||
@@ -80,7 +77,7 @@ export default class CSSStyleDeclarationStylePropertyParser {
 				) {
 					return '';
 				}
-				return `${style['border-top-width']?.value} ${style['border-top-style']?.value} ${style['border-top-color']?.value}`;
+				return `${style['border-top-width'].value} ${style['border-top-style'].value} ${style['border-top-color'].value}`;
 			case 'border-bottom':
 				if (
 					!style['border-bottom-width']?.value ||
@@ -89,17 +86,26 @@ export default class CSSStyleDeclarationStylePropertyParser {
 				) {
 					return '';
 				}
-				return `${style['border-bottom-width']?.value} ${style['border-bottom-style']?.value} ${style['border-bottom-color']?.value}`;
-            case 'background':
+				return `${style['border-bottom-width'].value} ${style['border-bottom-style'].value} ${style['border-bottom-color'].value}`;
+			case 'background':
 				if (!style['background-color']?.value && !style['background-image']?.value) {
 					return '';
 				}
 				return `${style['background-color']?.value} ${style['background-image']?.value} ${style['background-repeat']?.value} ${style['background-attachment']?.value} ${style['background-position']?.value}`
 					.replace(/  /g, '')
 					.trim();
+			case 'flex':
+				if (
+					!style['flex-grow']?.value ||
+					!style['flex-shrink']?.value ||
+					!style['flex-basis']?.value
+				) {
+					return '';
+				}
+				return `${style['flex-grow'].value} ${style['flex-shrink'].value} ${style['flex-basis'].value}`;
 		}
 
-		return '';
+		return style[propertyName]?.value || '';
 	}
 
 	/**
@@ -119,7 +125,6 @@ export default class CSSStyleDeclarationStylePropertyParser {
 				parts = value.split(/ +/);
 
 				if (
-					parts.length < 2 ||
 					!CSSStyleDeclarationPropertyValidator.validateSize(parts[0]) ||
 					!CSSStyleDeclarationPropertyValidator.validateBorderStyle(parts[1]) ||
 					!CSSStyleDeclarationPropertyValidator.validateColor(parts[2])
@@ -148,7 +153,6 @@ export default class CSSStyleDeclarationStylePropertyParser {
 				parts = value.split(/ +/);
 
 				if (
-					parts.length < 2 ||
 					!CSSStyleDeclarationPropertyValidator.validateSize(parts[0]) ||
 					!CSSStyleDeclarationPropertyValidator.validateBorderStyle(parts[1]) ||
 					!CSSStyleDeclarationPropertyValidator.validateColor(parts[2])
@@ -196,7 +200,6 @@ export default class CSSStyleDeclarationStylePropertyParser {
 			case 'border-radius':
 				parts = value.split(/ +/);
 				if (
-					!value ||
 					!CSSStyleDeclarationPropertyValidator.validateSize(parts[0]) ||
 					(parts[1] && !CSSStyleDeclarationPropertyValidator.validateSize(parts[1])) ||
 					(parts[2] && !CSSStyleDeclarationPropertyValidator.validateSize(parts[2])) ||
@@ -209,6 +212,98 @@ export default class CSSStyleDeclarationStylePropertyParser {
 					'border-top-right-radius': { name, important, value: parts[1] || '' },
 					'border-bottom-right-radius': { name, important, value: parts[2] || '' },
 					'border-bottom-left-radius': { name, important, value: parts[3] || '' }
+				};
+			case 'border-collapse':
+				if (!value || !CSSStyleDeclarationPropertyValidator.validateBorderCollapse(value)) {
+					return {};
+				}
+				return {
+					[name]: { name, important, value }
+				};
+			case 'clear':
+				if (!value || !CSSStyleDeclarationPropertyValidator.validateClear(value)) {
+					return {};
+				}
+				return {
+					[name]: { name, important, value }
+				};
+			case 'clip':
+				if (!value || !CSSStyleDeclarationPropertyValidator.validateClip(value)) {
+					return {};
+				}
+				return {
+					[name]: { name, important, value }
+				};
+			case 'css-float':
+			case 'float':
+				if (!value || !CSSStyleDeclarationPropertyValidator.validateFloat(value)) {
+					return {};
+				}
+				return {
+					[name]: { name, important, value }
+				};
+			case 'flex':
+				const lowerValue = value.trim().toLowerCase();
+				switch (lowerValue) {
+					case 'none':
+						return {
+							'flex-grow': { name, important, value: '0' },
+							'flex-shrink': { name, important, value: '0' },
+							'flex-basis': { name, important, value: 'auto' }
+						};
+					case 'auto':
+						return {
+							'flex-grow': { name, important, value: '1' },
+							'flex-shrink': { name, important, value: '1' },
+							'flex-basis': { name, important, value: 'auto' }
+						};
+					case 'initial':
+						return {
+							'flex-grow': { name, important, value: '0' },
+							'flex-shrink': { name, important, value: '1' },
+							'flex-basis': { name, important, value: 'auto' }
+						};
+					case 'inherit':
+						return {
+							'flex-grow': { name, important, value: 'inherit' },
+							'flex-shrink': { name, important, value: 'inherit' },
+							'flex-basis': { name, important, value: 'inherit' }
+						};
+				}
+
+				parts = value.split(/ +/);
+				if (
+					!CSSStyleDeclarationPropertyValidator.validateInteger(parts[0]) ||
+					!CSSStyleDeclarationPropertyValidator.validateInteger(parts[1]) ||
+					(parts[2] !== 'auto' &&
+						parts[2] !== 'inherit' &&
+						!CSSStyleDeclarationPropertyValidator.validateSize(parts[2]))
+				) {
+					return {};
+				}
+				return {
+					'flex-grow': { name, important, value: parts[0] },
+					'flex-shrink': { name, important, value: parts[1] },
+					'flex-basis': { name, important, value: parts[2] }
+				};
+			case 'flex-shrink':
+			case 'flex-grow':
+				if (!value || !CSSStyleDeclarationPropertyValidator.validateInteger(value)) {
+					return {};
+				}
+				return {
+					[name]: { name, important, value }
+				};
+			case 'flex-basis':
+				if (
+					value !== 'auto' &&
+					value !== 'inherit' &&
+					!CSSStyleDeclarationPropertyValidator.validateSize(value)
+				) {
+					return {};
+				}
+				return {
+					[name]: { name, important, value }
 				};
 			case 'padding':
 			case 'margin':
@@ -230,30 +325,32 @@ export default class CSSStyleDeclarationStylePropertyParser {
 				};
 			case 'background':
 				parts = value.split(/ +/);
-                // First value can be color or image url
-                if(!CSSStyleDeclarationPropertyValidator.validateColor(parts[0])) {
-                    parts.unshift('');
-                }
-				const backgroundImage = this.parseURL(parts[1]);
-                const backgroundPosition = this.parseBackgroundPosition(parts(4));
+				// First value can be color or image url
+				if (!CSSStyleDeclarationPropertyValidator.validateColor(parts[0])) {
+					parts.unshift('');
+				}
 				if (
-					!value ||
+					(!parts[0] && !parts[1]) ||
 					(parts[0] && !CSSStyleDeclarationPropertyValidator.validateColor(parts[0])) ||
-                    (parts[1] && !backgroundImage) ||
+					(parts[1] && !CSSStyleDeclarationPropertyValidator.validateURL(parts[1])) ||
 					(parts[2] && !CSSStyleDeclarationPropertyValidator.validateBackgroundRepeat(parts[2])) ||
 					(parts[3] &&
 						!CSSStyleDeclarationPropertyValidator.validateBackgroundAttachment(parts[3])) ||
-                    (parts[4] && !backgroundPosition)
+					(parts[4] && !CSSStyleDeclarationPropertyValidator.validateBackgroundPosition(parts[4]))
 				) {
 					return {};
 				}
 				return {
 					'background-color': { name, important, value: parts[0] || '' },
-					'background-image': { name, important, value: backgroundImage },
+					'background-image': { name, important, value: parts[1] || '' },
 					'background-repeat': { name, important, value: parts[2] || '' },
 					'background-attachment': { name, important, value: parts[3] || '' },
-					'background-position': { name, important, value: backgroundPosition },
+					'background-position': { name, important, value: parts[4] || '' }
 				};
+			case 'top':
+			case 'right':
+			case 'bottom':
+			case 'left':
 			case 'padding-top':
 			case 'padding-bottom':
 			case 'padding-left':
@@ -273,6 +370,8 @@ export default class CSSStyleDeclarationStylePropertyParser {
 				return {
 					[name]: { name, important, value }
 				};
+			case 'color':
+			case 'flood-color':
 			case 'border-top-color':
 			case 'border-bottom-color':
 			case 'border-left-color':
@@ -364,111 +463,21 @@ export default class CSSStyleDeclarationStylePropertyParser {
 					'border-bottom-right-radius',
 					'border-bottom-left-radius'
 				];
-            case 'background':
-                return [
+			case 'background':
+				return [
 					'background-color',
 					'background-image',
 					'background-repeat',
 					'background-attachment',
 					'background-position'
-				]
+				];
+			case 'flex':
+				return ['flex-grow', 'flex-shrink', 'flex-basis'];
 			case 'padding':
 			case 'margin':
 				return [`${name}-top`, `${name}-right`, `${name}-bottom`, `${name}-left`];
 		}
 
 		return [name];
-	}
-
-	/**
-	 * Parses URL.
-	 *
-	 * Based on:
-	 * https://github.com/jsdom/cssstyle/blob/master/lib/parsers.js#L222
-	 *
-	 * @param value
-	 * @returns New value.
-	 */
-	private static parseURL(value: string): string {
-		if (!value) {
-			return '';
-		}
-
-        if(value === 'none' || value === 'inherit') {
-            return value;
-        }
-
-		const result = URL_REGEXP.exec(value);
-
-		if (!result) {
-			return '';
-		}
-
-		let url = result[1];
-
-		if ((url[0] === '"' || url[0] === "'") && url[0] !== url[url.length - 1]) {
-			return '';
-		}
-
-		if (url[0] === '"' || url[0] === "'") {
-			url = url.substring(1, url.length - 1);
-		}
-
-		for (let i = 0; i < url.length; i++) {
-			switch (url[i]) {
-				case '(':
-				case ')':
-				case ' ':
-				case '\t':
-				case '\n':
-				case "'":
-				case '"':
-					return '';
-				case '\\':
-					i++;
-					break;
-			}
-		}
-
-		return 'url(' + url + ')';
-	}
-
-	/**
-	 * Parses URL.
-	 *
-	 * Based on:
-	 * https://github.com/jsdom/cssstyle/blob/master/lib/properties/backgroundPosition.js
-	 *
-	 * @param value
-	 * @returns New value.
-	 */
-	private static parseBackgroundPosition(value: string): string {
-		if (!value) {
-			return '';
-		}
-		const parts = value.split(/\s+/);
-		if (parts.length > 2 || parts.length < 1) {
-			return '';
-		}
-		if (parts.length === 1) {
-			if (CSSStyleDeclarationPropertyValidator.validateSize(parts[0])) {
-				return value;
-			}
-			if (parts[0]) {
-				if (BACKGROUND_POSITIONS.includes(value.toLowerCase())) {
-					return value;
-				}
-			}
-			return '';
-		}
-		if (
-			CSSStyleDeclarationPropertyValidator.validateSize(parts[0]) && CSSStyleDeclarationPropertyValidator.validateSize(parts[1])
-		) {
-			return value;
-		}
-		if (BACKGROUND_POSITIONS.includes(parts[0].toLowerCase()) && BACKGROUND_POSITIONS.includes(parts[1].toLowerCase())) {
-			return value;
-		}
-		return '';
 	}
 }
