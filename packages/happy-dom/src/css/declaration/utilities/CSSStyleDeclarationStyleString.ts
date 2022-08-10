@@ -1,11 +1,11 @@
 import IElement from '../../../nodes/element/IElement';
 import ICSSStyleDeclarationProperty from '../ICSSStyleDeclarationProperty';
-import CSSStyleDeclarationPropertyParser from './CSSStyleDeclarationStylePropertyParser';
+import CSSStyleDeclarationPropertyWriter from './CSSStyleDeclarationPropertyWriter';
 
 /**
  * CSS Style Declaration utility
  */
-export default class CSSStyleDeclarationStyleParser {
+export default class CSSStyleDeclarationStyleString {
 	/**
 	 * Returns a style from a string.
 	 *
@@ -17,6 +17,7 @@ export default class CSSStyleDeclarationStyleParser {
 	} {
 		const style = {};
 		const parts = styleString.split(';');
+		const writer = new CSSStyleDeclarationPropertyWriter(style);
 
 		for (const part of parts) {
 			if (part) {
@@ -29,14 +30,11 @@ export default class CSSStyleDeclarationStyleParser {
 						const valueWithoutImportant = trimmedValue.replace(' !important', '');
 
 						if (valueWithoutImportant) {
-							Object.assign(
-								style,
-								CSSStyleDeclarationPropertyParser.getValidProperties({
-									name: trimmedName,
-									value: valueWithoutImportant,
-									important
-								})
-							);
+							writer.set({
+								name: trimmedName,
+								value: valueWithoutImportant,
+								important
+							});
 						}
 					}
 				}
@@ -44,27 +42,6 @@ export default class CSSStyleDeclarationStyleParser {
 		}
 
 		return style;
-	}
-
-	/**
-	 * Returns a style string.
-	 *
-	 * @param style Style.
-	 * @returns Styles as string.
-	 */
-	public static getStyleString(style: { [k: string]: ICSSStyleDeclarationProperty }): string {
-		let styleString = '';
-
-		for (const property of Object.values(style)) {
-			if (styleString) {
-				styleString += ' ';
-			}
-			styleString += `${property.name}: ${property.value}${
-				property.important ? ' !important' : ''
-			};`;
-		}
-
-		return styleString;
 	}
 
 	/**
@@ -88,5 +65,26 @@ export default class CSSStyleDeclarationStyleParser {
 		}
 
 		return {};
+	}
+
+	/**
+	 * Returns a style string.
+	 *
+	 * @param style Style.
+	 * @returns Styles as string.
+	 */
+	public static getStyleString(style: { [k: string]: ICSSStyleDeclarationProperty }): string {
+		let styleString = '';
+
+		for (const property of Object.values(style)) {
+			if (styleString) {
+				styleString += ' ';
+			}
+			styleString += `${property.name}: ${property.value}${
+				property.important ? ' !important' : ''
+			};`;
+		}
+
+		return styleString;
 	}
 }

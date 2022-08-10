@@ -3,9 +3,10 @@ import Attr from '../../nodes/attr/Attr';
 import CSSRule from '../CSSRule';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import DOMException from '../../exception/DOMException';
-import CSSStyleDeclarationStyleParser from './utilities/CSSStyleDeclarationStyleParser';
+import CSSStyleDeclarationStyleString from './utilities/CSSStyleDeclarationStyleString';
+import CSSStyleDeclarationPropertyWriter from './utilities/CSSStyleDeclarationPropertyWriter';
 import ICSSStyleDeclarationProperty from './ICSSStyleDeclarationProperty';
-import CSSStyleDeclarationStylePropertyParser from './utilities/CSSStyleDeclarationStylePropertyParser';
+import CSSStyleDeclarationPropertyReader from './utilities/CSSStyleDeclarationPropertyReader';
 
 /**
  * CSS Style Declaration.
@@ -36,7 +37,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	public get length(): number {
 		if (this._ownerElement) {
 			return Object.keys(
-				CSSStyleDeclarationStyleParser.getElementStyleProperties(this._ownerElement, this._computed)
+				CSSStyleDeclarationStyleString.getElementStyleProperties(this._ownerElement, this._computed)
 			).length;
 		}
 
@@ -54,12 +55,12 @@ export default abstract class AbstractCSSStyleDeclaration {
 				return '';
 			}
 
-			return CSSStyleDeclarationStyleParser.getStyleString(
-				CSSStyleDeclarationStyleParser.getElementStyleProperties(this._ownerElement, this._computed)
+			return CSSStyleDeclarationStyleString.getStyleString(
+				CSSStyleDeclarationStyleString.getElementStyleProperties(this._ownerElement, this._computed)
 			);
 		}
 
-		return CSSStyleDeclarationStyleParser.getStyleString(this._styles);
+		return CSSStyleDeclarationStyleString.getStyleString(this._styles);
 	}
 
 	/**
@@ -76,8 +77,8 @@ export default abstract class AbstractCSSStyleDeclaration {
 		}
 
 		if (this._ownerElement) {
-			const parsed = CSSStyleDeclarationStyleParser.getStyleString(
-				CSSStyleDeclarationStyleParser.getStyleProperties(cssText)
+			const parsed = CSSStyleDeclarationStyleString.getStyleString(
+				CSSStyleDeclarationStyleString.getStyleProperties(cssText)
 			);
 			if (!parsed) {
 				delete this._ownerElement['_attributes']['style'];
@@ -91,7 +92,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 				this._ownerElement['_attributes']['style'].value = parsed;
 			}
 		} else {
-			this._styles = CSSStyleDeclarationStyleParser.getStyleProperties(cssText);
+			this._styles = CSSStyleDeclarationStyleString.getStyleProperties(cssText);
 		}
 	}
 
@@ -105,7 +106,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 		if (this._ownerElement) {
 			return (
 				Object.keys(
-					CSSStyleDeclarationStyleParser.getElementStyleProperties(
+					CSSStyleDeclarationStyleString.getElementStyleProperties(
 						this._ownerElement,
 						this._computed
 					)
@@ -147,14 +148,14 @@ export default abstract class AbstractCSSStyleDeclaration {
 				this._ownerElement['_attributes']['style'].name = 'style';
 			}
 
-			const elementStyleProperties = CSSStyleDeclarationStyleParser.getElementStyleProperties(
+			const elementStyleProperties = CSSStyleDeclarationStyleString.getElementStyleProperties(
 				this._ownerElement,
 				this._computed
 			);
 
 			Object.assign(
 				elementStyleProperties,
-				CSSStyleDeclarationStylePropertyParser.getValidProperties({
+				CSSStyleDeclarationPropertyWriter.getRelatedProperties({
 					name: propertyName,
 					value,
 					important: !!priority
@@ -162,11 +163,11 @@ export default abstract class AbstractCSSStyleDeclaration {
 			);
 
 			this._ownerElement['_attributes']['style'].value =
-				CSSStyleDeclarationStyleParser.getStyleString(elementStyleProperties);
+				CSSStyleDeclarationStyleString.getStyleString(elementStyleProperties);
 		} else {
 			Object.assign(
 				this._styles,
-				CSSStyleDeclarationStylePropertyParser.getValidProperties({
+				CSSStyleDeclarationPropertyWriter.getRelatedProperties({
 					name: propertyName,
 					value,
 					important: !!priority
@@ -192,18 +193,18 @@ export default abstract class AbstractCSSStyleDeclaration {
 
 		if (this._ownerElement) {
 			if (this._ownerElement['_attributes']['style']) {
-				const elementStyleProperties = CSSStyleDeclarationStyleParser.getElementStyleProperties(
+				const elementStyleProperties = CSSStyleDeclarationStyleString.getElementStyleProperties(
 					this._ownerElement,
 					this._computed
 				);
 				const propertiesToRemove =
-					CSSStyleDeclarationStylePropertyParser.getRelatedPropertyNames(propertyName);
+					CSSStyleDeclarationPropertyWriter.getRelatedPropertyNames(propertyName);
 
 				for (const property of Object.keys(propertiesToRemove)) {
 					delete elementStyleProperties[property];
 				}
 
-				const styleString = CSSStyleDeclarationStyleParser.getStyleString(elementStyleProperties);
+				const styleString = CSSStyleDeclarationStyleString.getStyleString(elementStyleProperties);
 
 				if (styleString) {
 					this._ownerElement['_attributes']['style'].value = styleString;
@@ -213,7 +214,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 			}
 		} else {
 			const propertiesToRemove =
-				CSSStyleDeclarationStylePropertyParser.getRelatedPropertyNames(propertyName);
+				CSSStyleDeclarationPropertyWriter.getRelatedPropertyNames(propertyName);
 
 			for (const property of Object.keys(propertiesToRemove)) {
 				delete this._styles[property];
@@ -229,15 +230,15 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public getPropertyValue(propertyName: string): string {
 		if (this._ownerElement) {
-			const elementStyleProperties = CSSStyleDeclarationStyleParser.getElementStyleProperties(
+			const elementStyleProperties = CSSStyleDeclarationStyleString.getElementStyleProperties(
 				this._ownerElement,
 				this._computed
 			);
-			return CSSStyleDeclarationStylePropertyParser.getPropertyValue(
+			return CSSStyleDeclarationPropertyReader.getPropertyValue(
 				elementStyleProperties,
 				propertyName
 			);
 		}
-		return CSSStyleDeclarationStylePropertyParser.getPropertyValue(this._styles, propertyName);
+		return CSSStyleDeclarationPropertyReader.getPropertyValue(this._styles, propertyName);
 	}
 }
