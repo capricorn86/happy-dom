@@ -85,4 +85,16 @@ export default abstract class EventTarget implements IEventTarget {
 	public attachEvent(type: string, listener: ((event: Event) => void) | IEventListener): void {
 		this.addEventListener(type.replace('on', ''), listener);
 	}
+
+        /**
+	 * Removes an event listener.
+	 *
+	 * This is only supported by IE8- and Opera, but for some reason React uses it and calls it, so therefore we will keep support for it until they stop using it.
+	 *
+	 * @param type Event type.
+	 * @param listener Listener.
+	 */
+	public detachEvent(type: string, listener: ((event: Event) => void) | IEventListener): void {
+		this.removeEventListener(type.replace('on', ''), listener);
+	}
 }
