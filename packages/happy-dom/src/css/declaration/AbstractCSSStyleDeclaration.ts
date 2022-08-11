@@ -4,7 +4,7 @@ import CSSRule from '../CSSRule';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import DOMException from '../../exception/DOMException';
 import CSSStyleDeclarationStyleString from './utilities/CSSStyleDeclarationStyleString';
-import CSSStyleDeclarationPropertyWriter from './utilities/CSSStyleDeclarationPropertyWriter';
+import CSSStyleDeclarationPropertyManager from './utilities/CSSStyleDeclarationPropertyManager';
 import ICSSStyleDeclarationProperty from './ICSSStyleDeclarationProperty';
 import CSSStyleDeclarationPropertyReader from './utilities/CSSStyleDeclarationPropertyReader';
 
@@ -155,7 +155,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 
 			Object.assign(
 				elementStyleProperties,
-				CSSStyleDeclarationPropertyWriter.getRelatedProperties({
+				CSSStyleDeclarationPropertyManager.getRelatedProperties({
 					name: propertyName,
 					value,
 					important: !!priority
@@ -167,7 +167,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 		} else {
 			Object.assign(
 				this._styles,
-				CSSStyleDeclarationPropertyWriter.getRelatedProperties({
+				CSSStyleDeclarationPropertyManager.getRelatedProperties({
 					name: propertyName,
 					value,
 					important: !!priority
@@ -198,7 +198,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 					this._computed
 				);
 				const propertiesToRemove =
-					CSSStyleDeclarationPropertyWriter.getRelatedPropertyNames(propertyName);
+					CSSStyleDeclarationPropertyManager.getRelatedPropertyNames(propertyName);
 
 				for (const property of Object.keys(propertiesToRemove)) {
 					delete elementStyleProperties[property];
@@ -214,7 +214,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 			}
 		} else {
 			const propertiesToRemove =
-				CSSStyleDeclarationPropertyWriter.getRelatedPropertyNames(propertyName);
+				CSSStyleDeclarationPropertyManager.getRelatedPropertyNames(propertyName);
 
 			for (const property of Object.keys(propertiesToRemove)) {
 				delete this._styles[property];

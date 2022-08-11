@@ -1,6 +1,6 @@
 import IElement from '../../../nodes/element/IElement';
 import ICSSStyleDeclarationProperty from '../ICSSStyleDeclarationProperty';
-import CSSStyleDeclarationPropertyWriter from './CSSStyleDeclarationPropertyWriter';
+import CSSStyleDeclarationPropertyManager from './CSSStyleDeclarationPropertyManager';
 
 /**
  * CSS Style Declaration utility
@@ -17,7 +17,7 @@ export default class CSSStyleDeclarationStyleString {
 	} {
 		const style = {};
 		const parts = styleString.split(';');
-		const writer = new CSSStyleDeclarationPropertyWriter(style);
+		const writer = new CSSStyleDeclarationPropertyManager(style);
 
 		for (const part of parts) {
 			if (part) {
