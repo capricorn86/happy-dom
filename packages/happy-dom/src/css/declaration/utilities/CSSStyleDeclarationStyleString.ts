@@ -1,5 +1,5 @@
 import IElement from '../../../nodes/element/IElement';
-import ICSSStyleDeclarationProperty from '../ICSSStyleDeclarationProperty';
+import ICSSStyleDeclarationProperty from './ICSSStyleDeclarationPropertyValue';
 import CSSStyleDeclarationPropertyManager from './CSSStyleDeclarationPropertyManager';
 
 /**

@@ -5,7 +5,7 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import DOMException from '../../exception/DOMException';
 import CSSStyleDeclarationStyleString from './utilities/CSSStyleDeclarationStyleString';
 import CSSStyleDeclarationPropertyManager from './utilities/CSSStyleDeclarationPropertyManager';
-import ICSSStyleDeclarationProperty from './ICSSStyleDeclarationProperty';
+import ICSSStyleDeclarationProperty from './utilities/ICSSStyleDeclarationPropertyValue';
 import CSSStyleDeclarationPropertyReader from './utilities/CSSStyleDeclarationPropertyReader';
 
 /**

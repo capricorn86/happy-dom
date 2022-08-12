@@ -1,4 +1,4 @@
-import ICSSStyleDeclarationProperty from '../ICSSStyleDeclarationProperty';
+import ICSSStyleDeclarationProperty from './ICSSStyleDeclarationPropertyValue';
 /**
  * Computed style property parser.
  */
