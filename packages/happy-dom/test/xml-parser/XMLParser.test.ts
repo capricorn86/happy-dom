@@ -373,5 +373,16 @@ describe('XMLParser', () => {
 			`.replace(/[\s]/gm, '')
 			);
 		});
+
+		it('Parses childless elements with start and end tag names in different case', () => {
+			const root = XMLParser.parse(
+				window.document,
+				`
+				<script type="text/JavaScript">console.log('hello')</SCRIPT>
+				`
+			);
+
+			expect((<IHTMLElement>root.children[0]).innerText).toBe(`console.log('hello')`);
+		});
 	});
 });
