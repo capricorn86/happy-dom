@@ -1,6 +1,7 @@
 import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue';
 import CSSStyleDeclarationValueParser from './CSSStyleDeclarationPropertyValueParser';
 import CSSStyleDeclarationPropertyManagerPropertyNames from './CSSStyleDeclarationPropertyManagerPropertyNames';
+import CSSStyleDeclarationPropertyValueParser from './CSSStyleDeclarationPropertyValueParser';
 
 /**
  * Computed this.properties property parser.
@@ -170,123 +171,109 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param important Important.
 	 */
 	public set(name: string, value: string, important: boolean): void {
+		let propertyValues = null;
+
 		switch (name) {
 			case 'border':
-				this.setBorder(name, value, important);
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorder(value, important);
+				break;
+			case 'border-top':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderTop(value, important);
 				break;
 			case 'border-left':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderLeft(value, important);
+				break;
 			case 'border-bottom':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderBottom(value, important);
+				break;
 			case 'border-right':
-			case 'border-top':
-				this.setBorderPosition(name, value, important);
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderRight(value, important);
 				break;
 			case 'border-width':
-				value = CSSStyleDeclarationValueParser.getBorderWidth(value);
-				if (value) {
-					this.properties['border-top-width'] = { name, important, value };
-					this.properties['border-right-width'] = { name, important, value };
-					this.properties['border-bottom-width'] = { name, important, value };
-					this.properties['border-left-width'] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderWidth(value, important);
 				break;
 			case 'border-style':
-				value = CSSStyleDeclarationValueParser.getBorderStyle(value);
-				if (value) {
-					this.properties['border-top-style'] = { name, important, value };
-					this.properties['border-right-style'] = { name, important, value };
-					this.properties['border-bottom-style'] = { name, important, value };
-					this.properties['border-left-style'] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderStyle(value, important);
 				break;
 			case 'border-color':
-				value = CSSStyleDeclarationValueParser.getBorderCollapse(value);
-				if (value) {
-					this.properties['border-top-color'] = { name, important, value };
-					this.properties['border-right-color'] = { name, important, value };
-					this.properties['border-bottom-color'] = { name, important, value };
-					this.properties['border-left-color'] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderCollapse(value, important);
 				break;
 			case 'border-radius':
-				this.setBorderRadius(name, value, important);
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderRadius(value, important);
 				break;
 			case 'border-collapse':
-				value = CSSStyleDeclarationValueParser.getBorderCollapse(value);
-				if (value) {
-					this.properties[name] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderCollapse(value, important);
 				break;
 			case 'clear':
-				value = CSSStyleDeclarationValueParser.getClear(value);
-				if (value) {
-					this.properties[name] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getClear(value, important);
+				break;
 			case 'clip':
-				value = CSSStyleDeclarationValueParser.getClip(value);
-				if (value) {
-					this.properties[name] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getClip(value, important);
 				break;
 			case 'css-float':
 			case 'float':
-				value = CSSStyleDeclarationValueParser.getFloat(value);
-				if (value) {
-					this.properties[name] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getFloat(value, important);
 				break;
 			case 'flex':
-				this.setFlex(name, value, important);
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getFlex(value, important);
 				break;
 			case 'flex-shrink':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getFlexShrink(value, important);
+				break;
 			case 'flex-grow':
-				value = CSSStyleDeclarationValueParser.getInteger(value);
-				if (value) {
-					this.properties[name] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getFlexGrow(value, important);
 				break;
 			case 'flex-basis':
-				value = CSSStyleDeclarationValueParser.getFlexBasis(value);
-				if (value) {
-					this.properties[name] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getFlexBasis(value, important);
 				break;
 			case 'padding':
-				this.setPadding(name, value, important);
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getPadding(value, important);
 				break;
 			case 'margin':
-				this.setMargin(name, value, important);
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getMargin(value, important);
 				break;
 			case 'background':
-				this.setBackground(name, value, important);
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBackground(value, important);
 				break;
 			case 'top':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getTop(value, important);
+				break;
 			case 'right':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getRight(value, important);
+				break;
 			case 'bottom':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBottom(value, important);
+				break;
 			case 'left':
-				value = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
-				if (value) {
-					this.properties[name] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getLeft(value, important);
 				break;
 			case 'padding-top':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getPaddingTop(value, important);
+				break;
 			case 'padding-bottom':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getPaddingBottom(value, important);
+				break;
 			case 'padding-left':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getPaddingLeft(value, important);
+				break;
 			case 'padding-right':
-				value = CSSStyleDeclarationValueParser.getMeasurement(value);
-				if (value) {
-					this.properties[name] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getPaddingRight(value, important);
 				break;
 			case 'margin-top':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getMarginTop(value, important);
+				break;
 			case 'margin-bottom':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getMarginBottom(value, important);
+				break;
 			case 'margin-left':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getMarginLeft(value, important);
+				break;
 			case 'margin-right':
-				value = CSSStyleDeclarationValueParser.getMargin(value);
-				if (value) {
-					this.properties[name] = { name, important, value };
-				}
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getMarginRight(value, important);
 				break;
 			case 'border-top-width':
+				propertyValues = CSSStyleDeclarationPropertyValueParser.getBorderTopWidth(value, important);
+				break;
 			case 'border-bottom-width':
 			case 'border-left-width':
 			case 'border-right-width':
