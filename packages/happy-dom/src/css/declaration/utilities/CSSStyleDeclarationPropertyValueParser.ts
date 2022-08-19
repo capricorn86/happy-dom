@@ -33,6 +33,16 @@ const FLEX_BASIS = [
 ];
 const CLEAR = ['none', 'left', 'right', 'both', 'inherit'];
 const FLOAT = ['none', 'left', 'right', 'inherit'];
+const SYSTEM_FONT = [
+	'caption',
+	'icon',
+	'menu',
+	'message-box',
+	'small-caption',
+	'status-bar',
+	'inherit'
+];
+const FONT_WEIGHT = ['normal', 'bold', 'bolder', 'lighter'];
 const FONT_SIZE = [
 	'xx-small',
 	'x-small',
@@ -54,26 +64,6 @@ const FONT_SIZE = [
  * Computed style property parser.
  */
 export default class CSSStyleDeclarationPropertyValueParser {
-	/**
-	 * Returns border style.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getBorderStyle(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const lowerValue = value.toLowerCase();
-		if (BORDER_STYLE.includes(lowerValue)) {
-			return { 'border-style': { value: lowerValue, important } };
-		}
-		return null;
-	}
-
 	/**
 	 * Returns border collapse.
 	 *
@@ -192,60 +182,6 @@ export default class CSSStyleDeclarationPropertyValueParser {
 	}
 
 	/**
-	 * Returns flex basis.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getFlexBasis(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const lowerValue = value.toLowerCase();
-		if (FLEX_BASIS.includes(lowerValue)) {
-			return { 'flex-basis': { value: lowerValue, important } };
-		}
-		return { 'flex-basis': { value: CSSStyleDeclarationValueParser.getLength(value), important } };
-	}
-
-	/**
-	 * Returns flex shrink.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getFlexShrink(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const parsedValue = CSSStyleDeclarationValueParser.getInteger(value);
-		return parsedValue ? { 'flex-shrink': { value: parsedValue, important } } : null;
-	}
-
-	/**
-	 * Returns flex grow.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getFlexGrow(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const parsedValue = CSSStyleDeclarationValueParser.getInteger(value);
-		return parsedValue ? { 'flex-grow': { value: parsedValue, important } } : null;
-	}
-
-	/**
 	 * Returns top.
 	 *
 	 * @param value Value.
@@ -311,95 +247,6 @@ export default class CSSStyleDeclarationPropertyValueParser {
 	} {
 		const parsedValue = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
 		return parsedValue ? { left: { value: parsedValue, important } } : null;
-	}
-
-	/**
-	 * Returns border width.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getBorderWidth(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const lowerValue = value.toLowerCase();
-		if (BORDER_WIDTH.includes(lowerValue)) {
-			return { 'border-width': { value: lowerValue, important } };
-		}
-		const length = CSSStyleDeclarationValueParser.getLength(value);
-		return length ? { 'border-width': { value: length, important } } : null;
-	}
-
-	/**
-	 * Returns border width.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getBorderTopWidth(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const borderWidth = this.getBorderWidth(value, important);
-		return borderWidth ? { 'border-top-width': borderWidth['border-width'] } : null;
-	}
-
-	/**
-	 * Returns border width.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getBorderRightWidth(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const borderWidth = this.getBorderWidth(value, important);
-		return borderWidth ? { 'border-right-width': borderWidth['border-width'] } : null;
-	}
-
-	/**
-	 * Returns border width.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getBorderBottomWidth(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const borderWidth = this.getBorderWidth(value, important);
-		return borderWidth ? { 'border-bottom-width': borderWidth['border-width'] } : null;
-	}
-
-	/**
-	 * Returns border width.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getBorderLeftWidth(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const borderWidth = this.getBorderWidth(value, important);
-		return borderWidth ? { 'border-left-width': borderWidth['border-width'] } : null;
 	}
 
 	/**
@@ -479,26 +326,20 @@ export default class CSSStyleDeclarationPropertyValueParser {
 	}
 
 	/**
-	 * Returns font size.
+	 * Returns float.
 	 *
 	 * @param value Value.
 	 * @param important Important.
 	 * @returns Property values
 	 */
-	public static getFontSize(
+	public static getCSSFloat(
 		value: string,
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const lowerValue = value.toLowerCase();
-		if (FONT_SIZE.includes(lowerValue)) {
-			return { 'font-size': { value: lowerValue, important } };
-		}
-		const measurement =
-			CSSStyleDeclarationValueParser.getLength(value) ||
-			CSSStyleDeclarationValueParser.getPercentage(value);
-		return measurement ? { 'font-size': { value: measurement, important } } : null;
+		const float = this.getFloat(value, important);
+		return float ? { 'css-float': float['float'] } : null;
 	}
 
 	/**
@@ -513,33 +354,309 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const parts = value.split(/ +/);
-		const borderWidth = parts[0] ? this.getBorderWidth(parts[0], important) : null;
-		const borderStyle = parts[1] ? this.getBorderStyle(parts[1], important) : null;
-		const borderColor = parts[2] ? CSSStyleDeclarationValueParser.getColor(parts[2]) : null;
-		const propertyValues = {};
+		const borderWidth = parts[0] ? this.getBorderWidth(parts[0], important) : '';
+		const borderStyle = parts[1] ? this.getBorderStyle(parts[1], important) : '';
+		const borderColor = parts[2] ? this.getBorderColor(parts[2], important) : '';
+		const properties = {};
 
 		if (borderWidth) {
-			propertyValues['border-top-width'] = { ...borderWidth['border-width'] };
-			propertyValues['border-right-width'] = { ...borderWidth['border-width'] };
-			propertyValues['border-bottom-width'] = { ...borderWidth['border-width'] };
-			propertyValues['border-left-width'] = { ...borderWidth['border-width'] };
+			Object.assign(properties, borderWidth);
 		}
 
 		if (borderStyle) {
-			propertyValues['border-top-style'] = { ...borderStyle['border-style'] };
-			propertyValues['border-right-style'] = { ...borderStyle['border-style'] };
-			propertyValues['border-bottom-style'] = { ...borderStyle['border-style'] };
-			propertyValues['border-left-style'] = { ...borderStyle['border-style'] };
+			Object.assign(properties, borderStyle);
 		}
 
 		if (borderColor) {
-			propertyValues['border-top-style'] = { important, value: borderColor };
-			propertyValues['border-right-style'] = { important, value: borderColor };
-			propertyValues['border-bottom-style'] = { important, value: borderColor };
-			propertyValues['border-left-style'] = { important, value: borderColor };
+			Object.assign(properties, borderColor);
 		}
 
-		return borderWidth && borderStyle !== null && borderColor !== null ? propertyValues : null;
+		return borderWidth && borderStyle !== null && borderColor !== null ? properties : null;
+	}
+
+	/**
+	 * Returns border width.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderWidth(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (BORDER_WIDTH.includes(lowerValue)) {
+			return {
+				'border-top-width': { value: lowerValue, important },
+				'border-right-width': { value: lowerValue, important },
+				'border-bottom-width': { value: lowerValue, important },
+				'border-left-width': { value: lowerValue, important }
+			};
+		}
+		const length = CSSStyleDeclarationValueParser.getLength(value);
+		return length
+			? {
+					'border-top-width': { value: length, important },
+					'border-right-width': { value: length, important },
+					'border-bottom-width': { value: length, important },
+					'border-left-width': { value: length, important }
+			  }
+			: null;
+	}
+	/**
+	 * Returns border style.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderStyle(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (BORDER_STYLE.includes(lowerValue)) {
+			return {
+				'border-top-style': { value: lowerValue, important },
+				'border-right-style': { value: lowerValue, important },
+				'border-bottom-style': { value: lowerValue, important },
+				'border-left-style': { value: lowerValue, important }
+			};
+		}
+		return null;
+	}
+
+	/**
+	 * Returns border color.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderColor(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const color = CSSStyleDeclarationValueParser.getColor(value);
+		return color
+			? {
+					'border-top-color': { value: color, important },
+					'border-right-color': { value: color, important },
+					'border-bottom-color': { value: color, important },
+					'border-left-color': { value: color, important }
+			  }
+			: null;
+	}
+
+	/**
+	 * Returns border width.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderTopWidth(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderWidth = this.getBorderWidth(value, important);
+		return borderWidth ? { 'border-top-width': borderWidth['border-top-width'] } : null;
+	}
+
+	/**
+	 * Returns border width.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderRightWidth(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderWidth = this.getBorderWidth(value, important);
+		return borderWidth ? { 'border-right-width': borderWidth['border-right-width'] } : null;
+	}
+
+	/**
+	 * Returns border width.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderBottomWidth(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderWidth = this.getBorderWidth(value, important);
+		return borderWidth ? { 'border-bottom-width': borderWidth['border-bottom-width'] } : null;
+	}
+
+	/**
+	 * Returns border width.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderLeftWidth(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderWidth = this.getBorderWidth(value, important);
+		return borderWidth ? { 'border-left-width': borderWidth['border-left-width'] } : null;
+	}
+
+	/**
+	 * Returns border style.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderTopStyle(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderStyle = this.getBorderStyle(value, important);
+		return borderStyle ? { 'border-top-style': borderStyle['border-top-style'] } : null;
+	}
+
+	/**
+	 * Returns border style.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderRightStyle(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderStyle = this.getBorderStyle(value, important);
+		return borderStyle ? { 'border-right-style': borderStyle['border-right-style'] } : null;
+	}
+
+	/**
+	 * Returns border style.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderBottomStyle(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderStyle = this.getBorderStyle(value, important);
+		return borderStyle ? { 'border-bottom-style': borderStyle['border-bottom-style'] } : null;
+	}
+
+	/**
+	 * Returns border style.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderLeftStyle(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderStyle = this.getBorderStyle(value, important);
+		return borderStyle ? { 'border-left-style': borderStyle['border-left-style'] } : null;
+	}
+
+	/**
+	 * Returns border color.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderTopColor(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderColor = this.getBorderColor(value, important);
+		return borderColor ? { 'border-top-color': borderColor['border-top-color'] } : null;
+	}
+
+	/**
+	 * Returns border color.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderRightColor(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderColor = this.getBorderColor(value, important);
+		return borderColor ? { 'border-right-color': borderColor['border-right-color'] } : null;
+	}
+
+	/**
+	 * Returns border color.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderBottomColor(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderColor = this.getBorderColor(value, important);
+		return borderColor ? { 'border-bottom-color': borderColor['border-bottom-color'] } : null;
+	}
+
+	/**
+	 * Returns border color.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderLeftColor(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const borderColor = this.getBorderColor(value, important);
+		return borderColor ? { 'border-left-color': borderColor['border-left-color'] } : null;
 	}
 
 	/**
@@ -554,28 +671,83 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const parts = value.split(/ +/);
-		const topLeft = parts[0] ? CSSStyleDeclarationValueParser.getMeasurement(parts[0]) : null;
-		const topRight = parts[1] ? CSSStyleDeclarationValueParser.getMeasurement(parts[1]) : null;
-		const bottomRight = parts[2] ? CSSStyleDeclarationValueParser.getMeasurement(parts[2]) : null;
-		const bottomLeft = parts[3] ? CSSStyleDeclarationValueParser.getMeasurement(parts[3]) : null;
-		const propertyValues = {};
+		const topLeft = parts[0] ? CSSStyleDeclarationValueParser.getMeasurement(parts[0]) : '';
+		const topRight = parts[1] ? CSSStyleDeclarationValueParser.getMeasurement(parts[1]) : '';
+		const bottomRight = parts[2] ? CSSStyleDeclarationValueParser.getMeasurement(parts[2]) : '';
+		const bottomLeft = parts[3] ? CSSStyleDeclarationValueParser.getMeasurement(parts[3]) : '';
+		const properties = {};
 
-		if (topLeft) {
-			propertyValues['border-top-left-radius'] = { important, value: topLeft };
-		}
-		if (topRight) {
-			propertyValues['border-top-right-radius'] = { important, value: topRight };
-		}
-		if (bottomRight) {
-			propertyValues['border-bottom-right-radius'] = { important, value: bottomRight };
-		}
-		if (bottomLeft) {
-			propertyValues['border-bottom-left-radius'] = { important, value: bottomLeft };
-		}
+		properties['border-top-left-radius'] = { important, value: topLeft };
+		properties['border-top-right-radius'] = { important, value: topRight || topLeft };
+		properties['border-bottom-right-radius'] = { important, value: bottomRight || topLeft };
+		properties['border-bottom-left-radius'] = {
+			important,
+			value: bottomLeft || topRight || topLeft
+		};
 
 		return topLeft && topRight !== null && bottomRight !== null && bottomLeft !== null
-			? propertyValues
+			? properties
 			: null;
+	}
+
+	/**
+	 * Returns border radius.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values.
+	 */
+	public static getBorderTopLeftRadius(
+		value: string,
+		important: boolean
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const radius = this.getBorderRadius(value, important);
+		return radius ? { 'border-top-left-radius': radius['border-top-left-radius'] } : null;
+	}
+
+	/**
+	 * Returns border radius.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values.
+	 */
+	public static getBorderTopRightRadius(
+		value: string,
+		important: boolean
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const radius = this.getBorderRadius(value, important);
+		return radius ? { 'border-top-right-radius': radius['border-top-right-radius'] } : null;
+	}
+
+	/**
+	 * Returns border radius.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values.
+	 */
+	public static getBorderBottomRightRadius(
+		value: string,
+		important: boolean
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const radius = this.getBorderRadius(value, important);
+		return radius ? { 'border-bottom-right-radius': radius['border-bottom-right-radius'] } : null;
+	}
+
+	/**
+	 * Returns border radius.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values.
+	 */
+	public static getBorderBottomLeftRadius(
+		value: string,
+		important: boolean
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const radius = this.getBorderRadius(value, important);
+		return radius ? { 'border-bottom-left-radius': radius['border-bottom-left-radius'] } : null;
 	}
 
 	/**
@@ -589,7 +761,14 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getBorderByPosition('top', value, important);
+		const border = this.getBorder(value, important);
+		return border
+			? {
+					'border-top-width': border['border-top-width'],
+					'border-top-style': border['border-top-style'],
+					'border-top-color': border['border-top-color']
+			  }
+			: null;
 	}
 
 	/**
@@ -603,7 +782,14 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getBorderByPosition('right', value, important);
+		const border = this.getBorder(value, important);
+		return border
+			? {
+					'border-right-width': border['border-right-width'],
+					'border-right-style': border['border-right-style'],
+					'border-right-color': border['border-right-color']
+			  }
+			: null;
 	}
 
 	/**
@@ -617,7 +803,14 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getBorderByPosition('bottom', value, important);
+		const border = this.getBorder(value, important);
+		return border
+			? {
+					'border-bottom-width': border['border-bottom-width'],
+					'border-bottom-style': border['border-bottom-style'],
+					'border-bottom-color': border['border-bottom-color']
+			  }
+			: null;
 	}
 
 	/**
@@ -631,7 +824,14 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getBorderByPosition('left', value, important);
+		const border = this.getBorder(value, important);
+		return border
+			? {
+					'border-left-width': border['border-left-width'],
+					'border-left-style': border['border-left-style'],
+					'border-left-color': border['border-left-color']
+			  }
+			: null;
 	}
 
 	/**
@@ -645,26 +845,18 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const parts = value.split(/ +/);
-		const top = parts[0] ? this.getPaddingByPosition('top', parts[0], important) : null;
-		const right = parts[1] ? this.getPaddingByPosition('right', parts[0], important) : null;
-		const bottom = parts[2] ? this.getPaddingByPosition('bottom', parts[0], important) : null;
-		const left = parts[3] ? this.getPaddingByPosition('left', parts[0], important) : null;
-		const propertyValues = {};
+		const top = parts[0] ? CSSStyleDeclarationValueParser.getMeasurement(parts[0]) : '';
+		const right = parts[1] ? CSSStyleDeclarationValueParser.getMeasurement(parts[1]) : '';
+		const bottom = parts[2] ? CSSStyleDeclarationValueParser.getMeasurement(parts[2]) : '';
+		const left = parts[3] ? CSSStyleDeclarationValueParser.getMeasurement(parts[3]) : '';
+		const properties = {};
 
-		if (top) {
-			Object.assign(propertyValues, top);
-		}
-		if (right) {
-			Object.assign(propertyValues, right);
-		}
-		if (bottom) {
-			Object.assign(propertyValues, bottom);
-		}
-		if (left) {
-			Object.assign(propertyValues, left);
-		}
+		properties['padding-top'] = { important, value: top };
+		properties['padding-right'] = { important, value: right || top };
+		properties['padding-bottom'] = { important, value: bottom || top };
+		properties['padding-left'] = { important, value: left || right || top };
 
-		return top && right !== null && bottom !== null && left !== null ? propertyValues : null;
+		return top && right !== null && bottom !== null && left !== null ? properties : null;
 	}
 
 	/**
@@ -678,7 +870,8 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getPaddingByPosition('top', value, important);
+		const padding = CSSStyleDeclarationValueParser.getMeasurement(value);
+		return padding ? { 'padding-top': { value: padding, important } } : null;
 	}
 
 	/**
@@ -692,7 +885,8 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getPaddingByPosition('right', value, important);
+		const padding = CSSStyleDeclarationValueParser.getMeasurement(value);
+		return padding ? { 'padding-right': { value: padding, important } } : null;
 	}
 
 	/**
@@ -706,7 +900,8 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getPaddingByPosition('bottom', value, important);
+		const padding = CSSStyleDeclarationValueParser.getMeasurement(value);
+		return padding ? { 'padding-bottom': { value: padding, important } } : null;
 	}
 
 	/**
@@ -720,7 +915,8 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getPaddingByPosition('left', value, important);
+		const padding = CSSStyleDeclarationValueParser.getMeasurement(value);
+		return padding ? { 'padding-left': { value: padding, important } } : null;
 	}
 
 	/**
@@ -735,26 +931,18 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const parts = value.split(/ +/);
-		const top = parts[0] ? this.getMarginByPosition('top', parts[0], important) : null;
-		const right = parts[1] ? this.getMarginByPosition('right', parts[0], important) : null;
-		const bottom = parts[2] ? this.getMarginByPosition('bottom', parts[0], important) : null;
-		const left = parts[3] ? this.getMarginByPosition('left', parts[0], important) : null;
-		const propertyValues = {};
+		const top = parts[0] ? CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[0]) : '';
+		const right = parts[1] ? CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[1]) : '';
+		const bottom = parts[2] ? CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[2]) : '';
+		const left = parts[3] ? CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[3]) : '';
+		const properties = {};
 
-		if (top) {
-			Object.assign(propertyValues, top);
-		}
-		if (right) {
-			Object.assign(propertyValues, right);
-		}
-		if (bottom) {
-			Object.assign(propertyValues, bottom);
-		}
-		if (left) {
-			Object.assign(propertyValues, left);
-		}
+		properties['margin-top'] = { important, value: top };
+		properties['margin-right'] = { important, value: right || top };
+		properties['margin-bottom'] = { important, value: bottom || top };
+		properties['margin-left'] = { important, value: left || right || top };
 
-		return top && right !== null && bottom !== null && left !== null ? propertyValues : null;
+		return top && right !== null && bottom !== null && left !== null ? properties : null;
 	}
 
 	/**
@@ -768,7 +956,8 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getMarginByPosition('top', value, important);
+		const margin = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+		return margin ? { 'margin-top': { value: margin, important } } : null;
 	}
 
 	/**
@@ -782,7 +971,8 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getMarginByPosition('right', value, important);
+		const margin = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+		return margin ? { 'margin-right': { value: margin, important } } : null;
 	}
 
 	/**
@@ -796,7 +986,8 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getMarginByPosition('bottom', value, important);
+		const margin = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+		return margin ? { 'margin-bottom': { value: margin, important } } : null;
 	}
 
 	/**
@@ -810,7 +1001,8 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		return this.getMarginByPosition('left', value, important);
+		const margin = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+		return margin ? { 'margin-left': { value: margin, important } } : null;
 	}
 
 	/**
@@ -854,15 +1046,15 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		}
 
 		const parts = value.split(/ +/);
-		const flexGrow = parts[0] ? CSSStyleDeclarationValueParser.getInteger(parts[0]) : null;
-		const flexShrink = parts[1] ? CSSStyleDeclarationValueParser.getInteger(parts[1]) : null;
-		const flexBasis = parts[2] ? this.getFlexBasis(parts[2], important) : null;
+		const flexGrow = parts[0] ? this.getFlexGrow(parts[0], important) : '';
+		const flexShrink = parts[1] ? this.getFlexShrink(parts[1], important) : '';
+		const flexBasis = parts[2] ? this.getFlexBasis(parts[2], important) : '';
 
 		if (flexGrow && flexShrink && flexBasis) {
 			return {
 				...flexBasis,
-				'flex-grow': { important, value: flexGrow },
-				'flex-shrink': { important, value: flexShrink }
+				...flexGrow,
+				...flexBasis
 			};
 		}
 
@@ -870,9 +1062,63 @@ export default class CSSStyleDeclarationPropertyValueParser {
 	}
 
 	/**
+	 * Returns flex basis.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getFlexBasis(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (FLEX_BASIS.includes(lowerValue)) {
+			return { 'flex-basis': { value: lowerValue, important } };
+		}
+		return { 'flex-basis': { value: CSSStyleDeclarationValueParser.getLength(value), important } };
+	}
+
+	/**
+	 * Returns flex shrink.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getFlexShrink(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const parsedValue = CSSStyleDeclarationValueParser.getInteger(value);
+		return parsedValue ? { 'flex-shrink': { value: parsedValue, important } } : null;
+	}
+
+	/**
+	 * Returns flex grow.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getFlexGrow(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const parsedValue = CSSStyleDeclarationValueParser.getInteger(value);
+		return parsedValue ? { 'flex-grow': { value: parsedValue, important } } : null;
+	}
+
+	/**
 	 * Returns background.
 	 *
-	 * @param name
+	 * @param name Name.
 	 * @param value Value.
 	 * @param important Important.
 	 * @returns Property values.
@@ -892,115 +1138,201 @@ export default class CSSStyleDeclarationPropertyValueParser {
 			parts.unshift('');
 		}
 
-		const color = parts[0] ? CSSStyleDeclarationValueParser.getColor(parts[0]) : null;
-		const image = parts[1] ? CSSStyleDeclarationValueParser.getURL(parts[1]) : null;
-		const repeat = parts[2] ? this.getBackgroundRepeat(parts[2], important) : null;
-		const attachment = parts[3] ? this.getBackgroundAttachment(parts[3], important) : null;
-		const position = parts[4] ? this.getBackgroundPosition(parts[4], important) : null;
-		const propertyValues = {};
+		const color = parts[0] ? this.getBackgroundColor(parts[0], important) : '';
+		const image = parts[1] ? this.getBackgroundImage(parts[1], important) : '';
+		const repeat = parts[2] ? this.getBackgroundRepeat(parts[2], important) : '';
+		const attachment = parts[3] ? this.getBackgroundAttachment(parts[3], important) : '';
+		const position = parts[4] ? this.getBackgroundPosition(parts[4], important) : '';
+		const properties = {};
 
 		if (color) {
-			propertyValues['background-color'] = { important, value: color };
-		} else if (image) {
-			propertyValues['background-image'] = { important, value: image };
+			Object.assign(properties, color);
+		}
+
+		if (image) {
+			Object.assign(properties, image);
 		}
 
 		if (repeat) {
-			Object.assign(propertyValues, repeat);
+			Object.assign(properties, repeat);
 		}
 
 		if (attachment) {
-			Object.assign(propertyValues, attachment);
+			Object.assign(properties, attachment);
 		}
 
 		if (position) {
-			Object.assign(propertyValues, position);
+			Object.assign(properties, position);
 		}
 
-		return color || image ? propertyValues : null;
+		return (color || image) && repeat !== null && attachment !== null && position !== null
+			? properties
+			: null;
 	}
 
 	/**
-	 * Returns border top, right, bottom or left.
+	 * Returns background color.
 	 *
-	 * @param position Position.
 	 * @param value Value.
 	 * @param important Important.
 	 * @returns Property value.
 	 */
-	private static getBorderByPosition(
-		position: 'top' | 'right' | 'bottom' | 'left',
+	public static getBackgroundColor(
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const color = CSSStyleDeclarationValueParser.getColor(value);
+
+		return color
+			? {
+					['background-color']: { important, value: color }
+			  }
+			: null;
+	}
+
+	/**
+	 * Returns background image.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property value.
+	 */
+	public static getBackgroundImage(
+		value: string,
+		important: boolean
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const image = CSSStyleDeclarationValueParser.getURL(value);
+
+		return image
+			? {
+					['background-image']: { important, value: image }
+			  }
+			: null;
+	}
+
+	/**
+	 * Returns color.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property value.
+	 */
+	public static getColor(
+		value: string,
+		important: boolean
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const color = CSSStyleDeclarationValueParser.getColor(value);
+
+		return color
+			? {
+					['color']: { important, value: color }
+			  }
+			: null;
+	}
+
+	/**
+	 * Returns color.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property value.
+	 */
+	public static getFloodColor(
+		value: string,
+		important: boolean
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const color = CSSStyleDeclarationValueParser.getColor(value);
+
+		return color
+			? {
+					['flood-color']: { important, value: color }
+			  }
+			: null;
+	}
+
+	/**
+	 * Returns font.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getFont(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
 		const parts = value.split(/ +/);
-		const borderWidth = parts[0] ? this.getBorderWidth(parts[0], important) : null;
-		const borderStyle = parts[1] ? this.getBorderStyle(parts[1], important) : null;
-		const borderColor = parts[2] ? CSSStyleDeclarationValueParser.getColor(parts[2]) : null;
-		const propertyValues = {};
-
-		if (borderWidth !== null) {
-			propertyValues['border-' + position + '-width'] = borderWidth['border-width'];
-		}
-		if (borderStyle !== null) {
-			propertyValues['border-' + position + '-style'] = borderStyle['border-width'];
-		}
-		if (borderColor) {
-			propertyValues['border-' + position + '-color'] = { important, value: borderColor };
-		}
-
-		return borderWidth !== null ? propertyValues : null;
+		let font;
+		let fontFamily;
+		let fontSize;
+		let fontStyle;
+		let fontVariant;
+		let fontWeight;
+		let lineHeight;
 	}
 
 	/**
-	 * Returns margin.
+	 * Returns font variant.
 	 *
-	 * @param position Position.
 	 * @param value Value.
 	 * @param important Important.
-	 * @returns Parsed value.
+	 * @returns Property values
 	 */
-	private static getMarginByPosition(
-		position: 'top' | 'right' | 'bottom' | 'left',
+	public static getFontVariant(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
 		const lowerValue = value.toLowerCase();
-		if (lowerValue === 'auto') {
-			return { [`margin-${position}`]: { important, value: 'auto' } };
-		}
-		const measurement = CSSStyleDeclarationValueParser.getMeasurement(value);
-		return measurement
-			? {
-					[`margin-${position}`]: {
-						important,
-						value: measurement
-					}
-			  }
+		return lowerValue === 'normal' || lowerValue === 'small-caps'
+			? { 'font-size': { value: lowerValue, important } }
 			: null;
 	}
 
 	/**
-	 * Returns padding.
+	 * Returns font weight.
 	 *
-	 * @param position Position.
 	 * @param value Value.
 	 * @param important Important.
-	 * @returns Parsed value.
+	 * @returns Property values
 	 */
-	private static getPaddingByPosition(
-		position: 'top' | 'right' | 'bottom' | 'left',
+	public static getFontWeight(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		const measurement = CSSStyleDeclarationValueParser.getMeasurement(value);
-		return measurement
-			? {
-					[`padding-${position}`]: {
-						important,
-						value: measurement
-					}
-			  }
-			: null;
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (FONT_WEIGHT.includes(lowerValue)) {
+			return { 'font-weight': { value: lowerValue, important } };
+		}
+		const measurement =
+			CSSStyleDeclarationValueParser.getLength(value) ||
+			CSSStyleDeclarationValueParser.getPercentage(value);
+		return measurement ? { 'font-size': { value: measurement, important } } : null;
+	}
+
+	/**
+	 * Returns font size.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getFontSize(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (FONT_SIZE.includes(lowerValue)) {
+			return { 'font-size': { value: lowerValue, important } };
+		}
+		const measurement = CSSStyleDeclarationValueParser.getLengthOrPercentage(value);
+		return measurement ? { 'font-size': { value: measurement, important } } : null;
 	}
 }

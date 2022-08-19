@@ -41,6 +41,16 @@ export default class CSSStyleDeclarationValueParser {
 	}
 
 	/**
+	 * Returns length or percentage.
+	 *
+	 * @param value Value.
+	 * @returns Parsed value.
+	 */
+	public static getLengthOrPercentage(value: string): string {
+		return this.getLength(value) || this.getPercentage(value);
+	}
+
+	/**
 	 * Returns measurement.
 	 *
 	 * @param value Value.
