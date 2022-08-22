@@ -3,7 +3,9 @@ const COLOR_REGEXP =
 
 const LENGTH_REGEXP = /^(0|[-+]?[0-9]*\.?[0-9]+(in|cm|em|mm|pt|pc|px|ex|rem|vh|vw|ch))$/;
 const PERCENTAGE_REGEXP = /^[-+]?[0-9]*\.?[0-9]+%$/;
+const DEGREE_REGEXP = /^[0-9]+deg$/;
 const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
+const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
 
 /**
  * Style declaration value parser.
@@ -24,6 +26,7 @@ export default class CSSStyleDeclarationValueParser {
 		}
 		return null;
 	}
+
 	/**
 	 * Returns percentance.
 	 *
@@ -41,13 +44,19 @@ export default class CSSStyleDeclarationValueParser {
 	}
 
 	/**
-	 * Returns length or percentage.
+	 * Returns degree.
 	 *
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getLengthOrPercentage(value: string): string {
-		return this.getLength(value) || this.getPercentage(value);
+	public static getDegree(value: string): string {
+		if (value === '0') {
+			return '0deg';
+		}
+		if (DEGREE_REGEXP.test(value)) {
+			return value;
+		}
+		return null;
 	}
 
 	/**
@@ -57,16 +66,6 @@ export default class CSSStyleDeclarationValueParser {
 	 * @returns Parsed value.
 	 */
 	public static getMeasurement(value: string): string {
-		const lowerValue = value.toLowerCase();
-		if (
-			lowerValue === 'inherit' ||
-			lowerValue === 'initial' ||
-			lowerValue === 'revert' ||
-			lowerValue === 'unset'
-		) {
-			return lowerValue;
-		}
-
 		return this.getLength(value) || this.getPercentage(value);
 	}
 
@@ -163,5 +162,16 @@ export default class CSSStyleDeclarationValueParser {
 		}
 
 		return value;
+	}
+
+	/**
+	 * Returns global.
+	 *
+	 * @param value Value.
+	 * @returns Parsed value.
+	 */
+	public static getGlobal(value: string): string {
+		const lowerValue = value.toLowerCase();
+		return GLOBALS.includes(lowerValue) ? lowerValue : null;
 	}
 }

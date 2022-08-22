@@ -3,10 +3,8 @@ import Attr from '../../nodes/attr/Attr';
 import CSSRule from '../CSSRule';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import DOMException from '../../exception/DOMException';
-import CSSStyleDeclarationStyleString from './utilities/CSSStyleDeclarationStyleString';
+import CSSStyleDeclarationElement from './utilities/CSSStyleDeclarationElement';
 import CSSStyleDeclarationPropertyManager from './utilities/CSSStyleDeclarationPropertyManager';
-import ICSSStyleDeclarationProperty from './utilities/ICSSStyleDeclarationPropertyValue';
-import CSSStyleDeclarationPropertyReader from './utilities/CSSStyleDeclarationPropertyReader';
 
 /**
  * CSS Style Declaration.
@@ -14,7 +12,7 @@ import CSSStyleDeclarationPropertyReader from './utilities/CSSStyleDeclarationPr
 export default abstract class AbstractCSSStyleDeclaration {
 	// Other properties
 	public readonly parentRule: CSSRule = null;
-	protected _styles: { [k: string]: ICSSStyleDeclarationProperty } = {};
+	protected _style: CSSStyleDeclarationPropertyManager = null;
 	protected _ownerElement: IElement;
 	protected _computed: boolean;
 
@@ -25,8 +23,9 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @param [computed] Computed.
 	 */
 	constructor(ownerElement: IElement = null, computed = false) {
+		this._style = !ownerElement ? new CSSStyleDeclarationPropertyManager() : null;
 		this._ownerElement = ownerElement;
-		this._computed = computed;
+		this._computed = ownerElement ? computed : false;
 	}
 
 	/**
@@ -36,12 +35,13 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public get length(): number {
 		if (this._ownerElement) {
-			return Object.keys(
-				CSSStyleDeclarationStyleString.getElementStyleProperties(this._ownerElement, this._computed)
-			).length;
+			const style = new CSSStyleDeclarationPropertyManager(
+				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, this._computed)
+			);
+			return style.size();
 		}
 
-		return Object.keys(this._styles).length;
+		return this._style.size();
 	}
 
 	/**
@@ -55,12 +55,13 @@ export default abstract class AbstractCSSStyleDeclaration {
 				return '';
 			}
 
-			return CSSStyleDeclarationStyleString.getStyleString(
-				CSSStyleDeclarationStyleString.getElementStyleProperties(this._ownerElement, this._computed)
+			const style = new CSSStyleDeclarationPropertyManager(
+				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false)
 			);
+			return style.toString();
 		}
 
-		return CSSStyleDeclarationStyleString.getStyleString(this._styles);
+		return this._style.toString();
 	}
 
 	/**
@@ -77,10 +78,8 @@ export default abstract class AbstractCSSStyleDeclaration {
 		}
 
 		if (this._ownerElement) {
-			const parsed = CSSStyleDeclarationStyleString.getStyleString(
-				CSSStyleDeclarationStyleString.getStyleProperties(cssText)
-			);
-			if (!parsed) {
+			const style = new CSSStyleDeclarationPropertyManager(cssText);
+			if (!style.size()) {
 				delete this._ownerElement['_attributes']['style'];
 			} else {
 				if (!this._ownerElement['_attributes']['style']) {
@@ -89,10 +88,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 					this._ownerElement['_attributes']['style'].name = 'style';
 				}
 
-				this._ownerElement['_attributes']['style'].value = parsed;
+				this._ownerElement['_attributes']['style'].value = style.toString();
 			}
 		} else {
-			this._styles = CSSStyleDeclarationStyleString.getStyleProperties(cssText);
+			this._style = new CSSStyleDeclarationPropertyManager(cssText);
 		}
 	}
 
@@ -104,33 +103,25 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public item(index: number): string {
 		if (this._ownerElement) {
-			return (
-				Object.keys(
-					CSSStyleDeclarationStyleString.getElementStyleProperties(
-						this._ownerElement,
-						this._computed
-					)
-				)[index] || ''
+			const style = new CSSStyleDeclarationPropertyManager(
+				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, this._computed)
 			);
+			return style.item(index);
 		}
-		return Object.keys(this._styles)[index] || '';
+		return this._style.item(index);
 	}
 
 	/**
 	 * Set a property.
 	 *
-	 * @param propertyName Property name.
+	 * @param name Property name.
 	 * @param value Value. Must not contain "!important" as that should be set using the priority parameter.
 	 * @param [priority] Can be "important", or an empty string.
 	 */
-	public setProperty(
-		propertyName: string,
-		value: string,
-		priority?: 'important' | '' | undefined
-	): void {
+	public setProperty(name: string, value: string, priority?: 'important' | '' | undefined): void {
 		if (this._computed) {
 			throw new DOMException(
-				`Failed to execute 'setProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${propertyName}' property is read-only.`,
+				`Failed to execute 'setProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name}' property is read-only.`,
 				DOMExceptionNameEnum.domException
 			);
 		}
@@ -140,7 +131,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 		}
 
 		if (!value) {
-			this.removeProperty(propertyName);
+			this.removeProperty(name);
 		} else if (this._ownerElement) {
 			if (!this._ownerElement['_attributes']['style']) {
 				Attr._ownerDocument = this._ownerElement.ownerDocument;
@@ -148,97 +139,61 @@ export default abstract class AbstractCSSStyleDeclaration {
 				this._ownerElement['_attributes']['style'].name = 'style';
 			}
 
-			const elementStyleProperties = CSSStyleDeclarationStyleString.getElementStyleProperties(
-				this._ownerElement,
-				this._computed
+			const style = new CSSStyleDeclarationPropertyManager(
+				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false)
 			);
+			style.set(name, value, !!priority);
 
-			Object.assign(
-				elementStyleProperties,
-				CSSStyleDeclarationPropertyManager.getRelatedProperties({
-					name: propertyName,
-					value,
-					important: !!priority
-				})
-			);
-
-			this._ownerElement['_attributes']['style'].value =
-				CSSStyleDeclarationStyleString.getStyleString(elementStyleProperties);
+			this._ownerElement['_attributes']['style'].value = style.toString();
 		} else {
-			Object.assign(
-				this._styles,
-				CSSStyleDeclarationPropertyManager.getRelatedProperties({
-					name: propertyName,
-					value,
-					important: !!priority
-				})
-			);
+			this._style.set(name, value, !!priority);
 		}
 	}
 
 	/**
 	 * Removes a property.
 	 *
-	 * @param propertyName Property name in kebab case.
+	 * @param name Property name in kebab case.
 	 * @param value Value. Must not contain "!important" as that should be set using the priority parameter.
 	 * @param [priority] Can be "important", or an empty string.
 	 */
-	public removeProperty(propertyName: string): void {
+	public removeProperty(name: string): void {
 		if (this._computed) {
 			throw new DOMException(
-				`Failed to execute 'removeProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${propertyName}' property is read-only.`,
+				`Failed to execute 'removeProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name}' property is read-only.`,
 				DOMExceptionNameEnum.domException
 			);
 		}
 
 		if (this._ownerElement) {
-			if (this._ownerElement['_attributes']['style']) {
-				const elementStyleProperties = CSSStyleDeclarationStyleString.getElementStyleProperties(
-					this._ownerElement,
-					this._computed
-				);
-				const propertiesToRemove =
-					CSSStyleDeclarationPropertyManager.getRelatedPropertyNames(propertyName);
-
-				for (const property of Object.keys(propertiesToRemove)) {
-					delete elementStyleProperties[property];
-				}
-
-				const styleString = CSSStyleDeclarationStyleString.getStyleString(elementStyleProperties);
-
-				if (styleString) {
-					this._ownerElement['_attributes']['style'].value = styleString;
-				} else {
-					delete this._ownerElement['_attributes']['style'];
-				}
+			const style = new CSSStyleDeclarationPropertyManager(
+				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false)
+			);
+			style.remove(name);
+			const newCSSText = style.toString();
+			if (newCSSText) {
+				this._ownerElement['_attributes']['style'].value = newCSSText;
+			} else {
+				delete this._ownerElement['_attributes']['style'];
 			}
 		} else {
-			const propertiesToRemove =
-				CSSStyleDeclarationPropertyManager.getRelatedPropertyNames(propertyName);
-
-			for (const property of Object.keys(propertiesToRemove)) {
-				delete this._styles[property];
-			}
+			this._style.remove(name);
 		}
 	}
 
 	/**
 	 * Returns a property.
 	 *
-	 * @param propertyName Property name in kebab case.
+	 * @param name Property name in kebab case.
 	 * @returns Property value.
 	 */
-	public getPropertyValue(propertyName: string): string {
+	public getPropertyValue(name: string): string {
 		if (this._ownerElement) {
-			const elementStyleProperties = CSSStyleDeclarationStyleString.getElementStyleProperties(
-				this._ownerElement,
-				this._computed
+			const style = new CSSStyleDeclarationPropertyManager(
+				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false)
 			);
-			return CSSStyleDeclarationPropertyReader.getPropertyValue(
-				elementStyleProperties,
-				propertyName
-			);
+			return style.get(name)?.value || '';
 		}
-		return CSSStyleDeclarationPropertyReader.getPropertyValue(this._styles, propertyName);
+		return this._style.get(name)?.value || '';
 	}
 }

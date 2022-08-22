@@ -1,11 +1,13 @@
 import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue';
-import CSSStyleDeclarationPropertyValueParser from './CSSStyleDeclarationPropertyValueParser';
+import CSSStyleDeclarationPropertySetParser from './CSSStyleDeclarationPropertySetParser';
+import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser';
+import CSSStyleDeclarationPropertyGetParser from './CSSStyleDeclarationPropertyGetParser';
 
 /**
  * Computed this.properties property parser.
  */
 export default class CSSStyleDeclarationPropertyManager {
-	private properties: {
+	public properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
 	} = {};
 
@@ -44,208 +46,43 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param name Property name.
 	 * @returns Property value.
 	 */
-	public get(name: string): string {
-		switch (name) {
-			case 'margin':
-				if (!this.properties['margin-top']?.value) {
-					return '';
-				}
-				return `${this.properties['margin-top'].value} ${
-					this.properties['margin-right']?.value || ''
-				} ${
-					this.properties['margin-top'].value !== this.properties['margin-bottom']?.value
-						? this.properties['margin-bottom']?.value || ''
-						: ''
-				} ${
-					this.properties['margin-right'].value !== this.properties['margin-left']?.value
-						? this.properties['margin-left']?.value || ''
-						: ''
-				}`
-					.replace(/  /g, '')
-					.trim();
-			case 'padding':
-				if (!this.properties['padding-top']?.value) {
-					return '';
-				}
-				return `${this.properties['padding-top'].value} ${
-					this.properties['padding-right']?.value || ''
-				} ${
-					this.properties['padding-top'].value !== this.properties['padding-bottom']?.value
-						? this.properties['padding-bottom']?.value || ''
-						: ''
-				} ${
-					this.properties['padding-right'].value !== this.properties['padding-left']?.value
-						? this.properties['padding-left']?.value || ''
-						: ''
-				}`
-					.replace(/  /g, '')
-					.trim();
-			case 'border':
-				if (
-					!this.properties['border-top-width']?.value ||
-					this.properties['border-right-width']?.value !==
-						this.properties['border-top-width']?.value ||
-					this.properties['border-right-style']?.value !==
-						this.properties['border-top-style']?.value ||
-					this.properties['border-right-color']?.value !==
-						this.properties['border-top-color']?.value ||
-					this.properties['border-bottom-width']?.value !==
-						this.properties['border-top-width']?.value ||
-					this.properties['border-bottom-style']?.value !==
-						this.properties['border-top-style']?.value ||
-					this.properties['border-bottom-color']?.value !==
-						this.properties['border-top-color']?.value ||
-					this.properties['border-left-width']?.value !==
-						this.properties['border-top-width']?.value ||
-					this.properties['border-left-style']?.value !==
-						this.properties['border-top-style']?.value ||
-					this.properties['border-left-color']?.value !== this.properties['border-top-color']?.value
-				) {
-					return '';
-				}
-				return `${this.properties['border-top-width'].value} ${
-					this.properties['border-top-style']?.value || ''
-				} ${this.properties['border-top-color']?.value || ''}`
-					.replace(/  /g, '')
-					.trim();
-			case 'border-left':
-				if (!this.properties['border-left-width']?.value) {
-					return '';
-				}
-				return `${this.properties['border-left-width'].value} ${
-					this.properties['border-left-style']?.value || ''
-				} ${this.properties['border-left-color']?.value || ''}`
-					.replace(/  /g, '')
-					.trim();
-			case 'border-right':
-				if (!this.properties['border-right-width']?.value) {
-					return '';
-				}
-				return `${this.properties['border-right-width'].value} ${
-					this.properties['border-right-style']?.value || ''
-				} ${this.properties['border-right-color']?.value || ''}`
-					.replace(/  /g, '')
-					.trim();
-			case 'border-top':
-				if (!this.properties['border-top-width']?.value) {
-					return '';
-				}
-				return `${this.properties['border-top-width'].value} ${
-					this.properties['border-top-style']?.value || ''
-				} ${this.properties['border-top-color']?.value || ''}`
-					.replace(/  /g, '')
-					.trim();
-			case 'border-bottom':
-				if (!this.properties['border-bottom-width']?.value) {
-					return '';
-				}
-				return `${this.properties['border-bottom-width'].value} ${
-					this.properties['border-bottom-style']?.value || ''
-				} ${this.properties['border-bottom-color']?.value || ''}`
-					.replace(/  /g, '')
-					.trim();
-			case 'border-color':
-				if (
-					!this.properties['border-top-color']?.value ||
-					this.properties['border-top-color']?.value !==
-						this.properties['border-right-color']?.value ||
-					this.properties['border-top-color']?.value !==
-						this.properties['border-bottom-color']?.value ||
-					this.properties['border-top-color']?.value !== this.properties['border-left-color']?.value
-				) {
-					return '';
-				}
-				return this.properties['border-top-color'].value;
-			case 'border-style':
-				if (
-					!this.properties['border-top-style']?.value ||
-					this.properties['border-top-style']?.value !==
-						this.properties['border-right-style']?.value ||
-					this.properties['border-top-style']?.value !==
-						this.properties['border-bottom-style']?.value ||
-					this.properties['border-top-style']?.value !== this.properties['border-left-style']?.value
-				) {
-					return '';
-				}
-				return this.properties['border-top-style'].value;
-			case 'border-width':
-				if (
-					!this.properties['border-top-width']?.value ||
-					this.properties['border-top-width']?.value !==
-						this.properties['border-right-width']?.value ||
-					this.properties['border-top-width']?.value !==
-						this.properties['border-bottom-width']?.value ||
-					this.properties['border-top-width']?.value !== this.properties['border-left-width']?.value
-				) {
-					return '';
-				}
-				return this.properties['border-top-width'].value;
-			case 'border-radius':
-				if (!this.properties['border-top-left-radius']?.value) {
-					return '';
-				}
-				return `${this.properties['border-top-left-radius'].value} ${
-					this.properties['border-top-right-radius'].value || ''
-				} ${
-					this.properties['border-top-left-radius'].value !==
-					this.properties['border-bottom-right-radius'].value
-						? this.properties['border-bottom-right-radius'].value || ''
-						: ''
-				} ${
-					this.properties['border-top-right-radius'].value !==
-					this.properties['border-bottom-left-radius'].value
-						? this.properties['border-bottom-left-radius'].value || ''
-						: ''
-				}`
-					.replace(/  /g, '')
-					.trim();
-			case 'background':
-				if (
-					!this.properties['background-color']?.value &&
-					!this.properties['background-image']?.value
-				) {
-					return '';
-				}
-				return `${this.properties['background-color']?.value || ''} ${
-					this.properties['background-image']?.value || ''
-				} ${this.properties['background-repeat']?.value || ''} ${
-					this.properties['background-repeat']?.value
-						? this.properties['background-attachment']?.value || ''
-						: ''
-				} ${
-					this.properties['background-repeat']?.value &&
-					this.properties['background-attachment']?.value
-						? this.properties['background-position']?.value || ''
-						: ''
-				}`
-					.replace(/  /g, '')
-					.trim();
-			case 'flex':
-				if (
-					!this.properties['flex-grow']?.value ||
-					!this.properties['flex-shrink']?.value ||
-					!this.properties['flex-basis']?.value
-				) {
-					return '';
-				}
-				return `${this.properties['flex-grow'].value} ${this.properties['flex-shrink'].value} ${this.properties['flex-basis'].value}`;
-			case 'font':
-				if (this.properties['font']?.value) {
-					return this.properties['font'].value;
-				}
-				if (!this.properties['font-family']?.value) {
-					return '';
-				}
-				return `${this.properties['font-family'].value} ${
-					this.properties['font-size'].value || ''
-				} ${this.properties['font-style'].value || ''} ${
-					this.properties['font-weight'].value || ''
-				}`
-					.replace(/  /g, '')
-					.trim();
+	public get(name: string): ICSSStyleDeclarationPropertyValue {
+		if (this.properties[name]) {
+			return this.properties[name];
 		}
 
-		return this.properties[name]?.value || '';
+		switch (name) {
+			case 'margin':
+				return CSSStyleDeclarationPropertyGetParser.getMargin(this.properties);
+			case 'padding':
+				return CSSStyleDeclarationPropertyGetParser.getPadding(this.properties);
+			case 'border':
+				return CSSStyleDeclarationPropertyGetParser.getBorder(this.properties);
+			case 'border-top':
+				return CSSStyleDeclarationPropertyGetParser.getBorderTop(this.properties);
+			case 'border-right':
+				return CSSStyleDeclarationPropertyGetParser.getBorderRight(this.properties);
+			case 'border-bottom':
+				return CSSStyleDeclarationPropertyGetParser.getBorderBottom(this.properties);
+			case 'border-left':
+				return CSSStyleDeclarationPropertyGetParser.getBorderLeft(this.properties);
+			case 'border-color':
+				return CSSStyleDeclarationPropertyGetParser.getBorderColor(this.properties);
+			case 'border-style':
+				return CSSStyleDeclarationPropertyGetParser.getBorderStyle(this.properties);
+			case 'border-width':
+				return CSSStyleDeclarationPropertyGetParser.getBorderWidth(this.properties);
+			case 'border-radius':
+				return CSSStyleDeclarationPropertyGetParser.getBorderRadius(this.properties);
+			case 'background':
+				return CSSStyleDeclarationPropertyGetParser.getBackground(this.properties);
+			case 'flex':
+				return CSSStyleDeclarationPropertyGetParser.getFlex(this.properties);
+			case 'font':
+				return CSSStyleDeclarationPropertyGetParser.getFont(this.properties);
+		}
+
+		return this.properties[name] || null;
 	}
 
 	/**
@@ -254,6 +91,8 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param name Property name.
 	 */
 	public remove(name: string): void {
+		delete this.properties[name];
+
 		switch (name) {
 			case 'border':
 				delete this.properties['border-top-width'];
@@ -325,6 +164,15 @@ export default class CSSStyleDeclarationPropertyManager {
 				delete this.properties['flex-shrink'];
 				delete this.properties['flex-basis'];
 				break;
+			case 'font':
+				delete this.properties['font-style'];
+				delete this.properties['font-variant'];
+				delete this.properties['font-weight'];
+				delete this.properties['font-stretch'];
+				delete this.properties['font-size'];
+				delete this.properties['line-height'];
+				delete this.properties['font-family'];
+				break;
 			case 'padding':
 				delete this.properties['padding-top'];
 				delete this.properties['padding-right'];
@@ -337,9 +185,6 @@ export default class CSSStyleDeclarationPropertyManager {
 				delete this.properties['margin-bottom'];
 				delete this.properties['margin-left'];
 				break;
-			default:
-				delete this.properties[name];
-				break;
 		}
 	}
 
@@ -351,197 +196,220 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param important Important.
 	 */
 	public set(name: string, value: string, important: boolean): void {
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
+
+		if (globalValue) {
+			this.remove(name);
+			this.properties[name] = {
+				value: globalValue,
+				important
+			};
+			return;
+		}
+
 		let properties = null;
 
 		switch (name) {
 			case 'border':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorder(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorder(value, important);
 				break;
 			case 'border-top':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderTop(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderTop(value, important);
 				break;
 			case 'border-right':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderRight(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderRight(value, important);
 				break;
 			case 'border-bottom':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderBottom(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderBottom(value, important);
 				break;
 			case 'border-left':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderLeft(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderLeft(value, important);
 				break;
 			case 'border-width':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderWidth(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderWidth(value, important);
 				break;
 			case 'border-style':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderStyle(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderStyle(value, important);
 				break;
 			case 'border-color':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderColor(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderColor(value, important);
 				break;
 			case 'border-top-width':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderTopWidth(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderTopWidth(value, important);
 				break;
 			case 'border-right-width':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderRightWidth(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderRightWidth(value, important);
 				break;
 			case 'border-bottom-width':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderBottomWidth(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomWidth(value, important);
 				break;
 			case 'border-left-width':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderLeftWidth(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderLeftWidth(value, important);
 				break;
 			case 'border-top-color':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderTopColor(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderTopColor(value, important);
 				break;
 			case 'border-right-color':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderRightColor(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderRightColor(value, important);
 				break;
 			case 'border-bottom-color':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderBottomColor(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomColor(value, important);
 				break;
 			case 'border-left-color':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderLeftColor(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderLeftColor(value, important);
 				break;
 			case 'border-top-style':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderTopStyle(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderTopStyle(value, important);
 				break;
 			case 'border-right-style':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderRightStyle(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderRightStyle(value, important);
 				break;
 			case 'border-bottom-style':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderBottomStyle(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomStyle(value, important);
 				break;
 			case 'border-left-style':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderLeftStyle(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderLeftStyle(value, important);
 				break;
 			case 'border-radius':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderRadius(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderRadius(value, important);
 				break;
 			case 'border-top-left-radius':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderTopLeftRadius(
-					value,
-					important
-				);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderTopLeftRadius(value, important);
 				break;
 			case 'border-top-right-radius':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderTopRightRadius(
+				properties = CSSStyleDeclarationPropertySetParser.getBorderTopRightRadius(value, important);
+				break;
+			case 'border-bottom-right-radius':
+				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomRightRadius(
 					value,
 					important
 				);
 				break;
 			case 'border-bottom-right-radius':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderBottomRightRadius(
-					value,
-					important
-				);
-				break;
-			case 'border-bottom-right-radius':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderBottomLeftRadius(
+				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomLeftRadius(
 					value,
 					important
 				);
 				break;
 			case 'border-collapse':
-				properties = CSSStyleDeclarationPropertyValueParser.getBorderCollapse(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBorderCollapse(value, important);
 				break;
 			case 'clear':
-				properties = CSSStyleDeclarationPropertyValueParser.getClear(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getClear(value, important);
 				break;
 			case 'clip':
-				properties = CSSStyleDeclarationPropertyValueParser.getClip(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getClip(value, important);
 				break;
 			case 'css-float':
-				properties = CSSStyleDeclarationPropertyValueParser.getCSSFloat(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getCSSFloat(value, important);
 				break;
 			case 'float':
-				properties = CSSStyleDeclarationPropertyValueParser.getFloat(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getFloat(value, important);
 				break;
 			case 'flex':
-				properties = CSSStyleDeclarationPropertyValueParser.getFlex(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getFlex(value, important);
 				break;
 			case 'flex-shrink':
-				properties = CSSStyleDeclarationPropertyValueParser.getFlexShrink(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getFlexShrink(value, important);
 				break;
 			case 'flex-grow':
-				properties = CSSStyleDeclarationPropertyValueParser.getFlexGrow(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getFlexGrow(value, important);
 				break;
 			case 'flex-basis':
-				properties = CSSStyleDeclarationPropertyValueParser.getFlexBasis(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getFlexBasis(value, important);
 				break;
 			case 'padding':
-				properties = CSSStyleDeclarationPropertyValueParser.getPadding(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getPadding(value, important);
 				break;
 			case 'padding-top':
-				properties = CSSStyleDeclarationPropertyValueParser.getPaddingTop(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getPaddingTop(value, important);
 				break;
 			case 'padding-bottom':
-				properties = CSSStyleDeclarationPropertyValueParser.getPaddingBottom(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getPaddingBottom(value, important);
 				break;
 			case 'padding-left':
-				properties = CSSStyleDeclarationPropertyValueParser.getPaddingLeft(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getPaddingLeft(value, important);
 				break;
 			case 'padding-right':
-				properties = CSSStyleDeclarationPropertyValueParser.getPaddingRight(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getPaddingRight(value, important);
 				break;
 			case 'margin':
-				properties = CSSStyleDeclarationPropertyValueParser.getMargin(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getMargin(value, important);
 				break;
 			case 'margin-top':
-				properties = CSSStyleDeclarationPropertyValueParser.getMarginTop(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getMarginTop(value, important);
 				break;
 			case 'margin-bottom':
-				properties = CSSStyleDeclarationPropertyValueParser.getMarginBottom(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getMarginBottom(value, important);
 				break;
 			case 'margin-left':
-				properties = CSSStyleDeclarationPropertyValueParser.getMarginLeft(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getMarginLeft(value, important);
 				break;
 			case 'margin-right':
-				properties = CSSStyleDeclarationPropertyValueParser.getMarginRight(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getMarginRight(value, important);
 				break;
 			case 'background':
-				properties = CSSStyleDeclarationPropertyValueParser.getBackground(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBackground(value, important);
 				break;
 			case 'background-image':
-				properties = CSSStyleDeclarationPropertyValueParser.getBackgroundImage(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBackgroundImage(value, important);
 				break;
 			case 'background-color':
-				properties = CSSStyleDeclarationPropertyValueParser.getBackgroundColor(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBackgroundColor(value, important);
 				break;
 			case 'background-repeat':
-				properties = CSSStyleDeclarationPropertyValueParser.getBackgroundRepeat(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBackgroundRepeat(value, important);
 				break;
 			case 'background-attachment':
-				properties = CSSStyleDeclarationPropertyValueParser.getBackgroundAttachment(
-					value,
-					important
-				);
+				properties = CSSStyleDeclarationPropertySetParser.getBackgroundAttachment(value, important);
 				break;
 			case 'background-position':
-				properties = CSSStyleDeclarationPropertyValueParser.getBackgroundPosition(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBackgroundPosition(value, important);
 				break;
 			case 'top':
-				properties = CSSStyleDeclarationPropertyValueParser.getTop(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getTop(value, important);
 				break;
 			case 'right':
-				properties = CSSStyleDeclarationPropertyValueParser.getRight(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getRight(value, important);
 				break;
 			case 'bottom':
-				properties = CSSStyleDeclarationPropertyValueParser.getBottom(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getBottom(value, important);
 				break;
 			case 'left':
-				properties = CSSStyleDeclarationPropertyValueParser.getLeft(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getLeft(value, important);
 				break;
 			case 'font':
-				properties = CSSStyleDeclarationPropertyValueParser.getFont(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getFont(value, important);
+				break;
+			case 'font-style':
+				properties = CSSStyleDeclarationPropertySetParser.getFontStyle(value, important);
+				break;
+			case 'font-variant':
+				properties = CSSStyleDeclarationPropertySetParser.getFontVariant(value, important);
+				break;
+			case 'font-weight':
+				properties = CSSStyleDeclarationPropertySetParser.getFontWeight(value, important);
+				break;
+			case 'font-stretch':
+				properties = CSSStyleDeclarationPropertySetParser.getFontStretch(value, important);
 				break;
 			case 'font-size':
-				properties = CSSStyleDeclarationPropertyValueParser.getFontSize(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getFontSize(value, important);
+				break;
+			case 'line-height':
+				properties = CSSStyleDeclarationPropertySetParser.getLineHeight(value, important);
+				break;
+			case 'font-family':
+				properties = CSSStyleDeclarationPropertySetParser.getFontFamily(value, important);
+				break;
+			case 'font-size':
+				properties = CSSStyleDeclarationPropertySetParser.getFontSize(value, important);
 				break;
 			case 'color':
-				properties = CSSStyleDeclarationPropertyValueParser.getColor(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getColor(value, important);
 				break;
 			case 'flood-color':
-				properties = CSSStyleDeclarationPropertyValueParser.getFloodColor(value, important);
+				properties = CSSStyleDeclarationPropertySetParser.getFloodColor(value, important);
 				break;
 			default:
 				properties = value
@@ -553,5 +421,81 @@ export default class CSSStyleDeclarationPropertyManager {
 		}
 
 		Object.assign(this.properties, properties);
+	}
+
+	/**
+	 * Returns a clone.
+	 *
+	 * @returns Clone.
+	 */
+	public clone(): CSSStyleDeclarationPropertyManager {
+		const _class = <typeof CSSStyleDeclarationPropertyManager>this.constructor;
+		const clone: CSSStyleDeclarationPropertyManager = new _class();
+
+		clone.properties = JSON.parse(JSON.stringify(this.properties));
+
+		return clone;
+	}
+
+	/**
+	 * Returns size.
+	 *
+	 * @returns Size.
+	 */
+	public size(): number {
+		return Object.keys(this.properties).length;
+	}
+
+	/**
+	 * Returns property name.
+	 *
+	 * @param index Index.
+	 * @returns Property name.
+	 */
+	public item(index: number): string {
+		return Object.keys(this.properties)[index] || '';
+	}
+
+	/**
+	 * Converts properties to string.
+	 *
+	 * @returns String.
+	 */
+	public toString(): string {
+		const clone = this.clone();
+		const groupProperties = {
+			margin: clone.get('margin'),
+			padding: clone.get('padding'),
+			border: clone.get('border'),
+			'border-top': clone.get('border-top'),
+			'border-right': clone.get('border-right'),
+			'border-bottom': clone.get('border-bottom'),
+			'border-left': clone.get('border-left'),
+			'border-color': clone.get('border-color'),
+			'border-style': clone.get('border-style'),
+			'border-width': clone.get('border-width'),
+			'border-radius': clone.get('border-radius'),
+			background: clone.get('background'),
+			flex: clone.get('flex'),
+			font: clone.get('font')
+		};
+
+		let result = '';
+
+		for (const name of Object.keys(groupProperties)) {
+			if (groupProperties[name]) {
+				result += `${name}: ${groupProperties[name].values}${
+					groupProperties[name].important ? ' !important' : ''
+				}; `;
+				clone.remove(name);
+			}
+		}
+
+		for (const name of Object.keys(clone.properties)) {
+			const property = clone.properties[name];
+			result += `${name}: ${property.value}${property.important ? ' !important' : ''}; `;
+		}
+
+		return result;
 	}
 }

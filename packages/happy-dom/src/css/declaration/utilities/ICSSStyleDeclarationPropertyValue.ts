@@ -1,4 +1,4 @@
 export default interface ICSSStyleDeclarationPropertyValue {
-	value: string;
-	important: boolean;
+	readonly value: string;
+	readonly important: boolean;
 }

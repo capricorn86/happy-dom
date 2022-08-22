@@ -14,35 +14,17 @@ const BORDER_STYLE = [
 	'inset',
 	'outset'
 ];
-const BORDER_WIDTH = ['thin', 'medium', 'thick', 'inherit', 'initial', 'unset', 'revert'];
-const BORDER_COLLAPSE = ['separate', 'collapse', 'initial', 'inherit'];
-const BACKGROUND_REPEAT = ['repeat', 'repeat-x', 'repeat-y', 'no-repeat', 'inherit'];
-const BACKGROUND_ATTACHMENT = ['scroll', 'fixed', 'inherit'];
+const BORDER_WIDTH = ['thin', 'medium', 'thick'];
+const BORDER_COLLAPSE = ['separate', 'collapse'];
+const BACKGROUND_REPEAT = ['repeat', 'repeat-x', 'repeat-y', 'no-repeat'];
+const BACKGROUND_ATTACHMENT = ['scroll', 'fixed'];
 const BACKGROUND_POSITION = ['top', 'center', 'bottom', 'left', 'right'];
-const FLEX_BASIS = [
-	'auto',
-	'fill',
-	'max-content',
-	'min-content',
-	'fit-content',
-	'content',
-	'inherit',
-	'initial',
-	'revert',
-	'unset'
-];
-const CLEAR = ['none', 'left', 'right', 'both', 'inherit'];
-const FLOAT = ['none', 'left', 'right', 'inherit'];
-const SYSTEM_FONT = [
-	'caption',
-	'icon',
-	'menu',
-	'message-box',
-	'small-caption',
-	'status-bar',
-	'inherit'
-];
+const FLEX_BASIS = ['auto', 'fill', 'max-content', 'min-content', 'fit-content', 'content'];
+const CLEAR = ['none', 'left', 'right', 'both'];
+const FLOAT = ['none', 'left', 'right'];
+const SYSTEM_FONT = ['caption', 'icon', 'menu', 'message-box', 'small-caption', 'status-bar'];
 const FONT_WEIGHT = ['normal', 'bold', 'bolder', 'lighter'];
+const FONT_STYLE = ['normal', 'italic', 'oblique'];
 const FONT_SIZE = [
 	'xx-small',
 	'x-small',
@@ -53,17 +35,24 @@ const FONT_SIZE = [
 	'xx-large',
 	'xxx-large',
 	'smaller',
-	'larger',
-	'inherit',
-	'initial',
-	'revert',
-	'unset'
+	'larger'
+];
+const FONT_STRETCH = [
+	'ultra-condensed',
+	'extra-condensed',
+	'condensed',
+	'semi-condensed',
+	'normal',
+	'semi-expanded',
+	'expanded',
+	'extra-expanded',
+	'ultra-expanded'
 ];
 
 /**
  * Computed style property parser.
  */
-export default class CSSStyleDeclarationPropertyValueParser {
+export default class CSSStyleDeclarationPropertySetParser {
 	/**
 	 * Returns border collapse.
 	 *
@@ -1263,14 +1252,105 @@ export default class CSSStyleDeclarationPropertyValueParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
+		const lowerValue = value.toLowerCase();
+
+		if (SYSTEM_FONT.includes(lowerValue)) {
+			return { font: { value: lowerValue, important } };
+		}
+
 		const parts = value.split(/ +/);
-		let font;
-		let fontFamily;
-		let fontSize;
-		let fontStyle;
-		let fontVariant;
-		let fontWeight;
-		let lineHeight;
+
+		if (parts.length > 0 && this.getFontStyle(parts[0], important)) {
+			if (parts[1] && parts[0] === 'oblique' && parts[1].endsWith('deg')) {
+				parts[0] += ' ' + parts[1];
+				parts.splice(1, 1);
+			}
+		} else {
+			parts.splice(0, 0, '');
+		}
+
+		if (parts.length <= 1 || !this.getFontVariant(parts[1], important)) {
+			parts.splice(1, 0, '');
+		}
+
+		if (parts.length <= 2 || !this.getFontWeight(parts[2], important)) {
+			parts.splice(2, 0, '');
+		}
+
+		if (parts.length <= 3 || !this.getFontStretch(parts[3], important)) {
+			parts.splice(3, 0, '');
+		}
+
+		if (parts.length <= 5 || !this.getLineHeight(parts[5], important)) {
+			parts.splice(5, 0, '');
+		}
+
+		const fontStyle = parts[0] ? this.getFontStyle(parts[0], important) : '';
+		const fontVariant = parts[0] ? this.getFontVariant(parts[1], important) : '';
+		const fontWeight = parts[2] ? this.getFontWeight(parts[2], important) : '';
+		const fontStretch = parts[3] ? this.getFontStretch(parts[3], important) : '';
+		const fontSize = parts[4] ? this.getFontStretch(parts[4], important) : '';
+		const lineHeight = parts[5] ? this.getLineHeight(parts[5], important) : '';
+		const fontFamily = parts[6] ? this.getFontFamily(parts.slice(6).join(' '), important) : '';
+
+		const properties = {};
+
+		if (fontStyle) {
+			Object.assign(properties, fontStyle);
+		}
+		if (fontVariant) {
+			Object.assign(properties, fontVariant);
+		}
+		if (fontWeight) {
+			Object.assign(properties, fontWeight);
+		}
+		if (fontStretch) {
+			Object.assign(properties, fontStretch);
+		}
+		if (fontSize) {
+			Object.assign(properties, fontSize);
+		}
+		if (lineHeight) {
+			Object.assign(properties, lineHeight);
+		}
+		if (fontFamily) {
+			Object.assign(properties, fontFamily);
+		}
+
+		return fontSize &&
+			fontFamily &&
+			fontStyle !== null &&
+			fontVariant !== null &&
+			fontWeight !== null &&
+			fontStretch !== null &&
+			lineHeight !== null
+			? properties
+			: null;
+	}
+
+	/**
+	 * Returns font style.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getFontStyle(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (FONT_STYLE.includes(lowerValue)) {
+			return { fontStyle: { value: lowerValue, important } };
+		}
+		const parts = value.split(/ +/);
+		if (parts.length === 2 && parts[0] === 'oblique') {
+			const degree = CSSStyleDeclarationValueParser.getDegree(parts[1]);
+			return degree ? { fontStyle: { value: lowerValue, important } } : null;
+		}
+		return null;
 	}
 
 	/**
@@ -1293,6 +1373,27 @@ export default class CSSStyleDeclarationPropertyValueParser {
 	}
 
 	/**
+	 * Returns font strech.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getFontStretch(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (FONT_STRETCH.includes(lowerValue)) {
+			return { 'font-stretch': { value: lowerValue, important } };
+		}
+		const percentage = CSSStyleDeclarationValueParser.getPercentage(value);
+		return percentage ? { 'font-stretch': { value: percentage, important } } : null;
+	}
+
+	/**
 	 * Returns font weight.
 	 *
 	 * @param value Value.
@@ -1309,10 +1410,8 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		if (FONT_WEIGHT.includes(lowerValue)) {
 			return { 'font-weight': { value: lowerValue, important } };
 		}
-		const measurement =
-			CSSStyleDeclarationValueParser.getLength(value) ||
-			CSSStyleDeclarationValueParser.getPercentage(value);
-		return measurement ? { 'font-size': { value: measurement, important } } : null;
+		const integer = CSSStyleDeclarationValueParser.getInteger(value);
+		return integer ? { 'font-weight': { value: integer, important } } : null;
 	}
 
 	/**
@@ -1332,7 +1431,65 @@ export default class CSSStyleDeclarationPropertyValueParser {
 		if (FONT_SIZE.includes(lowerValue)) {
 			return { 'font-size': { value: lowerValue, important } };
 		}
-		const measurement = CSSStyleDeclarationValueParser.getLengthOrPercentage(value);
+		const measurement = CSSStyleDeclarationValueParser.getMeasurement(value);
 		return measurement ? { 'font-size': { value: measurement, important } } : null;
+	}
+
+	/**
+	 * Returns line height.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getLineHeight(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		if (value.toLowerCase() === 'normal') {
+			return { 'line-height': { value: 'normal', important } };
+		}
+		const lineHeight =
+			CSSStyleDeclarationValueParser.getInteger(value) ||
+			CSSStyleDeclarationValueParser.getMeasurement(value);
+		return lineHeight ? { 'line-height': { value: lineHeight, important } } : null;
+	}
+
+	/**
+	 * Returns font family.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getFontFamily(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const parts = value.split(',');
+		let parsedValue = '';
+		for (let i = 0, max = parts.length; i < max; i++) {
+			const trimmedPart = parts[i].trim().replace(/[']/g, '"');
+			if (!trimmedPart) {
+				return null;
+			}
+			if (i > 0) {
+				parsedValue += ', ';
+			}
+			parsedValue += trimmedPart;
+		}
+		if (!parsedValue) {
+			return null;
+		}
+		return {
+			'font-family': {
+				important,
+				value: parsedValue
+			}
+		};
 	}
 }
