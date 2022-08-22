@@ -5,6 +5,7 @@ const LENGTH_REGEXP = /^(0|[-+]?[0-9]*\.?[0-9]+(in|cm|em|mm|pt|pc|px|ex|rem|vh|v
 const PERCENTAGE_REGEXP = /^[-+]?[0-9]*\.?[0-9]+%$/;
 const DEGREE_REGEXP = /^[0-9]+deg$/;
 const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
+const INTEGER_REGEXP = /^[0-9]+$/;
 const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
 
 /**
@@ -90,7 +91,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @returns Parsed value.
 	 */
 	public static getInteger(value: string): string {
-		if (!isNaN(parseInt(value))) {
+		if (INTEGER_REGEXP.test(value)) {
 			return value;
 		}
 		return null;

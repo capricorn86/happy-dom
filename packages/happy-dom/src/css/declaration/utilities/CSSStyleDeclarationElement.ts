@@ -1,12 +1,15 @@
 import IShadowRoot from '../../../nodes/shadow-root/IShadowRoot';
-import CSSStyleSheet from '../../../css/CSSStyleSheet';
 import IElement from '../../../nodes/element/IElement';
 import IDocument from '../../../nodes/document/IDocument';
-import IHTMLElement from '../../../nodes/html-element/IHTMLElement';
 import IHTMLStyleElement from '../../../nodes/html-style-element/IHTMLStyleElement';
-import INode from '../../../nodes/node/INode';
 import INodeList from '../../../nodes/node/INodeList';
 import CSSStyleDeclarationPropertyManager from './CSSStyleDeclarationPropertyManager';
+import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue';
+import NodeTypeEnum from '../../../nodes/node/NodeTypeEnum';
+import CSSRuleTypeEnum from '../../CSSRuleTypeEnum';
+import CSSMediaRule from '../../rules/CSSMediaRule';
+import CSSRule from '../../CSSRule';
+import CSSStyleRule from '../../rules/CSSStyleRule';
 
 const INHERITED_PROPERTIES = [
 	'border-collapse',
@@ -59,37 +62,15 @@ export default class CSSStyleDeclarationElement {
 	 * @param [computed] Computed.
 	 * @returns Element style properties.
 	 */
-	public static getElementStyle(element: IElement, computed: boolean): string {
-		let style = '';
+	public static getElementStyle(
+		element: IElement,
+		computed: boolean
+	): CSSStyleDeclarationPropertyManager {
 		if (computed) {
-			style += this.getStyleSheetElementStyle(element);
-		}
-		if (element['_attributes']['style'] && element['_attributes']['style'].value) {
-			style += element['_attributes']['style'].value;
+			return this.getComputedElementStyle(element);
 		}
 
-		return style ? style : null;
-	}
-
-	/**
-	 * Returns style sheet element style.
-	 *
-	 * @param element Element.
-	 * @returns Style sheet element style.
-	 */
-	private static getStyleSheetElementStyle(element: IElement): string {
-		const elements = this.getElementsWithStyle(element);
-		const inherited = {};
-
-		for (const element of elements) {
-			const propertyManager = new CSSStyleDeclarationPropertyManager(element.cssText);
-			Object.assign(propertyManager.properties, inherited);
-			for (const name of Object.keys(propertyManager.properties)) {
-				if (INHERITED_PROPERTIES.includes(name)) {
-					inherited[name] = propertyManager.properties[name];
-				}
-			}
-		}
+		return new CSSStyleDeclarationPropertyManager(element['_attributes']['style']?.value);
 	}
 
 	/**
@@ -98,57 +79,102 @@ export default class CSSStyleDeclarationElement {
 	 * @param element Element.
 	 * @returns Style sheets.
 	 */
-	private static getElementsWithStyle(
-		element: IElement
-	): Array<{ element: IElement; cssText: string }> {
-		const elements: Array<{ element: IElement; cssText: string }> = [{ element, cssText: null }];
-		let shadowRootElements: Array<{ element: IElement; cssText: string }> = [
-			{ element, cssText: null }
-		];
-		let parent: INode | IShadowRoot = <INode | IShadowRoot>element.parentNode;
+	private static getComputedElementStyle(element: IElement): CSSStyleDeclarationPropertyManager {
+		const targetElement: { element: IElement; cssText: string } = { element, cssText: null };
+		const parentElements: Array<{ element: IElement; cssText: string }> = [];
+		const inheritedProperties: { [k: string]: ICSSStyleDeclarationPropertyValue } = {};
+		let shadowRootElements: Array<{ element: IElement; cssText: string }> = [targetElement];
+		let currentNode: IElement | IShadowRoot | IDocument = <IElement | IShadowRoot | IDocument>(
+			element.parentNode
+		);
 
-		while (parent) {
-			const styleAndElement = { element, cssText: null };
-			elements.unshift(styleAndElement);
-			shadowRootElements.unshift(styleAndElement);
+		if (!element.isConnected) {
+			return new CSSStyleDeclarationPropertyManager();
+		}
 
-			parent = <INode | IShadowRoot>parent.parentNode;
+		while (currentNode) {
+			const styleAndElement = { element: <IElement>currentNode, cssText: null };
 
-			if (!parent) {
-				if ((<IShadowRoot>parent).host) {
+			if (currentNode.nodeType === NodeTypeEnum.elementNode) {
+				parentElements.unshift(styleAndElement);
+				shadowRootElements.unshift(styleAndElement);
+			}
+
+			currentNode = <IElement | IShadowRoot | IDocument>currentNode.parentNode;
+
+			if (currentNode) {
+				if (currentNode === element.ownerDocument) {
 					const styleSheets = <INodeList<IHTMLStyleElement>>(
-						(<IShadowRoot>parent).host.querySelectorAll('style')
+						element.ownerDocument.querySelectorAll('style')
 					);
 					for (const styleSheet of styleSheets) {
-						this.applyStyle(shadowRootElements, styleSheet.sheet);
+						this.applyCSSTextToElements(shadowRootElements, styleSheet.sheet.cssRules);
 					}
-					parent = (<IShadowRoot>parent).host;
+					currentNode = null;
+				} else if ((<IShadowRoot>currentNode).host) {
+					const styleSheets = <INodeList<IHTMLStyleElement>>(
+						(<IShadowRoot>currentNode).querySelectorAll('style')
+					);
+					for (const styleSheet of styleSheets) {
+						this.applyCSSTextToElements(shadowRootElements, styleSheet.sheet.cssRules);
+					}
+					currentNode = (<IShadowRoot>currentNode).host;
 					shadowRootElements = [];
 				}
 			}
 		}
 
-		return elements;
+		for (const parentElement of parentElements) {
+			const propertyManager = new CSSStyleDeclarationPropertyManager(
+				parentElement.cssText + (parentElement['_attributes']['style']?.value || '')
+			);
+			for (const name of Object.keys(propertyManager.properties)) {
+				if (INHERITED_PROPERTIES.includes(name)) {
+					inheritedProperties[name] = propertyManager.properties[name];
+				}
+			}
+		}
+
+		const targetPropertyManager = new CSSStyleDeclarationPropertyManager(
+			targetElement.cssText + (targetElement['_attributes']['style']?.value || '')
+		);
+		Object.assign(targetPropertyManager.properties, inheritedProperties);
+
+		return targetPropertyManager;
 	}
 
 	/**
-	 * Returns style sheets.
+	 * Applies CSS text to elements.
 	 *
 	 * @param elements Elements.
-	 * @param styleSheet Style sheet.
+	 * @param cssRules CSS rules.
 	 */
-	private static applyStyle(
+	private static applyCSSTextToElements(
 		elements: Array<{ element: IElement; cssText: string }>,
-		styleSheet: CSSStyleSheet
+		cssRules: CSSRule[]
 	): void {
-		for (const rule of styleSheet.cssRules) {
-			for (const element of elements) {
-				const firstBracket = rule.cssText.indexOf('{');
-				const lastBracket = rule.cssText.lastIndexOf('}');
-				const cssText = rule.cssText.substring(firstBracket + 1, lastBracket);
-				if (element.element.matches(rule.cssText.substring(0, firstBracket))) {
-					element.cssText += cssText;
+		if (!elements.length) {
+			return;
+		}
+
+		const defaultView = elements[0].element.ownerDocument.defaultView;
+
+		for (const rule of cssRules) {
+			if (rule.type === CSSRuleTypeEnum.styleRule) {
+				for (const element of elements) {
+					const selectorText = (<CSSStyleRule>rule).selectorText;
+
+					if (selectorText && element.element.matches(selectorText)) {
+						const firstBracket = rule.cssText.indexOf('{');
+						const lastBracket = rule.cssText.lastIndexOf('}');
+						element.cssText += rule.cssText.substring(firstBracket + 1, lastBracket);
+					}
 				}
+			} else if (
+				rule.type === CSSRuleTypeEnum.mediaRule &&
+				defaultView.matchMedia((<CSSMediaRule>rule).conditionalText).matches
+			) {
+				this.applyCSSTextToElements(elements, (<CSSMediaRule>rule).cssRules);
 			}
 		}
 	}

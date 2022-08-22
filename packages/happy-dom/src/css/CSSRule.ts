@@ -1,22 +1,23 @@
 import CSSStyleSheet from './CSSStyleSheet';
+import CSSRuleTypeEnum from './CSSRuleTypeEnum';
 
 /**
  * CSSRule interface.
  */
 export default class CSSRule {
-	public static STYLE_RULE = 1;
-	public static IMPORT_RULE = 3;
-	public static MEDIA_RULE = 4;
-	public static FONT_FACE_RULE = 5;
-	public static PAGE_RULE = 6;
-	public static KEYFRAMES_RULE = 7;
-	public static KEYFRAME_RULE = 8;
-	public static NAMESPACE_RULE = 10;
-	public static COUNTER_STYLE_RULE = 11;
-	public static SUPPORTS_RULE = 12;
-	public static DOCUMENT_RULE = 13;
-	public static FONT_FEATURE_VALUES_RULE = 14;
-	public static REGION_STYLE_RULE = 16;
+	public static STYLE_RULE = CSSRuleTypeEnum.styleRule;
+	public static IMPORT_RULE = CSSRuleTypeEnum.importRule;
+	public static MEDIA_RULE = CSSRuleTypeEnum.mediaRule;
+	public static FONT_FACE_RULE = CSSRuleTypeEnum.fontFaceRule;
+	public static PAGE_RULE = CSSRuleTypeEnum.pageRule;
+	public static KEYFRAMES_RULE = CSSRuleTypeEnum.keyframesRule;
+	public static KEYFRAME_RULE = CSSRuleTypeEnum.keyframeRule;
+	public static NAMESPACE_RULE = CSSRuleTypeEnum.namespaceRule;
+	public static COUNTER_STYLE_RULE = CSSRuleTypeEnum.counterStyleRule;
+	public static SUPPORTS_RULE = CSSRuleTypeEnum.supportsRule;
+	public static DOCUMENT_RULE = CSSRuleTypeEnum.documentRule;
+	public static FONT_FEATURE_VALUES_RULE = CSSRuleTypeEnum.fontFeatureValuesRule;
+	public static REGION_STYLE_RULE = CSSRuleTypeEnum.regionStyleRule;
 
 	public parentRule: CSSRule = null;
 	public parentStyleSheet: CSSStyleSheet = null;

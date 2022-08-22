@@ -35,9 +35,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public get length(): number {
 		if (this._ownerElement) {
-			const style = new CSSStyleDeclarationPropertyManager(
-				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, this._computed)
-			);
+			const style = CSSStyleDeclarationElement.getElementStyle(this._ownerElement, this._computed);
 			return style.size();
 		}
 
@@ -55,10 +53,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 				return '';
 			}
 
-			const style = new CSSStyleDeclarationPropertyManager(
-				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false)
-			);
-			return style.toString();
+			return CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false).toString();
 		}
 
 		return this._style.toString();
@@ -103,10 +98,9 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public item(index: number): string {
 		if (this._ownerElement) {
-			const style = new CSSStyleDeclarationPropertyManager(
-				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, this._computed)
+			return CSSStyleDeclarationElement.getElementStyle(this._ownerElement, this._computed).item(
+				index
 			);
-			return style.item(index);
 		}
 		return this._style.item(index);
 	}
@@ -139,9 +133,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 				this._ownerElement['_attributes']['style'].name = 'style';
 			}
 
-			const style = new CSSStyleDeclarationPropertyManager(
-				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false)
-			);
+			const style = CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false);
 			style.set(name, value, !!priority);
 
 			this._ownerElement['_attributes']['style'].value = style.toString();
@@ -166,9 +158,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 		}
 
 		if (this._ownerElement) {
-			const style = new CSSStyleDeclarationPropertyManager(
-				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false)
-			);
+			const style = CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false);
 			style.remove(name);
 			const newCSSText = style.toString();
 			if (newCSSText) {
@@ -189,9 +179,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public getPropertyValue(name: string): string {
 		if (this._ownerElement) {
-			const style = new CSSStyleDeclarationPropertyManager(
-				CSSStyleDeclarationElement.getElementStyle(this._ownerElement, false)
-			);
+			const style = CSSStyleDeclarationElement.getElementStyle(this._ownerElement, this._computed);
 			return style.get(name)?.value || '';
 		}
 		return this._style.get(name)?.value || '';

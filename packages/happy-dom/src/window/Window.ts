@@ -97,7 +97,6 @@ import { Buffer } from 'buffer';
 import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
 import Attr from '../nodes/attr/Attr';
-import ComputedStyle from '../css/computed-style/ComputedStyle';
 import IElement from '../nodes/element/IElement';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
@@ -423,7 +422,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns CSS style declaration.
 	 */
 	public getComputedStyle(element: IElement): CSSStyleDeclaration {
-		return ComputedStyle.getComputedStyle(element);
+		return new CSSStyleDeclaration(element, true);
 	}
 
 	/**
