@@ -138,7 +138,9 @@ export default class CSSStyleDeclarationElement {
 		const targetPropertyManager = new CSSStyleDeclarationPropertyManager(
 			targetElement.cssText + (targetElement.element['_attributes']['style']?.value || '')
 		);
-		Object.assign(targetPropertyManager.properties, inheritedProperties);
+
+		Object.assign(inheritedProperties, targetPropertyManager.properties);
+		targetPropertyManager.properties = inheritedProperties;
 
 		return targetPropertyManager;
 	}

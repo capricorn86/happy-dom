@@ -1341,12 +1341,12 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		const lowerValue = value.toLowerCase();
 		if (FONT_STYLE.includes(lowerValue)) {
-			return { fontStyle: { value: lowerValue, important } };
+			return { 'font-style': { value: lowerValue, important } };
 		}
 		const parts = value.split(/ +/);
 		if (parts.length === 2 && parts[0] === 'oblique') {
 			const degree = CSSStyleDeclarationValueParser.getDegree(parts[1]);
-			return degree ? { fontStyle: { value: lowerValue, important } } : null;
+			return degree ? { 'font-style': { value: lowerValue, important } } : null;
 		}
 		return null;
 	}
@@ -1366,7 +1366,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		const lowerValue = value.toLowerCase();
 		return lowerValue === 'normal' || lowerValue === 'small-caps'
-			? { 'font-size': { value: lowerValue, important } }
+			? { 'font-variant': { value: lowerValue, important } }
 			: null;
 	}
 

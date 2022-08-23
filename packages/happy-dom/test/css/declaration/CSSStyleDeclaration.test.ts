@@ -30,11 +30,24 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
 
-			debugger;
-			expect(declaration[0]).toBe('border');
-			expect(declaration[1]).toBe('border-radius');
-			expect(declaration[2]).toBe('font-size');
-			expect(declaration[3]).toBe(undefined);
+			expect(declaration[0]).toBe('border-top-width');
+			expect(declaration[1]).toBe('border-right-width');
+			expect(declaration[2]).toBe('border-bottom-width');
+			expect(declaration[3]).toBe('border-left-width');
+			expect(declaration[4]).toBe('border-top-style');
+			expect(declaration[5]).toBe('border-right-style');
+			expect(declaration[6]).toBe('border-bottom-style');
+			expect(declaration[7]).toBe('border-left-style');
+			expect(declaration[8]).toBe('border-top-color');
+			expect(declaration[9]).toBe('border-right-color');
+			expect(declaration[10]).toBe('border-bottom-color');
+			expect(declaration[11]).toBe('border-left-color');
+			expect(declaration[12]).toBe('border-top-left-radius');
+			expect(declaration[13]).toBe('border-top-right-radius');
+			expect(declaration[14]).toBe('border-bottom-right-radius');
+			expect(declaration[15]).toBe('border-bottom-left-radius');
+			expect(declaration[16]).toBe('font-size');
+			expect(declaration[17]).toBe(undefined);
 		});
 
 		it('Returns name of property without element.', () => {
@@ -44,10 +57,24 @@ describe('CSSStyleDeclaration', () => {
 			declaration.borderRadius = '2px';
 			declaration.fontSize = '12px';
 
-			expect(declaration[0]).toBe('border');
-			expect(declaration[1]).toBe('border-radius');
-			expect(declaration[2]).toBe('font-size');
-			expect(declaration[3]).toBe(undefined);
+			expect(declaration[0]).toBe('border-top-width');
+			expect(declaration[1]).toBe('border-right-width');
+			expect(declaration[2]).toBe('border-bottom-width');
+			expect(declaration[3]).toBe('border-left-width');
+			expect(declaration[4]).toBe('border-top-style');
+			expect(declaration[5]).toBe('border-right-style');
+			expect(declaration[6]).toBe('border-bottom-style');
+			expect(declaration[7]).toBe('border-left-style');
+			expect(declaration[8]).toBe('border-top-color');
+			expect(declaration[9]).toBe('border-right-color');
+			expect(declaration[10]).toBe('border-bottom-color');
+			expect(declaration[11]).toBe('border-left-color');
+			expect(declaration[12]).toBe('border-top-left-radius');
+			expect(declaration[13]).toBe('border-top-right-radius');
+			expect(declaration[14]).toBe('border-bottom-right-radius');
+			expect(declaration[15]).toBe('border-bottom-left-radius');
+			expect(declaration[16]).toBe('font-size');
+			expect(declaration[17]).toBe(undefined);
 		});
 	});
 
