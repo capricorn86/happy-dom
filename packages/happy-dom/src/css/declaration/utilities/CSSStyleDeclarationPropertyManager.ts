@@ -480,22 +480,24 @@ export default class CSSStyleDeclarationPropertyManager {
 			font: clone.get('font')
 		};
 
-		let result = '';
+		const result = [];
 
 		for (const name of Object.keys(groupProperties)) {
 			if (groupProperties[name]) {
-				result += `${name}: ${groupProperties[name].values}${
-					groupProperties[name].important ? ' !important' : ''
-				}; `;
+				result.push(
+					`${name}: ${groupProperties[name].value}${
+						groupProperties[name].important ? ' !important' : ''
+					};`
+				);
 				clone.remove(name);
 			}
 		}
 
 		for (const name of Object.keys(clone.properties)) {
 			const property = clone.properties[name];
-			result += `${name}: ${property.value}${property.important ? ' !important' : ''}; `;
+			result.push(`${name}: ${property.value}${property.important ? ' !important' : ''};`);
 		}
 
-		return result;
+		return result.join(' ');
 	}
 }

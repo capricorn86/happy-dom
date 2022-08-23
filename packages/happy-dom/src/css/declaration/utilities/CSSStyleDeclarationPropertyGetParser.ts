@@ -28,7 +28,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 					? properties['margin-bottom']?.value || ''
 					: ''
 			} ${
-				properties['margin-right'].value !== properties['margin-left']?.value
+				properties['margin-right']?.value !== properties['margin-left']?.value
 					? properties['margin-left']?.value || ''
 					: ''
 			}`
@@ -61,7 +61,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 					? properties['padding-bottom']?.value || ''
 					: ''
 			} ${
-				properties['padding-right'].value !== properties['padding-left']?.value
+				properties['padding-right']?.value !== properties['padding-left']?.value
 					? properties['padding-left']?.value || ''
 					: ''
 			}`
@@ -324,16 +324,16 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['border-bottom-left-radius']?.important
 			].some((important) => important === false),
 			value: `${properties['border-top-left-radius'].value} ${
-				properties['border-top-right-radius'].value || ''
+				properties['border-top-right-radius']?.value || ''
 			} ${
 				properties['border-top-left-radius'].value !==
-				properties['border-bottom-right-radius'].value
-					? properties['border-bottom-right-radius'].value || ''
+				properties['border-bottom-right-radius']?.value
+					? properties['border-bottom-right-radius']?.value || ''
 					: ''
 			} ${
-				properties['border-top-right-radius'].value !==
-				properties['border-bottom-left-radius'].value
-					? properties['border-bottom-left-radius'].value || ''
+				properties['border-top-right-radius']?.value !==
+				properties['border-bottom-left-radius']?.value
+					? properties['border-bottom-left-radius']?.value || ''
 					: ''
 			}`
 				.replace(/  /g, '')
@@ -415,6 +415,12 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		if (!properties['font-family']?.value || !properties['font-size']?.value) {
 			return null;
 		}
+		const sizeAndLineHeight = [properties['font-size'].value];
+
+		if (properties['line-height']?.value) {
+			sizeAndLineHeight.push(properties['line-height'].value);
+		}
+
 		return {
 			important: ![
 				properties['font-style']?.important,
@@ -425,11 +431,11 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['line-height']?.important,
 				properties['font-family']?.important
 			].some((important) => important === false),
-			value: `${properties['font-style'].value || ''} ${properties['font-variant'].value || ''} ${
-				properties['font-weight'].value || ''
-			} ${properties['font-stretch'].value || ''} ${properties['font-size'].value || ''} ${
-				properties['line-height'].value || ''
-			} ${properties['font-family'].value || ''}`
+			value: `${properties['font-style']?.value || ''} ${properties['font-variant']?.value || ''} ${
+				properties['font-weight']?.value || ''
+			} ${properties['font-stretch']?.value || ''} ${sizeAndLineHeight.join('/')} ${
+				properties['font-family'].value || ''
+			}`
 				.replace(/  /g, '')
 				.trim()
 		};

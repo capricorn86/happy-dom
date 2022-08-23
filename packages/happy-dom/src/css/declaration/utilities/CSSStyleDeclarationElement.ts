@@ -80,7 +80,7 @@ export default class CSSStyleDeclarationElement {
 	 * @returns Style sheets.
 	 */
 	private static getComputedElementStyle(element: IElement): CSSStyleDeclarationPropertyManager {
-		const targetElement: { element: IElement; cssText: string } = { element, cssText: null };
+		const targetElement: { element: IElement; cssText: string } = { element, cssText: '' };
 		const parentElements: Array<{ element: IElement; cssText: string }> = [];
 		const inheritedProperties: { [k: string]: ICSSStyleDeclarationPropertyValue } = {};
 		let shadowRootElements: Array<{ element: IElement; cssText: string }> = [targetElement];
@@ -93,7 +93,7 @@ export default class CSSStyleDeclarationElement {
 		}
 
 		while (currentNode) {
-			const styleAndElement = { element: <IElement>currentNode, cssText: null };
+			const styleAndElement = { element: <IElement>currentNode, cssText: '' };
 
 			if (currentNode.nodeType === NodeTypeEnum.elementNode) {
 				parentElements.unshift(styleAndElement);
@@ -126,7 +126,7 @@ export default class CSSStyleDeclarationElement {
 
 		for (const parentElement of parentElements) {
 			const propertyManager = new CSSStyleDeclarationPropertyManager(
-				parentElement.cssText + (parentElement['_attributes']['style']?.value || '')
+				parentElement.cssText + (parentElement.element['_attributes']['style']?.value || '')
 			);
 			for (const name of Object.keys(propertyManager.properties)) {
 				if (INHERITED_PROPERTIES.includes(name)) {
@@ -136,7 +136,7 @@ export default class CSSStyleDeclarationElement {
 		}
 
 		const targetPropertyManager = new CSSStyleDeclarationPropertyManager(
-			targetElement.cssText + (targetElement['_attributes']['style']?.value || '')
+			targetElement.cssText + (targetElement.element['_attributes']['style']?.value || '')
 		);
 		Object.assign(targetPropertyManager.properties, inheritedProperties);
 

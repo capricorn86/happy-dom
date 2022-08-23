@@ -30,6 +30,7 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
 
+			debugger;
 			expect(declaration[0]).toBe('border');
 			expect(declaration[1]).toBe('border-radius');
 			expect(declaration[2]).toBe('font-size');

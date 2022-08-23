@@ -6,6 +6,7 @@ const PERCENTAGE_REGEXP = /^[-+]?[0-9]*\.?[0-9]+%$/;
 const DEGREE_REGEXP = /^[0-9]+deg$/;
 const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
 const INTEGER_REGEXP = /^[0-9]+$/;
+const FLOAT_REGEXP = /^[0-9.]+$/;
 const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
 
 /**
@@ -92,6 +93,19 @@ export default class CSSStyleDeclarationValueParser {
 	 */
 	public static getInteger(value: string): string {
 		if (INTEGER_REGEXP.test(value)) {
+			return value;
+		}
+		return null;
+	}
+
+	/**
+	 * Returns float.
+	 *
+	 * @param value Value.
+	 * @returns Parsed value.
+	 */
+	public static getFloat(value: string): string {
+		if (FLOAT_REGEXP.test(value)) {
 			return value;
 		}
 		return null;

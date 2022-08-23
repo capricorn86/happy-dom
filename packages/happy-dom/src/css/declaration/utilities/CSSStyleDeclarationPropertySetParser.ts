@@ -1281,17 +1281,15 @@ export default class CSSStyleDeclarationPropertySetParser {
 			parts.splice(3, 0, '');
 		}
 
-		if (parts.length <= 5 || !this.getLineHeight(parts[5], important)) {
-			parts.splice(5, 0, '');
-		}
+		const [fontSizeValue, lineHeightValue] = parts[4].split('/');
 
 		const fontStyle = parts[0] ? this.getFontStyle(parts[0], important) : '';
-		const fontVariant = parts[0] ? this.getFontVariant(parts[1], important) : '';
+		const fontVariant = parts[1] ? this.getFontVariant(parts[1], important) : '';
 		const fontWeight = parts[2] ? this.getFontWeight(parts[2], important) : '';
 		const fontStretch = parts[3] ? this.getFontStretch(parts[3], important) : '';
-		const fontSize = parts[4] ? this.getFontStretch(parts[4], important) : '';
-		const lineHeight = parts[5] ? this.getLineHeight(parts[5], important) : '';
-		const fontFamily = parts[6] ? this.getFontFamily(parts.slice(6).join(' '), important) : '';
+		const fontSize = fontSizeValue ? this.getFontSize(fontSizeValue, important) : '';
+		const lineHeight = lineHeightValue ? this.getLineHeight(lineHeightValue, important) : '';
+		const fontFamily = parts[5] ? this.getFontFamily(parts.slice(5).join(' '), important) : '';
 
 		const properties = {};
 
@@ -1452,7 +1450,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'line-height': { value: 'normal', important } };
 		}
 		const lineHeight =
-			CSSStyleDeclarationValueParser.getInteger(value) ||
+			CSSStyleDeclarationValueParser.getFloat(value) ||
 			CSSStyleDeclarationValueParser.getMeasurement(value);
 		return lineHeight ? { 'line-height': { value: lineHeight, important } } : null;
 	}
