@@ -721,7 +721,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Attribute.
 	 */
 	public createAttribute(qualifiedName: string): IAttr {
-		return this.createAttributeNS(null, qualifiedName);
+		return this.createAttributeNS(null, qualifiedName.toLowerCase());
 	}
 
 	/**

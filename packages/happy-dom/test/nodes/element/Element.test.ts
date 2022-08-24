@@ -379,7 +379,9 @@ describe('Element', () => {
 
 			jest.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode === document).toBe(true);
-				expect(nodes).toEqual([node1, node2]);
+				expect(nodes.length).toBe(2);
+				expect(nodes[0] === node1).toBe(true);
+				expect(nodes[1] === node2).toBe(true);
 				isCalled = true;
 			});
 
@@ -396,7 +398,9 @@ describe('Element', () => {
 
 			jest.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode === document).toBe(true);
-				expect(nodes).toEqual([node1, node2]);
+				expect(nodes.length).toBe(2);
+				expect(nodes[0] === node1).toBe(true);
+				expect(nodes[1] === node2).toBe(true);
 				isCalled = true;
 			});
 
@@ -917,7 +921,7 @@ describe('Element', () => {
 			element.appendChild(clone);
 
 			expect(clone.childNodes.length).toBe(0);
-			expect(clone.children.length).toEqual(0);
+			expect(clone.children.length).toBe(0);
 			expect(element.innerHTML).toBe('<div>Div</div><span>Span</span>');
 		});
 	});
@@ -952,7 +956,7 @@ describe('Element', () => {
 
 			expect(element.children.length).toBe(3);
 			expect(element.children[0] === div2).toBe(true);
-			expect(element.children[1] === div2).toBe(true);
+			expect(element.children[1] === div1).toBe(true);
 			expect(element.children[2] === span).toBe(true);
 		});
 
@@ -1425,7 +1429,7 @@ describe('Element', () => {
 
 			svg.setAttributeNode(attribute1);
 
-			expect(svg.getAttributeNodeNS(NamespaceURI.svg, 'key1') === null).toBe(null);
+			expect(svg.getAttributeNodeNS(NamespaceURI.svg, 'key1') === null).toBe(true);
 			expect(svg.getAttributeNodeNS(NamespaceURI.svg, 'KEY1') === attribute1).toBe(true);
 			expect(svg.getAttributeNodeNS(NamespaceURI.svg, 'KEY2') === null).toBe(true);
 		});
