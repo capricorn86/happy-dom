@@ -10,6 +10,7 @@ export default class CSSStyleDeclarationPropertyManager {
 	public properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
 	} = {};
+	private definedPropertyNames: { [k: string]: boolean } = {};
 
 	/**
 	 * Class construtor.
@@ -92,6 +93,7 @@ export default class CSSStyleDeclarationPropertyManager {
 	 */
 	public remove(name: string): void {
 		delete this.properties[name];
+		delete this.definedPropertyNames[name];
 
 		switch (name) {
 			case 'border':
@@ -204,6 +206,7 @@ export default class CSSStyleDeclarationPropertyManager {
 				value: globalValue,
 				important
 			};
+			this.definedPropertyNames[name] = true;
 			return;
 		}
 
@@ -420,7 +423,10 @@ export default class CSSStyleDeclarationPropertyManager {
 				break;
 		}
 
-		Object.assign(this.properties, properties);
+		if (properties !== null && Object.keys(properties).length > 0) {
+			this.definedPropertyNames[name] = true;
+			Object.assign(this.properties, properties);
+		}
 	}
 
 	/**
@@ -433,6 +439,7 @@ export default class CSSStyleDeclarationPropertyManager {
 		const clone: CSSStyleDeclarationPropertyManager = new _class();
 
 		clone.properties = JSON.parse(JSON.stringify(this.properties));
+		clone.definedPropertyNames = Object.assign({}, this.definedPropertyNames);
 
 		return clone;
 	}
@@ -462,39 +469,10 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @returns String.
 	 */
 	public toString(): string {
-		const clone = this.clone();
-		const groupProperties = {
-			margin: clone.get('margin'),
-			padding: clone.get('padding'),
-			border: clone.get('border'),
-			'border-top': clone.get('border-top'),
-			'border-right': clone.get('border-right'),
-			'border-bottom': clone.get('border-bottom'),
-			'border-left': clone.get('border-left'),
-			'border-color': clone.get('border-color'),
-			'border-style': clone.get('border-style'),
-			'border-width': clone.get('border-width'),
-			'border-radius': clone.get('border-radius'),
-			background: clone.get('background'),
-			flex: clone.get('flex'),
-			font: clone.get('font')
-		};
-
 		const result = [];
 
-		for (const name of Object.keys(groupProperties)) {
-			if (groupProperties[name]) {
-				result.push(
-					`${name}: ${groupProperties[name].value}${
-						groupProperties[name].important ? ' !important' : ''
-					};`
-				);
-				clone.remove(name);
-			}
-		}
-
-		for (const name of Object.keys(clone.properties)) {
-			const property = clone.properties[name];
+		for (const name of Object.keys(this.definedPropertyNames)) {
+			const property = this.get(name);
 			result.push(`${name}: ${property.value}${property.important ? ' !important' : ''};`);
 		}
 

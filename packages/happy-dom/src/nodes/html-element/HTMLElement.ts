@@ -71,16 +71,12 @@ export default class HTMLElement extends Element implements IHTMLElement {
 				const computedStyle = this.ownerDocument.defaultView.getComputedStyle(element);
 				const display = computedStyle.display;
 
-				if (display === 'block') {
-					result += '\n';
-				}
+				if (element.tagName !== 'SCRIPT' && element.tagName !== 'STYLE' && display !== 'none') {
+					if (display === 'block' && result) {
+						result += '\n';
+					}
 
-				if (element.tagName !== 'SCRIPT' && element.tagName !== 'STYLE') {
 					result += element.innerText;
-				}
-
-				if (display === 'block') {
-					result += '\n';
 				}
 			} else if (childNode.nodeType === NodeTypeEnum.textNode) {
 				result += childNode.textContent.replace(/[\n\r]/, '');

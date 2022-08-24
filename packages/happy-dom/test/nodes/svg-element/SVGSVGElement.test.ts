@@ -193,17 +193,29 @@ describe('SVGSVGElement', () => {
 	describe('get style()', () => {
 		it('Returns styles.', () => {
 			element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
-			expect(element.style.length).toEqual(2);
-			expect(element.style[0]).toEqual('border-radius');
-			expect(element.style[1]).toEqual('padding');
+			expect(element.style.length).toEqual(8);
+			expect(element.style[0]).toEqual('border-top-left-radius');
+			expect(element.style[1]).toEqual('border-top-right-radius');
+			expect(element.style[2]).toEqual('border-bottom-right-radius');
+			expect(element.style[3]).toEqual('border-bottom-left-radius');
+			expect(element.style[4]).toEqual('padding-top');
+			expect(element.style[5]).toEqual('padding-right');
+			expect(element.style[6]).toEqual('padding-bottom');
+			expect(element.style[7]).toEqual('padding-left');
 			expect(element.style.borderRadius).toEqual('2px');
 			expect(element.style.padding).toEqual('2px');
 			expect(element.style.cssText).toEqual('border-radius: 2px; padding: 2px;');
 
 			element.setAttribute('style', 'border-radius: 4px; padding: 4px;');
-			expect(element.style.length).toEqual(2);
-			expect(element.style[0]).toEqual('border-radius');
-			expect(element.style[1]).toEqual('padding');
+			expect(element.style.length).toEqual(8);
+			expect(element.style[0]).toEqual('border-top-left-radius');
+			expect(element.style[1]).toEqual('border-top-right-radius');
+			expect(element.style[2]).toEqual('border-bottom-right-radius');
+			expect(element.style[3]).toEqual('border-bottom-left-radius');
+			expect(element.style[4]).toEqual('padding-top');
+			expect(element.style[5]).toEqual('padding-right');
+			expect(element.style[6]).toEqual('padding-bottom');
+			expect(element.style[7]).toEqual('padding-left');
 			expect(element.style.borderRadius).toEqual('4px');
 			expect(element.style.padding).toEqual('4px');
 			expect(element.style.cssText).toEqual('border-radius: 4px; padding: 4px;');

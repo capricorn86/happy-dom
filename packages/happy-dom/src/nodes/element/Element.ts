@@ -212,7 +212,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @returns Attributes.
 	 */
-	public get attributes(): { [k: string]: IAttr | number } {
+	public get attributes(): { [k: string | number]: IAttr } & { length: number } {
 		const attributes = Object.values(this._attributes);
 		return Object.assign({}, this._attributes, attributes, {
 			length: attributes.length

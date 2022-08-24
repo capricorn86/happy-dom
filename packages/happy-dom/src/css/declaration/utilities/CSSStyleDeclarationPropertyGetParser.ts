@@ -23,7 +23,11 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['margin-left']?.important,
 				properties['margin-right']?.important
 			].some((important) => important === false),
-			value: `${properties['margin-top'].value} ${properties['margin-right']?.value || ''} ${
+			value: `${properties['margin-top'].value} ${
+				properties['margin-top'].value !== properties['margin-right']?.value
+					? properties['margin-right']?.value || ''
+					: ''
+			} ${
 				properties['margin-top'].value !== properties['margin-bottom']?.value
 					? properties['margin-bottom']?.value || ''
 					: ''
@@ -56,7 +60,11 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['padding-left']?.important,
 				properties['padding-right']?.important
 			].some((important) => important === false),
-			value: `${properties['padding-top'].value} ${properties['padding-right']?.value || ''} ${
+			value: `${properties['padding-top'].value} ${
+				properties['padding-top'].value !== properties['padding-right']?.value
+					? properties['padding-right']?.value || ''
+					: ''
+			} ${
 				properties['padding-top'].value !== properties['padding-bottom']?.value
 					? properties['padding-bottom']?.value || ''
 					: ''
@@ -324,7 +332,9 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['border-bottom-left-radius']?.important
 			].some((important) => important === false),
 			value: `${properties['border-top-left-radius'].value} ${
-				properties['border-top-right-radius']?.value || ''
+				properties['border-top-left-radius'].value !== properties['border-top-right-radius']?.value
+					? properties['border-top-right-radius']?.value || ''
+					: ''
 			} ${
 				properties['border-top-left-radius'].value !==
 				properties['border-bottom-right-radius']?.value

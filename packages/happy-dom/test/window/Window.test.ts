@@ -206,15 +206,15 @@ describe('Window', () => {
 			const element = <IHTMLElement>document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
 
-			element.style.direction = 'rtl';
+			element.style.color = 'red';
 
 			expect(computedStyle instanceof CSSStyleDeclaration).toBe(true);
 
-			expect(computedStyle.direction).toBe('');
+			expect(computedStyle.color).toBe('');
 
 			window.document.body.appendChild(element);
 
-			expect(computedStyle.direction).toBe('rtl');
+			expect(computedStyle.color).toBe('red');
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
@@ -234,7 +234,7 @@ describe('Window', () => {
 			document.body.appendChild(documentStyle);
 			document.body.appendChild(parent);
 
-			expect(computedStyle.font).toBe('12px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;');
+			expect(computedStyle.font).toBe('12px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif');
 		});
 	});
 

@@ -27,7 +27,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	slot: string;
 	readonly nodeName: string;
 	readonly localName: string;
-	readonly attributes: { [k: string]: IAttr | number };
+	readonly attributes: { [k: string | number]: IAttr } & { length: number };
 
 	/**
 	 * Attribute changed callback.

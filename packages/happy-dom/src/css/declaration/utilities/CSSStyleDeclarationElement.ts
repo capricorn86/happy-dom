@@ -10,46 +10,8 @@ import CSSRuleTypeEnum from '../../CSSRuleTypeEnum';
 import CSSMediaRule from '../../rules/CSSMediaRule';
 import CSSRule from '../../CSSRule';
 import CSSStyleRule from '../../rules/CSSStyleRule';
-
-const INHERITED_PROPERTIES = [
-	'border-collapse',
-	'border-spacing',
-	'caption-side',
-	'color',
-	'cursor',
-	'direction',
-	'empty-cells',
-	'font-family',
-	'font-size',
-	'font-style',
-	'font-variant',
-	'font-weight',
-	'font-size-adjust',
-	'font-stretch',
-	'font',
-	'letter-spacing',
-	'line-height',
-	'list-style-image',
-	'list-style-position',
-	'list-style-type',
-	'list-style',
-	'orphans',
-	'quotes',
-	'tab-size',
-	'text-align',
-	'text-align-last',
-	'text-decoration-color',
-	'text-indent',
-	'text-justify',
-	'text-shadow',
-	'text-transform',
-	'visibility',
-	'white-space',
-	'widows',
-	'word-break',
-	'word-spacing',
-	'word-wrap'
-];
+import CSSStyleDeclarationElementDefaultProperties from './CSSStyleDeclarationElementDefaultProperties';
+import CSSStyleDeclarationElementInheritedProperties from './CSSStyleDeclarationElementInheritedProperties';
 
 /**
  * CSS Style Declaration utility
@@ -128,9 +90,15 @@ export default class CSSStyleDeclarationElement {
 			const propertyManager = new CSSStyleDeclarationPropertyManager(
 				parentElement.cssText + (parentElement.element['_attributes']['style']?.value || '')
 			);
-			for (const name of Object.keys(propertyManager.properties)) {
-				if (INHERITED_PROPERTIES.includes(name)) {
-					inheritedProperties[name] = propertyManager.properties[name];
+			const properties = Object.assign(
+				{},
+				CSSStyleDeclarationElementDefaultProperties.default,
+				CSSStyleDeclarationElementDefaultProperties[parentElement.element.tagName],
+				propertyManager.properties
+			);
+			for (const name of Object.keys(properties)) {
+				if (CSSStyleDeclarationElementInheritedProperties.includes(name)) {
+					inheritedProperties[name] = properties[name];
 				}
 			}
 		}
@@ -139,8 +107,13 @@ export default class CSSStyleDeclarationElement {
 			targetElement.cssText + (targetElement.element['_attributes']['style']?.value || '')
 		);
 
-		Object.assign(inheritedProperties, targetPropertyManager.properties);
-		targetPropertyManager.properties = inheritedProperties;
+		targetPropertyManager.properties = Object.assign(
+			{},
+			CSSStyleDeclarationElementDefaultProperties.default,
+			CSSStyleDeclarationElementDefaultProperties[targetElement.element.tagName],
+			inheritedProperties,
+			targetPropertyManager.properties
+		);
 
 		return targetPropertyManager;
 	}
