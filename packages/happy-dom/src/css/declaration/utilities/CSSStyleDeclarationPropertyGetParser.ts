@@ -16,6 +16,26 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		if (!properties['margin-top']?.value) {
 			return null;
 		}
+		const values = [properties['margin-top'].value];
+		if (
+			properties['margin-right']?.value &&
+			(properties['margin-right'].value !== properties['margin-top'].value ||
+				(properties['margin-bottom']?.value &&
+					properties['margin-bottom'].value !== properties['margin-top'].value))
+		) {
+			values.push(properties['margin-right'].value);
+		}
+		if (
+			properties['margin-bottom']?.value &&
+			(properties['margin-bottom'].value !== properties['margin-top'].value ||
+				(properties['margin-left']?.value &&
+					properties['margin-left'].value !== properties['margin-right'].value))
+		) {
+			values.push(properties['margin-bottom'].value);
+		}
+		if (properties['margin-left']?.value) {
+			values.push(properties['margin-left'].value);
+		}
 		return {
 			important: ![
 				properties['margin-top']?.important,
@@ -23,21 +43,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['margin-left']?.important,
 				properties['margin-right']?.important
 			].some((important) => important === false),
-			value: `${properties['margin-top'].value} ${
-				properties['margin-top'].value !== properties['margin-right']?.value
-					? properties['margin-right']?.value || ''
-					: ''
-			} ${
-				properties['margin-top'].value !== properties['margin-bottom']?.value
-					? properties['margin-bottom']?.value || ''
-					: ''
-			} ${
-				properties['margin-right']?.value !== properties['margin-left']?.value
-					? properties['margin-left']?.value || ''
-					: ''
-			}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 
@@ -53,6 +59,16 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		if (!properties['padding-top']?.value) {
 			return null;
 		}
+		const values = [properties['padding-top'].value];
+		if (properties['padding-right']?.value) {
+			values.push(properties['padding-right'].value);
+		}
+		if (properties['padding-bottom']?.value) {
+			values.push(properties['padding-bottom'].value);
+		}
+		if (properties['padding-left']?.value) {
+			values.push(properties['padding-left'].value);
+		}
 		return {
 			important: ![
 				properties['padding-top']?.important,
@@ -60,21 +76,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['padding-left']?.important,
 				properties['padding-right']?.important
 			].some((important) => important === false),
-			value: `${properties['padding-top'].value} ${
-				properties['padding-top'].value !== properties['padding-right']?.value
-					? properties['padding-right']?.value || ''
-					: ''
-			} ${
-				properties['padding-top'].value !== properties['padding-bottom']?.value
-					? properties['padding-bottom']?.value || ''
-					: ''
-			} ${
-				properties['padding-right']?.value !== properties['padding-left']?.value
-					? properties['padding-left']?.value || ''
-					: ''
-			}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 
@@ -89,18 +91,34 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	}): ICSSStyleDeclarationPropertyValue {
 		if (
 			!properties['border-top-width']?.value ||
-			properties['border-right-width']?.value !== properties['border-top-width']?.value ||
-			properties['border-right-style']?.value !== properties['border-top-style']?.value ||
-			properties['border-right-color']?.value !== properties['border-top-color']?.value ||
-			properties['border-bottom-width']?.value !== properties['border-top-width']?.value ||
-			properties['border-bottom-style']?.value !== properties['border-top-style']?.value ||
-			properties['border-bottom-color']?.value !== properties['border-top-color']?.value ||
-			properties['border-left-width']?.value !== properties['border-top-width']?.value ||
-			properties['border-left-style']?.value !== properties['border-top-style']?.value ||
-			properties['border-left-color']?.value !== properties['border-top-color']?.value
+			properties['border-top-width']?.value !== properties['border-right-width']?.value ||
+			properties['border-top-width']?.value !== properties['border-bottom-width']?.value ||
+			properties['border-top-width']?.value !== properties['border-left-width']?.value
 		) {
 			return null;
 		}
+
+		const values = [properties['border-top-width'].value];
+
+		if (
+			properties['border-top-style']?.value &&
+			properties['border-top-style'].value === properties['border-right-style'].value &&
+			properties['border-top-color'].value === properties['border-right-color'].value &&
+			properties['border-top-color'].value === properties['border-bottom-color'].value &&
+			properties['border-top-color'].value === properties['border-left-color'].value
+		) {
+			values.push(properties['border-top-style'].value);
+		}
+
+		if (
+			properties['border-top-color']?.value &&
+			properties['border-top-color'].value === properties['border-right-color'].value &&
+			properties['border-top-color'].value === properties['border-bottom-color'].value &&
+			properties['border-top-color'].value === properties['border-left-color'].value
+		) {
+			values.push(properties['border-top-color'].value);
+		}
+
 		return {
 			important: ![
 				properties['border-top-width']?.important,
@@ -116,11 +134,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['border-bottom-color']?.important,
 				properties['border-left-color']?.important
 			].some((important) => important === false),
-			value: `${properties['border-top-width'].value} ${
-				properties['border-top-style']?.value || ''
-			} ${properties['border-top-color']?.value || ''}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 
@@ -136,17 +150,20 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		if (!properties['border-top-width']?.value) {
 			return null;
 		}
+		const values = [properties['border-top-width'].value];
+		if (properties['border-top-style']?.value) {
+			values.push(properties['border-top-style'].value);
+		}
+		if (properties['border-top-color']?.value) {
+			values.push(properties['border-top-color'].value);
+		}
 		return {
 			important: ![
 				properties['border-top-width']?.important,
 				properties['border-top-style']?.important,
 				properties['border-top-color']?.important
 			].some((important) => important === false),
-			value: `${properties['border-top-width'].value} ${
-				properties['border-top-style']?.value || ''
-			} ${properties['border-top-color']?.value || ''}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 
@@ -162,17 +179,20 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		if (!properties['border-right-width']?.value) {
 			return null;
 		}
+		const values = [properties['border-right-width'].value];
+		if (properties['border-right-style']?.value) {
+			values.push(properties['border-right-style'].value);
+		}
+		if (properties['border-right-color']?.value) {
+			values.push(properties['border-right-color'].value);
+		}
 		return {
 			important: ![
 				properties['border-right-width']?.important,
 				properties['border-right-style']?.important,
 				properties['border-right-color']?.important
 			].some((important) => important === false),
-			value: `${properties['border-right-width'].value} ${
-				properties['border-right-style']?.value || ''
-			} ${properties['border-right-color']?.value || ''}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 
@@ -188,17 +208,20 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		if (!properties['border-bottom-width']?.value) {
 			return null;
 		}
+		const values = [properties['border-bottom-width'].value];
+		if (properties['border-bottom-style']?.value) {
+			values.push(properties['border-bottom-style'].value);
+		}
+		if (properties['border-bottom-color']?.value) {
+			values.push(properties['border-bottom-color'].value);
+		}
 		return {
 			important: ![
 				properties['border-bottom-width']?.important,
 				properties['border-bottom-style']?.important,
 				properties['border-bottom-color']?.important
 			].some((important) => important === false),
-			value: `${properties['border-bottom-width'].value} ${
-				properties['border-bottom-style']?.value || ''
-			} ${properties['border-bottom-color']?.value || ''}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 
@@ -214,17 +237,20 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		if (!properties['border-left-width']?.value) {
 			return null;
 		}
+		const values = [properties['border-left-width'].value];
+		if (properties['border-left-style']?.value) {
+			values.push(properties['border-bottom-style'].value);
+		}
+		if (properties['border-left-color']?.value) {
+			values.push(properties['border-left-color'].value);
+		}
 		return {
 			important: ![
 				properties['border-left-width']?.important,
 				properties['border-left-style']?.important,
 				properties['border-left-color']?.important
 			].some((important) => important === false),
-			value: `${properties['border-left-width'].value} ${
-				properties['border-left-style']?.value || ''
-			} ${properties['border-left-color']?.value || ''}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 
@@ -324,6 +350,16 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		if (!properties['border-top-left-radius']?.value) {
 			return null;
 		}
+		const values = [properties['border-top-left-radius'].value];
+		if (properties['border-top-right-radius']?.value) {
+			values.push(properties['border-top-right-radius'].value);
+		}
+		if (properties['border-bottom-right-radius']?.value) {
+			values.push(properties['border-bottom-right-radius'].value);
+		}
+		if (properties['border-bottom-left-radius']?.value) {
+			values.push(properties['border-bottom-left-radius'].value);
+		}
 		return {
 			important: ![
 				properties['border-top-left-radius']?.important,
@@ -331,23 +367,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['border-bottom-right-radius']?.important,
 				properties['border-bottom-left-radius']?.important
 			].some((important) => important === false),
-			value: `${properties['border-top-left-radius'].value} ${
-				properties['border-top-left-radius'].value !== properties['border-top-right-radius']?.value
-					? properties['border-top-right-radius']?.value || ''
-					: ''
-			} ${
-				properties['border-top-left-radius'].value !==
-				properties['border-bottom-right-radius']?.value
-					? properties['border-bottom-right-radius']?.value || ''
-					: ''
-			} ${
-				properties['border-top-right-radius']?.value !==
-				properties['border-bottom-left-radius']?.value
-					? properties['border-bottom-left-radius']?.value || ''
-					: ''
-			}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 
@@ -363,6 +383,22 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		if (!properties['background-color']?.value && !properties['background-image']?.value) {
 			return null;
 		}
+		const values = [];
+		if (properties['background-color']?.value) {
+			values.push(properties['background-color'].value);
+		}
+		if (properties['background-image']?.value) {
+			values.push(properties['background-image'].value);
+		}
+		if (properties['background-repeat']?.value) {
+			values.push(properties['background-repeat'].value);
+		}
+		if (properties['background-attachment']?.value) {
+			values.push(properties['background-attachment'].value);
+		}
+		if (properties['background-position']?.value) {
+			values.push(properties['background-position'].value);
+		}
 		return {
 			important: ![
 				properties['background-color']?.important,
@@ -371,19 +407,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['background-attachment']?.important,
 				properties['background-position']?.important
 			].some((important) => important === false),
-			value: `${properties['background-color']?.value || ''} ${
-				properties['background-image']?.value || ''
-			} ${properties['background-repeat']?.value || ''} ${
-				properties['background-repeat']?.value
-					? properties['background-attachment']?.value || ''
-					: ''
-			} ${
-				properties['background-repeat']?.value && properties['background-attachment']?.value
-					? properties['background-position']?.value || ''
-					: ''
-			}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 
@@ -431,6 +455,26 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			sizeAndLineHeight.push(properties['line-height'].value);
 		}
 
+		const values = [];
+		if (properties['font-style']?.value) {
+			values.push(properties['font-style'].value);
+		}
+		if (properties['font-variant']?.value) {
+			values.push(properties['font-variant'].value);
+		}
+		if (properties['font-weight']?.value) {
+			values.push(properties['font-weight'].value);
+		}
+		if (properties['font-stretch']?.value) {
+			values.push(properties['font-stretch'].value);
+		}
+
+		values.push(sizeAndLineHeight.join('/'));
+
+		if (properties['font-family']?.value) {
+			values.push(properties['font-family'].value);
+		}
+
 		return {
 			important: ![
 				properties['font-style']?.important,
@@ -441,13 +485,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['line-height']?.important,
 				properties['font-family']?.important
 			].some((important) => important === false),
-			value: `${properties['font-style']?.value || ''} ${properties['font-variant']?.value || ''} ${
-				properties['font-weight']?.value || ''
-			} ${properties['font-stretch']?.value || ''} ${sizeAndLineHeight.join('/')} ${
-				properties['font-family'].value || ''
-			}`
-				.replace(/  /g, '')
-				.trim()
+			value: values.join(' ')
 		};
 	}
 }

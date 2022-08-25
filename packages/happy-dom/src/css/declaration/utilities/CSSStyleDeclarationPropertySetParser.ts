@@ -49,6 +49,37 @@ const FONT_STRETCH = [
 	'ultra-expanded'
 ];
 
+const DISPLAY = [
+	/* Legacy values */
+	'block',
+	'inline',
+	'inline-block',
+	'flex',
+	'inline-flex',
+	'grid',
+	'inline-grid',
+	'flow-root',
+
+	/* Box generation */
+	'none',
+	'contents',
+
+	/* Two-value syntax */
+	'block flow',
+	'inline flow',
+	'inline flow-root',
+	'block flex',
+	'inline flex',
+	'block grid',
+	'inline grid',
+	'block flow-root',
+
+	/* Other values */
+	'table',
+	'table-row',
+	'list-item'
+];
+
 /**
  * Computed style property parser.
  */
@@ -166,6 +197,46 @@ export default class CSSStyleDeclarationPropertySetParser {
 					important
 				}
 			};
+		}
+		return null;
+	}
+
+	/**
+	 * Returns display.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getDisplay(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (DISPLAY.includes(lowerValue)) {
+			return { display: { value: lowerValue, important } };
+		}
+		return null;
+	}
+
+	/**
+	 * Returns direction.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getDirection(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (lowerValue === 'ltr' || lowerValue === 'rtl') {
+			return { direction: { value: lowerValue, important } };
 		}
 		return null;
 	}

@@ -3,7 +3,7 @@ import Window from '../../../src/window/Window';
 import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import IElement from '../../../src/nodes/element/IElement';
-import CSSStyleDeclarationDefaultValues from './data/CSSStyleDeclarationDefaultValues';
+import CSSStyleDeclarationMockedProperties from './data/CSSStyleDeclarationMockedProperties';
 
 function KEBAB_TO_CAMEL_CASE(text: string): string {
 	const parts = text.split('-');
@@ -78,38 +78,38 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
-	for (const property of Object.keys(CSSStyleDeclarationDefaultValues)) {
+	for (const property of Object.keys(CSSStyleDeclarationMockedProperties)) {
 		const camelCaseProperty = KEBAB_TO_CAMEL_CASE(property);
 		describe(`get ${camelCaseProperty}()`, () => {
 			it('Returns style property on element.', () => {
 				const declaration = new CSSStyleDeclaration(element);
 				element.setAttribute(
 					'style',
-					`${property}: ${CSSStyleDeclarationDefaultValues[property]};`
+					`${property}: ${CSSStyleDeclarationMockedProperties[property]};`
 				);
-				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationDefaultValues[property]);
+				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationMockedProperties[property]);
 			});
 
 			it('Returns style property without element.', () => {
 				const declaration = new CSSStyleDeclaration();
-				declaration[camelCaseProperty] = CSSStyleDeclarationDefaultValues[property];
-				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationDefaultValues[property]);
+				declaration[camelCaseProperty] = CSSStyleDeclarationMockedProperties[property];
+				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationMockedProperties[property]);
 			});
 		});
 
 		describe(`set ${camelCaseProperty}()`, () => {
 			it('Sets style property on element.', () => {
 				const declaration = new CSSStyleDeclaration(element);
-				declaration[camelCaseProperty] = CSSStyleDeclarationDefaultValues[property];
+				declaration[camelCaseProperty] = CSSStyleDeclarationMockedProperties[property];
 				expect(element.getAttribute('style')).toBe(
-					`${property}: ${CSSStyleDeclarationDefaultValues[property]};`
+					`${property}: ${CSSStyleDeclarationMockedProperties[property]};`
 				);
 			});
 
 			it('Sets style property without element.', () => {
 				const declaration = new CSSStyleDeclaration();
-				declaration[camelCaseProperty] = CSSStyleDeclarationDefaultValues[property];
-				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationDefaultValues[property]);
+				declaration[camelCaseProperty] = CSSStyleDeclarationMockedProperties[property];
+				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationMockedProperties[property]);
 			});
 		});
 	}
