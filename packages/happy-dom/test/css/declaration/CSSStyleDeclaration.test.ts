@@ -3,15 +3,6 @@ import Window from '../../../src/window/Window';
 import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import IElement from '../../../src/nodes/element/IElement';
-import CSSStyleDeclarationMockedProperties from './data/CSSStyleDeclarationMockedProperties';
-
-function KEBAB_TO_CAMEL_CASE(text: string): string {
-	const parts = text.split('-');
-	for (let i = 0, max = parts.length; i < max; i++) {
-		parts[i] = i > 0 ? parts[i].charAt(0).toUpperCase() + parts[i].slice(1) : parts[i];
-	}
-	return parts.join('');
-}
 
 describe('CSSStyleDeclaration', () => {
 	let window: IWindow;
@@ -78,41 +69,50 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
-	for (const property of Object.keys(CSSStyleDeclarationMockedProperties)) {
-		const camelCaseProperty = KEBAB_TO_CAMEL_CASE(property);
-		describe(`get ${camelCaseProperty}()`, () => {
-			it('Returns style property on element.', () => {
-				const declaration = new CSSStyleDeclaration(element);
-				element.setAttribute(
-					'style',
-					`${property}: ${CSSStyleDeclarationMockedProperties[property]};`
-				);
-				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationMockedProperties[property]);
-			});
+	describe('get border()', () => {
+		it('Returns style property on element.', () => {
+			const declaration = new CSSStyleDeclaration(element);
 
-			it('Returns style property without element.', () => {
-				const declaration = new CSSStyleDeclaration();
-				declaration[camelCaseProperty] = CSSStyleDeclarationMockedProperties[property];
-				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationMockedProperties[property]);
-			});
+			element.setAttribute('style', 'border: 2px solid green');
+
+			expect(declaration.border).toBe('2px solid green');
+
+			expect(declaration.borderTop).toBe('2px solid green');
+			expect(declaration.borderRight).toBe('2px solid green');
+			expect(declaration.borderBottom).toBe('2px solid green');
+			expect(declaration.borderLeft).toBe('2px solid green');
+
+			expect(declaration.borderTopColor).toBe('green');
+			expect(declaration.borderTopWidth).toBe('2px');
+			expect(declaration.borderTopStyle).toBe('solid');
+
+			expect(declaration.borderRightColor).toBe('green');
+			expect(declaration.borderRightWidth).toBe('2px');
+			expect(declaration.borderRightStyle).toBe('solid');
+
+			expect(declaration.borderBottomColor).toBe('green');
+			expect(declaration.borderBottomWidth).toBe('2px');
+			expect(declaration.borderBottomStyle).toBe('solid');
+
+			expect(declaration.borderLeftColor).toBe('green');
+			expect(declaration.borderLeftWidth).toBe('2px');
+			expect(declaration.borderLeftStyle).toBe('solid');
+
+			declaration.borderRight = '1px dotted red';
+
+			expect(declaration.border).toBe('');
+
+			declaration.borderRight = '2px solid green';
+
+			expect(declaration.border).toBe('2px solid green');
+
+			declaration.borderColor = 'red';
+			declaration.borderStyle = 'dotted';
+			declaration.borderWidth = '1px';
+
+			expect(declaration.border).toBe('1px dotted red');
 		});
-
-		describe(`set ${camelCaseProperty}()`, () => {
-			it('Sets style property on element.', () => {
-				const declaration = new CSSStyleDeclaration(element);
-				declaration[camelCaseProperty] = CSSStyleDeclarationMockedProperties[property];
-				expect(element.getAttribute('style')).toBe(
-					`${property}: ${CSSStyleDeclarationMockedProperties[property]};`
-				);
-			});
-
-			it('Sets style property without element.', () => {
-				const declaration = new CSSStyleDeclaration();
-				declaration[camelCaseProperty] = CSSStyleDeclarationMockedProperties[property];
-				expect(declaration[camelCaseProperty]).toBe(CSSStyleDeclarationMockedProperties[property]);
-			});
-		});
-	}
+	});
 
 	describe('get length()', () => {
 		it('Returns length when of styles on element.', () => {
