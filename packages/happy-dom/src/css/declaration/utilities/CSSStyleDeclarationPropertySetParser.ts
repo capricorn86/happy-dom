@@ -79,6 +79,7 @@ const DISPLAY = [
 	'table-row',
 	'list-item'
 ];
+const BORDER_IMAGE_REPEAT = ['stretch', 'repeat', 'round', 'space'];
 
 /**
  * Computed style property parser.
@@ -98,7 +99,10 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (BORDER_COLLAPSE.includes(lowerValue)) {
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			BORDER_COLLAPSE.includes(lowerValue)
+		) {
 			return { 'border-collapse': { value: lowerValue, important } };
 		}
 		return null;
@@ -118,7 +122,10 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (BACKGROUND_REPEAT.includes(lowerValue)) {
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			BACKGROUND_REPEAT.includes(lowerValue)
+		) {
 			return { 'background-repeat': { value: lowerValue, important } };
 		}
 		return null;
@@ -138,7 +145,10 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (BACKGROUND_ATTACHMENT.includes(lowerValue)) {
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			BACKGROUND_ATTACHMENT.includes(lowerValue)
+		) {
 			return { 'background-attachment': { value: lowerValue, important } };
 		}
 		return null;
@@ -162,6 +172,10 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		if (!value) {
 			return null;
+		}
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
+		if (globalValue) {
+			return { 'background-position': { value: globalValue, important } };
 		}
 		const parts = value.split(/\s+/);
 		if (parts.length > 2 || parts.length < 1) {
@@ -215,7 +229,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (DISPLAY.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || DISPLAY.includes(lowerValue)) {
 			return { display: { value: lowerValue, important } };
 		}
 		return null;
@@ -235,7 +249,11 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (lowerValue === 'ltr' || lowerValue === 'rtl') {
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			lowerValue === 'ltr' ||
+			lowerValue === 'rtl'
+		) {
 			return { direction: { value: lowerValue, important } };
 		}
 		return null;
@@ -254,7 +272,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const parsedValue = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
 		return parsedValue ? { top: { value: parsedValue, important } } : null;
 	}
 
@@ -271,7 +291,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const parsedValue = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
 		return parsedValue ? { right: { value: parsedValue, important } } : null;
 	}
 
@@ -288,7 +310,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const parsedValue = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
 		return parsedValue ? { bottom: { value: parsedValue, important } } : null;
 	}
 
@@ -305,7 +329,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const parsedValue = CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
 		return parsedValue ? { left: { value: parsedValue, important } } : null;
 	}
 
@@ -323,7 +349,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (CLEAR.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || CLEAR.includes(lowerValue)) {
 			return { clear: { value: lowerValue, important } };
 		}
 		return null;
@@ -346,7 +372,12 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (lowerValue === 'auto' || lowerValue === 'initial' || lowerValue === 'inherit') {
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			lowerValue === 'auto' ||
+			lowerValue === 'initial' ||
+			lowerValue === 'inherit'
+		) {
 			return { clip: { value: lowerValue, important } };
 		}
 		const matches = lowerValue.match(RECT_REGEXP);
@@ -379,7 +410,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (FLOAT.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || FLOAT.includes(lowerValue)) {
 			return { float: { value: lowerValue, important } };
 		}
 		return null;
@@ -398,7 +429,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const float = this.getFloat(value, important);
+		const float =
+			CSSStyleDeclarationValueParser.getGlobal(value) || this.getFloat(value, important);
 		return float ? { 'css-float': float['float'] } : null;
 	}
 
@@ -413,11 +445,15 @@ export default class CSSStyleDeclarationPropertySetParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
 		const parts = value.split(/ +/);
-		const borderWidth = parts[0] ? this.getBorderWidth(parts[0], important) : '';
-		const borderStyle = parts[1] ? this.getBorderStyle(parts[1], important) : '';
-		const borderColor = parts[2] ? this.getBorderColor(parts[2], important) : '';
-		const properties = {};
+		const borderWidth =
+			globalValue || parts[0] ? this.getBorderWidth(globalValue || parts[0], important) : '';
+		const borderStyle =
+			globalValue || parts[1] ? this.getBorderStyle(globalValue || parts[1], important) : '';
+		const borderColor =
+			globalValue || parts[2] ? this.getBorderColor(globalValue || parts[2], important) : '';
+		const properties = this.getBorderImage('initial', important);
 
 		if (borderWidth) {
 			Object.assign(properties, borderWidth);
@@ -448,7 +484,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (BORDER_WIDTH.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || BORDER_WIDTH.includes(lowerValue)) {
 			return {
 				'border-top-width': { value: lowerValue, important },
 				'border-right-width': { value: lowerValue, important },
@@ -480,7 +516,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (BORDER_STYLE.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || BORDER_STYLE.includes(lowerValue)) {
 			return {
 				'border-top-style': { value: lowerValue, important },
 				'border-right-style': { value: lowerValue, important },
@@ -504,7 +540,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const color = CSSStyleDeclarationValueParser.getColor(value);
+		const color =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getColor(value);
 		return color
 			? {
 					'border-top-color': { value: color, important },
@@ -513,6 +551,293 @@ export default class CSSStyleDeclarationPropertySetParser {
 					'border-left-color': { value: color, important }
 			  }
 			: null;
+	}
+
+	/**
+	 * Returns border image.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderImage(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
+
+		if (globalValue) {
+			return {
+				'border-image-source': { important, value: globalValue },
+				'border-image-slice': { important, value: globalValue },
+				'border-image-width': { important, value: globalValue },
+				'border-image-outset': { important, value: globalValue },
+				'border-image-repeat': { important, value: globalValue }
+			};
+		}
+
+		const parts = value.toLowerCase().split(/ +/);
+		const borderImageSource = parts[0] ? this.getBorderImageSource(parts[0], important) : '';
+		const repeatValue = [];
+
+		parts.splice(0, 1);
+
+		for (let i = 0; i < 2; i++) {
+			if (BORDER_IMAGE_REPEAT.includes(parts[parts.length - 1])) {
+				repeatValue.push(parts[parts.length - 1]);
+				parts.splice(parts.length - 1, 1);
+			}
+		}
+
+		const borderImageRepeat =
+			repeatValue.length > 0 ? this.getBorderImageRepeat(repeatValue.join(' '), important) : '';
+		const measurements = parts.join('').split('/');
+		const borderImageSlice = measurements[0]
+			? this.getBorderImageSlice(measurements[0], important)
+			: '';
+		const borderImageWidth = measurements[1]
+			? this.getBorderImageWidth(measurements[1], important)
+			: '';
+		const borderImageOutset = measurements[2]
+			? this.getBorderImageOutset(measurements[2], important)
+			: '';
+
+		const properties = {};
+
+		if (borderImageSource) {
+			Object.assign(properties, borderImageSource);
+		}
+
+		if (borderImageSlice) {
+			Object.assign(properties, borderImageSlice);
+		}
+
+		if (borderImageWidth) {
+			Object.assign(properties, borderImageWidth);
+		}
+
+		if (borderImageOutset) {
+			Object.assign(properties, borderImageOutset);
+		}
+
+		if (borderImageRepeat) {
+			Object.assign(properties, borderImageRepeat);
+		}
+
+		return borderImageSource &&
+			borderImageRepeat !== null &&
+			borderImageSlice !== null &&
+			borderImageWidth !== null &&
+			borderImageOutset !== null
+			? properties
+			: null;
+	}
+
+	/**
+	 * Returns border source.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderImageSource(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || lowerValue === 'none') {
+			return {
+				'border-image-source': {
+					important,
+					value: 'none'
+				}
+			};
+		}
+
+		return {
+			'border-image-source': {
+				important,
+				value:
+					CSSStyleDeclarationValueParser.getURL(value) ||
+					CSSStyleDeclarationValueParser.getGradient(value)
+			}
+		};
+	}
+
+	/**
+	 * Returns border slice.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderImageSlice(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
+			return {
+				'border-image-slice': {
+					important,
+					value: lowerValue
+				}
+			};
+		}
+
+		const parts = lowerValue.split(/ +/);
+
+		for (const part of parts) {
+			if (
+				part !== 'fill' &&
+				!CSSStyleDeclarationValueParser.getPercentage(part) &&
+				!CSSStyleDeclarationValueParser.getInteger(part)
+			) {
+				return null;
+			}
+		}
+
+		return {
+			'border-image-slice': {
+				important,
+				value: lowerValue
+			}
+		};
+	}
+
+	/**
+	 * Returns border width.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderImageWidth(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
+			return {
+				'border-image-width': {
+					important,
+					value: lowerValue
+				}
+			};
+		}
+
+		const parts = lowerValue.split(/ +/);
+
+		for (const part of parts) {
+			if (!CSSStyleDeclarationValueParser.getMeasurementOrAuto(part)) {
+				return null;
+			}
+		}
+
+		return {
+			'border-image-width': {
+				important,
+				value
+			}
+		};
+	}
+
+	/**
+	 * Returns border outset.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderImageOutset(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
+			return {
+				'border-image-outset': {
+					important,
+					value: lowerValue
+				}
+			};
+		}
+
+		const parts = value.split(/ +/);
+
+		for (const part of parts) {
+			if (
+				!CSSStyleDeclarationValueParser.getLength(part) &&
+				!CSSStyleDeclarationValueParser.getFloat(value)
+			) {
+				return null;
+			}
+		}
+
+		return {
+			'border-image-outset': {
+				important,
+				value
+			}
+		};
+	}
+
+	/**
+	 * Returns border repeat.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBorderImageRepeat(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
+			return {
+				'border-image-repeat': {
+					important,
+					value: lowerValue
+				}
+			};
+		}
+
+		const parts = lowerValue.split(/ +/);
+
+		if (parts.length > 2) {
+			return null;
+		}
+
+		for (const part of parts) {
+			if (!BORDER_IMAGE_REPEAT.includes(part)) {
+				return null;
+			}
+		}
+
+		return {
+			'border-image-repeat': {
+				important,
+				value
+			}
+		};
 	}
 
 	/**

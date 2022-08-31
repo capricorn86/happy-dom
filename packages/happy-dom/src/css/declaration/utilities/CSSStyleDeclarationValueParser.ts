@@ -7,6 +7,8 @@ const DEGREE_REGEXP = /^[0-9]+deg$/;
 const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
 const INTEGER_REGEXP = /^[0-9]+$/;
 const FLOAT_REGEXP = /^[0-9.]+$/;
+const GRADIENT_REGEXP =
+	/^(repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient\([^)]+\)$/;
 const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
 const COLORS = [
 	'silver',
@@ -250,6 +252,19 @@ export default class CSSStyleDeclarationValueParser {
 	 */
 	public static getFloat(value: string): string {
 		if (FLOAT_REGEXP.test(value)) {
+			return value;
+		}
+		return null;
+	}
+
+	/**
+	 * Returns gradient.
+	 *
+	 * @param value Value.
+	 * @returns Parsed value.
+	 */
+	public static getGradient(value: string): string {
+		if (GRADIENT_REGEXP.test(value)) {
 			return value;
 		}
 		return null;

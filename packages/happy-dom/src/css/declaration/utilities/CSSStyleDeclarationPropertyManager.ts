@@ -198,18 +198,6 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param important Important.
 	 */
 	public set(name: string, value: string, important: boolean): void {
-		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
-
-		if (globalValue) {
-			this.remove(name);
-			this.properties[name] = {
-				value: globalValue,
-				important
-			};
-			this.definedPropertyNames[name] = true;
-			return;
-		}
-
 		let properties = null;
 
 		switch (name) {
@@ -236,6 +224,24 @@ export default class CSSStyleDeclarationPropertyManager {
 				break;
 			case 'border-color':
 				properties = CSSStyleDeclarationPropertySetParser.getBorderColor(value, important);
+				break;
+			case 'border-image':
+				properties = CSSStyleDeclarationPropertySetParser.getBorderImage(value, important);
+				break;
+			case 'border-image-source':
+				properties = CSSStyleDeclarationPropertySetParser.getBorderImageSource(value, important);
+				break;
+			case 'border-image-slice':
+				properties = CSSStyleDeclarationPropertySetParser.getBorderImageSlice(value, important);
+				break;
+			case 'border-image-width':
+				properties = CSSStyleDeclarationPropertySetParser.getBorderImageWidth(value, important);
+				break;
+			case 'border-image-outset':
+				properties = CSSStyleDeclarationPropertySetParser.getBorderImageOutset(value, important);
+				break;
+			case 'border-image-repeat':
+				properties = CSSStyleDeclarationPropertySetParser.getBorderImageRepeat(value, important);
 				break;
 			case 'border-top-width':
 				properties = CSSStyleDeclarationPropertySetParser.getBorderTopWidth(value, important);
@@ -421,9 +427,10 @@ export default class CSSStyleDeclarationPropertyManager {
 				properties = CSSStyleDeclarationPropertySetParser.getFloodColor(value, important);
 				break;
 			default:
+				const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
 				properties = value
 					? {
-							[name]: { value, important }
+							[name]: { value: globalValue ? globalValue : value, important }
 					  }
 					: null;
 				break;

@@ -51,7 +51,12 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			!properties['border-top-width']?.value ||
 			properties['border-top-width']?.value !== properties['border-right-width']?.value ||
 			properties['border-top-width']?.value !== properties['border-bottom-width']?.value ||
-			properties['border-top-width']?.value !== properties['border-left-width']?.value
+			properties['border-top-width']?.value !== properties['border-left-width']?.value ||
+			!properties['border-image-source']?.value ||
+			!properties['border-image-slice']?.value ||
+			!properties['border-image-width']?.value ||
+			!properties['border-image-outset']?.value ||
+			!properties['border-image-repeat']?.value
 		) {
 			return null;
 		}
