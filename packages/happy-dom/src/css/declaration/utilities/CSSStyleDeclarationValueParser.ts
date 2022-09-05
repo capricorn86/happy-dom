@@ -11,6 +11,8 @@ const GRADIENT_REGEXP =
 	/^(repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient\([^)]+\)$/;
 const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
 const COLORS = [
+	'currentcolor',
+	'transparent',
 	'silver',
 	'gray',
 	'white',
@@ -351,5 +353,16 @@ export default class CSSStyleDeclarationValueParser {
 	public static getGlobal(value: string): string {
 		const lowerValue = value.toLowerCase();
 		return GLOBALS.includes(lowerValue) ? lowerValue : null;
+	}
+
+	/**
+	 * Returns global.
+	 *
+	 * @param value Value.
+	 * @returns Parsed value.
+	 */
+	public static getNonGlobalOrInitial(value: string): string {
+		const global = this.getGlobal(value);
+		return !global || global === 'initial' ? value : null;
 	}
 }

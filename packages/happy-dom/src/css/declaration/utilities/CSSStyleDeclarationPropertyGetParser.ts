@@ -1,3 +1,4 @@
+import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser';
 import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue';
 
 /**
@@ -13,12 +14,24 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	public static getMargin(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
 	}): ICSSStyleDeclarationPropertyValue {
-		return this.getPositionedValue(
-			properties['margin-top'],
-			properties['margin-right'],
-			properties['margin-bottom'],
-			properties['margin-left']
-		);
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(properties['margin-top']?.value) ||
+			CSSStyleDeclarationValueParser.getGlobal(properties['margin-right']?.value) ||
+			CSSStyleDeclarationValueParser.getGlobal(properties['margin-bottom']?.value) ||
+			CSSStyleDeclarationValueParser.getGlobal(properties['margin-left']?.value)
+		) {
+			return null;
+		}
+
+		return {
+			important: ![
+				properties['margin-top'].important,
+				properties['margin-right'].important,
+				properties['margin-bottom'].important,
+				properties['margin-left'].important
+			].some((important) => important === false),
+			value: `${properties['margin-top'].value} ${properties['margin-right'].value} ${properties['margin-bottom'].value} ${properties['margin-left'].value}`
+		};
 	}
 
 	/**
@@ -30,12 +43,24 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	public static getPadding(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
 	}): ICSSStyleDeclarationPropertyValue {
-		return this.getPositionedValue(
-			properties['padding-top'],
-			properties['padding-right'],
-			properties['padding-bottom'],
-			properties['padding-left']
-		);
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(properties['padding-top']?.value) ||
+			CSSStyleDeclarationValueParser.getGlobal(properties['padding-right']?.value) ||
+			CSSStyleDeclarationValueParser.getGlobal(properties['padding-bottom']?.value) ||
+			CSSStyleDeclarationValueParser.getGlobal(properties['padding-left']?.value)
+		) {
+			return null;
+		}
+
+		return {
+			important: ![
+				properties['padding-top'].important,
+				properties['padding-right'].important,
+				properties['padding-bottom'].important,
+				properties['padding-left'].important
+			].some((important) => important === false),
+			value: `${properties['padding-top'].value} ${properties['padding-right'].value} ${properties['padding-bottom'].value} ${properties['padding-left'].value}`
+		};
 	}
 
 	/**
@@ -52,33 +77,33 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties['border-top-width']?.value !== properties['border-right-width']?.value ||
 			properties['border-top-width']?.value !== properties['border-bottom-width']?.value ||
 			properties['border-top-width']?.value !== properties['border-left-width']?.value ||
+			!properties['border-top-style']?.value ||
+			properties['border-top-style']?.value !== properties['border-right-style']?.value ||
+			properties['border-top-style']?.value !== properties['border-bottom-style']?.value ||
+			properties['border-top-style']?.value !== properties['border-left-style']?.value ||
+			!properties['border-top-color']?.value ||
+			properties['border-top-color']?.value !== properties['border-right-color']?.value ||
+			properties['border-top-color']?.value !== properties['border-bottom-color']?.value ||
+			properties['border-top-color']?.value !== properties['border-left-color']?.value ||
 			!properties['border-image-source']?.value ||
 			!properties['border-image-slice']?.value ||
 			!properties['border-image-width']?.value ||
 			!properties['border-image-outset']?.value ||
-			!properties['border-image-repeat']?.value
+			!properties['border-image-repeat']?.value ||
+			!CSSStyleDeclarationValueParser.getNonGlobalOrInitial(properties['border-top-width'].value) ||
+			!CSSStyleDeclarationValueParser.getNonGlobalOrInitial(properties['border-top-style'].value) ||
+			!CSSStyleDeclarationValueParser.getNonGlobalOrInitial(properties['border-top-color'].value)
 		) {
 			return null;
 		}
 
 		const values = [properties['border-top-width'].value];
 
-		if (
-			properties['border-top-style']?.value &&
-			properties['border-top-style'].value === properties['border-right-style'].value &&
-			properties['border-top-color'].value === properties['border-right-color'].value &&
-			properties['border-top-color'].value === properties['border-bottom-color'].value &&
-			properties['border-top-color'].value === properties['border-left-color'].value
-		) {
+		if (properties['border-top-style'].value !== 'initial') {
 			values.push(properties['border-top-style'].value);
 		}
 
-		if (
-			properties['border-top-color']?.value &&
-			properties['border-top-color'].value === properties['border-right-color'].value &&
-			properties['border-top-color'].value === properties['border-bottom-color'].value &&
-			properties['border-top-color'].value === properties['border-left-color'].value
-		) {
+		if (properties['border-top-color'].value !== 'initial') {
 			values.push(properties['border-top-color'].value);
 		}
 
@@ -310,12 +335,24 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	public static getBorderRadius(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
 	}): ICSSStyleDeclarationPropertyValue {
-		return this.getPositionedValue(
-			properties['border-top-left-radius'],
-			properties['border-top-right-radius'],
-			properties['border-bottom-right-radius'],
-			properties['border-bottom-left-radius']
-		);
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(properties['border-top-left-radius']?.value) ||
+			CSSStyleDeclarationValueParser.getGlobal(properties['border-top-right-radius']?.value) ||
+			CSSStyleDeclarationValueParser.getGlobal(properties['border-bottom-right-radius']?.value) ||
+			CSSStyleDeclarationValueParser.getGlobal(properties['border-bottom-left-radius']?.value)
+		) {
+			return null;
+		}
+
+		return {
+			important: ![
+				properties['border-top-left-radius'].important,
+				properties['border-top-right-radius'].important,
+				properties['border-bottom-right-radius'].important,
+				properties['margin-left'].important
+			].some((important) => important === false),
+			value: `${properties['border-top-left-radius'].value} ${properties['border-top-right-radius'].value} ${properties['border-bottom-right-radius'].value} ${properties['border-bottom-left-radius'].value}`
+		};
 	}
 
 	/**
@@ -432,53 +469,6 @@ export default class CSSStyleDeclarationPropertyGetParser {
 				properties['line-height']?.important,
 				properties['font-family']?.important
 			].some((important) => important === false),
-			value: values.join(' ')
-		};
-	}
-
-	/**
-	 * Returns a positioned value.
-	 *
-	 * @param top Top.
-	 * @param right Right
-	 * @param bottom Bottom.
-	 * @param left Left.
-	 * @returns Property value
-	 */
-	public static getPositionedValue(
-		top?: ICSSStyleDeclarationPropertyValue,
-		right?: ICSSStyleDeclarationPropertyValue,
-		bottom?: ICSSStyleDeclarationPropertyValue,
-		left?: ICSSStyleDeclarationPropertyValue
-	): ICSSStyleDeclarationPropertyValue {
-		if (!top?.value) {
-			return null;
-		}
-
-		const values = [top.value];
-
-		if (right?.value && right.value !== top.value) {
-			values.push(right.value);
-		}
-
-		if (bottom?.value && bottom.value !== top.value) {
-			for (let i = values.length - 1; i < 1; i++) {
-				values.push('0px');
-			}
-			values.push(bottom.value);
-		}
-
-		if (left?.value && left.value !== right?.value) {
-			for (let i = values.length - 1; i < 2; i++) {
-				values.push('0px');
-			}
-			values.push(left.value);
-		}
-
-		return {
-			important: ![top?.important, right?.important, bottom?.important, left?.important].some(
-				(important) => important === false
-			),
 			value: values.join(' ')
 		};
 	}

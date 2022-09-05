@@ -17,8 +17,9 @@ const BORDER_STYLE = [
 const BORDER_WIDTH = ['thin', 'medium', 'thick'];
 const BORDER_COLLAPSE = ['separate', 'collapse'];
 const BACKGROUND_REPEAT = ['repeat', 'repeat-x', 'repeat-y', 'no-repeat'];
+const BACKGROUND_ORIGIN = ['border-box', 'padding-box', 'content-box'];
+const BACKGROUND_CLIP = ['border-box', 'padding-box', 'content-box'];
 const BACKGROUND_ATTACHMENT = ['scroll', 'fixed'];
-const BACKGROUND_POSITION = ['top', 'center', 'bottom', 'left', 'right'];
 const FLEX_BASIS = ['auto', 'fill', 'max-content', 'min-content', 'fit-content', 'content'];
 const CLEAR = ['none', 'left', 'right', 'both'];
 const FLOAT = ['none', 'left', 'right'];
@@ -104,113 +105,6 @@ export default class CSSStyleDeclarationPropertySetParser {
 			BORDER_COLLAPSE.includes(lowerValue)
 		) {
 			return { 'border-collapse': { value: lowerValue, important } };
-		}
-		return null;
-	}
-
-	/**
-	 * Returns background repeat.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getBackgroundRepeat(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const lowerValue = value.toLowerCase();
-		if (
-			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
-			BACKGROUND_REPEAT.includes(lowerValue)
-		) {
-			return { 'background-repeat': { value: lowerValue, important } };
-		}
-		return null;
-	}
-
-	/**
-	 * Returns background attachment.
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getBackgroundAttachment(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		const lowerValue = value.toLowerCase();
-		if (
-			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
-			BACKGROUND_ATTACHMENT.includes(lowerValue)
-		) {
-			return { 'background-attachment': { value: lowerValue, important } };
-		}
-		return null;
-	}
-
-	/**
-	 * Returns URL.
-	 *
-	 * Based on:
-	 * https://github.com/jsdom/cssstyle/blob/master/lib/properties/backgroundPosition.js
-	 *
-	 * @param value Value.
-	 * @param important Important.
-	 * @returns Property values
-	 */
-	public static getBackgroundPosition(
-		value: string,
-		important: boolean
-	): {
-		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
-		if (!value) {
-			return null;
-		}
-		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
-		if (globalValue) {
-			return { 'background-position': { value: globalValue, important } };
-		}
-		const parts = value.split(/\s+/);
-		if (parts.length > 2 || parts.length < 1) {
-			return null;
-		}
-		if (parts.length === 1) {
-			if (CSSStyleDeclarationValueParser.getLength(parts[0])) {
-				return { 'background-position': { value, important } };
-			}
-			if (parts[0]) {
-				const lowerValue = value.toLowerCase();
-				if (BACKGROUND_POSITION.includes(lowerValue) || lowerValue === 'inherit') {
-					return { 'background-position': { value: lowerValue, important } };
-				}
-			}
-			return null;
-		}
-		if (
-			(CSSStyleDeclarationValueParser.getLength(parts[0]) ||
-				CSSStyleDeclarationValueParser.getPercentage(parts[0])) &&
-			(CSSStyleDeclarationValueParser.getLength(parts[1]) ||
-				CSSStyleDeclarationValueParser.getPercentage(parts[1]))
-		) {
-			return { 'background-position': { value: value.toLowerCase(), important } };
-		}
-		if (
-			BACKGROUND_POSITION.includes(parts[0].toLowerCase()) &&
-			BACKGROUND_POSITION.includes(parts[1].toLowerCase())
-		) {
-			return {
-				'background-position': {
-					value: `${parts[0].toLowerCase()} ${parts[1].toLowerCase()}`,
-					important
-				}
-			};
 		}
 		return null;
 	}
@@ -441,23 +335,38 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
-		const parts = value.split(/ +/);
-		const borderWidth =
-			globalValue || parts[0] ? this.getBorderWidth(globalValue || parts[0], important) : '';
-		const borderStyle =
-			globalValue || parts[1] ? this.getBorderStyle(globalValue || parts[1], important) : '';
-		const borderColor =
-			globalValue || parts[2] ? this.getBorderColor(globalValue || parts[2], important) : '';
 
-		if (borderWidth && borderStyle !== null && borderColor !== null) {
+		if (globalValue) {
 			return {
-				...this.getBorderImage('initial', important),
-				...borderWidth,
-				...borderStyle,
-				...borderColor
+				...this.getBorderWidth(globalValue, important),
+				...this.getBorderStyle(globalValue, important),
+				...this.getBorderColor(globalValue, important),
+				...this.getBorderImage(globalValue, important)
 			};
 		}
-		return null;
+
+		const properties = {
+			...this.getBorderWidth('initial', important),
+			...this.getBorderStyle('initial', important),
+			...this.getBorderColor('initial', important),
+			...this.getBorderImage('none', important)
+		};
+
+		const parts = value.split(/ +/);
+
+		for (const part of parts) {
+			const width = this.getBorderWidth(part, important);
+			const style = this.getBorderStyle(part, important);
+			const color = this.getBorderColor(part, important);
+
+			if (width === null && style === null && color === null) {
+				return null;
+			}
+
+			Object.assign(properties, width, style, color);
+		}
+
+		return properties;
 	}
 
 	/**
@@ -473,13 +382,33 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const properties = {
-			...this.getBorderTopWidth(value, important),
-			...this.getBorderRightWidth(value, important),
-			...this.getBorderBottomWidth(value, important),
-			...this.getBorderLeftWidth(value, important)
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
+
+		if (globalValue) {
+			return {
+				...this.getBorderTopWidth(globalValue, important),
+				...this.getBorderRightWidth(globalValue, important),
+				...this.getBorderBottomWidth(globalValue, important),
+				...this.getBorderLeftWidth(globalValue, important)
+			};
+		}
+
+		const parts = value.split(/ +/);
+		const top = this.getBorderTopWidth(parts[0], important);
+		const right = this.getBorderRightWidth(parts[1] || parts[0], important);
+		const bottom = this.getBorderBottomWidth(parts[2] || parts[0], important);
+		const left = this.getBorderLeftWidth(parts[3] || parts[1] || parts[0], important);
+
+		if (!top || !right || !bottom || !left) {
+			return null;
+		}
+
+		return {
+			...top,
+			...right,
+			...bottom,
+			...left
 		};
-		return Object.keys(properties).length ? properties : null;
 	}
 	/**
 	 * Returns border style.
@@ -494,13 +423,33 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const properties = {
-			...this.getBorderTopStyle(value, important),
-			...this.getBorderRightStyle(value, important),
-			...this.getBorderBottomStyle(value, important),
-			...this.getBorderLeftStyle(value, important)
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
+
+		if (globalValue) {
+			return {
+				...this.getBorderTopStyle(globalValue, important),
+				...this.getBorderRightStyle(globalValue, important),
+				...this.getBorderBottomStyle(globalValue, important),
+				...this.getBorderLeftStyle(globalValue, important)
+			};
+		}
+
+		const parts = value.split(/ +/);
+		const top = this.getBorderTopStyle(parts[0], important);
+		const right = this.getBorderRightStyle(parts[1] || parts[0], important);
+		const bottom = this.getBorderBottomStyle(parts[2] || parts[0], important);
+		const left = this.getBorderLeftStyle(parts[3] || parts[1] || parts[0], important);
+
+		if (!top || !right || !bottom || !left) {
+			return null;
+		}
+
+		return {
+			...top,
+			...right,
+			...bottom,
+			...left
 		};
-		return Object.keys(properties).length ? properties : null;
 	}
 
 	/**
@@ -516,13 +465,33 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const properties = {
-			...this.getBorderTopStyle(value, important),
-			...this.getBorderRightStyle(value, important),
-			...this.getBorderBottomStyle(value, important),
-			...this.getBorderLeftStyle(value, important)
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
+
+		if (globalValue) {
+			return {
+				...this.getBorderTopColor(globalValue, important),
+				...this.getBorderRightColor(globalValue, important),
+				...this.getBorderBottomColor(globalValue, important),
+				...this.getBorderLeftColor(globalValue, important)
+			};
+		}
+
+		const parts = value.split(/ +/);
+		const top = this.getBorderTopColor(parts[0], important);
+		const right = this.getBorderRightColor(parts[1] || parts[0], important);
+		const bottom = this.getBorderBottomColor(parts[2] || parts[0], important);
+		const left = this.getBorderLeftColor(parts[3] || parts[1] || parts[0], important);
+
+		if (!top || !right || !bottom || !left) {
+			return null;
+		}
+
+		return {
+			...top,
+			...right,
+			...bottom,
+			...left
 		};
-		return Object.keys(properties).length ? properties : null;
 	}
 
 	/**
@@ -542,57 +511,52 @@ export default class CSSStyleDeclarationPropertySetParser {
 
 		if (globalValue) {
 			return {
-				'border-image-source': { important, value: globalValue },
-				'border-image-slice': { important, value: globalValue },
-				'border-image-width': { important, value: globalValue },
-				'border-image-outset': { important, value: globalValue },
-				'border-image-repeat': { important, value: globalValue }
+				...this.getBorderImageSource(globalValue, important),
+				...this.getBorderImageSlice(globalValue, important),
+				...this.getBorderImageWidth(globalValue, important),
+				...this.getBorderImageOutset(globalValue, important),
+				...this.getBorderImageRepeat(globalValue, important)
 			};
 		}
 
-		const parts = value.toLowerCase().split(/ +/);
-		const borderImageSource = parts[0] ? this.getBorderImageSource(parts[0], important) : '';
-		const repeatValue = [];
+		const parsedValue = value.replace(/[ ]*\/[ ]*/g, '/');
+		const parts = parsedValue.split(/ +/);
+		const properties = {
+			...this.getBorderImageSource('none', important),
+			...this.getBorderImageSlice('100%', important),
+			...this.getBorderImageWidth('1', important),
+			...this.getBorderImageOutset('0', important),
+			...this.getBorderImageRepeat('stretch', important)
+		};
 
-		parts.splice(0, 1);
+		for (const part of parts) {
+			if (part.includes('/')) {
+				const [slice, width, outset] = part.split('/');
+				const borderImageSlice = this.getBorderImageSlice(slice, important);
+				const borderImageWidth = this.getBorderImageWidth(width, important);
+				const borderImageOutset = this.getBorderImageOutset(outset, important);
 
-		for (let i = 0; i < 2; i++) {
-			if (BORDER_IMAGE_REPEAT.includes(parts[parts.length - 1])) {
-				repeatValue.push(parts[parts.length - 1]);
-				parts.splice(parts.length - 1, 1);
+				if (borderImageSlice === null || borderImageWidth === null || borderImageOutset === null) {
+					return null;
+				}
+
+				Object.assign(properties, borderImageSlice);
+				Object.assign(properties, borderImageWidth);
+				Object.assign(properties, borderImageOutset);
+			} else {
+				const source = this.getBorderImageSource(part, important);
+				const repeat = this.getBorderImageRepeat(part, important);
+
+				if (source === null && repeat === null) {
+					return null;
+				}
+
+				Object.assign(properties, source);
+				Object.assign(properties, repeat);
 			}
 		}
 
-		const borderImageRepeat =
-			repeatValue.length > 0 ? this.getBorderImageRepeat(repeatValue.join(' '), important) : '';
-		const measurements = parts.join('').split('/');
-		const borderImageSlice = measurements[0]
-			? this.getBorderImageSlice(measurements[0], important)
-			: '';
-		const borderImageWidth = measurements[1]
-			? this.getBorderImageWidth(measurements[1], important)
-			: '';
-		const borderImageOutset = measurements[2]
-			? this.getBorderImageOutset(measurements[2], important)
-			: '';
-
-		if (
-			borderImageSource &&
-			borderImageRepeat !== null &&
-			borderImageSlice !== null &&
-			borderImageWidth !== null &&
-			borderImageOutset !== null
-		) {
-			return {
-				...borderImageSource,
-				...borderImageSlice,
-				...borderImageWidth,
-				...borderImageOutset,
-				...borderImageRepeat
-			};
-		}
-
-		return null;
+		return properties;
 	}
 
 	/**
@@ -1311,22 +1275,33 @@ export default class CSSStyleDeclarationPropertySetParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		const parts = value.split(/ +/);
-		const top = parts[0] ? this.getPaddingTop(parts[0], important) : '';
-		const right = parts[1] ? this.getPaddingRight(parts[1], important) : '';
-		const bottom = parts[2] ? this.getPaddingBottom(parts[2], important) : '';
-		const left = parts[3] ? this.getPaddingLeft(parts[3], important) : '';
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
 
-		if (top && right !== null && bottom !== null && left !== null) {
+		if (globalValue) {
 			return {
-				...top,
-				...right,
-				...bottom,
-				...left
+				...this.getPaddingTop(globalValue, important),
+				...this.getPaddingRight(globalValue, important),
+				...this.getPaddingBottom(globalValue, important),
+				...this.getPaddingLeft(globalValue, important)
 			};
 		}
 
-		return null;
+		const parts = value.split(/ +/);
+		const top = this.getPaddingTop(parts[0], important);
+		const right = this.getPaddingRight(parts[1] || '0', important);
+		const bottom = this.getPaddingBottom(parts[2] || '0', important);
+		const left = this.getPaddingLeft(parts[3] || '0', important);
+
+		if (!top || !right || !bottom || !left) {
+			return null;
+		}
+
+		return {
+			...top,
+			...right,
+			...bottom,
+			...left
+		};
 	}
 
 	/**
@@ -1408,22 +1383,33 @@ export default class CSSStyleDeclarationPropertySetParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		const parts = value.split(/ +/);
-		const top = parts[0] ? this.getMarginTop(parts[0], important) : '';
-		const right = parts[1] ? this.getMarginRight(parts[1], important) : '';
-		const bottom = parts[2] ? this.getMarginBottom(parts[2], important) : '';
-		const left = parts[3] ? this.getMarginLeft(parts[3], important) : '';
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
 
-		if (top && right !== null && bottom !== null && left !== null) {
+		if (globalValue) {
 			return {
-				...top,
-				...right,
-				...bottom,
-				...left
+				...this.getMarginTop(globalValue, important),
+				...this.getMarginRight(globalValue, important),
+				...this.getMarginBottom(globalValue, important),
+				...this.getMarginLeft(globalValue, important)
 			};
 		}
 
-		return null;
+		const parts = value.split(/ +/);
+		const top = this.getMarginTop(parts[0], important);
+		const right = this.getMarginRight(parts[1] || '0', important);
+		const bottom = this.getMarginBottom(parts[2] || '0', important);
+		const left = this.getMarginLeft(parts[3] || '0', important);
+
+		if (!top || !right || !bottom || !left) {
+			return null;
+		}
+
+		return {
+			...top,
+			...right,
+			...bottom,
+			...left
+		};
 	}
 
 	/**
@@ -1510,31 +1496,31 @@ export default class CSSStyleDeclarationPropertySetParser {
 
 		if (globalValue) {
 			return {
-				'flex-grow': { value: globalValue, important },
-				'flex-shrink': { value: globalValue, important },
-				'flex-basis': { value: globalValue, important }
+				...this.getFlexGrow(globalValue, important),
+				...this.getFlexShrink(globalValue, important),
+				...this.getFlexBasis(globalValue, important)
 			};
 		}
 
 		switch (lowerValue) {
 			case 'none':
 				return {
-					'flex-grow': { important, value: '0' },
-					'flex-shrink': { important, value: '0' },
-					'flex-basis': { important, value: 'auto' }
+					...this.getFlexGrow('0', important),
+					...this.getFlexShrink('0', important),
+					...this.getFlexBasis('auto', important)
 				};
 			case 'auto':
 				return {
-					'flex-grow': { important, value: '1' },
-					'flex-shrink': { important, value: '1' },
-					'flex-basis': { important, value: 'auto' }
+					...this.getFlexGrow('1', important),
+					...this.getFlexShrink('1', important),
+					...this.getFlexBasis('auto', important)
 				};
 		}
 
 		const parts = value.split(/ +/);
-		const flexGrow = parts[0] ? this.getFlexGrow(parts[0], important) : '';
-		const flexShrink = parts[1] ? this.getFlexShrink(parts[1], important) : '';
-		const flexBasis = parts[2] ? this.getFlexBasis(parts[2], important) : '';
+		const flexGrow = parts[0] && this.getFlexGrow(parts[0], important);
+		const flexShrink = parts[1] && this.getFlexShrink(parts[1], important);
+		const flexBasis = parts[2] && this.getFlexBasis(parts[2], important);
 
 		if (flexGrow && flexShrink && flexBasis) {
 			return {
@@ -1561,7 +1547,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (FLEX_BASIS.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || FLEX_BASIS.includes(lowerValue)) {
 			return { 'flex-basis': { value: lowerValue, important } };
 		}
 		return { 'flex-basis': { value: CSSStyleDeclarationValueParser.getLength(value), important } };
@@ -1580,7 +1566,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const parsedValue = CSSStyleDeclarationValueParser.getInteger(value);
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getInteger(value);
 		return parsedValue ? { 'flex-shrink': { value: parsedValue, important } } : null;
 	}
 
@@ -1597,7 +1585,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const parsedValue = CSSStyleDeclarationValueParser.getInteger(value);
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getInteger(value);
 		return parsedValue ? { 'flex-grow': { value: parsedValue, important } } : null;
 	}
 
@@ -1613,47 +1603,394 @@ export default class CSSStyleDeclarationPropertySetParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		const parts = value.split(/ +/);
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
 
-		if (!parts[0]) {
-			return;
+		if (globalValue) {
+			return {
+				...this.getBackgroundImage(globalValue, important),
+				...this.getBackgroundPosition(globalValue, important),
+				...this.getBackgroundSize(globalValue, important),
+				...this.getBackgroundRepeat(globalValue, important),
+				...this.getBackgroundAttachment(globalValue, important),
+				...this.getBackgroundOrigin(globalValue, important),
+				...this.getBackgroundClip(globalValue, important),
+				...this.getBackgroundColor(globalValue, important)
+			};
 		}
 
-		// First value can be image if color is not specified.
-		if (!CSSStyleDeclarationValueParser.getColor(parts[0])) {
-			parts.unshift('');
+		const properties = {
+			...this.getBackgroundImage('none', important),
+			...this.getBackgroundPosition('0% 0%', important),
+			...this.getBackgroundSize('auto auto', important),
+			...this.getBackgroundRepeat('repeat', important),
+			...this.getBackgroundAttachment('scroll', important),
+			...this.getBackgroundOrigin('padding-box', important),
+			...this.getBackgroundClip('border-box', important),
+			...this.getBackgroundColor('transparent', important)
+		};
+
+		const parts = value.replace(/[ ]*\/[ ]*/g, '/').split(/ +/);
+
+		for (const part of parts) {
+			if (part.includes('/')) {
+				const [position, size] = part.split('/');
+				const backgroundPosition = this.getBackgroundImage(position, important);
+				const backgroundSize = this.getBackgroundSize(size, important);
+
+				if (!backgroundPosition || !backgroundSize) {
+					return null;
+				}
+
+				Object.assign(properties, backgroundPosition, backgroundSize);
+			} else {
+				const backgroundImage = this.getBackgroundImage(part, important);
+				const backgroundRepeat = this.getBackgroundRepeat(part, important);
+				const backgroundAttachment = this.getBackgroundAttachment(part, important);
+				const backgroundOrigin = this.getBackgroundOrigin(part, important);
+				const backgroundColor = this.getBackgroundColor(part, important);
+
+				if (
+					!backgroundImage &&
+					!backgroundRepeat &&
+					!backgroundAttachment &&
+					!backgroundOrigin &&
+					!backgroundColor
+				) {
+					return null;
+				}
+
+				Object.assign(
+					properties,
+					backgroundImage,
+					backgroundRepeat,
+					backgroundAttachment,
+					backgroundColor
+				);
+			}
 		}
 
-		const color = parts[0] ? this.getBackgroundColor(parts[0], important) : '';
-		const image = parts[1] ? this.getBackgroundImage(parts[1], important) : '';
-		const repeat = parts[2] ? this.getBackgroundRepeat(parts[2], important) : '';
-		const attachment = parts[3] ? this.getBackgroundAttachment(parts[3], important) : '';
-		const position = parts[4] ? this.getBackgroundPosition(parts[4], important) : '';
-		const properties = {};
+		return properties;
+	}
 
-		if (color) {
-			Object.assign(properties, color);
+	/**
+	 * Returns background size.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBackgroundSize(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
+			return { 'background-size': { value: lowerValue, important } };
 		}
 
-		if (image) {
-			Object.assign(properties, image);
+		const imageParts = lowerValue.split(',');
+		const parsed = [];
+
+		for (const imagePart of imageParts) {
+			const parts = imagePart.trim().split(' ');
+			if (parts.length !== 1 && parts.length !== 2) {
+				return null;
+			}
+			if (parts.length === 1) {
+				if (
+					parts[0] !== 'cover' &&
+					parts[0] !== 'contain' &&
+					!CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[0])
+				) {
+					return null;
+				}
+				parsed.push(parts[0]);
+			} else {
+				if (
+					!CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[0]) ||
+					!CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[1])
+				) {
+					return null;
+				}
+				parsed.push(`${parts[0]} ${parts[1]}`);
+			}
+		}
+		if (parsed.length === 1) {
+			return { 'background-size': { value: parsed.join(', '), important } };
+		}
+		return null;
+	}
+
+	/**
+	 * Returns background origin.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBackgroundOrigin(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			BACKGROUND_ORIGIN.includes(lowerValue)
+		) {
+			return { 'background-origin': { value: lowerValue, important } };
+		}
+		return null;
+	}
+
+	/**
+	 * Returns background clip.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBackgroundClip(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			BACKGROUND_CLIP.includes(lowerValue)
+		) {
+			return { 'background-clip': { value: lowerValue, important } };
+		}
+		return null;
+	}
+
+	/**
+	 * Returns background repeat.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBackgroundRepeat(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			BACKGROUND_REPEAT.includes(lowerValue)
+		) {
+			return { 'background-repeat': { value: lowerValue, important } };
+		}
+		return null;
+	}
+
+	/**
+	 * Returns background attachment.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBackgroundAttachment(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		if (
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			BACKGROUND_ATTACHMENT.includes(lowerValue)
+		) {
+			return { 'background-attachment': { value: lowerValue, important } };
+		}
+		return null;
+	}
+
+	/**
+	 * Returns background position.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBackgroundPosition(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
+		if (globalValue) {
+			return {
+				...this.getBackgroundPositionX(globalValue, important),
+				...this.getBackgroundPositionY(globalValue, important)
+			};
 		}
 
-		if (repeat) {
-			Object.assign(properties, repeat);
+		const imageParts = value.split(',');
+		let x = '';
+		let y = '';
+
+		for (const imagePart of imageParts) {
+			const parts = imagePart.trim().split(/ +/);
+
+			if (x) {
+				x += ',';
+				y += ',';
+			}
+
+			if (parts.length === 1) {
+				if (parts[0] === 'top' || parts[0] === 'bottom') {
+					x += 'center';
+					y += parts[0];
+				} else if (parts[0] === 'left' || parts[0] === 'right') {
+					x += parts[0];
+					y += 'center';
+				} else if (parts[0] === 'center') {
+					x += 'center';
+					y += 'center';
+				}
+			}
+
+			if (parts.length !== 2 && parts.length !== 4) {
+				return null;
+			}
+
+			if (parts.length === 2) {
+				x += parts[0] === 'top' || parts[0] === 'bottom' ? parts[1] : parts[0];
+				y += parts[0] === 'left' || parts[0] === 'right' ? parts[0] : parts[1];
+			} else if (parts.length === 4) {
+				x +=
+					parts[0] === 'top' || parts[0] === 'bottom' || parts[1] === 'top' || parts[1] === 'bottom'
+						? `${parts[2]} ${parts[3]}`
+						: `${parts[0]} ${parts[1]}`;
+				y +=
+					parts[2] === 'left' || parts[2] === 'right' || parts[3] === 'left' || parts[3] === 'right'
+						? `${parts[0]} ${parts[1]}`
+						: `${parts[2]} ${parts[3]}`;
+			}
 		}
 
-		if (attachment) {
-			Object.assign(properties, attachment);
+		const xValue = this.getBackgroundPositionX(x, important);
+		const yValue = this.getBackgroundPositionY(y, important);
+
+		if (xValue && yValue) {
+			return {
+				...xValue,
+				...yValue
+			};
 		}
 
-		if (position) {
-			Object.assign(properties, position);
+		return null;
+	}
+
+	/**
+	 * Returns background position.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBackgroundPositionX(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
+			return { 'background-position': { value: lowerValue, important } };
 		}
 
-		return (color || image) && repeat !== null && attachment !== null && position !== null
-			? properties
-			: null;
+		const imageParts = lowerValue.split(',');
+		let parsedValue = '';
+
+		for (const imagePart of imageParts) {
+			const parts = imagePart.trim().split(/ +/);
+
+			if (parsedValue) {
+				parsedValue += ',';
+			}
+
+			for (const part of parts) {
+				if (
+					!CSSStyleDeclarationValueParser.getMeasurement(part) &&
+					part !== 'left' &&
+					part !== 'right' &&
+					part !== 'center'
+				) {
+					return null;
+				}
+
+				if (parsedValue) {
+					parsedValue += ' ';
+				}
+
+				parsedValue += part;
+			}
+		}
+
+		return { 'background-position-x': { value: parsedValue, important } };
+	}
+
+	/**
+	 * Returns background position.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getBackgroundPositionY(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
+			return { 'background-position': { value: lowerValue, important } };
+		}
+
+		const imageParts = lowerValue.split(',');
+		let parsedValue = '';
+
+		for (const imagePart of imageParts) {
+			const parts = imagePart.trim().split(/ +/);
+
+			if (parsedValue) {
+				parsedValue += ',';
+			}
+
+			for (const part of parts) {
+				if (
+					!CSSStyleDeclarationValueParser.getMeasurement(part) &&
+					part !== 'top' &&
+					part !== 'bottom' &&
+					part !== 'center'
+				) {
+					return null;
+				}
+
+				if (parsedValue) {
+					parsedValue += ' ';
+				}
+
+				parsedValue += part;
+			}
+		}
+
+		return { 'background-position-y': { value: parsedValue, important } };
 	}
 
 	/**
@@ -1667,7 +2004,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		const color = CSSStyleDeclarationValueParser.getColor(value);
+		const color =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getColor(value);
 
 		return color
 			? {
@@ -1687,13 +2026,28 @@ export default class CSSStyleDeclarationPropertySetParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		const image = CSSStyleDeclarationValueParser.getURL(value);
+		const lowerValue = value.toLowerCase();
 
-		return image
-			? {
-					['background-image']: { important, value: image }
-			  }
-			: null;
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || lowerValue === 'none') {
+			return { 'background-image': { value: lowerValue, important } };
+		}
+
+		const parts = value.split(',');
+		const parsed = [];
+
+		for (const part of parts) {
+			const url = CSSStyleDeclarationValueParser.getURL(part.trim());
+			if (!url) {
+				return null;
+			}
+			parsed.push(url);
+		}
+
+		if (parsed.length) {
+			return { 'background-image': { value: parsed.join(', '), important } };
+		}
+
+		return null;
 	}
 
 	/**
@@ -1707,7 +2061,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		const color = CSSStyleDeclarationValueParser.getColor(value);
+		const color =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getColor(value);
 
 		return color
 			? {
@@ -1727,7 +2083,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 		value: string,
 		important: boolean
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
-		const color = CSSStyleDeclarationValueParser.getColor(value);
+		const color =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getColor(value);
 
 		return color
 			? {
@@ -1751,76 +2109,73 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		const lowerValue = value.toLowerCase();
 
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
+			return {
+				...this.getFontStyle(lowerValue, important),
+				...this.getFontVariant(lowerValue, important),
+				...this.getFontWeight(lowerValue, important),
+				...this.getFontStretch(lowerValue, important),
+				...this.getFontSize(lowerValue, important),
+				...this.getLineHeight(lowerValue, important),
+				...this.getFontFamily(lowerValue, important)
+			};
+		}
+
 		if (SYSTEM_FONT.includes(lowerValue)) {
 			return { font: { value: lowerValue, important } };
 		}
 
-		const parts = value.split(/ +/);
+		const properties = {
+			...this.getFontStyle('normal', important),
+			...this.getFontVariant('normal', important),
+			...this.getFontWeight('normal', important),
+			...this.getFontStretch('normal', important),
+			...this.getLineHeight('normal', important)
+		};
 
-		if (parts.length > 0 && this.getFontStyle(parts[0], important)) {
-			if (parts[1] && parts[0] === 'oblique' && parts[1].endsWith('deg')) {
-				parts[0] += ' ' + parts[1];
-				parts.splice(1, 1);
+		const parts = value.replace(/ *\/ */g, '/').split(/ +/);
+
+		for (let i = 0, max = parts.length; i < max; i++) {
+			const part = parts[i];
+			if (part.includes('/')) {
+				const [size, height] = part.split('/');
+				const fontSize = this.getFontSize(size, important);
+				const lineHeight = this.getLineHeight(height, important);
+
+				if (!fontSize || !lineHeight) {
+					return null;
+				}
+
+				Object.assign(properties, fontSize, lineHeight);
+			} else {
+				const fontStyle = this.getFontStyle(part, important);
+				const fontVariant = this.getFontVariant(part, important);
+				const fontWeight = this.getFontWeight(part, important);
+				const fontSize = this.getFontSize(part, important);
+				const fontStretch = this.getFontStretch(part, important);
+
+				if (fontStyle) {
+					Object.assign(properties, fontStyle);
+				} else if (fontVariant) {
+					Object.assign(properties, fontVariant);
+				} else if (fontWeight) {
+					Object.assign(properties, fontWeight);
+				} else if (fontSize) {
+					Object.assign(properties, fontSize);
+				} else if (fontStretch) {
+					Object.assign(properties, fontStretch);
+				} else {
+					const fontFamilyValue = parts.slice(i).join(' ');
+					const fontFamily = this.getFontFamily(fontFamilyValue, important);
+					if (!fontFamily) {
+						return null;
+					}
+					Object.assign(properties, fontFamily);
+				}
 			}
-		} else {
-			parts.splice(0, 0, '');
 		}
 
-		if (parts.length <= 1 || !this.getFontVariant(parts[1], important)) {
-			parts.splice(1, 0, '');
-		}
-
-		if (parts.length <= 2 || !this.getFontWeight(parts[2], important)) {
-			parts.splice(2, 0, '');
-		}
-
-		if (parts.length <= 3 || !this.getFontStretch(parts[3], important)) {
-			parts.splice(3, 0, '');
-		}
-
-		const [fontSizeValue, lineHeightValue] = parts[4].split('/');
-
-		const fontStyle = parts[0] ? this.getFontStyle(parts[0], important) : '';
-		const fontVariant = parts[1] ? this.getFontVariant(parts[1], important) : '';
-		const fontWeight = parts[2] ? this.getFontWeight(parts[2], important) : '';
-		const fontStretch = parts[3] ? this.getFontStretch(parts[3], important) : '';
-		const fontSize = fontSizeValue ? this.getFontSize(fontSizeValue, important) : '';
-		const lineHeight = lineHeightValue ? this.getLineHeight(lineHeightValue, important) : '';
-		const fontFamily = parts[5] ? this.getFontFamily(parts.slice(5).join(' '), important) : '';
-
-		const properties = {};
-
-		if (fontStyle) {
-			Object.assign(properties, fontStyle);
-		}
-		if (fontVariant) {
-			Object.assign(properties, fontVariant);
-		}
-		if (fontWeight) {
-			Object.assign(properties, fontWeight);
-		}
-		if (fontStretch) {
-			Object.assign(properties, fontStretch);
-		}
-		if (fontSize) {
-			Object.assign(properties, fontSize);
-		}
-		if (lineHeight) {
-			Object.assign(properties, lineHeight);
-		}
-		if (fontFamily) {
-			Object.assign(properties, fontFamily);
-		}
-
-		return fontSize &&
-			fontFamily &&
-			fontStyle !== null &&
-			fontVariant !== null &&
-			fontWeight !== null &&
-			fontStretch !== null &&
-			lineHeight !== null
-			? properties
-			: null;
+		return properties;
 	}
 
 	/**
@@ -1837,7 +2192,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (FONT_STYLE.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || FONT_STYLE.includes(lowerValue)) {
 			return { 'font-style': { value: lowerValue, important } };
 		}
 		const parts = value.split(/ +/);
@@ -1862,7 +2217,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		return lowerValue === 'normal' || lowerValue === 'small-caps'
+		return CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			lowerValue === 'normal' ||
+			lowerValue === 'small-caps'
 			? { 'font-variant': { value: lowerValue, important } }
 			: null;
 	}
@@ -1881,7 +2238,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (FONT_STRETCH.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || FONT_STRETCH.includes(lowerValue)) {
 			return { 'font-stretch': { value: lowerValue, important } };
 		}
 		const percentage = CSSStyleDeclarationValueParser.getPercentage(value);
@@ -1902,7 +2259,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (FONT_WEIGHT.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || FONT_WEIGHT.includes(lowerValue)) {
 			return { 'font-weight': { value: lowerValue, important } };
 		}
 		const integer = CSSStyleDeclarationValueParser.getInteger(value);
@@ -1923,7 +2280,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
 		const lowerValue = value.toLowerCase();
-		if (FONT_SIZE.includes(lowerValue)) {
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || FONT_SIZE.includes(lowerValue)) {
 			return { 'font-size': { value: lowerValue, important } };
 		}
 		const measurement = CSSStyleDeclarationValueParser.getMeasurement(value);
@@ -1943,8 +2300,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		if (value.toLowerCase() === 'normal') {
-			return { 'line-height': { value: 'normal', important } };
+		const lowerValue = value.toLowerCase();
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || lowerValue === 'normal') {
+			return { 'line-height': { value: lowerValue, important } };
 		}
 		const lineHeight =
 			CSSStyleDeclarationValueParser.getFloat(value) ||
@@ -1965,10 +2323,22 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
+
+		if (globalValue) {
+			return { 'font-family': { value: globalValue, important } };
+		}
+
 		const parts = value.split(',');
 		let parsedValue = '';
 		for (let i = 0, max = parts.length; i < max; i++) {
-			const trimmedPart = parts[i].trim().replace(/[']/g, '"');
+			const trimmedPart = parts[i].trim().replace(/'/g, '"');
+			if (
+				trimmedPart.includes(' ') &&
+				(trimmedPart[0] !== '"' || trimmedPart[trimmedPart.length - 1] !== "'")
+			) {
+				return null;
+			}
 			if (!trimmedPart) {
 				return null;
 			}
@@ -1977,9 +2347,11 @@ export default class CSSStyleDeclarationPropertySetParser {
 			}
 			parsedValue += trimmedPart;
 		}
+
 		if (!parsedValue) {
 			return null;
 		}
+
 		return {
 			'font-family': {
 				important,

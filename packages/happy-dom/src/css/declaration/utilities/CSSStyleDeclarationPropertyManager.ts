@@ -148,6 +148,13 @@ export default class CSSStyleDeclarationPropertyManager {
 				delete this.properties['border-bottom-color'];
 				delete this.properties['border-left-color'];
 				break;
+			case 'border-image':
+				delete this.properties['border-image-source'];
+				delete this.properties['border-image-slice'];
+				delete this.properties['border-image-width'];
+				delete this.properties['border-image-outset'];
+				delete this.properties['border-image-repeat'];
+				break;
 			case 'border-radius':
 				delete this.properties['border-top-left-radius'];
 				delete this.properties['border-top-right-radius'];
@@ -427,12 +434,13 @@ export default class CSSStyleDeclarationPropertyManager {
 				properties = CSSStyleDeclarationPropertySetParser.getFloodColor(value, important);
 				break;
 			default:
-				const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
-				properties = value
-					? {
-							[name]: { value: globalValue ? globalValue : value, important }
-					  }
-					: null;
+				const trimmedValue = value.trim();
+				if (trimmedValue) {
+					const globalValue = CSSStyleDeclarationValueParser.getGlobal(trimmedValue);
+					properties = {
+						[name]: { value: globalValue || trimmedValue, important }
+					};
+				}
 				break;
 		}
 
