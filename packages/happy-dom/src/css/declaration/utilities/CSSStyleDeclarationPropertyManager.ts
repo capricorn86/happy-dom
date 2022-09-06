@@ -75,8 +75,12 @@ export default class CSSStyleDeclarationPropertyManager {
 				return CSSStyleDeclarationPropertyGetParser.getBorderWidth(this.properties);
 			case 'border-radius':
 				return CSSStyleDeclarationPropertyGetParser.getBorderRadius(this.properties);
+			case 'border-image':
+				return CSSStyleDeclarationPropertyGetParser.getBorderImage(this.properties);
 			case 'background':
 				return CSSStyleDeclarationPropertyGetParser.getBackground(this.properties);
+			case 'background-position':
+				return CSSStyleDeclarationPropertyGetParser.getBackgroundPosition(this.properties);
 			case 'flex':
 				return CSSStyleDeclarationPropertyGetParser.getFlex(this.properties);
 			case 'font':
@@ -167,6 +171,10 @@ export default class CSSStyleDeclarationPropertyManager {
 				delete this.properties['background-repeat'];
 				delete this.properties['background-attachment'];
 				delete this.properties['background-position'];
+				break;
+			case 'background-position':
+				delete this.properties['background-position-x'];
+				delete this.properties['background-position-y'];
 				break;
 			case 'flex':
 				delete this.properties['flex-grow'];

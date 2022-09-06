@@ -1619,14 +1619,14 @@ export default class CSSStyleDeclarationPropertySetParser {
 		}
 
 		const properties = {
-			...this.getBackgroundImage('none', important),
-			...this.getBackgroundPosition('0% 0%', important),
-			...this.getBackgroundSize('auto auto', important),
-			...this.getBackgroundRepeat('repeat', important),
-			...this.getBackgroundAttachment('scroll', important),
-			...this.getBackgroundOrigin('padding-box', important),
-			...this.getBackgroundClip('border-box', important),
-			...this.getBackgroundColor('transparent', important)
+			...this.getBackgroundImage('initial', important),
+			...this.getBackgroundPosition('initial', important),
+			...this.getBackgroundSize('initial', important),
+			...this.getBackgroundRepeat('initial', important),
+			...this.getBackgroundAttachment('initial', important),
+			...this.getBackgroundOrigin('initial', important),
+			...this.getBackgroundClip('initial', important),
+			...this.getBackgroundColor('initial', important)
 		};
 
 		const parts = value.replace(/[ ]*\/[ ]*/g, '/').split(/ +/);
@@ -1634,7 +1634,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 		for (const part of parts) {
 			if (part.includes('/')) {
 				const [position, size] = part.split('/');
-				const backgroundPosition = this.getBackgroundImage(position, important);
+				const backgroundPosition = properties['background-position-x']
+					? this.getBackgroundPositionY(position, important)
+					: this.getBackgroundPosition(position, important);
 				const backgroundSize = this.getBackgroundSize(size, important);
 
 				if (!backgroundPosition || !backgroundSize) {
@@ -1646,14 +1648,14 @@ export default class CSSStyleDeclarationPropertySetParser {
 				const backgroundImage = this.getBackgroundImage(part, important);
 				const backgroundRepeat = this.getBackgroundRepeat(part, important);
 				const backgroundAttachment = this.getBackgroundAttachment(part, important);
-				const backgroundOrigin = this.getBackgroundOrigin(part, important);
+				const backgroundPosition = this.getBackgroundPosition(part, important);
 				const backgroundColor = this.getBackgroundColor(part, important);
 
 				if (
 					!backgroundImage &&
 					!backgroundRepeat &&
 					!backgroundAttachment &&
-					!backgroundOrigin &&
+					!backgroundPosition &&
 					!backgroundColor
 				) {
 					return null;
@@ -1664,6 +1666,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 					backgroundImage,
 					backgroundRepeat,
 					backgroundAttachment,
+					backgroundPosition,
 					backgroundColor
 				);
 			}
@@ -1909,7 +1912,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		const lowerValue = value.toLowerCase();
 
 		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
-			return { 'background-position': { value: lowerValue, important } };
+			return { 'background-position-x': { value: lowerValue, important } };
 		}
 
 		const imageParts = lowerValue.split(',');
@@ -1959,7 +1962,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		const lowerValue = value.toLowerCase();
 
 		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
-			return { 'background-position': { value: lowerValue, important } };
+			return { 'background-position-y': { value: lowerValue, important } };
 		}
 
 		const imageParts = lowerValue.split(',');

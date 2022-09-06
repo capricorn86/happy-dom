@@ -345,6 +345,16 @@ export default class CSSStyleDeclarationValueParser {
 	}
 
 	/**
+	 * Returns global initial value.
+	 *
+	 * @param value Value.
+	 * @returns Parsed value.
+	 */
+	public static getInitial(value: string): string {
+		return value.toLowerCase() === 'initial' ? 'initial' : null;
+	}
+
+	/**
 	 * Returns global.
 	 *
 	 * @param value Value.
@@ -356,13 +366,13 @@ export default class CSSStyleDeclarationValueParser {
 	}
 
 	/**
-	 * Returns global.
+	 * Returns global, unless it is not set to 'initial' as it is sometimes treated different.
 	 *
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getNonGlobalOrInitial(value: string): string {
-		const global = this.getGlobal(value);
-		return !global || global === 'initial' ? value : null;
+	public static getGlobalExceptInitial(value: string): string {
+		const lowerValue = value.toLowerCase();
+		return lowerValue !== 'initial' && GLOBALS.includes(lowerValue) ? lowerValue : null;
 	}
 }
