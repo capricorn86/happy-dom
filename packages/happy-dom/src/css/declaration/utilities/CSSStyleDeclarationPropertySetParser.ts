@@ -664,7 +664,10 @@ export default class CSSStyleDeclarationPropertySetParser {
 		const parts = lowerValue.split(/ +/);
 
 		for (const part of parts) {
-			if (!CSSStyleDeclarationValueParser.getMeasurementOrAuto(part)) {
+			if (
+				!CSSStyleDeclarationValueParser.getInteger(part) &&
+				!CSSStyleDeclarationValueParser.getMeasurementOrAuto(part)
+			) {
 				return null;
 			}
 		}
@@ -1061,9 +1064,13 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const parts = value.split(/ +/);
 		const topLeft = parts[0] ? this.getBorderTopLeftRadius(parts[0], important) : '';
-		const topRight = parts[1] ? this.getBorderTopRightRadius(parts[1], important) : '';
-		const bottomRight = parts[2] ? this.getBorderTopRightRadius(parts[2], important) : '';
-		const bottomLeft = parts[3] ? this.getBorderTopRightRadius(parts[3], important) : '';
+		const topRight = parts[1] ? this.getBorderTopRightRadius(parts[1] || parts[0], important) : '';
+		const bottomRight = parts[2]
+			? this.getBorderTopRightRadius(parts[2] || parts[0], important)
+			: '';
+		const bottomLeft = parts[3]
+			? this.getBorderTopRightRadius(parts[3] || parts[1] || parts[0], important)
+			: '';
 
 		if (topLeft && topRight !== null && bottomRight !== null && bottomLeft !== null) {
 			return {

@@ -325,6 +325,7 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns a CSS property without element.', () => {
 			const declaration = new CSSStyleDeclaration();
 
+			debugger;
 			declaration.cssText = `border: 2px solid green;border-radius: 2px;font-size: 12px;`;
 
 			expect(declaration.getPropertyValue('border')).toBe('2px solid green');
