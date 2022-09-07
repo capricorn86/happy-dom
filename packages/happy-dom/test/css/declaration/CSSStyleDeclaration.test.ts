@@ -33,12 +33,17 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration[9]).toBe('border-right-color');
 			expect(declaration[10]).toBe('border-bottom-color');
 			expect(declaration[11]).toBe('border-left-color');
-			expect(declaration[12]).toBe('border-top-left-radius');
-			expect(declaration[13]).toBe('border-top-right-radius');
-			expect(declaration[14]).toBe('border-bottom-right-radius');
-			expect(declaration[15]).toBe('border-bottom-left-radius');
-			expect(declaration[16]).toBe('font-size');
-			expect(declaration[17]).toBe(undefined);
+			expect(declaration[12]).toBe('border-image-source');
+			expect(declaration[13]).toBe('border-image-slice');
+			expect(declaration[14]).toBe('border-image-width');
+			expect(declaration[15]).toBe('border-image-outset');
+			expect(declaration[16]).toBe('border-image-repeat');
+			expect(declaration[17]).toBe('border-top-left-radius');
+			expect(declaration[18]).toBe('border-top-right-radius');
+			expect(declaration[19]).toBe('border-bottom-right-radius');
+			expect(declaration[20]).toBe('border-bottom-left-radius');
+			expect(declaration[21]).toBe('font-size');
+			expect(declaration[22]).toBe(undefined);
 		});
 
 		it('Returns name of property without element.', () => {
@@ -60,12 +65,17 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration[9]).toBe('border-right-color');
 			expect(declaration[10]).toBe('border-bottom-color');
 			expect(declaration[11]).toBe('border-left-color');
-			expect(declaration[12]).toBe('border-top-left-radius');
-			expect(declaration[13]).toBe('border-top-right-radius');
-			expect(declaration[14]).toBe('border-bottom-right-radius');
-			expect(declaration[15]).toBe('border-bottom-left-radius');
-			expect(declaration[16]).toBe('font-size');
-			expect(declaration[17]).toBe(undefined);
+			expect(declaration[12]).toBe('border-image-source');
+			expect(declaration[13]).toBe('border-image-slice');
+			expect(declaration[14]).toBe('border-image-width');
+			expect(declaration[15]).toBe('border-image-outset');
+			expect(declaration[16]).toBe('border-image-repeat');
+			expect(declaration[17]).toBe('border-top-left-radius');
+			expect(declaration[18]).toBe('border-top-right-radius');
+			expect(declaration[19]).toBe('border-bottom-right-radius');
+			expect(declaration[20]).toBe('border-bottom-left-radius');
+			expect(declaration[21]).toBe('font-size');
+			expect(declaration[22]).toBe(undefined);
 		});
 	});
 
@@ -100,7 +110,9 @@ describe('CSSStyleDeclaration', () => {
 
 			declaration.borderRight = '1px dotted red';
 
-			expect(declaration.border).toBe('');
+			expect(element.getAttribute('style')).toBe(
+				'border-width: 2px 1px 2px 2px; border-style: solid dotted solid solid; border-color: green red green green; border-image: initial;'
+			);
 
 			declaration.borderRight = '2px solid green';
 
@@ -120,7 +132,7 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
 
-			expect(declaration.length).toBe(17);
+			expect(declaration.length).toBe(22);
 		});
 
 		it('Returns length without element.', () => {
@@ -130,7 +142,7 @@ describe('CSSStyleDeclaration', () => {
 			declaration.borderRadius = '2px';
 			declaration.fontSize = '12px';
 
-			expect(declaration.length).toBe(17);
+			expect(declaration.length).toBe(22);
 		});
 	});
 
@@ -209,12 +221,17 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.item(9)).toBe('border-right-color');
 			expect(declaration.item(10)).toBe('border-bottom-color');
 			expect(declaration.item(11)).toBe('border-left-color');
-			expect(declaration.item(12)).toBe('border-top-left-radius');
-			expect(declaration.item(13)).toBe('border-top-right-radius');
-			expect(declaration.item(14)).toBe('border-bottom-right-radius');
-			expect(declaration.item(15)).toBe('border-bottom-left-radius');
-			expect(declaration.item(16)).toBe('font-size');
-			expect(declaration.item(17)).toBe('');
+			expect(declaration.item(12)).toBe('border-image-source');
+			expect(declaration.item(13)).toBe('border-image-slice');
+			expect(declaration.item(14)).toBe('border-image-width');
+			expect(declaration.item(15)).toBe('border-image-outset');
+			expect(declaration.item(16)).toBe('border-image-repeat');
+			expect(declaration.item(17)).toBe('border-top-left-radius');
+			expect(declaration.item(18)).toBe('border-top-right-radius');
+			expect(declaration.item(19)).toBe('border-bottom-right-radius');
+			expect(declaration.item(20)).toBe('border-bottom-left-radius');
+			expect(declaration.item(21)).toBe('font-size');
+			expect(declaration.item(22)).toBe('');
 		});
 
 		it('Returns an item by index without element.', () => {
@@ -234,12 +251,17 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.item(9)).toBe('border-right-color');
 			expect(declaration.item(10)).toBe('border-bottom-color');
 			expect(declaration.item(11)).toBe('border-left-color');
-			expect(declaration.item(12)).toBe('border-top-left-radius');
-			expect(declaration.item(13)).toBe('border-top-right-radius');
-			expect(declaration.item(14)).toBe('border-bottom-right-radius');
-			expect(declaration.item(15)).toBe('border-bottom-left-radius');
-			expect(declaration.item(16)).toBe('font-size');
-			expect(declaration.item(17)).toBe('');
+			expect(declaration.item(12)).toBe('border-image-source');
+			expect(declaration.item(13)).toBe('border-image-slice');
+			expect(declaration.item(14)).toBe('border-image-width');
+			expect(declaration.item(15)).toBe('border-image-outset');
+			expect(declaration.item(16)).toBe('border-image-repeat');
+			expect(declaration.item(17)).toBe('border-top-left-radius');
+			expect(declaration.item(18)).toBe('border-top-right-radius');
+			expect(declaration.item(19)).toBe('border-bottom-right-radius');
+			expect(declaration.item(20)).toBe('border-bottom-left-radius');
+			expect(declaration.item(21)).toBe('font-size');
+			expect(declaration.item(22)).toBe('');
 		});
 	});
 
@@ -325,7 +347,6 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns a CSS property without element.', () => {
 			const declaration = new CSSStyleDeclaration();
 
-			debugger;
 			declaration.cssText = `border: 2px solid green;border-radius: 2px;font-size: 12px;`;
 
 			expect(declaration.getPropertyValue('border')).toBe('2px solid green');

@@ -113,26 +113,51 @@ export default class CSSStyleDeclarationPropertyManager {
 				delete this.properties['border-right-color'];
 				delete this.properties['border-bottom-color'];
 				delete this.properties['border-left-color'];
+				delete this.properties['border-image-source'];
+				delete this.properties['border-image-slice'];
+				delete this.properties['border-image-width'];
+				delete this.properties['border-image-outset'];
+				delete this.properties['border-image-repeat'];
 				break;
 			case 'border-left':
 				delete this.properties['border-left-width'];
 				delete this.properties['border-left-style'];
 				delete this.properties['border-left-color'];
+				delete this.properties['border-image-source'];
+				delete this.properties['border-image-slice'];
+				delete this.properties['border-image-width'];
+				delete this.properties['border-image-outset'];
+				delete this.properties['border-image-repeat'];
 				break;
 			case 'border-bottom':
 				delete this.properties['border-bottom-width'];
 				delete this.properties['border-bottom-style'];
 				delete this.properties['border-bottom-color'];
+				delete this.properties['border-image-source'];
+				delete this.properties['border-image-slice'];
+				delete this.properties['border-image-width'];
+				delete this.properties['border-image-outset'];
+				delete this.properties['border-image-repeat'];
 				break;
 			case 'border-right':
 				delete this.properties['border-right-width'];
 				delete this.properties['border-right-style'];
 				delete this.properties['border-right-color'];
+				delete this.properties['border-image-source'];
+				delete this.properties['border-image-slice'];
+				delete this.properties['border-image-width'];
+				delete this.properties['border-image-outset'];
+				delete this.properties['border-image-repeat'];
 				break;
 			case 'border-top':
 				delete this.properties['border-top-width'];
 				delete this.properties['border-top-style'];
 				delete this.properties['border-top-color'];
+				delete this.properties['border-image-source'];
+				delete this.properties['border-image-slice'];
+				delete this.properties['border-image-width'];
+				delete this.properties['border-image-outset'];
+				delete this.properties['border-image-repeat'];
 				break;
 			case 'border-width':
 				delete this.properties['border-top-width'];
@@ -170,7 +195,11 @@ export default class CSSStyleDeclarationPropertyManager {
 				delete this.properties['background-image'];
 				delete this.properties['background-repeat'];
 				delete this.properties['background-attachment'];
-				delete this.properties['background-position'];
+				delete this.properties['background-position-x'];
+				delete this.properties['background-position-y'];
+				delete this.properties['background-size'];
+				delete this.properties['background-origin'];
+				delete this.properties['background-clip'];
 				break;
 			case 'background-position':
 				delete this.properties['background-position-x'];
@@ -499,10 +528,63 @@ export default class CSSStyleDeclarationPropertyManager {
 	 */
 	public toString(): string {
 		const result = [];
+		const clone = this.clone();
+		const properties = {};
 
-		for (const name of Object.keys(this.definedPropertyNames)) {
-			const property = this.get(name);
-			result.push(`${name}: ${property.value}${property.important ? ' !important' : ''};`);
+		for (const fallbackNames of [
+			['margin'],
+			['padding'],
+			['border', ['border-width', 'border-style', 'border-color', 'border-image']],
+			['border-radius'],
+			['background', 'background-position'],
+			['font']
+		]) {
+			for (const fallbackName of fallbackNames) {
+				if (Array.isArray(fallbackName)) {
+					let isMatch = false;
+					for (const childFallbackName of fallbackName) {
+						const property = clone.get(childFallbackName);
+						if (property) {
+							properties[childFallbackName] = property;
+							clone.remove(childFallbackName);
+							isMatch = true;
+						}
+					}
+					if (isMatch) {
+						break;
+					}
+				} else {
+					const property = clone.get(fallbackName);
+					if (property) {
+						properties[fallbackName] = property;
+						clone.remove(fallbackName);
+						break;
+					}
+				}
+			}
+		}
+
+		for (const name of Object.keys(clone.properties)) {
+			properties[name] = clone.get(name);
+		}
+
+		for (const definedPropertyName of Object.keys(this.definedPropertyNames)) {
+			const property = properties[definedPropertyName];
+			if (property) {
+				result.push(
+					`${definedPropertyName}: ${property.value}${property.important ? ' !important' : ''};`
+				);
+				delete properties[definedPropertyName];
+			}
+		}
+
+		for (const propertyName of Object.keys(properties)) {
+			const property = properties[propertyName];
+			if (property) {
+				result.push(
+					`${propertyName}: ${property.value}${property.important ? ' !important' : ''};`
+				);
+			}
 		}
 
 		return result.join(' ');

@@ -234,7 +234,7 @@ describe('Window', () => {
 			document.body.appendChild(documentStyle);
 			document.body.appendChild(parent);
 
-			expect(computedStyle.font).toBe('12px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif');
+			expect(computedStyle.font).toBe('12px / 1.5 "Helvetica Neue", Helvetica, Arial, sans-serif');
 		});
 	});
 

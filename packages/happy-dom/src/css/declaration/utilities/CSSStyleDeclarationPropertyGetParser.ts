@@ -198,22 +198,10 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	public static getBorderColor(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
 	}): ICSSStyleDeclarationPropertyValue {
-		if (
-			!properties['border-top-color']?.value ||
-			properties['border-top-color']?.value !== properties['border-right-color']?.value ||
-			properties['border-top-color']?.value !== properties['border-bottom-color']?.value ||
-			properties['border-top-color']?.value !== properties['border-left-color']?.value
-		) {
-			return null;
-		}
-		return {
-			important:
-				properties['border-top-color'].important &&
-				properties['border-right-color'].important &&
-				properties['border-bottom-color'].important &&
-				properties['border-left-color'].important,
-			value: properties['border-top-color'].value
-		};
+		return this.getPaddingLikeProperty(
+			['border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color'],
+			properties
+		);
 	}
 
 	/**
@@ -225,22 +213,10 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	public static getBorderWidth(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
 	}): ICSSStyleDeclarationPropertyValue {
-		if (
-			!properties['border-top-width']?.value ||
-			properties['border-top-width']?.value !== properties['border-right-width']?.value ||
-			properties['border-top-width']?.value !== properties['border-bottom-width']?.value ||
-			properties['border-top-width']?.value !== properties['border-left-width']?.value
-		) {
-			return null;
-		}
-		return {
-			important:
-				properties['border-top-width'].important &&
-				properties['border-right-width'].important &&
-				properties['border-bottom-width'].important &&
-				properties['border-left-width'].important,
-			value: properties['border-top-width'].value
-		};
+		return this.getPaddingLikeProperty(
+			['border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width'],
+			properties
+		);
 	}
 
 	/**
@@ -252,22 +228,10 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	public static getBorderStyle(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
 	}): ICSSStyleDeclarationPropertyValue {
-		if (
-			!properties['border-top-style']?.value ||
-			properties['border-top-style']?.value !== properties['border-right-style']?.value ||
-			properties['border-top-style']?.value !== properties['border-bottom-style']?.value ||
-			properties['border-top-style']?.value !== properties['border-left-style']?.value
-		) {
-			return null;
-		}
-		return {
-			important:
-				properties['border-top-style'].important &&
-				properties['border-right-style'].important &&
-				properties['border-bottom-style'].important &&
-				properties['border-left-style'].important,
-			value: properties['border-top-style'].value
-		};
+		return this.getPaddingLikeProperty(
+			['border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style'],
+			properties
+		);
 	}
 
 	/**
@@ -731,11 +695,30 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			};
 		}
 
+		const values = [properties[propertyNames[0]].value];
+
+		if (
+			properties[propertyNames[1]].value !== properties[propertyNames[0]].value ||
+			properties[propertyNames[2]].value !== properties[propertyNames[0]].value ||
+			properties[propertyNames[3]].value !== properties[propertyNames[1]].value
+		) {
+			values.push(properties[propertyNames[1]].value);
+		}
+
+		if (
+			properties[propertyNames[2]].value !== properties[propertyNames[0]].value ||
+			properties[propertyNames[3]].value !== properties[propertyNames[1]].value
+		) {
+			values.push(properties[propertyNames[2]].value);
+		}
+
+		if (properties[propertyNames[3]].value !== properties[propertyNames[1]].value) {
+			values.push(properties[propertyNames[3]].value);
+		}
+
 		return {
 			important,
-			value: `${properties[propertyNames[0]].value} ${properties[propertyNames[1]].value} ${
-				properties[propertyNames[2]].value
-			} ${properties[propertyNames[3]].value}`
+			value: values.join(' ')
 		};
 	}
 }
