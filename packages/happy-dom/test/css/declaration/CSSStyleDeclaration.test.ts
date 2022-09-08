@@ -80,7 +80,7 @@ describe('CSSStyleDeclaration', () => {
 	});
 
 	describe('get border()', () => {
-		it('Returns style property on element.', () => {
+		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
 			element.setAttribute('style', 'border: 2px solid green');
@@ -108,6 +108,13 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.borderLeftWidth).toBe('2px');
 			expect(declaration.borderLeftStyle).toBe('solid');
 
+			expect(declaration.borderImage).toBe('initial');
+			expect(declaration.borderImageOutset).toBe('initial');
+			expect(declaration.borderImageRepeat).toBe('initial');
+			expect(declaration.borderImageSlice).toBe('initial');
+			expect(declaration.borderImageSource).toBe('initial');
+			expect(declaration.borderImageWidth).toBe('initial');
+
 			declaration.borderRight = '1px dotted red';
 
 			expect(element.getAttribute('style')).toBe(
@@ -123,6 +130,241 @@ describe('CSSStyleDeclaration', () => {
 			declaration.borderWidth = '1px';
 
 			expect(declaration.border).toBe('1px dotted red');
+
+			element.setAttribute('style', 'border: green solid');
+
+			expect(declaration.border).toBe('solid green');
+		});
+	});
+
+	describe('get borderTop()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-top: green 2px solid');
+
+			expect(declaration.border).toBe('');
+
+			expect(declaration.borderTop).toBe('2px solid green');
+			expect(declaration.borderRight).toBe('');
+			expect(declaration.borderBottom).toBe('');
+			expect(declaration.borderLeft).toBe('');
+			expect(declaration.borderTopColor).toBe('green');
+			expect(declaration.borderTopWidth).toBe('2px');
+			expect(declaration.borderTopStyle).toBe('solid');
+			expect(declaration.borderImage).toBe('');
+		});
+	});
+
+	describe('get borderRight()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-right: green solid 2px');
+
+			expect(declaration.border).toBe('');
+
+			expect(declaration.borderTop).toBe('');
+			expect(declaration.borderRight).toBe('2px solid green');
+			expect(declaration.borderBottom).toBe('');
+			expect(declaration.borderLeft).toBe('');
+			expect(declaration.borderRightColor).toBe('green');
+			expect(declaration.borderRightWidth).toBe('2px');
+			expect(declaration.borderRightStyle).toBe('solid');
+			expect(declaration.borderImage).toBe('');
+		});
+	});
+
+	describe('get borderBottom()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-bottom: green solid 2px');
+
+			expect(declaration.border).toBe('');
+
+			expect(declaration.borderTop).toBe('');
+			expect(declaration.borderRight).toBe('');
+			expect(declaration.borderBottom).toBe('2px solid green');
+			expect(declaration.borderLeft).toBe('');
+			expect(declaration.borderBottomColor).toBe('green');
+			expect(declaration.borderBottomWidth).toBe('2px');
+			expect(declaration.borderBottomStyle).toBe('solid');
+			expect(declaration.borderImage).toBe('');
+		});
+	});
+
+	describe('get borderLeft()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-left: green solid 2px');
+
+			expect(declaration.border).toBe('');
+
+			expect(declaration.borderTop).toBe('');
+			expect(declaration.borderRight).toBe('');
+			expect(declaration.borderBottom).toBe('');
+			expect(declaration.borderLeft).toBe('2px solid green');
+			expect(declaration.borderLeftColor).toBe('green');
+			expect(declaration.borderLeftWidth).toBe('2px');
+			expect(declaration.borderLeftStyle).toBe('solid');
+			expect(declaration.borderImage).toBe('');
+		});
+	});
+
+	describe('get borderWidth()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-width: 1px 2px 3px 4px');
+
+			expect(declaration.borderTopWidth).toBe('1px');
+			expect(declaration.borderRightWidth).toBe('2px');
+			expect(declaration.borderBottomWidth).toBe('3px');
+			expect(declaration.borderLeftWidth).toBe('4px');
+
+			element.setAttribute('style', 'border-width: 2px');
+
+			expect(declaration.borderTopWidth).toBe('2px');
+			expect(declaration.borderRightWidth).toBe('2px');
+			expect(declaration.borderBottomWidth).toBe('2px');
+			expect(declaration.borderLeftWidth).toBe('2px');
+		});
+	});
+
+	describe('get borderStyle()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-style: none hidden dotted dashed');
+
+			expect(declaration.borderTopStyle).toBe('none');
+			expect(declaration.borderRightStyle).toBe('hidden');
+			expect(declaration.borderBottomStyle).toBe('dotted');
+			expect(declaration.borderLeftStyle).toBe('dashed');
+
+			element.setAttribute('style', 'border-style: hidden');
+
+			expect(declaration.borderTopStyle).toBe('hidden');
+			expect(declaration.borderRightStyle).toBe('hidden');
+			expect(declaration.borderBottomStyle).toBe('hidden');
+			expect(declaration.borderLeftStyle).toBe('hidden');
+		});
+	});
+
+	describe('get borderColor()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-color: #000 #ffffff rgba(135,200,150,0.5) blue');
+
+			expect(declaration.borderTopColor).toBe('#000');
+			expect(declaration.borderRightColor).toBe('#ffffff');
+			expect(declaration.borderBottomColor).toBe('rgba(135,200,150,0.5)');
+			expect(declaration.borderLeftColor).toBe('blue');
+
+			element.setAttribute('style', 'border-color: rgb(135,200,150)');
+
+			expect(declaration.borderTopColor).toBe('rgb(135,200,150)');
+			expect(declaration.borderRightColor).toBe('rgb(135,200,150)');
+			expect(declaration.borderBottomColor).toBe('rgb(135,200,150)');
+			expect(declaration.borderLeftColor).toBe('rgb(135,200,150)');
+		});
+	});
+
+	describe('get borderImage()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute(
+				'style',
+				'border-image: repeating-linear-gradient(30deg, #4d9f0c, #9198e5, #4d9f0c 20px) 60'
+			);
+
+			expect(declaration.borderImage).toBe(
+				'repeating-linear-gradient(30deg, #4d9f0c, #9198e5, #4d9f0c 20px) 60 / 1 / 0 stretch'
+			);
+
+			element.setAttribute('style', `border-image: url('/media/examples/border-diamonds.png') 30`);
+
+			expect(declaration.borderImage).toBe(
+				`url('/media/examples/border-diamonds.png') 30 / 1 / 0 stretch`
+			);
+
+			element.setAttribute(
+				'style',
+				`border-image: url('/media/examples/border-diamonds.png') 30 / 19px round`
+			);
+
+			expect(declaration.borderImage).toBe(
+				`url('/media/examples/border-diamonds.png') 30 / 19px / 0 round`
+			);
+
+			element.setAttribute(
+				'style',
+				`border-image: url('/media/examples/border-diamonds.png') 10 fill / 20px / 30px space`
+			);
+
+			expect(declaration.borderImage).toBe(
+				`url('/media/examples/border-diamonds.png') 10 fill / 20px / 30px space`
+			);
+			expect(declaration.borderImageOutset).toBe('30px');
+			expect(declaration.borderImageRepeat).toBe('space');
+			expect(declaration.borderImageSlice).toBe('10 fill');
+			expect(declaration.borderImageWidth).toBe('20px');
+
+			element.setAttribute('style', `border-image: linear-gradient(#f6b73c, #4d9f0c) 30;`);
+
+			expect(declaration.borderImage).toBe(`linear-gradient(#f6b73c, #4d9f0c) 30 / 1 / 0 stretch`);
+		});
+	});
+
+	describe('get borderImageSource()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute(
+				'style',
+				`border-image-source: url('/media/examples/border-diamonds.png')`
+			);
+
+			expect(declaration.borderImageSource).toBe(`url('/media/examples/border-diamonds.png')`);
+
+			element.setAttribute('style', `border-image-source: NONE`);
+
+			expect(declaration.borderImageSource).toBe(`none`);
+
+			element.setAttribute(
+				'style',
+				`border-image-source: repeating-linear-gradient(30deg, #4d9f0c, #9198e5, #4d9f0c 20px)`
+			);
+
+			expect(declaration.borderImageSource).toBe(
+				`repeating-linear-gradient(30deg, #4d9f0c, #9198e5, #4d9f0c 20px)`
+			);
+		});
+	});
+
+	describe('get borderImageSlice()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-image-slice: 30');
+
+			expect(declaration.borderImageSlice).toBe('30');
+
+			element.setAttribute('style', 'border-image-slice: 30 fill');
+
+			debugger;
+			expect(declaration.borderImageSlice).toBe('30 fill');
+
+			element.setAttribute(
+				'style',
+				'border-image-slice: calc(50 / 184 * 100%) calc(80 / 284 * 100%) fill'
+			);
+
+			expect(declaration.borderImageSlice).toBe('calc(50 / 184 * 100%) calc(80 / 284 * 100%) fill');
 		});
 	});
 

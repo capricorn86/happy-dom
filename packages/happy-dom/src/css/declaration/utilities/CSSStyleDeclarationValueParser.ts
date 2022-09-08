@@ -7,6 +7,7 @@ const DEGREE_REGEXP = /^[0-9]+deg$/;
 const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
 const INTEGER_REGEXP = /^[0-9]+$/;
 const FLOAT_REGEXP = /^[0-9.]+$/;
+const CALC_REGEXP = /^calc\([^^)]+\)$/;
 const GRADIENT_REGEXP =
 	/^(repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient\([^)]+\)$/;
 const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
@@ -204,6 +205,19 @@ export default class CSSStyleDeclarationValueParser {
 			return '0deg';
 		}
 		if (DEGREE_REGEXP.test(value)) {
+			return value;
+		}
+		return null;
+	}
+
+	/**
+	 * Returns calc.
+	 *
+	 * @param value Value.
+	 * @returns Parsed value.
+	 */
+	public static getCalc(value: string): string {
+		if (CALC_REGEXP.test(value)) {
 			return value;
 		}
 		return null;

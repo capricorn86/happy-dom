@@ -519,8 +519,19 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parsedValue = value.replace(/[ ]*\/[ ]*/g, '/');
+		let parsedValue = value.replace(/[ ]*\/[ ]*/g, '/');
+		const sourceMatch = parsedValue.match(/ *([a-zA-Z-]+\([^)]*\)) */);
+
+		if (sourceMatch) {
+			parsedValue = parsedValue.replace(sourceMatch[0], '');
+		}
+
 		const parts = parsedValue.split(/ +/);
+
+		if (sourceMatch) {
+			parts.push(sourceMatch[1]);
+		}
+
 		const properties = {
 			...this.getBorderImageSource('none', important),
 			...this.getBorderImageSlice('100%', important),
@@ -529,30 +540,35 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBorderImageRepeat('stretch', important)
 		};
 
-		for (const part of parts) {
-			if (part.includes('/')) {
-				const [slice, width, outset] = part.split('/');
-				const borderImageSlice = this.getBorderImageSlice(slice, important);
-				const borderImageWidth = this.getBorderImageWidth(width, important);
-				const borderImageOutset = this.getBorderImageOutset(outset, important);
+		for (let i = 0, max = parts.length; i < max; i++) {
+			const part = parts[i];
+			const previousPart = i > 0 ? parts[i - 1] : '';
 
-				if (borderImageSlice === null || borderImageWidth === null || borderImageOutset === null) {
+			if (!part.startsWith('url') && part.includes('/')) {
+				const [slice, width, outset] = part.split('/');
+				const borderImageSlice =
+					this.getBorderImageSlice(`${previousPart} ${slice}`, important) ||
+					this.getBorderImageSlice(slice, important);
+				const borderImageWidth = this.getBorderImageWidth(width, important);
+				const borderImageOutset = outset && this.getBorderImageOutset(outset, important);
+
+				if (!borderImageSlice || !borderImageWidth || borderImageOutset === null) {
 					return null;
 				}
 
-				Object.assign(properties, borderImageSlice);
-				Object.assign(properties, borderImageWidth);
-				Object.assign(properties, borderImageOutset);
+				Object.assign(properties, borderImageSlice, borderImageWidth, borderImageOutset);
 			} else {
+				const slice =
+					this.getBorderImageSlice(`${previousPart} ${part}`, important) ||
+					this.getBorderImageSlice(part, important);
 				const source = this.getBorderImageSource(part, important);
 				const repeat = this.getBorderImageRepeat(part, important);
 
-				if (source === null && repeat === null) {
+				if (!slice && !source && !repeat) {
 					return null;
 				}
 
-				Object.assign(properties, source);
-				Object.assign(properties, repeat);
+				Object.assign(properties, slice, source, repeat);
 			}
 		}
 
@@ -583,12 +599,18 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getURL(value) ||
+			CSSStyleDeclarationValueParser.getGradient(value);
+
+		if (!parsedValue) {
+			return null;
+		}
+
 		return {
 			'border-image-source': {
 				important,
-				value:
-					CSSStyleDeclarationValueParser.getURL(value) ||
-					CSSStyleDeclarationValueParser.getGradient(value)
+				value: parsedValue
 			}
 		};
 	}
@@ -617,22 +639,45 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = lowerValue.split(/ +/);
+		if (lowerValue !== lowerValue.trim()) {
+			return null;
+		}
 
-		for (const part of parts) {
+		const regexp = /(fill)|(calc\([^^)]+\))|([0-9]+%)|([0-9]+)/g;
+		const values = [];
+		let match;
+
+		while ((match = regexp.exec(lowerValue))) {
+			const previousCharacter = lowerValue[match.index - 1];
+			const nextCharacter = lowerValue[match.index + match[0].length];
+
 			if (
-				part !== 'fill' &&
-				!CSSStyleDeclarationValueParser.getPercentage(part) &&
-				!CSSStyleDeclarationValueParser.getInteger(part)
+				(previousCharacter && previousCharacter !== ' ') ||
+				(nextCharacter && nextCharacter !== ' ')
 			) {
 				return null;
 			}
+
+			const fill = match[1] && 'fill';
+			const calc = match[2] && CSSStyleDeclarationValueParser.getCalc(match[2]);
+			const percentage = match[3] && CSSStyleDeclarationValueParser.getPercentage(match[3]);
+			const integer = match[4] && CSSStyleDeclarationValueParser.getInteger(match[4]);
+
+			if (!fill && !calc && !percentage && !integer) {
+				return null;
+			}
+
+			values.push(fill || calc || percentage || integer);
+		}
+
+		if (!values.length || values.length > 4) {
+			return null;
 		}
 
 		return {
 			'border-image-slice': {
 				important,
-				value: lowerValue
+				value: values.join(' ')
 			}
 		};
 	}
@@ -1176,26 +1221,31 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return {
 				...this.getBorderTopWidth(globalValue, important),
 				...this.getBorderTopStyle(globalValue, important),
-				...this.getBorderTopColor(globalValue, important),
-				...this.getBorderImage(globalValue, important)
+				...this.getBorderTopColor(globalValue, important)
 			};
 		}
+
+		const properties = {
+			...this.getBorderTopWidth('initial', important),
+			...this.getBorderTopStyle('initial', important),
+			...this.getBorderTopColor('initial', important)
+		};
 
 		const parts = value.split(/ +/);
-		const borderWidth = parts[0] ? this.getBorderTopWidth(parts[0], important) : '';
-		const borderStyle = parts[1] ? this.getBorderTopStyle(parts[1], important) : '';
-		const borderColor = parts[2] ? this.getBorderTopColor(parts[2], important) : '';
 
-		if (borderWidth && borderStyle !== null && borderColor !== null) {
-			return {
-				...this.getBorderImage('initial', important),
-				...borderWidth,
-				...borderStyle,
-				...borderColor
-			};
+		for (const part of parts) {
+			const width = this.getBorderTopWidth(part, important);
+			const style = this.getBorderTopStyle(part, important);
+			const color = this.getBorderTopColor(part, important);
+
+			if (width === null && style === null && color === null) {
+				return null;
+			}
+
+			Object.assign(properties, width, style, color);
 		}
 
-		return null;
+		return properties;
 	}
 
 	/**
@@ -1215,26 +1265,31 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return {
 				...this.getBorderRightWidth(globalValue, important),
 				...this.getBorderRightStyle(globalValue, important),
-				...this.getBorderRightColor(globalValue, important),
-				...this.getBorderImage(globalValue, important)
+				...this.getBorderRightColor(globalValue, important)
 			};
 		}
+
+		const properties = {
+			...this.getBorderRightWidth('initial', important),
+			...this.getBorderRightStyle('initial', important),
+			...this.getBorderRightColor('initial', important)
+		};
 
 		const parts = value.split(/ +/);
-		const borderWidth = parts[0] ? this.getBorderRightWidth(parts[0], important) : '';
-		const borderStyle = parts[1] ? this.getBorderRightStyle(parts[1], important) : '';
-		const borderColor = parts[2] ? this.getBorderRightColor(parts[2], important) : '';
 
-		if (borderWidth && borderStyle !== null && borderColor !== null) {
-			return {
-				...this.getBorderImage('initial', important),
-				...borderWidth,
-				...borderStyle,
-				...borderColor
-			};
+		for (const part of parts) {
+			const width = this.getBorderRightWidth(part, important);
+			const style = this.getBorderRightStyle(part, important);
+			const color = this.getBorderRightColor(part, important);
+
+			if (width === null && style === null && color === null) {
+				return null;
+			}
+
+			Object.assign(properties, width, style, color);
 		}
 
-		return null;
+		return properties;
 	}
 
 	/**
@@ -1254,26 +1309,31 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return {
 				...this.getBorderBottomWidth(globalValue, important),
 				...this.getBorderBottomStyle(globalValue, important),
-				...this.getBorderBottomColor(globalValue, important),
-				...this.getBorderImage(globalValue, important)
+				...this.getBorderBottomColor(globalValue, important)
 			};
 		}
+
+		const properties = {
+			...this.getBorderBottomWidth('initial', important),
+			...this.getBorderBottomStyle('initial', important),
+			...this.getBorderBottomColor('initial', important)
+		};
 
 		const parts = value.split(/ +/);
-		const borderWidth = parts[0] ? this.getBorderBottomWidth(parts[0], important) : '';
-		const borderStyle = parts[1] ? this.getBorderBottomStyle(parts[1], important) : '';
-		const borderColor = parts[2] ? this.getBorderBottomColor(parts[2], important) : '';
 
-		if (borderWidth && borderStyle !== null && borderColor !== null) {
-			return {
-				...this.getBorderImage('initial', important),
-				...borderWidth,
-				...borderStyle,
-				...borderColor
-			};
+		for (const part of parts) {
+			const width = this.getBorderBottomWidth(part, important);
+			const style = this.getBorderBottomStyle(part, important);
+			const color = this.getBorderBottomColor(part, important);
+
+			if (width === null && style === null && color === null) {
+				return null;
+			}
+
+			Object.assign(properties, width, style, color);
 		}
 
-		return null;
+		return properties;
 	}
 
 	/**
@@ -1293,26 +1353,31 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return {
 				...this.getBorderLeftWidth(globalValue, important),
 				...this.getBorderLeftStyle(globalValue, important),
-				...this.getBorderLeftColor(globalValue, important),
-				...this.getBorderImage(globalValue, important)
+				...this.getBorderLeftColor(globalValue, important)
 			};
 		}
+
+		const properties = {
+			...this.getBorderLeftWidth('initial', important),
+			...this.getBorderLeftStyle('initial', important),
+			...this.getBorderLeftColor('initial', important)
+		};
 
 		const parts = value.split(/ +/);
-		const borderWidth = parts[0] ? this.getBorderLeftWidth(parts[0], important) : '';
-		const borderStyle = parts[1] ? this.getBorderLeftStyle(parts[1], important) : '';
-		const borderColor = parts[2] ? this.getBorderLeftColor(parts[2], important) : '';
 
-		if (borderWidth && borderStyle !== null && borderColor !== null) {
-			return {
-				...this.getBorderImage('initial', important),
-				...borderWidth,
-				...borderStyle,
-				...borderColor
-			};
+		for (const part of parts) {
+			const width = this.getBorderLeftWidth(part, important);
+			const style = this.getBorderLeftStyle(part, important);
+			const color = this.getBorderLeftColor(part, important);
+
+			if (width === null && style === null && color === null) {
+				return null;
+			}
+
+			Object.assign(properties, width, style, color);
 		}
 
-		return null;
+		return properties;
 	}
 
 	/**
