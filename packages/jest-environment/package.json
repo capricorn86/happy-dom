@@ -6,6 +6,7 @@
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "Use Happy DOM as environment in Jest.",
+	"files": ["lib"],
 	"main": "lib/index.js",
 	"keywords": [
 		"jest",
