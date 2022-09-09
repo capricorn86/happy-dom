@@ -356,7 +356,6 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'border-image-slice: 30 fill');
 
-			debugger;
 			expect(declaration.borderImageSlice).toBe('30 fill');
 
 			element.setAttribute(
@@ -365,6 +364,228 @@ describe('CSSStyleDeclaration', () => {
 			);
 
 			expect(declaration.borderImageSlice).toBe('calc(50 / 184 * 100%) calc(80 / 284 * 100%) fill');
+		});
+	});
+
+	describe('get borderImageWidth()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-image-width: auto');
+
+			expect(declaration.borderImageWidth).toBe('auto');
+
+			element.setAttribute('style', 'border-image-width: 25%');
+
+			expect(declaration.borderImageWidth).toBe('25%');
+
+			element.setAttribute('style', 'border-image-width: 5% 2em 10% auto');
+
+			expect(declaration.borderImageWidth).toBe('5% 2em 10% auto');
+		});
+	});
+
+	describe('get borderImageOutset()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-image-outset: 1rem');
+
+			expect(declaration.borderImageOutset).toBe('1rem');
+
+			element.setAttribute('style', 'border-image-outset: 1 1.2');
+
+			expect(declaration.borderImageOutset).toBe('1 1.2');
+
+			element.setAttribute('style', 'border-image-outset: 7px 12em 14cm 5px');
+
+			expect(declaration.borderImageOutset).toBe('7px 12em 14cm 5px');
+		});
+	});
+
+	describe('get borderImageRepeat()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-image-repeat: stretch');
+
+			expect(declaration.borderImageRepeat).toBe('stretch');
+
+			element.setAttribute('style', 'border-image-repeat: repeat');
+
+			expect(declaration.borderImageRepeat).toBe('repeat');
+
+			element.setAttribute('style', 'border-image-repeat: round stretch');
+
+			expect(declaration.borderImageRepeat).toBe('round stretch');
+		});
+	});
+
+	describe('get borderTopWidth()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-top-width: thick');
+
+			expect(declaration.borderTopWidth).toBe('thick');
+
+			element.setAttribute('style', 'border-top-width: 2em');
+
+			expect(declaration.borderTopWidth).toBe('2em');
+		});
+	});
+
+	describe('get borderRightWidth()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-right-width: thick');
+
+			expect(declaration.borderRightWidth).toBe('thick');
+
+			element.setAttribute('style', 'border-right-width: 2em');
+
+			expect(declaration.borderRightWidth).toBe('2em');
+		});
+	});
+
+	describe('get borderBottomWidth()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-bottom-width: thick');
+
+			expect(declaration.borderBottomWidth).toBe('thick');
+
+			element.setAttribute('style', 'border-bottom-width: 2em');
+
+			expect(declaration.borderBottomWidth).toBe('2em');
+		});
+	});
+
+	describe('get borderLeftWidth()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-left-width: thick');
+
+			expect(declaration.borderLeftWidth).toBe('thick');
+
+			element.setAttribute('style', 'border-left-width: 2em');
+
+			expect(declaration.borderLeftWidth).toBe('2em');
+		});
+	});
+
+	describe('get borderTopColor()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-top-color: red');
+
+			expect(declaration.borderTopColor).toBe('red');
+
+			element.setAttribute('style', 'border-top-color: rgba(100, 100, 100, 0.5)');
+
+			expect(declaration.borderTopColor).toBe('rgba(100, 100, 100, 0.5)');
+		});
+	});
+
+	describe('get borderRightColor()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-right-color: red');
+
+			expect(declaration.borderRightColor).toBe('red');
+
+			element.setAttribute('style', 'border-right-color: rgba(100, 100, 100, 0.5)');
+
+			expect(declaration.borderRightColor).toBe('rgba(100, 100, 100, 0.5)');
+		});
+	});
+
+	describe('get borderBottomColor()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-bottom-color: red');
+
+			expect(declaration.borderBottomColor).toBe('red');
+
+			element.setAttribute('style', 'border-bottom-color: rgba(100, 100, 100, 0.5)');
+
+			expect(declaration.borderBottomColor).toBe('rgba(100, 100, 100, 0.5)');
+		});
+	});
+
+	describe('get borderLeftColor()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-left-color: red');
+
+			expect(declaration.borderLeftColor).toBe('red');
+
+			element.setAttribute('style', 'border-left-color: rgba(100, 100, 100, 0.5)');
+
+			expect(declaration.borderLeftColor).toBe('rgba(100, 100, 100, 0.5)');
+		});
+	});
+
+	describe('get borderTopStyle()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-top-style: dotted');
+
+			expect(declaration.borderTopStyle).toBe('dotted');
+
+			element.setAttribute('style', 'border-top-style: solid');
+
+			expect(declaration.borderTopStyle).toBe('solid');
+		});
+	});
+
+	describe('get borderRightStyle()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-right-style: dotted');
+
+			expect(declaration.borderRightStyle).toBe('dotted');
+
+			element.setAttribute('style', 'border-right-style: solid');
+
+			expect(declaration.borderRightStyle).toBe('solid');
+		});
+	});
+
+	describe('get borderBottomStyle()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-bottom-style: dotted');
+
+			expect(declaration.borderBottomStyle).toBe('dotted');
+
+			element.setAttribute('style', 'border-bottom-style: solid');
+
+			expect(declaration.borderBottomStyle).toBe('solid');
+		});
+	});
+
+	describe('get borderLeftStyle()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'border-left-style: dotted');
+
+			expect(declaration.borderLeftStyle).toBe('dotted');
+
+			element.setAttribute('style', 'border-left-style: solid');
+
+			expect(declaration.borderLeftStyle).toBe('solid');
 		});
 	});
 

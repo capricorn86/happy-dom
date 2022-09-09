@@ -708,6 +708,10 @@ export default class CSSStyleDeclarationPropertySetParser {
 
 		const parts = lowerValue.split(/ +/);
 
+		if (parts.length > 4) {
+			return null;
+		}
+
 		for (const part of parts) {
 			if (
 				!CSSStyleDeclarationValueParser.getInteger(part) &&
@@ -751,10 +755,14 @@ export default class CSSStyleDeclarationPropertySetParser {
 
 		const parts = value.split(/ +/);
 
+		if (parts.length > 4) {
+			return null;
+		}
+
 		for (const part of parts) {
 			if (
 				!CSSStyleDeclarationValueParser.getLength(part) &&
-				!CSSStyleDeclarationValueParser.getFloat(value)
+				!CSSStyleDeclarationValueParser.getFloat(part)
 			) {
 				return null;
 			}
