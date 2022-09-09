@@ -8,6 +8,7 @@ const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
 const INTEGER_REGEXP = /^[0-9]+$/;
 const FLOAT_REGEXP = /^[0-9.]+$/;
 const CALC_REGEXP = /^calc\([^^)]+\)$/;
+const FIT_CONTENT_REGEXP = /^fit-content\([^^)]+\)$/;
 const GRADIENT_REGEXP =
 	/^(repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient\([^)]+\)$/;
 const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
@@ -224,6 +225,23 @@ export default class CSSStyleDeclarationValueParser {
 	}
 
 	/**
+	 * Returns fit content.
+	 *
+	 * @param value Value.
+	 * @returns Parsed value.
+	 */
+	public static getFitContent(value: string): string {
+		const lowerValue = value.toLowerCase();
+		if (lowerValue === 'auto' || lowerValue === 'max-content' || lowerValue === 'min-content') {
+			return lowerValue;
+		}
+		if (FIT_CONTENT_REGEXP.test(lowerValue)) {
+			return lowerValue;
+		}
+		return null;
+	}
+
+	/**
 	 * Returns measurement.
 	 *
 	 * @param value Value.
@@ -234,17 +252,13 @@ export default class CSSStyleDeclarationValueParser {
 	}
 
 	/**
-	 * Returns measurement or auto.
+	 * Returns measurement or auto, min-content, max-content or fit-content.
 	 *
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getMeasurementOrAuto(value: string): string {
-		const lowerValue = value.toLowerCase();
-		if (lowerValue === 'auto') {
-			return lowerValue;
-		}
-		return this.getMeasurement(value);
+	public static getContentMeasurement(value: string): string {
+		return this.getFitContent(value) || this.getMeasurement(value);
 	}
 
 	/**

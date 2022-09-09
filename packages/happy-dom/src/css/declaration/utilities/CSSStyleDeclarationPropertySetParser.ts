@@ -22,7 +22,7 @@ const BACKGROUND_CLIP = ['border-box', 'padding-box', 'content-box'];
 const BACKGROUND_ATTACHMENT = ['scroll', 'fixed'];
 const FLEX_BASIS = ['auto', 'fill', 'max-content', 'min-content', 'fit-content', 'content'];
 const CLEAR = ['none', 'left', 'right', 'both'];
-const FLOAT = ['none', 'left', 'right'];
+const FLOAT = ['none', 'left', 'right', 'inline-start', 'inline-end'];
 const SYSTEM_FONT = ['caption', 'icon', 'menu', 'message-box', 'small-caption', 'status-bar'];
 const FONT_WEIGHT = ['normal', 'bold', 'bolder', 'lighter'];
 const FONT_STYLE = ['normal', 'italic', 'oblique'];
@@ -168,7 +168,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return parsedValue ? { top: { value: parsedValue, important } } : null;
 	}
 
@@ -187,7 +187,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return parsedValue ? { right: { value: parsedValue, important } } : null;
 	}
 
@@ -206,7 +206,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return parsedValue ? { bottom: { value: parsedValue, important } } : null;
 	}
 
@@ -225,7 +225,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return parsedValue ? { left: { value: parsedValue, important } } : null;
 	}
 
@@ -318,8 +318,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const float =
-			CSSStyleDeclarationValueParser.getGlobal(value) || this.getFloat(value, important);
+		const float = this.getFloat(value, important);
 		return float ? { 'css-float': float['float'] } : null;
 	}
 
@@ -715,7 +714,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		for (const part of parts) {
 			if (
 				!CSSStyleDeclarationValueParser.getInteger(part) &&
-				!CSSStyleDeclarationValueParser.getMeasurementOrAuto(part)
+				!CSSStyleDeclarationValueParser.getContentMeasurement(part)
 			) {
 				return null;
 			}
@@ -1121,8 +1120,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return {
 				...this.getBorderTopLeftRadius(globalValue, important),
 				...this.getBorderTopRightRadius(globalValue, important),
-				...this.getBorderTopRightRadius(globalValue, important),
-				...this.getBorderTopRightRadius(globalValue, important)
+				...this.getBorderBottomRightRadius(globalValue, important),
+				...this.getBorderBottomLeftRadius(globalValue, important)
 			};
 		}
 
@@ -1548,7 +1547,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const margin =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return margin ? { 'margin-top': { value: margin, important } } : null;
 	}
 
@@ -1565,7 +1564,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const margin =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return margin ? { 'margin-right': { value: margin, important } } : null;
 	}
 
@@ -1582,7 +1581,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const margin =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return margin ? { 'margin-bottom': { value: margin, important } } : null;
 	}
 
@@ -1599,7 +1598,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const margin =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getMeasurementOrAuto(value);
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return margin ? { 'margin-left': { value: margin, important } } : null;
 	}
 
@@ -1640,20 +1639,30 @@ export default class CSSStyleDeclarationPropertySetParser {
 				};
 		}
 
-		const parts = value.split(/ +/);
-		const flexGrow = parts[0] && this.getFlexGrow(parts[0], important);
-		const flexShrink = parts[1] && this.getFlexShrink(parts[1], important);
-		const flexBasis = parts[2] && this.getFlexBasis(parts[2], important);
+		const measurement = CSSStyleDeclarationValueParser.getContentMeasurement(lowerValue);
 
-		if (flexGrow && flexShrink && flexBasis) {
+		if (measurement) {
 			return {
-				...flexBasis,
-				...flexGrow,
-				...flexBasis
+				...this.getFlexGrow('1', important),
+				...this.getFlexShrink('1', important),
+				...this.getFlexBasis(measurement, important)
 			};
 		}
 
-		return null;
+		const parts = value.split(/ +/);
+		const flexGrow = this.getFlexGrow(parts[0], important);
+		const flexShrink = this.getFlexShrink(parts[1] || '1', important);
+		const flexBasis = this.getFlexBasis(parts[2] || '0%', important);
+
+		if (!flexGrow || !flexShrink || !flexBasis) {
+			return null;
+		}
+
+		return {
+			...flexGrow,
+			...flexShrink,
+			...flexBasis
+		};
 	}
 
 	/**
@@ -1673,7 +1682,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || FLEX_BASIS.includes(lowerValue)) {
 			return { 'flex-basis': { value: lowerValue, important } };
 		}
-		return { 'flex-basis': { value: CSSStyleDeclarationValueParser.getLength(value), important } };
+		const measurement = CSSStyleDeclarationValueParser.getContentMeasurement(value);
+		return measurement ? { 'flex-basis': { value: measurement, important } } : null;
 	}
 
 	/**
@@ -1828,15 +1838,15 @@ export default class CSSStyleDeclarationPropertySetParser {
 				if (
 					parts[0] !== 'cover' &&
 					parts[0] !== 'contain' &&
-					!CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[0])
+					!CSSStyleDeclarationValueParser.getContentMeasurement(parts[0])
 				) {
 					return null;
 				}
 				parsed.push(parts[0]);
 			} else {
 				if (
-					!CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[0]) ||
-					!CSSStyleDeclarationValueParser.getMeasurementOrAuto(parts[1])
+					!CSSStyleDeclarationValueParser.getContentMeasurement(parts[0]) ||
+					!CSSStyleDeclarationValueParser.getContentMeasurement(parts[1])
 				) {
 					return null;
 				}

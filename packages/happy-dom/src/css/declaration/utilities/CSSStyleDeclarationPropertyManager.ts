@@ -242,6 +242,11 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param important Important.
 	 */
 	public set(name: string, value: string, important: boolean): void {
+		if (value === null) {
+			this.remove(name);
+			return;
+		}
+
 		let properties = null;
 
 		switch (name) {
@@ -356,14 +361,14 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'css-float':
 				properties = CSSStyleDeclarationPropertySetParser.getCSSFloat(value, important);
 				break;
+			case 'float':
+				properties = CSSStyleDeclarationPropertySetParser.getFloat(value, important);
+				break;
 			case 'display':
 				properties = CSSStyleDeclarationPropertySetParser.getDisplay(value, important);
 				break;
 			case 'direction':
 				properties = CSSStyleDeclarationPropertySetParser.getDirection(value, important);
-				break;
-			case 'float':
-				properties = CSSStyleDeclarationPropertySetParser.getFloat(value, important);
 				break;
 			case 'flex':
 				properties = CSSStyleDeclarationPropertySetParser.getFlex(value, important);
