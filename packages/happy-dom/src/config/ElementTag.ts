@@ -17,6 +17,7 @@ import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement';
 import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement';
 import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement';
 import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement';
 
 export default {
 	A: HTMLElement,
@@ -55,7 +56,7 @@ export default {
 	META: HTMLMetaElement,
 	BLOCKQUOTE: HTMLElement,
 	BR: HTMLElement,
-	BUTTON: HTMLElement,
+	BUTTON: HTMLButtonElement,
 	CANVAS: HTMLElement,
 	CAPTION: HTMLElement,
 	CITE: HTMLElement,
