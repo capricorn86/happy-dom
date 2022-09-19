@@ -160,6 +160,31 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'border: green solid');
 
 			expect(declaration.border).toBe('solid green');
+
+			element.setAttribute('style', 'border: 2px solid rgb(255, 255, 255)');
+
+			expect(declaration.border).toBe('2px solid rgb(255, 255, 255)');
+
+			expect(declaration.borderTop).toBe('2px solid rgb(255, 255, 255)');
+			expect(declaration.borderRight).toBe('2px solid rgb(255, 255, 255)');
+			expect(declaration.borderBottom).toBe('2px solid rgb(255, 255, 255)');
+			expect(declaration.borderLeft).toBe('2px solid rgb(255, 255, 255)');
+
+			expect(declaration.borderTopColor).toBe('rgb(255, 255, 255)');
+			expect(declaration.borderTopWidth).toBe('2px');
+			expect(declaration.borderTopStyle).toBe('solid');
+
+			expect(declaration.borderRightColor).toBe('rgb(255, 255, 255)');
+			expect(declaration.borderRightWidth).toBe('2px');
+			expect(declaration.borderRightStyle).toBe('solid');
+
+			expect(declaration.borderBottomColor).toBe('rgb(255, 255, 255)');
+			expect(declaration.borderBottomWidth).toBe('2px');
+			expect(declaration.borderBottomStyle).toBe('solid');
+
+			expect(declaration.borderLeftColor).toBe('rgb(255, 255, 255)');
+			expect(declaration.borderLeftWidth).toBe('2px');
+			expect(declaration.borderLeftStyle).toBe('solid');
 		});
 	});
 
@@ -336,15 +361,15 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderTopColor).toBe('#000');
 			expect(declaration.borderRightColor).toBe('#ffffff');
-			expect(declaration.borderBottomColor).toBe('rgba(135,200,150,0.5)');
+			expect(declaration.borderBottomColor).toBe('rgba(135, 200, 150, 0.5)');
 			expect(declaration.borderLeftColor).toBe('blue');
 
 			element.setAttribute('style', 'border-color: rgb(135,200,150)');
 
-			expect(declaration.borderTopColor).toBe('rgb(135,200,150)');
-			expect(declaration.borderRightColor).toBe('rgb(135,200,150)');
-			expect(declaration.borderBottomColor).toBe('rgb(135,200,150)');
-			expect(declaration.borderLeftColor).toBe('rgb(135,200,150)');
+			expect(declaration.borderTopColor).toBe('rgb(135, 200, 150)');
+			expect(declaration.borderRightColor).toBe('rgb(135, 200, 150)');
+			expect(declaration.borderBottomColor).toBe('rgb(135, 200, 150)');
+			expect(declaration.borderLeftColor).toBe('rgb(135, 200, 150)');
 		});
 	});
 
@@ -372,7 +397,7 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', `border-image: url('/media/examples/border-diamonds.png') 30`);
 
 			expect(declaration.borderImage).toBe(
-				`url('/media/examples/border-diamonds.png') 30 / 1 / 0 stretch`
+				`url("/media/examples/border-diamonds.png") 30 / 1 / 0 stretch`
 			);
 
 			element.setAttribute(
@@ -381,18 +406,18 @@ describe('CSSStyleDeclaration', () => {
 			);
 
 			expect(declaration.borderImage).toBe(
-				`url('/media/examples/border-diamonds.png') 30 / 19px / 0 round`
+				`url("/media/examples/border-diamonds.png") 30 / 19px / 0 round`
 			);
 
 			element.setAttribute(
 				'style',
-				`border-image: url('/media/examples/border-diamonds.png') 10 fill / 20px / 30px space`
+				`border-image: url("/media/examples/border-diamonds.png") 10 fill / 20px / 30px space`
 			);
 
 			expect(declaration.borderImage).toBe(
-				`url('/media/examples/border-diamonds.png') 10 fill / 20px / 30px space`
+				`url("/media/examples/border-diamonds.png") 10 fill / 20px / 30px space`
 			);
-			expect(declaration.borderImageSource).toBe(`url('/media/examples/border-diamonds.png')`);
+			expect(declaration.borderImageSource).toBe(`url("/media/examples/border-diamonds.png")`);
 			expect(declaration.borderImageOutset).toBe('30px');
 			expect(declaration.borderImageRepeat).toBe('space');
 			expect(declaration.borderImageSlice).toBe('10 fill');
@@ -417,7 +442,7 @@ describe('CSSStyleDeclaration', () => {
 				`border-image-source: url('/media/examples/border-diamonds.png')`
 			);
 
-			expect(declaration.borderImageSource).toBe(`url('/media/examples/border-diamonds.png')`);
+			expect(declaration.borderImageSource).toBe(`url("/media/examples/border-diamonds.png")`);
 
 			element.setAttribute('style', `border-image-source: NONE`);
 
@@ -1006,6 +1031,504 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.flexGrow).toBe('3');
 			expect(declaration.flexShrink).toBe('2');
 			expect(declaration.flexBasis).toBe('50rem');
+		});
+	});
+
+	describe('get flexShrink()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'flex-shrink: inherit');
+
+			expect(declaration.flexShrink).toBe('inherit');
+
+			element.setAttribute('style', 'flex-shrink: 2');
+
+			expect(declaration.flexShrink).toBe('2');
+
+			element.setAttribute('style', 'flex-shrink: 0.6');
+
+			expect(declaration.flexShrink).toBe('0.6');
+		});
+	});
+
+	describe('get flexGrow()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'flex-grow: inherit');
+
+			expect(declaration.flexGrow).toBe('inherit');
+
+			element.setAttribute('style', 'flex-grow: 2');
+
+			expect(declaration.flexGrow).toBe('2');
+
+			element.setAttribute('style', 'flex-grow: 0.6');
+
+			expect(declaration.flexGrow).toBe('0.6');
+		});
+	});
+
+	describe('get flexBasis()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'flex-basis: 10em');
+
+			expect(declaration.flexBasis).toBe('10em');
+
+			element.setAttribute('style', 'flex-basis: fit-content(10px)');
+
+			expect(declaration.flexBasis).toBe('fit-content(10px)');
+
+			for (const value of [
+				'inherit',
+				'initial',
+				'revert',
+				'unset',
+				'auto',
+				'fill',
+				'content',
+				'max-content',
+				'min-content',
+				'fit-content'
+			]) {
+				element.setAttribute('style', `flex-basis: ${value}`);
+
+				expect(declaration.flexBasis).toBe(value);
+			}
+		});
+	});
+
+	describe('get padding()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'padding: inherit');
+
+			expect(declaration.padding).toBe('inherit');
+
+			element.setAttribute('style', 'padding: 1px 2px 3px 4px');
+
+			expect(declaration.padding).toBe('1px 2px 3px 4px');
+
+			element.setAttribute('style', 'padding: 1px 2px 3px');
+
+			expect(declaration.padding).toBe('1px 2px 3px');
+
+			element.setAttribute('style', 'padding: 1px 2px');
+
+			expect(declaration.padding).toBe('1px 2px');
+
+			element.setAttribute('style', 'padding: 1px');
+
+			expect(declaration.padding).toBe('1px');
+
+			element.setAttribute('style', 'padding: auto');
+
+			expect(declaration.padding).toBe('');
+		});
+	});
+
+	describe('get paddingTop()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'padding-top: inherit');
+
+			expect(declaration.paddingTop).toBe('inherit');
+
+			element.setAttribute('style', 'padding-top: 1px');
+
+			expect(declaration.paddingTop).toBe('1px');
+
+			element.setAttribute('style', 'padding-top: 1%');
+
+			expect(declaration.paddingTop).toBe('1%');
+		});
+	});
+
+	describe('get paddingRight()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'padding-right: inherit');
+
+			expect(declaration.paddingRight).toBe('inherit');
+
+			element.setAttribute('style', 'padding-right: 1px');
+
+			expect(declaration.paddingRight).toBe('1px');
+
+			element.setAttribute('style', 'padding-right: 1%');
+
+			expect(declaration.paddingRight).toBe('1%');
+		});
+	});
+
+	describe('get paddingBottom()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'padding-bottom: inherit');
+
+			expect(declaration.paddingBottom).toBe('inherit');
+
+			element.setAttribute('style', 'padding-bottom: 1px');
+
+			expect(declaration.paddingBottom).toBe('1px');
+
+			element.setAttribute('style', 'padding-bottom: 1%');
+
+			expect(declaration.paddingBottom).toBe('1%');
+		});
+	});
+
+	describe('get paddingLeft()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'padding-left: inherit');
+
+			expect(declaration.paddingLeft).toBe('inherit');
+
+			element.setAttribute('style', 'padding-left: 1px');
+
+			expect(declaration.paddingLeft).toBe('1px');
+
+			element.setAttribute('style', 'padding-left: 1%');
+
+			expect(declaration.paddingLeft).toBe('1%');
+		});
+	});
+
+	describe('get margin()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'margin: inherit');
+
+			expect(declaration.margin).toBe('inherit');
+
+			element.setAttribute('style', 'margin: 1px 2px 3px 4px');
+
+			expect(declaration.margin).toBe('1px 2px 3px 4px');
+
+			element.setAttribute('style', 'margin: 1px 2px 3px');
+
+			expect(declaration.margin).toBe('1px 2px 3px');
+
+			element.setAttribute('style', 'margin: 1px 2px');
+
+			expect(declaration.margin).toBe('1px 2px');
+
+			element.setAttribute('style', 'margin: 1px');
+
+			expect(declaration.margin).toBe('1px');
+
+			element.setAttribute('style', 'margin: auto');
+
+			expect(declaration.margin).toBe('auto');
+		});
+	});
+
+	describe('get marginTop()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'margin-top: inherit');
+
+			expect(declaration.marginTop).toBe('inherit');
+
+			element.setAttribute('style', 'margin-top: 1px');
+
+			expect(declaration.marginTop).toBe('1px');
+
+			element.setAttribute('style', 'margin-top: 1%');
+
+			expect(declaration.marginTop).toBe('1%');
+
+			element.setAttribute('style', 'margin-top: auto');
+
+			expect(declaration.marginTop).toBe('auto');
+		});
+	});
+
+	describe('get marginRight()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'margin-right: inherit');
+
+			expect(declaration.marginRight).toBe('inherit');
+
+			element.setAttribute('style', 'margin-right: 1px');
+
+			expect(declaration.marginRight).toBe('1px');
+
+			element.setAttribute('style', 'margin-right: 1%');
+
+			expect(declaration.marginRight).toBe('1%');
+
+			element.setAttribute('style', 'margin-right: auto');
+
+			expect(declaration.marginRight).toBe('auto');
+		});
+	});
+
+	describe('get marginBottom()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'margin-bottom: inherit');
+
+			expect(declaration.marginBottom).toBe('inherit');
+
+			element.setAttribute('style', 'margin-bottom: 1px');
+
+			expect(declaration.marginBottom).toBe('1px');
+
+			element.setAttribute('style', 'margin-bottom: 1%');
+
+			expect(declaration.marginBottom).toBe('1%');
+
+			element.setAttribute('style', 'margin-bottom: auto');
+
+			expect(declaration.marginBottom).toBe('auto');
+		});
+	});
+
+	describe('get marginLeft()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'margin-left: inherit');
+
+			expect(declaration.marginLeft).toBe('inherit');
+
+			element.setAttribute('style', 'margin-left: 1px');
+
+			expect(declaration.marginLeft).toBe('1px');
+
+			element.setAttribute('style', 'margin-left: 1%');
+
+			expect(declaration.marginLeft).toBe('1%');
+
+			element.setAttribute('style', 'margin-left: auto');
+
+			expect(declaration.marginLeft).toBe('auto');
+		});
+	});
+
+	describe('get background()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'background: inherit');
+
+			expect(declaration.background).toBe('inherit');
+			expect(declaration.backgroundAttachment).toBe('inherit');
+			expect(declaration.backgroundClip).toBe('inherit');
+			expect(declaration.backgroundColor).toBe('inherit');
+			expect(declaration.backgroundImage).toBe('inherit');
+			expect(declaration.backgroundPosition).toBe('inherit');
+			expect(declaration.backgroundRepeat).toBe('inherit');
+			expect(declaration.backgroundSize).toBe('inherit');
+
+			element.setAttribute('style', 'background: green');
+
+			expect(declaration.background).toBe('green');
+
+			element.setAttribute('style', 'background: rgb(255, 255, 255)');
+
+			expect(declaration.background).toBe('rgb(255, 255, 255)');
+
+			element.setAttribute('style', 'background: url("test.jpg") repeat-y');
+
+			expect(declaration.background).toBe('url("test.jpg") repeat-y');
+
+			element.setAttribute('style', 'background: border-box red');
+
+			expect(declaration.background).toBe('border-box border-box red');
+
+			element.setAttribute('style', 'background: no-repeat center/80% url("../img/image.png")');
+
+			expect(declaration.background).toBe('url("../img/image.png") center center / 80% no-repeat');
+
+			element.setAttribute(
+				'style',
+				'background: scroll no-repeat top center / 80% url("../img/image.png")'
+			);
+
+			expect(declaration.background).toBe(
+				'url("../img/image.png") center top / 80% no-repeat scroll'
+			);
+		});
+	});
+
+	describe('get backgroundImage()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'background-image: inherit');
+
+			expect(declaration.backgroundImage).toBe('inherit');
+
+			element.setAttribute('style', 'background-image: url("test.jpg")');
+
+			expect(declaration.backgroundImage).toBe('url("test.jpg")');
+
+			element.setAttribute('style', 'background-image: url(test.jpg)');
+
+			expect(declaration.backgroundImage).toBe('url("test.jpg")');
+
+			element.setAttribute('style', 'background-image: url(test.jpg),  url(test2.jpg)');
+
+			expect(declaration.backgroundImage).toBe('url("test.jpg"), url("test2.jpg")');
+		});
+	});
+
+	describe('get backgroundColor()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'background-color: inherit');
+
+			expect(declaration.backgroundColor).toBe('inherit');
+
+			element.setAttribute('style', 'background-color: red');
+
+			expect(declaration.backgroundColor).toBe('red');
+
+			element.setAttribute('style', 'background-color: rgba(0, 55, 1,0.5)');
+
+			expect(declaration.backgroundColor).toBe('rgba(0, 55, 1, 0.5)');
+		});
+	});
+
+	describe('get backgroundRepeat()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const repeat of [
+				'inherit',
+				'initial',
+				'revert',
+				'unset',
+				'repeat',
+				'repeat-x',
+				'repeat-y',
+				'no-repeat'
+			]) {
+				element.setAttribute('style', `background-repeat: ${repeat}`);
+				expect(declaration.backgroundRepeat).toBe(repeat);
+			}
+		});
+	});
+
+	describe('get backgroundAttachment()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const repeat of ['inherit', 'initial', 'revert', 'unset', 'scroll', 'fixed']) {
+				element.setAttribute('style', `background-attachment: ${repeat}`);
+				expect(declaration.backgroundAttachment).toBe(repeat);
+			}
+		});
+	});
+
+	describe('get backgroundPosition()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'background-position: inherit');
+
+			expect(declaration.backgroundPosition).toBe('inherit');
+
+			element.setAttribute('style', 'background-position: top');
+
+			expect(declaration.backgroundPosition).toBe('center top');
+			expect(declaration.backgroundPositionX).toBe('center');
+			expect(declaration.backgroundPositionY).toBe('top');
+
+			element.setAttribute('style', 'background-position: bottom');
+
+			expect(declaration.backgroundPosition).toBe('center bottom');
+			expect(declaration.backgroundPositionX).toBe('center');
+			expect(declaration.backgroundPositionY).toBe('bottom');
+
+			element.setAttribute('style', 'background-position: left');
+
+			expect(declaration.backgroundPosition).toBe('left center');
+			expect(declaration.backgroundPositionX).toBe('left');
+			expect(declaration.backgroundPositionY).toBe('center');
+
+			element.setAttribute('style', 'background-position: right');
+
+			expect(declaration.backgroundPosition).toBe('right center');
+			expect(declaration.backgroundPositionX).toBe('right');
+			expect(declaration.backgroundPositionY).toBe('center');
+
+			element.setAttribute('style', 'background-position: center');
+
+			expect(declaration.backgroundPosition).toBe('center center');
+			expect(declaration.backgroundPositionX).toBe('center');
+			expect(declaration.backgroundPositionY).toBe('center');
+
+			element.setAttribute('style', 'background-position: 25% 75%');
+
+			expect(declaration.backgroundPosition).toBe('25% 75%');
+			expect(declaration.backgroundPositionX).toBe('25%');
+			expect(declaration.backgroundPositionY).toBe('75%');
+
+			element.setAttribute('style', 'background-position: 0 0');
+
+			expect(declaration.backgroundPosition).toBe('0px 0px');
+			expect(declaration.backgroundPositionX).toBe('0px');
+			expect(declaration.backgroundPositionY).toBe('0px');
+
+			element.setAttribute('style', 'background-position: 1cm 2cm');
+
+			expect(declaration.backgroundPosition).toBe('1cm 2cm');
+			expect(declaration.backgroundPositionX).toBe('1cm');
+			expect(declaration.backgroundPositionY).toBe('2cm');
+
+			element.setAttribute('style', 'background-position: 10ch 8em');
+
+			expect(declaration.backgroundPosition).toBe('10ch 8em');
+			expect(declaration.backgroundPositionX).toBe('10ch');
+			expect(declaration.backgroundPositionY).toBe('8em');
+
+			element.setAttribute('style', 'background-position: 0 0, center');
+
+			expect(declaration.backgroundPosition).toBe('0px 0px, center center');
+			expect(declaration.backgroundPositionX).toBe('0px, center');
+			expect(declaration.backgroundPositionY).toBe('0px, center');
+
+			element.setAttribute('style', 'background-position: bottom 10px right 20px');
+
+			expect(declaration.backgroundPosition).toBe('right 20px bottom 10px');
+			expect(declaration.backgroundPositionX).toBe('right 20px');
+			expect(declaration.backgroundPositionY).toBe('bottom 10px');
+
+			element.setAttribute('style', 'background-position: right 20px bottom 10px');
+
+			expect(declaration.backgroundPosition).toBe('right 20px bottom 10px');
+			expect(declaration.backgroundPositionX).toBe('right 20px');
+			expect(declaration.backgroundPositionY).toBe('bottom 10px');
+
+			element.setAttribute('style', 'background-position: bottom 10px right');
+
+			expect(declaration.backgroundPosition).toBe('right bottom 10px');
+			expect(declaration.backgroundPositionX).toBe('right');
+			expect(declaration.backgroundPositionY).toBe('bottom 10px');
+
+			element.setAttribute('style', 'background-position: top right 10px');
+
+			expect(declaration.backgroundPosition).toBe('right 10px top');
+			expect(declaration.backgroundPositionX).toBe('right 10px');
+			expect(declaration.backgroundPositionY).toBe('top');
 		});
 	});
 

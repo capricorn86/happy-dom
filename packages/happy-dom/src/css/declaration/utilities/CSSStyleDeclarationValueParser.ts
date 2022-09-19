@@ -232,7 +232,12 @@ export default class CSSStyleDeclarationValueParser {
 	 */
 	public static getFitContent(value: string): string {
 		const lowerValue = value.toLowerCase();
-		if (lowerValue === 'auto' || lowerValue === 'max-content' || lowerValue === 'min-content') {
+		if (
+			lowerValue === 'auto' ||
+			lowerValue === 'max-content' ||
+			lowerValue === 'min-content' ||
+			lowerValue === 'fit-content'
+		) {
 			return lowerValue;
 		}
 		if (FIT_CONTENT_REGEXP.test(lowerValue)) {
@@ -259,6 +264,19 @@ export default class CSSStyleDeclarationValueParser {
 	 */
 	public static getContentMeasurement(value: string): string {
 		return this.getFitContent(value) || this.getMeasurement(value);
+	}
+
+	/**
+	 * Returns measurement or auto, min-content, max-content or fit-content.
+	 *
+	 * @param value Value.
+	 * @returns Parsed value.
+	 */
+	public static getAutoMeasurement(value: string): string {
+		if (value.toLocaleLowerCase() === 'auto') {
+			return 'auto';
+		}
+		return this.getMeasurement(value);
 	}
 
 	/**
@@ -312,7 +330,7 @@ export default class CSSStyleDeclarationValueParser {
 			return lowerValue;
 		}
 		if (COLOR_REGEXP.test(value)) {
-			return value;
+			return value.replace(/,([^ ])/g, ', $1');
 		}
 		return null;
 	}
@@ -331,10 +349,8 @@ export default class CSSStyleDeclarationValueParser {
 			return null;
 		}
 
-		const lowerValue = value.toLowerCase();
-
-		if (lowerValue === 'none' || lowerValue === 'inherit') {
-			return lowerValue;
+		if (value.toLowerCase() === 'none') {
+			return 'none';
 		}
 
 		const result = URL_REGEXP.exec(value);
@@ -369,7 +385,7 @@ export default class CSSStyleDeclarationValueParser {
 			}
 		}
 
-		return value;
+		return `url("${url}")`;
 	}
 
 	/**

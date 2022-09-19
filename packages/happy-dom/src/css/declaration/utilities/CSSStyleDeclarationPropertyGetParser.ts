@@ -384,21 +384,13 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			values.push(properties['background-image'].value);
 		}
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-repeat'].value)) {
-			values.push(properties['background-repeat'].value);
-		}
-
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-attachment'].value)) {
-			values.push(properties['background-attachment'].value);
-		}
-
 		if (
 			!CSSStyleDeclarationValueParser.getInitial(properties['background-position-x'].value) &&
 			!CSSStyleDeclarationValueParser.getInitial(properties['background-position-y'].value) &&
-			!CSSStyleDeclarationValueParser.getInitial(properties['background-position-size'].value)
+			!CSSStyleDeclarationValueParser.getInitial(properties['background-size'].value)
 		) {
 			values.push(
-				`${properties['background-position-x'].value} ${properties['background-position-y'].value} / ${properties['background-position-size'].value}`
+				`${properties['background-position-x'].value} ${properties['background-position-y'].value} / ${properties['background-size'].value}`
 			);
 		} else if (
 			!CSSStyleDeclarationValueParser.getInitial(properties['background-position-x'].value) &&
@@ -407,6 +399,22 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			values.push(
 				`${properties['background-position-x'].value} ${properties['background-position-y'].value}`
 			);
+		}
+
+		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-repeat'].value)) {
+			values.push(properties['background-repeat'].value);
+		}
+
+		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-attachment'].value)) {
+			values.push(properties['background-attachment'].value);
+		}
+
+		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-origin'].value)) {
+			values.push(properties['background-origin'].value);
+		}
+
+		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-clip'].value)) {
+			values.push(properties['background-clip'].value);
 		}
 
 		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-color'].value)) {
@@ -452,9 +460,17 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			};
 		}
 
+		const positionX = properties['background-position-x'].value.replace(/ *, */g, ',').split(',');
+		const positionY = properties['background-position-y'].value.replace(/ *, */g, ',').split(',');
+		const parts = [];
+
+		for (let i = 0; i < positionX.length; i++) {
+			parts.push(`${positionX[i]} ${positionY[i]}`);
+		}
+
 		return {
 			important,
-			value: `${properties['background-position-x'].value} ${properties['background-position-y'].value}`
+			value: parts.join(', ')
 		};
 	}
 

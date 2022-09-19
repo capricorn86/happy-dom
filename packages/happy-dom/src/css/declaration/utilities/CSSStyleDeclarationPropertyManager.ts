@@ -388,14 +388,14 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'padding-top':
 				properties = CSSStyleDeclarationPropertySetParser.getPaddingTop(value, important);
 				break;
+			case 'padding-right':
+				properties = CSSStyleDeclarationPropertySetParser.getPaddingRight(value, important);
+				break;
 			case 'padding-bottom':
 				properties = CSSStyleDeclarationPropertySetParser.getPaddingBottom(value, important);
 				break;
 			case 'padding-left':
 				properties = CSSStyleDeclarationPropertySetParser.getPaddingLeft(value, important);
-				break;
-			case 'padding-right':
-				properties = CSSStyleDeclarationPropertySetParser.getPaddingRight(value, important);
 				break;
 			case 'margin':
 				properties = CSSStyleDeclarationPropertySetParser.getMargin(value, important);
@@ -403,14 +403,14 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'margin-top':
 				properties = CSSStyleDeclarationPropertySetParser.getMarginTop(value, important);
 				break;
+			case 'margin-right':
+				properties = CSSStyleDeclarationPropertySetParser.getMarginRight(value, important);
+				break;
 			case 'margin-bottom':
 				properties = CSSStyleDeclarationPropertySetParser.getMarginBottom(value, important);
 				break;
 			case 'margin-left':
 				properties = CSSStyleDeclarationPropertySetParser.getMarginLeft(value, important);
-				break;
-			case 'margin-right':
-				properties = CSSStyleDeclarationPropertySetParser.getMarginRight(value, important);
 				break;
 			case 'background':
 				properties = CSSStyleDeclarationPropertySetParser.getBackground(value, important);

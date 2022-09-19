@@ -20,7 +20,7 @@ const BACKGROUND_REPEAT = ['repeat', 'repeat-x', 'repeat-y', 'no-repeat'];
 const BACKGROUND_ORIGIN = ['border-box', 'padding-box', 'content-box'];
 const BACKGROUND_CLIP = ['border-box', 'padding-box', 'content-box'];
 const BACKGROUND_ATTACHMENT = ['scroll', 'fixed'];
-const FLEX_BASIS = ['auto', 'fill', 'max-content', 'min-content', 'fit-content', 'content'];
+const FLEX_BASIS = ['auto', 'fill', 'content'];
 const CLEAR = ['none', 'left', 'right', 'both'];
 const FLOAT = ['none', 'left', 'right', 'inline-start', 'inline-end'];
 const SYSTEM_FONT = ['caption', 'icon', 'menu', 'message-box', 'small-caption', 'status-bar'];
@@ -351,7 +351,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBorderImage('initial', important)
 		};
 
-		const parts = value.split(/ +/);
+		const parts = value.replace(/ *, */g, ',').split(/ +/);
 
 		for (const part of parts) {
 			const width = this.getBorderWidth(part, important);
@@ -714,7 +714,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		for (const part of parts) {
 			if (
 				!CSSStyleDeclarationValueParser.getInteger(part) &&
-				!CSSStyleDeclarationValueParser.getContentMeasurement(part)
+				!CSSStyleDeclarationValueParser.getAutoMeasurement(part)
 			) {
 				return null;
 			}
@@ -1547,7 +1547,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const margin =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getContentMeasurement(value);
+			CSSStyleDeclarationValueParser.getAutoMeasurement(value);
 		return margin ? { 'margin-top': { value: margin, important } } : null;
 	}
 
@@ -1564,7 +1564,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const margin =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getContentMeasurement(value);
+			CSSStyleDeclarationValueParser.getAutoMeasurement(value);
 		return margin ? { 'margin-right': { value: margin, important } } : null;
 	}
 
@@ -1581,7 +1581,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const margin =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getContentMeasurement(value);
+			CSSStyleDeclarationValueParser.getAutoMeasurement(value);
 		return margin ? { 'margin-bottom': { value: margin, important } } : null;
 	}
 
@@ -1598,7 +1598,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
 		const margin =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getContentMeasurement(value);
+			CSSStyleDeclarationValueParser.getAutoMeasurement(value);
 		return margin ? { 'margin-left': { value: margin, important } } : null;
 	}
 
@@ -1682,7 +1682,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || FLEX_BASIS.includes(lowerValue)) {
 			return { 'flex-basis': { value: lowerValue, important } };
 		}
-		const measurement = CSSStyleDeclarationValueParser.getContentMeasurement(value);
+		const measurement = CSSStyleDeclarationValueParser.getContentMeasurement(lowerValue);
 		return measurement ? { 'flex-basis': { value: measurement, important } } : null;
 	}
 
@@ -1701,7 +1701,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getInteger(value);
+			CSSStyleDeclarationValueParser.getFloat(value);
 		return parsedValue ? { 'flex-shrink': { value: parsedValue, important } } : null;
 	}
 
@@ -1720,7 +1720,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	} {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
-			CSSStyleDeclarationValueParser.getInteger(value);
+			CSSStyleDeclarationValueParser.getFloat(value);
 		return parsedValue ? { 'flex-grow': { value: parsedValue, important } } : null;
 	}
 
@@ -1762,36 +1762,59 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBackgroundColor('initial', important)
 		};
 
-		const parts = value.replace(/[ ]*\/[ ]*/g, '/').split(/ +/);
+		const parts = value
+			.replace(/[ ]*,[ ]*/g, ',')
+			.replace(/[ ]*\/[ ]*/g, '/')
+			.split(/ +/);
+
+		const backgroundPositions = [];
 
 		for (const part of parts) {
-			if (part.includes('/')) {
+			if (!part.startsWith('url') && part.includes('/')) {
 				const [position, size] = part.split('/');
-				const backgroundPosition = properties['background-position-x']
-					? this.getBackgroundPositionY(position, important)
-					: this.getBackgroundPosition(position, important);
+				const backgroundPositionX = this.getBackgroundPositionX(position, important);
+				const backgroundPositionY = this.getBackgroundPositionY(position, important);
+
 				const backgroundSize = this.getBackgroundSize(size, important);
 
-				if (!backgroundPosition || !backgroundSize) {
+				if ((!backgroundPositionX && !backgroundPositionY) || !backgroundSize) {
 					return null;
 				}
 
-				Object.assign(properties, backgroundPosition, backgroundSize);
+				if (backgroundPositionY) {
+					backgroundPositions.push(backgroundPositionY['background-position-y'].value);
+				} else if (backgroundPositionX) {
+					backgroundPositions.push(backgroundPositionX['background-position-x'].value);
+				}
+
+				Object.assign(properties, backgroundSize);
 			} else {
 				const backgroundImage = this.getBackgroundImage(part, important);
 				const backgroundRepeat = this.getBackgroundRepeat(part, important);
 				const backgroundAttachment = this.getBackgroundAttachment(part, important);
-				const backgroundPosition = this.getBackgroundPosition(part, important);
+				const backgroundPositionX = this.getBackgroundPositionX(part, important);
+				const backgroundPositionY = this.getBackgroundPositionY(part, important);
 				const backgroundColor = this.getBackgroundColor(part, important);
+				const backgroundOrigin = this.getBackgroundOrigin(part, important);
+				const backgroundClip = this.getBackgroundClip(part, important);
 
 				if (
 					!backgroundImage &&
 					!backgroundRepeat &&
 					!backgroundAttachment &&
-					!backgroundPosition &&
-					!backgroundColor
+					!backgroundPositionX &&
+					!backgroundPositionY &&
+					!backgroundColor &&
+					!backgroundOrigin &&
+					!backgroundClip
 				) {
 					return null;
+				}
+
+				if (backgroundPositionX) {
+					backgroundPositions.push(backgroundPositionX['background-position-x'].value);
+				} else if (backgroundPositionY) {
+					backgroundPositions.push(backgroundPositionY['background-position-y'].value);
 				}
 
 				Object.assign(
@@ -1799,10 +1822,18 @@ export default class CSSStyleDeclarationPropertySetParser {
 					backgroundImage,
 					backgroundRepeat,
 					backgroundAttachment,
-					backgroundPosition,
-					backgroundColor
+					backgroundColor,
+					backgroundOrigin,
+					backgroundClip
 				);
 			}
+		}
+
+		if (backgroundPositions.length) {
+			Object.assign(
+				properties,
+				this.getBackgroundPosition(backgroundPositions.join(' '), important)
+			);
 		}
 
 		return properties;
@@ -1838,15 +1869,15 @@ export default class CSSStyleDeclarationPropertySetParser {
 				if (
 					parts[0] !== 'cover' &&
 					parts[0] !== 'contain' &&
-					!CSSStyleDeclarationValueParser.getContentMeasurement(parts[0])
+					!CSSStyleDeclarationValueParser.getAutoMeasurement(parts[0])
 				) {
 					return null;
 				}
 				parsed.push(parts[0]);
 			} else {
 				if (
-					!CSSStyleDeclarationValueParser.getContentMeasurement(parts[0]) ||
-					!CSSStyleDeclarationValueParser.getContentMeasurement(parts[1])
+					!CSSStyleDeclarationValueParser.getAutoMeasurement(parts[0]) ||
+					!CSSStyleDeclarationValueParser.getAutoMeasurement(parts[1])
 				) {
 					return null;
 				}
@@ -1972,7 +2003,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const imageParts = value.split(',');
+		const imageParts = value.replace(/ *, */g, ',').split(',');
 		let x = '';
 		let y = '';
 
@@ -1984,35 +2015,53 @@ export default class CSSStyleDeclarationPropertySetParser {
 				y += ',';
 			}
 
-			if (parts.length === 1) {
-				if (parts[0] === 'top' || parts[0] === 'bottom') {
-					x += 'center';
-					y += parts[0];
-				} else if (parts[0] === 'left' || parts[0] === 'right') {
-					x += parts[0];
-					y += 'center';
-				} else if (parts[0] === 'center') {
-					x += 'center';
-					y += 'center';
-				}
-			}
-
-			if (parts.length !== 2 && parts.length !== 4) {
-				return null;
-			}
-
-			if (parts.length === 2) {
-				x += parts[0] === 'top' || parts[0] === 'bottom' ? parts[1] : parts[0];
-				y += parts[0] === 'left' || parts[0] === 'right' ? parts[0] : parts[1];
-			} else if (parts.length === 4) {
-				x +=
-					parts[0] === 'top' || parts[0] === 'bottom' || parts[1] === 'top' || parts[1] === 'bottom'
-						? `${parts[2]} ${parts[3]}`
-						: `${parts[0]} ${parts[1]}`;
-				y +=
-					parts[2] === 'left' || parts[2] === 'right' || parts[3] === 'left' || parts[3] === 'right'
-						? `${parts[0]} ${parts[1]}`
-						: `${parts[2]} ${parts[3]}`;
+			switch (parts.length) {
+				case 1:
+					if (parts[0] === 'top' || parts[0] === 'bottom') {
+						x += 'center';
+						y += parts[0];
+					} else if (parts[0] === 'left' || parts[0] === 'right') {
+						x += parts[0];
+						y += 'center';
+					} else if (parts[0] === 'center') {
+						x += 'center';
+						y += 'center';
+					}
+					break;
+				case 2:
+					x += parts[0] === 'top' || parts[0] === 'bottom' ? parts[1] : parts[0];
+					y += parts[0] === 'top' || parts[0] === 'bottom' ? parts[0] : parts[1];
+					break;
+				case 3:
+					if (
+						(parts[0] === 'top' || parts[0] === 'bottom') &&
+						(parts[2] === 'left' || parts[2] === 'right')
+					) {
+						x += `${parts[1]} ${parts[2]}`;
+						y += parts[0];
+					} else {
+						x += parts[0];
+						y += `${parts[1]} ${parts[2]}`;
+					}
+					break;
+				case 4:
+					x +=
+						parts[0] === 'top' ||
+						parts[0] === 'bottom' ||
+						parts[1] === 'top' ||
+						parts[1] === 'bottom'
+							? `${parts[2]} ${parts[3]}`
+							: `${parts[0]} ${parts[1]}`;
+					y +=
+						parts[0] === 'top' ||
+						parts[0] === 'bottom' ||
+						parts[1] === 'top' ||
+						parts[1] === 'bottom'
+							? `${parts[0]} ${parts[1]}`
+							: `${parts[2]} ${parts[3]}`;
+					break;
+				default:
+					return null;
 			}
 		}
 
@@ -2048,7 +2097,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-position-x': { value: lowerValue, important } };
 		}
 
-		const imageParts = lowerValue.split(',');
+		const imageParts = lowerValue.replace(/ *, */g, ',').split(',');
 		let parsedValue = '';
 
 		for (const imagePart of imageParts) {
@@ -2059,12 +2108,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 			}
 
 			for (const part of parts) {
-				if (
-					!CSSStyleDeclarationValueParser.getMeasurement(part) &&
-					part !== 'left' &&
-					part !== 'right' &&
-					part !== 'center'
-				) {
+				const measurement = CSSStyleDeclarationValueParser.getMeasurement(part);
+				if (!measurement && part !== 'left' && part !== 'right' && part !== 'center') {
 					return null;
 				}
 
@@ -2072,7 +2117,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 					parsedValue += ' ';
 				}
 
-				parsedValue += part;
+				parsedValue += measurement || part;
 			}
 		}
 
@@ -2098,7 +2143,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-position-y': { value: lowerValue, important } };
 		}
 
-		const imageParts = lowerValue.split(',');
+		const imageParts = lowerValue.replace(/ *, */g, ',').split(',');
 		let parsedValue = '';
 
 		for (const imagePart of imageParts) {
@@ -2109,12 +2154,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 			}
 
 			for (const part of parts) {
-				if (
-					!CSSStyleDeclarationValueParser.getMeasurement(part) &&
-					part !== 'top' &&
-					part !== 'bottom' &&
-					part !== 'center'
-				) {
+				const measurement = CSSStyleDeclarationValueParser.getMeasurement(part);
+				if (!measurement && part !== 'top' && part !== 'bottom' && part !== 'center') {
 					return null;
 				}
 
@@ -2122,7 +2163,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 					parsedValue += ' ';
 				}
 
-				parsedValue += part;
+				parsedValue += measurement || part;
 			}
 		}
 
@@ -2168,7 +2209,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-image': { value: lowerValue, important } };
 		}
 
-		const parts = value.split(',');
+		const parts = value.replace(/ *, */g, ',').split(',');
 		const parsed = [];
 
 		for (const part of parts) {
