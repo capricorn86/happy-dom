@@ -154,6 +154,25 @@ export default class CSSStyleDeclarationPropertySetParser {
 	}
 
 	/**
+	 * Returns width.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getWidth(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
+		return parsedValue ? { width: { value: parsedValue, important } } : null;
+	}
+
+	/**
 	 * Returns top.
 	 *
 	 * @param value Value.
@@ -2034,14 +2053,28 @@ export default class CSSStyleDeclarationPropertySetParser {
 					break;
 				case 3:
 					if (
-						(parts[0] === 'top' || parts[0] === 'bottom') &&
-						(parts[2] === 'left' || parts[2] === 'right')
+						parts[0] === 'top' ||
+						parts[0] === 'bottom' ||
+						parts[1] === 'left' ||
+						parts[1] === 'right' ||
+						parts[2] === 'left' ||
+						parts[2] === 'right'
 					) {
-						x += `${parts[1]} ${parts[2]}`;
-						y += parts[0];
+						if (CSSStyleDeclarationValueParser.getMeasurement(parts[1])) {
+							x += parts[2];
+							y += `${parts[0]} ${parts[1]}`;
+						} else {
+							x += `${parts[1]} ${parts[2]}`;
+							y += parts[0];
+						}
 					} else {
-						x += parts[0];
-						y += `${parts[1]} ${parts[2]}`;
+						if (CSSStyleDeclarationValueParser.getMeasurement(parts[1])) {
+							x += `${parts[0]} ${parts[1]}`;
+							y += parts[2];
+						} else {
+							x += parts[0];
+							y += `${parts[1]} ${parts[2]}`;
+						}
 					}
 					break;
 				case 4:
@@ -2509,21 +2542,36 @@ export default class CSSStyleDeclarationPropertySetParser {
 
 		const parts = value.split(',');
 		let parsedValue = '';
+		let endWithApostroph = false;
+
 		for (let i = 0, max = parts.length; i < max; i++) {
-			const trimmedPart = parts[i].trim().replace(/'/g, '"');
-			if (
-				trimmedPart.includes(' ') &&
-				(trimmedPart[0] !== '"' || trimmedPart[trimmedPart.length - 1] !== '"')
-			) {
-				return null;
-			}
+			let trimmedPart = parts[i].trim().replace(/'/g, '"');
+
 			if (!trimmedPart) {
 				return null;
 			}
+
+			if (trimmedPart.includes(' ')) {
+				const apostrophCount = (trimmedPart.match(/"/g) || []).length;
+				if ((trimmedPart[0] !== '"' || i !== 0) && apostrophCount !== 2 && apostrophCount !== 0) {
+					return null;
+				}
+				if (trimmedPart[0] === '"' && trimmedPart[trimmedPart.length - 1] !== '"') {
+					endWithApostroph = true;
+				} else if (trimmedPart[0] !== '"' && trimmedPart[trimmedPart.length - 1] !== '"') {
+					trimmedPart = `"${trimmedPart}"`;
+				}
+			}
+
 			if (i > 0) {
 				parsedValue += ', ';
 			}
+
 			parsedValue += trimmedPart;
+		}
+
+		if (endWithApostroph) {
+			parsedValue += '"';
 		}
 
 		if (!parsedValue) {

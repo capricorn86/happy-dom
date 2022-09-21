@@ -1529,6 +1529,328 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.backgroundPosition).toBe('right 10px top');
 			expect(declaration.backgroundPositionX).toBe('right 10px');
 			expect(declaration.backgroundPositionY).toBe('top');
+
+			element.setAttribute('style', 'background-position: right 10px top');
+
+			expect(declaration.backgroundPosition).toBe('right 10px top');
+			expect(declaration.backgroundPositionX).toBe('right 10px');
+			expect(declaration.backgroundPositionY).toBe('top');
+
+			element.setAttribute('style', 'background-position: right top 10px');
+
+			expect(declaration.backgroundPosition).toBe('right top 10px');
+			expect(declaration.backgroundPositionX).toBe('right');
+			expect(declaration.backgroundPositionY).toBe('top 10px');
+		});
+	});
+
+	describe('get width()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'width: inherit');
+
+			expect(declaration.width).toBe('inherit');
+
+			element.setAttribute('style', 'width: 75%');
+
+			expect(declaration.width).toBe('75%');
+
+			element.setAttribute('style', 'width: 75px');
+
+			expect(declaration.width).toBe('75px');
+
+			element.setAttribute('style', 'width: fit-content(20em)');
+
+			expect(declaration.width).toBe('fit-content(20em)');
+		});
+	});
+
+	describe('get top()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'top: inherit');
+
+			expect(declaration.top).toBe('inherit');
+
+			element.setAttribute('style', 'top: 75%');
+
+			expect(declaration.top).toBe('75%');
+
+			element.setAttribute('style', 'top: 75px');
+
+			expect(declaration.top).toBe('75px');
+
+			element.setAttribute('style', 'top: fit-content(20em)');
+
+			expect(declaration.top).toBe('fit-content(20em)');
+		});
+	});
+
+	describe('get right()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'right: inherit');
+
+			expect(declaration.right).toBe('inherit');
+
+			element.setAttribute('style', 'right: 75%');
+
+			expect(declaration.right).toBe('75%');
+
+			element.setAttribute('style', 'right: 75px');
+
+			expect(declaration.right).toBe('75px');
+
+			element.setAttribute('style', 'right: fit-content(20em)');
+
+			expect(declaration.right).toBe('fit-content(20em)');
+		});
+	});
+
+	describe('get bottom()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'bottom: inherit');
+
+			expect(declaration.bottom).toBe('inherit');
+
+			element.setAttribute('style', 'bottom: 75%');
+
+			expect(declaration.bottom).toBe('75%');
+
+			element.setAttribute('style', 'bottom: 75px');
+
+			expect(declaration.bottom).toBe('75px');
+
+			element.setAttribute('style', 'bottom: fit-content(20em)');
+
+			expect(declaration.bottom).toBe('fit-content(20em)');
+		});
+	});
+
+	describe('get left()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'left: inherit');
+
+			expect(declaration.left).toBe('inherit');
+
+			element.setAttribute('style', 'left: 75%');
+
+			expect(declaration.left).toBe('75%');
+
+			element.setAttribute('style', 'left: 75px');
+
+			expect(declaration.left).toBe('75px');
+
+			element.setAttribute('style', 'left: fit-content(20em)');
+
+			expect(declaration.left).toBe('fit-content(20em)');
+		});
+	});
+
+	describe('get font()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'font: inherit');
+
+			expect(declaration.font).toBe('inherit');
+
+			element.setAttribute('style', 'font: 1.2em "Fira Sans", sans-serif');
+
+			expect(declaration.font).toBe('1.2em "Fira Sans", sans-serif');
+			expect(declaration.fontFamily).toBe('"Fira Sans", sans-serif');
+			expect(declaration.fontSize).toBe('1.2em');
+			expect(declaration.fontStretch).toBe('normal');
+			expect(declaration.fontStyle).toBe('normal');
+			expect(declaration.fontVariant).toBe('normal');
+			expect(declaration.fontWeight).toBe('normal');
+			expect(declaration.lineHeight).toBe('normal');
+
+			element.setAttribute('style', 'font: italic 1.2em "Fira Sans", sans-serif');
+			expect(declaration.font).toBe('italic 1.2em "Fira Sans", sans-serif');
+
+			element.setAttribute('style', 'font: 1.2em Fira Sans, sans-serif');
+			expect(declaration.font).toBe('1.2em "Fira Sans", sans-serif');
+
+			element.setAttribute('style', 'font: 1.2em "Fira Sans, sans-serif');
+			expect(declaration.font).toBe('1.2em "Fira Sans, sans-serif"');
+
+			element.setAttribute('style', 'font: 1.2em Fira "Sans, sans-serif');
+			expect(declaration.font).toBe('');
+
+			element.setAttribute('style', 'font: italic small-caps bold 16px/2 cursive');
+			expect(declaration.font).toBe('italic small-caps bold 16px / 2 cursive');
+
+			element.setAttribute('style', 'font: small-caps bold 24px/1 sans-serif');
+			expect(declaration.font).toBe('small-caps bold 24px / 1 sans-serif');
+
+			element.setAttribute('style', 'font: caption');
+			expect(declaration.font).toBe('caption');
+		});
+	});
+
+	describe('get fontStyle()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const property of ['inherit', 'normal', 'italic', 'oblique', 'oblique 10deg']) {
+				element.setAttribute('style', `font-style: ${property}`);
+				expect(declaration.fontStyle).toBe(property);
+			}
+		});
+	});
+
+	describe('get fontVariant()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const property of ['inherit', 'normal', 'small-caps']) {
+				element.setAttribute('style', `font-variant: ${property}`);
+				expect(declaration.fontVariant).toBe(property);
+			}
+		});
+	});
+
+	describe('get fontWeight()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const property of [
+				'inherit',
+				'normal',
+				'bold',
+				'bolder',
+				'lighter',
+				'100',
+				'200',
+				'300',
+				'400',
+				'500',
+				'600',
+				'700',
+				'800',
+				'900'
+			]) {
+				element.setAttribute('style', `font-weight: ${property}`);
+				expect(declaration.fontWeight).toBe(property);
+			}
+		});
+	});
+
+	describe('get fontStretch()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const property of [
+				'inherit',
+				'normal',
+				'ultra-condensed',
+				'extra-condensed',
+				'condensed',
+				'semi-condensed',
+				'semi-expanded',
+				'expanded',
+				'extra-expanded',
+				'ultra-expanded'
+			]) {
+				element.setAttribute('style', `font-stretch: ${property}`);
+				expect(declaration.fontStretch).toBe(property);
+			}
+		});
+	});
+
+	describe('get fontSize()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const property of [
+				'inherit',
+				'medium',
+				'xx-small',
+				'x-small',
+				'small',
+				'large',
+				'x-large',
+				'xx-large',
+				'smaller',
+				'larger',
+				'10px',
+				'10em',
+				'10%'
+			]) {
+				element.setAttribute('style', `font-size: ${property}`);
+				expect(declaration.fontSize).toBe(property);
+			}
+		});
+	});
+
+	describe('get lineHeight()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const property of ['inherit', 'normal', '10px', '10em', '10%', '10']) {
+				element.setAttribute('style', `line-height: ${property}`);
+				expect(declaration.lineHeight).toBe(property);
+			}
+		});
+	});
+
+	describe('get fontFamily()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const property of [
+				'inherit',
+				'serif',
+				'sans-serif',
+				'cursive',
+				'fantasy',
+				'monospace'
+			]) {
+				element.setAttribute('style', `font-family: ${property}`);
+				expect(declaration.fontFamily).toBe(property);
+			}
+
+			element.setAttribute('style', 'font-family: "Fira Sans", sans-serif');
+			expect(declaration.fontFamily).toBe('"Fira Sans", sans-serif');
+
+			element.setAttribute('style', 'font-family: Fira Sans, sans-serif');
+			expect(declaration.fontFamily).toBe('"Fira Sans", sans-serif');
+
+			element.setAttribute('style', 'font-family: "Fira Sans, sans-serif');
+			expect(declaration.fontFamily).toBe('"Fira Sans, sans-serif"');
+
+			element.setAttribute('style', 'font-family: Fira "Sans, sans-serif');
+			expect(declaration.fontFamily).toBe('');
+		});
+	});
+
+	describe('get color()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const property of ['inherit', 'red', 'rgb(255, 0, 0)', '#ff0000']) {
+				element.setAttribute('style', `color: ${property}`);
+				expect(declaration.color).toBe(property);
+			}
+		});
+	});
+
+	describe('get floodColor()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const property of ['inherit', 'red', 'rgb(255, 0, 0)', '#ff0000']) {
+				element.setAttribute('style', `flood-color: ${property}`);
+				expect(declaration.floodColor).toBe(property);
+			}
 		});
 	});
 

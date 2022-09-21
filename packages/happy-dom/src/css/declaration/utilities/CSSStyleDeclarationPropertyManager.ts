@@ -430,6 +430,9 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'background-position':
 				properties = CSSStyleDeclarationPropertySetParser.getBackgroundPosition(value, important);
 				break;
+			case 'width':
+				properties = CSSStyleDeclarationPropertySetParser.getWidth(value, important);
+				break;
 			case 'top':
 				properties = CSSStyleDeclarationPropertySetParser.getTop(value, important);
 				break;
@@ -465,9 +468,6 @@ export default class CSSStyleDeclarationPropertyManager {
 				break;
 			case 'font-family':
 				properties = CSSStyleDeclarationPropertySetParser.getFontFamily(value, important);
-				break;
-			case 'font-size':
-				properties = CSSStyleDeclarationPropertySetParser.getFontSize(value, important);
 				break;
 			case 'color':
 				properties = CSSStyleDeclarationPropertySetParser.getColor(value, important);
