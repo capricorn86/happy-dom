@@ -119,20 +119,10 @@ export default class CSSStyleDeclarationPropertyManager {
 				delete this.properties['border-image-outset'];
 				delete this.properties['border-image-repeat'];
 				break;
-			case 'border-left':
-				delete this.properties['border-left-width'];
-				delete this.properties['border-left-style'];
-				delete this.properties['border-left-color'];
-				delete this.properties['border-image-source'];
-				delete this.properties['border-image-slice'];
-				delete this.properties['border-image-width'];
-				delete this.properties['border-image-outset'];
-				delete this.properties['border-image-repeat'];
-				break;
-			case 'border-bottom':
-				delete this.properties['border-bottom-width'];
-				delete this.properties['border-bottom-style'];
-				delete this.properties['border-bottom-color'];
+			case 'border-top':
+				delete this.properties['border-top-width'];
+				delete this.properties['border-top-style'];
+				delete this.properties['border-top-color'];
 				delete this.properties['border-image-source'];
 				delete this.properties['border-image-slice'];
 				delete this.properties['border-image-width'];
@@ -149,10 +139,20 @@ export default class CSSStyleDeclarationPropertyManager {
 				delete this.properties['border-image-outset'];
 				delete this.properties['border-image-repeat'];
 				break;
-			case 'border-top':
-				delete this.properties['border-top-width'];
-				delete this.properties['border-top-style'];
-				delete this.properties['border-top-color'];
+			case 'border-bottom':
+				delete this.properties['border-bottom-width'];
+				delete this.properties['border-bottom-style'];
+				delete this.properties['border-bottom-color'];
+				delete this.properties['border-image-source'];
+				delete this.properties['border-image-slice'];
+				delete this.properties['border-image-width'];
+				delete this.properties['border-image-outset'];
+				delete this.properties['border-image-repeat'];
+				break;
+			case 'border-left':
+				delete this.properties['border-left-width'];
+				delete this.properties['border-left-style'];
+				delete this.properties['border-left-color'];
 				delete this.properties['border-image-source'];
 				delete this.properties['border-image-slice'];
 				delete this.properties['border-image-width'];

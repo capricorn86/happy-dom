@@ -1880,11 +1880,11 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute(
 				'style',
-				`border: 2px solid green;     border-radius:   2px;font-size:   12px;`
+				`border: green 2px solid;     border-radius:   2px;font-size:   12px;`
 			);
 
 			expect(declaration.cssText).toBe(
-				'border: 2px solid green; border-radius: 2px; font-size: 12px;'
+				'border: green 2px solid; border-radius: 2px; font-size: 12px;'
 			);
 		});
 
@@ -2033,10 +2033,75 @@ describe('CSSStyleDeclaration', () => {
 		it('Removes a CSS property when using element.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
-			declaration.removeProperty('border-radius');
+			element.setAttribute('style', `border: 2px solid blue; color: red;`);
+			declaration.removeProperty('border');
+			expect(element.getAttribute('style')).toBe('color: red;');
 
-			expect(element.getAttribute('style')).toBe('border: 2px solid green; font-size: 12px;');
+			element.setAttribute('style', `border-top: 2px solid blue; color: red;`);
+			declaration.removeProperty('border-top');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `border-right: 2px solid blue; color: red;`);
+			declaration.removeProperty('border-right');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `border-bottom: 2px solid blue; color: red;`);
+			declaration.removeProperty('border-bottom');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `border-left: 2px solid blue; color: red;`);
+			declaration.removeProperty('border-left');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `border-width: 2px; color: red;`);
+			declaration.removeProperty('border-width');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `border-style: solid; color: red;`);
+			declaration.removeProperty('border-style');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `border-color: blue; color: red;`);
+			declaration.removeProperty('border-color');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute(
+				'style',
+				`border-image: url('/media/examples/border-diamonds.png') 30; color: red;`
+			);
+			declaration.removeProperty('border-image');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `border-radius: 2px;color: red;`);
+			declaration.removeProperty('border-radius');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute(
+				'style',
+				`background: no-repeat center/80% url("../img/image.png");color: red;`
+			);
+			declaration.removeProperty('background');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `background-position: 25% 75%;color: red;`);
+			declaration.removeProperty('background-position');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `flex: 3 2 min-content;color: red;`);
+			declaration.removeProperty('flex');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `font: 1.2em "Fira Sans", sans-serif;color: red;`);
+			declaration.removeProperty('font');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `padding: 1px 2px 3px 4px;color: red;`);
+			declaration.removeProperty('padding');
+			expect(element.getAttribute('style')).toBe('color: red;');
+
+			element.setAttribute('style', `margin: 1px 2px 3px 4px;color: red;`);
+			declaration.removeProperty('margin');
+			expect(element.getAttribute('style')).toBe('color: red;');
 		});
 
 		it('Removes a CSS property without element.', () => {
