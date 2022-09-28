@@ -171,7 +171,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param value Value.
 	 */
 	public set selectedIndex(value: number) {
-		if (this.options.length - 1 > value || value < 0) {
+		if (value > this.options.length - 1 || value < 0) {
 			throw new DOMException(
 				'Select elements selected index must be valid',
 				DOMExceptionNameEnum.indexSizeError
