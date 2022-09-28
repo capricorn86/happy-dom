@@ -162,24 +162,15 @@ describe('XMLSerializer', () => {
 									:host {
 										display: block;
 									}
-									div {
-										color: red;
+									span {
+										color: pink;
 									}
 									.class1 {
-										color: blue;
-									}
-									.class1.class2 span {
-										color: green;
-									}
-									.class1[attr1="value1"] {
-										color: yellow;
-									}
-									[attr1="value1"] {
 										color: yellow;
 									}
 								</style>
 								<div>
-									<span>
+									<span class="class1">
 										key1 is "value1" and key2 is "value2".
 									</span>
 									<span><slot></slot></span>

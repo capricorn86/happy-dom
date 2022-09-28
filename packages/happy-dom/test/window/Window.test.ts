@@ -11,6 +11,7 @@ import Headers from '../../src/fetch/Headers';
 import Selection from '../../src/selection/Selection';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
+import CustomElement from '../../test/CustomElement';
 
 const MOCKED_NODE_FETCH = global['mockedModules']['node-fetch'];
 
@@ -24,6 +25,7 @@ describe('Window', () => {
 		MOCKED_NODE_FETCH.error = null;
 		window = new Window();
 		document = window.document;
+		window.customElements.define('custom-element', CustomElement);
 	});
 
 	afterEach(() => {
@@ -223,23 +225,59 @@ describe('Window', () => {
 
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
 			const parent = <IHTMLElement>document.createElement('div');
-			const element = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
-			const documentStyle = document.createElement('style');
+			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
+			const customElement = <CustomElement>document.createElement('custom-element');
 
-			documentStyle.innerHTML =
-				'div { font: 12px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif; }';
-			elementStyle.innerHTML = 'div { border: 1px solid #000; }';
+			window.happyDOM.setInnerWidth(1024);
+
+			parentStyle.innerHTML = `
+				div {
+					font: 12px/1.5 "Helvetica Neue", Helvetica, Arial,sans-serif;
+					color: red !important;
+					cursor: pointer;
+				}
+
+				span {
+					border-radius: 1px !important;
+				}
+
+				@media (min-width: 1024px) {
+					div {
+						font-size: 14px;
+					}
+				}
+
+				@media (max-width: 768px) {
+					div {
+						font-size: 20px;
+					}
+				}
+			`;
+
+			elementStyle.innerHTML = `
+				span {
+					border: 1px solid #000;
+					border-radius: 2px; 
+					color: green;
+					cursor: default;
+				}
+			`;
 
 			parent.appendChild(elementStyle);
 			parent.appendChild(element);
 
-			document.body.appendChild(documentStyle);
+			document.body.appendChild(parentStyle);
 			document.body.appendChild(parent);
+			document.body.appendChild(customElement);
 
-			expect(computedStyle.font).toBe('12px / 1.5 "Helvetica Neue", Helvetica, Arial, sans-serif');
+			expect(computedStyle.font).toBe('14px / 1.5 "Helvetica Neue", Helvetica, Arial, sans-serif');
 			expect(computedStyle.border).toBe('1px solid #000');
+			expect(computedStyle.borderRadius).toBe('1px');
+			expect(computedStyle.color).toBe('red');
+			expect(computedStyle.cursor).toBe('default');
 		});
 	});
 

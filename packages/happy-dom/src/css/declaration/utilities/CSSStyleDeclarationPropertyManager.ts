@@ -31,10 +31,7 @@ export default class CSSStyleDeclarationPropertyManager {
 							const important = trimmedValue.endsWith(' !important');
 							const valueWithoutImportant = trimmedValue.replace(' !important', '');
 
-							if (
-								valueWithoutImportant &&
-								(important || !this.properties[trimmedName]?.important)
-							) {
+							if (valueWithoutImportant && (important || !this.get(trimmedName)?.important)) {
 								this.set(trimmedName, valueWithoutImportant, important);
 							}
 						}
