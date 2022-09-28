@@ -234,7 +234,7 @@ export default class Document extends Node implements IDocument {
 			let activeElement: IHTMLElement = this._activeElement;
 			while (rootNode !== this) {
 				activeElement = <IHTMLElement>(<IShadowRoot>rootNode).host;
-				rootNode = <IShadowRoot | IDocument>activeElement.getRootNode();
+				rootNode = activeElement ? <IShadowRoot | IDocument>activeElement.getRootNode() : this;
 			}
 			return activeElement;
 		}
