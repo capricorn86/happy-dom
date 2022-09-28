@@ -10,6 +10,7 @@ export default `
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        --css-variable: 1px;
     }
 
     @media screen and (max-width: 36rem) {

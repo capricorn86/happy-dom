@@ -102,10 +102,27 @@ describe('HTMLElement', () => {
 			expect(element.innerText).toBe('The quick brown foxJumped over the lazy dog');
 		});
 
-		it('Returns rendered text with line breaks between block elements and without hidden elements being rendered if element is connected to the document.', () => {
-			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><script>var key = "value";</script><style>button { background: red; }</style><div>Jumped over the lazy dog</div>`;
+		it('Returns rendered text with line breaks between block and flex elements and without hidden elements being rendered if element is connected to the document.', () => {
 			document.body.appendChild(element);
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><script>var key = "value";</script><style>button { background: red; }</style><div>Jumped over the lazy dog</div>`;
 			expect(element.innerText).toBe('The quick brown fox\nJumped over the lazy dog');
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span style="display: flex">Jumped over the lazy dog</span><div>.</div>`;
+			expect(element.innerText).toBe('The quick brown fox\nJumped over the lazy dog\n.');
+		});
+
+		it('Returns rendered text affected by the "text-transform" CSS property.', () => {
+			document.body.appendChild(element);
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span>Jumped over the lazy dog</span><style>span { text-transform: uppercase; display: block; }</style>`;
+			expect(element.innerText).toBe('The quick brown fox\nJUMPED OVER THE LAZY DOG');
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span>JUMPED OVER THE LAZY DOG</span><style>span { text-transform: lowercase; display: block; }</style>`;
+			expect(element.innerText).toBe('The quick brown fox\njumped over the lazy dog');
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span>jumped over the lazy dog</span><style>span { text-transform: capitalize; display: block; }</style>`;
+			expect(element.innerText).toBe('The quick brown fox\nJumped Over The Lazy Dog');
 		});
 	});
 

@@ -72,11 +72,27 @@ export default class HTMLElement extends Element implements IHTMLElement {
 				const display = computedStyle.display;
 
 				if (element.tagName !== 'SCRIPT' && element.tagName !== 'STYLE' && display !== 'none') {
-					if (display === 'block' && result) {
+					const textTransform = computedStyle.textTransform;
+
+					if ((display === 'block' || display === 'flex') && result) {
 						result += '\n';
 					}
 
-					result += element.innerText;
+					let text = element.innerText;
+
+					switch (textTransform) {
+						case 'uppercase':
+							text = text.toUpperCase();
+							break;
+						case 'lowercase':
+							text = text.toLowerCase();
+							break;
+						case 'capitalize':
+							text = text.replace(/(^|\s)\S/g, (l) => l.toUpperCase());
+							break;
+					}
+
+					result += text;
 				}
 			} else if (childNode.nodeType === NodeTypeEnum.textNode) {
 				result += childNode.textContent.replace(/[\n\r]/, '');

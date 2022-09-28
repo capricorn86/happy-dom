@@ -26,9 +26,9 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[0]).style[0]).toBe('display');
 			expect((<CSSStyleRule>cssRules[0]).style[1]).toBe('overflow');
 			expect((<CSSStyleRule>cssRules[0]).style[2]).toBe('width');
-			expect((<CSSStyleRule>cssRules[0]).style['display']).toBe('flex');
-			expect((<CSSStyleRule>cssRules[0]).style['overflow']).toBe('hidden');
-			expect((<CSSStyleRule>cssRules[0]).style['width']).toBe('100%');
+			expect((<CSSStyleRule>cssRules[0]).style.display).toBe('flex');
+			expect((<CSSStyleRule>cssRules[0]).style.overflow).toBe('hidden');
+			expect((<CSSStyleRule>cssRules[0]).style.width).toBe('100%');
 			expect((<CSSStyleRule>cssRules[0]).style.cssText).toBe(
 				'display: flex; overflow: hidden; width: 100%;'
 			);
@@ -38,20 +38,22 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[1]).parentStyleSheet).toBe(cssStyleSheet);
 			expect((<CSSStyleRule>cssRules[1]).selectorText).toBe('.container');
 			expect((<CSSStyleRule>cssRules[1]).cssText).toBe(
-				'.container { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }'
+				'.container { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px; }'
 			);
-			expect((<CSSStyleRule>cssRules[1]).style.length).toBe(4);
+			expect((<CSSStyleRule>cssRules[1]).style.length).toBe(5);
 			expect((<CSSStyleRule>cssRules[1]).style.parentRule).toBe(cssRules[1]);
 			expect((<CSSStyleRule>cssRules[1]).style[0]).toBe('flex-grow');
 			expect((<CSSStyleRule>cssRules[1]).style[1]).toBe('display');
 			expect((<CSSStyleRule>cssRules[1]).style[2]).toBe('flex-direction');
 			expect((<CSSStyleRule>cssRules[1]).style[3]).toBe('overflow');
-			expect((<CSSStyleRule>cssRules[1]).style['flexGrow']).toBe('1');
-			expect((<CSSStyleRule>cssRules[1]).style['display']).toBe('flex');
-			expect((<CSSStyleRule>cssRules[1]).style['flexDirection']).toBe('column');
-			expect((<CSSStyleRule>cssRules[1]).style['overflow']).toBe('hidden');
+			expect((<CSSStyleRule>cssRules[1]).style[4]).toBe('--css-variable');
+			expect((<CSSStyleRule>cssRules[1]).style.flexGrow).toBe('1');
+			expect((<CSSStyleRule>cssRules[1]).style.display).toBe('flex');
+			expect((<CSSStyleRule>cssRules[1]).style.flexDirection).toBe('column');
+			expect((<CSSStyleRule>cssRules[1]).style.overflow).toBe('hidden');
+			expect((<CSSStyleRule>cssRules[1]).style.getPropertyValue('--css-variable')).toBe('1px');
 			expect((<CSSStyleRule>cssRules[1]).style.cssText).toBe(
-				'flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;'
+				'flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px;'
 			);
 
 			// CSSMediaRule
@@ -72,8 +74,8 @@ describe('CSSParser', () => {
 			expect(children1[0].style.parentRule).toBe(children1[0]);
 			expect(children1[0].style[0]).toBe('height');
 			expect(children1[0].style[1]).toBe('animation');
-			expect(children1[0].style['height']).toBe('0.5rem');
-			expect(children1[0].style['animation']).toBe('keyframes2 2s linear infinite');
+			expect(children1[0].style.height).toBe('0.5rem');
+			expect(children1[0].style.animation).toBe('keyframes2 2s linear infinite');
 			expect(children1[0].cssText).toBe(
 				'.container { height: 0.5rem; animation: keyframes2 2s linear infinite; }'
 			);
@@ -93,14 +95,14 @@ describe('CSSParser', () => {
 			expect(children2[0].style.length).toBe(1);
 			expect(children2[0].style.parentRule).toBe(children2[0]);
 			expect(children2[0].style[0]).toBe('transform');
-			expect(children2[0].style['transform']).toBe('rotate(0deg)');
+			expect(children2[0].style.transform).toBe('rotate(0deg)');
 			expect(children2[0].cssText).toBe('from { transform: rotate(0deg); }');
 			expect(children2[1].parentRule).toBe(cssRules[3]);
 			expect(children2[1].parentStyleSheet).toBe(cssStyleSheet);
 			expect(children2[1].keyText).toBe('to');
 			expect(children2[1].style.length).toBe(1);
 			expect(children2[1].style[0]).toBe('transform');
-			expect(children2[1].style['transform']).toBe('rotate(360deg)');
+			expect(children2[1].style.transform).toBe('rotate(360deg)');
 			expect(children2[1].cssText).toBe('to { transform: rotate(360deg); }');
 
 			// CSSKeyframesRule
@@ -118,14 +120,14 @@ describe('CSSParser', () => {
 			expect(children3[0].style.length).toBe(1);
 			expect(children3[0].style.parentRule).toBe(children3[0]);
 			expect(children3[0].style[0]).toBe('transform');
-			expect(children3[0].style['transform']).toBe('rotate(0deg)');
+			expect(children3[0].style.transform).toBe('rotate(0deg)');
 			expect(children3[0].cssText).toBe('0% { transform: rotate(0deg); }');
 			expect(children3[1].parentRule).toBe(cssRules[4]);
 			expect(children3[1].parentStyleSheet).toBe(cssStyleSheet);
 			expect(children3[1].keyText).toBe('100%');
 			expect(children3[1].style.length).toBe(1);
 			expect(children3[1].style[0]).toBe('transform');
-			expect(children3[1].style['transform']).toBe('rotate(360deg)');
+			expect(children3[1].style.transform).toBe('rotate(360deg)');
 			expect(children3[1].cssText).toBe('100% { transform: rotate(360deg); }');
 		});
 	});

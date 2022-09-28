@@ -927,6 +927,7 @@ describe('CSSStyleDeclaration', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
 			for (const value of [
+				'var(--test-variable)',
 				'inherit',
 				'initial',
 				'revert',
@@ -1854,6 +1855,30 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
+	describe('get textTransform()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const value of [
+				'var(--test-variable)',
+				'inherit',
+				'initial',
+				'revert',
+				'unset',
+				'capitalize',
+				'uppercase',
+				'lowercase',
+				'none',
+				'full-width',
+				'full-size-kana'
+			]) {
+				element.setAttribute('style', `text-transform: ${value}`);
+
+				expect(declaration.textTransform).toBe(value);
+			}
+		});
+	});
+
 	describe('get length()', () => {
 		it('Returns length when of styles on element.', () => {
 			const declaration = new CSSStyleDeclaration(element);
@@ -1884,7 +1909,7 @@ describe('CSSStyleDeclaration', () => {
 			);
 
 			expect(declaration.cssText).toBe(
-				'border: green 2px solid; border-radius: 2px; font-size: 12px;'
+				'border: 2px solid green; border-radius: 2px; font-size: 12px;'
 			);
 		});
 
@@ -2026,6 +2051,17 @@ describe('CSSStyleDeclaration', () => {
 			declaration.setProperty('border', '');
 
 			expect(element.getAttribute('style')).toBe(null);
+		});
+
+		it('Can set a CSS variable.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', `border: 2px solid green;`);
+
+			declaration.setProperty('--test-key', 'value');
+
+			expect(element.getAttribute('style')).toBe('border: 2px solid green; --test-key: value;');
+			expect(declaration.getPropertyValue('--test-key')).toBe('value');
 		});
 	});
 

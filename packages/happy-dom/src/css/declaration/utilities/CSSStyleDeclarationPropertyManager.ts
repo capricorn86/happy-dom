@@ -475,6 +475,9 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'flood-color':
 				properties = CSSStyleDeclarationPropertySetParser.getFloodColor(value, important);
 				break;
+			case 'text-transform':
+				properties = CSSStyleDeclarationPropertySetParser.getTextTransform(value, important);
+				break;
 			default:
 				const trimmedValue = value.trim();
 				if (trimmedValue) {

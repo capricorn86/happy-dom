@@ -81,6 +81,14 @@ const DISPLAY = [
 	'list-item'
 ];
 const BORDER_IMAGE_REPEAT = ['stretch', 'repeat', 'round', 'space'];
+const TEXT_TRANSFORM = [
+	'capitalize',
+	'uppercase',
+	'lowercase',
+	'none',
+	'full-width',
+	'full-size-kana'
+];
 
 /**
  * Computed style property parser.
@@ -2584,5 +2592,30 @@ export default class CSSStyleDeclarationPropertySetParser {
 				value: parsedValue
 			}
 		};
+	}
+
+	/**
+	 * Returns font family.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getTextTransform(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const lowerValue = value.toLowerCase();
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			(TEXT_TRANSFORM.includes(lowerValue) && lowerValue);
+		if (parsedValue) {
+			return {
+				'text-transform': { value: parsedValue, important }
+			};
+		}
+		return null;
 	}
 }

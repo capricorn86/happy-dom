@@ -8,6 +8,7 @@ const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
 const INTEGER_REGEXP = /^[0-9]+$/;
 const FLOAT_REGEXP = /^[0-9.]+$/;
 const CALC_REGEXP = /^calc\([^^)]+\)$/;
+const CSS_VARIABLE_REGEXP = /^var\( *--[^)]+\)$/;
 const FIT_CONTENT_REGEXP = /^fit-content\([^^)]+\)$/;
 const GRADIENT_REGEXP =
 	/^(repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient\([^)]+\)$/;
@@ -405,6 +406,9 @@ export default class CSSStyleDeclarationValueParser {
 	 * @returns Parsed value.
 	 */
 	public static getGlobal(value: string): string {
+		if (CSS_VARIABLE_REGEXP.test(value)) {
+			return value;
+		}
 		const lowerValue = value.toLowerCase();
 		return GLOBALS.includes(lowerValue) ? lowerValue : null;
 	}
