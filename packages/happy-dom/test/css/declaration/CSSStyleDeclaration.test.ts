@@ -2183,5 +2183,31 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.getPropertyValue('font-size')).toBe('12px');
 			expect(declaration.getPropertyValue('background')).toBe('');
 		});
+
+		it('Does not override important values when defined multiple times.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute(
+				'style',
+				`text-transform: uppercase !important; text-transform: capitalize;`
+			);
+
+			expect(declaration.getPropertyValue('text-transform')).toBe('uppercase');
+			expect(declaration.getPropertyPriority('text-transform')).toBe('important');
+		});
+	});
+
+	describe('getPropertyPriority()', () => {
+		it('Returns property priority.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', `text-transform: uppercase`);
+
+			expect(declaration.getPropertyPriority('text-transform')).toBe('');
+
+			element.setAttribute('style', `text-transform: uppercase !important`);
+
+			expect(declaration.getPropertyPriority('text-transform')).toBe('important');
+		});
 	});
 });

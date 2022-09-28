@@ -184,4 +184,18 @@ export default abstract class AbstractCSSStyleDeclaration {
 		}
 		return this._style.get(name)?.value || '';
 	}
+
+	/**
+	 * Returns a property.
+	 *
+	 * @param name Property name in kebab case.
+	 * @returns "important" if set to be important.
+	 */
+	public getPropertyPriority(name: string): string {
+		if (this._ownerElement) {
+			const style = CSSStyleDeclarationElement.getElementStyle(this._ownerElement, this._computed);
+			return style.get(name)?.important ? 'important' : '';
+		}
+		return this._style.get(name)?.important ? 'important' : '';
+	}
 }

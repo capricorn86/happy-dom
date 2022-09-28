@@ -98,7 +98,9 @@ export default class CSSStyleDeclarationElement {
 			);
 			for (const name of Object.keys(properties)) {
 				if (CSSStyleDeclarationElementInheritedProperties.includes(name)) {
-					inheritedProperties[name] = properties[name];
+					if (!inheritedProperties[name]?.important || properties[name].important) {
+						inheritedProperties[name] = properties[name];
+					}
 				}
 			}
 		}
@@ -107,13 +109,20 @@ export default class CSSStyleDeclarationElement {
 			targetElement.cssText + (targetElement.element['_attributes']['style']?.value || '')
 		);
 
-		targetPropertyManager.properties = Object.assign(
+		const targetProperties = Object.assign(
 			{},
 			CSSStyleDeclarationElementDefaultProperties.default,
 			CSSStyleDeclarationElementDefaultProperties[targetElement.element.tagName],
-			inheritedProperties,
-			targetPropertyManager.properties
+			inheritedProperties
 		);
+
+		for (const name of Object.keys(targetPropertyManager.properties)) {
+			if (!targetProperties[name]?.important || targetPropertyManager.properties[name].important) {
+				targetProperties[name] = targetPropertyManager.properties[name];
+			}
+		}
+
+		targetPropertyManager.properties = targetProperties;
 
 		return targetPropertyManager;
 	}

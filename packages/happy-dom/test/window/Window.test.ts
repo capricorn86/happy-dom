@@ -215,6 +215,10 @@ describe('Window', () => {
 			window.document.body.appendChild(element);
 
 			expect(computedStyle.color).toBe('red');
+
+			element.style.color = 'green';
+
+			expect(computedStyle.color).toBe('green');
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
@@ -235,6 +239,7 @@ describe('Window', () => {
 			document.body.appendChild(parent);
 
 			expect(computedStyle.font).toBe('12px / 1.5 "Helvetica Neue", Helvetica, Arial, sans-serif');
+			expect(computedStyle.border).toBe('1px solid #000');
 		});
 	});
 
@@ -301,11 +306,16 @@ describe('Window', () => {
 
 	describe('matchMedia()', () => {
 		it('Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.', () => {
-			const mediaQueryString = '(max-width: 600px)';
+			window.happyDOM.setInnerWidth(1024);
+
+			const mediaQueryString = '(max-width: 512px)';
 			const mediaQueryList = window.matchMedia(mediaQueryString);
 			expect(mediaQueryList.matches).toBe(false);
 			expect(mediaQueryList.media).toBe(mediaQueryString);
 			expect(mediaQueryList.onchange).toBe(null);
+
+			expect(window.matchMedia('(max-width: 1024px)').matches).toBe(true);
+
 			expect(typeof mediaQueryList.addEventListener).toBe('function');
 			expect(typeof mediaQueryList.removeEventListener).toBe('function');
 		});

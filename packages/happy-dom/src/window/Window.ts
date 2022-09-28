@@ -35,6 +35,7 @@ import CustomEvent from '../event/events/CustomEvent';
 import AnimationEvent from '../event/events/AnimationEvent';
 import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
+import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
 import EventTarget from '../event/EventTarget';
 import URL from '../location/URL';
 import Location from '../location/Location';
@@ -119,7 +120,19 @@ export default class Window extends EventTarget implements IWindow {
 		cancelAsync: (): void => {
 			this.happyDOM.asyncTaskManager.cancelAll();
 		},
-		asyncTaskManager: new AsyncTaskManager()
+		asyncTaskManager: new AsyncTaskManager(),
+		setInnerWidth: (width: number): void => {
+			if (this.innerWidth !== width) {
+				(<number>this.innerWidth) = width;
+				this.dispatchEvent(new Event('resize'));
+			}
+		},
+		setInnerHeight: (height: number): void => {
+			if (this.innerHeight !== height) {
+				(<number>this.innerHeight) = height;
+				this.dispatchEvent(new Event('resize'));
+			}
+		}
 	};
 
 	// Global classes
@@ -168,6 +181,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly ErrorEvent = ErrorEvent;
 	public readonly StorageEvent = StorageEvent;
 	public readonly ProgressEvent = ProgressEvent;
+	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly EventTarget = EventTarget;
 	public readonly DataTransfer = DataTransfer;
 	public readonly DataTransferItem = DataTransferItem;
@@ -188,7 +202,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly URLSearchParams = URLSearchParams;
 	public readonly HTMLCollection = HTMLCollection;
 	public readonly NodeList = NodeList;
-	public readonly MediaQueryList = MediaQueryList;
 	public readonly CSSUnitValue = CSSUnitValue;
 	public readonly Selection = Selection;
 	public readonly Navigator = Navigator;
@@ -226,12 +239,12 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly window = this;
 	public readonly globalThis = this;
 	public readonly screen = new Screen();
-	public readonly innerWidth = 1024;
-	public readonly innerHeight = 768;
 	public readonly devicePixelRatio = 1;
 	public readonly sessionStorage = new Storage();
 	public readonly localStorage = new Storage();
 	public readonly performance = PerfHooks.performance;
+	public readonly innerWidth: number;
+	public readonly innerHeight: number;
 
 	// Node.js Globals
 	public ArrayBuffer;
@@ -304,9 +317,21 @@ export default class Window extends EventTarget implements IWindow {
 
 	/**
 	 * Constructor.
+	 *
+	 * @param [options] Options.
+	 * @param [options.innerWidth] Inner width.
+	 * @param [options.innerHeight] Inner height.
+	 * @param [options.url] URL.
 	 */
-	constructor() {
+	constructor(options?: { innerWidth?: number; innerHeight?: number; url?: string }) {
 		super();
+
+		this.innerWidth = options?.innerWidth ? options.innerWidth : 0;
+		this.innerHeight = options?.innerHeight ? options.innerHeight : 0;
+
+		if (options?.url) {
+			this.location.href = options.url;
+		}
 
 		this._setTimeout = ORIGINAL_SET_TIMEOUT;
 		this._clearTimeout = ORIGINAL_CLEAR_TIMEOUT;
@@ -485,9 +510,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns A new MediaQueryList.
 	 */
 	public matchMedia(mediaQueryString: string): MediaQueryList {
-		const mediaQueryList = new MediaQueryList();
-		mediaQueryList._media = mediaQueryString;
-		return mediaQueryList;
+		return new MediaQueryList(this, mediaQueryString);
 	}
 
 	/**

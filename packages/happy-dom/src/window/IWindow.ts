@@ -35,6 +35,7 @@ import CustomEvent from '../event/events/CustomEvent';
 import AnimationEvent from '../event/events/AnimationEvent';
 import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
+import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
 import EventTarget from '../event/EventTarget';
 import URL from '../location/URL';
 import Location from '../location/Location';
@@ -97,6 +98,8 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 		whenAsyncComplete: () => Promise<void>;
 		cancelAsync: () => void;
 		asyncTaskManager: AsyncTaskManager;
+		setInnerWidth: (width: number) => void;
+		setInnerHeight: (height: number) => void;
 	};
 
 	// Global classes
@@ -147,6 +150,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly ErrorEvent: typeof ErrorEvent;
 	readonly StorageEvent: typeof StorageEvent;
 	readonly ProgressEvent: typeof ProgressEvent;
+	readonly MediaQueryListEvent: typeof MediaQueryListEvent;
 	readonly EventTarget: typeof EventTarget;
 	readonly DataTransfer: typeof DataTransfer;
 	readonly DataTransferItem: typeof DataTransferItem;
