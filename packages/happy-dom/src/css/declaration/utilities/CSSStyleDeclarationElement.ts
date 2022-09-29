@@ -42,6 +42,7 @@ export default class CSSStyleDeclarationElement {
 	 * @returns Style sheets.
 	 */
 	private static getComputedElementStyle(element: IElement): CSSStyleDeclarationPropertyManager {
+		const documentElements: Array<{ element: IElement; cssText: string }> = [];
 		const parentElements: Array<{ element: IElement; cssText: string }> = [];
 		const inheritedProperties: { [k: string]: ICSSStyleDeclarationPropertyValue } = {};
 		let styleAndElement = { element: <IElement | IShadowRoot | IDocument>element, cssText: '' };
@@ -51,10 +52,16 @@ export default class CSSStyleDeclarationElement {
 			return new CSSStyleDeclarationPropertyManager();
 		}
 
+		// Walks through all parent elements and applies style to them.
 		while (styleAndElement.element) {
 			if (styleAndElement.element.nodeType === NodeTypeEnum.elementNode) {
+				const rootNode = styleAndElement.element.getRootNode();
+				if (rootNode.nodeType === NodeTypeEnum.documentNode) {
+					documentElements.unshift(<{ element: IElement; cssText: string }>styleAndElement);
+				} else {
+					shadowRootElements.unshift(<{ element: IElement; cssText: string }>styleAndElement);
+				}
 				parentElements.unshift(<{ element: IElement; cssText: string }>styleAndElement);
-				shadowRootElements.unshift(<{ element: IElement; cssText: string }>styleAndElement);
 			}
 
 			if (styleAndElement.element === element.ownerDocument) {
@@ -63,7 +70,7 @@ export default class CSSStyleDeclarationElement {
 				);
 
 				for (const styleSheet of styleSheets) {
-					this.applyCSSTextToElements(parentElements, styleSheet.sheet.cssRules);
+					this.applyCSSTextToElements(documentElements, styleSheet.sheet.cssRules);
 				}
 
 				styleAndElement = { element: null, cssText: '' };
@@ -90,6 +97,7 @@ export default class CSSStyleDeclarationElement {
 
 		const targetElement = parentElements[parentElements.length - 1];
 
+		// Walks through all parent elements and merges inherited properties.
 		for (const parentElement of parentElements) {
 			if (parentElement !== targetElement) {
 				const propertyManager = new CSSStyleDeclarationPropertyManager(
@@ -111,6 +119,7 @@ export default class CSSStyleDeclarationElement {
 			}
 		}
 
+		// Merges together styles in the target element with inherited properties.
 		const targetPropertyManager = new CSSStyleDeclarationPropertyManager(
 			targetElement.cssText + (targetElement.element['_attributes']['style']?.value || '')
 		);
@@ -155,18 +164,23 @@ export default class CSSStyleDeclarationElement {
 
 		for (const rule of cssRules) {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
-				for (const element of elements) {
-					const selectorText: string = (<CSSStyleRule>rule).selectorText;
-
-					if (selectorText) {
-						if (hostElement && selectorText.startsWith(':host')) {
-							const firstBracket = rule.cssText.indexOf('{');
-							const lastBracket = rule.cssText.lastIndexOf('}');
-							hostElement.cssText += rule.cssText.substring(firstBracket + 1, lastBracket);
-						} else if (element.element.matches(selectorText)) {
-							const firstBracket = rule.cssText.indexOf('{');
-							const lastBracket = rule.cssText.lastIndexOf('}');
-							element.cssText += rule.cssText.substring(firstBracket + 1, lastBracket);
+				const selectorText: string = (<CSSStyleRule>rule).selectorText;
+				if (selectorText) {
+					if (selectorText.startsWith(':host')) {
+						if (hostElement) {
+							const cssText = rule.cssText;
+							const firstBracket = cssText.indexOf('{');
+							const lastBracket = cssText.lastIndexOf('}');
+							hostElement.cssText += cssText.substring(firstBracket + 1, lastBracket);
+						}
+					} else {
+						for (const element of elements) {
+							if (element.element.matches(selectorText)) {
+								const cssText = rule.cssText;
+								const firstBracket = cssText.indexOf('{');
+								const lastBracket = cssText.lastIndexOf('}');
+								element.cssText += cssText.substring(firstBracket + 1, lastBracket);
+							}
 						}
 					}
 				}
@@ -174,7 +188,7 @@ export default class CSSStyleDeclarationElement {
 				rule.type === CSSRuleTypeEnum.mediaRule &&
 				defaultView.matchMedia((<CSSMediaRule>rule).conditionalText).matches
 			) {
-				this.applyCSSTextToElements(elements, (<CSSMediaRule>rule).cssRules);
+				this.applyCSSTextToElements(elements, (<CSSMediaRule>rule).cssRules, hostElement);
 			}
 		}
 	}

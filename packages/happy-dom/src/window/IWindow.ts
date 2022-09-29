@@ -88,6 +88,7 @@ import Window from './Window';
 import Attr from '../nodes/attr/Attr';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
+import IElement from '../nodes/element/IElement';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -223,7 +224,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * @param element Element.
 	 * @returns CSS style declaration.
 	 */
-	getComputedStyle(element: IHTMLElement): CSSStyleDeclaration;
+	getComputedStyle(element: IElement): CSSStyleDeclaration;
 
 	/**
 	 * Returns selection.

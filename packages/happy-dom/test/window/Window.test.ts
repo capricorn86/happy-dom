@@ -229,7 +229,6 @@ describe('Window', () => {
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
-			const customElement = <CustomElement>document.createElement('custom-element');
 
 			window.happyDOM.setInnerWidth(1024);
 
@@ -271,13 +270,41 @@ describe('Window', () => {
 
 			document.body.appendChild(parentStyle);
 			document.body.appendChild(parent);
-			document.body.appendChild(customElement);
 
 			expect(computedStyle.font).toBe('14px / 1.5 "Helvetica Neue", Helvetica, Arial, sans-serif');
 			expect(computedStyle.border).toBe('1px solid #000');
 			expect(computedStyle.borderRadius).toBe('1px');
 			expect(computedStyle.color).toBe('red');
 			expect(computedStyle.cursor).toBe('default');
+		});
+
+		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
+			const element = <IHTMLElement>document.createElement('span');
+			const elementStyle = document.createElement('style');
+			const customElement = <CustomElement>document.createElement('custom-element');
+			const elementComputedStyle = window.getComputedStyle(element);
+
+			elementStyle.innerHTML = `
+				span {
+					color: green;
+				}
+			`;
+
+			document.body.appendChild(elementStyle);
+			document.body.appendChild(element);
+			document.body.appendChild(customElement);
+
+			const customElementComputedStyle = window.getComputedStyle(
+				customElement.shadowRoot.querySelector('span')
+			);
+
+			expect(elementComputedStyle.font).toBe('');
+			expect(elementComputedStyle.color).toBe('green');
+
+			expect(customElementComputedStyle.color).toBe('yellow');
+			expect(customElementComputedStyle.font).toBe(
+				'14px "Lucida Grande", Helvetica, Arial, sans-serif'
+			);
 		});
 	});
 

@@ -43,6 +43,7 @@ export default class CustomElement extends new Window().HTMLElement {
             <style>
                 :host {
                     display: block;
+                    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
                 }
                 span {
                     color: pink;
