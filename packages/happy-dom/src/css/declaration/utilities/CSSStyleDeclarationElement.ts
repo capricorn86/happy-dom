@@ -250,6 +250,6 @@ export default class CSSStyleDeclarationElement {
 			}
 			newValue = newValue.replace(match[0], cssVariableValue);
 		}
-		return value !== newValue ? newValue : value;
+		return newValue;
 	}
 }
