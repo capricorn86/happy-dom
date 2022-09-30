@@ -278,7 +278,7 @@ describe('Window', () => {
 			expect(computedStyle.cursor).toBe('default');
 		});
 
-		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
+		it('Returns a CSSStyleDeclaration object with computed styles from style sheets for elements in a HTMLShadowRoot.', () => {
 			const element = <IHTMLElement>document.createElement('span');
 			const elementStyle = document.createElement('style');
 			const customElement = <CustomElement>document.createElement('custom-element');
@@ -305,6 +305,40 @@ describe('Window', () => {
 			expect(customElementComputedStyle.font).toBe(
 				'14px "Lucida Grande", Helvetica, Arial, sans-serif'
 			);
+		});
+
+		it('Returns values defined by a CSS variables.', () => {
+			const parent = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			window.happyDOM.setInnerWidth(1024);
+
+			parentStyle.innerHTML = `
+				div {
+					--color-variable: #000;
+					--valid-variable: 1px solid var(--color-variable);
+					--invalid-variable: invalid;
+				}
+			`;
+
+			elementStyle.innerHTML = `
+				span {
+					border: var(--valid-variable);
+					font: var(--invalid-variable);
+				}
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.border).toBe('1px solid #000');
+			expect(computedStyle.font).toBe('');
 		});
 	});
 

@@ -6,8 +6,23 @@ import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration';
  */
 export default class CSSKeyframeRule extends CSSRule {
 	public readonly type = CSSRule.KEYFRAME_RULE;
-	public readonly style: CSSStyleDeclaration;
 	public readonly keyText: string;
+	public _cssText = '';
+	private _style: CSSStyleDeclaration = null;
+
+	/**
+	 * Returns style.
+	 *
+	 * @returns Style.
+	 */
+	public get style(): CSSStyleDeclaration {
+		if (!this._style) {
+			this._style = new CSSStyleDeclaration();
+			(<CSSRule>this._style.parentRule) = this;
+			this._style.cssText = this._cssText;
+		}
+		return this._style;
+	}
 
 	/**
 	 * Returns css text.

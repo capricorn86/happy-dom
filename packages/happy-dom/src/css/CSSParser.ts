@@ -4,7 +4,6 @@ import CSSStyleRule from './rules/CSSStyleRule';
 import CSSKeyframeRule from './rules/CSSKeyframeRule';
 import CSSKeyframesRule from './rules/CSSKeyframesRule';
 import CSSMediaRule from './rules/CSSMediaRule';
-import CSSStyleDeclaration from './declaration/CSSStyleDeclaration';
 
 const COMMENT_REGEXP = /\/\*[^*]*\*\//gm;
 
@@ -86,10 +85,7 @@ export default class CSSParser {
 						case CSSRule.FONT_FACE_RULE:
 						case CSSRule.KEYFRAME_RULE:
 						case CSSRule.STYLE_RULE:
-							const style = new CSSStyleDeclaration();
-							style.cssText = cssText;
-							(<CSSRule>style.parentRule) = parentRule;
-							(<CSSStyleDeclaration>(<CSSStyleRule>parentRule).style) = style;
+							(<CSSStyleRule>parentRule)._cssText = cssText;
 							break;
 					}
 				}

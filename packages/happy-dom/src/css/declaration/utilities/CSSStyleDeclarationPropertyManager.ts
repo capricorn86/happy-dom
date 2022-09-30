@@ -2,6 +2,7 @@ import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyVal
 import CSSStyleDeclarationPropertySetParser from './CSSStyleDeclarationPropertySetParser';
 import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser';
 import CSSStyleDeclarationPropertyGetParser from './CSSStyleDeclarationPropertyGetParser';
+import CSSStyleDeclarationCSSParser from './CSSStyleDeclarationCSSParser';
 
 /**
  * Computed this.properties property parser.
@@ -15,29 +16,16 @@ export default class CSSStyleDeclarationPropertyManager {
 	/**
 	 * Class construtor.
 	 *
-	 * @param [cssString] CSS string.
+	 * @param [options] Options.
+	 * @param [options.cssText] CSS string.
 	 */
-	constructor(cssString?: string) {
-		if (cssString) {
-			const parts = cssString.split(';');
-
-			for (const part of parts) {
-				if (part) {
-					const [name, value]: string[] = part.trim().split(':');
-					if (value) {
-						const trimmedName = name.trim();
-						const trimmedValue = value.trim();
-						if (trimmedName && trimmedValue) {
-							const important = trimmedValue.endsWith(' !important');
-							const valueWithoutImportant = trimmedValue.replace(' !important', '');
-
-							if (valueWithoutImportant && (important || !this.get(trimmedName)?.important)) {
-								this.set(trimmedName, valueWithoutImportant, important);
-							}
-						}
-					}
+	constructor(options?: { cssText?: string }) {
+		if (options?.cssText) {
+			CSSStyleDeclarationCSSParser.parse(options.cssText, (name, value, important) => {
+				if (important || !this.get(name)?.important) {
+					this.set(name, value, important);
 				}
-			}
+			});
 		}
 	}
 
@@ -51,7 +39,6 @@ export default class CSSStyleDeclarationPropertyManager {
 		if (this.properties[name]) {
 			return this.properties[name];
 		}
-
 		switch (name) {
 			case 'margin':
 				return CSSStyleDeclarationPropertyGetParser.getMargin(this.properties);

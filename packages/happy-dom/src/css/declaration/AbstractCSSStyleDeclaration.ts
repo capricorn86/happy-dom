@@ -10,7 +10,6 @@ import CSSStyleDeclarationPropertyManager from './utilities/CSSStyleDeclarationP
  * CSS Style Declaration.
  */
 export default abstract class AbstractCSSStyleDeclaration {
-	// Other properties
 	public readonly parentRule: CSSRule = null;
 	protected _style: CSSStyleDeclarationPropertyManager = null;
 	protected _ownerElement: IElement;
@@ -73,7 +72,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 		}
 
 		if (this._ownerElement) {
-			const style = new CSSStyleDeclarationPropertyManager(cssText);
+			const style = new CSSStyleDeclarationPropertyManager({ cssText });
 			if (!style.size()) {
 				delete this._ownerElement['_attributes']['style'];
 			} else {
@@ -86,7 +85,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 				this._ownerElement['_attributes']['style'].value = style.toString();
 			}
 		} else {
-			this._style = new CSSStyleDeclarationPropertyManager(cssText);
+			this._style = new CSSStyleDeclarationPropertyManager({ cssText });
 		}
 	}
 

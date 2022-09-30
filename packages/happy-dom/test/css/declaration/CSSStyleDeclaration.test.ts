@@ -1693,6 +1693,7 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.font).toBe('small-caps bold 24px / 1 sans-serif');
 
 			element.setAttribute('style', 'font: caption');
+			debugger;
 			expect(declaration.font).toBe('caption');
 		});
 	});
