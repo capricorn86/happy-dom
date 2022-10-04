@@ -39,4 +39,16 @@ export default `
             transform: rotate(360deg);
         }
     }
+
+    @container (min-width: 36rem) {
+        .container {
+            color: red;
+        }
+    }
+
+    @container name (min-width: 36rem) {
+        .container {
+            color: red;
+        }
+    }
 `.trim();

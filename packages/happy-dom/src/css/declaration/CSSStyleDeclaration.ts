@@ -1577,6 +1577,14 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 		return this.item(391) || undefined;
 	}
 
+	public get 392(): string {
+		return this.item(392) || undefined;
+	}
+
+	public get 393(): string {
+		return this.item(393) || undefined;
+	}
+
 	/**
 	 * CSS properties
 	 */
@@ -4715,5 +4723,21 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 
 	public set zoom(value: string) {
 		this.setProperty('zoom', value);
+	}
+
+	public get containerType(): string {
+		return this.getPropertyValue('container-type');
+	}
+
+	public set containerType(value: string) {
+		this.setProperty('container-type', value);
+	}
+
+	public get containerName(): string {
+		return this.getPropertyValue('container-name');
+	}
+
+	public set containerName(value: string) {
+		this.setProperty('container-name', value);
 	}
 }

@@ -5,6 +5,7 @@ import CSSRuleTypeEnum from './CSSRuleTypeEnum';
  * CSSRule interface.
  */
 export default class CSSRule {
+	public static CONTAINER_RULE = CSSRuleTypeEnum.containerRule;
 	public static STYLE_RULE = CSSRuleTypeEnum.styleRule;
 	public static IMPORT_RULE = CSSRuleTypeEnum.importRule;
 	public static MEDIA_RULE = CSSRuleTypeEnum.mediaRule;

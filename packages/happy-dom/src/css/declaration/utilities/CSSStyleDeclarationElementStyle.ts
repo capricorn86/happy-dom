@@ -18,25 +18,43 @@ const CSS_VARIABLE_REGEXP = /var\( *(--[^) ]+)\)/g;
 /**
  * CSS Style Declaration utility
  */
-export default class CSSStyleDeclarationElement {
+export default class CSSStyleDeclarationElementStyle {
+	private cache: { [k: string]: CSSStyleDeclarationPropertyManager } = {};
+	private element: IElement;
+	private computed: boolean;
+
 	/**
-	 * Returns element style properties.
+	 * Constructor.
 	 *
 	 * @param element Element.
 	 * @param [computed] Computed.
+	 */
+	constructor(element: IElement, computed = false) {
+		this.element = element;
+		this.computed = computed;
+	}
+
+	/**
+	 * Returns element style properties.
+	 *
 	 * @returns Element style properties.
 	 */
-	public static getElementStyle(
-		element: IElement,
-		computed: boolean
-	): CSSStyleDeclarationPropertyManager {
-		if (computed) {
-			return this.getComputedElementStyle(element);
+	public getElementStyle(): CSSStyleDeclarationPropertyManager {
+		if (this.computed) {
+			return this.getComputedElementStyle();
 		}
 
-		return new CSSStyleDeclarationPropertyManager({
-			cssText: element['_attributes']['style']?.value
-		});
+		const cssText = this.element['_attributes']['style']?.value;
+
+		if (cssText) {
+			if (this.cache[cssText]) {
+				return this.cache[cssText];
+			}
+			this.cache[cssText] = new CSSStyleDeclarationPropertyManager({ cssText });
+			return this.cache[cssText];
+		}
+
+		return new CSSStyleDeclarationPropertyManager();
 	}
 
 	/**
@@ -45,13 +63,16 @@ export default class CSSStyleDeclarationElement {
 	 * @param element Element.
 	 * @returns Style sheets.
 	 */
-	private static getComputedElementStyle(element: IElement): CSSStyleDeclarationPropertyManager {
+	private getComputedElementStyle(): CSSStyleDeclarationPropertyManager {
 		const documentElements: Array<{ element: IElement; cssText: string }> = [];
 		const parentElements: Array<{ element: IElement; cssText: string }> = [];
-		let styleAndElement = { element: <IElement | IShadowRoot | IDocument>element, cssText: '' };
+		let styleAndElement = {
+			element: <IElement | IShadowRoot | IDocument>this.element,
+			cssText: ''
+		};
 		let shadowRootElements: Array<{ element: IElement; cssText: string }> = [];
 
-		if (!element.isConnected) {
+		if (!this.element.isConnected) {
 			return new CSSStyleDeclarationPropertyManager();
 		}
 
@@ -67,9 +88,9 @@ export default class CSSStyleDeclarationElement {
 				parentElements.unshift(<{ element: IElement; cssText: string }>styleAndElement);
 			}
 
-			if (styleAndElement.element === element.ownerDocument) {
+			if (styleAndElement.element === this.element.ownerDocument) {
 				const styleSheets = <INodeList<IHTMLStyleElement>>(
-					element.ownerDocument.querySelectorAll('style,link[rel="stylesheet"]')
+					this.element.ownerDocument.querySelectorAll('style,link[rel="stylesheet"]')
 				);
 
 				for (const styleSheet of styleSheets) {
@@ -124,6 +145,15 @@ export default class CSSStyleDeclarationElement {
 
 		const cssVariables: { [k: string]: string } = {};
 		const properties = {};
+		const targetCSSText =
+			(CSSStyleDeclarationElementDefaultCSS[targetElement.element.tagName] || '') +
+			targetElement.cssText +
+			(targetElement.element['_attributes']['style']?.value || '');
+		const combinedCSSText = inheritedCSSText + targetCSSText;
+
+		if (this.cache[combinedCSSText]) {
+			return this.cache[combinedCSSText];
+		}
 
 		// Parses the parent element CSS and stores CSS variables and inherited properties.
 		CSSStyleDeclarationCSSParser.parse(inheritedCSSText, (name, value, important) => {
@@ -147,11 +177,6 @@ export default class CSSStyleDeclarationElement {
 		});
 
 		// Parses the target element CSS.
-		const targetCSSText =
-			(CSSStyleDeclarationElementDefaultCSS[targetElement.element.tagName] || '') +
-			targetElement.cssText +
-			(targetElement.element['_attributes']['style']?.value || '');
-
 		CSSStyleDeclarationCSSParser.parse(targetCSSText, (name, value, important) => {
 			if (name.startsWith('--')) {
 				const cssValue = this.getCSSValue(value, cssVariables);
@@ -179,6 +204,8 @@ export default class CSSStyleDeclarationElement {
 			propertyManager.set(name, properties[name].value, properties[name].important);
 		}
 
+		this.cache[combinedCSSText] = propertyManager;
+
 		return propertyManager;
 	}
 
@@ -192,7 +219,7 @@ export default class CSSStyleDeclarationElement {
 	 * @param [options.hostElement.element] Element.
 	 * @param [options.hostElement.cssText] CSS text.
 	 */
-	private static parseCSSRules(options: {
+	private parseCSSRules(options: {
 		cssRules: CSSRule[];
 		elements: Array<{ element: IElement; cssText: string }>;
 		hostElement?: { element: IElement; cssText: string };
@@ -239,7 +266,7 @@ export default class CSSStyleDeclarationElement {
 	 * @param cssVariables CSS variables.
 	 * @returns CSS value.
 	 */
-	private static getCSSValue(value: string, cssVariables: { [k: string]: string }): string {
+	private getCSSValue(value: string, cssVariables: { [k: string]: string }): string {
 		const regexp = new RegExp(CSS_VARIABLE_REGEXP);
 		let newValue = value;
 		let match;

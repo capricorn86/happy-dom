@@ -5,6 +5,7 @@ import CSSMediaRule from '../../src/css/rules/CSSMediaRule';
 import CSSParserInput from './data/CSSParserInput';
 import CSSKeyframeRule from '../../src/css/rules/CSSKeyframeRule';
 import CSSKeyframesRule from '../../src/css/rules/CSSKeyframesRule';
+import CSSContainerRule from '../../src/css/rules/CSSContainerRule';
 
 describe('CSSParser', () => {
 	describe('parseFromString()', () => {
@@ -12,7 +13,7 @@ describe('CSSParser', () => {
 			const cssStyleSheet = new CSSStyleSheet();
 			const cssRules = CSSParser.parseFromString(cssStyleSheet, CSSParserInput);
 
-			expect(cssRules.length).toBe(5);
+			expect(cssRules.length).toBe(7);
 
 			// CSSStyleRule
 			expect((<CSSStyleRule>cssRules[0]).parentRule).toBe(null);
@@ -129,6 +130,40 @@ describe('CSSParser', () => {
 			expect(children3[1].style[0]).toBe('transform');
 			expect(children3[1].style.transform).toBe('rotate(360deg)');
 			expect(children3[1].cssText).toBe('100% { transform: rotate(360deg); }');
+
+			// CSSContainerRule 1
+			expect((<CSSContainerRule>cssRules[5]).parentRule).toBe(null);
+			expect((<CSSContainerRule>cssRules[5]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSContainerRule>cssRules[5]).cssText).toBe(
+				'@container (min-width: 36rem) { .container { color: red; } }'
+			);
+			expect((<CSSMediaRule>cssRules[5]).cssRules.length).toBe(1);
+			const children4 = <CSSStyleRule[]>(<CSSContainerRule>cssRules[5]).cssRules;
+			expect(children4[0].parentRule).toBe(cssRules[5]);
+			expect(children4[0].parentStyleSheet).toBe(cssStyleSheet);
+			expect(children4[0].selectorText).toBe('.container');
+			expect(children4[0].style.length).toBe(1);
+			expect(children4[0].style.parentRule).toBe(children4[0]);
+			expect(children4[0].style[0]).toBe('color');
+			expect(children4[0].style.color).toBe('red');
+			expect(children4[0].cssText).toBe('.container { color: red; }');
+
+			// CSSContainerRule 2
+			expect((<CSSContainerRule>cssRules[6]).parentRule).toBe(null);
+			expect((<CSSContainerRule>cssRules[6]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSContainerRule>cssRules[6]).cssText).toBe(
+				'@container name (min-width: 36rem) { .container { color: red; } }'
+			);
+			expect((<CSSMediaRule>cssRules[6]).cssRules.length).toBe(1);
+			const children5 = <CSSStyleRule[]>(<CSSContainerRule>cssRules[6]).cssRules;
+			expect(children5[0].parentRule).toBe(cssRules[6]);
+			expect(children5[0].parentStyleSheet).toBe(cssStyleSheet);
+			expect(children5[0].selectorText).toBe('.container');
+			expect(children5[0].style.length).toBe(1);
+			expect(children5[0].style.parentRule).toBe(children5[0]);
+			expect(children5[0].style[0]).toBe('color');
+			expect(children5[0].style.color).toBe('red');
+			expect(children5[0].cssText).toBe('.container { color: red; }');
 		});
 	});
 });

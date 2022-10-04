@@ -1,4 +1,5 @@
 enum CSSRuleTypeEnum {
+	containerRule = 0,
 	styleRule = 1,
 	importRule = 3,
 	mediaRule = 4,
