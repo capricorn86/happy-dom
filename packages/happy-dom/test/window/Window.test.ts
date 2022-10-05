@@ -204,6 +204,16 @@ describe('Window', () => {
 	});
 
 	describe('getComputedStyle()', () => {
+		it('Handles default properties "display" and "direction".', () => {
+			const element = <IHTMLElement>document.createElement('div');
+			const computedStyle = window.getComputedStyle(element);
+
+			window.document.body.appendChild(element);
+
+			expect(computedStyle.direction).toBe('ltr');
+			expect(computedStyle.display).toBe('block');
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
 			const element = <IHTMLElement>document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
