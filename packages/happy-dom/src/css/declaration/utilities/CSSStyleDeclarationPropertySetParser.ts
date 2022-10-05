@@ -89,6 +89,7 @@ const TEXT_TRANSFORM = [
 	'full-width',
 	'full-size-kana'
 ];
+const VISIBILITY = ['visible', 'hidden', 'collapse'];
 
 /**
  * Computed style property parser.
@@ -2988,6 +2989,36 @@ export default class CSSStyleDeclarationPropertySetParser {
 		if (parsedValue) {
 			return {
 				'text-transform': { value: parsedValue, important }
+			};
+		}
+		return null;
+	}
+
+	/**
+	 * Returns visibility.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property
+	 */
+	public static getVisibility(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const variable = CSSStyleDeclarationValueParser.getVariable(value);
+		if (variable) {
+			return { visibility: { value: variable, important } };
+		}
+
+		const lowerValue = value.toLowerCase();
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getGlobal(lowerValue) ||
+			(VISIBILITY.includes(lowerValue) && lowerValue);
+		if (parsedValue) {
+			return {
+				visibility: { value: parsedValue, important }
 			};
 		}
 		return null;

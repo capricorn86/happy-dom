@@ -255,7 +255,10 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	}
 
 	/**
+	 * Returns border image.
 	 *
+	 * @param properties Properties.
+	 * @returns Property value
 	 */
 	public static getBorderImage(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;

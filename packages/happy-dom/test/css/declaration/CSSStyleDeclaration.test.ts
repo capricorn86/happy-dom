@@ -1693,7 +1693,7 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.font).toBe('small-caps bold 24px / 1 sans-serif');
 
 			element.setAttribute('style', 'font: caption');
-			debugger;
+
 			expect(declaration.font).toBe('caption');
 		});
 	});
@@ -1876,6 +1876,27 @@ describe('CSSStyleDeclaration', () => {
 				element.setAttribute('style', `text-transform: ${value}`);
 
 				expect(declaration.textTransform).toBe(value);
+			}
+		});
+	});
+
+	describe('get visibility()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			for (const value of [
+				'var(--test-variable)',
+				'inherit',
+				'initial',
+				'revert',
+				'unset',
+				'visible',
+				'hidden',
+				'collapse'
+			]) {
+				element.setAttribute('style', `visibility: ${value}`);
+
+				expect(declaration.visibility).toBe(value);
 			}
 		});
 	});

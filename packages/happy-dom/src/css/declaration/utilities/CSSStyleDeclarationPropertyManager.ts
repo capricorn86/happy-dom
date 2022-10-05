@@ -4,6 +4,15 @@ import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser';
 import CSSStyleDeclarationPropertyGetParser from './CSSStyleDeclarationPropertyGetParser';
 import CSSStyleDeclarationCSSParser from './CSSStyleDeclarationCSSParser';
 
+const TO_STRING_SHORTHAND_PROPERTIES = [
+	['margin'],
+	['padding'],
+	['border', ['border-width', 'border-style', 'border-color', 'border-image']],
+	['border-radius'],
+	['background', 'background-position'],
+	['font']
+];
+
 /**
  * Computed this.properties property parser.
  */
@@ -465,6 +474,9 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'text-transform':
 				properties = CSSStyleDeclarationPropertySetParser.getTextTransform(value, important);
 				break;
+			case 'visibility':
+				properties = CSSStyleDeclarationPropertySetParser.getVisibility(value, important);
+				break;
 			default:
 				const trimmedValue = value.trim();
 				if (trimmedValue) {
@@ -526,22 +538,15 @@ export default class CSSStyleDeclarationPropertyManager {
 		const clone = this.clone();
 		const properties = {};
 
-		for (const fallbackNames of [
-			['margin'],
-			['padding'],
-			['border', ['border-width', 'border-style', 'border-color', 'border-image']],
-			['border-radius'],
-			['background', 'background-position'],
-			['font']
-		]) {
-			for (const fallbackName of fallbackNames) {
-				if (Array.isArray(fallbackName)) {
+		for (const shorthandPropertyGroup of TO_STRING_SHORTHAND_PROPERTIES) {
+			for (const shorthandProperty of shorthandPropertyGroup) {
+				if (Array.isArray(shorthandProperty)) {
 					let isMatch = false;
-					for (const childFallbackName of fallbackName) {
-						const property = clone.get(childFallbackName);
+					for (const childShorthandProperty of shorthandProperty) {
+						const property = clone.get(childShorthandProperty);
 						if (property) {
-							properties[childFallbackName] = property;
-							clone.remove(childFallbackName);
+							properties[childShorthandProperty] = property;
+							clone.remove(childShorthandProperty);
 							isMatch = true;
 						}
 					}
@@ -549,10 +554,10 @@ export default class CSSStyleDeclarationPropertyManager {
 						break;
 					}
 				} else {
-					const property = clone.get(fallbackName);
+					const property = clone.get(shorthandProperty);
 					if (property) {
-						properties[fallbackName] = property;
-						clone.remove(fallbackName);
+						properties[shorthandProperty] = property;
+						clone.remove(shorthandProperty);
 						break;
 					}
 				}
