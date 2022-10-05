@@ -12,7 +12,7 @@ import Element from '../../../src/nodes/element/Element';
 import Event from '../../../src/event/Event';
 import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement';
 import NamespaceURI from '../../../src/config/NamespaceURI';
-import Attr from '../../../src/attribute/Attr';
+import Attr from '../../../src/nodes/attr/Attr';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
 import QuerySelector from '../../../src/query-selector/QuerySelector';
 import NodeFilter from '../../../src/tree-walker/NodeFilter';
@@ -69,7 +69,8 @@ describe('Document', () => {
 	describe('get children()', () => {
 		it('Returns Element child nodes.', () => {
 			document.appendChild(document.createTextNode('test'));
-			expect(document.children).toEqual([document.documentElement]);
+			expect(document.children.length).toEqual(1);
+			expect(document.children[0] === document.documentElement).toBe(true);
 		});
 	});
 
@@ -89,7 +90,11 @@ describe('Document', () => {
 
 			document.body.appendChild(div);
 
-			expect(Array.from(document.scripts)).toEqual([script1, script2]);
+			const scripts = Array.from(document.scripts);
+
+			expect(scripts.length).toBe(2);
+			expect(scripts[0]).toBe(script1);
+			expect(scripts[1]).toBe(script2);
 		});
 	});
 
@@ -118,7 +123,7 @@ describe('Document', () => {
 			div.appendChild(span2);
 			div.appendChild(text2);
 
-			expect(div.firstElementChild).toBe(span1);
+			expect(div.firstElementChild === span1).toBe(true);
 		});
 	});
 
@@ -139,7 +144,7 @@ describe('Document', () => {
 			div.appendChild(span2);
 			div.appendChild(text2);
 
-			expect(div.lastElementChild).toBe(span2);
+			expect(div.lastElementChild === span2).toBe(true);
 		});
 	});
 
@@ -223,25 +228,25 @@ describe('Document', () => {
 
 	describe('get body()', () => {
 		it('Returns <body> element.', () => {
-			expect(document.body).toBe(document.children[0].children[1]);
+			expect(document.body === document.children[0].children[1]).toBe(true);
 		});
 	});
 
 	describe('get head()', () => {
 		it('Returns <head> element.', () => {
-			expect(document.head).toBe(document.children[0].children[0]);
+			expect(document.head === document.children[0].children[0]).toBe(true);
 		});
 	});
 
 	describe('get documentElement()', () => {
 		it('Returns <html> element.', () => {
-			expect(document.documentElement).toBe(document.children[0]);
+			expect(document.documentElement === document.children[0]).toBe(true);
 		});
 	});
 
 	describe('get doctype()', () => {
 		it('Returns DocumentType element.', () => {
-			expect(document.doctype).toBe(document.childNodes[0]);
+			expect(document.doctype === document.childNodes[0]).toBe(true);
 		});
 	});
 
@@ -314,7 +319,7 @@ describe('Document', () => {
 		});
 
 		it('Returns the first custom element that has document as root node when the focused element is nestled in multiple shadow roots.', () => {
-			class CustomElementA extends window.HTMLElement {
+			class CustomElementA extends (<Window>window).HTMLElement {
 				constructor() {
 					super();
 					this.attachShadow({ mode: 'open' });
@@ -328,7 +333,7 @@ describe('Document', () => {
 					`;
 				}
 			}
-			class CustomElementB extends window.HTMLElement {
+			class CustomElementB extends (<Window>window).HTMLElement {
 				constructor() {
 					super();
 					this.attachShadow({ mode: 'open' });
@@ -363,7 +368,7 @@ describe('Document', () => {
 			button.focus();
 			button.focus();
 
-			expect(document.activeElement).toBe(customElementA);
+			expect(document.activeElement === customElementA).toBe(true);
 			expect(focusCalls).toBe(1);
 		});
 	});
@@ -405,8 +410,10 @@ describe('Document', () => {
 			let isCalled = false;
 
 			jest.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
-				expect(parentNode).toBe(document);
-				expect(nodes).toEqual([node1, node2]);
+				expect(parentNode === document).toBe(true);
+				expect(nodes.length).toBe(2);
+				expect(nodes[0] === node1).toBe(true);
+				expect(nodes[1] === node2).toBe(true);
 				isCalled = true;
 			});
 
@@ -422,8 +429,10 @@ describe('Document', () => {
 			let isCalled = false;
 
 			jest.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
-				expect(parentNode).toBe(document);
-				expect(nodes).toEqual([node1, node2]);
+				expect(parentNode === document).toBe(true);
+				expect(nodes.length).toBe(2);
+				expect(nodes[0] === node1).toBe(true);
+				expect(nodes[1] === node2).toBe(true);
 				isCalled = true;
 			});
 
@@ -441,8 +450,10 @@ describe('Document', () => {
 			jest
 				.spyOn(ParentNodeUtility, 'replaceChildren')
 				.mockImplementation((parentNode, ...nodes) => {
-					expect(parentNode).toBe(document);
-					expect(nodes).toEqual([node1, node2]);
+					expect(parentNode === document).toBe(true);
+					expect(nodes.length).toBe(2);
+					expect(nodes[0] === node1).toBe(true);
+					expect(nodes[1] === node2).toBe(true);
 					isCalled = true;
 				});
 
@@ -457,12 +468,15 @@ describe('Document', () => {
 			const expectedSelector = 'selector';
 
 			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
+				expect(parentNode === document).toBe(true);
 				expect(selector).toEqual(expectedSelector);
 				return <INodeList<IElement>>[element];
 			});
 
-			expect(document.querySelectorAll(expectedSelector)).toEqual([element]);
+			const result = document.querySelectorAll(expectedSelector);
+
+			expect(result.length).toBe(1);
+			expect(result[0] === element).toBe(true);
 		});
 	});
 
@@ -472,12 +486,12 @@ describe('Document', () => {
 			const expectedSelector = 'selector';
 
 			jest.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(document);
+				expect(parentNode === document).toBe(true);
 				expect(selector).toEqual(expectedSelector);
 				return element;
 			});
 
-			expect(document.querySelector(expectedSelector)).toEqual(element);
+			expect(document.querySelector(expectedSelector) === element).toBe(true);
 		});
 	});
 
@@ -489,12 +503,14 @@ describe('Document', () => {
 			jest
 				.spyOn(ParentNodeUtility, 'getElementsByClassName')
 				.mockImplementation((parentNode, requestedClassName) => {
-					expect(parentNode).toBe(document);
+					expect(parentNode === document).toBe(true);
 					expect(requestedClassName).toEqual(className);
 					return <IHTMLCollection<IElement>>[element];
 				});
 
-			expect(document.getElementsByClassName(className)).toEqual([element]);
+			const result = document.getElementsByClassName(className);
+			expect(result.length).toBe(1);
+			expect(result[0] === element).toBe(true);
 		});
 	});
 
@@ -506,12 +522,14 @@ describe('Document', () => {
 			jest
 				.spyOn(ParentNodeUtility, 'getElementsByTagName')
 				.mockImplementation((parentNode, requestedTagName) => {
-					expect(parentNode).toBe(document);
+					expect(parentNode === document).toBe(true);
 					expect(requestedTagName).toEqual(tagName);
 					return <IHTMLCollection<IElement>>[element];
 				});
 
-			expect(document.getElementsByTagName(tagName)).toEqual([element]);
+			const result = document.getElementsByTagName(tagName);
+			expect(result.length).toBe(1);
+			expect(result[0] === element).toBe(true);
 		});
 	});
 
@@ -524,13 +542,16 @@ describe('Document', () => {
 			jest
 				.spyOn(ParentNodeUtility, 'getElementsByTagNameNS')
 				.mockImplementation((parentNode, requestedNamespaceURI, requestedTagName) => {
-					expect(parentNode).toBe(document);
+					expect(parentNode === document).toBe(true);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
 					return <IHTMLCollection<IElement>>[element];
 				});
 
-			expect(document.getElementsByTagNameNS(namespaceURI, tagName)).toEqual([element]);
+			const result = document.getElementsByTagNameNS(namespaceURI, tagName);
+
+			expect(result.length).toBe(1);
+			expect(result[0] === element).toBe(true);
 		});
 	});
 
@@ -542,12 +563,12 @@ describe('Document', () => {
 			jest
 				.spyOn(ParentNodeUtility, 'getElementById')
 				.mockImplementation((parentNode, requestedID) => {
-					expect(parentNode).toBe(document);
+					expect(parentNode === document).toBe(true);
 					expect(requestedID).toEqual(id);
 					return element;
 				});
 
-			expect(document.getElementById(id)).toEqual(element);
+			expect(document.getElementById(id) === element).toBe(true);
 		});
 	});
 
@@ -575,7 +596,9 @@ describe('Document', () => {
 			document.appendChild(document.createComment('test'));
 			document.appendChild(span);
 
-			expect(document.children).toEqual([div, span]);
+			expect(document.children.length).toBe(2);
+			expect(document.children[0]).toBe(div);
+			expect(document.children[1]).toBe(span);
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
@@ -592,8 +615,8 @@ describe('Document', () => {
 
 			document.appendChild(clone);
 
-			expect(clone.childNodes).toEqual([]);
-			expect(clone.children).toEqual([]);
+			expect(clone.childNodes.length).toBe(0);
+			expect(clone.children.length).toBe(0);
 			expect(document.children.map((child) => child.outerHTML).join('')).toBe(
 				'<div>Div</div><span>Span</span>'
 			);
@@ -616,7 +639,8 @@ describe('Document', () => {
 
 			document.removeChild(div);
 
-			expect(document.children).toEqual([span]);
+			expect(document.children.length).toBe(1);
+			expect(document.children[0]).toBe(span);
 		});
 	});
 
@@ -636,7 +660,10 @@ describe('Document', () => {
 			document.appendChild(span);
 			document.insertBefore(div2, div1);
 
-			expect(document.children).toEqual([div2, div1, span]);
+			expect(document.children.length).toBe(3);
+			expect(document.children[0]).toBe(div2);
+			expect(document.children[1]).toBe(div1);
+			expect(document.children[2]).toBe(span);
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
@@ -822,43 +849,42 @@ describe('Document', () => {
 	describe('createAttribute()', () => {
 		it('Creates an Attr node.', () => {
 			const attribute = document.createAttribute('KEY1');
+
 			expect(attribute instanceof Attr).toBe(true);
-			expect(attribute).toEqual({
-				value: null,
-				name: 'key1',
-				namespaceURI: null,
-				specified: true,
-				ownerElement: null,
-				ownerDocument: document
-			});
+
+			expect(attribute.value).toBe(null);
+			expect(attribute.name).toBe('key1');
+			expect(attribute.namespaceURI).toBe(null);
+			expect(attribute.specified).toBe(true);
+			expect(attribute.ownerElement === null).toBe(true);
+			expect(attribute.ownerDocument === document).toBe(true);
 		});
 	});
 
 	describe('createAttributeNS()', () => {
 		it('Creates an Attr node with namespace set to HTML.', () => {
 			const attribute = document.createAttributeNS(NamespaceURI.html, 'KEY1');
+
 			expect(attribute instanceof Attr).toBe(true);
-			expect(attribute).toEqual({
-				value: null,
-				name: 'KEY1',
-				namespaceURI: NamespaceURI.html,
-				specified: true,
-				ownerElement: null,
-				ownerDocument: document
-			});
+
+			expect(attribute.value).toBe(null);
+			expect(attribute.name).toBe('KEY1');
+			expect(attribute.namespaceURI).toBe(NamespaceURI.html);
+			expect(attribute.specified).toBe(true);
+			expect(attribute.ownerElement === null).toBe(true);
+			expect(attribute.ownerDocument === document).toBe(true);
 		});
 
 		it('Creates an Attr node with namespace set to SVG.', () => {
 			const attribute = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 			expect(attribute instanceof Attr).toBe(true);
-			expect(attribute).toEqual({
-				value: null,
-				name: 'KEY1',
-				namespaceURI: NamespaceURI.svg,
-				specified: true,
-				ownerElement: null,
-				ownerDocument: document
-			});
+
+			expect(attribute.value).toBe(null);
+			expect(attribute.name).toBe('KEY1');
+			expect(attribute.namespaceURI).toBe(NamespaceURI.svg);
+			expect(attribute.specified).toBe(true);
+			expect(attribute.ownerElement === null).toBe(true);
+			expect(attribute.ownerDocument === document).toBe(true);
 		});
 	});
 
@@ -911,7 +937,7 @@ describe('Document', () => {
 				}
 			};
 			const treeWalker = document.createTreeWalker(root, whatToShow, filter);
-			expect(treeWalker.root).toBe(root);
+			expect(treeWalker.root === root).toBe(true);
 			expect(treeWalker.whatToShow).toBe(whatToShow);
 			expect(treeWalker.filter).toBe(filter);
 			expect(treeWalker instanceof TreeWalker).toBe(true);
@@ -945,7 +971,7 @@ describe('Document', () => {
 			const node = new Window().document.createElement('div');
 			const clone = <Element>document.importNode(node);
 			expect(clone.tagName).toBe('DIV');
-			expect(clone.ownerDocument).toBe(document);
+			expect(clone.ownerDocument === document).toBe(true);
 			expect(clone instanceof HTMLElement).toBe(true);
 		});
 	});
@@ -963,8 +989,8 @@ describe('Document', () => {
 
 			const clone = document.cloneNode(false);
 			const clone2 = document.cloneNode(true);
-			expect(clone.defaultView).toBe(window);
-			expect(clone.children).toEqual([]);
+			expect(clone.defaultView === window).toBe(true);
+			expect(clone.children.length).toBe(0);
 			expect(clone2.children.length).toBe(1);
 			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
 		});
@@ -979,7 +1005,7 @@ describe('Document', () => {
 
 			expect(adopted.tagName).toBe('DIV');
 			expect(adopted instanceof HTMLElement).toBe(true);
-			expect(adopted.ownerDocument).toBe(document);
+			expect(adopted.ownerDocument === document).toBe(true);
 			expect(originalDocument.querySelector('div')).toBe(null);
 		});
 
@@ -989,7 +1015,7 @@ describe('Document', () => {
 
 			expect(adopted.tagName).toBe('DIV');
 			expect(adopted instanceof HTMLElement).toBe(true);
-			expect(adopted.ownerDocument).toBe(document);
+			expect(adopted.ownerDocument === document).toBe(true);
 		});
 	});
 

@@ -1,4 +1,4 @@
-import Attr from '../../attribute/Attr';
+import IAttr from '../attr/IAttr';
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLScriptElement from './IHTMLScriptElement';
 import ScriptUtility from './ScriptUtility';
@@ -158,7 +158,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: Attr): Attr {
+	public setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'src' && attribute.value !== null && this.isConnected) {

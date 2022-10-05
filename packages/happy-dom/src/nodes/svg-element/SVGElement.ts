@@ -1,8 +1,8 @@
-import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
 import Element from '../element/Element';
 import ISVGElement from './ISVGElement';
 import ISVGSVGElement from './ISVGSVGElement';
-import Attr from '../../attribute/Attr';
+import IAttr from '../attr/IAttr';
 
 /**
  * SVG Element.
@@ -59,7 +59,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 */
 	public get style(): CSSStyleDeclaration {
 		if (!this._style) {
-			this._style = new CSSStyleDeclaration(this._attributes);
+			this._style = new CSSStyleDeclaration(this);
 		}
 		return this._style;
 	}
@@ -71,7 +71,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: Attr): Attr {
+	public setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'style' && this._style) {
@@ -87,7 +87,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @override
 	 * @param attribute Attribute.
 	 */
-	public removeAttributeNode(attribute: Attr): void {
+	public removeAttributeNode(attribute: IAttr): void {
 		super.removeAttributeNode(attribute);
 
 		if (attribute.name === 'style' && this._style) {

@@ -1,14 +1,29 @@
 import CSSRule from '../CSSRule';
-import CSSStyleDeclaration from '../CSSStyleDeclaration';
+import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration';
 
 /**
  * CSSRule interface.
  */
 export default class CSSStyleRule extends CSSRule {
 	public readonly type = CSSRule.STYLE_RULE;
-	public readonly style: CSSStyleDeclaration;
 	public readonly selectorText = '';
 	public readonly styleMap = new Map();
+	public _cssText = '';
+	private _style: CSSStyleDeclaration = null;
+
+	/**
+	 * Returns style.
+	 *
+	 * @returns Style.
+	 */
+	public get style(): CSSStyleDeclaration {
+		if (!this._style) {
+			this._style = new CSSStyleDeclaration();
+			(<CSSRule>this._style.parentRule) = this;
+			this._style.cssText = this._cssText;
+		}
+		return this._style;
+	}
 
 	/**
 	 * Returns css text.

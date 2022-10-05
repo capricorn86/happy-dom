@@ -1,5 +1,5 @@
 import IShadowRoot from '../shadow-root/IShadowRoot';
-import Attr from '../../attribute/Attr';
+import IAttr from '../attr/IAttr';
 import DOMRect from './DOMRect';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import INode from './../node/INode';
@@ -27,7 +27,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	slot: string;
 	readonly nodeName: string;
 	readonly localName: string;
-	readonly attributes: { [k: string]: Attr | number };
+	readonly attributes: { [k: string | number]: IAttr } & { length: number };
 
 	/**
 	 * Attribute changed callback.
@@ -190,7 +190,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	setAttributeNode(attribute: Attr): Attr;
+	setAttributeNode(attribute: IAttr): IAttr;
 
 	/**
 	 * The setAttributeNodeNS() method adds a new Attr node to the specified element.
@@ -198,7 +198,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	setAttributeNodeNS(attribute: Attr): Attr;
+	setAttributeNodeNS(attribute: IAttr): IAttr;
 
 	/**
 	 * Returns an Attr node.
@@ -206,7 +206,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param name Name.
 	 * @returns Replaced attribute.
 	 */
-	getAttributeNode(name: string): Attr;
+	getAttributeNode(name: string): IAttr;
 
 	/**
 	 * Returns a namespaced Attr node.
@@ -215,21 +215,21 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param nodeName Node name.
 	 * @returns Replaced attribute.
 	 */
-	getAttributeNodeNS(namespace: string, nodeName: string): Attr;
+	getAttributeNodeNS(namespace: string, nodeName: string): IAttr;
 
 	/**
 	 * Removes an Attr node.
 	 *
 	 * @param attribute Attribute.
 	 */
-	removeAttributeNode(attribute: Attr): void;
+	removeAttributeNode(attribute: IAttr): void;
 
 	/**
 	 * Removes an Attr node.
 	 *
 	 * @param attribute Attribute.
 	 */
-	removeAttributeNodeNS(attribute: Attr): void;
+	removeAttributeNodeNS(attribute: IAttr): void;
 
 	/**
 	 * Clones a node.
