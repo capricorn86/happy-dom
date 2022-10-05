@@ -69,34 +69,32 @@ export default class HTMLElement extends Element implements IHTMLElement {
 			if (childNode.nodeType === NodeTypeEnum.elementNode) {
 				const childElement = <IHTMLElement>childNode;
 				const computedStyle = this.ownerDocument.defaultView.getComputedStyle(childElement);
-				const display = computedStyle.display;
 
-				if (
-					childElement.tagName !== 'SCRIPT' &&
-					childElement.tagName !== 'STYLE' &&
-					display !== 'none'
-				) {
-					const textTransform = computedStyle.textTransform;
+				if (childElement.tagName !== 'SCRIPT' && childElement.tagName !== 'STYLE') {
+					const display = computedStyle.display;
+					if (display !== 'none') {
+						const textTransform = computedStyle.textTransform;
 
-					if ((display === 'block' || display === 'flex') && result) {
-						result += '\n';
+						if ((display === 'block' || display === 'flex') && result) {
+							result += '\n';
+						}
+
+						let text = childElement.innerText;
+
+						switch (textTransform) {
+							case 'uppercase':
+								text = text.toUpperCase();
+								break;
+							case 'lowercase':
+								text = text.toLowerCase();
+								break;
+							case 'capitalize':
+								text = text.replace(/(^|\s)\S/g, (l) => l.toUpperCase());
+								break;
+						}
+
+						result += text;
 					}
-
-					let text = childElement.innerText;
-
-					switch (textTransform) {
-						case 'uppercase':
-							text = text.toUpperCase();
-							break;
-						case 'lowercase':
-							text = text.toLowerCase();
-							break;
-						case 'capitalize':
-							text = text.replace(/(^|\s)\S/g, (l) => l.toUpperCase());
-							break;
-					}
-
-					result += text;
 				}
 			} else if (childNode.nodeType === NodeTypeEnum.textNode) {
 				result += childNode.textContent.replace(/[\n\r]/, '');
