@@ -126,7 +126,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	}
 
 	/**
-	 * Returns outer HTML.
+	 * Returns outer text.
 	 *
 	 * @see https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
 	 * @returns HTML.
@@ -136,7 +136,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	}
 
 	/**
-	 * Returns outer HTML.
+	 * Sets outer text.
 	 *
 	 * @see https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
 	 * @param text Text.
