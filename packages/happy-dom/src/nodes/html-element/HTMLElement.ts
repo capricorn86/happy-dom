@@ -67,18 +67,22 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		for (const childNode of this.childNodes) {
 			if (childNode.nodeType === NodeTypeEnum.elementNode) {
-				const element = <IHTMLElement>childNode;
-				const computedStyle = this.ownerDocument.defaultView.getComputedStyle(element);
+				const childElement = <IHTMLElement>childNode;
+				const computedStyle = this.ownerDocument.defaultView.getComputedStyle(childElement);
 				const display = computedStyle.display;
 
-				if (element.tagName !== 'SCRIPT' && element.tagName !== 'STYLE' && display !== 'none') {
+				if (
+					childElement.tagName !== 'SCRIPT' &&
+					childElement.tagName !== 'STYLE' &&
+					display !== 'none'
+				) {
 					const textTransform = computedStyle.textTransform;
 
 					if ((display === 'block' || display === 'flex') && result) {
 						result += '\n';
 					}
 
-					let text = element.innerText;
+					let text = childElement.innerText;
 
 					switch (textTransform) {
 						case 'uppercase':
