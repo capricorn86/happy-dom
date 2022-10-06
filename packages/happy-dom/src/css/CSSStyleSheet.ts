@@ -5,7 +5,7 @@ import CSSRule from './CSSRule';
 import MediaList from './MediaList';
 
 /**
- * Attr node interface.
+ * CSS StyleSheet.
  *
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet.
@@ -16,19 +16,15 @@ export default class CSSStyleSheet {
 	public namespaceURI: string = null;
 	public readonly cssRules: CSSRule[] = [];
 
-	// Constructable Stylesheets is a new feature that only Blink supports:
-	// https://wicg.github.io/construct-stylesheets/
-	// TODO: Not fully implemented.
+	// TODO: MediaList is not fully implemented.
 	public media: MediaList | string;
 	public title: string;
 	public alternate: boolean;
 	public disabled: boolean;
+	private _currentText: string = null;
 
 	/**
 	 * Constructor.
-	 *
-	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/.
 	 *
 	 * @param [options] Options.
 	 * @param [options.media] Media.
@@ -51,9 +47,7 @@ export default class CSSStyleSheet {
 	/**
 	 * Inserts a rule.
 	 *
-	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/.
-	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/insertRule
 	 * @param rule Rule.
 	 * @param [index] Index.
 	 * @returns The newly inserterted rule's index.
@@ -79,8 +73,7 @@ export default class CSSStyleSheet {
 					DOMExceptionNameEnum.indexSizeError
 				);
 			}
-			this.cssRules.splice(index, 0);
-			this.cssRules.push(rules[0]);
+			this.cssRules.splice(index, 0, rules[0]);
 			return index;
 		}
 
@@ -94,9 +87,7 @@ export default class CSSStyleSheet {
 	/**
 	 * Removes a rule.
 	 *
-	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/.
-	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/deleteRule
 	 * @param index Index.
 	 */
 	public deleteRule(index: number): void {
@@ -106,9 +97,7 @@ export default class CSSStyleSheet {
 	/**
 	 * Replaces all CSS rules.
 	 *
-	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/.
-	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/replace
 	 * @param text CSS text.
 	 * @returns Promise.
 	 */
@@ -119,12 +108,13 @@ export default class CSSStyleSheet {
 	/**
 	 * Replaces all CSS rules.
 	 *
-	 * Constructable Stylesheets is a new feature that only Blink supports:
-	 * https://wicg.github.io/construct-stylesheets/.
-	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/replaceSync
 	 * @param text CSS text.
 	 */
 	public replaceSync(text: string): void {
-		(<CSSRule[]>this.cssRules) = CSSParser.parseFromString(this, text);
+		if (this._currentText !== text) {
+			this._currentText = text;
+			(<CSSRule[]>this.cssRules) = CSSParser.parseFromString(this, text);
+		}
 	}
 }

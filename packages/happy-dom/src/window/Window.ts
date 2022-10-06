@@ -35,6 +35,7 @@ import CustomEvent from '../event/events/CustomEvent';
 import AnimationEvent from '../event/events/AnimationEvent';
 import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
+import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
 import EventTarget from '../event/EventTarget';
 import URL from '../location/URL';
 import Location from '../location/Location';
@@ -50,9 +51,16 @@ import DOMException from '../exception/DOMException';
 import { default as FileReaderImplementation } from '../file/FileReader';
 import History from '../history/History';
 import CSSStyleSheet from '../css/CSSStyleSheet';
-import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../css/declaration/CSSStyleDeclaration';
 import CSS from '../css/CSS';
 import CSSUnitValue from '../css/CSSUnitValue';
+import CSSRule from '../css/CSSRule';
+import CSSContainerRule from '../css/rules/CSSContainerRule';
+import CSSFontFaceRule from '../css/rules/CSSFontFaceRule';
+import CSSKeyframeRule from '../css/rules/CSSKeyframeRule';
+import CSSKeyframesRule from '../css/rules/CSSKeyframesRule';
+import CSSMediaRule from '../css/rules/CSSMediaRule';
+import CSSStyleRule from '../css/rules/CSSStyleRule';
 import MouseEvent from '../event/events/MouseEvent';
 import PointerEvent from '../event/events/PointerEvent';
 import FocusEvent from '../event/events/FocusEvent';
@@ -96,6 +104,8 @@ import VM from 'vm';
 import { Buffer } from 'buffer';
 import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
+import Attr from '../nodes/attr/Attr';
+import IElement from '../nodes/element/IElement';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -117,7 +127,19 @@ export default class Window extends EventTarget implements IWindow {
 		cancelAsync: (): void => {
 			this.happyDOM.asyncTaskManager.cancelAll();
 		},
-		asyncTaskManager: new AsyncTaskManager()
+		asyncTaskManager: new AsyncTaskManager(),
+		setInnerWidth: (width: number): void => {
+			if (this.innerWidth !== width) {
+				(<number>this.innerWidth) = width;
+				this.dispatchEvent(new Event('resize'));
+			}
+		},
+		setInnerHeight: (height: number): void => {
+			if (this.innerHeight !== height) {
+				(<number>this.innerHeight) = height;
+				this.dispatchEvent(new Event('resize'));
+			}
+		}
 	};
 
 	// Global classes
@@ -137,6 +159,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLMetaElement = HTMLMetaElement;
 	public readonly HTMLBaseElement = HTMLBaseElement;
 	public readonly HTMLDialogElement = HTMLDialogElement;
+	public readonly Attr = Attr;
 	public readonly SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement = SVGElement;
 	public readonly Text = Text;
@@ -165,6 +188,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly ErrorEvent = ErrorEvent;
 	public readonly StorageEvent = StorageEvent;
 	public readonly ProgressEvent = ProgressEvent;
+	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly EventTarget = EventTarget;
 	public readonly DataTransfer = DataTransfer;
 	public readonly DataTransferItem = DataTransferItem;
@@ -185,8 +209,14 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly URLSearchParams = URLSearchParams;
 	public readonly HTMLCollection = HTMLCollection;
 	public readonly NodeList = NodeList;
-	public readonly MediaQueryList = MediaQueryList;
 	public readonly CSSUnitValue = CSSUnitValue;
+	public readonly CSSRule = CSSRule;
+	public readonly CSSContainerRule = CSSContainerRule;
+	public readonly CSSFontFaceRule = CSSFontFaceRule;
+	public readonly CSSKeyframeRule = CSSKeyframeRule;
+	public readonly CSSKeyframesRule = CSSKeyframesRule;
+	public readonly CSSMediaRule = CSSMediaRule;
+	public readonly CSSStyleRule = CSSStyleRule;
 	public readonly Selection = Selection;
 	public readonly Navigator = Navigator;
 	public readonly MimeType = MimeType;
@@ -223,12 +253,12 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly window = this;
 	public readonly globalThis = this;
 	public readonly screen = new Screen();
-	public readonly innerWidth = 1024;
-	public readonly innerHeight = 768;
 	public readonly devicePixelRatio = 1;
 	public readonly sessionStorage = new Storage();
 	public readonly localStorage = new Storage();
 	public readonly performance = PerfHooks.performance;
+	public readonly innerWidth: number;
+	public readonly innerHeight: number;
 
 	// Node.js Globals
 	public ArrayBuffer;
@@ -301,9 +331,21 @@ export default class Window extends EventTarget implements IWindow {
 
 	/**
 	 * Constructor.
+	 *
+	 * @param [options] Options.
+	 * @param [options.innerWidth] Inner width.
+	 * @param [options.innerHeight] Inner height.
+	 * @param [options.url] URL.
 	 */
-	constructor() {
+	constructor(options?: { innerWidth?: number; innerHeight?: number; url?: string }) {
 		super();
+
+		this.innerWidth = options?.innerWidth ? options.innerWidth : 0;
+		this.innerHeight = options?.innerHeight ? options.innerHeight : 0;
+
+		if (options?.url) {
+			this.location.href = options.url;
+		}
 
 		this._setTimeout = ORIGINAL_SET_TIMEOUT;
 		this._clearTimeout = ORIGINAL_CLEAR_TIMEOUT;
@@ -418,8 +460,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param element Element.
 	 * @returns CSS style declaration.
 	 */
-	public getComputedStyle(element: HTMLElement): CSSStyleDeclaration {
-		return new CSSStyleDeclaration(element._attributes, element);
+	public getComputedStyle(element: IElement): CSSStyleDeclaration {
+		return new CSSStyleDeclaration(element, true);
 	}
 
 	/**
@@ -482,9 +524,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns A new MediaQueryList.
 	 */
 	public matchMedia(mediaQueryString: string): MediaQueryList {
-		const mediaQueryList = new MediaQueryList();
-		mediaQueryList._media = mediaQueryString;
-		return mediaQueryList;
+		return new MediaQueryList(this, mediaQueryString);
 	}
 
 	/**
@@ -549,7 +589,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout {
 		return this.setTimeout(() => {
-			callback(2);
+			callback(this.performance.now());
 		});
 	}
 
