@@ -1,5 +1,4 @@
 import IEventInit from './IEventInit';
-import EventTarget from './EventTarget';
 import INode from '../nodes/node/INode';
 import IWindow from '../window/IWindow';
 import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
@@ -10,8 +9,8 @@ import IEventTarget from './IEventTarget';
  */
 export default class Event {
 	public composed = false;
-	public currentTarget: EventTarget = null;
-	public target: EventTarget = null;
+	public currentTarget: IEventTarget = null;
+	public target: IEventTarget = null;
 	public bubbles = false;
 	public cancelable = false;
 	public defaultPrevented = false;

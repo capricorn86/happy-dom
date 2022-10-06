@@ -1,6 +1,8 @@
 enum NodeTypeEnum {
 	elementNode = 1,
+	attributeNode = 2,
 	textNode = 3,
+	cdataSectionNode = 4,
 	commentNode = 8,
 	documentNode = 9,
 	documentTypeNode = 10,
