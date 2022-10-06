@@ -1,17 +1,19 @@
 import PointerEvent from '../../../src/event/events/PointerEvent';
-import Document from '../../../src/nodes/document/Document';
+import IDocument from '../../../src/nodes/document/IDocument';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
+import IWindow from '../../../src/window/IWindow';
 import Window from '../../../src/window/Window';
 
 describe('HTMLElement', () => {
-	let window: Window = null;
-	let document: Document = null;
-	let element: HTMLElement = null;
+	let window: IWindow = null;
+	let document: IDocument = null;
+	let element: IHTMLElement = null;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLElement>document.createElement('div');
+		element = <IHTMLElement>document.createElement('div');
 	});
 
 	afterEach(() => {
@@ -81,10 +83,10 @@ describe('HTMLElement', () => {
 	});
 
 	describe('get innerText()', () => {
-		it('Returns the as the textContent property.', () => {
+		it('Returns the as the textContent property if element is not connected to document.', () => {
 			const div = document.createElement('div');
 			const script = document.createElement('script');
-			const style = document.createElement('script');
+			const style = document.createElement('style');
 			element.appendChild(div);
 			element.appendChild(script);
 			element.appendChild(style);
@@ -92,7 +94,35 @@ describe('HTMLElement', () => {
 			div.appendChild(document.createTextNode('text1'));
 			script.appendChild(document.createTextNode('var key = "value";'));
 			style.appendChild(document.createTextNode('button { background: red; }'));
-			expect(element.innerText).toBe('text1text2');
+			expect(element.innerText).toBe('text1var key = "value";button { background: red; }text2');
+		});
+
+		it('Returns the as the textContent property without any line breaks if element is not connected to document.', () => {
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><div>Jumped over the lazy dog</div>`;
+			expect(element.innerText).toBe('The quick brown foxJumped over the lazy dog');
+		});
+
+		it('Returns rendered text with line breaks between block and flex elements and without hidden elements being rendered if element is connected to the document.', () => {
+			document.body.appendChild(element);
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><script>var key = "value";</script><style>button { background: red; }</style><div>Jumped over the lazy dog</div>`;
+			expect(element.innerText).toBe('The quick brown fox\nJumped over the lazy dog');
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span style="display: flex">Jumped over the lazy dog</span><div>.</div>`;
+			expect(element.innerText).toBe('The quick brown fox\nJumped over the lazy dog\n.');
+		});
+
+		it('Returns rendered text affected by the "text-transform" CSS property.', () => {
+			document.body.appendChild(element);
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span>Jumped over the lazy dog</span><style>span { text-transform: uppercase; display: block; }</style>`;
+			expect(element.innerText).toBe('The quick brown fox\nJUMPED OVER THE LAZY DOG');
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span>JUMPED OVER THE LAZY DOG</span><style>span { text-transform: lowercase; display: block; }</style>`;
+			expect(element.innerText).toBe('The quick brown fox\njumped over the lazy dog');
+
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span>jumped over the lazy dog</span><style>span { text-transform: capitalize; display: block; }</style>`;
+			expect(element.innerText).toBe('The quick brown fox\nJumped Over The Lazy Dog');
 		});
 	});
 
@@ -118,17 +148,32 @@ describe('HTMLElement', () => {
 	describe('get style()', () => {
 		it('Returns styles.', () => {
 			element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
-			expect(element.style.length).toEqual(2);
-			expect(element.style[0]).toEqual('border-radius');
-			expect(element.style[1]).toEqual('padding');
+
+			expect(element.style.length).toEqual(8);
+			expect(element.style[0]).toEqual('border-top-left-radius');
+			expect(element.style[1]).toEqual('border-top-right-radius');
+			expect(element.style[2]).toEqual('border-bottom-right-radius');
+			expect(element.style[3]).toEqual('border-bottom-left-radius');
+			expect(element.style[4]).toEqual('padding-top');
+			expect(element.style[5]).toEqual('padding-right');
+			expect(element.style[6]).toEqual('padding-bottom');
+			expect(element.style[7]).toEqual('padding-left');
 			expect(element.style.borderRadius).toEqual('2px');
 			expect(element.style.padding).toEqual('2px');
 			expect(element.style.cssText).toEqual('border-radius: 2px; padding: 2px;');
 
 			element.setAttribute('style', 'border-radius: 4px; padding: 4px;');
-			expect(element.style.length).toEqual(2);
-			expect(element.style[0]).toEqual('border-radius');
-			expect(element.style[1]).toEqual('padding');
+
+			expect(element.style.length).toEqual(8);
+			expect(element.style[0]).toEqual('border-top-left-radius');
+			expect(element.style[1]).toEqual('border-top-right-radius');
+			expect(element.style[2]).toEqual('border-bottom-right-radius');
+			expect(element.style[3]).toEqual('border-bottom-left-radius');
+			expect(element.style[4]).toEqual('padding-top');
+			expect(element.style[5]).toEqual('padding-right');
+			expect(element.style[6]).toEqual('padding-bottom');
+			expect(element.style[7]).toEqual('padding-left');
+
 			expect(element.style.borderRadius).toEqual('4px');
 			expect(element.style.padding).toEqual('4px');
 			expect(element.style.cssText).toEqual('border-radius: 4px; padding: 4px;');
@@ -140,10 +185,16 @@ describe('HTMLElement', () => {
 			element.style.borderRadius = '4rem';
 			element.style.backgroundColor = 'green';
 
-			expect(element.style.length).toEqual(3);
-			expect(element.style[0]).toEqual('border-radius');
-			expect(element.style[1]).toEqual('padding');
-			expect(element.style[2]).toEqual('background-color');
+			expect(element.style.length).toEqual(9);
+			expect(element.style[0]).toEqual('border-top-left-radius');
+			expect(element.style[1]).toEqual('border-top-right-radius');
+			expect(element.style[2]).toEqual('border-bottom-right-radius');
+			expect(element.style[3]).toEqual('border-bottom-left-radius');
+			expect(element.style[4]).toEqual('padding-top');
+			expect(element.style[5]).toEqual('padding-right');
+			expect(element.style[6]).toEqual('padding-bottom');
+			expect(element.style[7]).toEqual('padding-left');
+			expect(element.style[8]).toEqual('background-color');
 
 			expect(element.style.borderRadius).toEqual('4rem');
 			expect(element.style.padding).toEqual('2px');
@@ -164,10 +215,13 @@ describe('HTMLElement', () => {
 			element.style.borderRadius = '';
 			element.style.backgroundColor = 'green';
 
-			expect(element.style.length).toEqual(2);
-			expect(element.style[0]).toEqual('padding');
-			expect(element.style[1]).toEqual('background-color');
-			expect(element.style[2]).toBe(undefined);
+			expect(element.style.length).toEqual(5);
+			expect(element.style[0]).toEqual('padding-top');
+			expect(element.style[1]).toEqual('padding-right');
+			expect(element.style[2]).toEqual('padding-bottom');
+			expect(element.style[3]).toEqual('padding-left');
+			expect(element.style[4]).toEqual('background-color');
+			expect(element.style[5]).toBe(undefined);
 
 			expect(element.style.borderRadius).toEqual('');
 			expect(element.style.padding).toEqual('2px');

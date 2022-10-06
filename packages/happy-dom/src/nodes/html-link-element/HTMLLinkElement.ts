@@ -1,4 +1,4 @@
-import Attr from '../../attribute/Attr';
+import IAttr from '../attr/IAttr';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import ResourceFetchHandler from '../../fetch/ResourceFetchHandler';
 import HTMLElement from '../html-element/HTMLElement';
@@ -186,7 +186,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: Attr): Attr {
+	public setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
 		const rel = this.getAttributeNS(null, 'rel');
 		const href = this.getAttributeNS(null, 'href');

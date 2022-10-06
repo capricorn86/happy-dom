@@ -5,7 +5,7 @@ import TreeWalker from '../../tree-walker/TreeWalker';
 import Event from '../../event/Event';
 import DOMImplementation from '../../dom-implementation/DOMImplementation';
 import INodeFilter from '../../tree-walker/INodeFilter';
-import Attr from '../../attribute/Attr';
+import IAttr from '../attr/IAttr';
 import IDocumentType from '../document-type/IDocumentType';
 import IParentNode from '../parent-node/IParentNode';
 import INode from '../node/INode';
@@ -125,7 +125,7 @@ export default interface IDocument extends IParentNode {
 	 * @param name Name.
 	 * @returns Attribute.
 	 */
-	createAttribute(name: string): Attr;
+	createAttribute(name: string): IAttr;
 
 	/**
 	 * Creates a namespaced Attr node.
@@ -134,7 +134,7 @@ export default interface IDocument extends IParentNode {
 	 * @param qualifiedName Qualified name.
 	 * @returns Element.
 	 */
-	createAttributeNS(namespaceURI: string, qualifiedName: string): Attr;
+	createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr;
 
 	/**
 	 * Imports a node.

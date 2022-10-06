@@ -13,7 +13,7 @@ import File from './file/File';
 import FileReader from './file/FileReader';
 import DOMException from './exception/DOMException';
 import History from './history/History';
-import CSSStyleDeclaration from './css/CSSStyleDeclaration';
+import CSSStyleDeclaration from './css/declaration/CSSStyleDeclaration';
 import Screen from './screen/Screen';
 import AsyncTaskManager from './async-task-manager/AsyncTaskManager';
 import NodeFilter from './tree-walker/NodeFilter';
@@ -100,6 +100,13 @@ import CustomElementRegistry from './custom-element/CustomElementRegistry';
 import XMLParser from './xml-parser/XMLParser';
 import XMLSerializer from './xml-serializer/XMLSerializer';
 import CSSStyleSheet from './css/CSSStyleSheet';
+import CSSRule from './css/CSSRule';
+import CSSContainerRule from './css/rules/CSSContainerRule';
+import CSSFontFaceRule from './css/rules/CSSFontFaceRule';
+import CSSKeyframeRule from './css/rules/CSSKeyframeRule';
+import CSSKeyframesRule from './css/rules/CSSKeyframesRule';
+import CSSMediaRule from './css/rules/CSSMediaRule';
+import CSSStyleRule from './css/rules/CSSStyleRule';
 import Storage from './storage/Storage';
 import DOMRect from './nodes/element/DOMRect';
 import { URLSearchParams } from 'url';
@@ -211,6 +218,13 @@ export {
 	XMLParser,
 	XMLSerializer,
 	CSSStyleSheet,
+	CSSRule,
+	CSSContainerRule,
+	CSSFontFaceRule,
+	CSSKeyframeRule,
+	CSSKeyframesRule,
+	CSSMediaRule,
+	CSSStyleRule,
 	Storage,
 	DOMRect,
 	URLSearchParams,
