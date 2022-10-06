@@ -6,7 +6,9 @@ import NodeTypeEnum from './NodeTypeEnum';
 
 export default interface INode extends IEventTarget {
 	readonly ELEMENT_NODE: NodeTypeEnum;
+	readonly ATTRIBUTE_NODE: NodeTypeEnum;
 	readonly TEXT_NODE: NodeTypeEnum;
+	readonly CDATA_SECTION_NODE: NodeTypeEnum;
 	readonly COMMENT_NODE: NodeTypeEnum;
 	readonly DOCUMENT_NODE: NodeTypeEnum;
 	readonly DOCUMENT_TYPE_NODE: NodeTypeEnum;

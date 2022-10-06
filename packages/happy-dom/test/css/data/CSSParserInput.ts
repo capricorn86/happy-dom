@@ -10,6 +10,7 @@ export default `
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        --css-variable: 1px;
     }
 
     @media screen and (max-width: 36rem) {
@@ -36,6 +37,18 @@ export default `
 
         100% {
             transform: rotate(360deg);
+        }
+    }
+
+    @container (min-width: 36rem) {
+        .container {
+            color: red;
+        }
+    }
+
+    @container name (min-width: 36rem) {
+        .container {
+            color: red;
         }
     }
 `.trim();

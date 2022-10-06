@@ -1,6 +1,6 @@
 import Node from '../node/Node';
 import ShadowRoot from '../shadow-root/ShadowRoot';
-import Attr from '../../attribute/Attr';
+import Attr from '../attr/Attr';
 import DOMRect from './DOMRect';
 import DOMTokenList from '../../dom-token-list/DOMTokenList';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
@@ -26,6 +26,7 @@ import { TInsertAdjacentPositions } from './IElement';
 import IText from '../text/IText';
 import IDOMRectList from './IDOMRectList';
 import DOMRectListFactory from './DOMRectListFactory';
+import IAttr from '../attr/IAttr';
 
 /**
  * Element.
@@ -46,7 +47,7 @@ export default class Element extends Node implements IElement {
 
 	// Used for being able to access closed shadow roots
 	public _shadowRoot: IShadowRoot = null;
-	public _attributes: { [k: string]: Attr } = {};
+	public _attributes: { [k: string]: IAttr } = {};
 
 	private _classList: DOMTokenList = null;
 	public _isValue?: string;
@@ -211,7 +212,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @returns Attributes.
 	 */
-	public get attributes(): { [k: string]: Attr | number } {
+	public get attributes(): { [k: string | number]: IAttr } & { length: number } {
 		const attributes = Object.values(this._attributes);
 		return Object.assign({}, this._attributes, attributes, {
 			length: attributes.length
@@ -301,6 +302,8 @@ export default class Element extends Node implements IElement {
 	 */
 	public cloneNode(deep = false): IElement {
 		const clone = <Element | IElement>super.cloneNode(deep);
+
+		Attr._ownerDocument = this.ownerDocument;
 
 		for (const key of Object.keys(this._attributes)) {
 			const attr = Object.assign(new Attr(), this._attributes[key]);
@@ -802,13 +805,13 @@ export default class Element extends Node implements IElement {
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: Attr): Attr {
+	public setAttributeNode(attribute: IAttr): IAttr {
 		const name = this._getAttributeName(attribute.name);
 		const replacedAttribute = this._attributes[name];
 		const oldValue = replacedAttribute ? replacedAttribute.value : null;
 
 		attribute.name = name;
-		(<IElement>attribute.ownerElement) = this;
+		(<IElement>attribute.ownerElement) = <IElement>this;
 		(<IDocument>attribute.ownerDocument) = this.ownerDocument;
 
 		this._attributes[name] = attribute;
@@ -849,7 +852,7 @@ export default class Element extends Node implements IElement {
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNodeNS(attribute: Attr): Attr {
+	public setAttributeNodeNS(attribute: IAttr): IAttr {
 		return this.setAttributeNode(attribute);
 	}
 
@@ -859,7 +862,7 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 * @returns Replaced attribute.
 	 */
-	public getAttributeNode(name: string): Attr {
+	public getAttributeNode(name: string): IAttr {
 		return this._attributes[this._getAttributeName(name)] || null;
 	}
 
@@ -870,7 +873,7 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 * @returns Replaced attribute.
 	 */
-	public getAttributeNodeNS(namespace: string, name: string): Attr {
+	public getAttributeNodeNS(namespace: string, name: string): IAttr {
 		const attributeName = this._getAttributeName(name);
 		if (
 			this._attributes[attributeName] &&
@@ -893,7 +896,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param attribute Attribute.
 	 */
-	public removeAttributeNode(attribute: Attr): void {
+	public removeAttributeNode(attribute: IAttr): void {
 		delete this._attributes[attribute.name];
 
 		this._updateDomListIndices();
@@ -930,7 +933,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param attribute Attribute.
 	 */
-	public removeAttributeNodeNS(attribute: Attr): void {
+	public removeAttributeNodeNS(attribute: IAttr): void {
 		this.removeAttributeNode(attribute);
 	}
 
