@@ -589,7 +589,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout {
 		return this.setTimeout(() => {
-			callback(2);
+			callback(this.performance.now());
 		});
 	}
 

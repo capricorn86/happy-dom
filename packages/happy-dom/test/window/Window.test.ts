@@ -402,6 +402,13 @@ describe('Window', () => {
 			const timeoutId = window.requestAnimationFrame(() => done());
 			expect(timeoutId.constructor.name).toBe('Timeout');
 		});
+
+		it('Calls passed callback with current time', (done) => {
+			window.requestAnimationFrame((now) => {
+				expect(Math.abs(now - window.performance.now())).toBeLessThan(100);
+				done();
+			});
+		});
 	});
 
 	describe('cancelAnimationFrame()', () => {
