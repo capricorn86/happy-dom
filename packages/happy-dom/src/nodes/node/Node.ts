@@ -21,14 +21,18 @@ export default class Node extends EventTarget implements INode {
 
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
+	public static readonly ATTRIBUTE_NODE = NodeTypeEnum.attributeNode;
 	public static readonly TEXT_NODE = NodeTypeEnum.textNode;
+	public static readonly CDATA_SECTION_NODE = NodeTypeEnum.cdataSectionNode;
 	public static readonly COMMENT_NODE = NodeTypeEnum.commentNode;
 	public static readonly DOCUMENT_NODE = NodeTypeEnum.documentNode;
 	public static readonly DOCUMENT_TYPE_NODE = NodeTypeEnum.documentTypeNode;
 	public static readonly DOCUMENT_FRAGMENT_NODE = NodeTypeEnum.documentFragmentNode;
 	public static readonly PROCESSING_INSTRUCTION_NODE = NodeTypeEnum.processingInstructionNode;
 	public readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
+	public readonly ATTRIBUTE_NODE = NodeTypeEnum.attributeNode;
 	public readonly TEXT_NODE = NodeTypeEnum.textNode;
+	public readonly CDATA_SECTION_NODE = NodeTypeEnum.cdataSectionNode;
 	public readonly COMMENT_NODE = NodeTypeEnum.commentNode;
 	public readonly DOCUMENT_NODE = NodeTypeEnum.documentNode;
 	public readonly DOCUMENT_TYPE_NODE = NodeTypeEnum.documentTypeNode;
@@ -58,16 +62,18 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Text content.
 	 */
 	public get textContent(): string {
+		// Sub-classes should implement this method.
 		return null;
 	}
 
 	/**
 	 * Sets text content.
 	 *
-	 * @param textContent Text content.
+	 * @param _textContent Text content.
 	 */
 	public set textContent(_textContent) {
 		// Do nothing.
+		// Sub-classes should implement this method.
 	}
 
 	/**

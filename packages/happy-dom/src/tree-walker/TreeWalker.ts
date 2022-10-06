@@ -125,7 +125,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public previousSibling(): INode {
-		if (this.currentNode !== this.root && this.currentNode) {
+		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
 			const siblings = this.currentNode.parentNode.childNodes;
 			const index = siblings.indexOf(this.currentNode);
 
@@ -149,7 +149,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public nextSibling(): INode {
-		if (this.currentNode !== this.root && this.currentNode) {
+		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
 			const siblings = this.currentNode.parentNode.childNodes;
 			const index = siblings.indexOf(this.currentNode);
 

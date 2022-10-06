@@ -22,8 +22,8 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 		}
 		if (!this._styleSheet) {
 			this._styleSheet = new CSSStyleSheet();
-			this._styleSheet.replaceSync(this.innerText);
 		}
+		this._styleSheet.replaceSync(this.textContent);
 		return this._styleSheet;
 	}
 

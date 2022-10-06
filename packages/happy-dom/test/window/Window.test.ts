@@ -1,4 +1,4 @@
-import CSSStyleDeclaration from '../../src/css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration';
 import IDocument from '../../src/nodes/document/IDocument';
 import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement';
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
@@ -11,6 +11,7 @@ import Headers from '../../src/fetch/Headers';
 import Selection from '../../src/selection/Selection';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
+import CustomElement from '../../test/CustomElement';
 
 const MOCKED_NODE_FETCH = global['mockedModules']['node-fetch'];
 
@@ -24,6 +25,7 @@ describe('Window', () => {
 		MOCKED_NODE_FETCH.error = null;
 		window = new Window();
 		document = window.document;
+		window.customElements.define('custom-element', CustomElement);
 	});
 
 	afterEach(() => {
@@ -202,19 +204,151 @@ describe('Window', () => {
 	});
 
 	describe('getComputedStyle()', () => {
-		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
-			const element = <IHTMLElement>window.document.createElement('div');
+		it('Handles default properties "display" and "direction".', () => {
+			const element = <IHTMLElement>document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
-
-			element.style.direction = 'rtl';
-
-			expect(computedStyle instanceof CSSStyleDeclaration).toBe(true);
-
-			expect(computedStyle.direction).toBe('');
 
 			window.document.body.appendChild(element);
 
-			expect(computedStyle.direction).toBe('rtl');
+			expect(computedStyle.direction).toBe('ltr');
+			expect(computedStyle.display).toBe('block');
+		});
+
+		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
+			const element = <IHTMLElement>document.createElement('div');
+			const computedStyle = window.getComputedStyle(element);
+
+			element.style.color = 'red';
+
+			expect(computedStyle instanceof CSSStyleDeclaration).toBe(true);
+
+			expect(computedStyle.color).toBe('');
+
+			window.document.body.appendChild(element);
+
+			expect(computedStyle.color).toBe('red');
+
+			element.style.color = 'green';
+
+			expect(computedStyle.color).toBe('green');
+		});
+
+		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
+			const parent = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			window.happyDOM.setInnerWidth(1024);
+
+			parentStyle.innerHTML = `
+				div {
+					font: 12px/1.5 "Helvetica Neue", Helvetica, Arial,sans-serif;
+					color: red !important;
+					cursor: pointer;
+				}
+
+				span {
+					border-radius: 1px !important;
+				}
+
+				@media (min-width: 1024px) {
+					div {
+						font-size: 14px;
+					}
+				}
+
+				@media (max-width: 768px) {
+					div {
+						font-size: 20px;
+					}
+				}
+			`;
+
+			elementStyle.innerHTML = `
+				span {
+					border: 1px solid #000;
+					border-radius: 2px; 
+					color: green;
+					cursor: default;
+				}
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.font).toBe('14px / 1.5 "Helvetica Neue", Helvetica, Arial, sans-serif');
+			expect(computedStyle.border).toBe('1px solid #000');
+			expect(computedStyle.borderRadius).toBe('1px');
+			expect(computedStyle.color).toBe('red');
+			expect(computedStyle.cursor).toBe('default');
+		});
+
+		it('Returns a CSSStyleDeclaration object with computed styles from style sheets for elements in a HTMLShadowRoot.', () => {
+			const element = <IHTMLElement>document.createElement('span');
+			const elementStyle = document.createElement('style');
+			const customElement = <CustomElement>document.createElement('custom-element');
+			const elementComputedStyle = window.getComputedStyle(element);
+
+			elementStyle.innerHTML = `
+				span {
+					color: green;
+				}
+			`;
+
+			document.body.appendChild(elementStyle);
+			document.body.appendChild(element);
+			document.body.appendChild(customElement);
+
+			const customElementComputedStyle = window.getComputedStyle(
+				customElement.shadowRoot.querySelector('span')
+			);
+
+			expect(elementComputedStyle.font).toBe('');
+			expect(elementComputedStyle.color).toBe('green');
+
+			expect(customElementComputedStyle.color).toBe('yellow');
+			expect(customElementComputedStyle.font).toBe(
+				'14px "Lucida Grande", Helvetica, Arial, sans-serif'
+			);
+		});
+
+		it('Returns values defined by a CSS variables.', () => {
+			const parent = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			window.happyDOM.setInnerWidth(1024);
+
+			parentStyle.innerHTML = `
+				div {
+					--color-variable: #000;
+					--valid-variable: 1px solid var(--color-variable);
+					--invalid-variable: invalid;
+				}
+			`;
+
+			elementStyle.innerHTML = `
+				span {
+					border: var(--valid-variable);
+					font: var(--invalid-variable);
+				}
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.border).toBe('1px solid #000');
+			expect(computedStyle.font).toBe('');
 		});
 	});
 
@@ -268,6 +402,13 @@ describe('Window', () => {
 			const timeoutId = window.requestAnimationFrame(() => done());
 			expect(timeoutId.constructor.name).toBe('Timeout');
 		});
+
+		it('Calls passed callback with current time', (done) => {
+			window.requestAnimationFrame((now) => {
+				expect(Math.abs(now - window.performance.now())).toBeLessThan(100);
+				done();
+			});
+		});
 	});
 
 	describe('cancelAnimationFrame()', () => {
@@ -281,11 +422,16 @@ describe('Window', () => {
 
 	describe('matchMedia()', () => {
 		it('Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.', () => {
-			const mediaQueryString = '(max-width: 600px)';
+			window.happyDOM.setInnerWidth(1024);
+
+			const mediaQueryString = '(max-width: 512px)';
 			const mediaQueryList = window.matchMedia(mediaQueryString);
 			expect(mediaQueryList.matches).toBe(false);
 			expect(mediaQueryList.media).toBe(mediaQueryString);
 			expect(mediaQueryList.onchange).toBe(null);
+
+			expect(window.matchMedia('(max-width: 1024px)').matches).toBe(true);
+
 			expect(typeof mediaQueryList.addEventListener).toBe('function');
 			expect(typeof mediaQueryList.removeEventListener).toBe('function');
 		});
