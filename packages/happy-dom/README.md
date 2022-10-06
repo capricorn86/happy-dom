@@ -84,10 +84,12 @@ The default Window class is a [VM context](https://nodejs.org/api/vm.html#vm_vm_
 ```javascript
 import { Window } from 'happy-dom';
 
-const window = new Window();
+const window = new Window({
+    innerWidth: 1024,
+    innerHeight: 768,
+    url: 'http://localhost:8080
+});
 const document = window.document;
-
-window.location.href = 'http://localhost:8080';
 
 document.write(`
     <html>
@@ -143,10 +145,12 @@ The example below will show you how to setup a Node [VM context](https://nodejs.
 ```javascript
 import { Window } from 'happy-dom';
 
-const window = new Window();
+const window = new Window({
+    innerWidth: 1024,
+    innerHeight: 768,
+    url: 'http://localhost:8080
+});
 const document = window.document;
-
-window.location.href = 'http://localhost:8080';
 
 document.write(`
     <html>
@@ -228,6 +232,22 @@ window.setTimeout(() => {
     // This timeout will be canceled
 });
 window.happyDOM.cancelAsync();
+```
+
+**setInnerWidth()**
+
+Sets the property `window.innerWidth` and dispatches a "resize" event.
+
+```javascript
+window.happyDOM.setInnerWidth(1024);
+```
+
+**setInnerHeight()**
+
+Sets the property `window.innerHeight` and dispatches a "resize" event.
+
+```javascript
+window.happyDOM.setInnerHeight(768);
 ```
 
 
