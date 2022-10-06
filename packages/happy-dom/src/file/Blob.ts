@@ -110,7 +110,6 @@ export default class Blob implements IBlob {
 		return blob;
 	}
 
-
 	/**
 	 * Returns a Promise that resolves to a ArrayBuffer.
 	 *
@@ -120,8 +119,11 @@ export default class Blob implements IBlob {
 	// Reference:
 	// https://github.com/web-std/io/blob/c88170bf24f064adfbb3586a21fb76650ca5a9ab/packages/blob/src/blob.js#L139-L148
 	// https://stackoverflow.com/questions/8609289/convert-a-binary-nodejs-buffer-to-javascript-arraybuffer
+	/**
+	 *
+	 */
 	public async arrayBuffer(): Promise<ArrayBuffer> {
-		return new Uint8Array(this._buffer).buffer
+		return new Uint8Array(this._buffer).buffer;
 	}
 
 	/**

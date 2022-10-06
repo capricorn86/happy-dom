@@ -560,6 +560,16 @@ describe('QuerySelector', () => {
 			expect(div1.querySelector('span.spanClass')).toBe(span);
 		});
 
+		it('Returns div with a specific id and tag name matching "div#divId".', () => {
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			const div3 = document.createElement('div');
+			div3.id = 'divId';
+			div1.appendChild(div2);
+			div2.appendChild(div3);
+			expect(div1.querySelector('div#divId')).toBe(div3);
+		});
+
 		it('Returns span with a specific class name and tag name matching "custom-element.class1".', () => {
 			const div = document.createElement('div');
 			const customElement1 = document.createElement('custom-element');

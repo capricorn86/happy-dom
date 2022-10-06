@@ -1,11 +1,12 @@
 import Element from '../element/Element';
 import IHTMLElement from './IHTMLElement';
-import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
-import Attr from '../../attribute/Attr';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
+import IAttr from '../attr/IAttr';
 import FocusEvent from '../../event/events/FocusEvent';
 import PointerEvent from '../../event/events/PointerEvent';
-import Node from '../node/Node';
 import DatasetUtility from './DatasetUtility';
+import NodeTypeEnum from '../node/NodeTypeEnum';
+import DOMException from '../../exception/DOMException';
 
 /**
  * HTML Element.
@@ -54,32 +55,109 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * Returns inner text, which is the rendered appearance of text.
 	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
 	 * @returns Inner text.
 	 */
 	public get innerText(): string {
+		if (!this.isConnected) {
+			return this.textContent;
+		}
+
 		let result = '';
+
 		for (const childNode of this.childNodes) {
-			if (childNode instanceof HTMLElement) {
-				if (childNode.tagName !== 'SCRIPT' && childNode.tagName !== 'STYLE') {
-					result += childNode.innerText;
+			if (childNode.nodeType === NodeTypeEnum.elementNode) {
+				const childElement = <IHTMLElement>childNode;
+				const computedStyle = this.ownerDocument.defaultView.getComputedStyle(childElement);
+
+				if (childElement.tagName !== 'SCRIPT' && childElement.tagName !== 'STYLE') {
+					const display = computedStyle.display;
+					if (display !== 'none') {
+						const textTransform = computedStyle.textTransform;
+
+						if ((display === 'block' || display === 'flex') && result) {
+							result += '\n';
+						}
+
+						let text = childElement.innerText;
+
+						switch (textTransform) {
+							case 'uppercase':
+								text = text.toUpperCase();
+								break;
+							case 'lowercase':
+								text = text.toLowerCase();
+								break;
+							case 'capitalize':
+								text = text.replace(/(^|\s)\S/g, (l) => l.toUpperCase());
+								break;
+						}
+
+						result += text;
+					}
 				}
-			} else if (
-				childNode.nodeType === Node.ELEMENT_NODE ||
-				childNode.nodeType === Node.TEXT_NODE
-			) {
-				result += childNode.textContent;
+			} else if (childNode.nodeType === NodeTypeEnum.textNode) {
+				result += childNode.textContent.replace(/[\n\r]/, '');
 			}
 		}
+
 		return result;
 	}
 
 	/**
 	 * Sets the inner text, which is the rendered appearance of text.
 	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
 	 * @param innerText Inner text.
 	 */
-	public set innerText(innerText: string) {
-		this.textContent = innerText;
+	public set innerText(text: string) {
+		for (const child of this.childNodes.slice()) {
+			this.removeChild(child);
+		}
+
+		const texts = text.split(/[\n\r]/);
+
+		for (let i = 0, max = texts.length; i < max; i++) {
+			if (i !== 0) {
+				this.appendChild(this.ownerDocument.createElement('br'));
+			}
+			this.appendChild(this.ownerDocument.createTextNode(texts[i]));
+		}
+	}
+
+	/**
+	 * Returns outer text.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
+	 * @returns HTML.
+	 */
+	public get outerText(): string {
+		return this.innerText;
+	}
+
+	/**
+	 * Sets outer text.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
+	 * @param text Text.
+	 */
+	public set outerText(text: string) {
+		if (!this.parentNode) {
+			throw new DOMException(
+				"Failed to set the 'outerHTML' property on 'Element': This element has no parent node."
+			);
+		}
+
+		const texts = text.split(/[\n\r]/);
+
+		for (let i = 0, max = texts.length; i < max; i++) {
+			if (i !== 0) {
+				this.parentNode.insertBefore(this.ownerDocument.createElement('br'), this);
+			}
+			this.parentNode.insertBefore(this.ownerDocument.createTextNode(texts[i]), this);
+		}
+
+		this.parentNode.removeChild(this);
 	}
 
 	/**
@@ -89,7 +167,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 */
 	public get style(): CSSStyleDeclaration {
 		if (!this._style) {
-			this._style = new CSSStyleDeclaration(this._attributes);
+			this._style = new CSSStyleDeclaration(this);
 		}
 		return this._style;
 	}
@@ -311,7 +389,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: Attr): Attr {
+	public setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'style' && this._style) {
@@ -327,7 +405,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @override
 	 * @param attribute Attribute.
 	 */
-	public removeAttributeNode(attribute: Attr): void {
+	public removeAttributeNode(attribute: IAttr): void {
 		super.removeAttributeNode(attribute);
 
 		if (attribute.name === 'style' && this._style) {
