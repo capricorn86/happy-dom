@@ -3,6 +3,7 @@ import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import INodeList from './INodeList';
 import NodeTypeEnum from './NodeTypeEnum';
+import NodeDocumentPositionEnum from './NodeDocumentPositionEnum';
 
 export default interface INode extends IEventTarget {
 	readonly ELEMENT_NODE: NodeTypeEnum;
@@ -14,6 +15,12 @@ export default interface INode extends IEventTarget {
 	readonly DOCUMENT_TYPE_NODE: NodeTypeEnum;
 	readonly DOCUMENT_FRAGMENT_NODE: NodeTypeEnum;
 	readonly PROCESSING_INSTRUCTION_NODE: NodeTypeEnum;
+	readonly DOCUMENT_POSITION_DISCONNECTED: NodeDocumentPositionEnum;
+	readonly DOCUMENT_POSITION_PRECEDING: NodeDocumentPositionEnum;
+	readonly DOCUMENT_POSITION_FOLLOWING: NodeDocumentPositionEnum;
+	readonly DOCUMENT_POSITION_CONTAINS: NodeDocumentPositionEnum;
+	readonly DOCUMENT_POSITION_CONTAINED_BY: NodeDocumentPositionEnum;
+	readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: NodeDocumentPositionEnum;
 	readonly ownerDocument: IDocument;
 	readonly parentNode: INode;
 	readonly parentElement: IElement;
@@ -39,4 +46,5 @@ export default interface INode extends IEventTarget {
 	insertBefore(newNode: INode, referenceNode?: INode | null): INode;
 	replaceChild(newChild: INode, oldChild: INode): INode;
 	toString(): string;
+	compareDocumentPosition(otherNode: INode): number;
 }

@@ -109,6 +109,7 @@ import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
 import Attr from '../nodes/attr/Attr';
 import IElement from '../nodes/element/IElement';
+import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -171,6 +172,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Text = Text;
 	public readonly Comment = Comment;
 	public readonly ShadowRoot = ShadowRoot;
+	public readonly ProcessingInstruction = ProcessingInstruction;
 	public readonly Element = Element;
 	public readonly DocumentFragment = DocumentFragment;
 	public readonly CharacterData = CharacterData;

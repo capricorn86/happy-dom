@@ -30,6 +30,8 @@ import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
 import CustomEvent from '../../../src/event/events/CustomEvent';
 import Selection from '../../../src/selection/Selection';
 import Range from '../../../src/range/Range';
+import ProcessingInstruction from '../../../src/nodes/processing-instruction/ProcessingInstruction';
+import DOMException from '../../../src/exception/DOMException';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -1132,6 +1134,29 @@ describe('Document', () => {
 			document.dispatchEvent(event);
 
 			expect(emittedEvent).toBe(event);
+		});
+	});
+
+	describe('createProcessingInstruction()', () => {
+		it('Creates a Processing Instruction node with target & data.', () => {
+			const instruction = document.createProcessingInstruction('foo', 'bar');
+			expect(instruction instanceof ProcessingInstruction).toBe(true);
+			expect(instruction).toEqual(
+				expect.objectContaining({
+					target: 'foo',
+					data: 'bar',
+					ownerDocument: document
+				})
+			);
+		});
+
+		it('Throws an exception if data contains "?>".', () => {
+			expect.assertions(1);
+			try {
+				document.createProcessingInstruction('foo', 'bar?>');
+			} catch (e) {
+				expect(e).toEqual(new DOMException('InvalidCharacterError'));
+			}
 		});
 	});
 });
