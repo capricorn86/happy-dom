@@ -33,6 +33,7 @@ export default class GlobalRegistrator {
 		}
 		for (const key of this.registered) {
 			delete global[key];
+			this.registered.pop();
 		}
 	}
 }
