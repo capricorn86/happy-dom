@@ -87,7 +87,7 @@ import { Window } from 'happy-dom';
 const window = new Window({
     innerWidth: 1024,
     innerHeight: 768,
-    url: 'http://localhost:8080
+    url: 'http://localhost:8080'
 });
 const document = window.document;
 
@@ -148,7 +148,7 @@ import { Window } from 'happy-dom';
 const window = new Window({
     innerWidth: 1024,
     innerHeight: 768,
-    url: 'http://localhost:8080
+    url: 'http://localhost:8080'
 });
 const document = window.document;
 
