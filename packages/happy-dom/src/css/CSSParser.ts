@@ -4,7 +4,7 @@ import CSSStyleRule from './rules/CSSStyleRule';
 import CSSKeyframeRule from './rules/CSSKeyframeRule';
 import CSSKeyframesRule from './rules/CSSKeyframesRule';
 import CSSMediaRule from './rules/CSSMediaRule';
-import CSSStyleDeclaration from './CSSStyleDeclaration';
+import CSSContainerRule from './rules/CSSContainerRule';
 
 const COMMENT_REGEXP = /\/\*[^*]*\*\//gm;
 
@@ -50,6 +50,14 @@ export default class CSSParser {
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
+				} else if (selectorText.startsWith('@container')) {
+					const conditionalText = selectorText.replace(/@container */, '');
+					const newRule = new CSSContainerRule();
+
+					(<string>newRule.conditionalText) = conditionalText;
+					newRule.parentStyleSheet = parentStyleSheet;
+					cssRules.push(newRule);
+					parentRule = newRule;
 				} else if (parentRule && parentRule.type === CSSRule.KEYFRAMES_RULE) {
 					const newRule = new CSSKeyframeRule();
 					(<string>newRule.keyText) = selectorText.trim();
@@ -58,7 +66,10 @@ export default class CSSParser {
 
 					(<CSSKeyframesRule>parentRule).cssRules.push(<CSSKeyframeRule>newRule);
 					parentRule = newRule;
-				} else if (parentRule && parentRule.type === CSSRule.MEDIA_RULE) {
+				} else if (
+					parentRule &&
+					(parentRule.type === CSSRule.MEDIA_RULE || parentRule.type === CSSRule.CONTAINER_RULE)
+				) {
 					const newRule = new CSSStyleRule();
 					(<string>newRule.selectorText) = selectorText;
 					newRule.parentStyleSheet = parentStyleSheet;
@@ -86,10 +97,7 @@ export default class CSSParser {
 						case CSSRule.FONT_FACE_RULE:
 						case CSSRule.KEYFRAME_RULE:
 						case CSSRule.STYLE_RULE:
-							const style = new CSSStyleDeclaration();
-							style.cssText = cssText;
-							(<CSSRule>style.parentRule) = parentRule;
-							(<CSSStyleDeclaration>(<CSSStyleRule>parentRule).style) = style;
+							(<CSSStyleRule>parentRule)._cssText = cssText;
 							break;
 					}
 				}
