@@ -28,7 +28,6 @@ export default [
 	'HTMLLegendElement',
 	'HTMLMapElement',
 	'HTMLMarqueeElement',
-	'HTMLMediaElement',
 	'HTMLMeterElement',
 	'HTMLModElement',
 	'HTMLOutputElement',
@@ -50,7 +49,5 @@ export default [
 	'HTMLEmbedElement',
 	'HTMLObjectElement',
 	'HTMLParamElement',
-	'HTMLVideoElement',
-	'HTMLAudioElement',
 	'HTMLTrackElement'
 ];
