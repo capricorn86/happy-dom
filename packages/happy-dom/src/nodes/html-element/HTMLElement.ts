@@ -7,6 +7,7 @@ import PointerEvent from '../../event/events/PointerEvent';
 import DatasetUtility from './DatasetUtility';
 import NodeTypeEnum from '../node/NodeTypeEnum';
 import DOMException from '../../exception/DOMException';
+import Event from '../../event/Event';
 
 /**
  * HTML Element.
@@ -28,6 +29,33 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 	private _style: CSSStyleDeclaration = null;
 	private _dataset: { [key: string]: string } = null;
+
+	// Events
+	public oncopy: (event: Event) => void | null = null;
+	public oncut: (event: Event) => void | null = null;
+	public onpaste: (event: Event) => void | null = null;
+	public oninvalid: (event: Event) => void | null = null;
+	public onanimationcancel: (event: Event) => void | null = null;
+	public onanimationend: (event: Event) => void | null = null;
+	public onanimationiteration: (event: Event) => void | null = null;
+	public onanimationstart: (event: Event) => void | null = null;
+	public onbeforeinput: (event: Event) => void | null = null;
+	public oninput: (event: Event) => void | null = null;
+	public onchange: (event: Event) => void | null = null;
+	public ongotpointercapture: (event: Event) => void | null = null;
+	public onlostpointercapture: (event: Event) => void | null = null;
+	public onpointercancel: (event: Event) => void | null = null;
+	public onpointerdown: (event: Event) => void | null = null;
+	public onpointerenter: (event: Event) => void | null = null;
+	public onpointerleave: (event: Event) => void | null = null;
+	public onpointermove: (event: Event) => void | null = null;
+	public onpointerout: (event: Event) => void | null = null;
+	public onpointerover: (event: Event) => void | null = null;
+	public onpointerup: (event: Event) => void | null = null;
+	public ontransitioncancel: (event: Event) => void | null = null;
+	public ontransitionend: (event: Event) => void | null = null;
+	public ontransitionrun: (event: Event) => void | null = null;
+	public ontransitionstart: (event: Event) => void | null = null;
 
 	/**
 	 * Returns tab index.

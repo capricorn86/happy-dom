@@ -18,8 +18,8 @@
 	"include": [
 		"@types/node",
 		"@types/jest",
-		".",
-		"../src",
-		"../src/**/*.json"
+        "@types/react",
+        "@types/react-dom",
+		"."
 	]
 }

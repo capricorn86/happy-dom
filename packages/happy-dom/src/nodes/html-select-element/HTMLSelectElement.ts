@@ -12,6 +12,7 @@ import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollectio
 import INodeList from '../node/INodeList';
 import HTMLSelectElementValueSanitizer from './HTMLSelectElementValueSanitizer';
 import IHTMLSelectElement from './IHTMLSelectElement';
+import Event from '../../event/Event';
 
 /**
  * HTML Select Element.
@@ -22,6 +23,10 @@ import IHTMLSelectElement from './IHTMLSelectElement';
 export default class HTMLSelectElement extends HTMLElement implements IHTMLSelectElement {
 	public type: string;
 	public labels: INodeList<IHTMLLabelElement>;
+
+	// Events
+	public onchange: (event: Event) => void | null = null;
+	public oninput: (event: Event) => void | null = null;
 
 	public _value = null;
 	public _selectedIndex = -1;

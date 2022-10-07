@@ -1,6 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ReactComponent, { ReactSelectComponent } from './ReactComponent';
+import * as ReactTestingLibrary from '@testing-library/react';
+import ReactTestingLibraryUserEvent from '@testing-library/user-event';
+import { ReactComponent, ReactSelectComponent, ReactInputComponent } from './ReactComponent';
+
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+
+const TESTING_LIBRARY_USER = ReactTestingLibraryUserEvent.setup();
 
 describe('React', () => {
 	let appElement: Element;
@@ -25,10 +31,17 @@ describe('React', () => {
 		expect(appElement.innerHTML).toBe('');
 	});
 
-	it('Select tests integration.', () => {
+	it('Handles adding and removing event listeners.', () => {
+		ReactDOM.render(<ReactSelectComponent onChange={() => {}} />, appElement);
 		ReactDOM.render(<ReactSelectComponent />, appElement);
-		expect(appElement.innerHTML).toBe(
-			'<select><option value="t1">test 1</option><option value="t2" selected="">test 2</option></select>'
-		);
+	});
+
+	it('Testing library handles input', async () => {
+		const { getByPlaceholderText } = ReactTestingLibrary.render(<ReactInputComponent />);
+		const input: HTMLInputElement = getByPlaceholderText('input field') as HTMLInputElement;
+
+		await TESTING_LIBRARY_USER.type(input, 'hello');
+
+		expect(input.value).toBe('hello');
 	});
 });

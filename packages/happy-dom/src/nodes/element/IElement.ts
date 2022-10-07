@@ -7,6 +7,7 @@ import IChildNode from '../child-node/IChildNode';
 import IParentNode from '../parent-node/IParentNode';
 import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode';
 import IDOMRectList from './IDOMRectList';
+import Event from '../../event/Event';
 
 export type TInsertAdjacentPositions = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -29,6 +30,42 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	readonly nodeName: string;
 	readonly localName: string;
 	readonly attributes: { [k: string | number]: IAttr } & { length: number };
+
+	// Events
+	oncancel: (event: Event) => void | null;
+	onerror: (event: Event) => void | null;
+	onscroll: (event: Event) => void | null;
+	onselect: (event: Event) => void | null;
+	onwheel: (event: Event) => void | null;
+	oncopy: (event: Event) => void | null;
+	oncut: (event: Event) => void | null;
+	onpaste: (event: Event) => void | null;
+	oncompositionend: (event: Event) => void | null;
+	oncompositionstart: (event: Event) => void | null;
+	oncompositionupdate: (event: Event) => void | null;
+	onblur: (event: Event) => void | null;
+	onfocus: (event: Event) => void | null;
+	onfocusin: (event: Event) => void | null;
+	onfocusout: (event: Event) => void | null;
+	onfullscreenchange: (event: Event) => void | null;
+	onfullscreenerror: (event: Event) => void | null;
+	onkeydown: (event: Event) => void | null;
+	onkeyup: (event: Event) => void | null;
+	onauxclick: (event: Event) => void | null;
+	onclick: (event: Event) => void | null;
+	oncontextmenu: (event: Event) => void | null;
+	ondblclick: (event: Event) => void | null;
+	onmousedown: (event: Event) => void | null;
+	onmouseenter: (event: Event) => void | null;
+	onmouseleave: (event: Event) => void | null;
+	onmousemove: (event: Event) => void | null;
+	onmouseout: (event: Event) => void | null;
+	onmouseover: (event: Event) => void | null;
+	onmouseup: (event: Event) => void | null;
+	ontouchcancel: (event: Event) => void | null;
+	ontouchend: (event: Event) => void | null;
+	ontouchmove: (event: Event) => void | null;
+	ontouchstart: (event: Event) => void | null;
 
 	/**
 	 * Attribute changed callback.

@@ -27,6 +27,7 @@ import IText from '../text/IText';
 import IDOMRectList from './IDOMRectList';
 import DOMRectListFactory from './DOMRectListFactory';
 import IAttr from '../attr/IAttr';
+import Event from '../../event/Event';
 
 /**
  * Element.
@@ -45,6 +46,42 @@ export default class Element extends Node implements IElement {
 	public scrollLeft = 0;
 	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public readonly namespaceURI: string = null;
+
+	// Events
+	public oncancel: (event: Event) => void | null = null;
+	public onerror: (event: Event) => void | null = null;
+	public onscroll: (event: Event) => void | null = null;
+	public onselect: (event: Event) => void | null = null;
+	public onwheel: (event: Event) => void | null = null;
+	public oncopy: (event: Event) => void | null = null;
+	public oncut: (event: Event) => void | null = null;
+	public onpaste: (event: Event) => void | null = null;
+	public oncompositionend: (event: Event) => void | null = null;
+	public oncompositionstart: (event: Event) => void | null = null;
+	public oncompositionupdate: (event: Event) => void | null = null;
+	public onblur: (event: Event) => void | null = null;
+	public onfocus: (event: Event) => void | null = null;
+	public onfocusin: (event: Event) => void | null = null;
+	public onfocusout: (event: Event) => void | null = null;
+	public onfullscreenchange: (event: Event) => void | null = null;
+	public onfullscreenerror: (event: Event) => void | null = null;
+	public onkeydown: (event: Event) => void | null = null;
+	public onkeyup: (event: Event) => void | null = null;
+	public onauxclick: (event: Event) => void | null = null;
+	public onclick: (event: Event) => void | null = null;
+	public oncontextmenu: (event: Event) => void | null = null;
+	public ondblclick: (event: Event) => void | null = null;
+	public onmousedown: (event: Event) => void | null = null;
+	public onmouseenter: (event: Event) => void | null = null;
+	public onmouseleave: (event: Event) => void | null = null;
+	public onmousemove: (event: Event) => void | null = null;
+	public onmouseout: (event: Event) => void | null = null;
+	public onmouseover: (event: Event) => void | null = null;
+	public onmouseup: (event: Event) => void | null = null;
+	public ontouchcancel: (event: Event) => void | null = null;
+	public ontouchend: (event: Event) => void | null = null;
+	public ontouchmove: (event: Event) => void | null = null;
+	public ontouchstart: (event: Event) => void | null = null;
 
 	// Used for being able to access closed shadow roots
 	public _shadowRoot: IShadowRoot = null;

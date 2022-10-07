@@ -11,6 +11,10 @@ import IHTMLDialogElement from './IHTMLDialogElement';
 export default class HTMLDialogElement extends HTMLElement implements IHTMLDialogElement {
 	public returnValue = '';
 
+	// Events
+	public oncancel: (event: Event) => void | null = null;
+	public onclose: (event: Event) => void | null = null;
+
 	/**
 	 * Returns open.
 	 *

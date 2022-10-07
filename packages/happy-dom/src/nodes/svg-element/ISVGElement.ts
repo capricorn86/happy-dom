@@ -1,3 +1,4 @@
+import Event from '../../event/Event';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
 import IElement from '../element/IElement';
 import ISVGSVGElement from './ISVGSVGElement';
@@ -12,4 +13,12 @@ export default interface ISVGElement extends IElement {
 	readonly ownerSVGElement: ISVGSVGElement;
 	readonly dataset: { [key: string]: string };
 	readonly style: CSSStyleDeclaration;
+
+	// Events
+	onabort: (event: Event) => void | null;
+	onerror: (event: Event) => void | null;
+	onload: (event: Event) => void | null;
+	onresize: (event: Event) => void | null;
+	onscroll: (event: Event) => void | null;
+	onunload: (event: Event) => void | null;
 }

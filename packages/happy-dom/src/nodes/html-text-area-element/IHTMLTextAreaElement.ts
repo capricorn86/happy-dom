@@ -1,3 +1,4 @@
+import Event from '../../event/Event';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
@@ -29,6 +30,10 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	selectionEnd: number;
 	selectionDirection: string;
 	textLength: number;
+
+	// Events
+	oninput: (event: Event) => void | null;
+	onselectionchange: (event: Event) => void | null;
 
 	/**
 	 * Set selection range.

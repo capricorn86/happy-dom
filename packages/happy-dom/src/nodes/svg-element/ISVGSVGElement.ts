@@ -1,3 +1,4 @@
+import Event from '../../event/Event';
 import INode from '../node/INode';
 import ISVGGraphicsElement from './ISVGGraphicsElement';
 import SVGAngle from './SVGAngle';
@@ -24,6 +25,26 @@ export default interface ISVGSVGElement extends ISVGGraphicsElement {
 	viewport: SVGRect;
 	currentTranslate: SVGPoint;
 	viewBox: SVGAnimatedRect;
+
+	// Events
+	onafterprint: (event: Event) => void | null;
+	onbeforeprint: (event: Event) => void | null;
+	onbeforeunload: (event: Event) => void | null;
+	ongamepadconnected: (event: Event) => void | null;
+	ongamepaddisconnected: (event: Event) => void | null;
+	onhashchange: (event: Event) => void | null;
+	onlanguagechange: (event: Event) => void | null;
+	onmessage: (event: Event) => void | null;
+	onmessageerror: (event: Event) => void | null;
+	onoffline: (event: Event) => void | null;
+	ononline: (event: Event) => void | null;
+	onpagehide: (event: Event) => void | null;
+	onpageshow: (event: Event) => void | null;
+	onpopstate: (event: Event) => void | null;
+	onrejectionhandled: (event: Event) => void | null;
+	onstorage: (event: Event) => void | null;
+	onunhandledrejection: (event: Event) => void | null;
+	onunload: (event: Event) => void | null;
 
 	/**
 	 * Pauses animation.

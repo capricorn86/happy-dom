@@ -1,6 +1,7 @@
 import HTMLElement from '../html-element/HTMLElement';
 import IElement from '../element/IElement';
 import IHTMLFormElement from './IHTMLFormElement';
+import Event from '../../event/Event';
 
 /**
  * HTML Form Element.
@@ -9,6 +10,11 @@ import IHTMLFormElement from './IHTMLFormElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement.
  */
 export default class HTMLFormElement extends HTMLElement implements IHTMLFormElement {
+	// Events
+	public onformdata: (event: Event) => void | null = null;
+	public onreset: (event: Event) => void | null = null;
+	public onsubmit: (event: Event) => void | null = null;
+
 	/**
 	 * Returns name.
 	 *

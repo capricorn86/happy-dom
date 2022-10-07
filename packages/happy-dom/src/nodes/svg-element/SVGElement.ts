@@ -3,6 +3,7 @@ import Element from '../element/Element';
 import ISVGElement from './ISVGElement';
 import ISVGSVGElement from './ISVGSVGElement';
 import IAttr from '../attr/IAttr';
+import Event from '../../event/Event';
 
 /**
  * SVG Element.
@@ -11,6 +12,14 @@ import IAttr from '../attr/IAttr';
  * https://developer.mozilla.org/en-US/docs/Web/API/SVGElement.
  */
 export default class SVGElement extends Element implements ISVGElement {
+	// Events
+	public onabort: (event: Event) => void | null = null;
+	public onerror: (event: Event) => void | null = null;
+	public onload: (event: Event) => void | null = null;
+	public onresize: (event: Event) => void | null = null;
+	public onscroll: (event: Event) => void | null = null;
+	public onunload: (event: Event) => void | null = null;
+
 	private _style: CSSStyleDeclaration = null;
 
 	/**
