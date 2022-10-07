@@ -5,11 +5,13 @@ import React from 'react';
 /**
  *
  */
-export class ReactComponent extends React.Component<{}, {}> {
+export class ReactDivComponent extends React.Component<{}, {}> {
+	public $props = {};
+
 	/**
 	 * @override
 	 */
-	public render(): unknown {
+	public render(): React.ReactElement {
 		return <div>Test</div>;
 	}
 }
@@ -29,13 +31,18 @@ export class ReactSelectComponent extends React.Component<
 	},
 	{}
 > {
+	public $props = {
+		value: OPTIONS[0].value,
+		onChange: null
+	};
+
 	/**
 	 * @override
 	 */
-	public render(): unknown {
+	public render(): React.ReactElement {
 		return (
 			<select
-				value={this.props.value || OPTIONS[0].value}
+				value={this.props.value}
 				onChange={
 					this.props.onChange
 						? (event: React.ChangeEvent) =>
@@ -57,10 +64,12 @@ export class ReactSelectComponent extends React.Component<
  *
  */
 export class ReactInputComponent extends React.Component<{}, {}> {
+	public $props = {};
+
 	/**
 	 * @override
 	 */
-	public render(): unknown {
+	public render(): React.ReactElement {
 		return <input placeholder="input field" />;
 	}
 }

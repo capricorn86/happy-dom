@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as ReactTestingLibrary from '@testing-library/react';
 import ReactTestingLibraryUserEvent from '@testing-library/user-event';
-import { ReactComponent, ReactSelectComponent, ReactInputComponent } from './ReactComponent';
+import { ReactDivComponent, ReactSelectComponent, ReactInputComponent } from './ReactComponents';
 
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 
@@ -21,19 +21,18 @@ describe('React', () => {
 	});
 
 	it('Tests integration.', () => {
-		ReactDOM.render(<ReactComponent />, appElement);
+		ReactDOM.render(<ReactDivComponent />, appElement);
 		expect(appElement.innerHTML).toBe('<div>Test</div>');
 	});
 
 	it('Can unmount a component.', () => {
-		ReactDOM.render(<ReactComponent />, appElement);
+		ReactDOM.render(<ReactDivComponent />, appElement);
 		ReactDOM.unmountComponentAtNode(appElement);
 		expect(appElement.innerHTML).toBe('');
 	});
 
 	it('Handles adding and removing event listeners.', () => {
 		ReactDOM.render(<ReactSelectComponent onChange={() => {}} />, appElement);
-		ReactDOM.render(<ReactSelectComponent />, appElement);
 	});
 
 	it('Testing library handles input', async () => {
