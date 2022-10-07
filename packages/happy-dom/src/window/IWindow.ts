@@ -98,6 +98,7 @@ import Attr from '../nodes/attr/Attr';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
+import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -142,6 +143,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Element: typeof Element;
 	readonly DocumentFragment: typeof DocumentFragment;
 	readonly CharacterData: typeof CharacterData;
+	readonly ProcessingInstruction: typeof ProcessingInstruction;
 	readonly NodeFilter: typeof NodeFilter;
 	readonly TreeWalker: typeof TreeWalker;
 	readonly DOMParser: typeof DOMParser;

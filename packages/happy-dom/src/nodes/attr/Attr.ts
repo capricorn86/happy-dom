@@ -8,6 +8,7 @@ import IAttr from './IAttr';
  * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Attr.
  */
 export default class Attr extends Node implements IAttr {
+	public readonly nodeType = Node.ATTRIBUTE_NODE;
 	public value: string = null;
 	public name: string = null;
 	public namespaceURI: string = null;

@@ -120,6 +120,10 @@ import Selection from './selection/Selection';
 import Range from './range/Range';
 import HTMLDialogElement from './nodes/html-dialog-element/HTMLDialogElement';
 import IHTMLDialogElement from './nodes/html-dialog-element/IHTMLDialogElement';
+import Attr from './nodes/attr/Attr';
+import IAttr from './nodes/attr/IAttr';
+import ProcessingInstruction from './nodes/processing-instruction/ProcessingInstruction';
+import IProcessingInstruction from './nodes/processing-instruction/IProcessingInstruction';
 
 export {
 	GlobalWindow,
@@ -243,5 +247,9 @@ export {
 	Selection,
 	Range,
 	HTMLDialogElement,
-	IHTMLDialogElement
+	IHTMLDialogElement,
+	Attr,
+	IAttr,
+	ProcessingInstruction,
+	IProcessingInstruction
 };
