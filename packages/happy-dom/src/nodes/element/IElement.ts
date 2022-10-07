@@ -18,6 +18,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	readonly shadowRoot: IShadowRoot;
 	readonly classList: IDOMTokenList;
 	readonly namespaceURI: string;
+	prefix: string | null;
 	scrollTop: number;
 	scrollLeft: number;
 	id: string;

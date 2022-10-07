@@ -41,6 +41,10 @@ import IShadowRoot from '../shadow-root/IShadowRoot';
 import Range from '../../range/Range';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
 import IAttr from '../attr/IAttr';
+import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
+import ProcessingInstruction from '../processing-instruction/ProcessingInstruction';
+
+const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
 /**
  * Document.
@@ -823,5 +827,29 @@ export default class Document extends Node implements IDocument {
 			this.dispatchEvent(new Event('readystatechange'));
 			this.dispatchEvent(new Event('load', { bubbles: true }));
 		});
+	}
+
+	/**
+	 * Creates a Processing Instruction node.
+	 *
+	 * @returns IProcessingInstruction.
+	 * @param target
+	 * @param data
+	 */
+	public createProcessingInstruction(target: string, data: string): IProcessingInstruction {
+		if (!target || !PROCESSING_INSTRUCTION_TARGET_REGEXP.test(target)) {
+			throw new DOMException(
+				`Failed to execute 'createProcessingInstruction' on 'Document': The target provided ('${target}') is not a valid name.`
+			);
+		}
+		if (data.includes('?>')) {
+			throw new DOMException(
+				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
+			);
+		}
+		ProcessingInstruction._ownerDocument = this;
+		const processingInstruction = new ProcessingInstruction(data);
+		processingInstruction.target = target;
+		return processingInstruction;
 	}
 }

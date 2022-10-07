@@ -74,6 +74,12 @@ import HTMLLabelElement from './nodes/html-label-element/HTMLLabelElement';
 import IHTMLLabelElement from './nodes/html-label-element/IHTMLLabelElement';
 import HTMLMetaElement from './nodes/html-meta-element/HTMLMetaElement';
 import IHTMLMetaElement from './nodes/html-meta-element/IHTMLMetaElement';
+import IHTMLMediaElement from './nodes/html-media-element/IHTMLMediaElement';
+import HTMLMediaElement from './nodes/html-media-element/HTMLMediaElement';
+import HTMLAudioElement from './nodes/html-audio-element/HTMLAudioElement';
+import IHTMLAudioElement from './nodes/html-audio-element/IHTMLAudioElement';
+import HTMLVideoElement from './nodes/html-video-element/HTMLVideoElement';
+import IHTMLVideoElement from './nodes/html-video-element/IHTMLVideoElement';
 import HTMLBaseElement from './nodes/html-base-element/HTMLBaseElement';
 import IHTMLBaseElement from './nodes/html-base-element/IHTMLBaseElement';
 import SVGElement from './nodes/svg-element/SVGElement';
@@ -114,6 +120,10 @@ import Selection from './selection/Selection';
 import Range from './range/Range';
 import HTMLDialogElement from './nodes/html-dialog-element/HTMLDialogElement';
 import IHTMLDialogElement from './nodes/html-dialog-element/IHTMLDialogElement';
+import Attr from './nodes/attr/Attr';
+import IAttr from './nodes/attr/IAttr';
+import ProcessingInstruction from './nodes/processing-instruction/ProcessingInstruction';
+import IProcessingInstruction from './nodes/processing-instruction/IProcessingInstruction';
 
 export {
 	GlobalWindow,
@@ -192,6 +202,12 @@ export {
 	IHTMLLabelElement,
 	HTMLMetaElement,
 	IHTMLMetaElement,
+	HTMLMediaElement,
+	IHTMLMediaElement,
+	HTMLAudioElement,
+	IHTMLAudioElement,
+	HTMLVideoElement,
+	IHTMLVideoElement,
 	HTMLBaseElement,
 	IHTMLBaseElement,
 	SVGElement,
@@ -231,5 +247,9 @@ export {
 	Selection,
 	Range,
 	HTMLDialogElement,
-	IHTMLDialogElement
+	IHTMLDialogElement,
+	Attr,
+	IAttr,
+	ProcessingInstruction,
+	IProcessingInstruction
 };

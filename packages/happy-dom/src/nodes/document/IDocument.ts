@@ -19,6 +19,7 @@ import Location from '../../location/Location';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum';
 import INodeList from '../node/INodeList';
 import Range from '../../range/Range';
+import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
 
 /**
  * Document.
@@ -197,4 +198,13 @@ export default interface IDocument extends IParentNode {
 	 * @returns "true" if the document has focus.
 	 */
 	hasFocus(): boolean;
+
+	/**
+	 * Creates a Processing Instruction node.
+	 *
+	 * @returns IProcessingInstruction.
+	 * @param target
+	 * @param data
+	 */
+	createProcessingInstruction(target: string, data: string): IProcessingInstruction;
 }

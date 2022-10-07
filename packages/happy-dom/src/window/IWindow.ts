@@ -19,6 +19,9 @@ import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
 import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
+import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
+import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
+import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
@@ -95,6 +98,7 @@ import Attr from '../nodes/attr/Attr';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
+import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -124,6 +128,9 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLSlotElement: typeof HTMLSlotElement;
 	readonly HTMLLabelElement: typeof HTMLLabelElement;
 	readonly HTMLMetaElement: typeof HTMLMetaElement;
+	readonly HTMLMediaElement: typeof HTMLMediaElement;
+	readonly HTMLAudioElement: typeof HTMLAudioElement;
+	readonly HTMLVideoElement: typeof HTMLVideoElement;
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
 	readonly HTMLDialogElement: typeof HTMLDialogElement;
 	readonly Attr: typeof Attr;
@@ -136,6 +143,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Element: typeof Element;
 	readonly DocumentFragment: typeof DocumentFragment;
 	readonly CharacterData: typeof CharacterData;
+	readonly ProcessingInstruction: typeof ProcessingInstruction;
 	readonly NodeFilter: typeof NodeFilter;
 	readonly TreeWalker: typeof TreeWalker;
 	readonly DOMParser: typeof DOMParser;
