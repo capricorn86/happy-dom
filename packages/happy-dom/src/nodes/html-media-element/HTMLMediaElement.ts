@@ -44,14 +44,29 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	public readonly played = getTimeRangeDummy();
 
 	// Events
-	public onabort: (event: Event) => void = null;
-	public oncanplay: (event: Event) => void = null;
-	public oncanplaythrough: (event: Event) => void = null;
-	public ondurationchange: (event: Event) => void = null;
-	public onemptied: (event: Event) => void = null;
-	public onended: (event: Event) => void = null;
-	public onerror: (event: ErrorEvent) => void = null;
-	public onloadeddata: (event: Event) => void = null;
+	public onabort: (event: Event) => void | null = null;
+	public oncanplay: (event: Event) => void | null = null;
+	public oncanplaythrough: (event: Event) => void | null = null;
+	public ondurationchange: (event: Event) => void | null = null;
+	public onemptied: (event: Event) => void | null = null;
+	public onended: (event: Event) => void | null = null;
+	public onerror: (event: ErrorEvent) => void | null = null;
+	public onloadeddata: (event: Event) => void | null = null;
+	public onloadedmetadata: (event: Event) => void | null = null;
+	public onloadstart: (event: Event) => void | null = null;
+	public onpause: (event: Event) => void | null = null;
+	public onplay: (event: Event) => void | null = null;
+	public onplaying: (event: Event) => void | null = null;
+	public onprogress: (event: Event) => void | null = null;
+	public onratechange: (event: Event) => void | null = null;
+	public onresize: (event: Event) => void | null = null;
+	public onseeked: (event: Event) => void | null = null;
+	public onseeking: (event: Event) => void | null = null;
+	public onstalled: (event: Event) => void | null = null;
+	public onsuspend: (event: Event) => void | null = null;
+	public ontimeupdate: (event: Event) => void | null = null;
+	public onvolumechange: (event: Event) => void | null = null;
+	public onwaiting: (event: Event) => void | null = null;
 
 	#volume = 1;
 	#paused = true;

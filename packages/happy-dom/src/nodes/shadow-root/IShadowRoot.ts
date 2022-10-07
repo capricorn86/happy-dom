@@ -1,5 +1,6 @@
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import IElement from '../element/IElement';
+import Event from '../../event/Event';
 
 /**
  * ShadowRoot.
@@ -8,6 +9,9 @@ export default interface IShadowRoot extends IDocumentFragment {
 	mode: string;
 	innerHTML: string;
 	host: IElement;
+
+	// Events
+	onslotchange: (event: Event) => void | null;
 
 	/**
 	 * Clones a node.

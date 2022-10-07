@@ -77,12 +77,28 @@ export default abstract class EventTarget implements IEventTarget {
 	/**
 	 * Adds an event listener.
 	 *
-	 * This is only supported by IE8- and Opera, but for some reason React uses it and calls it, so therefore we will keep support for it until they stop using it.
+	 * TODO:
+	 * Was used by with IE8- and Opera. React believed Happy DOM was a legacy browser and used them, but that is no longer the case, so we should remove this method after that this is verified.
 	 *
+	 * @deprecated
 	 * @param type Event type.
 	 * @param listener Listener.
 	 */
 	public attachEvent(type: string, listener: ((event: Event) => void) | IEventListener): void {
 		this.addEventListener(type.replace('on', ''), listener);
+	}
+
+	/**
+	 * Removes an event listener.
+	 *
+	 * TODO:
+	 * Was used by IE8- and Opera. React believed Happy DOM was a legacy browser and used them, but that is no longer the case, so we should remove this method after that this is verified.
+	 *
+	 * @deprecated
+	 * @param type Event type.
+	 * @param listener Listener.
+	 */
+	public detachEvent(type: string, listener: ((event: Event) => void) | IEventListener): void {
+		this.removeEventListener(type.replace('on', ''), listener);
 	}
 }

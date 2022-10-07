@@ -2,6 +2,7 @@ import IHTMLElement from '../html-element/IHTMLElement';
 import IText from '../text/IText';
 import IElement from '../element/IElement';
 import INode from '../node/INode';
+import Event from '../../event/Event';
 
 /**
  * HTML Slot Element.
@@ -10,6 +11,9 @@ import INode from '../node/INode';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement.
  */
 export default interface IHTMLSlotElement extends IHTMLElement {
+	// Events
+	onslotchange: (event: Event) => void | null;
+
 	name: string;
 
 	/**

@@ -40,5 +40,6 @@ export default [
 	'TrackEvent',
 	'TransitionEvent',
 	'UserProximityEvent',
-	'WebGLContextEvent'
+	'WebGLContextEvent',
+	'TextEvent'
 ];

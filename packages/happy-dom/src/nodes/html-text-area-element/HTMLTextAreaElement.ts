@@ -16,11 +16,16 @@ import IHTMLTextAreaElement from './IHTMLTextAreaElement';
  */
 export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTextAreaElement {
 	public readonly type = 'textarea';
+	public defaultValue = '';
+
+	// Events
+	public oninput: (event: Event) => void | null = null;
+	public onselectionchange: (event: Event) => void | null = null;
+
 	public _value = null;
 	public _selectionStart = null;
 	public _selectionEnd = null;
 	public _selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
-	public defaultValue = '';
 
 	/**
 	 * Returns minlength.

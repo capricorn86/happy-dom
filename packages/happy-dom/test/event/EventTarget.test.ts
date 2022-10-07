@@ -99,4 +99,34 @@ describe('EventTarget', () => {
 			expect(recievedEvent.currentTarget).toBe(eventTarget);
 		});
 	});
+
+	describe('attachEvent()', () => {
+		it('Adds an event listener in older browsers for backward compatibility.', () => {
+			let recievedEvent: Event = null;
+			const listener = (event: Event): void => {
+				recievedEvent = event;
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+			eventTarget.attachEvent(`on${EVENT_TYPE}`, listener);
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(recievedEvent).toBe(dispatchedEvent);
+			expect(recievedEvent.type).toBe(EVENT_TYPE);
+			expect(recievedEvent.target).toBe(eventTarget);
+			expect(recievedEvent.currentTarget).toBe(eventTarget);
+		});
+	});
+
+	describe('detachEvent()', () => {
+		it('Removes an event listener in older browsers for backward compatibility.', () => {
+			let recievedEvent: Event = null;
+			const listener = (event: Event): void => {
+				recievedEvent = event;
+			};
+			const dispatchedEvent = new Event('click');
+			eventTarget.attachEvent('onclick', listener);
+			eventTarget.detachEvent('onclick', listener);
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(recievedEvent).toBe(null);
+		});
+	});
 });

@@ -4,6 +4,7 @@ import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 import INodeList from '../node/INodeList';
 import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
 import ValidityState from '../validity-state/ValidityState';
+import Event from '../../event/Event';
 
 /**
  * HTML Select Element.
@@ -24,4 +25,8 @@ export default interface IHTMLSelectElement extends IHTMLElement {
 	willValidate: boolean;
 	name: string;
 	multiple: boolean;
+
+	// Events
+	onchange: (event: Event) => void | null;
+	oninput: (event: Event) => void | null;
 }

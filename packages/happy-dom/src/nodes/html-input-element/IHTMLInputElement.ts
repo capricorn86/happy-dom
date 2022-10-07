@@ -3,6 +3,7 @@ import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum';
 import ValidityState from '../validity-state/ValidityState';
+import Event from '../../event/Event';
 
 /**
  * HTML Input Element.
@@ -52,6 +53,11 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	valueAsDate: Date;
 	valueAsNumber: number;
 	validationMessage: string;
+
+	// Events
+	oninput: (event: Event) => void | null;
+	oninvalid: (event: Event) => void | null;
+	onselectionchange: (event: Event) => void | null;
 
 	/**
 	 * Sets validation message.
