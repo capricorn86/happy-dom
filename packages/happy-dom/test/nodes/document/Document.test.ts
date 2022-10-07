@@ -1150,12 +1150,29 @@ describe('Document', () => {
 			);
 		});
 
+		it('Throws an exception if target is invalid".', () => {
+			expect.assertions(1);
+			try {
+				document.createProcessingInstruction('-foo', 'bar');
+			} catch (e) {
+				expect(e).toEqual(
+					new DOMException(
+						`Failed to execute 'createProcessingInstruction' on 'Document': The target provided ('-foo') is not a valid name.`
+					)
+				);
+			}
+		});
+
 		it('Throws an exception if data contains "?>".', () => {
 			expect.assertions(1);
 			try {
 				document.createProcessingInstruction('foo', 'bar?>');
 			} catch (e) {
-				expect(e).toEqual(new DOMException('InvalidCharacterError'));
+				expect(e).toEqual(
+					new DOMException(
+						`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
+					)
+				);
 			}
 		});
 	});
