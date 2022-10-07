@@ -11,6 +11,9 @@ import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
 import INodeList from './INodeList';
 import NodeListFactory from './NodeListFactory';
 import NodeTypeEnum from './NodeTypeEnum';
+import NodeDocumentPositionEnum from './NodeDocumentPositionEnum';
+import NodeUtility from './NodeUtility';
+import IAttr from '../attr/IAttr';
 
 /**
  * Node.
@@ -29,6 +32,13 @@ export default class Node extends EventTarget implements INode {
 	public static readonly DOCUMENT_TYPE_NODE = NodeTypeEnum.documentTypeNode;
 	public static readonly DOCUMENT_FRAGMENT_NODE = NodeTypeEnum.documentFragmentNode;
 	public static readonly PROCESSING_INSTRUCTION_NODE = NodeTypeEnum.processingInstructionNode;
+	public static readonly DOCUMENT_POSITION_CONTAINED_BY = NodeDocumentPositionEnum.containedBy;
+	public static readonly DOCUMENT_POSITION_CONTAINS = NodeDocumentPositionEnum.contains;
+	public static readonly DOCUMENT_POSITION_DISCONNECTED = NodeDocumentPositionEnum.disconnect;
+	public static readonly DOCUMENT_POSITION_FOLLOWING = NodeDocumentPositionEnum.following;
+	public static readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC =
+		NodeDocumentPositionEnum.implementationSpecific;
+	public static readonly DOCUMENT_POSITION_PRECEDING = NodeDocumentPositionEnum.preceding;
 	public readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
 	public readonly ATTRIBUTE_NODE = NodeTypeEnum.attributeNode;
 	public readonly TEXT_NODE = NodeTypeEnum.textNode;
@@ -38,6 +48,13 @@ export default class Node extends EventTarget implements INode {
 	public readonly DOCUMENT_TYPE_NODE = NodeTypeEnum.documentTypeNode;
 	public readonly DOCUMENT_FRAGMENT_NODE = NodeTypeEnum.documentFragmentNode;
 	public readonly PROCESSING_INSTRUCTION_NODE = NodeTypeEnum.processingInstructionNode;
+	public readonly DOCUMENT_POSITION_CONTAINED_BY = NodeDocumentPositionEnum.containedBy;
+	public readonly DOCUMENT_POSITION_CONTAINS = NodeDocumentPositionEnum.contains;
+	public readonly DOCUMENT_POSITION_DISCONNECTED = NodeDocumentPositionEnum.disconnect;
+	public readonly DOCUMENT_POSITION_FOLLOWING = NodeDocumentPositionEnum.following;
+	public readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC =
+		NodeDocumentPositionEnum.implementationSpecific;
+	public readonly DOCUMENT_POSITION_PRECEDING = NodeDocumentPositionEnum.preceding;
 	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
@@ -444,7 +461,7 @@ export default class Node extends EventTarget implements INode {
 			}
 
 			// eslint-disable-next-line
-			if(event.composed && (<any>this).host) {
+			if (event.composed && (<any>this).host) {
 				// eslint-disable-next-line
 				return (<any>this).host.dispatchEvent(event);
 			}
@@ -527,5 +544,178 @@ export default class Node extends EventTarget implements INode {
 				(<any>this)._shadowRoot._connectToNode(this);
 			}
 		}
+	}
+
+	/**
+	 * Reports the position of its argument node relative to the node on which it is called.
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-node-comparedocumentposition
+	 * @param otherNode Other node.
+	 */
+	public compareDocumentPosition(otherNode: INode): number {
+		/**
+		 * 1. If this is other, then return zero.
+		 */
+		if (this === otherNode) {
+			return 0;
+		}
+
+		/**
+		 * 2. Let node1 be other and node2 be this.
+		 */
+		let node1: INode = otherNode;
+		let node2: INode = this;
+
+		/**
+		 * 3. Let attr1 and attr2 be null.
+		 */
+		let attr1 = null;
+		let attr2 = null;
+
+		/**
+		 * 4. If node1 is an attribute, then set attr1 to node1 and node1 to attr1’s element.
+		 */
+		if (node1.nodeType === Node.ATTRIBUTE_NODE) {
+			attr1 = node1;
+			node1 = (<IAttr>attr1).ownerElement;
+		}
+
+		/**
+		 * 5. If node2 is an attribute, then:
+		 * 5.1. Set attr2 to node2 and node2 to attr2’s element.
+		 */
+		if (node2.nodeType === Node.ATTRIBUTE_NODE) {
+			attr2 = node2;
+			node2 = (<IAttr>attr2).ownerElement;
+
+			/**
+			 * 5.2. If attr1 and node1 are non-null, and node2 is node1, then:
+			 */
+			if (attr1 !== null && node1 !== null && node2 === node1) {
+				/**
+				 * 5.2.1. For each attr in node2’s attribute list:
+				 */
+				for (const attr of Object.values((<IElement>node2).attributes)) {
+					/**
+					 * 5.2.1.1. If attr equals attr1, then return the result of adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and DOCUMENT_POSITION_PRECEDING.
+					 */
+					if (NodeUtility.nodeEquals(<IAttr>attr, attr1)) {
+						return (
+							Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_PRECEDING
+						);
+					}
+
+					/**
+					 * 5.2.1.2. If attr equals attr2, then return the result of adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and DOCUMENT_POSITION_FOLLOWING.
+					 */
+					if (NodeUtility.nodeEquals(<IAttr>attr, attr2)) {
+						return (
+							Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_FOLLOWING
+						);
+					}
+				}
+			}
+		}
+
+		const node2Ancestors: INode[] = [];
+		let node2Ancestor: INode = node2;
+
+		while (node2Ancestor) {
+			/**
+			 * 7. If node1 is an ancestor of node2 […] then return the result of adding DOCUMENT_POSITION_CONTAINS to DOCUMENT_POSITION_PRECEDING.
+			 */
+			if (node2Ancestor === node1) {
+				return Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING;
+			}
+
+			node2Ancestors.push(node2Ancestor);
+			node2Ancestor = node2Ancestor.parentNode;
+		}
+
+		const node1Ancestors: INode[] = [];
+		let node1Ancestor: INode = node1;
+
+		while (node1Ancestor) {
+			/**
+			 * 8. If node1 is a descendant of node2 […] then return the result of adding DOCUMENT_POSITION_CONTAINED_BY to DOCUMENT_POSITION_FOLLOWING.
+			 */
+			if (node1Ancestor === node2) {
+				return Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING;
+			}
+
+			node1Ancestors.push(node1Ancestor);
+			node1Ancestor = node1Ancestor.parentNode;
+		}
+
+		const reverseArrayIndex = (array: INode[], reverseIndex: number): INode => {
+			return array[array.length - 1 - reverseIndex];
+		};
+
+		const root = reverseArrayIndex(node2Ancestors, 0);
+
+		/**
+		 * 6. If node1 or node2 is null, or node1’s root is not node2’s root, then return the result of adding
+		 * DOCUMENT_POSITION_DISCONNECTED, DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, and either
+		 * DOCUMENT_POSITION_PRECEDING or DOCUMENT_POSITION_FOLLOWING, with the constraint that this is to be consistent, together.
+		 */
+		if (!root || root !== reverseArrayIndex(node1Ancestors, 0)) {
+			return (
+				Node.DOCUMENT_POSITION_DISCONNECTED |
+				Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
+				Node.DOCUMENT_POSITION_FOLLOWING
+			);
+		}
+
+		// Find the lowest common ancestor
+		let commonAncestorIndex = 0;
+		const ancestorsMinLength = Math.min(node2Ancestors.length, node1Ancestors.length);
+
+		for (let i = 0; i < ancestorsMinLength; ++i) {
+			const node2Ancestor = reverseArrayIndex(node2Ancestors, i);
+			const node1Ancestor = reverseArrayIndex(node1Ancestors, i);
+
+			if (node2Ancestor !== node1Ancestor) {
+				break;
+			}
+
+			commonAncestorIndex = i;
+		}
+
+		const commonAncestor = reverseArrayIndex(node2Ancestors, commonAncestorIndex);
+
+		// Indexes within the common ancestor
+		let indexes = 0;
+		let node2Index = -1;
+		let node1Index = -1;
+		const node2Node = reverseArrayIndex(node2Ancestors, commonAncestorIndex + 1);
+		const node1Node = reverseArrayIndex(node1Ancestors, commonAncestorIndex + 1);
+
+		const computeNodeIndexes = (nodes: INode[]): void => {
+			for (const childNode of nodes) {
+				computeNodeIndexes(childNode.childNodes);
+
+				if (childNode === node2Node) {
+					node2Index = indexes;
+				} else if (childNode === node1Node) {
+					node1Index = indexes;
+				}
+
+				if (node2Index !== -1 && node1Index !== -1) {
+					break;
+				}
+
+				indexes++;
+			}
+		};
+
+		computeNodeIndexes(commonAncestor.childNodes);
+
+		/**
+		 * 9. If node1 is preceding node2, then return DOCUMENT_POSITION_PRECEDING.
+		 * 10. Return DOCUMENT_POSITION_FOLLOWING.
+		 */
+		return node1Index < node2Index
+			? Node.DOCUMENT_POSITION_PRECEDING
+			: Node.DOCUMENT_POSITION_FOLLOWING;
 	}
 }

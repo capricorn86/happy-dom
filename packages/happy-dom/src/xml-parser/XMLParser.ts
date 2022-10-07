@@ -93,7 +93,7 @@ export default class XMLParser {
 				if (ChildLessElements.includes(tagName)) {
 					let childLessMatch = null;
 					while ((childLessMatch = markupRegexp.exec(data))) {
-						if (childLessMatch[2] === match[2] && childLessMatch[1]) {
+						if (childLessMatch[2].toLowerCase() === tagName && childLessMatch[1]) {
 							markupRegexp.lastIndex -= childLessMatch[0].length;
 							break;
 						}

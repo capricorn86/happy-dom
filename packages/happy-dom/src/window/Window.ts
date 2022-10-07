@@ -20,6 +20,9 @@ import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
 import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
+import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
+import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
+import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
@@ -106,6 +109,7 @@ import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
 import Attr from '../nodes/attr/Attr';
 import IElement from '../nodes/element/IElement';
+import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -157,6 +161,9 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLLabelElement = HTMLLabelElement;
 	public readonly HTMLSlotElement = HTMLSlotElement;
 	public readonly HTMLMetaElement = HTMLMetaElement;
+	public readonly HTMLMediaElement = HTMLMediaElement;
+	public readonly HTMLAudioElement = HTMLAudioElement;
+	public readonly HTMLVideoElement = HTMLVideoElement;
 	public readonly HTMLBaseElement = HTMLBaseElement;
 	public readonly HTMLDialogElement = HTMLDialogElement;
 	public readonly Attr = Attr;
@@ -165,6 +172,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Text = Text;
 	public readonly Comment = Comment;
 	public readonly ShadowRoot = ShadowRoot;
+	public readonly ProcessingInstruction = ProcessingInstruction;
 	public readonly Element = Element;
 	public readonly DocumentFragment = DocumentFragment;
 	public readonly CharacterData = CharacterData;
