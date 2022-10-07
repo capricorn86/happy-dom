@@ -548,9 +548,9 @@ export default class Node extends EventTarget implements INode {
 
 	/**
 	 * Reports the position of its argument node relative to the node on which it is called.
-	 * Reference: https://dom.spec.whatwg.org/#dom-node-comparedocumentposition
 	 *
-	 * @param otherNode
+	 * @see https://dom.spec.whatwg.org/#dom-node-comparedocumentposition
+	 * @param otherNode Other node.
 	 */
 	public compareDocumentPosition(otherNode: INode): number {
 		/**

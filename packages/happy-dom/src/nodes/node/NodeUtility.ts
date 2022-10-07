@@ -179,21 +179,21 @@ export default class NodeUtility {
 	}
 
 	/**
-	 * Check if node a equals node b.
+	 * Check if node nodeA equals node nodeB.
 	 * Reference: https://dom.spec.whatwg.org/#concept-node-equals
 	 *
-	 * @param a
-	 * @param b
+	 * @param nodeA Node A.
+	 * @param nodeB Node B.
 	 */
-	public static nodeEquals(a: INode, b: INode): boolean {
-		if (a.nodeType !== b.nodeType) {
+	public static nodeEquals(nodeA: INode, nodeB: INode): boolean {
+		if (nodeA.nodeType !== nodeB.nodeType) {
 			return false;
 		}
 
-		switch (a.nodeType) {
+		switch (nodeA.nodeType) {
 			case NodeTypeEnum.documentTypeNode:
-				const documentTypeA = <IDocumentType>a;
-				const documentTypeB = <IDocumentType>b;
+				const documentTypeA = <IDocumentType>nodeA;
+				const documentTypeB = <IDocumentType>nodeB;
 
 				if (
 					documentTypeA.name !== documentTypeB.name ||
@@ -204,8 +204,8 @@ export default class NodeUtility {
 				}
 				break;
 			case NodeTypeEnum.elementNode:
-				const elementA = <IElement>a;
-				const elementB = <IElement>b;
+				const elementA = <IElement>nodeA;
+				const elementB = <IElement>nodeB;
 
 				if (
 					elementA.namespaceURI !== elementB.namespaceURI ||
@@ -217,8 +217,8 @@ export default class NodeUtility {
 				}
 				break;
 			case NodeTypeEnum.attributeNode:
-				const attributeA = <IAttr>a;
-				const attributeB = <IAttr>b;
+				const attributeA = <IAttr>nodeA;
+				const attributeB = <IAttr>nodeB;
 
 				if (
 					attributeA.namespaceURI !== attributeB.namespaceURI ||
@@ -229,8 +229,8 @@ export default class NodeUtility {
 				}
 				break;
 			case NodeTypeEnum.processingInstructionNode:
-				const processingInstructionA = <IProcessingInstruction>a;
-				const processingInstructionB = <IProcessingInstruction>b;
+				const processingInstructionA = <IProcessingInstruction>nodeA;
+				const processingInstructionB = <IProcessingInstruction>nodeB;
 
 				if (
 					processingInstructionA.target !== processingInstructionB.target ||
@@ -242,8 +242,8 @@ export default class NodeUtility {
 			case NodeTypeEnum.textNode:
 			case NodeTypeEnum.commentNode:
 				type TextOrComment = IText | IComment;
-				const textOrCommentA = <TextOrComment>a;
-				const textOrCommentB = <TextOrComment>b;
+				const textOrCommentA = <TextOrComment>nodeA;
+				const textOrCommentB = <TextOrComment>nodeB;
 
 				if (textOrCommentA.data !== textOrCommentB.data) {
 					return false;
@@ -252,21 +252,21 @@ export default class NodeUtility {
 		}
 
 		if (
-			a.nodeType === NodeTypeEnum.elementNode &&
-			!NodeUtility.attributeListsEqual(<IElement>a, <IElement>b)
+			nodeA.nodeType === NodeTypeEnum.elementNode &&
+			!NodeUtility.attributeListsEqual(<IElement>nodeA, <IElement>nodeB)
 		) {
 			return false;
 		}
 
-		if (a.childNodes.length !== b.childNodes.length) {
+		if (nodeA.childNodes.length !== nodeB.childNodes.length) {
 			return false;
 		}
 
-		for (let i = 0; i < a.childNodes.length; i++) {
-			const nodeA = a.childNodes[i];
-			const nodeB = b.childNodes[i];
+		for (let i = 0; i < nodeA.childNodes.length; i++) {
+			const childNodeA = nodeA.childNodes[i];
+			const childNodeB = nodeB.childNodes[i];
 
-			if (!NodeUtility.nodeEquals(nodeA, nodeB)) {
+			if (!NodeUtility.nodeEquals(childNodeA, childNodeB)) {
 				return false;
 			}
 		}
