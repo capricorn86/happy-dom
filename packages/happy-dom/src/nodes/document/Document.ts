@@ -60,6 +60,10 @@ export default class Document extends Node implements IDocument {
 	public readonly defaultView: IWindow;
 	public readonly _readyStateManager: DocumentReadyStateManager;
 	public _activeElement: IHTMLElement = null;
+
+	// Used as an unique identifier which is updated whenever the DOM gets modified.
+	public _cacheID = 0;
+
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
 	private _cookie = '';

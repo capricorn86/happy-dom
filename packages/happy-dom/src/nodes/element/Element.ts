@@ -5,7 +5,6 @@ import DOMRect from './DOMRect';
 import DOMTokenList from '../../dom-token-list/DOMTokenList';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import QuerySelector from '../../query-selector/QuerySelector';
-import SelectorItem from '../../query-selector/SelectorItem';
 import MutationRecord from '../../mutation-observer/MutationRecord';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
 import NamespaceURI from '../../config/NamespaceURI';
@@ -744,12 +743,7 @@ export default class Element extends Node implements IElement {
 	 * @returns "true" if matching.
 	 */
 	public matches(selector: string): boolean {
-		for (const part of selector.split(',')) {
-			if (new SelectorItem(part.trim()).match(this)) {
-				return true;
-			}
-		}
-		return false;
+		return QuerySelector.match(this, selector).matches;
 	}
 
 	/**
@@ -852,6 +846,10 @@ export default class Element extends Node implements IElement {
 		(<IElement>attribute.ownerElement) = <IElement>this;
 		(<IDocument>attribute.ownerDocument) = this.ownerDocument;
 
+		if (this.isConnected) {
+			this.ownerDocument['_cacheID']++;
+		}
+
 		this._attributes[name] = attribute;
 
 		this._updateDomListIndices();
@@ -936,6 +934,10 @@ export default class Element extends Node implements IElement {
 	 */
 	public removeAttributeNode(attribute: IAttr): void {
 		delete this._attributes[attribute.name];
+
+		if (this.isConnected) {
+			this.ownerDocument['_cacheID']++;
+		}
 
 		this._updateDomListIndices();
 

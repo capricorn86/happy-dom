@@ -249,8 +249,14 @@ describe('Window', () => {
 					cursor: pointer;
 				}
 
-				span {
+				div span {
 					border-radius: 1px !important;
+                    direction: ltr;
+				}
+
+				.mySpan {
+                    /* Should have higher priority because of the specifity of the rule */
+                    direction: rtl;
 				}
 
 				@media (min-width: 1024px) {
@@ -266,12 +272,14 @@ describe('Window', () => {
 				}
 			`;
 
+			element.className = 'mySpan';
 			elementStyle.innerHTML = `
 				span {
 					border: 1px solid #000;
 					border-radius: 2px; 
 					color: green;
 					cursor: default;
+                    direction: ltr;
 				}
 			`;
 
@@ -286,6 +294,7 @@ describe('Window', () => {
 			expect(computedStyle.borderRadius).toBe('1px');
 			expect(computedStyle.color).toBe('red');
 			expect(computedStyle.cursor).toBe('default');
+			expect(computedStyle.direction).toBe('rtl');
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets for elements in a HTMLShadowRoot.', () => {
