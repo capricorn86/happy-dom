@@ -317,6 +317,10 @@ export default class Node extends EventTarget implements INode {
 			}
 		}
 
+		if (this.isConnected) {
+			(this.ownerDocument || this)['_cacheID']++;
+		}
+
 		this.childNodes.push(node);
 
 		(<Node>node)._connectToNode(this);
@@ -352,6 +356,10 @@ export default class Node extends EventTarget implements INode {
 
 		if (index === -1) {
 			throw new DOMException('Failed to remove node. Node is not child of parent.');
+		}
+
+		if (this.isConnected) {
+			(this.ownerDocument || this)['_cacheID']++;
 		}
 
 		this.childNodes.splice(index, 1);
@@ -411,6 +419,10 @@ export default class Node extends EventTarget implements INode {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
+		}
+
+		if (this.isConnected) {
+			(this.ownerDocument || this)['_cacheID']++;
 		}
 
 		if (newNode.parentNode) {

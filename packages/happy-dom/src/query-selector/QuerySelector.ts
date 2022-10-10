@@ -8,9 +8,6 @@ import NodeListFactory from '../nodes/node/NodeListFactory';
 
 const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#"*:()\]]+)|([ ,>]+)/g;
 
-// The above one seem to work fine and is faster, but this one can be useful if more rules need to be added as it is more "correct".
-// Const SELECTOR_PART_REGEXP = /([a-zA-Z0-9-$.]+|\[[a-zA-Z0-9-]+\]|\[[a-zA-Z0-9$-~|^$*]+[ ]*=[ ]*"[^"]+"\])|([ ,]+)/g;
-
 /**
  * Utility for query selection in an HTML element.
  *
@@ -58,6 +55,70 @@ export default class QuerySelector {
 	}
 
 	/**
+	 * Checks if a node matches a selector and returns priority weight.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns Result.
+	 */
+	public static match(node: INode, selector: string): { priorityWeight: number; matches: boolean } {
+		for (const parts of this.getSelectorParts(selector)) {
+			const result = this.matchesSelector(node, node, parts.reverse());
+
+			if (result.matches) {
+				return result;
+			}
+		}
+
+		return { priorityWeight: 0, matches: false };
+	}
+
+	/**
+	 * Checks if a node matches a selector.
+	 *
+	 * @param targetNode Target node.
+	 * @param currentNode Current node.
+	 * @param selectorParts Selector parts.
+	 * @param [priorityWeight] Priority weight.
+	 * @returns Result.
+	 */
+	private static matchesSelector(
+		targetNode: INode,
+		currentNode: INode,
+		selectorParts: string[],
+		priorityWeight = 0
+	): {
+		priorityWeight: number;
+		matches: boolean;
+	} {
+		const isDirectChild = selectorParts[0] === '>';
+		if (isDirectChild) {
+			selectorParts = selectorParts.slice(1);
+			if (selectorParts.length === 0) {
+				return { priorityWeight: 0, matches: false };
+			}
+		}
+
+		if (selectorParts.length === 0) {
+			return { priorityWeight, matches: true };
+		}
+
+		const selector = new SelectorItem(selectorParts[0]);
+		const result = selector.match(<Element>currentNode);
+
+		if (targetNode === currentNode && !result.matches) {
+			return { priorityWeight: 0, matches: false };
+		}
+
+		return this.matchesSelector(
+			isDirectChild ? currentNode.parentNode : targetNode,
+			currentNode.parentNode,
+			selectorParts.slice(1),
+			priorityWeight + result.priorityWeight
+		);
+	}
+
+	/**
 	 * Finds elements based on a query selector for a part of a list of selectors separated with comma.
 	 *
 	 * @param rootNode Root node.
@@ -81,7 +142,7 @@ export default class QuerySelector {
 
 		for (const node of nodes) {
 			if (node.nodeType === Node.ELEMENT_NODE) {
-				if (selector.match(<Element>node)) {
+				if (selector.match(<Element>node).matches) {
 					if (selectorParts.length === 1) {
 						if (rootNode !== node) {
 							matched.push(node);
@@ -125,7 +186,7 @@ export default class QuerySelector {
 		const selector = selectorItem || new SelectorItem(selectorParts[0]);
 
 		for (const node of nodes) {
-			if (node.nodeType === Node.ELEMENT_NODE && selector.match(<Element>node)) {
+			if (node.nodeType === Node.ELEMENT_NODE && selector.match(<Element>node).matches) {
 				if (selectorParts.length === 1) {
 					if (rootNode !== node) {
 						return <Element>node;

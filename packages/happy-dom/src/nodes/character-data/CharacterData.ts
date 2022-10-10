@@ -56,6 +56,10 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 		const oldValue = this._data;
 		this._data = data;
 
+		if (this.isConnected) {
+			this.ownerDocument['_cacheID']++;
+		}
+
 		// MutationObserver
 		if (this._observers.length > 0) {
 			for (const observer of this._observers) {
