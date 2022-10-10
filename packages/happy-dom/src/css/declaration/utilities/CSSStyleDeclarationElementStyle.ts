@@ -12,14 +12,29 @@ import CSSStyleRule from '../../rules/CSSStyleRule';
 import CSSStyleDeclarationElementDefaultCSS from './CSSStyleDeclarationElementDefaultCSS';
 import CSSStyleDeclarationElementInheritedProperties from './CSSStyleDeclarationElementInheritedProperties';
 import CSSStyleDeclarationCSSParser from './CSSStyleDeclarationCSSParser';
+import QuerySelector from '../../../query-selector/QuerySelector';
 
 const CSS_VARIABLE_REGEXP = /var\( *(--[^) ]+)\)/g;
+
+type IStyleAndElement = {
+	element: IElement | IShadowRoot | IDocument;
+	cssTexts: Array<{ cssText: string; priorityWeight: number }>;
+};
 
 /**
  * CSS Style Declaration utility
  */
 export default class CSSStyleDeclarationElementStyle {
-	private cache: { [k: string]: CSSStyleDeclarationPropertyManager } = {};
+	private cache: {
+		propertyManager: CSSStyleDeclarationPropertyManager;
+		cssText: string;
+		documentCacheID: number;
+	} = {
+		propertyManager: null,
+		cssText: null,
+		documentCacheID: null
+	};
+
 	private element: IElement;
 	private computed: boolean;
 
@@ -47,11 +62,12 @@ export default class CSSStyleDeclarationElementStyle {
 		const cssText = this.element['_attributes']['style']?.value;
 
 		if (cssText) {
-			if (this.cache[cssText]) {
-				return this.cache[cssText];
+			if (this.cache.propertyManager && this.cache.cssText === cssText) {
+				return this.cache.propertyManager;
 			}
-			this.cache[cssText] = new CSSStyleDeclarationPropertyManager({ cssText });
-			return this.cache[cssText];
+			this.cache.cssText = cssText;
+			this.cache.propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
+			return this.cache.propertyManager;
 		}
 
 		return new CSSStyleDeclarationPropertyManager();
@@ -64,28 +80,37 @@ export default class CSSStyleDeclarationElementStyle {
 	 * @returns Style sheets.
 	 */
 	private getComputedElementStyle(): CSSStyleDeclarationPropertyManager {
-		const documentElements: Array<{ element: IElement; cssText: string }> = [];
-		const parentElements: Array<{ element: IElement; cssText: string }> = [];
-		let styleAndElement = {
+		const documentElements: Array<IStyleAndElement> = [];
+		const parentElements: Array<IStyleAndElement> = [];
+		let styleAndElement: IStyleAndElement = {
 			element: <IElement | IShadowRoot | IDocument>this.element,
-			cssText: ''
+			cssTexts: []
 		};
-		let shadowRootElements: Array<{ element: IElement; cssText: string }> = [];
+		let shadowRootElements: Array<IStyleAndElement> = [];
 
 		if (!this.element.isConnected) {
 			return new CSSStyleDeclarationPropertyManager();
 		}
+
+		if (
+			this.cache.propertyManager &&
+			this.cache.documentCacheID === this.element.ownerDocument['_cacheID']
+		) {
+			return this.cache.propertyManager;
+		}
+
+		this.cache.documentCacheID = this.element.ownerDocument['_cacheID'];
 
 		// Walks through all parent elements and stores them in an array with element and matching CSS text.
 		while (styleAndElement.element) {
 			if (styleAndElement.element.nodeType === NodeTypeEnum.elementNode) {
 				const rootNode = styleAndElement.element.getRootNode();
 				if (rootNode.nodeType === NodeTypeEnum.documentNode) {
-					documentElements.unshift(<{ element: IElement; cssText: string }>styleAndElement);
+					documentElements.unshift(styleAndElement);
 				} else {
-					shadowRootElements.unshift(<{ element: IElement; cssText: string }>styleAndElement);
+					shadowRootElements.unshift(styleAndElement);
 				}
-				parentElements.unshift(<{ element: IElement; cssText: string }>styleAndElement);
+				parentElements.unshift(styleAndElement);
 			}
 
 			if (styleAndElement.element === this.element.ownerDocument) {
@@ -103,7 +128,7 @@ export default class CSSStyleDeclarationElementStyle {
 					}
 				}
 
-				styleAndElement = { element: null, cssText: '' };
+				styleAndElement = { element: null, cssTexts: [] };
 			} else if ((<IShadowRoot>styleAndElement.element).host) {
 				const styleSheets = <INodeList<IHTMLStyleElement>>(
 					(<IShadowRoot>styleAndElement.element).querySelectorAll('style,link[rel="stylesheet"]')
@@ -111,7 +136,7 @@ export default class CSSStyleDeclarationElementStyle {
 
 				styleAndElement = {
 					element: <IElement>(<IShadowRoot>styleAndElement.element).host,
-					cssText: ''
+					cssTexts: []
 				};
 
 				for (const styleSheet of styleSheets) {
@@ -120,39 +145,58 @@ export default class CSSStyleDeclarationElementStyle {
 						this.parseCSSRules({
 							elements: shadowRootElements,
 							cssRules: sheet.cssRules,
-							hostElement: <{ element: IElement; cssText: string }>styleAndElement
+							hostElement: styleAndElement
 						});
 					}
 				}
 				shadowRootElements = [];
 			} else {
-				styleAndElement = { element: <IElement>styleAndElement.element.parentNode, cssText: '' };
+				styleAndElement = { element: <IElement>styleAndElement.element.parentNode, cssTexts: [] };
 			}
 		}
 
 		// Concatenates all parent element CSS to one string.
 		const targetElement = parentElements[parentElements.length - 1];
-		let inheritedCSSText = CSSStyleDeclarationElementDefaultCSS.default;
+		let inheritedCSSText = '';
 
 		for (const parentElement of parentElements) {
 			if (parentElement !== targetElement) {
-				inheritedCSSText +=
-					(CSSStyleDeclarationElementDefaultCSS[parentElement.element.tagName] || '') +
-					parentElement.cssText +
-					(parentElement.element['_attributes']['style']?.value || '');
+				parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
+
+				if (CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName]) {
+					inheritedCSSText +=
+						CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName];
+				}
+
+				for (const cssText of parentElement.cssTexts) {
+					inheritedCSSText += cssText.cssText;
+				}
+
+				if (parentElement.element['_attributes']['style']?.value) {
+					inheritedCSSText += parentElement.element['_attributes']['style'].value;
+				}
 			}
 		}
 
 		const cssVariables: { [k: string]: string } = {};
 		const properties = {};
-		const targetCSSText =
-			(CSSStyleDeclarationElementDefaultCSS[targetElement.element.tagName] || '') +
-			targetElement.cssText +
-			(targetElement.element['_attributes']['style']?.value || '');
+		let targetCSSText =
+			CSSStyleDeclarationElementDefaultCSS[(<IElement>targetElement.element).tagName] || '';
+
+		targetElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
+
+		for (const cssText of targetElement.cssTexts) {
+			targetCSSText += cssText.cssText;
+		}
+
+		if (targetElement.element['_attributes']['style']?.value) {
+			targetCSSText += targetElement.element['_attributes']['style'].value;
+		}
+
 		const combinedCSSText = inheritedCSSText + targetCSSText;
 
-		if (this.cache[combinedCSSText]) {
-			return this.cache[combinedCSSText];
+		if (this.cache.propertyManager && this.cache.cssText === combinedCSSText) {
+			return this.cache.propertyManager;
 		}
 
 		// Parses the parent element CSS and stores CSS variables and inherited properties.
@@ -204,7 +248,8 @@ export default class CSSStyleDeclarationElementStyle {
 			propertyManager.set(name, properties[name].value, properties[name].important);
 		}
 
-		this.cache[combinedCSSText] = propertyManager;
+		this.cache.cssText = combinedCSSText;
+		this.cache.propertyManager = propertyManager;
 
 		return propertyManager;
 	}
@@ -216,13 +261,11 @@ export default class CSSStyleDeclarationElementStyle {
 	 * @param options.elements Elements.
 	 * @param options.cssRules CSS rules.
 	 * @param [options.hostElement] Host element.
-	 * @param [options.hostElement.element] Element.
-	 * @param [options.hostElement.cssText] CSS text.
 	 */
 	private parseCSSRules(options: {
 		cssRules: CSSRule[];
-		elements: Array<{ element: IElement; cssText: string }>;
-		hostElement?: { element: IElement; cssText: string };
+		elements: Array<IStyleAndElement>;
+		hostElement?: IStyleAndElement;
 	}): void {
 		if (!options.elements.length) {
 			return;
@@ -236,12 +279,19 @@ export default class CSSStyleDeclarationElementStyle {
 				if (selectorText) {
 					if (selectorText.startsWith(':host')) {
 						if (options.hostElement) {
-							options.hostElement.cssText += (<CSSStyleRule>rule)._cssText;
+							options.hostElement.cssTexts.push({
+								cssText: (<CSSStyleRule>rule)._cssText,
+								priorityWeight: 0
+							});
 						}
 					} else {
 						for (const element of options.elements) {
-							if (element.element.matches(selectorText)) {
-								element.cssText += (<CSSStyleRule>rule)._cssText;
+							const matchResult = QuerySelector.match(element.element, selectorText);
+							if (matchResult.matches) {
+								element.cssTexts.push({
+									cssText: (<CSSStyleRule>rule)._cssText,
+									priorityWeight: matchResult.priorityWeight
+								});
 							}
 						}
 					}

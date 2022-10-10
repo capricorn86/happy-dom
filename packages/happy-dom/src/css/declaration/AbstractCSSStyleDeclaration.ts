@@ -86,6 +86,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 					this._ownerElement['_attributes']['style'].name = 'style';
 				}
 
+				if (this._ownerElement.isConnected) {
+					this._ownerElement.ownerDocument['_cacheID']++;
+				}
+
 				this._ownerElement['_attributes']['style'].value = style.toString();
 			}
 		} else {
@@ -137,6 +141,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 			const style = this._elementStyle.getElementStyle();
 			style.set(name, value, !!priority);
 
+			if (this._ownerElement.isConnected) {
+				this._ownerElement.ownerDocument['_cacheID']++;
+			}
+
 			this._ownerElement['_attributes']['style'].value = style.toString();
 		} else {
 			this._style.set(name, value, !!priority);
@@ -163,6 +171,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 			style.remove(name);
 			const newCSSText = style.toString();
 			if (newCSSText) {
+				if (this._ownerElement.isConnected) {
+					this._ownerElement.ownerDocument['_cacheID']++;
+				}
+
 				this._ownerElement['_attributes']['style'].value = newCSSText;
 			} else {
 				delete this._ownerElement['_attributes']['style'];
