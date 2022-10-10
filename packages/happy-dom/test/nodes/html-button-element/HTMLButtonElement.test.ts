@@ -13,6 +13,12 @@ describe('HTMLButtonElement', () => {
 		element = <HTMLButtonElement>document.createElement('button');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLButtonElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLButtonElement]');
+		});
+	});
+
 	describe('get value()', () => {
 		it(`Returns the attribute "value".`, () => {
 			element.setAttribute('value', 'VALUE');

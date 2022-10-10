@@ -16,6 +16,13 @@ describe('HTMLScriptElement', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLScriptElement]`', () => {
+			const element = document.createElement('script');
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLScriptElement]');
+		});
+	});
+
 	for (const property of ['type', 'charset', 'lang']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {

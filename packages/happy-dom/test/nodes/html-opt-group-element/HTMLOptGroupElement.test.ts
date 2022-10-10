@@ -13,6 +13,12 @@ describe('HTMLOptGroupElement', () => {
 		element = <HTMLOptGroupElement>document.createElement('optgroup');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLOptGroupElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLOptGroupElement]');
+		});
+	});
+
 	describe(`get disabled()`, () => {
 		it('Returns attribute value.', () => {
 			expect(element.disabled).toBe(false);

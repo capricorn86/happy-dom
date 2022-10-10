@@ -15,6 +15,12 @@ describe('HTMLDialogElement', () => {
 		element = <IHTMLDialogElement>document.createElement('dialog');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLDialogElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLDialogElement]');
+		});
+	});
+
 	describe('get open()', () => {
 		it('Should be closed by default', () => {
 			expect(element.open).toBe(false);

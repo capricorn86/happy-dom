@@ -15,6 +15,12 @@ describe('HTMLTextAreaElement', () => {
 		element = <HTMLTextAreaElement>document.createElement('textarea');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLTextAreaElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLTextAreaElement]');
+		});
+	});
+
 	describe('get value()', () => {
 		it('Returns the attribute "value" if it has not been set using the property.', () => {
 			element.setAttribute('value', 'TEST_VALUE');

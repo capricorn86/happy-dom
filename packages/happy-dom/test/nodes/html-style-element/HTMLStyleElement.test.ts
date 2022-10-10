@@ -17,6 +17,12 @@ describe('HTMLStyleElement', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLStyleElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLStyleElement]');
+		});
+	});
+
 	for (const property of ['media', 'type']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {

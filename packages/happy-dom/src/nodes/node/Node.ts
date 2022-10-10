@@ -74,6 +74,15 @@ export default class Node extends EventTarget implements INode {
 	}
 
 	/**
+	 * Returns `Symbol.toStringTag`.
+	 *
+	 * @returns `Symbol.toStringTag`.
+	 */
+	public get [Symbol.toStringTag](): string {
+		return this.constructor.name;
+	}
+
+	/**
 	 * Get text value of children.
 	 *
 	 * @returns Text content.

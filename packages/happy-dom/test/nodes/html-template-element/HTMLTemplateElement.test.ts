@@ -18,6 +18,12 @@ describe('HTMLTemplateElement', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLTemplateElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLTemplateElement]');
+		});
+	});
+
 	describe('get innerHTML()', () => {
 		it('Returns inner HTML of the "content" node.', () => {
 			const div = document.createElement('div');
