@@ -21,6 +21,12 @@ describe('HTMLMediaElement', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLAudioElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLAudioElement]');
+		});
+	});
+
 	for (const property of ['autoplay', 'controls', 'loop']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {

@@ -20,6 +20,12 @@ describe('HTMLElement', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLElement]');
+		});
+	});
+
 	for (const property of ['accessKey', 'accessKeyLabel']) {
 		describe(`${property}`, () => {
 			it('Returns "".', () => {

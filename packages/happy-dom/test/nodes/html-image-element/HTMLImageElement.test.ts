@@ -11,6 +11,13 @@ describe('HTMLImageElement', () => {
 		document = window.document;
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLImageElement]`', () => {
+			const element = document.createElement('img');
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLImageElement]');
+		});
+	});
+
 	for (const property of ['alt', 'referrerPolicy', 'sizes', 'src', 'srcset', 'useMap']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {

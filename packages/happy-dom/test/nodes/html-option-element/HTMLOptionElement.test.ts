@@ -13,6 +13,12 @@ describe('HTMLOptionElement', () => {
 		element = <HTMLOptionElement>document.createElement('option');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLOptionElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLOptionElement]');
+		});
+	});
+
 	describe('get value()', () => {
 		it('Returns the attribute "value".', () => {
 			element.setAttribute('value', 'VALUE');
