@@ -129,7 +129,9 @@ export default abstract class AbstractCSSStyleDeclaration {
 			return;
 		}
 
-		if (!value) {
+		const stringValue = String(value);
+
+		if (!stringValue) {
 			this.removeProperty(name);
 		} else if (this._ownerElement) {
 			if (!this._ownerElement['_attributes']['style']) {
@@ -139,7 +141,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 			}
 
 			const style = this._elementStyle.getElementStyle();
-			style.set(name, value, !!priority);
+			style.set(name, stringValue, !!priority);
 
 			if (this._ownerElement.isConnected) {
 				this._ownerElement.ownerDocument['_cacheID']++;
@@ -147,7 +149,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 
 			this._ownerElement['_attributes']['style'].value = style.toString();
 		} else {
-			this._style.set(name, value, !!priority);
+			this._style.set(name, stringValue, !!priority);
 		}
 	}
 

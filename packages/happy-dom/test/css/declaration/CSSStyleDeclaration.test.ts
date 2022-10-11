@@ -1586,6 +1586,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'top: fit-content(20em)');
 
 			expect(declaration.top).toBe('fit-content(20em)');
+
+			(<number>(<unknown>declaration.top)) = 0;
+
+			expect(declaration.top).toBe('0px');
 		});
 	});
 
@@ -2063,6 +2067,18 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.cssText).toBe(
 				'border: 2px solid green; border-radius: 2px; font-size: 12px; background-color: green;'
 			);
+		});
+
+		it('Handles when value is a number.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			declaration.setProperty('top', <string>(<unknown>1));
+
+			expect(element.getAttribute('style')).toBe('');
+
+			declaration.setProperty('top', <string>(<unknown>0));
+
+			expect(element.getAttribute('style')).toBe('top: 0px;');
 		});
 
 		it('Removes style attribute on element if empty value is sent', () => {
