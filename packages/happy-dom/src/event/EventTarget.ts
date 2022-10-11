@@ -46,11 +46,11 @@ export default abstract class EventTarget implements IEventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
-		if (!event.target) {
-			event.target = this;
+		if (!event._target) {
+			event._target = this;
 		}
 
-		event.currentTarget = this;
+		event._currentTarget = this;
 
 		const onEventName = 'on' + event.type.toLowerCase();
 

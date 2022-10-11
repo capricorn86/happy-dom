@@ -338,8 +338,8 @@ describe('HTMLElement', () => {
 				bubbles: true,
 				composed: true
 			});
-			event.target = element;
-			event.currentTarget = element;
+			event._target = element;
+			event._currentTarget = element;
 
 			expect(triggeredEvent).toEqual(event);
 		});

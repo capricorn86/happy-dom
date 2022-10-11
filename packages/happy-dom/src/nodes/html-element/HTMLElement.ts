@@ -359,8 +359,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 			bubbles: true,
 			composed: true
 		});
-		event.target = this;
-		event.currentTarget = this;
+		event._target = this;
+		event._currentTarget = this;
 		this.dispatchEvent(event);
 	}
 
@@ -379,8 +379,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 				bubbles: true,
 				composed: true
 			});
-			event.target = this;
-			event.currentTarget = this;
+			event._target = this;
+			event._currentTarget = this;
 			this.dispatchEvent(event);
 		}
 	}
@@ -404,8 +404,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 				bubbles: true,
 				composed: true
 			});
-			event.target = this;
-			event.currentTarget = this;
+			event._target = this;
+			event._currentTarget = this;
 			this.dispatchEvent(event);
 		}
 	}
