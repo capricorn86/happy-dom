@@ -1,696 +1,653 @@
-import * as http from 'http';
-import {
-	Agent as HttpAgent,
-	ClientRequest,
-	IncomingMessage,
-	RequestOptions as RequestOptionsHttp
-} from 'http';
-import * as https from 'https';
-import { Agent as HttpsAgent } from 'https';
-import ProgressEvent from '../event/events/ProgressEvent';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import { ProgressEventListener, XMLHttpRequestEventTarget } from './XMLHttpRequestEventTarget';
-import XMLHttpRequestUpload from './XMLHttpRequestUpload';
-import DOMException from '../exception/DOMException';
-import IWindow from '../window/IWindow';
-import URL from '../location/URL';
+import FS from 'fs';
+import { URL } from 'url';
+import ChildProcess from 'child_process';
+import HTTP from 'http';
+import HTTPS from 'https';
+import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget';
+import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum';
+import Event from '../event/Event';
+import IDocument from '../nodes/document/IDocument';
 import RelativeURL from '../location/RelativeURL';
-import Blob from '../file/Blob';
-import {
-	copyToArrayBuffer,
-	MajorNodeVersion,
-	IXMLHttpRequestOptions
-} from './XMLHttpReqeustUtility';
-import { spawnSync } from "child_process";
-const SyncWorkerFile = require.resolve ? require.resolve('./XMLHttpRequestSyncWorker') : null;
+import XMLHttpRequestUpload from './XMLHttpRequestUpload';
+
+const SSL_CERT = `-----BEGIN CERTIFICATE-----
+MIIDYzCCAkugAwIBAgIUJRKB/H66hpet1VfUlm0CiXqePA4wDQYJKoZIhvcNAQEL
+BQAwQTELMAkGA1UEBhMCU0UxDjAMBgNVBAgMBVNrYW5lMQ4wDAYDVQQHDAVNYWxt
+bzESMBAGA1UECgwJSGFwcHkgRE9NMB4XDTIyMTAxMTIyMDM0OVoXDTMyMTAwODIy
+MDM0OVowQTELMAkGA1UEBhMCU0UxDjAMBgNVBAgMBVNrYW5lMQ4wDAYDVQQHDAVN
+YWxtbzESMBAGA1UECgwJSGFwcHkgRE9NMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+MIIBCgKCAQEAqerQSQEg/SxVxRiwlItithr5e5EMZo1nsqt/xOxagbmpW3IEmt0j
+bpbH7iEF4DDEo7KAOwUCOwVWeFxRoag8lG2ax48wrgjlCna45XDn0Xeg1ARajL04
+gs46HZ0VrzIloVGfln0zgt/Vum5BNqs9Oc5fQoBmoP3cAn3dn4ZVcP0AKthtcyPl
+q2DuNRN0PV0D2RtMSiAy9l1Ko6N5x+sAeClDyOL+sTDLngZBVeZyOKt9Id15S8Zt
+XtA6VMgHnnF3jChn7pag77rsd/y5iANAVNZYqRl+Eg7xaDcsvbgH46UBOrBcB39Q
+tTh5Mtjoxep5e3ZDFG+kQ1HUE+iz5O5n0wIDAQABo1MwUTAdBgNVHQ4EFgQU69s9
+YSobG/m2SN4L/7zTaF7iDbwwHwYDVR0jBBgwFoAU69s9YSobG/m2SN4L/7zTaF7i
+DbwwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAi/WUXx2oal8L
+YnPlIuKfh49n/K18wXSYG//oFYwxfVxqpYH8hUiXVm/GUcXCxS++hUkaKLqXmH9q
+MKJiCrZr3vS+2nsBKopkICu/TLdROl0sAI9lByfnEbfSAzjxe1IWJdK8NdY0y5m5
+9pEr/URVIAp/CxrneyASb4q0Jg5To3FR7vYc+2X6wZn0MundKMg6Dp9/A37jiF3l
+Tt/EJp299YZcsUzh+LnRuggRjnoOVu1aLcLFlaUiwZfy9m8mLG6B/mdW/qNzNMh9
+Oqvg1zfGdpz/4D/2UUUBn6pq1vbsoAaF3OesoA3mfDcegDf/H9woJlpT0Wql+e68
+Y3FblSokcA==
+-----END CERTIFICATE-----`;
+
+const SSL_KEY = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCp6tBJASD9LFXF
+GLCUi2K2Gvl7kQxmjWeyq3/E7FqBualbcgSa3SNulsfuIQXgMMSjsoA7BQI7BVZ4
+XFGhqDyUbZrHjzCuCOUKdrjlcOfRd6DUBFqMvTiCzjodnRWvMiWhUZ+WfTOC39W6
+bkE2qz05zl9CgGag/dwCfd2fhlVw/QAq2G1zI+WrYO41E3Q9XQPZG0xKIDL2XUqj
+o3nH6wB4KUPI4v6xMMueBkFV5nI4q30h3XlLxm1e0DpUyAeecXeMKGfulqDvuux3
+/LmIA0BU1lipGX4SDvFoNyy9uAfjpQE6sFwHf1C1OHky2OjF6nl7dkMUb6RDUdQT
+6LPk7mfTAgMBAAECggEAKkwTkTjAt4UjzK56tl+EMQTB+ep/hb/JgoaChci4Nva6
+m9LkJpDJ0yuhlTuPNOGu8XjrxsVWas7HWarRf0Zb3i7yip6wZYI9Ub+AA015x4DZ
+/i0fRU2NFbK0cM67qSL4jxG8gj+kZP3HPGNZxHwX/53JxMolwgmvjMc8NgvAlSFd
+NnV9h4xtbhUh1NGS5zmP3iU2rwnE8JrIEzwy6axLom7nekAgkdcbAr0UoBs8gcgH
+aYNhU4Gz3tGcZZ0IXAfT/bJIH1Ko8AGv4pssWc3BXcmmNdm/+kzvHIxEIV7Qegmo
+XG1ZyZCyD/0b4/3e8ySDBEDqwR+HeyTW2isWG2agAQKBgQDp44aTwr3dkIXY30xv
+FPfUOipg/B49dWnffYJ9MWc1FT9ijNPAngWSk0EIiEQIazICcUBI4Yji6/KeyqLJ
+GdLpDi1CkKqtyh73mjELinYp3EUQgEa77aQogGa2+nMOVfu+O5CtloUrv/A18jX3
++VEyaEASK0fWmnSI0OdlxQHIAQKBgQC5+xOls2F3MlKASvWRLlnW1wHqlDTtVoYg
+5Nh8syZH4Ci2UH8tON3A5/7SWNM0t1cgV6Cw4zW8Z2spgIT/W0iYYrQ4hHL1xdCu
++CxL1km4Gy8Uwpsd+KdFahFqF/XTmLzW0HXLxWSK0fTwmdV0SFrKF3MXfTCU2AeZ
+jJoMFb6P0wKBgQC3Odw6s0vkYAzLGhuZxfZkVvDOK5RRF0NKpttr0iEFL9EJFkPo
+2KKK8jr3QTDy229BBJGUxsJi6u6VwS8HlehpVQbV59kd7oKV/EBBx0XMg1fDlopT
+PNbmN7i/zbIG4AsoOyebJZjL7kBzMn1e9vzKHWtcEHXlw/hZGja8vjooAQKBgAeg
+xK2HLfg1mCyq5meN/yFQsENu0LzrT5UJzddPgcJw7zqLEqxIKNBAs7Ls8by3yFsL
+PQwERa/0jfCl1M6kb9XQNpQa2pw6ANUsWKTDpUJn2wZ+9N3F1RaDwzMWyH5lRVmK
+M0qoTfdjpSg5Jwgd75taWt4bxGJWeflSSv8z5R0BAoGAWL8c527AbeBvx2tOYKkD
+2TFranvANNcoMrbeviZSkkGvMNDP3p8b6juJwXOIeWNr8q4vFgCzLmq6d1/9gYm2
+3XJwwyD0LKlqzkBrrKU47qrnmMosUrIRlrAzd3HbShOptxc6Iz2apSaUDKGKXkaw
+gl5OpEjeliU7Mus0BVS858g=
+-----END PRIVATE KEY-----`;
+
+// These headers are not user setable.
+// The following are allowed but banned in the spec:
+// * User-agent
+const FORBIDDEN_REQUEST_HEADERS = [
+	'accept-charset',
+	'accept-encoding',
+	'access-control-request-headers',
+	'access-control-request-method',
+	'connection',
+	'content-length',
+	'content-transfer-encoding',
+	'cookie',
+	'cookie2',
+	'date',
+	'expect',
+	'host',
+	'keep-alive',
+	'origin',
+	'referer',
+	'te',
+	'trailer',
+	'transfer-encoding',
+	'upgrade',
+	'via'
+];
+
+// These request methods are not allowed
+const FORBIDDEN_REQUEST_METHODS = ['TRACE', 'TRACK', 'CONNECT'];
 
 /**
- * References: https://github.com/souldreamer/xhr2-cookies.
+ * XMLHttpRequest.
+ *
+ * Based on:
+ * https://github.com/mjwwit/node-XMLHttpRequest/blob/master/lib/XMLHttpRequest.js
  */
 export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
-	public static readonly UNSENT = 0;
-	public static readonly OPENED = 1;
-	public static readonly HEADERS_RECEIVED = 2;
-	public static readonly LOADING = 3;
-	public static readonly DONE = 4;
+	// Owner document is set by a sub-class in the Window constructor
+	public static _ownerDocument: IDocument = null;
 
-	public static _defaultView: IWindow;
+	// Constants
+	public static UNSENT = XMLHttpRequestReadyStateEnum.unsent;
+	public static OPENED = XMLHttpRequestReadyStateEnum.opened;
+	public static HEADERS_RECEIVED = XMLHttpRequestReadyStateEnum.headersRecieved;
+	public static LOADING = XMLHttpRequestReadyStateEnum.loading;
+	public static DONE = XMLHttpRequestReadyStateEnum.done;
 
-	public onreadystatechange: ProgressEventListener | null = null;
-	public readyState: number = XMLHttpRequest.UNSENT;
-
-	public response: string | ArrayBuffer | Buffer | object | null = null;
+	// Public properties
+	public readyState: XMLHttpRequestReadyStateEnum = XMLHttpRequestReadyStateEnum.unsent;
 	public responseText = '';
-	public responseType = '';
-	public status = 0;
-	public statusText = '';
-	public timeout = 0;
-	public upload = new XMLHttpRequestUpload();
-	public responseUrl = '';
-	public withCredentials = false;
+	public responseXML = '';
+	public status: number = null;
+	public statusText: string = null;
+	public upload: XMLHttpRequestUpload = new XMLHttpRequestUpload();
 
-	public nodejsHttpAgent: HttpAgent = http.globalAgent;
-	public nodejsHttpsAgent: HttpsAgent = https.globalAgent;
-
-	private readonly anonymous: boolean;
-	private method: string | null = null;
-	private url: URL | null = null;
-	private auth: string | null = null;
-	private body: string | Buffer | ArrayBuffer | ArrayBufferView;
-	private sync = false;
-	private headers: { [header: string]: string } = {};
-	private loweredHeaders: { [lowercaseHeader: string]: string } = {};
-	private mimeOverride: string | null = null; // TODO: is type right?
-	private _request: ClientRequest | null = null;
-	private _response: IncomingMessage | null = null;
-	// @ts-ignore
-	private _error: Error | string | null = null;
-	private responseParts: Buffer[] | null = null;
-	private responseHeaders: { [lowercaseHeader: string]: string } | null = null;
-	private loadedBytes = 0;
-	private totalBytes = 0;
-	private lengthComputable = false;
-
-	private restrictedMethods = { CONNECT: true, TRACE: true, TRACK: true };
-	private restrictedHeaders = {
-		'accept-charset': true,
-		'accept-encoding': true,
-		'access-control-request-headers': true,
-		'access-control-request-method': true,
-		connection: true,
-		'content-length': true,
-		cookie: true,
-		cookie2: true,
-		date: true,
-		dnt: true,
-		expect: true,
-		host: true,
-		'keep-alive': true,
-		origin: true,
-		referer: true,
-		te: true,
-		trailer: true,
-		'transfer-encoding': true,
-		upgrade: true,
-		'user-agent': true,
-		via: true
+	// Private properties
+	private readonly _ownerDocument: IDocument = null;
+	private _request = null;
+	private _response = null;
+	private _requestHeaders = {};
+	private _sendFlag = false;
+	private _errorFlag = false;
+	private _abortedFlag = false;
+	private _settings: {
+		method: string;
+		url: string;
+		async: boolean;
+		user: string;
+		password: string;
+	} = {
+		method: null,
+		url: null,
+		async: true,
+		user: null,
+		password: null
 	};
-	private privateHeaders = { 'set-cookie': true, 'set-cookie2': true };
 
 	/**
-	 * News a request.
-	 *
-	 * @param options
+	 * Constructor.
 	 */
-	constructor(options: IXMLHttpRequestOptions = {}) {
+	constructor() {
 		super();
-		this.anonymous = options.anon || false;
+		this._ownerDocument = XMLHttpRequest._ownerDocument;
 	}
 
 	/**
-	 * Initializes a newly-created request, or re-initializes an existing one.
+	 * Opens the connection.
 	 *
-	 * @param method The HTTP request method to use.
-	 * @param url The URL to request.
-	 * @param async Whether the request is synchronous or asynchronous.
-	 * @param user The username to use for authentication purposes.
-	 * @param password The password to use for authentication purposes.
+	 * @param method Connection method (eg GET, POST).
+	 * @param url URL for the connection.
+	 * @param [async=true] Asynchronous connection.
+	 * @param [user] Username for basic authentication (optional).
+	 * @param [password] Password for basic authentication (optional).
 	 */
 	public open(method: string, url: string, async = true, user?: string, password?: string): void {
-		const { _defaultView } = XMLHttpRequest;
-		// If _defaultView is not defined, then we can't set the URL.
-		if (!_defaultView) {
-			throw new Error('need set defaultView');
-		}
-		method = method.toUpperCase();
-		if (this.restrictedMethods[method]) {
-			throw new DOMException(
-				`HTTP method ${method} is not allowed in XHR`,
-				DOMExceptionNameEnum.securityError
-			);
+		this.abort();
+		this._errorFlag = false;
+		this._abortedFlag = false;
+
+		const upperMethod = method.toUpperCase();
+
+		// Check for valid request method
+		if (FORBIDDEN_REQUEST_METHODS.includes(upperMethod)) {
+			throw new Error('SecurityError: Request method not allowed');
 		}
 
-		// Get and Parse the URL relative to the given Location object.
-		const xhrUrl = RelativeURL.getAbsoluteURL(XMLHttpRequest._defaultView.location, url);
-		// Set username and password if given.
-		xhrUrl.username = user ? user : xhrUrl.username;
-		xhrUrl.password = password ? password : xhrUrl.password;
+		this._settings = {
+			method: upperMethod,
+			url: url.toString(),
+			async: async,
+			user: user || null,
+			password: password || null
+		};
+
+		this._setState(XMLHttpRequestReadyStateEnum.opened);
+	}
+
+	/**
+	 * Sets a header for the request.
+	 *
+	 * @param header Header name
+	 * @param value Header value
+	 * @returns Header added.
+	 */
+	public setRequestHeader(header: string, value: string): boolean {
+		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
+			throw new Error('INVALID_STATE_ERR: setRequestHeader can only be called when state is OPEN');
+		}
+		const lowerHeader = header.toLowerCase();
+
+		if (FORBIDDEN_REQUEST_HEADERS.includes(lowerHeader)) {
+			return false;
+		}
+		if (this._sendFlag) {
+			throw new Error('INVALID_STATE_ERR: send flag is true');
+		}
+		this._requestHeaders[lowerHeader] = value;
+		return true;
+	}
+
+	/**
+	 * Gets a header from the server response.
+	 *
+	 * @param string header Name of header to get.
+	 * @param header
+	 * @returns string Text of the header or null if it doesn't exist.
+	 */
+	public getResponseHeader(header: string): string {
+		const lowerHeader = header.toLowerCase();
 
 		if (
-			this.readyState === XMLHttpRequest.HEADERS_RECEIVED ||
-			this.readyState === XMLHttpRequest.LOADING
+			typeof header === 'string' &&
+			this.readyState > XMLHttpRequestReadyStateEnum.opened &&
+			this._response.headers[lowerHeader] &&
+			!this._errorFlag
 		) {
-			// TODO: terminate abort(), terminate send()
+			return this._response.headers[lowerHeader];
 		}
 
-		this.method = method;
-		this.url = xhrUrl;
-		this.auth = `${this.url.username || ''}:${this.url.password || ''}`
-		this.sync = !async;
-		// this.headers = {};
-		this.loweredHeaders = {};
-		// this.mimeOverride = null;
-		this.setReadyState(XMLHttpRequest.OPENED);
-		this._request = null;
-		this._response = null;
-		this.status = 0;
-		this.statusText = '';
-		this.responseParts = [];
-		this.responseHeaders = null;
-		this.loadedBytes = 0;
-		this.totalBytes = 0;
-		this.lengthComputable = false;
-
+		return null;
 	}
 
 	/**
-	 * Sets the value of an HTTP request header.
+	 * Gets all the response headers.
 	 *
-	 * @param name The name of the header whose value is to be set.
-	 * @param value The value to set as the body of the header.
-	 */
-	public setRequestHeader(name: string, value: unknown): void {
-		const { _defaultView } = XMLHttpRequest;
-		if (this.readyState !== XMLHttpRequest.OPENED) {
-			throw new DOMException(
-				'XHR readyState must be OPENED',
-				DOMExceptionNameEnum.invalidStateError
-			);
-		}
-
-		const loweredName = name.toLowerCase();
-		if (
-			this.restrictedHeaders[loweredName] ||
-			/^sec-/.test(loweredName) ||
-			/^proxy-/.test(loweredName)
-		) {
-			_defaultView.console.warn(`Refused to set unsafe header "${name}"`);
-			return;
-		}
-
-		const headerBody = value.toString();
-		if (this.loweredHeaders[loweredName] != null) {
-			name = this.loweredHeaders[loweredName];
-			this.headers[name] = `${this.headers[name]}, ${headerBody}`;
-		} else {
-			this.loweredHeaders[loweredName] = name;
-			this.headers[name] = headerBody;
-		}
-	}
-
-	/**
-	 * Sends the request. If the request is asynchronous (which is the default), this method returns as soon as the request is sent.
-	 *
-	 * @param data The data to send with the request.
-	 */
-	public send(data?: string | Buffer | ArrayBuffer | ArrayBufferView): void {
-		const { invalidStateError, networkError } = DOMExceptionNameEnum;
-		if (this.readyState !== XMLHttpRequest.OPENED) {
-			throw new DOMException('XHR readyState must be OPENED', invalidStateError);
-		}
-		if (this._request) {
-			throw new DOMException('send() already called', invalidStateError);
-		}
-		switch (this.url.protocol) {
-			case 'file:':
-				return this.sendFile(data);
-			case 'http:':
-			case 'https:':
-				return this.sendHttp(data);
-			default:
-				throw new DOMException(`Unsupported protocol ${this.url.protocol}`, networkError);
-		}
-	}
-
-	/**
-	 * Aborts the request if it has already been sent.
-	 */
-	public abort(): void {
-		if (this._request == null) {
-			return;
-		}
-		// ClientRequest.destroy breaks the test suite for versions 10 and 12,
-		// Hence the version check
-		if (MajorNodeVersion > 13) {
-			this._request.destroy();
-		} else {
-			this._request.abort();
-		}
-		this.setReadyState(XMLHttpRequest.DONE);
-		this.setError();
-
-		this.dispatchProgress('abort');
-		this.dispatchProgress('loadend');
-	}
-
-	/**
-	 * Returns the string containing the text of the specified header, or null if either the response has not yet been received or the header doesn't exist in the response.
-	 *
-	 * @param name The name of the header.
-	 */
-	public getResponseHeader(name: string): string {
-		if (
-			this.responseHeaders == null ||
-			name == null ||
-			this.readyState === XMLHttpRequest.OPENED ||
-			this.readyState === XMLHttpRequest.UNSENT
-		) {
-			return null;
-		}
-		const loweredName = name.toLowerCase();
-		return this.responseHeaders.hasOwnProperty(loweredName)
-			? this.responseHeaders[name.toLowerCase()]
-			: null;
-	}
-
-	/**
-	 * Returns all the response headers, separated by CRLF, as a string, or null if no response has been received.
-	 *
+	 * @returns A string with all response headers separated by CR+LF.
 	 */
 	public getAllResponseHeaders(): string {
-		if (
-			this.responseHeaders == null ||
-			this.readyState === XMLHttpRequest.OPENED ||
-			this.readyState === XMLHttpRequest.UNSENT
-		) {
+		if (this.readyState < XMLHttpRequestReadyStateEnum.headersRecieved || this._errorFlag) {
 			return '';
 		}
-		return Object.keys(this.responseHeaders)
-			.map((key) => `${key}: ${this.responseHeaders[key]}`)
-			.join('\r\n');
-	}
+		let result = '';
 
-	/**
-	 * Overrides the MIME type returned by the server.
-	 *
-	 * @param mimeType The MIME type to use.
-	 */
-	public overrideMimeType(mimeType: string): void {
-		if (this.readyState === XMLHttpRequest.LOADING || this.readyState === XMLHttpRequest.DONE) {
-			throw new DOMException(
-				'overrideMimeType() not allowed in LOADING or DONE',
-				DOMExceptionNameEnum.invalidStateError
-			);
-		}
-		this.mimeOverride = mimeType.toLowerCase();
-	}
-
-	/**
-	 * Sets the value of the ReadyState.
-	 *
-	 * @param readyState The new value of the ReadyState.
-	 */
-	private setReadyState(readyState: number): void {
-		this.readyState = readyState;
-		this.dispatchEvent(new ProgressEvent('readystatechange'));
-	}
-
-	/**
-	 * Send request with file.
-	 *
-	 * @todo Not implemented.
-	 * @param _data File body to send.
-	 */
-	private sendFile(_data: unknown): void {
-		// TODO: sendFile() not implemented.
-		throw new Error('Protocol file: not implemented');
-	}
-
-	/**
-	 * Send request with http.
-	 *
-	 * @param data Data to send.
-	 */
-	private sendHttp(data?: string | Buffer | ArrayBuffer | ArrayBufferView): void {
-		const { _defaultView } = XMLHttpRequest;
-		this.body = data;
-
-		if (this.sync) {
-			const params = this._serialParams();
-			const res = spawnSync(process.execPath, [SyncWorkerFile], { input: params, maxBuffer: Infinity });
-			res;
-			// TODO: sync not implemented.
-			throw new Error('Synchronous XHR processing not implemented');
-		}
-		if (data && (this.method === 'GET' || this.method === 'HEAD')) {
-			_defaultView.console.warn(`Discarding entity body for ${this.method} requests`);
-			data = null;
-		} else {
-			data = data || '';
-		}
-
-		this.upload.setData(data);
-		this.finalizeHeaders();
-		this.sendHxxpRequest();
-	}
-
-	/**
-	 * SendHxxpRequest sends the actual request.
-	 *
-	 */
-	private sendHxxpRequest(): void {
-		const { _defaultView } = XMLHttpRequest;
-		if (this.withCredentials) {
-			// Set cookie if URL is same-origin.
-			if (_defaultView.location.origin === this.url.origin) {
-				this.headers.cookie = _defaultView.document.cookie;
+		for (const name of Object.keys(this._response.headers)) {
+			// Cookie headers are excluded
+			if (name !== 'set-cookie' && name !== 'set-cookie2') {
+				result += `${name}: ${this._response.headers[name]}\r\n`;
 			}
 		}
 
-		const [hxxp, agent] =
-			this.url.protocol === 'http:' ? [http, this.nodejsHttpAgent] : [https, this.nodejsHttpsAgent];
-		const requestMethod: (options: RequestOptionsHttp) => ClientRequest = hxxp.request.bind(hxxp);
-		const request = requestMethod({
-			hostname: this.url.hostname,
-			port: +this.url.port,
-			path: this.url.pathname,
-			auth: this.auth,
-			method: this.method,
-			headers: this.headers,
-			agent
-		});
-		this._request = request;
-
-		if (this.timeout) {
-			request.setTimeout(this.timeout, () => this.onHttpTimeout(request));
-		}
-		request.on('response', (response) => this.onHttpResponse(request, response));
-		request.on('error', (error) => this.onHttpRequestError(request, error));
-		this.upload.startUpload(request);
-
-		if (this._request === request) {
-			this.dispatchProgress('loadstart');
-		}
+		return result.substr(0, result.length - 2);
 	}
 
 	/**
-	 * Finalize headers.
+	 * Gets a request header
 	 *
+	 * @param name Name of header to get.
+	 * @returns Returns the request header or empty string if not set.
 	 */
-	private finalizeHeaders(): void {
-		const { _defaultView } = XMLHttpRequest;
-		this.headers = {
-			...this.headers,
-			Connection: 'keep-alive',
-			Host: this.url.host,
-			'User-Agent': _defaultView.navigator.userAgent,
-			...(this.anonymous ? { Referer: 'about:blank' } : { Referer: _defaultView.location.origin })
-		};
-		this.upload.finalizeHeaders(this.headers, this.loweredHeaders);
+	public getRequestHeader(name: string): string {
+		const lowerName = name.toLowerCase();
+		if (typeof name === 'string' && this._requestHeaders[lowerName]) {
+			return this._requestHeaders[lowerName];
+		}
+
+		return '';
 	}
 
 	/**
-	 * OnHttpResponse handles the response.
+	 * Sends the request to the server.
 	 *
-	 * @param request The request.
-	 * @param response The response.
+	 * @param data Optional data to send as request body.
 	 */
-	private onHttpResponse(request: ClientRequest, response: IncomingMessage): void {
-		if (this._request !== request) {
-			return;
-		}
-		const { _defaultView } = XMLHttpRequest;
-
-		if (this.withCredentials && response.headers['set-cookie']) {
-			_defaultView.document.cookie = response.headers['set-cookie'].join('; ');
+	public send(data: string): void {
+		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
+			throw new Error('INVALID_STATE_ERR: connection must be opened before send() is called');
 		}
 
-		if ([301, 302, 303, 307, 308].indexOf(response.statusCode) >= 0) {
-			this.url = new _defaultView.URL(response.headers.location);
-			this.method = 'GET';
-			if (this.loweredHeaders['content-type']) {
-				delete this.headers[this.loweredHeaders['content-type']];
-				delete this.loweredHeaders['content-type'];
-			}
-			if (this.headers['Content-Type'] != null) {
-				delete this.headers['Content-Type'];
-			}
-			delete this.headers['Content-Length'];
-
-			this.upload.reset();
-			this.finalizeHeaders();
-			this.sendHxxpRequest();
-			return;
+		if (this._sendFlag) {
+			throw new Error('INVALID_STATE_ERR: send has already been called');
 		}
 
-		this._response = response;
-		this._response.on('data', (data) => this.onHttpResponseData(response, data));
-		this._response.on('end', () => this.onHttpResponseEnd(response));
-		this._response.on('close', () => this.onHttpResponseClose(response));
+		let ssl = false;
+		let local = false;
+		const url = RelativeURL.getAbsoluteURL(
+			this._ownerDocument.defaultView.location,
+			this._settings.url
+		);
+		let host;
 
-		this.responseUrl = this.url.href.split('#')[0];
-		this.status = response.statusCode;
-		this.statusText = http.STATUS_CODES[this.status];
-		this.parseResponseHeaders(response);
-
-		const lengthString = this.responseHeaders['content-length'] || '';
-		this.totalBytes = +lengthString;
-		this.lengthComputable = !!lengthString;
-
-		this.setReadyState(XMLHttpRequest.HEADERS_RECEIVED);
-	}
-
-	/**
-	 * OnHttpResponseData handles the response data.
-	 *
-	 * @param response The response.
-	 * @param data The data.
-	 */
-	private onHttpResponseData(response: IncomingMessage, data: string | Buffer): void {
-		if (this._response !== response) {
-			return;
-		}
-
-		this.responseParts.push(Buffer.from(<string>data));
-		this.loadedBytes += data.length;
-
-		if (this.readyState !== XMLHttpRequest.LOADING) {
-			this.setReadyState(XMLHttpRequest.LOADING);
-		}
-
-		this.dispatchProgress('progress');
-	}
-
-	/**
-	 * OnHttpResponseEnd handles the response end.
-	 *
-	 * @param response The response.
-	 */
-	private onHttpResponseEnd(response: IncomingMessage): void {
-		if (this._response !== response) {
-			return;
-		}
-
-		this.parseResponse();
-		this._request = null;
-		this._response = null;
-		this.setReadyState(XMLHttpRequest.DONE);
-
-		this.dispatchProgress('load');
-		this.dispatchProgress('loadend');
-	}
-
-	/**
-	 * OnHttpResponseClose handles the response close.
-	 *
-	 * @param response The response.
-	 */
-	private onHttpResponseClose(response: IncomingMessage): void {
-		if (this._response !== response) {
-			return;
-		}
-
-		const request = this._request;
-		this.setError();
-		// ClientRequest.destroy breaks the test suite for versions 10 and 12,
-		// Hence the version check
-		if (MajorNodeVersion > 13) {
-			request.destroy();
-		} else {
-			request.abort();
-		}
-		this.setReadyState(XMLHttpRequest.DONE);
-
-		this.dispatchProgress('error');
-		this.dispatchProgress('loadend');
-	}
-
-	/**
-	 * OnHttpTimeout handles the timeout.
-	 *
-	 * @param request The request.
-	 */
-	private onHttpTimeout(request: ClientRequest): void {
-		if (this._request !== request) {
-			return;
-		}
-
-		this.setError();
-		// ClientRequest.destroy breaks the test suite for versions 10 and 12,
-		// Hence the version check
-		if (MajorNodeVersion > 13) {
-			request.destroy();
-		} else {
-			request.abort();
-		}
-		this.setReadyState(XMLHttpRequest.DONE);
-
-		this.dispatchProgress('timeout');
-		this.dispatchProgress('loadend');
-	}
-
-	/**
-	 * OnHttpRequestError handles the request error.
-	 *
-	 * @param request The request.
-	 * @param error The error.
-	 */
-	private onHttpRequestError(request: ClientRequest, error: Error): void {
-		this._error = error;
-		if (this._request !== request) {
-			return;
-		}
-
-		this.setError();
-		// ClientRequest.destroy breaks the test suite for versions 10 and 12,
-		// Hence the version check
-		if (MajorNodeVersion > 13) {
-			request.destroy();
-		} else {
-			request.abort();
-		}
-		this.setReadyState(XMLHttpRequest.DONE);
-
-		this.dispatchProgress('error');
-		this.dispatchProgress('loadend');
-	}
-
-	/**
-	 * Dispatches the progress event.
-	 *
-	 * @param eventType The event type.
-	 */
-	private dispatchProgress(eventType: string): void {
-		const event = new ProgressEvent(eventType, {
-			lengthComputable: this.lengthComputable,
-			loaded: this.loadedBytes,
-			total: this.totalBytes
-		});
-		this.dispatchEvent(event);
-	}
-
-	/**
-	 * Sets the error.
-	 *
-	 */
-	private setError(): void {
-		this._request = null;
-		this._response = null;
-		this.responseHeaders = null;
-		this.responseParts = null;
-	}
-
-	/**
-	 * Parses the response headers.
-	 *
-	 * @param response The response.
-	 */
-	private parseResponseHeaders(response: IncomingMessage): void {
-		this.responseHeaders = {};
-		for (const name in response.headers) {
-			const loweredName = name.toLowerCase();
-			if (this.privateHeaders[loweredName]) {
-				continue;
-			}
-			this.responseHeaders[loweredName] = <string>response.headers[name];
-		}
-		if (this.mimeOverride != null) {
-			this.responseHeaders['content-type'] = this.mimeOverride;
-		}
-	}
-
-	/**
-	 * Parses the response.
-	 *
-	 */
-	private parseResponse(): void {
-		const buffer = Buffer.concat(this.responseParts);
-		this.responseParts = null;
-
-		switch (this.responseType) {
-			case 'json':
-				this.responseText = null;
-				try {
-					this.response = JSON.parse(buffer.toString('utf-8'));
-				} catch {
-					this.response = null;
-				}
+		// Determine the server
+		switch (url.protocol) {
+			case 'https:':
+				ssl = true;
+			// SSL & non-SSL both need host, no break here.
+			case 'http:':
+				host = url.hostname;
 				break;
-			case 'buffer':
-				this.responseText = null;
-				this.response = buffer;
+
+			case 'file:':
+				local = true;
 				break;
-			case 'arraybuffer':
-				this.responseText = null;
-				this.response = copyToArrayBuffer(buffer);
+
+			case undefined:
+			case '':
+				host = 'localhost';
 				break;
-			case 'blob':
-				this.responseText = null;
-				this.response = new Blob([new Uint8Array(buffer)], {
-					type: this.mimeOverride || this.responseHeaders['content-type'] || ''
-				});
-				break;
-			case 'document':
-				// TODO: MimeType parse not yet supported.
-				break;
-			case 'text':
+
 			default:
-				try {
-					this.responseText = buffer.toString(<BufferEncoding>this.parseResponseEncoding());
-				} catch {
-					this.responseText = buffer.toString('binary');
-				}
-				this.response = this.responseText;
-				break;
+				throw new Error('Protocol not supported.');
 		}
-		return;
+
+		// Load files off the local filesystem (file://)
+		if (local) {
+			if (this._settings.method !== 'GET') {
+				throw new Error('XMLHttpRequest: Only GET method is supported');
+			}
+
+			if (this._settings.async) {
+				FS.readFile(unescape(url.pathname), 'utf8', (error: Error, data: Buffer) => {
+					if (error) {
+						this._handleError(error);
+					} else {
+						this.status = 200;
+						this.responseText = data.toString();
+						this._setState(XMLHttpRequestReadyStateEnum.done);
+					}
+				});
+			} else {
+				try {
+					this.responseText = FS.readFileSync(unescape(url.pathname), 'utf8');
+					this.status = 200;
+					this._setState(XMLHttpRequestReadyStateEnum.done);
+				} catch (error) {
+					this._handleError(error);
+				}
+			}
+
+			return;
+		}
+
+		// Default to port 80. If accessing localhost on another port be sure
+		// To use http://localhost:port/path
+		const port = url.port || (ssl ? 443 : 80);
+		// Add query string if one is used
+		const uri = url.pathname + (url.search ? url.search : '');
+
+		// Set the Host header or the server may reject the request
+		this._requestHeaders['host'] = host;
+		if (!((ssl && port === 443) || port === 80)) {
+			this._requestHeaders['host'] += ':' + url.port;
+		}
+
+		// Set Basic Auth if necessary
+		if (this._settings.user) {
+			if (typeof this._settings.password == 'undefined') {
+				this._settings.password = '';
+			}
+			const authBuffer = Buffer.from(this._settings.user + ':' + this._settings.password);
+			this._requestHeaders['authorization'] = 'Basic ' + authBuffer.toString('base64');
+		}
+
+		// Set content length header
+		if (this._settings.method === 'GET' || this._settings.method === 'HEAD') {
+			data = null;
+		} else if (data) {
+			this._requestHeaders['content-length'] = Buffer.isBuffer(data)
+				? data.length
+				: Buffer.byteLength(data);
+
+			if (!this._requestHeaders['content-type']) {
+				this._requestHeaders['content-type'] = 'text/plain;charset=UTF-8';
+			}
+		} else if (this._settings.method === 'POST') {
+			// For a post with no data set Content-Length: 0.
+			// This is required by buggy servers that don't meet the specs.
+			this._requestHeaders['content-length'] = 0;
+		}
+
+		const options = {
+			host: host,
+			port: port,
+			path: uri,
+			method: this._settings.method,
+			headers: Object.assign(this._getDefaultRequestHeaders(), this._requestHeaders),
+			agent: false,
+			rejectUnauthorized: true,
+			key: null,
+			cert: null
+		};
+
+		if (ssl) {
+			options.key = SSL_KEY;
+			options.cert = SSL_CERT;
+		}
+
+		// Reset error flag
+		this._errorFlag = false;
+		// Handle async requests
+		if (this._settings.async) {
+			// Use the proper protocol
+			const sendRequest = ssl ? HTTPS.request : HTTP.request;
+
+			// Request is being sent, set send flag
+			this._sendFlag = true;
+
+			// As per spec, this is called here for historical reasons.
+			this.dispatchEvent(new Event('readystatechange'));
+
+			// Handler for the response
+			const responseHandler = (resp): void => {
+				// Set response var to the response we got back
+				// This is so it remains accessable outside this scope
+				this._response = resp;
+
+				// Check for redirect
+				// @TODO Prevent looped redirects
+				if (
+					this._response.statusCode === 302 ||
+					this._response.statusCode === 303 ||
+					this._response.statusCode === 307
+				) {
+					// Change URL to the redirect location
+					this._settings.url = this._response.headers.location;
+					const url = new URL(this._settings.url);
+					// Set host var in case it's used later
+					host = url.hostname;
+					// Options for the new request
+					const newOptions = {
+						hostname: url.hostname,
+						port: url.port,
+						path: url.pathname,
+						method: this._response.statusCode === 303 ? 'GET' : this._settings.method,
+						headers: Object.assign(this._getDefaultRequestHeaders(), this._requestHeaders),
+						rejectUnauthorized: true,
+						key: null,
+						cert: null
+					};
+
+					if (ssl) {
+						newOptions.key = SSL_KEY;
+						newOptions.cert = SSL_CERT;
+					}
+
+					// Issue the new request
+					this._request = sendRequest(newOptions, responseHandler).on('error', errorHandler);
+					this._request.end();
+					// @TODO Check if an XHR event needs to be fired here
+					return;
+				}
+
+				if (this._response && this._response.setEncoding) {
+					this._response.setEncoding('utf8');
+				}
+
+				this._setState(XMLHttpRequestReadyStateEnum.headersRecieved);
+				this.status = this._response.statusCode;
+
+				this._response.on('data', (chunk) => {
+					// Make sure there's some data
+					if (chunk) {
+						this.responseText += chunk;
+					}
+					// Don't emit state changes if the connection has been aborted.
+					if (this._sendFlag) {
+						this._setState(XMLHttpRequestReadyStateEnum.loading);
+					}
+				});
+
+				this._response.on('end', () => {
+					if (this._sendFlag) {
+						// The sendFlag needs to be set before setState is called.  Otherwise if we are chaining callbacks
+						// There can be a timing issue (the callback is called and a new call is made before the flag is reset).
+						this._sendFlag = false;
+						// Discard the 'end' event if the connection has been aborted
+						this._setState(XMLHttpRequestReadyStateEnum.done);
+					}
+				});
+
+				this._response.on('error', (error) => {
+					this._handleError(error);
+				});
+			};
+
+			// Error handler for the request
+			const errorHandler = (error): void => {
+				this._handleError(error);
+			};
+
+			// Create the request
+			this._request = sendRequest(options, responseHandler).on('error', errorHandler);
+
+			// Node 0.4 and later won't accept empty data. Make sure it's needed.
+			if (data) {
+				this._request.write(data);
+			}
+
+			this._request.end();
+
+			this.dispatchEvent(new Event('loadstart'));
+		} else {
+			// Synchronous
+			// Create a temporary file for communication with the other Node process
+			const contentFile = '.node-xmlhttprequest-content-' + process.pid;
+			const syncFile = '.node-xmlhttprequest-sync-' + process.pid;
+			FS.writeFileSync(syncFile, '', 'utf8');
+
+			// The async request the other Node process executes
+			const execString = `
+                const HTTP = require('http')
+                const HTTPS = require('https')
+                const FS = require('FS');
+                const sendRequest = HTTP${ssl ? 'S' : ''}.request;
+                const options = ${JSON.stringify(options)};
+                const responseText = '';
+                const request = sendRequest(options, (response) => {
+                    response.setEncoding('utf8');
+                    response.on('data', (chunk) => {
+                        responseText += chunk;
+                    });
+                    response.on('end', () => {
+                        FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-STATUS:' + response.statusCode + ',' + responseText, 'utf8');
+                        FS.unlinkSync('${syncFile}');
+                    });
+                });
+                response.on('error', (error) => {
+                    FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8').on('error', (error) => {
+                        FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8');
+                        FS.unlinkSync('${syncFile}'));
+                    });
+                });
+                request.write(\`${JSON.stringify(data).slice(1, -1)}\`);
+                request.end();
+            `.trim();
+
+			// Start the other Node Process, executing this string
+			const syncProc = ChildProcess.spawn(process.argv[0], ['-e', execString]);
+
+			while (FS.existsSync(syncFile)) {
+				// Wait while the sync file is empty
+			}
+
+			this.responseText = FS.readFileSync(contentFile, 'utf8');
+
+			// Kill the child process once the file has data
+			syncProc.stdin.end();
+
+			// Remove the temporary file
+			FS.unlinkSync(contentFile);
+
+			if (this.responseText.match(/^NODE-XMLHTTPREQUEST-ERROR:/)) {
+				// If the file returned an error, handle it
+				const errorObj = this.responseText.replace(/^NODE-XMLHTTPREQUEST-ERROR:/, '');
+				this._handleError(errorObj, 503);
+			} else {
+				// If the file returned okay, parse its data and move to the DONE state
+				this.status = Number(
+					this.responseText.replace(/^NODE-XMLHTTPREQUEST-STATUS:([0-9]*),.*/, '$1')
+				);
+				this.responseText = this.responseText.replace(
+					/^NODE-XMLHTTPREQUEST-STATUS:[0-9]*,(.*)/,
+					'$1'
+				);
+				this._setState(XMLHttpRequestReadyStateEnum.done);
+			}
+		}
 	}
 
 	/**
-	 * Parses the response encoding.
-	 *
+	 * Aborts a request.
 	 */
-	private parseResponseEncoding(): string {
-		const charset = /;\s*charset=(.*)$/.exec(this.responseHeaders['content-type'] || '');
-		return Array.isArray(charset) ? charset[1] : 'utf-8';
+	public abort(): void {
+		if (this._request) {
+			this._request.abort();
+			this._request = null;
+		}
+
+		this._requestHeaders = {};
+		this.responseText = '';
+		this.responseXML = '';
+
+		this._errorFlag = this._abortedFlag = true;
+		if (
+			this.readyState !== XMLHttpRequestReadyStateEnum.unsent &&
+			(this.readyState !== XMLHttpRequestReadyStateEnum.opened || this._sendFlag) &&
+			this.readyState !== XMLHttpRequestReadyStateEnum.done
+		) {
+			this._sendFlag = false;
+			this._setState(XMLHttpRequestReadyStateEnum.done);
+		}
+		this.readyState = XMLHttpRequestReadyStateEnum.unsent;
 	}
 
-	public _syncGetError(): Error {
-		return <Error>this._error;
-	}
-	public _syncSetErrorString(error: string): void {
-		this._error = error;
+	/**
+	 * Called when an error is encountered to deal with it.
+	 *
+	 * @param error Error object.
+	 * @param status HTTP status code to use rather than the default (0) for XHR errors.
+	 */
+	private _handleError(error: Error | string, status = 0): void {
+		this.status = status;
+		this.statusText = error.toString();
+		this.responseText = error instanceof Error ? error.stack : '';
+		this._errorFlag = true;
+		this._setState(XMLHttpRequestReadyStateEnum.done);
 	}
 
-	private _serialParams(): string {
-		const { _defaultView } = XMLHttpRequest;
-		const serials = {
-			sync: this.sync,
-			withCredentials: this.withCredentials,
-			mimeType: this.mimeOverride,
-			username: this.url.username,
-			password: this.url.password,
-			auth: this.auth,
-			method: this.method,
-			responseType: this.responseType,
-			headers: this.headers,
-			uri: this.url.href,
-			timeout: this.timeout,
-			body: this.body,
+	/**
+	 * Changes readyState and calls onreadystatechange.
+	 *
+	 * @param int state New state
+	 * @param state
+	 */
+	private _setState(state: XMLHttpRequestReadyStateEnum): void {
+		if (
+			this.readyState === state ||
+			(this.readyState === XMLHttpRequestReadyStateEnum.unsent && this._abortedFlag)
+		) {
+			return;
+		}
 
-			cookie: _defaultView.document.cookie,
-			origin: _defaultView.location.href
+		this.readyState = state;
+
+		if (
+			this._settings.async ||
+			this.readyState < XMLHttpRequestReadyStateEnum.opened ||
+			this.readyState === XMLHttpRequestReadyStateEnum.done
+		) {
+			this.dispatchEvent(new Event('readystatechange'));
+		}
+
+		if (this.readyState === XMLHttpRequestReadyStateEnum.done) {
+			let fire: Event;
+
+			if (this._abortedFlag) {
+				fire = new Event('abort');
+			} else if (this._errorFlag) {
+				fire = new Event('error');
+			} else {
+				fire = new Event('load');
+			}
+
+			this.dispatchEvent(fire);
+			this.dispatchEvent(new Event('loadend'));
+		}
+	}
+
+	/**
+	 * Default request headers.
+	 *
+	 * @returns Default request headers.
+	 */
+	private _getDefaultRequestHeaders(): { [key: string]: string } {
+		return {
+			accept: '*/*',
+			refered: this._ownerDocument.defaultView.location.origin,
+			'user-agent': this._ownerDocument.defaultView.navigator.userAgent,
+			cookie: this._ownerDocument.defaultView.document.cookie
 		};
-		return JSON.stringify(serials);
 	}
 }

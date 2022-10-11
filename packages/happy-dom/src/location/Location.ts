@@ -1,4 +1,4 @@
-import URL from './URL';
+import { URL } from 'url';
 
 /**
  *

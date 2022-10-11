@@ -36,8 +36,7 @@ import AnimationEvent from '../event/events/AnimationEvent';
 import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
 import EventTarget from '../event/EventTarget';
-import URL from '../location/URL';
-import URLSearchParams from '../location/URLSearchParams';
+import { URL, URLSearchParams } from 'url';
 import Location from '../location/Location';
 import NonImplementedEventTypes from '../event/NonImplementedEventTypes';
 import MutationObserver from '../mutation-observer/MutationObserver';
@@ -94,9 +93,9 @@ import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
-import XMLHttpRequest from '../xml-http-request/XMLHttpRequest';
+import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest';
 import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload';
-import { XMLHttpRequestEventTarget } from '../xml-http-request/XMLHttpRequestEventTarget';
+import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget';
 import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
 
@@ -204,6 +203,9 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Response: {
 		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
 	};
+	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
+	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
+	public readonly XMLHttpRequest;
 	public readonly DOMParser;
 	public readonly Range;
 	public readonly FileReader;
@@ -232,10 +234,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly sessionStorage = new Storage();
 	public readonly localStorage = new Storage();
 	public readonly performance = PerfHooks.performance;
-
-	public XMLHttpRequest = XMLHttpRequest;
-	public XMLHttpRequestUpload = XMLHttpRequestUpload;
-	public XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
 
 	// Node.js Globals
 	public ArrayBuffer;
@@ -345,7 +343,6 @@ export default class Window extends EventTarget implements IWindow {
 			}
 		}
 
-		XMLHttpRequest._defaultView = this;
 		HTMLDocument._defaultView = this;
 
 		const document = new HTMLDocument();
@@ -361,6 +358,7 @@ export default class Window extends EventTarget implements IWindow {
 		FileReaderImplementation._ownerDocument = document;
 		DOMParserImplementation._ownerDocument = document;
 		RangeImplementation._ownerDocument = document;
+		XMLHttpRequestImplementation._ownerDocument = document;
 
 		/* eslint-disable jsdoc/require-jsdoc */
 		class Response extends ResponseImplementation {
@@ -378,10 +376,9 @@ export default class Window extends EventTarget implements IWindow {
 		class DOMParser extends DOMParserImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
-		class Range extends RangeImplementation {
+		class XMLHttpRequest extends XMLHttpRequestImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
-
 		/* eslint-enable jsdoc/require-jsdoc */
 
 		this.Response = Response;
@@ -389,7 +386,7 @@ export default class Window extends EventTarget implements IWindow {
 		this.Image = Image;
 		this.FileReader = FileReader;
 		this.DOMParser = DOMParser;
-		this.Range = Range;
+		this.XMLHttpRequest = XMLHttpRequest;
 
 		this._setupVMContext();
 

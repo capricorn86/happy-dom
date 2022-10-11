@@ -20,17 +20,19 @@ export default class FetchHandler {
 	public static fetch(document: IDocument, url: string, init?: IRequestInit): Promise<IResponse> {
 		// We want to only load NodeFetch when it is needed to improve performance and not have direct dependencies to server side packages.
 		const taskManager = document.defaultView.happyDOM.asyncTaskManager;
+		const requestInit = { ...init, headers: { ...init?.headers } };
+
 		// We need set referer to solve anti-hotlinking.
 		// And the browser will set the referer to the origin of the page.
-		if (init) {
-			if (!init.headers['referer']) {
-				init.headers['referer'] = document.defaultView.location.origin;
-			}
-		}
+		requestInit.headers['referer'] = document.defaultView.location.origin;
+
+		requestInit.headers['user-agent'] = document.defaultView.navigator.userAgent;
+		requestInit.headers['cookie'] = document.defaultView.document.cookie;
+
 		return new Promise((resolve, reject) => {
 			const taskID = taskManager.startTask();
 
-			NodeFetch(RelativeURL.getAbsoluteURL(document.defaultView.location, url).href, init)
+			NodeFetch(RelativeURL.getAbsoluteURL(document.defaultView.location, url).href, requestInit)
 				.then((response) => {
 					if (taskManager.getTaskCount() === 0) {
 						reject(new Error('Failed to complete fetch request. Task was canceled.'));

@@ -36,8 +36,7 @@ import AnimationEvent from '../event/events/AnimationEvent';
 import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
 import EventTarget from '../event/EventTarget';
-import URL from '../location/URL';
-import URLSearchParams from '../location/URLSearchParams';
+import { URL, URLSearchParams } from 'url';
 import Location from '../location/Location';
 import MutationObserver from '../mutation-observer/MutationObserver';
 import DOMParser from '../dom-parser/DOMParser';
@@ -83,6 +82,9 @@ import IRequestInit from '../fetch/IRequestInit';
 import IResponse from '../fetch/IResponse';
 import Range from '../range/Range';
 import MediaQueryList from '../match-media/MediaQueryList';
+import XMLHttpRequest from '../xml-http-request/XMLHttpRequest';
+import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload';
+import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget';
 import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
 import { Performance } from 'perf_hooks';
@@ -179,6 +181,9 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
 	readonly Range: typeof Range;
 	readonly DOMRect: typeof DOMRect;
+	readonly XMLHttpRequest: typeof XMLHttpRequest;
+	readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
+	readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
 
 	// Events
 	onload: (event: Event) => void;

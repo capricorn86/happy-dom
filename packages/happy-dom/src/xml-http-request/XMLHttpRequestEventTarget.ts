@@ -6,12 +6,12 @@ export type ProgressEventListener = (event: ProgressEvent) => void;
 /**
  * References: https://xhr.spec.whatwg.org/#xmlhttprequesteventtarget.
  */
-export class XMLHttpRequestEventTarget extends EventTarget {
-	public onloadstart: ProgressEventListener | null;
-	public onprogress: ProgressEventListener | null;
-	public onabort: ProgressEventListener | null;
-	public onerror: ProgressEventListener | null;
-	public onload: ProgressEventListener | null;
-	public ontimeout: ProgressEventListener | null;
-	public onloadend: ProgressEventListener | null;
+export default class XMLHttpRequestEventTarget extends EventTarget {
+	public onloadstart: ProgressEventListener | null = null;
+	public onprogress: ProgressEventListener | null = null;
+	public onabort: (event: ProgressEvent) => void | null = null;
+	public onerror: ProgressEventListener | null = null;
+	public onload: ProgressEventListener | null = null;
+	public ontimeout: ProgressEventListener | null = null;
+	public onloadend: ProgressEventListener | null = null;
 }

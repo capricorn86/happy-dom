@@ -7,7 +7,7 @@ export default interface IEventListener {
 	/**
 	 * Handles event.
 	 *
-	 * @param event
+	 * @param event Event.
 	 */
 	handleEvent(event: Event): void;
 }

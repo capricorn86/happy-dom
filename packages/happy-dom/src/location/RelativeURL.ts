@@ -1,5 +1,5 @@
 import Location from './Location';
-import URL from './URL';
+import { URL } from 'url';
 
 /**
  * Helper class for getting the URL relative to a Location object.
