@@ -17,6 +17,60 @@ describe('HTMLOptionsCollection', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('get selectedindex()', () => {
+		it('Returns the index of the first option element in the list of options in tree order that has its selectedness set to true.', () => {
+			const select = <HTMLSelectElement>document.createElement('select');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			option1.selected = true;
+			option1.value = 'option1';
+			option2.value = 'option2';
+			select.appendChild(option1);
+			select.appendChild(option2);
+
+			expect(select.options.selectedIndex).toBe(0);
+		});
+
+		it('Returns -1 if there are no options.', () => {
+			const select = <HTMLSelectElement>document.createElement('select');
+			expect(select.options.selectedIndex).toBe(-1);
+		});
+
+		it('Returns -1 if no option is selected.', () => {
+			const select = <HTMLSelectElement>document.createElement('select');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			option1.value = 'option1';
+			option2.value = 'option2';
+			select.appendChild(option1);
+			select.appendChild(option2);
+
+			expect(select.options.selectedIndex).toBe(-1);
+		});
+	});
+
+	describe('set selectedindex()', () => {
+		it('Updates option.selected', () => {
+			const select = <HTMLSelectElement>document.createElement('select');
+			select.appendChild(document.createElement('option'));
+			select.appendChild(document.createElement('option'));
+			document.body.appendChild(select);
+
+			expect((<HTMLOptionElement>select.options[0]).selected).toBe(false);
+			expect((<HTMLOptionElement>select.options[1]).selected).toBe(false);
+
+			select.options.selectedIndex = 1;
+
+			expect((<HTMLOptionElement>select.options[0]).selected).toBe(false);
+			expect((<HTMLOptionElement>select.options[1]).selected).toBe(true);
+
+			select.options.selectedIndex = -1;
+
+			expect((<HTMLOptionElement>select.options[0]).selected).toBe(false);
+			expect((<HTMLOptionElement>select.options[1]).selected).toBe(false);
+		});
+	});
+
 	describe('item()', () => {
 		it('Returns node at index.', () => {
 			const select = <HTMLSelectElement>document.createElement('select');

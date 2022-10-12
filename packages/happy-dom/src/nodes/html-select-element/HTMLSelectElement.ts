@@ -13,6 +13,7 @@ import INodeList from '../node/INodeList';
 import HTMLSelectElementValueSanitizer from './HTMLSelectElementValueSanitizer';
 import IHTMLSelectElement from './IHTMLSelectElement';
 import Event from '../../event/Event';
+import MutationObserver from '../../mutation-observer/MutationObserver';
 
 /**
  * HTML Select Element.
@@ -28,9 +29,19 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	public onchange: (event: Event) => void | null = null;
 	public oninput: (event: Event) => void | null = null;
 
-	public _value = null;
-	public _selectedIndex = -1;
 	public _options: IHTMLOptionsCollection = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		// Clear our options cache when option elements are added/removed from the DOM, keeping it fresh.
+		new MutationObserver(() => {
+			this._options = null;
+		}).observe(this, { childList: true });
+	}
 
 	/**
 	 * Returns name.
@@ -144,7 +155,13 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @returns Value.
 	 */
 	public get value(): string {
-		return this._value;
+		if (this.options.selectedIndex === -1) {
+			return '';
+		}
+
+		const option = this.options[this.options.selectedIndex];
+
+		return option instanceof HTMLOptionElement ? option.value : '';
 	}
 
 	/**
@@ -153,12 +170,11 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		this._value = HTMLSelectElementValueSanitizer.sanitize(value);
+		value = HTMLSelectElementValueSanitizer.sanitize(value);
 
-		const idx = this.options.findIndex((o) => o.nodeValue === value);
-		if (idx > -1) {
-			this._selectedIndex = idx;
-		}
+		this.options.selectedIndex = this.options.findIndex(
+			(o) => o instanceof HTMLOptionElement && o.value === value
+		);
 	}
 
 	/**
@@ -176,7 +192,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param value Value.
 	 */
 	public set selectedIndex(value: number) {
-		if (value > this.options.length - 1 || value < 0) {
+		if (value > this.options.length - 1 || value < -1) {
 			throw new DOMException(
 				'Select elements selected index must be valid',
 				DOMExceptionNameEnum.indexSizeError

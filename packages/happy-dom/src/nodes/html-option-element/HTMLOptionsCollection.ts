@@ -14,15 +14,20 @@ export default class HTMLOptionsCollection
 	extends HTMLCollection
 	implements IHTMLOptionsCollection
 {
-	public _selectedIndex: number;
-
 	/**
 	 * Returns selectedIndex.
 	 *
 	 * @returns SelectedIndex.
 	 */
 	public get selectedIndex(): number {
-		return this._selectedIndex;
+		for (let i = 0; i < this.length; i++) {
+			const item = this[i];
+			if (item instanceof HTMLOptionElement && item.selected) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 
 	/**
@@ -31,7 +36,12 @@ export default class HTMLOptionsCollection
 	 * @param selectedIndex SelectedIndex.
 	 */
 	public set selectedIndex(selectedIndex: number) {
-		this._selectedIndex = selectedIndex;
+		for (let i = 0; i < this.length; i++) {
+			const item = this[i];
+			if (item instanceof HTMLOptionElement) {
+				this[i].selected = i === selectedIndex;
+			}
+		}
 	}
 
 	/**
@@ -82,8 +92,11 @@ export default class HTMLOptionsCollection
 	 * @param index Index.
 	 */
 	public remove(index: number): void {
+		const prevSelectedIndex = this.selectedIndex;
+
 		this.splice(index, 1);
-		if (index === this.selectedIndex) {
+
+		if (index === prevSelectedIndex) {
 			if (this.length) {
 				this.selectedIndex = 0;
 			} else {
