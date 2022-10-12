@@ -349,7 +349,7 @@ export default class Document extends Node implements IDocument {
 			this._activeElement = null;
 		}
 
-		if (this._activeElement) {
+		if (this._activeElement && this._activeElement instanceof Element) {
 			let rootNode: IShadowRoot | IDocument = <IShadowRoot | IDocument>(
 				this._activeElement.getRootNode()
 			);
