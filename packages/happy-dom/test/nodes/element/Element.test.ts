@@ -694,6 +694,38 @@ describe('Element', () => {
 
 			expect(element.matches('.container, .active')).toBe(true);
 		});
+
+		it('Checks if the element matches with a descendant combinator', () => {
+			const grandparentElement = document.createElement('div');
+			grandparentElement.setAttribute('role', 'alert');
+
+			const parentElement = document.createElement('div');
+			parentElement.setAttribute('role', 'status');
+			grandparentElement.appendChild(parentElement);
+
+			const element = document.createElement('div');
+			element.className = 'active';
+			parentElement.appendChild(element);
+
+			expect(element.matches('div[role="alert"] div.active')).toBe(true);
+			expect(element.matches('div[role="article"] div.active')).toBe(false);
+		});
+
+		it('Checks if the element matches with a child combinator', () => {
+			const grandparentElement = document.createElement('div');
+			grandparentElement.setAttribute('role', 'alert');
+
+			const parentElement = document.createElement('div');
+			grandparentElement.setAttribute('role', 'status');
+			grandparentElement.appendChild(parentElement);
+
+			const element = document.createElement('div');
+			element.className = 'active';
+			parentElement.appendChild(element);
+
+			expect(element.matches('div[role="status"] > div.active')).toBe(true);
+			expect(element.matches('div[role="alert"] > div.active')).toBe(false);
+		});
 	});
 
 	describe('closest()', () => {
