@@ -106,14 +106,14 @@ export default class QuerySelector {
 		const selector = new SelectorItem(selectorParts[0]);
 		const result = selector.match(<Element>currentNode);
 
-		if (targetNode === currentNode && !result.matches) {
+		if ((targetNode === currentNode || !currentNode.parentNode) && !result.matches) {
 			return { priorityWeight: 0, matches: false };
 		}
 
 		return this.matchesSelector(
 			isDirectChild ? currentNode.parentNode : targetNode,
 			currentNode.parentNode,
-			selectorParts.slice(1),
+			result.matches ? selectorParts.slice(1) : selectorParts,
 			priorityWeight + result.priorityWeight
 		);
 	}
