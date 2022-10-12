@@ -552,6 +552,9 @@ export default class Node extends EventTarget implements INode {
 			if (isConnected && this.connectedCallback) {
 				this.connectedCallback();
 			} else if (!isConnected && this.disconnectedCallback) {
+				if (this.ownerDocument['_activeElement'] === this) {
+					this.ownerDocument['_activeElement'] = null;
+				}
 				this.disconnectedCallback();
 			}
 

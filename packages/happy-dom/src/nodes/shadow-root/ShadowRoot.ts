@@ -54,7 +54,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 */
 	public get activeElement(): IHTMLElement {
 		const activeElement: IHTMLElement = this.ownerDocument['_activeElement'];
-		if (activeElement && activeElement.getRootNode() === this) {
+		if (activeElement && activeElement.isConnected && activeElement.getRootNode() === this) {
 			return activeElement;
 		}
 		return null;

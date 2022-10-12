@@ -345,6 +345,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Active element.
 	 */
 	public get activeElement(): IHTMLElement {
+		if (this._activeElement && !this._activeElement.isConnected) {
+			this._activeElement = null;
+		}
+
 		if (this._activeElement) {
 			let rootNode: IShadowRoot | IDocument = <IShadowRoot | IDocument>(
 				this._activeElement.getRootNode()

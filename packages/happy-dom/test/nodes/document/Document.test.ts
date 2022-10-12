@@ -320,6 +320,22 @@ describe('Document', () => {
 			expect(document.activeElement === document.body).toBe(true);
 		});
 
+		it('Unsets the active element when it gets disconnected.', () => {
+			const div = <IHTMLElement>document.createElement('div');
+
+			document.appendChild(div);
+
+			expect(document.activeElement === document.body).toBe(true);
+
+			div.focus();
+
+			expect(document.activeElement === div).toBe(true);
+
+			div.remove();
+
+			expect(document.activeElement === document.body).toBe(true);
+		});
+
 		it('Returns the first custom element that has document as root node when the focused element is nestled in multiple shadow roots.', () => {
 			class CustomElementA extends (<Window>window).HTMLElement {
 				constructor() {

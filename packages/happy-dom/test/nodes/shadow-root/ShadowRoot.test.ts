@@ -68,6 +68,26 @@ describe('ShadowRoot', () => {
 
 			expect(shadowRoot.activeElement === null).toBe(true);
 		});
+
+		it('Unsets the active element when it gets disconnected.', () => {
+			const customElement = document.createElement('custom-element');
+			const shadowRoot = customElement.shadowRoot;
+			const div = <IHTMLElement>document.createElement('div');
+
+			document.body.appendChild(customElement);
+
+			shadowRoot.appendChild(div);
+
+			expect(shadowRoot.activeElement === null).toBe(true);
+
+			div.focus();
+
+			expect(shadowRoot.activeElement === div).toBe(true);
+
+			customElement.remove();
+
+			expect(shadowRoot.activeElement === null).toBe(true);
+		});
 	});
 
 	describe('toString()', () => {
