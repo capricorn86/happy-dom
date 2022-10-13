@@ -1,7 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import HTMLOptionElementValueSanitizer from './HTMLOptionElementValueSanitizer';
 import IHTMLOptionElement from './IHTMLOptionElement';
 
 /**
@@ -112,6 +111,6 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		this.setAttributeNS(null, 'value', HTMLOptionElementValueSanitizer.sanitize(value));
+		this.setAttributeNS(null, 'value', value);
 	}
 }

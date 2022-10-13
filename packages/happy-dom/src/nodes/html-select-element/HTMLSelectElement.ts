@@ -10,7 +10,6 @@ import HTMLOptionElement from '../html-option-element/HTMLOptionElement';
 import HTMLOptionsCollection from '../html-option-element/HTMLOptionsCollection';
 import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
 import INodeList from '../node/INodeList';
-import HTMLSelectElementValueSanitizer from './HTMLSelectElementValueSanitizer';
 import IHTMLSelectElement from './IHTMLSelectElement';
 import Event from '../../event/Event';
 import MutationObserver from '../../mutation-observer/MutationObserver';
@@ -170,8 +169,6 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		value = HTMLSelectElementValueSanitizer.sanitize(value);
-
 		this.options.selectedIndex = this.options.findIndex(
 			(o) => o instanceof HTMLOptionElement && o.value === value
 		);
