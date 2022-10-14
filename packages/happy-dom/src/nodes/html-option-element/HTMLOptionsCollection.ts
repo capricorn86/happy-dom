@@ -1,7 +1,9 @@
 import DOMException from '../../exception/DOMException';
 import HTMLCollection from '../element/HTMLCollection';
-import HTMLOptGroupElement from '../html-opt-group-element/HTMLOptGroupElement';
+import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
+import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
 import HTMLOptionElement from './HTMLOptionElement';
+import IHTMLOptionElement from './IHTMLOptionElement';
 import IHTMLOptionsCollection from './IHTMLOptionsCollection';
 
 /**
@@ -14,7 +16,17 @@ export default class HTMLOptionsCollection
 	extends HTMLCollection
 	implements IHTMLOptionsCollection
 {
-	public _selectedIndex: number;
+	private _selectElement: IHTMLSelectElement;
+
+	/**
+	 *
+	 * @param selectElement
+	 */
+	constructor(selectElement: IHTMLSelectElement) {
+		super();
+
+		this._selectElement = selectElement;
+	}
 
 	/**
 	 * Returns selectedIndex.
@@ -22,7 +34,14 @@ export default class HTMLOptionsCollection
 	 * @returns SelectedIndex.
 	 */
 	public get selectedIndex(): number {
-		return this._selectedIndex;
+		for (let i = 0; i < this.length; i++) {
+			const item = this[i];
+			if (item instanceof HTMLOptionElement && item.selected) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 
 	/**
@@ -31,7 +50,12 @@ export default class HTMLOptionsCollection
 	 * @param selectedIndex SelectedIndex.
 	 */
 	public set selectedIndex(selectedIndex: number) {
-		this._selectedIndex = selectedIndex;
+		for (let i = 0; i < this.length; i++) {
+			const item = this[i];
+			if (item instanceof HTMLOptionElement) {
+				this[i].selected = i === selectedIndex;
+			}
+		}
 	}
 
 	/**
@@ -39,7 +63,7 @@ export default class HTMLOptionsCollection
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): HTMLOptionElement | HTMLOptGroupElement {
+	public item(index: number): IHTMLOptionElement | IHTMLOptGroupElement {
 		return this[index];
 	}
 
@@ -49,11 +73,11 @@ export default class HTMLOptionsCollection
 	 * @param before
 	 */
 	public add(
-		element: HTMLOptionElement | HTMLOptGroupElement,
-		before?: number | HTMLOptionElement | HTMLOptGroupElement
+		element: IHTMLOptionElement | IHTMLOptGroupElement,
+		before?: number | IHTMLOptionElement | IHTMLOptGroupElement
 	): void {
 		if (!before && before !== 0) {
-			this.push(element);
+			this._selectElement.appendChild(element);
 			return;
 		}
 
@@ -62,18 +86,19 @@ export default class HTMLOptionsCollection
 				return;
 			}
 
-			this.splice(<number>before, 0, element);
+			this._selectElement.insertBefore(element, this[<number>before]);
 			return;
 		}
 
-		const idx = this.findIndex((element) => element === before);
-		if (idx === -1) {
+		const index = this.indexOf(before);
+
+		if (index === -1) {
 			throw new DOMException(
 				"Failed to execute 'add' on 'DOMException': The node before which the new node is to be inserted is not a child of this node."
 			);
 		}
 
-		this.splice(idx, 0, element);
+		this._selectElement.insertBefore(element, this[index]);
 	}
 
 	/**
@@ -82,13 +107,8 @@ export default class HTMLOptionsCollection
 	 * @param index Index.
 	 */
 	public remove(index: number): void {
-		this.splice(index, 1);
-		if (index === this.selectedIndex) {
-			if (this.length) {
-				this.selectedIndex = 0;
-			} else {
-				this.selectedIndex = -1;
-			}
+		if (this[index]) {
+			this._selectElement.removeChild(<IHTMLOptionElement>this[index]);
 		}
 	}
 }

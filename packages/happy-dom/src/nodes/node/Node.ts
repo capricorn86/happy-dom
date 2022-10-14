@@ -388,7 +388,7 @@ export default class Node extends EventTarget implements INode {
 	 * Inserts a node before another.
 	 *
 	 * @param newNode Node to insert.
-	 * @param [referenceNode] Node to insert before.
+	 * @param referenceNode Node to insert before.
 	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode: INode | null): INode {

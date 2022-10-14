@@ -31,11 +31,6 @@ describe('HTMLOptionElement', () => {
 			element.value = 'VALUE';
 			expect(element.getAttribute('value')).toBe('VALUE');
 		});
-
-		it('Trims and removes new lines.', () => {
-			element.value = '  \n\rtest  ';
-			expect(element.value).toBe('test');
-		});
 	});
 
 	for (const property of ['disabled', 'selected']) {
