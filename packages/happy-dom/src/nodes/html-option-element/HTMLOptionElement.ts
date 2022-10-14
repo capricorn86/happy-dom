@@ -113,6 +113,6 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		this.setAttributeNS(null, 'value',  String(value).trim().replace(NEW_LINES_REGEXP, ''));
+		this.setAttributeNS(null, 'value', String(value).trim().replace(NEW_LINES_REGEXP, ''));
 	}
 }
