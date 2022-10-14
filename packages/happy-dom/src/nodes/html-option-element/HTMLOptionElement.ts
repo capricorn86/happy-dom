@@ -3,8 +3,6 @@ import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import IHTMLOptionElement from './IHTMLOptionElement';
 
-const NEW_LINES_REGEXP = /[\n\r]/gm;
-
 /**
  * HTML Option Element.
  *
@@ -113,6 +111,6 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		this.setAttributeNS(null, 'value', String(value).trim().replace(NEW_LINES_REGEXP, ''));
+		this.setAttributeNS(null, 'value', value);
 	}
 }
