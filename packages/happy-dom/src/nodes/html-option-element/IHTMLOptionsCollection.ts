@@ -25,6 +25,13 @@ export default interface IHTMLOptionsCollection
 	): void;
 
 	/**
+	 * Returns option element by index.
+	 *
+	 * @param index Index.
+	 */
+	item(index: number): IHTMLOptionElement | IHTMLOptGroupElement;
+
+	/**
 	 * Removes option element from the collection.
 	 *
 	 * @param index Index.

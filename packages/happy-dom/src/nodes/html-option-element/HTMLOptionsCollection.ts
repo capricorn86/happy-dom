@@ -1,7 +1,8 @@
 import DOMException from '../../exception/DOMException';
 import HTMLCollection from '../element/HTMLCollection';
-import HTMLOptGroupElement from '../html-opt-group-element/HTMLOptGroupElement';
+import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
 import HTMLOptionElement from './HTMLOptionElement';
+import IHTMLOptionElement from './IHTMLOptionElement';
 import IHTMLOptionsCollection from './IHTMLOptionsCollection';
 
 /**
@@ -49,7 +50,7 @@ export default class HTMLOptionsCollection
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): HTMLOptionElement | HTMLOptGroupElement {
+	public item(index: number): IHTMLOptionElement | IHTMLOptGroupElement {
 		return this[index];
 	}
 
@@ -59,8 +60,8 @@ export default class HTMLOptionsCollection
 	 * @param before
 	 */
 	public add(
-		element: HTMLOptionElement | HTMLOptGroupElement,
-		before?: number | HTMLOptionElement | HTMLOptGroupElement
+		element: IHTMLOptionElement | IHTMLOptGroupElement,
+		before?: number | IHTMLOptionElement | IHTMLOptGroupElement
 	): void {
 		if (!before && before !== 0) {
 			this.push(element);

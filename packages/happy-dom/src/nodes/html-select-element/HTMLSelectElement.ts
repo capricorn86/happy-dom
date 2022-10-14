@@ -5,14 +5,16 @@ import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import ValidityState from '../validity-state/ValidityState';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
-import HTMLOptGroupElement from '../html-opt-group-element/HTMLOptGroupElement';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement';
 import HTMLOptionsCollection from '../html-option-element/HTMLOptionsCollection';
-import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
 import INodeList from '../node/INodeList';
 import IHTMLSelectElement from './IHTMLSelectElement';
 import Event from '../../event/Event';
-import MutationObserver from '../../mutation-observer/MutationObserver';
+import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
+import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
+import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
+import INode from '../node/INode';
+import Node from '../node/Node';
 
 /**
  * HTML Select Element.
@@ -21,14 +23,12 @@ import MutationObserver from '../../mutation-observer/MutationObserver';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement.
  */
 export default class HTMLSelectElement extends HTMLElement implements IHTMLSelectElement {
-	public type: string;
 	public labels: INodeList<IHTMLLabelElement>;
+	private readonly _options: HTMLOptionsCollection;
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
 	public oninput: (event: Event) => void | null = null;
-
-	public _options: IHTMLOptionsCollection = null;
 
 	/**
 	 * Constructor.
@@ -36,10 +36,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	constructor() {
 		super();
 
-		// Clear our options cache when option elements are added/removed from the DOM, keeping it fresh.
-		new MutationObserver(() => {
-			this._options = null;
-		}).observe(this, { childList: true });
+		this._options = new HTMLOptionsCollection();
 	}
 
 	/**
@@ -127,6 +124,24 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	}
 
 	/**
+	 * Returns length.
+	 *
+	 * @returns length.
+	 */
+	public get length(): number {
+		return this.options.length;
+	}
+
+	/**
+	 * Sets length.
+	 *
+	 * @param length Length.
+	 */
+	public set length(length: number) {
+		this.options.length = length;
+	}
+
+	/**
 	 * Returns required.
 	 *
 	 * @returns Required.
@@ -146,6 +161,15 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 		} else {
 			this.setAttributeNS(null, 'required', '');
 		}
+	}
+
+	/**
+	 * Returns type.
+	 *
+	 * @returns type.
+	 */
+	public get type(): string {
+		return this.hasAttributeNS(null, 'multiple') ? 'select-multiple' : 'select-one';
 	}
 
 	/**
@@ -242,16 +266,110 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @returns Options.
 	 */
 	public get options(): IHTMLOptionsCollection {
-		if (this._options === null) {
-			this._options = new HTMLOptionsCollection();
-			const childs = <INodeList<IHTMLElement>>this.childNodes;
-			for (const child of childs) {
-				if (child.tagName === 'OPTION') {
-					this._options.add(<HTMLOptionElement | HTMLOptGroupElement>child);
+		return this._options;
+	}
+
+	/**
+	 * Adds new option to options collection.
+	 *
+	 * @param element HTMLOptionElement or HTMLOptGroupElement to add.
+	 * @param before HTMLOptionElement or index number.
+	 */
+	public add(
+		element: IHTMLOptionElement | IHTMLOptGroupElement,
+		before?: number | IHTMLOptionElement | IHTMLOptGroupElement
+	): void {
+		this.options.add(element, before);
+	}
+
+	/**
+	 * Append a child node to childNodes.
+	 *
+	 * @override
+	 * @param  node Node to append.
+	 * @returns Appended node.
+	 */
+	public override appendChild(node: INode): INode {
+		if (node.nodeType === Node.ELEMENT_NODE) {
+			const element = <IHTMLElement>node;
+			if (element.tagName === 'OPTION' || element.tagName === 'OPTGROUP') {
+				this.options.add(<IHTMLOptionElement | IHTMLOptGroupElement>element);
+			}
+		}
+
+		return super.appendChild(node);
+	}
+
+	/**
+	 * Inserts a node before another.
+	 *
+	 * @override
+	 * @param newNode Node to insert.
+	 * @param [referenceNode] Node to insert before.
+	 * @returns Inserted node.
+	 */
+	public override insertBefore(newNode: INode, referenceNode?: INode): INode {
+		const returnValue = super.insertBefore(newNode, referenceNode);
+
+		if (newNode.nodeType === Node.ELEMENT_NODE && referenceNode?.nodeType === Node.ELEMENT_NODE) {
+			const newElement = <IHTMLElement>newNode;
+
+			if (newElement.tagName === 'OPTION' || newElement.tagName === 'OPTGROUP') {
+				const referenceElement = <IHTMLElement>referenceNode;
+				const referenceOptElement =
+					referenceElement.tagName === 'OPTION' || referenceElement.tagName === 'OPTGROUP'
+						? <IHTMLOptionElement | IHTMLOptGroupElement>referenceElement
+						: undefined;
+
+				this.options.add(
+					<IHTMLOptionElement | IHTMLOptGroupElement>newElement,
+					referenceOptElement
+				);
+			}
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * Returns item from options collection by index.
+	 *
+	 * @param index Index.
+	 */
+	public item(index: number): IHTMLOptionElement | IHTMLOptGroupElement {
+		return this.options.item(index);
+	}
+
+	/**
+	 * Removes indexed element from options collection.
+	 *
+	 * @param index Index.
+	 */
+	public override remove(index?: number): void {
+		if (!arguments.length) {
+			super.remove();
+		}
+
+		this.options.remove(index);
+	}
+
+	/**
+	 * Remove Child element from childNodes array.
+	 *
+	 * @override
+	 * @param node Node to remove.
+	 */
+	public override removeChild(node: INode): INode {
+		if (node.nodeType === Node.ELEMENT_NODE) {
+			const element = <IHTMLElement>node;
+			if (element.tagName === 'OPTION' || element.tagName === 'OPTION') {
+				const index = this.options.indexOf(<IHTMLOptionElement | IHTMLOptGroupElement>node);
+				if (index !== -1) {
+					this.options.remove(index);
 				}
 			}
 		}
 
-		return this._options;
+		return super.removeChild(node);
 	}
 }
