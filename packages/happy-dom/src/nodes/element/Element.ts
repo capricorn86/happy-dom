@@ -365,13 +365,9 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Append a child node to childNodes.
-	 *
 	 * @override
-	 * @param  node Node to append.
-	 * @returns Appended node.
 	 */
-	public appendChild(node: INode): INode {
+	public override appendChild(node: INode): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
@@ -391,12 +387,9 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Remove Child element from childNodes array.
-	 *
 	 * @override
-	 * @param node Node to remove.
 	 */
-	public removeChild(node: INode): INode {
+	public override removeChild(node: INode): INode {
 		if (node.nodeType === Node.ELEMENT_NODE) {
 			const index = this.children.indexOf(<IElement>node);
 			if (index !== -1) {
@@ -415,14 +408,9 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Inserts a node before another.
-	 *
 	 * @override
-	 * @param newNode Node to insert.
-	 * @param [referenceNode] Node to insert before.
-	 * @returns Inserted node.
 	 */
-	public insertBefore(newNode: INode, referenceNode?: INode): INode {
+	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
