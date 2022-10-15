@@ -263,7 +263,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param data Optional data to send as request body.
 	 */
-	public send(data: string): void {
+	public send(data?: string): void {
 		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
 			throw new Error('INVALID_STATE_ERR: connection must be opened before send() is called');
 		}
@@ -283,8 +283,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		// Determine the server
 		switch (url.protocol) {
 			case 'https:':
+				host = url.hostname;
 				ssl = true;
-			// SSL & non-SSL both need host, no break here.
+				break;
+
 			case 'http:':
 				host = url.hostname;
 				break;
@@ -302,6 +304,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				throw new Error('Protocol not supported.');
 		}
 
+		// TODO: Security Issue.
 		// Load files off the local filesystem (file://)
 		if (local) {
 			if (this._settings.method !== 'GET') {
@@ -309,7 +312,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			}
 
 			if (this._settings.async) {
-				FS.readFile(unescape(url.pathname), 'utf8', (error: Error, data: Buffer) => {
+				FS.readFile(decodeURI(url.pathname.slice(1)), 'utf8', (error: Error, data: Buffer) => {
 					if (error) {
 						this._handleError(error);
 					} else {
@@ -320,7 +323,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				});
 			} else {
 				try {
-					this.responseText = FS.readFileSync(unescape(url.pathname), 'utf8');
+					this.responseText = FS.readFileSync(decodeURI(url.pathname.slice(1)), 'utf8');
 					this.status = 200;
 					this._setState(XMLHttpRequestReadyStateEnum.done);
 				} catch (error) {
@@ -501,11 +504,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			const execString = `
                 const HTTP = require('http')
                 const HTTPS = require('https')
-                const FS = require('FS');
+                const FS = require('fs');
                 const sendRequest = HTTP${ssl ? 'S' : ''}.request;
                 const options = ${JSON.stringify(options)};
-                const responseText = '';
                 const request = sendRequest(options, (response) => {
+                    let responseText = '';
                     response.setEncoding('utf8');
                     response.on('data', (chunk) => {
                         responseText += chunk;
@@ -514,12 +517,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
                         FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-STATUS:' + response.statusCode + ',' + responseText, 'utf8');
                         FS.unlinkSync('${syncFile}');
                     });
-                });
-                response.on('error', (error) => {
-                    FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8').on('error', (error) => {
-                        FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8');
-                        FS.unlinkSync('${syncFile}'));
-                    });
+                    response.on('error', (error) => {
+										    FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8').on('error', (error) => {
+										    FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8');
+										    FS.unlinkSync('${syncFile}');
+										    });
+                	  });
                 });
                 request.write(\`${JSON.stringify(data).slice(1, -1)}\`);
                 request.end();
@@ -528,9 +531,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			// Start the other Node Process, executing this string
 			const syncProc = ChildProcess.spawn(process.argv[0], ['-e', execString]);
 
-			while (FS.existsSync(syncFile)) {
-				// Wait while the sync file is empty
-			}
+			// TODO: Block when a request exception cannot get syncFile.
+			while (FS.existsSync(syncFile)) {} // Wait while the sync file is empty
 
 			this.responseText = FS.readFileSync(contentFile, 'utf8');
 
@@ -645,7 +647,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	private _getDefaultRequestHeaders(): { [key: string]: string } {
 		return {
 			accept: '*/*',
-			refered: this._ownerDocument.defaultView.location.origin,
+			referer: this._ownerDocument.defaultView.location.origin,
 			'user-agent': this._ownerDocument.defaultView.navigator.userAgent,
 			cookie: this._ownerDocument.defaultView.document.cookie
 		};
