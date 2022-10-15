@@ -196,6 +196,14 @@ describe('Node', () => {
 
 			expect(text.parentElement).toBe(null);
 		});
+
+		it('Returns null if parent node is not an element.', () => {
+			const htmlElement = document.createElement('html');
+			document.appendChild(htmlElement);
+
+			expect(htmlElement.parentNode).toBe(document);
+			expect(htmlElement.parentElement).toBe(null);
+		});
 	});
 
 	describe('get baseURI()', () => {
