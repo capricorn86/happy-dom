@@ -429,6 +429,10 @@ export default class Window extends EventTarget implements IWindow {
 		class XMLHttpRequest extends XMLHttpRequestImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
+
+		class Range extends RangeImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
 		/* eslint-enable jsdoc/require-jsdoc */
 
 		this.Response = Response;
@@ -437,6 +441,7 @@ export default class Window extends EventTarget implements IWindow {
 		this.FileReader = FileReader;
 		this.DOMParser = DOMParser;
 		this.XMLHttpRequest = XMLHttpRequest;
+		this.Range = Range;
 
 		this._setupVMContext();
 
