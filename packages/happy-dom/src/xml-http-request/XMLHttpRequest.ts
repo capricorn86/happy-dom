@@ -155,6 +155,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (FORBIDDEN_REQUEST_METHODS.includes(upperMethod)) {
 			throw new DOMException('Request method not allowed', DOMExceptionNameEnum.securityError);
 		}
+		// Check responseType.
+		if (upperMethod === 'GET' && !!this.responseType && this.responseType !== 'text') {
+			throw new DOMException(
+				`Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a response type.`,
+				DOMExceptionNameEnum.invalidAccessError
+			);
+		}
 
 		this._settings = {
 			method: upperMethod,
@@ -534,14 +541,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this._response = { statusCode: responseObj.statusCode, headers: responseObj.headers };
 			this.status = responseObj.statusCode;
 			this.responseText = responseObj.text;
-			this.response = Buffer.from(responseObj.data, 'base64');
+			// Sync response is always text.
+			this.response = Buffer.from(responseObj.data, 'base64').toString('utf8');
 
 			// Set Cookies.
 			if (this._response.headers['set-cookie']) {
 				// TODO: Bugs in CookieJar.
 				this._ownerDocument.defaultView.document.cookie = this._response.headers['set-cookie'];
 			}
-
+			// Redirect.
 			if (
 				this._response.statusCode === 302 ||
 				this._response.statusCode === 303 ||
@@ -553,11 +561,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				);
 				ssl = redirectUrl.protocol === 'https:';
 				this._settings.url = redirectUrl.href;
+				// Recursive call.
 				this._sendSyncRequest(
 					Object.assign(options, {
 						host: redirectUrl.host,
 						uri: redirectUrl.pathname + (redirectUrl.search ?? ''),
-						port: redirectUrl.port || (ssl ? 443 : 80)
+						port: redirectUrl.port || (ssl ? 443 : 80),
+						method: this._response.statusCode === 303 ? 'GET' : this._settings.method
 					}),
 					ssl,
 					data
@@ -601,26 +611,22 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				// Change URL to the redirect location
 				this._settings.url = this._response.headers.location;
 				// Parse the new URL.
-				const url = RelativeURL.getAbsoluteURL(
+				const redirectUrl = RelativeURL.getAbsoluteURL(
 					this._ownerDocument.defaultView.location,
 					this._settings.url
 				);
-
-				// Options for the new request
-				const newOptions = {
-					hostname: url.hostname,
-					port: url.port,
-					path: url.pathname,
-					method: this._response.statusCode === 303 ? 'GET' : this._settings.method,
-					headers: Object.assign(this._getDefaultRequestHeaders(), this._requestHeaders),
-					rejectUnauthorized: true,
-					key: ssl ? SSL_KEY : null,
-					cert: ssl ? SSL_CERT : null
-				};
-
+				ssl = redirectUrl.protocol === 'https:';
 				// Issue the new request
-				this._request = sendRequest(newOptions, responseHandler).on('error', errorHandler);
-				this._request.end();
+				this._sendAsyncRequest(
+					Object.assign(options, {
+						host: redirectUrl.hostname,
+						port: redirectUrl.port,
+						uri: redirectUrl.pathname + (redirectUrl.search ?? ''),
+						method: this._response.statusCode === 303 ? 'GET' : this._settings.method
+					}),
+					ssl,
+					data
+				);
 				// @TODO Check if an XHR event needs to be fired here
 				return;
 			}
