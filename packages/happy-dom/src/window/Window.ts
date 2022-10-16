@@ -80,6 +80,7 @@ import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
 import IResponse from '../fetch/IResponse';
 import IResponseInit from '../fetch/IResponseInit';
 import IRequest from '../fetch/IRequest';
+import { RequestInfo } from '../fetch/IRequest';
 import IRequestInit from '../fetch/IRequestInit';
 import IHeaders from '../fetch/IHeaders';
 import IHeadersInit from '../fetch/IHeadersInit';
@@ -615,11 +616,11 @@ export default class Window extends EventTarget implements IWindow {
 	 * This method provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
 	 * @override
-	 * @param url URL.
+	 * @param url RequestInfo.
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	public async fetch(url: string, init?: IRequestInit): Promise<IResponse> {
+	public async fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse> {
 		return await FetchHandler.fetch(this.document, url, init);
 	}
 

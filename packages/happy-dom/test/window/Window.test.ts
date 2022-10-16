@@ -455,7 +455,7 @@ describe('Window', () => {
 				const response = await window.fetch(expectedUrl, expectedOptions);
 				const result = await response[method]();
 
-				expect(MOCKED_NODE_FETCH.url).toBe(expectedUrl);
+				expect(MOCKED_NODE_FETCH.url.url).toBe(expectedUrl);
 				expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
 				expect(result).toEqual(MOCKED_NODE_FETCH.response[method]);
 			});
@@ -470,7 +470,47 @@ describe('Window', () => {
 			const response = await window.fetch(expectedPath, expectedOptions);
 			const textResponse = await response.text();
 
-			expect(MOCKED_NODE_FETCH.url).toBe('https://localhost:8080' + expectedPath);
+			expect(MOCKED_NODE_FETCH.url.url).toBe('https://localhost:8080' + expectedPath);
+			expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
+			expect(textResponse).toEqual(MOCKED_NODE_FETCH.response.text);
+		});
+
+		it('Handles URL object.', async () => {
+			const expectedUrl = new window.URL('https://localhost:8080/path');
+			const expectedOptions = {};
+
+			const response = await window.fetch(expectedUrl, expectedOptions);
+			const textResponse = await response.text();
+
+			expect(MOCKED_NODE_FETCH.url.url).toBe(expectedUrl);
+			expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
+			expect(textResponse).toEqual(MOCKED_NODE_FETCH.response.text);
+		});
+
+		it('Handles Request object.', async () => {
+			const expectedRequest = new window.Request('https://localhost:8080/path', { method: 'GET' });
+			const expectedOptions = {};
+
+			const response = await window.fetch(expectedRequest, expectedOptions);
+			const textResponse = await response.text();
+
+			expect(MOCKED_NODE_FETCH.url.url).toBe(expectedRequest.url);
+			expect(MOCKED_NODE_FETCH.url.method).toBe(expectedRequest.method);
+			expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
+			expect(textResponse).toEqual(MOCKED_NODE_FETCH.response.text);
+		});
+
+		it('Handles Request object with relative url.', async () => {
+			const expectedPath = '/path';
+			const expectedRequest = new window.Request(expectedPath);
+			const expectedOptions = {};
+
+			window.location.href = 'https://localhost:8080';
+
+			const response = await window.fetch(expectedRequest, expectedOptions);
+			const textResponse = await response.text();
+
+			expect(MOCKED_NODE_FETCH.url.url).toBe('https://localhost:8080' + expectedPath);
 			expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
 			expect(textResponse).toEqual(MOCKED_NODE_FETCH.response.text);
 		});

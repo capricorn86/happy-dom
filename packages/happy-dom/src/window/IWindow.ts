@@ -87,6 +87,7 @@ import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
 import IResponseInit from '../fetch/IResponseInit';
 import IRequest from '../fetch/IRequest';
+import { RequestInfo } from '../fetch/IRequest';
 import IHeaders from '../fetch/IHeaders';
 import IRequestInit from '../fetch/IRequestInit';
 import IResponse from '../fetch/IResponse';
@@ -328,11 +329,11 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	/**
 	 * This method provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
-	 * @param url URL.
+	 * @param url RequestInfo.
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	fetch(url: string, init?: IRequestInit): Promise<IResponse>;
+	fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse>;
 
 	/**
 	 * Creates a Base64-encoded ASCII string from a binary string (i.e., a string in which each character in the string is treated as a byte of binary data).

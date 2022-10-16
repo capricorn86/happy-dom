@@ -5,7 +5,9 @@ global.mockedModules = {
 		options: null
 	},
 	'node-fetch': {
-		url: null,
+		url: {
+			url: Symbol('url')
+		},
 		init: null,
 		error: null,
 		response: {
@@ -53,7 +55,12 @@ class NodeFetchResponse {
 	}
 }
 
-class NodeFetchRequest extends NodeFetchResponse {}
+class NodeFetchRequest extends NodeFetchResponse {
+	constructor(url) {
+		super();
+		this.url = url;
+	}
+}
 class NodeFetchHeaders {}
 
 jest.mock('node-fetch', () => {

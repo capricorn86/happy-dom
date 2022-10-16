@@ -1,5 +1,8 @@
 import IHeaders from './IHeaders';
 import IBody from './IBody';
+import URL from './../location/URL';
+
+export type RequestInfo = IRequest | string | URL;
 
 /**
  * Fetch request.

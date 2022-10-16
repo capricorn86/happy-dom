@@ -1,9 +1,12 @@
+import URL from '../location/URL';
 import RelativeURL from '../location/RelativeURL';
+import { RequestInfo } from './IRequest';
 import IRequestInit from './IRequestInit';
 import IDocument from '../nodes/document/IDocument';
 import IResponse from './IResponse';
 import Response from './Response';
 import NodeFetch from 'node-fetch';
+import { Request } from 'node-fetch';
 
 /**
  * Helper class for performing fetch.
@@ -17,14 +20,30 @@ export default class FetchHandler {
 	 * @param [init] Init.
 	 * @returns Response.
 	 */
-	public static fetch(document: IDocument, url: string, init?: IRequestInit): Promise<IResponse> {
+	public static fetch(
+		document: IDocument,
+		url: RequestInfo,
+		init?: IRequestInit
+	): Promise<IResponse> {
 		// We want to only load NodeFetch when it is needed to improve performance and not have direct dependencies to server side packages.
 		const taskManager = document.defaultView.happyDOM.asyncTaskManager;
 
 		return new Promise((resolve, reject) => {
 			const taskID = taskManager.startTask();
 
-			NodeFetch(RelativeURL.getAbsoluteURL(document.defaultView.location, url), init)
+			let request;
+			if (typeof url === 'string') {
+				request = new Request(RelativeURL.getAbsoluteURL(document.defaultView.location, url));
+			} else if (url instanceof URL) {
+				// URLs are always absolute, no need for getAbsoluteURL.
+				request = new Request(url);
+			} else {
+				request = new Request(RelativeURL.getAbsoluteURL(document.defaultView.location, url.url), {
+					...url
+				});
+			}
+
+			NodeFetch(request, init)
 				.then((response) => {
 					if (taskManager.getTaskCount() === 0) {
 						reject(new Error('Failed to complete fetch request. Task was canceled.'));
