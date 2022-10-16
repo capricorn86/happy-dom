@@ -525,7 +525,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			// Start the other Node Process, executing this string
 			ChildProcess.execFileSync(process.argv[0], ['-e', execString]);
 
-			// if syncFile still exists, the request failed, if contentFile doesn't exist, the request failed.
+			// If syncFile still exists, the request failed, if contentFile doesn't exist, the request failed.
 			if (FS.existsSync(syncFile) || !FS.existsSync(contentFile)) {
 				throw new Error('Synchronous request failed');
 			}
