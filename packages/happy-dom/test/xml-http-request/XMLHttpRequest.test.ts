@@ -1,18 +1,16 @@
-import { XMLHttpRequest } from '../../lib/xml-http-request/xml-http-request';
+import XMLHttpRequest from '../../src/xml-http-request/XMLHttpRequest';
+import Window from '../../src/window/Window';
 
 describe('XMLHttpRequest', () => {
+	let window: Window;
+	// @ts-ignore
 	let xhr: XMLHttpRequest;
 	beforeEach(() => {
-		xhr = new XMLHttpRequest();
+		window = new Window();
+		xhr = new window.XMLHttpRequest();
 	});
 
-	it('XMLHttpRequest()', function () {
-		xhr.open('GET', 'http://localhost:8080/path/to/resource/', false);
-		xhr.addEventListener('load', () => {
-			expect(this.status).toBe(200);
-			expect(this.responseText).toBe('test');
-			expect(this.response).toBe('test');
-		});
-		xhr.send();
+	it('XMLHttpRequest()', () => {
+		// TODO: Implement
 	});
 });

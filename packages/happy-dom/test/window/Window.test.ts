@@ -451,12 +451,15 @@ describe('Window', () => {
 			it(`Handles successful "${method}" request.`, async () => {
 				const expectedUrl = 'https://localhost:8080/path/';
 				const expectedOptions = {};
-
 				const response = await window.fetch(expectedUrl, expectedOptions);
 				const result = await response[method]();
 
 				expect(MOCKED_NODE_FETCH.url).toBe(expectedUrl);
-				expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
+
+				expect(MOCKED_NODE_FETCH.init.headers['user-agent']).toBe(window.navigator.userAgent);
+				expect(MOCKED_NODE_FETCH.init.headers['cookie']).toBe(window.document.cookie);
+				expect(MOCKED_NODE_FETCH.init.headers['referer']).toBe(window.location.origin);
+
 				expect(result).toEqual(MOCKED_NODE_FETCH.response[method]);
 			});
 		}
@@ -471,13 +474,17 @@ describe('Window', () => {
 			const textResponse = await response.text();
 
 			expect(MOCKED_NODE_FETCH.url).toBe('https://localhost:8080' + expectedPath);
-			expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
+
+			expect(MOCKED_NODE_FETCH.init.headers['user-agent']).toBe(window.navigator.userAgent);
+			expect(MOCKED_NODE_FETCH.init.headers['cookie']).toBe(window.document.cookie);
+			expect(MOCKED_NODE_FETCH.init.headers['referer']).toBe(window.location.origin);
+
 			expect(textResponse).toEqual(MOCKED_NODE_FETCH.response.text);
 		});
 
 		it('Handles error JSON request.', async () => {
 			MOCKED_NODE_FETCH.error = new Error('error');
-
+			window.location.href = 'https://localhost:8080';
 			try {
 				await window.fetch('/url/', {});
 			} catch (error) {
@@ -488,6 +495,7 @@ describe('Window', () => {
 
 	describe('happyDOM.whenAsyncComplete()', () => {
 		it('Resolves the Promise returned by whenAsyncComplete() when all async tasks has been completed.', async () => {
+			window.location.href = 'https://localhost:8080';
 			let isFirstWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;
@@ -527,6 +535,7 @@ describe('Window', () => {
 
 	describe('happyDOM.cancelAsync()', () => {
 		it('Cancels all ongoing asynchrounous tasks.', (done) => {
+			window.location.href = 'https://localhost:8080';
 			let isFirstWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;
