@@ -265,7 +265,13 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param cookie Cookie string.
 	 */
-	public set cookie(cookie: string) {
+	public set cookie(cookie: string | string[]) {
+		if (Array.isArray(cookie)) {
+			for (const c of cookie) {
+				this._cookie = CookieUtility.getCookieString(this.defaultView.location, this._cookie, c);
+			}
+			return;
+		}
 		this._cookie = CookieUtility.getCookieString(this.defaultView.location, this._cookie, cookie);
 	}
 
