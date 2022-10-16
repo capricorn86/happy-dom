@@ -18,6 +18,12 @@ describe('HTMLInputElement', () => {
 		element = <HTMLInputElement>document.createElement('input');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLInputElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLInputElement]');
+		});
+	});
+
 	describe('get value()', () => {
 		for (const type of ['hidden', 'submit', 'image', 'reset', 'button']) {
 			it(`Returns the attribute "value" if type is "${type}".`, () => {

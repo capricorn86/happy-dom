@@ -17,6 +17,12 @@ describe('HTMLStyleElement', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLStyleElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLStyleElement]');
+		});
+	});
+
 	for (const property of ['media', 'type']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
@@ -57,11 +63,20 @@ describe('HTMLStyleElement', () => {
 			const textNode = document.createTextNode(
 				'body { background-color: red }\ndiv { background-color: green }'
 			);
+
 			element.appendChild(textNode);
 			document.head.appendChild(element);
+
 			expect(element.sheet.cssRules.length).toBe(2);
 			expect(element.sheet.cssRules[0].cssText).toBe('body { background-color: red; }');
 			expect(element.sheet.cssRules[1].cssText).toBe('div { background-color: green; }');
+
+			element.sheet.insertRule('html { background-color: blue }', 0);
+
+			expect(element.sheet.cssRules.length).toBe(3);
+			expect(element.sheet.cssRules[0].cssText).toBe('html { background-color: blue; }');
+			expect(element.sheet.cssRules[1].cssText).toBe('body { background-color: red; }');
+			expect(element.sheet.cssRules[2].cssText).toBe('div { background-color: green; }');
 		});
 	});
 });

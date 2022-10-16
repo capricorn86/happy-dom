@@ -31,7 +31,8 @@ export default class GlobalRegistrator {
 				'Failed to unregister. Happy DOM has not previously been globally registered.'
 			);
 		}
-		for (const key of this.registered) {
+		while (this.registered.length) {
+			const key = this.registered.pop();
 			delete global[key];
 		}
 	}

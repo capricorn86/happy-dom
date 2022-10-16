@@ -624,4 +624,81 @@ describe('Node', () => {
 			expect(parentEvent).toBe(event);
 		});
 	});
+
+	describe('compareDocumentPosition()', () => {
+		it('Returns 0 if b is a', () => {
+			const div = document.createElement('div');
+			div.id = 'element';
+
+			document.body.appendChild(div);
+
+			expect(
+				document
+					.getElementById('element')
+					.compareDocumentPosition(document.getElementById('element'))
+			).toEqual(0);
+		});
+
+		it('Returns 4 if b is following a', () => {
+			const div = document.createElement('div');
+			const span1 = document.createElement('span');
+			span1.id = 'span1';
+			const span2 = document.createElement('span');
+			span2.id = 'span2';
+
+			div.appendChild(span1);
+			div.appendChild(span2);
+			document.body.appendChild(div);
+
+			expect(
+				document.getElementById('span1').compareDocumentPosition(document.getElementById('span2'))
+			).toEqual(4);
+		});
+
+		it('Returns 2 if b is preceding a', () => {
+			const div = document.createElement('div');
+			const span1 = document.createElement('span');
+			span1.id = 'span1';
+			const span2 = document.createElement('span');
+			span2.id = 'span2';
+
+			div.appendChild(span1);
+			div.appendChild(span2);
+			document.body.appendChild(div);
+
+			expect(
+				document.getElementById('span2').compareDocumentPosition(document.getElementById('span1'))
+			).toEqual(2);
+		});
+
+		it('Returns 20 if b is contained by a', () => {
+			const div = document.createElement('div');
+			div.id = 'parent';
+			const span = document.createElement('span');
+			span.id = 'child';
+
+			div.appendChild(span);
+			document.body.appendChild(div);
+
+			const position = document
+				.getElementById('parent')
+				.compareDocumentPosition(document.getElementById('child'));
+			expect(position).toEqual(20);
+		});
+
+		it('Returns 10 if b contains a', () => {
+			const div = document.createElement('div');
+			div.id = 'parent';
+			const span = document.createElement('span');
+			span.id = 'child';
+
+			div.appendChild(span);
+			document.body.appendChild(div);
+
+			const position = document
+				.getElementById('child')
+				.compareDocumentPosition(document.getElementById('parent'));
+			expect(position).toEqual(10);
+		});
+	});
 });

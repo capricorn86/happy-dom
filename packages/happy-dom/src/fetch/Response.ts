@@ -13,9 +13,12 @@ export default class Response extends NodeFetch.Response implements IResponse {
 
 	/**
 	 * Constructor.
+	 *
+	 * @param [body] An object defining a body for the response (can be omitted)
+	 * @param [init] An options object containing any custom settings that you want to apply to the response, or an empty object (which is the default value)
 	 */
-	constructor() {
-		super();
+	constructor(body?: NodeFetch.BodyInit, init?: NodeFetch.ResponseInit) {
+		super(body, init);
 		this._ownerDocument = (<typeof Response>this.constructor)._ownerDocument;
 	}
 

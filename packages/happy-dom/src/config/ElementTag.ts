@@ -17,6 +17,9 @@ import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement';
 import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement';
 import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement';
 import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement';
+import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
+import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 
 export default {
 	A: HTMLElement,
@@ -25,7 +28,7 @@ export default {
 	AREA: HTMLElement,
 	ARTICLE: HTMLElement,
 	ASIDE: HTMLElement,
-	AUDIO: HTMLElement,
+	AUDIO: HTMLAudioElement,
 	B: HTMLElement,
 	BASE: HTMLBaseElement,
 	BDI: HTMLElement,
@@ -55,7 +58,7 @@ export default {
 	META: HTMLMetaElement,
 	BLOCKQUOTE: HTMLElement,
 	BR: HTMLElement,
-	BUTTON: HTMLElement,
+	BUTTON: HTMLButtonElement,
 	CANVAS: HTMLElement,
 	CAPTION: HTMLElement,
 	CITE: HTMLElement,
@@ -144,6 +147,6 @@ export default {
 	U: HTMLElement,
 	UL: HTMLElement,
 	VAR: HTMLElement,
-	VIDEO: HTMLElement,
+	VIDEO: HTMLVideoElement,
 	WBR: HTMLElement
 };

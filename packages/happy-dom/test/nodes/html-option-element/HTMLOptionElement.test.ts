@@ -13,6 +13,12 @@ describe('HTMLOptionElement', () => {
 		element = <HTMLOptionElement>document.createElement('option');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLOptionElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLOptionElement]');
+		});
+	});
+
 	describe('get value()', () => {
 		it('Returns the attribute "value".', () => {
 			element.setAttribute('value', 'VALUE');
@@ -24,11 +30,6 @@ describe('HTMLOptionElement', () => {
 		it('Sets the attribute "value".', () => {
 			element.value = 'VALUE';
 			expect(element.getAttribute('value')).toBe('VALUE');
-		});
-
-		it('Trims and removes new lines.', () => {
-			element.value = '  \n\rtest  ';
-			expect(element.value).toBe('test');
 		});
 	});
 

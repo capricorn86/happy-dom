@@ -11,7 +11,7 @@ import Event from '../../event/Event';
 import DOMImplementation from '../../dom-implementation/DOMImplementation';
 import ElementTag from '../../config/ElementTag';
 import INodeFilter from '../../tree-walker/INodeFilter';
-import Attr from '../../attribute/Attr';
+import Attr from '../attr/Attr';
 import NamespaceURI from '../../config/NamespaceURI';
 import DocumentType from '../document-type/DocumentType';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility';
@@ -40,13 +40,17 @@ import Selection from '../../selection/Selection';
 import IShadowRoot from '../shadow-root/IShadowRoot';
 import Range from '../../range/Range';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
+import IAttr from '../attr/IAttr';
+import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
+import ProcessingInstruction from '../processing-instruction/ProcessingInstruction';
+
+const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
 /**
  * Document.
  */
 export default class Document extends Node implements IDocument {
 	public static _defaultView: IWindow = null;
-	public onreadystatechange: (event: Event) => void = null;
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation: DOMImplementation;
@@ -56,10 +60,125 @@ export default class Document extends Node implements IDocument {
 	public readonly defaultView: IWindow;
 	public readonly _readyStateManager: DocumentReadyStateManager;
 	public _activeElement: IHTMLElement = null;
+
+	// Used as an unique identifier which is updated whenever the DOM gets modified.
+	public _cacheID = 0;
+
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
 	private _cookie = '';
 	private _selection: Selection = null;
+
+	// Events
+	public onreadystatechange: (event: Event) => void = null;
+	public onpointerlockchange: (event: Event) => void = null;
+	public onpointerlockerror: (event: Event) => void = null;
+	public onbeforecopy: (event: Event) => void = null;
+	public onbeforecut: (event: Event) => void = null;
+	public onbeforepaste: (event: Event) => void = null;
+	public onfreeze: (event: Event) => void = null;
+	public onresume: (event: Event) => void = null;
+	public onsearch: (event: Event) => void = null;
+	public onvisibilitychange: (event: Event) => void = null;
+	public onfullscreenchange: (event: Event) => void = null;
+	public onfullscreenerror: (event: Event) => void = null;
+	public onwebkitfullscreenchange: (event: Event) => void = null;
+	public onwebkitfullscreenerror: (event: Event) => void = null;
+	public onbeforexrselect: (event: Event) => void = null;
+	public onabort: (event: Event) => void = null;
+	public onbeforeinput: (event: Event) => void = null;
+	public onblur: (event: Event) => void = null;
+	public oncancel: (event: Event) => void = null;
+	public oncanplay: (event: Event) => void = null;
+	public oncanplaythrough: (event: Event) => void = null;
+	public onchange: (event: Event) => void = null;
+	public onclick: (event: Event) => void = null;
+	public onclose: (event: Event) => void = null;
+	public oncontextlost: (event: Event) => void = null;
+	public oncontextmenu: (event: Event) => void = null;
+	public oncontextrestored: (event: Event) => void = null;
+	public oncuechange: (event: Event) => void = null;
+	public ondblclick: (event: Event) => void = null;
+	public ondrag: (event: Event) => void = null;
+	public ondragend: (event: Event) => void = null;
+	public ondragenter: (event: Event) => void = null;
+	public ondragleave: (event: Event) => void = null;
+	public ondragover: (event: Event) => void = null;
+	public ondragstart: (event: Event) => void = null;
+	public ondrop: (event: Event) => void = null;
+	public ondurationchange: (event: Event) => void = null;
+	public onemptied: (event: Event) => void = null;
+	public onended: (event: Event) => void = null;
+	public onerror: (event: Event) => void = null;
+	public onfocus: (event: Event) => void = null;
+	public onformdata: (event: Event) => void = null;
+	public oninput: (event: Event) => void = null;
+	public oninvalid: (event: Event) => void = null;
+	public onkeydown: (event: Event) => void = null;
+	public onkeypress: (event: Event) => void = null;
+	public onkeyup: (event: Event) => void = null;
+	public onload: (event: Event) => void = null;
+	public onloadeddata: (event: Event) => void = null;
+	public onloadedmetadata: (event: Event) => void = null;
+	public onloadstart: (event: Event) => void = null;
+	public onmousedown: (event: Event) => void = null;
+	public onmouseenter: (event: Event) => void = null;
+	public onmouseleave: (event: Event) => void = null;
+	public onmousemove: (event: Event) => void = null;
+	public onmouseout: (event: Event) => void = null;
+	public onmouseover: (event: Event) => void = null;
+	public onmouseup: (event: Event) => void = null;
+	public onmousewheel: (event: Event) => void = null;
+	public onpause: (event: Event) => void = null;
+	public onplay: (event: Event) => void = null;
+	public onplaying: (event: Event) => void = null;
+	public onprogress: (event: Event) => void = null;
+	public onratechange: (event: Event) => void = null;
+	public onreset: (event: Event) => void = null;
+	public onresize: (event: Event) => void = null;
+	public onscroll: (event: Event) => void = null;
+	public onsecuritypolicyviolation: (event: Event) => void = null;
+	public onseeked: (event: Event) => void = null;
+	public onseeking: (event: Event) => void = null;
+	public onselect: (event: Event) => void = null;
+	public onslotchange: (event: Event) => void = null;
+	public onstalled: (event: Event) => void = null;
+	public onsubmit: (event: Event) => void = null;
+	public onsuspend: (event: Event) => void = null;
+	public ontimeupdate: (event: Event) => void = null;
+	public ontoggle: (event: Event) => void = null;
+	public onvolumechange: (event: Event) => void = null;
+	public onwaiting: (event: Event) => void = null;
+	public onwebkitanimationend: (event: Event) => void = null;
+	public onwebkitanimationiteration: (event: Event) => void = null;
+	public onwebkitanimationstart: (event: Event) => void = null;
+	public onwebkittransitionend: (event: Event) => void = null;
+	public onwheel: (event: Event) => void = null;
+	public onauxclick: (event: Event) => void = null;
+	public ongotpointercapture: (event: Event) => void = null;
+	public onlostpointercapture: (event: Event) => void = null;
+	public onpointerdown: (event: Event) => void = null;
+	public onpointermove: (event: Event) => void = null;
+	public onpointerrawupdate: (event: Event) => void = null;
+	public onpointerup: (event: Event) => void = null;
+	public onpointercancel: (event: Event) => void = null;
+	public onpointerover: (event: Event) => void = null;
+	public onpointerout: (event: Event) => void = null;
+	public onpointerenter: (event: Event) => void = null;
+	public onpointerleave: (event: Event) => void = null;
+	public onselectstart: (event: Event) => void = null;
+	public onselectionchange: (event: Event) => void = null;
+	public onanimationend: (event: Event) => void = null;
+	public onanimationiteration: (event: Event) => void = null;
+	public onanimationstart: (event: Event) => void = null;
+	public ontransitionrun: (event: Event) => void = null;
+	public ontransitionstart: (event: Event) => void = null;
+	public ontransitionend: (event: Event) => void = null;
+	public ontransitioncancel: (event: Event) => void = null;
+	public oncopy: (event: Event) => void = null;
+	public oncut: (event: Event) => void = null;
+	public onpaste: (event: Event) => void = null;
+	public onbeforematch: (event: Event) => void = null;
 
 	/**
 	 * Creates an instance of Document.
@@ -225,14 +344,18 @@ export default class Document extends Node implements IDocument {
 	 * @returns Active element.
 	 */
 	public get activeElement(): IHTMLElement {
-		if (this._activeElement) {
+		if (this._activeElement && !this._activeElement.isConnected) {
+			this._activeElement = null;
+		}
+
+		if (this._activeElement && this._activeElement instanceof Element) {
 			let rootNode: IShadowRoot | IDocument = <IShadowRoot | IDocument>(
 				this._activeElement.getRootNode()
 			);
 			let activeElement: IHTMLElement = this._activeElement;
 			while (rootNode !== this) {
 				activeElement = <IHTMLElement>(<IShadowRoot>rootNode).host;
-				rootNode = <IShadowRoot | IDocument>activeElement.getRootNode();
+				rootNode = activeElement ? <IShadowRoot | IDocument>activeElement.getRootNode() : this;
 			}
 			return activeElement;
 		}
@@ -733,14 +856,11 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Creates an Attr node.
 	 *
-	 * @param name Name.
+	 * @param qualifiedName Name.
 	 * @returns Attribute.
 	 */
-	public createAttribute(name: string): Attr {
-		const attribute = new Attr();
-		attribute.name = name.toLowerCase();
-		(<IDocument>attribute.ownerDocument) = this;
-		return attribute;
+	public createAttribute(qualifiedName: string): IAttr {
+		return this.createAttributeNS(null, qualifiedName.toLowerCase());
 	}
 
 	/**
@@ -750,12 +870,12 @@ export default class Document extends Node implements IDocument {
 	 * @param qualifiedName Qualified name.
 	 * @returns Element.
 	 */
-	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
+	public createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr {
+		Attr._ownerDocument = this;
 		const attribute = new Attr();
 		attribute.namespaceURI = namespaceURI;
 		attribute.name = qualifiedName;
-		(<IDocument>attribute.ownerDocument) = this;
-		return attribute;
+		return <IAttr>attribute;
 	}
 
 	/**
@@ -841,5 +961,29 @@ export default class Document extends Node implements IDocument {
 			this.dispatchEvent(new Event('readystatechange'));
 			this.dispatchEvent(new Event('load', { bubbles: true }));
 		});
+	}
+
+	/**
+	 * Creates a Processing Instruction node.
+	 *
+	 * @returns IProcessingInstruction.
+	 * @param target
+	 * @param data
+	 */
+	public createProcessingInstruction(target: string, data: string): IProcessingInstruction {
+		if (!target || !PROCESSING_INSTRUCTION_TARGET_REGEXP.test(target)) {
+			throw new DOMException(
+				`Failed to execute 'createProcessingInstruction' on 'Document': The target provided ('${target}') is not a valid name.`
+			);
+		}
+		if (data.includes('?>')) {
+			throw new DOMException(
+				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
+			);
+		}
+		ProcessingInstruction._ownerDocument = this;
+		const processingInstruction = new ProcessingInstruction(data);
+		processingInstruction.target = target;
+		return processingInstruction;
 	}
 }

@@ -17,6 +17,13 @@ describe('HTMLLinkElement', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLLinkElement]`', () => {
+			const element = <IHTMLLinkElement>document.createElement('link');
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLLinkElement]');
+		});
+	});
+
 	for (const property of [
 		'as',
 		'crossOrigin',

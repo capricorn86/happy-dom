@@ -14,6 +14,9 @@ describe('CSSStyleSheet', () => {
 			cssStyleSheet.insertRule('div { background-color: green }');
 			cssStyleSheet.insertRule('span { background-color: green }');
 			expect(cssStyleSheet.insertRule('button { background-color: green }', 1)).toBe(1);
+			expect(cssStyleSheet.cssRules[0].cssText).toBe('div { background-color: green; }');
+			expect(cssStyleSheet.cssRules[1].cssText).toBe('button { background-color: green; }');
+			expect(cssStyleSheet.cssRules[2].cssText).toBe('span { background-color: green; }');
 		});
 
 		it('Inserts a rule.', () => {

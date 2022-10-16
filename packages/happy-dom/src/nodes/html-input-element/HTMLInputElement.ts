@@ -38,6 +38,11 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	// Type specific: file
 	public files: File[] = [];
 
+	// Events
+	public oninput: (event: Event) => void | null = null;
+	public oninvalid: (event: Event) => void | null = null;
+	public onselectionchange: (event: Event) => void | null = null;
+
 	// Type specific: text/password/search/tel/url/week/month
 	private _selectionStart: number = null;
 	private _selectionEnd: number = null;

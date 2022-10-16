@@ -11,7 +11,6 @@ import Element from '../nodes/element/Element';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
-import IHTMLElement from '../nodes/html-element/IHTMLElement';
 import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
@@ -20,6 +19,9 @@ import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
 import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
 import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
+import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
+import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
+import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
@@ -35,6 +37,7 @@ import CustomEvent from '../event/events/CustomEvent';
 import AnimationEvent from '../event/events/AnimationEvent';
 import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
+import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
 import EventTarget from '../event/EventTarget';
 import { URL, URLSearchParams } from 'url';
 import Location from '../location/Location';
@@ -48,9 +51,16 @@ import DOMException from '../exception/DOMException';
 import FileReader from '../file/FileReader';
 import History from '../history/History';
 import CSSStyleSheet from '../css/CSSStyleSheet';
-import CSSStyleDeclaration from '../css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../css/declaration/CSSStyleDeclaration';
 import CSS from '../css/CSS';
 import CSSUnitValue from '../css/CSSUnitValue';
+import CSSRule from '../css/CSSRule';
+import CSSContainerRule from '../css/rules/CSSContainerRule';
+import CSSFontFaceRule from '../css/rules/CSSFontFaceRule';
+import CSSKeyframeRule from '../css/rules/CSSKeyframeRule';
+import CSSKeyframesRule from '../css/rules/CSSKeyframesRule';
+import CSSMediaRule from '../css/rules/CSSMediaRule';
+import CSSStyleRule from '../css/rules/CSSStyleRule';
 import PointerEvent from '../event/events/PointerEvent';
 import MouseEvent from '../event/events/MouseEvent';
 import FocusEvent from '../event/events/FocusEvent';
@@ -87,7 +97,10 @@ import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload';
 import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget';
 import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
+import Attr from '../nodes/attr/Attr';
 import { Performance } from 'perf_hooks';
+import IElement from '../nodes/element/IElement';
+import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -98,6 +111,8 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 		whenAsyncComplete: () => Promise<void>;
 		cancelAsync: () => void;
 		asyncTaskManager: AsyncTaskManager;
+		setInnerWidth: (width: number) => void;
+		setInnerHeight: (height: number) => void;
 	};
 
 	// Global classes
@@ -115,8 +130,12 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLSlotElement: typeof HTMLSlotElement;
 	readonly HTMLLabelElement: typeof HTMLLabelElement;
 	readonly HTMLMetaElement: typeof HTMLMetaElement;
+	readonly HTMLMediaElement: typeof HTMLMediaElement;
+	readonly HTMLAudioElement: typeof HTMLAudioElement;
+	readonly HTMLVideoElement: typeof HTMLVideoElement;
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
 	readonly HTMLDialogElement: typeof HTMLDialogElement;
+	readonly Attr: typeof Attr;
 	readonly SVGSVGElement: typeof SVGSVGElement;
 	readonly SVGElement: typeof SVGElement;
 	readonly Image: typeof Image;
@@ -126,6 +145,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Element: typeof Element;
 	readonly DocumentFragment: typeof DocumentFragment;
 	readonly CharacterData: typeof CharacterData;
+	readonly ProcessingInstruction: typeof ProcessingInstruction;
 	readonly NodeFilter: typeof NodeFilter;
 	readonly TreeWalker: typeof TreeWalker;
 	readonly DOMParser: typeof DOMParser;
@@ -147,6 +167,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly ErrorEvent: typeof ErrorEvent;
 	readonly StorageEvent: typeof StorageEvent;
 	readonly ProgressEvent: typeof ProgressEvent;
+	readonly MediaQueryListEvent: typeof MediaQueryListEvent;
 	readonly EventTarget: typeof EventTarget;
 	readonly DataTransfer: typeof DataTransfer;
 	readonly DataTransferItem: typeof DataTransferItem;
@@ -170,6 +191,13 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly NodeList: typeof NodeList;
 	readonly CSSUnitValue: typeof CSSUnitValue;
 	readonly CSS: CSS;
+	readonly CSSRule: typeof CSSRule;
+	readonly CSSContainerRule: typeof CSSContainerRule;
+	readonly CSSFontFaceRule: typeof CSSFontFaceRule;
+	readonly CSSKeyframeRule: typeof CSSKeyframeRule;
+	readonly CSSKeyframesRule: typeof CSSKeyframesRule;
+	readonly CSSMediaRule: typeof CSSMediaRule;
+	readonly CSSStyleRule: typeof CSSStyleRule;
 	readonly Selection: typeof Selection;
 	readonly Navigator: typeof Navigator;
 	readonly MimeType: typeof MimeType;
@@ -222,7 +250,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * @param element Element.
 	 * @returns CSS style declaration.
 	 */
-	getComputedStyle(element: IHTMLElement): CSSStyleDeclaration;
+	getComputedStyle(element: IElement): CSSStyleDeclaration;
 
 	/**
 	 * Returns selection.

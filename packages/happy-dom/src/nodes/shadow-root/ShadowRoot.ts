@@ -5,6 +5,7 @@ import IElement from '../element/IElement';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import IShadowRoot from './IShadowRoot';
 import IHTMLElement from '../../nodes/html-element/IHTMLElement';
+import Event from '../../event/Event';
 
 /**
  * ShadowRoot.
@@ -13,6 +14,9 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	public readonly mode = 'open';
 	public readonly host: IElement = null;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
+
+	// Events
+	public onslotchange: (event: Event) => void | null = null;
 
 	/**
 	 * Returns inner HTML.
@@ -50,7 +54,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 */
 	public get activeElement(): IHTMLElement {
 		const activeElement: IHTMLElement = this.ownerDocument['_activeElement'];
-		if (activeElement && activeElement.getRootNode() === this) {
+		if (activeElement && activeElement.isConnected && activeElement.getRootNode() === this) {
 			return activeElement;
 		}
 		return null;

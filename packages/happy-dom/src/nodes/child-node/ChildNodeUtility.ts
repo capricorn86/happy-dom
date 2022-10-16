@@ -1,3 +1,4 @@
+import DOMException from '../../exception/DOMException';
 import XMLParser from '../../xml-parser/XMLParser';
 import Document from '../document/Document';
 import INode from '../node/INode';
@@ -29,7 +30,7 @@ export default class ChildNodeUtility {
 		const parent = <IParentNode>childNode.parentNode;
 
 		if (!parent) {
-			return;
+			throw new DOMException('This element has no parent node.');
 		}
 
 		for (const node of nodes) {

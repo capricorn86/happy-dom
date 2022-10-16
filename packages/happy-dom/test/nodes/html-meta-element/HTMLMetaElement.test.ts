@@ -13,6 +13,12 @@ describe('HTMLMetaElement', () => {
 		element = <IHTMLMetaElement>document.createElement('meta');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLMetaElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLMetaElement]');
+		});
+	});
+
 	describe('get content()', () => {
 		it('Returns attribute value.', () => {
 			expect(element.content).toBe('');

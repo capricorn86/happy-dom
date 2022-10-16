@@ -1,4 +1,5 @@
-import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
+import Event from '../../event/Event';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
 import IElement from '../element/IElement';
 
 /**
@@ -9,6 +10,7 @@ import IElement from '../element/IElement';
  */
 export default interface IHTMLElement extends IElement {
 	style: CSSStyleDeclaration;
+	dataset: { [key: string]: string };
 	tabIndex: number;
 	offsetHeight: number;
 	offsetWidth: number;
@@ -17,6 +19,34 @@ export default interface IHTMLElement extends IElement {
 	clientHeight: number;
 	clientWidth: number;
 	innerText: string;
+	outerText: string;
+
+	// Events
+	oncopy: (event: Event) => void | null;
+	oncut: (event: Event) => void | null;
+	onpaste: (event: Event) => void | null;
+	oninvalid: (event: Event) => void | null;
+	onanimationcancel: (event: Event) => void | null;
+	onanimationend: (event: Event) => void | null;
+	onanimationiteration: (event: Event) => void | null;
+	onanimationstart: (event: Event) => void | null;
+	onbeforeinput: (event: Event) => void | null;
+	oninput: (event: Event) => void | null;
+	onchange: (event: Event) => void | null;
+	ongotpointercapture: (event: Event) => void | null;
+	onlostpointercapture: (event: Event) => void | null;
+	onpointercancel: (event: Event) => void | null;
+	onpointerdown: (event: Event) => void | null;
+	onpointerenter: (event: Event) => void | null;
+	onpointerleave: (event: Event) => void | null;
+	onpointermove: (event: Event) => void | null;
+	onpointerout: (event: Event) => void | null;
+	onpointerover: (event: Event) => void | null;
+	onpointerup: (event: Event) => void | null;
+	ontransitioncancel: (event: Event) => void | null;
+	ontransitionend: (event: Event) => void | null;
+	ontransitionrun: (event: Event) => void | null;
+	ontransitionstart: (event: Event) => void | null;
 
 	/**
 	 * Triggers a click event.

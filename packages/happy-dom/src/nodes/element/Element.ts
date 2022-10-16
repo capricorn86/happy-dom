@@ -1,11 +1,10 @@
 import Node from '../node/Node';
 import ShadowRoot from '../shadow-root/ShadowRoot';
-import Attr from '../../attribute/Attr';
+import Attr from '../attr/Attr';
 import DOMRect from './DOMRect';
 import DOMTokenList from '../../dom-token-list/DOMTokenList';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import QuerySelector from '../../query-selector/QuerySelector';
-import SelectorItem from '../../query-selector/SelectorItem';
 import MutationRecord from '../../mutation-observer/MutationRecord';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
 import NamespaceURI from '../../config/NamespaceURI';
@@ -26,6 +25,8 @@ import { TInsertAdjacentPositions } from './IElement';
 import IText from '../text/IText';
 import IDOMRectList from './IDOMRectList';
 import DOMRectListFactory from './DOMRectListFactory';
+import IAttr from '../attr/IAttr';
+import Event from '../../event/Event';
 
 /**
  * Element.
@@ -38,15 +39,52 @@ export default class Element extends Node implements IElement {
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
 	public shadowRoot: IShadowRoot = null;
+	public prefix: string = null;
 
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
 	public readonly namespaceURI: string = null;
 
+	// Events
+	public oncancel: (event: Event) => void | null = null;
+	public onerror: (event: Event) => void | null = null;
+	public onscroll: (event: Event) => void | null = null;
+	public onselect: (event: Event) => void | null = null;
+	public onwheel: (event: Event) => void | null = null;
+	public oncopy: (event: Event) => void | null = null;
+	public oncut: (event: Event) => void | null = null;
+	public onpaste: (event: Event) => void | null = null;
+	public oncompositionend: (event: Event) => void | null = null;
+	public oncompositionstart: (event: Event) => void | null = null;
+	public oncompositionupdate: (event: Event) => void | null = null;
+	public onblur: (event: Event) => void | null = null;
+	public onfocus: (event: Event) => void | null = null;
+	public onfocusin: (event: Event) => void | null = null;
+	public onfocusout: (event: Event) => void | null = null;
+	public onfullscreenchange: (event: Event) => void | null = null;
+	public onfullscreenerror: (event: Event) => void | null = null;
+	public onkeydown: (event: Event) => void | null = null;
+	public onkeyup: (event: Event) => void | null = null;
+	public onauxclick: (event: Event) => void | null = null;
+	public onclick: (event: Event) => void | null = null;
+	public oncontextmenu: (event: Event) => void | null = null;
+	public ondblclick: (event: Event) => void | null = null;
+	public onmousedown: (event: Event) => void | null = null;
+	public onmouseenter: (event: Event) => void | null = null;
+	public onmouseleave: (event: Event) => void | null = null;
+	public onmousemove: (event: Event) => void | null = null;
+	public onmouseout: (event: Event) => void | null = null;
+	public onmouseover: (event: Event) => void | null = null;
+	public onmouseup: (event: Event) => void | null = null;
+	public ontouchcancel: (event: Event) => void | null = null;
+	public ontouchend: (event: Event) => void | null = null;
+	public ontouchmove: (event: Event) => void | null = null;
+	public ontouchstart: (event: Event) => void | null = null;
+
 	// Used for being able to access closed shadow roots
 	public _shadowRoot: IShadowRoot = null;
-	public _attributes: { [k: string]: Attr } = {};
+	public _attributes: { [k: string]: IAttr } = {};
 
 	private _classList: DOMTokenList = null;
 	public _isValue?: string;
@@ -211,7 +249,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @returns Attributes.
 	 */
-	public get attributes(): { [k: string]: Attr | number } {
+	public get attributes(): { [k: string | number]: IAttr } & { length: number } {
 		const attributes = Object.values(this._attributes);
 		return Object.assign({}, this._attributes, attributes, {
 			length: attributes.length
@@ -302,6 +340,8 @@ export default class Element extends Node implements IElement {
 	public cloneNode(deep = false): IElement {
 		const clone = <Element | IElement>super.cloneNode(deep);
 
+		Attr._ownerDocument = this.ownerDocument;
+
 		for (const key of Object.keys(this._attributes)) {
 			const attr = Object.assign(new Attr(), this._attributes[key]);
 			(<IElement>attr.ownerElement) = clone;
@@ -325,13 +365,9 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Append a child node to childNodes.
-	 *
 	 * @override
-	 * @param  node Node to append.
-	 * @returns Appended node.
 	 */
-	public appendChild(node: INode): INode {
+	public override appendChild(node: INode): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
@@ -351,12 +387,9 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Remove Child element from childNodes array.
-	 *
 	 * @override
-	 * @param node Node to remove.
 	 */
-	public removeChild(node: INode): INode {
+	public override removeChild(node: INode): INode {
 		if (node.nodeType === Node.ELEMENT_NODE) {
 			const index = this.children.indexOf(<IElement>node);
 			if (index !== -1) {
@@ -375,14 +408,9 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Inserts a node before another.
-	 *
 	 * @override
-	 * @param newNode Node to insert.
-	 * @param [referenceNode] Node to insert before.
-	 * @returns Inserted node.
 	 */
-	public insertBefore(newNode: INode, referenceNode?: INode): INode {
+	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -703,12 +731,7 @@ export default class Element extends Node implements IElement {
 	 * @returns "true" if matching.
 	 */
 	public matches(selector: string): boolean {
-		for (const part of selector.split(',')) {
-			if (new SelectorItem(part.trim()).match(this)) {
-				return true;
-			}
-		}
-		return false;
+		return QuerySelector.match(this, selector).matches;
 	}
 
 	/**
@@ -802,14 +825,18 @@ export default class Element extends Node implements IElement {
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: Attr): Attr {
+	public setAttributeNode(attribute: IAttr): IAttr {
 		const name = this._getAttributeName(attribute.name);
 		const replacedAttribute = this._attributes[name];
 		const oldValue = replacedAttribute ? replacedAttribute.value : null;
 
 		attribute.name = name;
-		(<IElement>attribute.ownerElement) = this;
+		(<IElement>attribute.ownerElement) = <IElement>this;
 		(<IDocument>attribute.ownerDocument) = this.ownerDocument;
+
+		if (this.isConnected) {
+			this.ownerDocument['_cacheID']++;
+		}
 
 		this._attributes[name] = attribute;
 
@@ -849,7 +876,7 @@ export default class Element extends Node implements IElement {
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNodeNS(attribute: Attr): Attr {
+	public setAttributeNodeNS(attribute: IAttr): IAttr {
 		return this.setAttributeNode(attribute);
 	}
 
@@ -859,7 +886,7 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 * @returns Replaced attribute.
 	 */
-	public getAttributeNode(name: string): Attr {
+	public getAttributeNode(name: string): IAttr {
 		return this._attributes[this._getAttributeName(name)] || null;
 	}
 
@@ -870,7 +897,7 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 * @returns Replaced attribute.
 	 */
-	public getAttributeNodeNS(namespace: string, name: string): Attr {
+	public getAttributeNodeNS(namespace: string, name: string): IAttr {
 		const attributeName = this._getAttributeName(name);
 		if (
 			this._attributes[attributeName] &&
@@ -893,8 +920,12 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param attribute Attribute.
 	 */
-	public removeAttributeNode(attribute: Attr): void {
+	public removeAttributeNode(attribute: IAttr): void {
 		delete this._attributes[attribute.name];
+
+		if (this.isConnected) {
+			this.ownerDocument['_cacheID']++;
+		}
 
 		this._updateDomListIndices();
 
@@ -930,7 +961,7 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @param attribute Attribute.
 	 */
-	public removeAttributeNodeNS(attribute: Attr): void {
+	public removeAttributeNodeNS(attribute: IAttr): void {
 		this.removeAttributeNode(attribute);
 	}
 

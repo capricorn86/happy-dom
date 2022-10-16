@@ -5,13 +5,16 @@ import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import ValidityState from '../validity-state/ValidityState';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
-import HTMLOptGroupElement from '../html-opt-group-element/HTMLOptGroupElement';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement';
 import HTMLOptionsCollection from '../html-option-element/HTMLOptionsCollection';
-import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
 import INodeList from '../node/INodeList';
-import HTMLSelectElementValueSanitizer from './HTMLSelectElementValueSanitizer';
 import IHTMLSelectElement from './IHTMLSelectElement';
+import Event from '../../event/Event';
+import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
+import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
+import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
+import INode from '../node/INode';
+import NodeTypeEnum from '../node/NodeTypeEnum';
 
 /**
  * HTML Select Element.
@@ -20,12 +23,12 @@ import IHTMLSelectElement from './IHTMLSelectElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement.
  */
 export default class HTMLSelectElement extends HTMLElement implements IHTMLSelectElement {
-	public type: string;
 	public labels: INodeList<IHTMLLabelElement>;
+	public readonly options: IHTMLOptionsCollection = new HTMLOptionsCollection(this);
 
-	public _value = null;
-	public _selectedIndex = -1;
-	public _options: IHTMLOptionsCollection = null;
+	// Events
+	public onchange: (event: Event) => void | null = null;
+	public oninput: (event: Event) => void | null = null;
 
 	/**
 	 * Returns name.
@@ -112,6 +115,24 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	}
 
 	/**
+	 * Returns length.
+	 *
+	 * @returns length.
+	 */
+	public get length(): number {
+		return this.options.length;
+	}
+
+	/**
+	 * Sets length.
+	 *
+	 * @param length Length.
+	 */
+	public set length(length: number) {
+		this.options.length = length;
+	}
+
+	/**
 	 * Returns required.
 	 *
 	 * @returns Required.
@@ -134,12 +155,27 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	}
 
 	/**
+	 * Returns type.
+	 *
+	 * @returns type.
+	 */
+	public get type(): string {
+		return this.hasAttributeNS(null, 'multiple') ? 'select-multiple' : 'select-one';
+	}
+
+	/**
 	 * Returns value.
 	 *
 	 * @returns Value.
 	 */
 	public get value(): string {
-		return this._value;
+		if (this.options.selectedIndex === -1) {
+			return '';
+		}
+
+		const option = this.options[this.options.selectedIndex];
+
+		return option instanceof HTMLOptionElement ? option.value : '';
 	}
 
 	/**
@@ -148,12 +184,9 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		this._value = HTMLSelectElementValueSanitizer.sanitize(value);
-
-		const idx = this.options.findIndex((o) => o.nodeValue === value);
-		if (idx > -1) {
-			this._selectedIndex = idx;
-		}
+		this.options.selectedIndex = this.options.findIndex(
+			(o) => o instanceof HTMLOptionElement && o.value === value
+		);
 	}
 
 	/**
@@ -162,7 +195,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @returns Value.
 	 */
 	public get selectedIndex(): number {
-		return this._options ? this._options.selectedIndex : -1;
+		return this.options.selectedIndex;
 	}
 
 	/**
@@ -171,14 +204,14 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param value Value.
 	 */
 	public set selectedIndex(value: number) {
-		if (this.options.length - 1 > value || value < 0) {
+		if (value > this.options.length - 1 || value < -1) {
 			throw new DOMException(
 				'Select elements selected index must be valid',
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
 
-		this._options.selectedIndex = value;
+		this.options.selectedIndex = value;
 	}
 
 	/**
@@ -219,21 +252,143 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	}
 
 	/**
-	 * Returns options.
+	 * Returns item from options collection by index.
 	 *
-	 * @returns Options.
+	 * @param index Index.
 	 */
-	public get options(): IHTMLOptionsCollection {
-		if (this._options === null) {
-			this._options = new HTMLOptionsCollection();
-			const childs = <INodeList<IHTMLElement>>this.childNodes;
-			for (const child of childs) {
-				if (child.tagName === 'OPTION') {
-					this._options.add(<HTMLOptionElement | HTMLOptGroupElement>child);
-				}
+	public item(index: number): IHTMLOptionElement | IHTMLOptGroupElement {
+		return this.options.item(index);
+	}
+
+	/**
+	 * Adds new option to options collection.
+	 *
+	 * @param element HTMLOptionElement or HTMLOptGroupElement to add.
+	 * @param before HTMLOptionElement or index number.
+	 */
+	public add(
+		element: IHTMLOptionElement | IHTMLOptGroupElement,
+		before?: number | IHTMLOptionElement | IHTMLOptGroupElement
+	): void {
+		this.options.add(element, before);
+	}
+
+	/**
+	 * Removes indexed element from collection or the select element.
+	 *
+	 * @param [index] Index.
+	 */
+	public override remove(index?: number): void {
+		if (typeof index === 'number') {
+			this.options.remove(index);
+		} else {
+			super.remove();
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override appendChild(node: INode): INode {
+		if (node.nodeType === NodeTypeEnum.elementNode) {
+			const element = <IHTMLElement>node;
+			const previousLength = this.options.length;
+
+			if (element.tagName === 'OPTION' || element.tagName === 'OPTGROUP') {
+				this.options.push(<IHTMLOptionElement | IHTMLOptGroupElement>element);
 			}
+
+			this._updateIndexProperties(previousLength, this.options.length);
 		}
 
-		return this._options;
+		return super.appendChild(node);
+	}
+
+	/**
+	 * @override
+	 */
+	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
+		const returnValue = super.insertBefore(newNode, referenceNode);
+
+		if (
+			newNode.nodeType === NodeTypeEnum.elementNode &&
+			referenceNode?.nodeType === NodeTypeEnum.elementNode
+		) {
+			const newElement = <IHTMLElement>newNode;
+			const previousLength = this.options.length;
+
+			if (newElement.tagName === 'OPTION' || newElement.tagName === 'OPTGROUP') {
+				const referenceElement = <IHTMLElement>referenceNode;
+
+				if (
+					referenceElement &&
+					(referenceElement.tagName === 'OPTION' || referenceElement.tagName === 'OPTGROUP')
+				) {
+					const referenceIndex = this.options.indexOf(
+						<IHTMLOptGroupElement | IHTMLOptionElement>referenceElement
+					);
+					if (referenceIndex !== -1) {
+						this.options.splice(
+							referenceIndex,
+							0,
+							<IHTMLOptionElement | IHTMLOptGroupElement>newElement
+						);
+					}
+				} else {
+					this.options.push(<IHTMLOptionElement | IHTMLOptGroupElement>newElement);
+				}
+			}
+
+			this._updateIndexProperties(previousLength, this.options.length);
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeChild(node: INode): INode {
+		if (node.nodeType === NodeTypeEnum.elementNode) {
+			const element = <IHTMLElement>node;
+			const previousLength = this.options.length;
+
+			if (element.tagName === 'OPTION' || element.tagName === 'OPTION') {
+				const index = this.options.indexOf(<IHTMLOptionElement | IHTMLOptGroupElement>node);
+				if (index !== -1) {
+					this.options.splice(index, 1);
+				}
+			}
+
+			this._updateIndexProperties(previousLength, this.options.length);
+		}
+
+		return super.removeChild(node);
+	}
+
+	/**
+	 * Updates index properties.
+	 *
+	 * @param previousLength Length before the update.
+	 * @param newLength Length after the update.
+	 */
+	protected _updateIndexProperties(previousLength: number, newLength: number): void {
+		if (previousLength > newLength) {
+			for (let i = newLength; i < previousLength; i++) {
+				if (this.hasOwnProperty(String(i))) {
+					delete this[String(i)];
+				}
+			}
+		} else if (previousLength < newLength) {
+			for (let i = previousLength; i < newLength; i++) {
+				Object.defineProperty(this, String(i), {
+					get: () => {
+						return this.options[i];
+					},
+					enumerable: true,
+					configurable: true
+				});
+			}
+		}
 	}
 }

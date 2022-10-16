@@ -44,57 +44,79 @@ describe('XMLParser', () => {
 			expect((<IHTMLElement>root.childNodes[0]).tagName).toBe('DIV');
 			expect((<IHTMLElement>root.childNodes[0]).id).toBe('id');
 			expect((<IHTMLElement>root.childNodes[0]).className).toBe('class1 class2');
-			expect((<IHTMLElement>root.childNodes[0]).attributes).toEqual({
-				'0': {
-					name: 'class',
-					value: 'class1 class2',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: root.childNodes[0],
-					ownerDocument: document
-				},
-				'1': {
-					name: 'id',
-					value: 'id',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: root.childNodes[0],
-					ownerDocument: document
-				},
-				'2': {
-					name: 'data-no-value',
-					value: '',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: root.childNodes[0],
-					ownerDocument: document
-				},
-				class: {
-					name: 'class',
-					value: 'class1 class2',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: root.childNodes[0],
-					ownerDocument: document
-				},
-				id: {
-					name: 'id',
-					value: 'id',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: root.childNodes[0],
-					ownerDocument: document
-				},
-				'data-no-value': {
-					name: 'data-no-value',
-					value: '',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: root.childNodes[0],
-					ownerDocument: document
-				},
-				length: 3
-			});
+
+			expect((<IHTMLElement>root.childNodes[0]).attributes.length).toBe(3);
+
+			expect((<IHTMLElement>root.childNodes[0]).attributes[0].name).toBe('class');
+			expect((<IHTMLElement>root.childNodes[0]).attributes[0].value).toBe('class1 class2');
+			expect((<IHTMLElement>root.childNodes[0]).attributes[0].namespaceURI).toBe(null);
+			expect((<IHTMLElement>root.childNodes[0]).attributes[0].specified).toBe(true);
+			expect(
+				(<IHTMLElement>root.childNodes[0]).attributes[0].ownerElement === root.childNodes[0]
+			).toBe(true);
+			expect((<IHTMLElement>root.childNodes[0]).attributes[0].ownerDocument === document).toBe(
+				true
+			);
+
+			expect((<IHTMLElement>root.childNodes[0]).attributes[1].name).toBe('id');
+			expect((<IHTMLElement>root.childNodes[0]).attributes[1].value).toBe('id');
+			expect((<IHTMLElement>root.childNodes[0]).attributes[1].namespaceURI).toBe(null);
+			expect((<IHTMLElement>root.childNodes[0]).attributes[1].specified).toBe(true);
+			expect(
+				(<IHTMLElement>root.childNodes[0]).attributes[1].ownerElement === root.childNodes[0]
+			).toBe(true);
+			expect((<IHTMLElement>root.childNodes[0]).attributes[1].ownerDocument === document).toBe(
+				true
+			);
+
+			expect((<IHTMLElement>root.childNodes[0]).attributes[2].name).toBe('data-no-value');
+			expect((<IHTMLElement>root.childNodes[0]).attributes[2].value).toBe('');
+			expect((<IHTMLElement>root.childNodes[0]).attributes[2].namespaceURI).toBe(null);
+			expect((<IHTMLElement>root.childNodes[0]).attributes[2].specified).toBe(true);
+			expect(
+				(<IHTMLElement>root.childNodes[0]).attributes[2].ownerElement === root.childNodes[0]
+			).toBe(true);
+			expect((<IHTMLElement>root.childNodes[0]).attributes[2].ownerDocument === document).toBe(
+				true
+			);
+
+			expect((<IHTMLElement>root.childNodes[0]).attributes.class.name).toBe('class');
+			expect((<IHTMLElement>root.childNodes[0]).attributes.class.value).toBe('class1 class2');
+			expect((<IHTMLElement>root.childNodes[0]).attributes.class.namespaceURI).toBe(null);
+			expect((<IHTMLElement>root.childNodes[0]).attributes.class.specified).toBe(true);
+			expect(
+				(<IHTMLElement>root.childNodes[0]).attributes.class.ownerElement === root.childNodes[0]
+			).toBe(true);
+			expect((<IHTMLElement>root.childNodes[0]).attributes.class.ownerDocument === document).toBe(
+				true
+			);
+
+			expect((<IHTMLElement>root.childNodes[0]).attributes.id.name).toBe('id');
+			expect((<IHTMLElement>root.childNodes[0]).attributes.id.value).toBe('id');
+			expect((<IHTMLElement>root.childNodes[0]).attributes.id.namespaceURI).toBe(null);
+			expect((<IHTMLElement>root.childNodes[0]).attributes.id.specified).toBe(true);
+			expect(
+				(<IHTMLElement>root.childNodes[0]).attributes.id.ownerElement === root.childNodes[0]
+			).toBe(true);
+			expect((<IHTMLElement>root.childNodes[0]).attributes.id.ownerDocument === document).toBe(
+				true
+			);
+
+			expect((<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].name).toBe(
+				'data-no-value'
+			);
+			expect((<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].value).toBe('');
+			expect((<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].namespaceURI).toBe(
+				null
+			);
+			expect((<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].specified).toBe(true);
+			expect(
+				(<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].ownerElement ===
+					root.childNodes[0]
+			).toBe(true);
+			expect(
+				(<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].ownerDocument === document
+			).toBe(true);
 		});
 
 		it('Parses an entire HTML page.', () => {
@@ -243,73 +265,63 @@ describe('XMLParser', () => {
 			expect(circle.namespaceURI).toBe(NamespaceURI.svg);
 
 			// Attributes should be in lower-case now as the namespace is HTML
-			expect(svg.attributes).toEqual({
-				'0': {
-					name: 'viewBox',
-					value: '0 0 300 100',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: svg,
-					ownerDocument: document
-				},
-				'1': {
-					name: 'stroke',
-					value: 'red',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: svg,
-					ownerDocument: document
-				},
-				'2': {
-					name: 'fill',
-					value: 'grey',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: svg,
-					ownerDocument: document
-				},
-				'3': {
-					name: 'xmlns',
-					value: NamespaceURI.html,
-					namespaceURI: NamespaceURI.html,
-					specified: true,
-					ownerElement: svg,
-					ownerDocument: document
-				},
-				viewBox: {
-					name: 'viewBox',
-					value: '0 0 300 100',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: svg,
-					ownerDocument: document
-				},
-				stroke: {
-					name: 'stroke',
-					value: 'red',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: svg,
-					ownerDocument: document
-				},
-				fill: {
-					name: 'fill',
-					value: 'grey',
-					namespaceURI: null,
-					specified: true,
-					ownerElement: svg,
-					ownerDocument: document
-				},
-				xmlns: {
-					name: 'xmlns',
-					value: NamespaceURI.html,
-					namespaceURI: NamespaceURI.html,
-					specified: true,
-					ownerElement: svg,
-					ownerDocument: document
-				},
-				length: 4
-			});
+			expect(svg.attributes.length).toBe(4);
+
+			expect(svg.attributes[0].name).toBe('viewBox');
+			expect(svg.attributes[0].value).toBe('0 0 300 100');
+			expect(svg.attributes[0].namespaceURI).toBe(null);
+			expect(svg.attributes[0].specified).toBe(true);
+			expect(svg.attributes[0].ownerElement === svg).toBe(true);
+			expect(svg.attributes[0].ownerDocument === document).toBe(true);
+
+			expect(svg.attributes[1].name).toBe('stroke');
+			expect(svg.attributes[1].value).toBe('red');
+			expect(svg.attributes[1].namespaceURI).toBe(null);
+			expect(svg.attributes[1].specified).toBe(true);
+			expect(svg.attributes[1].ownerElement === svg).toBe(true);
+			expect(svg.attributes[1].ownerDocument === document).toBe(true);
+
+			expect(svg.attributes[2].name).toBe('fill');
+			expect(svg.attributes[2].value).toBe('grey');
+			expect(svg.attributes[2].namespaceURI).toBe(null);
+			expect(svg.attributes[2].specified).toBe(true);
+			expect(svg.attributes[2].ownerElement === svg).toBe(true);
+			expect(svg.attributes[2].ownerDocument === document).toBe(true);
+
+			expect(svg.attributes[3].name).toBe('xmlns');
+			expect(svg.attributes[3].value).toBe(NamespaceURI.html);
+			expect(svg.attributes[3].namespaceURI).toBe(NamespaceURI.html);
+			expect(svg.attributes[3].specified).toBe(true);
+			expect(svg.attributes[3].ownerElement === svg).toBe(true);
+			expect(svg.attributes[3].ownerDocument === document).toBe(true);
+
+			expect(svg.attributes.viewBox.name).toBe('viewBox');
+			expect(svg.attributes.viewBox.value).toBe('0 0 300 100');
+			expect(svg.attributes.viewBox.namespaceURI).toBe(null);
+			expect(svg.attributes.viewBox.specified).toBe(true);
+			expect(svg.attributes.viewBox.ownerElement === svg).toBe(true);
+			expect(svg.attributes.viewBox.ownerDocument === document).toBe(true);
+
+			expect(svg.attributes.stroke.name).toBe('stroke');
+			expect(svg.attributes.stroke.value).toBe('red');
+			expect(svg.attributes.stroke.namespaceURI).toBe(null);
+			expect(svg.attributes.stroke.specified).toBe(true);
+			expect(svg.attributes.stroke.ownerElement === svg).toBe(true);
+			expect(svg.attributes.stroke.ownerDocument === document).toBe(true);
+
+			expect(svg.attributes.fill.name).toBe('fill');
+			expect(svg.attributes.fill.value).toBe('grey');
+			expect(svg.attributes.fill.namespaceURI).toBe(null);
+			expect(svg.attributes.fill.specified).toBe(true);
+			expect(svg.attributes.fill.ownerElement === svg).toBe(true);
+			expect(svg.attributes.fill.ownerDocument === document).toBe(true);
+
+			expect(svg.attributes.xmlns.name).toBe('xmlns');
+			expect(svg.attributes.xmlns.value).toBe(NamespaceURI.html);
+			expect(svg.attributes.xmlns.namespaceURI).toBe(NamespaceURI.html);
+			expect(svg.attributes.xmlns.specified).toBe(true);
+			expect(svg.attributes.xmlns.ownerElement === svg).toBe(true);
+			expect(svg.attributes.xmlns.ownerDocument === document).toBe(true);
 
 			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
 				`
@@ -372,6 +384,17 @@ describe('XMLParser', () => {
 				</div>
 			`.replace(/[\s]/gm, '')
 			);
+		});
+
+		it('Parses childless elements with start and end tag names in different case', () => {
+			const root = XMLParser.parse(
+				window.document,
+				`
+				<script type="text/JavaScript">console.log('hello')</SCRIPT>
+				`
+			);
+
+			expect((<IHTMLElement>root.children[0]).innerText).toBe(`console.log('hello')`);
 		});
 	});
 });

@@ -46,11 +46,11 @@ export default abstract class EventTarget implements IEventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
-		if (!event.target) {
-			event.target = this;
+		if (!event._target) {
+			event._target = this;
 		}
 
-		event.currentTarget = this;
+		event._currentTarget = this;
 
 		const onEventName = 'on' + event.type.toLowerCase();
 
@@ -77,12 +77,28 @@ export default abstract class EventTarget implements IEventTarget {
 	/**
 	 * Adds an event listener.
 	 *
-	 * This is only supported by IE8- and Opera, but for some reason React uses it and calls it, so therefore we will keep support for it until they stop using it.
+	 * TODO:
+	 * Was used by with IE8- and Opera. React believed Happy DOM was a legacy browser and used them, but that is no longer the case, so we should remove this method after that this is verified.
 	 *
+	 * @deprecated
 	 * @param type Event type.
 	 * @param listener Listener.
 	 */
 	public attachEvent(type: string, listener: ((event: Event) => void) | IEventListener): void {
 		this.addEventListener(type.replace('on', ''), listener);
+	}
+
+	/**
+	 * Removes an event listener.
+	 *
+	 * TODO:
+	 * Was used by IE8- and Opera. React believed Happy DOM was a legacy browser and used them, but that is no longer the case, so we should remove this method after that this is verified.
+	 *
+	 * @deprecated
+	 * @param type Event type.
+	 * @param listener Listener.
+	 */
+	public detachEvent(type: string, listener: ((event: Event) => void) | IEventListener): void {
+		this.removeEventListener(type.replace('on', ''), listener);
 	}
 }

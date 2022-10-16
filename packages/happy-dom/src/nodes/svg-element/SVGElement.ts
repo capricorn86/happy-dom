@@ -1,8 +1,9 @@
-import CSSStyleDeclaration from '../../css/CSSStyleDeclaration';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
 import Element from '../element/Element';
 import ISVGElement from './ISVGElement';
 import ISVGSVGElement from './ISVGSVGElement';
-import Attr from '../../attribute/Attr';
+import IAttr from '../attr/IAttr';
+import Event from '../../event/Event';
 
 /**
  * SVG Element.
@@ -11,6 +12,14 @@ import Attr from '../../attribute/Attr';
  * https://developer.mozilla.org/en-US/docs/Web/API/SVGElement.
  */
 export default class SVGElement extends Element implements ISVGElement {
+	// Events
+	public onabort: (event: Event) => void | null = null;
+	public onerror: (event: Event) => void | null = null;
+	public onload: (event: Event) => void | null = null;
+	public onresize: (event: Event) => void | null = null;
+	public onscroll: (event: Event) => void | null = null;
+	public onunload: (event: Event) => void | null = null;
+
 	private _style: CSSStyleDeclaration = null;
 
 	/**
@@ -59,7 +68,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 */
 	public get style(): CSSStyleDeclaration {
 		if (!this._style) {
-			this._style = new CSSStyleDeclaration(this._attributes);
+			this._style = new CSSStyleDeclaration(this);
 		}
 		return this._style;
 	}
@@ -71,7 +80,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: Attr): Attr {
+	public setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'style' && this._style) {
@@ -87,7 +96,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @override
 	 * @param attribute Attribute.
 	 */
-	public removeAttributeNode(attribute: Attr): void {
+	public removeAttributeNode(attribute: IAttr): void {
 		super.removeAttributeNode(attribute);
 
 		if (attribute.name === 'style' && this._style) {

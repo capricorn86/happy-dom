@@ -1,3 +1,5 @@
+import DOMExceptionNameEnum from './DOMExceptionNameEnum';
+
 /**
  * DOM Exception.
  *
@@ -14,8 +16,6 @@ export default class DOMException extends Error {
 	constructor(message: string, name: string = null) {
 		super(message);
 
-		if (name) {
-			this.name = name;
-		}
+		this.name = name || DOMExceptionNameEnum.domException;
 	}
 }

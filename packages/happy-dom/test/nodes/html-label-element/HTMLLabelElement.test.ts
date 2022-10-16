@@ -13,6 +13,12 @@ describe('HTMLLabelElement', () => {
 		element = <IHTMLLabelElement>document.createElement('label');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLLabelElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLLabelElement]');
+		});
+	});
+
 	describe('get htmlFor()', () => {
 		it('Returns attribute value.', () => {
 			expect(element.htmlFor).toBe('');

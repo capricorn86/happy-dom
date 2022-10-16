@@ -1,5 +1,4 @@
 import IEventInit from './IEventInit';
-import EventTarget from './EventTarget';
 import INode from '../nodes/node/INode';
 import IWindow from '../window/IWindow';
 import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
@@ -10,13 +9,13 @@ import IEventTarget from './IEventTarget';
  */
 export default class Event {
 	public composed = false;
-	public currentTarget: EventTarget = null;
-	public target: EventTarget = null;
 	public bubbles = false;
 	public cancelable = false;
 	public defaultPrevented = false;
 	public _immediatePropagationStopped = false;
 	public _propagationStopped = false;
+	public _target: IEventTarget = null;
+	public _currentTarget: IEventTarget = null;
 	public type: string = null;
 
 	/**
@@ -33,6 +32,24 @@ export default class Event {
 			this.cancelable = eventInit.cancelable || false;
 			this.composed = eventInit.composed || false;
 		}
+	}
+
+	/**
+	 * Returns target.
+	 *
+	 * @returns Target.
+	 */
+	public get target(): IEventTarget {
+		return this._target;
+	}
+
+	/**
+	 * Returns target.
+	 *
+	 * @returns Target.
+	 */
+	public get currentTarget(): IEventTarget {
+		return this._currentTarget;
 	}
 
 	/**

@@ -9,6 +9,7 @@ enum DOMExceptionNameEnum {
 	invalidCharacterError = 'InvalidCharacterError',
 	notFoundError = 'NotFoundError',
 	securityError = 'SecurityError',
-	networkError = 'NetworkError'
+	networkError = 'NetworkError',
+	domException = 'DOMException'
 }
 export default DOMExceptionNameEnum;

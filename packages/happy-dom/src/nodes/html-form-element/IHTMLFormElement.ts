@@ -1,3 +1,4 @@
+import Event from '../../event/Event';
 import IElement from '../element/IElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 
@@ -19,6 +20,11 @@ export default interface IHTMLFormElement extends IHTMLElement {
 	noValidate: string;
 	elements: IElement[];
 	length: number;
+
+	// Events
+	onformdata: (event: Event) => void | null;
+	onreset: (event: Event) => void | null;
+	onsubmit: (event: Event) => void | null;
 
 	/**
 	 * Submits form.

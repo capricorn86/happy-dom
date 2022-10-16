@@ -13,6 +13,12 @@ describe('HTMLFormElement', () => {
 		element = <HTMLFormElement>document.createElement('form');
 	});
 
+	describe('Object.prototype.toString', () => {
+		it('Returns `[object HTMLFormElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLFormElement]');
+		});
+	});
+
 	for (const property of [
 		'name',
 		'target',

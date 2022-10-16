@@ -1,3 +1,4 @@
+import Event from '../../event/Event';
 import IHTMLElement from '../html-element/IHTMLElement';
 
 /**
@@ -9,6 +10,10 @@ import IHTMLElement from '../html-element/IHTMLElement';
 export default interface IHTMLDialogElement extends IHTMLElement {
 	open: boolean;
 	returnValue: string;
+
+	// Events
+	oncancel: (event: Event) => void | null;
+	onclose: (event: Event) => void | null;
 
 	/**
 	 * Closes the dialog.
