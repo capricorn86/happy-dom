@@ -1,10 +1,14 @@
-import URL from '../../src/location/URL';
+import Window from '../../src/window/Window';
 
 describe('URL', () => {
+	let window: Window;
+	beforeEach(() => {
+		window = new Window();
+	});
 	describe('constructor()', () => {
 		it('Parses "https://google.com/some-path/?key=value&key2=value2#hash".', () => {
 			const href = 'https://google.com/some-path/?key=value&key2=value2#hash';
-			const url = new URL(href);
+			const url = new window.URL(href);
 			expect(url.href).toBe(href);
 			expect(url.protocol).toBe('https:');
 			expect(url.hostname).toBe('google.com');
@@ -20,7 +24,7 @@ describe('URL', () => {
 
 		it('Parses "https://user:password@google.com/some-path/".', () => {
 			const href = 'https://user:password@google.com/some-path/';
-			const url = new URL(href);
+			const url = new window.URL(href);
 			expect(url.href).toBe(href);
 			expect(url.protocol).toBe('https:');
 			expect(url.hostname).toBe('google.com');
@@ -36,7 +40,7 @@ describe('URL', () => {
 
 		it('Parses "https://google.com:8080/some-path/".', () => {
 			const href = 'https://google.com:8080/some-path/';
-			const url = new URL(href);
+			const url = new window.URL(href);
 			expect(url.href).toBe(href);
 			expect(url.protocol).toBe('https:');
 			expect(url.hostname).toBe('google.com');
@@ -52,7 +56,7 @@ describe('URL', () => {
 		it('Parses "https://google.com".', () => {
 			const formatHref = 'https://google.com/';
 			const href = 'https://google.com';
-			const url = new URL(href);
+			const url = new window.URL(href);
 			expect(url.href).toBe(formatHref);
 			expect(url.protocol).toBe('https:');
 			expect(url.hostname).toBe('google.com');
