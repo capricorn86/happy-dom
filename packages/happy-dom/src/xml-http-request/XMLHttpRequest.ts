@@ -168,7 +168,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this._settings = {
 			method: upperMethod,
-			url: url.toString(),
+			url: url,
 			async: async,
 			user: user || null,
 			password: password || null
@@ -203,8 +203,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	/**
 	 * Gets a header from the server response.
 	 *
-	 * @param string header Name of header to get.
-	 * @param header
+	 * @param header header Name of header to get.
 	 * @returns string Text of the header or null if it doesn't exist.
 	 */
 	public getResponseHeader(header: string): string {
@@ -240,7 +239,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			}
 		}
 
-		return result.substr(0, result.length - 2);
+		return result.slice(0, -2);
 	}
 
 	/**
@@ -428,14 +427,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 						method: this._response.statusCode === 303 ? 'GET' : this._settings.method,
 						headers: Object.assign(this._getDefaultRequestHeaders(), this._requestHeaders),
 						rejectUnauthorized: true,
-						key: null,
-						cert: null
+						key: ssl ? SSL_KEY : null,
+						cert: ssl ? SSL_CERT : null
 					};
-
-					if (ssl) {
-						newOptions.key = SSL_KEY;
-						newOptions.cert = SSL_CERT;
-					}
 
 					// Issue the new request
 					this._request = sendRequest(newOptions, responseHandler).on('error', errorHandler);
@@ -464,7 +458,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 				this._response.on('end', () => {
 					if (this._sendFlag) {
-						// The sendFlag needs to be set before setState is called.  Otherwise if we are chaining callbacks
+						// The sendFlag needs to be set before setState is called.  Otherwise, if we are chaining callbacks
 						// There can be a timing issue (the callback is called and a new call is made before the flag is reset).
 						this._sendFlag = false;
 						// Discard the 'end' event if the connection has been aborted
@@ -502,8 +496,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 			// The async request the other Node process executes
 			const execString = `
-                const HTTP = require('http')
-                const HTTPS = require('https')
+                const HTTP = require('http');
+                const HTTPS = require('https');
                 const FS = require('fs');
                 const sendRequest = HTTP${ssl ? 'S' : ''}.request;
                 const options = ${JSON.stringify(options)};
@@ -518,26 +512,25 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
                         FS.unlinkSync('${syncFile}');
                     });
                     response.on('error', (error) => {
-										    FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8').on('error', (error) => {
-										    FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8');
-										    FS.unlinkSync('${syncFile}');
-										    });
-                	  });
+                        FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8').on('error', (error) => {
+                        FS.writeFileSync('${contentFile}', 'NODE-XMLHTTPREQUEST-ERROR:' + JSON.stringify(error), 'utf8');
+                        FS.unlinkSync('${syncFile}');
+                        });
+                    });
                 });
                 request.write(\`${JSON.stringify(data).slice(1, -1)}\`);
                 request.end();
             `.trim();
 
 			// Start the other Node Process, executing this string
-			const syncProc = ChildProcess.spawn(process.argv[0], ['-e', execString]);
+			ChildProcess.execFileSync(process.argv[0], ['-e', execString]);
 
-			// TODO: Block when a request exception cannot get syncFile.
-			while (FS.existsSync(syncFile)) {} // Wait while the sync file is empty
+			// if syncFile still exists, the request failed, if contentFile doesn't exist, the request failed.
+			if (FS.existsSync(syncFile) || !FS.existsSync(contentFile)) {
+				throw new Error('Synchronous request failed');
+			}
 
 			this.responseText = FS.readFileSync(contentFile, 'utf8');
-
-			// Kill the child process once the file has data
-			syncProc.stdin.end();
 
 			// Remove the temporary file
 			FS.unlinkSync(contentFile);
@@ -602,7 +595,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	/**
 	 * Changes readyState and calls onreadystatechange.
 	 *
-	 * @param int state New state
 	 * @param state
 	 */
 	private _setState(state: XMLHttpRequestReadyStateEnum): void {
