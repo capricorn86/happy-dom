@@ -33,21 +33,17 @@ export default class ResourceFetchHandler {
 	public static fetchSync(document: IDocument, url: string): string {
 		// We want to only load SyncRequest when it is needed to improve performance and not have direct dependencies to server side packages.
 		const absoluteURL = RelativeURL.getAbsoluteURL(document.defaultView.location, url).href;
-		const syncRequest = require('sync-request');
-		const response = syncRequest('GET', absoluteURL, {
-			headers: {
-				'user-agent': document.defaultView.navigator.userAgent,
-				cookie: document.defaultView.document.cookie,
-				referer: document.defaultView.location.origin
-			}
-		});
 
-		if (response.isError()) {
+		const xhr = new document.defaultView.XMLHttpRequest();
+		xhr.open('GET', absoluteURL, false);
+		xhr.send();
+
+		if (xhr.status !== 200) {
 			throw new DOMException(
-				`Failed to perform request to "${absoluteURL}". Status code: ${response.statusCode}`
+				`Failed to perform request to "${absoluteURL}". Status code: ${xhr.status}`
 			);
 		}
 
-		return response.getBody().toString();
+		return xhr.responseText;
 	}
 }

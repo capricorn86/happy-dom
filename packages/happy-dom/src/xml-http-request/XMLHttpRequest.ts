@@ -551,6 +551,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			}
 			// Redirect.
 			if (
+				this._response.statusCode === 301 ||
 				this._response.statusCode === 302 ||
 				this._response.statusCode === 303 ||
 				this._response.statusCode === 307
@@ -567,7 +568,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 						host: redirectUrl.host,
 						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
 						port: redirectUrl.port || (ssl ? 443 : 80),
-						method: this._response.statusCode === 303 ? 'GET' : this._settings.method
+						method: this._response.statusCode === 303 ? 'GET' : this._settings.method,
+						headers: Object.assign(options.headers, {
+							referer: redirectUrl.origin,
+							host: redirectUrl.host
+						})
 					}),
 					ssl,
 					data
@@ -603,6 +608,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			// Check for redirect
 			// @TODO Prevent looped redirects
 			if (
+				this._response.statusCode === 301 ||
 				this._response.statusCode === 302 ||
 				this._response.statusCode === 303 ||
 				this._response.statusCode === 307
@@ -615,6 +621,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					this._ownerDocument.defaultView.location,
 					this._settings.url
 				);
+				this._settings.url = redirectUrl.href;
 				ssl = redirectUrl.protocol === 'https:';
 				// Issue the new request
 				this._sendAsyncRequest(
@@ -622,7 +629,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 						host: redirectUrl.hostname,
 						port: redirectUrl.port,
 						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
-						method: this._response.statusCode === 303 ? 'GET' : this._settings.method
+						method: this._response.statusCode === 303 ? 'GET' : this._settings.method,
+						headers: Object.assign(options.headers, {
+							referer: redirectUrl.origin,
+							host: redirectUrl.host
+						})
 					}),
 					ssl,
 					data
