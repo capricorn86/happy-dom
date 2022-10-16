@@ -1,7 +1,7 @@
 export interface IXMLHttpRequestOptions {
 	host: string;
 	port: number;
-	uri: string;
+	path: string;
 	method: string;
 	headers: object;
 	agent: boolean;

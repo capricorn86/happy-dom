@@ -156,7 +156,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			throw new DOMException('Request method not allowed', DOMExceptionNameEnum.securityError);
 		}
 		// Check responseType.
-		if (upperMethod === 'GET' && !!this.responseType && this.responseType !== 'text') {
+		if (!async && !!this.responseType && this.responseType !== 'text') {
 			throw new DOMException(
 				`Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a response type.`,
 				DOMExceptionNameEnum.invalidAccessError
@@ -355,7 +355,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const options: IXMLHttpRequestOptions = {
 			host: host,
 			port: port,
-			uri: uri,
+			path: uri,
 			method: this._settings.method,
 			headers: Object.assign(this._getDefaultRequestHeaders(), this._requestHeaders),
 			agent: false,
@@ -565,7 +565,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				this._sendSyncRequest(
 					Object.assign(options, {
 						host: redirectUrl.host,
-						uri: redirectUrl.pathname + (redirectUrl.search ?? ''),
+						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
 						port: redirectUrl.port || (ssl ? 443 : 80),
 						method: this._response.statusCode === 303 ? 'GET' : this._settings.method
 					}),
@@ -584,7 +584,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param ssl
 	 * @param data
 	 */
-	private _sendAsyncRequest(options: object, ssl: boolean, data?: string): void {
+	private _sendAsyncRequest(options: IXMLHttpRequestOptions, ssl: boolean, data?: string): void {
 		// Use the proper protocol
 		const sendRequest = ssl ? HTTPS.request : HTTP.request;
 
@@ -621,7 +621,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					Object.assign(options, {
 						host: redirectUrl.hostname,
 						port: redirectUrl.port,
-						uri: redirectUrl.pathname + (redirectUrl.search ?? ''),
+						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
 						method: this._response.statusCode === 303 ? 'GET' : this._settings.method
 					}),
 					ssl,
@@ -716,7 +716,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		};
 
 		// Create the request
-		this._request = sendRequest(options, responseHandler).on('error', errorHandler);
+		this._request = sendRequest(<object>options, responseHandler).on('error', errorHandler);
 
 		// Node 0.4 and later won't accept empty data. Make sure it's needed.
 		if (data) {
