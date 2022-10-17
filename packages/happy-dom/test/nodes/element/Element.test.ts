@@ -698,6 +698,7 @@ describe('Element', () => {
 		it('Checks if the element matches with a descendant combinator', () => {
 			const grandparentElement = document.createElement('div');
 			grandparentElement.setAttribute('role', 'alert');
+			document.appendChild(grandparentElement);
 
 			const parentElement = document.createElement('div');
 			parentElement.setAttribute('role', 'status');
@@ -709,6 +710,7 @@ describe('Element', () => {
 
 			expect(element.matches('div[role="alert"] div.active')).toBe(true);
 			expect(element.matches('div[role="article"] div.active')).toBe(false);
+			expect(element.matches('.nonexistent-class div.active')).toBe(false);
 		});
 
 		it('Checks if the element matches with a child combinator', () => {
