@@ -53,8 +53,7 @@
 		"whatwg-encoding": "^2.0.0",
 		"whatwg-mimetype": "^3.0.0",
 		"webidl-conversions": "^7.0.0",
-		"css.escape": "^1.5.1",
-        "xmlhttprequest-ssl": "^1.6.3"
+		"css.escape": "^1.5.1"
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
