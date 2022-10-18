@@ -267,26 +267,26 @@ describe('Element', () => {
 			expect(element.attributes[2].ownerElement === element).toBe(true);
 			expect(element.attributes[2].ownerDocument === document).toBe(true);
 
-			expect(element.attributes.key1.name).toBe('key1');
-			expect(element.attributes.key1.value).toBe('value1');
-			expect(element.attributes.key1.namespaceURI).toBe(null);
-			expect(element.attributes.key1.specified).toBe(true);
-			expect(element.attributes.key1.ownerElement === element).toBe(true);
-			expect(element.attributes.key1.ownerDocument === document).toBe(true);
+			expect(element.attributes['key1'].name).toBe('key1');
+			expect(element.attributes['key1'].value).toBe('value1');
+			expect(element.attributes['key1'].namespaceURI).toBe(null);
+			expect(element.attributes['key1'].specified).toBe(true);
+			expect(element.attributes['key1'].ownerElement === element).toBe(true);
+			expect(element.attributes['key1'].ownerDocument === document).toBe(true);
 
-			expect(element.attributes.key2.name).toBe('key2');
-			expect(element.attributes.key2.value).toBe('value2');
-			expect(element.attributes.key2.namespaceURI).toBe(null);
-			expect(element.attributes.key2.specified).toBe(true);
-			expect(element.attributes.key2.ownerElement === element).toBe(true);
-			expect(element.attributes.key2.ownerDocument === document).toBe(true);
+			expect(element.attributes['key2'].name).toBe('key2');
+			expect(element.attributes['key2'].value).toBe('value2');
+			expect(element.attributes['key2'].namespaceURI).toBe(null);
+			expect(element.attributes['key2'].specified).toBe(true);
+			expect(element.attributes['key2'].ownerElement === element).toBe(true);
+			expect(element.attributes['key2'].ownerDocument === document).toBe(true);
 
-			expect(element.attributes.key3.name).toBe('key3');
-			expect(element.attributes.key3.value).toBe('value3');
-			expect(element.attributes.key3.namespaceURI).toBe(null);
-			expect(element.attributes.key3.specified).toBe(true);
-			expect(element.attributes.key3.ownerElement === element).toBe(true);
-			expect(element.attributes.key3.ownerDocument === document).toBe(true);
+			expect(element.attributes['key3'].name).toBe('key3');
+			expect(element.attributes['key3'].value).toBe('value3');
+			expect(element.attributes['key3'].namespaceURI).toBe(null);
+			expect(element.attributes['key3'].specified).toBe(true);
+			expect(element.attributes['key3'].ownerElement === element).toBe(true);
+			expect(element.attributes['key3'].ownerDocument === document).toBe(true);
 		});
 	});
 
@@ -1106,19 +1106,19 @@ describe('Element', () => {
 			expect(element.attributes[1].ownerElement === element).toBe(true);
 			expect(element.attributes[1].ownerDocument === document).toBe(true);
 
-			expect(element.attributes.key1.name).toBe('key1');
-			expect(element.attributes.key1.value).toBe('value1');
-			expect(element.attributes.key1.namespaceURI).toBe(null);
-			expect(element.attributes.key1.specified).toBe(true);
-			expect(element.attributes.key1.ownerElement === element).toBe(true);
-			expect(element.attributes.key1.ownerDocument === document).toBe(true);
+			expect(element.attributes['key1'].name).toBe('key1');
+			expect(element.attributes['key1'].value).toBe('value1');
+			expect(element.attributes['key1'].namespaceURI).toBe(null);
+			expect(element.attributes['key1'].specified).toBe(true);
+			expect(element.attributes['key1'].ownerElement === element).toBe(true);
+			expect(element.attributes['key1'].ownerDocument === document).toBe(true);
 
-			expect(element.attributes.key2.name).toBe('key2');
-			expect(element.attributes.key2.value).toBe('');
-			expect(element.attributes.key2.namespaceURI).toBe(null);
-			expect(element.attributes.key2.specified).toBe(true);
-			expect(element.attributes.key2.ownerElement === element).toBe(true);
-			expect(element.attributes.key2.ownerDocument === document).toBe(true);
+			expect(element.attributes['key2'].name).toBe('key2');
+			expect(element.attributes['key2'].value).toBe('');
+			expect(element.attributes['key2'].namespaceURI).toBe(null);
+			expect(element.attributes['key2'].specified).toBe(true);
+			expect(element.attributes['key2'].ownerElement === element).toBe(true);
+			expect(element.attributes['key2'].ownerDocument === document).toBe(true);
 		});
 	});
 
@@ -1345,19 +1345,19 @@ describe('Element', () => {
 				expect((<IAttr>element.attributes[1]).ownerElement).toBe(element);
 				expect((<IAttr>element.attributes[1]).ownerDocument).toBe(document);
 
-				expect((<IAttr>element.attributes.key1).name).toBe('key1');
-				expect((<IAttr>element.attributes.key1).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<IAttr>element.attributes.key1).value).toBe('value1');
-				expect((<IAttr>element.attributes.key1).specified).toBe(true);
-				expect((<IAttr>element.attributes.key1).ownerElement).toBe(element);
-				expect((<IAttr>element.attributes.key1).ownerDocument).toBe(document);
+				expect((<IAttr>element.attributes['key1']).name).toBe('key1');
+				expect((<IAttr>element.attributes['key1']).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<IAttr>element.attributes['key1']).value).toBe('value1');
+				expect((<IAttr>element.attributes['key1']).specified).toBe(true);
+				expect((<IAttr>element.attributes['key1']).ownerElement).toBe(element);
+				expect((<IAttr>element.attributes['key1']).ownerDocument).toBe(document);
 
-				expect((<IAttr>element.attributes.key2).name).toBe('key2');
-				expect((<IAttr>element.attributes.key2).namespaceURI).toBe(null);
-				expect((<IAttr>element.attributes.key2).value).toBe('value2');
-				expect((<IAttr>element.attributes.key2).specified).toBe(true);
-				expect((<IAttr>element.attributes.key2).ownerElement).toBe(element);
-				expect((<IAttr>element.attributes.key2).ownerDocument).toBe(document);
+				expect((<IAttr>element.attributes['key2']).name).toBe('key2');
+				expect((<IAttr>element.attributes['key2']).namespaceURI).toBe(null);
+				expect((<IAttr>element.attributes['key2']).value).toBe('value2');
+				expect((<IAttr>element.attributes['key2']).specified).toBe(true);
+				expect((<IAttr>element.attributes['key2']).ownerElement).toBe(element);
+				expect((<IAttr>element.attributes['key2']).ownerDocument).toBe(document);
 			});
 
 			it('Sets an Attr node on an <svg> element.', () => {
@@ -1387,19 +1387,19 @@ describe('Element', () => {
 				expect((<IAttr>svg.attributes[1]).ownerElement).toBe(svg);
 				expect((<IAttr>svg.attributes[1]).ownerDocument).toBe(document);
 
-				expect((<IAttr>svg.attributes.KEY1).name).toBe('KEY1');
-				expect((<IAttr>svg.attributes.KEY1).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<IAttr>svg.attributes.KEY1).value).toBe('value1');
-				expect((<IAttr>svg.attributes.KEY1).specified).toBe(true);
-				expect((<IAttr>svg.attributes.KEY1).ownerElement).toBe(svg);
-				expect((<IAttr>svg.attributes.KEY1).ownerDocument).toBe(document);
+				expect((<IAttr>svg.attributes['KEY1']).name).toBe('KEY1');
+				expect((<IAttr>svg.attributes['KEY1']).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<IAttr>svg.attributes['KEY1']).value).toBe('value1');
+				expect((<IAttr>svg.attributes['KEY1']).specified).toBe(true);
+				expect((<IAttr>svg.attributes['KEY1']).ownerElement).toBe(svg);
+				expect((<IAttr>svg.attributes['KEY1']).ownerDocument).toBe(document);
 
-				expect((<IAttr>svg.attributes.key2).name).toBe('key2');
-				expect((<IAttr>svg.attributes.key2).namespaceURI).toBe(null);
-				expect((<IAttr>svg.attributes.key2).value).toBe('value2');
-				expect((<IAttr>svg.attributes.key2).specified).toBe(true);
-				expect((<IAttr>svg.attributes.key2).ownerElement).toBe(svg);
-				expect((<IAttr>svg.attributes.key2).ownerDocument).toBe(document);
+				expect((<IAttr>svg.attributes['key2']).name).toBe('key2');
+				expect((<IAttr>svg.attributes['key2']).namespaceURI).toBe(null);
+				expect((<IAttr>svg.attributes['key2']).value).toBe('value2');
+				expect((<IAttr>svg.attributes['key2']).specified).toBe(true);
+				expect((<IAttr>svg.attributes['key2']).ownerElement).toBe(svg);
+				expect((<IAttr>svg.attributes['key2']).ownerDocument).toBe(document);
 			});
 		});
 	}

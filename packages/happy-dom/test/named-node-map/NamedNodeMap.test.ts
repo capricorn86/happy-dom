@@ -17,12 +17,34 @@ describe('NamedNodeMap', () => {
 		attributes = element.attributes;
 	});
 
-	describe('get length()', () => {
-		it('Is an integer representing the number of objects stored in the object.', () => {
+	describe('get toString()', () => {
+		it('Returns a stirng.', () => {
+			expect(attributes.toString()).toBe('[object NamedNodeMap]');
+		});
+	});
+
+	describe('get toString()', () => {
+		it('Returns a stirng.', () => {
+			expect(attributes.toString()).toBe('[object NamedNodeMap]');
+		});
+	});
+
+	describe('Symbol.iterator()', () => {
+		it('Handles being an iterator.', () => {
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', 'value2');
 
+			const attributeList = [];
+
+			for (const attribute of attributes) {
+				attributeList.push(attribute);
+			}
+
 			expect(attributes.length).toBe(2);
+			expect(attributeList[0].name).toBe('key1');
+			expect(attributeList[0].value).toBe('value1');
+			expect(attributeList[1].name).toBe('key2');
+			expect(attributeList[1].value).toBe('value2');
 
 			element.setAttribute('key3', 'value3');
 
@@ -83,8 +105,10 @@ describe('NamedNodeMap', () => {
 			const attr = attributes.getNamedItem('key');
 			attr.value = 'value2';
 
-			attributes.setNamedItem(attr);
+			const replaced = attributes.setNamedItem(attr);
 
+			expect(replaced.name).toBe('key');
+			expect(replaced.value).toBe('value1');
 			expect(attributes.getNamedItem('key')).toBe(attr);
 			expect(element.getAttribute('key')).toBe('value2');
 		});
@@ -106,7 +130,10 @@ describe('NamedNodeMap', () => {
 			const attr = attributes.getNamedItemNS('namespace', 'key');
 			attr.value = 'value2';
 
-			attributes.setNamedItemNS(attr);
+			const replaced = attributes.setNamedItemNS(attr);
+
+			expect(replaced.name).toBe('key');
+			expect(replaced.value).toBe('value1');
 
 			expect(attributes.getNamedItemNS('namespace', 'key')).toBe(attr);
 			expect(element.getAttributeNS('namespace', 'key')).toBe('value2');
@@ -116,7 +143,10 @@ describe('NamedNodeMap', () => {
 	describe('removeNamedItem()', () => {
 		it('Removes an attribute from the list.', () => {
 			element.setAttribute('key', 'value');
-			attributes.removeNamedItem('key');
+			const removed = attributes.removeNamedItem('key');
+
+			expect(removed.name).toBe('key');
+			expect(removed.value).toBe('value');
 
 			expect(element.getAttribute('key')).toBe(null);
 		});
