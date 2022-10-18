@@ -95,7 +95,7 @@ import MediaQueryList from '../match-media/MediaQueryList';
 import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
 import Attr from '../nodes/attr/Attr';
-import NamedNodeMap from '../nodes/attr/NamedNodeMap';
+import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';

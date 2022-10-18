@@ -1,6 +1,6 @@
 import IShadowRoot from '../shadow-root/IShadowRoot';
 import IAttr from '../attr/IAttr';
-import INamedNodeMap from '../attr/INamedNodeMap';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap';
 import DOMRect from './DOMRect';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import INode from './../node/INode';

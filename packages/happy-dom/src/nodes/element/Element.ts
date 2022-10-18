@@ -1,7 +1,7 @@
 import Node from '../node/Node';
 import ShadowRoot from '../shadow-root/ShadowRoot';
 import Attr from '../attr/Attr';
-import NamedNodeMap from '../attr/NamedNodeMap';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap';
 import DOMRect from './DOMRect';
 import DOMTokenList from '../../dom-token-list/DOMTokenList';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
@@ -27,7 +27,7 @@ import IText from '../text/IText';
 import IDOMRectList from './IDOMRectList';
 import DOMRectListFactory from './DOMRectListFactory';
 import IAttr from '../attr/IAttr';
-import INamedNodeMap from '../attr/INamedNodeMap';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap';
 
 import Event from '../../event/Event';
 

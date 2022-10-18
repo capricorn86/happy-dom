@@ -1,5 +1,5 @@
-import type Element from '../element/Element';
-import IAttr from './IAttr';
+import type Element from '../nodes/element/Element';
+import IAttr from '../nodes/attr/IAttr';
 import type { INamedNodeMapProps } from './INamedNodeMap';
 
 /**
@@ -8,7 +8,10 @@ import type { INamedNodeMapProps } from './INamedNodeMap';
  * Reference: https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap.
  */
 export default class NamedNodeMap implements INamedNodeMapProps {
-	private _element: Element;
+	/**
+	 * Reference to the element.
+	 */
+	private _ownerElement: Element;
 
 	/**
 	 * Constructor.
@@ -16,7 +19,10 @@ export default class NamedNodeMap implements INamedNodeMapProps {
 	 * @param element Associated element.
 	 */
 	constructor(element: Element) {
-		Object.defineProperty(this, '_element', { enumerable: false, writable: true, value: element });
+		Object.defineProperty(this, '_ownerElement', {
+			enumerable: false,
+			value: element
+		});
 	}
 
 	/**
@@ -32,7 +38,7 @@ export default class NamedNodeMap implements INamedNodeMapProps {
 	 * Length.
 	 */
 	public get length(): number {
-		return Object.keys(this._element._attributes).length;
+		return Object.keys(this._ownerElement._attributes).length;
 	}
 
 	/**
@@ -44,7 +50,7 @@ export default class NamedNodeMap implements INamedNodeMapProps {
 		if (index < 0) {
 			return null;
 		}
-		const attr = Object.values(this._element._attributes)[index];
+		const attr = Object.values(this._ownerElement._attributes)[index];
 		return attr ? attr : null;
 	}
 
@@ -54,7 +60,7 @@ export default class NamedNodeMap implements INamedNodeMapProps {
 	 * @param qualifiedName Name.
 	 */
 	public getNamedItem(qualifiedName: string): IAttr | null {
-		return this._element.getAttributeNode(qualifiedName);
+		return this._ownerElement.getAttributeNode(qualifiedName);
 	}
 
 	/**
@@ -64,7 +70,7 @@ export default class NamedNodeMap implements INamedNodeMapProps {
 	 * @param localName Local name of the attribute.
 	 */
 	public getNamedItemNS(namespace: string, localName: string): IAttr | null {
-		return this._element.getAttributeNodeNS(namespace, localName);
+		return this._ownerElement.getAttributeNodeNS(namespace, localName);
 	}
 
 	/**
@@ -74,7 +80,7 @@ export default class NamedNodeMap implements INamedNodeMapProps {
 	 * @returns Replaced attribute.
 	 */
 	public setNamedItem(attr: IAttr): IAttr {
-		return this._element.setAttributeNode(attr);
+		return this._ownerElement.setAttributeNode(attr);
 	}
 
 	/**
@@ -84,7 +90,7 @@ export default class NamedNodeMap implements INamedNodeMapProps {
 	 * @returns Replaced attribute.
 	 */
 	public setNamedItemNS(attr: IAttr): IAttr {
-		return this._element.setAttributeNodeNS(attr);
+		return this._ownerElement.setAttributeNodeNS(attr);
 	}
 
 	/**
@@ -97,7 +103,7 @@ export default class NamedNodeMap implements INamedNodeMapProps {
 		const attr = this.getNamedItem(qualifiedName);
 
 		if (attr) {
-			this._element.removeAttributeNode(attr);
+			this._ownerElement.removeAttributeNode(attr);
 		}
 		return attr;
 	}
@@ -113,7 +119,7 @@ export default class NamedNodeMap implements INamedNodeMapProps {
 		const attr = this.getNamedItemNS(namespace, localName);
 
 		if (attr) {
-			this._element.removeAttributeNode(attr);
+			this._ownerElement.removeAttributeNode(attr);
 		}
 		return attr;
 	}

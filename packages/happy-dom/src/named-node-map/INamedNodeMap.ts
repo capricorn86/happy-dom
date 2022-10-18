@@ -1,4 +1,4 @@
-import IAttr from './IAttr';
+import IAttr from '../nodes/attr/IAttr';
 
 export type INamedNodeMapProps = {
 	readonly length: number;
