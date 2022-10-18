@@ -713,6 +713,19 @@ describe('Element', () => {
 			expect(element.matches('.nonexistent-class div.active')).toBe(false);
 		});
 
+		it('Checks if a detached element matches with a descendant combinator', () => {
+			const parentElement = document.createElement('div');
+			parentElement.setAttribute('role', 'status');
+
+			const element = document.createElement('div');
+			element.className = 'active';
+			parentElement.appendChild(element);
+
+			expect(element.matches('div[role="status"] div.active')).toBe(true);
+			expect(element.matches('div[role="article"] div.active')).toBe(false);
+			expect(parentElement.matches('.nonexistent-class div[role="status"]')).toBe(false);
+		});
+
 		it('Checks if the element matches with a child combinator', () => {
 			const grandparentElement = document.createElement('div');
 			grandparentElement.setAttribute('role', 'alert');
@@ -727,6 +740,7 @@ describe('Element', () => {
 
 			expect(element.matches('div[role="status"] > div.active')).toBe(true);
 			expect(element.matches('div[role="alert"] > div.active')).toBe(false);
+			expect(grandparentElement.matches('div > div[role="alert"]')).toBe(false);
 		});
 	});
 
