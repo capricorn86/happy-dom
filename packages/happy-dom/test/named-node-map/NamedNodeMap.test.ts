@@ -102,7 +102,7 @@ describe('NamedNodeMap', () => {
 
 		it('Replaces an attribute when existing.', () => {
 			element.setAttribute('key', 'value1');
-			const attr = attributes.getNamedItem('key');
+			const attr = document.createAttributeNS('namespace', 'key');
 			attr.value = 'value2';
 
 			const replaced = attributes.setNamedItem(attr);
@@ -127,7 +127,7 @@ describe('NamedNodeMap', () => {
 
 		it('Replaces an attribute when existing.', () => {
 			element.setAttributeNS('namespace', 'key', 'value1');
-			const attr = attributes.getNamedItemNS('namespace', 'key');
+			const attr = document.createAttributeNS('namespace', 'key');
 			attr.value = 'value2';
 
 			const replaced = attributes.setNamedItemNS(attr);
