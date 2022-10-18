@@ -211,8 +211,6 @@ console.log(document.body.querySelector('div').getInnerHTML({ includeShadowRoots
 
 ## Additional Features
 
-Happy DOM exposes two functions that may be useful when working with asynchrounous code.
-
 **whenAsyncComplete()**
 
 Returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that is resolved when all async tasks has been completed.
@@ -249,6 +247,51 @@ Sets the property `window.innerHeight` and dispatches a "resize" event.
 ```javascript
 window.happyDOM.setInnerHeight(768);
 ```
+
+## Settings
+
+Settings can be sent to the constructor or by setting them on the "window.happyDOM.settings" property.
+
+Set by constructor:
+```javascript
+const window = new Window({
+    innerWidth: 1024,
+    innerHeight: 768,
+    url: 'http://localhost:8080',
+    settings: {
+        disableJavaScriptFileLoading: true,
+        disableJavaScriptEvaluation: true,
+        disableCSSFileLoading: true,
+        enableFileSystemHttpRequests: true
+    }
+});
+```
+
+Set by property:
+```javascript
+const window = new Window();
+
+window.happyDOM.settings.disableJavaScriptFileLoading = true;
+window.happyDOM.settings.disableJavaScriptEvaluation = true;
+window.happyDOM.settings.disableCSSFileLoading = true;
+window.happyDOM.settings.enableFileSystemHttpRequests = true;
+```
+
+**disableJavaScriptFileLoading**
+
+Set it to "true" to disable JavaScript file loading. Defaults to "false".
+
+**disableJavaScriptEvaluation**
+
+Set it to "true" to completely disable JavaScript evaluation. Defaults to "false".
+
+**disableCSSFileLoading**
+
+Set it to "true" to disable CSS file loading using the HTMLLinkElement. Defaults to "false".
+
+**enableFileSystemHttpRequests**
+
+Set it to "true" to enable file system HTTP requests using XMLHttpRequest. Defaults to "false".
 
 
 

@@ -112,6 +112,7 @@ import IDocument from '../nodes/document/IDocument';
 import Attr from '../nodes/attr/Attr';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
+import IHappyDOMSettings from './IHappyDOMSettings';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -145,6 +146,11 @@ export default class Window extends EventTarget implements IWindow {
 				(<number>this.innerHeight) = height;
 				this.dispatchEvent(new Event('resize'));
 			}
+		},
+		settings: {
+			disableJavaScriptEvaluation: false,
+			disableCSSEvaluation: false,
+			enableFileSystemHttpRequests: false
 		}
 	};
 
@@ -349,8 +355,14 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param [options.innerWidth] Inner width.
 	 * @param [options.innerHeight] Inner height.
 	 * @param [options.url] URL.
+	 * @param [options.settings] Settings.
 	 */
-	constructor(options?: { innerWidth?: number; innerHeight?: number; url?: string }) {
+	constructor(options?: {
+		innerWidth?: number;
+		innerHeight?: number;
+		url?: string;
+		settings?: IHappyDOMSettings;
+	}) {
 		super();
 
 		this.innerWidth = options?.innerWidth ? options.innerWidth : 0;
@@ -358,6 +370,10 @@ export default class Window extends EventTarget implements IWindow {
 
 		if (options?.url) {
 			this.location.href = options.url;
+		}
+
+		if (options?.settings) {
+			this.happyDOM.settings = Object.assign(this.happyDOM.settings, options.settings);
 		}
 
 		this._setTimeout = ORIGINAL_SET_TIMEOUT;

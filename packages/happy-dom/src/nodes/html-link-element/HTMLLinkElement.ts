@@ -196,7 +196,8 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 			href !== null &&
 			rel &&
 			rel.toLowerCase() === 'stylesheet' &&
-			this.isConnected
+			this.isConnected &&
+			!this.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading
 		) {
 			(<Document>this.ownerDocument)._readyStateManager.startTask();
 			ResourceFetchHandler.fetch(this.ownerDocument, href)
@@ -242,7 +243,11 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 
 		super._connectToNode(parentNode);
 
-		if (isConnected !== isParentConnected && this._evaluateCSS) {
+		if (
+			isConnected !== isParentConnected &&
+			this._evaluateCSS &&
+			!this.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading
+		) {
 			const href = this.getAttributeNS(null, 'href');
 			const rel = this.getAttributeNS(null, 'rel');
 

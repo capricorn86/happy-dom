@@ -101,6 +101,7 @@ import Attr from '../nodes/attr/Attr';
 import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
+import IHappyDOMSettings from './IHappyDOMSettings';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -113,6 +114,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 		asyncTaskManager: AsyncTaskManager;
 		setInnerWidth: (width: number) => void;
 		setInnerHeight: (height: number) => void;
+		settings: IHappyDOMSettings;
 	};
 
 	// Global classes
