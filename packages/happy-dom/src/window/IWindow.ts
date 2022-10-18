@@ -95,6 +95,7 @@ import MediaQueryList from '../match-media/MediaQueryList';
 import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
 import Attr from '../nodes/attr/Attr';
+import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
@@ -134,6 +135,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
 	readonly HTMLDialogElement: typeof HTMLDialogElement;
 	readonly Attr: typeof Attr;
+	readonly NamedNodeMap: typeof NamedNodeMap;
 	readonly SVGSVGElement: typeof SVGSVGElement;
 	readonly SVGElement: typeof SVGElement;
 	readonly Image: typeof Image;
