@@ -1,5 +1,6 @@
 import IShadowRoot from '../shadow-root/IShadowRoot';
 import IAttr from '../attr/IAttr';
+import INamedNodeMap from '../attr/INamedNodeMap';
 import DOMRect from './DOMRect';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import INode from './../node/INode';
@@ -29,7 +30,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	slot: string;
 	readonly nodeName: string;
 	readonly localName: string;
-	readonly attributes: { [k: string | number]: IAttr } & { length: number };
+	readonly attributes: INamedNodeMap;
 
 	// Events
 	oncancel: (event: Event) => void | null;

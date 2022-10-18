@@ -108,6 +108,7 @@ import { Buffer } from 'buffer';
 import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
 import Attr from '../nodes/attr/Attr';
+import NamedNodeMap from '../nodes/attr/NamedNodeMap';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 
@@ -167,6 +168,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLBaseElement = HTMLBaseElement;
 	public readonly HTMLDialogElement = HTMLDialogElement;
 	public readonly Attr = Attr;
+	public readonly NamedNodeMap = NamedNodeMap;
 	public readonly SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement = SVGElement;
 	public readonly Text = Text;

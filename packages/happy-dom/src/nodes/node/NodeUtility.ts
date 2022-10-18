@@ -148,8 +148,8 @@ export default class NodeUtility {
 	 * @param elementB
 	 */
 	public static attributeListsEqual(elementA: IElement, elementB: IElement): boolean {
-		const listA = Object.values(elementA.attributes);
-		const listB = Object.values(elementB.attributes);
+		const listA = Array.from(elementA.attributes);
+		const listB = Array.from(elementB.attributes);
 
 		const lengthA = listA.length;
 		const lengthB = listB.length;

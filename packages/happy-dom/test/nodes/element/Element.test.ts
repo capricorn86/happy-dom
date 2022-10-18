@@ -1198,9 +1198,7 @@ describe('Element', () => {
 		it('Removes an attribute.', () => {
 			element.setAttribute('key1', 'value1');
 			element.removeAttribute('key1');
-			expect(element.attributes).toEqual({
-				length: 0
-			});
+			expect(element.attributes.length).toBe(0);
 		});
 	});
 
@@ -1208,9 +1206,7 @@ describe('Element', () => {
 		it('Removes a namespace attribute.', () => {
 			element.setAttributeNS(NAMESPACE_URI, 'global:local', 'value');
 			element.removeAttributeNS(NAMESPACE_URI, 'local');
-			expect(element.attributes).toEqual({
-				length: 0
-			});
+			expect(element.attributes.length).toBe(0);
 		});
 	});
 
@@ -1478,7 +1474,7 @@ describe('Element', () => {
 				element.setAttributeNode(attribute);
 				element[method](attribute);
 
-				expect(element.attributes).toEqual({ length: 0 });
+				expect(element.attributes.length).toBe(0);
 			});
 		});
 	}
