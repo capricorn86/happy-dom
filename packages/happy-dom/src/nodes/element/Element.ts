@@ -1,6 +1,7 @@
 import Node from '../node/Node';
 import ShadowRoot from '../shadow-root/ShadowRoot';
 import Attr from '../attr/Attr';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap';
 import DOMRect from './DOMRect';
 import DOMTokenList from '../../dom-token-list/DOMTokenList';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
@@ -26,6 +27,8 @@ import IText from '../text/IText';
 import IDOMRectList from './IDOMRectList';
 import DOMRectListFactory from './DOMRectListFactory';
 import IAttr from '../attr/IAttr';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap';
+
 import Event from '../../event/Event';
 
 /**
@@ -249,11 +252,8 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @returns Attributes.
 	 */
-	public get attributes(): { [k: string | number]: IAttr } & { length: number } {
-		const attributes = Object.values(this._attributes);
-		return Object.assign({}, this._attributes, attributes, {
-			length: attributes.length
-		});
+	public get attributes(): INamedNodeMap {
+		return Object.assign(new NamedNodeMap(this), Object.values(this._attributes), this._attributes);
 	}
 
 	/**

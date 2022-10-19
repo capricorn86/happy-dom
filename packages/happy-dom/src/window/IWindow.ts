@@ -98,6 +98,7 @@ import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTa
 import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
 import Attr from '../nodes/attr/Attr';
+import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
@@ -138,6 +139,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
 	readonly HTMLDialogElement: typeof HTMLDialogElement;
 	readonly Attr: typeof Attr;
+	readonly NamedNodeMap: typeof NamedNodeMap;
 	readonly SVGSVGElement: typeof SVGSVGElement;
 	readonly SVGElement: typeof SVGElement;
 	readonly Image: typeof Image;
