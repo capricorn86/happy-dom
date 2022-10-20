@@ -150,7 +150,8 @@ export default class Window extends EventTarget implements IWindow {
 		},
 		settings: {
 			disableJavaScriptEvaluation: false,
-			disableCSSEvaluation: false,
+			disableJavaScriptFileLoading: false,
+			disableCSSFileLoading: false,
 			enableFileSystemHttpRequests: false
 		}
 	};
