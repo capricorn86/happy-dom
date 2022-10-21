@@ -123,7 +123,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 	// Private properties
 	private readonly _ownerDocument: IDocument = null;
-	private _request = null;
+	private _request: HTTP.ClientRequest = null;
 	private _response = null;
 	private _requestHeaders = {};
 	private _sendFlag = false;
@@ -534,11 +534,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	private _sendSyncRequest(options: HTTPS.RequestOptions, ssl: boolean, data?: string): void {
 		// Synchronous
-		// Create a temporary file for communication with the other Node process
-		const contentFile = '.node-xml-http-request-content-' + process.pid;
-		const syncFile = '.node-xml-http-request-sync-' + process.pid;
-		FS.writeFileSync(syncFile, '', 'utf8');
-
+		// Note: console.log === stdout
 		// The async request the other Node process executes
 		const execString = `
                 const HTTP = require('http');
@@ -555,14 +551,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
                         responseData = Buffer.concat([responseData, Buffer.from(chunk)]);
                     });
                     response.on('end', () => {
-                        FS.writeFileSync('${contentFile}', JSON.stringify({err: null, data: {statusCode: response.statusCode, headers: response.headers, text: responseText, data: responseData.toString('base64')}}), 'utf8');
-                        FS.unlinkSync('${syncFile}');
+                        console.log(JSON.stringify({err: null, data: {statusCode: response.statusCode, headers: response.headers, text: responseText, data: responseData.toString('base64')}}));
                     });
                     response.on('error', (error) => {
-                        FS.writeFileSync('${contentFile}', 'NODE-XML-HTTP-REQUEST-ERROR:' + JSON.stringify(error), 'utf8').on('error', (error) => {
-                            FS.writeFileSync('${contentFile}', 'NODE-XML-HTTP-REQUEST-ERROR:' + JSON.stringify(error), 'utf8');
-                            FS.unlinkSync('${syncFile}');
-                        });
+                        console.log(JSON.stringify({err: error, data: null}));
                     });
                 });
                 request.write(\`${JSON.stringify(data).slice(1, -1).replace(/'/g, "\\'")}\`);
@@ -570,29 +562,27 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
             `.trim();
 
 		// Start the other Node Process, executing this string
-		ChildProcess.execFileSync(process.argv[0], ['-e', execString]);
+		const content = ChildProcess.execFileSync(process.argv[0], ['-e', execString], {
+			encoding: 'utf-8'
+		});
 
-		// If syncFile still exists, the request failed, if contentFile doesn't exist, the request failed.
-		if (FS.existsSync(syncFile) || !FS.existsSync(contentFile)) {
+		// If content is null string, then there was an error
+		if (!content) {
 			throw new DOMException('Synchronous request failed', DOMExceptionNameEnum.networkError);
 		}
 		this.responseURL = RelativeURL.getAbsoluteURL(
 			this._ownerDocument.defaultView.location,
 			this._settings.url
 		).href;
-		const content = FS.readFileSync(contentFile, 'utf8');
 
-		// Remove the temporary file
-		FS.unlinkSync(contentFile);
-
-		if (content.match(/^NODE-XML-HTTP-REQUEST-ERROR:/)) {
+		const { err: error, data: responseObj } = JSON.parse(content);
+		if (error) {
 			// If the file returned an error, handle it
-			const errorObj = JSON.parse(content.replace(/^NODE-XMLHTTPREQUEST-ERROR:/, ''));
+			const errorObj = JSON.parse(content.replace(/^NODE-XML-HTTP-REQUEST-ERROR:/, ''));
 			this._onError(errorObj, 503);
-		} else {
-			// If the file returned okay, parse its data and move to the DONE state
-			const { data: responseObj } = JSON.parse(content);
+		}
 
+		if (responseObj) {
 			this._response = { statusCode: responseObj.statusCode, headers: responseObj.headers };
 			this.status = responseObj.statusCode;
 			this.responseText = responseObj.text;
@@ -848,6 +838,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 						this._onError(error);
 					} else {
 						this.status = 200;
+						this.response = data; // TODO: ResponseType.
 						this.responseText = data.toString();
 						this._setState(XMLHttpRequestReadyStateEnum.done);
 					}
