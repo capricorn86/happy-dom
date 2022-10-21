@@ -577,9 +577,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		const { err: error, data: responseObj } = JSON.parse(content);
 		if (error) {
-			// If the file returned an error, handle it
-			const errorObj = JSON.parse(content.replace(/^NODE-XML-HTTP-REQUEST-ERROR:/, ''));
-			this._onError(errorObj, 503);
+			this._onError(error, 503);
 		}
 
 		if (responseObj) {
