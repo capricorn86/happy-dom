@@ -2,7 +2,6 @@ import DOMException from '../../exception/DOMException';
 import HTMLCollection from '../element/HTMLCollection';
 import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
 import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
-import HTMLOptionElement from './HTMLOptionElement';
 import IHTMLOptionElement from './IHTMLOptionElement';
 import IHTMLOptionsCollection from './IHTMLOptionsCollection';
 
@@ -17,6 +16,7 @@ export default class HTMLOptionsCollection
 	implements IHTMLOptionsCollection
 {
 	private _selectElement: IHTMLSelectElement;
+	private _selectedIndex = -1;
 
 	/**
 	 *
@@ -34,14 +34,7 @@ export default class HTMLOptionsCollection
 	 * @returns SelectedIndex.
 	 */
 	public get selectedIndex(): number {
-		for (let i = 0; i < this.length; i++) {
-			const item = this[i];
-			if (item instanceof HTMLOptionElement && item.selected) {
-				return i;
-			}
-		}
-
-		return -1;
+		return this._selectedIndex;
 	}
 
 	/**
@@ -50,10 +43,11 @@ export default class HTMLOptionsCollection
 	 * @param selectedIndex SelectedIndex.
 	 */
 	public set selectedIndex(selectedIndex: number) {
-		for (let i = 0; i < this.length; i++) {
-			const item = this[i];
-			if (item instanceof HTMLOptionElement) {
-				this[i].selected = i === selectedIndex;
+		if (typeof selectedIndex === 'number' && !isNaN(selectedIndex)) {
+			if (selectedIndex >= 0 && selectedIndex < this.length) {
+				this._selectedIndex = selectedIndex;
+			} else {
+				this._selectedIndex = -1;
 			}
 		}
 	}

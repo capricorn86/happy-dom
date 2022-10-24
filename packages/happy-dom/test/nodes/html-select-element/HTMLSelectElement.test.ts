@@ -70,6 +70,10 @@ describe('HTMLSelectElement', () => {
 			element.appendChild(option1);
 			element.appendChild(option2);
 
+			expect(element.value).toBe('option1');
+
+			element.selectedIndex = -1;
+
 			expect(element.value).toBe('');
 		});
 	});
@@ -87,8 +91,6 @@ describe('HTMLSelectElement', () => {
 
 			expect(element.options.selectedIndex).toBe(0);
 		});
-
-		it('Trims and removes new lines.', () => {});
 	});
 
 	for (const property of ['disabled', 'autofocus', 'required', 'multiple']) {
@@ -148,6 +150,19 @@ describe('HTMLSelectElement', () => {
 
 			element.selectedIndex = 1;
 			expect(element.options.selectedIndex).toBe(1);
+		});
+
+		it('Ignores invalid values gracefully.', () => {
+			element.appendChild(document.createElement('option'));
+			element.appendChild(document.createElement('option'));
+
+			expect(element.options.selectedIndex).toBe(0);
+
+			element.selectedIndex = undefined;
+			expect(element.options.selectedIndex).toBe(0);
+
+			element.selectedIndex = 1000;
+			expect(element.options.selectedIndex).toBe(-1);
 		});
 	});
 
