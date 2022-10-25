@@ -42,76 +42,80 @@ export default class XMLParser {
 		let lastTextIndex = 0;
 		let match: RegExpExecArray;
 
-		while ((match = markupRegexp.exec(data))) {
-			const tagName = match[2].toLowerCase();
-			const isStartTag = !match[1];
+		if (data !== null && data !== undefined) {
+			data = String(data);
 
-			if (parent && match.index !== lastTextIndex) {
-				const text = data.substring(lastTextIndex, match.index);
-				this.appendTextAndCommentNodes(document, parent, text);
-			}
+			while ((match = markupRegexp.exec(data))) {
+				const tagName = match[2].toLowerCase();
+				const isStartTag = !match[1];
 
-			if (isStartTag) {
-				const namespaceURI =
-					tagName === 'svg'
-						? NamespaceURI.svg
-						: (<IElement>parent).namespaceURI || NamespaceURI.html;
-				const newElement = document.createElementNS(namespaceURI, tagName);
-
-				// Scripts are not allowed to be executed when they are parsed using innerHTML, outerHTML, replaceWith() etc.
-				// However, they are allowed to be executed when document.write() is used.
-				// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
-				if (tagName === 'script') {
-					(<HTMLScriptElement>newElement)._evaluateScript = evaluateScripts;
+				if (parent && match.index !== lastTextIndex) {
+					const text = data.substring(lastTextIndex, match.index);
+					this.appendTextAndCommentNodes(document, parent, text);
 				}
 
-				// An assumption that the same rule should be applied for the HTMLLinkElement is made here.
-				if (tagName === 'link') {
-					(<HTMLLinkElement>newElement)._evaluateCSS = evaluateScripts;
-				}
+				if (isStartTag) {
+					const namespaceURI =
+						tagName === 'svg'
+							? NamespaceURI.svg
+							: (<IElement>parent).namespaceURI || NamespaceURI.html;
+					const newElement = document.createElementNS(namespaceURI, tagName);
 
-				this.setAttributes(newElement, match[3]);
-
-				if (!match[4] && !VoidElements.includes(tagName)) {
-					// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
-					// Therefore we will auto-close the tag.
-					if (parentUnnestableTagName === tagName) {
-						stack.pop();
-						parent = <Element>parent.parentNode || root;
+					// Scripts are not allowed to be executed when they are parsed using innerHTML, outerHTML, replaceWith() etc.
+					// However, they are allowed to be executed when document.write() is used.
+					// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
+					if (tagName === 'script') {
+						(<HTMLScriptElement>newElement)._evaluateScript = evaluateScripts;
 					}
 
-					parent = <Element>parent.appendChild(newElement);
-					parentUnnestableTagName = this.getUnnestableTagName(parent);
-					stack.push(parent);
-				} else {
-					parent.appendChild(newElement);
-				}
-				lastTextIndex = markupRegexp.lastIndex;
+					// An assumption that the same rule should be applied for the HTMLLinkElement is made here.
+					if (tagName === 'link') {
+						(<HTMLLinkElement>newElement)._evaluateCSS = evaluateScripts;
+					}
 
-				// Tags which contain non-parsed content
-				// For example: <script> JavaScript should not be parsed
-				if (ChildLessElements.includes(tagName)) {
-					let childLessMatch = null;
-					while ((childLessMatch = markupRegexp.exec(data))) {
-						if (childLessMatch[2].toLowerCase() === tagName && childLessMatch[1]) {
-							markupRegexp.lastIndex -= childLessMatch[0].length;
-							break;
+					this.setAttributes(newElement, match[3]);
+
+					if (!match[4] && !VoidElements.includes(tagName)) {
+						// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
+						// Therefore we will auto-close the tag.
+						if (parentUnnestableTagName === tagName) {
+							stack.pop();
+							parent = <Element>parent.parentNode || root;
+						}
+
+						parent = <Element>parent.appendChild(newElement);
+						parentUnnestableTagName = this.getUnnestableTagName(parent);
+						stack.push(parent);
+					} else {
+						parent.appendChild(newElement);
+					}
+					lastTextIndex = markupRegexp.lastIndex;
+
+					// Tags which contain non-parsed content
+					// For example: <script> JavaScript should not be parsed
+					if (ChildLessElements.includes(tagName)) {
+						let childLessMatch = null;
+						while ((childLessMatch = markupRegexp.exec(data))) {
+							if (childLessMatch[2].toLowerCase() === tagName && childLessMatch[1]) {
+								markupRegexp.lastIndex -= childLessMatch[0].length;
+								break;
+							}
 						}
 					}
+				} else {
+					stack.pop();
+					parent = stack[stack.length - 1] || root;
+					parentUnnestableTagName = this.getUnnestableTagName(parent);
+
+					lastTextIndex = markupRegexp.lastIndex;
 				}
-			} else {
-				stack.pop();
-				parent = stack[stack.length - 1] || root;
-				parentUnnestableTagName = this.getUnnestableTagName(parent);
-
-				lastTextIndex = markupRegexp.lastIndex;
 			}
-		}
 
-		// Text after last element
-		if ((!match && data.length > 0) || (match && lastTextIndex !== match.index)) {
-			const text = data.substring(lastTextIndex);
-			this.appendTextAndCommentNodes(document, parent || root, text);
+			// Text after last element
+			if ((!match && data.length > 0) || (match && lastTextIndex !== match.index)) {
+				const text = data.substring(lastTextIndex);
+				this.appendTextAndCommentNodes(document, parent || root, text);
+			}
 		}
 
 		return root;
