@@ -1978,7 +1978,7 @@ describe('CSSStyleDeclaration', () => {
 
 			declaration.cssText = '';
 
-			expect(element.getAttribute('style')).toBe(null);
+			expect(element.getAttribute('style')).toBe('');
 		});
 	});
 

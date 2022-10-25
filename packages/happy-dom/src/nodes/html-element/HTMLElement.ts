@@ -201,6 +201,16 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	}
 
 	/**
+	 * Sets style.
+	 *
+	 * @param cssText Style as text.
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style#setting_styles
+	 */
+	public set style(cssText: string | CSSStyleDeclaration) {
+		this.style.cssText = typeof cssText === 'string' ? <string>cssText : '';
+	}
+
+	/**
 	 * Returns data set.
 	 *
 	 * @returns Data set.

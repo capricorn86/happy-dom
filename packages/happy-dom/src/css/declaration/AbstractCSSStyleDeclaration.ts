@@ -77,21 +77,17 @@ export default abstract class AbstractCSSStyleDeclaration {
 
 		if (this._ownerElement) {
 			const style = new CSSStyleDeclarationPropertyManager({ cssText });
-			if (!style.size()) {
-				delete this._ownerElement['_attributes']['style'];
-			} else {
-				if (!this._ownerElement['_attributes']['style']) {
-					Attr._ownerDocument = this._ownerElement.ownerDocument;
-					this._ownerElement['_attributes']['style'] = new Attr();
-					this._ownerElement['_attributes']['style'].name = 'style';
-				}
-
-				if (this._ownerElement.isConnected) {
-					this._ownerElement.ownerDocument['_cacheID']++;
-				}
-
-				this._ownerElement['_attributes']['style'].value = style.toString();
+			if (!this._ownerElement['_attributes']['style']) {
+				Attr._ownerDocument = this._ownerElement.ownerDocument;
+				this._ownerElement['_attributes']['style'] = new Attr();
+				this._ownerElement['_attributes']['style'].name = 'style';
 			}
+
+			if (this._ownerElement.isConnected) {
+				this._ownerElement.ownerDocument['_cacheID']++;
+			}
+
+			this._ownerElement['_attributes']['style'].value = style.toString();
 		} else {
 			this._style = new CSSStyleDeclarationPropertyManager({ cssText });
 		}
