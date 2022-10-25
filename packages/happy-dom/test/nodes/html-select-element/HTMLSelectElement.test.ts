@@ -137,6 +137,26 @@ describe('HTMLSelectElement', () => {
 			element.options.selectedIndex = 1;
 			expect(element.selectedIndex).toBe(1);
 		});
+
+		it('Returns option with "selected" attribute is defined.', () => {
+			const option1 = document.createElement('option');
+			const option2 = document.createElement('option');
+
+			option2.setAttribute('selected', '');
+
+			element.appendChild(option1);
+			element.appendChild(option2);
+
+			expect(element.selectedIndex).toBe(1);
+
+			option1.setAttribute('selected', '');
+
+			expect(element.selectedIndex).toBe(0);
+
+			option2.removeAttribute('selected');
+
+			expect(element.selectedIndex).toBe(0);
+		});
 	});
 
 	describe(`set selectedIndex()`, () => {

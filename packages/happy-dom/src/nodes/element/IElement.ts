@@ -260,15 +260,17 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * Removes an Attr node.
 	 *
 	 * @param attribute Attribute.
+	 * @returns Removed attribute.
 	 */
-	removeAttributeNode(attribute: IAttr): void;
+	removeAttributeNode(attribute: IAttr): IAttr;
 
 	/**
 	 * Removes an Attr node.
 	 *
 	 * @param attribute Attribute.
+	 * @returns Removed attribute.
 	 */
-	removeAttributeNodeNS(attribute: IAttr): void;
+	removeAttributeNodeNS(attribute: IAttr): IAttr;
 
 	/**
 	 * Clones a node.
