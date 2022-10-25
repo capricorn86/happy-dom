@@ -421,11 +421,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	}
 
 	/**
-	 * The setAttributeNode() method adds a new Attr node to the specified element.
-	 *
 	 * @override
-	 * @param attribute Attribute.
-	 * @returns Replaced attribute.
 	 */
 	public setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
@@ -438,25 +434,20 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	}
 
 	/**
-	 * Removes an Attr node.
-	 *
 	 * @override
-	 * @param attribute Attribute.
 	 */
-	public removeAttributeNode(attribute: IAttr): void {
+	public removeAttributeNode(attribute: IAttr): IAttr {
 		super.removeAttributeNode(attribute);
 
 		if (attribute.name === 'style' && this._style) {
 			this._style.cssText = '';
 		}
+
+		return attribute;
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IHTMLElement {
 		const clone = <HTMLElement>super.cloneNode(deep);

@@ -74,11 +74,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	}
 
 	/**
-	 * The setAttributeNode() method adds a new Attr node to the specified element.
-	 *
 	 * @override
-	 * @param attribute Attribute.
-	 * @returns Replaced attribute.
 	 */
 	public setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
@@ -91,16 +87,15 @@ export default class SVGElement extends Element implements ISVGElement {
 	}
 
 	/**
-	 * Removes an Attr node.
-	 *
 	 * @override
-	 * @param attribute Attribute.
 	 */
-	public removeAttributeNode(attribute: IAttr): void {
+	public removeAttributeNode(attribute: IAttr): IAttr {
 		super.removeAttributeNode(attribute);
 
 		if (attribute.name === 'style' && this._style) {
 			this._style.cssText = '';
 		}
+
+		return attribute;
 	}
 }

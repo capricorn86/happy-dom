@@ -16,7 +16,6 @@ export default class HTMLOptionsCollection
 	implements IHTMLOptionsCollection
 {
 	private _selectElement: IHTMLSelectElement;
-	private _selectedIndex = -1;
 
 	/**
 	 *
@@ -34,7 +33,7 @@ export default class HTMLOptionsCollection
 	 * @returns SelectedIndex.
 	 */
 	public get selectedIndex(): number {
-		return this._selectedIndex;
+		return this._selectElement.selectedIndex;
 	}
 
 	/**
@@ -43,13 +42,7 @@ export default class HTMLOptionsCollection
 	 * @param selectedIndex SelectedIndex.
 	 */
 	public set selectedIndex(selectedIndex: number) {
-		if (typeof selectedIndex === 'number' && !isNaN(selectedIndex)) {
-			if (selectedIndex >= 0 && selectedIndex < this.length) {
-				this._selectedIndex = selectedIndex;
-			} else {
-				this._selectedIndex = -1;
-			}
-		}
+		this._selectElement.selectedIndex = selectedIndex;
 	}
 
 	/**
