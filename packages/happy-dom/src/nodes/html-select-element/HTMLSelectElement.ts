@@ -1,5 +1,3 @@
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
@@ -204,13 +202,6 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param value Value.
 	 */
 	public set selectedIndex(value: number) {
-		if (value > this.options.length - 1 || value < -1) {
-			throw new DOMException(
-				'Select elements selected index must be valid',
-				DOMExceptionNameEnum.indexSizeError
-			);
-		}
-
 		this.options.selectedIndex = value;
 	}
 
@@ -296,6 +287,10 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 
 			if (element.tagName === 'OPTION' || element.tagName === 'OPTGROUP') {
 				this.options.push(<IHTMLOptionElement | IHTMLOptGroupElement>element);
+
+				if (this.options.length === 1) {
+					this.options.selectedIndex = 0;
+				}
 			}
 
 			this._updateIndexProperties(previousLength, this.options.length);
@@ -337,6 +332,10 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 				} else {
 					this.options.push(<IHTMLOptionElement | IHTMLOptGroupElement>newElement);
 				}
+
+				if (this.options.length === 1) {
+					this.options.selectedIndex = 0;
+				}
 			}
 
 			this._updateIndexProperties(previousLength, this.options.length);
@@ -355,8 +354,17 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 
 			if (element.tagName === 'OPTION' || element.tagName === 'OPTION') {
 				const index = this.options.indexOf(<IHTMLOptionElement | IHTMLOptGroupElement>node);
+
 				if (index !== -1) {
 					this.options.splice(index, 1);
+				}
+
+				if (this.options.selectedIndex >= this.options.length) {
+					this.options.selectedIndex = this.options.length - 1;
+				}
+
+				if (!this.options.length) {
+					this.options.selectedIndex = -1;
 				}
 			}
 

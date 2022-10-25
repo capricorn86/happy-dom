@@ -155,6 +155,27 @@ describe('ParentNodeUtility', () => {
 				div4
 			]);
 		});
+
+		it('Returns all elements when tag name is *.', () => {
+			const parent = document.createElement('div');
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			const div3 = document.createElement('div');
+			const div4 = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const span3 = document.createElement('span');
+
+			parent.appendChild(div1);
+			div1.appendChild(div2);
+			div2.appendChild(span1);
+			span1.appendChild(div3);
+			div3.appendChild(span2);
+			div3.appendChild(span3);
+			span3.appendChild(div4);
+
+			expect(ParentNodeUtility.getElementsByTagName(parent, '*').length).toEqual(7);
+		});
 	});
 
 	describe('getElementsByTagNameNS()', () => {
@@ -164,7 +185,7 @@ describe('ParentNodeUtility', () => {
 			const div2 = document.createElement('div');
 			const div3 = document.createElementNS(NamespaceURI.svg, 'div');
 			const div4 = document.createElement('div');
-			const span1 = document.createElement('span');
+			const span1 = document.createElementNS(NamespaceURI.svg, 'span');
 			const span2 = document.createElement('span');
 			const span3 = document.createElement('span');
 
@@ -180,6 +201,29 @@ describe('ParentNodeUtility', () => {
 				div1,
 				div3
 			]);
+		});
+
+		it('Returns all elements when tag name is *.', () => {
+			const parent = document.createElement('div');
+			const div1 = document.createElementNS(NamespaceURI.svg, 'div');
+			const div2 = document.createElement('div');
+			const div3 = document.createElementNS(NamespaceURI.svg, 'div');
+			const div4 = document.createElement('div');
+			const span1 = document.createElementNS(NamespaceURI.svg, 'span');
+			const span2 = document.createElement('span');
+			const span3 = document.createElement('span');
+
+			parent.appendChild(div1);
+			div1.appendChild(div2);
+			div2.appendChild(span1);
+			span1.appendChild(div3);
+			div3.appendChild(span2);
+			div3.appendChild(span3);
+			span3.appendChild(div4);
+
+			expect(
+				ParentNodeUtility.getElementsByTagNameNS(parent, NamespaceURI.svg, '*').length
+			).toEqual(3);
 		});
 	});
 

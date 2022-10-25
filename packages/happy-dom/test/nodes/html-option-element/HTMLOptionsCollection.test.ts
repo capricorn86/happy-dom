@@ -3,7 +3,7 @@ import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement';
 import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement';
-import { DOMException } from '../../../src';
+import DOMException from '../../../src/exception/DOMException';
 
 describe('HTMLOptionsCollection', () => {
 	let window: IWindow;
@@ -18,57 +18,51 @@ describe('HTMLOptionsCollection', () => {
 		jest.restoreAllMocks();
 	});
 
-	describe('get selectedindex()', () => {
-		it('Returns the index of the first option element in the list of options in tree order that has its selectedness set to true.', () => {
-			const select = <HTMLSelectElement>document.createElement('select');
-			const option1 = <HTMLOptionElement>document.createElement('option');
-			const option2 = <HTMLOptionElement>document.createElement('option');
-			option1.selected = true;
-			option1.value = 'option1';
-			option2.value = 'option2';
-			select.appendChild(option1);
-			select.appendChild(option2);
-
-			expect(select.options.selectedIndex).toBe(0);
-		});
-
+	describe('get selectedIndex()', () => {
 		it('Returns -1 if there are no options.', () => {
 			const select = <HTMLSelectElement>document.createElement('select');
 			expect(select.options.selectedIndex).toBe(-1);
 		});
 
-		it('Returns -1 if no option is selected.', () => {
+		it('Returns 0 by default.', () => {
 			const select = <HTMLSelectElement>document.createElement('select');
 			const option1 = <HTMLOptionElement>document.createElement('option');
 			const option2 = <HTMLOptionElement>document.createElement('option');
+
 			option1.value = 'option1';
 			option2.value = 'option2';
+
 			select.appendChild(option1);
 			select.appendChild(option2);
 
-			expect(select.options.selectedIndex).toBe(-1);
+			expect(select.options.selectedIndex).toBe(0);
 		});
 	});
 
-	describe('set selectedindex()', () => {
+	describe('set selectedIndex()', () => {
 		it('Updates option.selected', () => {
 			const select = <HTMLSelectElement>document.createElement('select');
-			select.appendChild(document.createElement('option'));
-			select.appendChild(document.createElement('option'));
-			document.body.appendChild(select);
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
 
-			expect((<HTMLOptionElement>select.options[0]).selected).toBe(false);
-			expect((<HTMLOptionElement>select.options[1]).selected).toBe(false);
+			expect(option1.selected).toBe(false);
+			expect(option2.selected).toBe(false);
+
+			select.appendChild(option1);
+			select.appendChild(option2);
+
+			expect(option1.selected).toBe(true);
+			expect(option2.selected).toBe(false);
 
 			select.options.selectedIndex = 1;
 
-			expect((<HTMLOptionElement>select.options[0]).selected).toBe(false);
-			expect((<HTMLOptionElement>select.options[1]).selected).toBe(true);
+			expect(option1.selected).toBe(false);
+			expect(option2.selected).toBe(true);
 
 			select.options.selectedIndex = -1;
 
-			expect((<HTMLOptionElement>select.options[0]).selected).toBe(false);
-			expect((<HTMLOptionElement>select.options[1]).selected).toBe(false);
+			expect(option1.selected).toBe(false);
+			expect(option2.selected).toBe(false);
 		});
 	});
 
@@ -134,16 +128,21 @@ describe('HTMLOptionsCollection', () => {
 			const select = <HTMLSelectElement>document.createElement('select');
 			const option = document.createElement('option');
 			const option2 = document.createElement('option');
+
+			expect(select.options.selectedIndex).toBe(-1);
+
 			select.appendChild(option);
 			select.appendChild(option2);
-			document.body.appendChild(select);
-			expect(select.options.selectedIndex).toBe(-1);
+
+			expect(select.options.selectedIndex).toBe(0);
 
 			select.options.selectedIndex = 1;
 			expect(select.options.selectedIndex).toBe(1);
 
-			// No option is selected after removing the selected option
 			select.options.remove(1);
+			expect(select.options.selectedIndex).toBe(0);
+
+			select.options.remove(0);
 			expect(select.options.selectedIndex).toBe(-1);
 		});
 	});
