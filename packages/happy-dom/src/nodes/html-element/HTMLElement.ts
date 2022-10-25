@@ -207,7 +207,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style#setting_styles
 	 */
 	public set style(cssText: string | CSSStyleDeclaration) {
-		this.setAttribute('style', typeof cssText === 'string' ? <string>cssText : '');
+		this.style.cssText = typeof cssText === 'string' ? <string>cssText : '';
 	}
 
 	/**
