@@ -396,5 +396,19 @@ describe('XMLParser', () => {
 
 			expect((<IHTMLElement>root.children[0]).innerText).toBe(`console.log('hello')`);
 		});
+
+		it('Handles different value types.', () => {
+			const root1 = XMLParser.parse(window.document, null);
+			expect(new XMLSerializer().serializeToString(root1)).toBe('');
+
+			const root2 = XMLParser.parse(window.document, undefined);
+			expect(new XMLSerializer().serializeToString(root2)).toBe('');
+
+			const root3 = XMLParser.parse(window.document, <string>(<unknown>1000));
+			expect(new XMLSerializer().serializeToString(root3)).toBe('1000');
+
+			const root4 = XMLParser.parse(window.document, <string>(<unknown>false));
+			expect(new XMLSerializer().serializeToString(root4)).toBe('false');
+		});
 	});
 });
