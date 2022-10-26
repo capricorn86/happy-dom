@@ -13,7 +13,7 @@ import DOMException from '../exception/DOMException';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import HTMLDocument from '../nodes/html-document/HTMLDocument';
 import { UrlObject } from 'url';
-import { default as DOMParserImplementation } from '../dom-parser/DOMParser';
+import DOMParser, { default as DOMParserImplementation } from '../dom-parser/DOMParser';
 
 // SSL certificates generated for Happy DOM to be able to perform HTTPS requests:
 
@@ -125,27 +125,27 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 	// Private properties
 	private readonly _ownerDocument: IDocument = null;
-	private flags: {
+	private _flags: {
 		// Async response or sync response.
-		_response: HTTP.IncomingMessage | { headers: string[]; statusCode: number };
+		response: HTTP.IncomingMessage | { headers: string[]; statusCode: number };
 		// Response fields
-		_responseType: string;
-		_responseText: string;
-		_responseXML: IDocument;
-		_asyncRequest: HTTP.ClientRequest;
-		_asyncTaskID: number;
-		_requestHeaders: object;
+		responseType: string;
+		responseText: string;
+		responseXML: IDocument;
+		asyncRequest: HTTP.ClientRequest;
+		asyncTaskID: number;
+		requestHeaders: object;
 		send: boolean;
 		error: boolean;
 		aborted: boolean;
 	} = {
-		_response: null,
-		_responseType: '',
-		_responseText: '',
-		_responseXML: null,
-		_asyncRequest: null,
-		_asyncTaskID: null,
-		_requestHeaders: {},
+		response: null,
+		responseType: '',
+		responseText: '',
+		responseXML: null,
+		asyncRequest: null,
+		asyncTaskID: null,
+		requestHeaders: {},
 		send: false,
 		error: false,
 		aborted: false
@@ -179,7 +179,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param value
 	 */
 	public set responseText(value: string) {
-		this.flags._responseText = value;
+		this._flags.responseText = value;
 	}
 
 	/**
@@ -190,7 +190,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public get responseText(): string {
 		if (this.responseType === 'text' || this.responseType === '') {
-			return this.flags._responseText;
+			return this._flags.responseText;
 		}
 		throw new DOMException(
 			`Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was '${this.responseType}').`,
@@ -204,7 +204,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param value The response XML.
 	 */
 	public set responseXML(value: IDocument) {
-		this.flags._responseXML = value;
+		this._flags.responseXML = value;
 	}
 
 	/**
@@ -215,7 +215,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public get responseXML(): IDocument {
 		if (this.responseType === 'document' || this.responseType === '') {
-			return this.flags._responseXML;
+			return this._flags.responseXML;
 		}
 		throw new DOMException(
 			`Failed to read the 'responseXML' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'document' (was '${this.responseType}').`,
@@ -248,7 +248,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
-		this.flags._responseType = type;
+		this._flags.responseType = type;
 	}
 
 	/**
@@ -257,7 +257,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @returns Response type.
 	 */
 	public get responseType(): string {
-		return this.flags._responseType;
+		return this._flags.responseType;
 	}
 
 	/**
@@ -271,7 +271,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public open(method: string, url: string, async = true, user?: string, password?: string): void {
 		this.abort();
-		this.flags = { ...this.flags, aborted: false, error: false };
+		this._flags = { ...this._flags, aborted: false, error: false };
 
 		const upperMethod = method.toUpperCase();
 
@@ -317,10 +317,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (FORBIDDEN_REQUEST_HEADERS.includes(lowerHeader)) {
 			return false;
 		}
-		if (this.flags.send) {
+		if (this._flags.send) {
 			throw new DOMException('send flag is true', DOMExceptionNameEnum.invalidStateError);
 		}
-		this.flags._requestHeaders[lowerHeader] = value;
+		this._flags.requestHeaders[lowerHeader] = value;
 		return true;
 	}
 
@@ -336,10 +336,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (
 			typeof header === 'string' &&
 			this.readyState > XMLHttpRequestReadyStateEnum.opened &&
-			this.flags._response.headers[lowerHeader] &&
-			!this.flags.error
+			this._flags.response.headers[lowerHeader] &&
+			!this._flags.error
 		) {
-			return this.flags._response.headers[lowerHeader];
+			return this._flags.response.headers[lowerHeader];
 		}
 
 		return null;
@@ -351,15 +351,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @returns A string with all response headers separated by CR+LF.
 	 */
 	public getAllResponseHeaders(): string {
-		if (this.readyState < XMLHttpRequestReadyStateEnum.headersRecieved || this.flags.error) {
+		if (this.readyState < XMLHttpRequestReadyStateEnum.headersRecieved || this._flags.error) {
 			return '';
 		}
 		let result = '';
 
-		for (const name of Object.keys(this.flags._response.headers)) {
+		for (const name of Object.keys(this._flags.response.headers)) {
 			// Cookie headers are excluded
 			if (name !== 'set-cookie' && name !== 'set-cookie2') {
-				result += `${name}: ${this.flags._response.headers[name]}\r\n`;
+				result += `${name}: ${this._flags.response.headers[name]}\r\n`;
 			}
 		}
 
@@ -374,8 +374,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public getRequestHeader(name: string): string {
 		const lowerName = name.toLowerCase();
-		if (typeof name === 'string' && this.flags._requestHeaders[lowerName]) {
-			return this.flags._requestHeaders[lowerName];
+		if (typeof name === 'string' && this._flags.requestHeaders[lowerName]) {
+			return this._flags.requestHeaders[lowerName];
 		}
 
 		return '';
@@ -394,29 +394,29 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * Aborts a request.
 	 */
 	public abort(): void {
-		if (this.flags._asyncRequest) {
-			this.flags._asyncRequest.destroy();
-			this.flags._asyncRequest = null;
+		if (this._flags.asyncRequest) {
+			this._flags.asyncRequest.destroy();
+			this._flags.asyncRequest = null;
 		}
 
-		this.flags._requestHeaders = {};
+		this._flags.requestHeaders = {};
 		this.responseText = '';
 		this.responseXML = null;
 
-		this.flags = { ...this.flags, aborted: true, error: true };
+		this._flags = { ...this._flags, aborted: true, error: true };
 
 		if (
 			this.readyState !== XMLHttpRequestReadyStateEnum.unsent &&
-			(this.readyState !== XMLHttpRequestReadyStateEnum.opened || this.flags.send) &&
+			(this.readyState !== XMLHttpRequestReadyStateEnum.opened || this._flags.send) &&
 			this.readyState !== XMLHttpRequestReadyStateEnum.done
 		) {
-			this.flags.send = false;
+			this._flags.send = false;
 			this._setState(XMLHttpRequestReadyStateEnum.done);
 		}
 		this.readyState = XMLHttpRequestReadyStateEnum.unsent;
 
-		if (this.flags._asyncTaskID !== null) {
-			this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this.flags._asyncTaskID);
+		if (this._flags.asyncTaskID !== null) {
+			this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._flags.asyncTaskID);
 		}
 	}
 
@@ -428,7 +428,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	private _setState(state: XMLHttpRequestReadyStateEnum): void {
 		if (
 			this.readyState === state ||
-			(this.readyState === XMLHttpRequestReadyStateEnum.unsent && this.flags.aborted)
+			(this.readyState === XMLHttpRequestReadyStateEnum.unsent && this._flags.aborted)
 		) {
 			return;
 		}
@@ -446,9 +446,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (this.readyState === XMLHttpRequestReadyStateEnum.done) {
 			let fire: Event;
 
-			if (this.flags.aborted) {
+			if (this._flags.aborted) {
 				fire = new Event('abort');
-			} else if (this.flags.error) {
+			} else if (this._flags.error) {
 				fire = new Event('error');
 			} else {
 				fire = new Event('load');
@@ -487,7 +487,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			);
 		}
 
-		if (this.flags.send) {
+		if (this._flags.send) {
 			throw new DOMException(
 				'send has already been called',
 				DOMExceptionNameEnum.invalidStateError
@@ -511,7 +511,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		let local = false;
 		let host;
 
-		this.flags._asyncTaskID = this._ownerDocument.defaultView.happyDOM.asyncTaskManager.startTask();
+		this._flags.asyncTaskID = this._ownerDocument.defaultView.happyDOM.asyncTaskManager.startTask();
 
 		// Determine the server
 		switch (url.protocol) {
@@ -539,8 +539,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		// Load files off the local filesystem (file://)
 		if (local) {
-			await this._sendLocalRequest(url);
-			this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this.flags._asyncTaskID);
+			if (this._settings.async) {
+				await this._sendLocalAsyncRequest(url);
+			} else {
+				this._sendLocalSyncRequest(url);
+			}
+			this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._flags.asyncTaskID);
 			return;
 		}
 
@@ -551,32 +555,32 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const uri = url.pathname + (url.search ? url.search : '');
 
 		// Set the Host header or the server may reject the request
-		this.flags._requestHeaders['host'] = host;
+		this._flags.requestHeaders['host'] = host;
 		if (!((ssl && port === 443) || port === 80)) {
-			this.flags._requestHeaders['host'] += ':' + url.port;
+			this._flags.requestHeaders['host'] += ':' + url.port;
 		}
 
 		// Set Basic Auth if necessary
 		if (this._settings.user) {
 			this._settings.password ??= '';
 			const authBuffer = Buffer.from(this._settings.user + ':' + this._settings.password);
-			this.flags._requestHeaders['authorization'] = 'Basic ' + authBuffer.toString('base64');
+			this._flags.requestHeaders['authorization'] = 'Basic ' + authBuffer.toString('base64');
 		}
 		// Set the Content-Length header if method is POST
 		if (this._settings.method === 'GET' || this._settings.method === 'HEAD') {
 			data = null;
 		} else if (this._settings.method === 'POST') {
 			// Set default content type if not set.
-			if (!this.flags._requestHeaders['content-type']) {
-				this.flags._requestHeaders['content-type'] = 'text/plain;charset=UTF-8';
+			if (!this._flags.requestHeaders['content-type']) {
+				this._flags.requestHeaders['content-type'] = 'text/plain;charset=UTF-8';
 			}
 
 			if (data) {
-				this.flags._requestHeaders['content-length'] = Buffer.isBuffer(data)
+				this._flags.requestHeaders['content-length'] = Buffer.isBuffer(data)
 					? data.length
 					: Buffer.byteLength(data);
 			} else {
-				this.flags._requestHeaders['content-length'] = 0;
+				this._flags.requestHeaders['content-length'] = 0;
 			}
 		}
 
@@ -585,7 +589,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			port: port,
 			path: uri,
 			method: this._settings.method,
-			headers: { ...this._getDefaultRequestHeaders(), ...this.flags._requestHeaders },
+			headers: { ...this._getDefaultRequestHeaders(), ...this._flags.requestHeaders },
 			agent: false,
 			rejectUnauthorized: true,
 			key: ssl ? SSL_KEY : null,
@@ -593,7 +597,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		};
 
 		// Reset error flag
-		this.flags.error = false;
+		this._flags.error = false;
 
 		// Handle async requests
 		if (this._settings.async) {
@@ -602,7 +606,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this._sendSyncRequest(options, ssl, data);
 		}
 
-		this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this.flags._asyncTaskID);
+		this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._flags.asyncTaskID);
 	}
 
 	/**
@@ -613,13 +617,93 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param data
 	 */
 	private _sendSyncRequest(options: HTTPS.RequestOptions, ssl: boolean, data?: string): void {
+		const scriptString = this._getSyncRequestScriptString(options, ssl, data);
+
+		// Start the other Node Process, executing this string
+		const content = ChildProcess.execFileSync(process.argv[0], ['-e', scriptString], {
+			encoding: 'buffer',
+			maxBuffer: 1024 * 1024 * 1024 // TODO: Consistent buffer size: 1GB.
+		});
+
+		// If content length is 0, then there was an error
+		if (!content.length) {
+			throw new DOMException('Synchronous request failed', DOMExceptionNameEnum.networkError);
+		}
+
+		const { err: error, data: responseObj } = JSON.parse(content.toString());
+		if (error) {
+			this._onError(error, 503);
+		}
+
+		if (responseObj) {
+			this._flags.response = { statusCode: responseObj.statusCode, headers: responseObj.headers };
+			this.status = responseObj.statusCode;
+			// Sync responseType === ''
+			this.response = responseObj.text;
+			this.responseText = responseObj.text;
+			this.responseXML = null;
+			this.responseURL = RelativeURL.getAbsoluteURL(
+				this._ownerDocument.defaultView.location,
+				this._settings.url
+			).href;
+			// Set Cookies.
+			if (this._flags.response.headers['set-cookie']) {
+				// TODO: Bugs in CookieJar.
+				this._ownerDocument.defaultView.document.cookie =
+					this._flags.response.headers['set-cookie'];
+			}
+			// Redirect.
+			if (
+				this._flags.response.statusCode === 301 ||
+				this._flags.response.statusCode === 302 ||
+				this._flags.response.statusCode === 303 ||
+				this._flags.response.statusCode === 307
+			) {
+				const redirectUrl = RelativeURL.getAbsoluteURL(
+					this._ownerDocument.defaultView.location,
+					this._flags.response.headers['location']
+				);
+				ssl = redirectUrl.protocol === 'https:';
+				this._settings.url = redirectUrl.href;
+				// Recursive call.
+				this._sendSyncRequest(
+					Object.assign(options, {
+						host: redirectUrl.host,
+						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
+						port: redirectUrl.port || (ssl ? 443 : 80),
+						method: this._flags.response.statusCode === 303 ? 'GET' : this._settings.method,
+						headers: Object.assign(options.headers, {
+							referer: redirectUrl.origin,
+							host: redirectUrl.host
+						})
+					}),
+					ssl,
+					data
+				);
+			}
+
+			this._setState(XMLHttpRequestReadyStateEnum.done);
+		}
+	}
+
+	/**
+	 * Sends a synchronous request.
+	 *
+	 * @param options Options.
+	 * @param ssl SSL.
+	 * @param data Data.
+	 */
+	private _getSyncRequestScriptString(
+		options: HTTPS.RequestOptions,
+		ssl: boolean,
+		data?: string
+	): string {
 		// Synchronous
 		// Note: console.log === stdout
 		// The async request the other Node process executes
-		const execString = `
+		return `
                 const HTTP = require('http');
                 const HTTPS = require('https');
-                const FS = require('fs');
                 const sendRequest = HTTP${ssl ? 'S' : ''}.request;
                 const options = ${JSON.stringify(options)};
                 const request = sendRequest(options, (response) => {
@@ -641,73 +725,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 									.slice(1, -1)
 									.replace(/'/g, "\\'")}\`);
                 request.end();
-            `.trim();
-
-		// Start the other Node Process, executing this string
-		const content = ChildProcess.execFileSync(process.argv[0], ['-e', execString], {
-			encoding: 'buffer',
-			maxBuffer: 1024 * 1024 * 1024 // TODO: Consistent buffer size: 1GB.
-		});
-
-		// If content length is 0, then there was an error
-		if (!content.length) {
-			throw new DOMException('Synchronous request failed', DOMExceptionNameEnum.networkError);
-		}
-
-		const { err: error, data: responseObj } = JSON.parse(content.toString());
-		if (error) {
-			this._onError(error, 503);
-		}
-
-		if (responseObj) {
-			this.flags._response = { statusCode: responseObj.statusCode, headers: responseObj.headers };
-			this.status = responseObj.statusCode;
-			// Sync responseType === ''
-			this.response = responseObj.text;
-			this.responseText = responseObj.text;
-			this.responseXML = null;
-			this.responseURL = RelativeURL.getAbsoluteURL(
-				this._ownerDocument.defaultView.location,
-				this._settings.url
-			).href;
-			// Set Cookies.
-			if (this.flags._response.headers['set-cookie']) {
-				// TODO: Bugs in CookieJar.
-				this._ownerDocument.defaultView.document.cookie =
-					this.flags._response.headers['set-cookie'];
-			}
-			// Redirect.
-			if (
-				this.flags._response.statusCode === 301 ||
-				this.flags._response.statusCode === 302 ||
-				this.flags._response.statusCode === 303 ||
-				this.flags._response.statusCode === 307
-			) {
-				const redirectUrl = RelativeURL.getAbsoluteURL(
-					this._ownerDocument.defaultView.location,
-					this.flags._response.headers['location']
-				);
-				ssl = redirectUrl.protocol === 'https:';
-				this._settings.url = redirectUrl.href;
-				// Recursive call.
-				this._sendSyncRequest(
-					Object.assign(options, {
-						host: redirectUrl.host,
-						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
-						port: redirectUrl.port || (ssl ? 443 : 80),
-						method: this.flags._response.statusCode === 303 ? 'GET' : this._settings.method,
-						headers: Object.assign(options.headers, {
-							referer: redirectUrl.origin,
-							host: redirectUrl.host
-						})
-					}),
-					ssl,
-					data
-				);
-			}
-
-			this._setState(XMLHttpRequestReadyStateEnum.done);
-		}
+            `;
 	}
 
 	/**
@@ -727,13 +745,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			const sendRequest = ssl ? HTTPS.request : HTTP.request;
 
 			// Request is being sent, set send flag
-			this.flags.send = true;
+			this._flags.send = true;
 
 			// As per spec, this is called here for historical reasons.
 			this.dispatchEvent(new Event('readystatechange'));
 
 			// Create the request
-			this.flags._asyncRequest = sendRequest(
+			this._flags.asyncRequest = sendRequest(
 				<object>options,
 				async (response: HTTP.IncomingMessage) => {
 					await this._onAsyncResponse(response, options, ssl, data);
@@ -746,10 +764,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 			// Node 0.4 and later won't accept empty data. Make sure it's needed.
 			if (data) {
-				this.flags._asyncRequest.write(data);
+				this._flags.asyncRequest.write(data);
 			}
 
-			this.flags._asyncRequest.end();
+			this._flags.asyncRequest.end();
 
 			this.dispatchEvent(new Event('loadstart'));
 		});
@@ -773,19 +791,19 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		return new Promise((resolve) => {
 			// Set response var to the response we got back
 			// This is so it remains accessable outside this scope
-			this.flags._response = response;
+			this._flags.response = response;
 
 			// Check for redirect
 			// @TODO Prevent looped redirects
 			if (
-				this.flags._response.statusCode === 301 ||
-				this.flags._response.statusCode === 302 ||
-				this.flags._response.statusCode === 303 ||
-				this.flags._response.statusCode === 307
+				this._flags.response.statusCode === 301 ||
+				this._flags.response.statusCode === 302 ||
+				this._flags.response.statusCode === 303 ||
+				this._flags.response.statusCode === 307
 			) {
 				// TODO: redirect url protocol change.
 				// Change URL to the redirect location
-				this._settings.url = this.flags._response.headers.location;
+				this._settings.url = this._flags.response.headers.location;
 				// Parse the new URL.
 				const redirectUrl = RelativeURL.getAbsoluteURL(
 					this._ownerDocument.defaultView.location,
@@ -800,7 +818,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 						host: redirectUrl.hostname,
 						port: redirectUrl.port,
 						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
-						method: this.flags._response.statusCode === 303 ? 'GET' : this._settings.method,
+						method: this._flags.response.statusCode === 303 ? 'GET' : this._settings.method,
 						headers: { ...options.headers, referer: redirectUrl.origin, host: redirectUrl.host }
 					},
 					ssl,
@@ -810,35 +828,35 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				return;
 			}
 
-			if (this.flags._response && this.flags._response.setEncoding) {
-				this.flags._response.setEncoding('utf-8');
+			if (this._flags.response && this._flags.response.setEncoding) {
+				this._flags.response.setEncoding('utf-8');
 			}
 
 			this._setState(XMLHttpRequestReadyStateEnum.headersRecieved);
-			this.status = this.flags._response.statusCode;
+			this.status = this._flags.response.statusCode;
 
 			// Initialize response.
 			let tempResponse = Buffer.from(new Uint8Array(0));
 
-			this.flags._response.on('data', (chunk: Uint8Array) => {
+			this._flags.response.on('data', (chunk: Uint8Array) => {
 				// Make sure there's some data
 				if (chunk) {
 					tempResponse = Buffer.concat([tempResponse, Buffer.from(chunk)]);
 				}
 				// Don't emit state changes if the connection has been aborted.
-				if (this.flags.send) {
+				if (this._flags.send) {
 					this._setState(XMLHttpRequestReadyStateEnum.loading);
 				}
 			});
 
-			this.flags._response.on('end', () => {
-				if (this.flags.send) {
+			this._flags.response.on('end', () => {
+				if (this._flags.send) {
 					// The sendFlag needs to be set before setState is called.  Otherwise, if we are chaining callbacks
 					// There can be a timing issue (the callback is called and a new call is made before the flag is reset).
-					this.flags.send = false;
+					this._flags.send = false;
 
 					// Set response according to responseType.
-					const { response, responseXML, responseText } = this._responseTypeSelector(tempResponse);
+					const { response, responseXML, responseText } = this._parseResponseData(tempResponse);
 					this.response = response;
 					this.responseXML = responseXML;
 					this.responseText = responseText;
@@ -853,7 +871,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				resolve();
 			});
 
-			this.flags._response.on('error', (error) => {
+			this._flags.response.on('error', (error) => {
 				this._onError(error);
 				resolve();
 			});
@@ -861,78 +879,98 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
-	 * Sends a local file system request.
+	 * Sends a local file system async request.
 	 *
 	 * @param url URL.
 	 * @returns Promise.
 	 */
-	private _sendLocalRequest(url: UrlObject): Promise<void> {
-		return new Promise((resolve) => {
-			if (!this._ownerDocument.defaultView.happyDOM.settings.enableFileSystemHttpRequests) {
-				throw new DOMException(
-					'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.',
-					DOMExceptionNameEnum.securityError
-				);
-			}
+	private async _sendLocalAsyncRequest(url: UrlObject): Promise<void> {
+		if (!this._ownerDocument.defaultView.happyDOM.settings.enableFileSystemHttpRequests) {
+			throw new DOMException(
+				'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.',
+				DOMExceptionNameEnum.securityError
+			);
+		}
 
-			if (this._settings.method !== 'GET') {
-				throw new DOMException(
-					'Only GET method is supported',
-					DOMExceptionNameEnum.notSupportedError
-				);
-			}
+		if (this._settings.method !== 'GET') {
+			throw new DOMException(
+				'Only GET method is supported',
+				DOMExceptionNameEnum.notSupportedError
+			);
+		}
 
-			if (this._settings.async) {
-				// Async request.
-				FS.readFile(decodeURI(url.pathname.slice(1)), (error: Error, data: Buffer) => {
-					if (error) {
-						this._onError(error);
-					} else {
-						this.status = 200;
+		let data: Buffer;
 
-						const { response, responseXML, responseText } = this._responseTypeSelector(data);
-						this.response = response;
-						this.responseXML = responseXML;
-						this.responseText = responseText;
-						this.responseURL = RelativeURL.getAbsoluteURL(
-							this._ownerDocument.defaultView.location,
-							this._settings.url
-						).href;
+		try {
+			data = await FS.promises.readFile(decodeURI(url.pathname.slice(1)));
+		} catch (error) {
+			this._onError(error);
+		}
 
-						this._setState(XMLHttpRequestReadyStateEnum.done);
-					}
-					resolve();
-				});
-			} else {
-				// Sync request.
-				try {
-					const tempResponse = FS.readFileSync(decodeURI(url.pathname.slice(1)));
-					this.status = 200;
-
-					const { response, responseXML, responseText } = this._responseTypeSelector(tempResponse);
-					this.response = response;
-					this.responseXML = responseXML;
-					this.responseText = responseText;
-					this.responseURL = RelativeURL.getAbsoluteURL(
-						this._ownerDocument.defaultView.location,
-						this._settings.url
-					).href;
-
-					this._setState(XMLHttpRequestReadyStateEnum.done);
-				} catch (error) {
-					this._onError(error);
-				}
-				resolve();
-			}
-		});
+		if (data) {
+			this._parseLocalRequestData(data);
+		}
 	}
 
 	/**
-	 * Set response according to responseType.
+	 * Sends a local file system synchronous request.
 	 *
-	 * @param data
+	 * @param url URL.
 	 */
-	private _responseTypeSelector(data: Buffer): {
+	private _sendLocalSyncRequest(url: UrlObject): void {
+		if (!this._ownerDocument.defaultView.happyDOM.settings.enableFileSystemHttpRequests) {
+			throw new DOMException(
+				'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.',
+				DOMExceptionNameEnum.securityError
+			);
+		}
+
+		if (this._settings.method !== 'GET') {
+			throw new DOMException(
+				'Only GET method is supported',
+				DOMExceptionNameEnum.notSupportedError
+			);
+		}
+
+		let data: Buffer;
+		try {
+			data = FS.readFileSync(decodeURI(url.pathname.slice(1)));
+		} catch (error) {
+			this._onError(error);
+		}
+
+		if (data) {
+			this._parseLocalRequestData(data);
+		}
+	}
+
+	/**
+	 * Parses local request data.
+	 *
+	 * @param data Data.
+	 */
+	private _parseLocalRequestData(data: Buffer): void {
+		this.status = 200;
+
+		const { response, responseXML, responseText } = this._parseResponseData(data);
+		this.response = response;
+		this.responseXML = responseXML;
+		this.responseText = responseText;
+		this.responseURL = RelativeURL.getAbsoluteURL(
+			this._ownerDocument.defaultView.location,
+			this._settings.url
+		).href;
+
+		this._setState(XMLHttpRequestReadyStateEnum.done);
+	}
+
+	/**
+	 * Returns response based to the "responseType" property.
+	 *
+	 * @param data Data.
+	 * @returns Parsed response.
+	 */
+	private _parseResponseData(data: Buffer): {
 		response: ArrayBuffer | Blob | IDocument | object | string;
 		responseText: string;
 		responseXML: IDocument;
@@ -961,26 +999,31 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					return { response: null, responseText: null, responseXML: null };
 				}
 			case 'document':
+				const window = this._ownerDocument.defaultView;
+				const happyDOMSettings = window.happyDOM.settings;
+				let response: IDocument;
+
+				// Temporary disables unsecure features.
+				window.happyDOM.settings = {
+					...happyDOMSettings,
+					enableFileSystemHttpRequests: false,
+					disableJavaScriptEvaluation: true,
+					disableCSSFileLoading: true,
+					disableJavaScriptFileLoading: true
+				};
+
+				const domParser = new window.DOMParser();
+
 				try {
-					// Create a new document.
-					const document = new HTMLDocument();
-					document.defaultView.happyDOM.settings.enableFileSystemHttpRequests = false;
-					document.defaultView.happyDOM.settings.disableJavaScriptEvaluation = true;
-					document.defaultView.happyDOM.settings.disableCSSFileLoading = true;
-					document.defaultView.happyDOM.settings.disableJavaScriptFileLoading = true;
-					/* eslint-disable jsdoc/require-jsdoc */
-					class DOMParser extends DOMParserImplementation {
-						public static _ownerDocument: IDocument = document;
-					}
-					const res = new DOMParser().parseFromString(data.toString(), 'text/xml');
-					return {
-						response: res,
-						responseText: null,
-						responseXML: res
-					};
+					response = domParser.parseFromString(data.toString(), 'text/xml');
 				} catch (e) {
 					return { response: null, responseText: null, responseXML: null };
 				}
+
+				// Restores unsecure features.
+				window.happyDOM.settings = happyDOMSettings;
+
+				return { response, responseText: null, responseXML: response };
 			case 'json':
 				try {
 					return {
@@ -1001,6 +1044,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				};
 		}
 	}
+
 	/**
 	 * Called when an error is encountered to deal with it.
 	 *
@@ -1011,7 +1055,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.status = status;
 		this.statusText = error.toString();
 		this.responseText = error instanceof Error ? error.stack : '';
-		this.flags.error = true;
+		this._flags.error = true;
 		this._setState(XMLHttpRequestReadyStateEnum.done);
 	}
 }

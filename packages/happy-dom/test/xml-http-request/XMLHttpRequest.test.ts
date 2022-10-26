@@ -1,16 +1,23 @@
 import XMLHttpRequest from '../../src/xml-http-request/XMLHttpRequest';
 import Window from '../../src/window/Window';
+import IWindow from '../../src/window/IWindow';
 
 describe('XMLHttpRequest', () => {
-	let window: Window;
-	// @ts-ignore
-	let xhr: XMLHttpRequest;
+	let window: IWindow;
+	let xmlHttpRequest: XMLHttpRequest;
+
 	beforeEach(() => {
 		window = new Window();
-		xhr = new window.XMLHttpRequest();
+		xmlHttpRequest = new window.XMLHttpRequest();
 	});
 
-	it('XMLHttpRequest()', () => {
-		// TODO: Implement
+	afterEach(() => {
+		global['resetMockedModules']();
+	});
+
+	describe('get responseText()', () => {
+		it('Returns response text for a sync request.', () => {
+			// TODO: Implement.
+		});
 	});
 });
