@@ -20,9 +20,10 @@ import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
 import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement';
 import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
+import HTMLAnchorElement from '../nodes/html-anchor-element/HTMLAnchorElement';
 
 export default {
-	A: HTMLElement,
+	A: HTMLAnchorElement,
 	ABBR: HTMLElement,
 	ADDRESS: HTMLElement,
 	AREA: HTMLElement,
