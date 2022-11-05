@@ -305,4 +305,9 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param text String to insert.
 	 */
 	insertAdjacentText(position: TInsertAdjacentPositions, text: string): void;
+
+	/**
+	 * Simulates a click on the element.
+	 */
+	click(): void;
 }
