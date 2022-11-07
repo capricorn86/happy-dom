@@ -109,7 +109,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Value.
 	 */
 	public get value(): string {
-		return this.getAttributeNS(null, 'value') || '';
+		return this.getAttributeNS(null, 'value') || this.textContent;
 	}
 
 	/**
