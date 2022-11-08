@@ -570,6 +570,14 @@ describe('QuerySelector', () => {
 			expect(div1.querySelector('div#divId')).toBe(div3);
 		});
 
+		it('Returns div with a specific id matching "#_divId".', () => {
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			div2.id = '_divId';
+			div1.appendChild(div2);
+			expect(div1.querySelector('#_divId')).toBe(div2);
+		});
+
 		it('Returns span with a specific class name and tag name matching "custom-element.class1".', () => {
 			const div = document.createElement('div');
 			const customElement1 = document.createElement('custom-element');

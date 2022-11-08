@@ -8,7 +8,7 @@ const ATTRIBUTE_NAME_REGEXP = /[^a-zA-Z0-9-_$]/;
 const PSUEDO_REGEXP = /:([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|:not\(([^)]+)\)|:([a-zA-Z-]+)/g;
 const CLASS_REGEXP = /\.([a-zA-Z0-9-_$]+)/g;
 const TAG_NAME_REGEXP = /^[a-zA-Z0-9-]+/;
-const ID_REGEXP = /#[A-Za-z][-A-Za-z0-9_]*/g;
+const ID_REGEXP = /#[^\s]+/g;
 
 /**
  * Selector item.
