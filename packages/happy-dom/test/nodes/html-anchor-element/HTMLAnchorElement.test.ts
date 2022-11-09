@@ -3,6 +3,8 @@ import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import IHTMLAnchorElement from '../../../src/nodes/html-anchor-element/IHTMLAnchorElement';
 
+const BLOB_URL = 'blob:https://mozilla.org';
+
 describe('HTMLAnchorElement', () => {
 	let window: IWindow;
 	let document: IDocument;
@@ -82,6 +84,14 @@ describe('HTMLAnchorElement', () => {
 			element.href = 'test';
 			expect(element.getAttribute('href')).toBe('test');
 		});
+
+		it('Can be set after a blob URL has been defined.', () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			expect(element.href).toBe(BLOB_URL);
+			element.href = 'https://example.com/';
+			expect(element.href).toBe('https://example.com/');
+		});
 	});
 
 	describe('get origin()', () => {
@@ -123,6 +133,13 @@ describe('HTMLAnchorElement', () => {
 			expect(element.protocol).toBe('http:');
 			expect(element.href).toBe('http://www.example.com/path?q1=a#xyz');
 		});
+
+		it("Can't be modified on blob URLs.", () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			element.protocol = 'http';
+			expect(element.protocol).toBe('blob:');
+		});
 	});
 
 	describe('get username()', () => {
@@ -143,6 +160,13 @@ describe('HTMLAnchorElement', () => {
 			element.username = 'user2';
 			expect(element.username).toBe('user2');
 			expect(element.href).toBe('https://user2:pw@www.example.com/path?q1=a#xyz');
+		});
+
+		it("Can't be modified on blob URLs.", () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			element.username = 'user2';
+			expect(element.username).toBe('');
 		});
 	});
 
@@ -165,6 +189,13 @@ describe('HTMLAnchorElement', () => {
 			expect(element.password).toBe('pw2');
 			expect(element.href).toBe('https://user:pw2@www.example.com/path?q1=a#xyz');
 		});
+
+		it("Can't be modified on blob URLs.", () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			element.password = 'pw2';
+			expect(element.password).toBe('');
+		});
 	});
 
 	describe('get host()', () => {
@@ -186,6 +217,13 @@ describe('HTMLAnchorElement', () => {
 			expect(element.host).toBe('abc.example2.com');
 			expect(element.href).toBe('https://abc.example2.com/path?q1=a#xyz');
 		});
+
+		it("Can't be modified on blob URLs.", () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			element.host = 'abc.example2.com';
+			expect(element.host).toBe('');
+		});
 	});
 
 	describe('get hostname()', () => {
@@ -206,6 +244,13 @@ describe('HTMLAnchorElement', () => {
 			element.hostname = 'abc.example2.com';
 			expect(element.hostname).toBe('abc.example2.com');
 			expect(element.href).toBe('https://abc.example2.com/path?q1=a#xyz');
+		});
+
+		it("Can't be modified on blob URLs.", () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			element.hostname = 'abc.example2.com';
+			expect(element.hostname).toBe('');
 		});
 	});
 
@@ -231,6 +276,13 @@ describe('HTMLAnchorElement', () => {
 			expect(element.port).toBe('8080');
 			expect(element.href).toBe('https://www.example.com:8080/path?q1=a#xyz');
 		});
+
+		it("Can't be modified on blob URLs.", () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			element.port = '8080';
+			expect(element.port).toBe('');
+		});
 	});
 
 	describe('get pathname()', () => {
@@ -251,6 +303,13 @@ describe('HTMLAnchorElement', () => {
 			element.pathname = '/path2';
 			expect(element.pathname).toBe('/path2');
 			expect(element.href).toBe('https://www.example.com/path2?q1=a#xyz');
+		});
+
+		it("Can't be modified on blob URLs.", () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			element.pathname = '/path2';
+			expect(element.pathname).toBe(BLOB_URL.split(':').slice(1).join(':'));
 		});
 	});
 
@@ -273,6 +332,13 @@ describe('HTMLAnchorElement', () => {
 			expect(element.search).toBe('?q1=b');
 			expect(element.href).toBe('https://www.example.com/path?q1=b#xyz');
 		});
+
+		it("Can't be modified on blob URLs.", () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			element.search = '?q1=b';
+			expect(element.search).toBe('');
+		});
 	});
 
 	describe('get hash()', () => {
@@ -293,6 +359,13 @@ describe('HTMLAnchorElement', () => {
 			element.hash = '#fgh';
 			expect(element.hash).toBe('#fgh');
 			expect(element.href).toBe('https://www.example.com/path?q1=a#fgh');
+		});
+
+		it('Can be modified on blob URLs.', () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = BLOB_URL;
+			element.hash = '#fgh';
+			expect(element.hash).toBe('');
 		});
 	});
 });

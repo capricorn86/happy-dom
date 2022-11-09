@@ -840,7 +840,9 @@ export default class Element extends Node implements IElement {
 
 		this._attributes[name] = attribute;
 
-		this._updateDomListIndices();
+		if (attribute.name === 'class' && this._classList) {
+			this._classList._updateIndices();
+		}
 
 		if (
 			this.attributeChangedCallback &&
@@ -936,7 +938,9 @@ export default class Element extends Node implements IElement {
 			this.ownerDocument['_cacheID']++;
 		}
 
-		this._updateDomListIndices();
+		if (attribute.name === 'class' && this._classList) {
+			this._classList._updateIndices();
+		}
 
 		if (
 			this.attributeChangedCallback &&
@@ -1032,14 +1036,5 @@ export default class Element extends Node implements IElement {
 			return name;
 		}
 		return name.toLowerCase();
-	}
-
-	/**
-	 * Updates DOM list indices.
-	 */
-	protected _updateDomListIndices(): void {
-		if (this._classList) {
-			this._classList._updateIndices();
-		}
 	}
 }

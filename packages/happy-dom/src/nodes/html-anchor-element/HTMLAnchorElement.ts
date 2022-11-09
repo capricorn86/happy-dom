@@ -3,6 +3,8 @@ import DOMTokenList from '../../dom-token-list/DOMTokenList';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
 import IHTMLAnchorElement from './IHTMLAnchorElement';
 import { URL } from 'url';
+import IAttr from '../attr/IAttr';
+import HTMLAnchorElementUtility from './HTMLAnchorElementUtility';
 
 /**
  * HTML Anchor Element.
@@ -13,15 +15,6 @@ import { URL } from 'url';
 export default class HTMLAnchorElement extends HTMLElement implements IHTMLAnchorElement {
 	private _relList: DOMTokenList = null;
 	private _url: URL | null = null;
-
-	/**
-	 * Constructor
-	 */
-	constructor() {
-		super();
-
-		this._setUrl();
-	}
 
 	/**
 	 * Returns download.
@@ -47,7 +40,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Hash.
 	 */
 	public get hash(): string {
-		this._reinitializeUrl();
 		return this._url?.hash ?? '';
 	}
 
@@ -57,8 +49,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param hash Hash.
 	 */
 	public set hash(hash: string) {
-		this._reinitializeUrl();
-		if (this._url) {
+		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.hash = hash;
 			this.setAttributeNS(null, 'href', this._url.toString());
 		}
@@ -70,8 +61,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Href.
 	 */
 	public get href(): string | null {
-		this._reinitializeUrl();
-
 		if (this._url) {
 			return this._url.toString();
 		}
@@ -86,8 +75,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 */
 	public set href(href: string) {
 		this.setAttributeNS(null, 'href', href);
-
-		this._setUrl();
 	}
 
 	/**
@@ -114,7 +101,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Origin.
 	 */
 	public get origin(): string {
-		this._reinitializeUrl();
 		return this._url?.origin ?? '';
 	}
 
@@ -142,7 +128,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Protocol.
 	 */
 	public get protocol(): string {
-		this._reinitializeUrl();
 		return this._url?.protocol ?? '';
 	}
 
@@ -152,8 +137,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param protocol Protocol.
 	 */
 	public set protocol(protocol: string) {
-		this._reinitializeUrl();
-		if (this._url) {
+		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.protocol = protocol;
 			this.setAttributeNS(null, 'href', this._url.toString());
 		}
@@ -165,7 +149,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Username.
 	 */
 	public get username(): string {
-		this._reinitializeUrl();
 		return this._url?.username ?? '';
 	}
 
@@ -175,8 +158,12 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param username Username.
 	 */
 	public set username(username: string) {
-		this._reinitializeUrl();
-		if (this._url && this._url.host && this._url.protocol != 'file') {
+		if (
+			this._url &&
+			!HTMLAnchorElementUtility.isBlobURL(this._url) &&
+			this._url.host &&
+			this._url.protocol != 'file'
+		) {
 			this._url.username = username;
 			this.setAttributeNS(null, 'href', this._url.toString());
 		}
@@ -188,7 +175,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Password.
 	 */
 	public get password(): string {
-		this._reinitializeUrl();
 		return this._url?.password ?? '';
 	}
 
@@ -198,8 +184,12 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param password Password.
 	 */
 	public set password(password: string) {
-		this._reinitializeUrl();
-		if (this._url && this._url.host && this._url.protocol != 'file') {
+		if (
+			this._url &&
+			!HTMLAnchorElementUtility.isBlobURL(this._url) &&
+			this._url.host &&
+			this._url.protocol != 'file'
+		) {
 			this._url.password = password;
 			this.setAttributeNS(null, 'href', this._url.toString());
 		}
@@ -211,7 +201,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Pathname.
 	 */
 	public get pathname(): string {
-		this._reinitializeUrl();
 		return this._url?.pathname ?? '';
 	}
 
@@ -221,8 +210,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param pathname Pathname.
 	 */
 	public set pathname(pathname: string) {
-		this._reinitializeUrl();
-		if (this._url) {
+		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.pathname = pathname;
 			this.setAttributeNS(null, 'href', this._url.toString());
 		}
@@ -234,7 +222,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Port.
 	 */
 	public get port(): string {
-		this._reinitializeUrl();
 		return this._url?.port ?? '';
 	}
 
@@ -244,8 +231,12 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param port Port.
 	 */
 	public set port(port: string) {
-		this._reinitializeUrl();
-		if (this._url && this._url.host && this._url.protocol != 'file') {
+		if (
+			this._url &&
+			!HTMLAnchorElementUtility.isBlobURL(this._url) &&
+			this._url.host &&
+			this._url.protocol != 'file'
+		) {
 			this._url.port = port;
 			this.setAttributeNS(null, 'href', this._url.toString());
 		}
@@ -257,7 +248,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Host.
 	 */
 	public get host(): string {
-		this._reinitializeUrl();
 		return this._url?.host ?? '';
 	}
 
@@ -267,8 +257,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param host Host.
 	 */
 	public set host(host: string) {
-		this._reinitializeUrl();
-		if (this._url) {
+		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.host = host;
 			this.setAttributeNS(null, 'href', this._url.toString());
 		}
@@ -280,7 +269,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Hostname.
 	 */
 	public get hostname(): string {
-		this._reinitializeUrl();
 		return this._url?.hostname ?? '';
 	}
 
@@ -290,8 +278,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param hostname Hostname.
 	 */
 	public set hostname(hostname: string) {
-		this._reinitializeUrl();
-		if (this._url) {
+		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.hostname = hostname;
 			this.setAttributeNS(null, 'href', this._url.toString());
 		}
@@ -351,7 +338,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Search.
 	 */
 	public get search(): string {
-		this._reinitializeUrl();
 		return this._url?.search ?? '';
 	}
 
@@ -361,8 +347,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param search Search.
 	 */
 	public set search(search: string) {
-		this._reinitializeUrl();
-		if (this._url) {
+		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.search = search;
 			this.setAttributeNS(null, 'href', this._url.toString());
 		}
@@ -423,43 +408,32 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	}
 
 	/**
-	 * Updates DOM list indices.
+	 * @override
 	 */
-	protected override _updateDomListIndices(): void {
-		super._updateDomListIndices();
+	public override setAttributeNode(attribute: IAttr): IAttr {
+		const replacedAttribute = super.setAttributeNode(attribute);
 
-		if (this._relList) {
+		if (attribute.name === 'rel' && this._relList) {
 			this._relList._updateIndices();
+		} else if (attribute.name === 'href') {
+			this._url = HTMLAnchorElementUtility.getUrl(this.ownerDocument, attribute.value);
 		}
+
+		return replacedAttribute;
 	}
 
 	/**
-	 * Reinitialize URL from href attribute
+	 * @override
 	 */
-	private _reinitializeUrl(): void {
-		// If element's url is non-null, its scheme is "blob", and it has an opaque path, then terminate these steps.
-		if (this._url?.protocol === 'blob' && this._url.pathname.length > 1) {
-			return;
-		}
+	public override removeAttributeNode(attribute: IAttr): IAttr {
+		super.removeAttributeNode(attribute);
 
-		this._setUrl();
-	}
-
-	/**
-	 * Initialize URL from href attribute
-	 */
-	private _setUrl(): void {
-		const hrefAttr = this.getAttributeNS(null, 'href');
-		if (!hrefAttr) {
+		if (attribute.name === 'rel' && this._relList) {
+			this._relList._updateIndices();
+		} else if (attribute.name === 'href') {
 			this._url = null;
 		}
 
-		const documentUrl = this.ownerDocument?.location?.href;
-
-		try {
-			this._url = new URL(hrefAttr.trim(), documentUrl);
-		} catch (TypeError) {
-			this._url = null;
-		}
+		return attribute;
 	}
 }
