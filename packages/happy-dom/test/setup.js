@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-global.mockedModules = {
+const modules = {
 	'node-fetch': {
 		parameters: {
 			url: null,
@@ -9,12 +9,12 @@ global.mockedModules = {
 		returnValue: {
 			error: null,
 			response: {
-				arrayBuffer: null,
-				blob: null,
-				buffer: null,
-				json: null,
-				text: null,
-				textConverted: null
+				arrayBuffer: 'nodeFetch.arrayBuffer',
+				blob: 'nodeFetch.blob',
+				buffer: 'nodeFetch.buffer',
+				json: 'nodeFetch.json',
+				text: 'nodeFetch.text',
+				textConverted: 'nodeFetch.textConverted'
 			}
 		}
 	},
@@ -25,7 +25,7 @@ global.mockedModules = {
 					path: null
 				},
 				returnValue: {
-					data: null
+					data: 'fs.promises.readFile'
 				}
 			}
 		},
@@ -34,7 +34,7 @@ global.mockedModules = {
 				path: null
 			},
 			returnValue: {
-				data: null
+				data: 'fs.readFileSync'
 			}
 		}
 	},
@@ -46,7 +46,13 @@ global.mockedModules = {
 				options: null
 			},
 			returnValue: {
-				data: null
+				data: {
+					statusCode: 200,
+					headers: { key1: 'value1', key2: 'value2' },
+					text: 'child_process.execFileSync.returnValue.data.text',
+					data: Buffer.from('child_process.execFileSync.returnValue.data.text').toString('base64')
+				},
+				error: null
 			}
 		}
 	},
@@ -60,10 +66,10 @@ global.mockedModules = {
 			},
 			returnValue: {
 				response: {
-					headers: null,
-					statusCode: null,
-					statusMessage: null,
-					body: null,
+					headers: 'http.request.headers',
+					statusCode: 'http.request.statusCode',
+					statusMessage: 'http.request.statusMessage',
+					body: 'http.request.body',
 					error: null
 				},
 				request: {
@@ -74,43 +80,36 @@ global.mockedModules = {
 	}
 };
 
-const initialMockedModules = JSON.parse(JSON.stringify(global.mockedModules));
-
-global.resetMockedModules = () => {
-	global.mockedModules = JSON.parse(JSON.stringify(initialMockedModules));
+global.mockedModules = {
+	modules: JSON.parse(JSON.stringify(modules)),
+	reset: () => {
+		global.mockedModules.modules = JSON.parse(JSON.stringify(modules));
+	}
 };
-
-jest.mock('sync-request', () => (method, url) => {
-	global.mockedModules['sync-request'].parameters = {
-		method,
-		url
-	};
-	return {
-		getBody: () => global.mockedModules['sync-request'].returnValue.body,
-		isError: () => global.mockedModules['sync-request'].returnValue.statusCode !== 200,
-		statusCode: global.mockedModules['sync-request'].returnValue.statusCode
-	};
-});
 
 /* eslint-disable jsdoc/require-jsdoc */
 class NodeFetchResponse {
 	arrayBuffer() {
-		return Promise.resolve(global.mockedModules['node-fetch'].returnValue.response.arrayBuffer);
+		return Promise.resolve(
+			global.mockedModules.modules['node-fetch'].returnValue.response.arrayBuffer
+		);
 	}
 	blob() {
-		return Promise.resolve(global.mockedModules['node-fetch'].returnValue.response.blob);
+		return Promise.resolve(global.mockedModules.modules['node-fetch'].returnValue.response.blob);
 	}
 	buffer() {
-		return Promise.resolve(global.mockedModules['node-fetch'].rreturnValue.esponse.buffer);
+		return Promise.resolve(global.mockedModules.modules['node-fetch'].returnValue.response.buffer);
 	}
 	json() {
-		return Promise.resolve(global.mockedModules['node-fetch'].returnValue.response.json);
+		return Promise.resolve(global.mockedModules.modules['node-fetch'].returnValue.response.json);
 	}
 	text() {
-		return Promise.resolve(global.mockedModules['node-fetch'].returnValue.response.text);
+		return Promise.resolve(global.mockedModules.modules['node-fetch'].returnValue.response.text);
 	}
 	textConverted() {
-		return Promise.resolve(global.mockedModules['node-fetch'].returnValue.response.textConverted);
+		return Promise.resolve(
+			global.mockedModules.modules['node-fetch'].returnValue.response.textConverted
+		);
 	}
 }
 
@@ -120,10 +119,10 @@ class NodeFetchHeaders {}
 jest.mock('node-fetch', () => {
 	return Object.assign(
 		(url, options) => {
-			global.mockedModules['node-fetch'].parameters.url = url;
-			global.mockedModules['node-fetch'].parameters.init = options;
-			if (global.mockedModules['node-fetch'].error) {
-				return Promise.reject(global.mockedModules['node-fetch'].returnValue.error);
+			global.mockedModules.modules['node-fetch'].parameters.url = url;
+			global.mockedModules.modules['node-fetch'].parameters.init = options;
+			if (global.mockedModules.modules['node-fetch'].error) {
+				return Promise.reject(global.mockedModules.modules['node-fetch'].returnValue.error);
 			}
 			return Promise.resolve(new NodeFetchResponse());
 		},
@@ -135,29 +134,29 @@ jest.mock('node-fetch', () => {
 	);
 });
 
-jest.mock('fs', {
+jest.mock('fs', () => ({
 	promises: {
 		readFile: (path) => {
-			global.mockedModules.fs.promises.readFile.parameters.path = path;
-			return Promise.resolve(global.mockedModules.fs.promises.readFile.returnValue.data);
+			global.mockedModules.modules.fs.promises.readFile.parameters.path = path;
+			return Promise.resolve(global.mockedModules.modules.fs.promises.readFile.returnValue.data);
 		}
 	},
 	readFileSync: (path) => {
-		global.mockedModules.fs.readFileSync.parameters.path = path;
-		return global.mockedModules.fs.readFileSync.returnValue.data;
+		global.mockedModules.modules.fs.readFileSync.parameters.path = path;
+		return global.mockedModules.modules.fs.readFileSync.returnValue.data;
 	}
-});
+}));
 
-jest.mock('child_process', {
+jest.mock('child_process', () => ({
 	execFileSync: (command, args, options) => {
-		global.mockedModules.child_process.parameters = {
+		global.mockedModules.modules.child_process.execFileSync.parameters = {
 			command,
 			args,
 			options
 		};
-		return global.mockedModules.child_process.returnValue.data;
+		return JSON.stringify(global.mockedModules.modules.child_process.execFileSync.returnValue);
 	}
-});
+}));
 
 class IncomingMessage {
 	constructor() {
@@ -176,49 +175,68 @@ class IncomingMessage {
 	}
 }
 
-const httpMock = {
-	request: (options, callback) => {
-		let errorCallback = null;
-		global.mockedModules.http.request.parameters = {
-			options
-		};
-		return {
-			write: (chunk) => (global.mockedModules.http.request.internal.body += chunk),
-			end: () => {
-				if (global.mockedModules.http.request.returnValue.request.error) {
-					if (errorCallback) {
-						errorCallback(global.mockedModules.http.request.returnValue.request.error);
-					}
-				} else {
-					const response = new IncomingMessage();
+const httpMock = () => {
+	return {
+		request: (options, callback) => {
+			let errorCallback = null;
+			global.mockedModules.modules.http.request.parameters = {
+				options
+			};
+			const request = {
+				write: (chunk) => (global.mockedModules.modules.http.request.internal.body += chunk),
+				end: () => {
+					setTimeout(() => {
+						if (global.mockedModules.modules.http.request.returnValue.request.error) {
+							if (errorCallback) {
+								errorCallback(global.mockedModules.modules.http.request.returnValue.request.error);
+							}
+						} else {
+							const response = new IncomingMessage();
 
-					response.headers = global.mockedModules.http.request.returnValue.response.headers;
-					response.statusCode = global.mockedModules.http.request.returnValue.response.statusCode;
-					response.statusMessage =
-						global.mockedModules.http.request.returnValue.response.statusMessage;
-					callback(response);
+							response.headers =
+								global.mockedModules.modules.http.request.returnValue.response.headers;
+							response.statusCode =
+								global.mockedModules.modules.http.request.returnValue.response.statusCode;
+							response.statusMessage =
+								global.mockedModules.modules.http.request.returnValue.response.statusMessage;
 
-					if (global.mockedModules.http.request.returnValue.error) {
-						for (const listener of response._eventListeners.error) {
-							listener(global.mockedModules.http.request.returnValue.error);
+							callback(response);
+
+							if (global.mockedModules.modules.http.request.returnValue.error) {
+								for (const listener of response._eventListeners.error) {
+									listener(global.mockedModules.modules.http.request.returnValue.error);
+								}
+							} else {
+								for (const listener of response._eventListeners.data) {
+									listener(global.mockedModules.modules.http.request.returnValue.response.body);
+								}
+								for (const listener of response._eventListeners.end) {
+									listener();
+								}
+							}
 						}
-					} else {
-						for (const listener of response._eventListeners.data) {
-							listener(global.mockedModules.http.request.returnValue.response.body);
-						}
-						for (const listener of response._eventListeners.end) {
-							listener();
-						}
+					});
+				},
+				on: (event, callback) => {
+					if (event === 'error') {
+						errorCallback = callback;
 					}
+					return request;
 				}
-			},
-			on: (event, callback) => {
-				if (event === 'error') {
-					errorCallback = callback;
-				}
-			}
-		};
-	}
+			};
+			return request;
+		},
+		STATUS_CODES: {
+			200: 'OK',
+			400: 'Bad Request',
+			401: 'Unauthorized',
+			403: 'Forbidden',
+			404: 'Not Found',
+			500: 'Internal Server Error',
+			502: 'Bad Gateway',
+			503: 'Service Unavailable'
+		}
+	};
 };
 
 jest.mock('http', httpMock);

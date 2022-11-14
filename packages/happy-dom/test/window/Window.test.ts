@@ -13,22 +13,18 @@ import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import CustomElement from '../../test/CustomElement';
 
-const MOCKED_NODE_FETCH = global['mockedModules']['node-fetch'];
-
 describe('Window', () => {
 	let window: IWindow;
 	let document: IDocument;
 
 	beforeEach(() => {
-		MOCKED_NODE_FETCH.url = null;
-		MOCKED_NODE_FETCH.init = null;
-		MOCKED_NODE_FETCH.error = null;
 		window = new Window();
 		document = window.document;
 		window.customElements.define('custom-element', CustomElement);
 	});
 
 	afterEach(() => {
+		mockedModules.reset();
 		jest.restoreAllMocks();
 	});
 
@@ -154,7 +150,7 @@ describe('Window', () => {
 			it(`Handles the "${method}" method with the async task manager.`, async () => {
 				const response = new window.Response();
 				const result = await response[method]();
-				expect(result).toBe(MOCKED_NODE_FETCH.response[method]);
+				expect(result).toBe(mockedModules.modules['node-fetch'].returnValue.response[method]);
 			});
 		}
 	});
@@ -169,7 +165,7 @@ describe('Window', () => {
 			it(`Handles the "${method}" method with the async task manager.`, async () => {
 				const request = new window.Request('test');
 				const result = await request[method]();
-				expect(result).toBe(MOCKED_NODE_FETCH.response[method]);
+				expect(result).toBe(mockedModules.modules['node-fetch'].returnValue.response[method]);
 			});
 		}
 	});
@@ -466,13 +462,19 @@ describe('Window', () => {
 				const response = await window.fetch(expectedUrl, expectedOptions);
 				const result = await response[method]();
 
-				expect(MOCKED_NODE_FETCH.url).toBe(expectedUrl);
+				expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedUrl);
 
-				expect(MOCKED_NODE_FETCH.init.headers['user-agent']).toBe(window.navigator.userAgent);
-				expect(MOCKED_NODE_FETCH.init.headers['cookie']).toBe(window.document.cookie);
-				expect(MOCKED_NODE_FETCH.init.headers['referer']).toBe(window.location.origin);
+				expect(mockedModules.modules['node-fetch'].parameters.init.headers['user-agent']).toBe(
+					window.navigator.userAgent
+				);
+				expect(mockedModules.modules['node-fetch'].parameters.init.headers['cookie']).toBe(
+					window.document.cookie
+				);
+				expect(mockedModules.modules['node-fetch'].parameters.init.headers['referer']).toBe(
+					window.location.origin
+				);
 
-				expect(result).toEqual(MOCKED_NODE_FETCH.response[method]);
+				expect(result).toEqual(mockedModules.modules['node-fetch'].returnValue.response[method]);
 			});
 		}
 
@@ -485,22 +487,30 @@ describe('Window', () => {
 			const response = await window.fetch(expectedPath, expectedOptions);
 			const textResponse = await response.text();
 
-			expect(MOCKED_NODE_FETCH.url).toBe('https://localhost:8080' + expectedPath);
+			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(
+				'https://localhost:8080' + expectedPath
+			);
 
-			expect(MOCKED_NODE_FETCH.init.headers['user-agent']).toBe(window.navigator.userAgent);
-			expect(MOCKED_NODE_FETCH.init.headers['cookie']).toBe(window.document.cookie);
-			expect(MOCKED_NODE_FETCH.init.headers['referer']).toBe(window.location.origin);
+			expect(mockedModules.modules['node-fetch'].parameters.init.headers['user-agent']).toBe(
+				window.navigator.userAgent
+			);
+			expect(mockedModules.modules['node-fetch'].parameters.init.headers['cookie']).toBe(
+				window.document.cookie
+			);
+			expect(mockedModules.modules['node-fetch'].parameters.init.headers['referer']).toBe(
+				window.location.origin
+			);
 
-			expect(textResponse).toEqual(MOCKED_NODE_FETCH.response.text);
+			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
 		});
 
 		it('Handles error JSON request.', async () => {
-			MOCKED_NODE_FETCH.error = new Error('error');
+			mockedModules.modules['node-fetch'].returnValue.error = new Error('error');
 			window.location.href = 'https://localhost:8080';
 			try {
 				await window.fetch('/url/', {});
 			} catch (error) {
-				expect(error).toBe(MOCKED_NODE_FETCH.error);
+				expect(error).toBe(mockedModules.modules['node-fetch'].returnValue.error);
 			}
 		});
 	});

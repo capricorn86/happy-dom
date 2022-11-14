@@ -11,9 +11,9 @@ import RelativeURL from '../location/RelativeURL';
 import XMLHttpRequestUpload from './XMLHttpRequestUpload';
 import DOMException from '../exception/DOMException';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import HTMLDocument from '../nodes/html-document/HTMLDocument';
 import { UrlObject } from 'url';
-import DOMParser, { default as DOMParserImplementation } from '../dom-parser/DOMParser';
+import XMLHttpRequestURLUtility from './utilities/XMLHttpRequestURLUtility';
+import ProgressEvent from '../event/events/ProgressEvent';
 
 // SSL certificates generated for Happy DOM to be able to perform HTTPS requests:
 
@@ -387,7 +387,104 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param data Optional data to send as request body.
 	 */
 	public send(data?: string): void {
-		this._sendRequest(data);
+		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
+			throw new DOMException(
+				'connection must be opened before send() is called',
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		if (this._flags.send) {
+			throw new DOMException(
+				'send has already been called',
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		const { location } = this._ownerDocument.defaultView;
+
+		const url = RelativeURL.getAbsoluteURL(location, this._settings.url);
+
+		// Security check.
+		if (url.protocol === 'http:' && location.protocol === 'https:') {
+			throw new DOMException(
+				`Mixed Content: The page at '${location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${url.href}'. This request has been blocked; the content must be served over HTTPS.`,
+				DOMExceptionNameEnum.securityError
+			);
+		}
+
+		// Load files off the local filesystem (file://)
+		if (XMLHttpRequestURLUtility.isLocal(url)) {
+			if (this._settings.async) {
+				this._sendLocalAsyncRequest(url);
+			} else {
+				this._sendLocalSyncRequest(url);
+			}
+			return;
+		}
+
+		// TODO: CORS check.
+
+		const host = XMLHttpRequestURLUtility.getHost(url);
+		const ssl = XMLHttpRequestURLUtility.isSSL(url);
+
+		// Default to port 80. If accessing localhost on another port be sure
+		// To use http://localhost:port/path
+		const port = Number(url.port) || (ssl ? 443 : 80);
+		// Add query string if one is used
+		const uri = url.pathname + (url.search ? url.search : '');
+
+		// Set the Host header or the server may reject the request
+		this._flags.requestHeaders['host'] = host;
+		if (!((ssl && port === 443) || port === 80)) {
+			this._flags.requestHeaders['host'] += ':' + url.port;
+		}
+
+		// Set Basic Auth if necessary
+		if (this._settings.user) {
+			this._settings.password ??= '';
+			const authBuffer = Buffer.from(this._settings.user + ':' + this._settings.password);
+			this._flags.requestHeaders['authorization'] = 'Basic ' + authBuffer.toString('base64');
+		}
+		// Set the Content-Length header if method is POST
+		if (this._settings.method === 'GET' || this._settings.method === 'HEAD') {
+			data = null;
+		} else if (this._settings.method === 'POST') {
+			// Set default content type if not set.
+			if (!this._flags.requestHeaders['content-type']) {
+				this._flags.requestHeaders['content-type'] = 'text/plain;charset=UTF-8';
+			}
+
+			if (data) {
+				this._flags.requestHeaders['content-length'] = Buffer.isBuffer(data)
+					? data.length
+					: Buffer.byteLength(data);
+			} else {
+				this._flags.requestHeaders['content-length'] = 0;
+			}
+		}
+
+		const options: HTTPS.RequestOptions = {
+			host: host,
+			port: port,
+			path: uri,
+			method: this._settings.method,
+			headers: { ...this._getDefaultRequestHeaders(), ...this._flags.requestHeaders },
+			agent: false,
+			rejectUnauthorized: true,
+			key: ssl ? SSL_KEY : null,
+			cert: ssl ? SSL_CERT : null
+		};
+
+		// Reset error flag
+		this._flags.error = false;
+
+		// Handle async requests
+		if (this._settings.async) {
+			this._sendAsyncRequest(options, ssl, data);
+		} else {
+			this._sendSyncRequest(options, ssl, data);
+		}
 	}
 
 	/**
@@ -471,142 +568,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			'user-agent': this._ownerDocument.defaultView.navigator.userAgent,
 			cookie: this._ownerDocument.defaultView.document.cookie
 		};
-	}
-
-	/**
-	 * Sends a request.
-	 *
-	 * @param [data] Optional data to send as request body.
-	 * @returns Promise that resolves when the request is done.
-	 */
-	private async _sendRequest(data?: string): Promise<void> {
-		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
-			throw new DOMException(
-				'connection must be opened before send() is called',
-				DOMExceptionNameEnum.invalidStateError
-			);
-		}
-
-		if (this._flags.send) {
-			throw new DOMException(
-				'send has already been called',
-				DOMExceptionNameEnum.invalidStateError
-			);
-		}
-
-		const { location } = this._ownerDocument.defaultView;
-
-		const url = RelativeURL.getAbsoluteURL(location, this._settings.url);
-		// Security check.
-		if (url.protocol === 'http:' && location.protocol === 'https:') {
-			throw new DOMException(
-				`Mixed Content: The page at '${location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${url.href}'. This request has been blocked; the content must be served over HTTPS.`,
-				DOMExceptionNameEnum.securityError
-			);
-		}
-
-		// TODO: CORS check.
-
-		let ssl = false;
-		let local = false;
-		let host;
-
-		this._flags.asyncTaskID = this._ownerDocument.defaultView.happyDOM.asyncTaskManager.startTask();
-
-		// Determine the server
-		switch (url.protocol) {
-			case 'https:':
-				host = url.hostname;
-				ssl = true;
-				break;
-
-			case 'http:':
-				host = url.hostname;
-				break;
-
-			case 'file:':
-				local = true;
-				break;
-
-			case undefined:
-			case '':
-				host = 'localhost';
-				break;
-
-			default:
-				throw new DOMException('Protocol not supported.', DOMExceptionNameEnum.notSupportedError);
-		}
-
-		// Load files off the local filesystem (file://)
-		if (local) {
-			if (this._settings.async) {
-				await this._sendLocalAsyncRequest(url);
-			} else {
-				this._sendLocalSyncRequest(url);
-			}
-			this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._flags.asyncTaskID);
-			return;
-		}
-
-		// Default to port 80. If accessing localhost on another port be sure
-		// To use http://localhost:port/path
-		const port = Number(url.port) || (ssl ? 443 : 80);
-		// Add query string if one is used
-		const uri = url.pathname + (url.search ? url.search : '');
-
-		// Set the Host header or the server may reject the request
-		this._flags.requestHeaders['host'] = host;
-		if (!((ssl && port === 443) || port === 80)) {
-			this._flags.requestHeaders['host'] += ':' + url.port;
-		}
-
-		// Set Basic Auth if necessary
-		if (this._settings.user) {
-			this._settings.password ??= '';
-			const authBuffer = Buffer.from(this._settings.user + ':' + this._settings.password);
-			this._flags.requestHeaders['authorization'] = 'Basic ' + authBuffer.toString('base64');
-		}
-		// Set the Content-Length header if method is POST
-		if (this._settings.method === 'GET' || this._settings.method === 'HEAD') {
-			data = null;
-		} else if (this._settings.method === 'POST') {
-			// Set default content type if not set.
-			if (!this._flags.requestHeaders['content-type']) {
-				this._flags.requestHeaders['content-type'] = 'text/plain;charset=UTF-8';
-			}
-
-			if (data) {
-				this._flags.requestHeaders['content-length'] = Buffer.isBuffer(data)
-					? data.length
-					: Buffer.byteLength(data);
-			} else {
-				this._flags.requestHeaders['content-length'] = 0;
-			}
-		}
-
-		const options: HTTPS.RequestOptions = {
-			host: host,
-			port: port,
-			path: uri,
-			method: this._settings.method,
-			headers: { ...this._getDefaultRequestHeaders(), ...this._flags.requestHeaders },
-			agent: false,
-			rejectUnauthorized: true,
-			key: ssl ? SSL_KEY : null,
-			cert: ssl ? SSL_CERT : null
-		};
-
-		// Reset error flag
-		this._flags.error = false;
-
-		// Handle async requests
-		if (this._settings.async) {
-			await this._sendAsyncRequest(options, ssl, data);
-		} else {
-			this._sendSyncRequest(options, ssl, data);
-		}
-
-		this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._flags.asyncTaskID);
 	}
 
 	/**
@@ -741,6 +702,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		data?: string
 	): Promise<void> {
 		return new Promise((resolve) => {
+			// Starts async task in Happy DOM
+			this._flags.asyncTaskID = this._ownerDocument.defaultView.happyDOM.asyncTaskManager.startTask(
+				this.abort.bind(this)
+			);
+
 			// Use the proper protocol
 			const sendRequest = ssl ? HTTPS.request : HTTP.request;
 
@@ -770,6 +736,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this._flags.asyncRequest.end();
 
 			this.dispatchEvent(new Event('loadstart'));
+
+			// Ends async task in Happy DOM
+			this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._flags.asyncTaskID);
 		});
 	}
 
@@ -847,6 +816,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				if (this._flags.send) {
 					this._setState(XMLHttpRequestReadyStateEnum.loading);
 				}
+
+				const contentLength = Number(this._flags.response.headers['content-length']);
+				this.dispatchEvent(
+					new ProgressEvent('progress', {
+						lengthComputable: isNaN(contentLength) ? false : true,
+						loaded: tempResponse.length,
+						total: isNaN(contentLength) ? 0 : contentLength
+					})
+				);
 			});
 
 			this._flags.response.on('end', () => {
@@ -885,6 +863,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @returns Promise.
 	 */
 	private async _sendLocalAsyncRequest(url: UrlObject): Promise<void> {
+		this._flags.asyncTaskID = this._ownerDocument.defaultView.happyDOM.asyncTaskManager.startTask(
+			this.abort.bind(this)
+		);
+
 		if (!this._ownerDocument.defaultView.happyDOM.settings.enableFileSystemHttpRequests) {
 			throw new DOMException(
 				'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.',
@@ -910,6 +892,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (data) {
 			this._parseLocalRequestData(data);
 		}
+
+		this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._flags.asyncTaskID);
 	}
 
 	/**
