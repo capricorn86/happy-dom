@@ -5,10 +5,13 @@ import Element from '../nodes/element/Element';
 const ATTRIBUTE_REGEXP =
 	/\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']{0,1}([^"']+)["']{0,1}\]/g;
 const ATTRIBUTE_NAME_REGEXP = /[^a-zA-Z0-9-_$]/;
-const PSUEDO_REGEXP = /:([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|:not\(([^)]+)\)|:([a-zA-Z-]+)/g;
-const CLASS_REGEXP = /\.([a-zA-Z0-9-_$]+)/g;
+const PSUEDO_REGEXP =
+	/(?<!\\):([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|(?<!\\):not\(([^)]+)\)|(?<!\\):([a-zA-Z-]+)/g;
+const CLASS_REGEXP = /\.(([a-zA-Z0-9-_$]|\\:)+)/g;
 const TAG_NAME_REGEXP = /^[a-zA-Z0-9-]+/;
 const ID_REGEXP = /#[A-Za-z][-A-Za-z0-9_]*/g;
+const CSS_ESCAPE_REGEXP = /(?<!\\):/g;
+const CSS_ESCAPE_CHAR_REGEXP = /\\/g;
 
 /**
  * Selector item.
@@ -296,13 +299,13 @@ export default class SelectorItem {
 	): { priorityWeight: number; matches: boolean } {
 		const regexp = new RegExp(CLASS_REGEXP, 'g');
 		const classList = element.className.split(' ');
-		const classSelector = selector.split(':')[0];
+		const classSelector = selector.split(CSS_ESCAPE_REGEXP)[0];
 		let priorityWeight = 0;
 		let match: RegExpMatchArray;
 
 		while ((match = regexp.exec(classSelector))) {
 			priorityWeight += 10;
-			if (!classList.includes(match[1])) {
+			if (!classList.includes(match[1].replace(CSS_ESCAPE_CHAR_REGEXP, ''))) {
 				return { priorityWeight: 0, matches: false };
 			}
 		}

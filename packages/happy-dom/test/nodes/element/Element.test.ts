@@ -695,6 +695,14 @@ describe('Element', () => {
 			expect(element.matches('.container, .active')).toBe(true);
 		});
 
+		it('Checks if the element matches a selector string containing escaped characters.', () => {
+			const element = document.createElement('div');
+
+			element.className = 'foo:bar';
+
+			expect(element.matches('.foo\\:bar')).toBe(true);
+		});
+
 		it('Checks if the element matches with a descendant combinator', () => {
 			const grandparentElement = document.createElement('div');
 			grandparentElement.setAttribute('role', 'alert');
