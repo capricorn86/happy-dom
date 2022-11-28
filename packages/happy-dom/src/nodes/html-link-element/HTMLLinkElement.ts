@@ -180,16 +180,16 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	}
 
 	/**
-	 * The setAttributeNode() method adds a new Attr node to the specified element.
-	 *
 	 * @override
-	 * @param attribute Attribute.
-	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: IAttr): IAttr {
+	public override setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
 		const rel = this.getAttributeNS(null, 'rel');
 		const href = this.getAttributeNS(null, 'href');
+
+		if (attribute.name === 'rel' && this._relList) {
+			this._relList._updateIndices();
+		}
 
 		if (
 			(attribute.name === 'rel' || attribute.name === 'href') &&
@@ -232,6 +232,19 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 		}
 
 		return replacedAttribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeAttributeNode(attribute: IAttr): IAttr {
+		super.removeAttributeNode(attribute);
+
+		if (attribute.name === 'rel' && this._relList) {
+			this._relList._updateIndices();
+		}
+
+		return attribute;
 	}
 
 	/**
@@ -283,17 +296,6 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 						}
 					});
 			}
-		}
-	}
-
-	/**
-	 * Updates DOM list indices.
-	 */
-	protected _updateDomListIndices(): void {
-		super._updateDomListIndices();
-
-		if (this._relList) {
-			this._relList._updateIndices();
 		}
 	}
 }

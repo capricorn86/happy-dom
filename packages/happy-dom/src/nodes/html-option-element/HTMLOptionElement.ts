@@ -1,7 +1,8 @@
+import IAttr from '../attr/IAttr';
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
+import HTMLSelectElement from '../html-select-element/HTMLSelectElement';
 import IHTMLOptionElement from './IHTMLOptionElement';
 
 /**
@@ -12,6 +13,8 @@ import IHTMLOptionElement from './IHTMLOptionElement';
  */
 export default class HTMLOptionElement extends HTMLElement implements IHTMLOptionElement {
 	public _index: number;
+	public _selectedness = false;
+	public _dirtyness = false;
 
 	/**
 	 * Returns inner text, which is the rendered appearance of text.
@@ -59,20 +62,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Selected.
 	 */
 	public get selected(): boolean {
-		const parentNode = <IHTMLSelectElement>this.parentNode;
-
-		if (parentNode?.tagName === 'SELECT') {
-			let index = -1;
-			for (let i = 0; i < parentNode.options.length; i++) {
-				if (parentNode.options[i] === this) {
-					index = i;
-					break;
-				}
-			}
-			return index !== -1 && parentNode.options.selectedIndex === index;
-		}
-
-		return false;
+		return this._selectedness;
 	}
 
 	/**
@@ -81,26 +71,13 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @param selected Selected.
 	 */
 	public set selected(selected: boolean) {
-		const parentNode = <IHTMLSelectElement>this.parentNode;
-		if (parentNode?.tagName === 'SELECT') {
-			if (selected) {
-				let index = -1;
+		const selectElement = this._getSelectElement();
 
-				for (let i = 0; i < parentNode.options.length; i++) {
-					if (parentNode.options[i] === this) {
-						index = i;
-						break;
-					}
-				}
+		this._dirtyness = true;
+		this._selectedness = Boolean(selected);
 
-				if (index !== -1) {
-					parentNode.options.selectedIndex = index;
-				}
-			} else if (parentNode.options.length) {
-				parentNode.options.selectedIndex = 0;
-			} else {
-				parentNode.options.selectedIndex = -1;
-			}
+		if (selectElement) {
+			selectElement._resetOptionSelectednes(this._selectedness ? this : null);
 		}
 	}
 
@@ -132,7 +109,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Value.
 	 */
 	public get value(): string {
-		return this.getAttributeNS(null, 'value') || '';
+		return this.getAttributeNS(null, 'value') || this.textContent;
 	}
 
 	/**
@@ -142,5 +119,62 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 */
 	public set value(value: string) {
 		this.setAttributeNS(null, 'value', value);
+	}
+
+	/**
+	 * @override
+	 */
+	public setAttributeNode(attribute: IAttr): IAttr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		if (
+			!this._dirtyness &&
+			attribute.name === 'selected' &&
+			replacedAttribute?.value !== attribute.value
+		) {
+			const selectElement = this._getSelectElement();
+
+			this._selectedness = true;
+
+			if (selectElement) {
+				selectElement._resetOptionSelectednes(this);
+			}
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public removeAttributeNode(attribute: IAttr): IAttr {
+		super.removeAttributeNode(attribute);
+
+		if (!this._dirtyness && attribute.name === 'selected') {
+			const selectElement = this._getSelectElement();
+
+			this._selectedness = false;
+
+			if (selectElement) {
+				selectElement._resetOptionSelectednes();
+			}
+		}
+
+		return attribute;
+	}
+
+	/**
+	 * Returns select element.
+	 *
+	 * @returns Select element.
+	 */
+	private _getSelectElement(): HTMLSelectElement {
+		const parentNode = <HTMLSelectElement>this.parentNode;
+		if (parentNode?.tagName === 'SELECT') {
+			return <HTMLSelectElement>parentNode;
+		}
+		if ((<HTMLSelectElement>parentNode?.parentNode)?.tagName === 'SELECT') {
+			return <HTMLSelectElement>parentNode.parentNode;
+		}
 	}
 }

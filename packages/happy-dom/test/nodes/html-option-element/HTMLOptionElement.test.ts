@@ -25,6 +25,12 @@ describe('HTMLOptionElement', () => {
 			element.setAttribute('value', 'VALUE');
 			expect(element.value).toBe('VALUE');
 		});
+
+		it('Returns the text IDL value if no attribute is present.', () => {
+			element.removeAttribute('value');
+			element.textContent = 'TEXT VALUE';
+			expect(element.value).toBe('TEXT VALUE');
+		});
 	});
 
 	describe('set value()', () => {

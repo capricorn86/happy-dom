@@ -199,7 +199,7 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * Updates indices.
 	 */
 	public _updateIndices(): void {
-		const attr = this._ownerElement.getAttribute('class');
+		const attr = this._ownerElement.getAttribute(this._attributeName);
 		const list = attr ? Array.from(new Set(attr.split(' '))) : [];
 
 		for (let i = list.length - 1, max = this.length; i < max; i++) {
