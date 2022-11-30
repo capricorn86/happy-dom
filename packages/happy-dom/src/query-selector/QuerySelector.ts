@@ -104,15 +104,22 @@ export default class QuerySelector {
 		}
 
 		const selector = new SelectorItem(selectorParts[0]);
-		const result = selector.match(<Element>currentNode);
+		const result = selector.match(<IElement>currentNode);
 
-		if ((targetNode === currentNode || !currentNode.parentNode) && !result.matches) {
+		if (result.matches && selectorParts.length === 1) {
+			return {
+				priorityWeight: priorityWeight + result.priorityWeight,
+				matches: true
+			};
+		}
+
+		if (!currentNode.parentElement || (targetNode === currentNode && !result.matches)) {
 			return { priorityWeight: 0, matches: false };
 		}
 
 		return this.matchesSelector(
-			isDirectChild ? currentNode.parentNode : targetNode,
-			currentNode.parentNode,
+			isDirectChild ? currentNode.parentElement : targetNode,
+			currentNode.parentElement,
 			result.matches ? selectorParts.slice(1) : selectorParts,
 			priorityWeight + result.priorityWeight
 		);

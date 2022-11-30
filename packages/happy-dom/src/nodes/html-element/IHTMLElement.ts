@@ -9,7 +9,6 @@ import IElement from '../element/IElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement.
  */
 export default interface IHTMLElement extends IElement {
-	style: CSSStyleDeclaration;
 	dataset: { [key: string]: string };
 	tabIndex: number;
 	offsetHeight: number;
@@ -47,6 +46,9 @@ export default interface IHTMLElement extends IElement {
 	ontransitionend: (event: Event) => void | null;
 	ontransitionrun: (event: Event) => void | null;
 	ontransitionstart: (event: Event) => void | null;
+
+	get style(): CSSStyleDeclaration;
+	set style(cssText: CSSStyleDeclaration | string);
 
 	/**
 	 * Triggers a click event.

@@ -1,5 +1,3 @@
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
@@ -169,13 +167,14 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @returns Value.
 	 */
 	public get value(): string {
-		if (this.options.selectedIndex === -1) {
-			return '';
+		for (let i = 0, max = this.options.length; i < max; i++) {
+			const option = <HTMLOptionElement>this.options[i];
+			if (option._selectedness) {
+				return option.value;
+			}
 		}
 
-		const option = this.options[this.options.selectedIndex];
-
-		return option instanceof HTMLOptionElement ? option.value : '';
+		return '';
 	}
 
 	/**
@@ -184,9 +183,15 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		this.options.selectedIndex = this.options.findIndex(
-			(o) => o instanceof HTMLOptionElement && o.value === value
-		);
+		for (let i = 0, max = this.options.length; i < max; i++) {
+			const option = <HTMLOptionElement>this.options[i];
+			if (option.value === value) {
+				option._selectedness = true;
+				option._dirtyness = true;
+			} else {
+				option._selectedness = false;
+			}
+		}
 	}
 
 	/**
@@ -195,23 +200,31 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @returns Value.
 	 */
 	public get selectedIndex(): number {
-		return this.options.selectedIndex;
+		for (let i = 0, max = this.options.length; i < max; i++) {
+			if ((<HTMLOptionElement>this.options[i])._selectedness) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	/**
 	 * Sets value.
 	 *
-	 * @param value Value.
+	 * @param selectedIndex Selected index.
 	 */
-	public set selectedIndex(value: number) {
-		if (value > this.options.length - 1 || value < -1) {
-			throw new DOMException(
-				'Select elements selected index must be valid',
-				DOMExceptionNameEnum.indexSizeError
-			);
-		}
+	public set selectedIndex(selectedIndex: number) {
+		if (typeof selectedIndex === 'number' && !isNaN(selectedIndex)) {
+			for (let i = 0, max = this.options.length; i < max; i++) {
+				(<HTMLOptionElement>this.options[i])._selectedness = false;
+			}
 
-		this.options.selectedIndex = value;
+			const selectedOption = <HTMLOptionElement>this.options[selectedIndex];
+			if (selectedOption) {
+				selectedOption._selectedness = true;
+				selectedOption._dirtyness = true;
+			}
+		}
 	}
 
 	/**
@@ -299,6 +312,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 			}
 
 			this._updateIndexProperties(previousLength, this.options.length);
+			this._resetOptionSelectednes();
 		}
 
 		return super.appendChild(node);
@@ -342,6 +356,10 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 			this._updateIndexProperties(previousLength, this.options.length);
 		}
 
+		if (newNode.nodeType === NodeTypeEnum.elementNode) {
+			this._resetOptionSelectednes();
+		}
+
 		return returnValue;
 	}
 
@@ -355,15 +373,87 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 
 			if (element.tagName === 'OPTION' || element.tagName === 'OPTION') {
 				const index = this.options.indexOf(<IHTMLOptionElement | IHTMLOptGroupElement>node);
+
 				if (index !== -1) {
 					this.options.splice(index, 1);
 				}
 			}
 
 			this._updateIndexProperties(previousLength, this.options.length);
+			this._resetOptionSelectednes();
 		}
 
 		return super.removeChild(node);
+	}
+
+	/**
+	 * Resets the option selectedness.
+	 *
+	 * Based on:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/HTMLSelectElement-impl.js
+	 *
+	 * @param [newOption] Optional new option element to be selected.
+	 * @see https://html.spec.whatwg.org/multipage/form-elements.html#selectedness-setting-algorithm
+	 */
+	public _resetOptionSelectednes(newOption?: IHTMLOptionElement): void {
+		if (this.hasAttributeNS(null, 'multiple')) {
+			return;
+		}
+
+		const selected: HTMLOptionElement[] = [];
+
+		for (let i = 0, max = this.options.length; i < max; i++) {
+			if (newOption) {
+				(<HTMLOptionElement>this.options[i])._selectedness = this.options[i] === newOption;
+			}
+
+			if ((<HTMLOptionElement>this.options[i])._selectedness) {
+				selected.push(<HTMLOptionElement>this.options[i]);
+			}
+		}
+
+		const size = this._getDisplaySize();
+
+		if (size === 1 && !selected.length) {
+			for (let i = 0, max = this.options.length; i < max; i++) {
+				const option = <HTMLOptionElement>this.options[i];
+
+				let disabled = option.hasAttributeNS(null, 'disabled');
+				const parentNode = <IHTMLElement>option.parentNode;
+				if (
+					parentNode &&
+					parentNode.nodeType === NodeTypeEnum.elementNode &&
+					parentNode.tagName === 'OPTGROUP' &&
+					parentNode.hasAttributeNS(null, 'disabled')
+				) {
+					disabled = true;
+				}
+
+				if (!disabled) {
+					option._selectedness = true;
+					break;
+				}
+			}
+		} else if (selected.length >= 2) {
+			for (let i = 0, max = this.options.length; i < max; i++) {
+				(<HTMLOptionElement>this.options[i])._selectedness = i === selected.length - 1;
+			}
+		}
+	}
+
+	/**
+	 * Returns display size.
+	 *
+	 * @returns Display size.
+	 */
+	protected _getDisplaySize(): number {
+		if (this.hasAttributeNS(null, 'size')) {
+			const size = parseInt(this.getAttributeNS(null, 'size'));
+			if (!isNaN(size) && size >= 0) {
+				return size;
+			}
+		}
+		return this.hasAttributeNS(null, 'multiple') ? 4 : 1;
 	}
 
 	/**
