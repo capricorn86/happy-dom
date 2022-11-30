@@ -19,7 +19,7 @@ import QuerySelector from '../../query-selector/QuerySelector';
 import IDocument from './IDocument';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import DOMException from '../../exception/DOMException';
-import CookieUtility from '../../cookie/CookieUtility';
+import CookieJar from '../../cookie/CookieJar';
 import IElement from '../element/IElement';
 import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement';
 import IHTMLElement from '../html-element/IHTMLElement';
@@ -66,7 +66,7 @@ export default class Document extends Node implements IDocument {
 
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
-	private _cookie = '';
+	private _cookie = new CookieJar();
 	private _selection: Selection = null;
 
 	// Events
@@ -258,7 +258,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
-		return this._cookie;
+		return this._cookie.getCookiesString(this.defaultView.location, true);
 	}
 
 	/**
@@ -267,7 +267,7 @@ export default class Document extends Node implements IDocument {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		this._cookie = CookieUtility.getCookieString(this.defaultView.location, this._cookie, cookie);
+		this._cookie.setCookiesString(cookie);
 	}
 
 	/**
