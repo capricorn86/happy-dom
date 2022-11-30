@@ -16,11 +16,11 @@ export default class CookieJar {
 	 * @param cookie
 	 */
 	private validateCookie(cookie: Cookie): boolean {
-		if (cookie.key.toLocaleUpperCase().startsWith('__secure-') && !cookie.isSecure()) {
+		if (cookie.key.toLowerCase().startsWith('__secure-') && !cookie.isSecure()) {
 			return false;
 		}
 		if (
-			cookie.key.toLocaleUpperCase().startsWith('__host-') &&
+			cookie.key.toLowerCase().startsWith('__host-') &&
 			(!cookie.isSecure() || cookie.path !== '/' || cookie.domain)
 		) {
 			return false;
