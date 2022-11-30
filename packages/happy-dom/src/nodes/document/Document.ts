@@ -63,10 +63,12 @@ export default class Document extends Node implements IDocument {
 
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
 	public _cacheID = 0;
+	// Public in order to be accessible by the fetch and xhr.
+	public _cookie = new CookieJar();
 
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
-	private _cookie = new CookieJar();
+	
 	private _selection: Selection = null;
 
 	// Events
