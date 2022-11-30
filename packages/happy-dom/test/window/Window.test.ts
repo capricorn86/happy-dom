@@ -79,6 +79,18 @@ describe('Window', () => {
 			expect(secondComment.ownerDocument === secondWindow.document).toBe(true);
 			expect(thirdComment.ownerDocument === thirdWindow.document).toBe(true);
 		});
+
+		it('Initializes by using given options', () => {
+			const windowWithOptions = new Window({
+				innerWidth: 1024,
+				innerHeight: 768,
+				url: 'http://localhost:8080'
+			});
+
+			expect(windowWithOptions.innerWidth).toBe(1024);
+			expect(windowWithOptions.innerHeight).toBe(768);
+			expect(windowWithOptions.location.href).toBe('http://localhost:8080/');
+		});
 	});
 
 	describe('get Object()', () => {

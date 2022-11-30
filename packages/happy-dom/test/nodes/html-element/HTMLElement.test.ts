@@ -239,6 +239,34 @@ describe('HTMLElement', () => {
 		});
 	});
 
+	describe('set style()', () => {
+		it('Sets the value of the style.cssText property.', () => {
+			element.style = 'border-radius: 2px; padding: 2px;';
+
+			expect(element.style.cssText).toEqual('border-radius: 2px; padding: 2px;');
+			expect(element.style.borderRadius).toEqual('2px');
+			expect(element.style.padding).toEqual('2px');
+			expect(element.getAttribute('style')).toEqual('border-radius: 2px; padding: 2px;');
+			expect(element.outerHTML).toEqual('<div style="border-radius: 2px; padding: 2px;"></div>');
+
+			element.style = '';
+
+			expect(element.style.cssText).toEqual('');
+			expect(element.style.borderRadius).toEqual('');
+			expect(element.style.padding).toEqual('');
+			expect(element.getAttribute('style')).toEqual('');
+			expect(element.outerHTML).toEqual('<div style=""></div>');
+
+			element.style = null;
+
+			expect(element.style.cssText).toEqual('');
+			expect(element.style.borderRadius).toEqual('');
+			expect(element.style.padding).toEqual('');
+			expect(element.getAttribute('style')).toEqual('');
+			expect(element.outerHTML).toEqual('<div style=""></div>');
+		});
+	});
+
 	describe('get dataset()', () => {
 		it('Returns a Proxy behaving like an object that can add, remove, set and get element attributes prefixed with "data-".', () => {
 			element.setAttribute('test-alpha', 'value1');

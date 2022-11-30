@@ -1,6 +1,7 @@
 import Node from '../node/Node';
 import ShadowRoot from '../shadow-root/ShadowRoot';
 import Attr from '../attr/Attr';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap';
 import DOMRect from './DOMRect';
 import DOMTokenList from '../../dom-token-list/DOMTokenList';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
@@ -26,6 +27,8 @@ import IText from '../text/IText';
 import IDOMRectList from './IDOMRectList';
 import DOMRectListFactory from './DOMRectListFactory';
 import IAttr from '../attr/IAttr';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap';
+
 import Event from '../../event/Event';
 
 /**
@@ -249,11 +252,8 @@ export default class Element extends Node implements IElement {
 	 *
 	 * @returns Attributes.
 	 */
-	public get attributes(): { [k: string | number]: IAttr } & { length: number } {
-		const attributes = Object.values(this._attributes);
-		return Object.assign({}, this._attributes, attributes, {
-			length: attributes.length
-		});
+	public get attributes(): INamedNodeMap {
+		return Object.assign(new NamedNodeMap(this), Object.values(this._attributes), this._attributes);
 	}
 
 	/**
@@ -840,7 +840,9 @@ export default class Element extends Node implements IElement {
 
 		this._attributes[name] = attribute;
 
-		this._updateDomListIndices();
+		if (attribute.name === 'class' && this._classList) {
+			this._classList._updateIndices();
+		}
 
 		if (
 			this.attributeChangedCallback &&
@@ -919,15 +921,26 @@ export default class Element extends Node implements IElement {
 	 * Removes an Attr node.
 	 *
 	 * @param attribute Attribute.
+	 * @returns Removed attribute.
 	 */
-	public removeAttributeNode(attribute: IAttr): void {
+	public removeAttributeNode(attribute: IAttr): IAttr {
+		const removedAttribute = this._attributes[attribute.name];
+
+		if (removedAttribute !== attribute) {
+			throw new DOMException(
+				`Failed to execute 'removeAttributeNode' on 'Element': The node provided is owned by another element.`
+			);
+		}
+
 		delete this._attributes[attribute.name];
 
 		if (this.isConnected) {
 			this.ownerDocument['_cacheID']++;
 		}
 
-		this._updateDomListIndices();
+		if (attribute.name === 'class' && this._classList) {
+			this._classList._updateIndices();
+		}
 
 		if (
 			this.attributeChangedCallback &&
@@ -954,15 +967,18 @@ export default class Element extends Node implements IElement {
 				}
 			}
 		}
+
+		return attribute;
 	}
 
 	/**
 	 * Removes an Attr node.
 	 *
 	 * @param attribute Attribute.
+	 * @returns Removed attribute.
 	 */
-	public removeAttributeNodeNS(attribute: IAttr): void {
-		this.removeAttributeNode(attribute);
+	public removeAttributeNodeNS(attribute: IAttr): IAttr {
+		return this.removeAttributeNode(attribute);
 	}
 
 	/**
@@ -1020,14 +1036,5 @@ export default class Element extends Node implements IElement {
 			return name;
 		}
 		return name.toLowerCase();
-	}
-
-	/**
-	 * Updates DOM list indices.
-	 */
-	protected _updateDomListIndices(): void {
-		if (this._classList) {
-			this._classList._updateIndices();
-		}
 	}
 }

@@ -108,6 +108,7 @@ import { Buffer } from 'buffer';
 import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
 import Attr from '../nodes/attr/Attr';
+import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 
@@ -167,6 +168,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLBaseElement = HTMLBaseElement;
 	public readonly HTMLDialogElement = HTMLDialogElement;
 	public readonly Attr = Attr;
+	public readonly NamedNodeMap = NamedNodeMap;
 	public readonly SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement = SVGElement;
 	public readonly Text = Text;
@@ -250,20 +252,20 @@ export default class Window extends EventTarget implements IWindow {
 
 	// Public Properties
 	public readonly document: Document;
-	public readonly customElements: CustomElementRegistry = new CustomElementRegistry();
-	public readonly location = new Location();
-	public readonly history = new History();
-	public readonly navigator = new Navigator();
+	public readonly customElements: CustomElementRegistry;
+	public readonly location: Location;
+	public readonly history: History;
+	public readonly navigator: Navigator;
 	public readonly console = console;
 	public readonly self = this;
 	public readonly top = this;
 	public readonly parent = this;
 	public readonly window = this;
 	public readonly globalThis = this;
-	public readonly screen = new Screen();
+	public readonly screen: Screen;
 	public readonly devicePixelRatio = 1;
-	public readonly sessionStorage = new Storage();
-	public readonly localStorage = new Storage();
+	public readonly sessionStorage: Storage;
+	public readonly localStorage: Storage;
 	public readonly performance = PerfHooks.performance;
 	public readonly innerWidth: number;
 	public readonly innerHeight: number;
@@ -347,6 +349,14 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	constructor(options?: { innerWidth?: number; innerHeight?: number; url?: string }) {
 		super();
+
+		this.customElements = new CustomElementRegistry();
+		this.location = new Location();
+		this.navigator = new Navigator();
+		this.history = new History();
+		this.screen = new Screen();
+		this.sessionStorage = new Storage();
+		this.localStorage = new Storage();
 
 		this.innerWidth = options?.innerWidth ? options.innerWidth : 0;
 		this.innerHeight = options?.innerHeight ? options.innerHeight : 0;

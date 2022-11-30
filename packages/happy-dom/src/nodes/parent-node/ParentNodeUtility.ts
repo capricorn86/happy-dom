@@ -97,9 +97,10 @@ export default class ParentNodeUtility {
 	): IHTMLCollection<IElement> {
 		const upperTagName = tagName.toUpperCase();
 		const matches = HTMLCollectionFactory.create();
+		const includeAll = tagName === '*';
 
 		for (const child of parentNode.children) {
-			if (child.tagName === upperTagName) {
+			if (includeAll || child.tagName === upperTagName) {
 				matches.push(child);
 			}
 			for (const match of this.getElementsByTagName(<IElement>child, tagName)) {
@@ -125,9 +126,10 @@ export default class ParentNodeUtility {
 	): IHTMLCollection<IElement> {
 		const upperTagName = tagName.toUpperCase();
 		const matches = HTMLCollectionFactory.create();
+		const includeAll = tagName === '*';
 
 		for (const child of parentNode.children) {
-			if (child.tagName === upperTagName && child.namespaceURI === namespaceURI) {
+			if ((includeAll || child.tagName === upperTagName) && child.namespaceURI === namespaceURI) {
 				matches.push(child);
 			}
 			for (const match of this.getElementsByTagNameNS(<IElement>child, namespaceURI, tagName)) {

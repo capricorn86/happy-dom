@@ -80,25 +80,25 @@ describe('XMLParser', () => {
 				true
 			);
 
-			expect((<IHTMLElement>root.childNodes[0]).attributes.class.name).toBe('class');
-			expect((<IHTMLElement>root.childNodes[0]).attributes.class.value).toBe('class1 class2');
-			expect((<IHTMLElement>root.childNodes[0]).attributes.class.namespaceURI).toBe(null);
-			expect((<IHTMLElement>root.childNodes[0]).attributes.class.specified).toBe(true);
+			expect((<IHTMLElement>root.childNodes[0]).attributes['class'].name).toBe('class');
+			expect((<IHTMLElement>root.childNodes[0]).attributes['class'].value).toBe('class1 class2');
+			expect((<IHTMLElement>root.childNodes[0]).attributes['class'].namespaceURI).toBe(null);
+			expect((<IHTMLElement>root.childNodes[0]).attributes['class'].specified).toBe(true);
 			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes.class.ownerElement === root.childNodes[0]
+				(<IHTMLElement>root.childNodes[0]).attributes['class'].ownerElement === root.childNodes[0]
 			).toBe(true);
-			expect((<IHTMLElement>root.childNodes[0]).attributes.class.ownerDocument === document).toBe(
-				true
-			);
+			expect(
+				(<IHTMLElement>root.childNodes[0]).attributes['class'].ownerDocument === document
+			).toBe(true);
 
-			expect((<IHTMLElement>root.childNodes[0]).attributes.id.name).toBe('id');
-			expect((<IHTMLElement>root.childNodes[0]).attributes.id.value).toBe('id');
-			expect((<IHTMLElement>root.childNodes[0]).attributes.id.namespaceURI).toBe(null);
-			expect((<IHTMLElement>root.childNodes[0]).attributes.id.specified).toBe(true);
+			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].name).toBe('id');
+			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].value).toBe('id');
+			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].namespaceURI).toBe(null);
+			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].specified).toBe(true);
 			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes.id.ownerElement === root.childNodes[0]
+				(<IHTMLElement>root.childNodes[0]).attributes['id'].ownerElement === root.childNodes[0]
 			).toBe(true);
-			expect((<IHTMLElement>root.childNodes[0]).attributes.id.ownerDocument === document).toBe(
+			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].ownerDocument === document).toBe(
 				true
 			);
 
@@ -295,33 +295,33 @@ describe('XMLParser', () => {
 			expect(svg.attributes[3].ownerElement === svg).toBe(true);
 			expect(svg.attributes[3].ownerDocument === document).toBe(true);
 
-			expect(svg.attributes.viewBox.name).toBe('viewBox');
-			expect(svg.attributes.viewBox.value).toBe('0 0 300 100');
-			expect(svg.attributes.viewBox.namespaceURI).toBe(null);
-			expect(svg.attributes.viewBox.specified).toBe(true);
-			expect(svg.attributes.viewBox.ownerElement === svg).toBe(true);
-			expect(svg.attributes.viewBox.ownerDocument === document).toBe(true);
+			expect(svg.attributes['viewBox'].name).toBe('viewBox');
+			expect(svg.attributes['viewBox'].value).toBe('0 0 300 100');
+			expect(svg.attributes['viewBox'].namespaceURI).toBe(null);
+			expect(svg.attributes['viewBox'].specified).toBe(true);
+			expect(svg.attributes['viewBox'].ownerElement === svg).toBe(true);
+			expect(svg.attributes['viewBox'].ownerDocument === document).toBe(true);
 
-			expect(svg.attributes.stroke.name).toBe('stroke');
-			expect(svg.attributes.stroke.value).toBe('red');
-			expect(svg.attributes.stroke.namespaceURI).toBe(null);
-			expect(svg.attributes.stroke.specified).toBe(true);
-			expect(svg.attributes.stroke.ownerElement === svg).toBe(true);
-			expect(svg.attributes.stroke.ownerDocument === document).toBe(true);
+			expect(svg.attributes['stroke'].name).toBe('stroke');
+			expect(svg.attributes['stroke'].value).toBe('red');
+			expect(svg.attributes['stroke'].namespaceURI).toBe(null);
+			expect(svg.attributes['stroke'].specified).toBe(true);
+			expect(svg.attributes['stroke'].ownerElement === svg).toBe(true);
+			expect(svg.attributes['stroke'].ownerDocument === document).toBe(true);
 
-			expect(svg.attributes.fill.name).toBe('fill');
-			expect(svg.attributes.fill.value).toBe('grey');
-			expect(svg.attributes.fill.namespaceURI).toBe(null);
-			expect(svg.attributes.fill.specified).toBe(true);
-			expect(svg.attributes.fill.ownerElement === svg).toBe(true);
-			expect(svg.attributes.fill.ownerDocument === document).toBe(true);
+			expect(svg.attributes['fill'].name).toBe('fill');
+			expect(svg.attributes['fill'].value).toBe('grey');
+			expect(svg.attributes['fill'].namespaceURI).toBe(null);
+			expect(svg.attributes['fill'].specified).toBe(true);
+			expect(svg.attributes['fill'].ownerElement === svg).toBe(true);
+			expect(svg.attributes['fill'].ownerDocument === document).toBe(true);
 
-			expect(svg.attributes.xmlns.name).toBe('xmlns');
-			expect(svg.attributes.xmlns.value).toBe(NamespaceURI.html);
-			expect(svg.attributes.xmlns.namespaceURI).toBe(NamespaceURI.html);
-			expect(svg.attributes.xmlns.specified).toBe(true);
-			expect(svg.attributes.xmlns.ownerElement === svg).toBe(true);
-			expect(svg.attributes.xmlns.ownerDocument === document).toBe(true);
+			expect(svg.attributes['xmlns'].name).toBe('xmlns');
+			expect(svg.attributes['xmlns'].value).toBe(NamespaceURI.html);
+			expect(svg.attributes['xmlns'].namespaceURI).toBe(NamespaceURI.html);
+			expect(svg.attributes['xmlns'].specified).toBe(true);
+			expect(svg.attributes['xmlns'].ownerElement === svg).toBe(true);
+			expect(svg.attributes['xmlns'].ownerDocument === document).toBe(true);
 
 			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
 				`
@@ -395,6 +395,20 @@ describe('XMLParser', () => {
 			);
 
 			expect((<IHTMLElement>root.children[0]).innerText).toBe(`console.log('hello')`);
+		});
+
+		it('Handles different value types.', () => {
+			const root1 = XMLParser.parse(window.document, null);
+			expect(new XMLSerializer().serializeToString(root1)).toBe('');
+
+			const root2 = XMLParser.parse(window.document, undefined);
+			expect(new XMLSerializer().serializeToString(root2)).toBe('');
+
+			const root3 = XMLParser.parse(window.document, <string>(<unknown>1000));
+			expect(new XMLSerializer().serializeToString(root3)).toBe('1000');
+
+			const root4 = XMLParser.parse(window.document, <string>(<unknown>false));
+			expect(new XMLSerializer().serializeToString(root4)).toBe('false');
 		});
 	});
 });

@@ -1,16 +1,17 @@
 import Window from '../../../src/window/Window';
 import Document from '../../../src/nodes/document/Document';
-import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement';
+import IHTMLOptionElement from '../../../src/nodes/html-option-element/IHTMLOptionElement';
+import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement';
 
 describe('HTMLOptionElement', () => {
 	let window: Window;
 	let document: Document;
-	let element: HTMLOptionElement;
+	let element: IHTMLOptionElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLOptionElement>document.createElement('option');
+		element = <IHTMLOptionElement>document.createElement('option');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -24,6 +25,12 @@ describe('HTMLOptionElement', () => {
 			element.setAttribute('value', 'VALUE');
 			expect(element.value).toBe('VALUE');
 		});
+
+		it('Returns the text IDL value if no attribute is present.', () => {
+			element.removeAttribute('value');
+			element.textContent = 'TEXT VALUE';
+			expect(element.value).toBe('TEXT VALUE');
+		});
 	});
 
 	describe('set value()', () => {
@@ -33,20 +40,78 @@ describe('HTMLOptionElement', () => {
 		});
 	});
 
-	for (const property of ['disabled', 'selected']) {
-		describe(`get ${property}()`, () => {
-			it('Returns attribute value.', () => {
-				expect(element[property]).toBe(false);
-				element.setAttribute(property, '');
-				expect(element[property]).toBe(true);
-			});
+	describe('get disabled()', () => {
+		it('Returns the attribute "disabled".', () => {
+			element.setAttribute('disabled', '');
+			expect(element.disabled).toBe(true);
 		});
+	});
 
-		describe(`set ${property}()`, () => {
-			it('Sets attribute value.', () => {
-				element[property] = true;
-				expect(element.getAttribute(property)).toBe('');
-			});
+	describe('set disabled()', () => {
+		it('Sets the attribute "disabled".', () => {
+			element.disabled = true;
+			expect(element.getAttribute('disabled')).toBe('');
 		});
-	}
+	});
+
+	describe('get selected()', () => {
+		it('Returns the selected state of the option.', () => {
+			const select = <IHTMLSelectElement>document.createElement('select');
+			const option1 = <IHTMLOptionElement>document.createElement('option');
+			const option2 = <IHTMLOptionElement>document.createElement('option');
+
+			expect(option1.selected).toBe(false);
+			expect(option2.selected).toBe(false);
+
+			select.appendChild(option1);
+			select.appendChild(option2);
+
+			expect(option1.selected).toBe(true);
+			expect(option2.selected).toBe(false);
+			expect(option1.getAttribute('selected')).toBe(null);
+			expect(option2.getAttribute('selected')).toBe(null);
+
+			select.options.selectedIndex = 1;
+
+			expect(option1.selected).toBe(false);
+			expect(option2.selected).toBe(true);
+			expect(option1.getAttribute('selected')).toBe(null);
+			expect(option2.getAttribute('selected')).toBe(null);
+
+			select.options.selectedIndex = -1;
+
+			expect(option1.selected).toBe(false);
+			expect(option2.selected).toBe(false);
+		});
+	});
+
+	describe('set selected()', () => {
+		it('Sets the selected state of the option.', () => {
+			const select = <IHTMLSelectElement>document.createElement('select');
+			const option1 = <IHTMLOptionElement>document.createElement('option');
+			const option2 = <IHTMLOptionElement>document.createElement('option');
+
+			expect(option1.selected).toBe(false);
+			expect(option2.selected).toBe(false);
+
+			option1.selected = true;
+
+			expect(select.selectedIndex).toBe(-1);
+
+			select.appendChild(option1);
+			select.appendChild(option2);
+
+			option1.selected = true;
+
+			expect(select.selectedIndex).toBe(0);
+
+			option2.selected = true;
+
+			expect(select.selectedIndex).toBe(1);
+
+			option2.selected = false;
+
+			expect(select.selectedIndex).toBe(0);
+		});
+	});
 });
