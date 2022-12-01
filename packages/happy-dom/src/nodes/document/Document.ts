@@ -68,7 +68,7 @@ export default class Document extends Node implements IDocument {
 
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
-	
+
 	private _selection: Selection = null;
 
 	// Events
