@@ -48,6 +48,7 @@ const modules = {
 			returnValue: {
 				data: {
 					statusCode: 200,
+					statusMessage: 'child_process.execFileSync.returnValue.data.statusMessage',
 					headers: { key1: 'value1', key2: 'value2' },
 					text: 'child_process.execFileSync.returnValue.data.text',
 					data: Buffer.from('child_process.execFileSync.returnValue.data.text').toString('base64')
@@ -67,7 +68,7 @@ const modules = {
 			returnValue: {
 				response: {
 					headers: 'http.request.headers',
-					statusCode: 'http.request.statusCode',
+					statusCode: 200,
 					statusMessage: 'http.request.statusMessage',
 					body: 'http.request.body',
 					error: null
