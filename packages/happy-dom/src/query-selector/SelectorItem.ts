@@ -7,9 +7,9 @@ const ATTRIBUTE_REGEXP =
 const ATTRIBUTE_NAME_REGEXP = /[^a-zA-Z0-9-_$]/;
 const PSUEDO_REGEXP =
 	/(?<!\\):([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|(?<!\\):not\(([^)]+)\)|(?<!\\):([a-zA-Z-]+)/g;
-const CLASS_REGEXP = /\.(([a-zA-Z0-9-_$]|\\:)+)/g;
+const CLASS_REGEXP = /\.(([a-zA-Z0-9-_$]|\\.)+)/g;
 const TAG_NAME_REGEXP = /^[a-zA-Z0-9-]+/;
-const ID_REGEXP = /#[A-Za-z][-A-Za-z0-9_]*/g;
+const ID_REGEXP = /(?<!\\)#[A-Za-z][-A-Za-z0-9_]*/g;
 const CSS_ESCAPE_REGEXP = /(?<!\\):/g;
 const CSS_ESCAPE_CHAR_REGEXP = /\\/g;
 
@@ -34,9 +34,10 @@ export default class SelectorItem {
 	 */
 	constructor(selector: string) {
 		const baseSelector = selector.replace(new RegExp(PSUEDO_REGEXP, 'g'), '');
+		const idMatch = !this.isAll && selector.includes('#') ? baseSelector.match(ID_REGEXP) : null;
 
 		this.isAll = baseSelector === '*';
-		this.isID = !this.isAll ? selector.indexOf('#') !== -1 : false;
+		this.isID = !!idMatch;
 		this.isAttribute = !this.isAll && baseSelector.includes('[');
 		// If baseSelector !== selector then some psuedo selector was replaced above
 		this.isPseudo = !this.isAll && baseSelector !== selector;
@@ -45,14 +46,7 @@ export default class SelectorItem {
 		this.tagName = this.tagName ? this.tagName[0].toUpperCase() : null;
 		this.isTagName = this.tagName !== null;
 		this.selector = selector;
-		this.id = null;
-
-		if (!this.isAll && this.isID) {
-			const idMatches = baseSelector.match(ID_REGEXP);
-			if (idMatches) {
-				this.id = idMatches[0].replace('#', '');
-			}
-		}
+		this.id = idMatch ? idMatch[0].replace('#', '') : null;
 	}
 
 	/**
