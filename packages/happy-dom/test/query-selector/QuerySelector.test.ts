@@ -51,6 +51,57 @@ describe('QuerySelector', () => {
 			expect(elements[3]).toBe(container.children[0].children[1].children[1]);
 		});
 
+		it('Returns all elements with class name "before:after".', () => {
+			const container = document.createElement('div');
+			const element1 = document.createElement('div');
+			const element2 = document.createElement('div');
+			element1.className = 'before:after';
+			element2.className = 'before:after';
+			container.appendChild(element1);
+			container.appendChild(element2);
+
+			const invalidSelectorElements = container.querySelectorAll('.before:');
+			const validSelectorElements = container.querySelectorAll('.before\\:after');
+			expect(invalidSelectorElements.length).toBe(0);
+			expect(validSelectorElements.length).toBe(2);
+			expect(validSelectorElements[0]).toBe(element1);
+			expect(validSelectorElements[1]).toBe(element2);
+		});
+
+		it('Returns all elements with class name "before#after".', () => {
+			const container = document.createElement('div');
+			const element1 = document.createElement('div');
+			const element2 = document.createElement('div');
+			element1.className = 'before#after';
+			element2.className = 'before#after';
+			container.appendChild(element1);
+			container.appendChild(element2);
+
+			const invalidSelectorElements = container.querySelectorAll('.before#after');
+			const validSelectorElements = container.querySelectorAll('.before\\#after');
+			expect(invalidSelectorElements.length).toBe(0);
+			expect(validSelectorElements.length).toBe(2);
+			expect(validSelectorElements[0]).toBe(element1);
+			expect(validSelectorElements[1]).toBe(element2);
+		});
+
+		it('Returns all elements with class name "before&after".', () => {
+			const container = document.createElement('div');
+			const element1 = document.createElement('div');
+			const element2 = document.createElement('div');
+			element1.className = 'before&after';
+			element2.className = 'before&after';
+			container.appendChild(element1);
+			container.appendChild(element2);
+
+			const invalidSelectorElements = container.querySelectorAll('.before&after');
+			const validSelectorElements = container.querySelectorAll('.before\\&after');
+			expect(invalidSelectorElements.length).toBe(0);
+			expect(validSelectorElements.length).toBe(2);
+			expect(validSelectorElements[0]).toBe(element1);
+			expect(validSelectorElements[1]).toBe(element2);
+		});
+
 		it('Returns all elements with class name "class1 class2".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
