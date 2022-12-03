@@ -19,7 +19,7 @@ import QuerySelector from '../../query-selector/QuerySelector';
 import IDocument from './IDocument';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
 import DOMException from '../../exception/DOMException';
-import CookieUtility from '../../cookie/CookieUtility';
+import CookieJar from '../../cookie/CookieJar';
 import IElement from '../element/IElement';
 import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement';
 import IHTMLElement from '../html-element/IHTMLElement';
@@ -63,10 +63,12 @@ export default class Document extends Node implements IDocument {
 
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
 	public _cacheID = 0;
+	// Public in order to be accessible by the fetch and xhr.
+	public _cookie = new CookieJar();
 
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
-	private _cookie = '';
+
 	private _selection: Selection = null;
 
 	// Events
@@ -258,7 +260,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
-		return this._cookie;
+		return this._cookie.getCookiesString(this.defaultView.location, true);
 	}
 
 	/**
@@ -267,7 +269,7 @@ export default class Document extends Node implements IDocument {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		this._cookie = CookieUtility.getCookieString(this.defaultView.location, this._cookie, cookie);
+		this._cookie.setCookiesString(cookie);
 	}
 
 	/**
