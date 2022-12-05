@@ -67,7 +67,7 @@ const modules = {
 			},
 			returnValue: {
 				response: {
-					headers: 'http.request.headers',
+					headers: { key1: 'value1', key2: 'value2' },
 					statusCode: 200,
 					statusMessage: 'http.request.statusMessage',
 					body: 'http.request.body',

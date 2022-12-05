@@ -293,7 +293,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		if (this._state.send) {
-			throw new DOMException('send flag is true', DOMExceptionNameEnum.invalidStateError);
+			throw new DOMException(
+				`Failed to execute 'setRequestHeader' on 'XMLHttpRequest': Request is in progress.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
 		}
 
 		this._state.requestHeaders[lowerHeader] = value;
@@ -310,8 +313,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public getResponseHeader(header: string): string {
 		const lowerHeader = header.toLowerCase();
 
+		// Cookie headers are excluded for security reasons as per spec.
 		if (
 			typeof header === 'string' &&
+			header !== 'set-cookie' &&
+			header !== 'set-cookie2' &&
 			this.readyState > XMLHttpRequestReadyStateEnum.opened &&
 			this._state.incommingMessage.headers[lowerHeader] &&
 			!this._state.error
@@ -331,31 +337,17 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (this.readyState < XMLHttpRequestReadyStateEnum.headersRecieved || this._state.error) {
 			return '';
 		}
-		let result = '';
+
+		const result = [];
 
 		for (const name of Object.keys(this._state.incommingMessage.headers)) {
-			// Cookie headers are excluded
+			// Cookie headers are excluded for security reasons as per spec.
 			if (name !== 'set-cookie' && name !== 'set-cookie2') {
-				result += `${name}: ${this._state.incommingMessage.headers[name]}\r\n`;
+				result.push(`${name}: ${this._state.incommingMessage.headers[name]}`);
 			}
 		}
 
-		return result.slice(0, -2);
-	}
-
-	/**
-	 * Gets a request header
-	 *
-	 * @param name Name of header to get.
-	 * @returns Returns the request header or empty string if not set.
-	 */
-	public getRequestHeader(name: string): string {
-		const lowerName = name.toLowerCase();
-		if (typeof name === 'string' && this._state.requestHeaders[lowerName]) {
-			return this._state.requestHeaders[lowerName];
-		}
-
-		return '';
+		return result.join('\r\n');
 	}
 
 	/**
@@ -366,14 +358,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public send(data?: string): void {
 		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
 			throw new DOMException(
-				'connection must be opened before send() is called',
+				`Failed to execute 'send' on 'XMLHttpRequest': Connection must be opened before send() is called.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
 		if (this._state.send) {
 			throw new DOMException(
-				'send has already been called',
+				`Failed to execute 'send' on 'XMLHttpRequest': Send has already been called.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
@@ -392,8 +384,22 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		// Load files off the local filesystem (file://)
 		if (XMLHttpRequestURLUtility.isLocal(url)) {
+			if (!this._ownerDocument.defaultView.happyDOM.settings.enableFileSystemHttpRequests) {
+				throw new DOMException(
+					'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.',
+					DOMExceptionNameEnum.securityError
+				);
+			}
+
+			if (this._settings.method !== 'GET') {
+				throw new DOMException(
+					'Failed to send local file system request. Only "GET" method is supported for local file system requests.',
+					DOMExceptionNameEnum.notSupportedError
+				);
+			}
+
 			if (this._settings.async) {
-				this._sendLocalAsyncRequest(url);
+				this._sendLocalAsyncRequest(url).catch((error) => this._onError(error));
 			} else {
 				this._sendLocalSyncRequest(url);
 			}
@@ -458,7 +464,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		// Handle async requests
 		if (this._settings.async) {
-			this._sendAsyncRequest(options, ssl, data);
+			this._sendAsyncRequest(options, ssl, data).catch((error) => this._onError(error));
 		} else {
 			this._sendSyncRequest(options, ssl, data);
 		}
@@ -809,20 +815,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.abort.bind(this)
 		);
 
-		if (!this._ownerDocument.defaultView.happyDOM.settings.enableFileSystemHttpRequests) {
-			throw new DOMException(
-				'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.',
-				DOMExceptionNameEnum.securityError
-			);
-		}
-
-		if (this._settings.method !== 'GET') {
-			throw new DOMException(
-				'Only GET method is supported',
-				DOMExceptionNameEnum.notSupportedError
-			);
-		}
-
 		let data: Buffer;
 
 		try {
@@ -844,20 +836,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param url URL.
 	 */
 	private _sendLocalSyncRequest(url: UrlObject): void {
-		if (!this._ownerDocument.defaultView.happyDOM.settings.enableFileSystemHttpRequests) {
-			throw new DOMException(
-				'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.',
-				DOMExceptionNameEnum.securityError
-			);
-		}
-
-		if (this._settings.method !== 'GET') {
-			throw new DOMException(
-				'Only GET method is supported',
-				DOMExceptionNameEnum.notSupportedError
-			);
-		}
-
 		let data: Buffer;
 		try {
 			data = FS.readFileSync(decodeURI(url.pathname.slice(1)));
