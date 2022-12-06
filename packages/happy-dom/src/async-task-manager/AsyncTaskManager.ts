@@ -101,12 +101,6 @@ export default class AsyncTaskManager {
 	 */
 	public endTask(taskID: number): void {
 		if (this.runningTasks[taskID]) {
-			try {
-				this.runningTasks[taskID]();
-			} catch (error) {
-				this.cancelAll(error);
-				return;
-			}
 			delete this.runningTasks[taskID];
 
 			if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {

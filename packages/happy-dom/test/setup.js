@@ -49,7 +49,7 @@ const modules = {
 				data: {
 					statusCode: 200,
 					statusMessage: 'child_process.execFileSync.returnValue.data.statusMessage',
-					headers: { key1: 'value1', key2: 'value2' },
+					headers: { key1: 'value1', key2: 'value2', 'content-length': '48' },
 					text: 'child_process.execFileSync.returnValue.data.text',
 					data: Buffer.from('child_process.execFileSync.returnValue.data.text').toString('base64')
 				},
@@ -63,11 +63,12 @@ const modules = {
 				options: null
 			},
 			internal: {
-				body: null
+				body: '',
+				destroyed: false
 			},
 			returnValue: {
 				response: {
-					headers: { key1: 'value1', key2: 'value2' },
+					headers: { key1: 'value1', key2: 'value2', 'content-length': '17' },
 					statusCode: 200,
 					statusMessage: 'http.request.statusMessage',
 					body: 'http.request.body',
@@ -203,9 +204,9 @@ const httpMock = () => {
 
 							callback(response);
 
-							if (global.mockedModules.modules.http.request.returnValue.error) {
+							if (global.mockedModules.modules.http.request.returnValue.response.error) {
 								for (const listener of response._eventListeners.error) {
-									listener(global.mockedModules.modules.http.request.returnValue.error);
+									listener(global.mockedModules.modules.http.request.returnValue.response.error);
 								}
 							} else {
 								for (const listener of response._eventListeners.data) {
@@ -223,6 +224,9 @@ const httpMock = () => {
 						errorCallback = callback;
 					}
 					return request;
+				},
+				destroy: () => {
+					global.mockedModules.modules.http.request.internal.destroyed = true;
 				}
 			};
 			return request;

@@ -581,21 +581,22 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			throw new DOMException('Synchronous request failed', DOMExceptionNameEnum.networkError);
 		}
 
-		const { err: error, data: responseObj } = JSON.parse(content.toString());
+		const { error, data: response } = JSON.parse(content.toString());
+
 		if (error) {
-			this._onError(error, 503);
+			this._onError(error);
 		}
 
-		if (responseObj) {
+		if (response) {
 			this._state.incommingMessage = {
-				statusCode: responseObj.statusCode,
-				headers: responseObj.headers
+				statusCode: response.statusCode,
+				headers: response.headers
 			};
-			this._state.status = responseObj.statusCode;
-			this._state.statusText = responseObj.statusMessage;
+			this._state.status = response.statusCode;
+			this._state.statusText = response.statusMessage;
 			// Sync responseType === ''
-			this._state.response = responseObj.text;
-			this._state.responseText = responseObj.text;
+			this._state.response = response.text;
+			this._state.responseText = response.text;
 			this._state.responseXML = null;
 			this._state.responseURL = RelativeURL.getAbsoluteURL(
 				this._ownerDocument.defaultView.location,
@@ -827,6 +828,17 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this._onError(error);
 		}
 
+		const dataLength = data.length;
+
+		this._setState(XMLHttpRequestReadyStateEnum.loading);
+		this.dispatchEvent(
+			new ProgressEvent('progress', {
+				lengthComputable: true,
+				loaded: dataLength,
+				total: dataLength
+			})
+		);
+
 		if (data) {
 			this._parseLocalRequestData(data);
 		}
@@ -968,11 +980,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	/**
 	 * Called when an error is encountered to deal with it.
 	 *
-	 * @param error Error object.
-	 * @param status HTTP status code to use rather than the default (0) for XHR errors.
+	 * @param error Error.
 	 */
-	private _onError(error: Error | string, status = 0): void {
-		this._state.status = status;
+	private _onError(error: Error | string): void {
+		this._state.status = 0;
 		this._state.statusText = error.toString();
 		this._state.responseText = error instanceof Error ? error.stack : '';
 		this._state.error = true;

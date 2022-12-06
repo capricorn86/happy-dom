@@ -49,10 +49,12 @@ declare let mockedModules: {
 				returnValue: {
 					data: {
 						statusCode: number;
+						statusMessage: string;
 						headers: { [k: string]: string };
 						text: string;
 						data: string;
 					};
+					error: string;
 				};
 			};
 		};
@@ -63,6 +65,7 @@ declare let mockedModules: {
 				};
 				internal: {
 					body: string;
+					destroyed: boolean;
 				};
 				returnValue: {
 					response: {

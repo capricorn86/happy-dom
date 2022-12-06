@@ -115,6 +115,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 		asyncTaskManager: AsyncTaskManager;
 		setInnerWidth: (width: number) => void;
 		setInnerHeight: (height: number) => void;
+		setURL: (url: string) => void;
 		settings: IHappyDOMSettings;
 	};
 

@@ -29,10 +29,19 @@ export default class XMLHttpRequestSyncRequestScriptBuilder {
                         responseData = Buffer.concat([responseData, Buffer.from(chunk)]);
                     });
                     response.on('end', () => {
-                        console.log(JSON.stringify({err: null, data: {statusCode: response.statusCode, statusMessage: response.statusMessage, headers: response.headers, text: responseText, data: responseData.toString('base64')}}));
+                        console.log(JSON.stringify({
+                            error: null,
+                            data: {
+                                statusCode: response.statusCode,
+                                statusMessage: response.statusMessage,
+                                headers: response.headers,
+                                text: responseText,
+                                data: responseData.toString('base64')
+                            }
+                        }));
                     });
                     response.on('error', (error) => {
-                        console.log(JSON.stringify({err: error, data: null}));
+                        console.log(JSON.stringify({ error: error.toString(), data: null }));
                     });
                 });
                 request.write(\`${JSON.stringify(data ?? '')

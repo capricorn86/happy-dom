@@ -5,6 +5,7 @@ import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequ
 import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum';
 import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder';
 import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate';
+import { ProgressEvent } from 'src';
 
 const WINDOW_URL = 'https://localhost:8080';
 const REQUEST_URL = '/path/to/resource/';
@@ -339,17 +340,21 @@ describe('XMLHttpRequest', () => {
 			request.open('GET', REQUEST_URL, false);
 			request.send();
 
-			expect(request.getAllResponseHeaders()).toBe('key1: value1\r\nkey2: value2');
+			expect(request.getAllResponseHeaders()).toBe(
+				'key1: value1\r\nkey2: value2\r\ncontent-length: 48'
+			);
 		});
 
 		it('Returns all response headers for an asynchrounous request.', (done) => {
 			mockedModules.modules.http.request.returnValue.response.headers['set-cookie'] = 'cookie';
 			mockedModules.modules.http.request.returnValue.response.headers['set-cookie2'] = 'cookie';
 
-			request.open('GET', REQUEST_URL, false);
+			request.open('GET', REQUEST_URL, true);
 
 			request.addEventListener('load', () => {
-				expect(request.getAllResponseHeaders()).toBe('key1: value1\r\nkey2: value2');
+				expect(request.getAllResponseHeaders()).toBe(
+					'key1: value1\r\nkey2: value2\r\ncontent-length: 17'
+				);
 				done();
 			});
 
@@ -420,6 +425,467 @@ describe('XMLHttpRequest', () => {
 			expect(() => request.send()).toThrowError(
 				'Failed to send local file system request. Only "GET" method is supported for local file system requests.'
 			);
+		});
+
+		it('Performs a synchronous request towards a local file.', () => {
+			window.happyDOM.settings.enableFileSystemHttpRequests = true;
+
+			request.open('GET', 'file://C:/path/to/file.txt', false);
+
+			request.send();
+
+			expect(mockedModules.modules.fs.readFileSync.parameters.path).toBe('C:/path/to/file.txt');
+			expect(request.responseText).toBe('fs.readFileSync');
+			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+		});
+
+		it('Performs an asynchronous request towards a local file.', (done) => {
+			const expectedResponseText = 'fs.promises.readFile';
+			window.happyDOM.settings.enableFileSystemHttpRequests = true;
+
+			request.open('GET', 'file://C:/path/to/file.txt', true);
+
+			let isProgressTriggered = false;
+
+			request.addEventListener('progress', (event: ProgressEvent) => {
+				isProgressTriggered = true;
+				expect(event.lengthComputable).toBe(true);
+				expect(event.loaded).toBe(expectedResponseText.length);
+				expect(event.total).toBe(expectedResponseText.length);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+			});
+
+			request.addEventListener('load', () => {
+				expect(mockedModules.modules.fs.promises.readFile.parameters.path).toBe(
+					'C:/path/to/file.txt'
+				);
+				expect(request.responseText).toBe(expectedResponseText);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				expect(isProgressTriggered).toBe(true);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Performs a synchronous GET request with the HTTP protocol.', () => {
+			const windowURL = 'http://localhost:8080';
+
+			window.happyDOM.setURL(windowURL);
+
+			request.open('GET', REQUEST_URL, false);
+
+			request.send();
+
+			expect(
+				mockedModules.modules.child_process.execFileSync.parameters.command.endsWith('node')
+			).toBe(true);
+
+			expect(mockedModules.modules.child_process.execFileSync.parameters.options).toEqual({
+				encoding: 'buffer',
+				maxBuffer: 1024 * 1024 * 1024
+			});
+
+			expect(mockedModules.modules.child_process.execFileSync.parameters.args[1]).toBe(
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: REQUEST_URL,
+						method: 'GET',
+						headers: {
+							accept: '*/*',
+							referer: windowURL + '/',
+							'user-agent': window.navigator.userAgent,
+							cookie: '',
+							host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: null,
+						cert: null
+					},
+					false
+				)
+			);
+
+			expect(request.responseText).toBe('child_process.execFileSync.returnValue.data.text');
+		});
+
+		it('Performs a synchronous GET request with the HTTPS protocol.', () => {
+			request.open('GET', REQUEST_URL, false);
+
+			request.send();
+
+			expect(
+				mockedModules.modules.child_process.execFileSync.parameters.command.endsWith('node')
+			).toBe(true);
+
+			expect(mockedModules.modules.child_process.execFileSync.parameters.options).toEqual({
+				encoding: 'buffer',
+				maxBuffer: 1024 * 1024 * 1024
+			});
+
+			expect(mockedModules.modules.child_process.execFileSync.parameters.args[1]).toBe(
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: REQUEST_URL,
+						method: 'GET',
+						headers: {
+							accept: '*/*',
+							referer: WINDOW_URL + '/',
+							'user-agent': window.navigator.userAgent,
+							cookie: '',
+							host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				)
+			);
+
+			expect(request.responseText).toBe('child_process.execFileSync.returnValue.data.text');
+		});
+
+		it('Performs an asynchronous GET request with the HTTP protocol.', (done) => {
+			const expectedResponseText = 'http.request.body';
+			const windowURL = 'http://localhost:8080';
+
+			window.location.href = windowURL;
+
+			request.open('GET', REQUEST_URL, true);
+
+			let isProgressTriggered = false;
+
+			request.addEventListener('progress', (event: ProgressEvent) => {
+				isProgressTriggered = true;
+				expect(event.lengthComputable).toBe(true);
+				expect(event.loaded).toBe(expectedResponseText.length);
+				expect(event.total).toBe(expectedResponseText.length);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+			});
+
+			request.addEventListener('load', () => {
+				expect(mockedModules.modules.http.request.parameters.options).toEqual({
+					host: 'localhost',
+					port: 8080,
+					path: REQUEST_URL,
+					method: 'GET',
+					headers: {
+						accept: '*/*',
+						referer: windowURL + '/',
+						'user-agent': window.navigator.userAgent,
+						cookie: '',
+						host: window.location.host
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: null,
+					cert: null
+				});
+				expect(mockedModules.modules.http.request.internal.body).toBe('');
+				expect(request.responseText).toBe(expectedResponseText);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				expect(isProgressTriggered).toBe(true);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Performs an asynchronous GET request with the HTTPS protocol and query string.', (done) => {
+			const expectedResponseText = 'http.request.body';
+			const queryString = '?query=string';
+
+			request.open('GET', REQUEST_URL + queryString, true);
+
+			let isProgressTriggered = false;
+
+			request.addEventListener('progress', (event: ProgressEvent) => {
+				isProgressTriggered = true;
+				expect(event.lengthComputable).toBe(true);
+				expect(event.loaded).toBe(expectedResponseText.length);
+				expect(event.total).toBe(expectedResponseText.length);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+			});
+
+			request.addEventListener('load', () => {
+				expect(mockedModules.modules.http.request.parameters.options).toEqual({
+					host: 'localhost',
+					port: 8080,
+					path: REQUEST_URL + queryString,
+					method: 'GET',
+					headers: {
+						accept: '*/*',
+						referer: WINDOW_URL + '/',
+						'user-agent': window.navigator.userAgent,
+						cookie: '',
+						host: window.location.host
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert
+				});
+				expect(mockedModules.modules.http.request.internal.body).toBe('');
+				expect(request.responseText).toBe(expectedResponseText);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				expect(isProgressTriggered).toBe(true);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Handles responses without content length.', (done) => {
+			const expectedResponseText = 'http.request.body';
+
+			delete mockedModules.modules.http.request.returnValue.response.headers['content-length'];
+
+			request.open('GET', REQUEST_URL, true);
+
+			request.addEventListener('progress', (event: ProgressEvent) => {
+				expect(event.lengthComputable).toBe(false);
+				expect(event.loaded).toBe(expectedResponseText.length);
+				expect(event.total).toBe(0);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Performs an asynchronous GET request with the HTTPS protocol.', (done) => {
+			const expectedResponseText = 'http.request.body';
+
+			request.open('GET', REQUEST_URL, true);
+
+			let isProgressTriggered = false;
+
+			request.addEventListener('progress', (event: ProgressEvent) => {
+				isProgressTriggered = true;
+				expect(event.lengthComputable).toBe(true);
+				expect(event.loaded).toBe(expectedResponseText.length);
+				expect(event.total).toBe(expectedResponseText.length);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+			});
+
+			request.addEventListener('load', () => {
+				expect(mockedModules.modules.http.request.parameters.options).toEqual({
+					host: 'localhost',
+					port: 8080,
+					path: REQUEST_URL,
+					method: 'GET',
+					headers: {
+						accept: '*/*',
+						referer: WINDOW_URL + '/',
+						'user-agent': window.navigator.userAgent,
+						cookie: '',
+						host: window.location.host
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert
+				});
+				expect(mockedModules.modules.http.request.internal.body).toBe('');
+				expect(request.responseText).toBe(expectedResponseText);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				expect(isProgressTriggered).toBe(true);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Performs an asynchronous basic auth request with username and password.', (done) => {
+			const username = 'username';
+			const password = 'password';
+			const expectedResponseText = 'http.request.body';
+
+			request.open('GET', REQUEST_URL, true, username, password);
+
+			let isProgressTriggered = false;
+
+			request.addEventListener('progress', (event: ProgressEvent) => {
+				isProgressTriggered = true;
+				expect(event.lengthComputable).toBe(true);
+				expect(event.loaded).toBe(expectedResponseText.length);
+				expect(event.total).toBe(expectedResponseText.length);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+			});
+
+			request.addEventListener('load', () => {
+				expect(mockedModules.modules.http.request.parameters.options).toEqual({
+					host: 'localhost',
+					port: 8080,
+					path: REQUEST_URL,
+					method: 'GET',
+					headers: {
+						accept: '*/*',
+						referer: WINDOW_URL + '/',
+						'user-agent': window.navigator.userAgent,
+						cookie: '',
+						host: window.location.host,
+						authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert
+				});
+				expect(mockedModules.modules.http.request.internal.body).toBe('');
+				expect(request.responseText).toBe(expectedResponseText);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				expect(isProgressTriggered).toBe(true);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Performs an asynchronous basic auth request with only username.', (done) => {
+			const username = 'username';
+			const expectedResponseText = 'http.request.body';
+
+			request.open('GET', REQUEST_URL, true, username);
+
+			request.addEventListener('load', () => {
+				expect(mockedModules.modules.http.request.parameters.options).toEqual({
+					host: 'localhost',
+					port: 8080,
+					path: REQUEST_URL,
+					method: 'GET',
+					headers: {
+						accept: '*/*',
+						referer: WINDOW_URL + '/',
+						'user-agent': window.navigator.userAgent,
+						cookie: '',
+						host: window.location.host,
+						authorization: `Basic ${Buffer.from(`${username}:`).toString('base64')}`
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert
+				});
+				expect(mockedModules.modules.http.request.internal.body).toBe('');
+				expect(request.responseText).toBe(expectedResponseText);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Performs an asynchronous POST request.', (done) => {
+			const postData = 'post.data';
+			const expectedResponseText = 'http.request.body';
+
+			request.open('POST', REQUEST_URL, true);
+
+			let isProgressTriggered = false;
+
+			request.addEventListener('progress', (event: ProgressEvent) => {
+				isProgressTriggered = true;
+				expect(event.lengthComputable).toBe(true);
+				expect(event.loaded).toBe(expectedResponseText.length);
+				expect(event.total).toBe(expectedResponseText.length);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+			});
+
+			request.addEventListener('load', () => {
+				expect(mockedModules.modules.http.request.parameters.options).toEqual({
+					host: 'localhost',
+					port: 8080,
+					path: REQUEST_URL,
+					method: 'POST',
+					headers: {
+						accept: '*/*',
+						'content-length': postData.length,
+						'content-type': 'text/plain;charset=UTF-8',
+						referer: WINDOW_URL + '/',
+						'user-agent': window.navigator.userAgent,
+						cookie: '',
+						host: window.location.host
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert
+				});
+				expect(mockedModules.modules.http.request.internal.body).toBe(postData);
+				expect(request.responseText).toBe(expectedResponseText);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				expect(isProgressTriggered).toBe(true);
+				done();
+			});
+
+			request.send(postData);
+		});
+
+		it('Handles error in request when performing an asynchronous request.', (done) => {
+			mockedModules.modules.http.request.returnValue.request.error = new Error('error');
+
+			request.open('GET', REQUEST_URL, true);
+
+			request.addEventListener('load', () => {
+				throw new Error('Load event should not be triggered.');
+			});
+
+			request.addEventListener('error', () => {
+				expect(request.status).toBe(0);
+				expect(request.statusText).toBe('Error: error');
+				expect(
+					request.responseText.startsWith('Error: error') && request.responseText.includes(' at ')
+				).toBe(true);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Handles error in response when performing an asynchronous request.', (done) => {
+			mockedModules.modules.http.request.returnValue.response.error = new Error('error');
+
+			request.open('GET', REQUEST_URL, true);
+
+			request.addEventListener('load', () => {
+				throw new Error('Load event should not be triggered.');
+			});
+
+			request.addEventListener('error', () => {
+				expect(request.status).toBe(0);
+				expect(request.statusText).toBe('Error: error');
+				expect(
+					request.responseText.startsWith('Error: error') && request.responseText.includes(' at ')
+				).toBe(true);
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Handles error in response when performing a synchronous request.', (done) => {
+			mockedModules.modules.child_process.execFileSync.returnValue.error = 'Error';
+
+			request.open('GET', REQUEST_URL, false);
+
+			request.addEventListener('error', () => {
+				expect(request.status).toBe(0);
+				expect(request.statusText).toBe('Error');
+				expect(request.responseText).toBe('');
+				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+				done();
+			});
+
+			request.send();
 		});
 	});
 });

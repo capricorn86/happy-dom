@@ -148,6 +148,9 @@ export default class Window extends EventTarget implements IWindow {
 				this.dispatchEvent(new Event('resize'));
 			}
 		},
+		setURL: (url: string) => {
+			this.location.href = url;
+		},
 		settings: {
 			disableJavaScriptEvaluation: false,
 			disableJavaScriptFileLoading: false,
