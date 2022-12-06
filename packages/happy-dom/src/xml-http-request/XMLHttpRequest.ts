@@ -430,21 +430,24 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this._state.requestHeaders['authorization'] = 'Basic ' + authBuffer.toString('base64');
 		}
 		// Set the Content-Length header if method is POST
-		if (this._settings.method === 'GET' || this._settings.method === 'HEAD') {
-			data = null;
-		} else if (this._settings.method === 'POST') {
-			// Set default content type if not set.
-			if (!this._state.requestHeaders['content-type']) {
-				this._state.requestHeaders['content-type'] = 'text/plain;charset=UTF-8';
-			}
+		switch (this._settings.method) {
+			case 'GET':
+			case 'HEAD':
+				data = null;
+				break;
+			case 'POST':
+				this._state.requestHeaders['content-type'] ??= 'text/plain;charset=UTF-8';
+				if (data) {
+					this._state.requestHeaders['content-length'] = Buffer.isBuffer(data)
+						? data.length
+						: Buffer.byteLength(data);
+				} else {
+					this._state.requestHeaders['content-length'] = 0;
+				}
+				break;
 
-			if (data) {
-				this._state.requestHeaders['content-length'] = Buffer.isBuffer(data)
-					? data.length
-					: Buffer.byteLength(data);
-			} else {
-				this._state.requestHeaders['content-length'] = 0;
-			}
+			default:
+				break;
 		}
 
 		const options: HTTPS.RequestOptions = {
@@ -547,11 +550,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @returns Default request headers.
 	 */
 	private _getDefaultRequestHeaders(): { [key: string]: string } {
+		const { location, navigator, document } = this._ownerDocument.defaultView;
+
 		return {
 			accept: '*/*',
-			referer: this._ownerDocument.defaultView.location.href,
-			'user-agent': this._ownerDocument.defaultView.navigator.userAgent,
-			cookie: this._ownerDocument.defaultView.document.cookie
+			referer: location.href,
+			'user-agent': navigator.userAgent,
+			cookie: document._cookie.getCookiesString(location, false)
 		};
 	}
 
@@ -597,11 +602,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				this._settings.url
 			).href;
 			// Set Cookies.
-			if (this._state.incommingMessage.headers['set-cookie']) {
-				// TODO: Bugs in CookieJar.
-				this._ownerDocument.defaultView.document.cookie =
-					this._state.incommingMessage.headers['set-cookie'];
-			}
+			this._setCookies(this._state.incommingMessage.headers);
 			// Redirect.
 			if (
 				this._state.incommingMessage.statusCode === 301 ||
@@ -708,6 +709,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			// Set response var to the response we got back
 			// This is so it remains accessable outside this scope
 			this._state.incommingMessage = response;
+
+			// Set Cookies
+			this._setCookies(this._state.incommingMessage.headers);
 
 			// Check for redirect
 			// @TODO Prevent looped redirects
@@ -947,6 +951,17 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					responseText: data.toString(),
 					responseXML: null
 				};
+		}
+	}
+
+	/**
+	 * Set Cookies from response headers.
+	 *
+	 * @param headers String array.
+	 */
+	private _setCookies(headers: string[] | HTTP.IncomingHttpHeaders): void {
+		for (const cookie of [...(headers['set-cookie'] ?? []), ...(headers['set-cookie2'] ?? [])]) {
+			this._ownerDocument.defaultView.document._cookie.setCookiesString(cookie);
 		}
 	}
 
