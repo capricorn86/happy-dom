@@ -181,13 +181,14 @@ const httpMock = () => {
 	return {
 		request: (options, callback) => {
 			let errorCallback = null;
+			let timeout = null;
 			global.mockedModules.modules.http.request.parameters = {
 				options
 			};
 			const request = {
 				write: (chunk) => (global.mockedModules.modules.http.request.internal.body += chunk),
 				end: () => {
-					setTimeout(() => {
+					timeout = setTimeout(() => {
 						if (global.mockedModules.modules.http.request.returnValue.request.error) {
 							if (errorCallback) {
 								errorCallback(global.mockedModules.modules.http.request.returnValue.request.error);
@@ -226,6 +227,7 @@ const httpMock = () => {
 					return request;
 				},
 				destroy: () => {
+					clearTimeout(timeout);
 					global.mockedModules.modules.http.request.internal.destroyed = true;
 				}
 			};
