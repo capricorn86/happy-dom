@@ -88,6 +88,22 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	 * @param [start] Start.
 	 * @param [end] End.
 	 * @param [direction] Direction.
+	 * @param selectionMode
+	 */
+	setRangeText(
+		replacement: string,
+		start?: number,
+		end?: number,
+		selectionMode?: HTMLInputElementSelectionModeEnum
+	): void;
+
+	/**
+	 * Set range text.
+	 *
+	 * @param replacement Replacement.
+	 * @param [start] Start.
+	 * @param [end] End.
+	 * @param [direction] Direction.
 	 */
 	setRangeText(
 		replacement: string,

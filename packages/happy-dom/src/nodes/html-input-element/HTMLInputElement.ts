@@ -36,6 +36,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 
 	// Type specific: checkbox/radio
 	public defaultChecked = false;
+	private _checked: boolean | null = null;
 
 	// Type specific: file
 	public files: IFileList<File> = new FileList();
@@ -546,6 +547,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Checked.
 	 */
 	public get checked(): boolean {
+		if (this._checked !== null) {
+			return this._checked;
+		}
 		return this.getAttributeNS(null, 'checked') !== null;
 	}
 
@@ -555,10 +559,17 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param checked Checked.
 	 */
 	public set checked(checked: boolean) {
-		if (!checked) {
-			this.removeAttributeNS(null, 'checked');
-		} else {
-			this.setAttributeNS(null, 'checked', '');
+		this._checked = checked;
+
+		if (checked && this.type === 'radio' && this.name) {
+			const root = <IHTMLElement>(this.form || this.getRootNode());
+			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
+
+			for (const radioButton of radioButtons) {
+				if (radioButton !== this) {
+					radioButton['_checked'] = false;
+				}
+			}
 		}
 	}
 
@@ -984,22 +995,35 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
-	 * Checks if private value is supported.
-	 *
-	 * @returns "true" if private value is supported.
+	 * @override
 	 */
-	// Private _isPrivateValueSupported(): boolean {
-	// 	Return (
-	// 		This.type !== 'hidden' &&
-	// 		This.type !== 'submit' &&
-	// 		This.type !== 'image' &&
-	// 		This.type !== 'reset' &&
-	// 		This.type !== 'button' &&
-	// 		This.type !== 'checkbox' &&
-	// 		This.type !== 'radio' &&
-	// 		This.type !== 'file'
-	// 	);
-	// }
+	public dispatchEvent(event: Event): boolean {
+		const returnValue = super.dispatchEvent(event);
+
+		if (
+			event.type === 'click' &&
+			this.isConnected &&
+			(this._isMutable() || this.type === 'checkbox' || this.type === 'radio')
+		) {
+			if (this.type === 'checkbox' || this.type === 'radio') {
+				this.checked = this.type === 'checkbox' ? !this.checked : true;
+				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+			} else if (this.type === 'submit') {
+				const form = this.form;
+				if (form) {
+					form.submit();
+				}
+			} else if (this.type === 'reset') {
+				const form = this.form;
+				if (form) {
+					form.reset();
+				}
+			}
+		}
+
+		return returnValue;
+	}
 
 	/**
 	 * Checks is selection is supported.
@@ -1014,5 +1038,14 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			this.type === 'tel' ||
 			this.type === 'password'
 		);
+	}
+
+	/**
+	 * Checks if the input field is disabled or read-only.
+	 *
+	 * @returns "true" if mutable.
+	 */
+	private _isMutable(): boolean {
+		return !this.disabled && !this.readOnly;
 	}
 }
