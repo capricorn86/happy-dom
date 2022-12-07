@@ -114,6 +114,7 @@ import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 import IHappyDOMSettings from './IHappyDOMSettings';
+import RequestInfo from '../fetch/RequestInfo';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -659,7 +660,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	public async fetch(url: string, init?: IRequestInit): Promise<IResponse> {
+	public async fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse> {
 		return await FetchHandler.fetch(this.document, url, init);
 	}
 

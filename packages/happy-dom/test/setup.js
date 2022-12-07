@@ -115,13 +115,19 @@ class NodeFetchResponse {
 	}
 }
 
-class NodeFetchRequest extends NodeFetchResponse {}
+class NodeFetchRequest extends NodeFetchResponse {
+	constructor(url) {
+		super();
+		this.url = url;
+	}
+}
+
 class NodeFetchHeaders {}
 
 jest.mock('node-fetch', () => {
 	return Object.assign(
-		(url, options) => {
-			global.mockedModules.modules['node-fetch'].parameters.url = url;
+		(request, options) => {
+			global.mockedModules.modules['node-fetch'].parameters.url = request.url.href;
 			global.mockedModules.modules['node-fetch'].parameters.init = options;
 			if (global.mockedModules.modules['node-fetch'].error) {
 				return Promise.reject(global.mockedModules.modules['node-fetch'].returnValue.error);

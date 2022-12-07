@@ -103,6 +103,7 @@ import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 import IHappyDOMSettings from './IHappyDOMSettings';
+import RequestInfo from '../fetch/RequestInfo';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -342,7 +343,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	fetch(url: string, init?: IRequestInit): Promise<IResponse>;
+	fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse>;
 
 	/**
 	 * Creates a Base64-encoded ASCII string from a binary string (i.e., a string in which each character in the string is treated as a byte of binary data).

@@ -12,6 +12,7 @@ import Selection from '../../src/selection/Selection';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import CustomElement from '../../test/CustomElement';
+import { URL } from 'url';
 
 describe('Window', () => {
 	let window: IWindow;
@@ -457,48 +458,85 @@ describe('Window', () => {
 	describe('fetch()', () => {
 		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
 			it(`Handles successful "${method}" request.`, async () => {
+				window.location.href = 'https://localhost:8080';
+				document.cookie = 'name1=value1';
+				document.cookie = 'name2=value2';
+
 				const expectedUrl = 'https://localhost:8080/path/';
-				const expectedOptions = {};
+				const expectedOptions = {
+					method: 'PUT',
+					headers: {
+						'test-header': 'test-value'
+					}
+				};
 				const response = await window.fetch(expectedUrl, expectedOptions);
 				const result = await response[method]();
 
+				expect(mockedModules.modules['node-fetch'].parameters.init).toEqual({
+					...expectedOptions,
+					headers: {
+						...expectedOptions.headers,
+						'user-agent': window.navigator.userAgent,
+						'set-cookie': 'name1=value1; name2=value2',
+						referer: window.location.origin
+					}
+				});
 				expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedUrl);
-
-				expect(mockedModules.modules['node-fetch'].parameters.init.headers['user-agent']).toBe(
-					window.navigator.userAgent
-				);
-				expect(mockedModules.modules['node-fetch'].parameters.init.headers['cookie']).toBe(
-					window.document.cookie
-				);
-				expect(mockedModules.modules['node-fetch'].parameters.init.headers['referer']).toBe(
-					window.location.origin
-				);
-
 				expect(result).toEqual(mockedModules.modules['node-fetch'].returnValue.response[method]);
 			});
 		}
 
 		it('Handles relative URL.', async () => {
 			const expectedPath = '/path/';
-			const expectedOptions = {};
 
 			window.location.href = 'https://localhost:8080';
 
-			const response = await window.fetch(expectedPath, expectedOptions);
+			const response = await window.fetch(expectedPath);
 			const textResponse = await response.text();
 
 			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(
 				'https://localhost:8080' + expectedPath
 			);
 
-			expect(mockedModules.modules['node-fetch'].parameters.init.headers['user-agent']).toBe(
-				window.navigator.userAgent
-			);
-			expect(mockedModules.modules['node-fetch'].parameters.init.headers['cookie']).toBe(
-				window.document.cookie
-			);
-			expect(mockedModules.modules['node-fetch'].parameters.init.headers['referer']).toBe(
-				window.location.origin
+			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
+		});
+
+		it('Handles URL object.', async () => {
+			const expectedURL = 'https://localhost:8080/path/';
+
+			window.location.href = 'https://localhost:8080';
+
+			const response = await window.fetch(new URL(expectedURL));
+			const textResponse = await response.text();
+
+			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedURL);
+
+			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
+		});
+
+		it('Handles Request object with absolute URL.', async () => {
+			const expectedURL = 'https://localhost:8080/path/';
+
+			window.location.href = 'https://localhost:8080';
+
+			const response = await window.fetch(new window.Request(expectedURL));
+			const textResponse = await response.text();
+
+			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedURL);
+
+			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
+		});
+
+		it('Handles Request object with relative URL.', async () => {
+			const expectedPath = '/path/';
+
+			window.location.href = 'https://localhost:8080';
+
+			const response = await window.fetch(new window.Request(expectedPath));
+			const textResponse = await response.text();
+
+			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(
+				'https://localhost:8080' + expectedPath
 			);
 
 			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
@@ -507,8 +545,9 @@ describe('Window', () => {
 		it('Handles error JSON request.', async () => {
 			mockedModules.modules['node-fetch'].returnValue.error = new Error('error');
 			window.location.href = 'https://localhost:8080';
+
 			try {
-				await window.fetch('/url/', {});
+				await window.fetch('/url/');
 			} catch (error) {
 				expect(error).toBe(mockedModules.modules['node-fetch'].returnValue.error);
 			}
