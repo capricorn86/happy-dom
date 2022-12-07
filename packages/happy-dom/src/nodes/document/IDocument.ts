@@ -39,6 +39,8 @@ export default interface IDocument extends IParentNode {
 	readonly readyState: DocumentReadyStateEnum;
 	readonly charset: string;
 	readonly characterSet: string;
+	readonly URL: string;
+	readonly documentURI: string;
 	cookie: string;
 
 	// Events

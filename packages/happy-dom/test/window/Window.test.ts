@@ -12,23 +12,20 @@ import Selection from '../../src/selection/Selection';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import CustomElement from '../../test/CustomElement';
-
-const MOCKED_NODE_FETCH = global['mockedModules']['node-fetch'];
+import { URL } from 'url';
 
 describe('Window', () => {
 	let window: IWindow;
 	let document: IDocument;
 
 	beforeEach(() => {
-		MOCKED_NODE_FETCH.url = null;
-		MOCKED_NODE_FETCH.init = null;
-		MOCKED_NODE_FETCH.error = null;
 		window = new Window();
 		document = window.document;
 		window.customElements.define('custom-element', CustomElement);
 	});
 
 	afterEach(() => {
+		mockedModules.reset();
 		jest.restoreAllMocks();
 	});
 
@@ -154,7 +151,7 @@ describe('Window', () => {
 			it(`Handles the "${method}" method with the async task manager.`, async () => {
 				const response = new window.Response();
 				const result = await response[method]();
-				expect(result).toBe(MOCKED_NODE_FETCH.response[method]);
+				expect(result).toBe(mockedModules.modules['node-fetch'].returnValue.response[method]);
 			});
 		}
 	});
@@ -169,7 +166,7 @@ describe('Window', () => {
 			it(`Handles the "${method}" method with the async task manager.`, async () => {
 				const request = new window.Request('test');
 				const result = await request[method]();
-				expect(result).toBe(MOCKED_NODE_FETCH.response[method]);
+				expect(result).toBe(mockedModules.modules['node-fetch'].returnValue.response[method]);
 			});
 		}
 	});
@@ -461,45 +458,105 @@ describe('Window', () => {
 	describe('fetch()', () => {
 		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
 			it(`Handles successful "${method}" request.`, async () => {
-				const expectedUrl = 'https://localhost:8080/path/';
-				const expectedOptions = {};
+				window.location.href = 'https://localhost:8080';
+				document.cookie = 'name1=value1';
+				document.cookie = 'name2=value2';
 
+				const expectedUrl = 'https://localhost:8080/path/';
+				const expectedOptions = {
+					method: 'PUT',
+					headers: {
+						'test-header': 'test-value'
+					}
+				};
 				const response = await window.fetch(expectedUrl, expectedOptions);
 				const result = await response[method]();
 
-				expect(MOCKED_NODE_FETCH.url).toBe(expectedUrl);
-				expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
-				expect(result).toEqual(MOCKED_NODE_FETCH.response[method]);
+				expect(mockedModules.modules['node-fetch'].parameters.init).toEqual({
+					...expectedOptions,
+					headers: {
+						...expectedOptions.headers,
+						'user-agent': window.navigator.userAgent,
+						'set-cookie': 'name1=value1; name2=value2',
+						referer: window.location.origin
+					}
+				});
+				expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedUrl);
+				expect(result).toEqual(mockedModules.modules['node-fetch'].returnValue.response[method]);
 			});
 		}
 
 		it('Handles relative URL.', async () => {
 			const expectedPath = '/path/';
-			const expectedOptions = {};
 
 			window.location.href = 'https://localhost:8080';
 
-			const response = await window.fetch(expectedPath, expectedOptions);
+			const response = await window.fetch(expectedPath);
 			const textResponse = await response.text();
 
-			expect(MOCKED_NODE_FETCH.url).toBe('https://localhost:8080' + expectedPath);
-			expect(MOCKED_NODE_FETCH.init).toBe(expectedOptions);
-			expect(textResponse).toEqual(MOCKED_NODE_FETCH.response.text);
+			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(
+				'https://localhost:8080' + expectedPath
+			);
+
+			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
+		});
+
+		it('Handles URL object.', async () => {
+			const expectedURL = 'https://localhost:8080/path/';
+
+			window.location.href = 'https://localhost:8080';
+
+			const response = await window.fetch(new URL(expectedURL));
+			const textResponse = await response.text();
+
+			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedURL);
+
+			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
+		});
+
+		it('Handles Request object with absolute URL.', async () => {
+			const expectedURL = 'https://localhost:8080/path/';
+
+			window.location.href = 'https://localhost:8080';
+
+			const response = await window.fetch(new window.Request(expectedURL));
+			const textResponse = await response.text();
+
+			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedURL);
+
+			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
+		});
+
+		it('Handles Request object with relative URL.', async () => {
+			const expectedPath = '/path/';
+
+			window.location.href = 'https://localhost:8080';
+
+			const response = await window.fetch(new window.Request(expectedPath));
+			const textResponse = await response.text();
+
+			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(
+				'https://localhost:8080' + expectedPath
+			);
+
+			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
 		});
 
 		it('Handles error JSON request.', async () => {
-			MOCKED_NODE_FETCH.error = new Error('error');
+			mockedModules.modules['node-fetch'].returnValue.error = new Error('error');
+			window.location.href = 'https://localhost:8080';
 
 			try {
-				await window.fetch('/url/', {});
+				await window.fetch('/url/');
 			} catch (error) {
-				expect(error).toBe(MOCKED_NODE_FETCH.error);
+				expect(error).toBe(mockedModules.modules['node-fetch'].returnValue.error);
 			}
 		});
 	});
 
 	describe('happyDOM.whenAsyncComplete()', () => {
 		it('Resolves the Promise returned by whenAsyncComplete() when all async tasks has been completed.', async () => {
+			window.location.href = 'https://localhost:8080';
 			let isFirstWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;
@@ -539,6 +596,7 @@ describe('Window', () => {
 
 	describe('happyDOM.cancelAsync()', () => {
 		it('Cancels all ongoing asynchrounous tasks.', (done) => {
+			window.location.href = 'https://localhost:8080';
 			let isFirstWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;

@@ -3,7 +3,7 @@
  */
 export default class AsyncTaskManager {
 	private static taskID = 0;
-	private runningTasks: number[] = [];
+	private runningTasks: { [k: string]: () => void } = {};
 	private runningTimers: NodeJS.Timeout[] = [];
 	private queue: { resolve: () => void; reject: (error: Error) => void }[] = [];
 
@@ -24,20 +24,26 @@ export default class AsyncTaskManager {
 	}
 
 	/**
-	 * Cancels all tasks.
+	 * Ends all tasks.
 	 *
 	 * @param [error] Error.
 	 */
 	public cancelAll(error?: Error): void {
-		for (const timerID of this.runningTimers) {
-			global.clearTimeout(timerID);
-		}
-
+		const runningTimers = this.runningTimers;
+		const runningTasks = this.runningTasks;
 		const promises = this.queue;
 
-		this.runningTasks = [];
+		this.runningTasks = {};
 		this.runningTimers = [];
 		this.queue = [];
+
+		for (const timer of runningTimers) {
+			global.clearTimeout(timer);
+		}
+
+		for (const key of Object.keys(runningTasks)) {
+			runningTasks[key]();
+		}
 
 		for (const promise of promises) {
 			if (error) {
@@ -67,7 +73,7 @@ export default class AsyncTaskManager {
 		if (index !== -1) {
 			this.runningTimers.splice(index, 1);
 		}
-		if (!this.runningTasks.length && !this.runningTimers.length) {
+		if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {
 			this.cancelAll();
 		}
 	}
@@ -75,11 +81,12 @@ export default class AsyncTaskManager {
 	/**
 	 * Starts an async task.
 	 *
+	 * @param abortHandler Abort handler.
 	 * @returns Task ID.
 	 */
-	public startTask(): number {
+	public startTask(abortHandler?: () => void): number {
 		const taskID = this.newTaskID();
-		this.runningTasks.push(taskID);
+		this.runningTasks[taskID] = abortHandler ? abortHandler : () => {};
 		return taskID;
 	}
 
@@ -89,12 +96,12 @@ export default class AsyncTaskManager {
 	 * @param taskID Task ID.
 	 */
 	public endTask(taskID: number): void {
-		const index = this.runningTasks.indexOf(taskID);
-		if (index !== -1) {
-			this.runningTasks.splice(index, 1);
-		}
-		if (!this.runningTasks.length && !this.runningTimers.length) {
-			this.cancelAll();
+		if (this.runningTasks[taskID]) {
+			delete this.runningTasks[taskID];
+
+			if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {
+				this.cancelAll();
+			}
 		}
 	}
 
@@ -104,16 +111,7 @@ export default class AsyncTaskManager {
 	 * @returns Count.
 	 */
 	public getTaskCount(): number {
-		return this.runningTasks.length;
-	}
-
-	/**
-	 * Returns the amount of running timers.
-	 *
-	 * @returns Count.
-	 */
-	public getTimerCount(): number {
-		return this.runningTimers.length;
+		return Object.keys(this.runningTasks).length;
 	}
 
 	/**

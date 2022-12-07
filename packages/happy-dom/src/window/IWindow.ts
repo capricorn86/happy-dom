@@ -39,7 +39,7 @@ import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
 import EventTarget from '../event/EventTarget';
-import URL from '../location/URL';
+import { URL, URLSearchParams } from 'url';
 import Location from '../location/Location';
 import MutationObserver from '../mutation-observer/MutationObserver';
 import DOMParser from '../dom-parser/DOMParser';
@@ -92,14 +92,18 @@ import IRequestInit from '../fetch/IRequestInit';
 import IResponse from '../fetch/IResponse';
 import Range from '../range/Range';
 import MediaQueryList from '../match-media/MediaQueryList';
+import XMLHttpRequest from '../xml-http-request/XMLHttpRequest';
+import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload';
+import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget';
 import DOMRect from '../nodes/element/DOMRect';
 import Window from './Window';
 import Attr from '../nodes/attr/Attr';
 import NamedNodeMap from '../named-node-map/NamedNodeMap';
-import { URLSearchParams } from 'url';
 import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
+import IHappyDOMSettings from './IHappyDOMSettings';
+import RequestInfo from '../fetch/RequestInfo';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -112,6 +116,8 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 		asyncTaskManager: AsyncTaskManager;
 		setInnerWidth: (width: number) => void;
 		setInnerHeight: (height: number) => void;
+		setURL: (url: string) => void;
+		settings: IHappyDOMSettings;
 	};
 
 	// Global classes
@@ -173,6 +179,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly DataTransferItem: typeof DataTransferItem;
 	readonly DataTransferItemList: typeof DataTransferItemList;
 	readonly URL: typeof URL;
+	readonly URLSearchParams: typeof URLSearchParams;
 	readonly Location: typeof Location;
 	readonly CustomElementRegistry: typeof CustomElementRegistry;
 	readonly Window: typeof Window;
@@ -186,7 +193,6 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly History: typeof History;
 	readonly Screen: typeof Screen;
 	readonly Storage: typeof Storage;
-	readonly URLSearchParams: typeof URLSearchParams;
 	readonly HTMLCollection: typeof HTMLCollection;
 	readonly NodeList: typeof NodeList;
 	readonly CSSUnitValue: typeof CSSUnitValue;
@@ -209,6 +215,9 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
 	readonly Range: typeof Range;
 	readonly DOMRect: typeof DOMRect;
+	readonly XMLHttpRequest: typeof XMLHttpRequest;
+	readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
+	readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
 
 	// Events
 	onload: (event: Event) => void;
@@ -334,13 +343,13 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	fetch(url: string, init?: IRequestInit): Promise<IResponse>;
+	fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse>;
 
 	/**
 	 * Creates a Base64-encoded ASCII string from a binary string (i.e., a string in which each character in the string is treated as a byte of binary data).
 	 *
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/btoa
-	 * @param data Binay data.
+	 * @param data Binary data.
 	 * @returns Base64-encoded string.
 	 */
 	btoa(data: unknown): string;
@@ -351,7 +360,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/atob
 	 * @see https://infra.spec.whatwg.org/#forgiving-base64-encode.
 	 * @see Https://html.spec.whatwg.org/multipage/webappapis.html#btoa.
-	 * @param data Binay string.
+	 * @param data Binary string.
 	 * @returns An ASCII string containing decoded data from encodedData.
 	 */
 	atob(data: unknown): string;

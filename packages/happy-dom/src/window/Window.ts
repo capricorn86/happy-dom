@@ -40,7 +40,7 @@ import KeyboardEvent from '../event/events/KeyboardEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
 import EventTarget from '../event/EventTarget';
-import URL from '../location/URL';
+import { URL, URLSearchParams } from 'url';
 import Location from '../location/Location';
 import NonImplementedEventTypes from '../event/NonImplementedEventTypes';
 import MutationObserver from '../mutation-observer/MutationObserver';
@@ -97,7 +97,6 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
-import { URLSearchParams } from 'url';
 import FetchHandler from '../fetch/FetchHandler';
 import { default as RangeImplementation } from '../range/Range';
 import DOMRect from '../nodes/element/DOMRect';
@@ -105,12 +104,17 @@ import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
+import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest';
+import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload';
+import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget';
 import Base64 from '../base64/Base64';
 import IDocument from '../nodes/document/IDocument';
 import Attr from '../nodes/attr/Attr';
 import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
+import IHappyDOMSettings from './IHappyDOMSettings';
+import RequestInfo from '../fetch/RequestInfo';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -144,6 +148,15 @@ export default class Window extends EventTarget implements IWindow {
 				(<number>this.innerHeight) = height;
 				this.dispatchEvent(new Event('resize'));
 			}
+		},
+		setURL: (url: string) => {
+			this.location.href = url;
+		},
+		settings: {
+			disableJavaScriptEvaluation: false,
+			disableJavaScriptFileLoading: false,
+			disableCSSFileLoading: false,
+			enableFileSystemHttpRequests: false
 		}
 	};
 
@@ -241,6 +254,9 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Response: {
 		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
 	};
+	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
+	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
+	public readonly XMLHttpRequest;
 	public readonly DOMParser;
 	public readonly Range;
 	public readonly FileReader;
@@ -346,8 +362,14 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param [options.innerWidth] Inner width.
 	 * @param [options.innerHeight] Inner height.
 	 * @param [options.url] URL.
+	 * @param [options.settings] Settings.
 	 */
-	constructor(options?: { innerWidth?: number; innerHeight?: number; url?: string }) {
+	constructor(options?: {
+		innerWidth?: number;
+		innerHeight?: number;
+		url?: string;
+		settings?: IHappyDOMSettings;
+	}) {
 		super();
 
 		this.customElements = new CustomElementRegistry();
@@ -363,6 +385,10 @@ export default class Window extends EventTarget implements IWindow {
 
 		if (options?.url) {
 			this.location.href = options.url;
+		}
+
+		if (options?.settings) {
+			this.happyDOM.settings = Object.assign(this.happyDOM.settings, options.settings);
 		}
 
 		this._setTimeout = ORIGINAL_SET_TIMEOUT;
@@ -413,6 +439,7 @@ export default class Window extends EventTarget implements IWindow {
 		FileReaderImplementation._ownerDocument = document;
 		DOMParserImplementation._ownerDocument = document;
 		RangeImplementation._ownerDocument = document;
+		XMLHttpRequestImplementation._ownerDocument = document;
 
 		/* eslint-disable jsdoc/require-jsdoc */
 		class Response extends ResponseImplementation {
@@ -430,10 +457,13 @@ export default class Window extends EventTarget implements IWindow {
 		class DOMParser extends DOMParserImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
-		class Range extends RangeImplementation {
+		class XMLHttpRequest extends XMLHttpRequestImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
 
+		class Range extends RangeImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
 		/* eslint-enable jsdoc/require-jsdoc */
 
 		this.Response = Response;
@@ -441,6 +471,7 @@ export default class Window extends EventTarget implements IWindow {
 		this.Image = Image;
 		this.FileReader = FileReader;
 		this.DOMParser = DOMParser;
+		this.XMLHttpRequest = XMLHttpRequest;
 		this.Range = Range;
 
 		this._setupVMContext();
@@ -629,7 +660,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	public async fetch(url: string, init?: IRequestInit): Promise<IResponse> {
+	public async fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse> {
 		return await FetchHandler.fetch(this.document, url, init);
 	}
 

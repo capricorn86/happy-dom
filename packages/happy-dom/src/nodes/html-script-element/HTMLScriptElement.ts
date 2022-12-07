@@ -193,7 +193,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 
 			if (src !== null) {
 				ScriptUtility.loadExternalScript(this);
-			} else {
+			} else if (!this.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation) {
 				const textContent = this.textContent;
 				const type = this.getAttributeNS(null, 'type');
 				if (

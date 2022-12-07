@@ -191,7 +191,7 @@ describe('Document', () => {
 		});
 
 		it('Sets a cookie with a path.', () => {
-			window.location.href = '/path/to/cookie/';
+			window.location.href = 'https://sub.test.com/path/to/cookie/';
 			document.cookie = 'name1=value1; path=path/to';
 			document.cookie = 'name2=value2; path=/path/to';
 			document.cookie = 'name3=value3; path=/path/to/cookie/';
@@ -199,7 +199,7 @@ describe('Document', () => {
 		});
 
 		it('Does not set cookie if the path does not match the current path.', () => {
-			window.location.href = '/path/to/cookie/';
+			window.location.href = 'https://sub.test.com/path/to/cookie/';
 			document.cookie = 'name1=value1; path=/cookie/';
 			expect(document.cookie).toBe('');
 		});
@@ -418,6 +418,19 @@ describe('Document', () => {
 			document.documentElement.appendChild(base);
 
 			expect(document.baseURI).toBe('https://www.test.test/base/path/to/script/?key=value=1#test');
+		});
+	});
+
+	describe('URL', () => {
+		it('Returns the URL of the document.', () => {
+			document.location.href = 'http://localhost:8080/path/to/file.html';
+			expect(document.URL).toBe('http://localhost:8080/path/to/file.html');
+		});
+	});
+	describe('documentURI', () => {
+		it('Returns the documentURI of the document.', () => {
+			document.location.href = 'http://localhost:8080/path/to/file.html';
+			expect(document.documentURI).toBe('http://localhost:8080/path/to/file.html');
 		});
 	});
 

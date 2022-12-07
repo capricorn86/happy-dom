@@ -1,6 +1,5 @@
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
-
 # About
 
 [Happy DOM](https://github.com/capricorn86/happy-dom) is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG [DOM](https://dom.spec.whatwg.org/) and [HTML](https://html.spec.whatwg.org/multipage/).
@@ -8,7 +7,6 @@
 The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate enough of a web browser to be useful for testing, scraping web sites and server-side rendering.
 
 [Happy DOM](https://github.com/capricorn86/happy-dom) focuses heavily on performance and can be used as an alternative to [JSDOM](https://github.com/jsdom/jsdom).
-
 
 ### DOM Features
 
@@ -26,8 +24,6 @@ The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate 
 
 And much more..
 
-  
-
 ### Works With
 
 - [Google LitHTML](https://lit-html.polymer-project.org)
@@ -40,19 +36,13 @@ And much more..
 
 - [Vue](https://vuejs.org/)
 
-  
-
 # Installation
 
 ```bash
 npm install happy-dom
 ```
 
-
-
 # Usage
-
-
 
 ## Basic Usage
 
@@ -75,8 +65,6 @@ container.appendChild(button);
 console.log(document.body.innerHTML);
 ```
 
-
-
 ## VM Context
 
 The default Window class is a [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options). A [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) will execute JavaScript code scoped within the context where the Window instance will be the global object.
@@ -85,9 +73,9 @@ The default Window class is a [VM context](https://nodejs.org/api/vm.html#vm_vm_
 import { Window } from 'happy-dom';
 
 const window = new Window({
-    innerWidth: 1024,
-    innerHeight: 768,
-    url: 'http://localhost:8080'
+	innerWidth: 1024,
+	innerHeight: 768,
+	url: 'http://localhost:8080'
 });
 const document = window.document;
 
@@ -146,9 +134,9 @@ The example below will show you how to setup a Node [VM context](https://nodejs.
 import { Window } from 'happy-dom';
 
 const window = new Window({
-    innerWidth: 1024,
-    innerHeight: 768,
-    url: 'http://localhost:8080'
+	innerWidth: 1024,
+	innerHeight: 768,
+	url: 'http://localhost:8080'
 });
 const document = window.document;
 
@@ -207,11 +195,7 @@ Will output:
 console.log(document.body.querySelector('div').getInnerHTML({ includeShadowRoots: true }));
 ```
 
-
-
 ## Additional Features
-
-Happy DOM exposes two functions that may be useful when working with asynchrounous code.
 
 **whenAsyncComplete()**
 
@@ -219,7 +203,7 @@ Returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 ```javascript
 window.happyDOM.whenAsyncComplete().then(() => {
-    // Do something when all async tasks are completed.
+	// Do something when all async tasks are completed.
 });
 ```
 
@@ -229,7 +213,7 @@ This method will cancel all running async tasks.
 
 ```javascript
 window.setTimeout(() => {
-    // This timeout will be canceled
+	// This timeout will be canceled
 });
 window.happyDOM.cancelAsync();
 ```
@@ -250,7 +234,60 @@ Sets the property `window.innerHeight` and dispatches a "resize" event.
 window.happyDOM.setInnerHeight(768);
 ```
 
+**setURL()**
 
+Sets the property `window.location.href`.
+
+```javascript
+window.happyDOM.setURL('https://localhost:3000');
+```
+
+## Settings
+
+Settings can be sent to the constructor or by setting them on the "window.happyDOM.settings" property.
+
+Set by constructor:
+
+```javascript
+const window = new Window({
+	innerWidth: 1024,
+	innerHeight: 768,
+	url: 'https://localhost:8080',
+	settings: {
+		disableJavaScriptFileLoading: true,
+		disableJavaScriptEvaluation: true,
+		disableCSSFileLoading: true,
+		enableFileSystemHttpRequests: true
+	}
+});
+```
+
+Set by property:
+
+```javascript
+const window = new Window();
+
+window.happyDOM.settings.disableJavaScriptFileLoading = true;
+window.happyDOM.settings.disableJavaScriptEvaluation = true;
+window.happyDOM.settings.disableCSSFileLoading = true;
+window.happyDOM.settings.enableFileSystemHttpRequests = true;
+```
+
+**disableJavaScriptFileLoading**
+
+Set it to "true" to disable JavaScript file loading. Defaults to "false".
+
+**disableJavaScriptEvaluation**
+
+Set it to "true" to completely disable JavaScript evaluation. Defaults to "false".
+
+**disableCSSFileLoading**
+
+Set it to "true" to disable CSS file loading using the HTMLLinkElement. Defaults to "false".
+
+**enableFileSystemHttpRequests**
+
+Set it to "true" to enable file system HTTP requests using XMLHttpRequest. Defaults to "false".
 
 # Performance
 
@@ -267,8 +304,6 @@ window.happyDOM.setInnerHeight(768);
 | querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
 
 [See how the test was done here](https://github.com/capricorn86/happy-dom-performance-test)
-
-
 
 # Jest
 
