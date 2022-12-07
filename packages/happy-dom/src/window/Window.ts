@@ -115,6 +115,7 @@ import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 import IHappyDOMSettings from './IHappyDOMSettings';
 import RequestInfo from '../fetch/RequestInfo';
+import FileList from '../nodes/html-input-element/FileList';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -246,6 +247,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly MimeTypeArray = MimeTypeArray;
 	public readonly Plugin = Plugin;
 	public readonly PluginArray = PluginArray;
+	public readonly FileList = FileList;
 	public readonly Headers: { new (init?: IHeadersInit): IHeaders } = Headers;
 	public readonly DOMRect: typeof DOMRect;
 	public readonly Request: {

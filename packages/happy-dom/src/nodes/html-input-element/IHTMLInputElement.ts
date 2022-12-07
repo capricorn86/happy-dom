@@ -1,9 +1,10 @@
-import File from '../../file/File';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum';
 import ValidityState from '../validity-state/ValidityState';
 import Event from '../../event/Event';
+import File from '../../file/File';
+import IFileList from './IFileList';
 
 /**
  * HTML Input Element.
@@ -17,7 +18,7 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	formMethod: string;
 	formNoValidate: boolean;
 	defaultChecked: boolean;
-	files: File[];
+	files: IFileList<File>;
 	defaultValue: string;
 	height: number;
 	width: number;

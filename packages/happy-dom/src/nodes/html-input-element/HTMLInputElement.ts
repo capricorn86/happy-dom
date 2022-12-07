@@ -1,4 +1,3 @@
-import File from '../../file/File';
 import HTMLElement from '../html-element/HTMLElement';
 import ValidityState from '../validity-state/ValidityState';
 import DOMException from '../../exception/DOMException';
@@ -11,6 +10,9 @@ import IHTMLInputElement from './IHTMLInputElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 import HTMLInputElementValueStepping from './HTMLInputElementValueStepping';
+import FileList from './FileList';
+import File from '../../file/File';
+import IFileList from './IFileList';
 
 /**
  * HTML Input Element.
@@ -36,7 +38,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	public defaultChecked = false;
 
 	// Type specific: file
-	public files: File[] = [];
+	public files: IFileList<File> = new FileList();
 
 	// Events
 	public oninput: (event: Event) => void | null = null;
@@ -974,7 +976,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		clone._height = this._height;
 		clone._width = this._width;
 		clone.defaultChecked = this.defaultChecked;
-		clone.files = this.files.slice();
+		clone.files = <FileList>this.files.slice();
 		clone._selectionStart = this._selectionStart;
 		clone._selectionEnd = this._selectionEnd;
 		clone._selectionDirection = this._selectionDirection;
