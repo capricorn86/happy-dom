@@ -123,6 +123,8 @@ import Attr from './nodes/attr/Attr';
 import IAttr from './nodes/attr/IAttr';
 import ProcessingInstruction from './nodes/processing-instruction/ProcessingInstruction';
 import IProcessingInstruction from './nodes/processing-instruction/IProcessingInstruction';
+import FileList from './nodes/html-input-element/FileList';
+import IFileList from './nodes/html-input-element/IFileList';
 
 export {
 	GlobalWindow,
@@ -250,5 +252,7 @@ export {
 	Attr,
 	IAttr,
 	ProcessingInstruction,
-	IProcessingInstruction
+	IProcessingInstruction,
+	FileList,
+	IFileList
 };

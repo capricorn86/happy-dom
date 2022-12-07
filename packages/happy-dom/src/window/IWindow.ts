@@ -104,6 +104,7 @@ import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 import IHappyDOMSettings from './IHappyDOMSettings';
 import RequestInfo from '../fetch/RequestInfo';
+import FileList from '../nodes/html-input-element/FileList';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -218,6 +219,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly XMLHttpRequest: typeof XMLHttpRequest;
 	readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
 	readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
+	readonly FileList: typeof FileList;
 
 	// Events
 	onload: (event: Event) => void;
