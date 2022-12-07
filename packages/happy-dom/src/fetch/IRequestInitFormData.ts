@@ -17,7 +17,7 @@ interface ISubmitOptions extends HTTP.RequestOptions {
 	protocol?: 'https:' | 'http:';
 }
 
-export default interface IFormData extends Stream.Readable {
+export default interface IRequestInitFormData extends Stream.Readable {
 	append(key: string, value: unknown, options?: IAppendOptions | string): void;
 	getHeaders(userHeaders?: IHeaders): { [key: string]: IHeaders };
 	submit(

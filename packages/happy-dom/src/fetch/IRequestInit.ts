@@ -1,7 +1,7 @@
 import IHeadersInit from './IHeadersInit';
 import IAbortSignal from './IAbortSignal';
 import { URLSearchParams } from 'url';
-import IFormData from '../form-data/IFormData';
+import IRequestInitFormData from './IRequestInitFormData';
 
 /**
  * Fetch request init.
@@ -13,7 +13,7 @@ export default interface IRequestInit {
 		| NodeJS.ReadableStream
 		| string
 		| URLSearchParams
-		| IFormData
+		| IRequestInitFormData
 		| null;
 	headers?: IHeadersInit;
 	method?: string;

@@ -1,7 +1,9 @@
 import HTMLElement from '../html-element/HTMLElement';
-import IElement from '../element/IElement';
 import IHTMLFormElement from './IHTMLFormElement';
 import Event from '../../event/Event';
+import HTMLFormControlsCollection from './HTMLFormControlsCollection';
+import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
+import INode from '../node/INode';
 
 /**
  * HTML Form Element.
@@ -182,8 +184,10 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 *
 	 * @returns Elements.
 	 */
-	public get elements(): IElement[] {
-		return this.querySelectorAll('input,textarea');
+	public get elements(): IHTMLFormControlsCollection<INode> {
+		return <HTMLFormControlsCollection>(
+			HTMLFormControlsCollection.from(this.querySelectorAll('input,textarea'))
+		);
 	}
 
 	/**
@@ -198,12 +202,16 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	/**
 	 * Submits form.
 	 */
-	public submit(): void {}
+	public submit(): void {
+		this.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+	}
 
 	/**
 	 * Resets form.
 	 */
-	public reset(): void {}
+	public reset(): void {
+		this.dispatchEvent(new Event('reset', { bubbles: true, cancelable: true }));
+	}
 
 	/**
 	 * Reports validity.

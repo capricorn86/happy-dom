@@ -1,6 +1,7 @@
 import Event from '../../event/Event';
-import IElement from '../element/IElement';
 import IHTMLElement from '../html-element/IHTMLElement';
+import INode from '../node/INode';
+import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
 
 /**
  * HTML Form Element.
@@ -18,7 +19,7 @@ export default interface IHTMLFormElement extends IHTMLElement {
 	autocomplete: string;
 	acceptCharset: string;
 	noValidate: string;
-	elements: IElement[];
+	elements: IHTMLFormControlsCollection<INode>;
 	length: number;
 
 	// Events
