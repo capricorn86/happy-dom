@@ -13,6 +13,7 @@ import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
 import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
+import HTMLSelectElement from '../nodes/html-input-element/HTMLSelectElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
@@ -128,6 +129,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLTemplateElement: typeof HTMLTemplateElement;
 	readonly HTMLFormElement: typeof HTMLFormElement;
 	readonly HTMLInputElement: typeof HTMLInputElement;
+	readonly HTMLSelectElement: typeof HTMLSelectElement;
 	readonly HTMLTextAreaElement: typeof HTMLTextAreaElement;
 	readonly HTMLImageElement: typeof HTMLImageElement;
 	readonly HTMLScriptElement: typeof HTMLScriptElement;

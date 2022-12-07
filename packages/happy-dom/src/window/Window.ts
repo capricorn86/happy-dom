@@ -14,6 +14,7 @@ import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
 import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
+import HTMLSelectElement from '../nodes/html-input-element/HTMLSelectElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
@@ -168,6 +169,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLTemplateElement = HTMLTemplateElement;
 	public readonly HTMLFormElement = HTMLFormElement;
 	public readonly HTMLInputElement = HTMLInputElement;
+	public readonly HTMLSelectElement = HTMLSelectElement;
 	public readonly HTMLTextAreaElement = HTMLTextAreaElement;
 	public readonly HTMLImageElement = HTMLImageElement;
 	public readonly HTMLScriptElement = HTMLScriptElement;
