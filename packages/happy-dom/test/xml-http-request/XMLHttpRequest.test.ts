@@ -552,7 +552,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.responseText).toBe('child_process.execFileSync.returnValue.data.text');
 		});
 
-		it('Performs an asynchronous GET request with the HTTP protocol.', (done) => {
+		it('Performs an asynchronous GET request with the HTTP protocol listening to the "loadend" event.', (done) => {
 			const expectedResponseText = 'http.request.body';
 			const windowURL = 'http://localhost:8080';
 
@@ -570,7 +570,7 @@ describe('XMLHttpRequest', () => {
 				expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
 			});
 
-			request.addEventListener('load', () => {
+			request.addEventListener('loadend', () => {
 				expect(mockedModules.modules.http.request.parameters.options).toEqual({
 					host: 'localhost',
 					port: 8080,
@@ -886,6 +886,53 @@ describe('XMLHttpRequest', () => {
 			});
 
 			request.send();
+		});
+
+		it('Handles Happy DOM asynchrounous tasks.', async () => {
+			request.open('GET', REQUEST_URL, true);
+			request.send();
+
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(request.responseText).toBe('http.request.body');
+		});
+	});
+
+	describe('abort()', () => {
+		it('Aborts an asynchrounous request.', () => {
+			let isAbortTriggered = false;
+			let isLoadEndTriggered = false;
+			request.open('GET', REQUEST_URL, true);
+			request.send();
+			request.addEventListener('abort', () => {
+				isAbortTriggered = true;
+			});
+			request.addEventListener('loadend', () => {
+				isLoadEndTriggered = true;
+			});
+			request.abort();
+			expect(isAbortTriggered).toBe(true);
+			expect(isLoadEndTriggered).toBe(true);
+			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
+		});
+
+		it('Ends an ongoing Happy DOM asynchrounous task.', async () => {
+			request.open('GET', REQUEST_URL, true);
+			request.send();
+			request.abort();
+
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
+		});
+
+		it('Aborts an ongoing request when cancelling all Happy DOM asynchrounous tasks.', async () => {
+			request.open('GET', REQUEST_URL, true);
+			request.send();
+
+			window.happyDOM.cancelAsync();
+
+			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
 		});
 	});
 });

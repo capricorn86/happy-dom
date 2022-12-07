@@ -670,11 +670,20 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				<object>options,
 				async (response: HTTP.IncomingMessage) => {
 					await this._onAsyncResponse(response, options, ssl, data);
+
 					resolve();
+
+					// Ends async task in Happy DOM
+					this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(
+						this._state.asyncTaskID
+					);
 				}
 			).on('error', (error: Error) => {
 				this._onError(error);
 				resolve();
+
+				// Ends async task in Happy DOM
+				this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._state.asyncTaskID);
 			});
 
 			// Node 0.4 and later won't accept empty data. Make sure it's needed.
@@ -685,9 +694,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this._state.asyncRequest.end();
 
 			this.dispatchEvent(new Event('loadstart'));
-
-			// Ends async task in Happy DOM
-			this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._state.asyncTaskID);
 		});
 	}
 

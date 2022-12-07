@@ -41,12 +41,8 @@ export default class AsyncTaskManager {
 			global.clearTimeout(timer);
 		}
 
-		try {
-			for (const key of Object.keys(runningTasks)) {
-				runningTasks[key]();
-			}
-		} catch (e) {
-			error = e;
+		for (const key of Object.keys(runningTasks)) {
+			runningTasks[key]();
 		}
 
 		for (const promise of promises) {
