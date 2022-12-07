@@ -79,14 +79,19 @@ describe('Window', () => {
 
 		it('Initializes by using given options', () => {
 			const windowWithOptions = new Window({
-				innerWidth: 1024,
-				innerHeight: 768,
+				innerWidth: 1920,
+				innerHeight: 1080,
 				url: 'http://localhost:8080'
 			});
+			const windowWithoutOptions = new Window();
 
-			expect(windowWithOptions.innerWidth).toBe(1024);
-			expect(windowWithOptions.innerHeight).toBe(768);
+			expect(windowWithOptions.innerWidth).toBe(1920);
+			expect(windowWithOptions.innerHeight).toBe(1080);
 			expect(windowWithOptions.location.href).toBe('http://localhost:8080/');
+
+			expect(windowWithoutOptions.innerWidth).toBe(1024);
+			expect(windowWithoutOptions.innerHeight).toBe(768);
+			expect(windowWithoutOptions.location.href).toBe('about:blank');
 		});
 	});
 

@@ -359,8 +359,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * Constructor.
 	 *
 	 * @param [options] Options.
-	 * @param [options.innerWidth] Inner width.
-	 * @param [options.innerHeight] Inner height.
+	 * @param [options.innerWidth] Inner width. Defaults to "1024".
+	 * @param [options.innerHeight] Inner height. Defaults to "768".
 	 * @param [options.url] URL.
 	 * @param [options.settings] Settings.
 	 */
@@ -380,8 +380,8 @@ export default class Window extends EventTarget implements IWindow {
 		this.sessionStorage = new Storage();
 		this.localStorage = new Storage();
 
-		this.innerWidth = options?.innerWidth ? options.innerWidth : 0;
-		this.innerHeight = options?.innerHeight ? options.innerHeight : 0;
+		this.innerWidth = options?.innerWidth ? options.innerWidth : 1024;
+		this.innerHeight = options?.innerHeight ? options.innerHeight : 768;
 
 		if (options?.url) {
 			this.location.href = options.url;

@@ -223,7 +223,7 @@ window.happyDOM.cancelAsync();
 Sets the property `window.innerWidth` and dispatches a "resize" event.
 
 ```javascript
-window.happyDOM.setInnerWidth(1024);
+window.happyDOM.setInnerWidth(1920);
 ```
 
 **setInnerHeight()**
@@ -231,7 +231,7 @@ window.happyDOM.setInnerWidth(1024);
 Sets the property `window.innerHeight` and dispatches a "resize" event.
 
 ```javascript
-window.happyDOM.setInnerHeight(768);
+window.happyDOM.setInnerHeight(1080);
 ```
 
 **setURL()**
@@ -250,8 +250,8 @@ Set by constructor:
 
 ```javascript
 const window = new Window({
-	innerWidth: 1024,
-	innerHeight: 768,
+	innerWidth: 1920,
+	innerHeight: 1080,
 	url: 'https://localhost:8080',
 	settings: {
 		disableJavaScriptFileLoading: true,
