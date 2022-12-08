@@ -1,9 +1,8 @@
 import INode from '../node/INode';
 import IElement from '../element/IElement';
 import IRadioNodeList from './IRadioNodeList';
-import HTMLCollection from '../element/HTMLCollection';
-import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
 import RadioNodeList from './RadioNodeList';
+import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
 
 /**
  * HTMLFormControlsCollection.
@@ -11,13 +10,23 @@ import RadioNodeList from './RadioNodeList';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormControlsCollection
  */
 export default class HTMLFormControlsCollection
-	extends HTMLCollection
+	extends Array
 	implements IHTMLFormControlsCollection<INode>
 {
+	/**
+	 * Returns item by index.
+	 *
+	 * @param index Index.
+	 */
+	public item(index: number): INode {
+		return index >= 0 && this[index] ? this[index] : null;
+	}
+
 	/**
 	 * Returns named item.
 	 *
 	 * @param name Name.
+	 * @returns Node.
 	 */
 	public namedItem(name: string): IElement | IRadioNodeList<INode> {
 		const radioNodeList: IRadioNodeList<INode> = new RadioNodeList();

@@ -30,6 +30,8 @@ import IAttr from '../attr/IAttr';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap';
 
 import Event from '../../event/Event';
+import HTMLCollection from './HTMLCollection';
+import ElementUtility from './ElementUtility';
 
 /**
  * Element.
@@ -368,21 +370,7 @@ export default class Element extends Node implements IElement {
 	 * @override
 	 */
 	public override appendChild(node: INode): INode {
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (node.parentNode && node.parentNode['children']) {
-				const index = node.parentNode['children'].indexOf(node);
-				if (index !== -1) {
-					node.parentNode['children'].splice(index, 1);
-				}
-			}
-
-			if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-				this.children.push(<IElement>node);
-			}
-		}
-
+		ElementUtility.appendChild(this, node);
 		return super.appendChild(node);
 	}
 
@@ -390,13 +378,7 @@ export default class Element extends Node implements IElement {
 	 * @override
 	 */
 	public override removeChild(node: INode): INode {
-		if (node.nodeType === Node.ELEMENT_NODE) {
-			const index = this.children.indexOf(<IElement>node);
-			if (index !== -1) {
-				this.children.splice(index, 1);
-			}
-		}
-
+		ElementUtility.removeChild(this, node);
 		return super.removeChild(node);
 	}
 
@@ -412,26 +394,7 @@ export default class Element extends Node implements IElement {
 	 */
 	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);
-
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (newNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (newNode.parentNode && newNode.parentNode['children']) {
-				const index = newNode.parentNode['children'].indexOf(newNode);
-				if (index !== -1) {
-					newNode.parentNode['children'].splice(index, 1);
-				}
-			}
-
-			this.children.length = 0;
-
-			for (const node of this.childNodes) {
-				if (node.nodeType === Node.ELEMENT_NODE) {
-					this.children.push(<IElement>node);
-				}
-			}
-		}
-
+		ElementUtility.insertBefore(this, newNode, referenceNode);
 		return returnValue;
 	}
 
@@ -842,6 +805,17 @@ export default class Element extends Node implements IElement {
 
 		if (attribute.name === 'class' && this._classList) {
 			this._classList._updateIndices();
+		}
+
+		if (attribute.name === 'name') {
+			if (this.parentNode && this.parentNode['children'] && attribute.value !== oldValue) {
+				if (oldValue) {
+					this.parentNode['children']._removeNamedItem(this);
+				}
+				if (attribute.value) {
+					this.parentNode['children']._appendNamedItem(this);
+				}
+			}
 		}
 
 		if (

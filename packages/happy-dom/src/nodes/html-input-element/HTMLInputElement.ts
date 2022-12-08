@@ -13,6 +13,7 @@ import HTMLInputElementValueStepping from './HTMLInputElementValueStepping';
 import FileList from './FileList';
 import File from '../../file/File';
 import IFileList from './IFileList';
+import IAttr from '../attr/IAttr';
 
 /**
  * HTML Input Element.
@@ -190,7 +191,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param name Name.
 	 */
 	public set name(name: string) {
-		this.setAttributeNS(null, 'name', name);
+		this.setAttributeNS(null, 'type', name);
 	}
 
 	/**
@@ -1023,6 +1024,47 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override setAttributeNode(attribute: IAttr): IAttr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		if (
+			attribute.name === 'name' &&
+			this.parentNode &&
+			this.parentNode['children'] &&
+			attribute.value !== replacedAttribute.value
+		) {
+			if (replacedAttribute.value) {
+				this.parentNode['children']._removeNamedItem(this);
+			}
+			if (attribute.value) {
+				this.parentNode['children']._appendNamedItem(this);
+			}
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeAttributeNode(attribute: IAttr): IAttr {
+		super.removeAttributeNode(attribute);
+
+		if (
+			attribute.name === 'name' &&
+			this.parentNode &&
+			this.parentNode['children'] &&
+			attribute.value
+		) {
+			this.parentNode['children']._removeNamedItem(this);
+		}
+
+		return attribute;
 	}
 
 	/**
