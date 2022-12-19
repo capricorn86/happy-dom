@@ -62,18 +62,4 @@ export default class FetchUtility {
 			stream
 		};
 	}
-	/**
-	 * Parses referrer.
-	 *
-	 * @param referrer Referrer.
-	 * @returns Parsed referrer.
-	 */
-	public static parseReferrer(referrer: string) {
-		if (referrer) {
-			const parsedReferrer = new URL(referrer).toString();
-			return /^about:(\/\/)?client$/.test(parsedReferrer) ? 'client' : parsedReferrer;
-		}
-
-		return '';
-	}
 }
