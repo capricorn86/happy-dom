@@ -14,7 +14,7 @@ import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
 import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
-import HTMLSelectElement from '../nodes/html-input-element/HTMLSelectElement';
+import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
@@ -481,6 +481,42 @@ export default class Window extends EventTarget implements IWindow {
 		this._setupVMContext();
 
 		this.document._onWindowReady();
+	}
+
+	/**
+	 * The number of pixels that the document is currently scrolled horizontally
+	 *
+	 * @returns number
+	 */
+	public get scrollX(): number {
+		return this?.document?.documentElement?.scrollLeft ?? 0;
+	}
+
+	/**
+	 * The read-only Window property pageXOffset is an alias for scrollX.
+	 *
+	 * @returns number
+	 */
+	public get pageXOffset(): number {
+		return this.scrollX;
+	}
+
+	/**
+	 * The number of pixels that the document is currently scrolled vertically
+	 *
+	 * @returns number
+	 */
+	public get scrollY(): number {
+		return this?.document?.documentElement?.scrollTop ?? 0;
+	}
+
+	/**
+	 * The read-only Window property pageYOffset is an alias for scrollY.
+	 *
+	 * @returns number
+	 */
+	public get pageYOffset(): number {
+		return this.scrollY;
 	}
 
 	/**
