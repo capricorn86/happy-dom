@@ -3,10 +3,13 @@ import IRequestInit from './IRequestInit';
 import IDocument from '../nodes/document/IDocument';
 import IResponse from './IResponse';
 import Response from './Response';
-import NodeFetch from 'node-fetch';
+import NodeFetch, { RequestInit } from 'node-fetch';
 import Request from './Request';
-import RequestInfo from './RequestInfo';
+import RequestInfo from './IRequestInfo';
 import { URL } from 'url';
+import Blob from '../file/Blob';
+import FormDataUtility from '../form-data/FormDataUtility';
+import FormData from '../form-data/FormData';
 
 /**
  * Helper class for performing fetch.
@@ -57,10 +60,34 @@ export default class FetchHandler {
 			});
 		}
 
+		if (requestInit.body instanceof Blob) {
+			const buffer = requestInit.body._buffer;
+			const type = requestInit.body.type;
+
+			requestInit.body = buffer;
+
+			if (type) {
+				requestInit.headers['content-type'] = type;
+			}
+		} else if (requestInit.body instanceof FormData) {
+			const { stream, type } = FormDataUtility.formDataToStream(
+				document.defaultView,
+				<FormData>requestInit.body
+			);
+			requestInit.body = stream;
+			requestInit.headers['content-type'] = type;
+		}
+
 		return new Promise((resolve, reject) => {
 			const taskID = taskManager.startTask();
 
-			NodeFetch(request, requestInit)
+			if (requestInit.signal) {
+				requestInit.signal.addEventListener('abort', () => {
+					taskManager.endTask(taskID);
+				});
+			}
+
+			NodeFetch(request, <RequestInit>(<unknown>requestInit))
 				.then((response) => {
 					if (taskManager.getTaskCount() === 0) {
 						reject(new Error('Failed to complete fetch request. Task was canceled.'));

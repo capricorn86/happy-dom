@@ -1,7 +1,8 @@
 import IHeadersInit from './IHeadersInit';
-import IAbortSignal from './IAbortSignal';
+import AbortSignal from './AbortSignal';
 import { URLSearchParams } from 'url';
-import IRequestInitFormData from './IRequestInitFormData';
+import FormData from '../form-data/FormData';
+import Blob from '../file/Blob';
 
 /**
  * Fetch request init.
@@ -13,12 +14,15 @@ export default interface IRequestInit {
 		| NodeJS.ReadableStream
 		| string
 		| URLSearchParams
-		| IRequestInitFormData
+		| Blob
+		| FormData
 		| null;
 	headers?: IHeadersInit;
 	method?: string;
 	redirect?: 'error' | 'manual' | 'follow';
-	signal?: IAbortSignal | null;
+	signal?: AbortSignal | null;
+	referrer?: string;
+	referrerPolicy?: string;
 
 	// Not implemented:
 	// Cache?: 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload';

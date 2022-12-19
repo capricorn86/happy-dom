@@ -10,4 +10,11 @@ export default interface IHTMLButtonElement extends IHTMLElement {
 	type: string;
 	disabled: boolean;
 	value: string;
+
+	/**
+	 * Checks validity.
+	 *
+	 * @returns Validity.
+	 */
+	checkValidity(): boolean;
 }

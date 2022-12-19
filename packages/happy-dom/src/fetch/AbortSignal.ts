@@ -1,0 +1,28 @@
+import EventTarget from 'src/event/EventTarget';
+import Event from '../event/Event';
+
+/**
+ * AbortSignal.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
+ */
+export default class AbortSignal extends EventTarget {
+	public readonly aborted: boolean = false;
+	public readonly reason: string | null = null;
+	public onabort: ((this: AbortSignal, event: Event) => void) | null = null;
+
+	/**
+	 * Returns an AbortSignal instance that has been set as aborted.
+	 *
+	 * @param [reason] Reason.
+	 * @returns AbortSignal instance.
+	 */
+	public static abort(reason?: string): AbortSignal {
+		const signal = new AbortSignal();
+		if (reason) {
+			(<string>signal.reason) = reason;
+		}
+		(<boolean>signal.aborted) = true;
+		return signal;
+	}
+}

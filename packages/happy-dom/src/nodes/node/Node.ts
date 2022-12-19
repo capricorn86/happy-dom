@@ -63,6 +63,8 @@ export default class Node extends EventTarget implements INode {
 
 	// Custom Properties (not part of HTML standard)
 	public _rootNode: INode = null;
+	public _formNode: INode = null;
+	public _selectNode: INode = null;
 	public _observers: MutationListener[] = [];
 
 	/**
@@ -541,9 +543,11 @@ export default class Node extends EventTarget implements INode {
 	public _connectToNode(parentNode: INode = null): void {
 		const isConnected = !!parentNode && parentNode.isConnected;
 
-		if (this.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+		if (this.nodeType !== NodeTypeEnum.documentFragmentNode) {
 			(<INode>this.parentNode) = parentNode;
 			(<Node>this)._rootNode = isConnected && parentNode ? (<Node>parentNode)._rootNode : null;
+			(<Node>this)._formNode = isConnected && parentNode ? (<Node>parentNode)._formNode : null;
+			(<Node>this)._selectNode = isConnected && parentNode ? (<Node>parentNode)._selectNode : null;
 		}
 
 		if (this.isConnected !== isConnected) {

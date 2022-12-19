@@ -4,6 +4,12 @@ import Event from '../../event/Event';
 import HTMLFormControlsCollection from './HTMLFormControlsCollection';
 import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
 import INode from '../node/INode';
+import IHTMLInputElement from '../html-input-element/IHTMLInputElement';
+import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement';
+import RadioNodeList from './RadioNodeList';
+import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
+
+const NAMED_ITEM_PROPERTIES = ['id', 'name'];
 
 /**
  * HTML Form Element.
@@ -12,10 +18,20 @@ import INode from '../node/INode';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement.
  */
 export default class HTMLFormElement extends HTMLElement implements IHTMLFormElement {
+	// Public properties.
+	public readonly elements: IHTMLFormControlsCollection = new HTMLFormControlsCollection();
+	public readonly length = 0;
+
 	// Events
 	public onformdata: (event: Event) => void | null = null;
 	public onreset: (event: Event) => void | null = null;
 	public onsubmit: (event: Event) => void | null = null;
+
+	// Private properties
+	public _formNode: INode = this;
+	private _namedItems: {
+		[k: string]: (IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement)[];
+	} = {};
 
 	/**
 	 * Returns name.
@@ -180,26 +196,6 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	}
 
 	/**
-	 * Returns input elements.
-	 *
-	 * @returns Elements.
-	 */
-	public get elements(): IHTMLFormControlsCollection<INode> {
-		return <HTMLFormControlsCollection>(
-			HTMLFormControlsCollection.from(this.querySelectorAll('input,textarea'))
-		);
-	}
-
-	/**
-	 * Returns number of input elements.
-	 *
-	 * @returns Length.
-	 */
-	public get length(): number {
-		return this.elements.length;
-	}
-
-	/**
 	 * Submits form.
 	 */
 	public submit(): void {
@@ -215,8 +211,12 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 
 	/**
 	 * Reports validity.
+	 *
+	 * @returns "true" if validation does'nt fail.
 	 */
-	public reportValidity(): void {}
+	public reportValidity(): boolean {
+		return this.checkValidity();
+	}
 
 	/**
 	 * Checks validity.
@@ -224,7 +224,11 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns "true" if validation does'nt fail.
 	 */
 	public checkValidity(): boolean {
-		return true;
+		for (const element of this.elements) {
+			if (!(<IHTMLInputElement | IHTMLTextAreaElement>element).checkValidity()) {
+				return false;
+			}
+		}
 	}
 
 	/**
@@ -236,5 +240,74 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 */
 	public cloneNode(deep = false): IHTMLFormElement {
 		return <IHTMLFormElement>super.cloneNode(deep);
+	}
+
+	/**
+	 * Appends a form control item.
+	 *
+	 * @param node Node.
+	 */
+	public _appendFormControlItem(
+		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement
+	): void {
+		if (!this.elements.includes(node)) {
+			this.elements.push(node);
+			this[this.length] = node;
+			(<number>this.length)++;
+		}
+
+		for (const property of NAMED_ITEM_PROPERTIES) {
+			const name = node[property];
+
+			if (name) {
+				this._namedItems[name] = this._namedItems[name] || new RadioNodeList();
+
+				if (!this._namedItems[name].includes(node)) {
+					this._namedItems[name].push(node);
+				}
+
+				this[name] =
+					this._namedItems[name].length > 1 ? this._namedItems[name] : this._namedItems[name][0];
+				this.elements[name] = this[name];
+			}
+		}
+	}
+
+	/**
+	 * Remove a form control item.
+	 *
+	 * @param node Node.
+	 */
+	public _removeFormControlItem(
+		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLSelectElement
+	): void {
+		const index = this.elements.indexOf(node);
+
+		if (index !== -1) {
+			this.elements.splice(index, 1);
+			for (let i = index; i < this.length; i++) {
+				this[i] = this[i + 1];
+			}
+			delete this[this.length - 1];
+			(<number>this.length)--;
+		}
+
+		for (const property of NAMED_ITEM_PROPERTIES) {
+			const name = node[property];
+
+			if (name && this._namedItems[name]) {
+				const index = this._namedItems[name].indexOf(node);
+
+				if (index > -1) {
+					this._namedItems[name].splice(index, 1);
+
+					if (this._namedItems[name].length === 0) {
+						delete this.elements[name];
+						delete this._namedItems[name];
+						delete this[name];
+					}
+				}
+			}
+		}
 	}
 }

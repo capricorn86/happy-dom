@@ -71,6 +71,15 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	}
 
 	/**
+	 * Checks validity.
+	 *
+	 * @returns Validity.
+	 */
+	public checkValidity(): boolean {
+		return true;
+	}
+
+	/**
 	 *
 	 * @param type
 	 */

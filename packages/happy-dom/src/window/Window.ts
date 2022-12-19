@@ -115,8 +115,12 @@ import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 import IHappyDOMSettings from './IHappyDOMSettings';
-import RequestInfo from '../fetch/RequestInfo';
+import RequestInfo from '../fetch/IRequestInfo';
 import FileList from '../nodes/html-input-element/FileList';
+import Stream from 'stream';
+import FormData from '../form-data/FormData';
+import AbortController from '../fetch/AbortController';
+import AbortSignal from '../fetch/AbortSignal';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -260,6 +264,12 @@ export default class Window extends EventTarget implements IWindow {
 	};
 	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
 	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
+	public readonly ReadableStream = Stream.Readable;
+	public readonly WritableStream = Stream.Writable;
+	public readonly TransformStream = Stream.Transform;
+	public readonly AbortController = AbortController;
+	public readonly AbortSignal = AbortSignal;
+	public readonly FormData = FormData;
 	public readonly XMLHttpRequest;
 	public readonly DOMParser;
 	public readonly Range;
@@ -347,8 +357,6 @@ export default class Window extends EventTarget implements IWindow {
 	public unescape;
 	public gc;
 	public v8debug;
-	public AbortController;
-	public AbortSignal;
 	public Array;
 	public Object;
 	public Function;

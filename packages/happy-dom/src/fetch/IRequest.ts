@@ -1,21 +1,29 @@
 import IHeaders from './IHeaders';
-import IBody from './IBody';
+import IBlob from '../file/IBlob';
+import AbortSignal from './AbortSignal';
 
 /**
  * Fetch request.
  */
-export default interface IRequest extends IBody {
+export default interface IRequest {
 	readonly headers: IHeaders;
 	readonly method: string;
 	readonly redirect: 'error' | 'follow' | 'manual';
 	readonly referrer: string;
 	readonly url: string;
+	readonly body: NodeJS.ReadableStream;
+	readonly bodyUsed: boolean;
+	readonly size: number;
+	readonly timeout: number;
+	readonly referrerPolicy: string;
+	readonly signal: AbortSignal | null;
 
-	/**
-	 * Returns a clone.
-	 *
-	 * @returns Clone.
-	 */
+	arrayBuffer(): Promise<ArrayBuffer>;
+	blob(): Promise<IBlob>;
+	buffer(): Promise<Buffer>;
+	json(): Promise<unknown>;
+	text(): Promise<string>;
+	textConverted(): Promise<string>;
 	clone(): IRequest;
 
 	// Not implemented:

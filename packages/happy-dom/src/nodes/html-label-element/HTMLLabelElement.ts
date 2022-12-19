@@ -56,11 +56,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		let parent = <IHTMLElement>this.parentNode;
-		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>parent.parentNode;
-		}
-		return <IHTMLFormElement>parent;
+		return <IHTMLFormElement>this._formNode;
 	}
 
 	/**

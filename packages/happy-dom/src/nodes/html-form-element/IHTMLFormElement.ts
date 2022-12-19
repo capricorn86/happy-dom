@@ -1,6 +1,5 @@
 import Event from '../../event/Event';
 import IHTMLElement from '../html-element/IHTMLElement';
-import INode from '../node/INode';
 import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
 
 /**
@@ -19,8 +18,8 @@ export default interface IHTMLFormElement extends IHTMLElement {
 	autocomplete: string;
 	acceptCharset: string;
 	noValidate: string;
-	elements: IHTMLFormControlsCollection<INode>;
-	length: number;
+	readonly elements: IHTMLFormControlsCollection;
+	readonly length: number;
 
 	// Events
 	onformdata: (event: Event) => void | null;
@@ -40,7 +39,7 @@ export default interface IHTMLFormElement extends IHTMLElement {
 	/**
 	 * Reports validity.
 	 */
-	reportValidity(): void;
+	reportValidity(): boolean;
 
 	/**
 	 * Checks validity.

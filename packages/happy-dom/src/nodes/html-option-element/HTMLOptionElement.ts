@@ -1,8 +1,8 @@
 import IAttr from '../attr/IAttr';
 import HTMLElement from '../html-element/HTMLElement';
-import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement';
+import INode from '../node/INode';
 import IHTMLOptionElement from './IHTMLOptionElement';
 
 /**
@@ -49,11 +49,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		let parent = <IHTMLElement>this.parentNode;
-		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>parent.parentNode;
-		}
-		return <IHTMLFormElement>parent;
+		return <IHTMLFormElement>this._formNode;
 	}
 
 	/**
@@ -71,13 +67,13 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @param selected Selected.
 	 */
 	public set selected(selected: boolean) {
-		const selectElement = this._getSelectElement();
+		const selectNode = <HTMLSelectElement>this._selectNode;
 
 		this._dirtyness = true;
 		this._selectedness = Boolean(selected);
 
-		if (selectElement) {
-			selectElement._resetOptionSelectednes(this._selectedness ? this : null);
+		if (selectNode) {
+			selectNode._resetOptionSelectednes(this._selectedness ? this : null);
 		}
 	}
 
@@ -132,12 +128,12 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 			attribute.name === 'selected' &&
 			replacedAttribute?.value !== attribute.value
 		) {
-			const selectElement = this._getSelectElement();
+			const selectNode = <HTMLSelectElement>this._selectNode;
 
 			this._selectedness = true;
 
-			if (selectElement) {
-				selectElement._resetOptionSelectednes(this);
+			if (selectNode) {
+				selectNode._resetOptionSelectednes(this);
 			}
 		}
 
@@ -151,12 +147,12 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 		super.removeAttributeNode(attribute);
 
 		if (!this._dirtyness && attribute.name === 'selected') {
-			const selectElement = this._getSelectElement();
+			const selectNode = <HTMLSelectElement>this._selectNode;
 
 			this._selectedness = false;
 
-			if (selectElement) {
-				selectElement._resetOptionSelectednes();
+			if (selectNode) {
+				selectNode._resetOptionSelectednes();
 			}
 		}
 
@@ -164,17 +160,20 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	}
 
 	/**
-	 * Returns select element.
-	 *
-	 * @returns Select element.
+	 * @override
 	 */
-	private _getSelectElement(): HTMLSelectElement {
-		const parentNode = <HTMLSelectElement>this.parentNode;
-		if (parentNode?.tagName === 'SELECT') {
-			return <HTMLSelectElement>parentNode;
-		}
-		if ((<HTMLSelectElement>parentNode?.parentNode)?.tagName === 'SELECT') {
-			return <HTMLSelectElement>parentNode.parentNode;
+	public override _connectToNode(parentNode: INode = null): void {
+		const oldSelectNode = <HTMLSelectElement>this._selectNode;
+
+		super._connectToNode(parentNode);
+
+		if (oldSelectNode !== this._selectNode) {
+			if (oldSelectNode) {
+				oldSelectNode._removeOptionItem(this);
+			}
+			if (this._selectNode) {
+				(<HTMLSelectElement>this._selectNode)._appendOptionItem(this);
+			}
 		}
 	}
 }

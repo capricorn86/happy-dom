@@ -13,7 +13,7 @@ import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
 import HTMLElement from '../nodes/html-element/HTMLElement';
 import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
-import HTMLSelectElement from '../nodes/html-input-element/HTMLSelectElement';
+import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
@@ -104,13 +104,17 @@ import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 import IHappyDOMSettings from './IHappyDOMSettings';
-import RequestInfo from '../fetch/RequestInfo';
+import RequestInfo from '../fetch/IRequestInfo';
 import FileList from '../nodes/html-input-element/FileList';
+import Stream from 'stream';
+import FormData from '../form-data/FormData';
+import AbortController from '../fetch/AbortController';
+import AbortSignal from '../fetch/AbortSignal';
 
 /**
  * Window without dependencies to server side specific packages.
  */
-export default interface IWindow extends IEventTarget, NodeJS.Global {
+export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	// Public Properties
 	readonly happyDOM: {
 		whenAsyncComplete: () => Promise<void>;
@@ -214,7 +218,9 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Plugin: typeof Plugin;
 	readonly PluginArray: typeof PluginArray;
 	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
-	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
+	readonly Request: {
+		new (input: string | { href: string } | IRequest, init?: IRequestInit): IRequest;
+	};
 	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
 	readonly Range: typeof Range;
 	readonly DOMRect: typeof DOMRect;
@@ -222,6 +228,11 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
 	readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
 	readonly FileList: typeof FileList;
+	readonly ReadableStream: typeof Stream.Readable;
+	readonly WritableStream: typeof Stream.Writable;
+	readonly FormData: typeof FormData;
+	readonly AbortController: typeof AbortController;
+	readonly AbortSignal: typeof AbortSignal;
 
 	// Events
 	onload: (event: Event) => void;

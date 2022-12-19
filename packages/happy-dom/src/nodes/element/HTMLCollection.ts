@@ -1,20 +1,19 @@
 import IHTMLCollection from './IHTMLCollection';
-import INode from '../node/INode';
 
 const NAMED_ITEM_PROPERTIES = ['id', 'name'];
 
 /**
  * Class list.
  */
-export default class HTMLCollection extends Array implements IHTMLCollection<INode> {
-	private _namedItems: { [k: string]: INode[] } = {};
+export default class HTMLCollection<T> extends Array implements IHTMLCollection<T> {
+	private _namedItems: { [k: string]: T[] } = {};
 
 	/**
 	 * Returns item by index.
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): INode {
+	public item(index: number): T {
 		return index >= 0 && this[index] ? this[index] : null;
 	}
 
@@ -24,7 +23,7 @@ export default class HTMLCollection extends Array implements IHTMLCollection<INo
 	 * @param name Name.
 	 * @returns Node.
 	 */
-	public namedItem(name: string): INode {
+	public namedItem(name: string): T {
 		return this[name];
 	}
 
@@ -33,7 +32,7 @@ export default class HTMLCollection extends Array implements IHTMLCollection<INo
 	 *
 	 * @param node Node.
 	 */
-	public _appendNamedItem(node: INode): void {
+	public _appendNamedItem(node: T): void {
 		for (const property of NAMED_ITEM_PROPERTIES) {
 			const name = node[property];
 
@@ -56,7 +55,7 @@ export default class HTMLCollection extends Array implements IHTMLCollection<INo
 	 *
 	 * @param node Node.
 	 */
-	public _removeNamedItem(node: INode): void {
+	public _removeNamedItem(node: T): void {
 		for (const property of NAMED_ITEM_PROPERTIES) {
 			const name = node[property];
 

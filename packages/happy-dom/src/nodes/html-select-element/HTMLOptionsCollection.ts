@@ -1,9 +1,9 @@
 import DOMException from '../../exception/DOMException';
 import HTMLCollection from '../element/HTMLCollection';
 import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
-import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
-import IHTMLOptionElement from './IHTMLOptionElement';
-import IHTMLOptionsCollection from './IHTMLOptionsCollection';
+import IHTMLSelectElement from './IHTMLSelectElement';
+import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
+import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
 
 /**
  * HTML Options Collection.
@@ -12,7 +12,7 @@ import IHTMLOptionsCollection from './IHTMLOptionsCollection';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection.
  */
 export default class HTMLOptionsCollection
-	extends HTMLCollection
+	extends HTMLCollection<IHTMLOptionElement | IHTMLOptGroupElement>
 	implements IHTMLOptionsCollection
 {
 	private _selectElement: IHTMLSelectElement;

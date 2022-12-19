@@ -1,11 +1,16 @@
 import Event from '../../event/Event';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
+import IAttr from '../attr/IAttr';
+import HTMLCollection from '../element/HTMLCollection';
+import IElement from '../element/IElement';
 import HTMLElement from '../html-element/HTMLElement';
-import IHTMLElement from '../html-element/IHTMLElement';
+import HTMLFormElement from '../html-form-element/HTMLFormElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
+import INode from '../node/INode';
+import ValidityState from '../validity-state/ValidityState';
 import IHTMLTextAreaElement from './IHTMLTextAreaElement';
 
 /**
@@ -16,7 +21,8 @@ import IHTMLTextAreaElement from './IHTMLTextAreaElement';
  */
 export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTextAreaElement {
 	public readonly type = 'textarea';
-	public defaultValue = '';
+	public readonly validationMessage = '';
+	public readonly validity = new ValidityState(this);
 
 	// Events
 	public oninput: (event: Event) => void | null = null;
@@ -26,6 +32,24 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	public _selectionStart = null;
 	public _selectionEnd = null;
 	public _selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+
+	/**
+	 * Returns the default value.
+	 *
+	 * @returns Default value.
+	 */
+	public get defaultValue(): string {
+		return this.textContent;
+	}
+
+	/**
+	 * Sets the default value.
+	 *
+	 * @param defaultValue Default value.
+	 */
+	public set defaultValue(defaultValue: string) {
+		this.textContent = defaultValue;
+	}
 
 	/**
 	 * Returns minlength.
@@ -274,7 +298,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public get value(): string {
 		if (this._value === null) {
-			return this.getAttributeNS(null, 'value') || '';
+			return this.textContent;
 		}
 
 		return this._value;
@@ -364,11 +388,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		let parent = <IHTMLElement>this.parentNode;
-		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>parent.parentNode;
-		}
-		return <IHTMLFormElement>parent;
+		return <IHTMLFormElement>this._formNode;
 	}
 
 	/**
@@ -469,12 +489,34 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	}
 
 	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	public setCustomValidity(message: string): void {
+		(<string>this.validationMessage) = String(message);
+	}
+
+	/**
 	 * Checks validity.
 	 *
-	 * @returns "true" if validation does'nt fail.
+	 * @returns "true" if the field is valid.
 	 */
 	public checkValidity(): boolean {
-		return true;
+		const valid = this.disabled || this.readOnly || this.validity.valid;
+		if (!valid) {
+			this.dispatchEvent(new Event('invalid', { bubbles: true, cancelable: true }));
+		}
+		return valid;
+	}
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	public reportValidity(): boolean {
+		return this.checkValidity();
 	}
 
 	/**
@@ -491,8 +533,138 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 		clone._selectionStart = this._selectionStart;
 		clone._selectionEnd = this._selectionEnd;
 		clone._selectionDirection = this._selectionDirection;
-		clone.defaultValue = this.defaultValue;
 
 		return clone;
+	}
+
+	/**
+	 * @override
+	 */
+	public override appendChild(node: INode): INode {
+		if (this._value === null) {
+			super.appendChild(node);
+		}
+
+		const oldTextContent = this.textContent;
+		const returnValue = super.appendChild(node);
+		const textContent = this.textContent;
+
+		if (textContent !== oldTextContent) {
+			this._selectionStart = textContent.length;
+			this._selectionEnd = textContent.length;
+			this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeChild(node: INode): INode {
+		if (this._value === null) {
+			super.removeChild(node);
+		}
+
+		const oldTextContent = this.textContent;
+		const returnValue = super.removeChild(node);
+		const textContent = this.textContent;
+
+		if (textContent !== oldTextContent) {
+			this._selectionStart = textContent.length;
+			this._selectionEnd = textContent.length;
+			this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
+		if (this._value === null) {
+			super.insertBefore(newNode, referenceNode);
+		}
+
+		const oldTextContent = this.textContent;
+		const returnValue = super.insertBefore(newNode, referenceNode);
+		const textContent = this.textContent;
+
+		if (textContent !== oldTextContent) {
+			this._selectionStart = textContent.length;
+			this._selectionEnd = textContent.length;
+			this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override setAttributeNode(attribute: IAttr): IAttr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		if (
+			attribute.name === 'name' &&
+			this.parentNode &&
+			(<IElement>this.parentNode).children &&
+			attribute.value !== replacedAttribute.value
+		) {
+			if (replacedAttribute.value) {
+				(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(this);
+				if (this._formNode) {
+					(<HTMLFormElement>this._formNode)._removeFormControlItem(this);
+				}
+			}
+			if (attribute.value) {
+				(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._appendNamedItem(this);
+				if (this._formNode) {
+					(<HTMLFormElement>this._formNode)._appendFormControlItem(this);
+				}
+			}
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeAttributeNode(attribute: IAttr): IAttr {
+		super.removeAttributeNode(attribute);
+
+		if (
+			attribute.name === 'name' &&
+			this.parentNode &&
+			(<IElement>this.parentNode).children &&
+			attribute.value
+		) {
+			(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(this);
+			if (this._formNode) {
+				(<HTMLFormElement>this._formNode)._removeFormControlItem(this);
+			}
+		}
+
+		return attribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override _connectToNode(parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this._formNode;
+
+		super._connectToNode(parentNode);
+
+		if (oldFormNode !== this._formNode) {
+			if (oldFormNode) {
+				oldFormNode._removeFormControlItem(this);
+			}
+			if (this._formNode) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this);
+			}
+		}
 	}
 }

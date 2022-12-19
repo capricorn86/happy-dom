@@ -136,7 +136,7 @@ export default class Blob implements IBlob {
 	}
 
 	/**
-	 * Closes the blob.
+	 * Returns the object converted to string.
 	 *
 	 * @returns String.
 	 */

@@ -28,10 +28,9 @@ import IDOMRectList from './IDOMRectList';
 import DOMRectListFactory from './DOMRectListFactory';
 import IAttr from '../attr/IAttr';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap';
-
 import Event from '../../event/Event';
-import HTMLCollection from './HTMLCollection';
 import ElementUtility from './ElementUtility';
+import HTMLCollection from './HTMLCollection';
 
 /**
  * Element.
@@ -383,19 +382,19 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Removes the node from its parent.
-	 */
-	public remove(): void {
-		ChildNodeUtility.remove(this);
-	}
-
-	/**
 	 * @override
 	 */
 	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
 		const returnValue = super.insertBefore(newNode, referenceNode);
 		ElementUtility.insertBefore(this, newNode, referenceNode);
 		return returnValue;
+	}
+
+	/**
+	 * Removes the node from its parent.
+	 */
+	public remove(): void {
+		ChildNodeUtility.remove(this);
 	}
 
 	/**
@@ -807,13 +806,13 @@ export default class Element extends Node implements IElement {
 			this._classList._updateIndices();
 		}
 
-		if (attribute.name === 'name') {
-			if (this.parentNode && this.parentNode['children'] && attribute.value !== oldValue) {
+		if (attribute.name === 'id') {
+			if (this.parentNode && (<IElement>this.parentNode).children && attribute.value !== oldValue) {
 				if (oldValue) {
-					this.parentNode['children']._removeNamedItem(this);
+					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(this);
 				}
 				if (attribute.value) {
-					this.parentNode['children']._appendNamedItem(this);
+					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._appendNamedItem(this);
 				}
 			}
 		}

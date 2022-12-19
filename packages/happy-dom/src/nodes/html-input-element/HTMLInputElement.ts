@@ -14,6 +14,10 @@ import FileList from './FileList';
 import File from '../../file/File';
 import IFileList from './IFileList';
 import IAttr from '../attr/IAttr';
+import INode from '../node/INode';
+import HTMLCollection from '../element/HTMLCollection';
+import HTMLFormElement from '../html-form-element/HTMLFormElement';
+import IElement from '../element/IElement';
 
 /**
  * HTML Input Element.
@@ -42,6 +46,10 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	// Type specific: file
 	public files: IFileList<File> = new FileList();
 
+	// All fields
+	public readonly validationMessage = '';
+	public readonly validity = new ValidityState(this);
+
 	// Events
 	public oninput: (event: Event) => void | null = null;
 	public oninvalid: (event: Event) => void | null = null;
@@ -52,7 +60,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	private _selectionEnd: number = null;
 	private _selectionDirection: HTMLInputElementSelectionDirectionEnum =
 		HTMLInputElementSelectionDirectionEnum.none;
-	private _validationMessage = '';
 
 	/**
 	 * Returns height.
@@ -563,7 +570,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		this._checked = checked;
 
 		if (checked && this.type === 'radio' && this.name) {
-			const root = <IHTMLElement>(this.form || this.getRootNode());
+			const root = <IHTMLElement>(<IHTMLFormElement>this._formNode || this.getRootNode());
 			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
 
 			for (const radioButton of radioButtons) {
@@ -741,20 +748,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		let parent = <IHTMLElement>this.parentNode;
-		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>parent.parentNode;
-		}
-		return <IHTMLFormElement>parent;
-	}
-
-	/**
-	 * Returns validity state.
-	 *
-	 * @returns Validity state.
-	 */
-	public get validity(): ValidityState {
-		return new ValidityState(this);
+		return <IHTMLFormElement>this._formNode;
 	}
 
 	/**
@@ -791,35 +785,12 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
-	 * Returns validation message.
-	 *
-	 * @returns Validation message.
-	 */
-	public get validationMessage(): string {
-		return this._validationMessage;
-	}
-
-	/**
 	 * Sets validation message.
 	 *
 	 * @param message Message.
 	 */
 	public setCustomValidity(message: string): void {
-		this._validationMessage = String(message);
-	}
-
-	/**
-	 * Reports validity by dispatching an "invalid" event.
-	 */
-	public reportValidity(): void {
-		if (this._validationMessage) {
-			this.dispatchEvent(
-				new Event('invalid', {
-					bubbles: true,
-					cancelable: true
-				})
-			);
-		}
+		(<string>this.validationMessage) = String(message);
 	}
 
 	/**
@@ -945,7 +916,26 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns "true" if the field is valid.
 	 */
 	public checkValidity(): boolean {
-		return true;
+		const valid =
+			this.disabled ||
+			this.readOnly ||
+			this.type === 'hidden' ||
+			this.type === 'reset' ||
+			this.type === 'button' ||
+			this.validity.valid;
+		if (!valid) {
+			this.dispatchEvent(new Event('invalid', { bubbles: true, cancelable: true }));
+		}
+		return valid;
+	}
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	public reportValidity(): boolean {
+		return this.checkValidity();
 	}
 
 	/**
@@ -999,24 +989,28 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @override
 	 */
 	public dispatchEvent(event: Event): boolean {
+		if (event.type === 'click' && this.disabled) {
+			return false;
+		}
+
 		const returnValue = super.dispatchEvent(event);
 
 		if (
 			event.type === 'click' &&
 			this.isConnected &&
-			(this._isMutable() || this.type === 'checkbox' || this.type === 'radio')
+			(!this.readOnly || this.type === 'checkbox' || this.type === 'radio')
 		) {
 			if (this.type === 'checkbox' || this.type === 'radio') {
 				this.checked = this.type === 'checkbox' ? !this.checked : true;
 				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
 				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 			} else if (this.type === 'submit') {
-				const form = this.form;
+				const form = <IHTMLFormElement>this._formNode;
 				if (form) {
 					form.submit();
 				}
 			} else if (this.type === 'reset') {
-				const form = this.form;
+				const form = <IHTMLFormElement>this._formNode;
 				if (form) {
 					form.reset();
 				}
@@ -1035,14 +1029,20 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		if (
 			attribute.name === 'name' &&
 			this.parentNode &&
-			this.parentNode['children'] &&
+			(<IElement>this.parentNode).children &&
 			attribute.value !== replacedAttribute.value
 		) {
 			if (replacedAttribute.value) {
-				this.parentNode['children']._removeNamedItem(this);
+				(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(this);
+				if (this._formNode) {
+					(<HTMLFormElement>this._formNode)._removeFormControlItem(this);
+				}
 			}
 			if (attribute.value) {
-				this.parentNode['children']._appendNamedItem(this);
+				(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._appendNamedItem(this);
+				if (this._formNode) {
+					(<HTMLFormElement>this._formNode)._appendFormControlItem(this);
+				}
 			}
 		}
 
@@ -1058,13 +1058,34 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		if (
 			attribute.name === 'name' &&
 			this.parentNode &&
-			this.parentNode['children'] &&
+			(<IElement>this.parentNode).children &&
 			attribute.value
 		) {
-			this.parentNode['children']._removeNamedItem(this);
+			(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(this);
+			if (this._formNode) {
+				(<HTMLFormElement>this._formNode)._removeFormControlItem(this);
+			}
 		}
 
 		return attribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override _connectToNode(parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this._formNode;
+
+		super._connectToNode(parentNode);
+
+		if (oldFormNode !== this._formNode) {
+			if (oldFormNode) {
+				oldFormNode._removeFormControlItem(this);
+			}
+			if (this._formNode) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this);
+			}
+		}
 	}
 
 	/**
@@ -1080,14 +1101,5 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			this.type === 'tel' ||
 			this.type === 'password'
 		);
-	}
-
-	/**
-	 * Checks if the input field is disabled or read-only.
-	 *
-	 * @returns "true" if mutable.
-	 */
-	private _isMutable(): boolean {
-		return !this.disabled && !this.readOnly;
 	}
 }

@@ -21,6 +21,7 @@ export default interface IHTMLSelectElement extends IHTMLElement {
 	readonly type: string;
 	readonly validity: ValidityState;
 	readonly willValidate: boolean;
+	readonly validationMessage: string;
 	autofocus: boolean;
 	disabled: boolean;
 	length: number;
@@ -57,4 +58,25 @@ export default interface IHTMLSelectElement extends IHTMLElement {
 	 * @param index Index.
 	 */
 	remove(index?: number): void;
+
+	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	setCustomValidity(message: string): void;
+
+	/**
+	 * Checks validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	checkValidity(): boolean;
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	reportValidity(): boolean;
 }

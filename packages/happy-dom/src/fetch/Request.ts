@@ -1,15 +1,38 @@
-import * as NodeFetch from 'node-fetch';
-import IRequest from './IRequest';
 import IBlob from '../file/IBlob';
 import IDocument from '../nodes/document/IDocument';
+import IRequestInit from './IRequestInit';
+import Headers from './Headers';
+import { URL } from 'url';
+import DOMException from 'src/exception/DOMException';
+import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
+import IRequestInfo from './IRequestInfo';
+import IRequest from './IRequest';
+import IHeaders from './IHeaders';
+import FetchUtility from './FetchUtility';
+import AbortSignal from './AbortSignal';
 
 /**
  * Fetch request.
+ *
+ * Based on:
+ * https://github.com/node-fetch/node-fetch/blob/main/src/request.js
+ *
+ * @see https://fetch.spec.whatwg.org/#request-class
  */
-export default class Request extends NodeFetch.Request implements IRequest {
+export default class Request implements IRequest {
 	// Owner document is set by a sub-class in the Window constructor
 	public static _ownerDocument: IDocument = null;
 	public readonly _ownerDocument: IDocument = null;
+
+	// Public properties
+	public readonly url: string;
+	public readonly method: string;
+	public readonly body: NodeJS.ReadableStream;
+	public readonly headers: IHeaders;
+	public readonly referrer: string;
+	public readonly redirect: 'error' | 'manual' | 'follow';
+	public readonly referrerPolicy: string;
+	public readonly signal: AbortSignal | null;
 
 	/**
 	 * Constructor.
@@ -17,9 +40,57 @@ export default class Request extends NodeFetch.Request implements IRequest {
 	 * @param input Input.
 	 * @param [init] Init.
 	 */
-	constructor(input: NodeFetch.RequestInfo, init?: NodeFetch.RequestInit) {
-		super(input, init);
+	constructor(input: IRequestInfo, init?: IRequestInit) {
 		this._ownerDocument = (<typeof Request>this.constructor)._ownerDocument;
+
+		const parsedURL = (<Request>input).url
+			? new URL((<Request>input).url)
+			: input instanceof URL
+			? input
+			: new URL(<string>input);
+
+		if (parsedURL.username !== '' || parsedURL.password !== '') {
+			throw new DOMException(
+				`${parsedURL} is an url with embedded credentials.`,
+				DOMExceptionNameEnum.notSupportedError
+			);
+		}
+
+		this.method = (init.method || (<Request>input).method || 'GET').toUpperCase();
+
+		if ((init.body || (<Request>input).body) && (this.method === 'GET' || this.method === 'HEAD')) {
+			throw new DOMException(
+				`Request with GET/HEAD method cannot have body.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		const { stream, type } = FetchUtility.bodyToStream(
+			this._ownerDocument.defaultView,
+			input instanceof Request && input.body !== null ? input.body : init.body
+		);
+
+		this.body = stream;
+		this.headers = new Headers(init.headers || (<Request>input).headers || {});
+
+		if (!this.headers.get('content-type') && type) {
+			this.headers.append('content-type', type);
+		}
+
+		const referrer = init.referrer !== null ? init.referrer : (<Request>input).referrer;
+		if (referrer) {
+			const parsedReferrer = new URL(referrer).toString();
+			this.referrer = /^about:(\/\/)?client$/.test(parsedReferrer)
+				? 'about:client'
+				: parsedReferrer;
+		} else if (referrer === '') {
+			this.referrer = '';
+		}
+
+		this.redirect = init.redirect || (<Request>input).redirect || 'follow';
+		this.referrerPolicy = init.referrerPolicy || (<Request>input).referrerPolicy || '';
+		this.url = parsedURL.toString();
+		this.signal = init.signal || (<Request>input).signal || null;
 	}
 
 	/**

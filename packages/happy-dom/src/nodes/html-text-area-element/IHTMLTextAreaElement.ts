@@ -12,6 +12,7 @@ import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputEl
 export default interface IHTMLTextAreaElement extends IHTMLElement {
 	readonly type: string;
 	readonly form: IHTMLFormElement;
+	readonly validationMessage: string;
 	defaultValue: string;
 	minLength: number;
 	maxLength: number;
@@ -65,6 +66,20 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	 * @returns "true" if the field is valid.
 	 */
 	checkValidity(): boolean;
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	reportValidity(): boolean;
+
+	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	setCustomValidity(message: string): void;
 
 	/**
 	 * Clones a node.

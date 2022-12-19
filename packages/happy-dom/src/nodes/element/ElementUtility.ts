@@ -4,6 +4,7 @@ import INode from '../node/INode';
 import HTMLCollection from './HTMLCollection';
 import IDocument from '../document/IDocument';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
+import IHTMLElement from '../html-element/IHTMLElement';
 
 /**
  * Element utility.
@@ -22,15 +23,19 @@ export default class ElementUtility {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node.nodeType === NodeTypeEnum.elementNode && node !== parentElement) {
-			if (node.parentNode && node.parentNode['children']) {
-				const index = node.parentNode['children'].indexOf(node);
+			if (node.parentNode && (<IHTMLElement>node.parentNode).children) {
+				const index = (<IHTMLElement>node.parentNode).children.indexOf(<IHTMLElement>node);
 				if (index !== -1) {
-					node.parentNode['children']._removeNamedItem(node);
-					node.parentNode['children'].splice(index, 1);
+					(<HTMLCollection<IHTMLElement>>(<IHTMLElement>node.parentNode).children)._removeNamedItem(
+						<IHTMLElement>node
+					);
+					(<IHTMLElement>node.parentNode).children.splice(index, 1);
 				}
 			}
 
-			node.parentNode['children']._appendNamedItem(node);
+			(<HTMLCollection<IHTMLElement>>(<IHTMLElement>node.parentNode).children)._appendNamedItem(
+				<IHTMLElement>node
+			);
 			parentElement.children.push(<IElement>node);
 		}
 	}
@@ -48,7 +53,9 @@ export default class ElementUtility {
 		if (node.nodeType === NodeTypeEnum.elementNode) {
 			const index = parentElement.children.indexOf(<IElement>node);
 			if (index !== -1) {
-				node.parentNode['children']._removeNamedItem(node);
+				(<HTMLCollection<IHTMLElement>>(<IHTMLElement>node.parentNode).children)._removeNamedItem(
+					<IHTMLElement>node
+				);
 				parentElement.children.splice(index, 1);
 			}
 		}
@@ -70,11 +77,13 @@ export default class ElementUtility {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode.nodeType === NodeTypeEnum.elementNode) {
-			if (newNode.parentNode && newNode.parentNode['children']) {
-				const index = newNode.parentNode['children'].indexOf(newNode);
+			if (newNode.parentNode && (<IHTMLElement>newNode.parentNode).children) {
+				const index = (<IHTMLElement>newNode.parentNode).children.indexOf(<IHTMLElement>newNode);
 				if (index !== -1) {
-					newNode.parentNode['children']._removeNamedItem(newNode);
-					newNode.parentNode['children'].splice(index, 1);
+					(<HTMLCollection<IHTMLElement>>(
+						(<IHTMLElement>newNode.parentNode).children
+					))._removeNamedItem(<IHTMLElement>newNode);
+					(<IHTMLElement>newNode.parentNode).children.splice(index, 1);
 				}
 			}
 
@@ -82,7 +91,9 @@ export default class ElementUtility {
 				referenceNode.nodeType === NodeTypeEnum.elementNode
 					? parentElement.children.indexOf(<IElement>referenceNode)
 					: -1;
-			(<HTMLCollection>(<unknown>parentElement.children))._appendNamedItem(newNode);
+			(<HTMLCollection<IHTMLElement>>parentElement.children)._appendNamedItem(
+				<IHTMLElement>newNode
+			);
 
 			if (index !== -1) {
 				parentElement.children.splice(index, 0, <IElement>newNode);

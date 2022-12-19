@@ -4,7 +4,7 @@ import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import ValidityState from '../validity-state/ValidityState';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement';
-import HTMLOptionsCollection from '../html-option-element/HTMLOptionsCollection';
+import HTMLOptionsCollection from './HTMLOptionsCollection';
 import INodeList from '../node/INodeList';
 import IHTMLSelectElement from './IHTMLSelectElement';
 import Event from '../../event/Event';
@@ -13,6 +13,10 @@ import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement
 import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
 import INode from '../node/INode';
 import NodeTypeEnum from '../node/NodeTypeEnum';
+import HTMLCollection from '../element/HTMLCollection';
+import HTMLFormElement from '../html-form-element/HTMLFormElement';
+import IAttr from '../attr/IAttr';
+import IElement from '../element/IElement';
 
 /**
  * HTML Select Element.
@@ -21,8 +25,15 @@ import NodeTypeEnum from '../node/NodeTypeEnum';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement.
  */
 export default class HTMLSelectElement extends HTMLElement implements IHTMLSelectElement {
+	// Public properties.
 	public labels: INodeList<IHTMLLabelElement>;
+	public readonly length = 0;
 	public readonly options: IHTMLOptionsCollection = new HTMLOptionsCollection(this);
+	public readonly validationMessage = '';
+	public readonly validity = new ValidityState(this);
+
+	// Private properties
+	public _selectNode: INode = this;
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
@@ -110,24 +121,6 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 		} else {
 			this.setAttributeNS(null, 'autofocus', '');
 		}
-	}
-
-	/**
-	 * Returns length.
-	 *
-	 * @returns length.
-	 */
-	public get length(): number {
-		return this.options.length;
-	}
-
-	/**
-	 * Sets length.
-	 *
-	 * @param length Length.
-	 */
-	public set length(length: number) {
-		this.options.length = length;
 	}
 
 	/**
@@ -233,20 +226,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		let parent = <IHTMLElement>this.parentNode;
-		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>parent.parentNode;
-		}
-		return <IHTMLFormElement>parent;
-	}
-
-	/**
-	 * Returns validity state.
-	 *
-	 * @returns Validity state.
-	 */
-	public get validity(): ValidityState {
-		return new ValidityState(this);
+		return <IHTMLFormElement>this._formNode;
 	}
 
 	/**
@@ -300,90 +280,67 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	}
 
 	/**
-	 * @override
+	 * Sets validation message.
+	 *
+	 * @param message Message.
 	 */
-	public override appendChild(node: INode): INode {
-		if (node.nodeType === NodeTypeEnum.elementNode) {
-			const element = <IHTMLElement>node;
-			const previousLength = this.options.length;
-
-			if (element.tagName === 'OPTION' || element.tagName === 'OPTGROUP') {
-				this.options.push(<IHTMLOptionElement | IHTMLOptGroupElement>element);
-			}
-
-			this._updateIndexProperties(previousLength, this.options.length);
-			this._resetOptionSelectednes();
-		}
-
-		return super.appendChild(node);
+	public setCustomValidity(message: string): void {
+		(<string>this.validationMessage) = String(message);
 	}
 
 	/**
-	 * @override
+	 * Checks validity.
+	 *
+	 * @returns "true" if the field is valid.
 	 */
-	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
-		const returnValue = super.insertBefore(newNode, referenceNode);
-
-		if (
-			newNode.nodeType === NodeTypeEnum.elementNode &&
-			referenceNode?.nodeType === NodeTypeEnum.elementNode
-		) {
-			const newElement = <IHTMLElement>newNode;
-			const previousLength = this.options.length;
-
-			if (newElement.tagName === 'OPTION' || newElement.tagName === 'OPTGROUP') {
-				const referenceElement = <IHTMLElement>referenceNode;
-
-				if (
-					referenceElement &&
-					(referenceElement.tagName === 'OPTION' || referenceElement.tagName === 'OPTGROUP')
-				) {
-					const referenceIndex = this.options.indexOf(
-						<IHTMLOptGroupElement | IHTMLOptionElement>referenceElement
-					);
-					if (referenceIndex !== -1) {
-						this.options.splice(
-							referenceIndex,
-							0,
-							<IHTMLOptionElement | IHTMLOptGroupElement>newElement
-						);
-					}
-				} else {
-					this.options.push(<IHTMLOptionElement | IHTMLOptGroupElement>newElement);
-				}
-			}
-
-			this._updateIndexProperties(previousLength, this.options.length);
+	public checkValidity(): boolean {
+		const valid = this.disabled || this.validity.valid;
+		if (!valid) {
+			this.dispatchEvent(new Event('invalid', { bubbles: true, cancelable: true }));
 		}
-
-		if (newNode.nodeType === NodeTypeEnum.elementNode) {
-			this._resetOptionSelectednes();
-		}
-
-		return returnValue;
+		return valid;
 	}
 
 	/**
-	 * @override
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
 	 */
-	public override removeChild(node: INode): INode {
-		if (node.nodeType === NodeTypeEnum.elementNode) {
-			const element = <IHTMLElement>node;
-			const previousLength = this.options.length;
+	public reportValidity(): boolean {
+		return this.checkValidity();
+	}
 
-			if (element.tagName === 'OPTION' || element.tagName === 'OPTION') {
-				const index = this.options.indexOf(<IHTMLOptionElement | IHTMLOptGroupElement>node);
-
-				if (index !== -1) {
-					this.options.splice(index, 1);
-				}
-			}
-
-			this._updateIndexProperties(previousLength, this.options.length);
+	/**
+	 * Appends option item.
+	 *
+	 * @param node Node.
+	 */
+	public _appendOptionItem(node: IHTMLOptionElement | IHTMLOptGroupElement): void {
+		if (!this.options.includes(node)) {
+			this.options.push(node);
+			this[this.length] = node;
+			(<number>this.length)++;
 			this._resetOptionSelectednes();
 		}
+	}
 
-		return super.removeChild(node);
+	/**
+	 * Appends form control item.
+	 *
+	 * @param node Node.
+	 */
+	public _removeOptionItem(node: IHTMLOptionElement | IHTMLOptGroupElement): void {
+		const index = this.options.indexOf(node);
+
+		if (index !== -1) {
+			this.options.splice(index, 1);
+			for (let i = index; i < this.length; i++) {
+				this[i] = this[i + 1];
+			}
+			delete this[this.length - 1];
+			(<number>this.length)--;
+			this._resetOptionSelectednes();
+		}
 	}
 
 	/**
@@ -442,6 +399,74 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	}
 
 	/**
+	 * @override
+	 */
+	public override setAttributeNode(attribute: IAttr): IAttr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		if (
+			attribute.name === 'name' &&
+			this.parentNode &&
+			(<IElement>this.parentNode).children &&
+			attribute.value !== replacedAttribute.value
+		) {
+			if (replacedAttribute.value) {
+				(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(this);
+				if (this._formNode) {
+					(<HTMLFormElement>this._formNode)._removeFormControlItem(this);
+				}
+			}
+			if (attribute.value) {
+				(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._appendNamedItem(this);
+				if (this._formNode) {
+					(<HTMLFormElement>this._formNode)._appendFormControlItem(this);
+				}
+			}
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeAttributeNode(attribute: IAttr): IAttr {
+		super.removeAttributeNode(attribute);
+
+		if (
+			attribute.name === 'name' &&
+			this.parentNode &&
+			(<IElement>this.parentNode).children &&
+			attribute.value
+		) {
+			(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(this);
+			if (this._formNode) {
+				(<HTMLFormElement>this._formNode)._removeFormControlItem(this);
+			}
+		}
+
+		return attribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override _connectToNode(parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this._formNode;
+
+		super._connectToNode(parentNode);
+
+		if (oldFormNode !== this._formNode) {
+			if (oldFormNode) {
+				oldFormNode._removeFormControlItem(this);
+			}
+			if (this._formNode) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this);
+			}
+		}
+	}
+
+	/**
 	 * Returns display size.
 	 *
 	 * @returns Display size.
@@ -454,31 +479,5 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 			}
 		}
 		return this.hasAttributeNS(null, 'multiple') ? 4 : 1;
-	}
-
-	/**
-	 * Updates index properties.
-	 *
-	 * @param previousLength Length before the update.
-	 * @param newLength Length after the update.
-	 */
-	protected _updateIndexProperties(previousLength: number, newLength: number): void {
-		if (previousLength > newLength) {
-			for (let i = newLength; i < previousLength; i++) {
-				if (this.hasOwnProperty(String(i))) {
-					delete this[String(i)];
-				}
-			}
-		} else if (previousLength < newLength) {
-			for (let i = previousLength; i < newLength; i++) {
-				Object.defineProperty(this, String(i), {
-					get: () => {
-						return this.options[i];
-					},
-					enumerable: true,
-					configurable: true
-				});
-			}
-		}
 	}
 }
