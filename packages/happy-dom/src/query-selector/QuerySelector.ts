@@ -22,8 +22,7 @@ export default class QuerySelector {
 	 * @returns HTML elements.
 	 */
 	public static querySelectorAll(node: INode, selector: string): INodeList<IElement> {
-		const matches = <INodeList<IElement>>NodeListFactory.create();
-
+		const matches = [];
 		for (const parts of this.getSelectorParts(selector)) {
 			for (const element of this.findAll(node, [node], parts)) {
 				if (!matches.includes(element)) {
@@ -32,7 +31,8 @@ export default class QuerySelector {
 			}
 		}
 
-		return matches;
+		const orderedMatches = this.orderByDocumentOrder(matches);
+		return <INodeList<IElement>>NodeListFactory.create(orderedMatches);
 	}
 
 	/**
@@ -43,15 +43,47 @@ export default class QuerySelector {
 	 * @returns HTML element.
 	 */
 	public static querySelector(node: INode, selector: string): IElement {
+		const matches: IElement[] = [];
 		for (const parts of this.getSelectorParts(selector)) {
 			const match = this.findFirst(node, [node], parts);
 
 			if (match) {
-				return match;
+				matches.push(match);
 			}
 		}
 
-		return null;
+		return this.orderByDocumentOrder(matches)[0] || null;
+	}
+
+	/**
+	 * Order list of elements based on the position of the
+	 * element in the document
+	 *
+	 * @param elements List of nodes that should be ordered
+	 * @returns Elements ordered by document order
+	 */
+	public static orderByDocumentOrder<T extends INode>(elements: T[]): T[] {
+		return elements.sort((a: T, b: T) => {
+			if (a === b) {
+				return 0;
+			}
+			const position = a.compareDocumentPosition(b);
+			if (
+				position & Node.DOCUMENT_POSITION_FOLLOWING ||
+				position & Node.DOCUMENT_POSITION_CONTAINED_BY
+			) {
+				return -1;
+			}
+
+			if (
+				position & Node.DOCUMENT_POSITION_PRECEDING ||
+				position & Node.DOCUMENT_POSITION_CONTAINS
+			) {
+				return 1;
+			}
+
+			return 0;
+		});
 	}
 
 	/**

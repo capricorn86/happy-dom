@@ -320,10 +320,10 @@ describe('QuerySelector', () => {
 
 			expect(elements.length).toBe(6);
 			expect(elements[0]).toBe(container.children[0]);
-			expect(elements[1]).toBe(container.children[0].children[1]);
-			expect(elements[2]).toBe(container.children[0].children[1].children[0]);
-			expect(elements[3]).toBe(container.children[0].children[1].children[1]);
-			expect(elements[4]).toBe(container.children[0].children[0]);
+			expect(elements[1]).toBe(container.children[0].children[0]);
+			expect(elements[2]).toBe(container.children[0].children[1]);
+			expect(elements[3]).toBe(container.children[0].children[1].children[0]);
+			expect(elements[4]).toBe(container.children[0].children[1].children[1]);
 			expect(elements[5]).toBe(container.children[1].children[0]);
 		});
 
@@ -569,6 +569,19 @@ describe('QuerySelector', () => {
 				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});
+
+		it('Returns all elements in order of position in document', () => {
+			const container = document.createElement('div');
+			const div = document.createElement('div');
+			const ul = document.createElement('ul');
+			const li = document.createElement('li');
+			container.appendChild(div);
+			div.appendChild(ul);
+			ul.appendChild(li);
+
+			expect(container.querySelectorAll('li, ul, div')).toEqual([div, ul, li]);
+			expect(container.querySelectorAll('div, li, ul')).toEqual([div, ul, li]);
+		});
 	});
 
 	describe('querySelector', () => {
@@ -685,6 +698,18 @@ describe('QuerySelector', () => {
 			div.appendChild(div2);
 
 			expect(div.querySelector('#id')).toEqual(div2);
+		});
+
+		it('Returns element in order of position in document', () => {
+			const container = document.createElement('div');
+			const div = document.createElement('div');
+			const ul = document.createElement('ul');
+			const li = document.createElement('li');
+			container.appendChild(div);
+			div.appendChild(ul);
+			ul.appendChild(li);
+
+			expect(container.querySelector('li,ul,div')).toEqual(div);
 		});
 
 		it('Does not find input with selector of input:not([list])[type="search"]', () => {
