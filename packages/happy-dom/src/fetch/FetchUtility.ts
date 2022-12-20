@@ -1,9 +1,11 @@
 import FormDataUtility from '../form-data/FormDataUtility';
 import IWindow from '../window/IWindow';
-import { PassThrough, Stream } from 'stream';
-import { URL, URLSearchParams } from 'url';
+import { PassThrough, Readable, Stream } from 'stream';
+import { URLSearchParams } from 'url';
 import FormData from '../form-data/FormData';
 import Blob from '../file/Blob';
+import DOMException from 'src/exception/DOMException';
+import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
 
 /**
  * Fetch utility.
@@ -28,38 +30,92 @@ export default class FetchUtility {
 			| FormData
 			| string
 			| null
-	): { type: string; stream: NodeJS.ReadableStream } {
-		let stream: NodeJS.ReadableStream | null;
-		let type: string | null = null;
-
+	): { type: string; stream: Readable } {
 		if (body === null) {
-			stream = null;
+			return { stream: null, type: null };
 		} else if (body instanceof URLSearchParams) {
-			stream = Stream.Readable.from(Buffer.from(body.toString()));
+			return { stream: Stream.Readable.from(Buffer.from(body.toString())), type: null };
 		} else if (body instanceof Blob) {
-			stream = Stream.Readable.from((<Blob>body)._buffer);
-			type = (<Blob>body).type;
+			return { stream: Stream.Readable.from((<Blob>body)._buffer), type: (<Blob>body).type };
 		} else if (Buffer.isBuffer(body)) {
-			stream = Stream.Readable.from(body);
+			return { stream: Stream.Readable.from(body), type: null };
 		} else if (body instanceof ArrayBuffer) {
-			stream = Stream.Readable.from(Buffer.from(body));
+			return { stream: Stream.Readable.from(Buffer.from(body)), type: null };
 		} else if (ArrayBuffer.isView(body)) {
-			stream = Stream.Readable.from(Buffer.from(body.buffer, body.byteOffset, body.byteLength));
+			return {
+				stream: Stream.Readable.from(Buffer.from(body.buffer, body.byteOffset, body.byteLength)),
+				type: null
+			};
 		} else if (body instanceof Stream) {
 			// Clones the body
-			stream = new PassThrough();
+			const stream = new PassThrough();
 			body.pipe(<PassThrough>stream);
+			return {
+				stream,
+				type: null
+			};
 		} else if (body instanceof FormData) {
-			const result = FormDataUtility.formDataToStream(window, body);
-			stream = result.stream;
-			type = result.type;
-		} else {
-			stream = Stream.Readable.from(Buffer.from(String(body)));
+			const { stream, type } = FormDataUtility.formDataToStream(window, body);
+			return { stream, type };
 		}
 
-		return {
-			type: type || 'text/plain;charset=UTF-8',
-			stream
-		};
+		return { stream: Stream.Readable.from(Buffer.from(String(body))), type: null };
+	}
+	/**
+	 * Consume and convert an entire Body to a Buffer.
+	 *
+	 * Ref: https://fetch.spec.whatwg.org/#concept-body-consume-body
+	 *
+	 * @param body Body stream.
+	 * @param [size] Size.
+	 * @returns Promise.
+	 */
+	public static async consumeBody(body: Readable | null, size = 0): Promise<Buffer> {
+		if (body === null || !(body instanceof Stream)) {
+			return Buffer.alloc(0);
+		}
+
+		const sizeError = new DOMException(
+			`Content size as reached the limit "${size}".`,
+			DOMExceptionNameEnum.invalidStateError
+		);
+
+		const chunks = [];
+		let bytes = 0;
+
+		for await (const chunk of body) {
+			if (size && bytes + chunk.length > size) {
+				if (typeof body['destroy'] === 'function') {
+					body['destroy'](sizeError);
+				}
+				throw sizeError;
+			}
+
+			bytes += chunk.length;
+			chunks.push(chunk);
+		}
+
+		if (
+			(<Readable>body).readableEnded === false ||
+			(<Readable>body)['_readableState']?.ended === false
+		) {
+			throw new DOMException(
+				`Premature close of server response.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		try {
+			if (typeof chunks[0] === 'string') {
+				return Buffer.from(chunks.join(''));
+			}
+
+			return Buffer.concat(chunks, bytes);
+		} catch (error) {
+			throw new DOMException(
+				`Could not create Buffer from response body. Error: ${error.message}.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
 	}
 }

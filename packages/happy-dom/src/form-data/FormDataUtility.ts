@@ -1,3 +1,4 @@
+import { Readable } from 'stream';
 import IWindow from '../window/IWindow';
 import FormData from './FormData';
 
@@ -15,7 +16,7 @@ export default class FormDataUtility {
 	public static formDataToStream(
 		window: IWindow,
 		formData: FormData
-	): { type: string; stream: NodeJS.ReadableStream } {
+	): { type: string; stream: Readable } {
 		const boundary = '----HappyDOMFormDataBoundary' + Math.random().toString(36);
 		const chunks: Buffer[] = [];
 		const prefix = `--${boundary}\r\nContent-Disposition: form-data; name="`;
@@ -39,7 +40,7 @@ export default class FormDataUtility {
 						)}"\r\nContent-Type: ${value.type || 'application/octet-stream'}\r\n\r\n`
 					)
 				);
-				chunks.push(value.);
+				chunks.push(value._buffer);
 				chunks.push(Buffer.from('\r\n'));
 			}
 		}

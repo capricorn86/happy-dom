@@ -12,6 +12,19 @@ export default class AbortSignal extends EventTarget {
 	public onabort: ((this: AbortSignal, event: Event) => void) | null = null;
 
 	/**
+	 * Aborts the signal.
+	 *
+	 * @param [reason] Reason.
+	 */
+	public _abort(reason?: string): void {
+		if (reason) {
+			(<string>this.reason) = reason;
+		}
+		(<boolean>this.aborted) = true;
+		this.dispatchEvent(new Event('abort'));
+	}
+
+	/**
 	 * Returns an AbortSignal instance that has been set as aborted.
 	 *
 	 * @param [reason] Reason.

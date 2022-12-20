@@ -10,6 +10,23 @@ import IRequest from './IRequest';
 import IHeaders from './IHeaders';
 import FetchUtility from './FetchUtility';
 import AbortSignal from './AbortSignal';
+import { Readable } from 'stream';
+import Blob from '../file/Blob';
+import { TextDecoder } from 'util';
+
+const VALID_REFERRER_POLICIES = [
+	'',
+	'no-referrer',
+	'no-referrer-when-downgrade',
+	'same-origin',
+	'origin',
+	'strict-origin',
+	'origin-when-cross-origin',
+	'strict-origin-when-cross-origin',
+	'unsafe-url'
+];
+
+const VALID_REDIRECTS = ['error', 'manual', 'follow'];
 
 /**
  * Fetch request.
@@ -27,12 +44,22 @@ export default class Request implements IRequest {
 	// Public properties
 	public readonly url: string;
 	public readonly method: string;
-	public readonly body: NodeJS.ReadableStream;
+	public readonly body: Readable | null;
 	public readonly headers: IHeaders;
 	public readonly referrer: string;
 	public readonly redirect: 'error' | 'manual' | 'follow';
-	public readonly referrerPolicy: string;
-	public readonly signal: AbortSignal | null;
+	public readonly referrerPolicy:
+		| ''
+		| 'no-referrer'
+		| 'no-referrer-when-downgrade'
+		| 'same-origin'
+		| 'origin'
+		| 'strict-origin'
+		| 'origin-when-cross-origin'
+		| 'strict-origin-when-cross-origin'
+		| 'unsafe-url';
+	public readonly signal: AbortSignal;
+	public readonly bodyUsed: boolean;
 
 	/**
 	 * Constructor.
@@ -87,10 +114,35 @@ export default class Request implements IRequest {
 			this.referrer = '';
 		}
 
-		this.redirect = init.redirect || (<Request>input).redirect || 'follow';
-		this.referrerPolicy = init.referrerPolicy || (<Request>input).referrerPolicy || '';
+		const referrerPolicy = <''>(
+			(init.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
+		);
+		const redirect = init.redirect || (<Request>input).redirect || 'follow';
+
+		if (!VALID_REFERRER_POLICIES.includes(referrerPolicy)) {
+			throw new DOMException(
+				`Invalid referrer policy "${referrerPolicy}".`,
+				DOMExceptionNameEnum.syntaxError
+			);
+		}
+
+		if (!VALID_REDIRECTS.includes(redirect)) {
+			throw new DOMException(`Invalid redirect "${redirect}".`, DOMExceptionNameEnum.syntaxError);
+		}
+
+		this.redirect = redirect;
+		this.referrerPolicy = referrerPolicy;
 		this.url = parsedURL.toString();
-		this.signal = init.signal || (<Request>input).signal || null;
+		this.signal = init.signal || (<Request>input).signal || new AbortSignal();
+	}
+
+	/**
+	 * Returns string tag.
+	 *
+	 * @returns String tag.
+	 */
+	public get [Symbol.toStringTag](): string {
+		return 'Request';
 	}
 
 	/**
@@ -98,14 +150,30 @@ export default class Request implements IRequest {
 	 *
 	 * @returns Array buffer.
 	 */
-	public arrayBuffer(): Promise<ArrayBuffer> {
-		return new Promise((resolve, reject) => {
-			const taskID = this._handlePromiseStart();
-			super
-				.arrayBuffer()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
-				.catch(this._handlePromiseError.bind(this, reject));
-		});
+	public async arrayBuffer(): Promise<ArrayBuffer> {
+		if (this.bodyUsed) {
+			throw new DOMException(
+				`Body has already been used for "${this.url}".`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		(<boolean>this.bodyUsed) = true;
+
+		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
+		const taskID = taskManager.startTask(() => this.signal._abort());
+		let buffer: Buffer;
+
+		try {
+			buffer = await FetchUtility.consumeBody(this.body);
+		} catch (error) {
+			taskManager.endTask(taskID);
+			throw error;
+		}
+
+		taskManager.endTask(taskID);
+
+		return buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
 
 	/**
@@ -113,14 +181,11 @@ export default class Request implements IRequest {
 	 *
 	 * @returns Blob.
 	 */
-	public blob(): Promise<IBlob> {
-		return new Promise((resolve, reject) => {
-			const taskID = this._handlePromiseStart();
-			super
-				.blob()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
-				.catch(this._handlePromiseError.bind(this, reject));
-		});
+	public async blob(): Promise<IBlob> {
+		const type = this.headers.get('content-type') || '';
+		const buffer = await this.arrayBuffer();
+
+		return new Blob([buffer], { type });
 	}
 
 	/**
@@ -128,103 +193,79 @@ export default class Request implements IRequest {
 	 *
 	 * @returns Buffer.
 	 */
-	public buffer(): Promise<Buffer> {
-		return new Promise((resolve, reject) => {
-			const taskID = this._handlePromiseStart();
-			super
-				.buffer()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
-				.catch(this._handlePromiseError.bind(this, reject));
-		});
-	}
-
-	/**
-	 * Returns json.
-	 *
-	 * @returns JSON.
-	 */
-	public json(): Promise<unknown> {
-		return new Promise((resolve, reject) => {
-			const taskID = this._handlePromiseStart();
-			super
-				.json()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
-				.catch(this._handlePromiseError.bind(this, reject));
-		});
-	}
-
-	/**
-	 * Returns json.
-	 *
-	 * @returns JSON.
-	 */
-	public text(): Promise<string> {
-		return new Promise((resolve, reject) => {
-			const taskID = this._handlePromiseStart();
-			super
-				.text()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
-				.catch(this._handlePromiseError.bind(this, reject));
-		});
-	}
-
-	/**
-	 * Returns json.
-	 *
-	 * @returns JSON.
-	 */
-	public textConverted(): Promise<string> {
-		return new Promise((resolve, reject) => {
-			const taskID = this._handlePromiseStart();
-			super
-				.textConverted()
-				.then(this._handlePromiseEnd.bind(this, resolve, reject, taskID))
-				.catch(this._handlePromiseError.bind(this, reject));
-		});
-	}
-
-	/**
-	 * Handles promise start.
-	 *
-	 * @returns Task ID.
-	 */
-	private _handlePromiseStart(): number {
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		return taskManager.startTask();
-	}
-
-	/**
-	 * Handles promise end.
-	 *
-	 * @param resolve Resolve.
-	 * @param reject Reject.
-	 * @param taskID Task ID.
-	 * @param response Response.
-	 */
-	private _handlePromiseEnd(
-		resolve: (response: unknown) => void,
-		reject: (error: Error) => void,
-		taskID: number,
-		response: unknown
-	): void {
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		if (taskManager.getTaskCount() === 0) {
-			reject(new Error('Failed to complete fetch request. Task was canceled.'));
-		} else {
-			resolve(response);
-			taskManager.endTask(taskID);
+	public async buffer(): Promise<Buffer> {
+		if (this.bodyUsed) {
+			throw new DOMException(
+				`Body has already been used for "${this.url}".`,
+				DOMExceptionNameEnum.invalidStateError
+			);
 		}
+
+		(<boolean>this.bodyUsed) = true;
+
+		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
+		const taskID = taskManager.startTask(() => this.signal._abort());
+		let buffer: Buffer;
+
+		try {
+			buffer = await FetchUtility.consumeBody(this.body);
+		} catch (error) {
+			taskManager.endTask(taskID);
+			throw error;
+		}
+
+		taskManager.endTask(taskID);
+
+		return buffer;
 	}
 
 	/**
-	 * Handles promise error.
+	 * Returns text.
 	 *
-	 * @param error
-	 * @param reject
+	 * @returns Text.
 	 */
-	private _handlePromiseError(reject: (error: Error) => void, error: Error): void {
+	public async text(): Promise<string> {
+		if (this.bodyUsed) {
+			throw new DOMException(
+				`Body has already been used for "${this.url}".`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		(<boolean>this.bodyUsed) = true;
+
 		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		reject(error);
-		taskManager.cancelAll(error);
+		const taskID = taskManager.startTask(() => this.signal._abort());
+		let buffer: Buffer;
+
+		try {
+			buffer = await FetchUtility.consumeBody(this.body);
+		} catch (error) {
+			taskManager.endTask(taskID);
+			throw error;
+		}
+
+		taskManager.endTask(taskID);
+
+		return new TextDecoder().decode(buffer);
+	}
+
+	/**
+	 * Returns json.
+	 *
+	 * @returns JSON.
+	 */
+	public async json(): Promise<string> {
+		const text = await this.text();
+		return JSON.parse(text);
+	}
+
+	/**
+	 * Clones request.
+	 *
+	 * @returns Clone.
+	 */
+	public clone(): IRequest {
+		return <IRequest>new Request(this);
 	}
 }
