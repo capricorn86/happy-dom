@@ -1,4 +1,3 @@
-import Event from '../event/Event';
 import AbortSignal from './AbortSignal';
 
 /**
@@ -22,10 +21,6 @@ export default class AbortController {
 	 * @param [reason] Reason.
 	 */
 	public abort(reason?: string): void {
-		if (reason) {
-			(<string>this.signal.reason) = reason;
-		}
-		(<boolean>this.signal.aborted) = true;
-		this.signal.dispatchEvent(new Event('abort'));
+		this.signal._abort(reason);
 	}
 }

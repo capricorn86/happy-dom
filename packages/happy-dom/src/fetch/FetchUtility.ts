@@ -14,6 +14,9 @@ export default class FetchUtility {
 	/**
 	 * Parses body and returns stream and type.
 	 *
+	 * Based on:
+	 * https://github.com/node-fetch/node-fetch/blob/main/src/body.js (MIT)
+	 *
 	 * @param window Window.
 	 * @param body Body.
 	 * @returns Stream and type.
@@ -61,11 +64,14 @@ export default class FetchUtility {
 
 		return { stream: Stream.Readable.from(Buffer.from(String(body))), type: null };
 	}
+
 	/**
 	 * Consume and convert an entire Body to a Buffer.
 	 *
-	 * Ref: https://fetch.spec.whatwg.org/#concept-body-consume-body
+	 * Based on:
+	 * https://github.com/node-fetch/node-fetch/blob/main/src/body.js (MIT)
 	 *
+	 * @see https://fetch.spec.whatwg.org/#concept-body-consume-body
 	 * @param body Body stream.
 	 * @param [size] Size.
 	 * @returns Promise.

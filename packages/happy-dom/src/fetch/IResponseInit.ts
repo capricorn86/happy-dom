@@ -1,10 +1,10 @@
-import IHeaders from './IHeaders';
+import IHeadersInit from './IHeadersInit';
 
 /**
  * Response init.
  */
 export default interface IResponseInit {
-	headers?: IHeaders | string[][] | Record<string, string>;
-	status?: number;
-	statusText?: string;
+	headers?: IHeadersInit | undefined;
+	status?: number | undefined;
+	statusText?: string | undefined;
 }

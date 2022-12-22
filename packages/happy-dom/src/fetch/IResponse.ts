@@ -1,8 +1,11 @@
 import IHeaders from './IHeaders';
 import IBlob from 'src/file/IBlob';
+import { Readable } from 'stream';
 
 /**
  * Fetch response.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
  */
 export default interface IResponse {
 	readonly headers: IHeaders;
@@ -12,16 +15,13 @@ export default interface IResponse {
 	readonly statusText: string;
 	readonly type: 'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect';
 	readonly url: string;
-	readonly body: NodeJS.ReadableStream;
+	readonly body: Readable | null;
 	readonly bodyUsed: boolean;
-	readonly size: number;
-	readonly timeout: number;
 
 	arrayBuffer(): Promise<ArrayBuffer>;
 	blob(): Promise<IBlob>;
 	buffer(): Promise<Buffer>;
 	json(): Promise<unknown>;
 	text(): Promise<string>;
-	textConverted(): Promise<string>;
 	clone(): IResponse;
 }
