@@ -30,4 +30,12 @@ describe('Location', () => {
 			expect(location.href).toBe(HREF);
 		});
 	});
+
+	describe('href', () => {
+		it('Set href.', () => {
+			location.replace(HREF);
+			location.href = '/foo';
+			expect(location.pathname).toBe('/foo');
+		});
+	});
 });

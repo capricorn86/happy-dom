@@ -126,7 +126,7 @@ module.exports = {
 				...COMMON_CONFIG.rules,
 				'@typescript-eslint/explicit-member-accessibility': [
 					ERROR,
-					{ overrides: { constructors: 'no-public' } }
+					{ overrides: { constructors: 'no-public', accessors: OFF } }
 				],
 				'@typescript-eslint/no-unused-vars': OFF, // TSC is already doing this
 				'@typescript-eslint/ban-types': OFF, // TSC is already doing this
