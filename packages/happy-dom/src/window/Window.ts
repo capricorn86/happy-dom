@@ -489,7 +489,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns number
 	 */
 	public get scrollX(): number {
-		return this.document.documentElement?.scrollLeft ?? 0;
+		return this.document?.documentElement?.scrollLeft ?? 0;
 	}
 
 	/**
@@ -507,7 +507,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns number
 	 */
 	public get scrollY(): number {
-		return this.document.documentElement?.scrollTop ?? 0;
+		return this.document?.documentElement?.scrollTop ?? 0;
 	}
 
 	/**
