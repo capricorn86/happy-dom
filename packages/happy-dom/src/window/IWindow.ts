@@ -245,6 +245,10 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly sessionStorage: Storage;
 	readonly localStorage: Storage;
 	readonly performance: Performance;
+	readonly pageXOffset: number;
+	readonly pageYOffset: number;
+	readonly scrollX: number;
+	readonly scrollY: number;
 
 	/**
 	 * Evaluates code.
