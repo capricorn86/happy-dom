@@ -251,10 +251,9 @@ export default class HTMLElement extends Element implements IHTMLElement {
 			},
 			deleteProperty: (dataset: { [key: string]: string }, key: string) => {
 				const name = 'data-' + DatasetUtility.camelCaseToKebab(key);
-				const exists = !!attributes[name];
-				delete attributes[name];
-				delete dataset[key];
-				return exists;
+				const result1 = delete attributes[name];
+				const result2 = delete dataset[key];
+				return result1 && result2;
 			},
 			ownKeys: (dataset: { [key: string]: string }) => {
 				// According to Mozilla we have to update the dataset object (target) to contain the same keys as what we return:
