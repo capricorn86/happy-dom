@@ -1,6 +1,6 @@
 import IHeadersInit from './IHeadersInit';
 import AbortSignal from './AbortSignal';
-import { URLSearchParams } from 'url';
+import { URL, URLSearchParams } from 'url';
 import FormData from '../form-data/FormData';
 import Blob from '../file/Blob';
 
@@ -21,7 +21,7 @@ export default interface IRequestInit {
 	method?: string;
 	redirect?: 'error' | 'manual' | 'follow';
 	signal?: AbortSignal | null;
-	referrer?: string;
+	referrer?: string | URL;
 	referrerPolicy?:
 		| ''
 		| 'no-referrer'

@@ -13,6 +13,7 @@ import AbortSignal from './AbortSignal';
 import { Readable } from 'stream';
 import Blob from '../file/Blob';
 import { TextDecoder } from 'util';
+import RelativeURL from '../location/RelativeURL';
 
 const VALID_REFERRER_POLICIES = [
 	'',
@@ -61,6 +62,9 @@ export default class Request implements IRequest {
 	public readonly signal: AbortSignal;
 	public readonly bodyUsed: boolean;
 
+	// Internal properties
+	public readonly _contentLength: number | null = null;
+
 	/**
 	 * Constructor.
 	 *
@@ -71,10 +75,10 @@ export default class Request implements IRequest {
 		this._ownerDocument = (<typeof Request>this.constructor)._ownerDocument;
 
 		const parsedURL = (<Request>input).url
-			? new URL((<Request>input).url)
+			? RelativeURL.getAbsoluteURL(this._ownerDocument.location, (<Request>input).url)
 			: input instanceof URL
 			? input
-			: new URL(<string>input);
+			: RelativeURL.getAbsoluteURL(this._ownerDocument.location, <string>input);
 
 		if (parsedURL.username !== '' || parsedURL.password !== '') {
 			throw new DOMException(
@@ -83,41 +87,55 @@ export default class Request implements IRequest {
 			);
 		}
 
-		this.method = (init.method || (<Request>input).method || 'GET').toUpperCase();
+		this.method = (init?.method || (<Request>input).method || 'GET').toUpperCase();
 
-		if ((init.body || (<Request>input).body) && (this.method === 'GET' || this.method === 'HEAD')) {
+		if (
+			(init?.body || (<Request>input).body) &&
+			(this.method === 'GET' || this.method === 'HEAD')
+		) {
 			throw new DOMException(
 				`Request with GET/HEAD method cannot have body.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
-		const { stream, type } = FetchUtility.bodyToStream(
+		const { stream, contentType, contentLength } = FetchUtility.bodyToStream(
 			this._ownerDocument.defaultView,
-			input instanceof Request && input.body !== null ? input.body : init.body
+			input instanceof Request && input.body !== null ? input.body : init?.body
 		);
 
 		this.body = stream;
-		this.headers = new Headers(init.headers || (<Request>input).headers || {});
+		this.headers = new Headers(init?.headers || (<Request>input).headers || {});
 
-		if (!this.headers.get('content-type') && type) {
-			this.headers.append('content-type', type);
+		if (contentLength) {
+			this._contentLength = contentLength;
+		} else if (this.body && (this.method === 'POST' || this.method === 'PUT')) {
+			this._contentLength = 0;
 		}
 
-		const referrer = init.referrer !== null ? init.referrer : (<Request>input).referrer;
+		if (!this.headers.get('Content-Type') && contentType) {
+			this.headers.append('Content-Type', contentType);
+		}
+
+		const referrer = init?.referrer !== null ? init?.referrer : (<Request>input).referrer;
 		if (referrer) {
-			const parsedReferrer = new URL(referrer).toString();
-			this.referrer = /^about:(\/\/)?client$/.test(parsedReferrer)
-				? 'about:client'
-				: parsedReferrer;
-		} else if (referrer === '') {
-			this.referrer = '';
+			const referrerURL =
+				referrer instanceof URL
+					? referrer
+					: RelativeURL.getAbsoluteURL(this._ownerDocument.location, referrer);
+
+			this.referrer =
+				referrerURL.origin === this._ownerDocument.location.origin
+					? referrerURL.href
+					: 'about:client';
+		} else {
+			this.referrer = 'about:client';
 		}
 
 		const referrerPolicy = <''>(
-			(init.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
+			(init?.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
 		);
-		const redirect = init.redirect || (<Request>input).redirect || 'follow';
+		const redirect = init?.redirect || (<Request>input).redirect || 'follow';
 
 		if (!VALID_REFERRER_POLICIES.includes(referrerPolicy)) {
 			throw new DOMException(
@@ -133,7 +151,7 @@ export default class Request implements IRequest {
 		this.redirect = redirect;
 		this.referrerPolicy = referrerPolicy;
 		this.url = parsedURL.toString();
-		this.signal = init.signal || (<Request>input).signal || new AbortSignal();
+		this.signal = init?.signal || (<Request>input).signal || new AbortSignal();
 	}
 
 	/**

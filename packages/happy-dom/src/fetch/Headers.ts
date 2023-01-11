@@ -9,7 +9,7 @@ import IHeadersInit from './IHeadersInit';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Headers
  */
 export default class Headers implements IHeaders {
-	public _entries: { [k: string]: string } = {};
+	public _entries: { [k: string]: { name: string; value: string } } = {};
 
 	/**
 	 * Constructor.
@@ -47,9 +47,12 @@ export default class Headers implements IHeaders {
 	public append(name: string, value: string): void {
 		const lowerName = name.toLowerCase();
 		if (this._entries[lowerName]) {
-			this._entries[lowerName] += `, ${value}`;
+			this._entries[lowerName].value += `, ${value}`;
 		} else {
-			this._entries[lowerName] = value;
+			this._entries[lowerName] = {
+				name,
+				value
+			};
 		}
 	}
 
@@ -59,8 +62,7 @@ export default class Headers implements IHeaders {
 	 * @param name Name.
 	 */
 	public delete(name: string): void {
-		const lowerName = name.toLowerCase();
-		delete this._entries[lowerName];
+		delete this._entries[name.toLowerCase()];
 	}
 
 	/**
@@ -70,8 +72,7 @@ export default class Headers implements IHeaders {
 	 * @returns Value.
 	 */
 	public get(name: string): string | null {
-		const lowerName = name.toLowerCase();
-		return this._entries[lowerName] || null;
+		return this._entries[name.toLowerCase()]?.value || null;
 	}
 
 	/**
@@ -81,8 +82,10 @@ export default class Headers implements IHeaders {
 	 * @param value Value.
 	 */
 	public set(name: string, value: string): void {
-		const lowerName = name.toLowerCase();
-		this._entries[lowerName] = value;
+		this._entries[name.toLowerCase()] = {
+			name,
+			value
+		};
 	}
 
 	/**
@@ -92,8 +95,7 @@ export default class Headers implements IHeaders {
 	 * @returns "true" if the Headers object contains the key.
 	 */
 	public has(name: string): boolean {
-		const lowerName = name.toLowerCase();
-		return !!this._entries[lowerName];
+		return !!this._entries[name.toLowerCase()];
 	}
 
 	/**
@@ -103,7 +105,7 @@ export default class Headers implements IHeaders {
 	 */
 	public forEach(callback: (name: string, value: string, object: IHeaders) => void): void {
 		for (const key of Object.keys(this._entries)) {
-			callback(key, this._entries[key], this);
+			callback(this._entries[key].name, this._entries[key].value, this);
 		}
 	}
 
@@ -113,8 +115,8 @@ export default class Headers implements IHeaders {
 	 * @returns Iterator.
 	 */
 	public *keys(): IterableIterator<string> {
-		for (const key of Object.keys(this._entries)) {
-			yield key;
+		for (const header of Object.values(this._entries)) {
+			yield header.name;
 		}
 	}
 
@@ -124,8 +126,8 @@ export default class Headers implements IHeaders {
 	 * @returns Iterator.
 	 */
 	public *values(): IterableIterator<string> {
-		for (const value of Object.values(this._entries)) {
-			yield value;
+		for (const header of Object.values(this._entries)) {
+			yield header.value;
 		}
 	}
 
@@ -135,8 +137,8 @@ export default class Headers implements IHeaders {
 	 * @returns Iterator.
 	 */
 	public *entries(): IterableIterator<[string, string]> {
-		for (const key of Object.keys(this._entries)) {
-			yield [key, this._entries[key]];
+		for (const header of Object.values(this._entries)) {
+			yield [header.name, header.value];
 		}
 	}
 
@@ -146,8 +148,8 @@ export default class Headers implements IHeaders {
 	 * @returns Iterator.
 	 */
 	public *[Symbol.iterator](): IterableIterator<[string, string]> {
-		for (const key of Object.keys(this._entries)) {
-			yield [key, this._entries[key]];
+		for (const header of Object.values(this._entries)) {
+			yield [header.name, header.value];
 		}
 	}
 }

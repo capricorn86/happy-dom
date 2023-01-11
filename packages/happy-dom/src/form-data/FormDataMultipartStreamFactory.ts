@@ -5,7 +5,7 @@ import FormData from './FormData';
 /**
  * FormData utility.
  */
-export default class FormDataUtility {
+export default class FormDataMultipartStreamFactory {
 	/**
 	 * Converts a FormData object to a ReadableStream.
 	 *
@@ -13,10 +13,10 @@ export default class FormDataUtility {
 	 * @param formData FormData.
 	 * @returns Stream and type.
 	 */
-	public static formDataToStream(
+	public static getStream(
 		window: IWindow,
 		formData: FormData
-	): { type: string; stream: Readable } {
+	): { contentType: string; contentLength: number; stream: Readable } {
 		const boundary = '----HappyDOMFormDataBoundary' + Math.random().toString(36);
 		const chunks: Buffer[] = [];
 		const prefix = `--${boundary}\r\nContent-Disposition: form-data; name="`;
@@ -25,7 +25,7 @@ export default class FormDataUtility {
 			if (typeof value === 'string') {
 				chunks.push(
 					Buffer.from(
-						`${prefix}${this._escapeName(name)}"\r\n\r\n${value.replace(
+						`${prefix}${this.escapeName(name)}"\r\n\r\n${value.replace(
 							/\r(?!\n)|(?<!\r)\n/g,
 							'\r\n'
 						)}\r\n`
@@ -34,7 +34,7 @@ export default class FormDataUtility {
 			} else {
 				chunks.push(
 					Buffer.from(
-						`${prefix}${this._escapeName(name)}"; filename="${this._escapeName(
+						`${prefix}${this.escapeName(name)}"; filename="${this.escapeName(
 							value.name,
 							true
 						)}"\r\nContent-Type: ${value.type || 'application/octet-stream'}\r\n\r\n`
@@ -45,10 +45,12 @@ export default class FormDataUtility {
 			}
 		}
 
-		const bufferIterator = Buffer.concat(chunks).entries();
+		const buffer = Buffer.concat(chunks);
+		const bufferIterator = buffer.entries();
 
 		return {
-			type: `multipart/form-data; boundary=${boundary}`,
+			contentType: `multipart/form-data; boundary=${boundary}`,
+			contentLength: buffer.length,
 			stream: new window.ReadableStream({
 				// @ts-ignore
 				type: 'bytes',
@@ -72,7 +74,7 @@ export default class FormDataUtility {
 	 * @param filename Whether it is a filename.
 	 * @returns Escaped name.
 	 */
-	private static _escapeName(name: string, filename = false): string {
+	private static escapeName(name: string, filename = false): string {
 		return (filename ? name : name.replace(/\r?\n|\r/g, '\r\n'))
 			.replace(/\n/g, '%0A')
 			.replace(/\r/g, '%0D')

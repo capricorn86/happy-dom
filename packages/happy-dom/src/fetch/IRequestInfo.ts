@@ -1,6 +1,6 @@
 import { URL } from 'url';
-import Request from './Request';
+import IRequest from './IRequest';
 
-type IRequestInfo = Request | string | URL;
+type IRequestInfo = IRequest | string | URL;
 
 export default IRequestInfo;

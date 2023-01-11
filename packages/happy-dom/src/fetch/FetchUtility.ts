@@ -1,4 +1,4 @@
-import FormDataUtility from '../form-data/FormDataUtility';
+import FormDataMultipartStreamFactory from '../form-data/FormDataMultipartStreamFactory';
 import IWindow from '../window/IWindow';
 import { PassThrough, Readable, Stream } from 'stream';
 import { URLSearchParams } from 'url';
@@ -6,6 +6,7 @@ import FormData from '../form-data/FormData';
 import Blob from '../file/Blob';
 import DOMException from 'src/exception/DOMException';
 import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
+import IRequest from './IRequest';
 
 /**
  * Fetch utility.
@@ -33,21 +34,35 @@ export default class FetchUtility {
 			| FormData
 			| string
 			| null
-	): { type: string; stream: Readable } {
+	): { contentType: string; contentLength: number | null; stream: Readable } {
 		if (body === null) {
-			return { stream: null, type: null };
+			return { stream: null, contentType: null, contentLength: null };
 		} else if (body instanceof URLSearchParams) {
-			return { stream: Stream.Readable.from(Buffer.from(body.toString())), type: null };
+			const bodyAsString = body.toString();
+			return {
+				stream: Stream.Readable.from(Buffer.from(bodyAsString)),
+				contentType: null,
+				contentLength: bodyAsString.length
+			};
 		} else if (body instanceof Blob) {
-			return { stream: Stream.Readable.from((<Blob>body)._buffer), type: (<Blob>body).type };
+			return {
+				stream: Stream.Readable.from((<Blob>body)._buffer),
+				contentType: (<Blob>body).type,
+				contentLength: body.size
+			};
 		} else if (Buffer.isBuffer(body)) {
-			return { stream: Stream.Readable.from(body), type: null };
+			return { stream: Stream.Readable.from(body), contentType: null, contentLength: body.length };
 		} else if (body instanceof ArrayBuffer) {
-			return { stream: Stream.Readable.from(Buffer.from(body)), type: null };
+			return {
+				stream: Stream.Readable.from(Buffer.from(body)),
+				contentType: null,
+				contentLength: body.byteLength
+			};
 		} else if (ArrayBuffer.isView(body)) {
 			return {
 				stream: Stream.Readable.from(Buffer.from(body.buffer, body.byteOffset, body.byteLength)),
-				type: null
+				contentType: null,
+				contentLength: body.byteLength
 			};
 		} else if (body instanceof Stream) {
 			// Clones the body
@@ -55,14 +70,19 @@ export default class FetchUtility {
 			body.pipe(<PassThrough>stream);
 			return {
 				stream,
-				type: null
+				contentType: null,
+				contentLength: null
 			};
 		} else if (body instanceof FormData) {
-			const { stream, type } = FormDataUtility.formDataToStream(window, body);
-			return { stream, type };
+			return FormDataMultipartStreamFactory.getStream(window, body);
 		}
 
-		return { stream: Stream.Readable.from(Buffer.from(String(body))), type: null };
+		const bodyAsString = String(body);
+		return {
+			stream: Stream.Readable.from(Buffer.from(bodyAsString)),
+			contentType: null,
+			contentLength: bodyAsString.length
+		};
 	}
 
 	/**

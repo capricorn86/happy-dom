@@ -9,9 +9,10 @@ import Blob from '../file/Blob';
 import { Readable, Stream } from 'stream';
 import FormData from '../form-data/FormData';
 import FetchUtility from './FetchUtility';
-import DOMException from 'src/exception/DOMException';
-import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import { TextDecoder } from 'util';
+import MultipartFormDataFactory from '../multipart/MultipartFormDataFactory';
 
 /**
  * Fetch response.
@@ -205,9 +206,9 @@ export default class Response implements IResponse {
 	 * @returns Form data.
 	 */
 	public async formData(): Promise<FormData> {
-		const ct = this.headers.get('content-type');
+		const contentType = this.headers.get('content-type');
 
-		if (ct.startsWith('application/x-www-form-urlencoded')) {
+		if (contentType.startsWith('application/x-www-form-urlencoded')) {
 			const formData = new FormData();
 			const parameters = new URLSearchParams(await this.text());
 
@@ -218,8 +219,7 @@ export default class Response implements IResponse {
 			return formData;
 		}
 
-		const { toFormData } = await import('./utils/multipart-parser.js');
-		return toFormData(this.body, ct);
+		return await MultipartFormDataFactory.getFormData(this.body, contentType);
 	}
 
 	/**

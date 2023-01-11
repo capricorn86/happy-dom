@@ -8,7 +8,7 @@ import Request from './Request';
 import RequestInfo from './IRequestInfo';
 import { URL } from 'url';
 import Blob from '../file/Blob';
-import FormDataUtility from '../form-data/FormDataUtility';
+import FormDataMultipartStreamFactory from '../form-data/FormDataMultipartStreamFactory';
 import FormData from '../form-data/FormData';
 
 /**
@@ -70,7 +70,7 @@ export default class FetchHandler {
 				requestInit.headers['content-type'] = type;
 			}
 		} else if (requestInit.body instanceof FormData) {
-			const { stream, type } = FormDataUtility.formDataToStream(
+			const { stream, type } = FormDataMultipartStreamFactory.getStream(
 				document.defaultView,
 				<FormData>requestInit.body
 			);
