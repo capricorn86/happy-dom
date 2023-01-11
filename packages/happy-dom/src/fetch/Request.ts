@@ -47,7 +47,7 @@ export default class Request implements IRequest {
 	public readonly method: string;
 	public readonly body: Readable | null;
 	public readonly headers: IHeaders;
-	public readonly referrer: string;
+	public readonly referrer: string = 'about:client';
 	public readonly redirect: 'error' | 'manual' | 'follow';
 	public readonly referrerPolicy:
 		| ''
@@ -118,7 +118,10 @@ export default class Request implements IRequest {
 		}
 
 		const referrer = init?.referrer !== null ? init?.referrer : (<Request>input).referrer;
-		if (referrer) {
+
+		if (referrer === '') {
+			this.referrer = '';
+		} else if (referrer) {
 			const referrerURL =
 				referrer instanceof URL
 					? referrer
@@ -128,13 +131,13 @@ export default class Request implements IRequest {
 				referrerURL.origin === this._ownerDocument.location.origin
 					? referrerURL.href
 					: 'about:client';
-		} else {
-			this.referrer = 'about:client';
 		}
 
-		const referrerPolicy = <''>(
-			(init?.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
-		);
+		const referrerPolicy = (
+			init?.referrerPolicy ||
+			(<Request>input).referrerPolicy ||
+			''
+		).toLowerCase();
 		const redirect = init?.redirect || (<Request>input).redirect || 'follow';
 
 		if (!VALID_REFERRER_POLICIES.includes(referrerPolicy)) {
@@ -149,7 +152,7 @@ export default class Request implements IRequest {
 		}
 
 		this.redirect = redirect;
-		this.referrerPolicy = referrerPolicy;
+		this.referrerPolicy = <''>referrerPolicy;
 		this.url = parsedURL.toString();
 		this.signal = init?.signal || (<Request>input).signal || new AbortSignal();
 	}

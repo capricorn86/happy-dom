@@ -8,7 +8,10 @@ import Headers from './Headers';
 import IRequest from './IRequest';
 
 /**
- * Helper class for performing fetch.
+ * Handles fetch requests.
+ *
+ * Based on:
+ * https://github.com/node-fetch/node-fetch/blob/main/src/index.js
  */
 export default class Fetch {
 	private url: IRequestInfo;
@@ -475,4 +478,12 @@ export default class Fetch {
 
 		return headers;
 	}
+
+	/**
+	 * Returns the referer header.
+	 *
+	 * @see https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
+	 * @returns Referer header.
+	 */
+	private getRefererHeader(): string | null {}
 }
