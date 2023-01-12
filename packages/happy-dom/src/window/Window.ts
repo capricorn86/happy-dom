@@ -484,6 +484,42 @@ export default class Window extends EventTarget implements IWindow {
 	}
 
 	/**
+	 * The number of pixels that the document is currently scrolled horizontally
+	 *
+	 * @returns number
+	 */
+	public get scrollX(): number {
+		return this.document?.documentElement?.scrollLeft ?? 0;
+	}
+
+	/**
+	 * The read-only Window property pageXOffset is an alias for scrollX.
+	 *
+	 * @returns number
+	 */
+	public get pageXOffset(): number {
+		return this.scrollX;
+	}
+
+	/**
+	 * The number of pixels that the document is currently scrolled vertically
+	 *
+	 * @returns number
+	 */
+	public get scrollY(): number {
+		return this.document?.documentElement?.scrollTop ?? 0;
+	}
+
+	/**
+	 * The read-only Window property pageYOffset is an alias for scrollY.
+	 *
+	 * @returns number
+	 */
+	public get pageYOffset(): number {
+		return this.scrollY;
+	}
+
+	/**
 	 * The CSS interface holds useful CSS-related methods.
 	 *
 	 * @returns CSS interface.
