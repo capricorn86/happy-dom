@@ -6,12 +6,11 @@ import FormData from '../form-data/FormData';
 import Blob from '../file/Blob';
 import DOMException from 'src/exception/DOMException';
 import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
-import IRequest from './IRequest';
 
 /**
- * Fetch utility.
+ * Fetch body utility.
  */
-export default class FetchUtility {
+export default class FetchBodyUtility {
 	/**
 	 * Parses body and returns stream and type.
 	 *
@@ -22,7 +21,7 @@ export default class FetchUtility {
 	 * @param body Body.
 	 * @returns Stream and type.
 	 */
-	public static bodyToStream(
+	public static getBodyStream(
 		window: IWindow,
 		body:
 			| URLSearchParams
@@ -96,7 +95,7 @@ export default class FetchUtility {
 	 * @param [size] Size.
 	 * @returns Promise.
 	 */
-	public static async consumeBody(body: Readable | null, size = 0): Promise<Buffer> {
+	public static async consumeBodyStream(body: Readable | null, size = 0): Promise<Buffer> {
 		if (body === null || !(body instanceof Stream)) {
 			return Buffer.alloc(0);
 		}

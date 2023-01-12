@@ -8,7 +8,7 @@ import { URLSearchParams } from 'url';
 import Blob from '../file/Blob';
 import { Readable, Stream } from 'stream';
 import FormData from '../form-data/FormData';
-import FetchUtility from './FetchUtility';
+import FetchBodyUtility from './FetchBodyUtility';
 import DOMException from '../exception/DOMException';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import { TextDecoder } from 'util';
@@ -67,11 +67,14 @@ export default class Response implements IResponse {
 		this.headers = new Headers(init?.headers);
 
 		if (body) {
-			const { stream, type } = FetchUtility.bodyToStream(this._ownerDocument.defaultView, body);
+			const { stream, contentType } = FetchBodyUtility.getBodyStream(
+				this._ownerDocument.defaultView,
+				body
+			);
 			this.body = stream;
 
-			if (type && !this.headers.has('content-type')) {
-				this.headers.set('content-type', type);
+			if (contentType && !this.headers.has('Content-Type')) {
+				this.headers.set('Content-Type', contentType);
 			}
 		}
 	}
@@ -105,7 +108,7 @@ export default class Response implements IResponse {
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchUtility.consumeBody(this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
 			taskManager.endTask(taskID);
 			throw error;
@@ -148,7 +151,7 @@ export default class Response implements IResponse {
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchUtility.consumeBody(this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
 			taskManager.endTask(taskID);
 			throw error;
@@ -179,7 +182,7 @@ export default class Response implements IResponse {
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchUtility.consumeBody(this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
 			taskManager.endTask(taskID);
 			throw error;

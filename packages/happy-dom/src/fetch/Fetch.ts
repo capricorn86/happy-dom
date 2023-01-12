@@ -6,6 +6,7 @@ import IRequestInfo from './IRequestInfo';
 import { URL } from 'url';
 import Headers from './Headers';
 import IRequest from './IRequest';
+import FetchReferrerUtility from './FetchReferrerUtility';
 
 /**
  * Handles fetch requests.
@@ -432,24 +433,12 @@ export default class Fetch {
 		const headers = new Headers(this.request.headers);
 		const document = this.ownerDocument;
 		const cookie = document.defaultView.document.cookie;
+		const referrer = FetchReferrerUtility.getReferrer(document, this.request);
 
 		headers.set('User-Agent', document.defaultView.navigator.userAgent);
 
-		// Referrer can be a URL with the same origin as the page or "about:client".
-		// When it's "about:client", we should set it do the origin of the page.
-		if (this.request.referrer === 'about:client') {
-			// Origin is "null" when the URL is set to "about:blank" (this is also how the browser behaves).
-			// Then we don't know the real referer, so we don't set it.
-			if (document.defaultView.location.origin !== 'null') {
-				headers.set(
-					'referer',
-					document.defaultView.location.origin +
-						document.defaultView.location.pathname +
-						document.defaultView.location.search
-				);
-			}
-		} else {
-			headers.set('Referer', this.request.referrer);
+		if (referrer) {
+			headers.set('Referer', referrer);
 		}
 
 		if (cookie) {
@@ -478,12 +467,4 @@ export default class Fetch {
 
 		return headers;
 	}
-
-	/**
-	 * Returns the referer header.
-	 *
-	 * @see https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
-	 * @returns Referer header.
-	 */
-	private getRefererHeader(): string | null {}
 }

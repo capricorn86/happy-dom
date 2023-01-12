@@ -8,7 +8,7 @@ import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
 import IRequestInfo from './IRequestInfo';
 import IRequest from './IRequest';
 import IHeaders from './IHeaders';
-import FetchUtility from './FetchUtility';
+import FetchBodyUtility from './FetchBodyUtility';
 import AbortSignal from './AbortSignal';
 import { Readable } from 'stream';
 import Blob from '../file/Blob';
@@ -99,7 +99,7 @@ export default class Request implements IRequest {
 			);
 		}
 
-		const { stream, contentType, contentLength } = FetchUtility.bodyToStream(
+		const { stream, contentType, contentLength } = FetchBodyUtility.getBodyStream(
 			this._ownerDocument.defaultView,
 			input instanceof Request && input.body !== null ? input.body : init?.body
 		);
@@ -186,7 +186,7 @@ export default class Request implements IRequest {
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchUtility.consumeBody(this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
 			taskManager.endTask(taskID);
 			throw error;
@@ -229,7 +229,7 @@ export default class Request implements IRequest {
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchUtility.consumeBody(this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
 			taskManager.endTask(taskID);
 			throw error;
@@ -260,7 +260,7 @@ export default class Request implements IRequest {
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchUtility.consumeBody(this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
 			taskManager.endTask(taskID);
 			throw error;
