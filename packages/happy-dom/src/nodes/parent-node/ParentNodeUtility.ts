@@ -1,4 +1,3 @@
-import QuerySelector from '../../query-selector/QuerySelector';
 import XMLParser from '../../xml-parser/XMLParser';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import IDocument from '../document/IDocument';
@@ -78,10 +77,21 @@ export default class ParentNodeUtility {
 	 * @returns Matching element.
 	 */
 	public static getElementsByClassName(
-		parentNode: INode,
+		parentNode: IElement | IDocumentFragment | IDocument,
 		className: string
 	): IHTMLCollection<IElement> {
-		return QuerySelector.querySelectorAll(parentNode, '.' + className.split(' ').join('.'));
+		const matches = HTMLCollectionFactory.create();
+
+		for (const child of parentNode.children) {
+			if (child.classList.contains(className)) {
+				matches.push(child);
+			}
+			for (const match of this.getElementsByTagName(<IElement>child, className)) {
+				matches.push(match);
+			}
+		}
+
+		return matches;
 	}
 
 	/**

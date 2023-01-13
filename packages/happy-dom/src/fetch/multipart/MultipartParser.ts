@@ -1,4 +1,4 @@
-import EventTarget from '../event/EventTarget';
+import EventTarget from '../../event/EventTarget';
 import MultipartEvent from './MultipartEvent';
 
 enum MultiparParserStateEnum {

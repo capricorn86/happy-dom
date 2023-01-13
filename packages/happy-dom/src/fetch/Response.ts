@@ -1,18 +1,21 @@
-import IResponse from './IResponse';
+import IResponse from './types/IResponse';
 import IBlob from '../file/IBlob';
 import IDocument from '../nodes/document/IDocument';
-import IResponseInit from './IResponseInit';
+import IResponseInit from './types/IResponseInit';
+import IResponseBody from './types/IResponseBody';
 import Headers from './Headers';
-import IHeaders from './IHeaders';
-import { URLSearchParams } from 'url';
+import IHeaders from './types/IHeaders';
+import { URL, URLSearchParams } from 'url';
 import Blob from '../file/Blob';
-import { Readable, Stream } from 'stream';
+import { Readable } from 'stream';
 import FormData from '../form-data/FormData';
-import FetchBodyUtility from './FetchBodyUtility';
+import FetchBodyUtility from './utilities/FetchBodyUtility';
 import DOMException from '../exception/DOMException';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import { TextDecoder } from 'util';
-import MultipartFormDataFactory from '../multipart/MultipartFormDataFactory';
+import MultipartFormDataParser from './multipart/MultipartFormDataParser';
+
+const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 
 /**
  * Fetch response.
@@ -46,19 +49,7 @@ export default class Response implements IResponse {
 	 * @param body
 	 * @param [init] Init.
 	 */
-	constructor(
-		body?:
-			| URLSearchParams
-			| Blob
-			| Buffer
-			| ArrayBuffer
-			| ArrayBufferView
-			| Stream
-			| FormData
-			| string
-			| null,
-		init?: IResponseInit
-	) {
+	constructor(body?: IResponseBody, init?: IResponseInit) {
 		this._ownerDocument = (<typeof Response>this.constructor)._ownerDocument;
 
 		this.status = init?.status || 200;
@@ -222,7 +213,7 @@ export default class Response implements IResponse {
 			return formData;
 		}
 
-		return await MultipartFormDataFactory.getFormData(this.body, contentType);
+		return await MultipartFormDataParser.streamToFormData(this.body, contentType);
 	}
 
 	/**
@@ -244,5 +235,66 @@ export default class Response implements IResponse {
 		(<string>response.url) = this.url;
 
 		return <IResponse>response;
+	}
+	/**
+	 * Returns a redirect response.
+	 *
+	 * @param url URL.
+	 * @param status Status code.
+	 * @returns Response.
+	 */
+	public static redirect(url: string, status = 302): IResponse {
+		if (!REDIRECT_STATUS_CODES.includes(status)) {
+			throw new DOMException(
+				'Failed to create redirect response: Invalid redirect status code.',
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		return new Response(null, {
+			headers: {
+				location: new URL(url).toString()
+			},
+			status
+		});
+	}
+
+	/**
+	 * Returns an error response.
+	 *
+	 * @param url URL.
+	 * @param status Status code.
+	 * @returns Response.
+	 */
+	public static error(): IResponse {
+		const response = new Response(null, { status: 0, statusText: '' });
+		(<string>response.type) = 'error';
+		return response;
+	}
+
+	/**
+	 * Returns an JSON response.
+	 *
+	 * @param data Data.
+	 * @param [init] Init.
+	 * @returns Response.
+	 */
+	public static json(data: object, init: IResponseInit): IResponse {
+		const body = JSON.stringify(data);
+
+		if (body === undefined) {
+			throw new TypeError('data is not JSON serializable');
+		}
+
+		const headers = new Headers(init && init.headers);
+
+		if (!headers.has('content-type')) {
+			headers.set('content-type', 'application/json');
+		}
+
+		return new Response(body, {
+			...init,
+			headers
+		});
 	}
 }

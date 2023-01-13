@@ -1,33 +1,22 @@
 import IBlob from '../file/IBlob';
 import IDocument from '../nodes/document/IDocument';
-import IRequestInit from './IRequestInit';
-import Headers from './Headers';
+import IRequestInit from './types/IRequestInit';
 import { URL } from 'url';
-import DOMException from 'src/exception/DOMException';
-import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
-import IRequestInfo from './IRequestInfo';
-import IRequest from './IRequest';
-import IHeaders from './IHeaders';
-import FetchBodyUtility from './FetchBodyUtility';
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import IRequestInfo from './types/IRequestInfo';
+import IRequest from './types/IRequest';
+import Headers from './Headers';
+import FetchBodyUtility from './utilities/FetchBodyUtility';
 import AbortSignal from './AbortSignal';
 import { Readable } from 'stream';
 import Blob from '../file/Blob';
 import { TextDecoder } from 'util';
 import RelativeURL from '../location/RelativeURL';
-
-const VALID_REFERRER_POLICIES = [
-	'',
-	'no-referrer',
-	'no-referrer-when-downgrade',
-	'same-origin',
-	'origin',
-	'strict-origin',
-	'origin-when-cross-origin',
-	'strict-origin-when-cross-origin',
-	'unsafe-url'
-];
-
-const VALID_REDIRECTS = ['error', 'manual', 'follow'];
+import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility';
+import IRequestReferrerPolicy from './types/IRequestReferrerPolicy';
+import IRequestRedirect from './types/IRequestRedirect';
+import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility';
 
 /**
  * Fetch request.
@@ -43,27 +32,18 @@ export default class Request implements IRequest {
 	public readonly _ownerDocument: IDocument = null;
 
 	// Public properties
-	public readonly url: string;
 	public readonly method: string;
 	public readonly body: Readable | null;
-	public readonly headers: IHeaders;
-	public readonly referrer: string = 'about:client';
-	public readonly redirect: 'error' | 'manual' | 'follow';
-	public readonly referrerPolicy:
-		| ''
-		| 'no-referrer'
-		| 'no-referrer-when-downgrade'
-		| 'same-origin'
-		| 'origin'
-		| 'strict-origin'
-		| 'origin-when-cross-origin'
-		| 'strict-origin-when-cross-origin'
-		| 'unsafe-url';
+	public readonly headers: Headers;
+	public readonly redirect: IRequestRedirect;
+	public readonly referrerPolicy: IRequestReferrerPolicy;
 	public readonly signal: AbortSignal;
 	public readonly bodyUsed: boolean;
 
 	// Internal properties
-	public readonly _contentLength: number | null = null;
+	public _referrer: '' | 'no-referrer' | 'client' | URL = 'client';
+	public readonly _contentLength: number | null;
+	public readonly _url: URL;
 
 	/**
 	 * Constructor.
@@ -74,30 +54,7 @@ export default class Request implements IRequest {
 	constructor(input: IRequestInfo, init?: IRequestInit) {
 		this._ownerDocument = (<typeof Request>this.constructor)._ownerDocument;
 
-		const parsedURL = (<Request>input).url
-			? RelativeURL.getAbsoluteURL(this._ownerDocument.location, (<Request>input).url)
-			: input instanceof URL
-			? input
-			: RelativeURL.getAbsoluteURL(this._ownerDocument.location, <string>input);
-
-		if (parsedURL.username !== '' || parsedURL.password !== '') {
-			throw new DOMException(
-				`${parsedURL} is an url with embedded credentials.`,
-				DOMExceptionNameEnum.notSupportedError
-			);
-		}
-
 		this.method = (init?.method || (<Request>input).method || 'GET').toUpperCase();
-
-		if (
-			(init?.body || (<Request>input).body) &&
-			(this.method === 'GET' || this.method === 'HEAD')
-		) {
-			throw new DOMException(
-				`Request with GET/HEAD method cannot have body.`,
-				DOMExceptionNameEnum.invalidStateError
-			);
-		}
 
 		const { stream, contentType, contentLength } = FetchBodyUtility.getBodyStream(
 			this._ownerDocument.defaultView,
@@ -117,44 +74,52 @@ export default class Request implements IRequest {
 			this.headers.append('Content-Type', contentType);
 		}
 
-		const referrer = init?.referrer !== null ? init?.referrer : (<Request>input).referrer;
-
-		if (referrer === '') {
-			this.referrer = '';
-		} else if (referrer) {
-			const referrerURL =
-				referrer instanceof URL
-					? referrer
-					: RelativeURL.getAbsoluteURL(this._ownerDocument.location, referrer);
-
-			this.referrer =
-				referrerURL.origin === this._ownerDocument.location.origin
-					? referrerURL.href
-					: 'about:client';
-		}
-
-		const referrerPolicy = (
-			init?.referrerPolicy ||
-			(<Request>input).referrerPolicy ||
-			''
-		).toLowerCase();
-		const redirect = init?.redirect || (<Request>input).redirect || 'follow';
-
-		if (!VALID_REFERRER_POLICIES.includes(referrerPolicy)) {
-			throw new DOMException(
-				`Invalid referrer policy "${referrerPolicy}".`,
-				DOMExceptionNameEnum.syntaxError
-			);
-		}
-
-		if (!VALID_REDIRECTS.includes(redirect)) {
-			throw new DOMException(`Invalid redirect "${redirect}".`, DOMExceptionNameEnum.syntaxError);
-		}
-
-		this.redirect = redirect;
-		this.referrerPolicy = <''>referrerPolicy;
-		this.url = parsedURL.toString();
+		this.redirect = init?.redirect || (<Request>input).redirect || 'follow';
+		this.referrerPolicy = <IRequestReferrerPolicy>(
+			(init?.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
+		);
 		this.signal = init?.signal || (<Request>input).signal || new AbortSignal();
+		this._referrer = FetchRequestReferrerUtility.getInitialReferrer(
+			this._ownerDocument,
+			init?.referrer !== null ? init?.referrer : (<Request>input).referrer
+		);
+		this._url = (<Request>input).url
+			? RelativeURL.getAbsoluteURL(this._ownerDocument.location, (<Request>input).url)
+			: input instanceof URL
+			? input
+			: RelativeURL.getAbsoluteURL(this._ownerDocument.location, <string>input);
+
+		FetchRequestValidationUtility.validateBody(this);
+		FetchRequestValidationUtility.validateURL(this._url);
+		FetchRequestValidationUtility.validateHeaders(this.headers);
+		FetchRequestValidationUtility.validateReferrerPolicy(this.referrerPolicy);
+		FetchRequestValidationUtility.validateRedirect(this.redirect);
+	}
+
+	/**
+	 * Returns referrer.
+	 *
+	 * @returns Referrer.
+	 */
+	public get referrer(): string {
+		if (!this._referrer || this._referrer === 'no-referrer') {
+			return '';
+		}
+
+		if (this._referrer === 'client') {
+			return 'about:client';
+		}
+
+		return this._referrer.toString();
+	}
+
+	/**
+	 * Returns URL.
+	 *
+	 * @returns URL.
+	 */
+	public get url(): string {
+		return this._url.href;
 	}
 
 	/**

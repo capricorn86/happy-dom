@@ -1,4 +1,4 @@
-import EventTarget from 'src/event/EventTarget';
+import EventTarget from '../event/EventTarget';
 import Event from '../event/Event';
 
 /**

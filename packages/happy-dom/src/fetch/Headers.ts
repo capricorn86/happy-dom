@@ -1,7 +1,7 @@
-import DOMException from 'src/exception/DOMException';
-import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
-import IHeaders from './IHeaders';
-import IHeadersInit from './IHeadersInit';
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import IHeaders from './types/IHeaders';
+import IHeadersInit from './types/IHeadersInit';
 
 /**
  * Fetch headers.
@@ -19,7 +19,7 @@ export default class Headers implements IHeaders {
 	constructor(init?: IHeadersInit) {
 		if (init) {
 			if (init instanceof Headers) {
-				this._entries = Object.assign({}, init._entries);
+				this._entries = JSON.parse(JSON.stringify(init._entries));
 			} else if (Array.isArray(init)) {
 				for (const entry of init) {
 					if (entry.length !== 2) {

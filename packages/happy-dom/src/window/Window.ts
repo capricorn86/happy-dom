@@ -78,12 +78,12 @@ import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
-import IResponse from '../fetch/IResponse';
-import IResponseInit from '../fetch/IResponseInit';
-import IRequest from '../fetch/IRequest';
-import IRequestInit from '../fetch/IRequestInit';
-import IHeaders from '../fetch/IHeaders';
-import IHeadersInit from '../fetch/IHeadersInit';
+import IResponse from '../fetch/types/IResponse';
+import IResponseInit from '../fetch/types/IResponseInit';
+import IRequest from '../fetch/types/IRequest';
+import IRequestInit from '../fetch/types/IRequestInit';
+import IHeaders from '../fetch/types/IHeaders';
+import IHeadersInit from '../fetch/types/IHeadersInit';
 import Headers from '../fetch/Headers';
 import { default as RequestImplementation } from '../fetch/Request';
 import { default as ResponseImplementation } from '../fetch/Response';
@@ -98,7 +98,7 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
-import FetchHandler from '../fetch/FetchHandler';
+import Fetch from '../fetch/Fetch';
 import { default as RangeImplementation } from '../range/Range';
 import DOMRect from '../nodes/element/DOMRect';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript';
@@ -115,12 +115,14 @@ import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 import IHappyDOMSettings from './IHappyDOMSettings';
-import RequestInfo from '../fetch/IRequestInfo';
+import RequestInfo from '../fetch/types/IRequestInfo';
 import FileList from '../nodes/html-input-element/FileList';
 import Stream from 'stream';
 import FormData from '../form-data/FormData';
 import AbortController from '../fetch/AbortController';
 import AbortSignal from '../fetch/AbortSignal';
+import IResponseBody from '../fetch/types/IResponseBody';
+import IRequestInfo from '../fetch/types/IRequestInfo';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -257,10 +259,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Headers: { new (init?: IHeadersInit): IHeaders } = Headers;
 	public readonly DOMRect: typeof DOMRect;
 	public readonly Request: {
-		new (input: string | { href: string } | IRequest, init?: IRequestInit): IRequest;
+		new (input: IRequestInfo, init?: IRequestInit): IRequest;
 	};
 	public readonly Response: {
-		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
+		new (body?: IResponseBody, init?: IResponseInit): IResponse;
 	};
 	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
 	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
@@ -343,6 +345,9 @@ export default class Window extends EventTarget implements IWindow {
 	public decodeURIComponent;
 	public encodeURI;
 	public encodeURIComponent;
+	/**
+	 * @deprecated
+	 */
 	public escape;
 	public global;
 	public isFinite;
@@ -354,6 +359,9 @@ export default class Window extends EventTarget implements IWindow {
 	public setImmediate;
 	public queueMicrotask;
 	public undefined;
+	/**
+	 * @deprecated
+	 */
 	public unescape;
 	public gc;
 	public v8debug;
@@ -591,7 +599,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Sets a timer which executes a function once the timer expires.
 	 *
-	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
 	 * @returns Timeout ID.
@@ -608,7 +615,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Cancels a timeout previously established by calling setTimeout().
 	 *
-	 * @override
 	 * @param id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
@@ -619,7 +625,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Calls a function with a fixed time delay between each call.
 	 *
-	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
 	 * @returns Interval ID.
@@ -633,7 +638,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Cancels a timed repeating action which was previously established by a call to setInterval().
 	 *
-	 * @override
 	 * @param id ID of the interval.
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
@@ -644,7 +648,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Mock animation frames with timeouts.
 	 *
-	 * @override
 	 * @param callback Callback.
 	 * @returns Timeout ID.
 	 */
@@ -657,7 +660,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Mock animation frames with timeouts.
 	 *
-	 * @override
 	 * @param id Timeout ID.
 	 */
 	public cancelAnimationFrame(id: NodeJS.Timeout): void {
@@ -667,13 +669,12 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * This method provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
-	 * @override
 	 * @param url URL.
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
 	public async fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse> {
-		return await FetchHandler.fetch(this.document, url, init);
+		return await new Fetch({ ownerDocument: this.document, url, init }).send();
 	}
 
 	/**

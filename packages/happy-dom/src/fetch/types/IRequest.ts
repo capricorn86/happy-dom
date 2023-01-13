@@ -1,7 +1,9 @@
 import IHeaders from './IHeaders';
-import IBlob from '../file/IBlob';
-import AbortSignal from './AbortSignal';
+import IBlob from '../../file/IBlob';
+import AbortSignal from '../AbortSignal';
 import { Readable } from 'stream';
+import IRequestReferrerPolicy from './IRequestReferrerPolicy';
+import IRequestRedirect from './IRequestRedirect';
 
 /**
  * Fetch request.
@@ -9,21 +11,12 @@ import { Readable } from 'stream';
 export default interface IRequest {
 	readonly headers: IHeaders;
 	readonly method: string;
-	readonly redirect: 'error' | 'follow' | 'manual';
+	readonly redirect: IRequestRedirect;
 	readonly referrer: string;
 	readonly url: string;
 	readonly body: Readable | null;
 	readonly bodyUsed: boolean;
-	readonly referrerPolicy:
-		| ''
-		| 'no-referrer'
-		| 'no-referrer-when-downgrade'
-		| 'same-origin'
-		| 'origin'
-		| 'strict-origin'
-		| 'origin-when-cross-origin'
-		| 'strict-origin-when-cross-origin'
-		| 'unsafe-url';
+	readonly referrerPolicy: IRequestReferrerPolicy;
 	readonly signal: AbortSignal | null;
 
 	/**

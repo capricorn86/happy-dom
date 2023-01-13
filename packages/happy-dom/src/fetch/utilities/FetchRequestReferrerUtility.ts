@@ -1,28 +1,45 @@
 import { URL } from 'url';
-import IRequest from './IRequest';
-import IDocument from '../nodes/document/IDocument';
+import IRequest from '../types/IRequest';
+import IDocument from '../../nodes/document/IDocument';
 import { isIP } from 'net';
+import Headers from '../Headers';
+import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy';
+import RelativeURL from '../../location/RelativeURL';
 
 const REQUEST_REFERRER_UNSUPPORTED_PROTOCOL_REGEXP = /^(about|blob|data):$/;
+const REFERRER_POLICIES: IRequestReferrerPolicy[] = [
+	'',
+	'no-referrer',
+	'no-referrer-when-downgrade',
+	'same-origin',
+	'origin',
+	'strict-origin',
+	'origin-when-cross-origin',
+	'strict-origin-when-cross-origin',
+	'unsafe-url'
+];
 
 /**
  * Fetch referrer utility.
  */
-export default class FetchReferrerUtility {
+export default class FetchRequestReferrerUtility {
 	/**
 	 * Returns the request referrer to be used as the value for the "Referer" header.
 	 *
 	 * Based on:
 	 * https://github.com/node-fetch/node-fetch/blob/main/src/utils/referrer.js (MIT)
 	 *
+	 * @see https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
 	 * @param document Document.
 	 * @param request Request.
-	 * @see https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
 	 * @returns Request referrer.
 	 */
-	public static getReferrer(document: IDocument, request: IRequest): string | null {
+	public static getSentReferrer(
+		document: IDocument,
+		request: IRequest
+	): '' | 'no-referrer' | 'client' | URL {
 		if (request.referrer === 'about:client' && document.defaultView.location.origin === 'null') {
-			return null;
+			return 'no-referrer';
 		}
 
 		const requestURL = new URL(request.url);
@@ -31,13 +48,8 @@ export default class FetchReferrerUtility {
 				? new URL(document.defaultView.location.href)
 				: new URL(request.referrer);
 
-		// Origin is "null" when the URL is set to "about:blank".
-		if (referrerURL.origin === 'null') {
-			return null;
-		}
-
 		if (REQUEST_REFERRER_UNSUPPORTED_PROTOCOL_REGEXP.test(referrerURL.protocol)) {
-			return null;
+			return 'no-referrer';
 		}
 
 		referrerURL.username = '';
@@ -46,36 +58,108 @@ export default class FetchReferrerUtility {
 
 		switch (request.referrerPolicy) {
 			case 'no-referrer':
-				return null;
+				return 'no-referrer';
 			case 'origin':
-				return referrerURL.origin;
+				return new URL(referrerURL.origin);
 			case 'unsafe-url':
-				return url.href;
+				return referrerURL;
 			case 'strict-origin':
 				if (
 					this.isURLPotentiallyTrustWorthy(referrerURL) &&
 					!this.isURLPotentiallyTrustWorthy(requestURL)
 				) {
-					return null;
+					return 'no-referrer';
 				}
 
-				return referrerURL.origin;
-			case 'origin-when-cross-origin':
+				return new URL(referrerURL.origin);
+			case 'strict-origin-when-cross-origin':
 				if (referrerURL.origin === requestURL.origin) {
-					return referrerURL.href;
+					return referrerURL;
 				}
 
 				if (
 					this.isURLPotentiallyTrustWorthy(referrerURL) &&
 					!this.isURLPotentiallyTrustWorthy(requestURL)
 				) {
-					return null;
+					return 'no-referrer';
 				}
 
-				return referrerURL.origin;
+				return new URL(referrerURL.origin);
+			case 'same-origin':
+				if (referrerURL.origin === requestURL.origin) {
+					return referrerURL;
+				}
+
+				return 'no-referrer';
+			case 'origin-when-cross-origin':
+				if (referrerURL.origin === requestURL.origin) {
+					return referrerURL;
+				}
+
+				return new URL(referrerURL.origin);
+			case 'no-referrer-when-downgrade':
+				if (
+					this.isURLPotentiallyTrustWorthy(referrerURL) &&
+					!this.isURLPotentiallyTrustWorthy(requestURL)
+				) {
+					return 'no-referrer';
+				}
+
+				return referrerURL;
 		}
 
-		return null;
+		return 'no-referrer';
+	}
+
+	/**
+	 * Returns initial referrer.
+	 *
+	 * @param document Document.
+	 * @param referrer Referrer.
+	 * @returns Initial referrer.
+	 */
+	public static getInitialReferrer(
+		document: IDocument,
+		referrer: '' | 'no-referrer' | 'client' | string | URL
+	): '' | 'no-referrer' | 'client' | URL {
+		if (referrer === '' || referrer === 'no-referrer' || referrer === 'client') {
+			return referrer;
+		} else if (referrer) {
+			const referrerURL =
+				referrer instanceof URL
+					? referrer
+					: RelativeURL.getAbsoluteURL(document.location, referrer);
+
+			return referrerURL.origin === document.location.origin ? referrerURL : 'client';
+		}
+
+		return 'client';
+	}
+
+	/**
+	 * Returns referrer policy from header.
+	 *
+	 * @see https://w3c.github.io/webappsec-referrer-policy/#parse-referrer-policy-from-header
+	 * @param headers Response headers
+	 * @returns Policy.
+	 */
+	public static getReferrerPolicyFromHeader(headers: Headers): IRequestReferrerPolicy {
+		const referrerPolicyHeader = headers.get('Referrer-Policy');
+
+		if (!referrerPolicyHeader) {
+			return '';
+		}
+
+		const policyTokens = referrerPolicyHeader.split(/[,\s]+/);
+		let policy: IRequestReferrerPolicy = '';
+
+		for (const token of policyTokens) {
+			if (token && REFERRER_POLICIES.includes(<IRequestReferrerPolicy>token)) {
+				policy = <IRequestReferrerPolicy>token;
+			}
+		}
+
+		return policy;
 	}
 
 	/**

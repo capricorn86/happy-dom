@@ -1,6 +1,6 @@
 import IAttr from '../attr/IAttr';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
-import ResourceFetchHandler from '../../fetch/ResourceFetchHandler';
+import ResourceFetch from '../../fetch/ResourceFetch';
 import HTMLElement from '../html-element/HTMLElement';
 import Document from '../document/Document';
 import IHTMLLinkElement from './IHTMLLinkElement';
@@ -200,7 +200,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 			!this.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading
 		) {
 			(<Document>this.ownerDocument)._readyStateManager.startTask();
-			ResourceFetchHandler.fetch(this.ownerDocument, href)
+			ResourceFetch.fetch(this.ownerDocument, href)
 				.then((code) => {
 					const styleSheet = new CSSStyleSheet();
 					styleSheet.replaceSync(code);
@@ -266,7 +266,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 
 			if (href !== null && rel && rel.toLowerCase() === 'stylesheet') {
 				(<Document>this.ownerDocument)._readyStateManager.startTask();
-				ResourceFetchHandler.fetch(this.ownerDocument, href)
+				ResourceFetch.fetch(this.ownerDocument, href)
 					.then((code) => {
 						const styleSheet = new CSSStyleSheet();
 						styleSheet.replaceSync(code);

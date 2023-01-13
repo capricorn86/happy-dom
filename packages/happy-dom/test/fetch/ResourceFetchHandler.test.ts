@@ -1,14 +1,14 @@
 import Window from '../../src/window/Window';
 import IWindow from '../../src/window/IWindow';
 import IDocument from '../../src/nodes/document/IDocument';
-import ResourceFetchHandler from '../../src/fetch/ResourceFetchHandler';
+import ResourceFetch from '../../src/fetch/ResourceFetch';
 import IResponse from '../../src/fetch/IResponse';
 import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder';
 import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate';
 
 const URL = 'https://localhost:8080/base/';
 
-describe('ResourceFetchHandler', () => {
+describe('ResourceFetch', () => {
 	let window: IWindow;
 	let document: IDocument;
 
@@ -33,7 +33,7 @@ describe('ResourceFetchHandler', () => {
 				});
 			});
 
-			const test = await ResourceFetchHandler.fetch(document, 'path/to/script/');
+			const test = await ResourceFetch.fetch(document, 'path/to/script/');
 
 			expect(fetchedURL).toBe('path/to/script/');
 			expect(test).toBe('test');
@@ -42,7 +42,7 @@ describe('ResourceFetchHandler', () => {
 
 	describe('fetchSync()', () => {
 		it('Returns resource data synchrounously.', () => {
-			const test = ResourceFetchHandler.fetchSync(document, 'path/to/script/');
+			const test = ResourceFetch.fetchSync(document, 'path/to/script/');
 
 			expect(mockedModules.modules.child_process.execFileSync.parameters.command).toEqual(
 				process.argv[0]
@@ -81,7 +81,7 @@ describe('ResourceFetchHandler', () => {
 		it('Handles error when resource is fetched synchrounously.', () => {
 			mockedModules.modules.child_process.execFileSync.returnValue.data.statusCode = 404;
 			expect(() => {
-				ResourceFetchHandler.fetchSync(document, 'path/to/script/');
+				ResourceFetch.fetchSync(document, 'path/to/script/');
 			}).toThrowError(`Failed to perform request to "${URL}path/to/script/". Status code: 404`);
 		});
 	});

@@ -125,6 +125,15 @@ import ProcessingInstruction from './nodes/processing-instruction/ProcessingInst
 import IProcessingInstruction from './nodes/processing-instruction/IProcessingInstruction';
 import FileList from './nodes/html-input-element/FileList';
 import IFileList from './nodes/html-input-element/IFileList';
+import AbortController from './fetch/AbortController';
+import AbortSignal from './fetch/AbortSignal';
+import Request from './fetch/Request';
+import IRequest from './fetch/types/IRequest';
+import Response from './fetch/Response';
+import IResponse from './fetch/types/IResponse';
+import Headers from './fetch/Headers';
+import IHeaders from './fetch/types/IHeaders';
+import FormData from './form-data/FormData';
 
 export {
 	GlobalWindow,
@@ -254,5 +263,14 @@ export {
 	ProcessingInstruction,
 	IProcessingInstruction,
 	FileList,
-	IFileList
+	IFileList,
+	AbortController,
+	AbortSignal,
+	Request,
+	IRequest,
+	Response,
+	IResponse,
+	Headers,
+	IHeaders,
+	FormData
 };

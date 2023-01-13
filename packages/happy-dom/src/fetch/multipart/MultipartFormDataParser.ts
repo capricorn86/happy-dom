@@ -1,11 +1,12 @@
-import FormData from '../form-data/FormData';
+import FormData from '../../form-data/FormData';
 import { Readable } from 'stream';
 import MultipartParser from './MultipartParser';
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import DOMException from '../../exception/DOMException';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import MultipartEvent from './MultipartEvent';
-import File from '../file/File';
+import File from '../../file/File';
 import { TextDecoder } from 'util';
+import IWindow from '../../window/IWindow';
 
 /**
  * Multipart form data factory.
@@ -13,7 +14,7 @@ import { TextDecoder } from 'util';
  * Based on:
  * https://github.com/node-fetch/node-fetch/blob/main/src/utils/multipart-parser.js (MIT)
  */
-export default class MultipartFormDataFactory {
+export default class MultipartFormDataParser {
 	/**
 	 * Returns form data.
 	 *
@@ -21,7 +22,7 @@ export default class MultipartFormDataFactory {
 	 * @param contentType Content type header value.
 	 * @returns Form data.
 	 */
-	public static async getFormData(body: Readable, contentType: string): Promise<FormData> {
+	public static async streamToFormData(body: Readable, contentType: string): Promise<FormData> {
 		if (!/multipart/i.test(contentType)) {
 			throw new DOMException(
 				`Failed to build FormData object: The "content-type" header isn't of type "multipart/form-data".`,
@@ -116,6 +117,80 @@ export default class MultipartFormDataFactory {
 		parser.end();
 
 		return formData;
+	}
+	/**
+	 * Converts a FormData object to a ReadableStream.
+	 *
+	 * @param window Window.
+	 * @param formData FormData.
+	 * @returns Stream and type.
+	 */
+	public static formDataToStream(
+		window: IWindow,
+		formData: FormData
+	): { contentType: string; contentLength: number; stream: Readable } {
+		const boundary = '----HappyDOMFormDataBoundary' + Math.random().toString(36);
+		const chunks: Buffer[] = [];
+		const prefix = `--${boundary}\r\nContent-Disposition: form-data; name="`;
+
+		for (const [name, value] of formData) {
+			if (typeof value === 'string') {
+				chunks.push(
+					Buffer.from(
+						`${prefix}${this.escapeName(name)}"\r\n\r\n${value.replace(
+							/\r(?!\n)|(?<!\r)\n/g,
+							'\r\n'
+						)}\r\n`
+					)
+				);
+			} else {
+				chunks.push(
+					Buffer.from(
+						`${prefix}${this.escapeName(name)}"; filename="${this.escapeName(
+							value.name,
+							true
+						)}"\r\nContent-Type: ${value.type || 'application/octet-stream'}\r\n\r\n`
+					)
+				);
+				chunks.push(value._buffer);
+				chunks.push(Buffer.from('\r\n'));
+			}
+		}
+
+		const buffer = Buffer.concat(chunks);
+		const bufferIterator = buffer.entries();
+
+		return {
+			contentType: `multipart/form-data; boundary=${boundary}`,
+			contentLength: buffer.length,
+			stream: new window.ReadableStream({
+				// @ts-ignore
+				type: 'bytes',
+
+				async pull(ctrl) {
+					const chunk = await bufferIterator.next();
+					chunk.done ? ctrl.close() : ctrl.enqueue(chunk.value);
+				},
+
+				async cancel() {
+					bufferIterator.return();
+				}
+			})
+		};
+	}
+
+	/**
+	 * Escapes a form data entry name.
+	 *
+	 * @param name Name.
+	 * @param filename Whether it is a filename.
+	 * @returns Escaped name.
+	 */
+	private static escapeName(name: string, filename = false): string {
+		return (filename ? name : name.replace(/\r?\n|\r/g, '\r\n'))
+			.replace(/\n/g, '%0A')
+			.replace(/\r/g, '%0D')
+			.replace(/"/g, '%22');
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import Event from '../event/Event';
+import Event from '../../event/Event';
 import IMultipartEventInit from './IMultipartEventInit';
 
 /**

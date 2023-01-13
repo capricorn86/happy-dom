@@ -2,7 +2,7 @@ import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration';
 import IDocument from '../../src/nodes/document/IDocument';
 import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement';
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
-import ResourceFetchHandler from '../../src/fetch/ResourceFetchHandler';
+import ResourceFetch from '../../src/fetch/ResourceFetch';
 import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement';
 import Window from '../../src/window/Window';
 import IWindow from '../../src/window/IWindow';
@@ -734,7 +734,7 @@ describe('Window', () => {
 			let loadEvent = null;
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (document: IDocument, url: string) => {
 					if (url.endsWith('.css')) {
 						resourceFetchCSSDocument = document;
@@ -783,7 +783,7 @@ describe('Window', () => {
 			const errorEvents = [];
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (_document: IDocument, url: string) => {
 					throw new Error(url);
 				});

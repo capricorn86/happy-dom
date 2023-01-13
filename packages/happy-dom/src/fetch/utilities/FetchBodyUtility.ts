@@ -1,11 +1,13 @@
-import FormDataMultipartStreamFactory from '../form-data/FormDataMultipartStreamFactory';
-import IWindow from '../window/IWindow';
+import MultipartFormDataParser from '../multipart/MultipartFormDataParser';
+import IWindow from '../../window/IWindow';
 import { PassThrough, Readable, Stream } from 'stream';
 import { URLSearchParams } from 'url';
-import FormData from '../form-data/FormData';
-import Blob from '../file/Blob';
-import DOMException from 'src/exception/DOMException';
-import DOMExceptionNameEnum from 'src/exception/DOMExceptionNameEnum';
+import FormData from '../../form-data/FormData';
+import Blob from '../../file/Blob';
+import DOMException from '../../exception/DOMException';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
+import IRequestBody from '../types/IRequestBody';
+import IResponseBody from '../types/IResponseBody';
 
 /**
  * Fetch body utility.
@@ -23,16 +25,7 @@ export default class FetchBodyUtility {
 	 */
 	public static getBodyStream(
 		window: IWindow,
-		body:
-			| URLSearchParams
-			| Blob
-			| Buffer
-			| ArrayBuffer
-			| ArrayBufferView
-			| Stream
-			| FormData
-			| string
-			| null
+		body: IRequestBody | IResponseBody
 	): { contentType: string; contentLength: number | null; stream: Readable } {
 		if (body === null) {
 			return { stream: null, contentType: null, contentLength: null };
@@ -73,7 +66,7 @@ export default class FetchBodyUtility {
 				contentLength: null
 			};
 		} else if (body instanceof FormData) {
-			return FormDataMultipartStreamFactory.getStream(window, body);
+			return MultipartFormDataParser.formDataToStream(window, body);
 		}
 
 		const bodyAsString = String(body);

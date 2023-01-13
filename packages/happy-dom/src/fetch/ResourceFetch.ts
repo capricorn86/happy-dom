@@ -5,7 +5,7 @@ import IDocument from '../nodes/document/IDocument';
 /**
  * Helper class for performing fetch of resources.
  */
-export default class ResourceFetchHandler {
+export default class ResourceFetch {
 	/**
 	 * Returns resource data asynchronously.
 	 *

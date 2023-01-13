@@ -86,11 +86,11 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
-import IResponseInit from '../fetch/IResponseInit';
-import IRequest from '../fetch/IRequest';
-import IHeaders from '../fetch/IHeaders';
-import IRequestInit from '../fetch/IRequestInit';
-import IResponse from '../fetch/IResponse';
+import IResponseInit from '../fetch/types/IResponseInit';
+import IRequest from '../fetch/types/IRequest';
+import IHeaders from '../fetch/types/IHeaders';
+import IRequestInit from '../fetch/types/IRequestInit';
+import IResponse from '../fetch/types/IResponse';
 import Range from '../range/Range';
 import MediaQueryList from '../match-media/MediaQueryList';
 import XMLHttpRequest from '../xml-http-request/XMLHttpRequest';
@@ -104,12 +104,15 @@ import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 import IHappyDOMSettings from './IHappyDOMSettings';
-import RequestInfo from '../fetch/IRequestInfo';
+import RequestInfo from '../fetch/types/IRequestInfo';
 import FileList from '../nodes/html-input-element/FileList';
 import Stream from 'stream';
 import FormData from '../form-data/FormData';
 import AbortController from '../fetch/AbortController';
 import AbortSignal from '../fetch/AbortSignal';
+import IResponseBody from '../fetch/types/IResponseBody';
+import IRequestInfo from '../fetch/types/IRequestInfo';
+import IHeadersInit from '../fetch/types/IHeadersInit';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -217,11 +220,11 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly MimeTypeArray: typeof MimeTypeArray;
 	readonly Plugin: typeof Plugin;
 	readonly PluginArray: typeof PluginArray;
-	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
+	readonly Headers: { new (init?: IHeadersInit): IHeaders };
 	readonly Request: {
-		new (input: string | { href: string } | IRequest, init?: IRequestInit): IRequest;
+		new (input: IRequestInfo, init?: IRequestInit): IRequest;
 	};
-	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
+	readonly Response: { new (body?: IResponseBody | null, init?: IResponseInit): IResponse };
 	readonly Range: typeof Range;
 	readonly DOMRect: typeof DOMRect;
 	readonly XMLHttpRequest: typeof XMLHttpRequest;

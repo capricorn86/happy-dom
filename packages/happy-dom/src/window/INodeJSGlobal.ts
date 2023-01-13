@@ -46,6 +46,9 @@ interface INodeJSGlobal {
 	decodeURIComponent: typeof decodeURIComponent;
 	encodeURI: typeof encodeURI;
 	encodeURIComponent: typeof encodeURIComponent;
+	/**
+	 * @deprecated
+	 */
 	escape: (str: string) => string;
 	eval: typeof eval;
 	global: NodeJS.Global;
@@ -58,6 +61,9 @@ interface INodeJSGlobal {
 	setTimeout: (callback: (...args: any[]) => void, ms?: number, ...args: any[]) => NodeJS.Timeout;
 	queueMicrotask: typeof queueMicrotask;
 	undefined: typeof undefined;
+	/**
+	 * @deprecated
+	 */
 	unescape: (str: string) => string;
 	gc: () => void;
 	v8debug?: any;

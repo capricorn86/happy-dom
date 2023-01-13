@@ -22,8 +22,8 @@ import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement';
-import IResponse from '../../../src/fetch/IResponse';
-import ResourceFetchHandler from '../../../src/fetch/ResourceFetchHandler';
+import IResponse from '../../../src/fetch/types/IResponse';
+import ResourceFetch from '../../../src/fetch/ResourceFetch';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement';
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum';
 import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
@@ -1079,7 +1079,7 @@ describe('Document', () => {
 			let readyChangeEvent = null;
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (document: IDocument, url: string) => {
 					if (url.endsWith('.css')) {
 						resourceFetchCSSDocument = document;

@@ -1,24 +1,51 @@
-import IRequestInit from './IRequestInit';
+import IRequestInit from './types/IRequestInit';
 import IDocument from '../nodes/document/IDocument';
-import IResponse from './IResponse';
+import IResponse from './types/IResponse';
 import Request from './Request';
-import IRequestInfo from './IRequestInfo';
-import { URL } from 'url';
+import IRequestInfo from './types/IRequestInfo';
 import Headers from './Headers';
-import IRequest from './IRequest';
-import FetchReferrerUtility from './FetchReferrerUtility';
+import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility';
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import Response from './Response';
+import HTTP, { IncomingMessage } from 'http';
+import HTTPS from 'https';
+import Zlib from 'zlib';
+import { URL } from 'url';
+import { Socket } from 'net';
+import { PassThrough, pipeline as Pipeline, Readable } from 'stream';
+import DataURIParser from './data-uri/DataURIParser';
+
+const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
+const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
+const UNSAFE_CORS_REDIRECT_HEADERS = ['authorization', 'www-authenticate', 'cookie', 'cookie2'];
+const LAST_CHUNK = Buffer.from('0\r\n\r\n');
+const MAX_REDIRECT_COUNT = 20;
+
+/* eslint-disable @typescript-eslint/member-ordering */
 
 /**
  * Handles fetch requests.
  *
  * Based on:
  * https://github.com/node-fetch/node-fetch/blob/main/src/index.js
+ *
+ * @see https://fetch.spec.whatwg.org/#http-network-fetch
  */
 export default class Fetch {
-	private url: IRequestInfo;
-	private init?: IRequestInit;
+	private reject: (reason: Error) => void = () => {};
+	private resolve: (value: IResponse | Promise<IResponse>) => void = () => {};
+	private listeners = {
+		onSignalAbort: this.onSignalAbort.bind(this)
+	};
+	private isChunkedTransfer = false;
+	private isProperLastChunkReceived = false;
+	private previousChunk: Buffer | null = null;
+	private nodeRequest: HTTP.ClientRequest | null = null;
+	private response: Response | null = null;
 	private ownerDocument: IDocument;
 	private request: Request;
+	private redirectCount = 0;
 
 	/**
 	 * Constructor.
@@ -33,10 +60,9 @@ export default class Fetch {
 		const init = { ...options.init, headers: new Headers(options.init?.headers) };
 		const url = options.url;
 
-		this.url = url;
-		this.init = init;
 		this.ownerDocument = options.ownerDocument;
-		this.request = typeof url === 'string' || url instanceof URL ? new Request(url, init) : url;
+		this.request =
+			typeof url === 'string' || url instanceof URL ? new Request(url, init) : <Request>url;
 	}
 
 	/**
@@ -46,382 +72,424 @@ export default class Fetch {
 	 */
 	public send(): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
-			if (!this.request.referrerPolicy) {
-				(<string>this.request.referrerPolicy) = 'strict-origin-when-cross-origin';
+			const taskManager = this.ownerDocument.defaultView.happyDOM.asyncTaskManager;
+			const taskID = taskManager.startTask(() => this.abort());
+
+			if (this.resolve) {
+				throw new Error('Fetch already sent.');
 			}
 
-			// Build request object
-			const { parsedURL, options } = getNodeRequestOptions(request);
-			if (!supportedSchemas.has(parsedURL.protocol)) {
-				throw new TypeError(
-					`node-fetch cannot load ${url}. URL scheme "${parsedURL.protocol.replace(
-						/:$/,
-						''
-					)}" is not supported.`
-				);
-			}
-
-			if (parsedURL.protocol === 'data:') {
-				const data = dataUriToBuffer(request.url);
-				const response = new Response(data, {
-					headers: { 'Content-Type': data.typeFull }
-				});
+			this.resolve = (response: IResponse | Promise<IResponse>): void => {
 				resolve(response);
-				return;
-			}
-
-			// Wrap http.request into fetch
-			const send = (parsedURL.protocol === 'https:' ? https : http).request;
-			const { signal } = request;
-			let response = null;
-
-			const abort = () => {
-				const error = new AbortError('The operation was aborted.');
+				taskManager.endTask(taskID);
+			};
+			this.reject = (error: Error): void => {
 				reject(error);
-				if (request.body && request.body instanceof Stream.Readable) {
-					request.body.destroy(error);
-				}
-
-				if (!response || !response.body) {
-					return;
-				}
-
-				response.body.emit('error', error);
+				taskManager.endTask(taskID);
 			};
 
-			if (signal && signal.aborted) {
-				abort();
+			this.prepareRequest();
+			this.validateRequest();
+
+			if (this.request._url.protocol === 'data:') {
+				const result = DataURIParser.parse(this.request.url);
+				this.response = new Response(result.buffer, {
+					headers: { 'Content-Type': result.type }
+				});
+				resolve(this.response);
 				return;
 			}
 
-			const abortAndFinalize = () => {
-				abort();
-				finalize();
-			};
-
-			// Send request
-			const request_ = send(parsedURL.toString(), options);
-
-			if (signal) {
-				signal.addEventListener('abort', abortAndFinalize);
+			if (this.request.signal.aborted) {
+				this.abort();
+				return;
 			}
 
-			const finalize = () => {
-				request_.abort();
-				if (signal) {
-					signal.removeEventListener('abort', abortAndFinalize);
-				}
-			};
+			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
 
-			request_.on('error', (error) => {
-				reject(
-					new FetchError(
-						`request to ${request.url} failed, reason: ${error.message}`,
-						'system',
-						error
+			const send = (this.request._url.protocol === 'https:' ? HTTPS : HTTP).request;
+
+			this.nodeRequest = send(this.request._url.href, {
+				method: this.request.method,
+				headers: this.getRequestHeaders()
+			});
+
+			this.nodeRequest.on('error', this.onError.bind(this));
+			this.nodeRequest.on('socket', this.onSocket.bind(this));
+			this.nodeRequest.on('response', this.onResponse.bind(this));
+
+			if (this.request.body === null) {
+				this.nodeRequest.end();
+			} else {
+				Pipeline(this.request.body, this.nodeRequest, (error) => {
+					if (error) {
+						this.onError(error);
+					}
+				});
+			}
+		});
+	}
+
+	/**
+	 * Event listener for "socket" event.
+	 *
+	 * @param socket Socket.
+	 */
+	private onSocket(socket: Socket): void {
+		const onSocketClose = (): void => {
+			if (this.isChunkedTransfer && !this.isProperLastChunkReceived) {
+				const error = new DOMException('Premature close.', DOMExceptionNameEnum.networkError);
+
+				if (this.response && this.response.body) {
+					this.response.body.destroy(error);
+				}
+			}
+		};
+
+		const onData = (buffer: Buffer): void => {
+			this.isProperLastChunkReceived = Buffer.compare(buffer.slice(-5), LAST_CHUNK) === 0;
+
+			// Sometimes final 0-length chunk and end of message code are in separate packets.
+			if (!this.isProperLastChunkReceived && this.previousChunk) {
+				this.isProperLastChunkReceived =
+					Buffer.compare(this.previousChunk.slice(-3), LAST_CHUNK.slice(0, 3)) === 0 &&
+					Buffer.compare(buffer.slice(-2), LAST_CHUNK.slice(3)) === 0;
+			}
+
+			this.previousChunk = buffer;
+		};
+
+		socket.prependListener('close', onSocketClose);
+		socket.on('data', onData);
+
+		this.nodeRequest.on('close', () => {
+			socket.removeListener('close', onSocketClose);
+			socket.removeListener('data', onData);
+		});
+	}
+
+	/**
+	 * Event listener for signal "abort" event.
+	 */
+	private onSignalAbort(): void {
+		this.finalizeRequest();
+		this.abort();
+	}
+
+	/**
+	 * Event listener for request "error" event.
+	 *
+	 * @param error Error.
+	 */
+	private onError(error: Error): void {
+		this.finalizeRequest();
+		this.reject(
+			new DOMException(
+				`Fetch to "${this.request.url}" failed. Error: ${error.message}`,
+				DOMExceptionNameEnum.networkError
+			)
+		);
+	}
+
+	/**
+	 * Event listener for request "response" event.
+	 *
+	 * @param nodeResponse Node response.
+	 */
+	private onResponse(nodeResponse: IncomingMessage): void {
+		// Needed for handling bad endings of chunked transfer.
+		this.isChunkedTransfer =
+			nodeResponse.headers['transfer-encoding'] === 'chunked' &&
+			!nodeResponse.headers['content-length'];
+
+		this.nodeRequest.setTimeout(0);
+
+		const headers = this.getResponseHeaders(nodeResponse);
+
+		if (this.isRedirect(nodeResponse.statusCode)) {
+			this.handleRedirectResponse(nodeResponse, headers);
+			return;
+		}
+
+		nodeResponse.once('end', () =>
+			this.request.signal.removeEventListener('abort', this.listeners.onSignalAbort)
+		);
+
+		let body = Pipeline(nodeResponse, new PassThrough(), (error: Error) => {
+			if (error) {
+				this.reject(error);
+			}
+		});
+
+		const responseOptions = {
+			url: this.request.url,
+			status: nodeResponse.statusCode,
+			statusText: nodeResponse.statusMessage,
+			headers
+		};
+
+		const contentEncodingHeader = headers.get('Content-Encoding');
+
+		if (
+			this.request.method === 'HEAD' ||
+			contentEncodingHeader === null ||
+			nodeResponse.statusCode === 204 ||
+			nodeResponse.statusCode === 304
+		) {
+			this.response = new Response(body, responseOptions);
+			this.resolve(this.response);
+			return;
+		}
+
+		// Be less strict when decoding compressed responses.
+		// Sometimes servers send slightly invalid responses that are still accepted by common browsers.
+		// "cURL" always uses Z_SYNC_FLUSH.
+		const zlibOptions = {
+			flush: Zlib.constants.Z_SYNC_FLUSH,
+			finishFlush: Zlib.constants.Z_SYNC_FLUSH
+		};
+
+		// For GZip
+		if (contentEncodingHeader === 'gzip' || contentEncodingHeader === 'x-gzip') {
+			body = Pipeline(body, Zlib.createGunzip(zlibOptions), (error: Error) => {
+				if (error) {
+					this.reject(error);
+				}
+			});
+			this.response = new Response(body, responseOptions);
+			this.resolve(this.response);
+			return;
+		}
+
+		// For Deflate
+		if (contentEncodingHeader === 'deflate' || contentEncodingHeader === 'x-deflate') {
+			// Handle the infamous raw deflate response from old servers
+			// A hack for old IIS and Apache servers
+			const raw = Pipeline(nodeResponse, new PassThrough(), (error) => {
+				if (error) {
+					this.reject(error);
+				}
+			});
+			raw.once('data', (chunk) => {
+				// See http://stackoverflow.com/questions/37519828
+				if ((chunk[0] & 0x0f) === 0x08) {
+					body = Pipeline(body, Zlib.createInflate(), (error) => {
+						if (error) {
+							this.reject(error);
+						}
+					});
+				} else {
+					body = Pipeline(body, Zlib.createInflateRaw(), (error) => {
+						if (error) {
+							this.reject(error);
+						}
+					});
+				}
+
+				this.response = new Response(body, responseOptions);
+				this.resolve(this.response);
+			});
+			raw.once('end', () => {
+				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
+				if (!this.response) {
+					this.response = new Response(body, responseOptions);
+					this.resolve(this.response);
+				}
+			});
+			return;
+		}
+
+		// For BR
+		if (contentEncodingHeader === 'br') {
+			body = Pipeline(body, Zlib.createBrotliDecompress(), (error) => {
+				if (error) {
+					this.reject(error);
+				}
+			});
+			this.response = new Response(body, responseOptions);
+			this.resolve(this.response);
+			return;
+		}
+
+		// Otherwise, use response as is
+		this.response = new Response(body, responseOptions);
+		this.resolve(this.response);
+	}
+
+	/**
+	 * Handles redirect response.
+	 *
+	 * @param nodeResponse Node response.
+	 * @param headers Headers.
+	 */
+	private handleRedirectResponse(nodeResponse: IncomingMessage, headers: Headers): void {
+		const locationHeader = headers.get('Location');
+		let locationURL: URL = null;
+
+		try {
+			locationURL = locationHeader === null ? null : new URL(locationHeader, this.request.url);
+		} catch {
+			// Error here can only be invalid URL in Location: header
+			// Do not throw when options.redirect == manual
+			// Let the user extract the errorneous redirect URL
+			if (this.request.redirect !== 'manual') {
+				this.finalizeRequest();
+				this.reject(
+					new DOMException(
+						`URI requested responds with an invalid redirect URL: ${locationHeader}`,
+						DOMExceptionNameEnum.uriMismatchError
 					)
 				);
-				finalize();
-			});
+				return;
+			}
+		}
 
-			fixResponseChunkedTransferBadEnding(request_, (error) => {
-				if (response && response.body) {
-					response.body.destroy(error);
+		switch (this.request.redirect) {
+			case 'error':
+				this.finalizeRequest();
+				this.reject(
+					new DOMException(
+						`URI requested responds with a redirect, redirect mode is set to error: ${this.request.url}`,
+						DOMExceptionNameEnum.uriMismatchError
+					)
+				);
+				return;
+			case 'manual':
+				// Nothing to do
+				break;
+			case 'follow': {
+				if (locationURL === null) {
+					break;
 				}
-			});
 
-			/* C8 ignore next 18 */
-			if (process.version < 'v14') {
-				// Before Node.js 14, pipeline() does not fully support async iterators and does not always
-				// Properly handle when the socket close/end events are out of order.
-				request_.on('socket', (s) => {
-					let endedWithEventsCount;
-					s.prependListener('end', () => {
-						endedWithEventsCount = s._eventsCount;
-					});
-					s.prependListener('close', (hadError) => {
-						// If end happened before close but the socket didn't emit an error, do it now
-						if (response && endedWithEventsCount < s._eventsCount && !hadError) {
-							const error = new Error('Premature close');
-							error.code = 'ERR_STREAM_PREMATURE_CLOSE';
-							response.body.emit('error', error);
-						}
-					});
+				if (this.redirectCount >= MAX_REDIRECT_COUNT) {
+					this.finalizeRequest();
+					this.reject(
+						new DOMException(
+							`Maximum redirect reached at: ${this.request.url}`,
+							DOMExceptionNameEnum.networkError
+						)
+					);
+					return;
+				}
+
+				this.redirectCount++;
+
+				const headers = new Headers(this.request.headers);
+				let body: Readable;
+
+				if (this.request.body) {
+					// Piping a used request body is not possible.
+					if (this.request.bodyUsed) {
+						throw new DOMException(
+							'It is not possible to pipe a body after it is used.',
+							DOMExceptionNameEnum.networkError
+						);
+					}
+
+					body = new PassThrough();
+					this.request.body.pipe(<PassThrough>body);
+				}
+
+				const requestInit: IRequestInit = {
+					method: this.request.method,
+					signal: this.request.signal,
+					referrer: this.request.referrer,
+					referrerPolicy: this.request.referrerPolicy,
+					headers,
+					body
+				};
+
+				// When following a redirect to another top domain or different protocol, unsafe headers will be ignored.
+				if (
+					(this.request._url.hostname !== locationURL.hostname &&
+						!this.request._url.hostname.endsWith(locationURL.hostname)) ||
+					this.request._url.protocol !== locationURL.protocol
+				) {
+					for (const name of UNSAFE_CORS_REDIRECT_HEADERS) {
+						headers.delete(name);
+					}
+				}
+
+				if (nodeResponse.statusCode !== 303 && this.request.body) {
+					this.finalizeRequest();
+					this.reject(
+						new DOMException(
+							'Cannot follow a redirect with a request body.',
+							DOMExceptionNameEnum.networkError
+						)
+					);
+					return;
+				}
+
+				if (
+					nodeResponse.statusCode === 303 ||
+					((nodeResponse.statusCode === 301 || nodeResponse.statusCode === 302) &&
+						this.request.method === 'POST')
+				) {
+					requestInit.method = 'GET';
+					requestInit.body = undefined;
+					headers.delete('content-length');
+				}
+
+				const responseReferrerPolicy =
+					FetchRequestReferrerUtility.getReferrerPolicyFromHeader(headers);
+				if (responseReferrerPolicy) {
+					requestInit.referrerPolicy = responseReferrerPolicy;
+				}
+
+				const fetch = new (<typeof Fetch>this.constructor)({
+					ownerDocument: this.ownerDocument,
+					url: locationURL,
+					init: requestInit
 				});
+
+				this.finalizeRequest();
+				this.resolve(fetch.send());
+				return;
 			}
 
-			request_.on('response', (response_) => {
-				request_.setTimeout(0);
-				const headers = fromRawHeaders(response_.rawHeaders);
+			default:
+				this.reject(
+					new DOMException(
+						`Redirect option '${this.request.redirect}' is not a valid value of RequestRedirect`
+					)
+				);
+		}
+	}
 
-				// HTTP fetch step 5
-				if (isRedirect(response_.statusCode)) {
-					// HTTP fetch step 5.2
-					const location = headers.get('Location');
+	/**
+	 * Prepares the request before being sent.
+	 */
+	private prepareRequest(): void {
+		if (!this.request.referrerPolicy) {
+			(<string>this.request.referrerPolicy) = 'strict-origin-when-cross-origin';
+		}
 
-					// HTTP fetch step 5.3
-					let locationURL = null;
-					try {
-						locationURL = location === null ? null : new URL(location, request.url);
-					} catch {
-						// Error here can only be invalid URL in Location: header
-						// Do not throw when options.redirect == manual
-						// Let the user extract the errorneous redirect URL
-						if (request.redirect !== 'manual') {
-							reject(
-								new FetchError(
-									`uri requested responds with an invalid redirect URL: ${location}`,
-									'invalid-redirect'
-								)
-							);
-							finalize();
-							return;
-						}
-					}
+		if (this.request.referrer && this.request.referrer !== 'no-referrer') {
+			this.request._referrer = FetchRequestReferrerUtility.getSentReferrer(
+				this.ownerDocument,
+				this.request
+			);
+		} else {
+			this.request._referrer = 'no-referrer';
+		}
+	}
 
-					// HTTP fetch step 5.5
-					switch (request.redirect) {
-						case 'error':
-							reject(
-								new FetchError(
-									`uri requested responds with a redirect, redirect mode is set to error: ${request.url}`,
-									'no-redirect'
-								)
-							);
-							finalize();
-							return;
-						case 'manual':
-							// Nothing to do
-							break;
-						case 'follow': {
-							// HTTP-redirect fetch step 2
-							if (locationURL === null) {
-								break;
-							}
-
-							// HTTP-redirect fetch step 5
-							if (request.counter >= request.follow) {
-								reject(
-									new FetchError(`maximum redirect reached at: ${request.url}`, 'max-redirect')
-								);
-								finalize();
-								return;
-							}
-
-							// HTTP-redirect fetch step 6 (counter increment)
-							// Create a new Request object.
-							const requestOptions = {
-								headers: new Headers(request.headers),
-								follow: request.follow,
-								counter: request.counter + 1,
-								agent: request.agent,
-								compress: request.compress,
-								method: request.method,
-								body: clone(request),
-								signal: request.signal,
-								size: request.size,
-								referrer: request.referrer,
-								referrerPolicy: request.referrerPolicy
-							};
-
-							// When forwarding sensitive headers like "Authorization",
-							// "WWW-Authenticate", and "Cookie" to untrusted targets,
-							// Headers will be ignored when following a redirect to a domain
-							// That is not a subdomain match or exact match of the initial domain.
-							// For example, a redirect from "foo.com" to either "foo.com" or "sub.foo.com"
-							// Will forward the sensitive headers, but a redirect to "bar.com" will not.
-							// Headers will also be ignored when following a redirect to a domain using
-							// A different protocol. For example, a redirect from "https://foo.com" to "http://foo.com"
-							// Will not forward the sensitive headers
-							if (
-								!isDomainOrSubdomain(request.url, locationURL) ||
-								!isSameProtocol(request.url, locationURL)
-							) {
-								for (const name of ['authorization', 'www-authenticate', 'cookie', 'cookie2']) {
-									requestOptions.headers.delete(name);
-								}
-							}
-
-							// HTTP-redirect fetch step 9
-							if (
-								response_.statusCode !== 303 &&
-								request.body &&
-								options_.body instanceof Stream.Readable
-							) {
-								reject(
-									new FetchError(
-										'Cannot follow redirect with body being a readable stream',
-										'unsupported-redirect'
-									)
-								);
-								finalize();
-								return;
-							}
-
-							// HTTP-redirect fetch step 11
-							if (
-								response_.statusCode === 303 ||
-								((response_.statusCode === 301 || response_.statusCode === 302) &&
-									request.method === 'POST')
-							) {
-								requestOptions.method = 'GET';
-								requestOptions.body = undefined;
-								requestOptions.headers.delete('content-length');
-							}
-
-							// HTTP-redirect fetch step 14
-							const responseReferrerPolicy = parseReferrerPolicyFromHeader(headers);
-							if (responseReferrerPolicy) {
-								requestOptions.referrerPolicy = responseReferrerPolicy;
-							}
-
-							// HTTP-redirect fetch step 15
-							resolve(fetch(new Request(locationURL, requestOptions)));
-							finalize();
-							return;
-						}
-
-						default:
-							return reject(
-								new TypeError(
-									`Redirect option '${request.redirect}' is not a valid value of RequestRedirect`
-								)
-							);
-					}
-				}
-
-				// Prepare response
-				if (signal) {
-					response_.once('end', () => {
-						signal.removeEventListener('abort', abortAndFinalize);
-					});
-				}
-
-				let body = pump(response_, new PassThrough(), (error) => {
-					if (error) {
-						reject(error);
-					}
-				});
-				// See https://github.com/nodejs/node/pull/29376
-				/* C8 ignore next 3 */
-				if (process.version < 'v12.10') {
-					response_.on('aborted', abortAndFinalize);
-				}
-
-				const responseOptions = {
-					url: request.url,
-					status: response_.statusCode,
-					statusText: response_.statusMessage,
-					headers,
-					size: request.size,
-					counter: request.counter,
-					highWaterMark: request.highWaterMark
-				};
-
-				// HTTP-network fetch step 12.1.1.3
-				const codings = headers.get('Content-Encoding');
-
-				// HTTP-network fetch step 12.1.1.4: handle content codings
-
-				// In following scenarios we ignore compression support
-				// 1. compression support is disabled
-				// 2. HEAD request
-				// 3. no Content-Encoding header
-				// 4. no content response (204)
-				// 5. content not modified response (304)
-				if (
-					!request.compress ||
-					request.method === 'HEAD' ||
-					codings === null ||
-					response_.statusCode === 204 ||
-					response_.statusCode === 304
-				) {
-					response = new Response(body, responseOptions);
-					resolve(response);
-					return;
-				}
-
-				// For Node v6+
-				// Be less strict when decoding compressed responses, since sometimes
-				// Servers send slightly invalid responses that are still accepted
-				// By common browsers.
-				// Always using Z_SYNC_FLUSH is what cURL does.
-				const zlibOptions = {
-					flush: zlib.Z_SYNC_FLUSH,
-					finishFlush: zlib.Z_SYNC_FLUSH
-				};
-
-				// For gzip
-				if (codings === 'gzip' || codings === 'x-gzip') {
-					body = pump(body, zlib.createGunzip(zlibOptions), (error) => {
-						if (error) {
-							reject(error);
-						}
-					});
-					response = new Response(body, responseOptions);
-					resolve(response);
-					return;
-				}
-
-				// For deflate
-				if (codings === 'deflate' || codings === 'x-deflate') {
-					// Handle the infamous raw deflate response from old servers
-					// A hack for old IIS and Apache servers
-					const raw = pump(response_, new PassThrough(), (error) => {
-						if (error) {
-							reject(error);
-						}
-					});
-					raw.once('data', (chunk) => {
-						// See http://stackoverflow.com/questions/37519828
-						if ((chunk[0] & 0x0f) === 0x08) {
-							body = pump(body, zlib.createInflate(), (error) => {
-								if (error) {
-									reject(error);
-								}
-							});
-						} else {
-							body = pump(body, zlib.createInflateRaw(), (error) => {
-								if (error) {
-									reject(error);
-								}
-							});
-						}
-
-						response = new Response(body, responseOptions);
-						resolve(response);
-					});
-					raw.once('end', () => {
-						// Some old IIS servers return zero-length OK deflate responses, so
-						// 'data' is never emitted. See https://github.com/node-fetch/node-fetch/pull/903
-						if (!response) {
-							response = new Response(body, responseOptions);
-							resolve(response);
-						}
-					});
-					return;
-				}
-
-				// For br
-				if (codings === 'br') {
-					body = pump(body, zlib.createBrotliDecompress(), (error) => {
-						if (error) {
-							reject(error);
-						}
-					});
-					response = new Response(body, responseOptions);
-					resolve(response);
-					return;
-				}
-
-				// Otherwise, use response as-is
-				response = new Response(body, responseOptions);
-				resolve(response);
-			});
-
-			// eslint-disable-next-line promise/prefer-await-to-then
-			writeToStream(request_, request).catch(reject);
-		});
+	/**
+	 * Validates the request.
+	 *
+	 * @throws {Error} Throws an error if the request is invalid.
+	 */
+	private validateRequest(): void {
+		if (!SUPPORTED_SCHEMAS.includes(this.request._url.protocol)) {
+			throw new DOMException(
+				`Failed to fetch from "${
+					this.request.url
+				}": URL scheme "${this.request._url.protocol.replace(/:$/, '')}" is not supported.`,
+				DOMExceptionNameEnum.notSupportedError
+			);
+		}
 	}
 
 	/**
@@ -429,23 +497,19 @@ export default class Fetch {
 	 *
 	 * @returns Headers.
 	 */
-	private getHeaders(): Headers {
+	private getRequestHeaders(): { [key: string]: string } {
 		const headers = new Headers(this.request.headers);
 		const document = this.ownerDocument;
 		const cookie = document.defaultView.document.cookie;
-		const referrer = FetchReferrerUtility.getReferrer(document, this.request);
 
 		headers.set('User-Agent', document.defaultView.navigator.userAgent);
 
-		if (referrer) {
-			headers.set('Referer', referrer);
+		if (this.request._referrer instanceof URL) {
+			headers.set('Referer', this.request._referrer.href);
 		}
 
 		if (cookie) {
-			headers.set('Set-Cookie', cookie);
-		} else {
-			// For security reasons the cookie header should not be set by the consumer.
-			headers.delete('Set-Cookie');
+			headers.set('Cookie', cookie);
 		}
 
 		if (!headers.has('Accept')) {
@@ -461,10 +525,91 @@ export default class Fetch {
 			headers.set('Content-Length', String(this.request._contentLength));
 		}
 
-		if (!headers.has('Connection')) {
-			headers.set('Connection', 'close');
+		// TODO: Is this correct? "node-fetch" has it.
+		headers.set('Connection', 'close');
+
+		// We need to convert the headers to Node request headers.
+		const httpRequestHeaders = {};
+
+		for (const header of Object.values(headers._entries)) {
+			httpRequestHeaders[header.name] = header.value;
+		}
+
+		return httpRequestHeaders;
+	}
+
+	/**
+	 * Returns "true" if redirect.
+	 *
+	 * @param statusCode Status code.
+	 * @returns "true" if redirect.
+	 */
+	private isRedirect(statusCode: number): boolean {
+		return REDIRECT_STATUS_CODES.includes(statusCode);
+	}
+
+	/**
+	 * Appends headers to response.
+	 *
+	 * @param nodeResponse HTTP request.
+	 * @returns Headers.
+	 */
+	private getResponseHeaders(nodeResponse: IncomingMessage): Headers {
+		const headers = new Headers();
+		let key = null;
+
+		for (const header of nodeResponse.rawHeaders) {
+			if (!key) {
+				key = header;
+			} else {
+				const lowerKey = key.toLowerCase();
+
+				// Handles setting cookie headers to the document.
+				// "set-cookie" and "set-cookie2" are not allowed in response headers according to spec.
+				if (lowerKey === 'set-cookie' || lowerKey === 'set-cookie2') {
+					this.ownerDocument.cookie = header;
+				} else {
+					headers.append(key, header);
+				}
+
+				key = null;
+			}
 		}
 
 		return headers;
+	}
+
+	/**
+	 * Finalizes the request.
+	 */
+	private finalizeRequest(): void {
+		this.nodeRequest.destroy();
+		this.request.signal.removeEventListener('abort', this.listeners.onSignalAbort);
+	}
+
+	/**
+	 * Aborts the request.
+	 *
+	 * @param [response] Response.
+	 */
+	private abort(response?: Response): void {
+		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+
+		if (this.request.body) {
+			this.request.body.destroy(error);
+		}
+
+		if (!response || !response.body) {
+			if (this.reject) {
+				this.reject(error);
+			}
+			return;
+		}
+
+		response.body.emit('error', error);
+
+		if (this.reject) {
+			this.reject(error);
+		}
 	}
 }
