@@ -2,7 +2,7 @@ import Window from '../../src/window/Window';
 import IWindow from '../../src/window/IWindow';
 import IDocument from '../../src/nodes/document/IDocument';
 import ResourceFetch from '../../src/fetch/ResourceFetch';
-import IResponse from '../../src/fetch/IResponse';
+import IResponse from '../../src/fetch/types/IResponse';
 import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder';
 import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate';
 

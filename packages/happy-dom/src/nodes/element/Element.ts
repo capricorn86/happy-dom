@@ -21,7 +21,6 @@ import INode from '../node/INode';
 import IDocument from '../document/IDocument';
 import IHTMLCollection from './IHTMLCollection';
 import INodeList from '../node/INodeList';
-import HTMLCollectionFactory from './HTMLCollectionFactory';
 import { TInsertAdjacentPositions } from './IElement';
 import IText from '../text/IText';
 import IDOMRectList from './IDOMRectList';
@@ -47,7 +46,7 @@ export default class Element extends Node implements IElement {
 
 	public scrollTop = 0;
 	public scrollLeft = 0;
-	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
+	public children: IHTMLCollection<IElement, IElement> = new HTMLCollection<IElement, IElement>();
 	public readonly namespaceURI: string = null;
 
 	// Events
@@ -299,7 +298,7 @@ export default class Element extends Node implements IElement {
 	 * @param slot Slot.
 	 */
 	public set slot(title: string) {
-		this.setAttributeNS(null, 'slot', title);
+		this.setAttribute('slot', title);
 	}
 
 	/**
@@ -385,9 +384,8 @@ export default class Element extends Node implements IElement {
 	 * @override
 	 */
 	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
-		const returnValue = super.insertBefore(newNode, referenceNode);
 		ElementUtility.insertBefore(this, newNode, referenceNode);
-		return returnValue;
+		return super.insertBefore(newNode, referenceNode);
 	}
 
 	/**
@@ -756,7 +754,7 @@ export default class Element extends Node implements IElement {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): IHTMLCollection<IElement> {
+	public getElementsByClassName(className: string): IHTMLCollection<IElement, IElement> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -766,7 +764,7 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
+	public getElementsByTagName(tagName: string): IHTMLCollection<IElement, IElement> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -777,7 +775,10 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement> {
+	public getElementsByTagNameNS(
+		namespaceURI: string,
+		tagName: string
+	): IHTMLCollection<IElement, IElement> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
@@ -806,13 +807,17 @@ export default class Element extends Node implements IElement {
 			this._classList._updateIndices();
 		}
 
-		if (attribute.name === 'id') {
+		if (attribute.name === 'id' || attribute.name === 'name') {
 			if (this.parentNode && (<IElement>this.parentNode).children && attribute.value !== oldValue) {
 				if (oldValue) {
-					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(this);
+					(<HTMLCollection<IElement, IElement>>(
+						(<IElement>this.parentNode).children
+					))._removeNamedItem(this, oldValue);
 				}
 				if (attribute.value) {
-					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._appendNamedItem(this);
+					(<HTMLCollection<IElement, IElement>>(
+						(<IElement>this.parentNode).children
+					))._appendNamedItem(this, attribute.value);
 				}
 			}
 		}
@@ -913,6 +918,15 @@ export default class Element extends Node implements IElement {
 
 		if (attribute.name === 'class' && this._classList) {
 			this._classList._updateIndices();
+		}
+
+		if (attribute.name === 'id' || attribute.name === 'name') {
+			if (this.parentNode && (<IElement>this.parentNode).children && attribute.value) {
+				(<HTMLCollection<IElement, IElement>>(<IElement>this.parentNode).children)._removeNamedItem(
+					this,
+					attribute.value
+				);
+			}
 		}
 
 		if (

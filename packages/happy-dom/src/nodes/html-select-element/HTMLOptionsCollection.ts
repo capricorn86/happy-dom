@@ -1,9 +1,8 @@
 import DOMException from '../../exception/DOMException';
 import HTMLCollection from '../element/HTMLCollection';
-import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
 import IHTMLSelectElement from './IHTMLSelectElement';
 import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
-import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
+import IHTMLOptionsCollection from './IHTMLOptionsCollection';
 
 /**
  * HTML Options Collection.
@@ -12,7 +11,7 @@ import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollectio
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection.
  */
 export default class HTMLOptionsCollection
-	extends HTMLCollection<IHTMLOptionElement | IHTMLOptGroupElement>
+	extends HTMLCollection<IHTMLOptionElement, IHTMLOptionElement>
 	implements IHTMLOptionsCollection
 {
 	private _selectElement: IHTMLSelectElement;
@@ -50,7 +49,7 @@ export default class HTMLOptionsCollection
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): IHTMLOptionElement | IHTMLOptGroupElement {
+	public item(index: number): IHTMLOptionElement {
 		return this[index];
 	}
 
@@ -59,10 +58,7 @@ export default class HTMLOptionsCollection
 	 * @param element
 	 * @param before
 	 */
-	public add(
-		element: IHTMLOptionElement | IHTMLOptGroupElement,
-		before?: number | IHTMLOptionElement | IHTMLOptGroupElement
-	): void {
+	public add(element: IHTMLOptionElement, before?: number | IHTMLOptionElement): void {
 		if (!before && before !== 0) {
 			this._selectElement.appendChild(element);
 			return;

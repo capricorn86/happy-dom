@@ -33,7 +33,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	 * @returns Media.
 	 */
 	public get media(): string {
-		return this.getAttributeNS(null, 'media') || '';
+		return this.getAttribute('media') || '';
 	}
 
 	/**
@@ -42,7 +42,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	 * @param media Media.
 	 */
 	public set media(media: string) {
-		this.setAttributeNS(null, 'media', media);
+		this.setAttribute('media', media);
 	}
 
 	/**
@@ -51,7 +51,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	 * @returns Type.
 	 */
 	public get type(): string {
-		return this.getAttributeNS(null, 'type') || '';
+		return this.getAttribute('type') || '';
 	}
 
 	/**
@@ -60,7 +60,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	 * @param type Type.
 	 */
 	public set type(type: string) {
-		this.setAttributeNS(null, 'type', type);
+		this.setAttribute('type', type);
 	}
 
 	/**
@@ -69,7 +69,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
-		return this.getAttributeNS(null, 'disabled') !== null;
+		return this.getAttribute('disabled') !== null;
 	}
 
 	/**
@@ -81,7 +81,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 		if (!disabled) {
 			this.removeAttributeNS(null, 'disabled');
 		} else {
-			this.setAttributeNS(null, 'disabled', '');
+			this.setAttribute('disabled', '');
 		}
 	}
 }

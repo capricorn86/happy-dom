@@ -1,23 +1,6 @@
 /* eslint-disable camelcase */
 
 const modules = {
-	'node-fetch': {
-		parameters: {
-			url: null,
-			init: null
-		},
-		returnValue: {
-			error: null,
-			response: {
-				arrayBuffer: 'nodeFetch.arrayBuffer',
-				blob: 'nodeFetch.blob',
-				buffer: 'nodeFetch.buffer',
-				json: 'nodeFetch.json',
-				text: 'nodeFetch.text',
-				textConverted: 'nodeFetch.textConverted'
-			}
-		}
-	},
 	fs: {
 		promises: {
 			readFile: {
@@ -60,15 +43,19 @@ const modules = {
 	http: {
 		request: {
 			parameters: {
-				options: null
+				uri: null,
+				options: null,
+				callback: null
 			},
 			internal: {
 				body: '',
-				destroyed: false
+				destroyed: false,
+				timeout: null
 			},
 			returnValue: {
 				response: {
 					headers: { key1: 'value1', key2: 'value2', 'content-length': '17' },
+					rawHeaders: ['key1', 'value1', 'key2', 'value2', 'content-length', '17'],
 					statusCode: 200,
 					statusMessage: 'http.request.statusMessage',
 					body: 'http.request.body',
@@ -77,6 +64,18 @@ const modules = {
 				request: {
 					error: null
 				}
+			}
+		}
+	},
+	stream: {
+		pipeline: {
+			parameters: {
+				source: null,
+				destination: null,
+				callback: null
+			},
+			returnValue: {
+				error: null
 			}
 		}
 	}
@@ -88,59 +87,6 @@ global.mockedModules = {
 		global.mockedModules.modules = JSON.parse(JSON.stringify(modules));
 	}
 };
-
-/* eslint-disable jsdoc/require-jsdoc */
-class NodeFetchResponse {
-	arrayBuffer() {
-		return Promise.resolve(
-			global.mockedModules.modules['node-fetch'].returnValue.response.arrayBuffer
-		);
-	}
-	blob() {
-		return Promise.resolve(global.mockedModules.modules['node-fetch'].returnValue.response.blob);
-	}
-	buffer() {
-		return Promise.resolve(global.mockedModules.modules['node-fetch'].returnValue.response.buffer);
-	}
-	json() {
-		return Promise.resolve(global.mockedModules.modules['node-fetch'].returnValue.response.json);
-	}
-	text() {
-		return Promise.resolve(global.mockedModules.modules['node-fetch'].returnValue.response.text);
-	}
-	textConverted() {
-		return Promise.resolve(
-			global.mockedModules.modules['node-fetch'].returnValue.response.textConverted
-		);
-	}
-}
-
-class NodeFetchRequest extends NodeFetchResponse {
-	constructor(url) {
-		super();
-		this.url = url;
-	}
-}
-
-class NodeFetchHeaders {}
-
-jest.mock('node-fetch', () => {
-	return Object.assign(
-		(request, options) => {
-			global.mockedModules.modules['node-fetch'].parameters.url = request.url.href;
-			global.mockedModules.modules['node-fetch'].parameters.init = options;
-			if (global.mockedModules.modules['node-fetch'].error) {
-				return Promise.reject(global.mockedModules.modules['node-fetch'].returnValue.error);
-			}
-			return Promise.resolve(new NodeFetchResponse());
-		},
-		{
-			Response: NodeFetchResponse,
-			Request: NodeFetchRequest,
-			Headers: NodeFetchHeaders
-		}
-	);
-});
 
 jest.mock('fs', () => ({
 	promises: {
@@ -166,73 +112,120 @@ jest.mock('child_process', () => ({
 	}
 }));
 
+/**
+ *
+ */
 class IncomingMessage {
-	constructor() {
-		this.headers = {};
-		this.statusCode = null;
-		this.statusMessage = null;
-		this._eventListeners = {
-			data: [],
-			end: [],
-			error: []
-		};
-	}
+	headers = {};
+	rawHeaders = [];
+	statusCode = null;
+	statusMessage = null;
+	_eventListeners = {
+		data: [],
+		end: [],
+		error: []
+	};
+	_onceEventListeners = {
+		end: []
+	};
 
+	/**
+	 *
+	 * @param event
+	 * @param callback
+	 */
 	on(event, callback) {
 		this._eventListeners[event].push(callback);
+	}
+
+	/**
+	 *
+	 * @param event
+	 * @param callback
+	 */
+	once(event, callback) {
+		this._onceEventListeners[event].push(callback);
 	}
 }
 
 const httpMock = () => {
 	return {
-		request: (options, callback) => {
-			let errorCallback = null;
+		request: (a, b, c) => {
+			let eventListeners = {};
 			let timeout = null;
+			let uri = null;
+			let options = null;
+			let callback = null;
+
+			for (const arg of [a, b, c]) {
+				if (typeof arg === 'function') {
+					callback = arg;
+				} else if (typeof arg === 'string') {
+					uri = arg;
+				} else if (typeof arg === 'object') {
+					options = arg;
+				}
+			}
+
 			global.mockedModules.modules.http.request.parameters = {
-				options
+				uri,
+				options,
+				callback
 			};
 			const request = {
 				write: (chunk) => (global.mockedModules.modules.http.request.internal.body += chunk),
 				end: () => {
 					timeout = setTimeout(() => {
 						if (global.mockedModules.modules.http.request.returnValue.request.error) {
-							if (errorCallback) {
-								errorCallback(global.mockedModules.modules.http.request.returnValue.request.error);
+							if (eventListeners.error) {
+								eventListeners.error(
+									global.mockedModules.modules.http.request.returnValue.request.error
+								);
 							}
 						} else {
 							const response = new IncomingMessage();
 
 							response.headers =
 								global.mockedModules.modules.http.request.returnValue.response.headers;
+							response.rawHeaders =
+								global.mockedModules.modules.http.request.returnValue.response.rawHeaders;
 							response.statusCode =
 								global.mockedModules.modules.http.request.returnValue.response.statusCode;
 							response.statusMessage =
 								global.mockedModules.modules.http.request.returnValue.response.statusMessage;
 
-							callback(response);
+							if (callback) {
+								callback(response);
+							}
 
-							if (global.mockedModules.modules.http.request.returnValue.response.error) {
-								for (const listener of response._eventListeners.error) {
-									listener(global.mockedModules.modules.http.request.returnValue.response.error);
-								}
-							} else {
-								for (const listener of response._eventListeners.data) {
-									listener(global.mockedModules.modules.http.request.returnValue.response.body);
-								}
-								for (const listener of response._eventListeners.end) {
-									listener();
+							if (eventListeners.response) {
+								eventListeners.response(response);
+							}
+
+							if (response._eventListeners.error) {
+								if (global.mockedModules.modules.http.request.returnValue.response.error) {
+									for (const listener of response._eventListeners.error) {
+										listener(global.mockedModules.modules.http.request.returnValue.response.error);
+									}
+								} else {
+									for (const listener of response._eventListeners.data) {
+										listener(global.mockedModules.modules.http.request.returnValue.response.body);
+									}
+									for (const listener of response._eventListeners.end) {
+										listener();
+									}
 								}
 							}
 						}
 					});
 				},
+				setTimeout: (time) => (global.mockedModules.modules.http.request.internal.timeout = time),
 				on: (event, callback) => {
-					if (event === 'error') {
-						errorCallback = callback;
-					}
+					eventListeners[event] = callback;
 					return request;
 				},
 				destroy: () => {
+					eventListeners = {};
 					clearTimeout(timeout);
 					global.mockedModules.modules.http.request.internal.destroyed = true;
 				}

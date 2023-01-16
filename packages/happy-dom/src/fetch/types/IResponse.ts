@@ -1,6 +1,6 @@
 import IHeaders from './IHeaders';
 import IBlob from 'src/file/IBlob';
-import { Readable } from 'stream';
+import Stream from 'stream';
 
 /**
  * Fetch response.
@@ -15,7 +15,7 @@ export default interface IResponse {
 	readonly statusText: string;
 	readonly type: 'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect';
 	readonly url: string;
-	readonly body: Readable | null;
+	readonly body: Stream.Readable | null;
 	readonly bodyUsed: boolean;
 
 	arrayBuffer(): Promise<ArrayBuffer>;

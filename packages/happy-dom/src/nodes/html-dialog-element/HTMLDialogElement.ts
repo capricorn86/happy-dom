@@ -39,13 +39,13 @@ export default class HTMLDialogElement extends HTMLElement implements IHTMLDialo
 	 * Shows the modal.
 	 */
 	public showModal(): void {
-		this.setAttributeNS(null, 'open', '');
+		this.setAttribute('open', '');
 	}
 
 	/**
 	 * Shows the dialog.
 	 */
 	public show(): void {
-		this.setAttributeNS(null, 'open', '');
+		this.setAttribute('open', '');
 	}
 }

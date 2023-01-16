@@ -82,7 +82,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns Autoplay.
 	 */
 	public get autoplay(): boolean {
-		return this.getAttributeNS(null, 'autoplay') !== null;
+		return this.getAttribute('autoplay') !== null;
 	}
 
 	/**
@@ -94,7 +94,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 		if (!autoplay) {
 			this.removeAttributeNS(null, 'autoplay');
 		} else {
-			this.setAttributeNS(null, 'autoplay', '');
+			this.setAttribute('autoplay', '');
 		}
 	}
 
@@ -104,7 +104,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns Controls.
 	 */
 	public get controls(): boolean {
-		return this.getAttributeNS(null, 'controls') !== null;
+		return this.getAttribute('controls') !== null;
 	}
 
 	/**
@@ -116,7 +116,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 		if (!controls) {
 			this.removeAttributeNS(null, 'controls');
 		} else {
-			this.setAttributeNS(null, 'controls', '');
+			this.setAttribute('controls', '');
 		}
 	}
 
@@ -126,7 +126,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns Loop.
 	 */
 	public get loop(): boolean {
-		return this.getAttributeNS(null, 'loop') !== null;
+		return this.getAttribute('loop') !== null;
 	}
 
 	/**
@@ -138,7 +138,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 		if (!loop) {
 			this.removeAttributeNS(null, 'loop');
 		} else {
-			this.setAttributeNS(null, 'loop', '');
+			this.setAttribute('loop', '');
 		}
 	}
 	/**
@@ -152,7 +152,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 		}
 
 		if (!this.#defaultMuted) {
-			return this.getAttributeNS(null, 'muted') !== null;
+			return this.getAttribute('muted') !== null;
 		}
 
 		return false;
@@ -168,7 +168,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 		if (!muted && !this.#defaultMuted) {
 			this.removeAttributeNS(null, 'muted');
 		} else {
-			this.setAttributeNS(null, 'muted', '');
+			this.setAttribute('muted', '');
 		}
 	}
 
@@ -191,7 +191,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 		if (!this.#defaultMuted && !this.#muted) {
 			this.removeAttributeNS(null, 'muted');
 		} else {
-			this.setAttributeNS(null, 'muted', '');
+			this.setAttribute('muted', '');
 		}
 	}
 
@@ -201,7 +201,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns Src.
 	 */
 	public get src(): string {
-		return this.getAttributeNS(null, 'src') || '';
+		return this.getAttribute('src') || '';
 	}
 
 	/**
@@ -210,7 +210,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @param src Src.
 	 */
 	public set src(src: string) {
-		this.setAttributeNS(null, 'src', src);
+		this.setAttribute('src', src);
 		if (Boolean(src)) {
 			this.dispatchEvent(new Event('canplay', { bubbles: false, cancelable: false }));
 			this.dispatchEvent(new Event('durationchange', { bubbles: false, cancelable: false }));
@@ -264,7 +264,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns CrossOrigin.
 	 */
 	public get crossOrigin(): string {
-		return this.getAttributeNS(null, 'crossorigin');
+		return this.getAttribute('crossorigin');
 	}
 
 	/**
@@ -278,9 +278,9 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 		}
 
 		if (['', 'use-credentials', 'anonymous'].includes(crossOrigin)) {
-			this.setAttributeNS(null, 'crossorigin', crossOrigin);
+			this.setAttribute('crossorigin', crossOrigin);
 		} else {
-			this.setAttributeNS(null, 'crossorigin', 'anonymous');
+			this.setAttribute('crossorigin', 'anonymous');
 		}
 	}
 
@@ -380,7 +380,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns preload.
 	 */
 	public get preload(): string {
-		return this.getAttributeNS(null, 'preload') || 'auto';
+		return this.getAttribute('preload') || 'auto';
 	}
 
 	/**
@@ -389,7 +389,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @param preload preload.
 	 */
 	public set preload(preload: string) {
-		this.setAttributeNS(null, 'preload', preload);
+		this.setAttribute('preload', preload);
 	}
 
 	/**

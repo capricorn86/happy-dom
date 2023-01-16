@@ -16,8 +16,8 @@ export default class ScriptUtility {
 	 * @param element
 	 */
 	public static async loadExternalScript(element: HTMLScriptElement): Promise<void> {
-		const src = element.getAttributeNS(null, 'src');
-		const async = element.getAttributeNS(null, 'async') !== null;
+		const src = element.getAttribute('src');
+		const async = element.getAttribute('async') !== null;
 
 		if (
 			element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptFileLoading ||

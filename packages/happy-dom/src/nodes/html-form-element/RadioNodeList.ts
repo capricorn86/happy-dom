@@ -1,4 +1,4 @@
-import INode from '../node/INode';
+import IElement from '../element/IElement';
 import NodeList from '../node/NodeList';
 import IRadioNodeList from './IRadioNodeList';
 
@@ -7,7 +7,7 @@ import IRadioNodeList from './IRadioNodeList';
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/RadioNodeList
  */
-export default class RadioNodeList extends NodeList implements IRadioNodeList<INode> {
+export default class RadioNodeList extends NodeList<IElement> implements IRadioNodeList {
 	/**
 	 * Returns value.
 	 *

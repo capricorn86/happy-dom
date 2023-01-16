@@ -1,5 +1,5 @@
 import FormData from '../../form-data/FormData';
-import { Readable } from 'stream';
+import Stream from 'stream';
 import MultipartParser from './MultipartParser';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
@@ -22,7 +22,10 @@ export default class MultipartFormDataParser {
 	 * @param contentType Content type header value.
 	 * @returns Form data.
 	 */
-	public static async streamToFormData(body: Readable, contentType: string): Promise<FormData> {
+	public static async streamToFormData(
+		body: Stream.Readable,
+		contentType: string
+	): Promise<FormData> {
 		if (!/multipart/i.test(contentType)) {
 			throw new DOMException(
 				`Failed to build FormData object: The "content-type" header isn't of type "multipart/form-data".`,
@@ -128,7 +131,7 @@ export default class MultipartFormDataParser {
 	public static formDataToStream(
 		window: IWindow,
 		formData: FormData
-	): { contentType: string; contentLength: number; stream: Readable } {
+	): { contentType: string; contentLength: number; stream: Stream.Readable } {
 		const boundary = '----HappyDOMFormDataBoundary' + Math.random().toString(36);
 		const chunks: Buffer[] = [];
 		const prefix = `--${boundary}\r\nContent-Disposition: form-data; name="`;

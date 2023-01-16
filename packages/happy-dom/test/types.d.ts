@@ -1,24 +1,5 @@
 declare let mockedModules: {
 	modules: {
-		'node-fetch': {
-			parameters: {
-				url: string;
-				init: {
-					headers: { [k: string]: string };
-				};
-			};
-			returnValue: {
-				error: Error;
-				response: {
-					arrayBuffer: Buffer;
-					blob: object;
-					buffer: Buffer;
-					json: object;
-					text: string;
-					textConverted: string;
-				};
-			};
-		};
 		fs: {
 			promises: {
 				readFile: {
@@ -61,23 +42,39 @@ declare let mockedModules: {
 		http: {
 			request: {
 				parameters: {
-					options: object;
+					uri: string | null;
+					options: object | null;
+					callback: function | null;
 				};
 				internal: {
-					body: string;
+					body: string | null;
 					destroyed: boolean;
+					timeout: number | null;
 				};
 				returnValue: {
 					response: {
-						headers: { [k: string]: string };
-						statusCode: number;
-						statusMessage: string;
-						body: string;
-						error: Error;
+						headers: { [k: string]: string } | null;
+						rawHeaders: string[] | null;
+						statusCode: number | null;
+						statusMessage: string | null;
+						body: string | null;
+						error: Error | null;
 					};
 					request: {
-						error: Error;
+						error: Error | null;
 					};
+				};
+			};
+		};
+		stream: {
+			pipeline: {
+				parameters: {
+					source: object | null;
+					destination: object | null;
+					callback: (error: Error | null) => void;
+				};
+				returnValue: {
+					error: Error | null;
 				};
 			};
 		};

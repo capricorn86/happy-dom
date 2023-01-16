@@ -23,7 +23,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @returns Type.
 	 */
 	public get type(): string {
-		return this.getAttributeNS(null, 'type') || '';
+		return this.getAttribute('type') || '';
 	}
 
 	/**
@@ -32,7 +32,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @param type Type.
 	 */
 	public set type(type: string) {
-		this.setAttributeNS(null, 'type', type);
+		this.setAttribute('type', type);
 	}
 
 	/**
@@ -41,7 +41,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @returns Source.
 	 */
 	public get src(): string {
-		return this.getAttributeNS(null, 'src') || '';
+		return this.getAttribute('src') || '';
 	}
 
 	/**
@@ -50,7 +50,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @param source Source.
 	 */
 	public set src(src: string) {
-		this.setAttributeNS(null, 'src', src);
+		this.setAttribute('src', src);
 	}
 
 	/**
@@ -59,7 +59,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @returns Charset.
 	 */
 	public get charset(): string {
-		return this.getAttributeNS(null, 'charset') || '';
+		return this.getAttribute('charset') || '';
 	}
 
 	/**
@@ -68,7 +68,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @param charset Charset.
 	 */
 	public set charset(charset: string) {
-		this.setAttributeNS(null, 'charset', charset);
+		this.setAttribute('charset', charset);
 	}
 
 	/**
@@ -77,7 +77,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @returns Lang.
 	 */
 	public get lang(): string {
-		return this.getAttributeNS(null, 'lang') || '';
+		return this.getAttribute('lang') || '';
 	}
 
 	/**
@@ -86,7 +86,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @param lang Lang.
 	 */
 	public set lang(lang: string) {
-		this.setAttributeNS(null, 'lang', lang);
+		this.setAttribute('lang', lang);
 	}
 
 	/**
@@ -95,7 +95,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @returns Async.
 	 */
 	public get async(): boolean {
-		return this.getAttributeNS(null, 'async') !== null;
+		return this.getAttribute('async') !== null;
 	}
 
 	/**
@@ -107,7 +107,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 		if (!async) {
 			this.removeAttributeNS(null, 'async');
 		} else {
-			this.setAttributeNS(null, 'async', '');
+			this.setAttribute('async', '');
 		}
 	}
 
@@ -117,7 +117,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @returns Defer.
 	 */
 	public get defer(): boolean {
-		return this.getAttributeNS(null, 'defer') !== null;
+		return this.getAttribute('defer') !== null;
 	}
 
 	/**
@@ -129,7 +129,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 		if (!defer) {
 			this.removeAttributeNS(null, 'defer');
 		} else {
-			this.setAttributeNS(null, 'defer', '');
+			this.setAttribute('defer', '');
 		}
 	}
 
@@ -189,13 +189,13 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 		super._connectToNode(parentNode);
 
 		if (isConnected !== isParentConnected && this._evaluateScript) {
-			const src = this.getAttributeNS(null, 'src');
+			const src = this.getAttribute('src');
 
 			if (src !== null) {
 				ScriptUtility.loadExternalScript(this);
 			} else if (!this.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation) {
 				const textContent = this.textContent;
-				const type = this.getAttributeNS(null, 'type');
+				const type = this.getAttribute('type');
 				if (
 					textContent &&
 					(type === null ||

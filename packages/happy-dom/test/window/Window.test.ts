@@ -12,6 +12,8 @@ import Selection from '../../src/selection/Selection';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import CustomElement from '../../test/CustomElement';
+import Request from '../../src/fetch/Request';
+import Response from '../../src/fetch/Response';
 import { URL } from 'url';
 
 describe('Window', () => {
@@ -31,8 +33,9 @@ describe('Window', () => {
 
 	describe('constructor()', () => {
 		it('Is able to handle multiple instances of Window', () => {
-			const secondWindow = new Window();
-			const thirdWindow = new Window();
+			const firstWindow = new Window({ url: 'https://localhost:8080' });
+			const secondWindow = new Window({ url: 'https://localhost:8080' });
+			const thirdWindow = new Window({ url: 'https://localhost:8080' });
 
 			for (const className of [
 				'Response',
@@ -42,37 +45,38 @@ describe('Window', () => {
 				'DOMParser',
 				'Range'
 			]) {
-				const thirdInstance = new thirdWindow[className]();
-				const firstInstance = new window[className]();
-				const secondInstance = new secondWindow[className]();
+				const input = className === 'Request' ? 'test' : undefined;
+				const thirdInstance = new thirdWindow[className](input);
+				const firstInstance = new firstWindow[className](input);
+				const secondInstance = new secondWindow[className](input);
 				const property = className === 'Image' ? 'ownerDocument' : '_ownerDocument';
 
-				expect(firstInstance[property] === window.document).toBe(true);
+				expect(firstInstance[property] === firstWindow.document).toBe(true);
 				expect(secondInstance[property] === secondWindow.document).toBe(true);
 				expect(thirdInstance[property] === thirdWindow.document).toBe(true);
 			}
 
 			const thirdElement = thirdWindow.document.createElement('div');
-			const firstElement = window.document.createElement('div');
+			const firstElement = firstWindow.document.createElement('div');
 			const secondElement = secondWindow.document.createElement('div');
 
-			expect(firstElement.ownerDocument === window.document).toBe(true);
+			expect(firstElement.ownerDocument === firstWindow.document).toBe(true);
 			expect(secondElement.ownerDocument === secondWindow.document).toBe(true);
 			expect(thirdElement.ownerDocument === thirdWindow.document).toBe(true);
 
 			const thirdText = thirdWindow.document.createTextNode('Test');
-			const firstText = window.document.createTextNode('Test');
+			const firstText = firstWindow.document.createTextNode('Test');
 			const secondText = secondWindow.document.createTextNode('Test');
 
-			expect(firstText.ownerDocument === window.document).toBe(true);
+			expect(firstText.ownerDocument === firstWindow.document).toBe(true);
 			expect(secondText.ownerDocument === secondWindow.document).toBe(true);
 			expect(thirdText.ownerDocument === thirdWindow.document).toBe(true);
 
 			const thirdComment = thirdWindow.document.createComment('Test');
-			const firstComment = window.document.createComment('Test');
+			const firstComment = firstWindow.document.createComment('Test');
 			const secondComment = secondWindow.document.createComment('Test');
 
-			expect(firstComment.ownerDocument === window.document).toBe(true);
+			expect(firstComment.ownerDocument === firstWindow.document).toBe(true);
 			expect(secondComment.ownerDocument === secondWindow.document).toBe(true);
 			expect(thirdComment.ownerDocument === thirdWindow.document).toBe(true);
 		});
@@ -148,32 +152,18 @@ describe('Window', () => {
 
 	describe('get Response()', () => {
 		it('Returns Response class.', () => {
-			expect(window.Response['_ownerDocument']).toBe(document);
-			expect(window.Response.name).toBe('Response');
+			const response = new window.Response();
+			expect(response instanceof Response).toBe(true);
+			expect(response['_ownerDocument']).toBe(document);
 		});
-
-		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
-			it(`Handles the "${method}" method with the async task manager.`, async () => {
-				const response = new window.Response();
-				const result = await response[method]();
-				expect(result).toBe(mockedModules.modules['node-fetch'].returnValue.response[method]);
-			});
-		}
 	});
 
 	describe('get Request()', () => {
 		it('Returns Request class.', () => {
-			expect(window.Request['_ownerDocument']).toBe(document);
-			expect(window.Request.name).toBe('Request');
+			const request = new window.Request('test');
+			expect(request instanceof Request).toBe(true);
+			expect(request['_ownerDocument']).toBe(document);
 		});
-
-		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
-			it(`Handles the "${method}" method with the async task manager.`, async () => {
-				const request = new window.Request('test');
-				const result = await request[method]();
-				expect(result).toBe(mockedModules.modules['node-fetch'].returnValue.response[method]);
-			});
-		}
 	});
 
 	describe('get performance()', () => {
@@ -461,35 +451,30 @@ describe('Window', () => {
 	});
 
 	describe('fetch()', () => {
-		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
-			it(`Handles successful "${method}" request.`, async () => {
-				window.location.href = 'https://localhost:8080';
-				document.cookie = 'name1=value1';
-				document.cookie = 'name2=value2';
+		it(`Handles successful "text" request.`, async () => {
+			window.location.href = 'https://localhost:8080';
+			document.cookie = 'name1=value1';
+			document.cookie = 'name2=value2';
 
-				const expectedUrl = 'https://localhost:8080/path/';
-				const expectedOptions = {
-					method: 'PUT',
-					headers: {
-						'test-header': 'test-value'
-					}
-				};
-				const response = await window.fetch(expectedUrl, expectedOptions);
-				const result = await response[method]();
+			const expectedUrl = 'https://localhost:8080/path/';
 
-				expect(mockedModules.modules['node-fetch'].parameters.init).toEqual({
-					...expectedOptions,
-					headers: {
-						...expectedOptions.headers,
-						'user-agent': window.navigator.userAgent,
-						'set-cookie': 'name1=value1; name2=value2',
-						referer: window.location.origin
-					}
-				});
-				expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedUrl);
-				expect(result).toEqual(mockedModules.modules['node-fetch'].returnValue.response[method]);
+			debugger;
+			const response = await window.fetch(expectedUrl, {
+				method: 'PUT',
+				headers: {
+					'test-header': 'test-value'
+				}
 			});
-		}
+			const result = await response.text();
+
+			expect(mockedModules.modules.http.request.parameters).toEqual({
+				uri: expectedUrl,
+				options: {},
+				callback: null
+			});
+
+			expect(result).toBe(mockedModules.modules.http.request.returnValue.response.body);
+		});
 
 		it('Handles relative URL.', async () => {
 			const expectedPath = '/path/';

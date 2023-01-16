@@ -1,6 +1,6 @@
 import MultipartFormDataParser from '../multipart/MultipartFormDataParser';
 import IWindow from '../../window/IWindow';
-import { PassThrough, Readable, Stream } from 'stream';
+import Stream from 'stream';
 import { URLSearchParams } from 'url';
 import FormData from '../../form-data/FormData';
 import Blob from '../../file/Blob';
@@ -26,8 +26,8 @@ export default class FetchBodyUtility {
 	public static getBodyStream(
 		window: IWindow,
 		body: IRequestBody | IResponseBody
-	): { contentType: string; contentLength: number | null; stream: Readable } {
-		if (body === null) {
+	): { contentType: string; contentLength: number | null; stream: Stream.Readable } {
+		if (body === null || body === undefined) {
 			return { stream: null, contentType: null, contentLength: null };
 		} else if (body instanceof URLSearchParams) {
 			const bodyAsString = body.toString();
@@ -56,10 +56,10 @@ export default class FetchBodyUtility {
 				contentType: null,
 				contentLength: body.byteLength
 			};
-		} else if (body instanceof Stream) {
+		} else if (body instanceof Stream.Stream) {
 			// Clones the body
-			const stream = new PassThrough();
-			body.pipe(<PassThrough>stream);
+			const stream = new Stream.PassThrough();
+			body.pipe(<Stream.PassThrough>stream);
 			return {
 				stream,
 				contentType: null,
@@ -88,8 +88,8 @@ export default class FetchBodyUtility {
 	 * @param [size] Size.
 	 * @returns Promise.
 	 */
-	public static async consumeBodyStream(body: Readable | null, size = 0): Promise<Buffer> {
-		if (body === null || !(body instanceof Stream)) {
+	public static async consumeBodyStream(body: Stream.Readable | null, size = 0): Promise<Buffer> {
+		if (body === null || !(body instanceof Stream.Stream)) {
 			return Buffer.alloc(0);
 		}
 
@@ -114,8 +114,8 @@ export default class FetchBodyUtility {
 		}
 
 		if (
-			(<Readable>body).readableEnded === false ||
-			(<Readable>body)['_readableState']?.ended === false
+			(<Stream.Readable>body).readableEnded === false ||
+			(<Stream.Readable>body)['_readableState']?.ended === false
 		) {
 			throw new DOMException(
 				`Premature close of server response.`,

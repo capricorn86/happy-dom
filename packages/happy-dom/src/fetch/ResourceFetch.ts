@@ -1,6 +1,6 @@
-import RelativeURL from '../location/RelativeURL';
 import DOMException from '../exception/DOMException';
 import IDocument from '../nodes/document/IDocument';
+import { URL } from 'url';
 
 /**
  * Helper class for performing fetch of resources.
@@ -32,7 +32,7 @@ export default class ResourceFetch {
 	 */
 	public static fetchSync(document: IDocument, url: string): string {
 		// We want to only load SyncRequest when it is needed to improve performance and not have direct dependencies to server side packages.
-		const absoluteURL = RelativeURL.getAbsoluteURL(document.defaultView.location, url).href;
+		const absoluteURL = new URL(url, document.defaultView.location).href;
 
 		const xhr = new document.defaultView.XMLHttpRequest();
 		xhr.open('GET', absoluteURL, false);

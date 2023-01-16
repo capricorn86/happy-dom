@@ -7,9 +7,10 @@ import IHTMLElement from '../html-element/IHTMLElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement.
  */
 export default interface IHTMLButtonElement extends IHTMLElement {
-	type: string;
-	disabled: boolean;
+	name: string;
 	value: string;
+	disabled: boolean;
+	type: string;
 
 	/**
 	 * Checks validity.

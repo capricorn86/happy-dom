@@ -4,7 +4,7 @@ import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import IHTMLCollection from '../element/IHTMLCollection';
 import INode from '../node/INode';
-import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
+import HTMLCollection from '../element/HTMLCollection';
 
 /**
  * Parent node utility.
@@ -79,16 +79,16 @@ export default class ParentNodeUtility {
 	public static getElementsByClassName(
 		parentNode: IElement | IDocumentFragment | IDocument,
 		className: string
-	): IHTMLCollection<IElement> {
-		const matches = HTMLCollectionFactory.create();
+	): IHTMLCollection<IElement, IElement> {
+		let matches = new HTMLCollection<IElement, IElement>();
 
 		for (const child of parentNode.children) {
-			if (child.classList.contains(className)) {
+			if (child.className.split(' ').includes(className)) {
 				matches.push(child);
 			}
-			for (const match of this.getElementsByTagName(<IElement>child, className)) {
-				matches.push(match);
-			}
+			matches = <HTMLCollection<IElement, IElement>>(
+				matches.concat(this.getElementsByClassName(<IElement>child, className))
+			);
 		}
 
 		return matches;
@@ -104,18 +104,18 @@ export default class ParentNodeUtility {
 	public static getElementsByTagName(
 		parentNode: IElement | IDocumentFragment | IDocument,
 		tagName: string
-	): IHTMLCollection<IElement> {
+	): IHTMLCollection<IElement, IElement> {
 		const upperTagName = tagName.toUpperCase();
-		const matches = HTMLCollectionFactory.create();
 		const includeAll = tagName === '*';
+		let matches = new HTMLCollection<IElement, IElement>();
 
 		for (const child of parentNode.children) {
 			if (includeAll || child.tagName === upperTagName) {
 				matches.push(child);
 			}
-			for (const match of this.getElementsByTagName(<IElement>child, tagName)) {
-				matches.push(match);
-			}
+			matches = <HTMLCollection<IElement, IElement>>(
+				matches.concat(this.getElementsByTagName(<IElement>child, tagName))
+			);
 		}
 
 		return matches;
@@ -133,18 +133,18 @@ export default class ParentNodeUtility {
 		parentNode: IElement | IDocumentFragment | IDocument,
 		namespaceURI: string,
 		tagName: string
-	): IHTMLCollection<IElement> {
+	): IHTMLCollection<IElement, IElement> {
 		const upperTagName = tagName.toUpperCase();
-		const matches = HTMLCollectionFactory.create();
 		const includeAll = tagName === '*';
+		let matches = new HTMLCollection<IElement, IElement>();
 
 		for (const child of parentNode.children) {
 			if ((includeAll || child.tagName === upperTagName) && child.namespaceURI === namespaceURI) {
 				matches.push(child);
 			}
-			for (const match of this.getElementsByTagNameNS(<IElement>child, namespaceURI, tagName)) {
-				matches.push(match);
-			}
+			matches = <HTMLCollection<IElement, IElement>>(
+				matches.concat(this.getElementsByTagNameNS(<IElement>child, namespaceURI, tagName))
+			);
 		}
 
 		return matches;

@@ -1,7 +1,7 @@
 import IHeaders from './IHeaders';
 import IBlob from '../../file/IBlob';
 import AbortSignal from '../AbortSignal';
-import { Readable } from 'stream';
+import Stream from 'stream';
 import IRequestReferrerPolicy from './IRequestReferrerPolicy';
 import IRequestRedirect from './IRequestRedirect';
 
@@ -14,7 +14,7 @@ export default interface IRequest {
 	readonly redirect: IRequestRedirect;
 	readonly referrer: string;
 	readonly url: string;
-	readonly body: Readable | null;
+	readonly body: Stream.Readable | null;
 	readonly bodyUsed: boolean;
 	readonly referrerPolicy: IRequestReferrerPolicy;
 	readonly signal: AbortSignal | null;

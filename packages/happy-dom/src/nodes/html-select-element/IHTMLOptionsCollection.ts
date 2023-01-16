@@ -1,6 +1,5 @@
 import IHTMLCollection from '../element/IHTMLCollection';
-import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
-import IHTMLOptionElement from './IHTMLOptionElement';
+import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
 
 /**
  * HTML Options Collection.
@@ -9,7 +8,7 @@ import IHTMLOptionElement from './IHTMLOptionElement';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection.
  */
 export default interface IHTMLOptionsCollection
-	extends IHTMLCollection<IHTMLOptionElement | IHTMLOptGroupElement> {
+	extends IHTMLCollection<IHTMLOptionElement, IHTMLOptionElement> {
 	selectedIndex: number;
 	length: number;
 
@@ -19,17 +18,14 @@ export default interface IHTMLOptionsCollection
 	 * @param element HTMLOptionElement or HTMLOptGroupElement to add.
 	 * @param before HTMLOptionElement or index number.
 	 */
-	add(
-		element: IHTMLOptionElement | IHTMLOptGroupElement,
-		before?: number | IHTMLOptionElement | IHTMLOptGroupElement
-	): void;
+	add(element: IHTMLOptionElement, before?: number | IHTMLOptionElement): void;
 
 	/**
 	 * Returns option element by index.
 	 *
 	 * @param index Index.
 	 */
-	item(index: number): IHTMLOptionElement | IHTMLOptGroupElement;
+	item(index: number): IHTMLOptionElement;
 
 	/**
 	 * Removes option element from the collection.

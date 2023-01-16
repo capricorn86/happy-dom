@@ -1,4 +1,7 @@
+import IAttr from '../attr/IAttr';
 import HTMLElement from '../html-element/HTMLElement';
+import HTMLFormElement from '../html-form-element/HTMLFormElement';
+import INode from '../node/INode';
 import IHTMLButtonElement from './IHTMLButtonElement';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
@@ -13,12 +16,30 @@ We can improve performance a bit if we make the types as a constant.
  */
 export default class HTMLButtonElement extends HTMLElement implements IHTMLButtonElement {
 	/**
+	 * Returns name.
+	 *
+	 * @returns Name.
+	 */
+	public get name(): string {
+		return this.getAttribute('name') || '';
+	}
+
+	/**
+	 * Sets name.
+	 *
+	 * @param name Name.
+	 */
+	public set name(name: string) {
+		this.setAttribute('name', name);
+	}
+
+	/**
 	 * Returns value.
 	 *
 	 * @returns Value.
 	 */
 	public get value(): string {
-		return this.getAttributeNS(null, 'value');
+		return this.getAttribute('value');
 	}
 
 	/**
@@ -27,7 +48,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		this.setAttributeNS(null, 'value', value);
+		this.setAttribute('value', value);
 	}
 
 	/**
@@ -36,7 +57,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
-		return this.getAttributeNS(null, 'disabled') !== null;
+		return this.getAttribute('disabled') !== null;
 	}
 
 	/**
@@ -48,7 +69,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 		if (!disabled) {
 			this.removeAttributeNS(null, 'disabled');
 		} else {
-			this.setAttributeNS(null, 'disabled', '');
+			this.setAttribute('disabled', '');
 		}
 	}
 
@@ -58,7 +79,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @returns Type
 	 */
 	public get type(): string {
-		return this._sanitizeType(this.getAttributeNS(null, 'type'));
+		return this._sanitizeType(this.getAttribute('type'));
 	}
 
 	/**
@@ -67,7 +88,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @param v Type
 	 */
 	public set type(v: string) {
-		this.setAttributeNS(null, 'type', this._sanitizeType(v));
+		this.setAttribute('type', this._sanitizeType(v));
 	}
 
 	/**
@@ -91,5 +112,57 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 		}
 
 		return type;
+	}
+
+	/**
+	 * @override
+	 */
+	public override setAttributeNode(attribute: IAttr): IAttr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+		const oldValue = replacedAttribute ? replacedAttribute.value : null;
+
+		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
+			if (oldValue) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, oldValue);
+			}
+			if (attribute.value) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
+			}
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeAttributeNode(attribute: IAttr): IAttr {
+		super.removeAttributeNode(attribute);
+
+		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
+			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
+		}
+
+		return attribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override _connectToNode(parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this._formNode;
+
+		super._connectToNode(parentNode);
+
+		if (oldFormNode !== this._formNode) {
+			if (oldFormNode) {
+				oldFormNode._removeFormControlItem(this, this.name);
+				oldFormNode._removeFormControlItem(this, this.id);
+			}
+			if (this._formNode) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.name);
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.id);
+			}
+		}
 	}
 }

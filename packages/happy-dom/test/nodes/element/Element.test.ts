@@ -836,7 +836,7 @@ describe('Element', () => {
 				.mockImplementation((parentNode, requestedClassName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedClassName).toEqual(className);
-					return <IHTMLCollection<IElement>>[child];
+					return <IHTMLCollection<IElement, IElement>>[child];
 				});
 
 			const result = element.getElementsByClassName(className);
@@ -855,7 +855,7 @@ describe('Element', () => {
 				.mockImplementation((parentNode, requestedTagName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>[child];
+					return <IHTMLCollection<IElement, IElement>>[child];
 				});
 
 			const result = element.getElementsByTagName(tagName);
@@ -876,7 +876,7 @@ describe('Element', () => {
 					expect(parentNode).toBe(element);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>[child];
+					return <IHTMLCollection<IElement, IElement>>[child];
 				});
 
 			const result = element.getElementsByTagNameNS(namespaceURI, tagName);
@@ -994,7 +994,7 @@ describe('Element', () => {
 
 			element.removeChild(div);
 
-			expect(element.children).toEqual([span]);
+			expect(Array.from(element.children)).toEqual([span]);
 		});
 	});
 

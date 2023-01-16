@@ -24,7 +24,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Alt.
 	 */
 	public get alt(): string {
-		return this.getAttributeNS(null, 'alt') || '';
+		return this.getAttribute('alt') || '';
 	}
 
 	/**
@@ -33,7 +33,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param alt Alt.
 	 */
 	public set alt(alt: string) {
-		this.setAttributeNS(null, 'alt', alt);
+		this.setAttribute('alt', alt);
 	}
 
 	/**
@@ -51,7 +51,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Height.
 	 */
 	public get height(): number {
-		const height = this.getAttributeNS(null, 'height');
+		const height = this.getAttribute('height');
 		return height !== null ? Number(height) : 0;
 	}
 
@@ -61,7 +61,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param height Height.
 	 */
 	public set height(height: number) {
-		this.setAttributeNS(null, 'height', String(height));
+		this.setAttribute('height', String(height));
 	}
 
 	/**
@@ -70,7 +70,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Is map.
 	 */
 	public get isMap(): boolean {
-		return this.getAttributeNS(null, 'ismap') !== null;
+		return this.getAttribute('ismap') !== null;
 	}
 
 	/**
@@ -82,7 +82,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 		if (!isMap) {
 			this.removeAttributeNS(null, 'ismap');
 		} else {
-			this.setAttributeNS(null, 'ismap', '');
+			this.setAttribute('ismap', '');
 		}
 	}
 
@@ -92,7 +92,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Referrer policy.
 	 */
 	public get referrerPolicy(): string {
-		return this.getAttributeNS(null, 'referrerpolicy') || '';
+		return this.getAttribute('referrerpolicy') || '';
 	}
 
 	/**
@@ -101,7 +101,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param referrerPolicy Referrer policy.
 	 */
 	public set referrerPolicy(referrerPolicy: string) {
-		this.setAttributeNS(null, 'referrerpolicy', referrerPolicy);
+		this.setAttribute('referrerpolicy', referrerPolicy);
 	}
 
 	/**
@@ -110,7 +110,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Sizes.
 	 */
 	public get sizes(): string {
-		return this.getAttributeNS(null, 'sizes') || '';
+		return this.getAttribute('sizes') || '';
 	}
 
 	/**
@@ -119,7 +119,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param sizes Sizes.
 	 */
 	public set sizes(sizes: string) {
-		this.setAttributeNS(null, 'sizes', sizes);
+		this.setAttribute('sizes', sizes);
 	}
 
 	/**
@@ -128,7 +128,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Source.
 	 */
 	public get src(): string {
-		return this.getAttributeNS(null, 'src') || '';
+		return this.getAttribute('src') || '';
 	}
 
 	/**
@@ -137,7 +137,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param source Source.
 	 */
 	public set src(src: string) {
-		this.setAttributeNS(null, 'src', src);
+		this.setAttribute('src', src);
 	}
 
 	/**
@@ -146,7 +146,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Source.
 	 */
 	public get srcset(): string {
-		return this.getAttributeNS(null, 'srcset') || '';
+		return this.getAttribute('srcset') || '';
 	}
 
 	/**
@@ -155,7 +155,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param srcset Src set.
 	 */
 	public set srcset(srcset: string) {
-		this.setAttributeNS(null, 'srcset', srcset);
+		this.setAttribute('srcset', srcset);
 	}
 
 	/**
@@ -164,7 +164,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Use map.
 	 */
 	public get useMap(): string {
-		return this.getAttributeNS(null, 'usemap') || '';
+		return this.getAttribute('usemap') || '';
 	}
 
 	/**
@@ -173,7 +173,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param useMap Is map.
 	 */
 	public set useMap(useMap: string) {
-		this.setAttributeNS(null, 'usemap', useMap);
+		this.setAttribute('usemap', useMap);
 	}
 
 	/**
@@ -182,7 +182,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Width.
 	 */
 	public get width(): number {
-		const width = this.getAttributeNS(null, 'width');
+		const width = this.getAttribute('width');
 		return width !== null ? Number(width) : 0;
 	}
 
@@ -192,7 +192,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param width Width.
 	 */
 	public set width(width: number) {
-		this.setAttributeNS(null, 'width', String(width));
+		this.setAttribute('width', String(width));
 	}
 
 	/**

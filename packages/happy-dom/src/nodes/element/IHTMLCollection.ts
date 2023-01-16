@@ -1,7 +1,7 @@
 /**
  * HTMLCollection.
  */
-export default interface IHTMLCollection<T> extends Array<T> {
+export default interface IHTMLCollection<T, NamedItem> extends Array<T> {
 	/**
 	 * Returns item by index.
 	 *
@@ -15,5 +15,5 @@ export default interface IHTMLCollection<T> extends Array<T> {
 	 * @param name Name.
 	 * @returns Node.
 	 */
-	namedItem(name: string): T | null;
+	namedItem(name: string): NamedItem | null;
 }

@@ -5,15 +5,15 @@ import ParentNodeUtility from '../parent-node/ParentNodeUtility';
 import IDocumentFragment from './IDocumentFragment';
 import INode from '../node/INode';
 import IHTMLCollection from '../element/IHTMLCollection';
-import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 import ElementUtility from '../element/ElementUtility';
+import HTMLCollection from '../element/HTMLCollection';
 
 /**
  * DocumentFragment.
  */
 export default class DocumentFragment extends Node implements IDocumentFragment {
 	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
-	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
+	public readonly children: IHTMLCollection<IElement, IElement> = new HTMLCollection();
 	public _rootNode: INode = this;
 
 	/**
@@ -170,8 +170,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @override
 	 */
 	public insertBefore(newNode: INode, referenceNode?: INode): INode {
-		const returnValue = super.insertBefore(newNode, referenceNode);
 		ElementUtility.insertBefore(this, newNode, referenceNode);
-		return returnValue;
+		return super.insertBefore(newNode, referenceNode);
 	}
 }

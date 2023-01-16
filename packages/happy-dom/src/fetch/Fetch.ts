@@ -13,7 +13,7 @@ import HTTPS from 'https';
 import Zlib from 'zlib';
 import { URL } from 'url';
 import { Socket } from 'net';
-import { PassThrough, pipeline as Pipeline, Readable } from 'stream';
+import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
@@ -33,8 +33,8 @@ const MAX_REDIRECT_COUNT = 20;
  * @see https://fetch.spec.whatwg.org/#http-network-fetch
  */
 export default class Fetch {
-	private reject: (reason: Error) => void = () => {};
-	private resolve: (value: IResponse | Promise<IResponse>) => void = () => {};
+	private reject: (reason: Error) => void | null = null;
+	private resolve: (value: IResponse | Promise<IResponse>) => void | null = null;
 	private listeners = {
 		onSignalAbort: this.onSignalAbort.bind(this)
 	};
@@ -57,12 +57,13 @@ export default class Fetch {
 	 * @param options.ownerDocument
 	 */
 	constructor(options: { ownerDocument: IDocument; url: IRequestInfo; init?: IRequestInit }) {
-		const init = { ...options.init, headers: new Headers(options.init?.headers) };
 		const url = options.url;
 
 		this.ownerDocument = options.ownerDocument;
 		this.request =
-			typeof url === 'string' || url instanceof URL ? new Request(url, init) : <Request>url;
+			typeof options.url === 'string' || options.url instanceof URL
+				? new Request(options.url, options.init)
+				: <Request>url;
 	}
 
 	/**
@@ -121,7 +122,7 @@ export default class Fetch {
 			if (this.request.body === null) {
 				this.nodeRequest.end();
 			} else {
-				Pipeline(this.request.body, this.nodeRequest, (error) => {
+				Stream.pipeline(this.request.body, this.nodeRequest, (error) => {
 					if (error) {
 						this.onError(error);
 					}
@@ -215,7 +216,7 @@ export default class Fetch {
 			this.request.signal.removeEventListener('abort', this.listeners.onSignalAbort)
 		);
 
-		let body = Pipeline(nodeResponse, new PassThrough(), (error: Error) => {
+		let body = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error: Error) => {
 			if (error) {
 				this.reject(error);
 			}
@@ -251,7 +252,7 @@ export default class Fetch {
 
 		// For GZip
 		if (contentEncodingHeader === 'gzip' || contentEncodingHeader === 'x-gzip') {
-			body = Pipeline(body, Zlib.createGunzip(zlibOptions), (error: Error) => {
+			body = Stream.pipeline(body, Zlib.createGunzip(zlibOptions), (error: Error) => {
 				if (error) {
 					this.reject(error);
 				}
@@ -265,7 +266,7 @@ export default class Fetch {
 		if (contentEncodingHeader === 'deflate' || contentEncodingHeader === 'x-deflate') {
 			// Handle the infamous raw deflate response from old servers
 			// A hack for old IIS and Apache servers
-			const raw = Pipeline(nodeResponse, new PassThrough(), (error) => {
+			const raw = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error) => {
 				if (error) {
 					this.reject(error);
 				}
@@ -273,13 +274,13 @@ export default class Fetch {
 			raw.once('data', (chunk) => {
 				// See http://stackoverflow.com/questions/37519828
 				if ((chunk[0] & 0x0f) === 0x08) {
-					body = Pipeline(body, Zlib.createInflate(), (error) => {
+					body = Stream.pipeline(body, Zlib.createInflate(), (error) => {
 						if (error) {
 							this.reject(error);
 						}
 					});
 				} else {
-					body = Pipeline(body, Zlib.createInflateRaw(), (error) => {
+					body = Stream.pipeline(body, Zlib.createInflateRaw(), (error) => {
 						if (error) {
 							this.reject(error);
 						}
@@ -301,7 +302,7 @@ export default class Fetch {
 
 		// For BR
 		if (contentEncodingHeader === 'br') {
-			body = Pipeline(body, Zlib.createBrotliDecompress(), (error) => {
+			body = Stream.pipeline(body, Zlib.createBrotliDecompress(), (error) => {
 				if (error) {
 					this.reject(error);
 				}
@@ -376,7 +377,7 @@ export default class Fetch {
 				this.redirectCount++;
 
 				const headers = new Headers(this.request.headers);
-				let body: Readable;
+				let body: Stream.Readable;
 
 				if (this.request.body) {
 					// Piping a used request body is not possible.
@@ -387,8 +388,8 @@ export default class Fetch {
 						);
 					}
 
-					body = new PassThrough();
-					this.request.body.pipe(<PassThrough>body);
+					body = new Stream.PassThrough();
+					this.request.body.pipe(<Stream.PassThrough>body);
 				}
 
 				const requestInit: IRequestInit = {

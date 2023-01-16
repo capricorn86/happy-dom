@@ -73,7 +73,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 		this._selectedness = Boolean(selected);
 
 		if (selectNode) {
-			selectNode._resetOptionSelectednes(this._selectedness ? this : null);
+			selectNode._updateOptionItems(this._selectedness ? this : null);
 		}
 	}
 
@@ -83,7 +83,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
-		return this.getAttributeNS(null, 'disabled') !== null;
+		return this.getAttribute('disabled') !== null;
 	}
 
 	/**
@@ -95,7 +95,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 		if (!disabled) {
 			this.removeAttributeNS(null, 'disabled');
 		} else {
-			this.setAttributeNS(null, 'disabled', '');
+			this.setAttribute('disabled', '');
 		}
 	}
 
@@ -105,7 +105,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Value.
 	 */
 	public get value(): string {
-		return this.getAttributeNS(null, 'value') || this.textContent;
+		return this.getAttribute('value') || this.textContent;
 	}
 
 	/**
@@ -114,7 +114,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		this.setAttributeNS(null, 'value', value);
+		this.setAttribute('value', value);
 	}
 
 	/**
@@ -133,7 +133,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 			this._selectedness = true;
 
 			if (selectNode) {
-				selectNode._resetOptionSelectednes(this);
+				selectNode._updateOptionItems(this);
 			}
 		}
 
@@ -152,7 +152,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 			this._selectedness = false;
 
 			if (selectNode) {
-				selectNode._resetOptionSelectednes();
+				selectNode._updateOptionItems();
 			}
 		}
 
@@ -169,10 +169,10 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 
 		if (oldSelectNode !== this._selectNode) {
 			if (oldSelectNode) {
-				oldSelectNode._removeOptionItem(this);
+				oldSelectNode._updateOptionItems();
 			}
 			if (this._selectNode) {
-				(<HTMLSelectElement>this._selectNode)._appendOptionItem(this);
+				(<HTMLSelectElement>this._selectNode)._updateOptionItems();
 			}
 		}
 	}

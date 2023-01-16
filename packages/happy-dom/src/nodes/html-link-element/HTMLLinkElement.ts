@@ -41,7 +41,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns As.
 	 */
 	public get as(): string {
-		return this.getAttributeNS(null, 'as') || '';
+		return this.getAttribute('as') || '';
 	}
 
 	/**
@@ -50,7 +50,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @param crossOrigin CrossOrigin.
 	 */
 	public set as(as: string) {
-		this.setAttributeNS(null, 'as', as);
+		this.setAttribute('as', as);
 	}
 
 	/**
@@ -68,7 +68,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @param crossOrigin CrossOrigin.
 	 */
 	public set crossOrigin(crossOrigin: string) {
-		this.setAttributeNS(null, 'crossorigin', crossOrigin);
+		this.setAttribute('crossorigin', crossOrigin);
 	}
 
 	/**
@@ -77,7 +77,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Href.
 	 */
 	public get href(): string {
-		return this.getAttributeNS(null, 'href') || '';
+		return this.getAttribute('href') || '';
 	}
 
 	/**
@@ -86,7 +86,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @param href Href.
 	 */
 	public set href(href: string) {
-		this.setAttributeNS(null, 'href', href);
+		this.setAttribute('href', href);
 	}
 
 	/**
@@ -95,7 +95,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Hreflang.
 	 */
 	public get hreflang(): string {
-		return this.getAttributeNS(null, 'hreflang') || '';
+		return this.getAttribute('hreflang') || '';
 	}
 
 	/**
@@ -104,7 +104,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @param hreflang Hreflang.
 	 */
 	public set hreflang(hreflang: string) {
-		this.setAttributeNS(null, 'hreflang', hreflang);
+		this.setAttribute('hreflang', hreflang);
 	}
 
 	/**
@@ -113,7 +113,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Media.
 	 */
 	public get media(): string {
-		return this.getAttributeNS(null, 'media') || '';
+		return this.getAttribute('media') || '';
 	}
 
 	/**
@@ -122,7 +122,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @param media Media.
 	 */
 	public set media(media: string) {
-		this.setAttributeNS(null, 'media', media);
+		this.setAttribute('media', media);
 	}
 
 	/**
@@ -140,7 +140,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @param referrerPolicy ReferrerPolicy.
 	 */
 	public set referrerPolicy(referrerPolicy: string) {
-		this.setAttributeNS(null, 'referrerPolicy', referrerPolicy);
+		this.setAttribute('referrerPolicy', referrerPolicy);
 	}
 
 	/**
@@ -149,7 +149,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Rel.
 	 */
 	public get rel(): string {
-		return this.getAttributeNS(null, 'rel') || '';
+		return this.getAttribute('rel') || '';
 	}
 
 	/**
@@ -158,7 +158,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @param rel Rel.
 	 */
 	public set rel(rel: string) {
-		this.setAttributeNS(null, 'rel', rel);
+		this.setAttribute('rel', rel);
 	}
 
 	/**
@@ -167,7 +167,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Type.
 	 */
 	public get type(): string {
-		return this.getAttributeNS(null, 'type') || '';
+		return this.getAttribute('type') || '';
 	}
 
 	/**
@@ -176,7 +176,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @param type Type.
 	 */
 	public set type(type: string) {
-		this.setAttributeNS(null, 'type', type);
+		this.setAttribute('type', type);
 	}
 
 	/**
@@ -184,8 +184,8 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 */
 	public override setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
-		const rel = this.getAttributeNS(null, 'rel');
-		const href = this.getAttributeNS(null, 'href');
+		const rel = this.getAttribute('rel');
+		const href = this.getAttribute('href');
 
 		if (attribute.name === 'rel' && this._relList) {
 			this._relList._updateIndices();
@@ -261,8 +261,8 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 			this._evaluateCSS &&
 			!this.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading
 		) {
-			const href = this.getAttributeNS(null, 'href');
-			const rel = this.getAttributeNS(null, 'rel');
+			const href = this.getAttribute('href');
+			const rel = this.getAttribute('rel');
 
 			if (href !== null && rel && rel.toLowerCase() === 'stylesheet') {
 				(<Document>this.ownerDocument)._readyStateManager.startTask();

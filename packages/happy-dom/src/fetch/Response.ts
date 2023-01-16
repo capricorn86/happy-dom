@@ -7,7 +7,7 @@ import Headers from './Headers';
 import IHeaders from './types/IHeaders';
 import { URL, URLSearchParams } from 'url';
 import Blob from '../file/Blob';
-import { Readable } from 'stream';
+import Stream from 'stream';
 import FormData from '../form-data/FormData';
 import FetchBodyUtility from './utilities/FetchBodyUtility';
 import DOMException from '../exception/DOMException';
@@ -31,7 +31,7 @@ export default class Response implements IResponse {
 	public readonly _ownerDocument: IDocument = null;
 
 	// Public properties
-	public readonly body: Readable | null = null;
+	public readonly body: Stream.Readable | null = null;
 	public readonly bodyUsed = false;
 	public readonly redirected = false;
 	public readonly type: 'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect' =
@@ -228,7 +228,7 @@ export default class Response implements IResponse {
 		(<string>response.statusText) = this.statusText;
 		(<boolean>response.ok) = this.ok;
 		(<Headers>response.headers) = new Headers(this.headers);
-		(<Readable>response.body) = this.body;
+		(<Stream.Readable>response.body) = this.body;
 		(<boolean>response.bodyUsed) = this.bodyUsed;
 		(<boolean>response.redirected) = this.redirected;
 		(<string>response.type) = this.type;

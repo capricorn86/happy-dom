@@ -2,7 +2,7 @@ import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 import INodeList from '../node/INodeList';
-import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
+import IHTMLOptionsCollection from './IHTMLOptionsCollection';
 import ValidityState from '../validity-state/ValidityState';
 import Event from '../../event/Event';
 import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';

@@ -373,8 +373,8 @@ describe('Node', () => {
 			expect(div).toEqual(clone);
 			expect(div !== clone).toBe(true);
 
-			expect(clone.children).toEqual(
-				clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE)
+			expect(Array.from(clone.children)).toEqual(
+				Array.from(clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE))
 			);
 		});
 	});
@@ -388,12 +388,12 @@ describe('Node', () => {
 			parent1.appendChild(child);
 
 			expect(child.parentNode).toBe(parent1);
-			expect(parent1.childNodes).toEqual([child]);
+			expect(Array.from(parent1.childNodes)).toEqual([child]);
 
 			parent2.appendChild(child);
 			expect(child.parentNode).toBe(parent2);
-			expect(parent1.childNodes).toEqual([]);
-			expect(parent2.childNodes).toEqual([child]);
+			expect(Array.from(parent1.childNodes)).toEqual([]);
+			expect(Array.from(parent2.childNodes)).toEqual([child]);
 
 			expect(child.isConnected).toBe(false);
 
@@ -413,7 +413,7 @@ describe('Node', () => {
 
 			div.appendChild(clone);
 
-			expect(clone.childNodes).toEqual([]);
+			expect(Array.from(clone.childNodes)).toEqual([]);
 			expect(div.innerHTML).toBe('<div>Div</div><span>Span</span>');
 		});
 	});
@@ -426,7 +426,7 @@ describe('Node', () => {
 			parent.appendChild(child);
 
 			expect(child.parentNode).toBe(parent);
-			expect(parent.childNodes).toEqual([child]);
+			expect(Array.from(parent.childNodes)).toEqual([child]);
 			expect(child.isConnected).toBe(false);
 
 			document.body.appendChild(parent);
@@ -436,7 +436,7 @@ describe('Node', () => {
 			const removed = parent.removeChild(child);
 
 			expect(child.parentNode).toBe(null);
-			expect(parent.childNodes).toEqual([]);
+			expect(Array.from(parent.childNodes)).toEqual([]);
 			expect(child.isConnected).toBe(false);
 			expect(removed).toEqual(child);
 		});
@@ -454,7 +454,7 @@ describe('Node', () => {
 			parent.insertBefore(newNode, child2);
 
 			expect(newNode.parentNode).toBe(parent);
-			expect(parent.childNodes).toEqual([child1, newNode, child2]);
+			expect(Array.from(parent.childNodes)).toEqual([child1, newNode, child2]);
 			expect(newNode.isConnected).toBe(false);
 
 			document.body.appendChild(parent);
@@ -540,7 +540,7 @@ describe('Node', () => {
 			parent.replaceChild(newNode, child2);
 
 			expect(newNode.parentNode).toBe(parent);
-			expect(parent.childNodes).toEqual([child1, newNode]);
+			expect(Array.from(parent.childNodes)).toEqual([child1, newNode]);
 			expect(newNode.isConnected).toBe(false);
 
 			document.body.appendChild(parent);

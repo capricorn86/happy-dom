@@ -9,10 +9,9 @@ import IRequest from './types/IRequest';
 import Headers from './Headers';
 import FetchBodyUtility from './utilities/FetchBodyUtility';
 import AbortSignal from './AbortSignal';
-import { Readable } from 'stream';
+import Stream from 'stream';
 import Blob from '../file/Blob';
 import { TextDecoder } from 'util';
-import RelativeURL from '../location/RelativeURL';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility';
 import IRequestReferrerPolicy from './types/IRequestReferrerPolicy';
 import IRequestRedirect from './types/IRequestRedirect';
@@ -33,7 +32,7 @@ export default class Request implements IRequest {
 
 	// Public properties
 	public readonly method: string;
-	public readonly body: Readable | null;
+	public readonly body: Stream.Readable | null;
 	public readonly headers: Headers;
 	public readonly redirect: IRequestRedirect;
 	public readonly referrerPolicy: IRequestReferrerPolicy;
@@ -53,6 +52,10 @@ export default class Request implements IRequest {
 	 */
 	constructor(input: IRequestInfo, init?: IRequestInit) {
 		this._ownerDocument = (<typeof Request>this.constructor)._ownerDocument;
+
+		if (!input) {
+			throw new TypeError(`Failed to contruct 'Request': 1 argument required, only 0 present.`);
+		}
 
 		this.method = (init?.method || (<Request>input).method || 'GET').toUpperCase();
 
@@ -84,10 +87,10 @@ export default class Request implements IRequest {
 			init?.referrer !== null ? init?.referrer : (<Request>input).referrer
 		);
 		this._url = (<Request>input).url
-			? RelativeURL.getAbsoluteURL(this._ownerDocument.location, (<Request>input).url)
+			? new URL((<Request>input).url, this._ownerDocument.location)
 			: input instanceof URL
 			? input
-			: RelativeURL.getAbsoluteURL(this._ownerDocument.location, <string>input);
+			: new URL(<string>input, this._ownerDocument.location);
 
 		FetchRequestValidationUtility.validateBody(this);
 		FetchRequestValidationUtility.validateURL(this._url);

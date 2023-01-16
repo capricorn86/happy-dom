@@ -231,7 +231,7 @@ export default class XMLParser {
 			// Attributes with no value
 			for (const name of attributes.replace(ATTRIBUTE_REGEXP, '').trim().split(' ')) {
 				if (name) {
-					element.setAttributeNS(null, this._getAttributeName(element.namespaceURI, name), '');
+					element.setAttribute(this._getAttributeName(element.namespaceURI, name), '');
 				}
 			}
 		}

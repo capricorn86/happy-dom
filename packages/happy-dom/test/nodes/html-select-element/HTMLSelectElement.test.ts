@@ -197,12 +197,12 @@ describe('HTMLSelectElement', () => {
 			expect(element.length).toBe(2);
 			expect(element.children.length).toBe(2);
 			expect(element.options.length).toBe(2);
-			expect(element[0]).toBe(option1);
-			expect(element[1]).toBe(option2);
-			expect(element.children[0]).toBe(option1);
-			expect(element.children[1]).toBe(option2);
-			expect(element.options[0]).toBe(option1);
-			expect(element.options[1]).toBe(option2);
+			expect(element[0] === option1).toBe(true);
+			expect(element[1] === option2).toBe(true);
+			expect(element.children[0] === option1).toBe(true);
+			expect(element.children[1] === option2).toBe(true);
+			expect(element.options[0] === option1).toBe(true);
+			expect(element.options[1] === option2).toBe(true);
 		});
 
 		it('Appends an option before an index.', () => {
@@ -217,15 +217,15 @@ describe('HTMLSelectElement', () => {
 			expect(element.length).toBe(3);
 			expect(element.children.length).toBe(3);
 			expect(element.options.length).toBe(3);
-			expect(element[0]).toBe(option1);
-			expect(element[1]).toBe(option3);
-			expect(element[2]).toBe(option2);
-			expect(element.children[0]).toBe(option1);
-			expect(element.children[1]).toBe(option3);
-			expect(element.children[2]).toBe(option2);
-			expect(element.options[0]).toBe(option1);
-			expect(element.options[1]).toBe(option3);
-			expect(element.options[2]).toBe(option2);
+			expect(element[0] === option1).toBe(true);
+			expect(element[1] === option3).toBe(true);
+			expect(element[2] === option2).toBe(true);
+			expect(element.children[0] === option1).toBe(true);
+			expect(element.children[1] === option3).toBe(true);
+			expect(element.children[2] === option2).toBe(true);
+			expect(element.options[0] === option1).toBe(true);
+			expect(element.options[1] === option3).toBe(true);
+			expect(element.options[2] === option2).toBe(true);
 		});
 
 		it('Appends an option before an option element.', () => {
@@ -240,15 +240,15 @@ describe('HTMLSelectElement', () => {
 			expect(element.length).toBe(3);
 			expect(element.children.length).toBe(3);
 			expect(element.options.length).toBe(3);
-			expect(element[0]).toBe(option1);
-			expect(element[1]).toBe(option3);
-			expect(element[2]).toBe(option2);
-			expect(element.children[0]).toBe(option1);
-			expect(element.children[1]).toBe(option3);
-			expect(element.children[2]).toBe(option2);
-			expect(element.options[0]).toBe(option1);
-			expect(element.options[1]).toBe(option3);
-			expect(element.options[2]).toBe(option2);
+			expect(element[0] === option1).toBe(true);
+			expect(element[1] === option3).toBe(true);
+			expect(element[2] === option2).toBe(true);
+			expect(element.children[0] === option1).toBe(true);
+			expect(element.children[1] === option3).toBe(true);
+			expect(element.children[2] === option2).toBe(true);
+			expect(element.options[0] === option1).toBe(true);
+			expect(element.options[1] === option3).toBe(true);
+			expect(element.options[2] === option2).toBe(true);
 		});
 	});
 
@@ -264,12 +264,12 @@ describe('HTMLSelectElement', () => {
 
 			expect(element.length).toBe(3);
 			expect(element.options.length).toBe(3);
-			expect(element.item(0)).toBe(option1);
-			expect(element.item(1)).toBe(option2);
-			expect(element.item(2)).toBe(option3);
-			expect(element.options.item(0)).toBe(option1);
-			expect(element.options.item(1)).toBe(option2);
-			expect(element.options.item(2)).toBe(option3);
+			expect(element.item(0) === option1).toBe(true);
+			expect(element.item(1) === option2).toBe(true);
+			expect(element.item(2) === option3).toBe(true);
+			expect(element.options.item(0) === option1).toBe(true);
+			expect(element.options.item(1) === option2).toBe(true);
+			expect(element.options.item(2) === option3).toBe(true);
 		});
 	});
 

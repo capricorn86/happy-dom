@@ -4,7 +4,6 @@ import IDocument from '../../nodes/document/IDocument';
 import { isIP } from 'net';
 import Headers from '../Headers';
 import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy';
-import RelativeURL from '../../location/RelativeURL';
 
 const REQUEST_REFERRER_UNSUPPORTED_PROTOCOL_REGEXP = /^(about|blob|data):$/;
 const REFERRER_POLICIES: IRequestReferrerPolicy[] = [
@@ -125,11 +124,7 @@ export default class FetchRequestReferrerUtility {
 		if (referrer === '' || referrer === 'no-referrer' || referrer === 'client') {
 			return referrer;
 		} else if (referrer) {
-			const referrerURL =
-				referrer instanceof URL
-					? referrer
-					: RelativeURL.getAbsoluteURL(document.location, referrer);
-
+			const referrerURL = referrer instanceof URL ? referrer : new URL(referrer, document.location);
 			return referrerURL.origin === document.location.origin ? referrerURL : 'client';
 		}
 
