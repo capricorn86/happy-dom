@@ -5,6 +5,7 @@ import CSSKeyframeRule from './rules/CSSKeyframeRule';
 import CSSKeyframesRule from './rules/CSSKeyframesRule';
 import CSSMediaRule from './rules/CSSMediaRule';
 import CSSContainerRule from './rules/CSSContainerRule';
+import CSSSupportsRule from './rules/CSSSupportsRule';
 
 const COMMENT_REGEXP = /\/\*[^*]*\*\//gm;
 
@@ -58,6 +59,14 @@ export default class CSSParser {
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
+				} else if (selectorText.startsWith('@supports')) {
+					const conditionText = selectorText.replace(/@supports */, '');
+					const newRule = new CSSSupportsRule();
+
+					(<string>newRule.conditionText) = conditionText;
+					newRule.parentStyleSheet = parentStyleSheet;
+					cssRules.push(newRule);
+					parentRule = newRule;
 				} else if (parentRule && parentRule.type === CSSRule.KEYFRAMES_RULE) {
 					const newRule = new CSSKeyframeRule();
 					(<string>newRule.keyText) = selectorText.trim();
@@ -68,7 +77,9 @@ export default class CSSParser {
 					parentRule = newRule;
 				} else if (
 					parentRule &&
-					(parentRule.type === CSSRule.MEDIA_RULE || parentRule.type === CSSRule.CONTAINER_RULE)
+					(parentRule.type === CSSRule.MEDIA_RULE ||
+						parentRule.type === CSSRule.CONTAINER_RULE ||
+						parentRule.type === CSSRule.SUPPORTS_RULE)
 				) {
 					const newRule = new CSSStyleRule();
 					(<string>newRule.selectorText) = selectorText;
