@@ -170,7 +170,7 @@ export default class SelectorItem {
 		} else if (place.includes('n')) {
 			const [a, b] = place.replace(/ /g, '').split('n');
 			const childIndex = children.indexOf(element);
-			const aNumber = Number(a);
+			const aNumber = a !== '' ? Number(a) : 1;
 			const bNumber = b !== undefined ? Number(b) : 0;
 			if (isNaN(aNumber) || isNaN(bNumber)) {
 				throw new DOMException(`The selector "${this.selector}" is not valid.`);

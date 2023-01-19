@@ -470,6 +470,16 @@ describe('QuerySelector', () => {
 			expect(elements[1]).toBe(container.children[0].children[1].children[1]);
 		});
 
+		it('Returns all elements matching ":nth-child(n+8)".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll(':nth-child(n+8)');
+
+			expect(
+				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+			).toEqual(['span.n8', 'div.n9', 'i.n10']);
+		});
+
 		it('Returns all elements matching :nth-child(2n).', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorNthChildHTML;

@@ -298,7 +298,7 @@ export default class CSSStyleDeclarationElementStyle {
 				}
 			} else if (
 				rule.type === CSSRuleTypeEnum.mediaRule &&
-				defaultView.matchMedia((<CSSMediaRule>rule).conditionalText).matches
+				defaultView.matchMedia((<CSSMediaRule>rule).conditionText).matches
 			) {
 				this.parseCSSRules({
 					elements: options.elements,

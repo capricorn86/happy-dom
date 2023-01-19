@@ -652,37 +652,63 @@ describe('Window', () => {
 
 	for (const functionName of ['scroll', 'scrollTo']) {
 		describe(`${functionName}()`, () => {
-			it('Sets the properties scrollTop and scrollLeft.', () => {
+			it('Sets the properties scrollTop, scrollLeft, scrollY, scrollX, pageXOffset and pageYOffset', () => {
 				window[functionName](50, 60);
 				expect(window.document.documentElement.scrollLeft).toBe(50);
 				expect(window.document.documentElement.scrollTop).toBe(60);
+				expect(window.pageXOffset).toBe(50);
+				expect(window.pageYOffset).toBe(60);
+				expect(window.scrollX).toBe(50);
+				expect(window.scrollY).toBe(60);
 			});
 
-			it('Sets the properties scrollTop and scrollLeft using object.', () => {
+			it('Sets the properties scrollTop, scrollLeft, scrollY, scrollX, pageXOffset and pageYOffset using object.', () => {
 				window[functionName]({ left: 50, top: 60 });
 				expect(window.document.documentElement.scrollLeft).toBe(50);
 				expect(window.document.documentElement.scrollTop).toBe(60);
+				expect(window.pageXOffset).toBe(50);
+				expect(window.pageYOffset).toBe(60);
+				expect(window.scrollX).toBe(50);
+				expect(window.scrollY).toBe(60);
 			});
 
-			it('Sets only the property scrollTop.', () => {
+			it('Sets only the property scrollTop, pageYOffset, and scrollY', () => {
 				window[functionName]({ top: 60 });
 				expect(window.document.documentElement.scrollLeft).toBe(0);
 				expect(window.document.documentElement.scrollTop).toBe(60);
+				expect(window.pageXOffset).toBe(0);
+				expect(window.pageYOffset).toBe(60);
+				expect(window.scrollX).toBe(0);
+				expect(window.scrollY).toBe(60);
 			});
 
-			it('Sets only the property scrollLeft.', () => {
+			it('Sets only the property scrollLeft, pageXOffset, and scrollX', () => {
 				window[functionName]({ left: 60 });
 				expect(window.document.documentElement.scrollLeft).toBe(60);
 				expect(window.document.documentElement.scrollTop).toBe(0);
+				expect(window.document.documentElement.scrollLeft).toBe(60);
+				expect(window.document.documentElement.scrollTop).toBe(0);
+				expect(window.pageXOffset).toBe(60);
+				expect(window.pageYOffset).toBe(0);
+				expect(window.scrollX).toBe(60);
+				expect(window.scrollY).toBe(0);
 			});
 
-			it('Sets the properties scrollTop and scrollLeft with animation.', async () => {
+			it('Sets the properties scrollTop, scrollLeft, scrollY, scrollX, pageXOffset and pageYOffset with animation.', async () => {
 				window[functionName]({ left: 50, top: 60, behavior: 'smooth' });
 				expect(window.document.documentElement.scrollLeft).toBe(0);
 				expect(window.document.documentElement.scrollTop).toBe(0);
+				expect(window.pageXOffset).toBe(0);
+				expect(window.pageYOffset).toBe(0);
+				expect(window.scrollX).toBe(0);
+				expect(window.scrollY).toBe(0);
 				await window.happyDOM.whenAsyncComplete();
 				expect(window.document.documentElement.scrollLeft).toBe(50);
 				expect(window.document.documentElement.scrollTop).toBe(60);
+				expect(window.pageXOffset).toBe(50);
+				expect(window.pageYOffset).toBe(60);
+				expect(window.scrollX).toBe(50);
+				expect(window.scrollY).toBe(60);
 			});
 		});
 	}

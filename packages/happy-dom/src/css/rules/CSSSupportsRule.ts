@@ -3,8 +3,8 @@ import CSSRule from '../CSSRule';
 /**
  * CSSRule interface.
  */
-export default class CSSContainerRule extends CSSRule {
-	public readonly type = CSSRule.CONTAINER_RULE;
+export default class CSSSupportsRule extends CSSRule {
+	public readonly type = CSSRule.SUPPORTS_RULE;
 	public readonly cssRules: CSSRule[] = [];
 	public readonly conditionText = '';
 
@@ -18,6 +18,6 @@ export default class CSSContainerRule extends CSSRule {
 		for (const cssRule of this.cssRules) {
 			cssText += cssRule.cssText;
 		}
-		return `@container ${this.conditionText} { ${cssText} }`;
+		return `@supports ${this.conditionText} { ${cssText} }`;
 	}
 }
