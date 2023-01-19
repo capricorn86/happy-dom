@@ -51,4 +51,16 @@ export default `
             color: red;
         }
     }
+
+    @container name (min-width: 36rem) {
+        .container {
+            color: red;
+        }
+    }
+    
+    @supports (display: flex) {
+        .container {
+            color: green;
+        }
+    }
 `.trim();

@@ -65,6 +65,7 @@ import CSSKeyframeRule from '../css/rules/CSSKeyframeRule';
 import CSSKeyframesRule from '../css/rules/CSSKeyframesRule';
 import CSSMediaRule from '../css/rules/CSSMediaRule';
 import CSSStyleRule from '../css/rules/CSSStyleRule';
+import CSSSupportsRule from '../css/rules/CSSSupportsRule';
 import MouseEvent from '../event/events/MouseEvent';
 import PointerEvent from '../event/events/PointerEvent';
 import FocusEvent from '../event/events/FocusEvent';
@@ -249,6 +250,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly CSSKeyframesRule = CSSKeyframesRule;
 	public readonly CSSMediaRule = CSSMediaRule;
 	public readonly CSSStyleRule = CSSStyleRule;
+	public readonly CSSSupportsRule = CSSSupportsRule;
 	public readonly Selection = Selection;
 	public readonly Navigator = Navigator;
 	public readonly MimeType = MimeType;

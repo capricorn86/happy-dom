@@ -62,6 +62,7 @@ import CSSKeyframeRule from '../css/rules/CSSKeyframeRule';
 import CSSKeyframesRule from '../css/rules/CSSKeyframesRule';
 import CSSMediaRule from '../css/rules/CSSMediaRule';
 import CSSStyleRule from '../css/rules/CSSStyleRule';
+import CSSSupportsRule from '../css/rules/CSSSupportsRule';
 import PointerEvent from '../event/events/PointerEvent';
 import MouseEvent from '../event/events/MouseEvent';
 import FocusEvent from '../event/events/FocusEvent';
@@ -214,6 +215,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly CSSKeyframesRule: typeof CSSKeyframesRule;
 	readonly CSSMediaRule: typeof CSSMediaRule;
 	readonly CSSStyleRule: typeof CSSStyleRule;
+	readonly CSSSupportsRule: typeof CSSSupportsRule;
 	readonly Selection: typeof Selection;
 	readonly Navigator: typeof Navigator;
 	readonly MimeType: typeof MimeType;

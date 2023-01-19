@@ -113,6 +113,7 @@ import CSSKeyframeRule from './css/rules/CSSKeyframeRule';
 import CSSKeyframesRule from './css/rules/CSSKeyframesRule';
 import CSSMediaRule from './css/rules/CSSMediaRule';
 import CSSStyleRule from './css/rules/CSSStyleRule';
+import CSSSupportsRule from './css/rules/CSSSupportsRule';
 import Storage from './storage/Storage';
 import DOMRect from './nodes/element/DOMRect';
 import Selection from './selection/Selection';
@@ -251,6 +252,7 @@ export {
 	CSSKeyframesRule,
 	CSSMediaRule,
 	CSSStyleRule,
+	CSSSupportsRule,
 	Storage,
 	DOMRect,
 	URLSearchParams,
