@@ -19,7 +19,7 @@ export default class CSSMediaRule extends CSSRule {
 		for (const cssRule of this.cssRules) {
 			cssText += cssRule.cssText;
 		}
-		return `@media ${this.conditionalText} { ${cssText} }`;
+		return `@media ${this.conditionText} { ${cssText} }`;
 	}
 
 	/**
@@ -27,7 +27,7 @@ export default class CSSMediaRule extends CSSRule {
 	 *
 	 * @returns Conditional text.
 	 */
-	public get conditionalText(): string {
+	public get conditionText(): string {
 		return this.media.mediaText;
 	}
 }
