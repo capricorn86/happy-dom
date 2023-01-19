@@ -6,7 +6,7 @@ import CSSRule from '../CSSRule';
 export default class CSSContainerRule extends CSSRule {
 	public readonly type = CSSRule.CONTAINER_RULE;
 	public readonly cssRules: CSSRule[] = [];
-	public readonly conditionalText = '';
+	public readonly conditionText = '';
 
 	/**
 	 * Returns css text.
@@ -18,6 +18,6 @@ export default class CSSContainerRule extends CSSRule {
 		for (const cssRule of this.cssRules) {
 			cssText += cssRule.cssText;
 		}
-		return `@container ${this.conditionalText} { ${cssText} }`;
+		return `@container ${this.conditionText} { ${cssText} }`;
 	}
 }

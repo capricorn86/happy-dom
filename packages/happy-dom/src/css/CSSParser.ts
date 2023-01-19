@@ -52,10 +52,10 @@ export default class CSSParser {
 					cssRules.push(newRule);
 					parentRule = newRule;
 				} else if (selectorText.startsWith('@container')) {
-					const conditionalText = selectorText.replace(/@container */, '');
+					const conditionText = selectorText.replace(/@container */, '');
 					const newRule = new CSSContainerRule();
 
-					(<string>newRule.conditionalText) = conditionalText;
+					(<string>newRule.conditionText) = conditionText;
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
