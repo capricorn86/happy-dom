@@ -167,7 +167,7 @@ export default class NodeUtility {
 						(typeof attrA === 'number' && typeof attrB === 'number' && attrA === attrB) ||
 						(typeof attrA === 'object' &&
 							typeof attrB === 'object' &&
-							NodeUtility.nodeEquals(attrA, attrB))
+							NodeUtility.isEqualNode(attrA, attrB))
 					);
 				})
 			) {
@@ -185,7 +185,7 @@ export default class NodeUtility {
 	 * @param nodeA Node A.
 	 * @param nodeB Node B.
 	 */
-	public static nodeEquals(nodeA: INode, nodeB: INode): boolean {
+	public static isEqualNode(nodeA: INode, nodeB: INode): boolean {
 		if (nodeA.nodeType !== nodeB.nodeType) {
 			return false;
 		}
@@ -266,7 +266,7 @@ export default class NodeUtility {
 			const childNodeA = nodeA.childNodes[i];
 			const childNodeB = nodeB.childNodes[i];
 
-			if (!NodeUtility.nodeEquals(childNodeA, childNodeB)) {
+			if (!NodeUtility.isEqualNode(childNodeA, childNodeB)) {
 				return false;
 			}
 		}

@@ -147,12 +147,12 @@ describe('NodeUtility', () => {
 		});
 	});
 
-	describe('nodeEquals()', () => {
+	describe('isEqualNode()', () => {
 		it('Returns false if element are not of same node type', () => {
 			const element = document.createElement('div');
 			const comment = document.createComment('foo');
 
-			expect(NodeUtility.nodeEquals(element, comment)).toEqual(false);
+			expect(NodeUtility.isEqualNode(element, comment)).toEqual(false);
 		});
 
 		describe('w/ document type node', () => {
@@ -168,28 +168,28 @@ describe('NodeUtility', () => {
 				const doctype1 = implementation.createDocumentType('html1', 'foo', 'bar');
 				const doctype2 = implementation.createDocumentType('html2', 'foo', 'bar');
 
-				expect(NodeUtility.nodeEquals(doctype1, doctype2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(false);
 			});
 
 			it('Returns false if public id are different', () => {
 				const doctype1 = implementation.createDocumentType('html', 'foo1', 'bar');
 				const doctype2 = implementation.createDocumentType('html', 'foo2', 'bar');
 
-				expect(NodeUtility.nodeEquals(doctype1, doctype2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(false);
 			});
 
 			it('Returns false if system id are different', () => {
 				const doctype1 = implementation.createDocumentType('html', 'foo', 'bar1');
 				const doctype2 = implementation.createDocumentType('html', 'foo', 'bar2');
 
-				expect(NodeUtility.nodeEquals(doctype1, doctype2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(false);
 			});
 
 			it('Returns true if doctype are equals', () => {
 				const doctype1 = implementation.createDocumentType('html', 'foo', 'bar');
 				const doctype2 = implementation.createDocumentType('html', 'foo', 'bar');
 
-				expect(NodeUtility.nodeEquals(doctype1, doctype2)).toEqual(true);
+				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(true);
 			});
 		});
 
@@ -198,14 +198,14 @@ describe('NodeUtility', () => {
 				const element1 = document.createElement('span');
 				const element2 = document.createElement('div');
 
-				expect(NodeUtility.nodeEquals(element1, element2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(element1, element2)).toEqual(false);
 			});
 
 			it('Returns false if namespace URI are different', () => {
 				const element1 = document.createElementNS('ns1', 'span');
 				const element2 = document.createElementNS('ns2', 'span');
 
-				expect(NodeUtility.nodeEquals(element1, element2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(element1, element2)).toEqual(false);
 			});
 
 			it('Returns false if prefix are different', () => {
@@ -215,7 +215,7 @@ describe('NodeUtility', () => {
 				element1.prefix = 'prefix1';
 				element2.prefix = 'prefix2';
 
-				expect(NodeUtility.nodeEquals(element1, element2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(element1, element2)).toEqual(false);
 			});
 
 			it('Returns false if attributes list length are different', () => {
@@ -225,7 +225,7 @@ describe('NodeUtility', () => {
 
 				element1.setAttributeNode(attrFoo);
 
-				expect(NodeUtility.nodeEquals(element1, element2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(element1, element2)).toEqual(false);
 			});
 
 			it('Returns false if element attributes are not equal', () => {
@@ -238,7 +238,7 @@ describe('NodeUtility', () => {
 				element1.setAttributeNode(attrFoo);
 				element2.setAttributeNode(attrBar);
 
-				expect(NodeUtility.nodeEquals(element1, element2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(element1, element2)).toEqual(false);
 			});
 
 			it('Returns false if element does not have same amount of children', () => {
@@ -253,7 +253,7 @@ describe('NodeUtility', () => {
 				element1.appendChild(child2);
 				element2.appendChild(child3);
 
-				expect(NodeUtility.nodeEquals(element1, element2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(element1, element2)).toEqual(false);
 			});
 
 			it("Returns false if element's children are not equals", () => {
@@ -270,7 +270,7 @@ describe('NodeUtility', () => {
 				element2.appendChild(child3);
 				element2.appendChild(child4);
 
-				expect(NodeUtility.nodeEquals(element1, element2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(element1, element2)).toEqual(false);
 			});
 		});
 
@@ -279,14 +279,14 @@ describe('NodeUtility', () => {
 				const attr1 = document.createAttribute('foo1');
 				const attr2 = document.createAttribute('foo2');
 
-				expect(NodeUtility.nodeEquals(attr1, attr2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(attr1, attr2)).toEqual(false);
 			});
 
 			it('Returns false if namespace URI are different', () => {
 				const attr1 = document.createAttributeNS('ns1', 'foo');
 				const attr2 = document.createAttributeNS('ns2', 'foo');
 
-				expect(NodeUtility.nodeEquals(attr1, attr2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(attr1, attr2)).toEqual(false);
 			});
 
 			it('Returns false if value are different', () => {
@@ -296,7 +296,7 @@ describe('NodeUtility', () => {
 				attr1.value = 'bar1';
 				attr2.value = 'bar2';
 
-				expect(NodeUtility.nodeEquals(attr1, attr2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(attr1, attr2)).toEqual(false);
 			});
 
 			it('Returns true if elements are equal', () => {
@@ -305,7 +305,7 @@ describe('NodeUtility', () => {
 				attr1.value = 'bar';
 				attr2.value = 'bar';
 
-				expect(NodeUtility.nodeEquals(attr1, attr2)).toEqual(true);
+				expect(NodeUtility.isEqualNode(attr1, attr2)).toEqual(true);
 			});
 		});
 
@@ -314,21 +314,21 @@ describe('NodeUtility', () => {
 				const instruction1 = document.createProcessingInstruction('target1', 'foo');
 				const instruction2 = document.createProcessingInstruction('target2', 'foo');
 
-				expect(NodeUtility.nodeEquals(instruction1, instruction2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(instruction1, instruction2)).toEqual(false);
 			});
 
 			it('Returns false if data are different', () => {
 				const instruction1 = document.createProcessingInstruction('target', 'foo1');
 				const instruction2 = document.createProcessingInstruction('target', 'foo2');
 
-				expect(NodeUtility.nodeEquals(instruction1, instruction2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(instruction1, instruction2)).toEqual(false);
 			});
 
 			it('Returns true if processing instructions are equal', () => {
 				const instruction1 = document.createProcessingInstruction('target', 'foo');
 				const instruction2 = document.createProcessingInstruction('target', 'foo');
 
-				expect(NodeUtility.nodeEquals(instruction1, instruction2)).toEqual(true);
+				expect(NodeUtility.isEqualNode(instruction1, instruction2)).toEqual(true);
 			});
 		});
 
@@ -337,14 +337,14 @@ describe('NodeUtility', () => {
 				const comment1 = document.createComment('foo1');
 				const comment2 = document.createComment('foo2');
 
-				expect(NodeUtility.nodeEquals(comment1, comment2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(comment1, comment2)).toEqual(false);
 			});
 
 			it('Returns true if comments are equal', () => {
 				const comment1 = document.createComment('foo');
 				const comment2 = document.createComment('foo');
 
-				expect(NodeUtility.nodeEquals(comment1, comment2)).toEqual(true);
+				expect(NodeUtility.isEqualNode(comment1, comment2)).toEqual(true);
 			});
 		});
 
@@ -353,14 +353,14 @@ describe('NodeUtility', () => {
 				const textNode1 = document.createTextNode('foo1');
 				const textNode2 = document.createTextNode('foo2');
 
-				expect(NodeUtility.nodeEquals(textNode1, textNode2)).toEqual(false);
+				expect(NodeUtility.isEqualNode(textNode1, textNode2)).toEqual(false);
 			});
 
 			it('Returns true if text nodes are equal', () => {
 				const textNode1 = document.createTextNode('foo');
 				const textNode2 = document.createTextNode('foo');
 
-				expect(NodeUtility.nodeEquals(textNode1, textNode2)).toEqual(true);
+				expect(NodeUtility.isEqualNode(textNode1, textNode2)).toEqual(true);
 			});
 		});
 	});
