@@ -5,7 +5,8 @@ import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequ
 import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum';
 import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder';
 import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate';
-import { ProgressEvent } from 'src';
+import ProgressEvent from '../../src/event/events/ProgressEvent';
+import HTTP from 'http';
 
 const WINDOW_URL = 'https://localhost:8080';
 const REQUEST_URL = '/path/to/resource/';
@@ -45,7 +46,7 @@ describe('XMLHttpRequest', () => {
 	});
 
 	afterEach(() => {
-		mockedModules.reset();
+		resetMockedModules();
 	});
 
 	describe('get status()', () => {
@@ -74,12 +75,29 @@ describe('XMLHttpRequest', () => {
 
 	describe('get statusText()', () => {
 		it('Returns status text for synchrounous requests.', () => {
+			const expectedStatusText = 'OK';
+
 			expect(request.statusText).toBe(null);
+
+			mockModule('child_process', {
+				execFileSync: () => {
+					return JSON.stringify({
+						error: null,
+						data: {
+							statusCode: 200,
+							statusMessage: expectedStatusText,
+							headers: {},
+							text: Buffer.from(''),
+							data: Buffer.from('').toString('base64')
+						}
+					});
+				}
+			});
 
 			request.open('GET', REQUEST_URL, false);
 			request.send();
 
-			expect(request.statusText).toBe('child_process.execFileSync.returnValue.data.statusMessage');
+			expect(request.statusText).toBe(expectedStatusText);
 		});
 
 		it('Returns status text for asynchrounous requests.', (done) => {
@@ -154,9 +172,26 @@ describe('XMLHttpRequest', () => {
 
 	describe('get responseText()', () => {
 		it('Returns response text for synchrounous requests.', () => {
+			const expectedResponseText = 'test';
+
+			mockModule('child_process', {
+				execFileSync: () => {
+					return JSON.stringify({
+						error: null,
+						data: {
+							statusCode: 200,
+							statusMessage: '',
+							headers: {},
+							text: Buffer.from(expectedResponseText),
+							data: Buffer.from(expectedResponseText).toString('base64')
+						}
+					});
+				}
+			});
+
 			request.open('GET', REQUEST_URL, false);
 			request.send();
-			expect(request.responseText).toBe('child_process.execFileSync.returnValue.data.text');
+			expect(request.responseText).toBe(expectedResponseText);
 		});
 
 		it('Returns response text for asynchrounous requests.', (done) => {
@@ -225,49 +260,85 @@ describe('XMLHttpRequest', () => {
 
 	describe('setRequestHeader()', () => {
 		it('Sets a request header on a synchronous request.', () => {
+			let isExecuted = false;
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					expect(args[1]).toBe(
+						XMLHttpRequestSyncRequestScriptBuilder.getScript(
+							{
+								host: 'localhost',
+								port: 8080,
+								path: REQUEST_URL,
+								method: 'GET',
+								headers: {
+									accept: '*/*',
+									referer: WINDOW_URL + '/',
+									'user-agent': window.navigator.userAgent,
+									cookie: '',
+									'test-header': 'test',
+									host: window.location.host
+								},
+								agent: false,
+								rejectUnauthorized: true,
+								key: XMLHttpRequestCertificate.key,
+								cert: XMLHttpRequestCertificate.cert
+							},
+							true
+						)
+					);
+
+					isExecuted = true;
+
+					return JSON.stringify({
+						error: null,
+						data: {
+							statusCode: 200,
+							statusMessage: '',
+							headers: {},
+							text: Buffer.from(''),
+							data: Buffer.from('').toString('base64')
+						}
+					});
+				}
+			});
+
 			request.open('GET', REQUEST_URL, false);
 			expect(request.setRequestHeader('test-header', 'test')).toBe(true);
 			request.send();
-
-			expect(mockedModules.modules.child_process.execFileSync.parameters.args[1]).toBe(
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: REQUEST_URL,
-						method: 'GET',
-						headers: {
-							accept: '*/*',
-							referer: WINDOW_URL + '/',
-							'user-agent': window.navigator.userAgent,
-							cookie: '',
-							'test-header': 'test',
-							host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				)
-			);
+			expect(isExecuted).toBe(true);
 		});
 
 		it('Sets a request header on an asynchrounous request.', (done) => {
+			mockModule('http', {
+				request: (
+					options: { headers: { [k: string]: string } },
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					expect(options.headers).toEqual({
+						accept: '*/*',
+						cookie: '',
+						host: window.location.host,
+						referer: WINDOW_URL + '/',
+						'user-agent': window.navigator.userAgent,
+						'test-header': 'test'
+					});
+					return {
+						end: () => {
+							callback(<HTTP.IncomingMessage>(<unknown>{
+								statusCode: 200,
+								statusMessage: '',
+								headers: {},
+								on: () => {}
+							}));
+						},
+						on: () => {}
+					};
+				}
+			});
 			request.open('GET', REQUEST_URL, true);
 			expect(request.setRequestHeader('test-header', 'test')).toBe(true);
-			request.addEventListener('load', () => {
-				expect(mockedModules.modules.http.request.parameters.options['headers']).toEqual({
-					accept: '*/*',
-					cookie: '',
-					host: window.location.host,
-					referer: WINDOW_URL + '/',
-					'user-agent': window.navigator.userAgent,
-					'test-header': 'test'
-				});
-				done();
-			});
+			request.addEventListener('load', () => done());
 			request.send();
 		});
 
