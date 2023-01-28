@@ -43,9 +43,6 @@ describe('ResourceFetch', () => {
 
 	describe('fetchSync()', () => {
 		it('Returns resource data synchrounously.', () => {
-			const expectedResponse = 'test';
-			const response = ResourceFetch.fetchSync(document, 'path/to/script/');
-
 			mockModule('child_process', {
 				execFileSync: (
 					command: string,
@@ -92,6 +89,9 @@ describe('ResourceFetch', () => {
 					});
 				}
 			});
+
+			const expectedResponse = 'test';
+			const response = ResourceFetch.fetchSync(document, 'path/to/script/');
 
 			expect(response).toBe(expectedResponse);
 		});

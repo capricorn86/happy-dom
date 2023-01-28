@@ -14,7 +14,10 @@ import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import CustomElement from '../../test/CustomElement';
 import Request from '../../src/fetch/Request';
 import Response from '../../src/fetch/Response';
-import { URL } from 'url';
+import IRequest from '../../src/fetch/types/IRequest';
+import IResponse from '../../src/fetch/types/IResponse';
+import Fetch from '../../src/fetch/Fetch';
+import HTTP from 'http';
 
 describe('Window', () => {
 	let window: IWindow;
@@ -27,7 +30,7 @@ describe('Window', () => {
 	});
 
 	afterEach(() => {
-		mockedModules.reset();
+		resetMockedModules();
 		jest.restoreAllMocks();
 	});
 
@@ -451,101 +454,62 @@ describe('Window', () => {
 	});
 
 	describe('fetch()', () => {
-		it(`Handles successful "text" request.`, async () => {
-			window.location.href = 'https://localhost:8080';
-			document.cookie = 'name1=value1';
-			document.cookie = 'name2=value2';
-
-			const expectedUrl = 'https://localhost:8080/path/';
-
-			debugger;
-			const response = await window.fetch(expectedUrl, {
+		it(`Forwards the request to Fetch and calls Fetch.send().`, async () => {
+			const expectedURL = 'https://localhost:8080/path/';
+			const expectedResponse = <IResponse>{};
+			const requestInit = {
 				method: 'PUT',
 				headers: {
 					'test-header': 'test-value'
 				}
+			};
+			let request: IRequest = null;
+
+			jest.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = this.request;
+				return Promise.resolve(expectedResponse);
 			});
-			const result = await response.text();
 
-			expect(mockedModules.modules.http.request.parameters).toEqual({
-				uri: expectedUrl,
-				options: {},
-				callback: null
-			});
+			const response = await window.fetch(expectedURL, requestInit);
 
-			expect(result).toBe(mockedModules.modules.http.request.returnValue.response.body);
-		});
-
-		it('Handles relative URL.', async () => {
-			const expectedPath = '/path/';
-
-			window.location.href = 'https://localhost:8080';
-
-			const response = await window.fetch(expectedPath);
-			const textResponse = await response.text();
-
-			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(
-				'https://localhost:8080' + expectedPath
-			);
-
-			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
-		});
-
-		it('Handles URL object.', async () => {
-			const expectedURL = 'https://localhost:8080/path/';
-
-			window.location.href = 'https://localhost:8080';
-
-			const response = await window.fetch(new URL(expectedURL));
-			const textResponse = await response.text();
-
-			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedURL);
-
-			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
-		});
-
-		it('Handles Request object with absolute URL.', async () => {
-			const expectedURL = 'https://localhost:8080/path/';
-
-			window.location.href = 'https://localhost:8080';
-
-			const response = await window.fetch(new window.Request(expectedURL));
-			const textResponse = await response.text();
-
-			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedURL);
-
-			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
-		});
-
-		it('Handles Request object with relative URL.', async () => {
-			const expectedPath = '/path/';
-
-			window.location.href = 'https://localhost:8080';
-
-			const response = await window.fetch(new window.Request(expectedPath));
-			const textResponse = await response.text();
-
-			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(
-				'https://localhost:8080' + expectedPath
-			);
-
-			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
-		});
-
-		it('Handles error JSON request.', async () => {
-			mockedModules.modules['node-fetch'].returnValue.error = new Error('error');
-			window.location.href = 'https://localhost:8080';
-
-			try {
-				await window.fetch('/url/');
-			} catch (error) {
-				expect(error).toBe(mockedModules.modules['node-fetch'].returnValue.error);
-			}
+			expect(response).toBe(expectedResponse);
+			expect(request.url).toBe(expectedURL);
+			expect(request.headers.get('test-header')).toBe('test-value');
 		});
 	});
 
 	describe('happyDOM.whenAsyncComplete()', () => {
 		it('Resolves the Promise returned by whenAsyncComplete() when all async tasks has been completed.', async () => {
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								setTimeout(() => {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 200,
+										statusMessage: '',
+										headers: {
+											'content-length': '0'
+										},
+										on: (event, callback) => {
+											setTimeout(() => {
+												if (event === 'data') {
+													callback(Buffer.from(''));
+												} else if (event === 'end') {
+													callback();
+												}
+											});
+										}
+									}));
+								});
+							}
+						}
+					};
+				}
+			});
+
 			window.location.href = 'https://localhost:8080';
 			let isFirstWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {

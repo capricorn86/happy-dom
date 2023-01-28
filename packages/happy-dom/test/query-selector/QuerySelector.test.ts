@@ -476,7 +476,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(n+8)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['span.n8', 'div.n9', 'i.n10']);
 		});
 

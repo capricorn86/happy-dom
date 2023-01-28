@@ -7,19 +7,26 @@ global.mockModule = (name, module) => {
 			`The module "${name}" is not mocked. Please add it to the mocked modules array in "setup.js".`
 		);
 	}
-	mockedModuleImplementations[name] = module;
+
+	for (const key of Object.keys(module)) {
+		mockedModuleImplementations[name][key] = module[key];
+	}
 };
 
 global.resetMockedModules = () => {
-	mockedModuleImplementations = {};
+	for (const name of mockedModuleNames) {
+		const actual = jest.requireActual(name);
+
+		for (const key of Object.keys(actual)) {
+			mockedModuleImplementations[name][key] = actual[key];
+		}
+	}
 };
 
 for (const name of mockedModuleNames) {
+	mockedModuleImplementations[name] = jest.requireActual(name);
+
 	jest.mock(name, () => {
-		return Object.assign(
-			{},
-			jest.requireActual('./utilities.js'),
-			mockedModuleImplementations[name]
-		);
+		return mockedModuleImplementations[name];
 	});
 }

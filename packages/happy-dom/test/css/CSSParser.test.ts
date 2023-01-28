@@ -14,7 +14,7 @@ describe('CSSParser', () => {
 			const cssStyleSheet = new CSSStyleSheet();
 			const cssRules = CSSParser.parseFromString(cssStyleSheet, CSSParserInput);
 
-			expect(cssRules.length).toBe(7);
+			expect(cssRules.length).toBe(9);
 
 			// CSSStyleRule
 			expect((<CSSStyleRule>cssRules[0]).parentRule).toBe(null);
@@ -153,7 +153,7 @@ describe('CSSParser', () => {
 			// CSSContainerRule 2
 			expect((<CSSContainerRule>cssRules[6]).parentRule).toBe(null);
 			expect((<CSSContainerRule>cssRules[6]).parentStyleSheet).toBe(cssStyleSheet);
-			expect((<CSSContainerRule>cssRules[6]).conditionText).toBe('(min-width: 36rem)');
+			expect((<CSSContainerRule>cssRules[6]).conditionText).toBe('name (min-width: 36rem)');
 			expect((<CSSContainerRule>cssRules[6]).cssText).toBe(
 				'@container name (min-width: 36rem) { .container { color: red; } }'
 			);
