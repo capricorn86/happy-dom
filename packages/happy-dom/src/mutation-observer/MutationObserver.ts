@@ -55,7 +55,9 @@ export default class MutationObserver {
 	 * Disconnects.
 	 */
 	public disconnect(): void {
-		(<Node>this.target)._unobserve(this.listener);
+		if (this.target) {
+			(<Node>this.target)._unobserve(this.listener);
+		}
 	}
 
 	/**
