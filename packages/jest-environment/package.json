@@ -49,11 +49,11 @@
 		"testEnvironment": "./lib"
 	},
 	"dependencies": {
-		"@jest/environment": "^27.5.1",
-		"@jest/fake-timers": "^27.5.1",
-		"@jest/types": "^27.5.1",
-		"jest-mock": "^27.5.1",
-		"jest-util": "^27.5.1",
+		"@jest/environment": "^29.4.0",
+		"@jest/fake-timers": "^29.4.0",
+		"@jest/types": "^29.4.0",
+		"jest-mock": "^29.4.0",
+		"jest-util": "^29.4.0",
 		"happy-dom": "^0.0.0"
 	},
 	"devDependencies": {
