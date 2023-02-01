@@ -2,6 +2,7 @@ import IEventInit from './IEventInit';
 import INode from '../nodes/node/INode';
 import IWindow from '../window/IWindow';
 import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
+import ShadowRoot from '../nodes/shadow-root/ShadowRoot';
 import IEventTarget from './IEventTarget';
 
 /**
@@ -69,8 +70,8 @@ export default class Event {
 			composedPath.push(eventTarget);
 
 			if (this.bubbles) {
-				if (this.composed && (<IShadowRoot>eventTarget).host) {
-					eventTarget = (<IShadowRoot>eventTarget).host;
+				if (this.composed && eventTarget instanceof ShadowRoot && eventTarget.host) {
+					eventTarget = eventTarget.host;
 				} else if ((<INode>(<unknown>this.target)).ownerDocument === eventTarget) {
 					eventTarget = (<INode>(<unknown>this.target)).ownerDocument.defaultView;
 				} else {
