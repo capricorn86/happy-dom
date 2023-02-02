@@ -3,6 +3,7 @@ import INode from '../nodes/node/INode';
 import IWindow from '../window/IWindow';
 import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
 import IEventTarget from './IEventTarget';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
 
 /**
  * Event.
@@ -69,7 +70,11 @@ export default class Event {
 			composedPath.push(eventTarget);
 
 			if (this.bubbles) {
-				if (this.composed && (<IShadowRoot>eventTarget).host) {
+				if (
+					this.composed &&
+					(<INode>eventTarget).nodeType === NodeTypeEnum.documentFragmentNode &&
+					(<IShadowRoot>eventTarget).host
+				) {
 					eventTarget = (<IShadowRoot>eventTarget).host;
 				} else if ((<INode>(<unknown>this.target)).ownerDocument === eventTarget) {
 					eventTarget = (<INode>(<unknown>this.target)).ownerDocument.defaultView;

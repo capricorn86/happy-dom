@@ -129,7 +129,10 @@ export default class CSSStyleDeclarationElementStyle {
 				}
 
 				styleAndElement = { element: null, cssTexts: [] };
-			} else if ((<IShadowRoot>styleAndElement.element).host) {
+			} else if (
+				styleAndElement.element.nodeType === NodeTypeEnum.documentFragmentNode &&
+				(<IShadowRoot>styleAndElement.element).host
+			) {
 				const styleSheets = <INodeList<IHTMLStyleElement>>(
 					(<IShadowRoot>styleAndElement.element).querySelectorAll('style,link[rel="stylesheet"]')
 				);
