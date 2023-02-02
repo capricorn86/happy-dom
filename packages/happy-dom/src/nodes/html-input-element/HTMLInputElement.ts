@@ -52,6 +52,48 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		HTMLInputElementSelectionDirectionEnum.none;
 	private _validationMessage = '';
 
+	public onclick = (): void => {
+		const dispatchEvent = (type: string = 'change', element: IHTMLElement = this): void => {
+			const event = new Event(type, {
+				bubbles: true,
+				cancelable: true
+			});
+			event._target = this;
+			event._currentTarget = element;
+
+			this.dispatchEvent(event);
+		}
+
+		switch (this.type) {
+			case 'checkbox':
+				if (this.checked) {
+					this.removeAttributeNS(null, 'checked');
+				} else {
+					this.setAttributeNS(null, 'checked', '');
+				}
+
+				dispatchEvent();
+
+				break;
+
+			case 'radio':
+				if (this.checked === true) {
+					return;
+				}
+
+				const allOptions = this.form.querySelectorAll(`input[type=radio][name="${this.name}"]`);
+				allOptions.forEach(option => option.removeAttributeNS(null, 'checked'))
+
+				this.setAttributeNS(null, 'checked', '');
+
+				dispatchEvent();
+
+				break;
+
+			case 'submit':
+				dispatchEvent('submit', this.form);
+		}
+	};
 	/**
 	 * Returns height.
 	 *

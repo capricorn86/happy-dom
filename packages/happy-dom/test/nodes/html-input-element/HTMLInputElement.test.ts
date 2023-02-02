@@ -584,4 +584,103 @@ describe('HTMLInputElement', () => {
 			expect(clone.selectionDirection).toEqual(element.selectionDirection);
 		});
 	});
+
+	describe('onclick()', () => {
+		it('checkbox triggers "onChange" on "click"',  () => {
+			const changed = jest.fn();
+
+			element.checked = false;
+			element.type = 'checkbox';
+			element.addEventListener('change', () => {
+				changed();
+			});
+
+			element.click();
+
+			expect(changed).toHaveBeenCalledTimes(1);
+			expect(element.checked).toBe(true)
+
+			element.click();
+
+			expect(changed).toHaveBeenCalledTimes(2);
+			expect(element.checked).toBe(false)
+		})
+
+		it('radio triggers "onChange" only when "click" changes the value from false to true',  () => {
+			// prepare a form with checkboxes: radio1(name=test) radio2(name=test) radio3(name=test2)
+			const form = document.createElement('form')
+			const radio1 = <HTMLInputElement>document.createElement('input');
+			radio1.type = 'radio';
+			radio1.name = 'test';
+			radio1.checked = false;
+			const radio2 = <HTMLInputElement>document.createElement('input');
+			radio2.type = 'radio';
+			radio2.name = 'test';
+			radio2.checked = true;
+			const radio3 = <HTMLInputElement>document.createElement('input');
+			radio3.type = 'radio';
+			radio3.name = 'test2';
+			radio3.checked = true;
+
+			form.appendChild(radio1);
+			form.appendChild(radio2);
+			form.appendChild(radio3);
+
+			document.appendChild(form);
+
+			const radio1Changed = jest.fn();
+			const radio2Changed = jest.fn();
+
+			radio1.addEventListener('change', () => {
+				radio1Changed();
+			});
+			radio2.addEventListener('change', () => {
+				radio2Changed();
+			});
+
+			radio1.click();
+			expect(radio1Changed).toHaveBeenCalledTimes(1);
+			expect(radio2Changed).toHaveBeenCalledTimes(0);
+			expect(radio1.checked).toBe(true)
+			expect(radio2.checked).toBe(false)
+			expect(radio3.checked).toBe(true)
+
+			// doesn't change when clicking the same radio
+			radio1.click();
+			expect(radio1Changed).toHaveBeenCalledTimes(1);
+			expect(radio2Changed).toHaveBeenCalledTimes(0);
+			expect(radio1.checked).toBe(true)
+			expect(radio2.checked).toBe(false)
+			expect(radio3.checked).toBe(true)
+
+			// change when clicking the 2nd radio
+			radio2.click();
+			expect(radio1Changed).toHaveBeenCalledTimes(1);
+			expect(radio2Changed).toHaveBeenCalledTimes(1);
+			expect(radio1.checked).toBe(false)
+			expect(radio2.checked).toBe(true)
+			expect(radio3.checked).toBe(true)
+		});
+
+		it('submit triggers "onSubmit" on parent form', function () {
+			const form = document.createElement('form');
+			const submit = <HTMLInputElement>document.createElement('input');
+			submit.type = 'submit';
+			form.appendChild(submit);
+			document.append(form);
+
+			const expectedEvent = new Event('submit', {
+				bubbles: true,
+				cancelable: true
+			});
+			expectedEvent._target = form;
+			expectedEvent._currentTarget = form;
+
+			const submitted = jest.fn();
+			form.addEventListener('submit', submitted);
+
+			submit.click();
+			expect(submitted).toHaveBeenCalledTimes(1);
+		});
+	})
 });
