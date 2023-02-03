@@ -99,5 +99,32 @@ describe('Event', () => {
 				customELement.shadowRoot
 			]);
 		});
+
+		it('Returns correct composed for HTMLAnchorElement event target and composed is set to "true".', () => {
+			const anchor = document.createElement('a');
+			anchor.setAttribute('href', 'https://example.com');
+			let composedPath = null;
+
+			document.body.appendChild(anchor);
+
+			anchor.addEventListener('click', (event: Event) => {
+				composedPath = event.composedPath();
+			});
+
+			anchor.dispatchEvent(
+				new Event('click', {
+					bubbles: true,
+					composed: true
+				})
+			);
+
+			expect(composedPath).toEqual([
+				anchor,
+				document.body,
+				document.documentElement,
+				document,
+				window
+			]);
+		});
 	});
 });
