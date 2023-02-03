@@ -46,13 +46,7 @@ export default `
         }
     }
 
-    @container name (min-width: 36rem) {
-        .container {
-            color: red;
-        }
-    }
-
-    @container name (min-width: 36rem) {
+    @container containerName (min-width: 36rem) {
         .container {
             color: red;
         }

@@ -59,7 +59,7 @@ describe('XMLHttpRequest', () => {
 							statusCode: 201,
 							statusMessage: 'OK',
 							headers: {},
-							text: Buffer.from(''),
+							text: '',
 							data: Buffer.from('').toString('base64')
 						}
 					});
@@ -124,7 +124,7 @@ describe('XMLHttpRequest', () => {
 							statusCode: 200,
 							statusMessage: expectedStatusText,
 							headers: {},
-							text: Buffer.from(''),
+							text: '',
 							data: Buffer.from('').toString('base64')
 						}
 					});
@@ -185,7 +185,7 @@ describe('XMLHttpRequest', () => {
 							statusCode: 200,
 							statusMessage: '',
 							headers: {},
-							text: Buffer.from(''),
+							text: '',
 							data: Buffer.from('').toString('base64')
 						}
 					});
@@ -246,7 +246,7 @@ describe('XMLHttpRequest', () => {
 							statusCode: 200,
 							statusMessage: '',
 							headers: {},
-							text: Buffer.from(''),
+							text: '',
 							data: Buffer.from('').toString('base64')
 						}
 					});
@@ -317,7 +317,7 @@ describe('XMLHttpRequest', () => {
 							statusCode: 200,
 							statusMessage: '',
 							headers: {},
-							text: Buffer.from(responseText),
+							text: responseText,
 							data: Buffer.from(responseText).toString('base64')
 						}
 					});
@@ -330,6 +330,7 @@ describe('XMLHttpRequest', () => {
 		});
 
 		it('Returns response text for asynchrounous requests.', (done) => {
+			const responseText = 'test';
 			mockModule('https', {
 				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
 					return {
@@ -340,7 +341,7 @@ describe('XMLHttpRequest', () => {
 								headers: {},
 								on: (event, callback) => {
 									if (event === 'data') {
-										callback(Buffer.from(''));
+										callback(Buffer.from(responseText));
 									} else if (event === 'end') {
 										callback();
 									}
@@ -354,7 +355,7 @@ describe('XMLHttpRequest', () => {
 
 			request.open('GET', REQUEST_URL, true);
 			request.addEventListener('load', () => {
-				expect(request.responseText).toBe('http.request.body');
+				expect(request.responseText).toBe(responseText);
 				done();
 			});
 			request.send();
@@ -475,7 +476,7 @@ describe('XMLHttpRequest', () => {
 							statusCode: 200,
 							statusMessage: '',
 							headers: {},
-							text: Buffer.from(''),
+							text: '',
 							data: Buffer.from('').toString('base64')
 						}
 					});
@@ -560,7 +561,7 @@ describe('XMLHttpRequest', () => {
 								'set-cookie': 'key1=value1',
 								'set-cookie2': 'key1=value1'
 							},
-							text: Buffer.from(''),
+							text: '',
 							data: Buffer.from('').toString('base64')
 						}
 					});
@@ -610,7 +611,7 @@ describe('XMLHttpRequest', () => {
 				}
 			});
 
-			request.open('GET', REQUEST_URL, false);
+			request.open('GET', REQUEST_URL, true);
 
 			request.addEventListener('load', () => {
 				expect(request.getResponseHeader('key1')).toBe('value1');
@@ -647,7 +648,7 @@ describe('XMLHttpRequest', () => {
 								'set-cookie': 'key1=value1',
 								'set-cookie2': 'key1=value1'
 							},
-							text: Buffer.from(''),
+							text: '',
 							data: Buffer.from('').toString('base64')
 						}
 					});
@@ -657,9 +658,7 @@ describe('XMLHttpRequest', () => {
 			request.open('GET', REQUEST_URL, false);
 			request.send();
 
-			expect(request.getAllResponseHeaders()).toBe(
-				'key1: value1\r\nkey2: value2\r\ncontent-length: 48'
-			);
+			expect(request.getAllResponseHeaders()).toBe('key1: value1\r\nkey2: value2');
 		});
 
 		it('Returns all response headers for an asynchrounous request.', (done) => {
@@ -697,7 +696,7 @@ describe('XMLHttpRequest', () => {
 
 			request.addEventListener('load', () => {
 				expect(request.getAllResponseHeaders()).toBe(
-					'key1: value1\r\nkey2: value2\r\ncontent-length: 17'
+					'content-length: 4\r\nkey1: value1\r\nkey2: value2'
 				);
 				done();
 			});
@@ -718,6 +717,15 @@ describe('XMLHttpRequest', () => {
 		});
 
 		it('Throws an exception if the request has already been sent.', () => {
+			mockModule('https', {
+				request: (_options: unknown) => {
+					return {
+						end: () => {},
+						on: () => {}
+					};
+				}
+			});
+
 			request.open('GET', REQUEST_URL, true);
 			request.send();
 
@@ -777,6 +785,7 @@ describe('XMLHttpRequest', () => {
 
 			mockModule('fs', {
 				readFileSync: (path: string) => {
+					debugger;
 					expect(path).toBe(filepath);
 					return Buffer.from(fileContent);
 				}
@@ -826,6 +835,7 @@ describe('XMLHttpRequest', () => {
 				done();
 			});
 
+			debugger;
 			request.send();
 		});
 
@@ -874,7 +884,7 @@ describe('XMLHttpRequest', () => {
 							statusCode: 200,
 							statusMessage: '',
 							headers: {},
-							text: Buffer.from(responseText),
+							text: responseText,
 							data: Buffer.from(responseText).toString('base64')
 						}
 					});
@@ -934,7 +944,7 @@ describe('XMLHttpRequest', () => {
 							statusCode: 200,
 							statusMessage: '',
 							headers: {},
-							text: Buffer.from(responseText),
+							text: responseText,
 							data: Buffer.from(responseText).toString('base64')
 						}
 					});
@@ -1431,9 +1441,9 @@ describe('XMLHttpRequest', () => {
 							statusCode: 200,
 							statusMessage: '',
 							headers: {
-								'set-cookie': 'key1=value1;key2=value2'
+								'set-cookie': ['key1=value1', 'key2=value2']
 							},
-							text: Buffer.from(''),
+							text: '',
 							data: Buffer.from('').toString('base64')
 						}
 					});
@@ -1443,7 +1453,7 @@ describe('XMLHttpRequest', () => {
 			request.open('GET', REQUEST_URL, false);
 			request.send();
 
-			expect(window.document.cookie).toBe('key1=value1;key2=value2');
+			expect(window.document.cookie).toBe('key1=value1; key2=value2');
 		});
 
 		it('Returns response header for an asynchrounous request.', (done) => {
@@ -1455,7 +1465,7 @@ describe('XMLHttpRequest', () => {
 								statusCode: 200,
 								statusMessage: '',
 								headers: {
-									'set-cookie': 'key1=value1;key2=value2'
+									'set-cookie': ['key1=value1', 'key2=value2']
 								},
 								on: (event, callback) => {
 									if (event === 'data') {
@@ -1471,10 +1481,10 @@ describe('XMLHttpRequest', () => {
 				}
 			});
 
-			request.open('GET', REQUEST_URL, false);
+			request.open('GET', REQUEST_URL, true);
 
 			request.addEventListener('load', () => {
-				expect(window.document.cookie).toBe('key1=value1;key2=value2');
+				expect(window.document.cookie).toBe('key1=value1; key2=value2');
 				done();
 			});
 
@@ -1549,6 +1559,7 @@ describe('XMLHttpRequest', () => {
 		});
 
 		it('Handles Happy DOM asynchrounous tasks.', async () => {
+			const responseText = 'responseText';
 			mockModule('https', {
 				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
 					return {
@@ -1559,7 +1570,7 @@ describe('XMLHttpRequest', () => {
 								headers: {},
 								on: (event, callback) => {
 									if (event === 'data') {
-										callback(Buffer.from(''));
+										callback(Buffer.from(responseText));
 									} else if (event === 'end') {
 										callback();
 									}
@@ -1576,30 +1587,34 @@ describe('XMLHttpRequest', () => {
 
 			await window.happyDOM.whenAsyncComplete();
 
-			expect(request.responseText).toBe('http.request.body');
+			expect(request.responseText).toBe(responseText);
 		});
 	});
 
 	describe('abort()', () => {
 		it('Aborts an asynchrounous request.', () => {
+			let isDestroyed = false;
 			mockModule('https', {
 				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
 					return {
 						end: () => {
-							callback(<HTTP.IncomingMessage>(<unknown>{
-								statusCode: 200,
-								statusMessage: '',
-								headers: {},
-								on: (event, callback) => {
-									if (event === 'data') {
-										callback(Buffer.from(''));
-									} else if (event === 'end') {
-										callback();
+							setTimeout(() => {
+								callback(<HTTP.IncomingMessage>(<unknown>{
+									statusCode: 200,
+									statusMessage: '',
+									headers: {},
+									on: (event, callback) => {
+										if (event === 'data') {
+											callback(Buffer.from(''));
+										} else if (event === 'end') {
+											callback();
+										}
 									}
-								}
-							}));
+								}));
+							});
 						},
-						on: () => {}
+						on: () => {},
+						destroy: () => (isDestroyed = true)
 					};
 				}
 			});
@@ -1618,9 +1633,11 @@ describe('XMLHttpRequest', () => {
 			expect(isAbortTriggered).toBe(true);
 			expect(isLoadEndTriggered).toBe(true);
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
+			expect(isDestroyed).toBe(true);
 		});
 
 		it('Ends an ongoing Happy DOM asynchrounous task.', async () => {
+			let isDestroyed = false;
 			mockModule('https', {
 				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
 					return {
@@ -1638,7 +1655,8 @@ describe('XMLHttpRequest', () => {
 								}
 							}));
 						},
-						on: () => {}
+						on: () => {},
+						destroy: () => (isDestroyed = true)
 					};
 				}
 			});
@@ -1650,9 +1668,11 @@ describe('XMLHttpRequest', () => {
 			await window.happyDOM.whenAsyncComplete();
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
+			expect(isDestroyed).toBe(true);
 		});
 
 		it('Aborts an ongoing request when cancelling all Happy DOM asynchrounous tasks.', async () => {
+			let isDestroyed = false;
 			mockModule('https', {
 				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
 					return {
@@ -1670,7 +1690,8 @@ describe('XMLHttpRequest', () => {
 								}
 							}));
 						},
-						on: () => {}
+						on: () => {},
+						destroy: () => (isDestroyed = true)
 					};
 				}
 			});
@@ -1681,6 +1702,7 @@ describe('XMLHttpRequest', () => {
 			window.happyDOM.cancelAsync();
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
+			expect(isDestroyed).toBe(true);
 		});
 	});
 });

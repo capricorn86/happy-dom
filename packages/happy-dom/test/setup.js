@@ -24,7 +24,7 @@ global.resetMockedModules = () => {
 };
 
 for (const name of mockedModuleNames) {
-	mockedModuleImplementations[name] = jest.requireActual(name);
+	mockedModuleImplementations[name] = Object.assign({}, jest.requireActual(name));
 
 	jest.mock(name, () => {
 		return mockedModuleImplementations[name];

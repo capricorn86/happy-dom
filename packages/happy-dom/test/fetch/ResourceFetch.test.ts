@@ -43,6 +43,8 @@ describe('ResourceFetch', () => {
 
 	describe('fetchSync()', () => {
 		it('Returns resource data synchrounously.', () => {
+			const expectedResponse = 'test';
+
 			mockModule('child_process', {
 				execFileSync: (
 					command: string,
@@ -83,14 +85,13 @@ describe('ResourceFetch', () => {
 							statusCode: 200,
 							statusMessage: '',
 							headers: {},
-							text: Buffer.from(expectedResponse),
+							text: expectedResponse,
 							data: Buffer.from(expectedResponse).toString('base64')
 						}
 					});
 				}
 			});
 
-			const expectedResponse = 'test';
 			const response = ResourceFetch.fetchSync(document, 'path/to/script/');
 
 			expect(response).toBe(expectedResponse);
@@ -105,7 +106,7 @@ describe('ResourceFetch', () => {
 							statusCode: 404,
 							statusMessage: 'Not found',
 							headers: {},
-							text: Buffer.from(''),
+							text: '',
 							data: Buffer.from('').toString('base64')
 						}
 					});

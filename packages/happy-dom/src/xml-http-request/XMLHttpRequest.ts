@@ -584,9 +584,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		if (error) {
 			this._onError(error);
-		}
-
-		if (response) {
+		} else if (response) {
 			this._state.incommingMessage = {
 				statusCode: response.statusCode,
 				headers: response.headers
@@ -677,7 +675,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 						this._state.asyncTaskID
 					);
 				}
-			).on('error', (error: Error) => {
+			);
+			this._state.asyncRequest.on('error', (error: Error) => {
 				this._onError(error);
 				resolve();
 
@@ -824,6 +823,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		let data: Buffer;
 
+		debugger;
 		try {
 			data = await FS.promises.readFile(decodeURI(url.pathname.slice(1)));
 		} catch (error) {
@@ -974,8 +974,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param headers String array.
 	 */
 	private _setCookies(headers: string[] | HTTP.IncomingHttpHeaders): void {
-		for (const cookie of [...(headers['set-cookie'] ?? []), ...(headers['set-cookie2'] ?? [])]) {
-			this._ownerDocument.defaultView.document._cookie.setCookiesString(cookie);
+		for (const header of ['set-cookie', 'set-cookie2']) {
+			if (Array.isArray(headers[header])) {
+				for (const cookie of headers[header]) {
+					this._ownerDocument.defaultView.document._cookie.setCookiesString(cookie);
+				}
+			} else if (headers[header]) {
+				this._ownerDocument.defaultView.document._cookie.setCookiesString(headers[header]);
+			}
 		}
 	}
 

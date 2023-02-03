@@ -191,6 +191,7 @@ export default class Response implements IResponse {
 	 */
 	public async json(): Promise<string> {
 		const text = await this.text();
+		console.log(`"${text}"`);
 		return JSON.parse(text);
 	}
 

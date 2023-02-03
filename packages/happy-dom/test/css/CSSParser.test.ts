@@ -14,7 +14,7 @@ describe('CSSParser', () => {
 			const cssStyleSheet = new CSSStyleSheet();
 			const cssRules = CSSParser.parseFromString(cssStyleSheet, CSSParserInput);
 
-			expect(cssRules.length).toBe(9);
+			expect(cssRules.length).toBe(8);
 
 			// CSSStyleRule
 			expect((<CSSStyleRule>cssRules[0]).parentRule).toBe(null);
@@ -153,9 +153,11 @@ describe('CSSParser', () => {
 			// CSSContainerRule 2
 			expect((<CSSContainerRule>cssRules[6]).parentRule).toBe(null);
 			expect((<CSSContainerRule>cssRules[6]).parentStyleSheet).toBe(cssStyleSheet);
-			expect((<CSSContainerRule>cssRules[6]).conditionText).toBe('name (min-width: 36rem)');
+			expect((<CSSContainerRule>cssRules[6]).conditionText).toBe(
+				'containerName (min-width: 36rem)'
+			);
 			expect((<CSSContainerRule>cssRules[6]).cssText).toBe(
-				'@container name (min-width: 36rem) { .container { color: red; } }'
+				'@container containerName (min-width: 36rem) { .container { color: red; } }'
 			);
 			expect((<CSSMediaRule>cssRules[6]).cssRules.length).toBe(1);
 			const children5 = <CSSStyleRule[]>(<CSSContainerRule>cssRules[6]).cssRules;
@@ -177,11 +179,11 @@ describe('CSSParser', () => {
 			);
 			expect((<CSSSupportsRule>cssRules[7]).cssRules.length).toBe(1);
 			const children6 = <CSSStyleRule[]>(<CSSSupportsRule>cssRules[7]).cssRules;
-			expect(children6[0].parentRule).toBe(cssRules[6]);
+			expect(children6[0].parentRule).toBe(cssRules[7]);
 			expect(children6[0].parentStyleSheet).toBe(cssStyleSheet);
 			expect(children6[0].selectorText).toBe('.container');
 			expect(children6[0].style.length).toBe(1);
-			expect(children6[0].style.parentRule).toBe(children5[0]);
+			expect(children6[0].style.parentRule).toBe(children6[0]);
 			expect(children6[0].style[0]).toBe('color');
 			expect(children6[0].style.color).toBe('green');
 			expect(children6[0].cssText).toBe('.container { color: green; }');

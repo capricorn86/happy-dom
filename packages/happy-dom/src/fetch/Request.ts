@@ -86,6 +86,30 @@ export default class Request implements IRequest {
 			this._ownerDocument,
 			init?.referrer !== null ? init?.referrer : (<Request>input).referrer
 		);
+
+		if (input instanceof URL) {
+			this._url = input;
+		} else {
+			try {
+				if (input instanceof Request && input.url) {
+					this._url = new URL(input.url, this._ownerDocument.location);
+				} else {
+					this._url = new URL(<string>input, this._ownerDocument.location);
+				}
+			} catch (error) {
+				throw new DOMException(
+					`Failed to construct 'Request. Invalid URL '${input}' on document location '${
+						this._ownerDocument.location
+					}'.${
+						this._ownerDocument.location.origin === 'null'
+							? ' Relative URLs are not permitted on current document location.'
+							: ''
+					}`,
+					DOMExceptionNameEnum.notSupportedError
+				);
+			}
+		}
+
 		this._url = (<Request>input).url
 			? new URL((<Request>input).url, this._ownerDocument.location)
 			: input instanceof URL
