@@ -785,7 +785,6 @@ describe('XMLHttpRequest', () => {
 
 			mockModule('fs', {
 				readFileSync: (path: string) => {
-					debugger;
 					expect(path).toBe(filepath);
 					return Buffer.from(fileContent);
 				}
@@ -835,7 +834,6 @@ describe('XMLHttpRequest', () => {
 				done();
 			});
 
-			debugger;
 			request.send();
 		});
 

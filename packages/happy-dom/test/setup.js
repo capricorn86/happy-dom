@@ -1,6 +1,11 @@
 const mockedModuleNames = ['fs', 'child_process', 'http', 'https'];
 const mockedModuleImplementations = {};
 
+process.on('unhandledRejection', (error) => {
+	console.error(error);
+	process.exit(1);
+});
+
 global.mockModule = (name, module) => {
 	if (!mockedModuleNames.includes(name)) {
 		throw new Error(

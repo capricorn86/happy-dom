@@ -823,7 +823,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		let data: Buffer;
 
-		debugger;
 		try {
 			data = await FS.promises.readFile(decodeURI(url.pathname.slice(1)));
 		} catch (error) {

@@ -40,8 +40,8 @@ export default class Request implements IRequest {
 	public readonly bodyUsed: boolean;
 
 	// Internal properties
+	public readonly _contentLength: number | null = null;
 	public _referrer: '' | 'no-referrer' | 'client' | URL = 'client';
-	public readonly _contentLength: number | null;
 	public readonly _url: URL;
 
 	/**
