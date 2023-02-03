@@ -2,6 +2,7 @@ const mockedModuleNames = ['fs', 'child_process', 'http', 'https'];
 const mockedModuleImplementations = {};
 
 process.on('unhandledRejection', (error) => {
+	// eslint-disable-next-line
 	console.error(error);
 	process.exit(1);
 });

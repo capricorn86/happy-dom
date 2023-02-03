@@ -639,12 +639,13 @@ export default class Window extends EventTarget implements IWindow {
 	 *
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
+	 * @param args Arguments passed to the callback function.
 	 * @returns Timeout ID.
 	 */
-	public setTimeout(callback: () => void, delay = 0): NodeJS.Timeout {
+	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this._setTimeout(() => {
 			this.happyDOM.asyncTaskManager.endTimer(id);
-			callback();
+			callback(...args);
 		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
@@ -665,10 +666,11 @@ export default class Window extends EventTarget implements IWindow {
 	 *
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
+	 * @param args Arguments passed to the callback function.
 	 * @returns Interval ID.
 	 */
-	public setInterval(callback: () => void, delay = 0): NodeJS.Timeout {
-		const id = this._setInterval(callback, delay);
+	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
+		const id = this._setInterval(callback, delay, ...args);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
 	}

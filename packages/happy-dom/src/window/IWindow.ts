@@ -318,9 +318,10 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	 *
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
+	 * @param args Arguments passed to the callback function.
 	 * @returns Timeout ID.
 	 */
-	setTimeout(callback: () => void, delay?: number): NodeJS.Timeout;
+	setTimeout(callback: Function, delay?: number, ...args: unknown[]): NodeJS.Timeout;
 
 	/**
 	 * Cancels a timeout previously established by calling setTimeout().
@@ -334,9 +335,10 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	 *
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
+	 * @param args Arguments passed to the callback function.
 	 * @returns Interval ID.
 	 */
-	setInterval(callback: () => void, delay?: number): NodeJS.Timeout;
+	setInterval(callback: Function, delay?: number, ...args: unknown[]): NodeJS.Timeout;
 
 	/**
 	 * Cancels a timed repeating action which was previously established by a call to setInterval().
