@@ -17,7 +17,7 @@ export default class CustomEvent extends Event {
 		super(type, eventInit);
 
 		if (eventInit) {
-			this.detail = eventInit.detail || null;
+			this.detail = eventInit.detail !== undefined ? eventInit.detail : null;
 		}
 	}
 
