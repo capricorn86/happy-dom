@@ -2,7 +2,11 @@
 	"$schema": "https://turbo.build/schema.json",
 	"pipeline": {
 		"compile": {
+			"dependsOn": ["^compile"],
 			"outputs": ["lib/**"]
+		},
+		"global-registrator#compile": {
+			"dependsOn": ["happy-dom#compile"]
 		},
 		"lint": {
 			"outputs": []
