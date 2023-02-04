@@ -5,9 +5,9 @@
 		"packages/*"
 	],
 	"scripts": {
-		"compile": "turbo run compile",
+		"compile": "turbo run compile --cache-dir=.turbo",
 		"watch": "turbo run watch --parallel",
-		"lint": "turbo run lint",
+		"lint": "turbo run lint --cache-dir=.turbo",
 		"lint:fix": "turbo run lint:fix",
 		"lint:changed": "turbo run lint:fix --since HEAD",
 		"validate-commit-messages": "",
@@ -16,7 +16,7 @@
 		"print-next-version": "node ./bin/print-next-version.js",
 		"prepublishOnly": "npm run compile && npm run lint && npm test",
 		"bootstrap-ci": "",
-		"test": "turbo run test",
+		"test": "turbo run test --cache-dir=.turbo",
 		"test:watch": "turbo run test:watch --parallel",
 		"test:update-snapshot": "turbo run test:update-snapshot",
 		"version": "turbo version --yes",
