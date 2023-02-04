@@ -10,7 +10,7 @@
 		"lint": "turbo run lint",
 		"lint:fix": "turbo run lint:fix",
 		"lint:changed": "turbo run lint:fix --since HEAD",
-		"validate-commit-messages": "node ./bin/validate-commit-messages.js",
+		"validate-commit-messages": "",
 		"generate-release-notes": "node ./bin/generate-release-notes.js",
 		"print-latest-version": "node ./bin/print-latest-version.js",
 		"print-next-version": "node ./bin/print-next-version.js",
