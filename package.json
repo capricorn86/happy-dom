@@ -15,7 +15,7 @@
 		"print-latest-version": "node ./bin/print-latest-version.js",
 		"print-next-version": "node ./bin/print-next-version.js",
 		"postinstall": "turbo bootstrap",
-		"bootstrap-ci": "turbo bootstrap --ci",
+		"bootstrap-ci": "turbo bootstrap",
 		"prepublishOnly": "npm run compile && npm run lint && npm test",
 		"test": "turbo run test",
 		"test:watch": "turbo run test:watch --parallel",
