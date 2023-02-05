@@ -24,8 +24,8 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc",
-		"watch": "npm run compile && tsc -w --preserveWatchOutput",
+		"compile": "tswc -- src -d ./lib && tsc --noEmit",
+		"watch": "npm run compile && tswc -- -w src -d ./lib & tsc -w --noEmit",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
 		"test": "tsc --project ./test && node ./tmp/react/React.test.js",
