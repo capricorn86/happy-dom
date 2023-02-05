@@ -705,5 +705,16 @@ describe('QuerySelector', () => {
 
 			expect(div.querySelector('input:not([list])[type="search"]')).toBeNull();
 		});
+
+		it('Returns an element by attribute with dots matching.', () => {
+			const div = document.createElement('div');
+			const customDivElement = document.createElement('div');
+			customDivElement.setAttribute('name', 'foo.bar');
+			customDivElement.setAttribute('foo', 'biz.bar');
+			div.append(customDivElement);
+
+			expect(div.querySelector('[name="foo.bar"]') === customDivElement).toBe(true);
+			expect(div.querySelector('[foo="biz.bar"]') === customDivElement).toBe(true);
+		});
 	});
 });
