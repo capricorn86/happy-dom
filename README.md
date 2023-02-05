@@ -1,4 +1,4 @@
-![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
+![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.png)
 
 
 # About
@@ -27,7 +27,7 @@ The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate 
 - Tree Walker
 
 - Fetch
-  
+
 
 And much more..
 
