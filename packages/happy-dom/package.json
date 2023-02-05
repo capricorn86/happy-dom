@@ -23,7 +23,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tswc -- src -d ./lib & tsc --noEmit",
+		"compile": "tswc -- src -d ./lib",
 		"watch": "tswc -- -w src -d ./lib & tsc --noEmit --watch",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",

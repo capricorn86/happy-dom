@@ -29,7 +29,7 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-turbo-
-      - run: npm ci --ignore-scripts      
+      - run: npm ci --ignore-scripts
       - run: npm run compile
       - run: npm run lint
       - run: npm run test
