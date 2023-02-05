@@ -708,17 +708,5 @@ describe('Node', () => {
 				.compareDocumentPosition(document.getElementById('parent'));
 			expect(position).toEqual(10);
 		});
-
-		it('Example correct use of insertBefore', () => {
-			const d = document.createElement('div');
-			d.innerHTML =
-				'<span id="a"></span><span id="b"></span><span id="c"></span><span id="d"></span>';
-			const a = d.querySelector('#a');
-			const b = d.querySelector('#b');
-			d.insertBefore(a, b);
-			expect(d.innerHTML).toBe(
-				'<span id="b"></span><span id="a"></span><span id="c"></span><span id="d"></span>'
-			);
-		});
 	});
 });
