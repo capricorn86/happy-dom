@@ -3,6 +3,7 @@ import Window from '../../src/window/Window';
 import IDocument from '../../src/nodes/document/IDocument';
 import Event from '../../src/event/Event';
 import CustomElement from '../CustomElement';
+import { performance } from 'perf_hooks';
 
 describe('Event', () => {
 	let window: IWindow;
@@ -13,6 +14,28 @@ describe('Event', () => {
 		document = window.document;
 
 		window.customElements.define('custom-element', CustomElement);
+	});
+
+	describe('timeStamp', () => {
+		it('Has a timeStamp property.', () => {
+			const event = new Event('click');
+			expect('timeStamp' in event).toBeTruthy();
+		});
+		it('Property is of type number.', () => {
+			const event = new Event('click');
+			expect(typeof event.timeStamp).toBe('number');
+		});
+		it('Has value greater than zero.', () => {
+			const event = new Event('click');
+			expect(event.timeStamp).toBeGreaterThan(0);
+		});
+		it('Returns a value not in the future', () => {
+			const event = new Event('click');
+			const { timeOrigin } = performance;
+			const eventOriginalTime = timeOrigin + event.timeStamp;
+			const now = Date.now();
+			expect(eventOriginalTime).toBeLessThanOrEqual(now);
+		});
 	});
 
 	describe('composedPath()', () => {
