@@ -98,7 +98,7 @@ export default class Request implements IRequest {
 				}
 			} catch (error) {
 				throw new DOMException(
-					`Failed to construct 'Request. Invalid URL '${input}' on document location '${
+					`Failed to construct 'Request. Invalid URL "${input}" on document location '${
 						this._ownerDocument.location
 					}'.${
 						this._ownerDocument.location.origin === 'null'

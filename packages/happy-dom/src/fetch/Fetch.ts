@@ -223,7 +223,6 @@ export default class Fetch {
 		});
 
 		const responseOptions = {
-			url: this.request.url,
 			status: nodeResponse.statusCode,
 			statusText: nodeResponse.statusMessage,
 			headers
@@ -238,6 +237,7 @@ export default class Fetch {
 			nodeResponse.statusCode === 304
 		) {
 			this.response = new Response(body, responseOptions);
+			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
 			return;
 		}
@@ -258,6 +258,7 @@ export default class Fetch {
 				}
 			});
 			this.response = new Response(body, responseOptions);
+			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
 			return;
 		}
@@ -288,12 +289,14 @@ export default class Fetch {
 				}
 
 				this.response = new Response(body, responseOptions);
+				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
 			});
 			raw.once('end', () => {
 				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
 				if (!this.response) {
 					this.response = new Response(body, responseOptions);
+					(<string>this.response.url) = this.request.url;
 					this.resolve(this.response);
 				}
 			});
@@ -308,12 +311,14 @@ export default class Fetch {
 				}
 			});
 			this.response = new Response(body, responseOptions);
+			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
 			return;
 		}
 
 		// Otherwise, use response as is
 		this.response = new Response(body, responseOptions);
+		(<string>this.response.url) = this.request.url;
 		this.resolve(this.response);
 	}
 
@@ -519,7 +524,7 @@ export default class Fetch {
 
 		// TODO: Is this correct? "node-fetch" has a compress option that is not available by default.
 		if (!headers.has('Accept-Encoding')) {
-			headers.set('accept-encoding', 'gzip, deflate, br');
+			headers.set('Accept-Encoding', 'gzip, deflate, br');
 		}
 
 		if (this.request._contentLength !== null) {

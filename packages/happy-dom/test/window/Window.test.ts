@@ -18,7 +18,7 @@ import IRequest from '../../src/fetch/types/IRequest';
 import IResponse from '../../src/fetch/types/IResponse';
 import Fetch from '../../src/fetch/Fetch';
 import HTTP from 'http';
-import Net from 'net';
+import Stream from 'stream';
 
 describe('Window', () => {
 	let window: IWindow;
@@ -554,34 +554,20 @@ describe('Window', () => {
 						end: () => {},
 						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
 							if (event === 'response') {
-								setTimeout(() => {
-									const chunks = [Buffer.from(responseText)];
-									const response = new HTTP.IncomingMessage(<Net.Socket>{});
-									response.statusCode = 200;
-									response.statusMessage = '';
-									response.headers = {
-										'content-length': '0'
-									};
-									response.rawHeaders = ['content-length', '0'];
-									response.read = () => (chunks.length ? chunks.pop() : null);
-									response.complete = !chunks.length;
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
 
-									(<unknown>response.on) = (event, callback) => {
-										setTimeout(() => {
-											if (event === 'data') {
-												callback(Buffer.from(''));
-											}
-										});
-									};
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-									Object.defineProperty(response, 'readableEnded', {
-										get: () => !chunks.length
-									});
-									response.readable = true;
-									response.once = response.on;
+								response.statusCode = 200;
+								response.statusMessage = '';
+								response.headers = {
+									'content-length': '0'
+								};
+								response.rawHeaders = ['content-length', '0'];
 
-									callback(response);
-								});
+								callback(response);
 							}
 						},
 						setTimeout: () => {}

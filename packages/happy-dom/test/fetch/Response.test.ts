@@ -1,8 +1,6 @@
 import Response from '../../src/fetch/Response';
 import Window from '../../src/window/Window';
 
-jest.unmock('node-fetch');
-
 beforeAll(() => {
 	const window = new Window();
 	Response._ownerDocument = window.document;
