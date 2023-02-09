@@ -19,11 +19,17 @@ describe('Event', () => {
 	afterEach(() => {
 		jest.restoreAllMocks();
 	});
-	
+
 	describe('get timeStamp()', () => {
 		it('Returns the value returned by performance.now() at the time it was created.', () => {
-		        const performanceNow = 12345;
-		        spyOn(performance, 'now').mockImplementation(() => performanceNow);
+			Object.defineProperty(performance, 'now', {
+				value: jest.fn(),
+				configurable: true,
+				writable: true
+			});
+
+			const performanceNow = 12345;
+			jest.spyOn(performance, 'now').mockImplementation(() => performanceNow);
 			const event = new Event('click');
 			expect(event.timeStamp).toBe(performanceNow);
 		});
