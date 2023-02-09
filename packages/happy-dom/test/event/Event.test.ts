@@ -16,25 +16,16 @@ describe('Event', () => {
 		window.customElements.define('custom-element', CustomElement);
 	});
 
-	describe('timeStamp', () => {
-		it('Has a timeStamp property.', () => {
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+	
+	describe('get timeStamp()', () => {
+		it('Returns the value returned by performance.now() at the time it was created.', () => {
+		        const performanceNow = 12345;
+		        spyOn(performance, 'now').mockImplementation(() => performanceNow);
 			const event = new Event('click');
-			expect('timeStamp' in event).toBeTruthy();
-		});
-		it('Property is of type number.', () => {
-			const event = new Event('click');
-			expect(typeof event.timeStamp).toBe('number');
-		});
-		it('Has value greater than zero.', () => {
-			const event = new Event('click');
-			expect(event.timeStamp).toBeGreaterThan(0);
-		});
-		it('Returns a value not in the future', () => {
-			const event = new Event('click');
-			const { timeOrigin } = performance;
-			const eventOriginalTime = timeOrigin + event.timeStamp;
-			const now = Date.now();
-			expect(eventOriginalTime).toBeLessThanOrEqual(now);
+			expect(event.timeStamp).toBe(performanceNow);
 		});
 	});
 
