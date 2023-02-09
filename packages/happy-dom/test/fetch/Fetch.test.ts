@@ -254,10 +254,10 @@ describe('Fetch', () => {
 		expect(response.bodyUsed).toBe(true);
 	});
 
-	it('Performs a request with a relative URL.', async () => {
+	it('Performs a request with a relative URL and adds the "Referer" header set to the window location.', async () => {
 		const path = 'some/path';
 		const responseText = 'test';
-		const baseUrl = 'https://localhost:8080';
+		const baseUrl = 'https://localhost:8080/base/';
 		let requestArgs: {
 			url: string;
 			options: { method: string; headers: { [k: string]: string } };
@@ -293,7 +293,7 @@ describe('Fetch', () => {
 		await window.fetch(path);
 
 		expect(requestArgs).toEqual({
-			url: `${baseUrl}/${path}`,
+			url: `${baseUrl}${path}`,
 			options: {
 				method: 'GET',
 				headers: {
@@ -301,7 +301,62 @@ describe('Fetch', () => {
 					Connection: 'close',
 					'User-Agent': window.navigator.userAgent,
 					'Accept-Encoding': 'gzip, deflate, br',
-					Referer: baseUrl + '/'
+					Referer: baseUrl
+				}
+			}
+		});
+	});
+
+	it('Adds document cookie string as an header with the name "Cookie".', async () => {
+		const responseText = 'test';
+		const cookies = 'key1=value1; key2=value2';
+		const url = 'https://localhost:8080/some/path';
+		let requestArgs: {
+			url: string;
+			options: { method: string; headers: { [k: string]: string } };
+		} | null = null;
+
+		mockModule('https', {
+			request: (url, options) => {
+				requestArgs = { url, options };
+
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {
+								yield responseText;
+							}
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {}
+				};
+			}
+		});
+
+		for (const cookie of cookies.split(';')) {
+			window.document.cookie = cookie.trim();
+		}
+
+		await window.fetch(url);
+
+		expect(requestArgs).toEqual({
+			url,
+			options: {
+				method: 'GET',
+				headers: {
+					Accept: '*/*',
+					Connection: 'close',
+					'User-Agent': window.navigator.userAgent,
+					'Accept-Encoding': 'gzip, deflate, br',
+					Cookie: cookies
 				}
 			}
 		});
@@ -363,7 +418,7 @@ describe('Fetch', () => {
 		});
 	});
 
-	it('Should send custom Headers instance request headers.', async () => {
+	it('Should send custom "Headers" instance request headers.', async () => {
 		const url = 'https://localhost:8080/some/path';
 		const responseText = 'test';
 		let requestArgs: {

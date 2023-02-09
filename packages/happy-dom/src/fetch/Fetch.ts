@@ -508,6 +508,8 @@ export default class Fetch {
 		const document = this.ownerDocument;
 		const cookie = document.defaultView.document.cookie;
 
+		headers.set('Accept-Encoding', 'gzip, deflate, br');
+		headers.set('Connection', 'close');
 		headers.set('User-Agent', document.defaultView.navigator.userAgent);
 
 		if (this.request._referrer instanceof URL) {
@@ -522,17 +524,9 @@ export default class Fetch {
 			headers.set('Accept', '*/*');
 		}
 
-		// TODO: Is this correct? "node-fetch" has a compress option that is not available by default.
-		if (!headers.has('Accept-Encoding')) {
-			headers.set('Accept-Encoding', 'gzip, deflate, br');
-		}
-
 		if (this.request._contentLength !== null) {
 			headers.set('Content-Length', String(this.request._contentLength));
 		}
-
-		// TODO: Is this correct? "node-fetch" has it.
-		headers.set('Connection', 'close');
 
 		// We need to convert the headers to Node request headers.
 		const httpRequestHeaders = {};
