@@ -18,7 +18,7 @@ export default class Event {
 	public _propagationStopped = false;
 	public _target: IEventTarget = null;
 	public _currentTarget: IEventTarget = null;
-	public timeStamp: number = Date.now() - performance.timeOrigin;
+	public timeStamp: number = performance.now();
 	public type: string = null;
 
 	/**
