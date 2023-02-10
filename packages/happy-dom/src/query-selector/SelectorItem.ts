@@ -41,7 +41,7 @@ export default class SelectorItem {
 		this.isAttribute = !this.isAll && baseSelector.includes('[');
 		// If baseSelector !== selector then some psuedo selector was replaced above
 		this.isPseudo = !this.isAll && baseSelector !== selector;
-		this.isClass = !this.isAll && new RegExp(CLASS_REGEXP, 'g').test(baseSelector);
+		this.isClass = !this.isAll && new RegExp(CLASS_REGEXP, 'g').test(baseSelector) && !this.isAttribute;
 		this.tagName = !this.isAll ? baseSelector.match(TAG_NAME_REGEXP) : null;
 		this.tagName = this.tagName ? this.tagName[0].toUpperCase() : null;
 		this.isTagName = this.tagName !== null;
