@@ -35,14 +35,6 @@ jobs:
             ./node_modules
             ./packages/*/node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
-
-      - name: Cache turbo build setup
-        uses: actions/cache@v3
-        with:
-          path: .turbo
-          key: turbo-${{ github.job }}-master-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ github.job }}-master
       
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
@@ -88,9 +80,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .turbo
-          key: turbo-${{ github.job }}-master-${{ github.sha }}
+          key: turbo-master-${{ github.sha }}
           restore-keys: |
-            turbo-${{ github.job }}-master
+            turbo-master
       
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
@@ -150,14 +142,6 @@ jobs:
             ./node_modules
             ./packages/*/node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
-
-      - name: Cache turbo build setup
-        uses: actions/cache@v3
-        with:
-          path: .turbo
-          key: turbo-${{ github.job }}-master-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ github.job }}-master
       
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'

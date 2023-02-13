@@ -28,20 +28,21 @@ jobs:
             ./packages/*/node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
 
+      - name: Cache turbo
+        uses: actions/cache@v3
+        id: cache-turbo
+        with:
+          path: .turbo
+          key: turbo-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ github.ref_name }}
+
       - name: Restore turbo cache from master
-        id: cache-primes-restore
+        if: steps.cache-turbo.outputs.cache-hit != 'true'
         uses: actions/cache/restore@v3
         with:
           path: .turbo
-          key: turbo-${{ github.job }}-master
-
-      - name: Cache turbo
-        uses: actions/cache@v3
-        with:
-          path: .turbo
-          key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ github.job }}-${{ github.ref_name }}
+          key: turbo-master
       
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
