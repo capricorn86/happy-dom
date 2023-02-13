@@ -34,6 +34,14 @@ jobs:
         with:
           path: ~/.npm
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v3
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
       
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
@@ -42,8 +50,8 @@ jobs:
 
       - id: versionCheck
         run: |
-          echo "::set-output name=next_version::$(npm run print-next-version --silent)"
-          echo "::set-output name=latest_version::$(npm run print-latest-version --silent)"
+          echo "::set-output name=next_version::$(node ./bin/print-next-version.js)"
+          echo "::set-output name=latest_version::$(node ./bin/print-latest-version.js)"
           echo "::set-output name=user_email::$(git log --format='%ae' HEAD^!)"
 
   publish: 
@@ -65,42 +73,30 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Cache node modules
-        uses: actions/cache@v3
-        id: cache-node-modules
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
-      
-      - name: Install Dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      - name: Compile packages
+        run: npm run compile
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Configures GIT
         run: |
-          npm ci
+          git checkout -b release/${{ needs.check-next-version.outputs.next_version }} origin/master
+          git pull origin master
+          git push origin release/${{ needs.check-next-version.outputs.next_version }}
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${{ needs.check-next-version.outputs.user_email }}"
 
-      - name: Cache turbo build setup
-        uses: actions/cache@v3
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
-
-      - run: npm run compile
-      - run: npm run test
-
-      - run: git checkout -b release/${{ needs.check-next-version.outputs.next_version }} origin/master
-      - run: git pull origin master
-      - run: git push origin release/${{ needs.check-next-version.outputs.next_version }}
-      - run: git config --global user.name "${GITHUB_ACTOR}"
-      - run: git config --global user.email "${{ needs.check-next-version.outputs.user_email }}"
-      - run: npm run version -- "${{needs.check-next-version.outputs.next_version }}"
+      - name: Set version
+        run: node ./bin/set-version.js --version=${{needs.check-next-version.outputs.next_version }}
 
       - name: Set .npmrc for publish
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_PUBLISH_TOKEN }}" > ./.npmrc
-      - run: npm whoami
-      - run: npm run publish
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_PUBLISH_TOKEN }}" > ./.npmrc
+          npm whoami
+
+      - name: Publish packages
+        run: npm publish --workspaces
 
   create-release:
     runs-on: ubuntu-latest
@@ -115,7 +111,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: npm run --silent generate-release-notes -- --latest-version=${{needs.check-next-version.outputs.latest_version}} --next-version=${{needs.check-next-version.outputs.next_version}}
+      - run: node ./bin/generate-release-notes.js --latest-version=${{needs.check-next-version.outputs.latest_version}} --next-version=${{needs.check-next-version.outputs.next_version}}
 
       - name: Create Release
         id: create_release
