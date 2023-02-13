@@ -3,7 +3,7 @@ const ERROR = 'error';
 const OFF = 'off';
 
 const COMMON_CONFIG = {
-	plugins: ['jsdoc', 'filenames', 'jest', 'import', 'prettier'],
+	plugins: ['turbo', 'jsdoc', 'filenames', 'jest', 'import', 'prettier'],
 	extends: ['plugin:@typescript-eslint/recommended', 'prettier', 'plugin:prettier/recommended'],
 	rules: {
 		'prettier/prettier': WARN,

@@ -6,31 +6,50 @@ jobs:
     strategy:
       matrix:
         node-version: [16]
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
+        id: cache-node-modules
         env:
           cache-name: cache-node-modules
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+          path: |
+            ./node_modules
+            ./packages/*/node_modules
+          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
 
-      - name: Cache turbo build setup
+      - name: Cache turbo
         uses: actions/cache@v3
+        id: cache-turbo
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: turbo-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-turbo-
-      - run: npm ci --ignore-scripts      
-      - run: npm run validate-commit-messages
+            turbo-${{ github.ref_name }}
+
+      - name: Restore turbo cache from master
+        if: steps.cache-turbo.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v3
+        with:
+          path: .turbo
+          key: turbo-master
+      
+      - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: |
+          npm ci
+  
+      - run: node ./bin/validate-commit-messages.js
       - run: npm run compile
       - run: npm run lint
       - run: npm run test

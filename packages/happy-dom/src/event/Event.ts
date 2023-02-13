@@ -4,6 +4,7 @@ import IWindow from '../window/IWindow';
 import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
 import IEventTarget from './IEventTarget';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
+import { performance } from 'perf_hooks';
 
 /**
  * Event.
@@ -17,6 +18,7 @@ export default class Event {
 	public _propagationStopped = false;
 	public _target: IEventTarget = null;
 	public _currentTarget: IEventTarget = null;
+	public timeStamp: number = performance.now();
 	public type: string = null;
 
 	/**

@@ -9,16 +9,8 @@
 		"watch": "turbo run watch --parallel",
 		"lint": "turbo run lint --cache-dir=.turbo",
 		"lint:fix": "turbo run lint:fix",
-		"validate-commit-messages": "",
-		"generate-release-notes": "node ./bin/generate-release-notes.js",
-		"print-latest-version": "node ./bin/print-latest-version.js",
-		"print-next-version": "node ./bin/print-next-version.js",
-		"prepublishOnly": "npm run compile && npm run lint && npm test",
 		"test": "turbo run test --cache-dir=.turbo",
-		"test:watch": "turbo run test:watch --parallel",
-		"version": "turbo version --yes",
-		"publish": "turbo publish from-package --yes",
-		"lerna-changed": "lerna changed"
+		"test:watch": "turbo run test:watch --parallel"
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
