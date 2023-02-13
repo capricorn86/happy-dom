@@ -32,16 +32,18 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+          path: |
+            ./node_modules
+            ./packages/*/node_modules
+          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
 
       - name: Cache turbo build setup
         uses: actions/cache@v3
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: turbo-${{ github.job }}-master-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-turbo-
+            turbo-${{ github.job }}-master
       
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
