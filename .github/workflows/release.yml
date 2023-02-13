@@ -95,16 +95,23 @@ jobs:
       - name: Run tests
         run: npm run test
 
-      - name: Configures GIT
+      - name: Set version
+        run: node ./bin/set-version.js --version=${{needs.check-next-version.outputs.next_version }}
+
+      - name: Configures Git
         run: |
-          git checkout -b release/${{ needs.check-next-version.outputs.next_version }} origin/master
-          git pull origin master
-          git push origin release/${{ needs.check-next-version.outputs.next_version }}
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "$(git log --format='%ae' HEAD^!)"
 
-      - name: Set version
-        run: node ./bin/set-version.js --version=${{needs.check-next-version.outputs.next_version }}
+      - name: Creates release branch
+        run: |
+          git checkout -b release/${{ needs.check-next-version.outputs.next_version }} origin/master
+          git push origin release/${{ needs.check-next-version.outputs.next_version }}
+
+      - name: Pushes Git tag
+        run: |
+          git tag --force ${{ steps.vars.outputs.next_version }} ${GITHUB_SHA}
+          git push origin --tags
 
       - name: Set .npmrc for publish
         run: |
