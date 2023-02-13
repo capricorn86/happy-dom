@@ -5,12 +5,12 @@
 		"packages/*"
 	],
 	"scripts": {
-		"compile": "turbo run compile --cache-dir=.turbo",
-		"watch": "turbo run watch --parallel",
-		"lint": "turbo run lint --cache-dir=.turbo",
-		"lint:fix": "turbo run lint:fix",
-		"test": "turbo run test --cache-dir=.turbo",
-		"test:watch": "turbo run test:watch --parallel"
+		"compile": "./node_modules/.bin/turbo run compile --cache-dir=.turbo",
+		"watch": "./node_modules/.bin/turbo run watch --parallel",
+		"lint": "./node_modules/.bin/turbo run lint --cache-dir=.turbo",
+		"lint:fix": "./node_modules/.bin/turbo run lint:fix",
+		"test": "./node_modules/.bin/turbo run test --cache-dir=.turbo",
+		"test:watch": "./node_modules/.bin/turbo run test:watch --parallel"
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
