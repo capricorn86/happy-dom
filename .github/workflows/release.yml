@@ -110,7 +110,7 @@ jobs:
 
       - name: Pushes Git tag
         run: |
-          git tag --force ${{ steps.vars.outputs.next_version }} ${GITHUB_SHA}
+          git tag --force ${{ needs.check-next-version.outputs.next_version }} ${GITHUB_SHA}
           git push origin --tags
 
       - name: Set .npmrc for publish
