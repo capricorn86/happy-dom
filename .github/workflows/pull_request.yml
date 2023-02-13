@@ -39,7 +39,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
   
-      - run: npm run validate-commit-messages
+      - run: node ./bin/validate-commit-messages.js
       - run: npm run compile
       - run: npm run lint
       - run: npm run test
