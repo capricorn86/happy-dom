@@ -33,9 +33,9 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: |
-            node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+            ./node_modules
+            ./packages/*/node_modules
+          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
 
       - name: Cache turbo build setup
         uses: actions/cache@v3
