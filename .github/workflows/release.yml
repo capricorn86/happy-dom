@@ -13,7 +13,7 @@ jobs:
 
     outputs:
       next_version: ${{ steps.versionCheck.outputs.next_version }}
-      latest_version: ${{ steps.versionCheck.outputs.latest_version }}
+      current_version: ${{ steps.versionCheck.outputs.current_version }}
 
     steps:
       - uses: actions/checkout@v3
@@ -35,14 +35,6 @@ jobs:
             ./node_modules
             ./packages/*/node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
-
-      - name: Cache turbo build setup
-        uses: actions/cache@v3
-        with:
-          path: .turbo
-          key: turbo-${{ github.job }}-master-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ github.job }}-master
       
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
@@ -57,7 +49,7 @@ jobs:
   publish: 
     runs-on: ubuntu-latest
     needs: [check-next-version]
-    if: ${{ needs.check-next-version.outputs.next_version != needs.check-next-version.outputs.latest_version }}
+    if: ${{ needs.check-next-version.outputs.next_version != needs.check-next-version.outputs.current_version }}
 
     strategy:
       matrix:
@@ -88,9 +80,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .turbo
-          key: turbo-${{ github.job }}-master-${{ github.sha }}
+          key: turbo-master-${{ github.sha }}
           restore-keys: |
-            turbo-${{ github.job }}-master
+            turbo-master
       
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
@@ -150,21 +142,13 @@ jobs:
             ./node_modules
             ./packages/*/node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
-
-      - name: Cache turbo build setup
-        uses: actions/cache@v3
-        with:
-          path: .turbo
-          key: turbo-${{ github.job }}-master-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ github.job }}-master
       
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
           npm ci --ignore-scripts
 
-      - run: node ./bin/generate-release-notes.js --latest-version=${{needs.check-next-version.outputs.latest_version}} --next-version=${{needs.check-next-version.outputs.next_version}}
+      - run: node ./bin/generate-release-notes.js --latest-version=${{needs.check-next-version.outputs.current_version}} --next-version=${{needs.check-next-version.outputs.next_version}}
 
       - name: Create Release
         id: create_release
