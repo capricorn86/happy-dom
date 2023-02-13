@@ -477,4 +477,63 @@ describe('Fetch', () => {
 			}
 		});
 	});
+
+	for (const httpCode of [301, 302, 303, 307, 308]) {
+		it(`Should follow redirect code ${httpCode}.`, async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'test';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = httpCode;
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+			await window.fetch(url, {
+				headers: {
+					key1: 'value1',
+					key2: 'value2'
+				}
+			});
+
+			expect(requestArgs).toEqual({
+				url,
+				options: {
+					method: 'GET',
+					headers: {
+						key1: 'value1',
+						KeY2: 'Value2',
+						key3: 'value3, value4',
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br'
+					}
+				}
+			});
+		});
+	}
 });
