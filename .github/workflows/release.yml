@@ -14,7 +14,6 @@ jobs:
     outputs:
       next_version: ${{ steps.versionCheck.outputs.next_version }}
       latest_version: ${{ steps.versionCheck.outputs.latest_version }}
-      user_email: ${{ steps.versionCheck.outputs.user_email }}
 
     steps:
       - uses: actions/checkout@v3
@@ -22,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -48,13 +47,12 @@ jobs:
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
-          npm ci
+          npm ci --ignore-scripts
 
       - id: versionCheck
         run: |
-          echo "::set-output name=next_version::$(node ./bin/print-next-version.js)"
-          echo "::set-output name=latest_version::$(node ./bin/print-latest-version.js)"
-          echo "::set-output name=user_email::$(git log --format='%ae' HEAD^!)"
+          echo "next_version=$(node ./bin/print-next-version.js)" >> $GITHUB_OUTPUT
+          echo "current_version=$(node ./bin/print-latest-version.js)" >> $GITHUB_OUTPUT
 
   publish: 
     runs-on: ubuntu-latest
@@ -71,9 +69,33 @@ jobs:
           fetch-depth: 0
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        id: cache-node-modules
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ./node_modules
+            ./packages/*/node_modules
+          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v3
+        with:
+          path: .turbo
+          key: turbo-${{ github.job }}-master-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ github.job }}-master
+      
+      - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: |
+          npm ci --ignore-scripts
 
       - name: Compile packages
         run: npm run compile
@@ -86,8 +108,8 @@ jobs:
           git checkout -b release/${{ needs.check-next-version.outputs.next_version }} origin/master
           git pull origin master
           git push origin release/${{ needs.check-next-version.outputs.next_version }}
-          git config --global user.name "${GITHUB_ACTOR}"
-          git config --global user.email "${{ needs.check-next-version.outputs.user_email }}"
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "$(git log --format='%ae' HEAD^!)"
 
       - name: Set version
         run: node ./bin/set-version.js --version=${{needs.check-next-version.outputs.next_version }}
@@ -112,6 +134,35 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        id: cache-node-modules
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ./node_modules
+            ./packages/*/node_modules
+          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v3
+        with:
+          path: .turbo
+          key: turbo-${{ github.job }}-master-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ github.job }}-master
+      
+      - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: |
+          npm ci --ignore-scripts
 
       - run: node ./bin/generate-release-notes.js --latest-version=${{needs.check-next-version.outputs.latest_version}} --next-version=${{needs.check-next-version.outputs.next_version}}
 
