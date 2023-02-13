@@ -69,6 +69,7 @@
 		"eslint-plugin-jest": "^26.1.2",
 		"eslint-plugin-jsdoc": "^38.0.6",
 		"eslint-plugin-json": "^3.1.0",
+		"eslint-plugin-turbo": "^0.0.7",
 		"jest": "^29.4.0",
 		"ts-jest": "^29.0.5",
 		"prettier": "^2.6.0",
