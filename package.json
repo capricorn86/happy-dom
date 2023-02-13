@@ -14,13 +14,12 @@
 		"generate-release-notes": "node ./bin/generate-release-notes.js",
 		"print-latest-version": "node ./bin/print-latest-version.js",
 		"print-next-version": "node ./bin/print-next-version.js",
-		"prepublishOnly": "npm run compile && npm run lint && npm test",		
+		"prepublishOnly": "npm run compile && npm run lint && npm test",
 		"test": "turbo run test --cache-dir=.turbo",
 		"test:watch": "turbo run test:watch --parallel",
 		"test:update-snapshot": "turbo run test:update-snapshot",
 		"version": "turbo version --yes",
-		"publish": "turbo publish from-package --yes",
-		"lerna-changed": "lerna changed"
+		"publish": "turbo publish from-package --yes"
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
