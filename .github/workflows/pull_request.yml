@@ -6,21 +6,30 @@ jobs:
     strategy:
       matrix:
         node-version: [16]
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
+        id: cache-node-modules
         env:
           cache-name: cache-node-modules
         with:
           path: ~/.npm
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+      
+      - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: |
+          npm ci
 
       - name: Cache turbo build setup
         uses: actions/cache@v3
@@ -29,7 +38,7 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-turbo-
-      - run: npm ci --ignore-scripts      
+  
       - run: npm run validate-commit-messages
       - run: npm run compile
       - run: npm run lint
