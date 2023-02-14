@@ -34,16 +34,11 @@
 	},
 	"jest": {
 		"transform": {
-			"^.+\\.ts?$": "ts-jest"
+			"^.+\\.ts?$": ["ts-jest", { "tsconfig": "./test/tsconfig.json" }]
 		},
 		"testMatch": [
 			"**/test/**/*.test.ts"
 		],
-		"globals": {
-			"ts-jest": {
-				"tsconfig": "./test/tsconfig.json"
-			}
-		},
 		"testEnvironment": "node"
 	},
 	"dependencies": {

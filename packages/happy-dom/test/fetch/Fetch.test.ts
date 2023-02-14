@@ -479,61 +479,113 @@ describe('Fetch', () => {
 	});
 
 	for (const httpCode of [301, 302, 303, 307, 308]) {
-		it(`Should follow redirect code ${httpCode}.`, async () => {
-			const url = 'https://localhost:8080/some/path';
-			const responseText = 'test';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
+        for(const method of ['GET', 'POST', 'PATCH']) {
+            it(`Should follow ${method} request redirect code ${httpCode}.`, async () => {
+                const redirectURL = 'https://localhost:8080/redirect';
+                const redirectURL2 = 'https://localhost:8080/redirect2';
+                const targetPath = '/some/path';
+                const targetURL = 'https://localhost:8080' + targetPath;
+                const body = method !== 'GET' && httpCode === 301 ? 'a=1' : null;
+                const responseText = '{ "key1": "value1" }';
+                const requestArgs: Array<{
+                    url: string;
+                    options: { method: string; headers: { [k: string]: string } };
+                }> = [];
+                let destroyCount = 0;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+                mockModule('https', {
+                    request: (url, options) => {
+                        requestArgs.push({ url, options });
 
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
+                        return {
+                            end: () => {},
+                            on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+                                if (event === 'response') {
+                                    async function* generate(): AsyncGenerator<string> {
+                                        yield requestArgs.length < 3 ? '' : responseText;
+                                    }
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+                                    const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = httpCode;
+                                    response.headers = {};
 
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
-			await window.fetch(url, {
-				headers: {
-					key1: 'value1',
-					key2: 'value2'
-				}
-			});
+                                    if(requestArgs.length === 1) {
+                                        response.statusCode = httpCode;
+                                        response.rawHeaders = ['Location', redirectURL2];
+                                    } else if(requestArgs.length === 2) {
+                                        response.statusCode = httpCode;
+                                        response.rawHeaders = ['Location', targetPath];
+                                    } else {
+                                        response.statusCode = 200;
+                                        response.rawHeaders = [];
+                                    }
 
-			expect(requestArgs).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						key1: 'value1',
-						KeY2: 'Value2',
-						key3: 'value3, value4',
-						Accept: '*/*',
-						Connection: 'close',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
-					}
-				}
-			});
-		});
+                                    callback(response);
+                                }
+                            },
+                            setTimeout: () => {},
+                            destroy: () => destroyCount++
+                        };
+                    }
+                });
+
+                const response = await window.fetch(redirectURL, {
+                    method,
+                    headers: {
+                        key1: 'value1',
+                        key2: 'value2'
+                    },
+                    body
+                });
+
+                expect(requestArgs).toEqual([{
+                    url: redirectURL,
+                    options: {
+                        method: 'GET',
+                        headers: {
+                            key1: 'value1',
+                            key2: 'value2',
+                            Accept: '*/*',
+                            Connection: 'close',
+                            'User-Agent': window.navigator.userAgent,
+                            'Accept-Encoding': 'gzip, deflate, br'
+                        }
+                    }
+                }, {
+                    url: redirectURL2,
+                    options: {
+                        method: 'GET',
+                        headers: {
+                            key1: 'value1',
+                            key2: 'value2',
+                            Accept: '*/*',
+                            Connection: 'close',
+                            'User-Agent': window.navigator.userAgent,
+                            'Accept-Encoding': 'gzip, deflate, br'
+                        }
+                    }
+                }, {
+                    url: targetURL,
+                    options: {
+                        method,
+                        headers: {
+                            key1: 'value1',
+                            key2: 'value2',
+                            Accept: '*/*',
+                            Connection: 'close',
+                            'User-Agent': window.navigator.userAgent,
+                            'Accept-Encoding': 'gzip, deflate, br'
+                        }
+                    }
+                }]);
+
+                expect(destroyCount).toBe(2);
+                expect(response.status).toBe(200);
+
+                const result = await response.json();
+
+                expect(result).toEqual(JSON.parse(responseText));
+            });
+        }
 	}
 });

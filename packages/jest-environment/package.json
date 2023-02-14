@@ -35,17 +35,12 @@
 	},
 	"jest": {
 		"transform": {
-			"^.+\\.(ts|tsx)?$": "ts-jest"
+			"^.+\\.ts?$": ["ts-jest", { "tsconfig": "./test/tsconfig.json" }]
 		},
 		"testMatch": [
 			"**/test/**/*.test.ts",
 			"**/test/**/*.test.tsx"
 		],
-		"globals": {
-			"ts-jest": {
-				"tsconfig": "./test/tsconfig.json"
-			}
-		},
 		"testEnvironment": "./lib"
 	},
 	"dependencies": {
