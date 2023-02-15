@@ -185,7 +185,7 @@ describe('Window', () => {
 	describe('get navigator()', () => {
 		it('Returns an instance of Navigator with browser data.', () => {
 			expect(window.navigator instanceof Navigator).toBe(true);
-			expect(window.navigator).toEqual({
+			const referenceValues = {
 				appCodeName: 'Mozilla',
 				appName: 'Netscape',
 				appVersion: '5.0 (Windows)',
@@ -213,7 +213,11 @@ describe('Window', () => {
 				vendor: '',
 				vendorSub: '',
 				webdriver: true
-			});
+			};
+
+			for (const propertyKey in referenceValues) {
+				expect(window.navigator[propertyKey]).toEqual(referenceValues[propertyKey]);
+			}
 		});
 	});
 
