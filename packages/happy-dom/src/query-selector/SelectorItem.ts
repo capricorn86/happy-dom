@@ -125,12 +125,16 @@ export default class SelectorItem {
 			const isNotClass = match[3] && match[3].trim()[0] === '.';
 			if (match[1] && !this.matchesNthChild(element, match[1], match[2])) {
 				return false;
-			} else if (
-				match[3] &&
-				((isNotClass && this.matchesClass(element, match[3]).matches) ||
-					(!isNotClass && this.matchesAttribute(element, match[3])).matches)
-			) {
-				return false;
+			} else if (match[3]) {
+				if (isNotClass && this.matchesClass(element, match[3]).matches) {
+					return false
+				}
+				if (!isNotClass && match[3].includes('[') && this.matchesAttribute(element, match[3]).matches) {
+					return false
+				}
+				if (!isNotClass && element.tagName.toLowerCase() === match[3]) {
+					return false;
+				}
 			} else if (match[4] && !this.matchesPsuedoExpression(element, match[4])) {
 				return false;
 			}
