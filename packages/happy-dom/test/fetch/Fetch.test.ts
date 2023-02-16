@@ -714,7 +714,7 @@ describe('Fetch', () => {
 		}
 
 		expect(error).toEqual(
-			new DOMException(`Maximum redirect reached at: ${url1}`, DOMExceptionNameEnum.networkError)
+			new DOMException(`Maximum redirects reached at: ${url1}`, DOMExceptionNameEnum.networkError)
 		);
 
 		// One more as the request is completed before it reaches the 20th try.

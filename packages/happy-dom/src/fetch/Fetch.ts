@@ -379,7 +379,7 @@ export default class Fetch {
 					this.finalizeRequest();
 					this.reject(
 						new DOMException(
-							`Maximum redirect reached at: ${this.request.url}`,
+							`Maximum redirects reached at: ${this.request.url}`,
 							DOMExceptionNameEnum.networkError
 						)
 					);
