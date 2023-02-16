@@ -127,10 +127,14 @@ export default class SelectorItem {
 				return false;
 			} else if (match[3]) {
 				if (isNotClass && this.matchesClass(element, match[3]).matches) {
-					return false
+					return false;
 				}
-				if (!isNotClass && match[3].includes('[') && this.matchesAttribute(element, match[3]).matches) {
-					return false
+				if (
+					!isNotClass &&
+					match[3].includes('[') &&
+					this.matchesAttribute(element, match[3]).matches
+				) {
+					return false;
 				}
 				if (!isNotClass && element.tagName.toLowerCase() === match[3]) {
 					return false;
