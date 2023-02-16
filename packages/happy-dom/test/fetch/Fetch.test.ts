@@ -479,113 +479,245 @@ describe('Fetch', () => {
 	});
 
 	for (const httpCode of [301, 302, 303, 307, 308]) {
-        for(const method of ['GET', 'POST', 'PATCH']) {
-            it(`Should follow ${method} request redirect code ${httpCode}.`, async () => {
-                const redirectURL = 'https://localhost:8080/redirect';
-                const redirectURL2 = 'https://localhost:8080/redirect2';
-                const targetPath = '/some/path';
-                const targetURL = 'https://localhost:8080' + targetPath;
-                const body = method !== 'GET' && httpCode === 301 ? 'a=1' : null;
-                const responseText = '{ "key1": "value1" }';
-                const requestArgs: Array<{
-                    url: string;
-                    options: { method: string; headers: { [k: string]: string } };
-                }> = [];
-                let destroyCount = 0;
+		for (const method of ['GET', 'POST', 'PATCH']) {
+			it(`Should follow ${method} request redirect code ${httpCode}.`, async () => {
+				const redirectURL = 'https://localhost:8080/redirect';
+				const redirectURL2 = 'https://localhost:8080/redirect2';
+				const targetPath = '/some/path';
+				const targetURL = 'https://localhost:8080' + targetPath;
+				const body = method !== 'GET' ? 'a=1' : null;
+				const responseText = '{ "key1": "value1" }';
+				const requestArgs: Array<{
+					url: string;
+					options: { method: string; headers: { [k: string]: string } };
+				}> = [];
+				let destroyCount = 0;
+				let writtenBodyData = '';
 
-                mockModule('https', {
-                    request: (url, options) => {
-                        requestArgs.push({ url, options });
+				mockModule('https', {
+					request: (url, options) => {
+						requestArgs.push({ url, options });
 
-                        return {
-                            end: () => {},
-                            on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-                                if (event === 'response') {
-                                    async function* generate(): AsyncGenerator<string> {
-                                        yield requestArgs.length < 3 ? '' : responseText;
-                                    }
+						const request = <HTTP.ClientRequest>new Stream.Writable();
 
-                                    const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+						request._write = (chunk, _encoding, callback) => {
+							writtenBodyData += chunk.toString();
+							callback();
+						};
+						(<unknown>request.on) = (
+							event: string,
+							callback: (response: HTTP.IncomingMessage) => void
+						) => {
+							if (event === 'response') {
+								setTimeout(() => {
+									async function* generate(): AsyncGenerator<string> {
+										yield requestArgs.length < 3 ? '' : responseText;
+									}
 
-                                    response.headers = {};
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-                                    if(requestArgs.length === 1) {
-                                        response.statusCode = httpCode;
-                                        response.rawHeaders = ['Location', redirectURL2];
-                                    } else if(requestArgs.length === 2) {
-                                        response.statusCode = httpCode;
-                                        response.rawHeaders = ['Location', targetPath];
-                                    } else {
-                                        response.statusCode = 200;
-                                        response.rawHeaders = [];
-                                    }
+									response.headers = {};
 
-                                    callback(response);
-                                }
-                            },
-                            setTimeout: () => {},
-                            destroy: () => destroyCount++
-                        };
-                    }
-                });
+									if (requestArgs.length === 1) {
+										response.statusCode = httpCode;
+										response.rawHeaders = ['Location', redirectURL2];
+									} else if (requestArgs.length === 2) {
+										response.statusCode = httpCode;
+										response.rawHeaders = ['Location', targetPath];
+									} else {
+										response.statusCode = 200;
+										response.rawHeaders = [];
+									}
 
-                const response = await window.fetch(redirectURL, {
-                    method,
-                    headers: {
-                        key1: 'value1',
-                        key2: 'value2'
-                    },
-                    body
-                });
+									callback(response);
+								});
+							}
+						};
+						(<unknown>request.setTimeout) = () => {};
+						request.destroy = () => destroyCount++;
 
-                expect(requestArgs).toEqual([{
-                    url: redirectURL,
-                    options: {
-                        method: 'GET',
-                        headers: {
-                            key1: 'value1',
-                            key2: 'value2',
-                            Accept: '*/*',
-                            Connection: 'close',
-                            'User-Agent': window.navigator.userAgent,
-                            'Accept-Encoding': 'gzip, deflate, br'
-                        }
-                    }
-                }, {
-                    url: redirectURL2,
-                    options: {
-                        method: 'GET',
-                        headers: {
-                            key1: 'value1',
-                            key2: 'value2',
-                            Accept: '*/*',
-                            Connection: 'close',
-                            'User-Agent': window.navigator.userAgent,
-                            'Accept-Encoding': 'gzip, deflate, br'
-                        }
-                    }
-                }, {
-                    url: targetURL,
-                    options: {
-                        method,
-                        headers: {
-                            key1: 'value1',
-                            key2: 'value2',
-                            Accept: '*/*',
-                            Connection: 'close',
-                            'User-Agent': window.navigator.userAgent,
-                            'Accept-Encoding': 'gzip, deflate, br'
-                        }
-                    }
-                }]);
+						return request;
+					}
+				});
 
-                expect(destroyCount).toBe(2);
-                expect(response.status).toBe(200);
+				const response = await window.fetch(redirectURL, {
+					method,
+					headers: {
+						key1: 'value1',
+						key2: 'value2'
+					},
+					body
+				});
 
-                const result = await response.json();
+				const shouldBecomeGetRequest =
+					httpCode === 303 || ((httpCode === 301 || httpCode === 302) && method === 'POST');
 
-                expect(result).toEqual(JSON.parse(responseText));
-            });
-        }
+				expect(requestArgs).toEqual([
+					{
+						url: redirectURL,
+						options: {
+							method: method,
+							headers: {
+								key1: 'value1',
+								key2: 'value2',
+								Accept: '*/*',
+								'Content-Length': body ? String(body.length) : undefined,
+								Connection: 'close',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br'
+							}
+						}
+					},
+					{
+						url: redirectURL2,
+						options: {
+							method: shouldBecomeGetRequest ? 'GET' : method,
+							headers: {
+								key1: 'value1',
+								key2: 'value2',
+								Accept: '*/*',
+								'Content-Length': body && !shouldBecomeGetRequest ? String(body.length) : undefined,
+								Connection: 'close',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br'
+							}
+						}
+					},
+					{
+						url: targetURL,
+						options: {
+							method: shouldBecomeGetRequest ? 'GET' : method,
+							headers: {
+								key1: 'value1',
+								key2: 'value2',
+								Accept: '*/*',
+								'Content-Length': body && !shouldBecomeGetRequest ? String(body.length) : undefined,
+								Connection: 'close',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br'
+							}
+						}
+					}
+				]);
+
+				if (body && !shouldBecomeGetRequest) {
+					expect(writtenBodyData).toBe(body + body + body);
+				}
+
+				// As the Node request is a stream, it is destroyed automatically internally by Node.js adding 3 more destroys.
+				// Fetch.ts adds 2 destroys after each redirect.
+				expect(destroyCount).toBe(5);
+
+				expect(response.status).toBe(200);
+
+				const result = await response.json();
+
+				expect(result).toEqual(JSON.parse(responseText));
+			});
+		}
 	}
+
+	it('Should not follow non-GET redirect if body is a readable stream.', async () => {
+		const responseText = 'test';
+		const body = 'test';
+		let error: Error | null = null;
+
+		let destroyCount = 0;
+		let writtenBodyData = '';
+
+		mockModule('https', {
+			request: () => {
+				const request = <HTTP.ClientRequest>new Stream.Writable();
+
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {
+								yield responseText;
+							}
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.statusCode = 301;
+							response.rawHeaders = ['Location', 'https://localhost:8080/test2/'];
+
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => destroyCount++;
+
+				return request;
+			}
+		});
+
+		try {
+			await window.fetch('https://localhost:8080/test/', {
+				method: 'PATCH',
+				body: Stream.Readable.from(body)
+			});
+		} catch (e) {
+			error = e;
+		}
+
+		expect(destroyCount).toBe(2);
+		expect(writtenBodyData).toBe(body);
+		expect(error).toEqual(
+			new DOMException(
+				'Cannot follow redirect with body being a readable stream.',
+				DOMExceptionNameEnum.networkError
+			)
+		);
+	});
+
+	it('Should cancel a redirect loop after 20 tries.', async () => {
+		const url1 = 'https://localhost:8080/test/';
+		const url2 = 'https://localhost:8080/test2/';
+		let error: Error | null = null;
+		let tryCount = 0;
+
+		mockModule('https', {
+			request: (requestURL) => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.statusCode = 302;
+							response.rawHeaders = requestURL === url1 ? ['Location', url2] : ['Location', url1];
+							tryCount++;
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}
+		});
+
+		try {
+			await window.fetch(url1, { method: 'GET' });
+		} catch (e) {
+			error = e;
+		}
+
+		expect(error).toEqual(
+			new DOMException(`Maximum redirect reached at: ${url1}`, DOMExceptionNameEnum.networkError)
+		);
+
+		// One more as the request is completed before it reaches the 20th try.
+		expect(tryCount).toBe(20 + 1);
+	});
 });

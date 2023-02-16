@@ -131,7 +131,7 @@ export default class MultipartFormDataParser {
 	public static formDataToStream(
 		window: IWindow,
 		formData: FormData
-	): { contentType: string; contentLength: number; stream: Stream.Readable } {
+	): { contentType: string; contentLength: number; buffer: Buffer; stream: Stream.Readable } {
 		const boundary = '----HappyDOMFormDataBoundary' + Math.random().toString(36);
 		const chunks: Buffer[] = [];
 		const prefix = `--${boundary}\r\nContent-Disposition: form-data; name="`;
@@ -166,6 +166,7 @@ export default class MultipartFormDataParser {
 		return {
 			contentType: `multipart/form-data; boundary=${boundary}`,
 			contentLength: buffer.length,
+			buffer,
 			stream: new window.ReadableStream({
 				// @ts-ignore
 				type: 'bytes',

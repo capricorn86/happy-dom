@@ -55,8 +55,14 @@ export default class Fetch {
 	 * @param options.url URL.
 	 * @param [options.init] Init.
 	 * @param options.ownerDocument
+	 * @param options.redirectCount
 	 */
-	constructor(options: { ownerDocument: IDocument; url: IRequestInfo; init?: IRequestInit }) {
+	constructor(options: {
+		ownerDocument: IDocument;
+		url: IRequestInfo;
+		init?: IRequestInit;
+		redirectCount?: number;
+	}) {
 		const url = options.url;
 
 		this.ownerDocument = options.ownerDocument;
@@ -64,6 +70,7 @@ export default class Fetch {
 			typeof options.url === 'string' || options.url instanceof URL
 				? new Request(options.url, options.init)
 				: <Request>url;
+		this.redirectCount = options.redirectCount || 0;
 	}
 
 	/**
@@ -379,12 +386,10 @@ export default class Fetch {
 					return;
 				}
 
-				this.redirectCount++;
-
 				const headers = new Headers(this.request.headers);
-				let body: Stream.Readable;
+				let body: Stream.Readable | Buffer | null = this.request._bodyBuffer;
 
-				if (this.request.body) {
+				if (!body && this.request.body) {
 					// Piping a used request body is not possible.
 					if (this.request.bodyUsed) {
 						throw new DOMException(
@@ -417,11 +422,11 @@ export default class Fetch {
 					}
 				}
 
-				if (nodeResponse.statusCode !== 303 && this.request.body) {
+				if (nodeResponse.statusCode !== 303 && this.request.body && !this.request._bodyBuffer) {
 					this.finalizeRequest();
 					this.reject(
 						new DOMException(
-							'Cannot follow a redirect with a request body.',
+							'Cannot follow redirect with body being a readable stream.',
 							DOMExceptionNameEnum.networkError
 						)
 					);
@@ -447,7 +452,8 @@ export default class Fetch {
 				const fetch = new (<typeof Fetch>this.constructor)({
 					ownerDocument: this.ownerDocument,
 					url: locationURL,
-					init: requestInit
+					init: requestInit,
+					redirectCount: this.redirectCount + 1
 				});
 
 				this.finalizeRequest();

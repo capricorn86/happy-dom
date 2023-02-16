@@ -43,6 +43,7 @@ export default class Request implements IRequest {
 	public readonly _contentLength: number | null = null;
 	public _referrer: '' | 'no-referrer' | 'client' | URL = 'client';
 	public readonly _url: URL;
+	public readonly _bodyBuffer: Buffer | null;
 
 	/**
 	 * Constructor.
@@ -59,11 +60,14 @@ export default class Request implements IRequest {
 
 		this.method = (init?.method || (<Request>input).method || 'GET').toUpperCase();
 
-		const { stream, contentType, contentLength } = FetchBodyUtility.getBodyStream(
+		const { stream, buffer, contentType, contentLength } = FetchBodyUtility.getBodyStream(
 			this._ownerDocument.defaultView,
-			input instanceof Request && input.body !== null ? input.body : init?.body
+			input instanceof Request && (input._bodyBuffer || input.body)
+				? input._bodyBuffer || input.body
+				: init?.body
 		);
 
+		this._bodyBuffer = buffer;
 		this.body = stream;
 		this.headers = new Headers(init?.headers || (<Request>input).headers || {});
 

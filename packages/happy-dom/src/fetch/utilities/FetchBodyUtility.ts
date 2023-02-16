@@ -26,33 +26,50 @@ export default class FetchBodyUtility {
 	public static getBodyStream(
 		window: IWindow,
 		body: IRequestBody | IResponseBody
-	): { contentType: string; contentLength: number | null; stream: Stream.Readable } {
+	): {
+		contentType: string;
+		contentLength: number | null;
+		stream: Stream.Readable;
+		buffer: Buffer | null;
+	} {
 		if (body === null || body === undefined) {
-			return { stream: null, contentType: null, contentLength: null };
+			return { stream: null, buffer: null, contentType: null, contentLength: null };
 		} else if (body instanceof URLSearchParams) {
-			const bodyAsString = body.toString();
+			const buffer = Buffer.from(body.toString());
 			return {
-				stream: Stream.Readable.from(Buffer.from(bodyAsString)),
+				buffer,
+				stream: Stream.Readable.from(Buffer.from(buffer)),
 				contentType: null,
-				contentLength: bodyAsString.length
+				contentLength: buffer.length
 			};
 		} else if (body instanceof Blob) {
+			const buffer = (<Blob>body)._buffer;
 			return {
-				stream: Stream.Readable.from((<Blob>body)._buffer),
+				buffer,
+				stream: Stream.Readable.from(buffer),
 				contentType: (<Blob>body).type,
 				contentLength: body.size
 			};
 		} else if (Buffer.isBuffer(body)) {
-			return { stream: Stream.Readable.from(body), contentType: null, contentLength: body.length };
-		} else if (body instanceof ArrayBuffer) {
 			return {
-				stream: Stream.Readable.from(Buffer.from(body)),
+				buffer: body,
+				stream: Stream.Readable.from(body),
+				contentType: null,
+				contentLength: body.length
+			};
+		} else if (body instanceof ArrayBuffer) {
+			const buffer = Buffer.from(body);
+			return {
+				buffer,
+				stream: Stream.Readable.from(buffer),
 				contentType: null,
 				contentLength: body.byteLength
 			};
 		} else if (ArrayBuffer.isView(body)) {
+			const buffer = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
 			return {
-				stream: Stream.Readable.from(Buffer.from(body.buffer, body.byteOffset, body.byteLength)),
+				buffer,
+				stream: Stream.Readable.from(buffer),
 				contentType: null,
 				contentLength: body.byteLength
 			};
@@ -61,6 +78,7 @@ export default class FetchBodyUtility {
 			const stream = new Stream.PassThrough();
 			body.pipe(<Stream.PassThrough>stream);
 			return {
+				buffer: null,
 				stream,
 				contentType: null,
 				contentLength: null
@@ -69,11 +87,12 @@ export default class FetchBodyUtility {
 			return MultipartFormDataParser.formDataToStream(window, body);
 		}
 
-		const bodyAsString = String(body);
+		const buffer = Buffer.from(String(body));
 		return {
-			stream: Stream.Readable.from(Buffer.from(bodyAsString)),
+			buffer,
+			stream: Stream.Readable.from(buffer),
 			contentType: null,
-			contentLength: bodyAsString.length
+			contentLength: buffer.length
 		};
 	}
 
