@@ -1232,6 +1232,21 @@ describe('Element', () => {
 		});
 	});
 
+	describe('toggleAttribute()', () => {
+		it('Toggles an attribute.', () => {
+			element.toggleAttribute('key1');
+			expect(element.hasAttribute('key1')).toBe(true);
+			element.toggleAttribute('key1');
+			expect(element.hasAttribute('key1')).toBe(false);
+			element.toggleAttribute('key1', true);
+			expect(element.hasAttribute('key1')).toBe(true);
+			element.toggleAttribute('key1', true);
+			expect(element.hasAttribute('key1')).toBe(true);
+			element.toggleAttribute('key1', false);
+			expect(element.hasAttribute('key1')).toBe(false);
+		});
+	});
+
 	describe('attachShadow()', () => {
 		it('Creates a new open ShadowRoot node and sets it to the "shadowRoot" property.', () => {
 			element.attachShadow({ mode: 'open' });

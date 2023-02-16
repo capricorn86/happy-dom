@@ -3,6 +3,7 @@ import Window from '../../src/window/Window';
 import IDocument from '../../src/nodes/document/IDocument';
 import Event from '../../src/event/Event';
 import CustomElement from '../CustomElement';
+import { performance } from 'perf_hooks';
 
 describe('Event', () => {
 	let window: IWindow;
@@ -13,6 +14,25 @@ describe('Event', () => {
 		document = window.document;
 
 		window.customElements.define('custom-element', CustomElement);
+	});
+
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
+	describe('get timeStamp()', () => {
+		it('Returns the value returned by performance.now() at the time it was created.', () => {
+			Object.defineProperty(performance, 'now', {
+				value: jest.fn(),
+				configurable: true,
+				writable: true
+			});
+
+			const performanceNow = 12345;
+			jest.spyOn(performance, 'now').mockImplementation(() => performanceNow);
+			const event = new Event('click');
+			expect(event.timeStamp).toBe(performanceNow);
+		});
 	});
 
 	describe('composedPath()', () => {

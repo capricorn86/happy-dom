@@ -391,6 +391,35 @@ describe('Window', () => {
 			const timeoutId = window.setTimeout(() => done());
 			expect(timeoutId.constructor.name).toBe('Timeout');
 		});
+
+		it('Sets a timeout with single argument.', (done) => {
+			const callbackArgumentOne = 'hello';
+			const timeoutId = window.setTimeout(
+				(message: string) => {
+					expect(message).toBe(callbackArgumentOne);
+					done();
+				},
+				0,
+				callbackArgumentOne
+			);
+			expect(timeoutId.constructor.name).toBe('Timeout');
+		});
+
+		it('Sets a timeout with multiple arguments.', (done) => {
+			const callbackArgumentOne = 'hello';
+			const callbackArgumentTwo = 1337;
+			const timeoutId = window.setTimeout(
+				(message: string, num: number) => {
+					expect(message).toBe(callbackArgumentOne);
+					expect(num).toBe(callbackArgumentTwo);
+					done();
+				},
+				0,
+				callbackArgumentOne,
+				callbackArgumentTwo
+			);
+			expect(timeoutId.constructor.name).toBe('Timeout');
+		});
 	});
 
 	describe('clearTimeout()', () => {
@@ -412,6 +441,43 @@ describe('Window', () => {
 					done();
 				}
 			});
+		});
+
+		it('Sets an interval with single argument.', (done) => {
+			const callbackArgumentOne = 'hello';
+			let count = 0;
+			const intervalId = window.setInterval(
+				(message: string) => {
+					expect(message).toBe(callbackArgumentOne);
+					count++;
+					if (count > 2) {
+						clearInterval(intervalId);
+						done();
+					}
+				},
+				0,
+				callbackArgumentOne
+			);
+		});
+
+		it('Sets an interval with multiple arguments.', (done) => {
+			const callbackArgumentOne = 'hello';
+			const callbackArgumentTwo = 1337;
+			let count = 0;
+			const intervalId = window.setInterval(
+				(message: string, num: number) => {
+					expect(message).toBe(callbackArgumentOne);
+					expect(num).toBe(callbackArgumentTwo);
+					count++;
+					if (count > 2) {
+						clearInterval(intervalId);
+						done();
+					}
+				},
+				0,
+				callbackArgumentOne,
+				callbackArgumentTwo
+			);
 		});
 	});
 
