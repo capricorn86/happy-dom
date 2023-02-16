@@ -11,6 +11,7 @@ import INode from '../nodes/node/INode';
 import IElement from '../nodes/element/IElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
+import PlainTextElements from '../config/PlainTextElements';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^<>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->|<([!?])([^>]*)>/gi;
@@ -51,7 +52,14 @@ export default class XMLParser {
 
 				if (parent && match.index !== lastTextIndex) {
 					const text = data.substring(lastTextIndex, match.index);
-					this.appendTextAndCommentNodes(document, parent, text);
+					if (
+						parent.nodeType === Node.ELEMENT_NODE &&
+						PlainTextElements.includes((<IElement>parent).tagName.toLowerCase())
+					) {
+						parent.appendChild(document.createTextNode(text));
+					} else {
+						this.appendTextAndCommentNodes(document, parent, text);
+					}
 				}
 
 				if (isStartTag) {
