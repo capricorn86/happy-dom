@@ -112,7 +112,9 @@ export default class XMLParser {
 				} else {
 					stack.pop();
 					parent = stack[stack.length - 1] || root;
-					parentTagName = (<IElement>parent).tagName ? (<IElement>parent).tagName.toLowerCase() : null;
+					parentTagName = (<IElement>parent).tagName
+						? (<IElement>parent).tagName.toLowerCase()
+						: null;
 					parentUnnestableTagName = this.getUnnestableTagName(parent);
 
 					lastTextIndex = markupRegexp.lastIndex;
