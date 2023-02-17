@@ -39,6 +39,7 @@ export default class XMLParser {
 		const stack: Array<IElement | IDocumentFragment> = [root];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gi');
 		let parent: IDocumentFragment | IElement = root;
+		let parentTagName = null;
 		let parentUnnestableTagName = null;
 		let lastTextIndex = 0;
 		let match: RegExpExecArray;
@@ -52,10 +53,7 @@ export default class XMLParser {
 
 				if (parent && match.index !== lastTextIndex) {
 					const text = data.substring(lastTextIndex, match.index);
-					if (
-						parent.nodeType === Node.ELEMENT_NODE &&
-						PlainTextElements.includes((<IElement>parent).tagName.toLowerCase())
-					) {
+					if (parentTagName && PlainTextElements.includes(parentTagName)) {
 						parent.appendChild(document.createTextNode(text));
 					} else {
 						this.appendTextAndCommentNodes(document, parent, text);
@@ -92,6 +90,7 @@ export default class XMLParser {
 						}
 
 						parent = <Element>parent.appendChild(newElement);
+						parentTagName = tagName;
 						parentUnnestableTagName = this.getUnnestableTagName(parent);
 						stack.push(parent);
 					} else {
@@ -113,6 +112,7 @@ export default class XMLParser {
 				} else {
 					stack.pop();
 					parent = stack[stack.length - 1] || root;
+					parentTagName = (<IElement>parent).tagName ? (<IElement>parent).tagName.toLowerCase() : null;
 					parentUnnestableTagName = this.getUnnestableTagName(parent);
 
 					lastTextIndex = markupRegexp.lastIndex;
