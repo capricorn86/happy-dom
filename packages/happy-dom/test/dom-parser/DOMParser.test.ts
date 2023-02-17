@@ -7,7 +7,14 @@ describe('DOMParser', () => {
 	let window;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: {
+				disableJavaScriptFileLoading: true,
+				disableJavaScriptEvaluation: true,
+				disableCSSFileLoading: true,
+				enableFileSystemHttpRequests: false
+			}
+		});
 		domParser = new window.DOMParser();
 	});
 
@@ -53,6 +60,29 @@ describe('DOMParser', () => {
 					</body>
 				</html>
 				`.replace(/[\s]/gm, '')
+			);
+		});
+
+		it('Correctly parses JS script w/ `<!` in it', () => {
+			const newDocument = domParser.parseFromString(
+				`<html>
+					<body>
+						<script>
+							var test = {className:"meta",begin:/<![a-z]/,end:/>/,contains:[t,i,l,c]};
+						</script>
+					</body>
+				</html>`,
+				'text/html'
+			);
+			// Spurious comment `<!--[a-z]/,end:/-->` should be solved
+			expect(new XMLSerializer().serializeToString(newDocument).replace(/\s{1,}/, ' ')).toBe(
+				`<html>
+					<body>
+						<script>
+							var test = {className:"meta",begin:/<![a-z]/,end:/>/,contains:[t,i,l,c]};
+						</script>
+					</body>
+				</html>`.replace(/\s{1,}/, ' ')
 			);
 		});
 	});
