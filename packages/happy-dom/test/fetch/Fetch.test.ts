@@ -307,61 +307,6 @@ describe('Fetch', () => {
 		});
 	});
 
-	it('Adds document cookie string as an header with the name "Cookie".', async () => {
-		const responseText = 'test';
-		const cookies = 'key1=value1; key2=value2';
-		const url = 'https://localhost:8080/some/path';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				return {
-					end: () => {},
-					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-						if (event === 'response') {
-							async function* generate(): AsyncGenerator<string> {
-								yield responseText;
-							}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-
-							callback(response);
-						}
-					},
-					setTimeout: () => {}
-				};
-			}
-		});
-
-		for (const cookie of cookies.split(';')) {
-			window.document.cookie = cookie.trim();
-		}
-
-		await window.fetch(url);
-
-		expect(requestArgs).toEqual({
-			url,
-			options: {
-				method: 'GET',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					Cookie: cookies
-				}
-			}
-		});
-	});
-
 	it('Should send custom key/value object request headers.', async () => {
 		const url = 'https://localhost:8080/some/path';
 		const responseText = 'test';
@@ -719,5 +664,468 @@ describe('Fetch', () => {
 
 		// One more as the request is completed before it reaches the 20th try.
 		expect(tryCount).toBe(20 + 1);
+	});
+
+	it('Should support "manual" redirect mode.', async () => {
+		const url = 'https://localhost:8080/test/';
+		const redirectURL = 'https://localhost:8080/redirect/';
+
+		mockModule('https', {
+			request: () => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.statusCode = 301;
+							response.rawHeaders = ['Location', redirectURL];
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}
+		});
+
+		const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
+
+		expect(response.status).toBe(301);
+		expect(response.headers.get('location')).toBe(redirectURL);
+	});
+
+	it('Should support "manual" redirect mode with broken location header.', async () => {
+		const url = 'https://localhost:8080/test/';
+		const redirectURL = '<>';
+
+		mockModule('https', {
+			request: () => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.statusCode = 301;
+							response.rawHeaders = ['Location', redirectURL];
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}
+		});
+
+		const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
+
+		expect(response.status).toBe(301);
+		expect(response.headers.get('location')).toBe(redirectURL);
+	});
+
+	it('Should support "manual" redirect mode to other host.', async () => {
+		const url = 'https://localhost:8080/test/';
+		const redirectURL = 'https://example.com/redirect/';
+
+		mockModule('https', {
+			request: () => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.statusCode = 301;
+							response.rawHeaders = ['Location', redirectURL];
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}
+		});
+
+		const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
+
+		expect(response.status).toBe(301);
+		expect(response.headers.get('location')).toBe(redirectURL);
+	});
+
+	it('Should support "error" redirect.', async () => {
+		const url = 'https://localhost:8080/test/';
+		const redirectURL = 'https://localhost:8080/redirect/';
+		let error: Error | null = null;
+
+		mockModule('https', {
+			request: () => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.statusCode = 301;
+							response.rawHeaders = ['Location', redirectURL];
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}
+		});
+
+		try {
+			await window.fetch(url, { method: 'GET', redirect: 'error' });
+		} catch (e) {
+			error = e;
+		}
+
+		expect(error).toEqual(
+			new DOMException(
+				`URI requested responds with a redirect, redirect mode is set to "error": ${url}`,
+				DOMExceptionNameEnum.abortError
+			)
+		);
+	});
+
+	it("Does'nt forward unsafe headers.", async () => {
+		const url = 'https://localhost:8080/some/path';
+		let requestArgs: {
+			url: string;
+			options: { method: string; headers: { [k: string]: string } };
+		} | null = null;
+
+		mockModule('https', {
+			request: (url, options) => {
+				requestArgs = { url, options };
+
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {}
+				};
+			}
+		});
+
+		await window.fetch(url, {
+			headers: {
+				'accept-charset': 'unsafe',
+				'accept-encoding': 'unsafe',
+				'access-control-request-headers': 'unsafe',
+				'access-control-request-method': 'unsafe',
+				connection: 'unsafe',
+				'content-length': 'unsafe',
+				cookie: 'unsafe',
+				cookie2: 'unsafe',
+				date: 'unsafe',
+				dnt: 'unsafe',
+				expect: 'unsafe',
+				host: 'unsafe',
+				'keep-alive': 'unsafe',
+				origin: 'unsafe',
+				referer: 'unsafe',
+				te: 'unsafe',
+				trailer: 'unsafe',
+				'transfer-encoding': 'unsafe',
+				upgrade: 'unsafe',
+				via: 'unsafe',
+				'proxy-unsafe': 'unsafe',
+				'sec-unsafe': 'unsafe',
+				'safe-header': 'safe'
+			}
+		});
+
+		expect(requestArgs).toEqual({
+			url,
+			options: {
+				method: 'GET',
+				headers: {
+					Accept: '*/*',
+					Connection: 'close',
+					'User-Agent': window.navigator.userAgent,
+					'Accept-Encoding': 'gzip, deflate, br',
+					'safe-header': 'safe'
+				}
+			}
+		});
+	});
+
+	it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "omit".', async () => {
+		const url = 'https://localhost:8080/some/path';
+		let requestArgs: {
+			url: string;
+			options: { method: string; headers: { [k: string]: string } };
+		} | null = null;
+
+		window.document.cookie = 'test=cookie';
+
+		mockModule('https', {
+			request: (url, options) => {
+				requestArgs = { url, options };
+
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {}
+				};
+			}
+		});
+
+		await window.fetch(url, {
+			headers: {
+				authorization: 'authorization',
+				'www-authenticate': 'www-authenticate'
+			},
+			credentials: 'omit'
+		});
+
+		expect(requestArgs).toEqual({
+			url,
+			options: {
+				method: 'GET',
+				headers: {
+					Accept: '*/*',
+					Connection: 'close',
+					'User-Agent': window.navigator.userAgent,
+					'Accept-Encoding': 'gzip, deflate, br'
+				}
+			}
+		});
+	});
+
+	it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes do a different origin than the document.', async () => {
+		const originURL = 'https://localhost:8080';
+		const url = 'https://other.origin.com/some/path';
+		let requestArgs: {
+			url: string;
+			options: { method: string; headers: { [k: string]: string } };
+		} | null = null;
+
+		window.happyDOM.setURL(originURL);
+		window.document.cookie = 'test=cookie';
+
+		mockModule('https', {
+			request: (url, options) => {
+				requestArgs = { url, options };
+
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {}
+				};
+			}
+		});
+
+		await window.fetch(url, {
+			headers: {
+				authorization: 'authorization',
+				'www-authenticate': 'www-authenticate'
+			},
+			credentials: 'same-origin'
+		});
+
+		expect(requestArgs).toEqual({
+			url,
+			options: {
+				method: 'GET',
+				headers: {
+					Accept: '*/*',
+					Connection: 'close',
+					'User-Agent': window.navigator.userAgent,
+					'Accept-Encoding': 'gzip, deflate, br',
+					Referer: originURL + '/'
+				}
+			}
+		});
+	});
+
+	it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes to the same origin as the document.', async () => {
+		const originURL = 'https://localhost:8080';
+		const url = 'https://localhost:8080/some/path';
+		let requestArgs: {
+			url: string;
+			options: { method: string; headers: { [k: string]: string } };
+		} | null = null;
+
+		window.happyDOM.setURL(originURL);
+		window.document.cookie = 'test=cookie';
+
+		mockModule('https', {
+			request: (url, options) => {
+				requestArgs = { url, options };
+
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {}
+				};
+			}
+		});
+
+		await window.fetch(url, {
+			headers: {
+				authorization: 'authorization',
+				'www-authenticate': 'www-authenticate'
+			},
+			credentials: 'same-origin'
+		});
+
+		expect(requestArgs).toEqual({
+			url,
+			options: {
+				method: 'GET',
+				headers: {
+					Accept: '*/*',
+					Connection: 'close',
+					'User-Agent': window.navigator.userAgent,
+					'Accept-Encoding': 'gzip, deflate, br',
+					Referer: originURL + '/',
+					Cookie: 'test=cookie',
+					authorization: 'authorization',
+					'www-authenticate': 'www-authenticate'
+				}
+			}
+		});
+	});
+
+	it('Adds document cookie string as an header with the name "Cookie" if request cridentials are set to "include".', async () => {
+		const responseText = 'test';
+		const cookies = 'key1=value1; key2=value2';
+		const url = 'https://localhost:8080/some/path';
+		let requestArgs: {
+			url: string;
+			options: { method: string; headers: { [k: string]: string } };
+		} | null = null;
+
+		mockModule('https', {
+			request: (url, options) => {
+				requestArgs = { url, options };
+
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {
+								yield responseText;
+							}
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {}
+				};
+			}
+		});
+
+		for (const cookie of cookies.split(';')) {
+			window.document.cookie = cookie.trim();
+		}
+
+		await window.fetch(url, {
+			credentials: 'include'
+		});
+
+		expect(requestArgs).toEqual({
+			url,
+			options: {
+				method: 'GET',
+				headers: {
+					Accept: '*/*',
+					Connection: 'close',
+					'User-Agent': window.navigator.userAgent,
+					'Accept-Encoding': 'gzip, deflate, br',
+					Cookie: cookies
+				}
+			}
+		});
+	});
+
+	it('Sets document cookie string if the response contains a "Set-Cookie" header if request cridentials are set to "include".', async () => {
+		mockModule('https', {
+			request: () => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {}
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.rawHeaders = ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2'];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {}
+				};
+			}
+		});
+
+		const response = await window.fetch('https://localhost:8080/some/path', {
+			credentials: 'include'
+		});
+
+		expect(response.headers.get('Set-Cookie')).toBe(null);
+		expect(window.document.cookie).toBe('key1=value1; key2=value2');
 	});
 });

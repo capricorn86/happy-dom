@@ -4,6 +4,7 @@ import AbortSignal from '../AbortSignal';
 import Stream from 'stream';
 import IRequestReferrerPolicy from './IRequestReferrerPolicy';
 import IRequestRedirect from './IRequestRedirect';
+import IRequestCredentials from './IRequestCredentials';
 
 /**
  * Fetch request.
@@ -18,6 +19,7 @@ export default interface IRequest {
 	readonly bodyUsed: boolean;
 	readonly referrerPolicy: IRequestReferrerPolicy;
 	readonly signal: AbortSignal | null;
+	readonly credentials: IRequestCredentials;
 
 	/**
 	 * Returns array buffer.

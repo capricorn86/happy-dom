@@ -16,6 +16,8 @@ import FetchRequestValidationUtility from './utilities/FetchRequestValidationUti
 import IRequestReferrerPolicy from './types/IRequestReferrerPolicy';
 import IRequestRedirect from './types/IRequestRedirect';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility';
+import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility';
+import IRequestCredentials from './types/IRequestCredentials';
 
 /**
  * Fetch request.
@@ -38,6 +40,7 @@ export default class Request implements IRequest {
 	public readonly referrerPolicy: IRequestReferrerPolicy;
 	public readonly signal: AbortSignal;
 	public readonly bodyUsed: boolean;
+	public readonly credentials: IRequestCredentials;
 
 	// Internal properties
 	public readonly _contentLength: number | null = null;
@@ -69,7 +72,10 @@ export default class Request implements IRequest {
 
 		this._bodyBuffer = buffer;
 		this.body = stream;
+		this.credentials = init?.credentials || (<Request>input).credentials || 'same-origin';
 		this.headers = new Headers(init?.headers || (<Request>input).headers || {});
+
+		FetchRequestHeaderUtility.removeForbiddenHeaders(this.headers);
 
 		if (contentLength) {
 			this._contentLength = contentLength;
@@ -122,7 +128,6 @@ export default class Request implements IRequest {
 
 		FetchRequestValidationUtility.validateBody(this);
 		FetchRequestValidationUtility.validateURL(this._url);
-		FetchRequestValidationUtility.validateHeaders(this.headers);
 		FetchRequestValidationUtility.validateReferrerPolicy(this.referrerPolicy);
 		FetchRequestValidationUtility.validateRedirect(this.redirect);
 	}

@@ -15,10 +15,10 @@ import { URL } from 'url';
 import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser';
+import FetchCORSUtility from './utilities/FetchCORSUtility';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
-const UNSAFE_CORS_REDIRECT_HEADERS = ['authorization', 'www-authenticate', 'cookie', 'cookie2'];
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 const MAX_REDIRECT_COUNT = 20;
 
@@ -214,8 +214,7 @@ export default class Fetch {
 
 		const headers = this.getResponseHeaders(nodeResponse);
 
-		if (this.isRedirect(nodeResponse.statusCode)) {
-			this.handleRedirectResponse(nodeResponse, headers);
+		if (this.handleRedirectResponse(nodeResponse, headers)) {
 			return;
 		}
 
@@ -334,8 +333,13 @@ export default class Fetch {
 	 *
 	 * @param nodeResponse Node response.
 	 * @param headers Headers.
+	 * @returns True if redirect response was handled, false otherwise.
 	 */
-	private handleRedirectResponse(nodeResponse: IncomingMessage, headers: Headers): void {
+	private handleRedirectResponse(nodeResponse: IncomingMessage, headers: Headers): boolean {
+		if (!this.isRedirect(nodeResponse.statusCode)) {
+			return false;
+		}
+
 		const locationHeader = headers.get('Location');
 		let locationURL: URL = null;
 
@@ -353,7 +357,7 @@ export default class Fetch {
 						DOMExceptionNameEnum.uriMismatchError
 					)
 				);
-				return;
+				return true;
 			}
 		}
 
@@ -362,14 +366,14 @@ export default class Fetch {
 				this.finalizeRequest();
 				this.reject(
 					new DOMException(
-						`URI requested responds with a redirect, redirect mode is set to error: ${this.request.url}`,
-						DOMExceptionNameEnum.uriMismatchError
+						`URI requested responds with a redirect, redirect mode is set to "error": ${this.request.url}`,
+						DOMExceptionNameEnum.abortError
 					)
 				);
-				return;
+				return true;
 			case 'manual':
 				// Nothing to do
-				break;
+				return false;
 			case 'follow': {
 				if (locationURL === null) {
 					break;
@@ -383,7 +387,7 @@ export default class Fetch {
 							DOMExceptionNameEnum.networkError
 						)
 					);
-					return;
+					return true;
 				}
 
 				const headers = new Headers(this.request.headers);
@@ -407,19 +411,21 @@ export default class Fetch {
 					signal: this.request.signal,
 					referrer: this.request.referrer,
 					referrerPolicy: this.request.referrerPolicy,
+					credentials: this.request.credentials,
 					headers,
 					body
 				};
 
-				// When following a redirect to another top domain or different protocol, unsafe headers will be ignored.
+				// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
 				if (
-					(this.request._url.hostname !== locationURL.hostname &&
-						!this.request._url.hostname.endsWith(locationURL.hostname)) ||
-					this.request._url.protocol !== locationURL.protocol
+					this.request.credentials === 'omit' ||
+					(this.request.credentials === 'same-origin' &&
+						FetchCORSUtility.isCORS(this.ownerDocument.location, locationURL))
 				) {
-					for (const name of UNSAFE_CORS_REDIRECT_HEADERS) {
-						headers.delete(name);
-					}
+					headers.delete('authorization');
+					headers.delete('www-authenticate');
+					headers.delete('cookie');
+					headers.delete('cookie2');
 				}
 
 				if (nodeResponse.statusCode !== 303 && this.request.body && !this.request._bodyBuffer) {
@@ -430,7 +436,7 @@ export default class Fetch {
 							DOMExceptionNameEnum.networkError
 						)
 					);
-					return;
+					return true;
 				}
 
 				if (
@@ -458,15 +464,17 @@ export default class Fetch {
 
 				this.finalizeRequest();
 				this.resolve(fetch.send());
-				return;
+				return true;
 			}
 
 			default:
+				this.finalizeRequest();
 				this.reject(
 					new DOMException(
 						`Redirect option '${this.request.redirect}' is not a valid value of RequestRedirect`
 					)
 				);
+				return true;
 		}
 	}
 
@@ -512,18 +520,36 @@ export default class Fetch {
 	private getRequestHeaders(): { [key: string]: string } {
 		const headers = new Headers(this.request.headers);
 		const document = this.ownerDocument;
-		const cookie = document.defaultView.document.cookie;
+		const isCORS = FetchCORSUtility.isCORS(document.location, this.request._url);
+
+		// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
+		if (
+			this.request.credentials === 'omit' ||
+			(this.request.credentials === 'same-origin' && isCORS)
+		) {
+			headers.delete('authorization');
+			headers.delete('www-authenticate');
+		}
 
 		headers.set('Accept-Encoding', 'gzip, deflate, br');
 		headers.set('Connection', 'close');
-		headers.set('User-Agent', document.defaultView.navigator.userAgent);
+
+		if (!headers.has('User-Agent')) {
+			headers.set('User-Agent', document.defaultView.navigator.userAgent);
+		}
 
 		if (this.request._referrer instanceof URL) {
 			headers.set('Referer', this.request._referrer.href);
 		}
 
-		if (cookie) {
-			headers.set('Cookie', cookie);
+		if (
+			this.request.credentials === 'include' ||
+			(this.request.credentials === 'same-origin' && !isCORS)
+		) {
+			const cookie = document.defaultView.document.cookie;
+			if (cookie) {
+				headers.set('Cookie', cookie);
+			}
 		}
 
 		if (!headers.has('Accept')) {
@@ -573,7 +599,13 @@ export default class Fetch {
 				// Handles setting cookie headers to the document.
 				// "set-cookie" and "set-cookie2" are not allowed in response headers according to spec.
 				if (lowerKey === 'set-cookie' || lowerKey === 'set-cookie2') {
-					this.ownerDocument.cookie = header;
+					const isCORS = FetchCORSUtility.isCORS(this.ownerDocument.location, this.request._url);
+					if (
+						this.request.credentials === 'include' ||
+						(this.request.credentials === 'same-origin' && !isCORS)
+					) {
+						this.ownerDocument.cookie = header;
+					}
 				} else {
 					headers.append(key, header);
 				}

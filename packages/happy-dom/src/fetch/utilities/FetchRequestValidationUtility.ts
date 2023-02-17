@@ -1,34 +1,10 @@
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import Headers from '../Headers';
-import IHeaders from '../types/IHeaders';
 import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy';
 import IRequestRedirect from '../types/IRequestRedirect';
 import { URL } from 'url';
 import IRequest from '../types/IRequest';
 
-const FORBIDDEN_HEADER_NAMES = [
-	'accept-charset',
-	'accept-encoding',
-	'access-control-request-headers',
-	'access-control-request-method',
-	'connection',
-	'content-length',
-	'cookie',
-	'cookie2',
-	'date',
-	'dnt',
-	'expect',
-	'host',
-	'keep-alive',
-	'origin',
-	'referer',
-	'te',
-	'trailer',
-	'transfer-encoding',
-	'upgrade',
-	'via'
-];
 const VALID_REFERRER_POLICIES = [
 	'',
 	'no-referrer',
@@ -74,27 +50,6 @@ export default class FetchRequestValidationUtility {
 				`${url} is an url with embedded credentials.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
-		}
-	}
-
-	/**
-	 * Validates request headers.
-	 *
-	 * @throws DOMException
-	 * @param headers Headers.
-	 */
-	public static validateHeaders(headers: IHeaders): void {
-		for (const key of Object.keys((<Headers>headers)._entries)) {
-			if (
-				key.startsWith('proxy-') ||
-				key.startsWith('sec-') ||
-				FORBIDDEN_HEADER_NAMES.includes(key)
-			) {
-				throw new DOMException(
-					`Request header ${key} is not allowed.`,
-					DOMExceptionNameEnum.invalidStateError
-				);
-			}
 		}
 	}
 

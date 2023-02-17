@@ -4,6 +4,7 @@ import { URL } from 'url';
 import IRequestReferrerPolicy from './IRequestReferrerPolicy';
 import IRequestRedirect from './IRequestRedirect';
 import IRequestBody from './IRequestBody';
+import IRequestCredentials from './IRequestCredentials';
 
 /**
  * Fetch request init.
@@ -15,5 +16,6 @@ export default interface IRequestInit {
 	redirect?: IRequestRedirect;
 	signal?: AbortSignal | null;
 	referrer?: '' | 'no-referrer' | 'client' | string | URL;
+	credentials?: IRequestCredentials;
 	referrerPolicy?: IRequestReferrerPolicy;
 }
