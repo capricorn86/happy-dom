@@ -7,7 +7,10 @@ import IEventTarget from './IEventTarget';
  */
 export default abstract class EventTarget implements IEventTarget {
 	public readonly _listeners: {
-		[k: string]: (((event: Event) => void) | IEventListener)[];
+		[k: string]: {
+			fn: ((event: Event) => void) | IEventListener;
+			options?: { once: boolean } | undefined;
+		}[];
 	} = {};
 
 	/**
@@ -15,10 +18,16 @@ export default abstract class EventTarget implements IEventTarget {
 	 *
 	 * @param type Event type.
 	 * @param listener Listener.
+	 * @param options An object that specifies characteristics about the event listener.(currently only once)
+	 * @param options.once
 	 */
-	public addEventListener(type: string, listener: ((event: Event) => void) | IEventListener): void {
+	public addEventListener(
+		type: string,
+		listener: ((event: Event) => void) | IEventListener,
+		options?: { once: boolean }
+	): void {
 		this._listeners[type] = this._listeners[type] || [];
-		this._listeners[type].push(listener);
+		this._listeners[type].push({ fn: listener, options });
 	}
 
 	/**
@@ -32,7 +41,8 @@ export default abstract class EventTarget implements IEventTarget {
 		listener: ((event: Event) => void) | IEventListener
 	): void {
 		if (this._listeners[type]) {
-			const index = this._listeners[type].indexOf(listener);
+			const _listeners = this._listeners[type].map((l) => l.fn);
+			const index = _listeners.indexOf(listener);
 			if (index !== -1) {
 				this._listeners[type].splice(index, 1);
 			}
@@ -60,10 +70,14 @@ export default abstract class EventTarget implements IEventTarget {
 
 		if (this._listeners[event.type]) {
 			for (const listener of this._listeners[event.type]) {
-				if ((<IEventListener>listener).handleEvent) {
-					(<IEventListener>listener).handleEvent(event);
+				const _listener = listener.fn;
+				const once = listener.options && listener.options.once && listener.options.once === true;
+				if ((<IEventListener>_listener).handleEvent) {
+					(<IEventListener>_listener).handleEvent(event);
+					once && this.removeEventListener(event.type, _listener);
 				} else {
-					(<(event: Event) => void>listener).call(this, event);
+					(<(event: Event) => void>_listener).call(this, event);
+					once && this.removeEventListener(event.type, _listener);
 				}
 				if (event._immediatePropagationStopped) {
 					return !(event.cancelable && event.defaultPrevented);
