@@ -41,8 +41,14 @@ export default abstract class EventTarget implements IEventTarget {
 		listener: ((event: Event) => void) | IEventListener
 	): void {
 		if (this._listeners[type]) {
-			const _listeners = this._listeners[type].map((l) => l.fn);
-			const index = _listeners.indexOf(listener);
+			const _listeners = [];
+			let index = -1;
+			for (let i = 0; i < this._listeners[type].length; i++) {
+				_listeners.push(this._listeners[type][i].fn);
+				if (listener === this._listeners[type][i].fn) {
+					index = i;
+				}
+			}
 			if (index !== -1) {
 				this._listeners[type].splice(index, 1);
 			}
