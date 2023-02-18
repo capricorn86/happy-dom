@@ -28,6 +28,7 @@ import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
+import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import { default as ImageImplementation } from '../nodes/html-image-element/Image';
@@ -187,6 +188,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly NamedNodeMap = NamedNodeMap;
 	public readonly SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement = SVGElement;
+	public readonly SVGGraphicsElement = SVGGraphicsElement;
 	public readonly Text = Text;
 	public readonly Comment = Comment;
 	public readonly ShadowRoot = ShadowRoot;
