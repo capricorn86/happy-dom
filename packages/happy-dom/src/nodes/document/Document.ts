@@ -726,7 +726,7 @@ export default class Document extends Node implements IDocument {
 			const listeners = this._listeners[eventType];
 			if (listeners) {
 				for (const listener of listeners) {
-					this.removeEventListener(eventType, listener.fn);
+					this.removeEventListener(eventType, listener);
 				}
 			}
 		}

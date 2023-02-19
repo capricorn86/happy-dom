@@ -1,16 +1,17 @@
 import IEventListener from './IEventListener';
 import Event from './Event';
 import IEventTarget from './IEventTarget';
+import IEventListenerOptions from './IEventListenerOptions';
 
 /**
  * Handles events.
  */
 export default abstract class EventTarget implements IEventTarget {
 	public readonly _listeners: {
-		[k: string]: {
-			fn: ((event: Event) => void) | IEventListener;
-			options?: { once: boolean } | undefined;
-		}[];
+		[k: string]: (((event: Event) => void) | IEventListener)[];
+	} = {};
+	public readonly _listenerOptions: {
+		[k: string]: (IEventListenerOptions | null)[];
 	} = {};
 
 	/**
@@ -24,10 +25,13 @@ export default abstract class EventTarget implements IEventTarget {
 	public addEventListener(
 		type: string,
 		listener: ((event: Event) => void) | IEventListener,
-		options?: { once: boolean }
+		options?: IEventListenerOptions
 	): void {
 		this._listeners[type] = this._listeners[type] || [];
-		this._listeners[type].push({ fn: listener, options });
+		this._listenerOptions[type] = this._listenerOptions[type] || [];
+
+		this._listeners[type].push(listener);
+		this._listenerOptions[type].push(options || null);
 	}
 
 	/**
@@ -41,16 +45,10 @@ export default abstract class EventTarget implements IEventTarget {
 		listener: ((event: Event) => void) | IEventListener
 	): void {
 		if (this._listeners[type]) {
-			const _listeners = [];
-			let index = -1;
-			for (let i = 0; i < this._listeners[type].length; i++) {
-				_listeners.push(this._listeners[type][i].fn);
-				if (listener === this._listeners[type][i].fn) {
-					index = i;
-				}
-			}
+			const index = this._listeners[type].indexOf(listener);
 			if (index !== -1) {
 				this._listeners[type].splice(index, 1);
+				this._listenerOptions[type].splice(index, 1);
 			}
 		}
 	}
@@ -75,16 +73,20 @@ export default abstract class EventTarget implements IEventTarget {
 		}
 
 		if (this._listeners[event.type]) {
-			for (const listener of this._listeners[event.type]) {
-				const _listener = listener.fn;
-				const once = listener.options && listener.options.once && listener.options.once === true;
-				if ((<IEventListener>_listener).handleEvent) {
-					(<IEventListener>_listener).handleEvent(event);
-					once && this.removeEventListener(event.type, _listener);
+			for (let i = 0, max = this._listeners[event.type].length; i < max; i++) {
+				const listener = this._listeners[event.type][i];
+				const options = this._listenerOptions[event.type][i];
+
+				if ((<IEventListener>listener).handleEvent) {
+					(<IEventListener>listener).handleEvent(event);
 				} else {
-					(<(event: Event) => void>_listener).call(this, event);
-					once && this.removeEventListener(event.type, _listener);
+					(<(event: Event) => void>listener).call(this, event);
 				}
+
+				if (options?.once) {
+					this.removeEventListener(event.type, listener);
+				}
+
 				if (event._immediatePropagationStopped) {
 					return !(event.cancelable && event.defaultPrevented);
 				}
