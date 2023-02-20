@@ -59,7 +59,7 @@ export default abstract class EventTarget implements IEventTarget {
 		}
 
 		if (this._listeners[event.type]) {
-			for (const listener of this._listeners[event.type]) {
+			for (const listener of this._listeners[event.type].slice()) {
 				if ((<IEventListener>listener).handleEvent) {
 					(<IEventListener>listener).handleEvent(event);
 				} else {

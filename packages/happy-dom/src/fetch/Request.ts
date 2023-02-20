@@ -66,7 +66,7 @@ export default class Request implements IRequest {
 		const { stream, buffer, contentType, contentLength } = FetchBodyUtility.getBodyStream(
 			this._ownerDocument.defaultView,
 			input instanceof Request && (input._bodyBuffer || input.body)
-				? input._bodyBuffer || input.body
+				? input._bodyBuffer || FetchBodyUtility.cloneRequestBodyStream(input)
 				: init?.body
 		);
 

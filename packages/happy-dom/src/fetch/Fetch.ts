@@ -224,7 +224,7 @@ export default class Fetch {
 
 		let body = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error: Error) => {
 			if (error) {
-				this.reject(error);
+				// Ignore error as it is forwarded to the response body.
 			}
 		});
 
@@ -243,6 +243,7 @@ export default class Fetch {
 			nodeResponse.statusCode === 304
 		) {
 			this.response = new Response(body, responseOptions);
+			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
 			return;
@@ -260,10 +261,11 @@ export default class Fetch {
 		if (contentEncodingHeader === 'gzip' || contentEncodingHeader === 'x-gzip') {
 			body = Stream.pipeline(body, Zlib.createGunzip(zlibOptions), (error: Error) => {
 				if (error) {
-					this.reject(error);
+					// Ignore error as it is forwarded to the response body.
 				}
 			});
 			this.response = new Response(body, responseOptions);
+			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
 			return;
@@ -275,33 +277,35 @@ export default class Fetch {
 			// A hack for old IIS and Apache servers
 			const raw = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error) => {
 				if (error) {
-					this.reject(error);
+					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			raw.once('data', (chunk) => {
+			raw.on('data', (chunk) => {
 				// See http://stackoverflow.com/questions/37519828
 				if ((chunk[0] & 0x0f) === 0x08) {
 					body = Stream.pipeline(body, Zlib.createInflate(), (error) => {
 						if (error) {
-							this.reject(error);
+							// Ignore error as the fetch() promise has already been resolved.
 						}
 					});
 				} else {
 					body = Stream.pipeline(body, Zlib.createInflateRaw(), (error) => {
 						if (error) {
-							this.reject(error);
+							// Ignore error as it is forwarded to the response body.
 						}
 					});
 				}
 
 				this.response = new Response(body, responseOptions);
+				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
 			});
-			raw.once('end', () => {
+			raw.on('end', () => {
 				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
 				if (!this.response) {
 					this.response = new Response(body, responseOptions);
+					(<boolean>this.response.redirected) = this.redirectCount > 0;
 					(<string>this.response.url) = this.request.url;
 					this.resolve(this.response);
 				}
@@ -313,10 +317,11 @@ export default class Fetch {
 		if (contentEncodingHeader === 'br') {
 			body = Stream.pipeline(body, Zlib.createBrotliDecompress(), (error) => {
 				if (error) {
-					this.reject(error);
+					// Ignore error as it is forwarded to the response body.
 				}
 			});
 			this.response = new Response(body, responseOptions);
+			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
 			return;
@@ -324,6 +329,7 @@ export default class Fetch {
 
 		// Otherwise, use response as is
 		this.response = new Response(body, responseOptions);
+		(<boolean>this.response.redirected) = this.redirectCount > 0;
 		(<string>this.response.url) = this.request.url;
 		this.resolve(this.response);
 	}
@@ -332,33 +338,12 @@ export default class Fetch {
 	 * Handles redirect response.
 	 *
 	 * @param nodeResponse Node response.
-	 * @param headers Headers.
+	 * @param responseHeaders Headers.
 	 * @returns True if redirect response was handled, false otherwise.
 	 */
-	private handleRedirectResponse(nodeResponse: IncomingMessage, headers: Headers): boolean {
+	private handleRedirectResponse(nodeResponse: IncomingMessage, responseHeaders: Headers): boolean {
 		if (!this.isRedirect(nodeResponse.statusCode)) {
 			return false;
-		}
-
-		const locationHeader = headers.get('Location');
-		let locationURL: URL = null;
-
-		try {
-			locationURL = locationHeader === null ? null : new URL(locationHeader, this.request.url);
-		} catch {
-			// Error here can only be invalid URL in Location: header
-			// Do not throw when options.redirect == manual
-			// Let the user extract the errorneous redirect URL
-			if (this.request.redirect !== 'manual') {
-				this.finalizeRequest();
-				this.reject(
-					new DOMException(
-						`URI requested responds with an invalid redirect URL: ${locationHeader}`,
-						DOMExceptionNameEnum.uriMismatchError
-					)
-				);
-				return true;
-			}
 		}
 
 		switch (this.request.redirect) {
@@ -374,9 +359,27 @@ export default class Fetch {
 			case 'manual':
 				// Nothing to do
 				return false;
-			case 'follow': {
+			case 'follow':
+				const locationHeader = responseHeaders.get('Location');
+				let locationURL: URL = null;
+
+				if (locationHeader !== null) {
+					try {
+						locationURL = new URL(locationHeader, this.request.url);
+					} catch {
+						this.finalizeRequest();
+						this.reject(
+							new DOMException(
+								`URI requested responds with an invalid redirect URL: ${locationHeader}`,
+								DOMExceptionNameEnum.uriMismatchError
+							)
+						);
+						return true;
+					}
+				}
+
 				if (locationURL === null) {
-					break;
+					return false;
 				}
 
 				if (this.redirectCount >= MAX_REDIRECT_COUNT) {
@@ -439,6 +442,11 @@ export default class Fetch {
 					return true;
 				}
 
+				if (this.request.signal.aborted) {
+					this.abort();
+					return true;
+				}
+
 				if (
 					nodeResponse.statusCode === 303 ||
 					((nodeResponse.statusCode === 301 || nodeResponse.statusCode === 302) &&
@@ -465,8 +473,6 @@ export default class Fetch {
 				this.finalizeRequest();
 				this.resolve(fetch.send());
 				return true;
-			}
-
 			default:
 				this.finalizeRequest();
 				this.reject(
@@ -621,30 +627,28 @@ export default class Fetch {
 	 * Finalizes the request.
 	 */
 	private finalizeRequest(): void {
-		this.nodeRequest.destroy();
 		this.request.signal.removeEventListener('abort', this.listeners.onSignalAbort);
+		this.nodeRequest.destroy();
 	}
 
 	/**
 	 * Aborts the request.
-	 *
-	 * @param [response] Response.
 	 */
-	private abort(response?: Response): void {
+	private abort(): void {
 		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
 
 		if (this.request.body) {
 			this.request.body.destroy(error);
 		}
 
-		if (!response || !response.body) {
+		if (!this.response || !this.response.body) {
 			if (this.reject) {
 				this.reject(error);
 			}
 			return;
 		}
 
-		response.body.emit('error', error);
+		this.response.body.emit('error', error);
 
 		if (this.reject) {
 			this.reject(error);

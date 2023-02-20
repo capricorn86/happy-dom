@@ -8,6 +8,7 @@ import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import IRequestBody from '../types/IRequestBody';
 import IResponseBody from '../types/IResponseBody';
+import Request from '../Request';
 
 /**
  * Fetch body utility.
@@ -74,12 +75,9 @@ export default class FetchBodyUtility {
 				contentLength: body.byteLength
 			};
 		} else if (body instanceof Stream.Stream) {
-			// Clones the body
-			const stream = new Stream.PassThrough();
-			body.pipe(<Stream.PassThrough>stream);
 			return {
 				buffer: null,
-				stream,
+				stream: <Stream.Readable>body,
 				contentType: null,
 				contentLength: null
 			};
@@ -97,6 +95,33 @@ export default class FetchBodyUtility {
 	}
 
 	/**
+	 * Clones a request body stream.
+	 *
+	 * @param request Request.
+	 * @returns Stream.
+	 */
+	public static cloneRequestBodyStream(request: Request): Stream.Readable {
+		if (request.bodyUsed) {
+			throw new DOMException(
+				`Failed to clone body stream of request: Request body is already used.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		const p1 = new Stream.PassThrough();
+		const p2 = new Stream.PassThrough();
+
+		request.body.pipe(p1);
+		request.body.pipe(p2);
+
+		// Sets the body of the cloned request to the first pass through stream.
+		(<Stream.Readable>request.body) = p1;
+
+		// Returns the clone.
+		return p2;
+	}
+
+	/**
 	 * Consume and convert an entire Body to a Buffer.
 	 *
 	 * Based on:
@@ -104,32 +129,29 @@ export default class FetchBodyUtility {
 	 *
 	 * @see https://fetch.spec.whatwg.org/#concept-body-consume-body
 	 * @param body Body stream.
-	 * @param [size] Size.
 	 * @returns Promise.
 	 */
-	public static async consumeBodyStream(body: Stream.Readable | null, size = 0): Promise<Buffer> {
+	public static async consumeBodyStream(body: Stream.Readable | null): Promise<Buffer> {
 		if (body === null || !(body instanceof Stream.Stream)) {
 			return Buffer.alloc(0);
 		}
 
-		const sizeError = new DOMException(
-			`Content size as reached the limit "${size}".`,
-			DOMExceptionNameEnum.invalidStateError
-		);
-
 		const chunks = [];
 		let bytes = 0;
 
-		for await (const chunk of body) {
-			if (size && bytes + chunk.length > size) {
-				if (typeof body['destroy'] === 'function') {
-					body['destroy'](sizeError);
-				}
-				throw sizeError;
+		try {
+			for await (const chunk of body) {
+				bytes += chunk.length;
+				chunks.push(chunk);
 			}
-
-			bytes += chunk.length;
-			chunks.push(chunk);
+		} catch (error) {
+			if (error instanceof DOMException) {
+				throw error;
+			}
+			throw new DOMException(
+				`Failed to read response body. Error: ${error.message}.`,
+				DOMExceptionNameEnum.encodingError
+			);
 		}
 
 		if (
