@@ -1,6 +1,7 @@
 import DOMException from '../exception/DOMException';
 import IElement from '../nodes/element/IElement';
 import Element from '../nodes/element/Element';
+import HTMLInputElement from 'src/nodes/html-input-element/HTMLInputElement';
 
 const ATTRIBUTE_REGEXP =
 	/\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']{0,1}([^"']+)["']{0,1}\]/g;
@@ -252,6 +253,8 @@ export default class SelectorItem {
 					}
 				}
 				return isFound;
+			case 'checked':
+				return element.tagName.toLowerCase() === 'input' && (<HTMLInputElement>element).checked;
 		}
 
 		return false;

@@ -558,6 +558,24 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		if (!checked) {
 			this.removeAttributeNS(null, 'checked');
 		} else {
+			// Need to remove all other radio buttons checked with the same name
+			const name = this.getAttributeNS(null, 'name');
+			if (name) {
+				const form = this.form;
+				if (form) {
+					const elements = form.elements;
+					for (let i = 0; i < elements.length; i++) {
+						const element = elements[i];
+						if (
+							element instanceof HTMLInputElement &&
+							element.type === 'radio' &&
+							element.getAttributeNS(null, 'name') === name
+						) {
+							element.checked = false;
+						}
+					}
+				}
+			}
 			this.setAttributeNS(null, 'checked', '');
 		}
 	}
