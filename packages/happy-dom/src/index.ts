@@ -82,6 +82,8 @@ import HTMLVideoElement from './nodes/html-video-element/HTMLVideoElement';
 import IHTMLVideoElement from './nodes/html-video-element/IHTMLVideoElement';
 import HTMLBaseElement from './nodes/html-base-element/HTMLBaseElement';
 import IHTMLBaseElement from './nodes/html-base-element/IHTMLBaseElement';
+import HTMLIFrameElement from './nodes/html-iframe-element/HTMLIFrameElement';
+import IHTMLIFrameElement from './nodes/html-iframe-element/IHTMLIFrameElement';
 import SVGElement from './nodes/svg-element/SVGElement';
 import ISVGElement from './nodes/svg-element/ISVGElement';
 import SVGGraphicsElement from './nodes/svg-element/SVGGraphicsElement';
@@ -211,6 +213,8 @@ export {
 	IHTMLVideoElement,
 	HTMLBaseElement,
 	IHTMLBaseElement,
+	HTMLIFrameElement,
+	IHTMLIFrameElement,
 	SVGElement,
 	ISVGElement,
 	SVGGraphicsElement,

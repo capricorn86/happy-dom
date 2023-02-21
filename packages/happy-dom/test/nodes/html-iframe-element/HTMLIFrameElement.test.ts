@@ -1,26 +1,28 @@
 import Window from '../../../src/window/Window';
 import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
-import IHTMLIframeElement from '../../../src/nodes/html-iframe-element/IHTMLIframeElement';
+import IHTMLIFrameElement from '../../../src/nodes/html-iframe-element/IHTMLIFrameElement';
 import IResponse from '../../../src/fetch/IResponse';
 import ErrorEvent from '../../../src/event/events/ErrorEvent';
-import IframeCrossOriginWindow from '../../../src/nodes/html-iframe-element/IframeCrossOriginWindow';
+import IFrameCrossOriginWindow from '../../../src/nodes/html-iframe-element/IFrameCrossOriginWindow';
 import MessageEvent from '../../../src/event/events/MessageEvent';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
+import DOMException from '../../../src/exception/DOMException';
 
-describe('HTMLIframeElement', () => {
+describe('HTMLIFrameElement', () => {
 	let window: IWindow;
 	let document: IDocument;
-	let element: IHTMLIframeElement;
+	let element: IHTMLIFrameElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLIframeElement>document.createElement('iframe');
+		element = <IHTMLIFrameElement>document.createElement('iframe');
 	});
 
 	describe('Object.prototype.toString', () => {
-		it('Returns `[object HTMLIframeElement]`', () => {
-			expect(Object.prototype.toString.call(element)).toBe('[object HTMLIframeElement]');
+		it('Returns `[object HTMLIFrameElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLIFrameElement]');
 		});
 	});
 
@@ -82,7 +84,7 @@ describe('HTMLIframeElement', () => {
 			document.body.appendChild(element);
 		});
 
-		it('Returns instance of IframeCrossOriginWindow for URL with different origin.', (done) => {
+		it('Returns instance of IFrameCrossOriginWindow for URL with different origin.', (done) => {
 			const iframeOrigin = 'https://other.origin.com';
 			const iframeSrc = iframeOrigin + '/iframe.html';
 			const documentOrigin = 'https://localhost:8080';
@@ -102,8 +104,13 @@ describe('HTMLIframeElement', () => {
 				const message = 'test';
 				let triggeredEvent: MessageEvent | null = null;
 				expect(fetchedURL).toBe(iframeSrc);
-				expect(element.contentWindow instanceof IframeCrossOriginWindow).toBe(true);
-				expect(element.contentWindow.location.href).toBe(iframeSrc);
+				expect(element.contentWindow instanceof IFrameCrossOriginWindow).toBe(true);
+				expect(() => element.contentWindow.location.href).toThrowError(
+					new DOMException(
+						`Blocked a frame with origin "${documentOrigin}" from accessing a cross-origin frame.`,
+						DOMExceptionNameEnum.securityError
+					)
+				);
 				expect(element.contentWindow.self === element.contentWindow).toBe(true);
 				expect(element.contentWindow.window === element.contentWindow).toBe(true);
 				expect(element.contentWindow.parent === window).toBe(true);

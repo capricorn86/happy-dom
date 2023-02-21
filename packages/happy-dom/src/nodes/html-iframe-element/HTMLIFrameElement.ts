@@ -6,22 +6,22 @@ import Window from '../../window/Window';
 import IDocument from '../document/IDocument';
 import HTMLElement from '../html-element/HTMLElement';
 import INode from '../node/INode';
-import IframeCrossOriginWindow from './IframeCrossOriginWindow';
-import IHTMLIframeElement from './IHTMLIframeElement';
+import IFrameCrossOriginWindow from './IFrameCrossOriginWindow';
+import IHTMLIFrameElement from './IHTMLIFrameElement';
 
 /**
  * HTML Iframe Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIframeElement.
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement.
  */
-export default class HTMLIframeElement extends HTMLElement implements IHTMLIframeElement {
+export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFrameElement {
 	// Events
 	public onload: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
 
 	// Private
-	#contentWindow: IWindow | IframeCrossOriginWindow | null = null;
+	#contentWindow: IWindow | IFrameCrossOriginWindow | null = null;
 
 	/**
 	 * Returns source.
@@ -163,7 +163,7 @@ export default class HTMLIframeElement extends HTMLElement implements IHTMLIfram
 	 *
 	 * @returns Content window.
 	 */
-	public get contentWindow(): IWindow | IframeCrossOriginWindow | null {
+	public get contentWindow(): IWindow | IFrameCrossOriginWindow | null {
 		return this.#contentWindow || null;
 	}
 
@@ -241,7 +241,7 @@ export default class HTMLIframeElement extends HTMLElement implements IHTMLIfram
 							.text()
 							.then((text) => {
 								this.#contentWindow = isCORS
-									? new IframeCrossOriginWindow(this.ownerDocument.defaultView, contentWindow)
+									? new IFrameCrossOriginWindow(this.ownerDocument.defaultView, contentWindow)
 									: contentWindow;
 								contentWindow.document.write(text);
 								this.dispatchEvent(new Event('load'));
@@ -260,7 +260,7 @@ export default class HTMLIframeElement extends HTMLElement implements IHTMLIfram
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLIframeElement {
-		return <IHTMLIframeElement>super.cloneNode(deep);
+	public cloneNode(deep = false): IHTMLIFrameElement {
+		return <IHTMLIFrameElement>super.cloneNode(deep);
 	}
 }

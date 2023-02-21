@@ -2,15 +2,15 @@ import Event from '../../event/Event';
 import IWindow from '../../window/IWindow';
 import IDocument from '../document/IDocument';
 import IHTMLElement from '../html-element/IHTMLElement';
-import IframeCrossOriginWindow from './IframeCrossOriginWindow';
+import IFrameCrossOriginWindow from './IFrameCrossOriginWindow';
 
 /**
  * HTML Iframe Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIframeElement.
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement.
  */
-export default interface IHTMLIframeElement extends IHTMLElement {
+export default interface IHTMLIFrameElement extends IHTMLElement {
 	src: string | null;
 	allow: string | null;
 	height: string | null;
@@ -19,7 +19,7 @@ export default interface IHTMLIframeElement extends IHTMLElement {
 	sandbox: string | null;
 	srcdoc: string | null;
 	readonly contentDocument: IDocument | null;
-	readonly contentWindow: IWindow | IframeCrossOriginWindow | null;
+	readonly contentWindow: IWindow | IFrameCrossOriginWindow | null;
 
 	// Events
 	onload: (event: Event) => void | null;
