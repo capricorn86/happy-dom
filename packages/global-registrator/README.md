@@ -92,4 +92,4 @@ console.log(global.document);
 
 # Sponsors
 
-[![RTVision](https://avatars.githubusercontent.com/u/8292810?s=200&v=4)](https://github.com/RTVision)
+[![RTVision](https://avatars.githubusercontent.com/u/8292810?s=200&v=4)](https://rtvision.com/)
