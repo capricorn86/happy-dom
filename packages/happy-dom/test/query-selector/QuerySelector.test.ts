@@ -486,6 +486,18 @@ describe('QuerySelector', () => {
 			expect(elements[0]).toBe(document.body.children[1]);
 		});
 
+		it('Returns all elements matching "[tabindex]:not(textarea)".', () => {
+			document.body.innerHTML = `
+				<div tabindex="-1"></div>
+				<div tabindex="0"></div>
+				<div tabindex="1"></div>
+				<textarea tabindex="-1"></textarea>
+			`;
+			const elements = document.querySelectorAll('[tabindex]:not(textarea)');
+			expect(elements.length).toBe(3);
+			expect(elements[0]).toBe(document.body.children[0]);
+		});
+
 		it('Returns all span elements matching span:nth-child(1) or span:nth-child(2).', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;

@@ -45,7 +45,6 @@ export default [
 	'HTMLTableSectionElement',
 	'HTMLFrameElement',
 	'HTMLFrameSetElement',
-	'HTMLIFrameElement',
 	'HTMLEmbedElement',
 	'HTMLObjectElement',
 	'HTMLParamElement',

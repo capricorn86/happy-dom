@@ -1,6 +1,5 @@
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
-
 # About
 
 [Happy DOM](https://github.com/capricorn86/happy-dom) is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG [DOM](https://dom.spec.whatwg.org/) and [HTML](https://html.spec.whatwg.org/multipage/).
@@ -10,7 +9,6 @@ The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate 
 [Happy DOM](https://github.com/capricorn86/happy-dom) focuses heavily on performance and can be used as an alternative to [JSDOM](https://github.com/jsdom/jsdom).
 
 This package contains a utility that registers [Happy DOM](https://github.com/capricorn86/happy-dom) globally, which makes it possible to use [Happy DOM](https://github.com/capricorn86/happy-dom) for testing in a Node environment.
-
 
 ### DOM Features
 
@@ -28,8 +26,6 @@ This package contains a utility that registers [Happy DOM](https://github.com/ca
 
 And much more..
 
-  
-
 ### Works With
 
 - [Google LitHTML](https://lit-html.polymer-project.org)
@@ -42,17 +38,11 @@ And much more..
 
 - [Vue](https://vuejs.org/)
 
-  
-
-
 # Installation
 
 ```bash
 npm install @happy-dom/global-registrator --save-dev
 ```
-
-
-
 
 # Usage
 
@@ -68,7 +58,7 @@ document.body.innerHTML = `<button>My button</button>`;
 const button = document.querySelector('button');
 
 // Outputs: "My button"
-console.log(button.innerText)
+console.log(button.innerText);
 ```
 
 ## Unregister
@@ -81,9 +71,8 @@ GlobalRegistrator.register();
 GlobalRegistrator.unregister();
 
 // Outputs: "undefined"
-console.log(global.document)
+console.log(global.document);
 ```
-
 
 # Performance
 
@@ -101,3 +90,6 @@ console.log(global.document)
 
 [See how the test was done here](https://github.com/capricorn86/happy-dom-performance-test)
 
+# Sponsors
+
+[<img alt="RTVision" width="120px" src="https://avatars.githubusercontent.com/u/8292810?s=200&v=4" />](https://rtvision.com)

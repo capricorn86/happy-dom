@@ -188,7 +188,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 
 		super._connectToNode(parentNode);
 
-		if (isConnected !== isParentConnected && this._evaluateScript) {
+		if (isParentConnected && isConnected !== isParentConnected && this._evaluateScript) {
 			const src = this.getAttribute('src');
 
 			if (src !== null) {

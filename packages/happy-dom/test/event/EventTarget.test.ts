@@ -29,6 +29,18 @@ describe('EventTarget', () => {
 			expect(recievedEvent.currentTarget).toBe(eventTarget);
 		});
 
+		it('Adds an event listener and set options once', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+			eventTarget.addEventListener(EVENT_TYPE, listener, { once: true });
+			eventTarget.dispatchEvent(dispatchedEvent);
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(count).toBe(1);
+		});
+
 		it('Adds a custom event listener and triggers it when calling dispatchEvent().', () => {
 			let recievedEvent: CustomEvent = null;
 			const DETAIL = {};

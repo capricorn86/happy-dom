@@ -11,6 +11,7 @@ import INode from '../nodes/node/INode';
 import IElement from '../nodes/element/IElement';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
+import PlainTextElements from '../config/PlainTextElements';
 
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^<>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->|<([!?])([^>]*)>/gi;
@@ -38,6 +39,7 @@ export default class XMLParser {
 		const stack: Array<IElement | IDocumentFragment> = [root];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gi');
 		let parent: IDocumentFragment | IElement = root;
+		let parentTagName = null;
 		let parentUnnestableTagName = null;
 		let lastTextIndex = 0;
 		let match: RegExpExecArray;
@@ -51,7 +53,11 @@ export default class XMLParser {
 
 				if (parent && match.index !== lastTextIndex) {
 					const text = data.substring(lastTextIndex, match.index);
-					this.appendTextAndCommentNodes(document, parent, text);
+					if (parentTagName && PlainTextElements.includes(parentTagName)) {
+						parent.appendChild(document.createTextNode(text));
+					} else {
+						this.appendTextAndCommentNodes(document, parent, text);
+					}
 				}
 
 				if (isStartTag) {
@@ -84,6 +90,7 @@ export default class XMLParser {
 						}
 
 						parent = <Element>parent.appendChild(newElement);
+						parentTagName = tagName;
 						parentUnnestableTagName = this.getUnnestableTagName(parent);
 						stack.push(parent);
 					} else {
@@ -105,6 +112,9 @@ export default class XMLParser {
 				} else {
 					stack.pop();
 					parent = stack[stack.length - 1] || root;
+					parentTagName = (<IElement>parent).tagName
+						? (<IElement>parent).tagName.toLowerCase()
+						: null;
 					parentUnnestableTagName = this.getUnnestableTagName(parent);
 
 					lastTextIndex = markupRegexp.lastIndex;

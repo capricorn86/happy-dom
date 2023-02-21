@@ -257,6 +257,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 		super._connectToNode(parentNode);
 
 		if (
+			isParentConnected &&
 			isConnected !== isParentConnected &&
 			this._evaluateCSS &&
 			!this.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading

@@ -552,6 +552,30 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
+	 * Toggle an attribute.
+	 * Returns `true` if attribute name is eventually present, and `false` otherwise.
+	 *
+	 * @param name A DOMString specifying the name of the attribute to be toggled.
+	 * @param force A boolean value to determine whether the attribute should be added or removed, no matter whether the attribute is present or not at the moment.
+	 */
+	public toggleAttribute(name: string, force?: boolean): boolean {
+		name = name.toLowerCase();
+		const attribute = this.getAttributeNode(name);
+		if (attribute) {
+			if (force === true) {
+				return true;
+			}
+			this.removeAttributeNode(attribute);
+			return false;
+		}
+		if (force === false) {
+			return false;
+		}
+		this.setAttribute(name, '');
+		return true;
+	}
+
+	/**
 	 * Returns namespace attribute value.
 	 *
 	 * @param namespace Namespace URI.

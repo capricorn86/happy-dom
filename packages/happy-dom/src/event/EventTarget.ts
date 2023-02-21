@@ -1,6 +1,7 @@
 import IEventListener from './IEventListener';
 import Event from './Event';
 import IEventTarget from './IEventTarget';
+import IEventListenerOptions from './IEventListenerOptions';
 
 /**
  * Handles events.
@@ -9,16 +10,28 @@ export default abstract class EventTarget implements IEventTarget {
 	public readonly _listeners: {
 		[k: string]: (((event: Event) => void) | IEventListener)[];
 	} = {};
+	public readonly _listenerOptions: {
+		[k: string]: (IEventListenerOptions | null)[];
+	} = {};
 
 	/**
 	 * Adds an event listener.
 	 *
 	 * @param type Event type.
 	 * @param listener Listener.
+	 * @param options An object that specifies characteristics about the event listener.(currently only once)
+	 * @param options.once
 	 */
-	public addEventListener(type: string, listener: ((event: Event) => void) | IEventListener): void {
+	public addEventListener(
+		type: string,
+		listener: ((event: Event) => void) | IEventListener,
+		options?: IEventListenerOptions
+	): void {
 		this._listeners[type] = this._listeners[type] || [];
+		this._listenerOptions[type] = this._listenerOptions[type] || [];
+
 		this._listeners[type].push(listener);
+		this._listenerOptions[type].push(options || null);
 	}
 
 	/**
@@ -35,6 +48,7 @@ export default abstract class EventTarget implements IEventTarget {
 			const index = this._listeners[type].indexOf(listener);
 			if (index !== -1) {
 				this._listeners[type].splice(index, 1);
+				this._listenerOptions[type].splice(index, 1);
 			}
 		}
 	}
@@ -59,12 +73,24 @@ export default abstract class EventTarget implements IEventTarget {
 		}
 
 		if (this._listeners[event.type]) {
-			for (const listener of this._listeners[event.type].slice()) {
+			// We need to clone the arrays because the listeners may remove themselves while we are iterating.
+			const listeners = this._listeners[event.type].slice();
+			const listenerOptions = this._listenerOptions[event.type].slice();
+
+			for (let i = 0, max = listeners.length; i < max; i++) {
+				const listener = listeners[i];
+				const options = listenerOptions[i];
+
 				if ((<IEventListener>listener).handleEvent) {
 					(<IEventListener>listener).handleEvent(event);
 				} else {
 					(<(event: Event) => void>listener).call(this, event);
 				}
+
+				if (options?.once) {
+					this.removeEventListener(event.type, listener);
+				}
+
 				if (event._immediatePropagationStopped) {
 					return !(event.cancelable && event.defaultPrevented);
 				}

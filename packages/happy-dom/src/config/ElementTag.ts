@@ -21,6 +21,7 @@ import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement';
 import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLAnchorElement from '../nodes/html-anchor-element/HTMLAnchorElement';
+import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement';
 
 export default {
 	A: HTMLAnchorElement,
@@ -94,7 +95,7 @@ export default {
 	HR: HTMLElement,
 	HTML: HTMLElement,
 	I: HTMLElement,
-	IFRAME: HTMLElement,
+	IFRAME: HTMLIFrameElement,
 	INS: HTMLElement,
 	KBD: HTMLElement,
 	LEGEND: HTMLElement,

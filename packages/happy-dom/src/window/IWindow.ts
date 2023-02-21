@@ -24,6 +24,7 @@ import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
 import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
+import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
@@ -74,6 +75,8 @@ import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
+import MessageEvent from '../event/events/MessageEvent';
+import MessagePort from '../event/MessagePort';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
 import Storage from '../storage/Storage';
@@ -150,6 +153,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly HTMLAudioElement: typeof HTMLAudioElement;
 	readonly HTMLVideoElement: typeof HTMLVideoElement;
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
+	readonly HTMLIFrameElement: typeof HTMLIFrameElement;
 	readonly HTMLDialogElement: typeof HTMLDialogElement;
 	readonly Attr: typeof Attr;
 	readonly NamedNodeMap: typeof NamedNodeMap;
@@ -183,6 +187,8 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly InputEvent: typeof InputEvent;
 	readonly ErrorEvent: typeof ErrorEvent;
 	readonly StorageEvent: typeof StorageEvent;
+	readonly MessageEvent: typeof MessageEvent;
+	readonly MessagePort: typeof MessagePort;
 	readonly ProgressEvent: typeof ProgressEvent;
 	readonly MediaQueryListEvent: typeof MediaQueryListEvent;
 	readonly EventTarget: typeof EventTarget;
@@ -390,4 +396,12 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	 * @returns An ASCII string containing decoded data from encodedData.
 	 */
 	atob(data: unknown): string;
+
+	/**
+	 * Safely enables cross-origin communication between Window objects; e.g., between a page and a pop-up that it spawned, or between a page and an iframe embedded within it.
+	 *
+	 * @param message Message.
+	 * @param listener Listener.
+	 */
+	postMessage(message: unknown, targetOrigin?: string, transfer?: unknown[]): void;
 }

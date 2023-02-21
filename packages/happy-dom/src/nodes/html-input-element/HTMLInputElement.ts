@@ -613,6 +613,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param value Value.
 	 */
 	public set value(value: string) {
+		// The value maybe not string, so we need to convert it to string
+		value = String(value);
 		switch (this.type) {
 			case 'hidden':
 			case 'submit':
