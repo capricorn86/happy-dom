@@ -182,13 +182,13 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * @override
 	 */
-	public _connectToNode(parentNode: INode = null): void {
+	public override _connectToNode(parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
 
 		super._connectToNode(parentNode);
 
-		if (isConnected !== isParentConnected && this._evaluateScript) {
+		if (isParentConnected && isConnected !== isParentConnected && this._evaluateScript) {
 			const src = this.getAttributeNS(null, 'src');
 
 			if (src !== null) {

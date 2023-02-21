@@ -257,6 +257,7 @@ const window = new Window({
 		disableJavaScriptFileLoading: true,
 		disableJavaScriptEvaluation: true,
 		disableCSSFileLoading: true,
+		disableIframePageLoading: true,
 		enableFileSystemHttpRequests: true
 	}
 });
@@ -270,6 +271,7 @@ const window = new Window();
 window.happyDOM.settings.disableJavaScriptFileLoading = true;
 window.happyDOM.settings.disableJavaScriptEvaluation = true;
 window.happyDOM.settings.disableCSSFileLoading = true;
+window.happyDOM.settings.disableIframePageLoading = true;
 window.happyDOM.settings.enableFileSystemHttpRequests = true;
 ```
 
@@ -283,7 +285,11 @@ Set it to "true" to completely disable JavaScript evaluation. Defaults to "false
 
 **disableCSSFileLoading**
 
-Set it to "true" to disable CSS file loading using the HTMLLinkElement. Defaults to "false".
+Set it to "true" to disable CSS file loading in HTMLLinkElement. Defaults to "false".
+
+**disableIframePageLoading**
+
+Set it to "true" to disable page loading in HTMLIframeElement. Defaults to "false".
 
 **enableFileSystemHttpRequests**
 
@@ -312,3 +318,7 @@ Happy DOM provide with a package called [@happy-dom/jest-environment](https://gi
 # Global Registration
 
 Happy DOM provide with a package called [@happy-dom/global-registrator](https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator) that can register Happy DOM globally. It makes it possible to use Happy DOM for testing in a Node environment.
+
+# Sponsors
+
+[![RTVision](https://avatars.githubusercontent.com/u/8292810?s=200&v=4)](https://rtvision.com/)
