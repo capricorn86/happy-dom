@@ -25,7 +25,7 @@ import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
 import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
-import HTMLIframeElement from '../nodes/html-iframe-element/HTMLIframeElement';
+import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement';
 import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
@@ -188,7 +188,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLAudioElement = HTMLAudioElement;
 	public readonly HTMLVideoElement = HTMLVideoElement;
 	public readonly HTMLBaseElement = HTMLBaseElement;
-	public readonly HTMLIframeElement = HTMLIframeElement;
+	public readonly HTMLIFrameElement = HTMLIFrameElement;
 	public readonly HTMLDialogElement = HTMLDialogElement;
 	public readonly Attr = Attr;
 	public readonly NamedNodeMap = NamedNodeMap;

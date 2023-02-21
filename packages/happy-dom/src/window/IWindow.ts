@@ -24,7 +24,7 @@ import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
 import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
-import HTMLIframeElement from '../nodes/html-iframe-element/HTMLIframeElement';
+import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
@@ -145,7 +145,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLAudioElement: typeof HTMLAudioElement;
 	readonly HTMLVideoElement: typeof HTMLVideoElement;
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
-	readonly HTMLIframeElement: typeof HTMLIframeElement;
+	readonly HTMLIFrameElement: typeof HTMLIFrameElement;
 	readonly HTMLDialogElement: typeof HTMLDialogElement;
 	readonly Attr: typeof Attr;
 	readonly NamedNodeMap: typeof NamedNodeMap;

@@ -289,7 +289,7 @@ Set it to "true" to disable CSS file loading in HTMLLinkElement. Defaults to "fa
 
 **disableIframePageLoading**
 
-Set it to "true" to disable page loading in HTMLIframeElement. Defaults to "false".
+Set it to "true" to disable page loading in HTMLIFrameElement. Defaults to "false".
 
 **enableFileSystemHttpRequests**
 
