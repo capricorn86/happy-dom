@@ -147,4 +147,4 @@ describe('runAnimation()', () => {
 
 # Sponsors
 
-[![RTVision](https://avatars.githubusercontent.com/u/8292810?s=200&v=4)](https://rtvision.com/)
+[<img alt="RTVision" width="120px" src="https://avatars.githubusercontent.com/u/8292810?s=200&v=4" />](https://rtvision.com)
