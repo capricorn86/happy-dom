@@ -23,6 +23,7 @@ import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
 import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
 import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
+import { default as AudioImplementation } from '../nodes/html-audio-element/Audio';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement';
@@ -275,6 +276,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Range;
 	public readonly FileReader;
 	public readonly Image;
+	public readonly Audio;
 
 	// Events
 	public onload: (event: Event) => void = null;
@@ -469,8 +471,10 @@ export default class Window extends EventTarget implements IWindow {
 		class XMLHttpRequest extends XMLHttpRequestImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
-
 		class Range extends RangeImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
+		class Audio extends AudioImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
 		/* eslint-enable jsdoc/require-jsdoc */
@@ -482,6 +486,7 @@ export default class Window extends EventTarget implements IWindow {
 		this.DOMParser = DOMParser;
 		this.XMLHttpRequest = XMLHttpRequest;
 		this.Range = Range;
+		this.Audio = Audio;
 
 		this._setupVMContext();
 
