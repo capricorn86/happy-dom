@@ -1,5 +1,4 @@
 import MultipartFormDataParser from '../multipart/MultipartFormDataParser';
-import IWindow from '../../window/IWindow';
 import Stream from 'stream';
 import { URLSearchParams } from 'url';
 import FormData from '../../form-data/FormData';
@@ -20,14 +19,10 @@ export default class FetchBodyUtility {
 	 * Based on:
 	 * https://github.com/node-fetch/node-fetch/blob/main/src/body.js (MIT)
 	 *
-	 * @param window Window.
 	 * @param body Body.
 	 * @returns Stream and type.
 	 */
-	public static getBodyStream(
-		window: IWindow,
-		body: IRequestBody | IResponseBody
-	): {
+	public static getBodyStream(body: IRequestBody | IResponseBody): {
 		contentType: string;
 		contentLength: number | null;
 		stream: Stream.Readable;
@@ -40,7 +35,7 @@ export default class FetchBodyUtility {
 			return {
 				buffer,
 				stream: Stream.Readable.from(Buffer.from(buffer)),
-				contentType: null,
+				contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
 				contentLength: buffer.length
 			};
 		} else if (body instanceof Blob) {
@@ -82,14 +77,14 @@ export default class FetchBodyUtility {
 				contentLength: null
 			};
 		} else if (body instanceof FormData) {
-			return MultipartFormDataParser.formDataToStream(window, body);
+			return MultipartFormDataParser.formDataToStream(body);
 		}
 
 		const buffer = Buffer.from(String(body));
 		return {
 			buffer,
 			stream: Stream.Readable.from(buffer),
-			contentType: null,
+			contentType: 'text/plain;charset=UTF-8',
 			contentLength: buffer.length
 		};
 	}

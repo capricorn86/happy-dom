@@ -54,14 +54,16 @@ export default class Fetch {
 	 * @param options.document
 	 * @param options.url URL.
 	 * @param [options.init] Init.
-	 * @param options.ownerDocument
-	 * @param options.redirectCount
+	 * @param [options.ownerDocument] Owner document.
+	 * @param [options.redirectCount] Redirect count.
+	 * @param [options.contentType] Content Type.
 	 */
 	constructor(options: {
 		ownerDocument: IDocument;
 		url: IRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
+		contentType?: string;
 	}) {
 		const url = options.url;
 
@@ -70,6 +72,9 @@ export default class Fetch {
 			typeof options.url === 'string' || options.url instanceof URL
 				? new Request(options.url, options.init)
 				: <Request>url;
+		if (options.contentType) {
+			(<string>this.request._contentType) = options.contentType;
+		}
 		this.redirectCount = options.redirectCount || 0;
 	}
 
@@ -361,6 +366,10 @@ export default class Fetch {
 				return false;
 			case 'follow':
 				const locationHeader = responseHeaders.get('Location');
+				const shouldBecomeGetRequest =
+					nodeResponse.statusCode === 303 ||
+					((nodeResponse.statusCode === 301 || nodeResponse.statusCode === 302) &&
+						this.request.method === 'POST');
 				let locationURL: URL = null;
 
 				if (locationHeader !== null) {
@@ -447,14 +456,11 @@ export default class Fetch {
 					return true;
 				}
 
-				if (
-					nodeResponse.statusCode === 303 ||
-					((nodeResponse.statusCode === 301 || nodeResponse.statusCode === 302) &&
-						this.request.method === 'POST')
-				) {
+				if (shouldBecomeGetRequest) {
 					requestInit.method = 'GET';
 					requestInit.body = undefined;
-					headers.delete('content-length');
+					headers.delete('Content-Length');
+					headers.delete('Content-Type');
 				}
 
 				const responseReferrerPolicy =
@@ -467,7 +473,8 @@ export default class Fetch {
 					ownerDocument: this.ownerDocument,
 					url: locationURL,
 					init: requestInit,
-					redirectCount: this.redirectCount + 1
+					redirectCount: this.redirectCount + 1,
+					contentType: !shouldBecomeGetRequest ? this.request._contentType : undefined
 				});
 
 				this.finalizeRequest();
@@ -562,8 +569,12 @@ export default class Fetch {
 			headers.set('Accept', '*/*');
 		}
 
-		if (this.request._contentLength !== null) {
+		if (!headers.has('Content-Length') && this.request._contentLength !== null) {
 			headers.set('Content-Length', String(this.request._contentLength));
+		}
+
+		if (!headers.has('Content-Type') && this.request._contentType) {
+			headers.set('Content-Type', this.request._contentType);
 		}
 
 		// We need to convert the headers to Node request headers.

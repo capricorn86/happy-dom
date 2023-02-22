@@ -44,6 +44,7 @@ export default class Request implements IRequest {
 
 	// Internal properties
 	public readonly _contentLength: number | null = null;
+	public readonly _contentType: string | null = null;
 	public _referrer: '' | 'no-referrer' | 'client' | URL = 'client';
 	public readonly _url: URL;
 	public readonly _bodyBuffer: Buffer | null;
@@ -64,7 +65,6 @@ export default class Request implements IRequest {
 		this.method = (init?.method || (<Request>input).method || 'GET').toUpperCase();
 
 		const { stream, buffer, contentType, contentLength } = FetchBodyUtility.getBodyStream(
-			this._ownerDocument.defaultView,
 			input instanceof Request && (input._bodyBuffer || input.body)
 				? input._bodyBuffer || FetchBodyUtility.cloneRequestBodyStream(input)
 				: init?.body
@@ -79,12 +79,12 @@ export default class Request implements IRequest {
 
 		if (contentLength) {
 			this._contentLength = contentLength;
-		} else if (this.body && (this.method === 'POST' || this.method === 'PUT')) {
+		} else if (!this.body && (this.method === 'POST' || this.method === 'PUT')) {
 			this._contentLength = 0;
 		}
 
-		if (!this.headers.get('Content-Type') && contentType) {
-			this.headers.append('Content-Type', contentType);
+		if (contentType) {
+			this._contentType = contentType;
 		}
 
 		this.redirect = init?.redirect || (<Request>input).redirect || 'follow';

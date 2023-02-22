@@ -58,10 +58,7 @@ export default class Response implements IResponse {
 		this.headers = new Headers(init?.headers);
 
 		if (body) {
-			const { stream, contentType } = FetchBodyUtility.getBodyStream(
-				this._ownerDocument.defaultView,
-				body
-			);
+			const { stream, contentType } = FetchBodyUtility.getBodyStream(body);
 			this.body = stream;
 
 			if (contentType && !this.headers.has('Content-Type')) {

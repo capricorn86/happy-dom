@@ -6,7 +6,6 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import MultipartEvent from './MultipartEvent';
 import File from '../../file/File';
 import { TextDecoder } from 'util';
-import IWindow from '../../window/IWindow';
 
 /**
  * Multipart form data factory.
@@ -124,14 +123,15 @@ export default class MultipartFormDataParser {
 	/**
 	 * Converts a FormData object to a ReadableStream.
 	 *
-	 * @param window Window.
 	 * @param formData FormData.
 	 * @returns Stream and type.
 	 */
-	public static formDataToStream(
-		window: IWindow,
-		formData: FormData
-	): { contentType: string; contentLength: number; buffer: Buffer; stream: Stream.Readable } {
+	public static formDataToStream(formData: FormData): {
+		contentType: string;
+		contentLength: number;
+		buffer: Buffer;
+		stream: Stream.Readable;
+	} {
 		const boundary = '----HappyDOMFormDataBoundary' + Math.random().toString(36);
 		const chunks: Buffer[] = [];
 		const prefix = `--${boundary}\r\nContent-Disposition: form-data; name="`;
@@ -161,25 +161,12 @@ export default class MultipartFormDataParser {
 		}
 
 		const buffer = Buffer.concat(chunks);
-		const bufferIterator = buffer.entries();
 
 		return {
 			contentType: `multipart/form-data; boundary=${boundary}`,
 			contentLength: buffer.length,
 			buffer,
-			stream: new window.ReadableStream({
-				// @ts-ignore
-				type: 'bytes',
-
-				async pull(ctrl) {
-					const chunk = await bufferIterator.next();
-					chunk.done ? ctrl.close() : ctrl.enqueue(chunk.value);
-				},
-
-				async cancel() {
-					bufferIterator.return();
-				}
-			})
+			stream: Stream.Readable.from(buffer)
 		};
 	}
 

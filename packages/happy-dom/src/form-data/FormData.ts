@@ -15,7 +15,7 @@ const SUBMITTABLE_ELEMENTS = ['BUTTON', 'INPUT', 'OBJECT', 'SELECT', 'TEXTAREA']
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/FormData
  */
-export default class FormData {
+export default class FormData implements Iterable<[string, string | File]> {
 	private _entries: FormDataEntry[] = [];
 
 	/**
@@ -40,6 +40,17 @@ export default class FormData {
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * For each.
+	 *
+	 * @param callback Callback.
+	 */
+	public forEach(callback: (key: string, value: string | File, thisArg: FormData) => void): void {
+		for (const entry of this._entries) {
+			callback.call(this, entry.name, entry.value, this);
 		}
 	}
 
