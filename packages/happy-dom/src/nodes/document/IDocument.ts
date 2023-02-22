@@ -20,6 +20,7 @@ import DocumentReadyStateEnum from './DocumentReadyStateEnum';
 import INodeList from '../node/INodeList';
 import Range from '../../range/Range';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
+import VisibilityStateEnum from './VisibilityStateEnum';
 
 /**
  * Document.
@@ -41,6 +42,8 @@ export default interface IDocument extends IParentNode {
 	readonly characterSet: string;
 	readonly URL: string;
 	readonly documentURI: string;
+	readonly visibilityState: VisibilityStateEnum;
+	readonly hidden: boolean;
 	cookie: string;
 
 	// Events
