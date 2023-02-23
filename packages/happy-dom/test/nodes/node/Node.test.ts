@@ -128,7 +128,7 @@ describe('Node', () => {
 			const text1 = document.createTextNode('text1');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
-		
+
 			div.appendChild(text1);
 			div.appendChild(span1);
 			div.appendChild(text);
@@ -161,7 +161,7 @@ describe('Node', () => {
 			const text1 = document.createTextNode('text1');
 			const span1 = document.createElement('span');
 			const span2 = document.createElement('span');
-		
+
 			div.appendChild(text1);
 			div.appendChild(span1);
 			div.appendChild(text);

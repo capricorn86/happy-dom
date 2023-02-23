@@ -144,9 +144,9 @@ export default class Node extends EventTarget implements INode {
 
 	/**
 	 * Previous element sibling.
-	 * 
+	 *
 	 * @returns Element.
-	*/
+	 */
 	public get previousElementSibling(): IElement {
 		let previousSibling = this.previousSibling;
 		while (previousSibling && previousSibling.nodeType !== Node.ELEMENT_NODE) {
@@ -172,9 +172,9 @@ export default class Node extends EventTarget implements INode {
 
 	/**
 	 * Next element sibling.
-	 * 
+	 *
 	 * @returns Element.
-	*/
+	 */
 	public get nextElementSibling(): IElement {
 		let nextSibling = this.nextSibling;
 		while (nextSibling && nextSibling.nodeType !== Node.ELEMENT_NODE) {
