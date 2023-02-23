@@ -29,7 +29,9 @@ export default interface INode extends IEventTarget {
 	readonly isConnected: boolean;
 	readonly nodeName: string;
 	readonly previousSibling: INode;
+	readonly previousElementSibling: IElement;
 	readonly nextSibling: INode;
+	readonly nextElementSibling: IElement;
 	readonly firstChild: INode;
 	readonly lastChild: INode;
 	readonly baseURI: string;

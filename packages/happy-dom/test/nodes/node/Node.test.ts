@@ -121,6 +121,24 @@ describe('Node', () => {
 		});
 	});
 
+	describe('get previousElementSibling()', () => {
+		it('Returns previous element sibling.', () => {
+			const div = document.createElement('div');
+			const text = document.createTextNode('text');
+			const text1 = document.createTextNode('text1');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+		
+			div.appendChild(text1);
+			div.appendChild(span1);
+			div.appendChild(text);
+			div.appendChild(span2);
+
+			expect(span2.previousElementSibling).toBe(span1);
+			expect(span1.previousElementSibling).toBe(null);
+		});
+	});
+
 	describe('get nextSibling()', () => {
 		it('Returns next sibling.', () => {
 			const div = document.createElement('div');
@@ -133,6 +151,24 @@ describe('Node', () => {
 			div.appendChild(span2);
 
 			expect(text.nextSibling).toBe(span2);
+		});
+	});
+
+	describe('get nextElementSibling()', () => {
+		it('Returns next element sibling.', () => {
+			const div = document.createElement('div');
+			const text = document.createTextNode('text');
+			const text1 = document.createTextNode('text1');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+		
+			div.appendChild(text1);
+			div.appendChild(span1);
+			div.appendChild(text);
+			div.appendChild(span2);
+
+			expect(span1.nextElementSibling).toBe(span2);
+			expect(span2.nextElementSibling).toBe(null);
 		});
 	});
 
