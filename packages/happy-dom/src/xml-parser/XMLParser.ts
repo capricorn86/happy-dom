@@ -13,6 +13,9 @@ import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
 import PlainTextElements from '../config/PlainTextElements';
 
+const CONDITION_COMMENT_REGEXP =
+	/<!(--)?\[if (!|le|lt|lte|gt|gte|\(.*\)|&|\|| |IE|WindowsEdition|Contoso|true|false|\d+\.?(\d+)?|)*\]>/gi;
+const CONDITION_COMMENT_END_REGEXP = /<!\[endif\](--)?>/gi;
 const MARKUP_REGEXP = /<(\/?)([a-z][-.0-9_a-z]*)\s*([^<>]*?)(\/?)>/gi;
 const COMMENT_REGEXP = /<!--(.*?)-->|<([!?])([^>]*)>/gi;
 const DOCUMENT_TYPE_ATTRIBUTE_REGEXP = /"([^"]+)"/gm;
@@ -56,7 +59,29 @@ export default class XMLParser {
 					if (parentTagName && PlainTextElements.includes(parentTagName)) {
 						parent.appendChild(document.createTextNode(text));
 					} else {
-						this.appendTextAndCommentNodes(document, parent, text);
+						let condCommMatch;
+						let condCommEndMatch;
+						let needRewrite = false;
+						const condCommRegexp = new RegExp(CONDITION_COMMENT_REGEXP, 'gi');
+						const condCommEndRegexp = new RegExp(CONDITION_COMMENT_END_REGEXP, 'gi');
+						// @Refer: https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/?redirectedfrom=MSDN
+						if (isStartTag && (condCommMatch = condCommRegexp.exec(text)) && condCommMatch[0]) {
+							// Compatible with IE
+							while ((condCommEndMatch = condCommEndRegexp.exec(data))) {
+								if (condCommEndMatch[0]) {
+									needRewrite = true;
+									break;
+								} else {
+									throw new Error('conditional comments unclosed.');
+								}
+							}
+							if (needRewrite) {
+								markupRegexp.lastIndex = condCommEndRegexp.lastIndex;
+								continue; // Re parse.
+							}
+						} else {
+							this.appendTextAndCommentNodes(document, parent, text);
+						}
 					}
 				}
 

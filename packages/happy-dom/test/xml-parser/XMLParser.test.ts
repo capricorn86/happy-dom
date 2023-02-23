@@ -410,5 +410,37 @@ describe('XMLParser', () => {
 			const root4 = XMLParser.parse(window.document, <string>(<unknown>false));
 			expect(new XMLSerializer().serializeToString(root4)).toBe('false');
 		});
+
+		it('Parses conditional comments', () => {
+			const testHTML = [
+				'<!--[if IE 8]>\n' + '<p>Welcome to Internet Explorer 8.</p>\n' + '<![endif]-->',
+
+				'<!--[if gte IE 7]>\n' +
+					'<script>\n' +
+					'  alert("Congratulations! You are running Internet Explorer 7 or a later version of Internet Explorer.");\n' +
+					'</script>\n' +
+					'<p>Thank you for closing the message box.</p>\n' +
+					'<![endif]-->',
+
+				'<!--[if IE 5]>\n' +
+					'<p>Welcome to any incremental version of Internet Explorer 5!</p>\n' +
+					'<![endif]-->',
+
+				'<!--[if IE 5.0000]>\n' + '<p>Welcome to Internet Explorer 5.0!</p>\n' + '<![endif]-->',
+
+				'<!--[if WindowsEdition 1]>\n' +
+					'<p>You are using Windows Ultimate Edition.</p>\n' +
+					'<![endif]-->',
+
+				'<!--[if lt Contoso 2]>\n' +
+					'<p>Your version of the Contoso control is out of date; Please update to the latest.</p>\n' +
+					'<![endif]-->'
+			];
+
+			for (const html of testHTML) {
+				const root = XMLParser.parse(window.document, html);
+				expect(new XMLSerializer().serializeToString(root)).toBe(html);
+			}
+		});
 	});
 });
