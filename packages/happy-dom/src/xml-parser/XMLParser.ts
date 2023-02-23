@@ -61,24 +61,18 @@ export default class XMLParser {
 					} else {
 						let condCommMatch;
 						let condCommEndMatch;
-						let needRewrite = false;
 						const condCommRegexp = new RegExp(CONDITION_COMMENT_REGEXP, 'gi');
 						const condCommEndRegexp = new RegExp(CONDITION_COMMENT_END_REGEXP, 'gi');
 						// @Refer: https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/?redirectedfrom=MSDN
-						if (isStartTag && (condCommMatch = condCommRegexp.exec(text)) && condCommMatch[0]) {
-							// Compatible with IE
-							while ((condCommEndMatch = condCommEndRegexp.exec(data))) {
-								if (condCommEndMatch[0]) {
-									needRewrite = true;
-									break;
-								} else {
-									throw new Error('conditional comments unclosed.');
-								}
-							}
-							if (needRewrite) {
-								markupRegexp.lastIndex = condCommEndRegexp.lastIndex;
-								continue; // Re parse.
-							}
+						if (
+							isStartTag &&
+							(condCommMatch = condCommRegexp.exec(text)) &&
+							condCommMatch[0] &&
+							(condCommEndMatch = condCommEndRegexp.exec(data)) &&
+							condCommEndMatch[0]
+						) {
+							markupRegexp.lastIndex = condCommEndRegexp.lastIndex;
+							continue;
 						} else {
 							this.appendTextAndCommentNodes(document, parent, text);
 						}
