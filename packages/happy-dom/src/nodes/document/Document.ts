@@ -227,6 +227,34 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns title.
+	 *
+	 * @returns Title.
+	 */
+	public get title(): string {
+		const el = this.querySelector('title');
+		if (el) {
+			return el.textContent;
+		}
+		return '';
+	}
+
+	/**
+	 * Returns set title.
+	 *
+	 */
+	public set title(title: string) {
+		const el = this.querySelector('title');
+		if (el) {
+			el.textContent = title;
+		} else {
+			const titleEl = this.createElement('title');
+			titleEl.textContent = title;
+			this.head.appendChild(titleEl);
+		}
+	}
+
+	/**
 	 * Last element child.
 	 *
 	 * @returns Element.

@@ -228,6 +228,20 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get title() and set title()', () => {
+		it('Returns and sets title.', () => {
+			document.title = 'test title';
+			expect(document.title).toBe('test title');
+			const title = document.head.querySelector('title');
+			expect(title.textContent).toBe('test title');
+			document.title = 'new title';
+			expect(document.title).toBe('new title');
+			expect(title.textContent).toBe('new title');
+			title.textContent = 'new title 2';
+			expect(document.title).toBe('new title 2');
+		});
+	});
+
 	describe('get body()', () => {
 		it('Returns <body> element.', () => {
 			expect(document.body === document.children[0].children[1]).toBe(true);

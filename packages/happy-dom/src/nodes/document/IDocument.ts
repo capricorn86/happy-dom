@@ -42,6 +42,7 @@ export default interface IDocument extends IParentNode {
 	readonly URL: string;
 	readonly documentURI: string;
 	cookie: string;
+	title: string;
 
 	// Events
 	onreadystatechange: (event: Event) => void;
