@@ -434,7 +434,28 @@ describe('XMLParser', () => {
 
 				'<!--[if lt Contoso 2]>\n' +
 					'<p>Your version of the Contoso control is out of date; Please update to the latest.</p>\n' +
-					'<![endif]-->'
+					'<![endif]-->',
+
+				'<!DOCTYPE html><html lang="en">\n' +
+				'<head>\n' +
+				'    <meta charset="UTF-8">\n' +
+				'    <title>Title</title>\n' +
+				'</head>\n' +
+				'<body>\n' +
+				'<!--[if lt IE 9]>\n' +
+				'<script>window.location = \'browser.htm\';</script>\n' +
+				'<![endif]-->\n' +
+				'\n' +
+				'\n' +
+				'<script>\n' +
+				'    const node = document.createElement(\'a\');\n' +
+				'    node.href = \'http://www.google.com\';\n' +
+				'    node.target = \'_blank\';\n' +
+				'    node.innerHTML = \'google\';\n' +
+				'    window.document.body.appendChild(node);\n' +
+				'</script>\n' +
+				'</body>\n' +
+				'</html>\n'
 			];
 
 			for (const html of testHTML) {

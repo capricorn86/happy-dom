@@ -68,10 +68,10 @@ export default class XMLParser {
 							isStartTag &&
 							(condCommMatch = condCommRegexp.exec(text)) &&
 							condCommMatch[0] &&
-							(condCommEndMatch = condCommEndRegexp.exec(data)) &&
+							(condCommEndMatch = condCommEndRegexp.exec(data.substring(markupRegexp.lastIndex))) &&
 							condCommEndMatch[0]
 						) {
-							markupRegexp.lastIndex = condCommEndRegexp.lastIndex;
+							markupRegexp.lastIndex += condCommEndRegexp.lastIndex;
 							continue;
 						} else {
 							this.appendTextAndCommentNodes(document, parent, text);
