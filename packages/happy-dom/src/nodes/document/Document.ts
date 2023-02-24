@@ -43,6 +43,7 @@ import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
 import IAttr from '../attr/IAttr';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
 import ProcessingInstruction from '../processing-instruction/ProcessingInstruction';
+import VisibilityStateEnum from './VisibilityStateEnum';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -421,6 +422,32 @@ export default class Document extends Node implements IDocument {
 	 * */
 	public get documentURI(): string {
 		return this.URL;
+	}
+
+	/**
+	 * Returns document visibility state.
+	 *
+	 * @returns the visibility state of the current document.
+	 * */
+	public get visibilityState(): VisibilityStateEnum {
+		if (this.defaultView) {
+			return VisibilityStateEnum.visible;
+		}
+
+		return VisibilityStateEnum.hidden;
+	}
+
+	/**
+	 * Returns document hidden state.
+	 *
+	 * @returns the hidden state of the current document.
+	 * */
+	public get hidden(): boolean {
+		if (this.defaultView) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
