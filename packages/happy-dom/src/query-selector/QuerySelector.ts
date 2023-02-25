@@ -285,7 +285,17 @@ export default class QuerySelector {
 		}
 
 		if (parts.length > 0) {
-			groups.push(parts);
+			// Handle special pseudo-class selectors, such as: nth-child(2n + 1)
+			const newParts = [];
+			for (let i = 0; i < parts.length; i++) {
+				if (parts[i].includes('(') && parts[i + 1] === '+' && parts[i + 2].includes(')')) {
+					newParts.push(parts[i] + parts[i + 1] + parts[i + 2]);
+					i += 2;
+				} else {
+					newParts.push(parts[i]);
+				}
+			}
+			groups.push(newParts);
 		}
 
 		return groups;
