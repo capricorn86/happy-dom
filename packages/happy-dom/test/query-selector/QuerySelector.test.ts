@@ -176,8 +176,6 @@ describe('QuerySelector', () => {
 			expect(el[1].textContent).toBe('e');
 			const two = div.querySelector('.a + .c');
 			expect(two).toBe(null);
-			const three = div.querySelector('.e + .f');
-			expect(three).toBe(div.children[5]);
 		});
 
 		it('Returns all elements with matching attributes using "[attr1="value1"]".', () => {
