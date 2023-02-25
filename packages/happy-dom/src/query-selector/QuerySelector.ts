@@ -6,7 +6,7 @@ import INodeList from '../nodes/node/INodeList';
 import SelectorItem from './SelectorItem';
 import NodeListFactory from '../nodes/node/NodeListFactory';
 
-const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#"*:()\]]+)|([ ,>]+)/g;
+const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#"*:()\]]+)|([ ,>+]+)/g;
 
 /**
  * Utility for query selection in an HTML element.
@@ -141,13 +141,15 @@ export default class QuerySelector {
 		selectorItem?: SelectorItem
 	): IElement[] {
 		const isDirectChild = selectorParts[0] === '>';
-		if (isDirectChild) {
+		const isNextSibling = selectorParts[0] === '+';
+		if (isDirectChild || isNextSibling) {
 			selectorParts = selectorParts.slice(1);
 		}
 		const selector = selectorItem || new SelectorItem(selectorParts[0]);
 		let matched = [];
 
-		for (const node of nodes) {
+		for (let i = 0; i < nodes.length; i++) {
+			const node = nodes[i];
 			if (node.nodeType === Node.ELEMENT_NODE) {
 				if (selector.match(<Element>node).matches) {
 					if (selectorParts.length === 1) {
@@ -158,11 +160,16 @@ export default class QuerySelector {
 						matched = matched.concat(
 							this.findAll(rootNode, (<Element>node).children, selectorParts.slice(1), null)
 						);
+						if (nodes[i + 1]) {
+							matched = matched.concat(
+								this.findAll(rootNode, [nodes[i + 1]], selectorParts.slice(1), null)
+							);
+						}
 					}
 				}
 			}
 
-			if (!isDirectChild && node['children']) {
+			if (!isDirectChild && !isNextSibling && node['children']) {
 				matched = matched.concat(this.findAll(rootNode, node['children'], selectorParts, selector));
 			}
 		}
@@ -187,12 +194,14 @@ export default class QuerySelector {
 		selectorItem?: SelectorItem
 	): IElement {
 		const isDirectChild = selectorParts[0] === '>';
-		if (isDirectChild) {
+		const isNextSibling = selectorParts[0] === '+';
+		if (isDirectChild || isNextSibling) {
 			selectorParts = selectorParts.slice(1);
 		}
 		const selector = selectorItem || new SelectorItem(selectorParts[0]);
 
-		for (const node of nodes) {
+		for (let i = 0; i < nodes.length; i++) {
+			const node = nodes[i];
 			if (node.nodeType === Node.ELEMENT_NODE && selector.match(<Element>node).matches) {
 				if (selectorParts.length === 1) {
 					if (rootNode !== node) {
@@ -208,10 +217,21 @@ export default class QuerySelector {
 					if (childSelector) {
 						return childSelector;
 					}
+					if (nodes[i + 1]) {
+						const siblingSelector = this.findFirst(
+							rootNode,
+							[nodes[i + 1]],
+							selectorParts.slice(1),
+							null
+						);
+						if (siblingSelector) {
+							return siblingSelector;
+						}
+					}
 				}
 			}
 
-			if (!isDirectChild && node['children']) {
+			if (!isDirectChild && !isNextSibling && node['children']) {
 				const childSelector = this.findFirst(rootNode, node['children'], selectorParts, selector);
 
 				if (childSelector) {
@@ -252,6 +272,8 @@ export default class QuerySelector {
 					parts = [];
 				} else if (trimmed === '>') {
 					parts.push('>');
+				} else if (trimmed === '+') {
+					parts.push('+');
 				}
 			} else if (match[1]) {
 				currentSelector += match[1];
