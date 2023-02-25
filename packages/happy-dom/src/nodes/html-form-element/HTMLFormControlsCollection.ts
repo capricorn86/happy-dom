@@ -23,7 +23,7 @@ export default class HTMLFormControlsCollection
 	>
 	implements IHTMLFormControlsCollection
 {
-	protected _namedItems: { [k: string]: RadioNodeList } = {};
+	public _namedItems: { [k: string]: RadioNodeList } = {};
 
 	/**
 	 * Appends named item.

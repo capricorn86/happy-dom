@@ -83,24 +83,6 @@ describe('Fetch', () => {
 			);
 		});
 
-		it('Rejects with error on network failure.', async () => {
-			const url = 'http://localhost:8080/some/path';
-			let error: Error = null;
-
-			try {
-				await window.fetch(url);
-			} catch (e) {
-				error = e;
-			}
-
-			expect(error).toEqual(
-				new DOMException(
-					`Fetch to "http://localhost:8080/some/path" failed. Error: connect ECONNREFUSED ::1:8080`,
-					DOMExceptionNameEnum.networkError
-				)
-			);
-		});
-
 		it('Performs a basic plain text HTTPS GET request.', async () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
@@ -1422,6 +1404,21 @@ describe('Fetch', () => {
 		it(`Handles network error response.`, async () => {
 			const url = 'https://localhost:8080/some/path';
 			let error: Error | null = null;
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: Error) => void) => {
+							if (event === 'error') {
+								callback(new Error('connect ECONNREFUSED ::1:8080'));
+							}
+						},
+						setTimeout: () => {},
+						destroy: () => {}
+					};
+				}
+			});
 
 			try {
 				await window.fetch(url);

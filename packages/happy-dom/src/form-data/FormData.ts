@@ -2,6 +2,10 @@ import Blob from '../file/Blob';
 import File from '../file/File';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
 import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement';
+import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection';
+import IHTMLTextAreaElement from '../nodes/html-text-area-element/IHTMLTextAreaElement';
+import IHTMLSelectElement from '../nodes/html-select-element/IHTMLSelectElement';
+import IHTMLButtonElement from '../nodes/html-button-element/IHTMLButtonElement';
 
 type FormDataEntry = {
 	name: string;
@@ -25,7 +29,22 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 */
 	constructor(form?: IHTMLFormElement) {
 		if (form) {
-			for (const element of form.elements) {
+			for (const name of Object.keys((<HTMLFormControlsCollection>form.elements)._namedItems)) {
+				const radioNodeList = (<HTMLFormControlsCollection>form.elements)._namedItems[name];
+				let element:
+					| IHTMLInputElement
+					| IHTMLTextAreaElement
+					| IHTMLSelectElement
+					| IHTMLButtonElement = radioNodeList[0];
+
+				if (radioNodeList.length > 1) {
+					for (const radioNode of radioNodeList) {
+						if (radioNode.checked) {
+							element = radioNode;
+						}
+					}
+				}
+
 				if (element.name && SUBMITTABLE_ELEMENTS.includes(element.tagName)) {
 					if (element.tagName === 'INPUT' && element.type === 'file') {
 						if ((<IHTMLInputElement>element).files.length === 0) {
@@ -203,10 +222,13 @@ export default class FormData implements Iterable<[string, string | File]> {
 			return file;
 		}
 
-		if (value instanceof File && filename) {
-			const file = new File([], filename, { type: value.type, lastModified: value.lastModified });
-			file._buffer = value._buffer;
-			return file;
+		if (value instanceof File) {
+			if(filename) {
+				const file = new File([], filename, { type: value.type, lastModified: value.lastModified });
+				file._buffer = value._buffer;
+				return file;
+			}
+			return value;
 		}
 
 		return String(value);

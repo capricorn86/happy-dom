@@ -67,4 +67,186 @@ describe('FormData', () => {
 			expect(formData.getAll('checkboxInput')).toEqual(['checkbox value 2']);
 		});
 	});
+
+	describe('forEach()', () => {
+		it('Calls callback for each entity.', () => {
+			const formData = new window.FormData();
+			formData.set('key1', 'value1');
+			formData.set('key2', 'value2');
+			const values = [];
+
+			formData.forEach((key, value) => values.push({ key, value }));
+
+			expect(values).toEqual([
+				{ key: 'key1', value: 'value1' },
+				{ key: 'key2', value: 'value2' }
+			]);
+		});
+	});
+
+	describe('append()', () => {
+		it('Appends a value.', () => {
+			const formData = new window.FormData();
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+
+			expect(formData.getAll('key1')).toEqual(['value1', 'value2']);
+		});
+	});
+
+	describe('delete()', () => {
+		it('Removes all keys matching name.', () => {
+			const formData = new window.FormData();
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+			formData.append('key2', 'value3');
+			formData.append('key3', 'value4');
+
+			formData.delete('key1');
+
+			expect(formData.getAll('key1')).toEqual([]);
+			expect(formData.getAll('key2')).toEqual(['value3']);
+			expect(formData.getAll('key3')).toEqual(['value4']);
+		});
+	});
+
+	describe('get()', () => {
+		it('Returns value of first matching entity.', () => {
+			const formData = new window.FormData();
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+			formData.append('key2', 'value3');
+
+			expect(formData.get('key1')).toBe('value1');
+			expect(formData.get('key2')).toBe('value3');
+		});
+	});
+
+	describe('getAll()', () => {
+		it('Returns the value of all entities matching a key.', () => {
+			const formData = new window.FormData();
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+			formData.append('key2', 'value3');
+			formData.append('key3', 'value4');
+
+			expect(formData.getAll('key1')).toEqual(['value1', 'value2']);
+			expect(formData.getAll('key2')).toEqual(['value3']);
+			expect(formData.getAll('key3')).toEqual(['value4']);
+		});
+	});
+
+	describe('has()', () => {
+		it('Returns "true" if an entity matching given key exists.', () => {
+			const formData = new window.FormData();
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+			formData.append('key2', 'value3');
+			formData.append('key3', 'value4');
+
+			expect(formData.has('key1')).toBe(true);
+			expect(formData.has('key2')).toBe(true);
+			expect(formData.has('key3')).toBe(true);
+		});
+	});
+
+	describe('has()', () => {
+		it('Sets a key and value overwriting any existing entity with the same key.', () => {
+			const formData = new window.FormData();
+
+			formData.set('key1', 'value1');
+			formData.set('key1', 'value2');
+			formData.set('key2', 'value3');
+
+			expect(formData.getAll('key1')).toEqual(['value2']);
+			expect(formData.getAll('key2')).toEqual(['value3']);
+		});
+	});
+
+	describe('keys()', () => {
+		it('Returns iterator for keys.', () => {
+			const formData = new window.FormData();
+			const keys = []
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+			formData.append('key2', 'value3');
+			formData.append('key3', 'value4');
+
+			for(const key of formData.keys()) {
+				keys.push(key);
+			}
+
+			expect(keys).toEqual(['key1', 'key1', 'key2', 'key3']);
+		});
+	});
+
+	describe('values()', () => {
+		it('Returns iterator for values.', () => {
+			const formData = new window.FormData();
+			const values = []
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+			formData.append('key2', 'value3');
+			formData.append('key3', 'value4');
+
+			for(const value of formData.values()) {
+				values.push(value);
+			}
+
+			expect(values).toEqual(['value1', 'value2', 'value3', 'value4']);
+		});
+	});
+
+	describe('entries()', () => {
+		it('Returns iterator for entries.', () => {
+			const formData = new window.FormData();
+			const entries = []
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+			formData.append('key2', 'value3');
+			formData.append('key3', 'value4');
+
+			for(const [key, value] of formData.entries()) {
+				entries.push({ key, value});
+			}
+
+			expect(entries).toEqual([
+				{ key: 'key1', value: 'value1' },
+				{ key: 'key1', value: 'value2' },
+				{ key: 'key2', value: 'value3' },
+				{ key: 'key3', value: 'value4' },
+			]);
+		});
+	});
+
+	describe('*[Symbol.iterator]()', () => {
+		it('Returns iterator for entries.', () => {
+			const formData = new window.FormData();
+			const entries = []
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+			formData.append('key2', 'value3');
+			formData.append('key3', 'value4');
+
+			for(const [key, value] of formData) {
+				entries.push({ key, value});
+			}
+
+			expect(entries).toEqual([
+				{ key: 'key1', value: 'value1' },
+				{ key: 'key1', value: 'value2' },
+				{ key: 'key2', value: 'value3' },
+				{ key: 'key3', value: 'value4' },
+			]);
+		});
+	});
 });
