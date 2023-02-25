@@ -45,6 +45,7 @@ export default interface IDocument extends IParentNode {
 	readonly visibilityState: VisibilityStateEnum;
 	readonly hidden: boolean;
 	cookie: string;
+	title: string;
 
 	// Events
 	onreadystatechange: (event: Event) => void;
