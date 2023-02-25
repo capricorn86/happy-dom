@@ -597,6 +597,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		if (error) {
 			this._onError(error);
+			return;
 		}
 
 		if (response) {
@@ -844,6 +845,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			data = await FS.promises.readFile(decodeURI(url.pathname.slice(1)));
 		} catch (error) {
 			this._onError(error);
+			// Release async task.
+			this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._state.asyncTaskID);
+			return;
 		}
 
 		const dataLength = data.length;
@@ -877,9 +881,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			data = FS.readFileSync(decodeURI(url.pathname.slice(1)));
 		} catch (error) {
 			this._onError(error);
+			return;
 		}
+
 		// @TODO: set state headersRecieved first.
 		this._setState(XMLHttpRequestReadyStateEnum.loading);
+
 		if (data) {
 			this._parseLocalRequestData(url, data);
 		}
