@@ -233,6 +233,9 @@ export default class Node extends EventTarget implements INode {
 	 * @returns "true" if this node contains the other node.
 	 */
 	public contains(otherNode: INode): boolean {
+		if (this === otherNode) {
+			return true;
+		}
 		for (const childNode of this.childNodes) {
 			if (childNode === otherNode || childNode.contains(otherNode)) {
 				return true;
