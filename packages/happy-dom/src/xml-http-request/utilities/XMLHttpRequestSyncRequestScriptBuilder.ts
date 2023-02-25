@@ -23,7 +23,6 @@ export default class XMLHttpRequestSyncRequestScriptBuilder {
                 const request = sendRequest(options, (response) => {
                     let responseText = '';
                     let responseData = Buffer.alloc(0);
-                    response.setEncoding('utf8');
                     response.on('data', (chunk) => {
                         responseText += chunk;
                         responseData = Buffer.concat([responseData, Buffer.from(chunk)]);
