@@ -73,7 +73,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	// Private properties
 	private readonly _ownerDocument: IDocument = null;
 	private _state: {
-		incommingMessage: HTTP.IncomingMessage | { headers: string[]; statusCode: number };
+		incommingMessage: HTTP.IncomingMessage | { headers: object; statusCode: number };
 		response: ArrayBuffer | Blob | IDocument | object | string;
 		responseType: XMLHttpResponseTypeEnum | '';
 		responseText: string;
@@ -144,6 +144,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public get statusText(): string {
 		return this._state.statusText;
+	}
+
+	/**
+	 * Returns the response.
+	 *
+	 * @returns Response.
+	 */
+	public get response(): ArrayBuffer | Blob | IDocument | object | string {
+		return this._state.response;
 	}
 
 	/**
@@ -597,7 +606,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			};
 			this._state.status = response.statusCode;
 			this._state.statusText = response.statusMessage;
+			// Although it will immediately be set to loading,
+			// According to the spec, the state should be headersRecieved first.
+			this._setState(XMLHttpRequestReadyStateEnum.headersRecieved);
 			// Sync responseType === ''
+			this._setState(XMLHttpRequestReadyStateEnum.loading);
 			this._state.response = this._decodeResponseText(Buffer.from(response.data, 'base64'));
 			this._state.responseText = this._state.response;
 			this._state.responseXML = null;
@@ -758,9 +771,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				return;
 			}
 
-			this._setState(XMLHttpRequestReadyStateEnum.headersRecieved);
 			this._state.status = this._state.incommingMessage.statusCode;
 			this._state.statusText = this._state.incommingMessage.statusMessage;
+			this._setState(XMLHttpRequestReadyStateEnum.headersRecieved);
 
 			// Initialize response.
 			let tempResponse = Buffer.from(new Uint8Array(0));
@@ -835,6 +848,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		const dataLength = data.length;
 
+		// @TODO: set state headersRecieved first.
 		this._setState(XMLHttpRequestReadyStateEnum.loading);
 		this.dispatchEvent(
 			new ProgressEvent('progress', {
@@ -845,9 +859,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		);
 
 		if (data) {
-			this._parseLocalRequestData(data);
+			this._parseLocalRequestData(url, data);
 		}
 
+		this._setState(XMLHttpRequestReadyStateEnum.done);
 		this._ownerDocument.defaultView.happyDOM.asyncTaskManager.endTask(this._state.asyncTaskID);
 	}
 
@@ -863,19 +878,33 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		} catch (error) {
 			this._onError(error);
 		}
-
+		// @TODO: set state headersRecieved first.
+		this._setState(XMLHttpRequestReadyStateEnum.loading);
 		if (data) {
-			this._parseLocalRequestData(data);
+			this._parseLocalRequestData(url, data);
 		}
+
+		this._setState(XMLHttpRequestReadyStateEnum.done);
 	}
 
 	/**
 	 * Parses local request data.
 	 *
+	 * @param url URL.
 	 * @param data Data.
 	 */
-	private _parseLocalRequestData(data: Buffer): void {
-		this._state.status = 200;
+	private _parseLocalRequestData(url: UrlObject, data: Buffer): void {
+		// Manually set the response headers.
+		this._state.incommingMessage = {
+			statusCode: 200,
+			headers: {
+				'content-length': data.length,
+				'content-type': XMLHttpRequestURLUtility.getMimeTypeFromExt(url)
+				// @TODO: 'last-modified':
+			}
+		};
+
+		this._state.status = this._state.incommingMessage.statusCode;
 		this._state.statusText = 'OK';
 
 		const { response, responseXML, responseText } = this._parseResponseData(data);
@@ -941,7 +970,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				const domParser = new window.DOMParser();
 
 				try {
-					response = domParser.parseFromString(data.toString(), 'text/xml');
+					response = domParser.parseFromString(this._decodeResponseText(data), 'text/xml');
 				} catch (e) {
 					return { response: null, responseText: null, responseXML: null };
 				}
@@ -975,9 +1004,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	/**
 	 * Set Cookies from response headers.
 	 *
-	 * @param headers String array.
+	 * @param headers Headers.
 	 */
-	private _setCookies(headers: string[] | HTTP.IncomingHttpHeaders): void {
+	private _setCookies(headers: object | HTTP.IncomingHttpHeaders): void {
 		for (const cookie of [...(headers['set-cookie'] ?? []), ...(headers['set-cookie2'] ?? [])]) {
 			this._ownerDocument.defaultView.document._cookie.setCookiesString(cookie);
 		}
@@ -1004,14 +1033,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 **/
 	private _decodeResponseText(data: Buffer): string {
 		const contextTypeEncodingRegexp = new RegExp(CONTENT_TYPE_ENCODING_REGEXP, 'gi');
-		let contentType;
-		if (this._state.incommingMessage && this._state.incommingMessage.headers) {
-			contentType = this._state.incommingMessage.headers['content-type']; // For remote requests (http/https).
-		} else {
-			contentType = this._state.requestHeaders['content-type']; // For local requests or unpredictable remote requests.
-		}
+		// Compatibility with file:// protocol or unpredictable http request.
+		const contentType =
+			this.getResponseHeader('content-type') ?? this._state.requestHeaders['content-type'];
 		const charset = contextTypeEncodingRegexp.exec(contentType);
-		// Default utf-8
+		// Default encoding: utf-8.
 		return iconv.decode(data, charset ? charset[1] : 'utf-8');
 	}
 }
