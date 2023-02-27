@@ -5,6 +5,7 @@ import MutationListener from '../../mutation-observer/MutationListener';
 import Event from '../../event/Event';
 import INode from './INode';
 import DOMException from '../../exception/DOMException';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
@@ -301,6 +302,16 @@ export default class Node extends EventTarget implements INode {
 	public appendChild(node: INode): INode {
 		if (node === this) {
 			throw new DOMException('Not possible to append a node as a child of itself.');
+		}
+		let parent = this.parentNode;
+		while (parent) {
+			if (parent === node) {
+				throw new DOMException(
+					"Failed to execute 'appendChild' on 'Node': The new child element contains the parent.",
+					DOMExceptionNameEnum.domException
+				);
+			}
+			parent = parent.parentNode;
 		}
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.

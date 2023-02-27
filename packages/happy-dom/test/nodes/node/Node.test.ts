@@ -2,6 +2,8 @@ import Window from '../../../src/window/Window';
 import Node from '../../../src/nodes/node/Node';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
 import Event from '../../../src/event/Event';
+import DOMException from '../../../src/exception/DOMException';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
 
 /**
  *
@@ -415,6 +417,22 @@ describe('Node', () => {
 
 			expect(clone.childNodes).toEqual([]);
 			expect(div.innerHTML).toBe('<div>Div</div><span>Span</span>');
+		});
+
+		it('Throws an error if the append node is the parentNode of the current node.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('div');
+			parent.appendChild(child);
+			try {
+				child.appendChild(parent);
+			} catch (error) {
+				expect(error).toEqual(
+					new DOMException(
+						"Failed to execute 'appendChild' on 'Node': The new child element contains the parent.",
+						DOMExceptionNameEnum.domException
+					)
+				);
+			}
 		});
 	});
 
