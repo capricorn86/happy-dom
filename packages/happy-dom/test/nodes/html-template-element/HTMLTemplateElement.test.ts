@@ -235,4 +235,21 @@ describe('HTMLTemplateElement', () => {
 			expect(clone.innerHTML).toBe('<div></div><b></b><span></span>');
 		});
 	});
+
+	describe('after()', () => {
+		it('Inserts a node after the template.', () => {
+			document.append(element);
+			const div = document.createElement('div');
+			element.after(div);
+			expect(element.nextSibling).toBe(div);
+		});
+	});
+	describe('before()', () => {
+		it('Inserts a node before the template.', () => {
+			document.append(element);
+			const div = document.createElement('div');
+			element.before(div);
+			expect(element.previousSibling).toBe(div);
+		});
+	});
 });
