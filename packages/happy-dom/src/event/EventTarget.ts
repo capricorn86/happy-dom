@@ -29,7 +29,9 @@ export default abstract class EventTarget implements IEventTarget {
 	): void {
 		this._listeners[type] = this._listeners[type] || [];
 		this._listenerOptions[type] = this._listenerOptions[type] || [];
-
+		if (this._listeners[type].includes(listener)) {
+			return;
+		}
 		this._listeners[type].push(listener);
 		this._listenerOptions[type].push(options || null);
 	}
@@ -85,6 +87,8 @@ export default abstract class EventTarget implements IEventTarget {
 
 				if (options?.once) {
 					this.removeEventListener(event.type, listener);
+					i--;
+					max--;
 				}
 
 				if (event._immediatePropagationStopped) {
