@@ -4,7 +4,6 @@ import IWindow from '../../src/window/IWindow';
 import IDocument from '../../src/nodes/document/IDocument';
 import Node from '../../src/nodes/node/Node';
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
-import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTemplateElement';
 import XMLParserHTML from './data/XMLParserHTML';
 import NamespaceURI from '../../src/config/NamespaceURI';
 import DocumentType from '../../src/nodes/document-type/DocumentType';
@@ -185,14 +184,13 @@ describe('XMLParser', () => {
 			);
 		});
 
-		it('Does not parse the content of script, style and template elements.', () => {
+		it('Does not parse the content of script and style elements.', () => {
 			const root = XMLParser.parse(
 				window.document,
 				`<div>
 					<script>if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}</script>
 					<script><b></b></script>
 					<style><b></b></style>
-					<template><b></b></template>
 				</div>`
 			);
 
@@ -202,16 +200,12 @@ describe('XMLParser', () => {
 
 			expect((<IHTMLElement>root.children[0].children[1]).innerText).toBe('<b></b>');
 			expect((<IHTMLElement>root.children[0].children[2]).innerText).toBe('<b></b>');
-			expect((<IHTMLTemplateElement>root.children[0].children[3]).content.textContent).toBe(
-				'<b></b>'
-			);
 
 			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
 				`<div>
 					<script>if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}</script>
 					<script><b></b></script>
 					<style><b></b></style>
-					<template><b></b></template>
 				</div>`.replace(/[\s]/gm, '')
 			);
 
@@ -247,7 +241,7 @@ describe('XMLParser', () => {
 					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
 						<circle cx="50" cy="50" r="40" />
 						<circle cx="150" cy="50" r="4" />
-					
+
 						<svg viewBox="0 0 10 10" x="200" width="100">
 							<circle cx="5" cy="5" r="4" />
 						</svg>
@@ -329,7 +323,7 @@ describe('XMLParser', () => {
 					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
 						<circle cx="50" cy="50" r="40"></circle>
 						<circle cx="150" cy="50" r="4"></circle>
-					
+
 						<svg viewBox="0 0 10 10" x="200" width="100">
 							<circle cx="5" cy="5" r="4"></circle>
 						</svg>
@@ -354,7 +348,7 @@ describe('XMLParser', () => {
 						<stop cx="50" cy="50" r="40" />
 						<use cx="50" cy="50" r="40" />
 						<circle cx="150" cy="50" r="4"><test></test></circle>
-					
+
 						<svg viewBox="0 0 10 10" x="200" width="100">
 							<circle cx="5" cy="5" r="4" />
 						</svg>
@@ -376,7 +370,7 @@ describe('XMLParser', () => {
 						<stop cx="50" cy="50" r="40"></stop>
 						<use cx="50" cy="50" r="40"></use>
 						<circle cx="150" cy="50" r="4"><test></test></circle>
-					
+
 						<svg viewBox="0 0 10 10" x="200" width="100">
 							<circle cx="5" cy="5" r="4"></circle>
 						</svg>

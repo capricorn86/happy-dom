@@ -233,7 +233,7 @@ describe('HTMLTemplateElement', () => {
 			document.body.innerHTML = '<template><div></div><b></b><span></span></template>';
 			element = <HTMLTemplateElement>document.body.firstElementChild;
 			const clone = element.content.cloneNode(true);
-			expect(clone.children.map((node) => node.tagName)).toBe(['DIV', 'B', 'SPAN']);
+			expect(clone.children.map((node) => node.tagName)).toStrictEqual(['DIV', 'B', 'SPAN']);
 		});
 	});
 });
