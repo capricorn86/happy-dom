@@ -230,9 +230,10 @@ describe('HTMLTemplateElement', () => {
 
 	describe('cloneNode()', () => {
 		it('Clones the nodes of the "content" node.', () => {
-			element.innerHTML = '<div></div><b></b><span></span>';
-			const clone = element.cloneNode(true);
-			expect(clone.innerHTML).toBe('<div></div><b></b><span></span>');
+			document.body.innerHTML = '<template><div></div><b></b><span></span></template>';
+			element = <HTMLTemplateElement>document.body.firstElementChild;
+			const clone = element.content.cloneNode(true);
+			expect(clone.children.map((node) => node.tagName)).toBe(['DIV', 'B', 'SPAN']);
 		});
 	});
 });
