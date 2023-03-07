@@ -37,11 +37,13 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Element.
 	 */
 	public get ownerSVGElement(): ISVGSVGElement {
-		const parent = this.parentNode;
+		let parent = this.parentNode;
 		while (parent) {
 			if (parent['tagName'] === 'SVG') {
 				return <ISVGSVGElement>parent;
 			}
+
+			parent = parent.parentNode;
 		}
 		return null;
 	}
