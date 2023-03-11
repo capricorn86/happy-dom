@@ -1,6 +1,0 @@
-{
-	"hooks": {
-		"pre-commit": "npm run lint:fix",
-		"commit-msg": "node ./bin/husky-commit-message.js --filepath=$HUSKY_GIT_PARAMS%HUSKY_GIT_PARAMS%"
-	}
-}
