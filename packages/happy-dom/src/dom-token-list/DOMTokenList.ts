@@ -1,4 +1,3 @@
-import DOMException from '../exception/DOMException';
 import Element from '../nodes/element/Element';
 import IDOMTokenList from './IDOMTokenList';
 
@@ -72,14 +71,10 @@ export default class DOMTokenList implements IDOMTokenList {
 	/**
 	 * Supports.
 	 *
-	 * @param token Token.
+	 * @param _token Token.
 	 */
-	public supports(token: string): boolean {
-		// TODO: Only implemented for classList, which does not have any supported tokens
-		throw new DOMException(
-			`Failed to execute '${token}' on 'DOMTokenList': DOMTokenList has no supported tokens.`,
-			'TypeError'
-		);
+	public supports(_token: string): boolean {
+		return false;
 	}
 
 	/**
