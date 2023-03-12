@@ -128,6 +128,20 @@ describe('Element', () => {
 			div.appendChild(textNode1);
 			expect(element.textContent).toBe('text1text2');
 		});
+
+		it('Converts specifial characters to HTML entities.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div>&gt;</div>';
+			expect(div.textContent).toBe('>');
+			const el = document.createElement('div');
+			el.innerHTML = '<div id="testnode">&gt;howdy</div>';
+			expect(el.textContent).toBe('>howdy');
+			div.appendChild(el);
+			expect(div.textContent).toBe('>>howdy');
+			const el2 = document.createElement('div');
+			el2.innerHTML = '<div id="testnode">&gt;&lt;&amp;&quot;&apos;&nbsp;&nbsp;</div>';
+			expect(el2.textContent).toBe('><&"\'  ');
+		});
 	});
 
 	describe('set textContent()', () => {

@@ -30,6 +30,7 @@ import IAttr from '../attr/IAttr';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap';
 
 import Event from '../../event/Event';
+import { escapeHTML } from '../character-data/CharacterData';
 
 /**
  * Element.
@@ -188,7 +189,7 @@ export default class Element extends Node implements IElement {
 				result += childNode.textContent;
 			}
 		}
-		return result;
+		return escapeHTML(result);
 	}
 
 	/**
