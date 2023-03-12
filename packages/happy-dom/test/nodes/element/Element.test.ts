@@ -140,7 +140,7 @@ describe('Element', () => {
 			expect(div.textContent).toBe('>>howdy');
 			const el2 = document.createElement('div');
 			el2.innerHTML = '<div id="testnode">&gt;&lt;&amp;&quot;&apos;&nbsp;&nbsp;</div>';
-			expect(el2.textContent).toBe('><&"\'  ');
+			expect(el2.textContent).toBe('><&"\'  ');
 		});
 	});
 
