@@ -18,6 +18,7 @@ export default class Event {
 	public _propagationStopped = false;
 	public _target: IEventTarget = null;
 	public _currentTarget: IEventTarget = null;
+	public _inPassiveListener = false;
 	public timeStamp: number = performance.now();
 	public type: string = null;
 
@@ -107,7 +108,9 @@ export default class Event {
 	 * Prevents default.
 	 */
 	public preventDefault(): void {
-		this.defaultPrevented = true;
+		if (!this._inPassiveListener) {
+			this.defaultPrevented = true;
+		}
 	}
 
 	/**
