@@ -1,14 +1,13 @@
 import IAttr from '../attr/IAttr';
 import HTMLElement from '../html-element/HTMLElement';
 import HTMLFormElement from '../html-form-element/HTMLFormElement';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import INode from '../node/INode';
 import IHTMLButtonElement from './IHTMLButtonElement';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
 
 /**
- 
-We can improve performance a bit if we make the types as a constant.
  * HTML Button Element.
  *
  * Reference:
@@ -92,6 +91,15 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	}
 
 	/**
+	 * Returns the parent form element.
+	 *
+	 * @returns Form.
+	 */
+	public get form(): IHTMLFormElement {
+		return <IHTMLFormElement>this._formNode;
+	}
+
+	/**
 	 * Checks validity.
 	 *
 	 * @returns Validity.
@@ -101,8 +109,12 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	}
 
 	/**
-	 *
-	 * @param type
+	 * Sanitizes type.
+	 * 
+	 * TODO: We can improve performance a bit if we make the types as a constant.
+	 * 
+	 * @param type Type.
+	 * @returns Type sanitized.
 	 */
 	protected _sanitizeType(type: string): string {
 		type = (type && type.toLowerCase()) || 'submit';

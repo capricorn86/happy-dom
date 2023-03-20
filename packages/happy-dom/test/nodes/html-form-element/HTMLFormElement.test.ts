@@ -1,6 +1,7 @@
 import Window from '../../../src/window/Window';
 import Document from '../../../src/nodes/document/Document';
 import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement';
+import RadioNodeList from '../../../src/nodes/html-form-element/RadioNodeList';
 
 describe('HTMLFormElement', () => {
 	let window: Window;
@@ -65,29 +66,44 @@ describe('HTMLFormElement', () => {
 			element.innerHTML = `
                 <div>
                     <input type="text" name="text1" value"value1">
+					<button name="button1" value="value1"></button>
                     <input type="checkbox" name="checkbox1" value"value1">
-                    <input type="checkbox" name="checkbox2" value"value1">
+                    <input type="checkbox" name="checkbox1" value"value2" checked>
+                    <input type="checkbox" name="checkbox1" value"value3">
                     <input type="radio" name="radio1" value="value1">
-                    <input type="radio" name="radio2" value="value2">
-                    <input type="radio" name="radio3" value="value3">
+                    <input type="radio" name="radio1" value="value2" checked>
+                    <input type="radio" name="radio1" value="value3">
                 </div>
             `;
 			const elements = element.elements;
-			expect(elements.length).toBe(6);
+			const root = element.children[0];
 
-			expect(elements[0] === element.children[0].children[0]).toBe(true);
-			expect(elements[1] === element.children[0].children[1]).toBe(true);
-			expect(elements[2] === element.children[0].children[2]).toBe(true);
-			expect(elements[3] === element.children[0].children[3]).toBe(true);
-			expect(elements[4] === element.children[0].children[4]).toBe(true);
-			expect(elements[5] === element.children[0].children[5]).toBe(true);
+			expect(elements.length).toBe(8);
 
-			expect(elements['text1'] === element.children[0].children[0]).toBe(true);
-			expect(elements['checkbox1'] === element.children[0].children[1]).toBe(true);
-			expect(elements['checkbox2'] === element.children[0].children[2]).toBe(true);
-			expect(elements['radio1'] === element.children[0].children[3]).toBe(true);
-			expect(elements['radio2'] === element.children[0].children[4]).toBe(true);
-			expect(elements['radio3'] === element.children[0].children[5]).toBe(true);
+			expect(elements[0] === root.children[0]).toBe(true);
+			expect(elements[1] === root.children[1]).toBe(true);
+			expect(elements[2] === root.children[2]).toBe(true);
+			expect(elements[3] === root.children[3]).toBe(true);
+			expect(elements[4] === root.children[4]).toBe(true);
+			expect(elements[5] === root.children[5]).toBe(true);
+			expect(elements[6] === root.children[6]).toBe(true);
+			expect(elements[7] === root.children[7]).toBe(true);
+
+			const radioNodeList1 = new RadioNodeList();
+			const radioNodeList2 = new RadioNodeList();
+
+			radioNodeList1.push(root.children[2]);
+			radioNodeList1.push(root.children[3]);
+			radioNodeList1.push(root.children[4]);
+
+			radioNodeList2.push(root.children[5]);
+			radioNodeList2.push(root.children[6]);
+			radioNodeList2.push(root.children[7]);
+
+			expect(elements['text1']).toBe(root.children[0]);
+			expect(elements['button1']).toBe(root.children[1]);
+			expect(elements['checkbox1']).toEqual(radioNodeList1);
+			expect(elements['radio1']).toEqual(radioNodeList2);
 		});
 	});
 });

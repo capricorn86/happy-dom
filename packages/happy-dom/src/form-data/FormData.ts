@@ -223,7 +223,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 		}
 
 		if (value instanceof File) {
-			if(filename) {
+			if (filename) {
 				const file = new File([], filename, { type: value.type, lastModified: value.lastModified });
 				file._buffer = value._buffer;
 				return file;

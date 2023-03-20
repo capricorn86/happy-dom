@@ -171,14 +171,14 @@ describe('FormData', () => {
 	describe('keys()', () => {
 		it('Returns iterator for keys.', () => {
 			const formData = new window.FormData();
-			const keys = []
+			const keys = [];
 
 			formData.append('key1', 'value1');
 			formData.append('key1', 'value2');
 			formData.append('key2', 'value3');
 			formData.append('key3', 'value4');
 
-			for(const key of formData.keys()) {
+			for (const key of formData.keys()) {
 				keys.push(key);
 			}
 
@@ -189,14 +189,14 @@ describe('FormData', () => {
 	describe('values()', () => {
 		it('Returns iterator for values.', () => {
 			const formData = new window.FormData();
-			const values = []
+			const values = [];
 
 			formData.append('key1', 'value1');
 			formData.append('key1', 'value2');
 			formData.append('key2', 'value3');
 			formData.append('key3', 'value4');
 
-			for(const value of formData.values()) {
+			for (const value of formData.values()) {
 				values.push(value);
 			}
 
@@ -207,22 +207,22 @@ describe('FormData', () => {
 	describe('entries()', () => {
 		it('Returns iterator for entries.', () => {
 			const formData = new window.FormData();
-			const entries = []
+			const entries = [];
 
 			formData.append('key1', 'value1');
 			formData.append('key1', 'value2');
 			formData.append('key2', 'value3');
 			formData.append('key3', 'value4');
 
-			for(const [key, value] of formData.entries()) {
-				entries.push({ key, value});
+			for (const [key, value] of formData.entries()) {
+				entries.push({ key, value });
 			}
 
 			expect(entries).toEqual([
 				{ key: 'key1', value: 'value1' },
 				{ key: 'key1', value: 'value2' },
 				{ key: 'key2', value: 'value3' },
-				{ key: 'key3', value: 'value4' },
+				{ key: 'key3', value: 'value4' }
 			]);
 		});
 	});
@@ -230,22 +230,22 @@ describe('FormData', () => {
 	describe('*[Symbol.iterator]()', () => {
 		it('Returns iterator for entries.', () => {
 			const formData = new window.FormData();
-			const entries = []
+			const entries = [];
 
 			formData.append('key1', 'value1');
 			formData.append('key1', 'value2');
 			formData.append('key2', 'value3');
 			formData.append('key3', 'value4');
 
-			for(const [key, value] of formData) {
-				entries.push({ key, value});
+			for (const [key, value] of formData) {
+				entries.push({ key, value });
 			}
 
 			expect(entries).toEqual([
 				{ key: 'key1', value: 'value1' },
 				{ key: 'key1', value: 'value2' },
 				{ key: 'key2', value: 'value3' },
-				{ key: 'key3', value: 'value4' },
+				{ key: 'key3', value: 'value4' }
 			]);
 		});
 	});

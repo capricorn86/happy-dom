@@ -1,6 +1,7 @@
 import Window from '../../../src/window/Window';
 import Document from '../../../src/nodes/document/Document';
 import HTMLButtonElement from '../../../src/nodes/html-button-element/HTMLButtonElement';
+import { IHTMLElement, IHTMLFormElement } from 'src';
 
 describe('HTMLButtonElement', () => {
 	let window: Window;
@@ -30,6 +31,34 @@ describe('HTMLButtonElement', () => {
 		it(`Sets the attribute "value".`, () => {
 			element.value = 'VALUE';
 			expect(element.getAttribute('value')).toBe('VALUE');
+		});
+	});
+
+	describe('get name()', () => {
+		it(`Returns the attribute "name".`, () => {
+			element.setAttribute('name', 'VALUE');
+			expect(element.name).toBe('VALUE');
+		});
+	});
+
+	describe('set name()', () => {
+		it(`Sets the attribute "name".`, () => {
+			element.name = 'VALUE';
+			expect(element.getAttribute('name')).toBe('VALUE');
+		});
+
+		it(`Sets name as property in parent form elements.`, () => {
+			const form = <IHTMLFormElement>document.createElement('form');
+			form.appendChild(element);
+			element.name = 'button1';
+			expect(form.elements['button1']).toBe(element);
+		});
+
+		it(`Sets name as property in parent element children.`, () => {
+			const div = <IHTMLElement>document.createElement('div');
+			div.appendChild(element);
+			element.name = 'button1';
+			expect(div.children['button1']).toBe(element);
 		});
 	});
 
@@ -92,6 +121,16 @@ describe('HTMLButtonElement', () => {
 
 			element.type = null;
 			expect(element.getAttribute('type')).toBe('submit');
+		});
+	});
+
+	describe(`get form()`, () => {
+		it('Returns parent form.', () => {
+			const form = <IHTMLFormElement>document.createElement('form');
+			form.appendChild(element);
+			expect(element.form).toBe(form);
+			form.removeChild(element);
+			expect(element.form).toBe(null);
 		});
 	});
 });

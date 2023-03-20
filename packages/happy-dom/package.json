@@ -30,7 +30,7 @@
 		"test": "jest --setupFilesAfterEnv ./test/setup.js",
 		"test:coverage": "jest --setupFilesAfterEnv ./test/setup.js --collectCoverage",
 		"test:watch": "jest --setupFilesAfterEnv ./test/setup.js --watch",
-		"test:debug": "node --inspect-brk ./node_modules/.bin/jest --setupFilesAfterEnv ./test/setup.js --runInBand"
+		"test:debug": "node --inspect-brk ../../node_modules/.bin/jest --setupFilesAfterEnv ./test/setup.js --runInBand"
 	},
 	"jest": {
 		"transform": {
