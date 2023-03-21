@@ -3,7 +3,7 @@ import Event from '../../src/event/Event';
 
 describe('AbortSignal', () => {
 	describe('_abort()', () => {
-		it('Aborts the signal.', async () => {
+		it('Aborts the signal.', () => {
 			const signal = new AbortSignal();
 			const reason = 'abort reason';
 			let triggeredEvent: Event | null = null;
@@ -19,7 +19,7 @@ describe('AbortSignal', () => {
 	});
 
 	describe('AbortSignal.abort()', () => {
-		it('Returns a new instance of AbortSignal.', async () => {
+		it('Returns a new instance of AbortSignal.', () => {
 			const reason = 'abort reason';
 			const signal = AbortSignal.abort(reason);
 

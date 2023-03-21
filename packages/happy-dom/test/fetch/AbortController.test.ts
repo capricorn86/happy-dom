@@ -3,7 +3,7 @@ import AbortController from '../../src/fetch/AbortController';
 
 describe('AbortController', () => {
 	describe('abort()', () => {
-		it('Aborts the signal.', async () => {
+		it('Aborts the signal.', () => {
 			const controller = new AbortController();
 			const signal = controller.signal;
 			const reason = 'abort reason';

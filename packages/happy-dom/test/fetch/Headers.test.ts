@@ -2,7 +2,7 @@ import Headers from '../../src/fetch/Headers';
 
 describe('Headers', () => {
 	describe('constructor()', () => {
-		it('Supports sending in an instance of Headers as argument.', async () => {
+		it('Supports sending in an instance of Headers as argument.', () => {
 			const headers1 = new Headers();
 
 			headers1.append('Content-Type', 'application/json');
@@ -24,7 +24,7 @@ describe('Headers', () => {
 	});
 
 	describe('append()', () => {
-		it('Appends an header.', async () => {
+		it('Appends an header.', () => {
 			const headers = new Headers();
 
 			headers.append('Content-Type', 'application/json');
@@ -45,7 +45,7 @@ describe('Headers', () => {
 	});
 
 	describe('delete()', () => {
-		it('Removes an header.', async () => {
+		it('Removes an header.', () => {
 			const headers = new Headers();
 
 			headers.append('Content-Type', 'application/json');
@@ -66,7 +66,7 @@ describe('Headers', () => {
 		});
 
 		describe('get()', () => {
-			it('Returns an header.', async () => {
+			it('Returns an header.', () => {
 				const headers = new Headers();
 
 				headers.append('Content-Type', 'application/json');
@@ -78,7 +78,7 @@ describe('Headers', () => {
 		});
 
 		describe('set()', () => {
-			it('Sets headers and replaces any header with the same name.', async () => {
+			it('Sets headers and replaces any header with the same name.', () => {
 				const headers = new Headers();
 
 				headers.set('Content-Type', 'application/json');
@@ -99,7 +99,7 @@ describe('Headers', () => {
 		});
 
 		describe('has()', () => {
-			it('Returns true if an header exists.', async () => {
+			it('Returns true if an header exists.', () => {
 				const headers = new Headers();
 
 				headers.append('Content-Type', 'application/json');
@@ -112,7 +112,7 @@ describe('Headers', () => {
 		});
 
 		describe('forEach()', () => {
-			it('Calls a callback for each entry.', async () => {
+			it('Calls a callback for each entry.', () => {
 				const headers = new Headers();
 
 				headers.append('Content-Type', 'application/json');
@@ -134,7 +134,7 @@ describe('Headers', () => {
 		});
 
 		describe('*keys()', () => {
-			it('Returns an iterator for keys.', async () => {
+			it('Returns an iterator for keys.', () => {
 				const headers = new Headers();
 
 				headers.append('Content-Type', 'application/json');
@@ -152,7 +152,7 @@ describe('Headers', () => {
 		});
 
 		describe('*values()', () => {
-			it('Returns an iterator for values.', async () => {
+			it('Returns an iterator for values.', () => {
 				const headers = new Headers();
 
 				headers.append('Content-Type', 'application/json');
@@ -170,7 +170,7 @@ describe('Headers', () => {
 		});
 
 		describe('*entries()', () => {
-			it('Returns an iterator for keys and values.', async () => {
+			it('Returns an iterator for keys and values.', () => {
 				const headers = new Headers();
 
 				headers.set('Content-Type', 'application/json');
@@ -191,7 +191,7 @@ describe('Headers', () => {
 		});
 
 		describe('*[Symbol.iterator]()', () => {
-			it('Returns an iterator for keys and values.', async () => {
+			it('Returns an iterator for keys and values.', () => {
 				const headers = new Headers();
 
 				headers.set('Content-Type', 'application/json');

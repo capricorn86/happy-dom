@@ -3098,7 +3098,7 @@ describe('Fetch', () => {
 							response.statusCode = 200;
 
 							callback(response);
-						}, 50);
+						}, 100);
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};

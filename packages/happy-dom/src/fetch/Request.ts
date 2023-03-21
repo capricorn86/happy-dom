@@ -39,7 +39,7 @@ export default class Request implements IRequest {
 	public readonly redirect: IRequestRedirect;
 	public readonly referrerPolicy: IRequestReferrerPolicy;
 	public readonly signal: AbortSignal;
-	public readonly bodyUsed: boolean;
+	public readonly bodyUsed: boolean = false;
 	public readonly credentials: IRequestCredentials;
 
 	// Internal properties
@@ -85,6 +85,8 @@ export default class Request implements IRequest {
 
 		if (contentType) {
 			this._contentType = contentType;
+		} else if (input instanceof Request && input._contentType) {
+			this._contentType = input._contentType;
 		}
 
 		this.redirect = init?.redirect || (<Request>input).redirect || 'follow';
@@ -94,7 +96,9 @@ export default class Request implements IRequest {
 		this.signal = init?.signal || (<Request>input).signal || new AbortSignal();
 		this._referrer = FetchRequestReferrerUtility.getInitialReferrer(
 			this._ownerDocument,
-			init?.referrer !== null ? init?.referrer : (<Request>input).referrer
+			init?.referrer !== null && init?.referrer !== undefined
+				? init?.referrer
+				: (<Request>input).referrer
 		);
 
 		if (input instanceof URL) {
@@ -119,12 +123,6 @@ export default class Request implements IRequest {
 				);
 			}
 		}
-
-		this._url = (<Request>input).url
-			? new URL((<Request>input).url, this._ownerDocument.location)
-			: input instanceof URL
-			? input
-			: new URL(<string>input, this._ownerDocument.location);
 
 		FetchRequestValidationUtility.validateBody(this);
 		FetchRequestValidationUtility.validateURL(this._url);
