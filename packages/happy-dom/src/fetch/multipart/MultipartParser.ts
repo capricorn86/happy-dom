@@ -77,7 +77,7 @@ export default class MultipartParser extends EventTarget {
 		super();
 
 		const parsedBoundary = '\r\n--' + boundary;
-		const ui8a = new Uint8Array(boundary.length);
+		const ui8a = new Uint8Array(parsedBoundary.length);
 
 		for (let i = 0; i < parsedBoundary.length; i++) {
 			ui8a[i] = parsedBoundary.charCodeAt(i);
@@ -85,7 +85,7 @@ export default class MultipartParser extends EventTarget {
 		}
 
 		this.boundary = ui8a;
-		this.lookbehind = new Uint8Array(this.boundary.length + 8);
+		this.lookbehind = new Uint8Array(ui8a.length + 8);
 	}
 
 	/**
@@ -94,39 +94,37 @@ export default class MultipartParser extends EventTarget {
 	 * @param data Data.
 	 */
 	public write(data: Uint8Array): void {
-		let i = 0;
 		const length_ = data.length;
-		let previousIndex = this.index;
 		const { lookbehind, boundary, boundaryChars } = this;
-		let { index, state, flags } = this;
 		const boundaryLength = this.boundary.length;
 		const boundaryEnd = boundaryLength - 1;
 		const bufferLength = data.length;
+		let previousIndex = this.index;
 		let c;
 		let cl;
 
-		for (i = 0; i < length_; i++) {
+		for (let i = 0; i < length_; i++) {
 			c = data[i];
 
-			switch (state) {
+			switch (this.state) {
 				case MultiparParserStateEnum.startBoundary:
-					if (index === boundary.length - 2) {
+					if (this.index === boundary.length) {
 						if (c === CHARACTER_CODE.hyphen) {
-							flags |= FLAG_BOUNDARY.last;
+							this.flags |= FLAG_BOUNDARY.last;
 						} else if (c !== CHARACTER_CODE.cr) {
 							return;
 						}
 
-						index++;
+						this.index++;
 						break;
-					} else if (index - 1 === boundary.length - 2) {
-						if (flags & FLAG_BOUNDARY.last && c === CHARACTER_CODE.hyphen) {
-							state = MultiparParserStateEnum.end;
-							flags = 0;
-						} else if (!(flags & FLAG_BOUNDARY.last) && c === CHARACTER_CODE.lf) {
-							index = 0;
+					} else if (this.index - 1 === boundary.length - 2) {
+						if (this.flags & FLAG_BOUNDARY.last && c === CHARACTER_CODE.hyphen) {
+							this.state = MultiparParserStateEnum.end;
+							this.flags = 0;
+						} else if (!(this.flags & FLAG_BOUNDARY.last) && c === CHARACTER_CODE.lf) {
+							this.index = 0;
 							this.onPartBegin();
-							state = MultiparParserStateEnum.headerFieldStart;
+							this.state = MultiparParserStateEnum.headerFieldStart;
 						} else {
 							return;
 						}
@@ -134,40 +132,41 @@ export default class MultipartParser extends EventTarget {
 						break;
 					}
 
-					if (c !== boundary[index + 2]) {
-						index = -2;
+					if (c !== boundary[this.index + 2]) {
+						this.index = -2;
 					}
 
-					if (c === boundary[index + 2]) {
-						index++;
+					if (c === boundary[this.index + 2]) {
+						this.index++;
 					}
 
 					break;
 				case MultiparParserStateEnum.headerFieldStart:
-					state = MultiparParserStateEnum.headerField;
+					this.state = MultiparParserStateEnum.headerField;
 					this.marks.set(MultiparParserMarkEnum.headerField, i);
-					index = 0;
+					this.index = 0;
 				// Falls through
 				case MultiparParserStateEnum.headerField:
 					if (c === CHARACTER_CODE.cr) {
 						this.marks.delete(MultiparParserMarkEnum.headerField);
-						state = MultiparParserStateEnum.headersAlmostDone;
+						this.state = MultiparParserStateEnum.headersAlmostDone;
 						break;
 					}
 
-					index++;
+					this.index++;
+
 					if (c === CHARACTER_CODE.hyphen) {
 						break;
 					}
 
 					if (c === CHARACTER_CODE.colon) {
-						if (index === 1) {
+						if (this.index === 1) {
 							// Empty header field
 							return;
 						}
 
 						this.onHeaderField({ data, end: i });
-						state = MultiparParserStateEnum.headerValueStart;
+						this.state = MultiparParserStateEnum.headerValueStart;
 						break;
 					}
 
@@ -183,13 +182,13 @@ export default class MultipartParser extends EventTarget {
 					}
 
 					this.marks.set(MultiparParserMarkEnum.headerValue, i);
-					state = MultiparParserStateEnum.headerValue;
+					this.state = MultiparParserStateEnum.headerValue;
 				// Falls through
 				case MultiparParserStateEnum.headerValue:
 					if (c === CHARACTER_CODE.cr) {
 						this.onHeaderValue({ data, end: i });
 						this.onHeaderEnd();
-						state = MultiparParserStateEnum.headerValueAlmostDone;
+						this.state = MultiparParserStateEnum.headerValueAlmostDone;
 					}
 
 					break;
@@ -198,7 +197,7 @@ export default class MultipartParser extends EventTarget {
 						return;
 					}
 
-					state = MultiparParserStateEnum.headerFieldStart;
+					this.state = MultiparParserStateEnum.headerFieldStart;
 					break;
 				case MultiparParserStateEnum.headersAlmostDone:
 					if (c !== CHARACTER_CODE.lf) {
@@ -206,17 +205,17 @@ export default class MultipartParser extends EventTarget {
 					}
 
 					this.onHeadersEnd();
-					state = MultiparParserStateEnum.partDataStart;
+					this.state = MultiparParserStateEnum.partDataStart;
 					break;
 				case MultiparParserStateEnum.partDataStart:
-					state = MultiparParserStateEnum.partData;
+					this.state = MultiparParserStateEnum.partData;
 					this.marks.set(MultiparParserMarkEnum.partData, i);
 					break;
 				// Falls through
 				case MultiparParserStateEnum.partData:
-					previousIndex = index;
+					previousIndex = this.index;
 
-					if (index === 0) {
+					if (this.index === 0) {
 						// Boyer-moore derrived algorithm to safely skip non-boundary data
 						i += boundaryEnd;
 						while (i < bufferLength && !(data[i] in boundaryChars)) {
@@ -227,55 +226,55 @@ export default class MultipartParser extends EventTarget {
 						c = data[i];
 					}
 
-					if (index < boundary.length) {
-						if (boundary[index] === c) {
-							if (index === 0) {
+					if (this.index < boundary.length) {
+						if (boundary[this.index] === c) {
+							if (this.index === 0) {
 								this.onPartData({ data, end: i });
 							}
 
-							index++;
+							this.index++;
 						} else {
-							index = 0;
+							this.index = 0;
 						}
-					} else if (index === boundary.length) {
-						index++;
+					} else if (this.index === boundary.length) {
+						this.index++;
 						if (c === CHARACTER_CODE.cr) {
 							// CHARACTER_CODE.cr = part boundary
-							flags |= FLAG_BOUNDARY.part;
+							this.flags |= FLAG_BOUNDARY.part;
 						} else if (c === CHARACTER_CODE.hyphen) {
 							// CHARACTER_CODE.hyphen = end boundary
-							flags |= FLAG_BOUNDARY.last;
+							this.flags |= FLAG_BOUNDARY.last;
 						} else {
-							index = 0;
+							this.index = 0;
 						}
-					} else if (index - 1 === boundary.length) {
-						if (flags & FLAG_BOUNDARY.part) {
-							index = 0;
+					} else if (this.index - 1 === boundary.length) {
+						if (this.flags & FLAG_BOUNDARY.part) {
+							this.index = 0;
 							if (c === CHARACTER_CODE.lf) {
 								// Unset the PART_BOUNDARY flag
-								flags &= ~FLAG_BOUNDARY.part;
+								this.flags &= ~FLAG_BOUNDARY.part;
 								this.onPartEnd();
 								this.onPartBegin();
-								state = MultiparParserStateEnum.headerFieldStart;
+								this.state = MultiparParserStateEnum.headerFieldStart;
 								break;
 							}
-						} else if (flags & FLAG_BOUNDARY.last) {
+						} else if (this.flags & FLAG_BOUNDARY.last) {
 							if (c === CHARACTER_CODE.hyphen) {
 								this.onPartEnd();
-								state = MultiparParserStateEnum.end;
-								flags = 0;
+								this.state = MultiparParserStateEnum.end;
+								this.flags = 0;
 							} else {
-								index = 0;
+								this.index = 0;
 							}
 						} else {
-							index = 0;
+							this.index = 0;
 						}
 					}
 
-					if (index > 0) {
+					if (this.index > 0) {
 						// When matching a possible boundary, keep a lookbehind reference
 						// In case it turns out to be a false lead
-						lookbehind[index - 1] = c;
+						lookbehind[this.index - 1] = c;
 					} else if (previousIndex > 0) {
 						// If our boundary turned out to be rubbish, the captured lookbehind
 						// Belongs to partData
@@ -297,18 +296,13 @@ export default class MultipartParser extends EventTarget {
 				case MultiparParserStateEnum.end:
 					break;
 				default:
-					throw new Error(`Unexpected state entered: ${state}`);
+					throw new Error(`Unexpected state entered: ${this.state}`);
 			}
 		}
 
 		this.onHeaderField();
 		this.onHeaderValue();
 		this.onPartData();
-
-		// Update properties for the next call
-		this.index = index;
-		this.state = state;
-		this.flags = flags;
 	}
 
 	/**
