@@ -28,6 +28,12 @@ enum MultipartEventTypeEnum {
 	partEnd = 'partend'
 }
 
+let FLAG_BOUNDARY_VALUE = 1;
+const FLAG_BOUNDARY = {
+	part: FLAG_BOUNDARY_VALUE,
+	last: (FLAG_BOUNDARY_VALUE *= 2)
+};
+
 const CHARACTER_CODE = {
 	lf: 10,
 	cr: 13,
@@ -60,7 +66,6 @@ export default class MultipartParser extends EventTarget {
 	private boundaryChars: { [k: number]: boolean } = {};
 	private boundary: Uint8Array;
 	private lookbehind: Uint8Array;
-	private flagBoundary: { part: number; last: number };
 
 	/**
 	 * Constructor.
@@ -81,9 +86,6 @@ export default class MultipartParser extends EventTarget {
 
 		this.boundary = ui8a;
 		this.lookbehind = new Uint8Array(this.boundary.length + 8);
-
-		let flagBoundary = 1;
-		this.flagBoundary = { part: flagBoundary, last: (flagBoundary *= 2) };
 	}
 
 	/**
@@ -110,7 +112,7 @@ export default class MultipartParser extends EventTarget {
 				case MultiparParserStateEnum.startBoundary:
 					if (index === boundary.length - 2) {
 						if (c === CHARACTER_CODE.hyphen) {
-							flags |= this.flagBoundary.last;
+							flags |= FLAG_BOUNDARY.last;
 						} else if (c !== CHARACTER_CODE.cr) {
 							return;
 						}
@@ -118,10 +120,10 @@ export default class MultipartParser extends EventTarget {
 						index++;
 						break;
 					} else if (index - 1 === boundary.length - 2) {
-						if (flags & this.flagBoundary.last && c === CHARACTER_CODE.hyphen) {
+						if (flags & FLAG_BOUNDARY.last && c === CHARACTER_CODE.hyphen) {
 							state = MultiparParserStateEnum.end;
 							flags = 0;
-						} else if (!(flags & this.flagBoundary.last) && c === CHARACTER_CODE.lf) {
+						} else if (!(flags & FLAG_BOUNDARY.last) && c === CHARACTER_CODE.lf) {
 							index = 0;
 							this.onPartBegin();
 							state = MultiparParserStateEnum.headerFieldStart;
@@ -239,25 +241,25 @@ export default class MultipartParser extends EventTarget {
 						index++;
 						if (c === CHARACTER_CODE.cr) {
 							// CHARACTER_CODE.cr = part boundary
-							flags |= this.flagBoundary.part;
+							flags |= FLAG_BOUNDARY.part;
 						} else if (c === CHARACTER_CODE.hyphen) {
 							// CHARACTER_CODE.hyphen = end boundary
-							flags |= this.flagBoundary.last;
+							flags |= FLAG_BOUNDARY.last;
 						} else {
 							index = 0;
 						}
 					} else if (index - 1 === boundary.length) {
-						if (flags & this.flagBoundary.part) {
+						if (flags & FLAG_BOUNDARY.part) {
 							index = 0;
 							if (c === CHARACTER_CODE.lf) {
 								// Unset the PART_BOUNDARY flag
-								flags &= ~this.flagBoundary.part;
+								flags &= ~FLAG_BOUNDARY.part;
 								this.onPartEnd();
 								this.onPartBegin();
 								state = MultiparParserStateEnum.headerFieldStart;
 								break;
 							}
-						} else if (flags & this.flagBoundary.last) {
+						} else if (flags & FLAG_BOUNDARY.last) {
 							if (c === CHARACTER_CODE.hyphen) {
 								this.onPartEnd();
 								state = MultiparParserStateEnum.end;

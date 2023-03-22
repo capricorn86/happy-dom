@@ -54,8 +54,6 @@ export default class MultipartFormDataParser {
 
 		const decoder = new TextDecoder('utf-8');
 
-		decoder.decode();
-
 		parser.addEventListener('partBegin', () => {
 			parser.addEventListener('partData', (event: MultipartEvent) => {
 				entryValue += decoder.decode(event.data, { stream: true });

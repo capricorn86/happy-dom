@@ -193,7 +193,7 @@ export default class Request implements IRequest {
 
 		taskManager.endTask(taskID);
 
-		return buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
 
 	/**

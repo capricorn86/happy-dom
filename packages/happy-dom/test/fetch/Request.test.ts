@@ -8,6 +8,8 @@ import AbortSignal from '../../src/fetch/AbortSignal';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import IRequestReferrerPolicy from '../../src/fetch/types/IRequestReferrerPolicy';
+import IRequestRedirect from '../../src/fetch/types/IRequestRedirect';
+import Blob from '../../src/file/Blob';
 
 const TEST_URL = 'https://example.com/';
 
@@ -365,6 +367,22 @@ describe('Request', () => {
 
 			expect(error).toEqual(
 				new DOMException(
+					`https://user@example.com/ is an url with embedded credentials.`,
+					DOMExceptionNameEnum.notSupportedError
+				)
+			);
+		});
+
+		it('Throws error using password in URL.', () => {
+			let error: Error | null = null;
+			try {
+				new Request('https://user:pass@example.com');
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
+				new DOMException(
 					`https://user:pass@example.com/ is an url with embedded credentials.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
@@ -382,6 +400,138 @@ describe('Request', () => {
 			expect(error).toEqual(
 				new DOMException(`Invalid referrer policy "invalid".`, DOMExceptionNameEnum.syntaxError)
 			);
+		});
+
+		it('Throws error when invalid referrer policy.', () => {
+			let error: Error | null = null;
+			try {
+				new Request(TEST_URL, { referrerPolicy: <IRequestReferrerPolicy>'invalid' });
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
+				new DOMException(`Invalid referrer policy "invalid".`, DOMExceptionNameEnum.syntaxError)
+			);
+		});
+
+		it('Throws error when invalid referrer policy.', () => {
+			let error: Error | null = null;
+			try {
+				new Request(TEST_URL, { redirect: <IRequestRedirect>'invalid' });
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
+				new DOMException(`Invalid redirect "invalid".`, DOMExceptionNameEnum.syntaxError)
+			);
+		});
+	});
+
+	describe('get referrer()', () => {
+		it('Returns referrer.', () => {
+			window.happyDOM.setURL('https://example.com/other/path/');
+			const request = new Request(TEST_URL, { referrer: 'https://example.com/path/' });
+			expect(request.referrer).toBe('https://example.com/path/');
+		});
+	});
+
+	describe('get url()', () => {
+		it('Returns URL.', () => {
+			const request = new Request(TEST_URL);
+			expect(request.url).toBe(TEST_URL);
+		});
+	});
+
+	describe('get [Symbol.toStringTag]()', () => {
+		it('Returns class name.', () => {
+			expect(String(new Request(TEST_URL))).toBe('[object Request]');
+		});
+	});
+
+	describe('arrayBuffer()', () => {
+		it('Returns ArrayBuffer.', async () => {
+			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const arrayBuffer = await request.arrayBuffer();
+
+			expect(arrayBuffer).toBeInstanceOf(ArrayBuffer);
+			expect(Buffer.from(arrayBuffer).toString()).toBe('Hello World');
+		});
+	});
+
+	describe('blob()', () => {
+		it('Returns Blob.', async () => {
+			const request = new Request(TEST_URL, {
+				method: 'POST',
+				body: 'Hello World',
+				headers: { 'Content-Type': 'text/plain' }
+			});
+			const blob = await request.blob();
+
+			expect(blob).toBeInstanceOf(Blob);
+			expect(blob.type).toBe('text/plain');
+
+			const text = await blob.text();
+			expect(text).toBe('Hello World');
+		});
+	});
+
+	describe('buffer()', () => {
+		it('Returns Buffer.', async () => {
+			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const buffer = await request.buffer();
+
+			expect(buffer).toBeInstanceOf(Buffer);
+			expect(buffer.toString()).toBe('Hello World');
+		});
+	});
+
+	describe('text()', () => {
+		it('Returns text string.', async () => {
+			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const text = await request.text();
+
+			expect(text).toBe('Hello World');
+		});
+	});
+
+	describe('json()', () => {
+		it('Returns JSON.', async () => {
+			const request = new Request(TEST_URL, { method: 'POST', body: '{ "key1": "value1" }' });
+			const json = await request.json();
+
+			expect(json).toEqual({ key1: 'value1' });
+		});
+	});
+
+	describe('clone()', () => {
+		it('Returns a clone.', async () => {
+			window.happyDOM.setURL('https://example.com/other/path/');
+
+			const signal = new AbortSignal();
+			const request = new Request(TEST_URL, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: 'Hello world',
+				signal,
+				redirect: 'error',
+				referrerPolicy: 'no-referrer',
+				credentials: 'include',
+				referrer: 'https://example.com/path/'
+			});
+
+			const clone = request.clone();
+
+			expect(clone.url).toEqual(TEST_URL);
+			expect(clone.method).toEqual('POST');
+			expect(clone.headers.get('Content-Type')).toEqual('application/json');
+			expect(clone.signal).toBe(signal);
+			expect(clone.redirect).toBe('error');
+			expect(clone.referrerPolicy).toBe('no-referrer');
+			expect(clone.credentials).toBe('include');
+			expect(clone.referrer).toBe('https://example.com/path/');
+			expect(await clone.text()).toBe('Hello world');
 		});
 	});
 });

@@ -104,7 +104,7 @@ export default class Response implements IResponse {
 
 		taskManager.endTask(taskID);
 
-		return buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
 
 	/**
