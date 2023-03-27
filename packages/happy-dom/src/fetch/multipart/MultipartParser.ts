@@ -1,3 +1,4 @@
+import File from '../../file/File';
 import FormData from '../../form-data/FormData';
 
 enum MultiparParserStateEnum {
@@ -23,85 +24,108 @@ const CHARACTER_CODE = {
  * https://github.com/node-fetch/node-fetch/blob/main/src/utils/multipart-parser.js (MIT)
  */
 export default class MultipartParser {
+	private formData: FormData;
+	private boundary: Uint8Array;
+	private boundaryIndex = 0;
+	private state = MultiparParserStateEnum.boundary;
+	private data: {
+		contentDisposition: { [key: string]: string } | null;
+		value: number[];
+		contentType: string | null;
+		header: string;
+		char: number;
+	};
+
 	/**
-	 * Writes data.
+	 * Constructor.
 	 *
-	 * @param boundary
-	 * @param data Data.
+	 * @param formData Form data.
+	 * @param boundary Boundary.
 	 */
-	public static getFormData(boundary: string, data: Uint8Array): void {
-		const boundaryChars = new Uint8Array(boundary.length);
+	constructor(formData: FormData, boundary: string) {
+		this.formData = formData;
+		this.boundary = new Uint8Array(boundary.length);
 
 		for (let i = 0, max = boundary.length; i < max; i++) {
-			boundaryChars[i] = boundary.charCodeAt(i);
+			this.boundary[i] = boundary.charCodeAt(i);
 		}
+	}
 
-		const formData = new FormData();
-		let index = 0;
-		let state = MultiparParserStateEnum.boundary;
-		let contentDisposition: { [key: string]: string } | null = null;
-		let fieldData: number[] = [];
-		let contentType: string | null = null;
-		let header: string;
+	/**
+	 * Appends data the form data object.
+	 *
+	 * @param data Data.
+	 */
+	public append(data: Uint8Array): void {
 		let char: number;
 
 		for (let i = 0, max = data.length; i < max; i++) {
 			char = data[i];
 
-			switch (state) {
+			switch (this.state) {
 				case MultiparParserStateEnum.boundary:
-					if (char === boundaryChars[index]) {
-						index++;
+				case MultiparParserStateEnum.data:
+					if (char === this.boundary[this.boundaryIndex]) {
+						this.boundaryIndex++;
+					} else {
+						this.boundaryIndex = 0;
 					}
-					if (index === boundaryChars.length && char === CHARACTER_CODE.lf) {
-						state = MultiparParserStateEnum.header;
-						header = '';
-						contentDisposition = null;
-						contentType = null;
-						fieldData = [];
-						index = 0;
+					if (this.boundaryIndex === this.boundary.length && char === CHARACTER_CODE.lf) {
+						if (this.data.value.length) {
+							if (this.data.contentDisposition.filename) {
+								this.formData.append(
+									this.data.contentDisposition.name,
+									new File(
+										[new Uint8Array(this.data.value)],
+										this.data.contentDisposition.filename,
+										{
+											type: this.data.contentType
+										}
+									)
+								);
+							} else if (this.data.value) {
+								this.formData.append(
+									this.data.contentDisposition.name,
+									Buffer.from(this.data.value).toString()
+								);
+							}
+						}
+
+						this.state = MultiparParserStateEnum.header;
+						this.data.header = '';
+						this.data.contentDisposition = null;
+						this.data.contentType = null;
+						this.data.value = [];
+						this.boundaryIndex = 0;
 					}
 					break;
 				case MultiparParserStateEnum.header:
 					if (char !== CHARACTER_CODE.cr && char !== CHARACTER_CODE.lf) {
-						header += String.fromCharCode(char);
-					} else {
-						if (header) {
-							const headerParts = header.split(':');
+						this.data.header += String.fromCharCode(char);
+					} else if (char === CHARACTER_CODE.lf) {
+						if (this.data.header) {
+							const headerParts = this.data.header.split(':');
 							const headerName = headerParts[0].toLowerCase();
 							const headerValue = headerParts[1].trim();
 
 							switch (headerName) {
 								case 'content-disposition':
-									contentDisposition = this.getContentDisposition(headerValue);
+									this.data.contentDisposition = this.getContentDisposition(headerValue);
 									break;
 								case 'content-type':
-									contentType = headerValue;
+									this.data.contentType = headerValue;
 									break;
 							}
-						} else if (contentDisposition) {
-							state = MultiparParserStateEnum.data;
+						} else if (this.data.contentDisposition?.name) {
+							this.state = MultiparParserStateEnum.data;
+						} else {
+							this.state = MultiparParserStateEnum.boundary;
 						}
 					}
 					break;
 				case MultiparParserStateEnum.data:
-					if (
-						data[i] === CHARACTER_CODE.cr &&
-						data[i + 1] === CHARACTER_CODE.lf &&
-						data[i + 2] === CHARACTER_CODE.cr &&
-						data[i + 3] === CHARACTER_CODE.lf &&
-						data[i + 4] === CHARACTER_CODE.hyphen
-					) {
-						if (contentDisposition && contentDisposition.name) {
-							formData.append(
-								contentDisposition.name,
-								new Blob([new Uint8Array(fieldData)], { type: contentType })
-							);
-						}
-
-						state = MultiparParserStateEnum.boundary;
-						i += 4;
-					}
+					this.data.value.push(char);
+					break;
 			}
 		}
 	}
@@ -112,7 +136,7 @@ export default class MultipartParser {
 	 * @param headerValue Header value.
 	 * @returns Content disposition.
 	 */
-	private static getContentDisposition(headerValue: string): { [key: string]: string } {
+	private getContentDisposition(headerValue: string): { [key: string]: string } {
 		const regex = /([a-z]+) *= *"([^"]+)"/g;
 		const contentDisposition: { [key: string]: string } = {};
 		let match: RegExpExecArray;

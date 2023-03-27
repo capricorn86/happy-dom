@@ -3,9 +3,6 @@ import Stream from 'stream';
 import MultipartParser from './MultipartParser';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import MultipartEvent from './MultipartEvent';
-import File from '../../file/File';
-import { TextDecoder } from 'util';
 
 /**
  * Multipart form data factory.
@@ -41,80 +38,12 @@ export default class MultipartFormDataParser {
 			);
 		}
 
-		const parser = new MultipartParser(match[1] || match[2]);
 		const formData = new FormData();
-		const entryChunks = [];
-
-		let headerField;
-		let headerValue;
-		let entryValue;
-		let entryName;
-		let fieldContentType;
-		let filename;
-
-		const decoder = new TextDecoder('utf-8');
-
-		parser.addEventListener('partBegin', () => {
-			parser.addEventListener('partData', (event: MultipartEvent) => {
-				entryValue += decoder.decode(event.data, { stream: true });
-			});
-			parser.addEventListener('partEnd', () => {
-				formData.append(entryName, entryValue);
-			});
-
-			headerField = '';
-			headerValue = '';
-			entryValue = '';
-			entryName = '';
-			fieldContentType = '';
-			filename = null;
-			entryChunks.length = 0;
-		});
-
-		parser.addEventListener('headerField', (event: MultipartEvent) => {
-			headerField += decoder.decode(event.data, { stream: true });
-		});
-
-		parser.addEventListener('headerValue', (event: MultipartEvent) => {
-			headerValue += decoder.decode(event.data, { stream: true });
-		});
-
-		parser.addEventListener('headerEnd', () => {
-			headerValue += decoder.decode();
-			headerField = headerField.toLowerCase();
-
-			if (headerField === 'content-disposition') {
-				// Matches either a quoted-string or a token (RFC 2616 section 19.5.1)
-				const match = headerValue.match(/\bname=("([^"]*)"|([^()<>@,;:\\"/[\]?={}\s\t]+))/i);
-
-				if (match) {
-					entryName = match[2] || match[3] || '';
-				}
-
-				filename = this.getFileName(headerValue);
-
-				if (filename) {
-					parser.addEventListener('partData', (event: MultipartEvent) => {
-						entryChunks.push(event.data);
-					});
-					parser.addEventListener('partEnd', () => {
-						const file = new File(entryChunks, filename, { type: fieldContentType });
-						formData.append(entryName, file);
-					});
-				}
-			} else if (headerField === 'content-type') {
-				fieldContentType = headerValue;
-			}
-
-			headerValue = '';
-			headerField = '';
-		});
+		const multipartParser = new MultipartParser(formData, match[1] || match[2]);
 
 		for await (const chunk of body) {
-			parser.write(chunk);
+			multipartParser.append(chunk);
 		}
-
-		parser.end();
 
 		return formData;
 	}
