@@ -517,6 +517,24 @@ describe('Node', () => {
 			);
 		});
 
+		it('If reference node is null or undefined, the newNode should be inserted at the end of the peer node.', () => {
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+			const newNode = document.createElement('span');
+			const newNode1 = document.createElement('span');
+			const parent = document.createElement('div');
+
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+			parent.insertBefore(newNode, null);
+			parent.insertBefore(newNode1, undefined);
+
+			expect(parent.childNodes[0]).toBe(child1);
+			expect(parent.childNodes[1]).toBe(child2);
+			expect(parent.childNodes[2]).toBe(newNode);
+			expect(parent.childNodes[3]).toBe(newNode1);
+		});
+
 		it('Throws an exception if reference node is not child of parent node.', () => {
 			const referenceNode = document.createElement('span');
 			const newNode = document.createElement('span');

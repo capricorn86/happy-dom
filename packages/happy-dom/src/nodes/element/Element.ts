@@ -411,7 +411,10 @@ export default class Element extends Node implements IElement {
 	 * @override
 	 */
 	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
-		const returnValue = super.insertBefore(newNode, referenceNode);
+		const returnValue =
+			arguments.length === 2
+				? super.insertBefore(newNode, referenceNode)
+				: super.insertBefore(newNode);
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment

@@ -394,7 +394,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param referenceNode Node to insert before.
 	 * @returns Inserted node.
 	 */
-	public insertBefore(newNode: INode, referenceNode: INode | null): INode {
+	public insertBefore(newNode: INode, referenceNode?: INode | null): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
@@ -404,16 +404,17 @@ export default class Node extends EventTarget implements INode {
 			return newNode;
 		}
 
-		if (referenceNode === null) {
-			this.appendChild(newNode);
-			return newNode;
-		}
-
-		if (referenceNode === undefined) {
+		if (arguments.length === 1) {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 1 present.",
 				'TypeError'
 			);
+		}
+
+		// The incoming referenceNode may be undefined, and at this time, the newNode should be inserted at the end of the peer node.
+		if (referenceNode === null || referenceNode === undefined) {
+			this.appendChild(newNode);
+			return newNode;
 		}
 
 		const index = referenceNode ? this.childNodes.indexOf(referenceNode) : 0;
