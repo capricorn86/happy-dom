@@ -1,6 +1,6 @@
 import FormData from '../../form-data/FormData';
 import Stream from 'stream';
-import MultipartParser from './MultipartParser';
+import MultipartReader from './MultipartReader';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 
@@ -38,15 +38,15 @@ export default class MultipartFormDataParser {
 			);
 		}
 
-		const formData = new FormData();
-		const multipartParser = new MultipartParser(formData, match[1] || match[2]);
+		const reader = new MultipartReader(match[1] || match[2]);
 
 		for await (const chunk of body) {
-			multipartParser.append(chunk);
+			reader.write(chunk);
 		}
 
-		return formData;
+		return reader.end();
 	}
+
 	/**
 	 * Converts a FormData object to a ReadableStream.
 	 *
@@ -109,30 +109,5 @@ export default class MultipartFormDataParser {
 			.replace(/\n/g, '%0A')
 			.replace(/\r/g, '%0D')
 			.replace(/"/g, '%22');
-	}
-
-	/**
-	 * Returns file name.
-	 *
-	 * @param headerValue Header value.
-	 * @returns File name.
-	 */
-	private static getFileName(headerValue): string | null {
-		// Matches either a quoted-string or a token (RFC 2616 section 19.5.1)
-
-		const filenameMatch = headerValue.match(
-			/\bfilename=("(.*?)"|([^()<>@,;:\\"/[\]?={}\s\t]+))($|;\s)/i
-		);
-
-		if (!filenameMatch) {
-			return null;
-		}
-
-		const filename = filenameMatch[2] || filenameMatch[3] || '';
-
-		return filename
-			.slice(filename.lastIndexOf('\\') + 1)
-			.replace(/%22/g, '"')
-			.replace(/&#(\d{4});/g, (_match, code) => String.fromCharCode(code));
 	}
 }

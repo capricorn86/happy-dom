@@ -155,6 +155,7 @@ describe('Response', () => {
 
 			formData.set('key1', 'value1');
 			formData.set('key2', 'value2');
+			formData.set('key3', 'value3');
 
 			const response = new Response(formData);
 			const formDataResponse = await response.formData();
@@ -166,7 +167,8 @@ describe('Response', () => {
 
 			expect(formDataResponse.get('key1')).toBe('value1');
 			expect(formDataResponse.get('key2')).toBe('value2');
-			expect(size).toBe(2);
+			expect(formDataResponse.get('key3')).toBe('value3');
+			expect(size).toBe(3);
 		});
 	});
 
