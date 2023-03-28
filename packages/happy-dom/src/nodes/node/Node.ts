@@ -394,7 +394,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param referenceNode Node to insert before.
 	 * @returns Inserted node.
 	 */
-	public insertBefore(newNode: INode, referenceNode?: INode | null): INode {
+	public insertBefore(newNode: INode, referenceNode: INode | null): INode {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
