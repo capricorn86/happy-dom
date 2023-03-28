@@ -52,7 +52,7 @@ export default class Response implements IResponse {
 	constructor(body?: IResponseBody, init?: IResponseInit) {
 		this._ownerDocument = (<typeof Response>this.constructor)._ownerDocument;
 
-		this.status = init?.status || 200;
+		this.status = init?.status !== undefined ? init.status : 200;
 		this.statusText = init?.statusText || '';
 		this.ok = this.status >= 200 && this.status < 300;
 		this.headers = new Headers(init?.headers);
@@ -276,7 +276,7 @@ export default class Response implements IResponse {
 	 * @param [init] Init.
 	 * @returns Response.
 	 */
-	public static json(data: object, init: IResponseInit): IResponse {
+	public static json(data: object, init?: IResponseInit): IResponse {
 		const body = JSON.stringify(data);
 
 		if (body === undefined) {
@@ -290,6 +290,7 @@ export default class Response implements IResponse {
 		}
 
 		return new Response(body, {
+			status: 200,
 			...init,
 			headers
 		});
