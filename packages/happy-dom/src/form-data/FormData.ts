@@ -153,11 +153,12 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @param name Name.
 	 * @param value Value.
+	 * @param [filename] Filename.
 	 */
-	public set(name: string, value: string): void {
+	public set(name: string, value: string | Blob | File, filename?: string): void {
 		for (const entry of this._entries) {
 			if (entry.name === name) {
-				entry.value = value;
+				entry.value = this._parseValue(value, filename);
 				return;
 			}
 		}

@@ -7,6 +7,11 @@ import Blob from '../../src/file/Blob';
 import FormData from '../../src/form-data/FormData';
 import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility';
 import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser';
+import FS from 'fs';
+import Path from 'path';
+import { File } from '../../src';
+import DOMException from '../../src/exception/DOMException';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 
 describe('Response', () => {
 	let window: IWindow;
@@ -268,7 +273,7 @@ describe('Response', () => {
 	});
 
 	describe('formData()', () => {
-		it('Returns FormData.', async () => {
+		it('Returns FormData for text fields.', async () => {
 			const formData = new FormData();
 
 			jest.spyOn(Math, 'random').mockImplementation(() => 0.8);
@@ -313,6 +318,45 @@ describe('Response', () => {
 				done();
 			}, 12);
 		});
+
+		it('Returns FormData for files.', async () => {
+			const formData = new FormData();
+			const imageBuffer = await FS.promises.readFile(
+				Path.join(__dirname, 'data', 'test-image.jpg')
+			);
+
+			jest.spyOn(Math, 'random').mockImplementation(() => 0.8);
+
+			formData.set('key1', 'value1');
+			formData.set('file1', new File([imageBuffer], 'test-image-1.jpg', { type: 'image/jpeg' }));
+			formData.set('key2', 'value2');
+			formData.set('file2', new File([imageBuffer], 'test-image-2.jpg', { type: 'image/jpeg' }));
+
+			const response = new Response(formData);
+			const formDataResponse = await response.formData();
+			let size = 0;
+
+			for (const _entry of formDataResponse) {
+				size++;
+			}
+
+			expect(formDataResponse.get('key1')).toBe('value1');
+			expect(formDataResponse.get('key2')).toBe('value2');
+			expect(size).toBe(4);
+
+			const file1 = <File>formDataResponse.get('file1');
+			const file2 = <File>formDataResponse.get('file2');
+
+			expect(file1.name).toBe('test-image-1.jpg');
+			expect(file1.type).toBe('image/jpeg');
+			expect(file1.size).toBe(imageBuffer.length);
+			expect(await file1.arrayBuffer()).toEqual(imageBuffer.buffer);
+
+			expect(file2.name).toBe('test-image-2.jpg');
+			expect(file2.type).toBe('image/jpeg');
+			expect(file2.size).toBe(imageBuffer.length);
+			expect(await file2.arrayBuffer()).toEqual(imageBuffer.buffer);
+		});
 	});
 
 	describe('clone()', () => {
@@ -333,6 +377,75 @@ describe('Response', () => {
 			const bodyText = await clone.text();
 
 			expect(bodyText).toBe('Hello World');
+		});
+	});
+
+	describe('static redirect()', () => {
+		it('Returns a new instance of Response with redirect status set to 302 by default.', async () => {
+			const response = Response.redirect('https://example.com');
+
+			expect(response.status).toBe(302);
+			expect(response.headers.get('Location')).toBe('https://example.com/');
+		});
+
+		it('Returns a new instance of Response with redirect status set to 301.', async () => {
+			const response = Response.redirect('https://example.com', 301);
+
+			expect(response.status).toBe(301);
+			expect(response.headers.get('Location')).toBe('https://example.com/');
+		});
+
+		it('Throws exception for ingaliv status codes.', async () => {
+			let error: Error | null = null;
+
+			try {
+				Response.redirect('https://example.com', 200);
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
+				new DOMException(
+					'Failed to create redirect response: Invalid redirect status code.',
+					DOMExceptionNameEnum.invalidStateError
+				)
+			);
+		});
+	});
+
+	describe('static error()', () => {
+		it('Returns a new instance of Response with type set to error.', async () => {
+			const response = Response.error();
+
+			expect(response.status).toBe(0);
+			expect(response.statusText).toBe('');
+			expect(response.type).toBe('error');
+		});
+	});
+
+	describe('static json()', () => {
+		it('Returns a new instance of Response with JSON body.', async () => {
+			const data = { key1: 'value1', key2: 'value2' };
+			const response = Response.json(data);
+
+			expect(response.status).toBe(200);
+			expect(response.statusText).toBe('');
+			expect(response.headers.get('Content-Type')).toBe('application/json');
+			expect(await response.json()).toEqual(data);
+		});
+
+		it('Returns a new instance of Response with JSON body and custom init.', async () => {
+			const data = { key1: 'value1', key2: 'value2' };
+			const response = Response.json(data, {
+				status: 201,
+				statusText: 'OK',
+				headers: { 'Content-Type': 'test' }
+			});
+
+			expect(response.status).toBe(201);
+			expect(response.statusText).toBe('OK');
+			expect(response.headers.get('Content-Type')).toBe('test');
+			expect(await response.json()).toEqual(data);
 		});
 	});
 });
