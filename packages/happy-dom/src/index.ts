@@ -50,6 +50,9 @@ import SVGDocument from './nodes/svg-document/SVGDocument';
 import Element from './nodes/element/Element';
 import IElement from './nodes/element/IElement';
 import IHTMLCollection from './nodes/element/IHTMLCollection';
+import HTMLCollection from './nodes/element/HTMLCollection';
+import HTMLFormControlsCollection from './nodes/html-form-element/HTMLFormControlsCollection';
+import IHTMLFormControlsCollection from './nodes/html-form-element/IHTMLFormControlsCollection';
 import HTMLElement from './nodes/html-element/HTMLElement';
 import IHTMLElement from './nodes/html-element/IHTMLElement';
 import HTMLTemplateElement from './nodes/html-template-element/HTMLTemplateElement';
@@ -191,6 +194,9 @@ export {
 	Element,
 	IElement,
 	IHTMLCollection,
+	HTMLCollection,
+	HTMLFormControlsCollection,
+	IHTMLFormControlsCollection,
 	HTMLElement,
 	IHTMLElement,
 	HTMLTemplateElement,

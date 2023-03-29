@@ -496,7 +496,11 @@ export default class Node extends EventTarget implements INode {
 			}
 
 			// eslint-disable-next-line
-			if (event.composed && this.nodeType === NodeTypeEnum.documentFragmentNode && (<any>this).host) {
+			if (
+				event.composed &&
+				this.nodeType === NodeTypeEnum.documentFragmentNode &&
+				(<any>this).host
+			) {
 				// eslint-disable-next-line
 				return (<any>this).host.dispatchEvent(event);
 			}

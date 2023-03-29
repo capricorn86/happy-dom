@@ -12,6 +12,7 @@ import Path from 'path';
 import { File } from '../../src';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
+import { URLSearchParams } from 'url';
 
 describe('Response', () => {
 	let window: IWindow;
@@ -273,7 +274,28 @@ describe('Response', () => {
 	});
 
 	describe('formData()', () => {
-		it('Returns FormData for text fields.', async () => {
+		it('Returns FormData for "application/x-www-form-urlencoded" content.', async () => {
+			const urlSearchParams = new URLSearchParams();
+
+			urlSearchParams.set('key1', 'value1');
+			urlSearchParams.set('key2', 'value2');
+			urlSearchParams.set('key3', 'value3');
+
+			const response = new Response(urlSearchParams);
+			const formDataResponse = await response.formData();
+			let size = 0;
+
+			for (const _entry of formDataResponse) {
+				size++;
+			}
+
+			expect(formDataResponse.get('key1')).toBe('value1');
+			expect(formDataResponse.get('key2')).toBe('value2');
+			expect(formDataResponse.get('key3')).toBe('value3');
+			expect(size).toBe(3);
+		});
+
+		it('Returns FormData for multipart text fields.', async () => {
 			const formData = new FormData();
 
 			jest.spyOn(Math, 'random').mockImplementation(() => 0.8);
@@ -296,30 +318,7 @@ describe('Response', () => {
 			expect(size).toBe(3);
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
-			const response = new Response(new FormData());
-			let isAsyncComplete = false;
-
-			jest
-				.spyOn(MultipartFormDataParser, 'streamToFormData')
-				.mockImplementation(
-					() => new Promise((resolve) => setTimeout(() => resolve(new FormData()), 10))
-				);
-
-			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
-			response.formData();
-
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(false);
-			}, 2);
-
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(true);
-				done();
-			}, 12);
-		});
-
-		it('Returns FormData for files.', async () => {
+		it('Returns FormData for multipart files.', async () => {
 			const formData = new FormData();
 			const imageBuffer = await FS.promises.readFile(
 				Path.join(__dirname, 'data', 'test-image.jpg')
@@ -356,6 +355,52 @@ describe('Response', () => {
 			expect(file2.type).toBe('image/jpeg');
 			expect(file2.size).toBe(imageBuffer.length);
 			expect(await file2.arrayBuffer()).toEqual(imageBuffer.buffer);
+		});
+
+		it('Supports window.happyDOM.whenAsyncComplete() for "application/x-www-form-urlencoded" content.', (done) => {
+			const response = new Response(new URLSearchParams());
+			let isAsyncComplete = false;
+
+			jest
+				.spyOn(FetchBodyUtility, 'consumeBodyStream')
+				.mockImplementation(
+					() => new Promise((resolve) => setTimeout(() => resolve(Buffer.from('')), 10))
+				);
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			response.formData();
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 2);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				done();
+			}, 12);
+		});
+
+		it('Supports window.happyDOM.whenAsyncComplete() for multipart content.', (done) => {
+			const response = new Response(new FormData());
+			let isAsyncComplete = false;
+
+			jest
+				.spyOn(MultipartFormDataParser, 'streamToFormData')
+				.mockImplementation(
+					() => new Promise((resolve) => setTimeout(() => resolve(new FormData()), 10))
+				);
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			response.formData();
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 2);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				done();
+			}, 12);
 		});
 	});
 

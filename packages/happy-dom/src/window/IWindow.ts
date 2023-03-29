@@ -82,6 +82,7 @@ import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
 import Storage from '../storage/Storage';
 import NodeFilter from '../tree-walker/NodeFilter';
 import HTMLCollection from '../nodes/element/HTMLCollection';
+import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection';
 import NodeList from '../nodes/node/NodeList';
 import Selection from '../selection/Selection';
 import IEventTarget from '../event/IEventTarget';
@@ -117,6 +118,7 @@ import AbortSignal from '../fetch/AbortSignal';
 import IResponseBody from '../fetch/types/IResponseBody';
 import IRequestInfo from '../fetch/types/IRequestInfo';
 import IHeadersInit from '../fetch/types/IHeadersInit';
+import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -211,6 +213,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly Screen: typeof Screen;
 	readonly Storage: typeof Storage;
 	readonly HTMLCollection: typeof HTMLCollection;
+	readonly HTMLFormControlsCollection: typeof HTMLFormControlsCollection;
 	readonly NodeList: typeof NodeList;
 	readonly CSSUnitValue: typeof CSSUnitValue;
 	readonly CSS: CSS;
@@ -244,6 +247,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly FormData: typeof FormData;
 	readonly AbortController: typeof AbortController;
 	readonly AbortSignal: typeof AbortSignal;
+	readonly RadioNodeList: typeof RadioNodeList;
 
 	// Events
 	onload: (event: Event) => void;

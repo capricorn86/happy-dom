@@ -7,6 +7,7 @@ import INode from '../node/INode';
 import IHTMLCollection from '../element/IHTMLCollection';
 import ElementUtility from '../element/ElementUtility';
 import HTMLCollection from '../element/HTMLCollection';
+import INodeList from '../node/INodeList';
 
 /**
  * DocumentFragment.
@@ -105,7 +106,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): IElement[] {
+	public querySelectorAll(selector: string): INodeList<IElement> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 

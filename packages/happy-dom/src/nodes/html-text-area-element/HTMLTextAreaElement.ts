@@ -556,7 +556,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 
 		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
 			if (oldValue) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, oldValue);
+				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
 			}
 			if (attribute.value) {
 				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);

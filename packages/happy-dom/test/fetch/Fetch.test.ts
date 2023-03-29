@@ -3347,4 +3347,75 @@ describe('Fetch', () => {
 		expect(writtenBodyData).toBe('key1=value1&key2=value2');
 		expect(response.status).toBe(200);
 	});
+
+	it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
+		const chunks = ['chunk1', 'chunk2', 'chunk3'];
+		async function* generate(): AsyncGenerator<Buffer> {
+			yield await new Promise((resolve) => {
+				setTimeout(() => {
+					resolve(Buffer.from(chunks[0]));
+				}, 10);
+			});
+			yield await new Promise((resolve) => {
+				setTimeout(() => {
+					resolve(Buffer.from(chunks[1]));
+				}, 10);
+			});
+			yield await new Promise((resolve) => {
+				setTimeout(() => {
+					resolve(Buffer.from(chunks[2]));
+				}, 10);
+			});
+		}
+
+		let isAsyncComplete = false;
+
+		mockModule('https', {
+			request: () => {
+				const request = <HTTP.ClientRequest>new Stream.Writable();
+
+				request._write = (_chunk, _encoding, callback) => {
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
+
+							callback(response);
+						}, 100);
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => {};
+
+				return request;
+			}
+		});
+
+		window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+
+		window.fetch('https://localhost:8080/test/', {
+			method: 'POST',
+			body: Stream.Readable.from(generate())
+		});
+
+		setTimeout(() => {
+			expect(isAsyncComplete).toBe(false);
+		}, 10);
+
+		setTimeout(() => {
+			expect(isAsyncComplete).toBe(true);
+			done();
+		}, 110);
+	});
 });

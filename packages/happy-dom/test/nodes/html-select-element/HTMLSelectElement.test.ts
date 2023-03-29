@@ -186,6 +186,28 @@ describe('HTMLSelectElement', () => {
 		});
 	});
 
+	describe(`get labels()`, () => {
+		it('Returns associated labels', () => {
+			const label1 = document.createElement('label');
+			const label2 = document.createElement('label');
+
+			label1.setAttribute('for', 'select1');
+			label2.setAttribute('for', 'select1');
+
+			element.id = 'select1';
+
+			document.body.appendChild(label1);
+			document.body.appendChild(label2);
+			document.body.appendChild(element);
+
+			const labels = element.labels;
+
+			expect(labels.length).toBe(2);
+			expect(labels[0] === label1).toBe(true);
+			expect(labels[1] === label2).toBe(true);
+		});
+	});
+
 	describe(`add()`, () => {
 		it('Appends options.', () => {
 			const option1 = <IHTMLOptionElement>document.createElement('option');

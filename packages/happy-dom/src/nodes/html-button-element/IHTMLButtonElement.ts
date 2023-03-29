@@ -1,4 +1,5 @@
 import IHTMLElement from '../html-element/IHTMLElement';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 
 /**
  * HTML Button Element.
@@ -11,6 +12,7 @@ export default interface IHTMLButtonElement extends IHTMLElement {
 	value: string;
 	disabled: boolean;
 	type: string;
+	form: IHTMLFormElement;
 
 	/**
 	 * Checks validity.

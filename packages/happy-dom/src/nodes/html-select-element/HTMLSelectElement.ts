@@ -15,6 +15,9 @@ import NodeTypeEnum from '../node/NodeTypeEnum';
 import HTMLFormElement from '../html-form-element/HTMLFormElement';
 import IAttr from '../attr/IAttr';
 import IHTMLCollection from '../element/IHTMLCollection';
+import NodeList from '../node/NodeList';
+import IDocument from '../document/IDocument';
+import IShadowRoot from '../shadow-root/IShadowRoot';
 
 /**
  * HTML Select Element.
@@ -24,7 +27,6 @@ import IHTMLCollection from '../element/IHTMLCollection';
  */
 export default class HTMLSelectElement extends HTMLElement implements IHTMLSelectElement {
 	// Public properties.
-	public labels: INodeList<IHTMLLabelElement>;
 	public readonly length = 0;
 	public readonly options: IHTMLOptionsCollection = new HTMLOptionsCollection(this);
 	public readonly validationMessage = '';
@@ -223,6 +225,21 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 *
 	 * @returns Form.
 	 */
+	public get labels(): INodeList<IHTMLLabelElement> {
+		const id = this.id;
+		if (id) {
+			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
+			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
+			return <INodeList<IHTMLLabelElement>>labels;
+		}
+		return new NodeList<IHTMLLabelElement>();
+	}
+
+	/**
+	 * Returns the parent form element.
+	 *
+	 * @returns Form.
+	 */
 	public get form(): IHTMLFormElement {
 		return <IHTMLFormElement>this._formNode;
 	}
@@ -386,7 +403,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 
 		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
 			if (oldValue) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, oldValue);
+				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
 			}
 			if (attribute.value) {
 				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);

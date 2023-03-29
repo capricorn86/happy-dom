@@ -95,6 +95,7 @@ import { default as ResponseImplementation } from '../fetch/Response';
 import Storage from '../storage/Storage';
 import IWindow from './IWindow';
 import HTMLCollection from '../nodes/element/HTMLCollection';
+import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection';
 import NodeList from '../nodes/node/NodeList';
 import MediaQueryList from '../match-media/MediaQueryList';
 import Selection from '../selection/Selection';
@@ -129,6 +130,7 @@ import IResponseBody from '../fetch/types/IResponseBody';
 import IRequestInfo from '../fetch/types/IRequestInfo';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import IHappyDOMOptions from './IHappyDOMOptions';
+import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -251,6 +253,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Storage = Storage;
 	public readonly URLSearchParams = URLSearchParams;
 	public readonly HTMLCollection = HTMLCollection;
+	public readonly HTMLFormControlsCollection = HTMLFormControlsCollection;
 	public readonly NodeList = NodeList;
 	public readonly CSSUnitValue = CSSUnitValue;
 	public readonly CSSRule = CSSRule;
@@ -270,6 +273,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly FileList = FileList;
 	public readonly Headers: { new (init?: IHeadersInit): IHeaders } = Headers;
 	public readonly DOMRect: typeof DOMRect;
+	public readonly RadioNodeList: typeof RadioNodeList;
 	public readonly Request: {
 		new (input: IRequestInfo, init?: IRequestInit): IRequest;
 	};
