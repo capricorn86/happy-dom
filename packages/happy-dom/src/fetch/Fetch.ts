@@ -22,8 +22,6 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 const MAX_REDIRECT_COUNT = 20;
 
-/* eslint-disable @typescript-eslint/member-ordering */
-
 /**
  * Handles fetch requests.
  *

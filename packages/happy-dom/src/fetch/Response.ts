@@ -198,19 +198,43 @@ export default class Response implements IResponse {
 	 */
 	public async formData(): Promise<FormData> {
 		const contentType = this.headers.get('content-type');
+		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
+		const taskID = taskManager.startTask();
 
 		if (contentType.startsWith('application/x-www-form-urlencoded')) {
 			const formData = new FormData();
-			const parameters = new URLSearchParams(await this.text());
+			let text: string;
+
+			try {
+				text = await this.text();
+			} catch (error) {
+				taskManager.endTask(taskID);
+				throw error;
+			}
+
+			const parameters = new URLSearchParams(text);
 
 			for (const [name, value] of parameters) {
 				formData.append(name, value);
 			}
 
+			taskManager.endTask(taskID);
+
 			return formData;
 		}
 
-		return await MultipartFormDataParser.streamToFormData(this.body, contentType);
+		let formData: FormData;
+
+		try {
+			formData = await MultipartFormDataParser.streamToFormData(this.body, contentType);
+		} catch (error) {
+			taskManager.endTask(taskID);
+			throw error;
+		}
+
+		taskManager.endTask(taskID);
+
+		return formData;
 	}
 
 	/**

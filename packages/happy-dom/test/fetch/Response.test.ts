@@ -5,6 +5,8 @@ import Response from '../../src/fetch/Response';
 import Headers from '../../src/fetch/Headers';
 import Blob from '../../src/file/Blob';
 import FormData from '../../src/form-data/FormData';
+import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility';
+import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser';
 
 describe('Response', () => {
 	let window: IWindow;
@@ -104,6 +106,29 @@ describe('Response', () => {
 			expect(arrayBuffer).toBeInstanceOf(ArrayBuffer);
 			expect(Buffer.from(arrayBuffer).toString()).toBe('Hello World');
 		});
+
+		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
+			const response = new Response('Hello World');
+			let isAsyncComplete = false;
+
+			jest
+				.spyOn(FetchBodyUtility, 'consumeBodyStream')
+				.mockImplementation(
+					() => new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
+				);
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			response.arrayBuffer();
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 2);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				done();
+			}, 12);
+		});
 	});
 
 	describe('blob()', () => {
@@ -117,6 +142,29 @@ describe('Response', () => {
 			const text = await blob.text();
 			expect(text).toBe('Hello World');
 		});
+
+		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
+			const response = new Response('Hello World', { headers: { 'Content-Type': 'text/plain' } });
+			let isAsyncComplete = false;
+
+			jest
+				.spyOn(FetchBodyUtility, 'consumeBodyStream')
+				.mockImplementation(
+					() => new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
+				);
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			response.blob();
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 2);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				done();
+			}, 12);
+		});
 	});
 
 	describe('buffer()', () => {
@@ -127,6 +175,29 @@ describe('Response', () => {
 			expect(buffer).toBeInstanceOf(Buffer);
 			expect(buffer.toString()).toBe('Hello World');
 		});
+
+		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
+			const response = new Response('Hello World');
+			let isAsyncComplete = false;
+
+			jest
+				.spyOn(FetchBodyUtility, 'consumeBodyStream')
+				.mockImplementation(
+					() => new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
+				);
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			response.buffer();
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 2);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				done();
+			}, 12);
+		});
 	});
 
 	describe('text()', () => {
@@ -136,6 +207,29 @@ describe('Response', () => {
 
 			expect(text).toBe('Hello World');
 		});
+
+		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
+			const response = new Response('Hello World');
+			let isAsyncComplete = false;
+
+			jest
+				.spyOn(FetchBodyUtility, 'consumeBodyStream')
+				.mockImplementation(
+					() => new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
+				);
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			response.text();
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 2);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				done();
+			}, 12);
+		});
 	});
 
 	describe('json()', () => {
@@ -144,6 +238,32 @@ describe('Response', () => {
 			const json = await response.json();
 
 			expect(json).toEqual({ key1: 'value1' });
+		});
+
+		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
+			const response = new Response('{ "key1": "value1" }');
+			let isAsyncComplete = false;
+
+			jest
+				.spyOn(FetchBodyUtility, 'consumeBodyStream')
+				.mockImplementation(
+					() =>
+						new Promise((resolve) =>
+							setTimeout(() => resolve(Buffer.from('{ "key1": "value1" }')), 10)
+						)
+				);
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			response.json();
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 2);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				done();
+			}, 12);
 		});
 	});
 
@@ -169,6 +289,29 @@ describe('Response', () => {
 			expect(formDataResponse.get('key2')).toBe('value2');
 			expect(formDataResponse.get('key3')).toBe('value3');
 			expect(size).toBe(3);
+		});
+
+		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
+			const response = new Response(new FormData());
+			let isAsyncComplete = false;
+
+			jest
+				.spyOn(MultipartFormDataParser, 'streamToFormData')
+				.mockImplementation(
+					() => new Promise((resolve) => setTimeout(() => resolve(new FormData()), 10))
+				);
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			response.formData();
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 2);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				done();
+			}, 12);
 		});
 	});
 
