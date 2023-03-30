@@ -1,5 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement';
-import ValidityState from '../validity-state/ValidityState';
+import ValidityState from '../../validity-state/ValidityState';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import Event from '../../event/Event';
@@ -16,6 +16,11 @@ import IFileList from './IFileList';
 import IAttr from '../attr/IAttr';
 import INode from '../node/INode';
 import HTMLFormElement from '../html-form-element/HTMLFormElement';
+import INodeList from '../node/INodeList';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
+import IDocument from '../document/IDocument';
+import IShadowRoot from '../shadow-root/IShadowRoot';
+import NodeList from '../node/NodeList';
 
 /**
  * HTML Input Element.
@@ -782,6 +787,31 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public get valueAsNumber(): number {
 		return this.value ? parseFloat(this.value) : NaN;
+	}
+
+	/**
+	 * Returns the associated label elements.
+	 *
+	 * @returns Label elements.
+	 */
+	public get labels(): INodeList<IHTMLLabelElement> {
+		const id = this.id;
+		if (id) {
+			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
+			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
+
+			let parent = this.parentNode;
+			while (parent) {
+				if (parent['tagName'] === 'LABEL') {
+					labels.push(<IHTMLLabelElement>parent);
+					break;
+				}
+				parent = parent.parentNode;
+			}
+
+			return <INodeList<IHTMLLabelElement>>labels;
+		}
+		return new NodeList<IHTMLLabelElement>();
 	}
 
 	/**

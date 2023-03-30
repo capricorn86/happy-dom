@@ -14,6 +14,7 @@ import NodeUtility from './NodeUtility';
 import IAttr from '../attr/IAttr';
 import NodeList from './NodeList';
 import INodeList from './INodeList';
+import IShadowRoot from '../shadow-root/IShadowRoot';
 
 const JSON_CIRCULAR_PROPERTIES = [
 	'ownerDocument',
@@ -499,10 +500,10 @@ export default class Node extends EventTarget implements INode {
 			if (
 				event.composed &&
 				this.nodeType === NodeTypeEnum.documentFragmentNode &&
-				(<any>this).host
+				(<IShadowRoot>(<unknown>this)).host
 			) {
 				// eslint-disable-next-line
-				return (<any>this).host.dispatchEvent(event);
+				return (<IShadowRoot>(<unknown>this)).host.dispatchEvent(event);
 			}
 		}
 

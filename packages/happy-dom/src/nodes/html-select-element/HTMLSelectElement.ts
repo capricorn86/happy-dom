@@ -1,7 +1,7 @@
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import ValidityState from '../validity-state/ValidityState';
+import ValidityState from '../../validity-state/ValidityState';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement';
 import HTMLOptionsCollection from './HTMLOptionsCollection';
@@ -221,15 +221,25 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	}
 
 	/**
-	 * Returns the parent form element.
+	 * Returns the associated label elements.
 	 *
-	 * @returns Form.
+	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
 		const id = this.id;
 		if (id) {
 			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
 			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
+
+			let parent = this.parentNode;
+			while (parent) {
+				if (parent['tagName'] === 'LABEL') {
+					labels.push(<IHTMLLabelElement>parent);
+					break;
+				}
+				parent = parent.parentNode;
+			}
+
 			return <INodeList<IHTMLLabelElement>>labels;
 		}
 		return new NodeList<IHTMLLabelElement>();

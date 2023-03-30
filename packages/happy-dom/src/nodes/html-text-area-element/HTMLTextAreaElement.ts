@@ -8,8 +8,13 @@ import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
 import INode from '../node/INode';
-import ValidityState from '../validity-state/ValidityState';
+import ValidityState from '../../validity-state/ValidityState';
 import IHTMLTextAreaElement from './IHTMLTextAreaElement';
+import INodeList from '../node/INodeList';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
+import IDocument from '../document/IDocument';
+import IShadowRoot from '../shadow-root/IShadowRoot';
+import NodeList from '../node/NodeList';
 
 /**
  * HTML Text Area Element.
@@ -397,6 +402,31 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public get textLength(): number {
 		return this.value.length;
+	}
+
+	/**
+	 * Returns the associated label elements.
+	 *
+	 * @returns Label elements.
+	 */
+	public get labels(): INodeList<IHTMLLabelElement> {
+		const id = this.id;
+		if (id) {
+			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
+			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
+
+			let parent = this.parentNode;
+			while (parent) {
+				if (parent['tagName'] === 'LABEL') {
+					labels.push(<IHTMLLabelElement>parent);
+					break;
+				}
+				parent = parent.parentNode;
+			}
+
+			return <INodeList<IHTMLLabelElement>>labels;
+		}
+		return new NodeList<IHTMLLabelElement>();
 	}
 
 	/**

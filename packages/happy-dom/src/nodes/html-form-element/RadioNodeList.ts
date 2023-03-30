@@ -16,7 +16,6 @@ export default class RadioNodeList extends NodeList<IElement> implements IRadioN
 	public get value(): string {
 		for (const node of this) {
 			if (node.checked) {
-				debugger;
 				return node.value;
 			}
 		}

@@ -1,8 +1,15 @@
+import Event from '../../event/Event';
+import ValidityState from '../../validity-state/ValidityState';
 import IAttr from '../attr/IAttr';
+import IDocument from '../document/IDocument';
 import HTMLElement from '../html-element/HTMLElement';
 import HTMLFormElement from '../html-form-element/HTMLFormElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 import INode from '../node/INode';
+import INodeList from '../node/INodeList';
+import NodeList from '../node/NodeList';
+import IShadowRoot from '../shadow-root/IShadowRoot';
 import IHTMLButtonElement from './IHTMLButtonElement';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
@@ -14,6 +21,9 @@ const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement.
  */
 export default class HTMLButtonElement extends HTMLElement implements IHTMLButtonElement {
+	public readonly validationMessage = '';
+	public readonly validity = new ValidityState(this);
+
 	/**
 	 * Returns name.
 	 *
@@ -100,12 +110,60 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	}
 
 	/**
+	 * Returns the associated label elements.
+	 *
+	 * @returns Label elements.
+	 */
+	public get labels(): INodeList<IHTMLLabelElement> {
+		const id = this.id;
+		if (id) {
+			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
+			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
+
+			let parent = this.parentNode;
+			while (parent) {
+				if (parent['tagName'] === 'LABEL') {
+					labels.push(<IHTMLLabelElement>parent);
+					break;
+				}
+				parent = parent.parentNode;
+			}
+
+			return <INodeList<IHTMLLabelElement>>labels;
+		}
+		return new NodeList<IHTMLLabelElement>();
+	}
+
+	/**
 	 * Checks validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	public checkValidity(): boolean {
+		const valid =
+			this.disabled || this.type === 'reset' || this.type === 'button' || this.validity.valid;
+		if (!valid) {
+			this.dispatchEvent(new Event('invalid', { bubbles: true, cancelable: true }));
+		}
+		return valid;
+	}
+
+	/**
+	 * Reports validity.
 	 *
 	 * @returns Validity.
 	 */
-	public checkValidity(): boolean {
-		return true;
+	public reportValidity(): boolean {
+		return this.checkValidity();
+	}
+
+	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	public setCustomValidity(message: string): void {
+		(<string>this.validationMessage) = String(message);
 	}
 
 	/**

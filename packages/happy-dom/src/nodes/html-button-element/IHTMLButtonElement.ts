@@ -1,5 +1,7 @@
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
+import INodeList from '../node/INodeList';
 
 /**
  * HTML Button Element.
@@ -12,7 +14,9 @@ export default interface IHTMLButtonElement extends IHTMLElement {
 	value: string;
 	disabled: boolean;
 	type: string;
-	form: IHTMLFormElement;
+	readonly form: IHTMLFormElement;
+	readonly validationMessage: string;
+	readonly labels: INodeList<IHTMLLabelElement>;
 
 	/**
 	 * Checks validity.
@@ -20,4 +24,18 @@ export default interface IHTMLButtonElement extends IHTMLElement {
 	 * @returns Validity.
 	 */
 	checkValidity(): boolean;
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns Validity.
+	 */
+	reportValidity(): boolean;
+
+	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	setCustomValidity(message: string): void;
 }

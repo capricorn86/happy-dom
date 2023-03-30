@@ -131,6 +131,7 @@ import IRequestInfo from '../fetch/types/IRequestInfo';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import IHappyDOMOptions from './IHappyDOMOptions';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
+import ValidityState from '../validity-state/ValidityState';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -274,6 +275,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Headers: { new (init?: IHeadersInit): IHeaders } = Headers;
 	public readonly DOMRect: typeof DOMRect;
 	public readonly RadioNodeList: typeof RadioNodeList;
+	public readonly ValidityState: typeof ValidityState;
 	public readonly Request: {
 		new (input: IRequestInfo, init?: IRequestInit): IRequest;
 	};

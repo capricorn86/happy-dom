@@ -119,6 +119,7 @@ import IResponseBody from '../fetch/types/IResponseBody';
 import IRequestInfo from '../fetch/types/IRequestInfo';
 import IHeadersInit from '../fetch/types/IHeadersInit';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
+import ValidityState from '../validity-state/ValidityState';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -248,6 +249,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly AbortController: typeof AbortController;
 	readonly AbortSignal: typeof AbortSignal;
 	readonly RadioNodeList: typeof RadioNodeList;
+	readonly ValidityState: typeof ValidityState;
 
 	// Events
 	onload: (event: Event) => void;

@@ -7,6 +7,7 @@ import File from '../../../src/file/File';
 import Event from '../../../src/event/Event';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
+import ValidityState from '../../../src/validity-state/ValidityState';
 
 describe('HTMLInputElement', () => {
 	let window: IWindow;
@@ -472,10 +473,41 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get validity()', () => {
+		it('Returns an instance of ValidityState.', () => {
+			expect(element.validity).toBeInstanceOf(ValidityState);
+		});
+	});
+
 	describe('get validationMessage()', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');
 			expect(element.validationMessage).toBe('Error message');
+		});
+	});
+
+	describe(`get labels()`, () => {
+		it('Returns associated labels', () => {
+			const label1 = document.createElement('label');
+			const label2 = document.createElement('label');
+			const parentLabel = document.createElement('label');
+
+			label1.setAttribute('for', 'select1');
+			label2.setAttribute('for', 'select1');
+
+			element.id = 'select1';
+
+			parentLabel.appendChild(element);
+			document.body.appendChild(label1);
+			document.body.appendChild(label2);
+			document.body.appendChild(parentLabel);
+
+			const labels = element.labels;
+
+			expect(labels.length).toBe(3);
+			expect(labels[0] === label1).toBe(true);
+			expect(labels[1] === label2).toBe(true);
+			expect(labels[2] === parentLabel).toBe(true);
 		});
 	});
 
@@ -487,25 +519,6 @@ describe('HTMLInputElement', () => {
 			expect(element.validationMessage).toBe('null');
 			element.setCustomValidity('');
 			expect(element.validationMessage).toBe('');
-		});
-	});
-
-	describe('reportValidity()', () => {
-		it('Dispatches an "invalid" event.', () => {
-			let dispatchedEvent: Event = null;
-			element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
-			element.setCustomValidity('Error message');
-			element.reportValidity();
-			expect(dispatchedEvent.cancelable).toBe(true);
-			expect(dispatchedEvent.bubbles).toBe(true);
-		});
-
-		it('Does not dispatch an "invalid" event if the validation message is an empty string.', () => {
-			let dispatchedEvent: Event = null;
-			element.setCustomValidity('');
-			element.reportValidity();
-			element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
-			expect(dispatchedEvent).toBe(null);
 		});
 	});
 
@@ -561,11 +574,52 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
-	describe('checkValidity()', () => {
-		it('Returns "true".', () => {
-			expect(element.checkValidity()).toBe(true);
+	for (const method of ['checkValidity', 'reportValidity']) {
+		describe(`${method}()`, () => {
+			it('Returns "true" if the field is "disabled".', () => {
+				element.required = true;
+				element.disabled = true;
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "true" if the field is "readOnly".', () => {
+				element.required = true;
+				element.readOnly = true;
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "true" if the field type is "hidden".', () => {
+				element.required = true;
+				element.type = 'hidden';
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "true" if the field type is "reset".', () => {
+				element.required = true;
+				element.type = 'reset';
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "true" if the field type is "button".', () => {
+				element.required = true;
+				element.type = 'button';
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "false" if invalid.', () => {
+				element.required = true;
+				expect(element[method]()).toBe(false);
+			});
+
+			it('Triggers an "invalid" event when invalid.', () => {
+				element.required = true;
+				let dispatchedEvent: Event | null = null;
+				element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
+				element[method]();
+				expect(dispatchedEvent.type).toBe('invalid');
+			});
 		});
-	});
+	}
 
 	describe('stepUp()', () => {
 		it('Steps up with default value.', () => {

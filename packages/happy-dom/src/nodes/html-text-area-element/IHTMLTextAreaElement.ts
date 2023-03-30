@@ -2,6 +2,8 @@ import Event from '../../event/Event';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
+import INodeList from '../node/INodeList';
 
 /**
  * HTML Text Area Element.
@@ -13,6 +15,7 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	readonly type: string;
 	readonly form: IHTMLFormElement;
 	readonly validationMessage: string;
+	readonly labels: INodeList<IHTMLLabelElement>;
 	defaultValue: string;
 	minLength: number;
 	maxLength: number;

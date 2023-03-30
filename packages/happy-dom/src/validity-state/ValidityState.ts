@@ -1,6 +1,9 @@
-import HTMLInputElement from '../html-input-element/HTMLInputElement';
-import HTMLSelectElement from '../html-select-element/HTMLSelectElement';
-import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement';
+import IHTMLButtonElement from '../nodes/html-button-element/IHTMLButtonElement';
+import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
+import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
+import IHTMLSelectElement from '../nodes/html-select-element/IHTMLSelectElement';
+import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
+import IHTMLTextAreaElement from '../nodes/html-text-area-element/IHTMLTextAreaElement';
 
 const EMAIL_REGEXP =
 	/^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
@@ -16,14 +19,20 @@ const URL_REGEXP =
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ValidityState
  */
 export default class ValidityState {
-	private element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+	private element:
+		| IHTMLInputElement
+		| IHTMLTextAreaElement
+		| IHTMLSelectElement
+		| IHTMLButtonElement;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param element Input element.
 	 */
-	constructor(element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
+	constructor(
+		element: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement
+	) {
 		this.element = element;
 	}
 
@@ -60,7 +69,7 @@ export default class ValidityState {
 			this.element instanceof HTMLInputElement &&
 			this.element.hasAttribute('pattern') &&
 			this.element.value.length > 0 &&
-			new RegExp(this.element.getAttribute('pattern')).test(this.element.value) === false
+			this.element.value.replace(new RegExp(this.element.getAttribute('pattern')), '').length > 0
 		);
 	}
 
@@ -117,7 +126,7 @@ export default class ValidityState {
 	 */
 	public get tooLong(): boolean {
 		return (
-			this.element instanceof HTMLInputElement &&
+			(this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement) &&
 			this.element.maxLength > 0 &&
 			this.element.value.length > this.element.maxLength
 		);
@@ -130,10 +139,10 @@ export default class ValidityState {
 	 */
 	public get tooShort(): boolean {
 		return (
-			this.element instanceof HTMLInputElement &&
+			(this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement) &&
 			this.element.minLength > 0 &&
 			this.element.value.length > 0 &&
-			this.element.value.length < parseInt(this.element.getAttribute('minLength'), 10)
+			this.element.value.length < this.element.minLength
 		);
 	}
 
@@ -157,7 +166,7 @@ export default class ValidityState {
 	 * @returns "true" if valid.
 	 */
 	public get valueMissing(): boolean {
-		if (!this.element.required) {
+		if (!(<IHTMLInputElement>this.element).required) {
 			return false;
 		}
 		if (

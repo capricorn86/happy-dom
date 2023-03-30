@@ -3,7 +3,7 @@ import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 import INodeList from '../node/INodeList';
 import IHTMLOptionsCollection from './IHTMLOptionsCollection';
-import ValidityState from '../validity-state/ValidityState';
+import ValidityState from '../../validity-state/ValidityState';
 import Event from '../../event/Event';
 import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
 import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
@@ -29,6 +29,7 @@ export default interface IHTMLSelectElement extends IHTMLElement {
 	value: string;
 	name: string;
 	multiple: boolean;
+	required: boolean;
 
 	// Events
 	onchange: (event: Event) => void | null;
