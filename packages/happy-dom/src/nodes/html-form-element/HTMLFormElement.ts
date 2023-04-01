@@ -297,8 +297,8 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 		name: string
 	): void {
 		if (!this.elements.includes(node)) {
-			this.elements.push(node);
 			this[this.elements.length] = node;
+			this.elements.push(node);
 			(<number>this.length) = this.elements.length;
 		}
 

@@ -96,7 +96,17 @@ describe('HTMLFormElement', () => {
 			const elements = element.elements;
 			const root = element.children[0];
 
+			expect(element.length).toBe(8);
 			expect(elements.length).toBe(8);
+
+			expect(element[0] === root.children[0]).toBe(true);
+			expect(element[1] === root.children[1]).toBe(true);
+			expect(element[2] === root.children[2]).toBe(true);
+			expect(element[3] === root.children[3]).toBe(true);
+			expect(element[4] === root.children[4]).toBe(true);
+			expect(element[5] === root.children[5]).toBe(true);
+			expect(element[6] === root.children[6]).toBe(true);
+			expect(element[7] === root.children[7]).toBe(true);
 
 			expect(elements[0] === root.children[0]).toBe(true);
 			expect(elements[1] === root.children[1]).toBe(true);
@@ -127,6 +137,11 @@ describe('HTMLFormElement', () => {
 			radioNodeList2.push(root.children[6]);
 			radioNodeList2.push(root.children[7]);
 
+			expect(element['text1'] === root.children[0]).toBe(true);
+			expect(element['button1'] === root.children[1]).toBe(true);
+			expect(element['checkbox1']).toEqual(radioNodeList1);
+			expect(element['radio1']).toEqual(radioNodeList2);
+
 			expect(elements['text1'] === root.children[0]).toBe(true);
 			expect(elements['button1'] === root.children[1]).toBe(true);
 			expect(elements['checkbox1']).toEqual(radioNodeList1);
@@ -141,6 +156,9 @@ describe('HTMLFormElement', () => {
 
 			(<IHTMLInputElement>elements.namedItem('text1')).name = 'text2';
 			(<IHTMLInputElement>elements.namedItem('text2')).id = 'text3';
+
+			expect(element['text2'] === root.children[0]).toBe(true);
+			expect(element['text3'] === root.children[0]).toBe(true);
 
 			expect(elements['text2'] === root.children[0]).toBe(true);
 			expect(elements['text3'] === root.children[0]).toBe(true);
@@ -163,7 +181,17 @@ describe('HTMLFormElement', () => {
 
 			root.appendChild(anotherElement);
 
+			expect(element.length).toBe(16);
 			expect(elements.length).toBe(16);
+
+			expect(element[8] === anotherRoot.children[0]).toBe(true);
+			expect(element[9] === anotherRoot.children[1]).toBe(true);
+			expect(element[10] === anotherRoot.children[2]).toBe(true);
+			expect(element[11] === anotherRoot.children[3]).toBe(true);
+			expect(element[12] === anotherRoot.children[4]).toBe(true);
+			expect(element[13] === anotherRoot.children[5]).toBe(true);
+			expect(element[14] === anotherRoot.children[6]).toBe(true);
+			expect(element[15] === anotherRoot.children[7]).toBe(true);
 
 			expect(elements[8] === anotherRoot.children[0]).toBe(true);
 			expect(elements[9] === anotherRoot.children[1]).toBe(true);
@@ -185,10 +213,52 @@ describe('HTMLFormElement', () => {
 			anotherRadioNodeList2.push(anotherRoot.children[6]);
 			anotherRadioNodeList2.push(anotherRoot.children[7]);
 
+			expect(element['anotherText1'] === anotherRoot.children[0]).toBe(true);
+			expect(element['anotherButton1'] === anotherRoot.children[1]).toBe(true);
+			expect(element['anotherCheckbox1']).toEqual(anotherRadioNodeList1);
+			expect(element['anotherRadio1']).toEqual(anotherRadioNodeList2);
+
 			expect(elements['anotherText1'] === anotherRoot.children[0]).toBe(true);
 			expect(elements['anotherButton1'] === anotherRoot.children[1]).toBe(true);
 			expect(elements['anotherCheckbox1']).toEqual(anotherRadioNodeList1);
 			expect(elements['anotherRadio1']).toEqual(anotherRadioNodeList2);
+
+			for (const child of root.children.slice()) {
+				if (child !== anotherElement) {
+					root.removeChild(child);
+				}
+			}
+
+			expect(element.length).toBe(8);
+			expect(elements.length).toBe(8);
+
+			expect(element[0] === anotherRoot.children[0]).toBe(true);
+			expect(element[1] === anotherRoot.children[1]).toBe(true);
+			expect(element[2] === anotherRoot.children[2]).toBe(true);
+			expect(element[3] === anotherRoot.children[3]).toBe(true);
+			expect(element[4] === anotherRoot.children[4]).toBe(true);
+			expect(element[5] === anotherRoot.children[5]).toBe(true);
+			expect(element[6] === anotherRoot.children[6]).toBe(true);
+			expect(element[7] === anotherRoot.children[7]).toBe(true);
+
+			expect(elements[0] === anotherRoot.children[0]).toBe(true);
+			expect(elements[1] === anotherRoot.children[1]).toBe(true);
+			expect(elements[2] === anotherRoot.children[2]).toBe(true);
+			expect(elements[3] === anotherRoot.children[3]).toBe(true);
+			expect(elements[4] === anotherRoot.children[4]).toBe(true);
+			expect(elements[5] === anotherRoot.children[5]).toBe(true);
+			expect(elements[6] === anotherRoot.children[6]).toBe(true);
+			expect(elements[7] === anotherRoot.children[7]).toBe(true);
+
+			expect(element['text1'] === undefined).toBe(true);
+			expect(element['button1'] === undefined).toBe(true);
+			expect(element['checkbox1'] === undefined).toBe(true);
+			expect(element['radio1'] === undefined).toBe(true);
+
+			expect(elements['text1'] === undefined).toBe(true);
+			expect(elements['button1'] === undefined).toBe(true);
+			expect(elements['checkbox1'] === undefined).toBe(true);
+			expect(elements['radio1'] === undefined).toBe(true);
 		});
 	});
 
