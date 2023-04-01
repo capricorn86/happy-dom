@@ -51,7 +51,8 @@
 		"he": "^1.2.0",
 		"webidl-conversions": "^7.0.0",
 		"whatwg-encoding": "^2.0.0",
-		"whatwg-mimetype": "^3.0.0"
+		"whatwg-mimetype": "^3.0.0",
+	  	"iconv-lite": "^0.6.3"
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",

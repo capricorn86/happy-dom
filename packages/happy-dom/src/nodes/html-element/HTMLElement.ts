@@ -383,15 +383,18 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		this.ownerDocument['_activeElement'] = null;
 
-		for (const eventType of ['blur', 'focusout']) {
-			const event = new FocusEvent(eventType, {
+		this.dispatchEvent(
+			new FocusEvent('blur', {
+				bubbles: false,
+				composed: true
+			})
+		);
+		this.dispatchEvent(
+			new FocusEvent('focusout', {
 				bubbles: true,
 				composed: true
-			});
-			event._target = this;
-			event._currentTarget = this;
-			this.dispatchEvent(event);
-		}
+			})
+		);
 	}
 
 	/**
@@ -408,15 +411,18 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		this.ownerDocument['_activeElement'] = this;
 
-		for (const eventType of ['focus', 'focusin']) {
-			const event = new FocusEvent(eventType, {
+		this.dispatchEvent(
+			new FocusEvent('focus', {
+				bubbles: false,
+				composed: true
+			})
+		);
+		this.dispatchEvent(
+			new FocusEvent('focusin', {
 				bubbles: true,
 				composed: true
-			});
-			event._target = this;
-			event._currentTarget = this;
-			this.dispatchEvent(event);
-		}
+			})
+		);
 	}
 
 	/**

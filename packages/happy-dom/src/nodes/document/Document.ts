@@ -45,6 +45,7 @@ import IProcessingInstruction from '../processing-instruction/IProcessingInstruc
 import ProcessingInstruction from '../processing-instruction/ProcessingInstruction';
 import ElementUtility from '../element/ElementUtility';
 import HTMLCollection from '../element/HTMLCollection';
+import VisibilityStateEnum from './VisibilityStateEnum';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -229,6 +230,34 @@ export default class Document extends Node implements IDocument {
 	public get characterSet(): string {
 		const charset = this.querySelector('meta[charset]')?.getAttributeNS(null, 'charset');
 		return charset ? charset : 'UTF-8';
+	}
+
+	/**
+	 * Returns title.
+	 *
+	 * @returns Title.
+	 */
+	public get title(): string {
+		const el = this.querySelector('title');
+		if (el) {
+			return el.textContent;
+		}
+		return '';
+	}
+
+	/**
+	 * Returns set title.
+	 *
+	 */
+	public set title(title: string) {
+		const el = this.querySelector('title');
+		if (el) {
+			el.textContent = title;
+		} else {
+			const titleEl = this.createElement('title');
+			titleEl.textContent = title;
+			this.head.appendChild(titleEl);
+		}
 	}
 
 	/**
@@ -428,6 +457,32 @@ export default class Document extends Node implements IDocument {
 	 * */
 	public get documentURI(): string {
 		return this.URL;
+	}
+
+	/**
+	 * Returns document visibility state.
+	 *
+	 * @returns the visibility state of the current document.
+	 * */
+	public get visibilityState(): VisibilityStateEnum {
+		if (this.defaultView) {
+			return VisibilityStateEnum.visible;
+		}
+
+		return VisibilityStateEnum.hidden;
+	}
+
+	/**
+	 * Returns document hidden state.
+	 *
+	 * @returns the hidden state of the current document.
+	 * */
+	public get hidden(): boolean {
+		if (this.defaultView) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

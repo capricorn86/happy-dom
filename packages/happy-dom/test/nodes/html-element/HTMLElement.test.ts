@@ -388,7 +388,7 @@ describe('HTMLElement', () => {
 			element.blur();
 
 			expect(triggeredBlurEvent.type).toBe('blur');
-			expect(triggeredBlurEvent.bubbles).toBe(true);
+			expect(triggeredBlurEvent.bubbles).toBe(false);
 			expect(triggeredBlurEvent.composed).toBe(true);
 			expect(triggeredBlurEvent.target === element).toBe(true);
 
@@ -446,7 +446,7 @@ describe('HTMLElement', () => {
 			element.focus();
 
 			expect(triggeredFocusEvent.type).toBe('focus');
-			expect(triggeredFocusEvent.bubbles).toBe(true);
+			expect(triggeredFocusEvent.bubbles).toBe(false);
 			expect(triggeredFocusEvent.composed).toBe(true);
 			expect(triggeredFocusEvent.target === element).toBe(true);
 
@@ -502,7 +502,7 @@ describe('HTMLElement', () => {
 			element.focus();
 
 			expect(triggeredEvent.type).toBe('blur');
-			expect(triggeredEvent.bubbles).toBe(true);
+			expect(triggeredEvent.bubbles).toBe(false);
 			expect(triggeredEvent.composed).toBe(true);
 			expect(triggeredEvent.target === previousElement).toBe(true);
 		});

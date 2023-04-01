@@ -16,6 +16,7 @@ import ProgressEvent from '../event/events/ProgressEvent';
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum';
 import XMLHttpRequestCertificate from './XMLHttpRequestCertificate';
 import XMLHttpRequestSyncRequestScriptBuilder from './utilities/XMLHttpRequestSyncRequestScriptBuilder';
+import iconv from 'iconv-lite';
 
 // These headers are not user setable.
 // The following are allowed but banned in the spec:
@@ -45,6 +46,8 @@ const FORBIDDEN_REQUEST_HEADERS = [
 
 // These request methods are not allowed
 const FORBIDDEN_REQUEST_METHODS = ['TRACE', 'TRACK', 'CONNECT'];
+// Match Content-Type header charset
+const CONTENT_TYPE_ENCODING_REGEXP = /charset=([^;]*)/i;
 
 /**
  * XMLHttpRequest.
@@ -592,8 +595,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this._state.status = response.statusCode;
 			this._state.statusText = response.statusMessage;
 			// Sync responseType === ''
-			this._state.response = response.text;
-			this._state.responseText = response.text;
+			this._state.response = this._decodeResponseText(Buffer.from(response.data, 'base64'));
+			this._state.responseText = this._state.response;
 			this._state.responseXML = null;
 			this._state.responseURL = new URL(
 				this._settings.url,
@@ -750,10 +753,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				return;
 			}
 
-			if (this._state.incommingMessage && this._state.incommingMessage.setEncoding) {
-				this._state.incommingMessage.setEncoding('utf-8');
-			}
-
 			this._setState(XMLHttpRequestReadyStateEnum.headersRecieved);
 			this._state.status = this._state.incommingMessage.statusCode;
 			this._state.statusText = this._state.incommingMessage.statusMessage;
@@ -774,7 +773,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				const contentLength = Number(this._state.incommingMessage.headers['content-length']);
 				this.dispatchEvent(
 					new ProgressEvent('progress', {
-						lengthComputable: isNaN(contentLength) ? false : true,
+						lengthComputable: !isNaN(contentLength),
 						loaded: tempResponse.length,
 						total: isNaN(contentLength) ? 0 : contentLength
 					})
@@ -949,7 +948,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			case XMLHttpResponseTypeEnum.json:
 				try {
 					return {
-						response: JSON.parse(data.toString()),
+						response: JSON.parse(this._decodeResponseText(data)),
 						responseText: null,
 						responseXML: null
 					};
@@ -959,9 +958,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			case XMLHttpResponseTypeEnum.text:
 			case '':
 			default:
+				const responseText = this._decodeResponseText(data);
 				return {
-					response: data.toString(),
-					responseText: data.toString(),
+					response: responseText,
+					responseText: responseText,
 					responseXML: null
 				};
 		}
@@ -995,5 +995,24 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this._state.responseText = error instanceof Error ? error.stack : '';
 		this._state.error = true;
 		this._setState(XMLHttpRequestReadyStateEnum.done);
+	}
+
+	/**
+	 * Decodes response text.
+	 *
+	 * @param data Data.
+	 * @returns Decoded text.
+	 **/
+	private _decodeResponseText(data: Buffer): string {
+		const contextTypeEncodingRegexp = new RegExp(CONTENT_TYPE_ENCODING_REGEXP, 'gi');
+		let contentType;
+		if (this._state.incommingMessage && this._state.incommingMessage.headers) {
+			contentType = this._state.incommingMessage.headers['content-type']; // For remote requests (http/https).
+		} else {
+			contentType = this._state.requestHeaders['content-type']; // For local requests or unpredictable remote requests.
+		}
+		const charset = contextTypeEncodingRegexp.exec(contentType);
+		// Default utf-8
+		return iconv.decode(data, charset ? charset[1] : 'utf-8');
 	}
 }
