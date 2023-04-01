@@ -17,6 +17,7 @@ import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 export default interface IHTMLInputElement extends IHTMLElement {
 	readonly form: IHTMLFormElement;
 	readonly labels: INodeList<IHTMLLabelElement>;
+	readonly validity: ValidityState;
 	formAction: string;
 	formMethod: string;
 	formNoValidate: boolean;
@@ -52,7 +53,6 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	selectionStart: number;
 	selectionEnd: number;
 	selectionDirection: string;
-	validity: ValidityState;
 	willValidate: boolean;
 	valueAsDate: Date;
 	valueAsNumber: number;
@@ -74,6 +74,11 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	 * Reports validity by dispatching an "invalid" event.
 	 */
 	reportValidity(): void;
+
+	/**
+	 * Selects the text.
+	 */
+	select(): void;
 
 	/**
 	 * Set selection range.
@@ -98,21 +103,6 @@ export default interface IHTMLInputElement extends IHTMLElement {
 		start?: number,
 		end?: number,
 		selectionMode?: HTMLInputElementSelectionModeEnum
-	): void;
-
-	/**
-	 * Set range text.
-	 *
-	 * @param replacement Replacement.
-	 * @param [start] Start.
-	 * @param [end] End.
-	 * @param [direction] Direction.
-	 */
-	setRangeText(
-		replacement: string,
-		start: number,
-		end: number,
-		selectionMode: HTMLInputElementSelectionModeEnum
 	): void;
 
 	/**

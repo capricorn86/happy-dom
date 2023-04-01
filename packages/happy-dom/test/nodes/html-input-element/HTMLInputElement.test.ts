@@ -538,13 +538,29 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('select()', () => {
+		it('Selects all text.', () => {
+			let triggeredEvent: Event | null = null;
+			element.addEventListener('select', (event) => (triggeredEvent = event));
+			element.value = 'TEST_VALUE';
+			element.select();
+			expect(element.selectionStart).toBe(0);
+			expect(element.selectionEnd).toBe(10);
+			expect(element.selectionDirection).toBe('none');
+			expect(triggeredEvent.type).toBe('select');
+		});
+	});
+
 	describe('setSelectionRange()', () => {
 		it('Sets selection range.', () => {
+			let triggeredEvent: Event | null = null;
+			element.addEventListener('select', (event) => (triggeredEvent = event));
 			element.value = 'TEST_VALUE';
 			element.setSelectionRange(1, 5, 'forward');
 			expect(element.selectionStart).toBe(1);
 			expect(element.selectionEnd).toBe(5);
 			expect(element.selectionDirection).toBe('forward');
+			expect(triggeredEvent.type).toBe('select');
 		});
 
 		it('Sets selection end to the value length if out of range.', () => {
