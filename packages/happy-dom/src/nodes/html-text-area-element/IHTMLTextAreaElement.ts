@@ -1,4 +1,5 @@
 import Event from '../../event/Event';
+import ValidityState from '../../validity-state/ValidityState';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
@@ -16,6 +17,7 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	readonly form: IHTMLFormElement;
 	readonly validationMessage: string;
 	readonly labels: INodeList<IHTMLLabelElement>;
+	readonly validity: ValidityState;
 	defaultValue: string;
 	minLength: number;
 	maxLength: number;
@@ -40,6 +42,11 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	onselectionchange: (event: Event) => void | null;
 
 	/**
+	 * Selects the text.
+	 */
+	select(): void;
+
+	/**
 	 * Set selection range.
 	 *
 	 * @param start Start.
@@ -60,7 +67,7 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 		replacement: string,
 		start: number,
 		end: number,
-		selectionMode: HTMLInputElementSelectionModeEnum
+		selectionMode?: HTMLInputElementSelectionModeEnum
 	): void;
 
 	/**

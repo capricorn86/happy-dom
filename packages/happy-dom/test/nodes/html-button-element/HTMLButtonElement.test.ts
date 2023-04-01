@@ -1,21 +1,20 @@
 import Window from '../../../src/window/Window';
 import Document from '../../../src/nodes/document/Document';
-import HTMLButtonElement from '../../../src/nodes/html-button-element/HTMLButtonElement';
+import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement';
 import Event from '../../../src/event/Event';
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
 import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement';
 import ValidityState from '../../../src/validity-state/ValidityState';
-import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement';
 
 describe('HTMLButtonElement', () => {
 	let window: Window;
 	let document: Document;
-	let element: HTMLButtonElement;
+	let element: IHTMLButtonElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLButtonElement>document.createElement('button');
+		element = <IHTMLButtonElement>document.createElement('button');
 	});
 
 	describe('Object.prototype.toString', () => {

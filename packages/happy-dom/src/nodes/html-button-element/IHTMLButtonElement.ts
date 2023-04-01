@@ -1,3 +1,4 @@
+import ValidityState from '../../validity-state/ValidityState';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
@@ -15,6 +16,7 @@ export default interface IHTMLButtonElement extends IHTMLElement {
 	disabled: boolean;
 	type: string;
 	formNoValidate: boolean;
+	readonly validity: ValidityState;
 	readonly form: IHTMLFormElement;
 	readonly validationMessage: string;
 	readonly labels: INodeList<IHTMLLabelElement>;

@@ -430,6 +430,17 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	}
 
 	/**
+	 * Selects the text.
+	 */
+	public select(): void {
+		this._selectionStart = 0;
+		this._selectionEnd = this.value.length;
+		this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+	}
+
+	/**
 	 * Set selection range.
 	 *
 	 * @param start Start.
