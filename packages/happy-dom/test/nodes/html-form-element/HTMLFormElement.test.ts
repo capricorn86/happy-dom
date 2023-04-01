@@ -2,7 +2,10 @@ import Window from '../../../src/window/Window';
 import Document from '../../../src/nodes/document/Document';
 import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement';
 import RadioNodeList from '../../../src/nodes/html-form-element/RadioNodeList';
-import { IHTMLInputElement } from '../../../src';
+import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement';
+import Event from '../../../src/event/Event';
+import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement';
+import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement';
 
 describe('HTMLFormElement', () => {
 	let window: Window;
@@ -28,8 +31,7 @@ describe('HTMLFormElement', () => {
 		'encoding',
 		'enctype',
 		'acceptCharset',
-		'autocomplete',
-		'noValidate'
+		'autocomplete'
 	]) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
@@ -46,6 +48,21 @@ describe('HTMLFormElement', () => {
 			});
 		});
 	}
+
+	describe('get noValidate()', () => {
+		it('Returns "true" if defined.', () => {
+			expect(element.noValidate).toBe(false);
+			element.setAttribute('novalidate', '');
+			expect(element.noValidate).toBe(true);
+		});
+	});
+
+	describe('set noValidate()', () => {
+		it('Sets attribute value.', () => {
+			element.noValidate = true;
+			expect(element.getAttribute('novalidate')).toBe('');
+		});
+	});
 
 	describe('get method()', () => {
 		it('Returns attribute value.', () => {
@@ -174,4 +191,178 @@ describe('HTMLFormElement', () => {
 			expect(elements['anotherRadio1']).toEqual(anotherRadioNodeList2);
 		});
 	});
+
+	describe('submit()', () => {
+		it('Does nothing.', () => {
+			element.submit();
+		});
+	});
+
+	describe('requestSubmit()', () => {
+		it('Validates form and triggers a "submit" event when valid.', () => {
+			element.innerHTML = `
+                <div>
+                    <input type="text" name="text1" required>
+					<button name="button1"></button>
+                    <input type="checkbox" name="checkbox1" value="value1" required>
+                    <input type="checkbox" name="checkbox1" value="value2">
+                    <input type="checkbox" name="checkbox1" value="value3">
+                    <input type="radio" name="radio1" value="value1" required>
+                    <input type="radio" name="radio1" value="value2" required>
+                    <input type="radio" name="radio1" value="value3" required>
+                </div>
+            `;
+
+			document.body.appendChild(element);
+
+			const root = element.children[0];
+			let submitEvent: Event | null = null;
+
+			element.addEventListener('submit', (event: Event) => (submitEvent = event));
+
+			element.noValidate = true;
+			element.requestSubmit();
+
+			expect(submitEvent.type).toBe('submit');
+
+			submitEvent = null;
+
+			element.noValidate = false;
+			element.requestSubmit();
+
+			expect(submitEvent).toBe(null);
+
+			(<IHTMLInputElement>root.children[0]).value = 'value';
+			(<IHTMLInputElement>root.children[2]).click();
+			(<IHTMLInputElement>root.children[6]).click();
+
+			element.requestSubmit();
+
+			expect(submitEvent.type).toBe('submit');
+		});
+
+		it('Skips validating if a submitter is sent that has "formNoValidate" set to "true".', () => {
+			element.innerHTML = `
+                <div>
+                    <input type="text" name="text1" required>
+                    <input type="checkbox" name="checkbox1" value="value1" required>
+                    <input type="checkbox" name="checkbox1" value="value2">
+                    <input type="checkbox" name="checkbox1" value="value3">
+                    <input type="radio" name="radio1" value="value1" required>
+                    <input type="radio" name="radio1" value="value2" required>
+                    <input type="radio" name="radio1" value="value3" required>
+					<input type="submit" name="button1"></input>
+                </div>
+            `;
+
+			document.body.appendChild(element);
+
+			const root = element.children[0];
+			const submitter = <IHTMLInputElement>root.children[7];
+			let submitEvent: Event | null = null;
+
+			element.addEventListener('submit', (event: Event) => (submitEvent = event));
+
+			submitter.formNoValidate = true;
+			element.requestSubmit(submitter);
+
+			expect(submitEvent.type).toBe('submit');
+		});
+	});
+
+	describe('reset()', () => {
+		it('Resets the form.', () => {
+			element.innerHTML = `
+                <div>
+                    <input type="text" name="text1" value="Default value">
+                    <select>
+                        <option value="value1"></option>
+                        <option value="value2" selected></option>
+                        <option value="value3"></option>
+                    </select>
+                    <textarea name="textarea1">Default value</textarea>
+                    <input type="checkbox" name="checkbox1" value="value1">
+                    <input type="checkbox" name="checkbox1" value="value2" checked>
+                    <input type="checkbox" name="checkbox1" value="value3">
+                    <input type="radio" name="radio1" value="value1">
+                    <input type="radio" name="radio1" value="value2" checked>
+                    <input type="radio" name="radio1" value="value3">
+                </div>
+            `;
+
+			document.body.appendChild(element);
+
+			const root = element.children[0];
+			let resetEvent: Event | null = null;
+
+			(<IHTMLInputElement>root.children[0]).value = 'New value';
+			(<IHTMLSelectElement>root.children[1]).value = 'value3';
+			(<IHTMLTextAreaElement>root.children[2]).value = 'New value';
+			(<IHTMLInputElement>root.children[3]).click();
+			(<IHTMLInputElement>root.children[5]).click();
+			(<IHTMLInputElement>root.children[7]).click();
+
+			element.addEventListener('reset', (event: Event) => (resetEvent = event));
+
+			element.reset();
+
+			expect(resetEvent.type).toBe('reset');
+
+			expect((<IHTMLInputElement>root.children[0]).value).toBe('Default value');
+			expect((<IHTMLSelectElement>root.children[1]).value).toBe('value2');
+			expect((<IHTMLTextAreaElement>root.children[2]).value).toBe('Default value');
+
+			expect((<IHTMLInputElement>root.children[3]).checked).toBe(false);
+			expect((<IHTMLInputElement>root.children[4]).checked).toBe(true);
+			expect((<IHTMLInputElement>root.children[5]).checked).toBe(false);
+
+			expect((<IHTMLInputElement>root.children[6]).checked).toBe(false);
+			expect((<IHTMLInputElement>root.children[7]).checked).toBe(true);
+			expect((<IHTMLInputElement>root.children[8]).checked).toBe(false);
+		});
+	});
+
+	for (const method of ['checkValidity', 'reportValidity']) {
+		describe(`${method}()`, () => {
+			it('Validates the form.', () => {
+				element.innerHTML = `
+                <div>
+                    <input type="text" name="text1" required>
+                    <select required>
+                        <option></option>
+                    </select>
+                    <textarea name="textarea1" required></textarea>
+                    <input type="checkbox" name="checkbox1" value="value1" required>
+                    <input type="checkbox" name="checkbox1" value="value2" required>
+                    <input type="checkbox" name="checkbox1" value="value3" required>
+                    <input type="radio" name="radio1" value="value1" required>
+                    <input type="radio" name="radio1" value="value2" required>
+                    <input type="radio" name="radio1" value="value3" required>
+                </div>
+            `;
+
+				document.body.appendChild(element);
+
+				const root = element.children[0];
+				let invalidEvents: Event[] = [];
+
+				element.addEventListener('invalid', (event: Event) => invalidEvents.push(event));
+
+				expect(element[method]()).toBe(false);
+				expect(invalidEvents.length).toBe(7);
+				invalidEvents = [];
+
+				(<IHTMLInputElement>root.children[0]).value = 'value';
+				(<IHTMLSelectElement>root.children[1]).options[0].value = 'value';
+				(<IHTMLTextAreaElement>root.children[2]).value = 'value';
+				(<IHTMLInputElement>root.children[3]).click();
+				(<IHTMLInputElement>root.children[4]).click();
+				(<IHTMLInputElement>root.children[5]).click();
+				(<IHTMLInputElement>root.children[7]).click();
+
+				expect(element[method]()).toBe(true);
+				expect(invalidEvents.length).toBe(0);
+			});
+		});
+	}
 });

@@ -223,7 +223,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public set readOnly(readOnly: boolean) {
 		if (!readOnly) {
-			this.removeAttributeNS(null, 'readonly');
+			this.removeAttribute('readonly');
 		} else {
 			this.setAttribute('readonly', '');
 		}
@@ -245,7 +245,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
 			this.setAttribute('disabled', '');
 		}
@@ -267,7 +267,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public set autofocus(autofocus: boolean) {
 		if (!autofocus) {
-			this.removeAttributeNS(null, 'autofocus');
+			this.removeAttribute('autofocus');
 		} else {
 			this.setAttribute('autofocus', '');
 		}
@@ -289,7 +289,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public set required(required: boolean) {
 		if (!required) {
-			this.removeAttributeNS(null, 'required');
+			this.removeAttribute('required');
 		} else {
 			this.setAttribute('required', '');
 		}

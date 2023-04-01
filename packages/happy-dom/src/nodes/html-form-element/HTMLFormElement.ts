@@ -177,8 +177,8 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 *
 	 * @returns No validate.
 	 */
-	public get noValidate(): string {
-		return this.getAttribute('novalidate') || '';
+	public get noValidate(): boolean {
+		return this.getAttribute('novalidate') !== null;
 	}
 
 	/**
@@ -186,22 +186,84 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 *
 	 * @param noValidate No validate.
 	 */
-	public set noValidate(noValidate: string) {
-		this.setAttribute('novalidate', noValidate);
+	public set noValidate(noValidate: boolean) {
+		if (!noValidate) {
+			this.removeAttribute('novalidate');
+		} else {
+			this.setAttribute('novalidate', '');
+		}
 	}
 
 	/**
-	 * Submits form.
+	 * Submits form. No submit event is raised. In particular, the form's "submit" event handler is not run.
+	 *
+	 * In Happy DOM this means that nothing happens.
 	 */
-	public submit(): void {
-		this.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+	public submit(): void {}
+
+	/**
+	 * Submits form, reports validity and raises submit event.
+	 *
+	 * @param [submitter] Submitter.
+	 */
+	public requestSubmit(submitter?: IHTMLInputElement | IHTMLButtonElement): void {
+		const noValidate = submitter?.formNoValidate || this.noValidate;
+		if (noValidate || this.checkValidity()) {
+			this.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+		}
 	}
 
 	/**
 	 * Resets form.
 	 */
 	public reset(): void {
+		for (const element of this.elements) {
+			if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+				element['_value'] = null;
+				element['_checked'] = null;
+			} else if (element.tagName === 'TEXTAREA') {
+				element['_value'] = null;
+			} else if (element.tagName === 'SELECT') {
+				let hasSelectedAttribute = false;
+				for (const option of (<IHTMLSelectElement>element).options) {
+					if (option.hasAttribute('selected')) {
+						hasSelectedAttribute = true;
+						option.selected = true;
+						break;
+					}
+				}
+				if (!hasSelectedAttribute && (<IHTMLSelectElement>element).options.length > 0) {
+					(<IHTMLSelectElement>element).options[0].selected = true;
+				}
+			}
+		}
+
 		this.dispatchEvent(new Event('reset', { bubbles: true, cancelable: true }));
+	}
+
+	/**
+	 * Checks validity.
+	 *
+	 * @returns "true" if validation does'nt fail.
+	 */
+	public checkValidity(): boolean {
+		const isValidated: { [k: string]: boolean } = {};
+		let isValid = true;
+
+		for (const element of this.elements) {
+			if (element.tagName === 'INPUT' && element.type === 'radio' && element.name) {
+				if (!isValidated[element.name]) {
+					isValidated[element.name] = true;
+					if (!element.checkValidity()) {
+						isValid = false;
+					}
+				}
+			} else if (!element.checkValidity()) {
+				isValid = false;
+			}
+		}
+
+		return isValid;
 	}
 
 	/**
@@ -211,19 +273,6 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 */
 	public reportValidity(): boolean {
 		return this.checkValidity();
-	}
-
-	/**
-	 * Checks validity.
-	 *
-	 * @returns "true" if validation does'nt fail.
-	 */
-	public checkValidity(): boolean {
-		for (const element of this.elements) {
-			if (!(<IHTMLInputElement | IHTMLTextAreaElement>element).checkValidity()) {
-				return false;
-			}
-		}
 	}
 
 	/**

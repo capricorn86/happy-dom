@@ -92,7 +92,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 */
 	public set autoplay(autoplay: boolean) {
 		if (!autoplay) {
-			this.removeAttributeNS(null, 'autoplay');
+			this.removeAttribute('autoplay');
 		} else {
 			this.setAttribute('autoplay', '');
 		}
@@ -114,7 +114,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 */
 	public set controls(controls: boolean) {
 		if (!controls) {
-			this.removeAttributeNS(null, 'controls');
+			this.removeAttribute('controls');
 		} else {
 			this.setAttribute('controls', '');
 		}
@@ -136,7 +136,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 */
 	public set loop(loop: boolean) {
 		if (!loop) {
-			this.removeAttributeNS(null, 'loop');
+			this.removeAttribute('loop');
 		} else {
 			this.setAttribute('loop', '');
 		}
@@ -166,7 +166,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	public set muted(muted: boolean) {
 		this.#muted = !!muted;
 		if (!muted && !this.#defaultMuted) {
-			this.removeAttributeNS(null, 'muted');
+			this.removeAttribute('muted');
 		} else {
 			this.setAttribute('muted', '');
 		}
@@ -189,7 +189,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	public set defaultMuted(defaultMuted: boolean) {
 		this.#defaultMuted = !!defaultMuted;
 		if (!this.#defaultMuted && !this.#muted) {
-			this.removeAttributeNS(null, 'muted');
+			this.removeAttribute('muted');
 		} else {
 			this.setAttribute('muted', '');
 		}

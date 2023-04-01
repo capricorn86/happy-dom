@@ -76,7 +76,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
 			this.setAttribute('disabled', '');
 		}
@@ -98,6 +98,28 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 */
 	public set type(v: string) {
 		this.setAttribute('type', this._sanitizeType(v));
+	}
+
+	/**
+	 * Returns no validate.
+	 *
+	 * @returns No validate.
+	 */
+	public get formNoValidate(): boolean {
+		return this.getAttribute('formnovalidate') !== null;
+	}
+
+	/**
+	 * Sets no validate.
+	 *
+	 * @param formNoValidate No validate.
+	 */
+	public set formNoValidate(formNoValidate: boolean) {
+		if (!formNoValidate) {
+			this.removeAttribute('formnovalidate');
+		} else {
+			this.setAttribute('formnovalidate', '');
+		}
 	}
 
 	/**

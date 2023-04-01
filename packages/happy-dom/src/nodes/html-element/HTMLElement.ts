@@ -74,7 +74,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 */
 	public set tabIndex(tabIndex: number) {
 		if (tabIndex === -1) {
-			this.removeAttributeNS(null, 'tabindex');
+			this.removeAttribute('tabindex');
 		} else {
 			this.setAttribute('tabindex', String(tabIndex));
 		}
@@ -318,7 +318,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 */
 	public set hidden(hidden: boolean) {
 		if (!hidden) {
-			this.removeAttributeNS(null, 'hidden');
+			this.removeAttribute('hidden');
 		} else {
 			this.setAttribute('hidden', '');
 		}

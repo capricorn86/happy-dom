@@ -473,6 +473,21 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get formNoValidate()', () => {
+		it('Returns "true" if defined.', () => {
+			expect(element.formNoValidate).toBe(false);
+			element.setAttribute('formnovalidate', '');
+			expect(element.formNoValidate).toBe(true);
+		});
+	});
+
+	describe('set formNoValidate()', () => {
+		it('Sets attribute value.', () => {
+			element.formNoValidate = true;
+			expect(element.getAttribute('formnovalidate')).toBe('');
+		});
+	});
+
 	describe('get validity()', () => {
 		it('Returns an instance of ValidityState.', () => {
 			expect(element.validity).toBeInstanceOf(ValidityState);

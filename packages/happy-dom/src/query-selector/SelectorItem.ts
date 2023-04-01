@@ -254,7 +254,7 @@ export default class SelectorItem {
 				}
 				return isFound;
 			case 'checked':
-				return element.tagName.toLowerCase() === 'input' && (<IHTMLInputElement>element).checked;
+				return element.tagName === 'INPUT' && (<IHTMLInputElement>element).checked;
 		}
 
 		return false;

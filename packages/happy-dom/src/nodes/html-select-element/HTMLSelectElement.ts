@@ -73,7 +73,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
 			this.setAttribute('disabled', '');
 		}
@@ -95,7 +95,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 */
 	public set multiple(multiple: boolean) {
 		if (!multiple) {
-			this.removeAttributeNS(null, 'multiple');
+			this.removeAttribute('multiple');
 		} else {
 			this.setAttribute('multiple', '');
 		}
@@ -117,7 +117,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 */
 	public set autofocus(autofocus: boolean) {
 		if (!autofocus) {
-			this.removeAttributeNS(null, 'autofocus');
+			this.removeAttribute('autofocus');
 		} else {
 			this.setAttribute('autofocus', '');
 		}
@@ -139,7 +139,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 */
 	public set required(required: boolean) {
 		if (!required) {
-			this.removeAttributeNS(null, 'required');
+			this.removeAttribute('required');
 		} else {
 			this.setAttribute('required', '');
 		}

@@ -4,6 +4,7 @@ import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
 import IHTMLSelectElement from '../nodes/html-select-element/IHTMLSelectElement';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
 import IHTMLTextAreaElement from '../nodes/html-text-area-element/IHTMLTextAreaElement';
+import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
 
 const EMAIL_REGEXP =
 	/^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
@@ -169,11 +170,19 @@ export default class ValidityState {
 		if (!(<IHTMLInputElement>this.element).required) {
 			return false;
 		}
-		if (
-			this.element instanceof HTMLInputElement &&
-			(this.element.type === 'checkbox' || this.element.type === 'radio')
-		) {
-			return !this.element.checked;
+		if (this.element instanceof HTMLInputElement) {
+			if (this.element.type === 'checkbox') {
+				return !this.element.checked;
+			} else if (this.element.type === 'radio') {
+				if (this.element.checked) {
+					return false;
+				}
+				if (!this.element.name) {
+					return true;
+				}
+				const root = <IShadowRoot>this.element.getRootNode();
+				return !root || !root.querySelector(`input[name="${this.element.name}"]:checked`);
+			}
 		}
 		return this.element.value.length === 0;
 	}

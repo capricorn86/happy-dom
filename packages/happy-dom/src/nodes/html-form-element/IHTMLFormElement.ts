@@ -1,5 +1,7 @@
 import Event from '../../event/Event';
+import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement';
 import IHTMLElement from '../html-element/IHTMLElement';
+import IHTMLInputElement from '../html-input-element/IHTMLInputElement';
 import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
 
 /**
@@ -17,7 +19,7 @@ export default interface IHTMLFormElement extends IHTMLElement {
 	enctype: string;
 	autocomplete: string;
 	acceptCharset: string;
-	noValidate: string;
+	noValidate: boolean;
 	readonly elements: IHTMLFormControlsCollection;
 	readonly length: number;
 
@@ -27,9 +29,18 @@ export default interface IHTMLFormElement extends IHTMLElement {
 	onsubmit: (event: Event) => void | null;
 
 	/**
-	 * Submits form.
+	 * Submits form. No submit event is raised. In particular, the form's "submit" event handler is not run.
+	 *
+	 * In Happy DOM this means that nothing happens.
 	 */
 	submit(): void;
+
+	/**
+	 * Submits form, reports validity and raises submit event.
+	 *
+	 * @param [submitter] Submitter.
+	 */
+	requestSubmit(submitter?: IHTMLInputElement | IHTMLButtonElement): void;
 
 	/**
 	 * Resets form.

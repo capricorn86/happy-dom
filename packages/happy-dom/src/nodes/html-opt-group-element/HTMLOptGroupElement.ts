@@ -24,7 +24,7 @@ export default class HTMLOptGroupElement extends HTMLElement implements IHTMLOpt
 	 */
 	public set label(label: string) {
 		if (!label) {
-			this.removeAttributeNS(null, 'label');
+			this.removeAttribute('label');
 		} else {
 			this.setAttribute('label', label);
 		}
@@ -46,7 +46,7 @@ export default class HTMLOptGroupElement extends HTMLElement implements IHTMLOpt
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
 			this.setAttribute('disabled', '');
 		}

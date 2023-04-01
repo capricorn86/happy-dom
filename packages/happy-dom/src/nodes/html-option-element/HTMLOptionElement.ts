@@ -93,7 +93,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
 			this.setAttribute('disabled', '');
 		}

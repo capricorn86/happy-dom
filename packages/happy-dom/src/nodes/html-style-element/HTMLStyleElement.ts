@@ -79,7 +79,7 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
 			this.setAttribute('disabled', '');
 		}

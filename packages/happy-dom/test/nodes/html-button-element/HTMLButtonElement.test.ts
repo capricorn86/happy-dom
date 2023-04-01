@@ -127,6 +127,21 @@ describe('HTMLButtonElement', () => {
 		});
 	});
 
+	describe('get formNoValidate()', () => {
+		it('Returns "true" if defined.', () => {
+			expect(element.formNoValidate).toBe(false);
+			element.setAttribute('formnovalidate', '');
+			expect(element.formNoValidate).toBe(true);
+		});
+	});
+
+	describe('set formNoValidate()', () => {
+		it('Sets attribute value.', () => {
+			element.formNoValidate = true;
+			expect(element.getAttribute('formnovalidate')).toBe('');
+		});
+	});
+
 	describe(`get form()`, () => {
 		it('Returns parent form.', () => {
 			const form = <IHTMLFormElement>document.createElement('form');

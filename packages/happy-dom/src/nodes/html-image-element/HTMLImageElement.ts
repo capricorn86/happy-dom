@@ -80,7 +80,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 */
 	public set isMap(isMap: boolean) {
 		if (!isMap) {
-			this.removeAttributeNS(null, 'ismap');
+			this.removeAttribute('ismap');
 		} else {
 			this.setAttribute('ismap', '');
 		}

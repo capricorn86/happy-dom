@@ -35,7 +35,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	// Related to parent form.
 	public formAction = '';
 	public formMethod = '';
-	public formNoValidate = false;
 
 	// Any type of input
 	public _value = null;
@@ -44,7 +43,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 
 	// Type specific: checkbox/radio
 	public defaultChecked = false;
-	private _checked: boolean | null = null;
+	public _checked: boolean | null = null;
 
 	// Type specific: file
 	public files: IFileList<File> = new FileList();
@@ -408,7 +407,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Defaultvalue.
 	 */
 	public get defaultValue(): string {
-		return this.getAttribute('defaultvalue') || '';
+		return this.getAttribute('value') || '';
 	}
 
 	/**
@@ -417,7 +416,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param defaultValue Defaultvalue.
 	 */
 	public set defaultValue(defaultValue: string) {
-		this.setAttribute('defaultvalue', defaultValue);
+		this.setAttribute('value', defaultValue);
 	}
 
 	/**
@@ -436,7 +435,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set readOnly(readOnly: boolean) {
 		if (!readOnly) {
-			this.removeAttributeNS(null, 'readonly');
+			this.removeAttribute('readonly');
 		} else {
 			this.setAttribute('readonly', '');
 		}
@@ -458,7 +457,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
 			this.setAttribute('disabled', '');
 		}
@@ -480,7 +479,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set autofocus(autofocus: boolean) {
 		if (!autofocus) {
-			this.removeAttributeNS(null, 'autofocus');
+			this.removeAttribute('autofocus');
 		} else {
 			this.setAttribute('autofocus', '');
 		}
@@ -502,7 +501,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set required(required: boolean) {
 		if (!required) {
-			this.removeAttributeNS(null, 'required');
+			this.removeAttribute('required');
 		} else {
 			this.setAttribute('required', '');
 		}
@@ -524,7 +523,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set indeterminate(indeterminate: boolean) {
 		if (!indeterminate) {
-			this.removeAttributeNS(null, 'indeterminate');
+			this.removeAttribute('indeterminate');
 		} else {
 			this.setAttribute('indeterminate', '');
 		}
@@ -546,7 +545,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set multiple(multiple: boolean) {
 		if (!multiple) {
-			this.removeAttributeNS(null, 'multiple');
+			this.removeAttribute('multiple');
 		} else {
 			this.setAttribute('multiple', '');
 		}
@@ -745,6 +744,28 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		}
 
 		this.setSelectionRange(this._selectionStart, this._selectionEnd, direction);
+	}
+
+	/**
+	 * Returns no validate.
+	 *
+	 * @returns No validate.
+	 */
+	public get formNoValidate(): boolean {
+		return this.getAttribute('formnovalidate') !== null;
+	}
+
+	/**
+	 * Sets no validate.
+	 *
+	 * @param formNoValidate No validate.
+	 */
+	public set formNoValidate(formNoValidate: boolean) {
+		if (!formNoValidate) {
+			this.removeAttribute('formnovalidate');
+		} else {
+			this.setAttribute('formnovalidate', '');
+		}
 	}
 
 	/**
@@ -1003,7 +1024,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		const clone = <HTMLInputElement>super.cloneNode(deep);
 		clone.formAction = this.formAction;
 		clone.formMethod = this.formMethod;
-		clone.formNoValidate = this.formNoValidate;
 		clone._value = this._value;
 		clone._height = this._height;
 		clone._width = this._width;
@@ -1037,7 +1057,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			} else if (this.type === 'submit') {
 				const form = <IHTMLFormElement>this._formNode;
 				if (form) {
-					form.submit();
+					form.requestSubmit();
 				}
 			} else if (this.type === 'reset') {
 				const form = <IHTMLFormElement>this._formNode;

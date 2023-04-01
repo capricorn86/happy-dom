@@ -105,7 +105,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 */
 	public set async(async: boolean) {
 		if (!async) {
-			this.removeAttributeNS(null, 'async');
+			this.removeAttribute('async');
 		} else {
 			this.setAttribute('async', '');
 		}
@@ -127,7 +127,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 */
 	public set defer(defer: boolean) {
 		if (!defer) {
-			this.removeAttributeNS(null, 'defer');
+			this.removeAttribute('defer');
 		} else {
 			this.setAttribute('defer', '');
 		}
