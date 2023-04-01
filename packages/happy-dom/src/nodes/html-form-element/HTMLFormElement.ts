@@ -247,23 +247,23 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns "true" if validation does'nt fail.
 	 */
 	public checkValidity(): boolean {
-		const isValidated: { [k: string]: boolean } = {};
-		let isValid = true;
+		const radioValidationState: { [k: string]: boolean } = {};
+		let isFormValid = true;
 
 		for (const element of this.elements) {
 			if (element.tagName === 'INPUT' && element.type === 'radio' && element.name) {
-				if (!isValidated[element.name]) {
-					isValidated[element.name] = true;
+				if (!radioValidationState[element.name]) {
+					radioValidationState[element.name] = true;
 					if (!element.checkValidity()) {
-						isValid = false;
+						isFormValid = false;
 					}
 				}
 			} else if (!element.checkValidity()) {
-				isValid = false;
+				isFormValid = false;
 			}
 		}
 
-		return isValid;
+		return isFormValid;
 	}
 
 	/**
