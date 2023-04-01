@@ -1038,7 +1038,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * @override
 	 */
-	public dispatchEvent(event: Event): boolean {
+	public override dispatchEvent(event: Event): boolean {
 		if (event.type === 'click' && this.disabled) {
 			return false;
 		}

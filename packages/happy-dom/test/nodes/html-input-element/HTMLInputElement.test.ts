@@ -8,6 +8,7 @@ import Event from '../../../src/event/Event';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
 import ValidityState from '../../../src/validity-state/ValidityState';
+import { IHTMLFormElement } from '../../../src';
 
 describe('HTMLInputElement', () => {
 	let window: IWindow;
@@ -739,7 +740,7 @@ describe('HTMLInputElement', () => {
 	});
 
 	describe('dispatchEvent()', () => {
-		it('Sets "checked" to "true" if type is "checkbox" and it is mutable for a "click" event.', () => {
+		it('Sets "checked" to "true" if type is "checkbox" and is a "click" event.', () => {
 			let isInputTriggered = false;
 			let isChangeTriggered = false;
 
@@ -761,7 +762,7 @@ describe('HTMLInputElement', () => {
 			expect(element.checked).toBe(false);
 		});
 
-		it('Sets "checked" to "true" if type is "radio" and it is mutable for a "click" event.', () => {
+		it('Sets "checked" to "true" if type is "radio" and is a "click" event.', () => {
 			let isInputTriggered = false;
 			let isChangeTriggered = false;
 
@@ -783,8 +784,42 @@ describe('HTMLInputElement', () => {
 			expect(element.checked).toBe(true);
 		});
 
-		it('Submits form if type is "submit" and it is mutable for a "click" event.', () => {
-			// TODO: implement
+		it('Submits form if type is "submit" and is a "click" event.', () => {
+			const form = <IHTMLFormElement>document.createElement('form');
+			const button = <IHTMLInputElement>document.createElement('input');
+
+			let isSubmitTriggered = false;
+
+			button.type = 'submit';
+
+			form.appendChild(button);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('submit', () => (isSubmitTriggered = true));
+
+			button.click();
+
+			expect(isSubmitTriggered).toBe(true);
+		});
+
+		it('Resets form if type is "reset" and is a "click" event.', () => {
+			const form = <IHTMLFormElement>document.createElement('form');
+			const button = <IHTMLInputElement>document.createElement('input');
+
+			let isResetTriggered = false;
+
+			button.type = 'reset';
+
+			form.appendChild(button);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('reset', () => (isResetTriggered = true));
+
+			button.click();
+
+			expect(isResetTriggered).toBe(true);
 		});
 	});
 });

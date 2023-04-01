@@ -209,6 +209,35 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	/**
 	 * @override
 	 */
+	public override dispatchEvent(event: Event): boolean {
+		if (event.type === 'click' && this.disabled) {
+			return false;
+		}
+
+		const returnValue = super.dispatchEvent(event);
+
+		if (event.type === 'click' && this.isConnected && !this.disabled) {
+			const form = <IHTMLFormElement>this._formNode;
+			switch (this.type) {
+				case 'submit':
+					if (form) {
+						form.requestSubmit();
+					}
+					break;
+				case 'reset':
+					if (form) {
+						form.reset();
+					}
+					break;
+			}
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
 	public override setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
 		const oldValue = replacedAttribute ? replacedAttribute.value : null;

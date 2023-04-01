@@ -5,6 +5,7 @@ import Event from '../../../src/event/Event';
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
 import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement';
 import ValidityState from '../../../src/validity-state/ValidityState';
+import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement';
 
 describe('HTMLButtonElement', () => {
 	let window: Window;
@@ -235,4 +236,44 @@ describe('HTMLButtonElement', () => {
 			});
 		});
 	}
+
+	describe('dispatchEvent()', () => {
+		it('Submits form if type is "submit" and is a "click" event.', () => {
+			const form = <IHTMLFormElement>document.createElement('form');
+			const button = <IHTMLButtonElement>document.createElement('button');
+
+			let isSubmitTriggered = false;
+
+			button.type = 'submit';
+
+			form.appendChild(button);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('submit', () => (isSubmitTriggered = true));
+
+			button.click();
+
+			expect(isSubmitTriggered).toBe(true);
+		});
+
+		it('Resets form if type is "reset" and is a "click" event.', () => {
+			const form = <IHTMLFormElement>document.createElement('form');
+			const button = <IHTMLButtonElement>document.createElement('button');
+
+			let isResetTriggered = false;
+
+			button.type = 'reset';
+
+			form.appendChild(button);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('reset', () => (isResetTriggered = true));
+
+			button.click();
+
+			expect(isResetTriggered).toBe(true);
+		});
+	});
 });
