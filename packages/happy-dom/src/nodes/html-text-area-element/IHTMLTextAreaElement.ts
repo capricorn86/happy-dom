@@ -2,6 +2,8 @@ import Event from '../../event/Event';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
+import INodeList from '../node/INodeList';
 
 /**
  * HTML Text Area Element.
@@ -12,6 +14,8 @@ import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputEl
 export default interface IHTMLTextAreaElement extends IHTMLElement {
 	readonly type: string;
 	readonly form: IHTMLFormElement;
+	readonly validationMessage: string;
+	readonly labels: INodeList<IHTMLLabelElement>;
 	defaultValue: string;
 	minLength: number;
 	maxLength: number;
@@ -65,6 +69,20 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	 * @returns "true" if the field is valid.
 	 */
 	checkValidity(): boolean;
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	reportValidity(): boolean;
+
+	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	setCustomValidity(message: string): void;
 
 	/**
 	 * Clones a node.

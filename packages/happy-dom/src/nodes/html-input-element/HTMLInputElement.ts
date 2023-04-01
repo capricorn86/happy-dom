@@ -1,5 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement';
-import ValidityState from '../validity-state/ValidityState';
+import ValidityState from '../../validity-state/ValidityState';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import Event from '../../event/Event';
@@ -13,6 +13,14 @@ import HTMLInputElementValueStepping from './HTMLInputElementValueStepping';
 import FileList from './FileList';
 import File from '../../file/File';
 import IFileList from './IFileList';
+import IAttr from '../attr/IAttr';
+import INode from '../node/INode';
+import HTMLFormElement from '../html-form-element/HTMLFormElement';
+import INodeList from '../node/INodeList';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
+import IDocument from '../document/IDocument';
+import IShadowRoot from '../shadow-root/IShadowRoot';
+import NodeList from '../node/NodeList';
 
 /**
  * HTML Input Element.
@@ -27,7 +35,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	// Related to parent form.
 	public formAction = '';
 	public formMethod = '';
-	public formNoValidate = false;
 
 	// Any type of input
 	public _value = null;
@@ -36,9 +43,14 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 
 	// Type specific: checkbox/radio
 	public defaultChecked = false;
+	public _checked: boolean | null = null;
 
 	// Type specific: file
 	public files: IFileList<File> = new FileList();
+
+	// All fields
+	public readonly validationMessage = '';
+	public readonly validity = new ValidityState(this);
 
 	// Events
 	public oninput: (event: Event) => void | null = null;
@@ -50,7 +62,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	private _selectionEnd: number = null;
 	private _selectionDirection: HTMLInputElementSelectionDirectionEnum =
 		HTMLInputElementSelectionDirectionEnum.none;
-	private _validationMessage = '';
 
 	/**
 	 * Returns height.
@@ -68,7 +79,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set height(height: number) {
 		this._height = height;
-		this.setAttributeNS(null, 'height', String(height));
+		this.setAttribute('height', String(height));
 	}
 
 	/**
@@ -87,7 +98,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set width(width: number) {
 		this._width = width;
-		this.setAttributeNS(null, 'width', String(width));
+		this.setAttribute('width', String(width));
 	}
 
 	/**
@@ -96,7 +107,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Size.
 	 */
 	public get size(): number {
-		const size = this.getAttributeNS(null, 'size');
+		const size = this.getAttribute('size');
 		if (size !== null) {
 			return parseInt(size);
 		}
@@ -109,7 +120,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param size Size.
 	 */
 	public set size(size: number) {
-		this.setAttributeNS(null, 'size', String(size));
+		this.setAttribute('size', String(size));
 	}
 
 	/**
@@ -118,7 +129,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Min length.
 	 */
 	public get minLength(): number {
-		const minLength = this.getAttributeNS(null, 'minlength');
+		const minLength = this.getAttribute('minlength');
 		if (minLength !== null) {
 			return parseInt(minLength);
 		}
@@ -131,7 +142,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param minLength Min length.
 	 */
 	public set minLength(minlength: number) {
-		this.setAttributeNS(null, 'minlength', String(minlength));
+		this.setAttribute('minlength', String(minlength));
 	}
 
 	/**
@@ -140,7 +151,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Max length.
 	 */
 	public get maxLength(): number {
-		const maxLength = this.getAttributeNS(null, 'maxlength');
+		const maxLength = this.getAttribute('maxlength');
 		if (maxLength !== null) {
 			return parseInt(maxLength);
 		}
@@ -153,7 +164,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param maxlength Max length.
 	 */
 	public set maxLength(maxLength: number) {
-		this.setAttributeNS(null, 'maxlength', String(maxLength));
+		this.setAttribute('maxlength', String(maxLength));
 	}
 
 	/**
@@ -162,7 +173,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Type. Defaults to "text".
 	 */
 	public get type(): string {
-		return this.getAttributeNS(null, 'type') || 'text';
+		return this.getAttribute('type') || 'text';
 	}
 
 	/**
@@ -171,7 +182,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param type Type.
 	 */
 	public set type(type: string) {
-		this.setAttributeNS(null, 'type', type.toLowerCase());
+		this.setAttribute('type', type.toLowerCase());
 	}
 
 	/**
@@ -180,7 +191,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Name.
 	 */
 	public get name(): string {
-		return this.getAttributeNS(null, 'name') || '';
+		return this.getAttribute('name') || '';
 	}
 
 	/**
@@ -189,7 +200,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param name Name.
 	 */
 	public set name(name: string) {
-		this.setAttributeNS(null, 'name', name);
+		this.setAttribute('name', name);
 	}
 
 	/**
@@ -198,7 +209,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Alt.
 	 */
 	public get alt(): string {
-		return this.getAttributeNS(null, 'alt') || '';
+		return this.getAttribute('alt') || '';
 	}
 
 	/**
@@ -207,7 +218,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param alt Alt.
 	 */
 	public set alt(alt: string) {
-		this.setAttributeNS(null, 'alt', alt);
+		this.setAttribute('alt', alt);
 	}
 
 	/**
@@ -216,7 +227,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Min.
 	 */
 	public get min(): string {
-		return this.getAttributeNS(null, 'min') || '';
+		return this.getAttribute('min') || '';
 	}
 
 	/**
@@ -225,7 +236,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param min Min.
 	 */
 	public set min(min: string) {
-		this.setAttributeNS(null, 'min', min);
+		this.setAttribute('min', min);
 	}
 
 	/**
@@ -234,7 +245,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Max.
 	 */
 	public get max(): string {
-		return this.getAttributeNS(null, 'max') || '';
+		return this.getAttribute('max') || '';
 	}
 
 	/**
@@ -243,7 +254,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param max Max.
 	 */
 	public set max(max: string) {
-		this.setAttributeNS(null, 'max', max);
+		this.setAttribute('max', max);
 	}
 
 	/**
@@ -252,7 +263,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Pattern.
 	 */
 	public get pattern(): string {
-		return this.getAttributeNS(null, 'pattern') || '';
+		return this.getAttribute('pattern') || '';
 	}
 
 	/**
@@ -261,7 +272,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param pattern Pattern.
 	 */
 	public set pattern(pattern: string) {
-		this.setAttributeNS(null, 'pattern', pattern);
+		this.setAttribute('pattern', pattern);
 	}
 
 	/**
@@ -270,7 +281,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Placeholder.
 	 */
 	public get placeholder(): string {
-		return this.getAttributeNS(null, 'placeholder') || '';
+		return this.getAttribute('placeholder') || '';
 	}
 
 	/**
@@ -279,7 +290,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param placeholder Placeholder.
 	 */
 	public set placeholder(placeholder: string) {
-		this.setAttributeNS(null, 'placeholder', placeholder);
+		this.setAttribute('placeholder', placeholder);
 	}
 
 	/**
@@ -288,7 +299,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Step.
 	 */
 	public get step(): string {
-		return this.getAttributeNS(null, 'step') || '';
+		return this.getAttribute('step') || '';
 	}
 
 	/**
@@ -297,7 +308,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param step Step.
 	 */
 	public set step(step: string) {
-		this.setAttributeNS(null, 'step', step);
+		this.setAttribute('step', step);
 	}
 
 	/**
@@ -306,7 +317,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Inputmode.
 	 */
 	public get inputmode(): string {
-		return this.getAttributeNS(null, 'inputmode') || '';
+		return this.getAttribute('inputmode') || '';
 	}
 
 	/**
@@ -315,7 +326,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param inputmode Inputmode.
 	 */
 	public set inputmode(inputmode: string) {
-		this.setAttributeNS(null, 'inputmode', inputmode);
+		this.setAttribute('inputmode', inputmode);
 	}
 
 	/**
@@ -324,7 +335,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Accept.
 	 */
 	public get accept(): string {
-		return this.getAttributeNS(null, 'accept') || '';
+		return this.getAttribute('accept') || '';
 	}
 
 	/**
@@ -333,7 +344,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param accept Accept.
 	 */
 	public set accept(accept: string) {
-		this.setAttributeNS(null, 'accept', accept);
+		this.setAttribute('accept', accept);
 	}
 
 	/**
@@ -342,7 +353,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Allowdirs.
 	 */
 	public get allowdirs(): string {
-		return this.getAttributeNS(null, 'allowdirs') || '';
+		return this.getAttribute('allowdirs') || '';
 	}
 
 	/**
@@ -351,7 +362,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param allowdirs Allowdirs.
 	 */
 	public set allowdirs(allowdirs: string) {
-		this.setAttributeNS(null, 'allowdirs', allowdirs);
+		this.setAttribute('allowdirs', allowdirs);
 	}
 
 	/**
@@ -360,7 +371,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Autocomplete.
 	 */
 	public get autocomplete(): string {
-		return this.getAttributeNS(null, 'autocomplete') || '';
+		return this.getAttribute('autocomplete') || '';
 	}
 
 	/**
@@ -369,7 +380,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param autocomplete Autocomplete.
 	 */
 	public set autocomplete(autocomplete: string) {
-		this.setAttributeNS(null, 'autocomplete', autocomplete);
+		this.setAttribute('autocomplete', autocomplete);
 	}
 
 	/**
@@ -378,7 +389,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Src.
 	 */
 	public get src(): string {
-		return this.getAttributeNS(null, 'src') || '';
+		return this.getAttribute('src') || '';
 	}
 
 	/**
@@ -387,7 +398,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param src Src.
 	 */
 	public set src(src: string) {
-		this.setAttributeNS(null, 'src', src);
+		this.setAttribute('src', src);
 	}
 
 	/**
@@ -396,7 +407,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Defaultvalue.
 	 */
 	public get defaultValue(): string {
-		return this.getAttributeNS(null, 'defaultvalue') || '';
+		return this.getAttribute('value') || '';
 	}
 
 	/**
@@ -405,7 +416,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param defaultValue Defaultvalue.
 	 */
 	public set defaultValue(defaultValue: string) {
-		this.setAttributeNS(null, 'defaultvalue', defaultValue);
+		this.setAttribute('value', defaultValue);
 	}
 
 	/**
@@ -414,7 +425,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Read only.
 	 */
 	public get readOnly(): boolean {
-		return this.getAttributeNS(null, 'readonly') !== null;
+		return this.getAttribute('readonly') !== null;
 	}
 
 	/**
@@ -424,9 +435,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set readOnly(readOnly: boolean) {
 		if (!readOnly) {
-			this.removeAttributeNS(null, 'readonly');
+			this.removeAttribute('readonly');
 		} else {
-			this.setAttributeNS(null, 'readonly', '');
+			this.setAttribute('readonly', '');
 		}
 	}
 
@@ -436,7 +447,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
-		return this.getAttributeNS(null, 'disabled') !== null;
+		return this.getAttribute('disabled') !== null;
 	}
 
 	/**
@@ -446,9 +457,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
-			this.setAttributeNS(null, 'disabled', '');
+			this.setAttribute('disabled', '');
 		}
 	}
 
@@ -458,7 +469,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Autofocus.
 	 */
 	public get autofocus(): boolean {
-		return this.getAttributeNS(null, 'autofocus') !== null;
+		return this.getAttribute('autofocus') !== null;
 	}
 
 	/**
@@ -468,9 +479,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set autofocus(autofocus: boolean) {
 		if (!autofocus) {
-			this.removeAttributeNS(null, 'autofocus');
+			this.removeAttribute('autofocus');
 		} else {
-			this.setAttributeNS(null, 'autofocus', '');
+			this.setAttribute('autofocus', '');
 		}
 	}
 
@@ -480,7 +491,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Required.
 	 */
 	public get required(): boolean {
-		return this.getAttributeNS(null, 'required') !== null;
+		return this.getAttribute('required') !== null;
 	}
 
 	/**
@@ -490,9 +501,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set required(required: boolean) {
 		if (!required) {
-			this.removeAttributeNS(null, 'required');
+			this.removeAttribute('required');
 		} else {
-			this.setAttributeNS(null, 'required', '');
+			this.setAttribute('required', '');
 		}
 	}
 
@@ -502,7 +513,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Indeterminate.
 	 */
 	public get indeterminate(): boolean {
-		return this.getAttributeNS(null, 'indeterminate') !== null;
+		return this.getAttribute('indeterminate') !== null;
 	}
 
 	/**
@@ -512,9 +523,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set indeterminate(indeterminate: boolean) {
 		if (!indeterminate) {
-			this.removeAttributeNS(null, 'indeterminate');
+			this.removeAttribute('indeterminate');
 		} else {
-			this.setAttributeNS(null, 'indeterminate', '');
+			this.setAttribute('indeterminate', '');
 		}
 	}
 
@@ -524,7 +535,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Multiple.
 	 */
 	public get multiple(): boolean {
-		return this.getAttributeNS(null, 'multiple') !== null;
+		return this.getAttribute('multiple') !== null;
 	}
 
 	/**
@@ -534,9 +545,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public set multiple(multiple: boolean) {
 		if (!multiple) {
-			this.removeAttributeNS(null, 'multiple');
+			this.removeAttribute('multiple');
 		} else {
-			this.setAttributeNS(null, 'multiple', '');
+			this.setAttribute('multiple', '');
 		}
 	}
 
@@ -546,7 +557,10 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Checked.
 	 */
 	public get checked(): boolean {
-		return this.getAttributeNS(null, 'checked') !== null;
+		if (this._checked !== null) {
+			return this._checked;
+		}
+		return this.getAttribute('checked') !== null;
 	}
 
 	/**
@@ -555,10 +569,17 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param checked Checked.
 	 */
 	public set checked(checked: boolean) {
-		if (!checked) {
-			this.removeAttributeNS(null, 'checked');
-		} else {
-			this.setAttributeNS(null, 'checked', '');
+		this._checked = checked;
+
+		if (checked && this.type === 'radio' && this.name) {
+			const root = <IHTMLElement>(<IHTMLFormElement>this._formNode || this.getRootNode());
+			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
+
+			for (const radioButton of radioButtons) {
+				if (radioButton !== this) {
+					radioButton['_checked'] = false;
+				}
+			}
 		}
 	}
 
@@ -574,17 +595,17 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			case 'image':
 			case 'reset':
 			case 'button':
-				return this.getAttributeNS(null, 'value') || '';
+				return this.getAttribute('value') || '';
 			case 'checkbox':
 			case 'radio':
-				const attritube = this.getAttributeNS(null, 'value');
+				const attritube = this.getAttribute('value');
 				return attritube !== null ? attritube : 'on';
 			case 'file':
 				return this.files.length > 0 ? '/fake/path/' + this.files[0].name : '';
 		}
 
 		if (this._value === null) {
-			return this.getAttributeNS(null, 'value') || '';
+			return this.getAttribute('value') || '';
 		}
 
 		return this._value;
@@ -606,7 +627,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			case 'button':
 			case 'checkbox':
 			case 'radio':
-				this.setAttributeNS(null, 'value', value);
+				this.setAttribute('value', value);
 				break;
 			case 'file':
 				if (value !== '') {
@@ -726,25 +747,34 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
+	 * Returns no validate.
+	 *
+	 * @returns No validate.
+	 */
+	public get formNoValidate(): boolean {
+		return this.getAttribute('formnovalidate') !== null;
+	}
+
+	/**
+	 * Sets no validate.
+	 *
+	 * @param formNoValidate No validate.
+	 */
+	public set formNoValidate(formNoValidate: boolean) {
+		if (!formNoValidate) {
+			this.removeAttribute('formnovalidate');
+		} else {
+			this.setAttribute('formnovalidate', '');
+		}
+	}
+
+	/**
 	 * Returns the parent form element.
 	 *
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		let parent = <IHTMLElement>this.parentNode;
-		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>parent.parentNode;
-		}
-		return <IHTMLFormElement>parent;
-	}
-
-	/**
-	 * Returns validity state.
-	 *
-	 * @returns Validity state.
-	 */
-	public get validity(): ValidityState {
-		return new ValidityState(this);
+		return <IHTMLFormElement>this._formNode;
 	}
 
 	/**
@@ -781,12 +811,28 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
-	 * Returns validation message.
+	 * Returns the associated label elements.
 	 *
-	 * @returns Validation message.
+	 * @returns Label elements.
 	 */
-	public get validationMessage(): string {
-		return this._validationMessage;
+	public get labels(): INodeList<IHTMLLabelElement> {
+		const id = this.id;
+		if (id) {
+			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
+			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
+
+			let parent = this.parentNode;
+			while (parent) {
+				if (parent['tagName'] === 'LABEL') {
+					labels.push(<IHTMLLabelElement>parent);
+					break;
+				}
+				parent = parent.parentNode;
+			}
+
+			return <INodeList<IHTMLLabelElement>>labels;
+		}
+		return new NodeList<IHTMLLabelElement>();
 	}
 
 	/**
@@ -795,21 +841,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param message Message.
 	 */
 	public setCustomValidity(message: string): void {
-		this._validationMessage = String(message);
-	}
-
-	/**
-	 * Reports validity by dispatching an "invalid" event.
-	 */
-	public reportValidity(): void {
-		if (this._validationMessage) {
-			this.dispatchEvent(
-				new Event('invalid', {
-					bubbles: true,
-					cancelable: true
-				})
-			);
-		}
+		(<string>this.validationMessage) = String(message);
 	}
 
 	/**
@@ -935,7 +967,26 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns "true" if the field is valid.
 	 */
 	public checkValidity(): boolean {
-		return true;
+		const valid =
+			this.disabled ||
+			this.readOnly ||
+			this.type === 'hidden' ||
+			this.type === 'reset' ||
+			this.type === 'button' ||
+			this.validity.valid;
+		if (!valid) {
+			this.dispatchEvent(new Event('invalid', { bubbles: true, cancelable: true }));
+		}
+		return valid;
+	}
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	public reportValidity(): boolean {
+		return this.checkValidity();
 	}
 
 	/**
@@ -973,7 +1024,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		const clone = <HTMLInputElement>super.cloneNode(deep);
 		clone.formAction = this.formAction;
 		clone.formMethod = this.formMethod;
-		clone.formNoValidate = this.formNoValidate;
 		clone._value = this._value;
 		clone._height = this._height;
 		clone._width = this._width;
@@ -986,22 +1036,91 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
-	 * Checks if private value is supported.
-	 *
-	 * @returns "true" if private value is supported.
+	 * @override
 	 */
-	// Private _isPrivateValueSupported(): boolean {
-	// 	Return (
-	// 		This.type !== 'hidden' &&
-	// 		This.type !== 'submit' &&
-	// 		This.type !== 'image' &&
-	// 		This.type !== 'reset' &&
-	// 		This.type !== 'button' &&
-	// 		This.type !== 'checkbox' &&
-	// 		This.type !== 'radio' &&
-	// 		This.type !== 'file'
-	// 	);
-	// }
+	public dispatchEvent(event: Event): boolean {
+		if (event.type === 'click' && this.disabled) {
+			return false;
+		}
+
+		const returnValue = super.dispatchEvent(event);
+
+		if (
+			event.type === 'click' &&
+			this.isConnected &&
+			(!this.readOnly || this.type === 'checkbox' || this.type === 'radio')
+		) {
+			if (this.type === 'checkbox' || this.type === 'radio') {
+				this.checked = this.type === 'checkbox' ? !this.checked : true;
+				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+			} else if (this.type === 'submit') {
+				const form = <IHTMLFormElement>this._formNode;
+				if (form) {
+					form.requestSubmit();
+				}
+			} else if (this.type === 'reset') {
+				const form = <IHTMLFormElement>this._formNode;
+				if (form) {
+					form.reset();
+				}
+			}
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override setAttributeNode(attribute: IAttr): IAttr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+		const oldValue = replacedAttribute ? replacedAttribute.value : null;
+
+		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
+			if (oldValue) {
+				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
+			}
+			if (attribute.value) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
+			}
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeAttributeNode(attribute: IAttr): IAttr {
+		super.removeAttributeNode(attribute);
+
+		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
+			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
+		}
+
+		return attribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override _connectToNode(parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this._formNode;
+
+		super._connectToNode(parentNode);
+
+		if (oldFormNode !== this._formNode) {
+			if (oldFormNode) {
+				oldFormNode._removeFormControlItem(this, this.name);
+				oldFormNode._removeFormControlItem(this, this.id);
+			}
+			if (this._formNode) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.name);
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.id);
+			}
+		}
+	}
 
 	/**
 	 * Checks is selection is supported.

@@ -2,8 +2,8 @@ import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 import INodeList from '../node/INodeList';
-import IHTMLOptionsCollection from '../html-option-element/IHTMLOptionsCollection';
-import ValidityState from '../validity-state/ValidityState';
+import IHTMLOptionsCollection from './IHTMLOptionsCollection';
+import ValidityState from '../../validity-state/ValidityState';
 import Event from '../../event/Event';
 import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
 import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
@@ -21,6 +21,7 @@ export default interface IHTMLSelectElement extends IHTMLElement {
 	readonly type: string;
 	readonly validity: ValidityState;
 	readonly willValidate: boolean;
+	readonly validationMessage: string;
 	autofocus: boolean;
 	disabled: boolean;
 	length: number;
@@ -28,6 +29,7 @@ export default interface IHTMLSelectElement extends IHTMLElement {
 	value: string;
 	name: string;
 	multiple: boolean;
+	required: boolean;
 
 	// Events
 	onchange: (event: Event) => void | null;
@@ -57,4 +59,25 @@ export default interface IHTMLSelectElement extends IHTMLElement {
 	 * @param index Index.
 	 */
 	remove(index?: number): void;
+
+	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	setCustomValidity(message: string): void;
+
+	/**
+	 * Checks validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	checkValidity(): boolean;
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	reportValidity(): boolean;
 }

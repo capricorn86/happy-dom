@@ -3,6 +3,9 @@ import Document from '../../../src/nodes/document/Document';
 import HTMLTextAreaElement from '../../../src/nodes/html-text-area-element/HTMLTextAreaElement';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
+import ValidityState from '../../../src/validity-state/ValidityState';
+import Event from '../../../src/event/Event';
+import IText from '../../../src/nodes/text/IText';
 
 describe('HTMLTextAreaElement', () => {
 	let window: Window;
@@ -22,8 +25,8 @@ describe('HTMLTextAreaElement', () => {
 	});
 
 	describe('get value()', () => {
-		it('Returns the attribute "value" if it has not been set using the property.', () => {
-			element.setAttribute('value', 'TEST_VALUE');
+		it('Returns text content of the element.', () => {
+			element.textContent = 'TEST_VALUE';
 			expect(element.value).toBe('TEST_VALUE');
 		});
 
@@ -36,22 +39,29 @@ describe('HTMLTextAreaElement', () => {
 	describe('set value()', () => {
 		it('Sets a value and selection range.', () => {
 			element.selectionDirection = HTMLInputElementSelectionDirectionEnum.forward;
-			element.value = 'TEST_VALUE';
+			element.textContent = 'TEST_VALUE';
+
 			expect(element.value).toBe('TEST_VALUE');
 			expect(element.selectionStart).toBe(10);
 			expect(element.selectionEnd).toBe(10);
+			expect(element.selectionDirection).toBe(HTMLInputElementSelectionDirectionEnum.none);
+
+			element.selectionDirection = HTMLInputElementSelectionDirectionEnum.forward;
+			(<IText>element.childNodes[0]).data = 'NEW_TEST_VALUE';
+			expect(element.selectionStart).toBe(14);
+			expect(element.selectionEnd).toBe(14);
 			expect(element.selectionDirection).toBe(HTMLInputElementSelectionDirectionEnum.none);
 		});
 	});
 
 	describe('get selectionStart()', () => {
 		it('Returns the length of the attribute "value" if value has not been set using the property.', () => {
-			element.setAttribute('value', 'TEST_VALUE');
+			element.textContent = 'TEST_VALUE';
 			expect(element.selectionStart).toBe(10);
 		});
 
 		it('Returns the length of the value set using the property.', () => {
-			element.setAttribute('value', 'TEST_VALUE');
+			element.textContent = 'TEST_VALUE';
 			element.selectionStart = 5;
 			expect(element.selectionStart).toBe(5);
 		});
@@ -59,7 +69,7 @@ describe('HTMLTextAreaElement', () => {
 
 	describe('set selectionStart()', () => {
 		it('Sets the value to the length of the property "value" if it is out of range.', () => {
-			element.setAttribute('value', 'TEST_VALUE');
+			element.textContent = 'TEST_VALUE';
 			element.selectionStart = 20;
 			expect(element.selectionStart).toBe(10);
 		});
@@ -73,12 +83,12 @@ describe('HTMLTextAreaElement', () => {
 
 	describe('get selectionEnd()', () => {
 		it('Returns the length of the attribute "value" if value has not been set using the property.', () => {
-			element.setAttribute('value', 'TEST_VALUE');
+			element.textContent = 'TEST_VALUE';
 			expect(element.selectionEnd).toBe(10);
 		});
 
 		it('Returns the length of the value set using the property.', () => {
-			element.setAttribute('value', 'TEST_VALUE');
+			element.textContent = 'TEST_VALUE';
 			element.selectionEnd = 5;
 			expect(element.selectionEnd).toBe(5);
 		});
@@ -86,7 +96,7 @@ describe('HTMLTextAreaElement', () => {
 
 	describe('set selectionEnd()', () => {
 		it('Sets the value to the length of the property "value" if it is out of range.', () => {
-			element.setAttribute('value', 'TEST_VALUE');
+			element.textContent = 'TEST_VALUE';
 			element.selectionEnd = 20;
 			expect(element.selectionEnd).toBe(10);
 		});
@@ -156,6 +166,66 @@ describe('HTMLTextAreaElement', () => {
 				element[property] = 50;
 				expect(element[property]).toBe(50);
 				expect(element.getAttribute(property)).toBe('50');
+			});
+		});
+	}
+
+	describe('get validity()', () => {
+		it('Returns an instance of ValidityState.', () => {
+			expect(element.validity).toBeInstanceOf(ValidityState);
+		});
+	});
+
+	describe(`get labels()`, () => {
+		it('Returns associated labels', () => {
+			const label1 = document.createElement('label');
+			const label2 = document.createElement('label');
+			const parentLabel = document.createElement('label');
+
+			label1.setAttribute('for', 'select1');
+			label2.setAttribute('for', 'select1');
+
+			element.id = 'select1';
+
+			parentLabel.appendChild(element);
+			document.body.appendChild(label1);
+			document.body.appendChild(label2);
+			document.body.appendChild(parentLabel);
+
+			const labels = element.labels;
+
+			expect(labels.length).toBe(3);
+			expect(labels[0] === label1).toBe(true);
+			expect(labels[1] === label2).toBe(true);
+			expect(labels[2] === parentLabel).toBe(true);
+		});
+	});
+
+	for (const method of ['checkValidity', 'reportValidity']) {
+		describe(`${method}()`, () => {
+			it('Returns "true" if the field is "disabled".', () => {
+				element.required = true;
+				element.disabled = true;
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "true" if the field is "readOnly".', () => {
+				element.required = true;
+				element.readOnly = true;
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "false" if invalid.', () => {
+				element.required = true;
+				expect(element[method]()).toBe(false);
+			});
+
+			it('Triggers an "invalid" event when invalid.', () => {
+				element.required = true;
+				let dispatchedEvent: Event | null = null;
+				element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
+				element[method]();
+				expect(dispatchedEvent.type).toBe('invalid');
 			});
 		});
 	}

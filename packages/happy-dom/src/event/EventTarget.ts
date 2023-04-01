@@ -73,9 +73,13 @@ export default abstract class EventTarget implements IEventTarget {
 		}
 
 		if (this._listeners[event.type]) {
-			for (let i = 0, max = this._listeners[event.type].length; i < max; i++) {
-				const listener = this._listeners[event.type][i];
-				const options = this._listenerOptions[event.type][i];
+			// We need to clone the arrays because the listeners may remove themselves while we are iterating.
+			const listeners = this._listeners[event.type].slice();
+			const listenerOptions = this._listenerOptions[event.type].slice();
+
+			for (let i = 0, max = listeners.length; i < max; i++) {
+				const listener = listeners[i];
+				const options = listenerOptions[i];
 
 				if ((<IEventListener>listener).handleEvent) {
 					(<IEventListener>listener).handleEvent(event);

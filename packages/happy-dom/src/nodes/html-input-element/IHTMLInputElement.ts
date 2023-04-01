@@ -1,10 +1,12 @@
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum';
-import ValidityState from '../validity-state/ValidityState';
+import ValidityState from '../../validity-state/ValidityState';
 import Event from '../../event/Event';
 import File from '../../file/File';
 import IFileList from './IFileList';
+import INodeList from '../node/INodeList';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 
 /**
  * HTML Input Element.
@@ -14,6 +16,7 @@ import IFileList from './IFileList';
  */
 export default interface IHTMLInputElement extends IHTMLElement {
 	readonly form: IHTMLFormElement;
+	readonly labels: INodeList<IHTMLLabelElement>;
 	formAction: string;
 	formMethod: string;
 	formNoValidate: boolean;
@@ -80,6 +83,22 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	 * @param [direction="none"] Direction.
 	 */
 	setSelectionRange(start: number, end: number, direction: string): void;
+
+	/**
+	 * Set range text.
+	 *
+	 * @param replacement Replacement.
+	 * @param [start] Start.
+	 * @param [end] End.
+	 * @param [direction] Direction.
+	 * @param selectionMode
+	 */
+	setRangeText(
+		replacement: string,
+		start?: number,
+		end?: number,
+		selectionMode?: HTMLInputElementSelectionModeEnum
+	): void;
 
 	/**
 	 * Set range text.
