@@ -1,10 +1,8 @@
 import Window from '../../../src/window/Window';
 import Document from '../../../src/nodes/document/Document';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
-import QuerySelector from '../../../src/query-selector/QuerySelector';
 import NamespaceURI from '../../../src/config/NamespaceURI';
-import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
-import IElement from '../../../src/nodes/element/IElement';
+import HTMLCollection from '../../../src/nodes/element/HTMLCollection';
 
 describe('ParentNodeUtility', () => {
 	let window: Window;
@@ -115,17 +113,27 @@ describe('ParentNodeUtility', () => {
 
 	describe('getElementsByClassName()', () => {
 		it('Returns elements by class name.', () => {
-			const parent = document.createElement('div');
-			const element = document.createElement('div');
 			const className = 'className';
+			const parent = document.createElement('div');
+			const element1 = document.createElement('div');
+			const element2 = document.createElement('div');
+			const element3 = document.createElement('div');
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
-				expect(parentNode).toBe(parent);
-				expect(selector).toEqual(`.${className}`);
-				return <IHTMLCollection<IElement>>[element];
-			});
+			element1.className = className;
+			element2.className = className;
+			element3.className = className;
 
-			expect(ParentNodeUtility.getElementsByClassName(parent, className)).toEqual([element]);
+			parent.appendChild(element1);
+			element1.appendChild(element2);
+			element1.appendChild(element3);
+
+			const elementByClassName = ParentNodeUtility.getElementsByClassName(parent, className);
+
+			expect(elementByClassName instanceof HTMLCollection).toBe(true);
+			expect(elementByClassName.length).toBe(3);
+			expect(elementByClassName[0]).toBe(element1);
+			expect(elementByClassName[1]).toBe(element2);
+			expect(elementByClassName[2]).toBe(element3);
 		});
 	});
 
@@ -148,12 +156,14 @@ describe('ParentNodeUtility', () => {
 			div3.appendChild(span3);
 			span3.appendChild(div4);
 
-			expect(ParentNodeUtility.getElementsByTagName(parent, 'div')).toEqual([
-				div1,
-				div2,
-				div3,
-				div4
-			]);
+			const elementsByTagName = ParentNodeUtility.getElementsByTagName(parent, 'div');
+
+			expect(elementsByTagName instanceof HTMLCollection).toBe(true);
+			expect(elementsByTagName.length).toBe(4);
+			expect(elementsByTagName[0]).toBe(div1);
+			expect(elementsByTagName[1]).toBe(div2);
+			expect(elementsByTagName[2]).toBe(div3);
+			expect(elementsByTagName[3]).toBe(div4);
 		});
 
 		it('Returns all elements when tag name is *.', () => {
@@ -197,10 +207,16 @@ describe('ParentNodeUtility', () => {
 			div3.appendChild(span3);
 			span3.appendChild(div4);
 
-			expect(ParentNodeUtility.getElementsByTagNameNS(parent, NamespaceURI.svg, 'div')).toEqual([
-				div1,
-				div3
-			]);
+			const elementsByTagName = ParentNodeUtility.getElementsByTagNameNS(
+				parent,
+				NamespaceURI.svg,
+				'div'
+			);
+
+			expect(elementsByTagName instanceof HTMLCollection).toBe(true);
+			expect(elementsByTagName.length).toBe(2);
+			expect(elementsByTagName[0]).toBe(div1);
+			expect(elementsByTagName[1]).toBe(div3);
 		});
 
 		it('Returns all elements when tag name is *.', () => {
@@ -246,7 +262,7 @@ describe('ParentNodeUtility', () => {
 			div3.appendChild(span3);
 			span3.appendChild(div4);
 
-			expect(ParentNodeUtility.getElementByTagName(parent, 'div')).toEqual(div1);
+			expect(ParentNodeUtility.getElementByTagName(parent, 'div') === div1).toBe(true);
 		});
 	});
 
