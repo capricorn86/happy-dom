@@ -22,7 +22,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 	 * @returns Name.
 	 */
 	public get name(): string {
-		return this.getAttributeNS(null, 'name') || '';
+		return this.getAttribute('name') || '';
 	}
 
 	/**
@@ -31,7 +31,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 	 * @param name Name.
 	 */
 	public set name(name: string) {
-		this.setAttributeNS(null, 'name', name);
+		this.setAttribute('name', name);
 	}
 
 	/**

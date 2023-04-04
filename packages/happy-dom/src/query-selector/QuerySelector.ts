@@ -4,7 +4,7 @@ import INode from '../nodes/node/INode';
 import Node from '../nodes/node/Node';
 import INodeList from '../nodes/node/INodeList';
 import SelectorItem from './SelectorItem';
-import NodeListFactory from '../nodes/node/NodeListFactory';
+import NodeList from '../nodes/node/NodeList';
 
 const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#"*:()\]]+)|([ ,>+]+)/g;
 
@@ -22,8 +22,16 @@ export default class QuerySelector {
 	 * @returns HTML elements.
 	 */
 	public static querySelectorAll(node: INode, selector: string): INodeList<IElement> {
-		const matches = <INodeList<IElement>>NodeListFactory.create();
+		const matches = new NodeList<IElement>();
 
+		if (selector === '') {
+			throw new Error(
+				"Failed to execute 'querySelectorAll' on 'Element': The provided selector is empty."
+			);
+		}
+		if (selector === null || selector === undefined) {
+			return matches;
+		}
 		for (const parts of this.getSelectorParts(selector)) {
 			for (const element of this.findAll(node, [node], parts)) {
 				if (!matches.includes(element)) {
@@ -43,6 +51,14 @@ export default class QuerySelector {
 	 * @returns HTML element.
 	 */
 	public static querySelector(node: INode, selector: string): IElement {
+		if (selector === '') {
+			throw new Error(
+				"Failed to execute 'querySelector' on 'Element': The provided selector is empty."
+			);
+		}
+		if (selector === null || selector === undefined) {
+			return null;
+		}
 		for (const parts of this.getSelectorParts(selector)) {
 			const match = this.findFirst(node, [node], parts);
 

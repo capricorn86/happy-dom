@@ -3,6 +3,8 @@ import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement';
 import IHTMLOptionElement from '../../../src/nodes/html-option-element/IHTMLOptionElement';
+import ValidityState from '../../../src/validity-state/ValidityState';
+import Event from '../../../src/event/Event';
 
 describe('HTMLSelectElement', () => {
 	let window: IWindow;
@@ -186,6 +188,44 @@ describe('HTMLSelectElement', () => {
 		});
 	});
 
+	describe(`get labels()`, () => {
+		it('Returns associated labels', () => {
+			const label1 = document.createElement('label');
+			const label2 = document.createElement('label');
+			const parentLabel = document.createElement('label');
+
+			label1.setAttribute('for', 'select1');
+			label2.setAttribute('for', 'select1');
+
+			element.id = 'select1';
+
+			parentLabel.appendChild(element);
+			document.body.appendChild(label1);
+			document.body.appendChild(label2);
+			document.body.appendChild(parentLabel);
+
+			const labels = element.labels;
+
+			expect(labels.length).toBe(3);
+			expect(labels[0] === label1).toBe(true);
+			expect(labels[1] === label2).toBe(true);
+			expect(labels[2] === parentLabel).toBe(true);
+		});
+	});
+
+	describe('get validity()', () => {
+		it('Returns an instance of ValidityState.', () => {
+			expect(element.validity).toBeInstanceOf(ValidityState);
+		});
+	});
+
+	describe('get validationMessage()', () => {
+		it('Returns validation message.', () => {
+			element.setCustomValidity('Error message');
+			expect(element.validationMessage).toBe('Error message');
+		});
+	});
+
 	describe(`add()`, () => {
 		it('Appends options.', () => {
 			const option1 = <IHTMLOptionElement>document.createElement('option');
@@ -197,12 +237,12 @@ describe('HTMLSelectElement', () => {
 			expect(element.length).toBe(2);
 			expect(element.children.length).toBe(2);
 			expect(element.options.length).toBe(2);
-			expect(element[0]).toBe(option1);
-			expect(element[1]).toBe(option2);
-			expect(element.children[0]).toBe(option1);
-			expect(element.children[1]).toBe(option2);
-			expect(element.options[0]).toBe(option1);
-			expect(element.options[1]).toBe(option2);
+			expect(element[0] === option1).toBe(true);
+			expect(element[1] === option2).toBe(true);
+			expect(element.children[0] === option1).toBe(true);
+			expect(element.children[1] === option2).toBe(true);
+			expect(element.options[0] === option1).toBe(true);
+			expect(element.options[1] === option2).toBe(true);
 		});
 
 		it('Appends an option before an index.', () => {
@@ -217,15 +257,15 @@ describe('HTMLSelectElement', () => {
 			expect(element.length).toBe(3);
 			expect(element.children.length).toBe(3);
 			expect(element.options.length).toBe(3);
-			expect(element[0]).toBe(option1);
-			expect(element[1]).toBe(option3);
-			expect(element[2]).toBe(option2);
-			expect(element.children[0]).toBe(option1);
-			expect(element.children[1]).toBe(option3);
-			expect(element.children[2]).toBe(option2);
-			expect(element.options[0]).toBe(option1);
-			expect(element.options[1]).toBe(option3);
-			expect(element.options[2]).toBe(option2);
+			expect(element[0] === option1).toBe(true);
+			expect(element[1] === option3).toBe(true);
+			expect(element[2] === option2).toBe(true);
+			expect(element.children[0] === option1).toBe(true);
+			expect(element.children[1] === option3).toBe(true);
+			expect(element.children[2] === option2).toBe(true);
+			expect(element.options[0] === option1).toBe(true);
+			expect(element.options[1] === option3).toBe(true);
+			expect(element.options[2] === option2).toBe(true);
 		});
 
 		it('Appends an option before an option element.', () => {
@@ -240,15 +280,15 @@ describe('HTMLSelectElement', () => {
 			expect(element.length).toBe(3);
 			expect(element.children.length).toBe(3);
 			expect(element.options.length).toBe(3);
-			expect(element[0]).toBe(option1);
-			expect(element[1]).toBe(option3);
-			expect(element[2]).toBe(option2);
-			expect(element.children[0]).toBe(option1);
-			expect(element.children[1]).toBe(option3);
-			expect(element.children[2]).toBe(option2);
-			expect(element.options[0]).toBe(option1);
-			expect(element.options[1]).toBe(option3);
-			expect(element.options[2]).toBe(option2);
+			expect(element[0] === option1).toBe(true);
+			expect(element[1] === option3).toBe(true);
+			expect(element[2] === option2).toBe(true);
+			expect(element.children[0] === option1).toBe(true);
+			expect(element.children[1] === option3).toBe(true);
+			expect(element.children[2] === option2).toBe(true);
+			expect(element.options[0] === option1).toBe(true);
+			expect(element.options[1] === option3).toBe(true);
+			expect(element.options[2] === option2).toBe(true);
 		});
 	});
 
@@ -264,12 +304,12 @@ describe('HTMLSelectElement', () => {
 
 			expect(element.length).toBe(3);
 			expect(element.options.length).toBe(3);
-			expect(element.item(0)).toBe(option1);
-			expect(element.item(1)).toBe(option2);
-			expect(element.item(2)).toBe(option3);
-			expect(element.options.item(0)).toBe(option1);
-			expect(element.options.item(1)).toBe(option2);
-			expect(element.options.item(2)).toBe(option3);
+			expect(element.item(0) === option1).toBe(true);
+			expect(element.item(1) === option2).toBe(true);
+			expect(element.item(2) === option3).toBe(true);
+			expect(element.options.item(0) === option1).toBe(true);
+			expect(element.options.item(1) === option2).toBe(true);
+			expect(element.options.item(2) === option3).toBe(true);
 		});
 	});
 
@@ -409,4 +449,55 @@ describe('HTMLSelectElement', () => {
 			expect(element.item(1) === option3).toBe(true);
 		});
 	});
+
+	describe('setCustomValidity()', () => {
+		it('Returns validation message.', () => {
+			element.setCustomValidity('Error message');
+			expect(element.validationMessage).toBe('Error message');
+			element.setCustomValidity(null);
+			expect(element.validationMessage).toBe('null');
+			element.setCustomValidity('');
+			expect(element.validationMessage).toBe('');
+		});
+	});
+
+	for (const method of ['checkValidity', 'reportValidity']) {
+		describe(`${method}()`, () => {
+			it('Returns "true" if the field is "disabled".', () => {
+				const option1 = <IHTMLOptionElement>document.createElement('option');
+				option1.value = '';
+				element.appendChild(option1);
+
+				element.required = true;
+				element.disabled = true;
+
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "false" if invalid.', () => {
+				const option1 = <IHTMLOptionElement>document.createElement('option');
+				option1.value = '';
+				element.appendChild(option1);
+
+				element.required = true;
+
+				expect(element[method]()).toBe(false);
+			});
+
+			it('Triggers an "invalid" event when invalid.', () => {
+				const option1 = <IHTMLOptionElement>document.createElement('option');
+				option1.value = '';
+				element.appendChild(option1);
+
+				element.required = true;
+
+				let dispatchedEvent: Event | null = null;
+				element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
+
+				element[method]();
+
+				expect(dispatchedEvent.type).toBe('invalid');
+			});
+		});
+	}
 });

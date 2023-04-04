@@ -14,7 +14,7 @@ export default class HTMLOptGroupElement extends HTMLElement implements IHTMLOpt
 	 * @returns Label.
 	 */
 	public get label(): string {
-		return this.getAttributeNS(null, 'label') || '';
+		return this.getAttribute('label') || '';
 	}
 
 	/**
@@ -24,9 +24,9 @@ export default class HTMLOptGroupElement extends HTMLElement implements IHTMLOpt
 	 */
 	public set label(label: string) {
 		if (!label) {
-			this.removeAttributeNS(null, 'label');
+			this.removeAttribute('label');
 		} else {
-			this.setAttributeNS(null, 'label', label);
+			this.setAttribute('label', label);
 		}
 	}
 
@@ -36,7 +36,7 @@ export default class HTMLOptGroupElement extends HTMLElement implements IHTMLOpt
 	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
-		return this.getAttributeNS(null, 'disabled') !== null;
+		return this.getAttribute('disabled') !== null;
 	}
 
 	/**
@@ -46,9 +46,9 @@ export default class HTMLOptGroupElement extends HTMLElement implements IHTMLOpt
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
-			this.setAttributeNS(null, 'disabled', '');
+			this.setAttribute('disabled', '');
 		}
 	}
 }
