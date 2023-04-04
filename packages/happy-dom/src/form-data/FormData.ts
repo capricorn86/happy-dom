@@ -3,9 +3,7 @@ import File from '../file/File';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
 import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement';
 import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection';
-import IHTMLTextAreaElement from '../nodes/html-text-area-element/IHTMLTextAreaElement';
-import IHTMLSelectElement from '../nodes/html-select-element/IHTMLSelectElement';
-import IHTMLButtonElement from '../nodes/html-button-element/IHTMLButtonElement';
+import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
 
 type FormDataEntry = {
 	name: string;
@@ -30,32 +28,35 @@ export default class FormData implements Iterable<[string, string | File]> {
 	constructor(form?: IHTMLFormElement) {
 		if (form) {
 			for (const name of Object.keys((<HTMLFormControlsCollection>form.elements)._namedItems)) {
-				const radioNodeList = (<HTMLFormControlsCollection>form.elements)._namedItems[name];
-				let element:
-					| IHTMLInputElement
-					| IHTMLTextAreaElement
-					| IHTMLSelectElement
-					| IHTMLButtonElement = radioNodeList[0];
+				let radioNodeList = (<HTMLFormControlsCollection>form.elements)._namedItems[name];
 
-				if (radioNodeList.length > 1) {
-					for (const radioNode of radioNodeList) {
-						if (radioNode.checked) {
-							element = radioNode;
+				if (
+					radioNodeList[0].tagName === 'INPUT' &&
+					(radioNodeList[0].type === 'checkbox' || radioNodeList[0].type === 'radio')
+				) {
+					const newRadioNodeList = new RadioNodeList();
+					for (const node of radioNodeList) {
+						if (node.checked) {
+							newRadioNodeList.push(node);
+							break;
 						}
 					}
+					radioNodeList = newRadioNodeList;
 				}
 
-				if (element.name && SUBMITTABLE_ELEMENTS.includes(element.tagName)) {
-					if (element.tagName === 'INPUT' && element.type === 'file') {
-						if ((<IHTMLInputElement>element).files.length === 0) {
-							this.append(element.name, new File([], '', { type: 'application/octet-stream' }));
-						} else {
-							for (const file of (<IHTMLInputElement>element).files) {
-								this.append(element.name, file);
+				for (const node of radioNodeList) {
+					if (node.name && SUBMITTABLE_ELEMENTS.includes(node.tagName)) {
+						if (node.tagName === 'INPUT' && node.type === 'file') {
+							if ((<IHTMLInputElement>node).files.length === 0) {
+								this.append(node.name, new File([], '', { type: 'application/octet-stream' }));
+							} else {
+								for (const file of (<IHTMLInputElement>node).files) {
+									this.append(node.name, file);
+								}
 							}
+						} else {
+							this.append(node.name, node.value);
 						}
-					} else {
-						this.append(element.name, element.value);
 					}
 				}
 			}
