@@ -70,6 +70,7 @@ import CSSKeyframeRule from '../css/rules/CSSKeyframeRule';
 import CSSKeyframesRule from '../css/rules/CSSKeyframesRule';
 import CSSMediaRule from '../css/rules/CSSMediaRule';
 import CSSStyleRule from '../css/rules/CSSStyleRule';
+import CSSSupportsRule from '../css/rules/CSSSupportsRule';
 import MouseEvent from '../event/events/MouseEvent';
 import PointerEvent from '../event/events/PointerEvent';
 import FocusEvent from '../event/events/FocusEvent';
@@ -83,18 +84,19 @@ import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
-import IResponse from '../fetch/IResponse';
-import IResponseInit from '../fetch/IResponseInit';
-import IRequest from '../fetch/IRequest';
-import IRequestInit from '../fetch/IRequestInit';
-import IHeaders from '../fetch/IHeaders';
-import IHeadersInit from '../fetch/IHeadersInit';
+import IResponse from '../fetch/types/IResponse';
+import IResponseInit from '../fetch/types/IResponseInit';
+import IRequest from '../fetch/types/IRequest';
+import IRequestInit from '../fetch/types/IRequestInit';
+import IHeaders from '../fetch/types/IHeaders';
+import IHeadersInit from '../fetch/types/IHeadersInit';
 import Headers from '../fetch/Headers';
 import { default as RequestImplementation } from '../fetch/Request';
 import { default as ResponseImplementation } from '../fetch/Response';
 import Storage from '../storage/Storage';
 import IWindow from './IWindow';
 import HTMLCollection from '../nodes/element/HTMLCollection';
+import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection';
 import NodeList from '../nodes/node/NodeList';
 import MediaQueryList from '../match-media/MediaQueryList';
 import Selection from '../selection/Selection';
@@ -103,7 +105,7 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
-import FetchHandler from '../fetch/FetchHandler';
+import Fetch from '../fetch/Fetch';
 import { default as RangeImplementation } from '../range/Range';
 import DOMRect from '../nodes/element/DOMRect';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript';
@@ -119,10 +121,18 @@ import Attr from '../nodes/attr/Attr';
 import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
-import RequestInfo from '../fetch/RequestInfo';
+import RequestInfo from '../fetch/types/IRequestInfo';
 import FileList from '../nodes/html-input-element/FileList';
+import Stream from 'stream';
+import FormData from '../form-data/FormData';
+import AbortController from '../fetch/AbortController';
+import AbortSignal from '../fetch/AbortSignal';
+import IResponseBody from '../fetch/types/IResponseBody';
+import IRequestInfo from '../fetch/types/IRequestInfo';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import IHappyDOMOptions from './IHappyDOMOptions';
+import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
+import ValidityState from '../validity-state/ValidityState';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -245,6 +255,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Storage = Storage;
 	public readonly URLSearchParams = URLSearchParams;
 	public readonly HTMLCollection = HTMLCollection;
+	public readonly HTMLFormControlsCollection = HTMLFormControlsCollection;
 	public readonly NodeList = NodeList;
 	public readonly CSSUnitValue = CSSUnitValue;
 	public readonly CSSRule = CSSRule;
@@ -254,6 +265,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly CSSKeyframesRule = CSSKeyframesRule;
 	public readonly CSSMediaRule = CSSMediaRule;
 	public readonly CSSStyleRule = CSSStyleRule;
+	public readonly CSSSupportsRule = CSSSupportsRule;
 	public readonly Selection = Selection;
 	public readonly Navigator = Navigator;
 	public readonly MimeType = MimeType;
@@ -263,14 +275,22 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly FileList = FileList;
 	public readonly Headers: { new (init?: IHeadersInit): IHeaders } = Headers;
 	public readonly DOMRect: typeof DOMRect;
+	public readonly RadioNodeList: typeof RadioNodeList;
+	public readonly ValidityState: typeof ValidityState;
 	public readonly Request: {
-		new (input: string | { href: string } | IRequest, init?: IRequestInit): IRequest;
+		new (input: IRequestInfo, init?: IRequestInit): IRequest;
 	};
 	public readonly Response: {
-		new (body?: NodeJS.ReadableStream | null, init?: IResponseInit): IResponse;
+		new (body?: IResponseBody, init?: IResponseInit): IResponse;
 	};
 	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
 	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
+	public readonly ReadableStream = Stream.Readable;
+	public readonly WritableStream = Stream.Writable;
+	public readonly TransformStream = Stream.Transform;
+	public readonly AbortController = AbortController;
+	public readonly AbortSignal = AbortSignal;
+	public readonly FormData = FormData;
 	public readonly XMLHttpRequest;
 	public readonly DOMParser;
 	public readonly Range;
@@ -345,6 +365,9 @@ export default class Window extends EventTarget implements IWindow {
 	public decodeURIComponent;
 	public encodeURI;
 	public encodeURIComponent;
+	/**
+	 * @deprecated
+	 */
 	public escape;
 	public global;
 	public isFinite;
@@ -356,11 +379,12 @@ export default class Window extends EventTarget implements IWindow {
 	public setImmediate;
 	public queueMicrotask;
 	public undefined;
+	/**
+	 * @deprecated
+	 */
 	public unescape;
 	public gc;
 	public v8debug;
-	public AbortController;
-	public AbortSignal;
 	public Array;
 	public Object;
 	public Function;
@@ -629,7 +653,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Sets a timer which executes a function once the timer expires.
 	 *
-	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
 	 * @param args Arguments passed to the callback function.
@@ -647,7 +670,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Cancels a timeout previously established by calling setTimeout().
 	 *
-	 * @override
 	 * @param id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
@@ -658,7 +680,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Calls a function with a fixed time delay between each call.
 	 *
-	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
 	 * @param args Arguments passed to the callback function.
@@ -673,7 +694,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Cancels a timed repeating action which was previously established by a call to setInterval().
 	 *
-	 * @override
 	 * @param id ID of the interval.
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
@@ -684,7 +704,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Mock animation frames with timeouts.
 	 *
-	 * @override
 	 * @param callback Callback.
 	 * @returns Timeout ID.
 	 */
@@ -697,7 +716,6 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Mock animation frames with timeouts.
 	 *
-	 * @override
 	 * @param id Timeout ID.
 	 */
 	public cancelAnimationFrame(id: NodeJS.Timeout): void {
@@ -707,13 +725,12 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * This method provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
-	 * @override
 	 * @param url URL.
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
 	public async fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse> {
-		return await FetchHandler.fetch(this.document, url, init);
+		return await new Fetch({ ownerDocument: this.document, url, init }).send();
 	}
 
 	/**

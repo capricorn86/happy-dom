@@ -5,14 +5,16 @@ import ParentNodeUtility from '../parent-node/ParentNodeUtility';
 import IDocumentFragment from './IDocumentFragment';
 import INode from '../node/INode';
 import IHTMLCollection from '../element/IHTMLCollection';
-import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
+import ElementUtility from '../element/ElementUtility';
+import HTMLCollection from '../element/HTMLCollection';
+import INodeList from '../node/INodeList';
 
 /**
  * DocumentFragment.
  */
 export default class DocumentFragment extends Node implements IDocumentFragment {
 	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
-	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
+	public readonly children: IHTMLCollection<IElement, IElement> = new HTMLCollection();
 	public _rootNode: INode = this;
 
 	/**
@@ -104,7 +106,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): IElement[] {
+	public querySelectorAll(selector: string): INodeList<IElement> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -150,78 +152,26 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	}
 
 	/**
-	 * Append a child node to childNodes.
-	 *
 	 * @override
-	 * @param  node Node to append.
-	 * @returns Appended node.
 	 */
 	public appendChild(node: INode): INode {
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (node.parentNode && node.parentNode['children']) {
-				const index = node.parentNode['children'].indexOf(node);
-				if (index !== -1) {
-					node.parentNode['children'].splice(index, 1);
-				}
-			}
-
-			if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-				this.children.push(<IElement>node);
-			}
-		}
-
+		ElementUtility.appendChild(this, node);
 		return super.appendChild(<INode>node);
 	}
 
 	/**
-	 * Remove Child element from childNodes array.
-	 *
 	 * @override
-	 * @param node Node to remove.
 	 */
 	public removeChild(node: INode): INode {
-		if (node.nodeType === Node.ELEMENT_NODE) {
-			const index = this.children.indexOf(<IElement>node);
-			if (index !== -1) {
-				this.children.splice(index, 1);
-			}
-		}
-
+		ElementUtility.removeChild(this, node);
 		return super.removeChild(<Node>node);
 	}
 
 	/**
-	 * Inserts a node before another.
-	 *
 	 * @override
-	 * @param newNode Node to insert.
-	 * @param [referenceNode] Node to insert before.
-	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode?: INode): INode {
-		const returnValue = super.insertBefore(newNode, referenceNode);
-
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (newNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (newNode.parentNode && newNode.parentNode['children']) {
-				const index = newNode.parentNode['children'].indexOf(newNode);
-				if (index !== -1) {
-					newNode.parentNode['children'].splice(index, 1);
-				}
-			}
-
-			this.children.length = 0;
-
-			for (const node of this.childNodes) {
-				if (node.nodeType === Node.ELEMENT_NODE) {
-					this.children.push(<IElement>node);
-				}
-			}
-		}
-
-		return returnValue;
+		ElementUtility.insertBefore(this, newNode, referenceNode);
+		return super.insertBefore(newNode, referenceNode);
 	}
 }
