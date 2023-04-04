@@ -216,18 +216,14 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 
 		const returnValue = super.dispatchEvent(event);
 
-		if (event.type === 'click' && this.isConnected && !this.disabled) {
+		if (event.type === 'click' && this._formNode && this.isConnected) {
 			const form = <IHTMLFormElement>this._formNode;
 			switch (this.type) {
 				case 'submit':
-					if (form) {
-						form.requestSubmit();
-					}
+					form.requestSubmit();
 					break;
 				case 'reset':
-					if (form) {
-						form.reset();
-					}
+					form.reset();
 					break;
 			}
 		}

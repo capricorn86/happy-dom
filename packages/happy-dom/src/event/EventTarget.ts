@@ -81,11 +81,17 @@ export default abstract class EventTarget implements IEventTarget {
 				const listener = listeners[i];
 				const options = listenerOptions[i];
 
+				if (options?.passive) {
+					event._isInPassiveEventListener = true;
+				}
+
 				if ((<IEventListener>listener).handleEvent) {
 					(<IEventListener>listener).handleEvent(event);
 				} else {
 					(<(event: Event) => void>listener).call(this, event);
 				}
+
+				event._isInPassiveEventListener = false;
 
 				if (options?.once) {
 					this.removeEventListener(event.type, listener);

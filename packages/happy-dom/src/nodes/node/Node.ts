@@ -491,10 +491,10 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * @override
 	 */
-	public dispatchEvent(event: Event): boolean {
+	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
 
-		if (event.bubbles && !event._propagationStopped) {
+		if (event.bubbles && !event._propagationStopped && !event._immediatePropagationStopped) {
 			if (this.parentNode) {
 				return this.parentNode.dispatchEvent(event);
 			}

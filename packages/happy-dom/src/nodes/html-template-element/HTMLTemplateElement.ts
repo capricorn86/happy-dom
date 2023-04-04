@@ -37,20 +37,6 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	/**
 	 * @override
 	 */
-	public get previousSibling(): INode {
-		return null;
-	}
-
-	/**
-	 * @override
-	 */
-	public get nextSibling(): INode {
-		return null;
-	}
-
-	/**
-	 * @override
-	 */
 	public get firstChild(): INode {
 		return this.content.firstChild;
 	}
