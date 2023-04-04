@@ -4,11 +4,11 @@ import IWindow from '../../src/window/IWindow';
 import IDocument from '../../src/nodes/document/IDocument';
 import Node from '../../src/nodes/node/Node';
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
-import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTemplateElement';
 import XMLParserHTML from './data/XMLParserHTML';
 import NamespaceURI from '../../src/config/NamespaceURI';
 import DocumentType from '../../src/nodes/document-type/DocumentType';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
+import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTemplateElement';
 
 const GET_EXPECTED_HTML = (html: string): string =>
 	html
@@ -185,14 +185,13 @@ describe('XMLParser', () => {
 			);
 		});
 
-		it('Does not parse the content of script, style and template elements.', () => {
+		it('Does not parse the content of script and style elements.', () => {
 			const root = XMLParser.parse(
 				window.document,
 				`<div>
 					<script>if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}</script>
 					<script><b></b></script>
 					<style><b></b></style>
-					<template><b></b></template>
 				</div>`
 			);
 
@@ -202,16 +201,12 @@ describe('XMLParser', () => {
 
 			expect((<IHTMLElement>root.children[0].children[1]).innerText).toBe('<b></b>');
 			expect((<IHTMLElement>root.children[0].children[2]).innerText).toBe('<b></b>');
-			expect((<IHTMLTemplateElement>root.children[0].children[3]).content.textContent).toBe(
-				'<b></b>'
-			);
 
 			expect(new XMLSerializer().serializeToString(root).replace(/[\s]/gm, '')).toBe(
 				`<div>
 					<script>if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}</script>
 					<script><b></b></script>
 					<style><b></b></style>
-					<template><b></b></template>
 				</div>`.replace(/[\s]/gm, '')
 			);
 
@@ -462,6 +457,21 @@ describe('XMLParser', () => {
 				const root = XMLParser.parse(window.document, html);
 				expect(new XMLSerializer().serializeToString(root)).toBe(html);
 			}
+		});
+
+		it('Parses <template> elements, including its content.', () => {
+			const root = XMLParser.parse(
+				window.document,
+				'<div><template><tr><td></td></tr></template></div>'
+			);
+			expect(root.childNodes.length).toBe(1);
+			const template = <IHTMLTemplateElement>root.childNodes[0].childNodes[0];
+			expect(template.childNodes.length).toBe(0);
+			expect(template.children.length).toBe(0);
+			expect(template.content.children.length).toBe(1);
+			expect(template.content.children[0].tagName).toBe('TR');
+			expect(template.content.children[0].children.length).toBe(1);
+			expect(template.content.children[0].children[0].tagName).toBe('TD');
 		});
 	});
 });

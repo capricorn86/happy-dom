@@ -14,7 +14,7 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @returns Content.
 	 */
 	public get content(): string {
-		return this.getAttributeNS(null, 'content') || '';
+		return this.getAttribute('content') || '';
 	}
 
 	/**
@@ -23,7 +23,7 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @param content Content.
 	 */
 	public set content(content: string) {
-		this.setAttributeNS(null, 'content', content);
+		this.setAttribute('content', content);
 	}
 
 	/**
@@ -32,7 +32,7 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @returns HttpEquiv.
 	 */
 	public get httpEquiv(): string {
-		return this.getAttributeNS(null, 'http-equiv') || '';
+		return this.getAttribute('http-equiv') || '';
 	}
 
 	/**
@@ -41,7 +41,7 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @param httpEquiv HttpEquiv.
 	 */
 	public set httpEquiv(httpEquiv: string) {
-		this.setAttributeNS(null, 'http-equiv', httpEquiv);
+		this.setAttribute('http-equiv', httpEquiv);
 	}
 
 	/**
@@ -50,7 +50,7 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @returns Name.
 	 */
 	public get name(): string {
-		return this.getAttributeNS(null, 'name') || '';
+		return this.getAttribute('name') || '';
 	}
 
 	/**
@@ -59,7 +59,7 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @param name Name.
 	 */
 	public set name(name: string) {
-		this.setAttributeNS(null, 'name', name);
+		this.setAttribute('name', name);
 	}
 	/**
 	 * Returns scheme.
@@ -67,7 +67,7 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @returns Name.
 	 */
 	public get scheme(): string {
-		return this.getAttributeNS(null, 'scheme') || '';
+		return this.getAttribute('scheme') || '';
 	}
 
 	/**
@@ -76,6 +76,6 @@ export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaEle
 	 * @param scheme Scheme.
 	 */
 	public set scheme(scheme: string) {
-		this.setAttributeNS(null, 'scheme', scheme);
+		this.setAttribute('scheme', scheme);
 	}
 }
