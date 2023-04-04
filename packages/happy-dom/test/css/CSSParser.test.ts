@@ -6,6 +6,7 @@ import CSSParserInput from './data/CSSParserInput';
 import CSSKeyframeRule from '../../src/css/rules/CSSKeyframeRule';
 import CSSKeyframesRule from '../../src/css/rules/CSSKeyframesRule';
 import CSSContainerRule from '../../src/css/rules/CSSContainerRule';
+import { CSSSupportsRule } from '../../src';
 
 describe('CSSParser', () => {
 	describe('parseFromString()', () => {
@@ -13,7 +14,7 @@ describe('CSSParser', () => {
 			const cssStyleSheet = new CSSStyleSheet();
 			const cssRules = CSSParser.parseFromString(cssStyleSheet, CSSParserInput);
 
-			expect(cssRules.length).toBe(7);
+			expect(cssRules.length).toBe(8);
 
 			// CSSStyleRule
 			expect((<CSSStyleRule>cssRules[0]).parentRule).toBe(null);
@@ -134,6 +135,7 @@ describe('CSSParser', () => {
 			// CSSContainerRule 1
 			expect((<CSSContainerRule>cssRules[5]).parentRule).toBe(null);
 			expect((<CSSContainerRule>cssRules[5]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSContainerRule>cssRules[5]).conditionText).toBe('(min-width: 36rem)');
 			expect((<CSSContainerRule>cssRules[5]).cssText).toBe(
 				'@container (min-width: 36rem) { .container { color: red; } }'
 			);
@@ -151,8 +153,11 @@ describe('CSSParser', () => {
 			// CSSContainerRule 2
 			expect((<CSSContainerRule>cssRules[6]).parentRule).toBe(null);
 			expect((<CSSContainerRule>cssRules[6]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSContainerRule>cssRules[6]).conditionText).toBe(
+				'containerName (min-width: 36rem)'
+			);
 			expect((<CSSContainerRule>cssRules[6]).cssText).toBe(
-				'@container name (min-width: 36rem) { .container { color: red; } }'
+				'@container containerName (min-width: 36rem) { .container { color: red; } }'
 			);
 			expect((<CSSMediaRule>cssRules[6]).cssRules.length).toBe(1);
 			const children5 = <CSSStyleRule[]>(<CSSContainerRule>cssRules[6]).cssRules;
@@ -164,6 +169,24 @@ describe('CSSParser', () => {
 			expect(children5[0].style[0]).toBe('color');
 			expect(children5[0].style.color).toBe('red');
 			expect(children5[0].cssText).toBe('.container { color: red; }');
+
+			// CSSSupportsRule
+			expect((<CSSSupportsRule>cssRules[7]).parentRule).toBe(null);
+			expect((<CSSSupportsRule>cssRules[7]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSSupportsRule>cssRules[7]).conditionText).toBe('(display: flex)');
+			expect((<CSSSupportsRule>cssRules[7]).cssText).toBe(
+				'@supports (display: flex) { .container { color: green; } }'
+			);
+			expect((<CSSSupportsRule>cssRules[7]).cssRules.length).toBe(1);
+			const children6 = <CSSStyleRule[]>(<CSSSupportsRule>cssRules[7]).cssRules;
+			expect(children6[0].parentRule).toBe(cssRules[7]);
+			expect(children6[0].parentStyleSheet).toBe(cssStyleSheet);
+			expect(children6[0].selectorText).toBe('.container');
+			expect(children6[0].style.length).toBe(1);
+			expect(children6[0].style.parentRule).toBe(children6[0]);
+			expect(children6[0].style[0]).toBe('color');
+			expect(children6[0].style.color).toBe('green');
+			expect(children6[0].cssText).toBe('.container { color: green; }');
 		});
 	});
 });

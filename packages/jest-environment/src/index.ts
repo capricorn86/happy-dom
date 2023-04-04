@@ -37,6 +37,9 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 
 		JestUtil.installCommonGlobals(<typeof globalThis>(<unknown>this.window), config.globals);
 
+		// For some reason Jest removes the global setImmediate, so we need to add it back.
+		this.global.setImmediate = global.setImmediate;
+
 		if (options && options.console) {
 			this.global.console = options.console;
 			this.global.window['console'] = options.console;

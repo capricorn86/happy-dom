@@ -121,7 +121,7 @@ describe('HTMLOptionsCollection', () => {
 			select.appendChild(option);
 			document.body.appendChild(select);
 			select.options.remove(0);
-			expect(select.options).toHaveLength(0);
+			expect(select.options.length).toBe(0);
 		});
 
 		it('Changes selectedIndex when element removed from collection.', () => {
