@@ -1,5 +1,6 @@
 import IElement from '../element/IElement';
 import INode from '../node/INode';
+import INodeList from '../node/INodeList';
 
 export default interface IDocumentFragment extends INode {
 	readonly childElementCount: number;
@@ -35,7 +36,7 @@ export default interface IDocumentFragment extends INode {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	querySelectorAll(selector: string): IElement[];
+	querySelectorAll(selector: string): INodeList<IElement>;
 
 	/**
 	 * Replaces the existing children of a node with a specified new set of children.

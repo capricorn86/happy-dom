@@ -21,7 +21,11 @@ export default class File extends Blob {
 	 * @param [options.lastModifier] Last modified. Defaults to Date.now().
 	 * @param options.lastModified
 	 */
-	constructor(bits, name, options?: { type?: string; lastModified?: number }) {
+	constructor(
+		bits: (ArrayBuffer | ArrayBufferView | Blob | Buffer | string)[],
+		name: string,
+		options?: { type?: string; lastModified?: number }
+	) {
 		super(bits, options);
 
 		this.name = name.replace(/\//g, ':');

@@ -119,7 +119,7 @@ describe('EventTarget', () => {
 	});
 
 	describe('dispatchEvent()', () => {
-		it('Triggers callback properties with "on" as prefix.', () => {
+		it('Triggers listener properties with "on" as prefix.', () => {
 			let recievedEvent: Event = null;
 			const listener = (event: Event): void => {
 				recievedEvent = event;
@@ -130,6 +130,31 @@ describe('EventTarget', () => {
 			expect(recievedEvent).toBe(dispatchedEvent);
 			expect(recievedEvent.target).toBe(eventTarget);
 			expect(recievedEvent.currentTarget).toBe(eventTarget);
+		});
+
+		it('Triggers all listeners, even though listeners are removed while dispatching.', () => {
+			let recievedEvent1: Event = null;
+			let recievedEvent2: Event = null;
+			const listener1 = (event: Event): void => {
+				recievedEvent1 = event;
+				eventTarget.removeEventListener(EVENT_TYPE, listener1);
+			};
+			const listener2 = (event: Event): void => {
+				recievedEvent2 = event;
+				eventTarget.removeEventListener(EVENT_TYPE, listener2);
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+
+			eventTarget.addEventListener(EVENT_TYPE, listener1);
+			eventTarget.addEventListener(EVENT_TYPE, listener2);
+
+			eventTarget.dispatchEvent(dispatchedEvent);
+
+			expect(recievedEvent1).toBe(dispatchedEvent);
+			expect(recievedEvent2).toBe(dispatchedEvent);
+
+			expect(dispatchedEvent.target).toBe(eventTarget);
+			expect(dispatchedEvent.currentTarget).toBe(eventTarget);
 		});
 	});
 

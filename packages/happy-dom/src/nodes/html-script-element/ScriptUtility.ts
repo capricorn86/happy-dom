@@ -1,7 +1,7 @@
 import { Document } from '../..';
 import Event from '../../event/Event';
 import ErrorEvent from '../../event/events/ErrorEvent';
-import ResourceFetchHandler from '../../fetch/ResourceFetchHandler';
+import ResourceFetch from '../../fetch/ResourceFetch';
 import HTMLScriptElement from './HTMLScriptElement';
 
 /**
@@ -16,8 +16,8 @@ export default class ScriptUtility {
 	 * @param element
 	 */
 	public static async loadExternalScript(element: HTMLScriptElement): Promise<void> {
-		const src = element.getAttributeNS(null, 'src');
-		const async = element.getAttributeNS(null, 'async') !== null;
+		const src = element.getAttribute('src');
+		const async = element.getAttribute('async') !== null;
 
 		if (
 			element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptFileLoading ||
@@ -30,7 +30,7 @@ export default class ScriptUtility {
 			let code = null;
 			(<Document>element.ownerDocument)._readyStateManager.startTask();
 			try {
-				code = await ResourceFetchHandler.fetch(element.ownerDocument, src);
+				code = await ResourceFetch.fetch(element.ownerDocument, src);
 			} catch (error) {
 				element.dispatchEvent(
 					new ErrorEvent('error', {
@@ -59,7 +59,7 @@ export default class ScriptUtility {
 		} else {
 			let code = null;
 			try {
-				code = ResourceFetchHandler.fetchSync(element.ownerDocument, src);
+				code = ResourceFetch.fetchSync(element.ownerDocument, src);
 			} catch (error) {
 				element.dispatchEvent(
 					new ErrorEvent('error', {

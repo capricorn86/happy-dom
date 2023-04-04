@@ -74,7 +74,7 @@ export default class CookieJar {
 			if (cookie.path && !location.pathname.startsWith(cookie.path)) {
 				return false;
 			}
-			// TODO: check SameSite.
+			// TODO: Check same site behaviour.
 			return true;
 		});
 		return cookies.map((cookie) => cookie.cookieString()).join('; ');

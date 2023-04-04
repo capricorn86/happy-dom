@@ -29,8 +29,8 @@ import IComment from '../comment/IComment';
 import IText from '../text/IText';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INodeList from '../node/INodeList';
+import NodeList from '../node/NodeList';
 import IHTMLCollection from '../element/IHTMLCollection';
-import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement';
 import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum';
@@ -43,6 +43,8 @@ import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
 import IAttr from '../attr/IAttr';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
 import ProcessingInstruction from '../processing-instruction/ProcessingInstruction';
+import ElementUtility from '../element/ElementUtility';
+import HTMLCollection from '../element/HTMLCollection';
 import VisibilityStateEnum from './VisibilityStateEnum';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
@@ -55,7 +57,10 @@ export default class Document extends Node implements IDocument {
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation: DOMImplementation;
-	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
+	public readonly children: IHTMLCollection<IElement, IElement> = new HTMLCollection<
+		IElement,
+		IElement
+	>();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
@@ -416,8 +421,10 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Scripts.
 	 */
-	public get scripts(): IHTMLCollection<IHTMLScriptElement> {
-		return <IHTMLCollection<IHTMLScriptElement>>this.getElementsByTagName('script');
+	public get scripts(): IHTMLCollection<IHTMLScriptElement, IHTMLScriptElement> {
+		return <IHTMLCollection<IHTMLScriptElement, IHTMLScriptElement>>(
+			this.getElementsByTagName('script')
+		);
 	}
 
 	/**
@@ -531,7 +538,7 @@ export default class Document extends Node implements IDocument {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): IHTMLCollection<IElement> {
+	public getElementsByClassName(className: string): IHTMLCollection<IElement, IElement> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -541,7 +548,7 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
+	public getElementsByTagName(tagName: string): IHTMLCollection<IElement, IElement> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -552,7 +559,10 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement> {
+	public getElementsByTagNameNS(
+		namespaceURI: string,
+		tagName: string
+	): IHTMLCollection<IElement, IElement> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
@@ -577,9 +587,9 @@ export default class Document extends Node implements IDocument {
 			_parentNode: IElement | IDocumentFragment | IDocument,
 			_name: string
 		): INodeList<IElement> => {
-			const matches = HTMLCollectionFactory.create();
+			const matches = new NodeList<IElement>();
 			for (const child of _parentNode.children) {
-				if ((child.getAttributeNS(null, 'name') || '') === _name) {
+				if (child.getAttributeNS(null, 'name') === _name) {
 					matches.push(child);
 				}
 				for (const match of _getElementsByName(<IElement>child, _name)) {
@@ -615,78 +625,27 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
-	 * Append a child node to childNodes.
-	 *
 	 * @override
-	 * @param  node Node to append.
-	 * @returns Appended node.
 	 */
 	public appendChild(node: INode): INode {
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (node.parentNode && node.parentNode['children']) {
-				const index = node.parentNode['children'].indexOf(node);
-				if (index !== -1) {
-					node.parentNode['children'].splice(index, 1);
-				}
-			}
-			if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-				this.children.push(<Element>node);
-			}
-		}
-
+		ElementUtility.appendChild(this, node);
 		return super.appendChild(node);
 	}
 
 	/**
-	 * Remove Child element from childNodes array.
-	 *
 	 * @override
-	 * @param node Node to remove.
 	 */
 	public removeChild(node: INode): INode {
-		if (node.nodeType === Node.ELEMENT_NODE) {
-			const index = this.children.indexOf(<Element>node);
-			if (index !== -1) {
-				this.children.splice(index, 1);
-			}
-		}
-
+		ElementUtility.removeChild(this, node);
 		return super.removeChild(node);
 	}
 
 	/**
-	 * Inserts a node before another.
-	 *
 	 * @override
-	 * @param newNode Node to insert.
-	 * @param [referenceNode] Node to insert before.
-	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode?: INode): INode {
-		const returnValue = super.insertBefore(newNode, referenceNode);
-
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (newNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (newNode.parentNode && newNode.parentNode['children']) {
-				const index = newNode.parentNode['children'].indexOf(newNode);
-				if (index !== -1) {
-					newNode.parentNode['children'].splice(index, 1);
-				}
-			}
-
-			this.children.length = 0;
-
-			for (const node of this.childNodes) {
-				if (node.nodeType === Node.ELEMENT_NODE) {
-					this.children.push(<IElement>node);
-				}
-			}
-		}
-
-		return returnValue;
+		ElementUtility.insertBefore(this, newNode, referenceNode);
+		return super.insertBefore(newNode, referenceNode);
 	}
 
 	/**
