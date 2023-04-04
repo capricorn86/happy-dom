@@ -8,7 +8,7 @@ import IBlob from './IBlob';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/Blob-impl.js (MIT licensed).
  */
 export default class Blob implements IBlob {
-	public readonly _buffer: Buffer = null;
+	public _buffer: Buffer = null;
 	public readonly type: string = '';
 
 	/**
@@ -136,7 +136,7 @@ export default class Blob implements IBlob {
 	}
 
 	/**
-	 * Closes the blob.
+	 * Returns the object converted to string.
 	 *
 	 * @returns String.
 	 */

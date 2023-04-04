@@ -50,6 +50,9 @@ import SVGDocument from './nodes/svg-document/SVGDocument';
 import Element from './nodes/element/Element';
 import IElement from './nodes/element/IElement';
 import IHTMLCollection from './nodes/element/IHTMLCollection';
+import HTMLCollection from './nodes/element/HTMLCollection';
+import HTMLFormControlsCollection from './nodes/html-form-element/HTMLFormControlsCollection';
+import IHTMLFormControlsCollection from './nodes/html-form-element/IHTMLFormControlsCollection';
 import HTMLElement from './nodes/html-element/HTMLElement';
 import IHTMLElement from './nodes/html-element/IHTMLElement';
 import HTMLTemplateElement from './nodes/html-template-element/HTMLTemplateElement';
@@ -115,6 +118,7 @@ import CSSKeyframeRule from './css/rules/CSSKeyframeRule';
 import CSSKeyframesRule from './css/rules/CSSKeyframesRule';
 import CSSMediaRule from './css/rules/CSSMediaRule';
 import CSSStyleRule from './css/rules/CSSStyleRule';
+import CSSSupportsRule from './css/rules/CSSSupportsRule';
 import Storage from './storage/Storage';
 import DOMRect from './nodes/element/DOMRect';
 import Selection from './selection/Selection';
@@ -127,6 +131,15 @@ import ProcessingInstruction from './nodes/processing-instruction/ProcessingInst
 import IProcessingInstruction from './nodes/processing-instruction/IProcessingInstruction';
 import FileList from './nodes/html-input-element/FileList';
 import IFileList from './nodes/html-input-element/IFileList';
+import AbortController from './fetch/AbortController';
+import AbortSignal from './fetch/AbortSignal';
+import Request from './fetch/Request';
+import IRequest from './fetch/types/IRequest';
+import Response from './fetch/Response';
+import IResponse from './fetch/types/IResponse';
+import Headers from './fetch/Headers';
+import IHeaders from './fetch/types/IHeaders';
+import FormData from './form-data/FormData';
 
 export {
 	GlobalWindow,
@@ -181,6 +194,9 @@ export {
 	Element,
 	IElement,
 	IHTMLCollection,
+	HTMLCollection,
+	HTMLFormControlsCollection,
+	IHTMLFormControlsCollection,
 	HTMLElement,
 	IHTMLElement,
 	HTMLTemplateElement,
@@ -246,6 +262,7 @@ export {
 	CSSKeyframesRule,
 	CSSMediaRule,
 	CSSStyleRule,
+	CSSSupportsRule,
 	Storage,
 	DOMRect,
 	URLSearchParams,
@@ -258,5 +275,14 @@ export {
 	ProcessingInstruction,
 	IProcessingInstruction,
 	FileList,
-	IFileList
+	IFileList,
+	AbortController,
+	AbortSignal,
+	Request,
+	IRequest,
+	Response,
+	IResponse,
+	Headers,
+	IHeaders,
+	FormData
 };

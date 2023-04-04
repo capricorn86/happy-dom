@@ -1,1 +1,1 @@
-export default ['style', 'script', 'template'];
+export default ['style', 'script'];
