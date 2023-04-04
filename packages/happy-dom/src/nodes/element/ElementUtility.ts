@@ -29,10 +29,9 @@ export default class ElementUtility {
 				if (index !== -1) {
 					for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 						if ((<Element>node)._attributes[attribute]) {
-							(<HTMLCollection<IHTMLElement, IHTMLElement>>parentElement.children)._removeNamedItem(
-								<IHTMLElement>node,
-								(<Element>node)._attributes[attribute].value
-							);
+							(<HTMLCollection<IHTMLElement, IHTMLElement>>(
+								(<IElement>node.parentNode).children
+							))._removeNamedItem(<IHTMLElement>node, (<Element>node)._attributes[attribute].value);
 						}
 					}
 					(<IHTMLElement>node.parentNode).children.splice(index, 1);
@@ -97,14 +96,20 @@ export default class ElementUtility {
 				if (index !== -1) {
 					for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 						if ((<Element>newNode)._attributes[attribute]) {
-							(<HTMLCollection<IHTMLElement, IHTMLElement>>parentElement.children)._removeNamedItem(
+							(<HTMLCollection<IHTMLElement, IHTMLElement>>(
+								(<IElement>newNode.parentNode).children
+							))._removeNamedItem(
 								<IHTMLElement>newNode,
 								(<Element>newNode)._attributes[attribute].value
 							);
 						}
 					}
+
+					(<IElement>newNode.parentNode).children.splice(index, 1);
 				}
 			}
+
+			// Node.ts will call appendChild() for the scenario where "referenceNode" is "null"
 
 			if (referenceNode) {
 				if (referenceNode.nodeType === NodeTypeEnum.elementNode) {
@@ -122,7 +127,9 @@ export default class ElementUtility {
 						}
 					}
 				}
+			}
 
+			if (referenceNode || referenceNode === null) {
 				for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 					if ((<Element>newNode)._attributes[attribute]) {
 						(<HTMLCollection<IHTMLElement, IHTMLElement>>parentElement.children)._appendNamedItem(

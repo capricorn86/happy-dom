@@ -21,6 +21,7 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
 
+			expect(declaration.length).toBe(22);
 			expect(declaration[0]).toBe('border-top-width');
 			expect(declaration[1]).toBe('border-right-width');
 			expect(declaration[2]).toBe('border-bottom-width');
@@ -53,6 +54,7 @@ describe('CSSStyleDeclaration', () => {
 			declaration.borderRadius = '2px';
 			declaration.fontSize = '12px';
 
+			expect(declaration.length).toBe(22);
 			expect(declaration[0]).toBe('border-top-width');
 			expect(declaration[1]).toBe('border-right-width');
 			expect(declaration[2]).toBe('border-bottom-width');
@@ -84,6 +86,8 @@ describe('CSSStyleDeclaration', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
 			element.setAttribute('style', 'border: inherit');
+
+			expect(declaration.length).toBe(17);
 
 			expect(declaration.border).toBe('inherit');
 			expect(declaration.borderTop).toBe('inherit');
@@ -193,6 +197,8 @@ describe('CSSStyleDeclaration', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
 			element.setAttribute('style', 'border-top: inherit');
+
+			expect(declaration.length).toBe(3);
 
 			expect(declaration.borderTop).toBe('inherit');
 			expect(declaration.borderTopColor).toBe('inherit');

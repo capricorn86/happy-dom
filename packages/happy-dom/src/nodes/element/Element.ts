@@ -1037,6 +1037,20 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
+	 * @override
+	 */
+	public override dispatchEvent(event: Event): boolean {
+		const returnValue = super.dispatchEvent(event);
+		const attribute = this.getAttribute('on' + event.type);
+
+		if (attribute && !event._immediatePropagationStopped) {
+			this.ownerDocument.defaultView.eval(attribute);
+		}
+
+		return returnValue;
+	}
+
+	/**
 	 * Returns attribute name.
 	 *
 	 * @param name Name.
