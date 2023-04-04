@@ -94,20 +94,6 @@ describe('HTMLTemplateElement', () => {
 		});
 	});
 
-	describe('get previousSibling()', () => {
-		it('Returns null.', () => {
-			element.innerHTML = '<div>Test</div>';
-			expect(element.previousSibling).toBe(null);
-		});
-	});
-
-	describe('get nextSibling()', () => {
-		it('Returns null.', () => {
-			element.innerHTML = '<div>Test</div>';
-			expect(element.nextSibling).toBe(null);
-		});
-	});
-
 	describe('get firstChild()', () => {
 		it('Returns first child.', () => {
 			const div = document.createElement('div');

@@ -63,7 +63,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Tab index.
 	 */
 	public get tabIndex(): number {
-		const tabIndex = this.getAttributeNS(null, 'tabindex');
+		const tabIndex = this.getAttribute('tabindex');
 		return tabIndex !== null ? Number(tabIndex) : -1;
 	}
 
@@ -74,9 +74,9 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 */
 	public set tabIndex(tabIndex: number) {
 		if (tabIndex === -1) {
-			this.removeAttributeNS(null, 'tabindex');
+			this.removeAttribute('tabindex');
 		} else {
-			this.setAttributeNS(null, 'tabindex', String(tabIndex));
+			this.setAttribute('tabindex', String(tabIndex));
 		}
 	}
 
@@ -290,7 +290,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Direction.
 	 */
 	public get dir(): string {
-		return this.getAttributeNS(null, 'dir') || '';
+		return this.getAttribute('dir') || '';
 	}
 
 	/**
@@ -299,7 +299,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param direction Direction.
 	 */
 	public set dir(direction: string) {
-		this.setAttributeNS(null, 'dir', direction);
+		this.setAttribute('dir', direction);
 	}
 
 	/**
@@ -308,7 +308,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Hidden.
 	 */
 	public get hidden(): boolean {
-		return this.getAttributeNS(null, 'hidden') !== null;
+		return this.getAttribute('hidden') !== null;
 	}
 
 	/**
@@ -318,9 +318,9 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 */
 	public set hidden(hidden: boolean) {
 		if (!hidden) {
-			this.removeAttributeNS(null, 'hidden');
+			this.removeAttribute('hidden');
 		} else {
-			this.setAttributeNS(null, 'hidden', '');
+			this.setAttribute('hidden', '');
 		}
 	}
 
@@ -330,7 +330,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Language.
 	 */
 	public get lang(): string {
-		return this.getAttributeNS(null, 'lang') || '';
+		return this.getAttribute('lang') || '';
 	}
 
 	/**
@@ -339,7 +339,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param language Language.
 	 */
 	public set lang(lang: string) {
-		this.setAttributeNS(null, 'lang', lang);
+		this.setAttribute('lang', lang);
 	}
 
 	/**
@@ -348,7 +348,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Title.
 	 */
 	public get title(): string {
-		return this.getAttributeNS(null, 'title') || '';
+		return this.getAttribute('title') || '';
 	}
 
 	/**
@@ -357,7 +357,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param title Title.
 	 */
 	public set title(title: string) {
-		this.setAttributeNS(null, 'title', title);
+		this.setAttribute('title', title);
 	}
 
 	/**

@@ -63,6 +63,7 @@ import CSSKeyframeRule from '../css/rules/CSSKeyframeRule';
 import CSSKeyframesRule from '../css/rules/CSSKeyframesRule';
 import CSSMediaRule from '../css/rules/CSSMediaRule';
 import CSSStyleRule from '../css/rules/CSSStyleRule';
+import CSSSupportsRule from '../css/rules/CSSSupportsRule';
 import PointerEvent from '../event/events/PointerEvent';
 import MouseEvent from '../event/events/MouseEvent';
 import FocusEvent from '../event/events/FocusEvent';
@@ -81,6 +82,7 @@ import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
 import Storage from '../storage/Storage';
 import NodeFilter from '../tree-walker/NodeFilter';
 import HTMLCollection from '../nodes/element/HTMLCollection';
+import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection';
 import NodeList from '../nodes/node/NodeList';
 import Selection from '../selection/Selection';
 import IEventTarget from '../event/IEventTarget';
@@ -89,11 +91,11 @@ import MimeType from '../navigator/MimeType';
 import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
-import IResponseInit from '../fetch/IResponseInit';
-import IRequest from '../fetch/IRequest';
-import IHeaders from '../fetch/IHeaders';
-import IRequestInit from '../fetch/IRequestInit';
-import IResponse from '../fetch/IResponse';
+import IResponseInit from '../fetch/types/IResponseInit';
+import IRequest from '../fetch/types/IRequest';
+import IHeaders from '../fetch/types/IHeaders';
+import IRequestInit from '../fetch/types/IRequestInit';
+import IResponse from '../fetch/types/IResponse';
 import Range from '../range/Range';
 import MediaQueryList from '../match-media/MediaQueryList';
 import XMLHttpRequest from '../xml-http-request/XMLHttpRequest';
@@ -107,13 +109,22 @@ import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
 import IHappyDOMSettings from './IHappyDOMSettings';
-import RequestInfo from '../fetch/RequestInfo';
+import RequestInfo from '../fetch/types/IRequestInfo';
 import FileList from '../nodes/html-input-element/FileList';
+import Stream from 'stream';
+import FormData from '../form-data/FormData';
+import AbortController from '../fetch/AbortController';
+import AbortSignal from '../fetch/AbortSignal';
+import IResponseBody from '../fetch/types/IResponseBody';
+import IRequestInfo from '../fetch/types/IRequestInfo';
+import IHeadersInit from '../fetch/types/IHeadersInit';
+import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
+import ValidityState from '../validity-state/ValidityState';
 
 /**
  * Window without dependencies to server side specific packages.
  */
-export default interface IWindow extends IEventTarget, NodeJS.Global {
+export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	// Public Properties
 	readonly happyDOM: {
 		whenAsyncComplete: () => Promise<void>;
@@ -203,6 +214,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly Screen: typeof Screen;
 	readonly Storage: typeof Storage;
 	readonly HTMLCollection: typeof HTMLCollection;
+	readonly HTMLFormControlsCollection: typeof HTMLFormControlsCollection;
 	readonly NodeList: typeof NodeList;
 	readonly CSSUnitValue: typeof CSSUnitValue;
 	readonly CSS: CSS;
@@ -213,21 +225,31 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly CSSKeyframesRule: typeof CSSKeyframesRule;
 	readonly CSSMediaRule: typeof CSSMediaRule;
 	readonly CSSStyleRule: typeof CSSStyleRule;
+	readonly CSSSupportsRule: typeof CSSSupportsRule;
 	readonly Selection: typeof Selection;
 	readonly Navigator: typeof Navigator;
 	readonly MimeType: typeof MimeType;
 	readonly MimeTypeArray: typeof MimeTypeArray;
 	readonly Plugin: typeof Plugin;
 	readonly PluginArray: typeof PluginArray;
-	readonly Headers: { new (init?: string[][] | Record<string, string> | IHeaders): IHeaders };
-	readonly Request: { new (input: string | IRequest, init?: IRequestInit): IRequest };
-	readonly Response: { new (body?: unknown | null, init?: IResponseInit): IResponse };
+	readonly Headers: { new (init?: IHeadersInit): IHeaders };
+	readonly Request: {
+		new (input: IRequestInfo, init?: IRequestInit): IRequest;
+	};
+	readonly Response: { new (body?: IResponseBody | null, init?: IResponseInit): IResponse };
 	readonly Range: typeof Range;
 	readonly DOMRect: typeof DOMRect;
 	readonly XMLHttpRequest: typeof XMLHttpRequest;
 	readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
 	readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
 	readonly FileList: typeof FileList;
+	readonly ReadableStream: typeof Stream.Readable;
+	readonly WritableStream: typeof Stream.Writable;
+	readonly FormData: typeof FormData;
+	readonly AbortController: typeof AbortController;
+	readonly AbortSignal: typeof AbortSignal;
+	readonly RadioNodeList: typeof RadioNodeList;
+	readonly ValidityState: typeof ValidityState;
 
 	// Events
 	onload: (event: Event) => void;
