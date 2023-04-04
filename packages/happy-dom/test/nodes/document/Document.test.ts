@@ -218,6 +218,13 @@ describe('Document', () => {
 			expect(document.cookie).toBe('');
 		});
 
+		it('Unset previous cookie.', () => {
+			document.cookie = 'name=Dave; expires=Thu, 01 Jan 2025 00:00:00 GMT;';
+			expect(document.cookie).toBe('name=Dave');
+			document.cookie = 'name=; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+			expect(document.cookie).toBe('');
+		});
+
 		it('Removes a previously defined cookie if "expires" is in the past, but treats cookies with no value set differently from cookies with a value.', () => {
 			document.cookie = 'name=value1';
 			document.cookie = 'name';
