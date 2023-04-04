@@ -11,24 +11,6 @@ export default class CookieJar {
 	private cookies: Cookie[] = [];
 
 	/**
-	 * Validate cookie.
-	 *
-	 * @param cookie
-	 */
-	private validateCookie(cookie: Cookie): boolean {
-		if (cookie.key.toLowerCase().startsWith('__secure-') && !cookie.isSecure()) {
-			return false;
-		}
-		if (
-			cookie.key.toLowerCase().startsWith('__host-') &&
-			(!cookie.isSecure() || cookie.path !== '/' || cookie.domain)
-		) {
-			return false;
-		}
-		return true;
-	}
-
-	/**
 	 * Set cookie.
 	 *
 	 * @param cookieString
@@ -57,26 +39,40 @@ export default class CookieJar {
 	 * @returns Cookie string.
 	 */
 	public getCookiesString(location: Location, fromDocument: boolean): string {
-		const cookies = this.cookies.filter((cookie) => {
-			// Skip when use document.cookie and the cookie is httponly.
-			if (fromDocument && cookie.isHttpOnly()) {
-				return false;
-			}
-			if (cookie.isExpired()) {
-				return false;
-			}
-			if (cookie.isSecure() && location.protocol !== 'https:') {
-				return false;
-			}
-			if (cookie.domain && !location.hostname.endsWith(cookie.domain)) {
-				return false;
-			}
-			if (cookie.path && !location.pathname.startsWith(cookie.path)) {
-				return false;
-			}
+		let cookieString = '';
+		for (const cookie of this.cookies) {
 			// TODO: Check same site behaviour.
-			return true;
-		});
-		return cookies.map((cookie) => cookie.cookieString()).join('; ');
+			if (
+				(!fromDocument || !cookie.isHttpOnly()) &&
+				!cookie.isExpired() &&
+				(!cookie.isSecure() || location.protocol === 'https:') &&
+				(!cookie.domain || location.hostname.endsWith(cookie.domain)) &&
+				(!cookie.path || location.pathname.startsWith(cookie.path))
+			) {
+				if (cookieString) {
+					cookieString += '; ';
+				}
+				cookieString += cookie.cookieString();
+			}
+		}
+		return cookieString;
+	}
+
+	/**
+	 * Validate cookie.
+	 *
+	 * @param cookie
+	 */
+	private validateCookie(cookie: Cookie): boolean {
+		if (cookie.key.toLowerCase().startsWith('__secure-') && !cookie.isSecure()) {
+			return false;
+		}
+		if (
+			cookie.key.toLowerCase().startsWith('__host-') &&
+			(!cookie.isSecure() || cookie.path !== '/' || cookie.domain)
+		) {
+			return false;
+		}
+		return true;
 	}
 }

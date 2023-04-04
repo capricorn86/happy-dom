@@ -558,7 +558,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			accept: '*/*',
 			referer: location.href,
 			'user-agent': navigator.userAgent,
-			cookie: document.cookie
+			cookie: document._cookie.getCookiesString(location, false)
 		};
 	}
 

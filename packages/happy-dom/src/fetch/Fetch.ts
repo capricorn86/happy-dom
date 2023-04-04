@@ -557,7 +557,10 @@ export default class Fetch {
 			this.request.credentials === 'include' ||
 			(this.request.credentials === 'same-origin' && !isCORS)
 		) {
-			const cookie = document.defaultView.document.cookie;
+			const cookie = document.defaultView.document._cookie.getCookiesString(
+				this.ownerDocument.defaultView.location,
+				false
+			);
 			if (cookie) {
 				headers.set('Cookie', cookie);
 			}
