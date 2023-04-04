@@ -19,6 +19,8 @@ describe('FormData', () => {
 			const form = <IHTMLFormElement>document.createElement('form');
 			const file = new File([Buffer.from('fileContent')], 'file.txt', { type: 'text/plain' });
 			const textInput = <IHTMLInputElement>document.createElement('input');
+			const hiddenInput = <IHTMLInputElement>document.createElement('input');
+			const hiddenInput2 = <IHTMLInputElement>document.createElement('input');
 			const fileInput = <IHTMLInputElement>document.createElement('input');
 			const radioInput1 = <IHTMLInputElement>document.createElement('input');
 			const radioInput2 = <IHTMLInputElement>document.createElement('input');
@@ -28,6 +30,14 @@ describe('FormData', () => {
 			textInput.type = 'text';
 			textInput.name = 'textInput';
 			textInput.value = 'text value';
+
+			hiddenInput.type = 'hidden';
+			hiddenInput.name = 'hiddenInput';
+			hiddenInput.value = 'hidden value 1';
+
+			hiddenInput2.type = 'hidden';
+			hiddenInput2.name = 'hiddenInput';
+			hiddenInput2.value = 'hidden value 2';
 
 			fileInput.type = 'file';
 			fileInput.name = 'fileInput';
@@ -53,6 +63,8 @@ describe('FormData', () => {
 			checkboxInput2.checked = true;
 
 			form.appendChild(textInput);
+			form.appendChild(hiddenInput);
+			form.appendChild(hiddenInput2);
 			form.appendChild(fileInput);
 			form.appendChild(radioInput1);
 			form.appendChild(radioInput2);
@@ -62,8 +74,12 @@ describe('FormData', () => {
 			const formData = new window.FormData(form);
 
 			expect(formData.get('textInput')).toBe('text value');
+			expect(formData.get('hiddenInput')).toBe('hidden value 1');
 			expect(formData.get('fileInput')).toBe(file);
 			expect(formData.get('radioInput')).toBe('radio value 2');
+			expect(formData.get('checkboxInput')).toBe('checkbox value 2');
+			expect(formData.getAll('hiddenInput')).toEqual(['hidden value 1', 'hidden value 2']);
+			expect(formData.getAll('radioInput')).toEqual(['radio value 2']);
 			expect(formData.getAll('checkboxInput')).toEqual(['checkbox value 2']);
 		});
 	});
