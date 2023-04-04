@@ -126,9 +126,9 @@ console.log(global.test);
 
 ## Server-Side Rendering of Web Components
 
-The example below will show you how to setup a Node [VM context](https://nodejs.org/api/vm.html#vm_vm_createcontext_sandbox_options) to render a page with custom elements (web components) in Happy DOM. We can then use a new web feature called [Declarative Shadow DOM](https://chromestatus.com/feature/5191745052606464) to include the shadow roots in the HTML output.
+The example below will show you how to server-side render a page with custom elements (web components) in Happy DOM. In the example we will use a new web feature called [Declarative Shadow DOM](https://chromestatus.com/feature/5191745052606464) to include the shadow roots in the HTML output.
 
-[Declarative Shadow DOM](https://chromestatus.com/feature/5191745052606464) is only supported by Chromium based browsers. Unsupported browsers should safely fallback to being rendered using Javascript.
+[Declarative Shadow DOM](https://chromestatus.com/feature/5191745052606464) is only supported by Chromium based browsers. Unsupported browsers will safely fallback to being rendered using Javascript.
 
 ```javascript
 import { Window } from 'happy-dom';

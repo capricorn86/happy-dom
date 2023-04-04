@@ -35,7 +35,7 @@ export default class Cookie {
 		this.key = match[1].trim();
 		this.value = match[2];
 		// Set key is empty if match[2] is undefined.
-		if (!match[2]) {
+		if (!match[2] && parts[0][this.key.length] !== '=') {
 			this.value = this.key;
 			this.key = '';
 		}

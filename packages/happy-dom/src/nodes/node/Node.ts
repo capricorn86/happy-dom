@@ -8,12 +8,24 @@ import DOMException from '../../exception/DOMException';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
-import INodeList from './INodeList';
-import NodeListFactory from './NodeListFactory';
 import NodeTypeEnum from './NodeTypeEnum';
 import NodeDocumentPositionEnum from './NodeDocumentPositionEnum';
 import NodeUtility from './NodeUtility';
 import IAttr from '../attr/IAttr';
+import NodeList from './NodeList';
+import INodeList from './INodeList';
+import IShadowRoot from '../shadow-root/IShadowRoot';
+
+const JSON_CIRCULAR_PROPERTIES = [
+	'ownerDocument',
+	'parentNode',
+	'ownerElement',
+	'defaultView',
+	'_rootNode',
+	'_formNode',
+	'_selectNode',
+	'_textAreaNode'
+];
 
 /**
  * Node.
@@ -58,11 +70,14 @@ export default class Node extends EventTarget implements INode {
 	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
-	public readonly childNodes: INodeList<INode> = NodeListFactory.create();
+	public readonly childNodes: INodeList<INode> = new NodeList<INode>();
 	public readonly isConnected: boolean = false;
 
 	// Custom Properties (not part of HTML standard)
 	public _rootNode: INode = null;
+	public _formNode: INode = null;
+	public _selectNode: INode = null;
+	public _textAreaNode: INode = null;
 	public _observers: MutationListener[] = [];
 
 	/**
@@ -476,18 +491,22 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * @override
 	 */
-	public dispatchEvent(event: Event): boolean {
+	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
 
-		if (event.bubbles && !event._propagationStopped) {
+		if (event.bubbles && !event._propagationStopped && !event._immediatePropagationStopped) {
 			if (this.parentNode) {
 				return this.parentNode.dispatchEvent(event);
 			}
 
 			// eslint-disable-next-line
-			if (event.composed && this.nodeType === NodeTypeEnum.documentFragmentNode && (<any>this).host) {
+			if (
+				event.composed &&
+				this.nodeType === NodeTypeEnum.documentFragmentNode &&
+				(<IShadowRoot>(<unknown>this)).host
+			) {
 				// eslint-disable-next-line
-				return (<any>this).host.dispatchEvent(event);
+				return (<IShadowRoot>(<unknown>this)).host.dispatchEvent(event);
 			}
 		}
 
@@ -543,10 +562,25 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public _connectToNode(parentNode: INode = null): void {
 		const isConnected = !!parentNode && parentNode.isConnected;
+		const formNode = (<Node>this)._formNode;
+		const selectNode = (<Node>this)._selectNode;
+		const textAreaNode = (<Node>this)._textAreaNode;
 
-		if (this.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+		if (this.nodeType !== NodeTypeEnum.documentFragmentNode) {
 			(<INode>this.parentNode) = parentNode;
 			(<Node>this)._rootNode = isConnected && parentNode ? (<Node>parentNode)._rootNode : null;
+
+			if (this['tagName'] !== 'FORM') {
+				(<Node>this)._formNode = parentNode ? (<Node>parentNode)._formNode : null;
+			}
+
+			if (this['tagName'] !== 'SELECT') {
+				(<Node>this)._selectNode = parentNode ? (<Node>parentNode)._selectNode : null;
+			}
+
+			if (this['tagName'] !== 'TEXTAREA') {
+				(<Node>this)._textAreaNode = parentNode ? (<Node>parentNode)._textAreaNode : null;
+			}
 		}
 
 		if (this.isConnected !== isConnected) {
@@ -569,6 +603,14 @@ export default class Node extends EventTarget implements INode {
 			if ((<any>this)._shadowRoot) {
 				// eslint-disable-next-line
 				(<any>this)._shadowRoot._connectToNode(this);
+			}
+		} else if (
+			formNode !== this._formNode ||
+			selectNode !== this._selectNode ||
+			textAreaNode !== this._textAreaNode
+		) {
+			for (const child of this.childNodes) {
+				(<Node>child)._connectToNode(this);
 			}
 		}
 	}
@@ -744,5 +786,18 @@ export default class Node extends EventTarget implements INode {
 		return node1Index < node2Index
 			? Node.DOCUMENT_POSITION_PRECEDING
 			: Node.DOCUMENT_POSITION_FOLLOWING;
+	}
+
+	/**
+	 * This will be called by JSON.stringify() when serializing this node.
+	 *
+	 * @returns Object without circular references.
+	 */
+	public toJSON(): { [key: string]: unknown } {
+		const result = {};
+		for (const key of Object.keys(this)) {
+			result[key] = !JSON_CIRCULAR_PROPERTIES.includes(key) ? this[key] : null;
+		}
+		return result;
 	}
 }

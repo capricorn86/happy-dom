@@ -1,12 +1,20 @@
 import Event from '../../event/Event';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
+import IAttr from '../attr/IAttr';
 import HTMLElement from '../html-element/HTMLElement';
-import IHTMLElement from '../html-element/IHTMLElement';
+import HTMLFormElement from '../html-form-element/HTMLFormElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
+import INode from '../node/INode';
+import ValidityState from '../../validity-state/ValidityState';
 import IHTMLTextAreaElement from './IHTMLTextAreaElement';
+import INodeList from '../node/INodeList';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
+import IDocument from '../document/IDocument';
+import IShadowRoot from '../shadow-root/IShadowRoot';
+import NodeList from '../node/NodeList';
 
 /**
  * HTML Text Area Element.
@@ -16,7 +24,8 @@ import IHTMLTextAreaElement from './IHTMLTextAreaElement';
  */
 export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTextAreaElement {
 	public readonly type = 'textarea';
-	public defaultValue = '';
+	public readonly validationMessage = '';
+	public readonly validity = new ValidityState(this);
 
 	// Events
 	public oninput: (event: Event) => void | null = null;
@@ -26,6 +35,25 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	public _selectionStart = null;
 	public _selectionEnd = null;
 	public _selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+	public _textAreaNode: HTMLTextAreaElement = this;
+
+	/**
+	 * Returns the default value.
+	 *
+	 * @returns Default value.
+	 */
+	public get defaultValue(): string {
+		return this.textContent;
+	}
+
+	/**
+	 * Sets the default value.
+	 *
+	 * @param defaultValue Default value.
+	 */
+	public set defaultValue(defaultValue: string) {
+		this.textContent = defaultValue;
+	}
 
 	/**
 	 * Returns minlength.
@@ -33,7 +61,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Min length.
 	 */
 	public get minLength(): number {
-		const minLength = this.getAttributeNS(null, 'minlength');
+		const minLength = this.getAttribute('minlength');
 		if (minLength !== null) {
 			return parseInt(minLength);
 		}
@@ -46,7 +74,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param minLength Min length.
 	 */
 	public set minLength(minlength: number) {
-		this.setAttributeNS(null, 'minlength', String(minlength));
+		this.setAttribute('minlength', String(minlength));
 	}
 
 	/**
@@ -55,7 +83,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Max length.
 	 */
 	public get maxLength(): number {
-		const maxLength = this.getAttributeNS(null, 'maxlength');
+		const maxLength = this.getAttribute('maxlength');
 		if (maxLength !== null) {
 			return parseInt(maxLength);
 		}
@@ -68,7 +96,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param maxlength Max length.
 	 */
 	public set maxLength(maxLength: number) {
-		this.setAttributeNS(null, 'maxlength', String(maxLength));
+		this.setAttribute('maxlength', String(maxLength));
 	}
 
 	/**
@@ -77,7 +105,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Name.
 	 */
 	public get name(): string {
-		return this.getAttributeNS(null, 'name') || '';
+		return this.getAttribute('name') || '';
 	}
 
 	/**
@@ -86,7 +114,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param name Name.
 	 */
 	public set name(name: string) {
-		this.setAttributeNS(null, 'name', name);
+		this.setAttribute('name', name);
 	}
 
 	/**
@@ -95,7 +123,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Placeholder.
 	 */
 	public get placeholder(): string {
-		return this.getAttributeNS(null, 'placeholder') || '';
+		return this.getAttribute('placeholder') || '';
 	}
 
 	/**
@@ -104,7 +132,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param placeholder Placeholder.
 	 */
 	public set placeholder(placeholder: string) {
-		this.setAttributeNS(null, 'placeholder', placeholder);
+		this.setAttribute('placeholder', placeholder);
 	}
 
 	/**
@@ -113,7 +141,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Inputmode.
 	 */
 	public get inputmode(): string {
-		return this.getAttributeNS(null, 'inputmode') || '';
+		return this.getAttribute('inputmode') || '';
 	}
 
 	/**
@@ -122,7 +150,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param inputmode Inputmode.
 	 */
 	public set inputmode(inputmode: string) {
-		this.setAttributeNS(null, 'inputmode', inputmode);
+		this.setAttribute('inputmode', inputmode);
 	}
 
 	/**
@@ -131,7 +159,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Cols.
 	 */
 	public get cols(): string {
-		return this.getAttributeNS(null, 'cols') || '';
+		return this.getAttribute('cols') || '';
 	}
 
 	/**
@@ -140,7 +168,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param cols Cols.
 	 */
 	public set cols(cols: string) {
-		this.setAttributeNS(null, 'cols', cols);
+		this.setAttribute('cols', cols);
 	}
 
 	/**
@@ -149,7 +177,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Rows.
 	 */
 	public get rows(): string {
-		return this.getAttributeNS(null, 'rows') || '';
+		return this.getAttribute('rows') || '';
 	}
 
 	/**
@@ -158,7 +186,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param rows Rows.
 	 */
 	public set rows(rows: string) {
-		this.setAttributeNS(null, 'rows', rows);
+		this.setAttribute('rows', rows);
 	}
 
 	/**
@@ -167,7 +195,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Autocomplete.
 	 */
 	public get autocomplete(): string {
-		return this.getAttributeNS(null, 'autocomplete') || '';
+		return this.getAttribute('autocomplete') || '';
 	}
 
 	/**
@@ -176,7 +204,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param autocomplete Autocomplete.
 	 */
 	public set autocomplete(autocomplete: string) {
-		this.setAttributeNS(null, 'autocomplete', autocomplete);
+		this.setAttribute('autocomplete', autocomplete);
 	}
 
 	/**
@@ -185,7 +213,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns ReadOnly.
 	 */
 	public get readOnly(): boolean {
-		return this.getAttributeNS(null, 'readonly') !== null;
+		return this.getAttribute('readonly') !== null;
 	}
 
 	/**
@@ -195,9 +223,9 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public set readOnly(readOnly: boolean) {
 		if (!readOnly) {
-			this.removeAttributeNS(null, 'readonly');
+			this.removeAttribute('readonly');
 		} else {
-			this.setAttributeNS(null, 'readonly', '');
+			this.setAttribute('readonly', '');
 		}
 	}
 
@@ -207,7 +235,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
-		return this.getAttributeNS(null, 'disabled') !== null;
+		return this.getAttribute('disabled') !== null;
 	}
 
 	/**
@@ -217,9 +245,9 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public set disabled(disabled: boolean) {
 		if (!disabled) {
-			this.removeAttributeNS(null, 'disabled');
+			this.removeAttribute('disabled');
 		} else {
-			this.setAttributeNS(null, 'disabled', '');
+			this.setAttribute('disabled', '');
 		}
 	}
 
@@ -229,7 +257,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Autofocus.
 	 */
 	public get autofocus(): boolean {
-		return this.getAttributeNS(null, 'autofocus') !== null;
+		return this.getAttribute('autofocus') !== null;
 	}
 
 	/**
@@ -239,9 +267,9 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public set autofocus(autofocus: boolean) {
 		if (!autofocus) {
-			this.removeAttributeNS(null, 'autofocus');
+			this.removeAttribute('autofocus');
 		} else {
-			this.setAttributeNS(null, 'autofocus', '');
+			this.setAttribute('autofocus', '');
 		}
 	}
 
@@ -251,7 +279,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Required.
 	 */
 	public get required(): boolean {
-		return this.getAttributeNS(null, 'required') !== null;
+		return this.getAttribute('required') !== null;
 	}
 
 	/**
@@ -261,9 +289,9 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public set required(required: boolean) {
 		if (!required) {
-			this.removeAttributeNS(null, 'required');
+			this.removeAttribute('required');
 		} else {
-			this.setAttributeNS(null, 'required', '');
+			this.setAttribute('required', '');
 		}
 	}
 
@@ -274,7 +302,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public get value(): string {
 		if (this._value === null) {
-			return this.getAttributeNS(null, 'value') || '';
+			return this.textContent;
 		}
 
 		return this._value;
@@ -355,7 +383,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param direction Direction.
 	 */
 	public set selectionDirection(direction: string) {
-		this.setSelectionRange(this._selectionStart, this._selectionEnd, direction);
+		this.setSelectionRange(this.selectionStart, this.selectionEnd, direction);
 	}
 
 	/**
@@ -364,11 +392,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		let parent = <IHTMLElement>this.parentNode;
-		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>parent.parentNode;
-		}
-		return <IHTMLFormElement>parent;
+		return <IHTMLFormElement>this._formNode;
 	}
 
 	/**
@@ -381,6 +405,42 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	}
 
 	/**
+	 * Returns the associated label elements.
+	 *
+	 * @returns Label elements.
+	 */
+	public get labels(): INodeList<IHTMLLabelElement> {
+		const id = this.id;
+		if (id) {
+			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
+			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
+
+			let parent = this.parentNode;
+			while (parent) {
+				if (parent['tagName'] === 'LABEL') {
+					labels.push(<IHTMLLabelElement>parent);
+					break;
+				}
+				parent = parent.parentNode;
+			}
+
+			return <INodeList<IHTMLLabelElement>>labels;
+		}
+		return new NodeList<IHTMLLabelElement>();
+	}
+
+	/**
+	 * Selects the text.
+	 */
+	public select(): void {
+		this._selectionStart = 0;
+		this._selectionEnd = this.value.length;
+		this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+	}
+
+	/**
 	 * Set selection range.
 	 *
 	 * @param start Start.
@@ -389,7 +449,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 */
 	public setSelectionRange(start: number, end: number, direction = 'none'): void {
 		this._selectionEnd = Math.min(end, this.value.length);
-		this._selectionStart = Math.min(start, this._selectionEnd);
+		this._selectionStart = Math.min(start, this.selectionEnd);
 		this._selectionDirection =
 			direction === HTMLInputElementSelectionDirectionEnum.forward ||
 			direction === HTMLInputElementSelectionDirectionEnum.backward
@@ -469,12 +529,34 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	}
 
 	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	public setCustomValidity(message: string): void {
+		(<string>this.validationMessage) = String(message);
+	}
+
+	/**
 	 * Checks validity.
 	 *
-	 * @returns "true" if validation does'nt fail.
+	 * @returns "true" if the field is valid.
 	 */
 	public checkValidity(): boolean {
-		return true;
+		const valid = this.disabled || this.readOnly || this.validity.valid;
+		if (!valid) {
+			this.dispatchEvent(new Event('invalid', { bubbles: true, cancelable: true }));
+		}
+		return valid;
+	}
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	public reportValidity(): boolean {
+		return this.checkValidity();
 	}
 
 	/**
@@ -491,8 +573,70 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 		clone._selectionStart = this._selectionStart;
 		clone._selectionEnd = this._selectionEnd;
 		clone._selectionDirection = this._selectionDirection;
-		clone.defaultValue = this.defaultValue;
 
 		return clone;
+	}
+
+	/**
+	 * Resets selection.
+	 */
+	public _resetSelection(): void {
+		if (this._value === null) {
+			this._selectionStart = null;
+			this._selectionEnd = null;
+			this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override setAttributeNode(attribute: IAttr): IAttr {
+		const replacedAttribute = super.setAttributeNode(attribute);
+		const oldValue = replacedAttribute ? replacedAttribute.value : null;
+
+		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
+			if (oldValue) {
+				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
+			}
+			if (attribute.value) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
+			}
+		}
+
+		return replacedAttribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeAttributeNode(attribute: IAttr): IAttr {
+		super.removeAttributeNode(attribute);
+
+		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
+			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
+		}
+
+		return attribute;
+	}
+
+	/**
+	 * @override
+	 */
+	public override _connectToNode(parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this._formNode;
+
+		super._connectToNode(parentNode);
+
+		if (oldFormNode !== this._formNode) {
+			if (oldFormNode) {
+				oldFormNode._removeFormControlItem(this, this.name);
+				oldFormNode._removeFormControlItem(this, this.id);
+			}
+			if (this._formNode) {
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.name);
+				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.id);
+			}
+		}
 	}
 }
