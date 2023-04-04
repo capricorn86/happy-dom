@@ -4,7 +4,7 @@ import INode from '../nodes/node/INode';
 import Node from '../nodes/node/Node';
 import INodeList from '../nodes/node/INodeList';
 import SelectorItem from './SelectorItem';
-import NodeListFactory from '../nodes/node/NodeListFactory';
+import NodeList from '../nodes/node/NodeList';
 
 const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#"*:()\]]+)|([ ,>]+)/g;
 
@@ -22,7 +22,7 @@ export default class QuerySelector {
 	 * @returns HTML elements.
 	 */
 	public static querySelectorAll(node: INode, selector: string): INodeList<IElement> {
-		const matches = <INodeList<IElement>>NodeListFactory.create();
+		const matches = new NodeList<IElement>();
 
 		if (selector === '') {
 			throw new Error(

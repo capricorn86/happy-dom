@@ -2,7 +2,7 @@ import Window from '../../../src/window/Window';
 import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement';
-import ResourceFetchHandler from '../../../src/fetch/ResourceFetchHandler';
+import ResourceFetch from '../../../src/fetch/ResourceFetch';
 
 describe('HTMLLinkElement', () => {
 	let window: IWindow;
@@ -82,7 +82,7 @@ describe('HTMLLinkElement', () => {
 			let loadEvent = null;
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (document: IDocument, url: string) => {
 					loadedDocument = document;
 					loadedURL = url;
@@ -113,7 +113,7 @@ describe('HTMLLinkElement', () => {
 			const thrownError = new Error('error');
 			let errorEvent = null;
 
-			jest.spyOn(ResourceFetchHandler, 'fetch').mockImplementation(async () => {
+			jest.spyOn(ResourceFetch, 'fetch').mockImplementation(async () => {
 				throw thrownError;
 			});
 
@@ -140,7 +140,7 @@ describe('HTMLLinkElement', () => {
 			let loadedURL = null;
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (document: IDocument, url: string) => {
 					loadedDocument = document;
 					loadedURL = url;
@@ -164,7 +164,7 @@ describe('HTMLLinkElement', () => {
 			let loadedURL = null;
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (document: IDocument, url: string) => {
 					loadedDocument = document;
 					loadedURL = url;
@@ -194,7 +194,7 @@ describe('HTMLLinkElement', () => {
 			const thrownError = new Error('error');
 			let errorEvent = null;
 
-			jest.spyOn(ResourceFetchHandler, 'fetch').mockImplementation(async () => {
+			jest.spyOn(ResourceFetch, 'fetch').mockImplementation(async () => {
 				throw thrownError;
 			});
 
@@ -220,7 +220,7 @@ describe('HTMLLinkElement', () => {
 			let loadedURL = null;
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (document: IDocument, url: string) => {
 					loadedDocument = document;
 					loadedURL = url;
