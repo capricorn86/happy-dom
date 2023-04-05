@@ -96,6 +96,10 @@ export default abstract class EventTarget implements IEventTarget {
 				event._isInPassiveEventListener = false;
 
 				if (options?.once) {
+					// At this time, listeners and listenersOptions are cloned arrays. When the original value is deleted,
+					// The value corresponding to the cloned array is not deleted. So we need to delete the value in the cloned array.
+					listeners.splice(i, 1);
+					listenerOptions.splice(i, 1);
 					this.removeEventListener(event.type, listener);
 					i--;
 					max--;
