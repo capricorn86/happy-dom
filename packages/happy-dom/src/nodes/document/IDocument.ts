@@ -32,7 +32,7 @@ export default interface IDocument extends IParentNode {
 	readonly doctype: IDocumentType;
 	readonly body: IHTMLElement;
 	readonly head: IHTMLElement;
-	readonly scripts: IHTMLCollection<IHTMLScriptElement, IHTMLScriptElement>;
+	readonly scripts: IHTMLCollection<IHTMLScriptElement>;
 	readonly activeElement: IHTMLElement;
 	readonly styleSheets: CSSStyleSheet[];
 	readonly scrollingElement: IHTMLElement;

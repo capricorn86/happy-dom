@@ -75,5 +75,47 @@ describe('HTMLCollection', () => {
 			expect(document.body.children.namedItem('div3') === null).toBe(true);
 			expect(document.body.children.namedItem('div5') === div5).toBe(true);
 		});
+
+		it('Supports attributes only consisting of numbers.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `<div name="container1" class="container1"></div><div name="container2" class="container2"></div><div name="0" class="container3"></div><div name="1" class="container4"></div>`;
+			const container1 = div.querySelector('.container1');
+			const container2 = div.querySelector('.container2');
+			const container3 = div.querySelector('.container3');
+			const container4 = div.querySelector('.container4');
+
+			expect(div.children.length).toBe(4);
+			expect(div.children[0] === container1).toBe(true);
+			expect(div.children[1] === container2).toBe(true);
+			expect(div.children[2] === container3).toBe(true);
+			expect(div.children[3] === container4).toBe(true);
+			expect(div.children.namedItem('container1') === container1).toBe(true);
+			expect(div.children.namedItem('container2') === container2).toBe(true);
+			expect(div.children.namedItem('0') === container3).toBe(true);
+			expect(div.children.namedItem('1') === container4).toBe(true);
+
+			container3.remove();
+
+			expect(div.children.length).toBe(3);
+			expect(div.children[0] === container1).toBe(true);
+			expect(div.children[1] === container2).toBe(true);
+			expect(div.children[2] === container4).toBe(true);
+			expect(div.children.namedItem('container1') === container1).toBe(true);
+			expect(div.children.namedItem('container2') === container2).toBe(true);
+			expect(div.children.namedItem('0') === null).toBe(true);
+			expect(div.children.namedItem('1') === container4).toBe(true);
+
+			div.insertBefore(container3, container4);
+
+			expect(div.children.length).toBe(4);
+			expect(div.children[0] === container1).toBe(true);
+			expect(div.children[1] === container2).toBe(true);
+			expect(div.children[2] === container3).toBe(true);
+			expect(div.children[3] === container4).toBe(true);
+			expect(div.children.namedItem('container1') === container1).toBe(true);
+			expect(div.children.namedItem('container2') === container2).toBe(true);
+			expect(div.children.namedItem('0') === container3).toBe(true);
+			expect(div.children.namedItem('1') === container4).toBe(true);
+		});
 	});
 });
