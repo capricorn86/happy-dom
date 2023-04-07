@@ -46,7 +46,7 @@ export default class Element extends Node implements IElement {
 
 	public scrollTop = 0;
 	public scrollLeft = 0;
-	public children: IHTMLCollection<IElement, IElement> = new HTMLCollection<IElement, IElement>();
+	public children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public readonly namespaceURI: string = null;
 
 	// Events
@@ -778,7 +778,7 @@ export default class Element extends Node implements IElement {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): IHTMLCollection<IElement, IElement> {
+	public getElementsByClassName(className: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -788,7 +788,7 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IHTMLCollection<IElement, IElement> {
+	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -799,10 +799,7 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(
-		namespaceURI: string,
-		tagName: string
-	): IHTMLCollection<IElement, IElement> {
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
@@ -834,14 +831,16 @@ export default class Element extends Node implements IElement {
 		if (attribute.name === 'id' || attribute.name === 'name') {
 			if (this.parentNode && (<IElement>this.parentNode).children && attribute.value !== oldValue) {
 				if (oldValue) {
-					(<HTMLCollection<IElement, IElement>>(
-						(<IElement>this.parentNode).children
-					))._removeNamedItem(this, oldValue);
+					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(
+						this,
+						oldValue
+					);
 				}
 				if (attribute.value) {
-					(<HTMLCollection<IElement, IElement>>(
-						(<IElement>this.parentNode).children
-					))._appendNamedItem(this, attribute.value);
+					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._appendNamedItem(
+						this,
+						attribute.value
+					);
 				}
 			}
 		}
@@ -946,7 +945,7 @@ export default class Element extends Node implements IElement {
 
 		if (attribute.name === 'id' || attribute.name === 'name') {
 			if (this.parentNode && (<IElement>this.parentNode).children && attribute.value) {
-				(<HTMLCollection<IElement, IElement>>(<IElement>this.parentNode).children)._removeNamedItem(
+				(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(
 					this,
 					attribute.value
 				);

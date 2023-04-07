@@ -57,10 +57,7 @@ export default class Document extends Node implements IDocument {
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation: DOMImplementation;
-	public readonly children: IHTMLCollection<IElement, IElement> = new HTMLCollection<
-		IElement,
-		IElement
-	>();
+	public readonly children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
@@ -421,10 +418,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Scripts.
 	 */
-	public get scripts(): IHTMLCollection<IHTMLScriptElement, IHTMLScriptElement> {
-		return <IHTMLCollection<IHTMLScriptElement, IHTMLScriptElement>>(
-			this.getElementsByTagName('script')
-		);
+	public get scripts(): IHTMLCollection<IHTMLScriptElement> {
+		return <IHTMLCollection<IHTMLScriptElement>>this.getElementsByTagName('script');
 	}
 
 	/**
@@ -538,7 +533,7 @@ export default class Document extends Node implements IDocument {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): IHTMLCollection<IElement, IElement> {
+	public getElementsByClassName(className: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -548,7 +543,7 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IHTMLCollection<IElement, IElement> {
+	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -559,10 +554,7 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(
-		namespaceURI: string,
-		tagName: string
-	): IHTMLCollection<IElement, IElement> {
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
