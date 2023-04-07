@@ -557,7 +557,7 @@ describe('Document', () => {
 				.mockImplementation((parentNode, requestedClassName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedClassName).toEqual(className);
-					return <IHTMLCollection<IElement, IElement>>[element];
+					return <IHTMLCollection<IElement>>[element];
 				});
 
 			const result = document.getElementsByClassName(className);
@@ -576,7 +576,7 @@ describe('Document', () => {
 				.mockImplementation((parentNode, requestedTagName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement, IElement>>[element];
+					return <IHTMLCollection<IElement>>[element];
 				});
 
 			const result = document.getElementsByTagName(tagName);
@@ -597,7 +597,7 @@ describe('Document', () => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement, IElement>>[element];
+					return <IHTMLCollection<IElement>>[element];
 				});
 
 			const result = document.getElementsByTagNameNS(namespaceURI, tagName);
