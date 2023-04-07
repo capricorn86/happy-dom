@@ -75,5 +75,15 @@ describe('HTMLCollection', () => {
 			expect(document.body.children.namedItem('div3') === null).toBe(true);
 			expect(document.body.children.namedItem('div5') === div5).toBe(true);
 		});
+
+		it('Supports attributes only consisting of numbers.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `<div name="1" class="container"></div>`;
+			const container = div.children[0];
+			expect(div.children.length).toBe(1);
+			expect(div.children[0]).toBe(container.children[0]);
+			expect(div.children[1]).toBe(undefined);
+			expect(div.children.namedItem('1')).toBe(container.children[0]);
+		});
 	});
 });
