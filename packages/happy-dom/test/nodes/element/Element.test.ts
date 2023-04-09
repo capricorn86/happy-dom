@@ -1076,6 +1076,28 @@ describe('Element', () => {
 			expect(element.children[2] === span).toBe(true);
 		});
 
+		it('After should add child element correctly', () => {
+			document.body.innerHTML = `<div class="container"></div>\n`;
+			expect(document.body.children.length).toBe(1);
+			const container = document.querySelector('.container');
+
+			const div1 = document.createElement('div');
+			div1.classList.add('someClassName');
+			div1.innerHTML = 'div1';
+			container.after(div1);
+			expect(document.body.children.length).toBe(2);
+
+			const div2 = document.createElement('div');
+			div2.classList.add('someClassName');
+			div2.innerHTML = 'div2';
+			div1.after(div2);
+
+			expect(document.body.children.length).toBe(3);
+			expect(document.body.children[1] === div1).toBe(true);
+			expect(document.body.children[2] === div2).toBe(true);
+			expect(document.getElementsByClassName('someClassName').length).toBe(2);
+		});
+
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		it('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
 			const child1 = document.createElement('span');

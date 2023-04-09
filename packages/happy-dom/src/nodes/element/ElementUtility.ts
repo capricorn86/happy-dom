@@ -122,9 +122,6 @@ export default class ElementUtility {
 						if (node === referenceNode) {
 							parentElement.children.push(<IElement>newNode);
 						}
-						if (node.nodeType === NodeTypeEnum.elementNode) {
-							parentElement.children.push(<IElement>node);
-						}
 					}
 				}
 			}
