@@ -119,6 +119,8 @@ export default class ElementUtility {
 						parentElement.children.splice(index, 0, <IElement>newNode);
 					}
 				} else {
+					parentElement.children.length = 0;
+
 					for (const node of parentElement.childNodes) {
 						if (node === referenceNode) {
 							parentElement.children.push(<IElement>newNode);
