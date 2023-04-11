@@ -16,6 +16,7 @@ import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser';
 import FetchCORSUtility from './utilities/FetchCORSUtility';
+import CookieJar from '../cookie/CookieJar';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -557,7 +558,10 @@ export default class Fetch {
 			this.request.credentials === 'include' ||
 			(this.request.credentials === 'same-origin' && !isCORS)
 		) {
-			const cookie = document.defaultView.document.cookie;
+			const cookie = document.defaultView.document._cookie.getCookieString(
+				this.ownerDocument.defaultView.location,
+				false
+			);
 			if (cookie) {
 				headers.set('Cookie', cookie);
 			}
@@ -614,13 +618,7 @@ export default class Fetch {
 				// Handles setting cookie headers to the document.
 				// "set-cookie" and "set-cookie2" are not allowed in response headers according to spec.
 				if (lowerKey === 'set-cookie' || lowerKey === 'set-cookie2') {
-					const isCORS = FetchCORSUtility.isCORS(this.ownerDocument.location, this.request._url);
-					if (
-						this.request.credentials === 'include' ||
-						(this.request.credentials === 'same-origin' && !isCORS)
-					) {
-						this.ownerDocument.cookie = header;
-					}
+					(<CookieJar>this.ownerDocument['_cookie']).addCookieString(this.request._url, header);
 				} else {
 					headers.append(key, header);
 				}
