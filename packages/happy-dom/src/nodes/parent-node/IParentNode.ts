@@ -7,7 +7,7 @@ export default interface IParentNode extends INode {
 	readonly childElementCount: number;
 	readonly firstElementChild: IElement;
 	readonly lastElementChild: IElement;
-	readonly children: IHTMLCollection<IElement, IElement>;
+	readonly children: IHTMLCollection<IElement>;
 
 	/**
 	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
@@ -45,7 +45,7 @@ export default interface IParentNode extends INode {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	getElementsByClassName(className: string): IHTMLCollection<IElement, IElement>;
+	getElementsByClassName(className: string): IHTMLCollection<IElement>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -53,7 +53,7 @@ export default interface IParentNode extends INode {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	getElementsByTagName(tagName: string): IHTMLCollection<IElement, IElement>;
+	getElementsByTagName(tagName: string): IHTMLCollection<IElement>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -62,10 +62,7 @@ export default interface IParentNode extends INode {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	getElementsByTagNameNS(
-		namespaceURI: string,
-		tagName: string
-	): IHTMLCollection<IElement, IElement>;
+	getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement>;
 
 	/**
 	 * Replaces the existing children of a node with a specified new set of children.
