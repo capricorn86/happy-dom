@@ -29,9 +29,10 @@ export default class ElementUtility {
 				if (index !== -1) {
 					for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 						if ((<Element>node)._attributes[attribute]) {
-							(<HTMLCollection<IHTMLElement, IHTMLElement>>(
-								(<IElement>node.parentNode).children
-							))._removeNamedItem(<IHTMLElement>node, (<Element>node)._attributes[attribute].value);
+							(<HTMLCollection<IHTMLElement>>(<IElement>node.parentNode).children)._removeNamedItem(
+								<IHTMLElement>node,
+								(<Element>node)._attributes[attribute].value
+							);
 						}
 					}
 					(<IHTMLElement>node.parentNode).children.splice(index, 1);
@@ -40,7 +41,7 @@ export default class ElementUtility {
 
 			for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 				if ((<Element>node)._attributes[attribute]) {
-					(<HTMLCollection<IHTMLElement, IHTMLElement>>parentElement.children)._appendNamedItem(
+					(<HTMLCollection<IHTMLElement>>parentElement.children)._appendNamedItem(
 						<IHTMLElement>node,
 						(<Element>node)._attributes[attribute].value
 					);
@@ -66,7 +67,7 @@ export default class ElementUtility {
 			if (index !== -1) {
 				for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 					if ((<Element>node)._attributes[attribute]) {
-						(<HTMLCollection<IHTMLElement, IHTMLElement>>parentElement.children)._removeNamedItem(
+						(<HTMLCollection<IHTMLElement>>parentElement.children)._removeNamedItem(
 							<IHTMLElement>node,
 							(<Element>node)._attributes[attribute].value
 						);
@@ -96,7 +97,7 @@ export default class ElementUtility {
 				if (index !== -1) {
 					for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 						if ((<Element>newNode)._attributes[attribute]) {
-							(<HTMLCollection<IHTMLElement, IHTMLElement>>(
+							(<HTMLCollection<IHTMLElement>>(
 								(<IElement>newNode.parentNode).children
 							))._removeNamedItem(
 								<IHTMLElement>newNode,
@@ -134,7 +135,7 @@ export default class ElementUtility {
 			if (referenceNode || referenceNode === null) {
 				for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 					if ((<Element>newNode)._attributes[attribute]) {
-						(<HTMLCollection<IHTMLElement, IHTMLElement>>parentElement.children)._appendNamedItem(
+						(<HTMLCollection<IHTMLElement>>parentElement.children)._appendNamedItem(
 							<IHTMLElement>newNode,
 							(<Element>newNode)._attributes[attribute].value
 						);

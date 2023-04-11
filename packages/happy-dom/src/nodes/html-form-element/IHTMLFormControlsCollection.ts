@@ -1,4 +1,3 @@
-import IHTMLCollection from '../element/IHTMLCollection';
 import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement';
 import IHTMLInputElement from '../html-input-element/IHTMLInputElement';
 import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
@@ -11,13 +10,8 @@ import IRadioNodeList from './IRadioNodeList';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormControlsCollection
  */
 export default interface IHTMLFormControlsCollection
-	extends IHTMLCollection<
-		IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
-		| IHTMLInputElement
-		| IHTMLTextAreaElement
-		| IHTMLSelectElement
-		| IHTMLButtonElement
-		| IRadioNodeList
+	extends Array<
+		IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement
 	> {
 	/**
 	 * Returns item by index.

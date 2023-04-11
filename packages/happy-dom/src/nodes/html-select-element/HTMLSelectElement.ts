@@ -342,9 +342,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param [selectedOption] Selected option.
 	 */
 	public _updateOptionItems(selectedOption?: IHTMLOptionElement): void {
-		const optionElements = <IHTMLCollection<IHTMLOptionElement, IHTMLOptionElement>>(
-			this.getElementsByTagName('option')
-		);
+		const optionElements = <IHTMLCollection<IHTMLOptionElement>>this.getElementsByTagName('option');
 
 		if (optionElements.length < this.options.length) {
 			this.options.splice(this.options.length - 1, this.options.length - optionElements.length);
