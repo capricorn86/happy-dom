@@ -34,7 +34,7 @@ export default class CookieJar {
 				this.cookies[i].originURL.hostname === newCookie.originURL.hostname &&
 				// Cookies with or without values are treated differently in the browser.
 				// Therefore, the cookie should only be replaced if either both has a value or if both has no value.
-				// The cookie is null if it has no value.
+				// The cookie value is null if it has no value set.
 				// This is a bit unlogical, so it would be nice with a link to the spec here.
 				typeof this.cookies[i].value === typeof newCookie.value
 			) {
@@ -65,6 +65,7 @@ export default class CookieJar {
 				(!cookie.secure || targetURL.protocol === 'https:') &&
 				(!cookie.domain || targetURL.hostname.endsWith(cookie.domain)) &&
 				(!cookie.path || targetURL.pathname.startsWith(cookie.path)) &&
+				// @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value
 				((cookie.sameSite === CookieSameSiteEnum.none && cookie.secure) ||
 					cookie.originURL.hostname === targetURL.hostname)
 			) {

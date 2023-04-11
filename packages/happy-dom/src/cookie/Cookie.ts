@@ -81,13 +81,13 @@ export default class Cookie {
 	/**
 	 * Returns cookie string.
 	 *
-	 * @param [fromDocument] From document.
 	 * @returns Cookie string.
 	 */
-	public toString(fromDocument = false): string {
-		if (this.key && this.value) {
+	public toString(): string {
+		if (this.value !== null) {
 			return `${this.key}=${this.value}`;
 		}
+
 		return this.key;
 	}
 
@@ -109,16 +109,15 @@ export default class Cookie {
 	/**
 	 * Validate cookie.
 	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#cookie_prefixes
 	 * @returns "true" if valid.
 	 */
 	public validate(): boolean {
-		if (this.key.toLowerCase().startsWith('__secure-') && !this.secure) {
+		const lowerKey = this.key.toLowerCase();
+		if (lowerKey.startsWith('__secure-') && !this.secure) {
 			return false;
 		}
-		if (
-			this.key.toLowerCase().startsWith('__host-') &&
-			(!this.secure || this.path !== '/' || this.domain)
-		) {
+		if (lowerKey.startsWith('__host-') && (!this.secure || this.path !== '/' || this.domain)) {
 			return false;
 		}
 		return true;
