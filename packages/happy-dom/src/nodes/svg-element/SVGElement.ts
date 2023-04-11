@@ -4,6 +4,7 @@ import ISVGElement from './ISVGElement';
 import ISVGSVGElement from './ISVGSVGElement';
 import IAttr from '../attr/IAttr';
 import Event from '../../event/Event';
+import Dataset from '../element/Dataset';
 
 /**
  * SVG Element.
@@ -21,6 +22,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	public onunload: (event: Event) => void | null = null;
 
 	private _style: CSSStyleDeclaration = null;
+	private _dataset: Dataset = null;
 
 	/**
 	 * Returns viewport.
@@ -54,13 +56,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
-		const dataset = {};
-		for (const name of Object.keys(this._attributes)) {
-			if (name.startsWith('data-')) {
-				dataset[name.replace('data-', '')] = this._attributes[name].value;
-			}
-		}
-		return dataset;
+		return (this._dataset ??= new Dataset(this)).proxy;
 	}
 
 	/**
