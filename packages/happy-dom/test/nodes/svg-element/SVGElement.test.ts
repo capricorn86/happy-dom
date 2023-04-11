@@ -28,5 +28,38 @@ describe('SVGElement', () => {
 			const ownerSVG = line.ownerSVGElement;
 			expect(ownerSVG).toBe(null);
 		});
+
+		describe('get dataset()', () => {
+			it('Returns a Proxy behaving like an object that can add, remove, set and get element attributes prefixed with "data-".', () => {
+				element.setAttribute('test-alpha', 'value1');
+				element.setAttribute('data-test-alpha', 'value2');
+				element.setAttribute('test-beta', 'value3');
+				element.setAttribute('data-test-beta', 'value4');
+
+				const dataset = element.dataset;
+
+				expect(dataset).toBe(element.dataset);
+				expect(Object.keys(dataset)).toEqual(['testAlpha', 'testBeta']);
+				expect(Object.values(dataset)).toEqual(['value2', 'value4']);
+
+				dataset.testGamma = 'value5';
+
+				expect(element.getAttribute('data-test-gamma')).toBe('value5');
+				expect(Object.keys(dataset)).toEqual(['testAlpha', 'testBeta', 'testGamma']);
+				expect(Object.values(dataset)).toEqual(['value2', 'value4', 'value5']);
+
+				element.setAttribute('data-test-delta', 'value6');
+
+				expect(dataset.testDelta).toBe('value6');
+				expect(Object.keys(dataset)).toEqual(['testAlpha', 'testBeta', 'testGamma', 'testDelta']);
+				expect(Object.values(dataset)).toEqual(['value2', 'value4', 'value5', 'value6']);
+
+				delete dataset.testDelta;
+
+				expect(element.getAttribute('data-test-delta')).toBe(null);
+				expect(Object.keys(dataset)).toEqual(['testAlpha', 'testBeta', 'testGamma']);
+				expect(Object.values(dataset)).toEqual(['value2', 'value4', 'value5']);
+			});
+		});
 	});
 });
