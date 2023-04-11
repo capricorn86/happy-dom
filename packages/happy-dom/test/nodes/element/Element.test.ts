@@ -1098,6 +1098,23 @@ describe('Element', () => {
 			expect(document.getElementsByClassName('someClassName').length).toBe(2);
 		});
 
+		it('Insert before comment node should be at the correct location.', () => {
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const span3 = document.createElement('span');
+			const comment = document.createComment('test');
+
+			element.appendChild(span1);
+			element.appendChild(comment);
+			element.appendChild(span2);
+			element.insertBefore(span3, comment);
+
+			expect(element.children.length).toBe(3);
+			expect(element.children[0] === span1).toBe(true);
+			expect(element.children[1] === span3).toBe(true);
+			expect(element.children[2] === span2).toBe(true);
+		});
+
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		it('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
 			const child1 = document.createElement('span');
