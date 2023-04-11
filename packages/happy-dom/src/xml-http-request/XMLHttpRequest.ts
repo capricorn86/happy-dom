@@ -558,7 +558,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			accept: '*/*',
 			referer: location.href,
 			'user-agent': navigator.userAgent,
-			cookie: document._cookie.getCookiesString(location, false)
+			cookie: document._cookie.getCookieString(location, false)
 		};
 	}
 
@@ -973,13 +973,17 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param headers String array.
 	 */
 	private _setCookies(headers: string[] | HTTP.IncomingHttpHeaders): void {
+		const originURL = new URL(this._settings.url, this._ownerDocument.defaultView.location);
 		for (const header of ['set-cookie', 'set-cookie2']) {
 			if (Array.isArray(headers[header])) {
 				for (const cookie of headers[header]) {
-					this._ownerDocument.defaultView.document._cookie.setCookiesString(cookie);
+					this._ownerDocument.defaultView.document._cookie.addCookieString(originURL, cookie);
 				}
 			} else if (headers[header]) {
-				this._ownerDocument.defaultView.document._cookie.setCookiesString(headers[header]);
+				this._ownerDocument.defaultView.document._cookie.addCookieString(
+					originURL,
+					headers[header]
+				);
 			}
 		}
 	}

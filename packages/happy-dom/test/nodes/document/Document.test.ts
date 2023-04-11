@@ -219,7 +219,7 @@ describe('Document', () => {
 		});
 
 		it('Unset previous cookie.', () => {
-			document.cookie = 'name=Dave; expires=Thu, 01 Jan 2025 00:00:00 GMT;';
+			document.cookie = 'name=Dave; expires=Thu, 01 Jan 2030 00:00:00 GMT;';
 			expect(document.cookie).toBe('name=Dave');
 			document.cookie = 'name=; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
 			expect(document.cookie).toBe('');

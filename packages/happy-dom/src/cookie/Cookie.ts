@@ -1,61 +1,54 @@
-const CookiePairRegex = /([^=]+)(?:=([\s\S]*))?/;
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import CookieSameSiteEnum from './CookieSameSiteEnum';
+import { URL } from 'url';
 
 /**
  * Cookie.
  */
 export default class Cookie {
-	private pairs: { [key: string]: string } = {};
-	//
+	// Required
 	public key = '';
-	public value = '';
-	public size = 0;
+	public value: string | null = null;
+	public originURL: URL;
+
 	// Optional
 	public domain = '';
 	public path = '';
-	public expriesOrMaxAge: Date = null;
+	public expires: Date | null = null;
 	public httpOnly = false;
 	public secure = false;
-	public sameSite = '';
+	public sameSite: CookieSameSiteEnum = CookieSameSiteEnum.lax;
 
 	/**
 	 * Constructor.
 	 *
+	 * @param originURL Origin URL.
 	 * @param cookie Cookie.
 	 */
-	constructor(cookie: string) {
-		let match: RegExpExecArray | null;
+	constructor(originURL, cookie: string) {
+		const parts = cookie.split(';');
+		const [key, value] = parts.shift().split('=');
 
-		const parts = cookie.split(';').filter(Boolean);
+		this.originURL = originURL;
+		this.key = key.trim();
+		this.value = value !== undefined ? value : null;
 
-		// Part[0] is the key-value pair.
-		match = new RegExp(CookiePairRegex).exec(parts[0]);
-		if (!match) {
-			throw new Error(`Invalid cookie: ${cookie}`);
+		if (!this.key) {
+			throw new DOMException(`Invalid cookie: ${cookie}.`, DOMExceptionNameEnum.syntaxError);
 		}
-		this.key = match[1].trim();
-		this.value = match[2];
-		// Set key is empty if match[2] is undefined.
-		if (!match[2] && parts[0][this.key.length] !== '=') {
-			this.value = this.key;
-			this.key = '';
-		}
-		this.pairs[this.key] = this.value;
-		this.size = this.key.length + this.value.length;
-		// Attribute.
-		for (const part of parts.slice(1)) {
-			match = new RegExp(CookiePairRegex).exec(part);
-			if (!match) {
-				throw new Error(`Invalid cookie: ${part}`);
-			}
-			const key = match[1].trim();
-			const value = match[2];
 
-			switch (key.toLowerCase()) {
+		for (const part of parts) {
+			const keyAndValue = part.split('=');
+			const key = keyAndValue[0].trim().toLowerCase();
+			const value = keyAndValue[1];
+
+			switch (key) {
 				case 'expires':
-					this.expriesOrMaxAge = new Date(value);
+					this.expires = new Date(value);
 					break;
 				case 'max-age':
-					this.expriesOrMaxAge = new Date(parseInt(value, 10) * 1000 + Date.now());
+					this.expires = new Date(parseInt(value, 10) * 1000 + Date.now());
 					break;
 				case 'domain':
 					this.domain = value;
@@ -70,53 +63,42 @@ export default class Cookie {
 					this.secure = true;
 					break;
 				case 'samesite':
-					this.sameSite = value;
+					switch (value.toLowerCase()) {
+						case 'strict':
+							this.sameSite = CookieSameSiteEnum.strict;
+							break;
+						case 'lax':
+							this.sameSite = CookieSameSiteEnum.lax;
+							break;
+						case 'none':
+							this.sameSite = CookieSameSiteEnum.none;
+					}
 					break;
-				default:
-					continue; // Skip.
 			}
-			// Skip unknown key-value pair.
-			if (
-				['expires', 'max-age', 'domain', 'path', 'httponly', 'secure', 'samesite'].indexOf(
-					key.toLowerCase()
-				) === -1
-			) {
-				continue;
-			}
-			this.pairs[key] = value;
 		}
 	}
 
 	/**
-	 * Returns a raw string of the cookie.
-	 */
-	public rawString(): string {
-		return Object.keys(this.pairs)
-			.map((key) => {
-				if (key) {
-					return `${key}=${this.pairs[key]}`;
-				}
-				return this.pairs[key];
-			})
-			.join('; ');
-	}
-
-	/**
+	 * Returns cookie string.
 	 *
+	 * @param [fromDocument] From document.
+	 * @returns Cookie string.
 	 */
-	public cookieString(): string {
-		if (this.key) {
+	public toString(fromDocument = false): string {
+		if (this.key && this.value) {
 			return `${this.key}=${this.value}`;
 		}
-		return this.value;
+		return this.key;
 	}
 
 	/**
+	 * Returns "true" if expired.
 	 *
+	 * @returns "true" if expired.
 	 */
 	public isExpired(): boolean {
 		// If the expries/maxage is set, then determine whether it is expired.
-		if (this.expriesOrMaxAge && this.expriesOrMaxAge.getTime() < Date.now()) {
+		if (this.expires && this.expires.getTime() < Date.now()) {
 			return true;
 		}
 		// If the expries/maxage is not set, it's a session-level cookie that will expire when the browser is closed.
@@ -125,34 +107,20 @@ export default class Cookie {
 	}
 
 	/**
+	 * Validate cookie.
 	 *
+	 * @returns "true" if valid.
 	 */
-	public isHttpOnly(): boolean {
-		return this.httpOnly;
-	}
-
-	/**
-	 *
-	 */
-	public isSecure(): boolean {
-		return this.secure;
-	}
-
-	/**
-	 * Parse a cookie string.
-	 *
-	 * @param cookieString
-	 */
-	public static parse(cookieString: string): Cookie {
-		return new Cookie(cookieString);
-	}
-
-	/**
-	 * Stringify a Cookie object.
-	 *
-	 * @param cookie
-	 */
-	public static stringify(cookie: Cookie): string {
-		return cookie.toString();
+	public validate(): boolean {
+		if (this.key.toLowerCase().startsWith('__secure-') && !this.secure) {
+			return false;
+		}
+		if (
+			this.key.toLowerCase().startsWith('__host-') &&
+			(!this.secure || this.path !== '/' || this.domain)
+		) {
+			return false;
+		}
+		return true;
 	}
 }

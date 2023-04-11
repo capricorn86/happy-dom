@@ -293,7 +293,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
-		return this._cookie.getCookiesString(this.defaultView.location, true);
+		return this._cookie.getCookieString(this.defaultView.location, true);
 	}
 
 	/**
@@ -302,7 +302,7 @@ export default class Document extends Node implements IDocument {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		this._cookie.setCookiesString(cookie);
+		this._cookie.addCookieString(this.defaultView.location, cookie);
 	}
 
 	/**
