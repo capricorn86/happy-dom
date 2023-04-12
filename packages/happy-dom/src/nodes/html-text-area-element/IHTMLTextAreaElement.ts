@@ -1,7 +1,10 @@
 import Event from '../../event/Event';
+import ValidityState from '../../validity-state/ValidityState';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
+import INodeList from '../node/INodeList';
 
 /**
  * HTML Text Area Element.
@@ -12,6 +15,9 @@ import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputEl
 export default interface IHTMLTextAreaElement extends IHTMLElement {
 	readonly type: string;
 	readonly form: IHTMLFormElement;
+	readonly validationMessage: string;
+	readonly labels: INodeList<IHTMLLabelElement>;
+	readonly validity: ValidityState;
 	defaultValue: string;
 	minLength: number;
 	maxLength: number;
@@ -36,6 +42,11 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	onselectionchange: (event: Event) => void | null;
 
 	/**
+	 * Selects the text.
+	 */
+	select(): void;
+
+	/**
 	 * Set selection range.
 	 *
 	 * @param start Start.
@@ -56,7 +67,7 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 		replacement: string,
 		start: number,
 		end: number,
-		selectionMode: HTMLInputElementSelectionModeEnum
+		selectionMode?: HTMLInputElementSelectionModeEnum
 	): void;
 
 	/**
@@ -65,6 +76,20 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	 * @returns "true" if the field is valid.
 	 */
 	checkValidity(): boolean;
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if the field is valid.
+	 */
+	reportValidity(): boolean;
+
+	/**
+	 * Sets validation message.
+	 *
+	 * @param message Message.
+	 */
+	setCustomValidity(message: string): void;
 
 	/**
 	 * Clones a node.

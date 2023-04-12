@@ -22,8 +22,8 @@ import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement';
-import IResponse from '../../../src/fetch/IResponse';
-import ResourceFetchHandler from '../../../src/fetch/ResourceFetchHandler';
+import IResponse from '../../../src/fetch/types/IResponse';
+import ResourceFetch from '../../../src/fetch/ResourceFetch';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement';
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum';
 import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
@@ -215,6 +215,13 @@ describe('Document', () => {
 
 		it('Does not set cookie if "expires" is in the past.', () => {
 			document.cookie = 'name=value1; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+			expect(document.cookie).toBe('');
+		});
+
+		it('Unset previous cookie.', () => {
+			document.cookie = 'name=Dave; expires=Thu, 01 Jan 2030 00:00:00 GMT;';
+			expect(document.cookie).toBe('name=Dave');
+			document.cookie = 'name=; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
 			expect(document.cookie).toBe('');
 		});
 
@@ -1093,7 +1100,7 @@ describe('Document', () => {
 			let readyChangeEvent = null;
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (document: IDocument, url: string) => {
 					if (url.endsWith('.css')) {
 						resourceFetchCSSDocument = document;

@@ -20,6 +20,7 @@ export default class Event {
 	public _currentTarget: IEventTarget = null;
 	public timeStamp: number = performance.now();
 	public type: string = null;
+	public _isInPassiveEventListener = false;
 
 	/**
 	 * Constructor.
@@ -53,6 +54,15 @@ export default class Event {
 	 */
 	public get currentTarget(): IEventTarget {
 		return this._currentTarget;
+	}
+
+	/**
+	 * Returns "true" if propagation has been stopped.
+	 *
+	 * @returns "true" if propagation has been stopped.
+	 */
+	public get cancelBubble(): boolean {
+		return this._propagationStopped;
 	}
 
 	/**
@@ -107,7 +117,9 @@ export default class Event {
 	 * Prevents default.
 	 */
 	public preventDefault(): void {
-		this.defaultPrevented = true;
+		if (!this._isInPassiveEventListener) {
+			this.defaultPrevented = true;
+		}
 	}
 
 	/**

@@ -4,6 +4,7 @@ import IWindow from '../../src/window/IWindow';
 import IDocument from '../../src/nodes/document/IDocument';
 import QuerySelectorHTML from './data/QuerySelectorHTML';
 import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML';
+import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement';
 
 describe('QuerySelector', () => {
 	let window: IWindow;
@@ -438,6 +439,28 @@ describe('QuerySelector', () => {
 			expect(elements[4]).toBe(container.children[1].children[0]);
 		});
 
+		it('Returns all input elements matching "input[name="op"]:checked".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+			<form>
+				<input type="radio" id="id1" name="op" value="one" checked="true"/>
+				<input type="radio" id="id2" name="op" value="two"/>
+				<input type="submit" id="submitbutton" value="Submit"/>
+			</form>
+			`;
+			let elements = container.querySelectorAll('input[name="op"]:checked');
+			expect(elements.length).toBe(1);
+			expect(elements[0]).toBe(container.children[0].children[0]);
+			const input = <IHTMLInputElement>elements[0];
+			expect(input.value).toBe('one');
+			const twoEl = <IHTMLInputElement>container.querySelector("input[value='two']");
+			twoEl.checked = true;
+			elements = container.querySelectorAll('input[name="op"]:checked');
+			expect(elements.length).toBe(1);
+			expect(elements[0]).toBe(container.children[0].children[1]);
+			expect((<IHTMLInputElement>elements[0]).value).toBe('two');
+		});
+
 		it('Returns all elements matching "span:not([type=hidden])".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -514,7 +537,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(n+8)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['span.n8', 'div.n9', 'i.n10']);
 		});
 
@@ -524,7 +549,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(2n)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['span.n2', 'b.n4', 'div.n6', 'span.n8', 'i.n10']);
 		});
 
@@ -534,7 +561,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('div :nth-child(2n+1)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['div.', 'b.n1', 'div.n3', 'span.n5', 'b.n7', 'div.n9']);
 		});
 
@@ -544,7 +573,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('div :nth-child(3n+1)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['div.', 'b.n1', 'b.n4', 'b.n7', 'i.n10']);
 		});
 
@@ -554,7 +585,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('div :nth-child(3n+3)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['div.n3', 'div.n6', 'div.n9']);
 		});
 
@@ -564,7 +597,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(odd)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['div.', 'b.n1', 'div.n3', 'span.n5', 'b.n7', 'div.n9']);
 		});
 
@@ -574,7 +609,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(even)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['span.n2', 'b.n4', 'div.n6', 'span.n8', 'i.n10']);
 		});
 
@@ -584,7 +621,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-of-type(2n)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});
 
@@ -594,7 +633,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-of-type(odd)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['div.', 'b.n1', 'span.n2', 'div.n3', 'b.n7', 'span.n8', 'div.n9', 'i.n10']);
 		});
 
@@ -604,7 +645,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-last-child(2n)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['b.n1', 'div.n3', 'span.n5', 'b.n7', 'div.n9']);
 		});
 
@@ -614,7 +657,9 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-last-of-type(2n)');
 
 			expect(
-				elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});
 	});

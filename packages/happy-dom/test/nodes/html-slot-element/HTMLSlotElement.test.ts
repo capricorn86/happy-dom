@@ -3,6 +3,7 @@ import Document from '../../../src/nodes/document/Document';
 import IHTMLSlotElement from '../../../src/nodes/html-slot-element/IHTMLSlotElement';
 import CustomElementWithNamedSlots from './CustomElementWithNamedSlots';
 import CustomElementWithSlot from './CustomElementWithSlot';
+import INodeList from '../../../src/nodes/node/INodeList';
 
 describe('HTMLSlotElement', () => {
 	let window: Window;
@@ -82,7 +83,7 @@ describe('HTMLSlotElement', () => {
 			customElementWithNamedSlots.appendChild(div);
 			customElementWithNamedSlots.appendChild(span);
 
-			const slots = <IHTMLSlotElement[]>(
+			const slots = <INodeList<IHTMLSlotElement>>(
 				customElementWithNamedSlots.shadowRoot.querySelectorAll('slot')
 			);
 
@@ -124,7 +125,7 @@ describe('HTMLSlotElement', () => {
 			customElementWithNamedSlots.appendChild(span1);
 			customElementWithNamedSlots.appendChild(span2);
 
-			const slots = <IHTMLSlotElement[]>(
+			const slots = <INodeList<IHTMLSlotElement>>(
 				customElementWithNamedSlots.shadowRoot.querySelectorAll('slot')
 			);
 

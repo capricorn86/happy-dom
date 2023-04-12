@@ -7,7 +7,7 @@ export default interface IParentNode extends INode {
 	readonly childElementCount: number;
 	readonly firstElementChild: IElement;
 	readonly lastElementChild: IElement;
-	readonly children: IElement[];
+	readonly children: IHTMLCollection<IElement>;
 
 	/**
 	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
