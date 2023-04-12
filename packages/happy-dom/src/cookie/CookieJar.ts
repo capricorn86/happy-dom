@@ -1,5 +1,6 @@
-import Location from 'src/location/Location';
 import Cookie from './Cookie';
+import CookieSameSiteEnum from './CookieSameSiteEnum';
+import { URL } from 'url';
 
 /**
  * CookieJar.
@@ -11,72 +12,70 @@ export default class CookieJar {
 	private cookies: Cookie[] = [];
 
 	/**
-	 * Validate cookie.
+	 * Adds cookie string.
 	 *
-	 * @param cookie
+	 * @param originURL Origin URL.
+	 * @param cookieString Cookie string.
 	 */
-	private validateCookie(cookie: Cookie): boolean {
-		if (cookie.key.toLowerCase().startsWith('__secure-') && !cookie.isSecure()) {
-			return false;
-		}
-		if (
-			cookie.key.toLowerCase().startsWith('__host-') &&
-			(!cookie.isSecure() || cookie.path !== '/' || cookie.domain)
-		) {
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	 * Set cookie.
-	 *
-	 * @param cookieString
-	 */
-	public setCookiesString(cookieString: string): void {
+	public addCookieString(originURL: URL, cookieString: string): void {
 		if (!cookieString) {
 			return;
 		}
-		const newCookie = new Cookie(cookieString);
-		if (!this.validateCookie(newCookie)) {
+
+		const newCookie = new Cookie(originURL, cookieString);
+
+		if (!newCookie.validate()) {
 			return;
 		}
-		this.cookies
-			.filter((cookie) => cookie.key === newCookie.key)
-			.forEach((cookie) => {
-				this.cookies.splice(this.cookies.indexOf(cookie), 1);
-			});
-		this.cookies.push(newCookie);
+
+		for (let i = 0, max = this.cookies.length; i < max; i++) {
+			if (
+				this.cookies[i].key === newCookie.key &&
+				this.cookies[i].originURL.hostname === newCookie.originURL.hostname &&
+				// Cookies with or without values are treated differently in the browser.
+				// Therefore, the cookie should only be replaced if either both has a value or if both has no value.
+				// The cookie value is null if it has no value set.
+				// This is a bit unlogical, so it would be nice with a link to the spec here.
+				typeof this.cookies[i].value === typeof newCookie.value
+			) {
+				this.cookies.splice(i, 1);
+				break;
+			}
+		}
+
+		if (!newCookie.isExpired()) {
+			this.cookies.push(newCookie);
+		}
 	}
 
 	/**
-	 * Get cookie.
+	 * Get cookie string.
 	 *
-	 * @param location Location.
+	 * @param targetURL Target URL.
 	 * @param fromDocument If true, the caller is a document.
 	 * @returns Cookie string.
 	 */
-	public getCookiesString(location: Location, fromDocument: boolean): string {
-		const cookies = this.cookies.filter((cookie) => {
-			// Skip when use document.cookie and the cookie is httponly.
-			if (fromDocument && cookie.isHttpOnly()) {
-				return false;
+	public getCookieString(targetURL: URL, fromDocument: boolean): string {
+		let cookieString = '';
+
+		for (const cookie of this.cookies) {
+			if (
+				(!fromDocument || !cookie.httpOnly) &&
+				!cookie.isExpired() &&
+				(!cookie.secure || targetURL.protocol === 'https:') &&
+				(!cookie.domain || targetURL.hostname.endsWith(cookie.domain)) &&
+				(!cookie.path || targetURL.pathname.startsWith(cookie.path)) &&
+				// @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value
+				((cookie.sameSite === CookieSameSiteEnum.none && cookie.secure) ||
+					cookie.originURL.hostname === targetURL.hostname)
+			) {
+				if (cookieString) {
+					cookieString += '; ';
+				}
+				cookieString += cookie.toString();
 			}
-			if (cookie.isExpired()) {
-				return false;
-			}
-			if (cookie.isSecure() && location.protocol !== 'https:') {
-				return false;
-			}
-			if (cookie.domain && !location.hostname.endsWith(cookie.domain)) {
-				return false;
-			}
-			if (cookie.path && !location.pathname.startsWith(cookie.path)) {
-				return false;
-			}
-			// TODO: check SameSite.
-			return true;
-		});
-		return cookies.map((cookie) => cookie.cookieString()).join('; ');
+		}
+
+		return cookieString;
 	}
 }

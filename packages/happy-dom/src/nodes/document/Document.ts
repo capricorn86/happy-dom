@@ -4,6 +4,7 @@ import Text from '../text/Text';
 import Comment from '../comment/Comment';
 import IWindow from '../../window/IWindow';
 import Node from '../node/Node';
+import NodeIterator from '../../tree-walker/NodeIterator';
 import TreeWalker from '../../tree-walker/TreeWalker';
 import DocumentFragment from '../document-fragment/DocumentFragment';
 import XMLParser from '../../xml-parser/XMLParser';
@@ -29,8 +30,8 @@ import IComment from '../comment/IComment';
 import IText from '../text/IText';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INodeList from '../node/INodeList';
+import NodeList from '../node/NodeList';
 import IHTMLCollection from '../element/IHTMLCollection';
-import HTMLCollectionFactory from '../element/HTMLCollectionFactory';
 import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement';
 import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum';
@@ -43,6 +44,8 @@ import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
 import IAttr from '../attr/IAttr';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
 import ProcessingInstruction from '../processing-instruction/ProcessingInstruction';
+import ElementUtility from '../element/ElementUtility';
+import HTMLCollection from '../element/HTMLCollection';
 import VisibilityStateEnum from './VisibilityStateEnum';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
@@ -55,7 +58,7 @@ export default class Document extends Node implements IDocument {
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation: DOMImplementation;
-	public readonly children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
+	public readonly children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
@@ -288,7 +291,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
-		return this._cookie.getCookiesString(this.defaultView.location, true);
+		return this._cookie.getCookieString(this.defaultView.location, true);
 	}
 
 	/**
@@ -297,7 +300,7 @@ export default class Document extends Node implements IDocument {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		this._cookie.setCookiesString(cookie);
+		this._cookie.addCookieString(this.defaultView.location, cookie);
 	}
 
 	/**
@@ -577,9 +580,9 @@ export default class Document extends Node implements IDocument {
 			_parentNode: IElement | IDocumentFragment | IDocument,
 			_name: string
 		): INodeList<IElement> => {
-			const matches = HTMLCollectionFactory.create();
+			const matches = new NodeList<IElement>();
 			for (const child of _parentNode.children) {
-				if ((child.getAttributeNS(null, 'name') || '') === _name) {
+				if (child.getAttributeNS(null, 'name') === _name) {
 					matches.push(child);
 				}
 				for (const match of _getElementsByName(<IElement>child, _name)) {
@@ -615,78 +618,27 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
-	 * Append a child node to childNodes.
-	 *
 	 * @override
-	 * @param  node Node to append.
-	 * @returns Appended node.
 	 */
 	public appendChild(node: INode): INode {
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (node.parentNode && node.parentNode['children']) {
-				const index = node.parentNode['children'].indexOf(node);
-				if (index !== -1) {
-					node.parentNode['children'].splice(index, 1);
-				}
-			}
-			if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-				this.children.push(<Element>node);
-			}
-		}
-
+		ElementUtility.appendChild(this, node);
 		return super.appendChild(node);
 	}
 
 	/**
-	 * Remove Child element from childNodes array.
-	 *
 	 * @override
-	 * @param node Node to remove.
 	 */
 	public removeChild(node: INode): INode {
-		if (node.nodeType === Node.ELEMENT_NODE) {
-			const index = this.children.indexOf(<Element>node);
-			if (index !== -1) {
-				this.children.splice(index, 1);
-			}
-		}
-
+		ElementUtility.removeChild(this, node);
 		return super.removeChild(node);
 	}
 
 	/**
-	 * Inserts a node before another.
-	 *
 	 * @override
-	 * @param newNode Node to insert.
-	 * @param [referenceNode] Node to insert before.
-	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode?: INode): INode {
-		const returnValue = super.insertBefore(newNode, referenceNode);
-
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (newNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (newNode.parentNode && newNode.parentNode['children']) {
-				const index = newNode.parentNode['children'].indexOf(newNode);
-				if (index !== -1) {
-					newNode.parentNode['children'].splice(index, 1);
-				}
-			}
-
-			this.children.length = 0;
-
-			for (const node of this.childNodes) {
-				if (node.nodeType === Node.ELEMENT_NODE) {
-					this.children.push(<IElement>node);
-				}
-			}
-		}
-
-		return returnValue;
+		ElementUtility.insertBefore(this, newNode, referenceNode);
+		return super.insertBefore(newNode, referenceNode);
 	}
 
 	/**
@@ -883,6 +835,21 @@ export default class Document extends Node implements IDocument {
 	public createDocumentFragment(): IDocumentFragment {
 		DocumentFragment._ownerDocument = this;
 		return new DocumentFragment();
+	}
+
+	/**
+	 * Creates a node iterator.
+	 *
+	 * @param root Root.
+	 * @param [whatToShow] What to show.
+	 * @param [filter] Filter.
+	 */
+	public createNodeIterator(
+		root: INode,
+		whatToShow = -1,
+		filter: INodeFilter = null
+	): NodeIterator {
+		return new NodeIterator(root, whatToShow, filter);
 	}
 
 	/**

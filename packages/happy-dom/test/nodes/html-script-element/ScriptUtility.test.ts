@@ -2,9 +2,9 @@ import Window from '../../../src/window/Window';
 import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import ScriptUtility from '../../../src/nodes/html-script-element/ScriptUtility';
-import IResponse from '../../../src/fetch/IResponse';
+import IResponse from '../../../src/fetch/types/IResponse';
 import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement';
-import ResourceFetchHandler from '../../../src/fetch/ResourceFetchHandler';
+import ResourceFetch from '../../../src/fetch/ResourceFetch';
 
 describe('ScriptUtility', () => {
 	let window: IWindow;
@@ -79,7 +79,7 @@ describe('ScriptUtility', () => {
 			window.location.href = 'https://localhost:8080/base/';
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetchSync')
+				.spyOn(ResourceFetch, 'fetchSync')
 				.mockImplementation((document: IDocument, url: string) => {
 					fetchedDocument = document;
 					fetchedURL = url;
@@ -106,7 +106,7 @@ describe('ScriptUtility', () => {
 
 			window.location.href = 'https://localhost:8080/base/';
 
-			jest.spyOn(ResourceFetchHandler, 'fetchSync').mockImplementation(() => {
+			jest.spyOn(ResourceFetch, 'fetchSync').mockImplementation(() => {
 				throw thrownError;
 			});
 

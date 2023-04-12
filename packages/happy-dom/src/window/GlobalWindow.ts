@@ -64,8 +64,6 @@ export default class GlobalWindow extends Window {
 	public unescape = globalThis.unescape;
 	public gc = globalThis.gc;
 	public v8debug = globalThis.v8debug;
-	public AbortController = globalThis.AbortController;
-	public AbortSignal = globalThis.AbortSignal;
 	public Array = globalThis.Array;
 	public Object = globalThis.Object;
 	public Function = globalThis.Function;
