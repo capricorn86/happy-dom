@@ -102,7 +102,7 @@ export default class CharacterDataUtility {
 			return '';
 		}
 		for (const key of Object.keys(HTML_ENTITIES)) {
-			html = html.replace(new RegExp(key, 'gm'), HTML_ENTITIES[key]);
+			html = html.replace(new RegExp(key, 'g'), HTML_ENTITIES[key]);
 		}
 		return html;
 	}
