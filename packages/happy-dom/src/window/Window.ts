@@ -36,6 +36,7 @@ import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import { default as ImageImplementation } from '../nodes/html-image-element/Image';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
 import CharacterData from '../nodes/character-data/CharacterData';
+import NodeIterator from '../tree-walker/NodeIterator';
 import TreeWalker from '../tree-walker/TreeWalker';
 import Event from '../event/Event';
 import CustomEvent from '../event/events/CustomEvent';
@@ -214,6 +215,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly DocumentFragment = DocumentFragment;
 	public readonly CharacterData = CharacterData;
 	public readonly NodeFilter = NodeFilter;
+	public readonly NodeIterator = NodeIterator;
 	public readonly TreeWalker = TreeWalker;
 	public readonly MutationObserver = MutationObserver;
 	public readonly Document = Document;

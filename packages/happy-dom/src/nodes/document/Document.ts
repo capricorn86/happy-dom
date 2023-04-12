@@ -4,6 +4,7 @@ import Text from '../text/Text';
 import Comment from '../comment/Comment';
 import IWindow from '../../window/IWindow';
 import Node from '../node/Node';
+import NodeIterator from '../../tree-walker/NodeIterator';
 import TreeWalker from '../../tree-walker/TreeWalker';
 import DocumentFragment from '../document-fragment/DocumentFragment';
 import XMLParser from '../../xml-parser/XMLParser';
@@ -834,6 +835,21 @@ export default class Document extends Node implements IDocument {
 	public createDocumentFragment(): IDocumentFragment {
 		DocumentFragment._ownerDocument = this;
 		return new DocumentFragment();
+	}
+
+	/**
+	 * Creates a node iterator.
+	 *
+	 * @param root Root.
+	 * @param [whatToShow] What to show.
+	 * @param [filter] Filter.
+	 */
+	public createNodeIterator(
+		root: INode,
+		whatToShow = -1,
+		filter: INodeFilter = null
+	): NodeIterator {
+		return new NodeIterator(root, whatToShow, filter);
 	}
 
 	/**
