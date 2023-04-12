@@ -7,41 +7,6 @@ import ChildNodeUtility from '../child-node/ChildNodeUtility';
 import MutationRecord from '../../mutation-observer/MutationRecord';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
 
-const charactersList = {
-	'&quot;': '"',
-	'&#34': '"',
-	'&#x22': '"',
-	'&amp;': '&',
-	'&#38': '&',
-	'&#x26': '&',
-	'&apos;': "'",
-	'&#39': "'",
-	'&#x27': "'",
-	'&lt;': '<',
-	'&#60': '<',
-	'&#x3C': '<',
-	'&gt;': '>',
-	'&#62': '>',
-	'&#x3E': '>',
-	'&nbsp;': ' ',
-	'&#160': ' ',
-	'&#xA0': ' '
-};
-/**
- * Converts special characters to HTML entities.
- *
- * @param html
- */
-export const escapeHTML = (html: string): string => {
-	if (!html) {
-		return '';
-	}
-	Object.keys(charactersList).forEach((key) => {
-		html = html.replace(new RegExp(key, 'g'), charactersList[key]);
-	});
-	return html;
-};
-
 /**
  * Character data base class.
  *

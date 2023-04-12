@@ -1,5 +1,26 @@
 import ICharacterData from './ICharacterData';
 
+const HTML_ENTITIES = {
+	'&quot;': '"',
+	'&#34': '"',
+	'&#x22': '"',
+	'&amp;': '&',
+	'&#38': '&',
+	'&#x26': '&',
+	'&apos;': "'",
+	'&#39': "'",
+	'&#x27': "'",
+	'&lt;': '<',
+	'&#60': '<',
+	'&#x3C': '<',
+	'&gt;': '>',
+	'&#62': '>',
+	'&#x3E': '>',
+	'&nbsp;': ' ',
+	'&#160': ' ',
+	'&#xA0': ' '
+};
+
 /**
  * Child node utility.
  */
@@ -68,5 +89,21 @@ export default class CharacterDataUtility {
 		count: number
 	): string {
 		return characterData.data.substring(offset, offset + count);
+	}
+
+	/**
+	 * Decodes unicode characters to text.
+	 *
+	 * @param html String.
+	 * @returns Decoded HTML string.
+	 */
+	public static decodeHTMLEntities(html: string): string {
+		if (!html) {
+			return '';
+		}
+		for (const key of Object.keys(HTML_ENTITIES)) {
+			html = html.replace(new RegExp(key, 'gm'), HTML_ENTITIES[key]);
+		}
+		return html;
 	}
 }

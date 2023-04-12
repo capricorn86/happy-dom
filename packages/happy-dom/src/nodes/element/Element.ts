@@ -28,9 +28,9 @@ import DOMRectListFactory from './DOMRectListFactory';
 import IAttr from '../attr/IAttr';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap';
 import Event from '../../event/Event';
-import { escapeHTML } from '../character-data/CharacterData';
 import ElementUtility from './ElementUtility';
 import HTMLCollection from './HTMLCollection';
+import CharacterDataUtility from '../character-data/CharacterDataUtility';
 
 /**
  * Element.
@@ -189,7 +189,7 @@ export default class Element extends Node implements IElement {
 				result += childNode.textContent;
 			}
 		}
-		return escapeHTML(result);
+		return CharacterDataUtility.decodeHTMLEntities(result);
 	}
 
 	/**
