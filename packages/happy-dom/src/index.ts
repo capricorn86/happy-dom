@@ -106,6 +106,7 @@ import Comment from './nodes/comment/Comment';
 import IComment from './nodes/comment/IComment';
 import DocumentType from './nodes/document-type/DocumentType';
 import IDocumentType from './nodes/document-type/IDocumentType';
+import NodeIterator from './tree-walker/NodeIterator';
 import TreeWalker from './tree-walker/TreeWalker';
 import CustomElementRegistry from './custom-element/CustomElementRegistry';
 import XMLParser from './xml-parser/XMLParser';
@@ -250,6 +251,7 @@ export {
 	IComment,
 	DocumentType,
 	IDocumentType,
+	NodeIterator,
 	TreeWalker,
 	CustomElementRegistry,
 	XMLParser,
