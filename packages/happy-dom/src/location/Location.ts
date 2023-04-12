@@ -14,8 +14,16 @@ export default class Location extends URL {
 	/**
 	 * Override set href.
 	 */
-	set href(value: string) {
+	// @ts-ignore
+	public set href(value: string) {
 		super.href = new URL(value, this).href;
+	}
+
+	/**
+	 * Override set href.
+	 */
+	public get href(): string {
+		return super.href;
 	}
 
 	/**

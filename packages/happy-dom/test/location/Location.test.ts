@@ -33,9 +33,9 @@ describe('Location', () => {
 
 	describe('href', () => {
 		it('Set href.', () => {
-			location.replace(HREF);
+			location.href = HREF;
 			location.href = '/foo';
-			expect(location.pathname).toBe('/foo');
+			expect(location.href).toBe('https://google.com/foo/');
 		});
 	});
 });
