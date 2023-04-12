@@ -44,7 +44,7 @@ export default class Location extends URL {
 	 * @see this.replace()
 	 */
 	public assign(url: string): void {
-		this.replace(url);
+		this.href = url;
 	}
 
 	/**
