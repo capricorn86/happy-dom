@@ -23,11 +23,14 @@ import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
 import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
 import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
+import { default as AudioImplementation } from '../nodes/html-audio-element/Audio';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
+import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement';
 import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
+import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import { default as ImageImplementation } from '../nodes/html-image-element/Image';
@@ -38,9 +41,11 @@ import Event from '../event/Event';
 import CustomEvent from '../event/events/CustomEvent';
 import AnimationEvent from '../event/events/AnimationEvent';
 import KeyboardEvent from '../event/events/KeyboardEvent';
+import MessageEvent from '../event/events/MessageEvent';
 import ProgressEvent from '../event/events/ProgressEvent';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
 import EventTarget from '../event/EventTarget';
+import MessagePort from '../event/MessagePort';
 import { URL, URLSearchParams } from 'url';
 import Location from '../location/Location';
 import NonImplementedEventTypes from '../event/NonImplementedEventTypes';
@@ -114,9 +119,10 @@ import Attr from '../nodes/attr/Attr';
 import NamedNodeMap from '../named-node-map/NamedNodeMap';
 import IElement from '../nodes/element/IElement';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
-import IHappyDOMSettings from './IHappyDOMSettings';
 import RequestInfo from '../fetch/RequestInfo';
 import FileList from '../nodes/html-input-element/FileList';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import IHappyDOMOptions from './IHappyDOMOptions';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -158,6 +164,7 @@ export default class Window extends EventTarget implements IWindow {
 			disableJavaScriptEvaluation: false,
 			disableJavaScriptFileLoading: false,
 			disableCSSFileLoading: false,
+			disableIframePageLoading: false,
 			enableFileSystemHttpRequests: false
 		}
 	};
@@ -182,11 +189,13 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLAudioElement = HTMLAudioElement;
 	public readonly HTMLVideoElement = HTMLVideoElement;
 	public readonly HTMLBaseElement = HTMLBaseElement;
+	public readonly HTMLIFrameElement = HTMLIFrameElement;
 	public readonly HTMLDialogElement = HTMLDialogElement;
 	public readonly Attr = Attr;
 	public readonly NamedNodeMap = NamedNodeMap;
 	public readonly SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement = SVGElement;
+	public readonly SVGGraphicsElement = SVGGraphicsElement;
 	public readonly Text = Text;
 	public readonly Comment = Comment;
 	public readonly ShadowRoot = ShadowRoot;
@@ -206,6 +215,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly CustomEvent = CustomEvent;
 	public readonly AnimationEvent = AnimationEvent;
 	public readonly KeyboardEvent = KeyboardEvent;
+	public readonly MessageEvent = MessageEvent;
 	public readonly MouseEvent = MouseEvent;
 	public readonly PointerEvent = PointerEvent;
 	public readonly FocusEvent = FocusEvent;
@@ -216,6 +226,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly ProgressEvent = ProgressEvent;
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly EventTarget = EventTarget;
+	public readonly MessagePort = MessagePort;
 	public readonly DataTransfer = DataTransfer;
 	public readonly DataTransferItem = DataTransferItem;
 	public readonly DataTransferItemList = DataTransferItemList;
@@ -265,6 +276,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Range;
 	public readonly FileReader;
 	public readonly Image;
+	public readonly Audio;
 
 	// Events
 	public onload: (event: Event) => void = null;
@@ -368,12 +380,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param [options.url] URL.
 	 * @param [options.settings] Settings.
 	 */
-	constructor(options?: {
-		innerWidth?: number;
-		innerHeight?: number;
-		url?: string;
-		settings?: IHappyDOMSettings;
-	}) {
+	constructor(options?: IHappyDOMOptions) {
 		super();
 
 		this.customElements = new CustomElementRegistry();
@@ -464,8 +471,10 @@ export default class Window extends EventTarget implements IWindow {
 		class XMLHttpRequest extends XMLHttpRequestImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
-
 		class Range extends RangeImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
+		class Audio extends AudioImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
 		/* eslint-enable jsdoc/require-jsdoc */
@@ -477,6 +486,7 @@ export default class Window extends EventTarget implements IWindow {
 		this.DOMParser = DOMParser;
 		this.XMLHttpRequest = XMLHttpRequest;
 		this.Range = Range;
+		this.Audio = Audio;
 
 		this._setupVMContext();
 
@@ -622,12 +632,13 @@ export default class Window extends EventTarget implements IWindow {
 	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
+	 * @param args Arguments passed to the callback function.
 	 * @returns Timeout ID.
 	 */
-	public setTimeout(callback: () => void, delay = 0): NodeJS.Timeout {
+	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this._setTimeout(() => {
 			this.happyDOM.asyncTaskManager.endTimer(id);
-			callback();
+			callback(...args);
 		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
@@ -650,10 +661,11 @@ export default class Window extends EventTarget implements IWindow {
 	 * @override
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
+	 * @param args Arguments passed to the callback function.
 	 * @returns Interval ID.
 	 */
-	public setInterval(callback: () => void, delay = 0): NodeJS.Timeout {
-		const id = this._setInterval(callback, delay);
+	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
+		const id = this._setInterval(callback, delay, ...args);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
 	}
@@ -726,6 +738,42 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public atob(data: unknown): string {
 		return Base64.atob(data);
+	}
+
+	/**
+	 * Safely enables cross-origin communication between Window objects; e.g., between a page and a pop-up that it spawned, or between a page and an iframe embedded within it.
+	 *
+	 * @param message Message.
+	 * @param [targetOrigin=*] Target origin.
+	 * @param _transfer Transfer. Not implemented.
+	 */
+	public postMessage(message: unknown, targetOrigin = '*', _transfer?: unknown[]): void {
+		// TODO: Implement transfer.
+
+		if (targetOrigin && targetOrigin !== '*' && this.location.origin !== targetOrigin) {
+			throw new DOMException(
+				`Failed to execute 'postMessage' on 'Window': The target origin provided ('${targetOrigin}') does not match the recipient window\'s origin ('${this.location.origin}').`,
+				DOMExceptionNameEnum.securityError
+			);
+		}
+
+		try {
+			JSON.stringify(message);
+		} catch (error) {
+			throw new DOMException(
+				`Failed to execute 'postMessage' on 'Window': The provided message cannot be serialized.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		this.dispatchEvent(
+			new MessageEvent('message', {
+				data: message,
+				origin: this.parent.location.origin,
+				source: this.parent,
+				lastEventId: ''
+			})
+		);
 	}
 
 	/**

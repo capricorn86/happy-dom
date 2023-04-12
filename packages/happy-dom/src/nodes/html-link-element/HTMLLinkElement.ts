@@ -250,13 +250,14 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * @override
 	 */
-	public _connectToNode(parentNode: INode = null): void {
+	public override _connectToNode(parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
 
 		super._connectToNode(parentNode);
 
 		if (
+			isParentConnected &&
 			isConnected !== isParentConnected &&
 			this._evaluateCSS &&
 			!this.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading

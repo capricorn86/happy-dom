@@ -24,6 +24,7 @@ import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
 import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
+import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
@@ -73,6 +74,8 @@ import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
+import MessageEvent from '../event/events/MessageEvent';
+import MessagePort from '../event/MessagePort';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
 import Storage from '../storage/Storage';
@@ -142,6 +145,7 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly HTMLAudioElement: typeof HTMLAudioElement;
 	readonly HTMLVideoElement: typeof HTMLVideoElement;
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
+	readonly HTMLIFrameElement: typeof HTMLIFrameElement;
 	readonly HTMLDialogElement: typeof HTMLDialogElement;
 	readonly Attr: typeof Attr;
 	readonly NamedNodeMap: typeof NamedNodeMap;
@@ -175,6 +179,8 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	readonly InputEvent: typeof InputEvent;
 	readonly ErrorEvent: typeof ErrorEvent;
 	readonly StorageEvent: typeof StorageEvent;
+	readonly MessageEvent: typeof MessageEvent;
+	readonly MessagePort: typeof MessagePort;
 	readonly ProgressEvent: typeof ProgressEvent;
 	readonly MediaQueryListEvent: typeof MediaQueryListEvent;
 	readonly EventTarget: typeof EventTarget;
@@ -302,9 +308,10 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 *
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
+	 * @param args Arguments passed to the callback function.
 	 * @returns Timeout ID.
 	 */
-	setTimeout(callback: () => void, delay?: number): NodeJS.Timeout;
+	setTimeout(callback: Function, delay?: number, ...args: unknown[]): NodeJS.Timeout;
 
 	/**
 	 * Cancels a timeout previously established by calling setTimeout().
@@ -318,9 +325,10 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 *
 	 * @param callback Function to be executed.
 	 * @param [delay=0] Delay in ms.
+	 * @param args Arguments passed to the callback function.
 	 * @returns Interval ID.
 	 */
-	setInterval(callback: () => void, delay?: number): NodeJS.Timeout;
+	setInterval(callback: Function, delay?: number, ...args: unknown[]): NodeJS.Timeout;
 
 	/**
 	 * Cancels a timed repeating action which was previously established by a call to setInterval().
@@ -372,4 +380,12 @@ export default interface IWindow extends IEventTarget, NodeJS.Global {
 	 * @returns An ASCII string containing decoded data from encodedData.
 	 */
 	atob(data: unknown): string;
+
+	/**
+	 * Safely enables cross-origin communication between Window objects; e.g., between a page and a pop-up that it spawned, or between a page and an iframe embedded within it.
+	 *
+	 * @param message Message.
+	 * @param listener Listener.
+	 */
+	postMessage(message: unknown, targetOrigin?: string, transfer?: unknown[]): void;
 }

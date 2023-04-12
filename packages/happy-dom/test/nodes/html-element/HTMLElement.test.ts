@@ -354,22 +354,18 @@ describe('HTMLElement', () => {
 
 	describe('click()', () => {
 		it('Dispatches "click" event.', () => {
-			let triggeredEvent = null;
+			let triggeredEvent: PointerEvent = null;
 
-			element.addEventListener('click', (event) => {
-				triggeredEvent = event;
-			});
+			element.addEventListener('click', (event: PointerEvent) => (triggeredEvent = event));
 
 			element.click();
 
-			const event = new PointerEvent('click', {
-				bubbles: true,
-				composed: true
-			});
-			event._target = element;
-			event._currentTarget = element;
-
-			expect(triggeredEvent).toEqual(event);
+			expect(triggeredEvent instanceof PointerEvent).toBe(true);
+			expect(triggeredEvent.type).toBe('click');
+			expect(triggeredEvent.bubbles).toBe(true);
+			expect(triggeredEvent.composed).toBe(true);
+			expect(triggeredEvent.target === element).toBe(true);
+			expect(triggeredEvent.currentTarget === element).toBe(true);
 		});
 	});
 
@@ -392,7 +388,7 @@ describe('HTMLElement', () => {
 			element.blur();
 
 			expect(triggeredBlurEvent.type).toBe('blur');
-			expect(triggeredBlurEvent.bubbles).toBe(true);
+			expect(triggeredBlurEvent.bubbles).toBe(false);
 			expect(triggeredBlurEvent.composed).toBe(true);
 			expect(triggeredBlurEvent.target === element).toBe(true);
 
@@ -401,7 +397,7 @@ describe('HTMLElement', () => {
 			expect(triggeredFocusOutEvent.composed).toBe(true);
 			expect(triggeredFocusOutEvent.target === element).toBe(true);
 
-			expect(document.activeElement).toEqual(document.body);
+			expect(document.activeElement === document.body).toBe(true);
 		});
 
 		it('Does not dispatch "blur" event if not connected to the DOM.', () => {
@@ -450,7 +446,7 @@ describe('HTMLElement', () => {
 			element.focus();
 
 			expect(triggeredFocusEvent.type).toBe('focus');
-			expect(triggeredFocusEvent.bubbles).toBe(true);
+			expect(triggeredFocusEvent.bubbles).toBe(false);
 			expect(triggeredFocusEvent.composed).toBe(true);
 			expect(triggeredFocusEvent.target === element).toBe(true);
 
@@ -459,7 +455,7 @@ describe('HTMLElement', () => {
 			expect(triggeredFocusInEvent.composed).toBe(true);
 			expect(triggeredFocusInEvent.target === element).toBe(true);
 
-			expect(document.activeElement).toEqual(element);
+			expect(document.activeElement === element).toBe(true);
 		});
 
 		it('Does not dispatch "focus" event if not connected to the DOM.', () => {
@@ -506,7 +502,7 @@ describe('HTMLElement', () => {
 			element.focus();
 
 			expect(triggeredEvent.type).toBe('blur');
-			expect(triggeredEvent.bubbles).toBe(true);
+			expect(triggeredEvent.bubbles).toBe(false);
 			expect(triggeredEvent.composed).toBe(true);
 			expect(triggeredEvent.target === previousElement).toBe(true);
 		});

@@ -213,4 +213,23 @@ describe('MutationObserver', () => {
 			]);
 		});
 	});
+
+	describe('disconnect()', () => {
+		it('Disconnects the observer.', () => {
+			let records = [];
+			const div = document.createElement('div');
+			const observer = new MutationObserver((mutationRecords) => {
+				records = mutationRecords;
+			});
+			observer.observe(div, { attributes: true });
+			observer.disconnect();
+			div.setAttribute('attr', 'value');
+			expect(records).toEqual([]);
+		});
+
+		it('Ignores if triggered when it is not observing.', () => {
+			const observer = new MutationObserver(() => {});
+			expect(() => observer.disconnect()).not.toThrow();
+		});
+	});
 });

@@ -169,6 +169,14 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	removeAttributeNS(namespace: string, localName: string): void;
 
 	/**
+	 * Toggle an attribute.
+	 *
+	 * @param name A DOMString specifying the name of the attribute to be toggled.
+	 * @param force A boolean value to determine whether the attribute should be added or removed, no matter whether the attribute is present or not at the moment.
+	 */
+	toggleAttribute(name: string, force?: boolean): boolean;
+
+	/**
 	 * Attaches a shadow root.
 	 *
 	 * @param _shadowRootInit Shadow root init.

@@ -251,10 +251,9 @@ export default class HTMLElement extends Element implements IHTMLElement {
 			},
 			deleteProperty: (dataset: { [key: string]: string }, key: string) => {
 				const name = 'data-' + DatasetUtility.camelCaseToKebab(key);
-				const exists = !!attributes[name];
-				delete attributes[name];
-				delete dataset[key];
-				return exists;
+				const result1 = delete attributes[name];
+				const result2 = delete dataset[key];
+				return result1 && result2;
 			},
 			ownKeys: (dataset: { [key: string]: string }) => {
 				// According to Mozilla we have to update the dataset object (target) to contain the same keys as what we return:
@@ -384,15 +383,18 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		this.ownerDocument['_activeElement'] = null;
 
-		for (const eventType of ['blur', 'focusout']) {
-			const event = new FocusEvent(eventType, {
+		this.dispatchEvent(
+			new FocusEvent('blur', {
+				bubbles: false,
+				composed: true
+			})
+		);
+		this.dispatchEvent(
+			new FocusEvent('focusout', {
 				bubbles: true,
 				composed: true
-			});
-			event._target = this;
-			event._currentTarget = this;
-			this.dispatchEvent(event);
-		}
+			})
+		);
 	}
 
 	/**
@@ -409,15 +411,18 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		this.ownerDocument['_activeElement'] = this;
 
-		for (const eventType of ['focus', 'focusin']) {
-			const event = new FocusEvent(eventType, {
+		this.dispatchEvent(
+			new FocusEvent('focus', {
+				bubbles: false,
+				composed: true
+			})
+		);
+		this.dispatchEvent(
+			new FocusEvent('focusin', {
 				bubbles: true,
 				composed: true
-			});
-			event._target = this;
-			event._currentTarget = this;
-			this.dispatchEvent(event);
-		}
+			})
+		);
 	}
 
 	/**

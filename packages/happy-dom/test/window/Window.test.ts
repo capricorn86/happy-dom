@@ -13,6 +13,7 @@ import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import CustomElement from '../../test/CustomElement';
 import { URL } from 'url';
+import MessageEvent from '../../src/event/events/MessageEvent';
 
 describe('Window', () => {
 	let window: IWindow;
@@ -185,7 +186,7 @@ describe('Window', () => {
 	describe('get navigator()', () => {
 		it('Returns an instance of Navigator with browser data.', () => {
 			expect(window.navigator instanceof Navigator).toBe(true);
-			expect(window.navigator).toEqual({
+			const referenceValues = {
 				appCodeName: 'Mozilla',
 				appName: 'Netscape',
 				appVersion: '5.0 (Windows)',
@@ -213,7 +214,11 @@ describe('Window', () => {
 				vendor: '',
 				vendorSub: '',
 				webdriver: true
-			});
+			};
+
+			for (const propertyKey in referenceValues) {
+				expect(window.navigator[propertyKey]).toEqual(referenceValues[propertyKey]);
+			}
 		});
 	});
 
@@ -387,6 +392,35 @@ describe('Window', () => {
 			const timeoutId = window.setTimeout(() => done());
 			expect(timeoutId.constructor.name).toBe('Timeout');
 		});
+
+		it('Sets a timeout with single argument.', (done) => {
+			const callbackArgumentOne = 'hello';
+			const timeoutId = window.setTimeout(
+				(message: string) => {
+					expect(message).toBe(callbackArgumentOne);
+					done();
+				},
+				0,
+				callbackArgumentOne
+			);
+			expect(timeoutId.constructor.name).toBe('Timeout');
+		});
+
+		it('Sets a timeout with multiple arguments.', (done) => {
+			const callbackArgumentOne = 'hello';
+			const callbackArgumentTwo = 1337;
+			const timeoutId = window.setTimeout(
+				(message: string, num: number) => {
+					expect(message).toBe(callbackArgumentOne);
+					expect(num).toBe(callbackArgumentTwo);
+					done();
+				},
+				0,
+				callbackArgumentOne,
+				callbackArgumentTwo
+			);
+			expect(timeoutId.constructor.name).toBe('Timeout');
+		});
 	});
 
 	describe('clearTimeout()', () => {
@@ -408,6 +442,43 @@ describe('Window', () => {
 					done();
 				}
 			});
+		});
+
+		it('Sets an interval with single argument.', (done) => {
+			const callbackArgumentOne = 'hello';
+			let count = 0;
+			const intervalId = window.setInterval(
+				(message: string) => {
+					expect(message).toBe(callbackArgumentOne);
+					count++;
+					if (count > 2) {
+						clearInterval(intervalId);
+						done();
+					}
+				},
+				0,
+				callbackArgumentOne
+			);
+		});
+
+		it('Sets an interval with multiple arguments.', (done) => {
+			const callbackArgumentOne = 'hello';
+			const callbackArgumentTwo = 1337;
+			let count = 0;
+			const intervalId = window.setInterval(
+				(message: string, num: number) => {
+					expect(message).toBe(callbackArgumentOne);
+					expect(num).toBe(callbackArgumentTwo);
+					count++;
+					if (count > 2) {
+						clearInterval(intervalId);
+						done();
+					}
+				},
+				0,
+				callbackArgumentOne,
+				callbackArgumentTwo
+			);
 		});
 	});
 
@@ -899,6 +970,70 @@ describe('Window', () => {
 				new DOMException(
 					"Failed to execute 'btoa' on 'Window': The string to be encoded contains characters outside of the Latin1 range.",
 					DOMExceptionNameEnum.invalidCharacterError
+				)
+			);
+		});
+	});
+
+	describe('postMessage()', () => {
+		it('Posts a message.', function () {
+			const message = 'test';
+			const parentOrigin = 'https://localhost:8080';
+			const parent = new Window({
+				url: parentOrigin
+			});
+			let triggeredEvent: MessageEvent | null = null;
+
+			(<Window>window.parent) = parent;
+
+			window.addEventListener('message', (event) => (triggeredEvent = event));
+			window.postMessage(message);
+
+			expect(triggeredEvent.data).toBe(message);
+			expect(triggeredEvent.origin).toBe(parentOrigin);
+			expect(triggeredEvent.source).toBe(parent);
+			expect(triggeredEvent.lastEventId).toBe('');
+
+			window.postMessage(message, '*');
+
+			expect(triggeredEvent.data).toBe(message);
+			expect(triggeredEvent.origin).toBe(parentOrigin);
+			expect(triggeredEvent.source).toBe(parent);
+			expect(triggeredEvent.lastEventId).toBe('');
+		});
+
+		it('Posts a data object as message.', function () {
+			const message = {
+				test: 'test'
+			};
+			let triggeredEvent: MessageEvent | null = null;
+
+			window.addEventListener('message', (event) => (triggeredEvent = event));
+			window.postMessage(message);
+
+			expect(triggeredEvent.data).toBe(message);
+		});
+
+		it("Throws an exception if the provided object can't be serialized.", function () {
+			expect(() => window.postMessage(window)).toThrowError(
+				new DOMException(
+					`Failed to execute 'postMessage' on 'Window': The provided message cannot be serialized.`,
+					DOMExceptionNameEnum.invalidStateError
+				)
+			);
+		});
+
+		it('Throws an exception if the target origin differs from the document origin.', function () {
+			const message = 'test';
+			const targetOrigin = 'https://localhost:8081';
+			const documentOrigin = 'https://localhost:8080';
+
+			window.happyDOM.setURL(documentOrigin);
+
+			expect(() => window.postMessage(message, targetOrigin)).toThrowError(
+				new DOMException(
+					`Failed to execute 'postMessage' on 'Window': The target origin provided ('${targetOrigin}') does not match the recipient window\'s origin ('${documentOrigin}').`,
+					DOMExceptionNameEnum.securityError
 				)
 			);
 		});
