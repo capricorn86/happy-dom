@@ -33,6 +33,7 @@ import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
 import Image from '../nodes/html-image-element/Image';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
 import CharacterData from '../nodes/character-data/CharacterData';
+import NodeIterator from '../tree-walker/NodeIterator';
 import TreeWalker from '../tree-walker/TreeWalker';
 import Event from '../event/Event';
 import CustomEvent from '../event/events/CustomEvent';
@@ -171,6 +172,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly CharacterData: typeof CharacterData;
 	readonly ProcessingInstruction: typeof ProcessingInstruction;
 	readonly NodeFilter: typeof NodeFilter;
+	readonly NodeIterator: typeof NodeIterator;
 	readonly TreeWalker: typeof TreeWalker;
 	readonly DOMParser: typeof DOMParser;
 	readonly MutationObserver: typeof MutationObserver;
