@@ -1,25 +1,25 @@
 import ICharacterData from './ICharacterData';
 
-const HTML_ENTITIES = {
-	'&quot;': '"',
-	'&#34': '"',
-	'&#x22': '"',
-	'&amp;': '&',
-	'&#38': '&',
-	'&#x26': '&',
-	'&apos;': "'",
-	'&#39': "'",
-	'&#x27': "'",
-	'&lt;': '<',
-	'&#60': '<',
-	'&#x3C': '<',
-	'&gt;': '>',
-	'&#62': '>',
-	'&#x3E': '>',
-	'&nbsp;': ' ',
-	'&#160': ' ',
-	'&#xA0': ' '
-};
+const HTML_ENTITIES = [
+	{ regex: /&quot;/g, value: '"' },
+	{ regex: /&#34/g, value: '"' },
+	{ regex: /&#x22/g, value: '"' },
+	{ regex: /&amp;/g, value: '&' },
+	{ regex: /&#38/g, value: '&' },
+	{ regex: /&#x26/g, value: '&' },
+	{ regex: /&apos;/g, value: "'" },
+	{ regex: /&#39/g, value: "'" },
+	{ regex: /&#x27/g, value: "'" },
+	{ regex: /&lt;/g, value: '<' },
+	{ regex: /&#60/g, value: '<' },
+	{ regex: /&#x3C/g, value: '<' },
+	{ regex: /&gt;/g, value: '>' },
+	{ regex: /&#62/g, value: '>' },
+	{ regex: /&#x3E/g, value: '>' },
+	{ regex: /&nbsp;/g, value: ' ' },
+	{ regex: /&#160/g, value: ' ' },
+	{ regex: /&#xA0/g, value: ' ' }
+];
 
 /**
  * Child node utility.
@@ -101,8 +101,8 @@ export default class CharacterDataUtility {
 		if (!html) {
 			return '';
 		}
-		for (const key of Object.keys(HTML_ENTITIES)) {
-			html = html.replace(new RegExp(key, 'g'), HTML_ENTITIES[key]);
+		for (const entity of HTML_ENTITIES) {
+			html = html.replace(entity.regex, entity.value);
 		}
 		return html;
 	}
