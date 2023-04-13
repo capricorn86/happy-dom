@@ -83,6 +83,7 @@ import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
+import SubmitEvent from '../event/events/SubmitEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
 import IResponse from '../fetch/types/IResponse';
@@ -235,6 +236,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly InputEvent = InputEvent;
 	public readonly ErrorEvent = ErrorEvent;
 	public readonly StorageEvent = StorageEvent;
+	public readonly SubmitEvent = SubmitEvent;
 	public readonly ProgressEvent = ProgressEvent;
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly EventTarget = EventTarget;

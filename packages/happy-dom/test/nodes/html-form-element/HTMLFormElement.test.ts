@@ -4,8 +4,10 @@ import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElemen
 import RadioNodeList from '../../../src/nodes/html-form-element/RadioNodeList';
 import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement';
 import Event from '../../../src/event/Event';
+import SubmitEvent from '../../../src/event/events/SubmitEvent';
 import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement';
 import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement';
+import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement';
 
 describe('HTMLFormElement', () => {
 	let window: Window;
@@ -298,7 +300,9 @@ describe('HTMLFormElement', () => {
 			element.noValidate = true;
 			element.requestSubmit();
 
+			expect(submitEvent).toBeInstanceOf(SubmitEvent);
 			expect(submitEvent.type).toBe('submit');
+			expect((<SubmitEvent>submitEvent).submitter).toBe(element);
 
 			submitEvent = null;
 
@@ -311,9 +315,10 @@ describe('HTMLFormElement', () => {
 			(<IHTMLInputElement>root.children[2]).click();
 			(<IHTMLInputElement>root.children[6]).click();
 
-			element.requestSubmit();
+			element.requestSubmit(<IHTMLButtonElement>root.children[1]);
 
 			expect(submitEvent.type).toBe('submit');
+			expect((<SubmitEvent>submitEvent).submitter).toBe(root.children[1]);
 		});
 
 		it('Skips validating if a submitter is sent that has "formNoValidate" set to "true".', () => {
