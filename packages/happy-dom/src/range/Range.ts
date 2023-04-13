@@ -79,8 +79,6 @@ export default class Range {
 			const length = NodeUtility.getNodeLength(this._start.node);
 			if (this._start.offset > length) {
 				this._start.offset = length;
-			} else if (length === 0) {
-				this._start.offset = 0;
 			}
 		}
 
@@ -98,8 +96,6 @@ export default class Range {
 			const length = NodeUtility.getNodeLength(this._end.node);
 			if (this._end.offset > length) {
 				this._end.offset = length;
-			} else if (length === 0) {
-				this._end.offset = 0;
 			}
 		}
 
@@ -343,8 +339,8 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new Range();
-			subRange._start.node = this._end.node;
-			subRange._start.offset = endOffset;
+			subRange._start.node = this._start.node;
+			subRange._start.offset = startOffset;
 			subRange._end.node = firstPartialContainedChild;
 			subRange._end.offset = NodeUtility.getNodeLength(firstPartialContainedChild);
 

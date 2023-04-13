@@ -291,6 +291,22 @@ describe('Range', () => {
 
 			expect(document.body.innerHTML).toBe('ample: <i>italic</i> and <b>bol</b>');
 		});
+
+		// Fix for https://github.com/capricorn86/happy-dom/issues/853.
+		it('Clones multiple child elements inside a paragraph.', () => {
+			const paragraph = document.createElement('p');
+
+			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
+
+			range.setStart(paragraph.querySelector('i').firstChild, 2);
+			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+
+			const documentFragment = range.cloneContents();
+
+			document.body.appendChild(documentFragment);
+
+			expect(document.body.innerHTML).toBe('<i>alic</i> and <b>bol</b>');
+		});
 	});
 
 	describe('cloneRange()', () => {
