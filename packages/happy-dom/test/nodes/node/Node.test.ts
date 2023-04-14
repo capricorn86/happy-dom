@@ -5,6 +5,7 @@ import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
 import Event from '../../../src/event/Event';
 import Text from '../../../src/nodes/text/Text';
+import EventPhaseEnum from '../../../src/event/EventPhaseEnum';
 
 /**
  *
@@ -633,6 +634,49 @@ describe('Node', () => {
 
 			expect(childEvent).toBe(event);
 			expect(parentEvent).toBe(event);
+		});
+
+		it('Supports capture events that bubbles.', () => {
+			const parent = document.createElement('div');
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+
+			child1.appendChild(child2);
+			parent.appendChild(child1);
+
+			const event = new Event('blur', { bubbles: true, cancelable: true });
+			const parentEvents = [];
+			const child1Events = [];
+			const child2Events = [];
+
+			parent.addEventListener(
+				'blur',
+				(event) => {
+					expect(event.eventPhase).toBe(EventPhaseEnum.capturing);
+					parentEvents.push(event);
+				},
+				true
+			);
+
+			child1.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.bubbling);
+				child1Events.push(event);
+			});
+
+			child2.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.atTarget);
+				child2Events.push(event);
+			});
+
+			debugger;
+			child2.dispatchEvent(event);
+
+			expect(child1Events.length).toBe(1);
+			expect(child1Events[0] === event).toBe(true);
+			expect(child2Events.length).toBe(1);
+			expect(child2Events[0] === event).toBe(true);
+			expect(parentEvents.length).toBe(1);
+			expect(parentEvents[0] === event).toBe(true);
 		});
 	});
 
