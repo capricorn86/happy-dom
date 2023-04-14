@@ -1,6 +1,8 @@
 import Window from '../../../src/window/Window';
+import Document from '../../../src/nodes/document/Document';
 import Node from '../../../src/nodes/node/Node';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
+import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
 import Event from '../../../src/event/Event';
 import Text from '../../../src/nodes/text/Text';
 
@@ -56,8 +58,8 @@ class CustomButtonElement extends HTMLElement {
 }
 
 describe('Node', () => {
-	let window;
-	let document;
+	let window: Window;
+	let document: Document;
 	let customElementOutput;
 
 	beforeEach(() => {
@@ -405,7 +407,7 @@ describe('Node', () => {
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		it('Append the child nodes instead of the actual node if the type is DocumentFragment.', () => {
-			const template = document.createElement('template');
+			const template = <HTMLTemplateElement>document.createElement('template');
 
 			template.innerHTML = '<div>Div</div><span>Span</span>';
 
@@ -467,7 +469,7 @@ describe('Node', () => {
 		it('Insert the child nodes instead of the actual node before another reference Node if the type is DocumentFragment.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
-			const template = document.createElement('template');
+			const template = <HTMLTemplateElement>document.createElement('template');
 			const parent = document.createElement('div');
 
 			template.innerHTML = '<div>Template DIV 1</div><span>Template SPAN 1</span>';

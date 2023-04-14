@@ -1,4 +1,7 @@
 import Window from '../../../src/window/Window';
+import Document from '../../../src/nodes/document/Document';
+import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment';
+import IDocumentFragment from '../../../src/nodes/document-fragment/IDocumentFragment';
 import Node from '../../../src/nodes/node/Node';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
 import QuerySelector from '../../../src/query-selector/QuerySelector';
@@ -8,9 +11,9 @@ import INodeList from '../../../src/nodes/node/INodeList';
 import IElement from '../../../src/nodes/element/IElement';
 
 describe('DocumentFragment', () => {
-	let window;
-	let document;
-	let documentFragment;
+	let window: Window;
+	let document: Document;
+	let documentFragment: IDocumentFragment;
 
 	beforeEach(() => {
 		window = new Window();
@@ -294,7 +297,7 @@ describe('DocumentFragment', () => {
 			const clone = documentFragment.cloneNode(false);
 
 			expect(clone.nodeType).toBe(Node.DOCUMENT_FRAGMENT_NODE);
-			expect(clone._rootNode).toBe(clone);
+			expect((<DocumentFragment>clone)._rootNode).toBe(clone);
 			expect(clone.childNodes.length).toBe(0);
 			expect(clone.children.length).toBe(0);
 		});
@@ -311,7 +314,7 @@ describe('DocumentFragment', () => {
 			const clone = documentFragment.cloneNode(true);
 
 			expect(clone.nodeType).toBe(Node.DOCUMENT_FRAGMENT_NODE);
-			expect(clone._rootNode).toBe(clone);
+			expect((<DocumentFragment>clone)._rootNode).toBe(clone);
 			expect(clone.childNodes.length).toBe(3);
 			expect(Array.from(clone.children)).toEqual(
 				Array.from(clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE))
