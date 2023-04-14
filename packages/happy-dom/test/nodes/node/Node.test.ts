@@ -4,6 +4,7 @@ import Node from '../../../src/nodes/node/Node';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
 import Event from '../../../src/event/Event';
+import Text from '../../../src/nodes/text/Text';
 
 /**
  *
@@ -709,6 +710,66 @@ describe('Node', () => {
 				.getElementById('child')
 				.compareDocumentPosition(document.getElementById('parent'));
 			expect(position).toEqual(10);
+		});
+	});
+
+	describe('normalize()', () => {
+		it('Normalizes an element.', () => {
+			const txt = document.createTextNode.bind(document);
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			span.append(txt('sp'), txt('an'));
+			const b = document.createElement('b');
+			b.append(txt(''), txt(''), txt(''));
+			div.append(txt(''), txt('d'), txt(''), txt('i'), txt('v'), span, txt(''), b, txt(''));
+			expect(div.childNodes).toHaveLength(9);
+			div.normalize();
+			expect(div.childNodes).toHaveLength(3);
+			expect(div.childNodes[0]).toBeInstanceOf(Text);
+			expect(div.childNodes[0].nodeValue).toBe('div');
+			expect(div.childNodes[1]).toBe(span);
+			expect(div.childNodes[2]).toBe(b);
+			expect(span.childNodes).toHaveLength(1);
+			expect(span.childNodes[0]).toBeInstanceOf(Text);
+			expect(span.childNodes[0].nodeValue).toBe('span');
+			expect(b.childNodes).toHaveLength(0);
+		});
+
+		it('Normalizes a document fragment.', () => {
+			const txt = document.createTextNode.bind(document);
+			const fragment = document.createDocumentFragment();
+			const span = document.createElement('span');
+			span.append(txt('sp'), txt('an'));
+			const b = document.createElement('b');
+			b.append(txt(''), txt(''), txt(''));
+			fragment.append(txt(''), txt('d'), txt(''), txt('i'), txt('v'), span, txt(''), b, txt(''));
+			expect(fragment.childNodes).toHaveLength(9);
+			fragment.normalize();
+			expect(fragment.childNodes).toHaveLength(3);
+			expect(fragment.childNodes[0]).toBeInstanceOf(Text);
+			expect(fragment.childNodes[0].nodeValue).toBe('div');
+			expect(fragment.childNodes[1]).toBe(span);
+			expect(fragment.childNodes[2]).toBe(b);
+			expect(span.childNodes).toHaveLength(1);
+			expect(span.childNodes[0]).toBeInstanceOf(Text);
+			expect(span.childNodes[0].nodeValue).toBe('span');
+			expect(b.childNodes).toHaveLength(0);
+		});
+
+		it('Normalizes the document.', () => {
+			const count = document.childNodes.length;
+			document.append(document.createTextNode(''));
+			expect(document.childNodes).toHaveLength(count + 1);
+			document.normalize();
+			expect(document.childNodes).toHaveLength(count);
+		});
+
+		it('Does nothing on a text node.', () => {
+			const div = document.createElement('div');
+			const node = div.appendChild(document.createTextNode(''));
+			node.normalize();
+			expect(div.childNodes).toHaveLength(1);
+			expect(div.childNodes[0]).toBe(node);
 		});
 	});
 });

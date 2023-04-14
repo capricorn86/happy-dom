@@ -789,6 +789,36 @@ export default class Node extends EventTarget implements INode {
 	}
 
 	/**
+	 * Normalizes the sub-tree of the node, i.e. joins adjacent text nodes, and
+	 * removes all empty text nodes.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Node/normalize
+	 */
+	public normalize(): void {
+		let child = this.firstChild;
+		while (child) {
+			if (NodeUtility.isTextNode(child)) {
+				// Append text of all following text nodes, and remove them.
+				while (NodeUtility.isTextNode(child.nextSibling)) {
+					child.data += child.nextSibling.data;
+					child.nextSibling.remove();
+				}
+				// Remove text node if it is still empty.
+				if (!child.data.length) {
+					const node = child;
+					child = child.nextSibling;
+					node.remove();
+					continue;
+				}
+			} else {
+				// Normalize child nodes recursively.
+				child.normalize();
+			}
+			child = child.nextSibling;
+		}
+	}
+
+	/**
 	 * This will be called by JSON.stringify() when serializing this node.
 	 *
 	 * @returns Object without circular references.
