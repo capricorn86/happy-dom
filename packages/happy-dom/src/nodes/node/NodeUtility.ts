@@ -12,6 +12,16 @@ import IProcessingInstruction from '../processing-instruction/IProcessingInstruc
  */
 export default class NodeUtility {
 	/**
+	 * Returns whether the passed node is a text node, and narrows its type.
+	 *
+	 * @param node The node to be tested.
+	 * @returns "true" if the node is a text node.
+	 */
+	public static isTextNode(node: INode | null): node is IText {
+		return node?.nodeType === NodeTypeEnum.textNode;
+	}
+
+	/**
 	 * Returns boolean indicating if nodeB is an inclusive ancestor of nodeA.
 	 *
 	 * Based on:
@@ -127,9 +137,9 @@ export default class NodeUtility {
 	 * Returns the next sibling or parents sibling.
 	 *
 	 * @param node Node.
-	 * @returns Next decentant node.
+	 * @returns Next descendant node.
 	 */
-	public static nextDecendantNode(node: INode): INode {
+	public static nextDescendantNode(node: INode): INode {
 		while (node && !node.nextSibling) {
 			node = node.parentNode;
 		}

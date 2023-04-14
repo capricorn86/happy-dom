@@ -47,4 +47,5 @@ export default interface INode extends IEventTarget {
 	replaceChild(newChild: INode, oldChild: INode): INode;
 	toString(): string;
 	compareDocumentPosition(otherNode: INode): number;
+	normalize(): void;
 }

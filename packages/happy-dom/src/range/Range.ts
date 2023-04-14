@@ -434,7 +434,7 @@ export default class Range {
 
 		const nodesToRemove = [];
 		let currentNode = this._start.node;
-		const endNode = NodeUtility.nextDecendantNode(this._end.node);
+		const endNode = NodeUtility.nextDescendantNode(this._end.node);
 		while (currentNode && currentNode !== endNode) {
 			if (
 				RangeUtility.isContained(currentNode, this) &&
@@ -973,7 +973,7 @@ export default class Range {
 	 */
 	public surroundContents(newParent: INode): void {
 		let node = this.commonAncestorContainer;
-		const endNode = NodeUtility.nextDecendantNode(node);
+		const endNode = NodeUtility.nextDescendantNode(node);
 		while (node !== endNode) {
 			if (
 				node.nodeType !== NodeTypeEnum.textNode &&
@@ -1030,7 +1030,7 @@ export default class Range {
 			string += (<IText>this._start.node).data.slice(startOffset);
 		}
 
-		const endNode = NodeUtility.nextDecendantNode(this._end.node);
+		const endNode = NodeUtility.nextDescendantNode(this._end.node);
 		let currentNode = this._start.node;
 
 		while (currentNode && currentNode !== endNode) {
