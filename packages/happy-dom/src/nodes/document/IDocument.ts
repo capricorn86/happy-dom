@@ -301,7 +301,7 @@ export default interface IDocument extends IParentNode {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IDocument;
+	cloneNode(deep?: boolean): IDocument;
 
 	/**
 	 * Adopts a node.

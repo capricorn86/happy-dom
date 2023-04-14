@@ -287,7 +287,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IElement;
+	cloneNode(deep?: boolean): IElement;
 
 	/**
 	 * Inserts a node to the given position.

@@ -1,4 +1,5 @@
 import Window from '../../src/window/Window';
+import Document from '../../src/nodes/document/Document';
 import NodeFilter from '../../src/tree-walker/NodeFilter';
 import Element from '../../src/nodes/element/Element';
 import Comment from '../../src/nodes/comment/Comment';
@@ -16,8 +17,8 @@ const NODE_TO_STRING = (node: Node): string => {
 };
 
 describe('NodeIterator', () => {
-	let window;
-	let document;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
