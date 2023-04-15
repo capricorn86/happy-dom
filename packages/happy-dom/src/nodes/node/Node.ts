@@ -15,6 +15,9 @@ import IAttr from '../attr/IAttr';
 import NodeList from './NodeList';
 import INodeList from './INodeList';
 import IShadowRoot from '../shadow-root/IShadowRoot';
+import IEventListener from '../../event/IEventListener';
+import IEventListenerOptions from '../../event/IEventListenerOptions';
+import EventPhaseEnum from '../../event/EventPhaseEnum';
 
 const JSON_CIRCULAR_PROPERTIES = [
 	'ownerDocument',
@@ -248,15 +251,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns "true" if this node contains the other node.
 	 */
 	public contains(otherNode: INode): boolean {
-		if (this === otherNode) {
-			return true;
-		}
-		for (const childNode of this.childNodes) {
-			if (childNode === otherNode || childNode.contains(otherNode)) {
-				return true;
-			}
-		}
-		return false;
+		return NodeUtility.contains(this, otherNode);
 	}
 
 	/**
@@ -491,10 +486,85 @@ export default class Node extends EventTarget implements INode {
 	/**
 	 * @override
 	 */
+	public override addEventListener(
+		type: string,
+		listener: ((event: Event) => void) | IEventListener,
+		options?: boolean | IEventListenerOptions
+	): void {
+		super.addEventListener(type, listener, options);
+
+		if (options === true || (options && options.capture)) {
+			const captureEventListenerNodes = this.ownerDocument
+				? <{ [eventType: string]: INode[] }>this.ownerDocument['_captureEventListenerNodes']
+				: <{ [eventType: string]: INode[] }>this['_captureEventListenerNodes'];
+
+			captureEventListenerNodes[type] = captureEventListenerNodes[type] || [];
+
+			if (!captureEventListenerNodes[type].includes(this)) {
+				captureEventListenerNodes[type].push(this);
+			}
+		}
+	}
+
+	/**
+	 * Adds an event listener.
+	 *
+	 * @param type Event type.
+	 * @param listener Listener.
+	 */
+	public override removeEventListener(
+		type: string,
+		listener: ((event: Event) => void) | IEventListener
+	): void {
+		const index = this._listeners[type]?.indexOf(listener) || -1;
+		const options = index !== -1 ? this._listenerOptions[type][index] : null;
+
+		if (options?.capture) {
+			const captureEventListenerNodes = this.ownerDocument
+				? <{ [eventType: string]: INode[] }>this.ownerDocument['_captureEventListenerNodes']
+				: <{ [eventType: string]: INode[] }>this['_captureEventListenerNodes'];
+
+			if (captureEventListenerNodes[type]) {
+				const index = captureEventListenerNodes[type].indexOf(this);
+				if (index !== -1) {
+					captureEventListenerNodes[type].splice(index, 1);
+				}
+			}
+		}
+
+		super.removeEventListener(type, listener);
+	}
+
+	/**
+	 * @override
+	 */
 	public override dispatchEvent(event: Event): boolean {
+		// Capture phase
+		if (!event._target) {
+			const captureEventListenerNodes = this.ownerDocument
+				? <{ [eventType: string]: INode[] }>this.ownerDocument['_captureEventListenerNodes']
+				: <{ [eventType: string]: INode[] }>this['_captureEventListenerNodes'];
+
+			if (captureEventListenerNodes[event.type]) {
+				event._target = this;
+				event.eventPhase = EventPhaseEnum.capturing;
+
+				for (const node of captureEventListenerNodes[event.type]) {
+					if (node !== this && NodeUtility.contains(node, this, event.composed)) {
+						node.dispatchEvent(event);
+					}
+				}
+
+				event.eventPhase = EventPhaseEnum.atTarget;
+			}
+		}
+
 		const returnValue = super.dispatchEvent(event);
 
+		// Bubbling phase
 		if (event.bubbles && !event._propagationStopped && !event._immediatePropagationStopped) {
+			event.eventPhase = EventPhaseEnum.bubbling;
+
 			if (this.parentNode) {
 				return this.parentNode.dispatchEvent(event);
 			}

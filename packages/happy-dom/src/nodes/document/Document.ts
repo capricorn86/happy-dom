@@ -70,6 +70,12 @@ export default class Document extends Node implements IDocument {
 	// Public in order to be accessible by the fetch and xhr.
 	public _cookie = new CookieJar();
 
+	// List of all nodes that has capture listeners.
+	// We need to keep track of them globally as capture listeners are called before other listeners.
+	public readonly _captureEventListenerNodes: {
+		[eventType: string]: INode[];
+	} = {};
+
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
 

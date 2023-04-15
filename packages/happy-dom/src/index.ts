@@ -143,6 +143,7 @@ import IResponse from './fetch/types/IResponse';
 import Headers from './fetch/Headers';
 import IHeaders from './fetch/types/IHeaders';
 import FormData from './form-data/FormData';
+import EventPhaseEnum from './event/EventPhaseEnum';
 
 export {
 	GlobalWindow,
@@ -290,5 +291,6 @@ export {
 	IResponse,
 	Headers,
 	IHeaders,
-	FormData
+	FormData,
+	EventPhaseEnum
 };
