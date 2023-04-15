@@ -6,11 +6,53 @@ import IElement from '../element/IElement';
 import IDocumentType from '../document-type/IDocumentType';
 import IAttr from '../attr/IAttr';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
+import IHTMLElement from '../html-element/IHTMLElement';
 
 /**
  * Node utility.
  */
 export default class NodeUtility {
+	/**
+	 * Returns whether the passed node is a text node, and narrows its type.
+	 *
+	 * @param node The node to be tested.
+	 * @returns "true" if the node is a text node.
+	 */
+	public static isTextNode(node: INode | null): node is IText {
+		return node?.nodeType === NodeTypeEnum.textNode;
+	}
+
+	/**
+	 * Returns "true" if this node contains the other node.
+	 *
+	 * @param rootNode Root node.
+	 * @param otherNode Node to test with.
+	 * @param [includeShadowRoots = false] Include shadow roots.
+	 * @returns "true" if this node contains the other node.
+	 */
+	public static contains(rootNode: INode, otherNode: INode, includeShadowRoots = false): boolean {
+		if (rootNode === otherNode) {
+			return true;
+		}
+
+		if (includeShadowRoots && rootNode === otherNode.ownerDocument && otherNode.isConnected) {
+			return true;
+		}
+
+		for (const childNode of rootNode.childNodes) {
+			if (
+				childNode === otherNode ||
+				this.contains(childNode, otherNode, includeShadowRoots) ||
+				(includeShadowRoots &&
+					(<IHTMLElement>childNode).shadowRoot &&
+					(<IHTMLElement>childNode).shadowRoot.contains(otherNode))
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Returns boolean indicating if nodeB is an inclusive ancestor of nodeA.
 	 *
@@ -127,9 +169,9 @@ export default class NodeUtility {
 	 * Returns the next sibling or parents sibling.
 	 *
 	 * @param node Node.
-	 * @returns Next decentant node.
+	 * @returns Next descendant node.
 	 */
-	public static nextDecendantNode(node: INode): INode {
+	public static nextDescendantNode(node: INode): INode {
 		while (node && !node.nextSibling) {
 			node = node.parentNode;
 		}

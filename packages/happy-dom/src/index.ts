@@ -35,11 +35,13 @@ import IInputEventInit from './event/events/IInputEventInit';
 import IKeyboardEventInit from './event/events/IKeyboardEventInit';
 import IMouseEventInit from './event/events/IMouseEventInit';
 import IProgressEventInit from './event/events/IProgressEventInit';
+import ISubmitEventInit from './event/events/ISubmitEventInit';
 import IWheelEventInit from './event/events/IWheelEventInit';
 import InputEvent from './event/events/InputEvent';
 import KeyboardEvent from './event/events/KeyboardEvent';
 import MouseEvent from './event/events/MouseEvent';
 import ProgressEvent from './event/events/ProgressEvent';
+import SubmitEvent from './event/events/SubmitEvent';
 import WheelEvent from './event/events/WheelEvent';
 import DOMParser from './dom-parser/DOMParser';
 import Document from './nodes/document/Document';
@@ -141,6 +143,7 @@ import IResponse from './fetch/types/IResponse';
 import Headers from './fetch/Headers';
 import IHeaders from './fetch/types/IHeaders';
 import FormData from './form-data/FormData';
+import EventPhaseEnum from './event/EventPhaseEnum';
 
 export {
 	GlobalWindow,
@@ -180,11 +183,13 @@ export {
 	IKeyboardEventInit,
 	IMouseEventInit,
 	IProgressEventInit,
+	ISubmitEventInit,
 	IWheelEventInit,
 	InputEvent,
 	KeyboardEvent,
 	MouseEvent,
 	ProgressEvent,
+	SubmitEvent,
 	WheelEvent,
 	DOMParser,
 	Document,
@@ -286,5 +291,6 @@ export {
 	IResponse,
 	Headers,
 	IHeaders,
-	FormData
+	FormData,
+	EventPhaseEnum
 };

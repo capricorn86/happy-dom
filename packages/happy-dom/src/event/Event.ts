@@ -5,6 +5,7 @@ import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
 import IEventTarget from './IEventTarget';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
 import { performance } from 'perf_hooks';
+import EventPhaseEnum from './EventPhaseEnum';
 
 /**
  * Event.
@@ -14,6 +15,7 @@ export default class Event {
 	public bubbles = false;
 	public cancelable = false;
 	public defaultPrevented = false;
+	public eventPhase: EventPhaseEnum = EventPhaseEnum.none;
 	public _immediatePropagationStopped = false;
 	public _propagationStopped = false;
 	public _target: IEventTarget = null;
@@ -21,6 +23,10 @@ export default class Event {
 	public timeStamp: number = performance.now();
 	public type: string = null;
 	public _isInPassiveEventListener = false;
+	public NONE = EventPhaseEnum.none;
+	public CAPTURING_PHASE = EventPhaseEnum.capturing;
+	public AT_TARGET = EventPhaseEnum.atTarget;
+	public BUBBLING_PHASE = EventPhaseEnum.bubbling;
 
 	/**
 	 * Constructor.

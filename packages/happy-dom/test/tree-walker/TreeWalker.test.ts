@@ -1,4 +1,5 @@
 import Window from '../../src/window/Window';
+import Document from '../../src/nodes/document/Document';
 import NodeFilter from '../../src/tree-walker/NodeFilter';
 import Element from '../../src/nodes/element/Element';
 import Comment from '../../src/nodes/comment/Comment';
@@ -16,8 +17,8 @@ const NODE_TO_STRING = (node: Node): string => {
 };
 
 describe('TreeWalker', () => {
-	let window;
-	let document;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -200,8 +201,8 @@ describe('TreeWalker', () => {
 		it('Returns the first child node.', () => {
 			const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
 			const node = treeWalker.nextNode();
-			expect(node.firstChild !== null).toBe(true);
-			expect(treeWalker.firstChild() === node.firstElementChild).toBe(true);
+			expect(node).toBeInstanceOf(Element);
+			expect(treeWalker.firstChild()).toBe((<Element>node).firstElementChild);
 		});
 	});
 });

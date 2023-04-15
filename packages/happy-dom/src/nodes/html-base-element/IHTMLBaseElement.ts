@@ -17,5 +17,5 @@ export default interface IHTMLBaseElement extends IHTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IHTMLBaseElement;
+	cloneNode(deep?: boolean): IHTMLBaseElement;
 }

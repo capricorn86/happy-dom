@@ -76,6 +76,7 @@ import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
+import SubmitEvent from '../event/events/SubmitEvent';
 import MessageEvent from '../event/events/MessageEvent';
 import MessagePort from '../event/MessagePort';
 import Screen from '../screen/Screen';
@@ -192,6 +193,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly InputEvent: typeof InputEvent;
 	readonly ErrorEvent: typeof ErrorEvent;
 	readonly StorageEvent: typeof StorageEvent;
+	readonly SubmitEvent: typeof SubmitEvent;
 	readonly MessageEvent: typeof MessageEvent;
 	readonly MessagePort: typeof MessagePort;
 	readonly ProgressEvent: typeof ProgressEvent;

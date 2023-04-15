@@ -2,6 +2,7 @@ import IEventListener from './IEventListener';
 import Event from './Event';
 import IEventTarget from './IEventTarget';
 import IEventListenerOptions from './IEventListenerOptions';
+import EventPhaseEnum from './EventPhaseEnum';
 
 /**
  * Handles events.
@@ -25,13 +26,15 @@ export default abstract class EventTarget implements IEventTarget {
 	public addEventListener(
 		type: string,
 		listener: ((event: Event) => void) | IEventListener,
-		options?: IEventListenerOptions
+		options?: boolean | IEventListenerOptions
 	): void {
 		this._listeners[type] = this._listeners[type] || [];
 		this._listenerOptions[type] = this._listenerOptions[type] || [];
 
 		this._listeners[type].push(listener);
-		this._listenerOptions[type].push(options || null);
+		this._listenerOptions[type].push(
+			typeof options === 'boolean' ? { capture: options } : options || null
+		);
 	}
 
 	/**
@@ -62,6 +65,7 @@ export default abstract class EventTarget implements IEventTarget {
 	public dispatchEvent(event: Event): boolean {
 		if (!event._target) {
 			event._target = this;
+			event.eventPhase = EventPhaseEnum.atTarget;
 		}
 
 		event._currentTarget = this;
@@ -80,6 +84,10 @@ export default abstract class EventTarget implements IEventTarget {
 			for (let i = 0, max = listeners.length; i < max; i++) {
 				const listener = listeners[i];
 				const options = listenerOptions[i];
+
+				if (options?.capture && event.eventPhase !== EventPhaseEnum.capturing) {
+					continue;
+				}
 
 				if (options?.passive) {
 					event._isInPassiveEventListener = true;
