@@ -419,16 +419,14 @@ export default class Node extends EventTarget implements INode {
 			return newNode;
 		}
 
-		if (referenceNode === undefined) {
+		if (!referenceNode) {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 1 present.",
 				'TypeError'
 			);
 		}
 
-		const index = referenceNode ? this.childNodes.indexOf(referenceNode) : 0;
-
-		if (index === -1) {
+		if (this.childNodes.indexOf(referenceNode) === -1) {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
@@ -445,7 +443,7 @@ export default class Node extends EventTarget implements INode {
 			}
 		}
 
-		this.childNodes.splice(index, 0, newNode);
+		this.childNodes.splice(this.childNodes.indexOf(referenceNode), 0, newNode);
 
 		(<Node>newNode)._connectToNode(this);
 

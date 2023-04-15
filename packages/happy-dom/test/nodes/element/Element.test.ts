@@ -1090,6 +1090,21 @@ describe('Element', () => {
 			expect(element.children[2] === span).toBe(true);
 		});
 
+		it('Inserts elements of the same parent correctly.', () => {
+			const div = document.createElement('div');
+			div.innerHTML =
+				'<span id="a"></span><span id="b"></span><span id="c"></span><span id="d"></span>';
+
+			const a = div.querySelector('#a');
+			const b = div.querySelector('#b');
+
+			div.insertBefore(a, b);
+
+			expect(div.innerHTML).toBe(
+				'<span id="a"></span><span id="b"></span><span id="c"></span><span id="d"></span>'
+			);
+		});
+
 		it('After should add child element correctly', () => {
 			document.body.innerHTML = `<div class="container"></div>\n`;
 			expect(document.body.children.length).toBe(1);
