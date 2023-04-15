@@ -14,7 +14,7 @@ export default class HTMLBaseElement extends HTMLElement implements IHTMLBaseEle
 	 * @returns Href.
 	 */
 	public get href(): string {
-		const href = this.getAttributeNS(null, 'href');
+		const href = this.getAttribute('href');
 		if (href !== null) {
 			return href;
 		}
@@ -27,7 +27,7 @@ export default class HTMLBaseElement extends HTMLElement implements IHTMLBaseEle
 	 * @param href Href.
 	 */
 	public set href(href: string) {
-		this.setAttributeNS(null, 'href', href);
+		this.setAttribute('href', href);
 	}
 
 	/**
@@ -36,7 +36,7 @@ export default class HTMLBaseElement extends HTMLElement implements IHTMLBaseEle
 	 * @returns Target.
 	 */
 	public get target(): string {
-		return this.getAttributeNS(null, 'target') || '';
+		return this.getAttribute('target') || '';
 	}
 
 	/**
@@ -45,7 +45,7 @@ export default class HTMLBaseElement extends HTMLElement implements IHTMLBaseEle
 	 * @param target Target.
 	 */
 	public set target(target: string) {
-		this.setAttributeNS(null, 'target', target);
+		this.setAttribute('target', target);
 	}
 
 	/**

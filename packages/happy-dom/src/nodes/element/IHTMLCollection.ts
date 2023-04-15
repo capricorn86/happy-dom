@@ -7,5 +7,13 @@ export default interface IHTMLCollection<T> extends Array<T> {
 	 *
 	 * @param index Index.
 	 */
-	item(index: number): T;
+	item(index: number): T | null;
+
+	/**
+	 * Returns named item.
+	 *
+	 * @param name Name.
+	 * @returns Node.
+	 */
+	namedItem(name: string): T | null;
 }

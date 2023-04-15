@@ -31,7 +31,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param download Download.
 	 */
 	public set download(download: string) {
-		this.setAttributeNS(null, 'download', download);
+		this.setAttribute('download', download);
 	}
 
 	/**
@@ -51,7 +51,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	public set hash(hash: string) {
 		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.hash = hash;
-			this.setAttributeNS(null, 'href', this._url.toString());
+			this.setAttribute('href', this._url.toString());
 		}
 	}
 
@@ -65,7 +65,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 			return this._url.toString();
 		}
 
-		return this.getAttributeNS(null, 'href') || '';
+		return this.getAttribute('href') || '';
 	}
 
 	/**
@@ -74,7 +74,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param href Href.
 	 */
 	public set href(href: string) {
-		this.setAttributeNS(null, 'href', href);
+		this.setAttribute('href', href);
 	}
 
 	/**
@@ -83,7 +83,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Hreflang.
 	 */
 	public get hreflang(): string {
-		return this.getAttributeNS(null, 'hreflang') || '';
+		return this.getAttribute('hreflang') || '';
 	}
 
 	/**
@@ -92,7 +92,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param hreflang Hreflang.
 	 */
 	public set hreflang(hreflang: string) {
-		this.setAttributeNS(null, 'hreflang', hreflang);
+		this.setAttribute('hreflang', hreflang);
 	}
 
 	/**
@@ -110,7 +110,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Ping.
 	 */
 	public get ping(): string {
-		return this.getAttributeNS(null, 'ping') || '';
+		return this.getAttribute('ping') || '';
 	}
 
 	/**
@@ -119,7 +119,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param ping Ping.
 	 */
 	public set ping(ping: string) {
-		this.setAttributeNS(null, 'ping', ping);
+		this.setAttribute('ping', ping);
 	}
 
 	/**
@@ -139,7 +139,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	public set protocol(protocol: string) {
 		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.protocol = protocol;
-			this.setAttributeNS(null, 'href', this._url.toString());
+			this.setAttribute('href', this._url.toString());
 		}
 	}
 
@@ -165,7 +165,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 			this._url.protocol != 'file'
 		) {
 			this._url.username = username;
-			this.setAttributeNS(null, 'href', this._url.toString());
+			this.setAttribute('href', this._url.toString());
 		}
 	}
 
@@ -191,7 +191,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 			this._url.protocol != 'file'
 		) {
 			this._url.password = password;
-			this.setAttributeNS(null, 'href', this._url.toString());
+			this.setAttribute('href', this._url.toString());
 		}
 	}
 
@@ -212,7 +212,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	public set pathname(pathname: string) {
 		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.pathname = pathname;
-			this.setAttributeNS(null, 'href', this._url.toString());
+			this.setAttribute('href', this._url.toString());
 		}
 	}
 
@@ -238,7 +238,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 			this._url.protocol != 'file'
 		) {
 			this._url.port = port;
-			this.setAttributeNS(null, 'href', this._url.toString());
+			this.setAttribute('href', this._url.toString());
 		}
 	}
 
@@ -259,7 +259,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	public set host(host: string) {
 		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.host = host;
-			this.setAttributeNS(null, 'href', this._url.toString());
+			this.setAttribute('href', this._url.toString());
 		}
 	}
 
@@ -280,7 +280,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	public set hostname(hostname: string) {
 		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.hostname = hostname;
-			this.setAttributeNS(null, 'href', this._url.toString());
+			this.setAttribute('href', this._url.toString());
 		}
 	}
 
@@ -290,7 +290,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Referrer Policy.
 	 */
 	public get referrerPolicy(): string {
-		return this.getAttributeNS(null, 'referrerPolicy') || '';
+		return this.getAttribute('referrerPolicy') || '';
 	}
 
 	/**
@@ -299,7 +299,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param referrerPolicy Referrer Policy.
 	 */
 	public set referrerPolicy(referrerPolicy: string) {
-		this.setAttributeNS(null, 'referrerPolicy', referrerPolicy);
+		this.setAttribute('referrerPolicy', referrerPolicy);
 	}
 
 	/**
@@ -308,7 +308,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Rel.
 	 */
 	public get rel(): string {
-		return this.getAttributeNS(null, 'rel') || '';
+		return this.getAttribute('rel') || '';
 	}
 
 	/**
@@ -317,7 +317,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param rel Rel.
 	 */
 	public set rel(rel: string) {
-		this.setAttributeNS(null, 'rel', rel);
+		this.setAttribute('rel', rel);
 	}
 
 	/**
@@ -349,7 +349,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	public set search(search: string) {
 		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
 			this._url.search = search;
-			this.setAttributeNS(null, 'href', this._url.toString());
+			this.setAttribute('href', this._url.toString());
 		}
 	}
 
@@ -359,7 +359,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns target.
 	 */
 	public get target(): string {
-		return this.getAttributeNS(null, 'target') || '';
+		return this.getAttribute('target') || '';
 	}
 
 	/**
@@ -368,7 +368,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param target Target.
 	 */
 	public set target(target: string) {
-		this.setAttributeNS(null, 'target', target);
+		this.setAttribute('target', target);
 	}
 
 	/**
@@ -395,7 +395,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Type.
 	 */
 	public get type(): string {
-		return this.getAttributeNS(null, 'type') || '';
+		return this.getAttribute('type') || '';
 	}
 
 	/**
@@ -404,7 +404,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param type Type.
 	 */
 	public set type(type: string) {
-		this.setAttributeNS(null, 'type', type);
+		this.setAttribute('type', type);
 	}
 
 	/**

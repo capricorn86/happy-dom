@@ -2,7 +2,7 @@ import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration';
 import IDocument from '../../src/nodes/document/IDocument';
 import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement';
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
-import ResourceFetchHandler from '../../src/fetch/ResourceFetchHandler';
+import ResourceFetch from '../../src/fetch/ResourceFetch';
 import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement';
 import Window from '../../src/window/Window';
 import IWindow from '../../src/window/IWindow';
@@ -12,7 +12,13 @@ import Selection from '../../src/selection/Selection';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import CustomElement from '../../test/CustomElement';
-import { URL } from 'url';
+import Request from '../../src/fetch/Request';
+import Response from '../../src/fetch/Response';
+import IRequest from '../../src/fetch/types/IRequest';
+import IResponse from '../../src/fetch/types/IResponse';
+import Fetch from '../../src/fetch/Fetch';
+import HTTP from 'http';
+import Stream from 'stream';
 import MessageEvent from '../../src/event/events/MessageEvent';
 
 describe('Window', () => {
@@ -26,14 +32,15 @@ describe('Window', () => {
 	});
 
 	afterEach(() => {
-		mockedModules.reset();
+		resetMockedModules();
 		jest.restoreAllMocks();
 	});
 
 	describe('constructor()', () => {
 		it('Is able to handle multiple instances of Window', () => {
-			const secondWindow = new Window();
-			const thirdWindow = new Window();
+			const firstWindow = new Window({ url: 'https://localhost:8080' });
+			const secondWindow = new Window({ url: 'https://localhost:8080' });
+			const thirdWindow = new Window({ url: 'https://localhost:8080' });
 
 			for (const className of [
 				'Response',
@@ -43,37 +50,38 @@ describe('Window', () => {
 				'DOMParser',
 				'Range'
 			]) {
-				const thirdInstance = new thirdWindow[className]();
-				const firstInstance = new window[className]();
-				const secondInstance = new secondWindow[className]();
+				const input = className === 'Request' ? 'test' : undefined;
+				const thirdInstance = new thirdWindow[className](input);
+				const firstInstance = new firstWindow[className](input);
+				const secondInstance = new secondWindow[className](input);
 				const property = className === 'Image' ? 'ownerDocument' : '_ownerDocument';
 
-				expect(firstInstance[property] === window.document).toBe(true);
+				expect(firstInstance[property] === firstWindow.document).toBe(true);
 				expect(secondInstance[property] === secondWindow.document).toBe(true);
 				expect(thirdInstance[property] === thirdWindow.document).toBe(true);
 			}
 
 			const thirdElement = thirdWindow.document.createElement('div');
-			const firstElement = window.document.createElement('div');
+			const firstElement = firstWindow.document.createElement('div');
 			const secondElement = secondWindow.document.createElement('div');
 
-			expect(firstElement.ownerDocument === window.document).toBe(true);
+			expect(firstElement.ownerDocument === firstWindow.document).toBe(true);
 			expect(secondElement.ownerDocument === secondWindow.document).toBe(true);
 			expect(thirdElement.ownerDocument === thirdWindow.document).toBe(true);
 
 			const thirdText = thirdWindow.document.createTextNode('Test');
-			const firstText = window.document.createTextNode('Test');
+			const firstText = firstWindow.document.createTextNode('Test');
 			const secondText = secondWindow.document.createTextNode('Test');
 
-			expect(firstText.ownerDocument === window.document).toBe(true);
+			expect(firstText.ownerDocument === firstWindow.document).toBe(true);
 			expect(secondText.ownerDocument === secondWindow.document).toBe(true);
 			expect(thirdText.ownerDocument === thirdWindow.document).toBe(true);
 
 			const thirdComment = thirdWindow.document.createComment('Test');
-			const firstComment = window.document.createComment('Test');
+			const firstComment = firstWindow.document.createComment('Test');
 			const secondComment = secondWindow.document.createComment('Test');
 
-			expect(firstComment.ownerDocument === window.document).toBe(true);
+			expect(firstComment.ownerDocument === firstWindow.document).toBe(true);
 			expect(secondComment.ownerDocument === secondWindow.document).toBe(true);
 			expect(thirdComment.ownerDocument === thirdWindow.document).toBe(true);
 		});
@@ -149,32 +157,18 @@ describe('Window', () => {
 
 	describe('get Response()', () => {
 		it('Returns Response class.', () => {
-			expect(window.Response['_ownerDocument']).toBe(document);
-			expect(window.Response.name).toBe('Response');
+			const response = new window.Response();
+			expect(response instanceof Response).toBe(true);
+			expect(response['_ownerDocument']).toBe(document);
 		});
-
-		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
-			it(`Handles the "${method}" method with the async task manager.`, async () => {
-				const response = new window.Response();
-				const result = await response[method]();
-				expect(result).toBe(mockedModules.modules['node-fetch'].returnValue.response[method]);
-			});
-		}
 	});
 
 	describe('get Request()', () => {
 		it('Returns Request class.', () => {
-			expect(window.Request['_ownerDocument']).toBe(document);
-			expect(window.Request.name).toBe('Request');
+			const request = new window.Request('https://localhost:8080/test/page/');
+			expect(request instanceof Request).toBe(true);
+			expect(request['_ownerDocument']).toBe(document);
 		});
-
-		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
-			it(`Handles the "${method}" method with the async task manager.`, async () => {
-				const request = new window.Request('test');
-				const result = await request[method]();
-				expect(result).toBe(mockedModules.modules['node-fetch'].returnValue.response[method]);
-			});
-		}
 	});
 
 	describe('get performance()', () => {
@@ -532,106 +526,60 @@ describe('Window', () => {
 	});
 
 	describe('fetch()', () => {
-		for (const method of ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted']) {
-			it(`Handles successful "${method}" request.`, async () => {
-				window.location.href = 'https://localhost:8080';
-				document.cookie = 'name1=value1';
-				document.cookie = 'name2=value2';
+		it(`Forwards the request to Fetch and calls Fetch.send().`, async () => {
+			const expectedURL = 'https://localhost:8080/path/';
+			const expectedResponse = <IResponse>{};
+			const requestInit = {
+				method: 'PUT',
+				headers: {
+					'test-header': 'test-value'
+				}
+			};
+			let request: IRequest = null;
 
-				const expectedUrl = 'https://localhost:8080/path/';
-				const expectedOptions = {
-					method: 'PUT',
-					headers: {
-						'test-header': 'test-value'
-					}
-				};
-				const response = await window.fetch(expectedUrl, expectedOptions);
-				const result = await response[method]();
-
-				expect(mockedModules.modules['node-fetch'].parameters.init).toEqual({
-					...expectedOptions,
-					headers: {
-						...expectedOptions.headers,
-						'user-agent': window.navigator.userAgent,
-						'set-cookie': 'name1=value1; name2=value2',
-						referer: window.location.origin
-					}
-				});
-				expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedUrl);
-				expect(result).toEqual(mockedModules.modules['node-fetch'].returnValue.response[method]);
+			jest.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = this.request;
+				return Promise.resolve(expectedResponse);
 			});
-		}
 
-		it('Handles relative URL.', async () => {
-			const expectedPath = '/path/';
+			const response = await window.fetch(expectedURL, requestInit);
 
-			window.location.href = 'https://localhost:8080';
-
-			const response = await window.fetch(expectedPath);
-			const textResponse = await response.text();
-
-			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(
-				'https://localhost:8080' + expectedPath
-			);
-
-			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
-		});
-
-		it('Handles URL object.', async () => {
-			const expectedURL = 'https://localhost:8080/path/';
-
-			window.location.href = 'https://localhost:8080';
-
-			const response = await window.fetch(new URL(expectedURL));
-			const textResponse = await response.text();
-
-			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedURL);
-
-			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
-		});
-
-		it('Handles Request object with absolute URL.', async () => {
-			const expectedURL = 'https://localhost:8080/path/';
-
-			window.location.href = 'https://localhost:8080';
-
-			const response = await window.fetch(new window.Request(expectedURL));
-			const textResponse = await response.text();
-
-			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(expectedURL);
-
-			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
-		});
-
-		it('Handles Request object with relative URL.', async () => {
-			const expectedPath = '/path/';
-
-			window.location.href = 'https://localhost:8080';
-
-			const response = await window.fetch(new window.Request(expectedPath));
-			const textResponse = await response.text();
-
-			expect(mockedModules.modules['node-fetch'].parameters.url).toBe(
-				'https://localhost:8080' + expectedPath
-			);
-
-			expect(textResponse).toEqual(mockedModules.modules['node-fetch'].returnValue.response.text);
-		});
-
-		it('Handles error JSON request.', async () => {
-			mockedModules.modules['node-fetch'].returnValue.error = new Error('error');
-			window.location.href = 'https://localhost:8080';
-
-			try {
-				await window.fetch('/url/');
-			} catch (error) {
-				expect(error).toBe(mockedModules.modules['node-fetch'].returnValue.error);
-			}
+			expect(response).toBe(expectedResponse);
+			expect(request.url).toBe(expectedURL);
+			expect(request.headers.get('test-header')).toBe('test-value');
 		});
 	});
 
 	describe('happyDOM.whenAsyncComplete()', () => {
 		it('Resolves the Promise returned by whenAsyncComplete() when all async tasks has been completed.', async () => {
+			const responseText = '{ "test": "test" }';
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = '';
+								response.headers = {
+									'content-length': '0'
+								};
+								response.rawHeaders = ['content-length', '0'];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
 			window.location.href = 'https://localhost:8080';
 			let isFirstWhenAsyncCompleteCalled = false;
 			window.happyDOM.whenAsyncComplete().then(() => {
@@ -831,7 +779,7 @@ describe('Window', () => {
 			let loadEvent = null;
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (document: IDocument, url: string) => {
 					if (url.endsWith('.css')) {
 						resourceFetchCSSDocument = document;
@@ -880,7 +828,7 @@ describe('Window', () => {
 			const errorEvents = [];
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (_document: IDocument, url: string) => {
 					throw new Error(url);
 				});

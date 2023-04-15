@@ -1,10 +1,9 @@
 import INodeList from './INodeList';
-import INode from './INode';
 
 /**
  * Class list.
  */
-export default class NodeList extends Array implements INodeList<INode> {
+export default class NodeList<T> extends Array implements INodeList<T> {
 	/**
 	 * Returns `Symbol.toStringTag`.
 	 *
@@ -19,7 +18,7 @@ export default class NodeList extends Array implements INodeList<INode> {
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): INode {
+	public item(index: number): T {
 		return index >= 0 && this[index] ? this[index] : null;
 	}
 }

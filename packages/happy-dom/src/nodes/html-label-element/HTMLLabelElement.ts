@@ -16,7 +16,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 * @returns ID of the labeled control.
 	 */
 	public get htmlFor(): string {
-		const htmlFor = this.getAttributeNS(null, 'for');
+		const htmlFor = this.getAttribute('for');
 		if (htmlFor !== null) {
 			return htmlFor;
 		}
@@ -29,7 +29,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 * @param htmlFor ID of the labeled control.
 	 */
 	public set htmlFor(htmlFor: string) {
-		this.setAttributeNS(null, 'for', htmlFor);
+		this.setAttribute('for', htmlFor);
 	}
 
 	/**
@@ -56,11 +56,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		let parent = <IHTMLElement>this.parentNode;
-		while (parent && parent.tagName !== 'FORM') {
-			parent = <IHTMLElement>parent.parentNode;
-		}
-		return <IHTMLFormElement>parent;
+		return <IHTMLFormElement>this._formNode;
 	}
 
 	/**

@@ -181,7 +181,11 @@ export default class TreeWalker {
 
 		if (mask && (this.whatToShow & mask) == 0) {
 			return NodeFilter.FILTER_SKIP;
-		} else if (this.filter) {
+		}
+		if (typeof this.filter === 'function') {
+			return this.filter(node);
+		}
+		if (this.filter) {
 			return this.filter.acceptNode(node);
 		}
 
