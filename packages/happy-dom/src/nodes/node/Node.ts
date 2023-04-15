@@ -541,22 +541,22 @@ export default class Node extends EventTarget implements INode {
 	public override dispatchEvent(event: Event): boolean {
 		// Capture phase
 		if (!event._target) {
-			event._target = this;
-			event.eventPhase = EventPhaseEnum.capturing;
-
 			const captureEventListenerNodes = this.ownerDocument
 				? <{ [eventType: string]: INode[] }>this.ownerDocument['_captureEventListenerNodes']
 				: <{ [eventType: string]: INode[] }>this['_captureEventListenerNodes'];
 
 			if (captureEventListenerNodes[event.type]) {
+				event._target = this;
+				event.eventPhase = EventPhaseEnum.capturing;
+
 				for (const node of captureEventListenerNodes[event.type]) {
 					if (node !== this && NodeUtility.contains(node, this, event.composed)) {
 						node.dispatchEvent(event);
 					}
 				}
-			}
 
-			event.eventPhase = EventPhaseEnum.atTarget;
+				event.eventPhase = EventPhaseEnum.atTarget;
+			}
 		}
 
 		const returnValue = super.dispatchEvent(event);
