@@ -40,6 +40,8 @@ export default class DOMParser {
 		const ownerDocument = this._ownerDocument;
 		const newDocument = this._createDocument(mimeType);
 
+		newDocument['_disableInsertParentValidation'] = true;
+
 		(<IWindow>newDocument.defaultView) = ownerDocument.defaultView;
 		newDocument.childNodes.length = 0;
 		newDocument.children.length = 0;
@@ -84,6 +86,8 @@ export default class DOMParser {
 				bodyElement.appendChild(node);
 			}
 		}
+
+		newDocument['_disableInsertParentValidation'] = false;
 
 		return newDocument;
 	}

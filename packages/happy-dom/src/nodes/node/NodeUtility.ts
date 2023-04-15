@@ -54,6 +54,27 @@ export default class NodeUtility {
 	}
 
 	/**
+	 * Returns "true" if this node contains the other node.
+	 *
+	 * @param parentNode Parent node.
+	 * @param childNode Child node.
+	 * @returns "true" if this node contains the other node.
+	 */
+	public static isParentOfNode(parentNode: INode, childNode: INode): boolean {
+		if (childNode.isConnected !== parentNode.isConnected || !parentNode.childNodes.length) {
+			return false;
+		}
+		let parent = childNode.parentNode;
+		while (parent) {
+			if (parent === parentNode) {
+				return true;
+			}
+			parent = parent.parentNode;
+		}
+		return false;
+	}
+
+	/**
 	 * Returns boolean indicating if nodeB is an inclusive ancestor of nodeA.
 	 *
 	 * Based on:

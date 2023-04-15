@@ -6,6 +6,9 @@ import IDocument from '../document/IDocument';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import IHTMLElement from '../html-element/IHTMLElement';
 import Element from './Element';
+import NodeUtility from '../node/NodeUtility';
+import DOMException from '../../exception/DOMException';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 
 const NAMED_ITEM_ATTRIBUTES = ['id', 'name'];
 
@@ -23,6 +26,16 @@ export default class ElementUtility {
 		parentElement: IElement | IDocument | IDocumentFragment,
 		node: INode
 	): void {
+		if (
+			!(parentElement.ownerDocument || parentElement)['_disableInsertParentValidation'] &&
+			NodeUtility.isParentOfNode(node, parentElement)
+		) {
+			throw new DOMException(
+				"Failed to execute 'appendChild' on 'Node': The new child element contains the parent.",
+				DOMExceptionNameEnum.domException
+			);
+		}
+
 		if (node.nodeType === NodeTypeEnum.elementNode && node !== parentElement) {
 			if (node.parentNode && (<IHTMLElement>node.parentNode).children) {
 				const index = (<IHTMLElement>node.parentNode).children.indexOf(<IHTMLElement>node);
@@ -91,6 +104,16 @@ export default class ElementUtility {
 		newNode: INode,
 		referenceNode: INode | null
 	): void {
+		if (
+			!(parentElement.ownerDocument || parentElement)['_disableInsertParentValidation'] &&
+			NodeUtility.isParentOfNode(newNode, parentElement)
+		) {
+			throw new DOMException(
+				"Failed to execute 'insertBefore' on 'Node': The new child element contains the parent.",
+				DOMExceptionNameEnum.domException
+			);
+		}
+
 		if (newNode.nodeType === NodeTypeEnum.elementNode) {
 			if (newNode.parentNode && (<IHTMLElement>newNode.parentNode).children) {
 				const index = (<IHTMLElement>newNode.parentNode).children.indexOf(<IHTMLElement>newNode);

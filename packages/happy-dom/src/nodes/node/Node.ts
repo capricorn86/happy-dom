@@ -313,15 +313,14 @@ export default class Node extends EventTarget implements INode {
 		if (node === this) {
 			throw new DOMException('Not possible to append a node as a child of itself.');
 		}
-		let parent = this.parentNode;
-		while (parent) {
-			if (parent === node) {
-				throw new DOMException(
-					"Failed to execute 'appendChild' on 'Node': The new child element contains the parent.",
-					DOMExceptionNameEnum.domException
-				);
-			}
-			parent = parent.parentNode;
+		if (
+			!(this.ownerDocument || this)['_disableInsertParentValidation'] &&
+			NodeUtility.isParentOfNode(node, this)
+		) {
+			throw new DOMException(
+				"Failed to execute 'appendChild' on 'Node': The new child element contains the parent.",
+				DOMExceptionNameEnum.domException
+			);
 		}
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -416,6 +415,16 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode: INode | null): INode {
+		if (
+			!(this.ownerDocument || this)['_disableInsertParentValidation'] &&
+			NodeUtility.isParentOfNode(newNode, this)
+		) {
+			throw new DOMException(
+				"Failed to execute 'insertBefore' on 'Node': The new child element contains the parent.",
+				DOMExceptionNameEnum.domException
+			);
+		}
+
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {

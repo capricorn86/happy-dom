@@ -33,6 +33,8 @@ export default class ChildNodeUtility {
 			throw new DOMException('This element has no parent node.');
 		}
 
+		(parent.ownerDocument || parent)['_disableInsertParentValidation'] = true;
+
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = XMLParser.parse(
@@ -48,6 +50,8 @@ export default class ChildNodeUtility {
 		}
 
 		parent.removeChild(childNode);
+
+		(parent.ownerDocument || parent)['_disableInsertParentValidation'] = false;
 	}
 
 	/**
@@ -63,6 +67,8 @@ export default class ChildNodeUtility {
 			return;
 		}
 
+		(parent.ownerDocument || parent)['_disableInsertParentValidation'] = true;
+
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = XMLParser.parse(
@@ -76,6 +82,8 @@ export default class ChildNodeUtility {
 				parent.insertBefore(node, childNode);
 			}
 		}
+
+		(parent.ownerDocument || parent)['_disableInsertParentValidation'] = false;
 	}
 
 	/**
@@ -92,6 +100,8 @@ export default class ChildNodeUtility {
 		}
 
 		const nextSibling = childNode.nextSibling;
+
+		(parent.ownerDocument || parent)['_disableInsertParentValidation'] = true;
 
 		for (const node of nodes) {
 			if (typeof node === 'string') {
@@ -112,5 +122,7 @@ export default class ChildNodeUtility {
 				parent.insertBefore(node, nextSibling);
 			}
 		}
+
+		(parent.ownerDocument || parent)['_disableInsertParentValidation'] = false;
 	}
 }

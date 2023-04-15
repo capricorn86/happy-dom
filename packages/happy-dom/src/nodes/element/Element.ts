@@ -202,7 +202,9 @@ export default class Element extends Node implements IElement {
 			this.removeChild(child);
 		}
 		if (textContent) {
+			this.ownerDocument['_disableInsertParentValidation'] = true;
 			this.appendChild(this.ownerDocument.createTextNode(textContent));
+			this.ownerDocument['_disableInsertParentValidation'] = false;
 		}
 	}
 
@@ -225,9 +227,11 @@ export default class Element extends Node implements IElement {
 			this.removeChild(child);
 		}
 
+		this.ownerDocument['_disableInsertParentValidation'] = true;
 		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
 			this.appendChild(node);
 		}
+		this.ownerDocument['_disableInsertParentValidation'] = false;
 	}
 
 	/**
@@ -370,7 +374,10 @@ export default class Element extends Node implements IElement {
 	 */
 	public override appendChild(node: INode): INode {
 		ElementUtility.appendChild(this, node);
-		return super.appendChild(node);
+		this.ownerDocument['_disableInsertParentValidation'] = true;
+		super.appendChild(node);
+		this.ownerDocument['_disableInsertParentValidation'] = false;
+		return node;
 	}
 
 	/**
@@ -386,7 +393,10 @@ export default class Element extends Node implements IElement {
 	 */
 	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
 		ElementUtility.insertBefore(this, newNode, referenceNode);
-		return super.insertBefore(newNode, referenceNode);
+		this.ownerDocument['_disableInsertParentValidation'] = true;
+		super.insertBefore(newNode, referenceNode);
+		this.ownerDocument['_disableInsertParentValidation'] = false;
+		return newNode;
 	}
 
 	/**

@@ -423,12 +423,14 @@ describe('Node', () => {
 			expect(div.innerHTML).toBe('<div>Div</div><span>Span</span>');
 		});
 
-		it('Throws an error if the append node is the parentNode of the current node.', () => {
+		it('Throws an error if the node to append is the parent of the current node.', () => {
 			const parent = document.createElement('div');
-			const child = document.createElement('div');
-			parent.appendChild(child);
+			const child1 = document.createElement('div');
+			const child2 = document.createElement('div');
+			child1.appendChild(child2);
+			parent.appendChild(child1);
 			try {
-				child.appendChild(parent);
+				child2.appendChild(parent);
 			} catch (error) {
 				expect(error).toEqual(
 					new DOMException(
@@ -547,6 +549,26 @@ describe('Node', () => {
 			expect(() => parent.insertBefore(newNode, referenceNode)).toThrow(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
+		});
+
+		it('Throws an error if the node to insert is the parent of the current node.', () => {
+			const parent = document.createElement('div');
+			const child1 = document.createElement('div');
+			const child2 = document.createElement('div');
+
+			child1.appendChild(child2);
+			parent.appendChild(child1);
+
+			try {
+				child2.insertBefore(parent, null);
+			} catch (error) {
+				expect(error).toEqual(
+					new DOMException(
+						"Failed to execute 'insertBefore' on 'Node': The new child element contains the parent.",
+						DOMExceptionNameEnum.domException
+					)
+				);
+			}
 		});
 	});
 

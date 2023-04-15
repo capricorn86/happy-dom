@@ -145,12 +145,14 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		const texts = text.split(/[\n\r]/);
 
+		this.ownerDocument['_disableInsertParentValidation'] = true;
 		for (let i = 0, max = texts.length; i < max; i++) {
 			if (i !== 0) {
 				this.appendChild(this.ownerDocument.createElement('br'));
 			}
 			this.appendChild(this.ownerDocument.createTextNode(texts[i]));
 		}
+		this.ownerDocument['_disableInsertParentValidation'] = false;
 	}
 
 	/**
@@ -178,6 +180,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		const texts = text.split(/[\n\r]/);
 
+		this.ownerDocument['_disableInsertParentValidation'] = true;
+
 		for (let i = 0, max = texts.length; i < max; i++) {
 			if (i !== 0) {
 				this.parentNode.insertBefore(this.ownerDocument.createElement('br'), this);
@@ -186,6 +190,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		}
 
 		this.parentNode.removeChild(this);
+
+		this.ownerDocument['_disableInsertParentValidation'] = false;
 	}
 
 	/**

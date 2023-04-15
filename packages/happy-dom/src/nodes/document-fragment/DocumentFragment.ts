@@ -69,7 +69,9 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 			this.removeChild(child);
 		}
 		if (textContent) {
+			this.ownerDocument['_disableInsertParentValidation'] = true;
 			this.appendChild(this.ownerDocument.createTextNode(textContent));
+			this.ownerDocument['_disableInsertParentValidation'] = false;
 		}
 	}
 
@@ -154,24 +156,30 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	/**
 	 * @override
 	 */
-	public appendChild(node: INode): INode {
+	public override appendChild(node: INode): INode {
 		ElementUtility.appendChild(this, node);
-		return super.appendChild(<INode>node);
+		this.ownerDocument['_disableInsertParentValidation'] = true;
+		super.appendChild(node);
+		this.ownerDocument['_disableInsertParentValidation'] = false;
+		return node;
 	}
 
 	/**
 	 * @override
 	 */
-	public removeChild(node: INode): INode {
+	public override removeChild(node: INode): INode {
 		ElementUtility.removeChild(this, node);
-		return super.removeChild(<Node>node);
+		return super.removeChild(node);
 	}
 
 	/**
 	 * @override
 	 */
-	public insertBefore(newNode: INode, referenceNode?: INode): INode {
+	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
 		ElementUtility.insertBefore(this, newNode, referenceNode);
-		return super.insertBefore(newNode, referenceNode);
+		this.ownerDocument['_disableInsertParentValidation'] = true;
+		super.insertBefore(newNode, referenceNode);
+		this.ownerDocument['_disableInsertParentValidation'] = false;
+		return newNode;
 	}
 }
