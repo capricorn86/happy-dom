@@ -636,6 +636,47 @@ describe('Node', () => {
 			expect(parentEvent).toBe(event);
 		});
 
+		it('Supports capture events that are not bubbles.', () => {
+			const parent = document.createElement('div');
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+
+			child1.appendChild(child2);
+			parent.appendChild(child1);
+
+			const event = new Event('blur', { bubbles: false, cancelable: true });
+			const parentEvents = [];
+			const child1Events = [];
+			const child2Events = [];
+
+			parent.addEventListener(
+				'blur',
+				(event) => {
+					expect(event.eventPhase).toBe(EventPhaseEnum.capturing);
+					parentEvents.push(event);
+				},
+				true
+			);
+
+			child1.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.bubbling);
+				child1Events.push(event);
+			});
+
+			child2.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.atTarget);
+				child2Events.push(event);
+			});
+
+			child2.dispatchEvent(event);
+
+			expect(child1Events.length).toBe(0);
+			expect(child2Events.length).toBe(1);
+			expect(child2Events[0] === event).toBe(true);
+			expect(parentEvents.length).toBe(1);
+			expect(parentEvents[0] === event).toBe(true);
+		});
+
 		it('Supports capture events that bubbles.', () => {
 			const parent = document.createElement('div');
 			const child1 = document.createElement('span');
@@ -668,7 +709,6 @@ describe('Node', () => {
 				child2Events.push(event);
 			});
 
-			debugger;
 			child2.dispatchEvent(event);
 
 			expect(child1Events.length).toBe(1);
@@ -677,6 +717,49 @@ describe('Node', () => {
 			expect(child2Events[0] === event).toBe(true);
 			expect(parentEvents.length).toBe(1);
 			expect(parentEvents[0] === event).toBe(true);
+		});
+
+		it('Supports capture events on document simulating what Test Library is doing when listenening to "blur" and "focus".', () => {
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+
+			child1.appendChild(child2);
+			document.body.appendChild(child1);
+
+			const event = new Event('blur', { bubbles: false, composed: true });
+			const documentEvents = [];
+			const child1Events = [];
+			const child2Events = [];
+
+			document.addEventListener(
+				'blur',
+				(event) => {
+					expect(event.eventPhase).toBe(EventPhaseEnum.capturing);
+					documentEvents.push(event);
+				},
+				{
+					capture: true,
+					passive: true
+				}
+			);
+
+			child1.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.bubbling);
+				child1Events.push(event);
+			});
+
+			child2.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.atTarget);
+				child2Events.push(event);
+			});
+
+			child2.dispatchEvent(event);
+
+			expect(child1Events.length).toBe(0);
+			expect(child2Events.length).toBe(1);
+			expect(child2Events[0] === event).toBe(true);
+			expect(documentEvents.length).toBe(1);
+			expect(documentEvents[0] === event).toBe(true);
 		});
 	});
 

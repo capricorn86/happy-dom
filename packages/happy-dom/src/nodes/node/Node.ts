@@ -541,6 +541,7 @@ export default class Node extends EventTarget implements INode {
 	public override dispatchEvent(event: Event): boolean {
 		// Capture phase
 		if (!event._target) {
+			event._target = this;
 			event.eventPhase = EventPhaseEnum.capturing;
 
 			const captureEventListenerNodes = this.ownerDocument
@@ -554,6 +555,8 @@ export default class Node extends EventTarget implements INode {
 					}
 				}
 			}
+
+			event.eventPhase = EventPhaseEnum.atTarget;
 		}
 
 		const returnValue = super.dispatchEvent(event);
