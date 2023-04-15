@@ -62,7 +62,7 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 
 				if (this._namedItems[name].length === 0) {
 					delete this._namedItems[name];
-					if (this._isValidPropertyName(name)) {
+					if (this[name] && this._isValidPropertyName(name)) {
 						delete this[name];
 					}
 				} else if (this._isValidPropertyName(name)) {

@@ -93,7 +93,7 @@ export default class HTMLFormControlsCollection
 
 				if (this._namedItems[name].length === 0) {
 					delete this._namedItems[name];
-					if (this._isValidPropertyName(name)) {
+					if (this[name] && this._isValidPropertyName(name)) {
 						delete this[name];
 					}
 				} else if (this._isValidPropertyName(name)) {
