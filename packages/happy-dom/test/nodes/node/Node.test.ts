@@ -297,6 +297,12 @@ describe('Node', () => {
 
 			expect(div.contains(text)).toBe(true);
 		});
+
+		it('Returns "false" if match node is null.', () => {
+			const div = document.createElement('div');
+
+			expect(div.contains(null)).toBe(false);
+		});
 	});
 
 	describe('getRootNode()', () => {

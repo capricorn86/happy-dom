@@ -30,7 +30,15 @@ export default class NodeUtility {
 	 * @param [includeShadowRoots = false] Include shadow roots.
 	 * @returns "true" if this node contains the other node.
 	 */
-	public static contains(rootNode: INode, otherNode: INode, includeShadowRoots = false): boolean {
+	public static contains(
+		rootNode: INode,
+		otherNode: INode | null,
+		includeShadowRoots = false
+	): boolean {
+		if (otherNode === null) {
+			return false;
+		}
+
 		if (rootNode === otherNode) {
 			return true;
 		}
