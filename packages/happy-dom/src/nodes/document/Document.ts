@@ -964,19 +964,6 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
-	 * @override
-	 */
-	public dispatchEvent(event: Event): boolean {
-		const returnValue = super.dispatchEvent(event);
-
-		if (event.bubbles && !event._propagationStopped) {
-			return this.defaultView.dispatchEvent(event);
-		}
-
-		return returnValue;
-	}
-
-	/**
 	 * Triggered by window when it is ready.
 	 */
 	public _onWindowReady(): void {

@@ -1,4 +1,5 @@
 import Event from '../../event/Event';
+import EventPhaseEnum from '../../event/EventPhaseEnum';
 import ValidityState from '../../validity-state/ValidityState';
 import IAttr from '../attr/IAttr';
 import IDocument from '../document/IDocument';
@@ -210,13 +211,19 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
-		if (event.type === 'click' && this.disabled) {
+		if (event.type === 'click' && event.eventPhase === EventPhaseEnum.none && this.disabled) {
 			return false;
 		}
 
 		const returnValue = super.dispatchEvent(event);
 
-		if (event.type === 'click' && this._formNode && this.isConnected) {
+		if (
+			event.type === 'click' &&
+			(event.eventPhase === EventPhaseEnum.atTarget ||
+				event.eventPhase === EventPhaseEnum.bubbling) &&
+			this._formNode &&
+			this.isConnected
+		) {
 			const form = <IHTMLFormElement>this._formNode;
 			switch (this.type) {
 				case 'submit':

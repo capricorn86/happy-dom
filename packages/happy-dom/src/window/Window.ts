@@ -393,13 +393,6 @@ export default class Window extends EventTarget implements IWindow {
 	public Object;
 	public Function;
 
-	// Public internal properties
-
-	// Keeps count of the number of event listeners that are using the "capture" option for performance reasons.
-	public readonly _captureEventListenerCount: {
-		[eventType: string]: number;
-	} = {};
-
 	// Private properties
 	private _setTimeout;
 	private _clearTimeout;

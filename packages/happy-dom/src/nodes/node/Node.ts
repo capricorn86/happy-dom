@@ -2,7 +2,6 @@ import EventTarget from '../../event/EventTarget';
 import MutationRecord from '../../mutation-observer/MutationRecord';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
 import MutationListener from '../../mutation-observer/MutationListener';
-import Event from '../../event/Event';
 import INode from './INode';
 import DOMException from '../../exception/DOMException';
 import IDocument from '../document/IDocument';
@@ -14,10 +13,6 @@ import NodeUtility from './NodeUtility';
 import IAttr from '../attr/IAttr';
 import NodeList from './NodeList';
 import INodeList from './INodeList';
-import IShadowRoot from '../shadow-root/IShadowRoot';
-import IEventListener from '../../event/IEventListener';
-import IEventListenerOptions from '../../event/IEventListenerOptions';
-import EventPhaseEnum from '../../event/EventPhaseEnum';
 
 const JSON_CIRCULAR_PROPERTIES = [
 	'ownerDocument',
@@ -82,7 +77,6 @@ export default class Node extends EventTarget implements INode {
 	public _selectNode: INode = null;
 	public _textAreaNode: INode = null;
 	public _observers: MutationListener[] = [];
-	public _passiveEventListenerCount = 0;
 
 	/**
 	 * Constructor.
@@ -480,109 +474,6 @@ export default class Node extends EventTarget implements INode {
 		this.removeChild(oldChild);
 
 		return oldChild;
-	}
-
-	/**
-	 * @override
-	 */
-	public override addEventListener(
-		type: string,
-		listener: ((event: Event) => void) | IEventListener,
-		options?: boolean | IEventListenerOptions
-	): void {
-		super.addEventListener(type, listener, options);
-
-		// We are setting the count of capture event listeners on the document for performance reasons.
-		if (options === true || (options && options.capture)) {
-			const captureEventListenerCount = this.ownerDocument
-				? <{ [eventType: string]: number }>(
-						this.ownerDocument.defaultView['_captureEventListenerCount']
-				  )
-				: <{ [eventType: string]: number }>this.defaultView['_captureEventListenerCount'];
-
-			captureEventListenerCount[type] = captureEventListenerCount[type] ?? 0;
-			captureEventListenerCount[type]++;
-		}
-	}
-
-	/**
-	 * Adds an event listener.
-	 *
-	 * @param type Event type.
-	 * @param listener Listener.
-	 */
-	public override removeEventListener(
-		type: string,
-		listener: ((event: Event) => void) | IEventListener
-	): void {
-		const index = this._listeners[type]?.indexOf(listener) || -1;
-		const options = index !== -1 ? this._listenerOptions[type][index] : null;
-
-		// We are setting the count of capture event listeners on the document for performance reasons.
-		if (options?.capture) {
-			const captureEventListenerCount = this.ownerDocument
-				? <{ [eventType: string]: number }>this.ownerDocument['_captureEventListenerCount']
-				: <{ [eventType: string]: number }>this['_captureEventListenerCount'];
-
-			captureEventListenerCount[type] = captureEventListenerCount[type] ?? 0;
-			captureEventListenerCount[type]--;
-		}
-
-		super.removeEventListener(type, listener);
-	}
-
-	/**
-	 * @override
-	 */
-	public override dispatchEvent(event: Event): boolean {
-		// Capture phase
-		if (!event._target) {
-			const captureEventListenerCount = this.ownerDocument
-				? <{ [eventType: string]: number }>this.ownerDocument['_captureEventListenerCount']
-				: <{ [eventType: string]: number }>this['_captureEventListenerCount'];
-
-			if (captureEventListenerCount[event.type]) {
-				event._target = this;
-				event.eventPhase = EventPhaseEnum.capturing;
-
-				const parents = [];
-				let parent = this.parentNode;
-
-				while (parent) {
-					parents.unshift(parent);
-					parent = parent.parentNode;
-				}
-
-				for (const parent of parents) {
-					parent.dispatchEvent(event);
-				}
-
-				event.eventPhase = EventPhaseEnum.atTarget;
-			}
-		}
-
-		const returnValue = super.dispatchEvent(event);
-
-		// Bubbling phase
-		if (event.bubbles && !event._propagationStopped && !event._immediatePropagationStopped) {
-			event.eventPhase = EventPhaseEnum.bubbling;
-
-			if (this.parentNode) {
-				return this.parentNode.dispatchEvent(event);
-			}
-
-			// eslint-disable-next-line
-			if (
-				event.composed &&
-				this.nodeType === NodeTypeEnum.documentFragmentNode &&
-				(<IShadowRoot>(<unknown>this)).host
-			) {
-				// eslint-disable-next-line
-				return (<IShadowRoot>(<unknown>this)).host.dispatchEvent(event);
-			}
-		}
-
-		return returnValue;
 	}
 
 	/**

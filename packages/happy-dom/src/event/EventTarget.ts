@@ -50,9 +50,6 @@ export default abstract class EventTarget implements IEventTarget {
 		if (this._listeners[type]) {
 			const index = this._listeners[type].indexOf(listener);
 			if (index !== -1) {
-				if (this._listenerOptions[type][index]?.passive) {
-					this._passiveEventListenerCount--;
-				}
 				this._listeners[type].splice(index, 1);
 				this._listenerOptions[type].splice(index, 1);
 			}
@@ -62,25 +59,59 @@ export default abstract class EventTarget implements IEventTarget {
 	/**
 	 * Dispatches an event.
 	 *
+	 * @see https://www.w3.org/TR/DOM-Level-3-Events/#event-flow
+	 * @see https://www.quirksmode.org/js/events_order.html#link4
 	 * @param event Event.
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
-		if (event.eventPhase === EventPhaseEnum.capturing && this._passiveEventListenerCount === 0) {
-			return true;
-		}
-
-		if (!event._target) {
+		if (event.eventPhase === EventPhaseEnum.none) {
 			event._target = this;
+
+			const composedPath = event.composedPath();
+
+			// Capturing phase
+
+			event.eventPhase = EventPhaseEnum.capturing;
+
+			for (let i = composedPath.length - 1; i >= 0; i--) {
+				composedPath[i].dispatchEvent(event);
+				if (event._propagationStopped || event._immediatePropagationStopped) {
+					break;
+				}
+			}
+
+			// At target phase
 			event.eventPhase = EventPhaseEnum.atTarget;
+
+			this.dispatchEvent(event);
+
+			// Bubbling phase
+			if (event.bubbles && !event._propagationStopped && !event._immediatePropagationStopped) {
+				event.eventPhase = EventPhaseEnum.bubbling;
+
+				for (let i = 1; i < composedPath.length; i++) {
+					composedPath[i].dispatchEvent(event);
+					if (event._propagationStopped || event._immediatePropagationStopped) {
+						break;
+					}
+				}
+			}
+
+			// None phase (completed)
+			event.eventPhase = EventPhaseEnum.none;
+
+			return !(event.cancelable && event.defaultPrevented);
 		}
 
 		event._currentTarget = this;
 
-		const onEventName = 'on' + event.type.toLowerCase();
+		if (event.eventPhase !== EventPhaseEnum.capturing) {
+			const onEventName = 'on' + event.type.toLowerCase();
 
-		if (typeof this[onEventName] === 'function') {
-			this[onEventName].call(this, event);
+			if (typeof this[onEventName] === 'function') {
+				this[onEventName].call(this, event);
+			}
 		}
 
 		if (this._listeners[event.type]) {
@@ -92,7 +123,10 @@ export default abstract class EventTarget implements IEventTarget {
 				const listener = listeners[i];
 				const options = listenerOptions[i];
 
-				if (options?.capture && event.eventPhase !== EventPhaseEnum.capturing) {
+				if (
+					(options?.capture && event.eventPhase !== EventPhaseEnum.capturing) ||
+					(!options?.capture && event.eventPhase === EventPhaseEnum.capturing)
+				) {
 					continue;
 				}
 
