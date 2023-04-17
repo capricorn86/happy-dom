@@ -82,6 +82,7 @@ export default class Node extends EventTarget implements INode {
 	public _selectNode: INode = null;
 	public _textAreaNode: INode = null;
 	public _observers: MutationListener[] = [];
+	public _passiveEventListenerCount = 0;
 
 	/**
 	 * Constructor.
@@ -491,16 +492,16 @@ export default class Node extends EventTarget implements INode {
 	): void {
 		super.addEventListener(type, listener, options);
 
+		// We are setting the count of capture event listeners on the document for performance reasons.
 		if (options === true || (options && options.capture)) {
-			const captureEventListenerNodes = this.ownerDocument
-				? <{ [eventType: string]: INode[] }>this.ownerDocument['_captureEventListenerNodes']
-				: <{ [eventType: string]: INode[] }>this['_captureEventListenerNodes'];
+			const captureEventListenerCount = this.ownerDocument
+				? <{ [eventType: string]: number }>(
+						this.ownerDocument.defaultView['_captureEventListenerCount']
+				  )
+				: <{ [eventType: string]: number }>this.defaultView['_captureEventListenerCount'];
 
-			captureEventListenerNodes[type] = captureEventListenerNodes[type] || [];
-
-			if (!captureEventListenerNodes[type].includes(this)) {
-				captureEventListenerNodes[type].push(this);
-			}
+			captureEventListenerCount[type] = captureEventListenerCount[type] ?? 0;
+			captureEventListenerCount[type]++;
 		}
 	}
 
@@ -517,17 +518,14 @@ export default class Node extends EventTarget implements INode {
 		const index = this._listeners[type]?.indexOf(listener) || -1;
 		const options = index !== -1 ? this._listenerOptions[type][index] : null;
 
+		// We are setting the count of capture event listeners on the document for performance reasons.
 		if (options?.capture) {
-			const captureEventListenerNodes = this.ownerDocument
-				? <{ [eventType: string]: INode[] }>this.ownerDocument['_captureEventListenerNodes']
-				: <{ [eventType: string]: INode[] }>this['_captureEventListenerNodes'];
+			const captureEventListenerCount = this.ownerDocument
+				? <{ [eventType: string]: number }>this.ownerDocument['_captureEventListenerCount']
+				: <{ [eventType: string]: number }>this['_captureEventListenerCount'];
 
-			if (captureEventListenerNodes[type]) {
-				const index = captureEventListenerNodes[type].indexOf(this);
-				if (index !== -1) {
-					captureEventListenerNodes[type].splice(index, 1);
-				}
-			}
+			captureEventListenerCount[type] = captureEventListenerCount[type] ?? 0;
+			captureEventListenerCount[type]--;
 		}
 
 		super.removeEventListener(type, listener);
@@ -539,18 +537,24 @@ export default class Node extends EventTarget implements INode {
 	public override dispatchEvent(event: Event): boolean {
 		// Capture phase
 		if (!event._target) {
-			const captureEventListenerNodes = this.ownerDocument
-				? <{ [eventType: string]: INode[] }>this.ownerDocument['_captureEventListenerNodes']
-				: <{ [eventType: string]: INode[] }>this['_captureEventListenerNodes'];
+			const captureEventListenerCount = this.ownerDocument
+				? <{ [eventType: string]: number }>this.ownerDocument['_captureEventListenerCount']
+				: <{ [eventType: string]: number }>this['_captureEventListenerCount'];
 
-			if (captureEventListenerNodes[event.type]) {
+			if (captureEventListenerCount[event.type]) {
 				event._target = this;
 				event.eventPhase = EventPhaseEnum.capturing;
 
-				for (const node of captureEventListenerNodes[event.type]) {
-					if (node !== this && NodeUtility.contains(node, this, event.composed)) {
-						node.dispatchEvent(event);
-					}
+				const parents = [];
+				let parent = this.parentNode;
+
+				while (parent) {
+					parents.unshift(parent);
+					parent = parent.parentNode;
+				}
+
+				for (const parent of parents) {
+					parent.dispatchEvent(event);
 				}
 
 				event.eventPhase = EventPhaseEnum.atTarget;

@@ -50,6 +50,9 @@ export default abstract class EventTarget implements IEventTarget {
 		if (this._listeners[type]) {
 			const index = this._listeners[type].indexOf(listener);
 			if (index !== -1) {
+				if (this._listenerOptions[type][index]?.passive) {
+					this._passiveEventListenerCount--;
+				}
 				this._listeners[type].splice(index, 1);
 				this._listenerOptions[type].splice(index, 1);
 			}
@@ -63,6 +66,10 @@ export default abstract class EventTarget implements IEventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
+		if (event.eventPhase === EventPhaseEnum.capturing && this._passiveEventListenerCount === 0) {
+			return true;
+		}
+
 		if (!event._target) {
 			event._target = this;
 			event.eventPhase = EventPhaseEnum.atTarget;
