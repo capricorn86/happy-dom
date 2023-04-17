@@ -298,6 +298,27 @@ describe('HTMLElement', () => {
 			expect(Object.keys(dataset)).toEqual(['testAlpha', 'testBeta', 'testGamma']);
 			expect(Object.values(dataset)).toEqual(['value2', 'value4', 'value5']);
 		});
+
+		// https://github.com/capricorn86/happy-dom/issues/493
+		it('Creates dataset from "innerHTML" markup.', () => {
+			const main = document.createElement('main');
+			main.innerHTML = `<button data-test="test"></button>`;
+			document.body.append(main);
+			const button = <IHTMLElement>main.querySelector('button');
+			expect(button.dataset.test).toBe('test');
+		});
+
+		// https://github.com/capricorn86/happy-dom/issues/493
+		it('Finds closest ancestor element by data attribute.', () => {
+			const main = document.createElement('main');
+			document.body.append(main);
+			const div = <IHTMLElement>document.createElement('div');
+			div.dataset.test = 'test';
+			div.innerHTML = '<button>label</button>';
+			main.append(div);
+			const button = <IHTMLElement>main.querySelector('button');
+			expect(button.closest('[data-test]')).toBe(div);
+		});
 	});
 
 	describe('get dir()', () => {
