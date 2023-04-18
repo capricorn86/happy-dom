@@ -6,7 +6,7 @@ import IElement from '../element/IElement';
 import IDocumentType from '../document-type/IDocumentType';
 import IAttr from '../attr/IAttr';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
-import IHTMLElement from '../html-element/IHTMLElement';
+import IShadowRoot from '../shadow-root/IShadowRoot';
 
 /**
  * Node utility.
@@ -23,59 +23,7 @@ export default class NodeUtility {
 	}
 
 	/**
-	 * Returns "true" if this node contains the other node.
-	 *
-	 * @param rootNode Root node.
-	 * @param otherNode Node to test with.
-	 * @param [includeShadowRoots = false] Include shadow roots.
-	 * @returns "true" if this node contains the other node.
-	 */
-	public static contains(rootNode: INode, otherNode: INode, includeShadowRoots = false): boolean {
-		if (rootNode === otherNode) {
-			return true;
-		}
-
-		if (includeShadowRoots && rootNode === otherNode.ownerDocument && otherNode.isConnected) {
-			return true;
-		}
-
-		for (const childNode of rootNode.childNodes) {
-			if (
-				childNode === otherNode ||
-				this.contains(childNode, otherNode, includeShadowRoots) ||
-				(includeShadowRoots &&
-					(<IHTMLElement>childNode).shadowRoot &&
-					(<IHTMLElement>childNode).shadowRoot.contains(otherNode))
-			) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns "true" if this node contains the other node.
-	 *
-	 * @param parentNode Parent node.
-	 * @param childNode Child node.
-	 * @returns "true" if this node contains the other node.
-	 */
-	public static isParentOfNode(parentNode: INode, childNode: INode): boolean {
-		if (childNode.isConnected !== parentNode.isConnected || !parentNode.childNodes.length) {
-			return false;
-		}
-		let parent = childNode.parentNode;
-		while (parent) {
-			if (parent === parentNode) {
-				return true;
-			}
-			parent = parent.parentNode;
-		}
-		return false;
-	}
-
-	/**
-	 * Returns boolean indicating if nodeB is an inclusive ancestor of nodeA.
+	 * Returns boolean indicating if "ancestorNode" is an inclusive ancestor of "referenceNode".
 	 *
 	 * Based on:
 	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/helpers/node.js
@@ -83,16 +31,52 @@ export default class NodeUtility {
 	 * @see https://dom.spec.whatwg.org/#concept-tree-inclusive-ancestor
 	 * @param ancestorNode Ancestor node.
 	 * @param referenceNode Reference node.
-	 * @returns "true" if following.
+	 * @param [includeShadowRoots = false] Include shadow roots.
+	 * @returns "true" if inclusive ancestor.
 	 */
-	public static isInclusiveAncestor(ancestorNode: INode, referenceNode: INode): boolean {
-		let parent: INode = referenceNode;
+	public static isInclusiveAncestor(
+		ancestorNode: INode,
+		referenceNode: INode,
+		includeShadowRoots = false
+	): boolean {
+		if (ancestorNode === null || referenceNode === null) {
+			return false;
+		}
+
+		if (ancestorNode === referenceNode) {
+			return true;
+		}
+
+		if (!ancestorNode.childNodes.length) {
+			return false;
+		}
+
+		if (includeShadowRoots && referenceNode.isConnected !== ancestorNode.isConnected) {
+			return false;
+		}
+
+		if (
+			includeShadowRoots &&
+			ancestorNode === referenceNode.ownerDocument &&
+			referenceNode.isConnected
+		) {
+			return true;
+		}
+
+		let parent: INode = referenceNode.parentNode;
+
 		while (parent) {
 			if (ancestorNode === parent) {
 				return true;
 			}
-			parent = parent.parentNode;
+
+			parent = parent.parentNode
+				? parent.parentNode
+				: includeShadowRoots && (<IShadowRoot>parent).host
+				? (<IShadowRoot>parent).host
+				: null;
 		}
+
 		return false;
 	}
 

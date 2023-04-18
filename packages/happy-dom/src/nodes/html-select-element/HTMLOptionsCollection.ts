@@ -60,9 +60,7 @@ export default class HTMLOptionsCollection
 	 */
 	public add(element: IHTMLOptionElement, before?: number | IHTMLOptionElement): void {
 		if (!before && before !== 0) {
-			this._selectElement.ownerDocument['_disableInsertParentValidation'] = true;
 			this._selectElement.appendChild(element);
-			this._selectElement.ownerDocument['_disableInsertParentValidation'] = false;
 			return;
 		}
 
@@ -71,9 +69,7 @@ export default class HTMLOptionsCollection
 				return;
 			}
 
-			this._selectElement.ownerDocument['_disableInsertParentValidation'] = true;
 			this._selectElement.insertBefore(element, this[<number>before]);
-			this._selectElement.ownerDocument['_disableInsertParentValidation'] = false;
 			return;
 		}
 
@@ -85,9 +81,7 @@ export default class HTMLOptionsCollection
 			);
 		}
 
-		this._selectElement.ownerDocument['_disableInsertParentValidation'] = true;
 		this._selectElement.insertBefore(element, this[index]);
-		this._selectElement.ownerDocument['_disableInsertParentValidation'] = false;
 	}
 
 	/**

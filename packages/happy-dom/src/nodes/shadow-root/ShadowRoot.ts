@@ -42,11 +42,9 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 			this.removeChild(child);
 		}
 
-		this.ownerDocument['_disableInsertParentValidation'] = true;
 		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
 			this.appendChild(node);
 		}
-		this.ownerDocument['_disableInsertParentValidation'] = false;
 	}
 
 	/**

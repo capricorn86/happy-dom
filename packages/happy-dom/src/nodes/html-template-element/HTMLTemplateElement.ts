@@ -29,11 +29,9 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 			this.content.removeChild(child);
 		}
 
-		this.ownerDocument['_disableInsertParentValidation'] = true;
 		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
 			this.content.appendChild(node);
 		}
-		this.ownerDocument['_disableInsertParentValidation'] = false;
 	}
 
 	/**

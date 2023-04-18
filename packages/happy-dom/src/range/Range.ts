@@ -258,14 +258,11 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public cloneContents(): IDocumentFragment {
-		this._ownerDocument['_disableInsertParentValidation'] = true;
-
 		const fragment = this._ownerDocument.createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
 
 		if (this.collapsed) {
-			this._ownerDocument['_disableInsertParentValidation'] = false;
 			return fragment;
 		}
 
@@ -278,7 +275,6 @@ export default class Range {
 			const clone = (<IText | IComment>this._start.node).cloneNode(false);
 			clone['_data'] = clone.substringData(startOffset, endOffset - startOffset);
 			fragment.appendChild(clone);
-			this._ownerDocument['_disableInsertParentValidation'] = false;
 			return fragment;
 		}
 
@@ -381,7 +377,6 @@ export default class Range {
 			clone.appendChild(subFragment);
 		}
 
-		this._ownerDocument['_disableInsertParentValidation'] = false;
 		return fragment;
 	}
 
@@ -517,13 +512,11 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public extractContents(): IDocumentFragment {
-		this._ownerDocument['_disableInsertParentValidation'] = true;
 		const fragment = this._ownerDocument.createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
 
 		if (this.collapsed) {
-			this._ownerDocument['_disableInsertParentValidation'] = false;
 			return fragment;
 		}
 
@@ -540,7 +533,6 @@ export default class Range {
 
 			(<IText | IComment>this._start.node).replaceData(startOffset, endOffset - startOffset, '');
 
-			this._ownerDocument['_disableInsertParentValidation'] = false;
 			return fragment;
 		}
 
@@ -673,8 +665,6 @@ export default class Range {
 		this._start.offset = newOffset;
 		this._end.node = newNode;
 		this._end.offset = newOffset;
-
-		this._ownerDocument['_disableInsertParentValidation'] = false;
 
 		return fragment;
 	}
@@ -982,8 +972,6 @@ export default class Range {
 	 * @param newParent New parent.
 	 */
 	public surroundContents(newParent: INode): void {
-		this._ownerDocument['_disableInsertParentValidation'] = true;
-
 		let node = this.commonAncestorContainer;
 		const endNode = NodeUtility.nextDescendantNode(node);
 		while (node !== endNode) {
@@ -1019,8 +1007,6 @@ export default class Range {
 		newParent.appendChild(fragment);
 
 		this.selectNode(newParent);
-
-		this._ownerDocument['_disableInsertParentValidation'] = false;
 	}
 
 	/**

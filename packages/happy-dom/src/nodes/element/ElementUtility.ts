@@ -26,17 +26,14 @@ export default class ElementUtility {
 		parentElement: IElement | IDocument | IDocumentFragment,
 		node: INode
 	): void {
-		if (
-			!(parentElement.ownerDocument || parentElement)['_disableInsertParentValidation'] &&
-			NodeUtility.isParentOfNode(node, parentElement)
-		) {
-			throw new DOMException(
-				"Failed to execute 'appendChild' on 'Node': The new child element contains the parent.",
-				DOMExceptionNameEnum.domException
-			);
-		}
-
 		if (node.nodeType === NodeTypeEnum.elementNode && node !== parentElement) {
+			if (NodeUtility.isInclusiveAncestor(node, parentElement)) {
+				throw new DOMException(
+					"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
+					DOMExceptionNameEnum.domException
+				);
+			}
+
 			if (node.parentNode && (<IHTMLElement>node.parentNode).children) {
 				const index = (<IHTMLElement>node.parentNode).children.indexOf(<IHTMLElement>node);
 				if (index !== -1) {
@@ -104,17 +101,14 @@ export default class ElementUtility {
 		newNode: INode,
 		referenceNode: INode | null
 	): void {
-		if (
-			!(parentElement.ownerDocument || parentElement)['_disableInsertParentValidation'] &&
-			NodeUtility.isParentOfNode(newNode, parentElement)
-		) {
-			throw new DOMException(
-				"Failed to execute 'insertBefore' on 'Node': The new child element contains the parent.",
-				DOMExceptionNameEnum.domException
-			);
-		}
-
 		if (newNode.nodeType === NodeTypeEnum.elementNode) {
+			if (NodeUtility.isInclusiveAncestor(newNode, parentElement)) {
+				throw new DOMException(
+					"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
+					DOMExceptionNameEnum.domException
+				);
+			}
+
 			if (newNode.parentNode && (<IHTMLElement>newNode.parentNode).children) {
 				const index = (<IHTMLElement>newNode.parentNode).children.indexOf(<IHTMLElement>newNode);
 				if (index !== -1) {

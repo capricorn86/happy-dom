@@ -38,8 +38,6 @@ export default class XMLParser {
 		data: string,
 		evaluateScripts = false
 	): IDocumentFragment {
-		document['_disableInsertParentValidation'] = true;
-
 		const root = document.createDocumentFragment();
 		const stack: Array<IElement | IDocumentFragment> = [root];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gi');
@@ -148,8 +146,6 @@ export default class XMLParser {
 				this.appendTextAndCommentNodes(document, parent || root, text);
 			}
 		}
-
-		document['_disableInsertParentValidation'] = false;
 
 		return root;
 	}

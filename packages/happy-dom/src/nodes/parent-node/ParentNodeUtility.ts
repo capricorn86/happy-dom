@@ -19,7 +19,6 @@ export default class ParentNodeUtility {
 	public static append(parentNode: INode, ...nodes: (INode | string)[]): void {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
-				(parentNode.ownerDocument || parentNode)['_disableInsertParentValidation'] = true;
 				const newChildNodes = XMLParser.parse(
 					<IDocument>parentNode.ownerDocument,
 					node
@@ -27,7 +26,6 @@ export default class ParentNodeUtility {
 				for (const newChildNode of newChildNodes) {
 					parentNode.appendChild(newChildNode);
 				}
-				(parentNode.ownerDocument || parentNode)['_disableInsertParentValidation'] = false;
 			} else {
 				parentNode.appendChild(node);
 			}
@@ -45,7 +43,6 @@ export default class ParentNodeUtility {
 
 		for (const node of nodes) {
 			if (typeof node === 'string') {
-				(parentNode.ownerDocument || parentNode)['_disableInsertParentValidation'] = true;
 				const newChildNodes = XMLParser.parse(
 					<IDocument>parentNode.ownerDocument,
 					node
@@ -53,7 +50,6 @@ export default class ParentNodeUtility {
 				for (const newChildNode of newChildNodes) {
 					parentNode.insertBefore(newChildNode, firstChild);
 				}
-				(parentNode.ownerDocument || parentNode)['_disableInsertParentValidation'] = false;
 			} else {
 				parentNode.insertBefore(node, firstChild);
 			}

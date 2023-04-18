@@ -76,9 +76,6 @@ export default class Document extends Node implements IDocument {
 		[eventType: string]: INode[];
 	} = {};
 
-	// When set to true, the nodes will not validate the parent of the inserted node.
-	public _disableInsertParentValidation = false;
-
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
 
@@ -212,15 +209,11 @@ export default class Document extends Node implements IDocument {
 		const bodyElement = this.createElement('body');
 		const headElement = this.createElement('head');
 
-		this._disableInsertParentValidation = true;
-
 		this.appendChild(doctype);
 		this.appendChild(documentElement);
 
 		documentElement.appendChild(headElement);
 		documentElement.appendChild(bodyElement);
-
-		this._disableInsertParentValidation = false;
 	}
 
 	/**
@@ -267,9 +260,7 @@ export default class Document extends Node implements IDocument {
 		} else {
 			const titleEl = this.createElement('title');
 			titleEl.textContent = title;
-			this._disableInsertParentValidation = true;
 			this.head.appendChild(titleEl);
-			this._disableInsertParentValidation = false;
 		}
 	}
 
@@ -637,9 +628,7 @@ export default class Document extends Node implements IDocument {
 	 */
 	public override appendChild(node: INode): INode {
 		ElementUtility.appendChild(this, node);
-		this._disableInsertParentValidation = true;
 		super.appendChild(node);
-		this._disableInsertParentValidation = false;
 		return node;
 	}
 
@@ -656,9 +645,7 @@ export default class Document extends Node implements IDocument {
 	 */
 	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
 		ElementUtility.insertBefore(this, newNode, referenceNode);
-		this._disableInsertParentValidation = true;
 		super.insertBefore(newNode, referenceNode);
-		this._disableInsertParentValidation = false;
 		return newNode;
 	}
 
@@ -694,8 +681,6 @@ export default class Document extends Node implements IDocument {
 					break;
 				}
 			}
-
-			this._disableInsertParentValidation = true;
 
 			if (documentElement) {
 				if (!this.documentElement) {
@@ -742,8 +727,6 @@ export default class Document extends Node implements IDocument {
 				this.body.appendChild(child);
 			}
 		}
-
-		this._disableInsertParentValidation = false;
 	}
 
 	/**

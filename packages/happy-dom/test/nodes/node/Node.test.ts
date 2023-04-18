@@ -434,7 +434,7 @@ describe('Node', () => {
 			} catch (error) {
 				expect(error).toEqual(
 					new DOMException(
-						"Failed to execute 'appendChild' on 'Node': The new child element contains the parent.",
+						"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
 						DOMExceptionNameEnum.domException
 					)
 				);
@@ -564,7 +564,7 @@ describe('Node', () => {
 			} catch (error) {
 				expect(error).toEqual(
 					new DOMException(
-						"Failed to execute 'insertBefore' on 'Node': The new child element contains the parent.",
+						"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
 						DOMExceptionNameEnum.domException
 					)
 				);

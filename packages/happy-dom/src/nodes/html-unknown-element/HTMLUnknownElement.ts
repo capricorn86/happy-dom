@@ -28,10 +28,8 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 				const callback = (): void => {
 					if (this.parentNode) {
 						const newElement = this.ownerDocument.createElement(tagName);
-						this.ownerDocument['_disableInsertParentValidation'] = true;
 						this.parentNode.insertBefore(newElement, this);
 						this.parentNode.removeChild(this);
-						this.ownerDocument['_disableInsertParentValidation'] = false;
 					}
 				};
 				callbacks[tagName] = callbacks[tagName] || [];

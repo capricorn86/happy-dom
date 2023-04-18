@@ -252,7 +252,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns "true" if this node contains the other node.
 	 */
 	public contains(otherNode: INode): boolean {
-		return NodeUtility.contains(this, otherNode);
+		return NodeUtility.isInclusiveAncestor(this, otherNode);
 	}
 
 	/**
@@ -313,12 +313,10 @@ export default class Node extends EventTarget implements INode {
 		if (node === this) {
 			throw new DOMException('Not possible to append a node as a child of itself.');
 		}
-		if (
-			!(this.ownerDocument || this)['_disableInsertParentValidation'] &&
-			NodeUtility.isParentOfNode(node, this)
-		) {
+
+		if (NodeUtility.isInclusiveAncestor(node, this, true)) {
 			throw new DOMException(
-				"Failed to execute 'appendChild' on 'Node': The new child element contains the parent.",
+				"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
 				DOMExceptionNameEnum.domException
 			);
 		}
@@ -415,12 +413,9 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode: INode | null): INode {
-		if (
-			!(this.ownerDocument || this)['_disableInsertParentValidation'] &&
-			NodeUtility.isParentOfNode(newNode, this)
-		) {
+		if (NodeUtility.isInclusiveAncestor(newNode, this, true)) {
 			throw new DOMException(
-				"Failed to execute 'insertBefore' on 'Node': The new child element contains the parent.",
+				"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
 				DOMExceptionNameEnum.domException
 			);
 		}
@@ -568,7 +563,7 @@ export default class Node extends EventTarget implements INode {
 				event.eventPhase = EventPhaseEnum.capturing;
 
 				for (const node of captureEventListenerNodes[event.type]) {
-					if (node !== this && NodeUtility.contains(node, this, event.composed)) {
+					if (node !== this && NodeUtility.isInclusiveAncestor(node, this, event.composed)) {
 						node.dispatchEvent(event);
 					}
 				}
