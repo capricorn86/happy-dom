@@ -622,8 +622,7 @@ export default class Document extends Node implements IDocument {
 	 */
 	public override appendChild(node: INode): INode {
 		ElementUtility.appendChild(this, node);
-		super.appendChild(node);
-		return node;
+		return super.appendChild(node);
 	}
 
 	/**
@@ -639,8 +638,7 @@ export default class Document extends Node implements IDocument {
 	 */
 	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
 		ElementUtility.insertBefore(this, newNode, referenceNode);
-		super.insertBefore(newNode, referenceNode);
-		return newNode;
+		return super.insertBefore(newNode, referenceNode);
 	}
 
 	/**
