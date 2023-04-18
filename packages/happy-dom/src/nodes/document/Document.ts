@@ -70,12 +70,6 @@ export default class Document extends Node implements IDocument {
 	// Public in order to be accessible by the fetch and xhr.
 	public _cookie = new CookieJar();
 
-	// List of all nodes that has capture listeners.
-	// We need to keep track of them globally as capture listeners are called before other listeners.
-	public readonly _captureEventListenerNodes: {
-		[eventType: string]: INode[];
-	} = {};
-
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
 
@@ -967,19 +961,6 @@ export default class Document extends Node implements IDocument {
 	 */
 	public hasFocus(): boolean {
 		return !!this.activeElement;
-	}
-
-	/**
-	 * @override
-	 */
-	public dispatchEvent(event: Event): boolean {
-		const returnValue = super.dispatchEvent(event);
-
-		if (event.bubbles && !event._propagationStopped) {
-			return this.defaultView.dispatchEvent(event);
-		}
-
-		return returnValue;
 	}
 
 	/**

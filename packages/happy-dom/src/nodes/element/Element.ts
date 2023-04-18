@@ -31,6 +31,7 @@ import Event from '../../event/Event';
 import ElementUtility from './ElementUtility';
 import HTMLCollection from './HTMLCollection';
 import CharacterDataUtility from '../character-data/CharacterDataUtility';
+import EventPhaseEnum from '../../event/EventPhaseEnum';
 
 /**
  * Element.
@@ -1041,10 +1042,17 @@ export default class Element extends Node implements IElement {
 	 */
 	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
-		const attribute = this.getAttribute('on' + event.type);
 
-		if (attribute && !event._immediatePropagationStopped) {
-			this.ownerDocument.defaultView.eval(attribute);
+		if (
+			(event.eventPhase === EventPhaseEnum.atTarget ||
+				event.eventPhase === EventPhaseEnum.bubbling) &&
+			!event._immediatePropagationStopped
+		) {
+			const attribute = this.getAttribute('on' + event.type);
+
+			if (attribute && !event._immediatePropagationStopped) {
+				this.ownerDocument.defaultView.eval(attribute);
+			}
 		}
 
 		return returnValue;

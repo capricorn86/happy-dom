@@ -393,6 +393,12 @@ export default class Window extends EventTarget implements IWindow {
 	public Object;
 	public Function;
 
+	// Public internal properties
+
+	// Used for tracking capture event listeners to improve performance when they are not used.
+	// See EventTarget class.
+	public _captureEventListenerCount: { [eventType: string]: number } = {};
+
 	// Private properties
 	private _setTimeout;
 	private _clearTimeout;
