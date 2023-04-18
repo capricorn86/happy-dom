@@ -42,7 +42,7 @@ export default interface INode extends IEventTarget {
 	appendChild(node: INode): INode;
 	removeChild(node: INode): INode;
 	hasChildNodes(): boolean;
-	contains(otherNode: INode): boolean;
+	contains(otherNode: INode | null): boolean;
 	insertBefore(newNode: INode, referenceNode?: INode | null): INode;
 	replaceChild(newChild: INode, oldChild: INode): INode;
 	toString(): string;

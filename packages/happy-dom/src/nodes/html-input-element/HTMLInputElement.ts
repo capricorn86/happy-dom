@@ -21,6 +21,7 @@ import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 import IDocument from '../document/IDocument';
 import IShadowRoot from '../shadow-root/IShadowRoot';
 import NodeList from '../node/NodeList';
+import EventPhaseEnum from '../../event/EventPhaseEnum';
 
 /**
  * HTML Input Element.
@@ -1039,19 +1040,30 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
-		if (event.type === 'click' && this.disabled) {
+		if (event.type === 'click' && event.eventPhase === EventPhaseEnum.none && this.disabled) {
 			return false;
+		}
+
+		if (
+			event.type === 'click' &&
+			(event.eventPhase === EventPhaseEnum.atTarget ||
+				event.eventPhase === EventPhaseEnum.bubbling) &&
+			this.isConnected &&
+			(this.type === 'checkbox' || this.type === 'radio')
+		) {
+			this.checked = this.type === 'checkbox' ? !this.checked : true;
 		}
 
 		const returnValue = super.dispatchEvent(event);
 
 		if (
 			event.type === 'click' &&
+			(event.eventPhase === EventPhaseEnum.atTarget ||
+				event.eventPhase === EventPhaseEnum.bubbling) &&
 			this.isConnected &&
 			(!this.readOnly || this.type === 'checkbox' || this.type === 'radio')
 		) {
 			if (this.type === 'checkbox' || this.type === 'radio') {
-				this.checked = this.type === 'checkbox' ? !this.checked : true;
 				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
 				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 			} else if (this.type === 'submit') {

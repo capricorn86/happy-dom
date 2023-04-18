@@ -6,6 +6,7 @@ import IEventTarget from './IEventTarget';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
 import { performance } from 'perf_hooks';
 import EventPhaseEnum from './EventPhaseEnum';
+import IDocument from '../nodes/document/IDocument';
 
 /**
  * Event.
@@ -77,28 +78,28 @@ export default class Event {
 	 * @returns Composed path.
 	 */
 	public composedPath(): IEventTarget[] {
-		if (!this.target) {
+		if (!this._target) {
 			return [];
 		}
 
 		const composedPath = [];
-		let eventTarget: INode | IShadowRoot | IWindow = <INode | IShadowRoot>(<unknown>this.target);
+		let eventTarget: INode | IShadowRoot | IWindow = <INode | IShadowRoot>(<unknown>this._target);
 
 		while (eventTarget) {
 			composedPath.push(eventTarget);
 
-			if (this.bubbles) {
-				if (
-					this.composed &&
-					(<INode>eventTarget).nodeType === NodeTypeEnum.documentFragmentNode &&
-					(<IShadowRoot>eventTarget).host
-				) {
-					eventTarget = (<IShadowRoot>eventTarget).host;
-				} else if ((<INode>(<unknown>this.target)).ownerDocument === eventTarget) {
-					eventTarget = (<INode>(<unknown>this.target)).ownerDocument.defaultView;
-				} else {
-					eventTarget = (<INode>(<unknown>eventTarget)).parentNode || null;
-				}
+			if ((<INode>(<unknown>eventTarget)).parentNode) {
+				eventTarget = (<INode>(<unknown>eventTarget)).parentNode;
+			} else if (
+				this.composed &&
+				(<INode>eventTarget).nodeType === NodeTypeEnum.documentFragmentNode &&
+				(<IShadowRoot>eventTarget).host
+			) {
+				eventTarget = (<IShadowRoot>eventTarget).host;
+			} else if ((<INode>eventTarget).nodeType === NodeTypeEnum.documentNode) {
+				eventTarget = (<IDocument>(<unknown>eventTarget)).defaultView;
+			} else {
+				break;
 			}
 		}
 
