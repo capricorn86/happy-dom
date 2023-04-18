@@ -3,6 +3,9 @@ import Event from './Event';
 import IEventTarget from './IEventTarget';
 import IEventListenerOptions from './IEventListenerOptions';
 import EventPhaseEnum from './EventPhaseEnum';
+import INode from '../nodes/node/INode';
+import IDocument from '../nodes/document/IDocument';
+import IWindow from '../window/IWindow';
 
 /**
  * Handles events.
@@ -28,13 +31,23 @@ export default abstract class EventTarget implements IEventTarget {
 		listener: ((event: Event) => void) | IEventListener,
 		options?: boolean | IEventListenerOptions
 	): void {
+		const listenerOptions = typeof options === 'boolean' ? { capture: options } : options || null;
+
 		this._listeners[type] = this._listeners[type] || [];
 		this._listenerOptions[type] = this._listenerOptions[type] || [];
 
 		this._listeners[type].push(listener);
-		this._listenerOptions[type].push(
-			typeof options === 'boolean' ? { capture: options } : options || null
-		);
+		this._listenerOptions[type].push(listenerOptions);
+
+		// Tracks the amount of capture event listeners to improve performance when they are not used.
+		if (listenerOptions && listenerOptions.capture) {
+			const window = this._getWindow();
+			if (window) {
+				window['_captureEventListenerCount'][type] =
+					window['_captureEventListenerCount'][type] ?? 0;
+				window['_captureEventListenerCount'][type]++;
+			}
+		}
 	}
 
 	/**
@@ -50,6 +63,14 @@ export default abstract class EventTarget implements IEventTarget {
 		if (this._listeners[type]) {
 			const index = this._listeners[type].indexOf(listener);
 			if (index !== -1) {
+				// Tracks the amount of capture event listeners to improve performance when they are not used.
+				if (this._listenerOptions[type][index] && this._listenerOptions[type][index].capture) {
+					const window = this._getWindow();
+					if (window && window['_captureEventListenerCount'][type]) {
+						window['_captureEventListenerCount'][type]--;
+					}
+				}
+
 				this._listeners[type].splice(index, 1);
 				this._listenerOptions[type].splice(index, 1);
 			}
@@ -69,15 +90,19 @@ export default abstract class EventTarget implements IEventTarget {
 			event._target = this;
 
 			const composedPath = event.composedPath();
+			const window = this._getWindow();
 
 			// Capturing phase
 
-			event.eventPhase = EventPhaseEnum.capturing;
+			// We only need to iterate over the composed path if there are capture event listeners.
+			if (window && window['_captureEventListenerCount'][event.type]) {
+				event.eventPhase = EventPhaseEnum.capturing;
 
-			for (let i = composedPath.length - 1; i >= 0; i--) {
-				composedPath[i].dispatchEvent(event);
-				if (event._propagationStopped || event._immediatePropagationStopped) {
-					break;
+				for (let i = composedPath.length - 1; i >= 0; i--) {
+					composedPath[i].dispatchEvent(event);
+					if (event._propagationStopped || event._immediatePropagationStopped) {
+						break;
+					}
 				}
 			}
 
@@ -181,5 +206,23 @@ export default abstract class EventTarget implements IEventTarget {
 	 */
 	public detachEvent(type: string, listener: ((event: Event) => void) | IEventListener): void {
 		this.removeEventListener(type.replace('on', ''), listener);
+	}
+
+	/**
+	 * Finds and returns window if possible.
+	 *
+	 * @returns Window.
+	 */
+	public _getWindow(): IWindow | null {
+		if ((<INode>(<unknown>this)).ownerDocument) {
+			return (<INode>(<unknown>this)).ownerDocument.defaultView;
+		}
+		if ((<IDocument>(<unknown>this)).defaultView) {
+			return (<IDocument>(<unknown>this)).defaultView;
+		}
+		if ((<IWindow>(<unknown>this)).document) {
+			return <IWindow>(<unknown>this);
+		}
+		return null;
 	}
 }
