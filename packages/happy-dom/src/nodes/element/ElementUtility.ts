@@ -19,15 +19,22 @@ export default class ElementUtility {
 	/**
 	 * Handles appending a child element to the "children" property.
 	 *
-	 * @param parentElement Parent element.
-	 * @param node Node.
+	 * @param ancestorNode Ancestor node.
+	 * @param node Node to append.
+	 * @param [options] Options.
+	 * @param [options.disableAncestorValidation] Disables validation for checking if the node is an ancestor of the ancestorNode.
+	 * @returns Appended node.
 	 */
 	public static appendChild(
-		parentElement: IElement | IDocument | IDocumentFragment,
-		node: INode
-	): void {
-		if (node.nodeType === NodeTypeEnum.elementNode && node !== parentElement) {
-			if (NodeUtility.isInclusiveAncestor(node, parentElement)) {
+		ancestorNode: IElement | IDocument | IDocumentFragment,
+		node: INode,
+		options?: { disableAncestorValidation?: boolean }
+	): INode {
+		if (node.nodeType === NodeTypeEnum.elementNode && node !== ancestorNode) {
+			if (
+				!options?.disableAncestorValidation &&
+				NodeUtility.isInclusiveAncestor(node, ancestorNode)
+			) {
 				throw new DOMException(
 					"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
 					DOMExceptionNameEnum.domException
@@ -51,58 +58,76 @@ export default class ElementUtility {
 
 			for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 				if ((<Element>node)._attributes[attribute]) {
-					(<HTMLCollection<IHTMLElement>>parentElement.children)._appendNamedItem(
+					(<HTMLCollection<IHTMLElement>>ancestorNode.children)._appendNamedItem(
 						<IHTMLElement>node,
 						(<Element>node)._attributes[attribute].value
 					);
 				}
 			}
 
-			parentElement.children.push(<IElement>node);
+			ancestorNode.children.push(<IElement>node);
+
+			NodeUtility.appendChild(ancestorNode, node, { disableAncestorValidation: true });
+		} else {
+			NodeUtility.appendChild(ancestorNode, node, options);
 		}
+
+		return node;
 	}
 
 	/**
 	 * Handles removing a child element from the "children" property.
 	 *
-	 * @param parentElement Parent element.
+	 * @param ancestorNode Ancestor node.
 	 * @param node Node.
+	 * @returns Removed node.
 	 */
 	public static removeChild(
-		parentElement: IElement | IDocument | IDocumentFragment,
+		ancestorNode: IElement | IDocument | IDocumentFragment,
 		node: INode
-	): void {
+	): INode {
 		if (node.nodeType === NodeTypeEnum.elementNode) {
-			const index = parentElement.children.indexOf(<IElement>node);
+			const index = ancestorNode.children.indexOf(<IElement>node);
 			if (index !== -1) {
 				for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 					if ((<Element>node)._attributes[attribute]) {
-						(<HTMLCollection<IHTMLElement>>parentElement.children)._removeNamedItem(
+						(<HTMLCollection<IHTMLElement>>ancestorNode.children)._removeNamedItem(
 							<IHTMLElement>node,
 							(<Element>node)._attributes[attribute].value
 						);
 					}
 				}
-				parentElement.children.splice(index, 1);
+				ancestorNode.children.splice(index, 1);
 			}
 		}
+
+		NodeUtility.removeChild(ancestorNode, node);
+
+		return node;
 	}
 
 	/**
 	 *
 	 * Handles inserting a child element to the "children" property.
 	 *
-	 * @param parentElement Parent element.
-	 * @param newNode
-	 * @param referenceNode
+	 * @param ancestorNode Ancestor node.
+	 * @param newNode Node to insert.
+	 * @param referenceNode Node to insert before.
+	 * @param [options] Options.
+	 * @param [options.disableAncestorValidation] Disables validation for checking if the node is an ancestor of the ancestorNode.
+	 * @returns Inserted node.
 	 */
 	public static insertBefore(
-		parentElement: IElement | IDocument | IDocumentFragment,
+		ancestorNode: IElement | IDocument | IDocumentFragment,
 		newNode: INode,
-		referenceNode: INode | null
-	): void {
+		referenceNode: INode | null,
+		options?: { disableAncestorValidation?: boolean }
+	): INode {
 		if (newNode.nodeType === NodeTypeEnum.elementNode) {
-			if (NodeUtility.isInclusiveAncestor(newNode, parentElement)) {
+			if (
+				!options?.disableAncestorValidation &&
+				NodeUtility.isInclusiveAncestor(newNode, ancestorNode)
+			) {
 				throw new DOMException(
 					"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
 					DOMExceptionNameEnum.domException
@@ -131,19 +156,19 @@ export default class ElementUtility {
 
 			if (referenceNode) {
 				if (referenceNode.nodeType === NodeTypeEnum.elementNode) {
-					const index = parentElement.children.indexOf(<IElement>referenceNode);
+					const index = ancestorNode.children.indexOf(<IElement>referenceNode);
 					if (index !== -1) {
-						parentElement.children.splice(index, 0, <IElement>newNode);
+						ancestorNode.children.splice(index, 0, <IElement>newNode);
 					}
 				} else {
-					parentElement.children.length = 0;
+					ancestorNode.children.length = 0;
 
-					for (const node of parentElement.childNodes) {
+					for (const node of ancestorNode.childNodes) {
 						if (node === referenceNode) {
-							parentElement.children.push(<IElement>newNode);
+							ancestorNode.children.push(<IElement>newNode);
 						}
 						if (node.nodeType === NodeTypeEnum.elementNode) {
-							parentElement.children.push(<IElement>node);
+							ancestorNode.children.push(<IElement>node);
 						}
 					}
 				}
@@ -152,13 +177,21 @@ export default class ElementUtility {
 			if (referenceNode || referenceNode === null) {
 				for (const attribute of NAMED_ITEM_ATTRIBUTES) {
 					if ((<Element>newNode)._attributes[attribute]) {
-						(<HTMLCollection<IHTMLElement>>parentElement.children)._appendNamedItem(
+						(<HTMLCollection<IHTMLElement>>ancestorNode.children)._appendNamedItem(
 							<IHTMLElement>newNode,
 							(<Element>newNode)._attributes[attribute].value
 						);
 					}
 				}
 			}
+
+			NodeUtility.insertBefore(ancestorNode, newNode, referenceNode, {
+				disableAncestorValidation: true
+			});
+		} else {
+			NodeUtility.insertBefore(ancestorNode, newNode, referenceNode, options);
 		}
+
+		return newNode;
 	}
 }
