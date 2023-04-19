@@ -15,7 +15,7 @@ export default interface IEventTarget {
 	addEventListener(
 		type: string,
 		listener: ((event: Event) => void) | IEventListener,
-		options?: IEventListenerOptions
+		options?: boolean | IEventListenerOptions
 	): void;
 
 	/**

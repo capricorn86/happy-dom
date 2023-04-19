@@ -60,5 +60,5 @@ export default interface IDocumentFragment extends INode {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IDocumentFragment;
+	cloneNode(deep?: boolean): IDocumentFragment;
 }

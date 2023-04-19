@@ -18,6 +18,23 @@ describe('NodeUtility', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('isTextNode()', () => {
+		it('Returns "true" for text node.', () => {
+			expect(NodeUtility.isTextNode(document.createTextNode('a'))).toBe(true);
+		});
+
+		it('Returns "false" for other nodes.', () => {
+			expect(NodeUtility.isTextNode(document)).toBe(false);
+			expect(NodeUtility.isTextNode(document.createElement('div'))).toBe(false);
+			expect(NodeUtility.isTextNode(document.createDocumentFragment())).toBe(false);
+			expect(NodeUtility.isTextNode(document.createAttribute('attr'))).toBe(false);
+		});
+
+		it('Returns "false" for null.', () => {
+			expect(NodeUtility.isTextNode(null)).toBe(false);
+		});
+	});
+
 	describe('isInclusiveAncestor()', () => {
 		it('Returns "true" if referenceNode is the same as ancestorNode.', () => {
 			const ancestorNode = document.createElement('div');

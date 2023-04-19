@@ -79,14 +79,14 @@ export default class ParentNodeUtility {
 	public static getElementsByClassName(
 		parentNode: IElement | IDocumentFragment | IDocument,
 		className: string
-	): IHTMLCollection<IElement, IElement> {
-		let matches = new HTMLCollection<IElement, IElement>();
+	): IHTMLCollection<IElement> {
+		let matches = new HTMLCollection<IElement>();
 
 		for (const child of parentNode.children) {
 			if (child.className.split(' ').includes(className)) {
 				matches.push(child);
 			}
-			matches = <HTMLCollection<IElement, IElement>>(
+			matches = <HTMLCollection<IElement>>(
 				matches.concat(this.getElementsByClassName(<IElement>child, className))
 			);
 		}
@@ -104,16 +104,16 @@ export default class ParentNodeUtility {
 	public static getElementsByTagName(
 		parentNode: IElement | IDocumentFragment | IDocument,
 		tagName: string
-	): IHTMLCollection<IElement, IElement> {
+	): IHTMLCollection<IElement> {
 		const upperTagName = tagName.toUpperCase();
 		const includeAll = tagName === '*';
-		let matches = new HTMLCollection<IElement, IElement>();
+		let matches = new HTMLCollection<IElement>();
 
 		for (const child of parentNode.children) {
 			if (includeAll || child.tagName === upperTagName) {
 				matches.push(child);
 			}
-			matches = <HTMLCollection<IElement, IElement>>(
+			matches = <HTMLCollection<IElement>>(
 				matches.concat(this.getElementsByTagName(<IElement>child, tagName))
 			);
 		}
@@ -133,16 +133,16 @@ export default class ParentNodeUtility {
 		parentNode: IElement | IDocumentFragment | IDocument,
 		namespaceURI: string,
 		tagName: string
-	): IHTMLCollection<IElement, IElement> {
+	): IHTMLCollection<IElement> {
 		const upperTagName = tagName.toUpperCase();
 		const includeAll = tagName === '*';
-		let matches = new HTMLCollection<IElement, IElement>();
+		let matches = new HTMLCollection<IElement>();
 
 		for (const child of parentNode.children) {
 			if ((includeAll || child.tagName === upperTagName) && child.namespaceURI === namespaceURI) {
 				matches.push(child);
 			}
-			matches = <HTMLCollection<IElement, IElement>>(
+			matches = <HTMLCollection<IElement>>(
 				matches.concat(this.getElementsByTagNameNS(<IElement>child, namespaceURI, tagName))
 			);
 		}

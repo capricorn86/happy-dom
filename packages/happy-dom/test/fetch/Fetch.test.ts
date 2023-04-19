@@ -993,6 +993,7 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
+			window.happyDOM.setURL('https://localhost:8080');
 			window.document.cookie = 'test=cookie';
 
 			mockModule('https', {
@@ -1033,6 +1034,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
 					}
@@ -1282,6 +1284,8 @@ describe('Fetch', () => {
 		});
 
 		it('Sets document cookie string if the response contains a "Set-Cookie" header if request cridentials are set to "include".', async () => {
+			window.happyDOM.setURL('https://localhost:8080');
+
 			mockModule('https', {
 				request: () => {
 					return {

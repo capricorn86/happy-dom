@@ -1,9 +1,10 @@
 import Window from '../../src/window/Window';
+import Document from '../../src/nodes/document/Document';
 import MutationObserver from '../../src/mutation-observer/MutationObserver';
 
 describe('MutationObserver', () => {
-	let window;
-	let document;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();

@@ -14,7 +14,7 @@ import INodeList from '../node/INodeList';
  */
 export default class DocumentFragment extends Node implements IDocumentFragment {
 	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
-	public readonly children: IHTMLCollection<IElement, IElement> = new HTMLCollection();
+	public readonly children: IHTMLCollection<IElement> = new HTMLCollection();
 	public _rootNode: INode = this;
 
 	/**
@@ -154,24 +154,24 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	/**
 	 * @override
 	 */
-	public appendChild(node: INode): INode {
-		ElementUtility.appendChild(this, node);
-		return super.appendChild(<INode>node);
+	public override appendChild(node: INode): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.appendChild(this, node);
 	}
 
 	/**
 	 * @override
 	 */
-	public removeChild(node: INode): INode {
-		ElementUtility.removeChild(this, node);
-		return super.removeChild(<Node>node);
+	public override removeChild(node: INode): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.removeChild(this, node);
 	}
 
 	/**
 	 * @override
 	 */
-	public insertBefore(newNode: INode, referenceNode?: INode): INode {
-		ElementUtility.insertBefore(this, newNode, referenceNode);
-		return super.insertBefore(newNode, referenceNode);
+	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}
 }

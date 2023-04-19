@@ -1,10 +1,11 @@
 import Window from '../../src/window/Window';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
+import DOMParser from '../../src/dom-parser/DOMParser';
 import DOMParserHTML from './data/DOMParserHTML';
 
 describe('DOMParser', () => {
-	let domParser;
-	let window;
+	let domParser: DOMParser;
+	let window: Window;
 
 	beforeEach(() => {
 		window = new Window({

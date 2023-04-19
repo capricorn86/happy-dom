@@ -98,5 +98,5 @@ export default interface IHTMLTextAreaElement extends IHTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IHTMLTextAreaElement;
+	cloneNode(deep?: boolean): IHTMLTextAreaElement;
 }

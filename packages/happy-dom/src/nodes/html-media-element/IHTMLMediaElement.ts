@@ -106,5 +106,5 @@ export default interface IHTMLMediaElement extends IHTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IHTMLMediaElement;
+	cloneNode(deep?: boolean): IHTMLMediaElement;
 }
