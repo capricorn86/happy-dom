@@ -41,6 +41,27 @@ describe('EventTarget', () => {
 			expect(count).toBe(1);
 		});
 
+		it('Adds an event listener and set options once and bind the same event multiple times', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			const listener1 = (): void => {
+				count++;
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+			eventTarget.addEventListener(EVENT_TYPE, listener, { once: true });
+			eventTarget.addEventListener(EVENT_TYPE, listener1, { once: true });
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(count).toBe(2);
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(count).toBe(2);
+			eventTarget.addEventListener(EVENT_TYPE, listener, { once: true });
+			eventTarget.addEventListener(EVENT_TYPE, listener, { once: true });
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(count).toBe(3);
+		});
+
 		it('Adds a custom event listener and triggers it when calling dispatchEvent().', () => {
 			let recievedEvent: CustomEvent = null;
 			const DETAIL = {};

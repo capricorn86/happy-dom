@@ -35,7 +35,9 @@ export default abstract class EventTarget implements IEventTarget {
 
 		this._listeners[type] = this._listeners[type] || [];
 		this._listenerOptions[type] = this._listenerOptions[type] || [];
-
+		if (this._listeners[type].includes(listener)) {
+			return;
+		}
 		this._listeners[type].push(listener);
 		this._listenerOptions[type].push(listenerOptions);
 
@@ -168,7 +170,13 @@ export default abstract class EventTarget implements IEventTarget {
 				event._isInPassiveEventListener = false;
 
 				if (options?.once) {
+					// At this time, listeners and listenersOptions are cloned arrays. When the original value is deleted,
+					// The value corresponding to the cloned array is not deleted. So we need to delete the value in the cloned array.
+					listeners.splice(i, 1);
+					listenerOptions.splice(i, 1);
 					this.removeEventListener(event.type, listener);
+					i--;
+					max--;
 				}
 
 				if (event._immediatePropagationStopped) {
