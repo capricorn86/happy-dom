@@ -4,6 +4,8 @@ import Node from '../../../src/nodes/node/Node';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
 import Event from '../../../src/event/Event';
+import DOMException from '../../../src/exception/DOMException';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
 import Text from '../../../src/nodes/text/Text';
 import EventPhaseEnum from '../../../src/event/EventPhaseEnum';
 
@@ -426,6 +428,24 @@ describe('Node', () => {
 			expect(Array.from(clone.childNodes)).toEqual([]);
 			expect(div.innerHTML).toBe('<div>Div</div><span>Span</span>');
 		});
+
+		it('Throws an error if the node to append is the parent of the current node.', () => {
+			const parent = document.createElement('div');
+			const child1 = document.createElement('div');
+			const child2 = document.createElement('div');
+			child1.appendChild(child2);
+			parent.appendChild(child1);
+			try {
+				child2.appendChild(parent);
+			} catch (error) {
+				expect(error).toEqual(
+					new DOMException(
+						"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
+						DOMExceptionNameEnum.domException
+					)
+				);
+			}
+		});
 	});
 
 	describe('removeChild()', () => {
@@ -535,6 +555,26 @@ describe('Node', () => {
 			expect(() => parent.insertBefore(newNode, referenceNode)).toThrow(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
+		});
+
+		it('Throws an error if the node to insert is the parent of the current node.', () => {
+			const parent = document.createElement('div');
+			const child1 = document.createElement('div');
+			const child2 = document.createElement('div');
+
+			child1.appendChild(child2);
+			parent.appendChild(child1);
+
+			try {
+				child2.insertBefore(parent, null);
+			} catch (error) {
+				expect(error).toEqual(
+					new DOMException(
+						"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
+						DOMExceptionNameEnum.domException
+					)
+				);
+			}
 		});
 	});
 

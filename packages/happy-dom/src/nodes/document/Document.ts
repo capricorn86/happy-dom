@@ -620,25 +620,25 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * @override
 	 */
-	public appendChild(node: INode): INode {
-		ElementUtility.appendChild(this, node);
-		return super.appendChild(node);
+	public override appendChild(node: INode): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.appendChild(this, node);
 	}
 
 	/**
 	 * @override
 	 */
-	public removeChild(node: INode): INode {
-		ElementUtility.removeChild(this, node);
-		return super.removeChild(node);
+	public override removeChild(node: INode): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.removeChild(this, node);
 	}
 
 	/**
 	 * @override
 	 */
-	public insertBefore(newNode: INode, referenceNode?: INode): INode {
-		ElementUtility.insertBefore(this, newNode, referenceNode);
-		return super.insertBefore(newNode, referenceNode);
+	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}
 
 	/**

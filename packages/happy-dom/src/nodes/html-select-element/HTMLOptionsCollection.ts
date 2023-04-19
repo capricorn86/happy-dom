@@ -65,7 +65,7 @@ export default class HTMLOptionsCollection
 		}
 
 		if (!Number.isNaN(Number(before))) {
-			if (before < 0) {
+			if (<number>before < 0) {
 				return;
 			}
 

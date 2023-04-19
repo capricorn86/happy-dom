@@ -6,12 +6,217 @@ import IElement from '../element/IElement';
 import IDocumentType from '../document-type/IDocumentType';
 import IAttr from '../attr/IAttr';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
-import IHTMLElement from '../html-element/IHTMLElement';
+import IShadowRoot from '../shadow-root/IShadowRoot';
+import DOMException from '../../exception/DOMException';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
+import Node from './Node';
+import MutationRecord from '../../mutation-observer/MutationRecord';
+import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
 
 /**
  * Node utility.
  */
 export default class NodeUtility {
+	/**
+	 * Append a child node to childNodes.
+	 *
+	 * @param ancestorNode Ancestor node.
+	 * @param node Node to append.
+	 * @param [options] Options.
+	 * @param [options.disableAncestorValidation] Disables validation for checking if the node is an ancestor of the ancestorNode.
+	 * @returns Appended node.
+	 */
+	public static appendChild(
+		ancestorNode: INode,
+		node: INode,
+		options?: { disableAncestorValidation?: boolean }
+	): INode {
+		if (node === ancestorNode) {
+			throw new DOMException(
+				"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
+			);
+		}
+
+		if (!options?.disableAncestorValidation && this.isInclusiveAncestor(node, ancestorNode, true)) {
+			throw new DOMException(
+				"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
+				DOMExceptionNameEnum.domException
+			);
+		}
+
+		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		if (node.nodeType === NodeTypeEnum.documentFragmentNode) {
+			for (const child of node.childNodes.slice()) {
+				ancestorNode.appendChild(child);
+			}
+			return node;
+		}
+
+		// Remove the node from its previous parent if it has any.
+		if (node.parentNode) {
+			const index = node.parentNode.childNodes.indexOf(node);
+			if (index !== -1) {
+				node.parentNode.childNodes.splice(index, 1);
+			}
+		}
+
+		if (ancestorNode.isConnected) {
+			(ancestorNode.ownerDocument || this)['_cacheID']++;
+		}
+
+		ancestorNode.childNodes.push(node);
+
+		(<Node>node)._connectToNode(ancestorNode);
+
+		// MutationObserver
+		if ((<Node>ancestorNode)._observers.length > 0) {
+			const record = new MutationRecord();
+			record.target = ancestorNode;
+			record.type = MutationTypeEnum.childList;
+			record.addedNodes = [node];
+
+			for (const observer of (<Node>ancestorNode)._observers) {
+				if (observer.options.subtree) {
+					(<Node>node)._observe(observer);
+				}
+				if (observer.options.childList) {
+					observer.callback([record]);
+				}
+			}
+		}
+
+		return node;
+	}
+
+	/**
+	 * Remove Child element from childNodes array.
+	 *
+	 * @param ancestorNode Ancestor node.
+	 * @param node Node to remove.
+	 * @returns Removed node.
+	 */
+	public static removeChild(ancestorNode: INode, node: INode): INode {
+		const index = ancestorNode.childNodes.indexOf(node);
+
+		if (index === -1) {
+			throw new DOMException('Failed to remove node. Node is not child of parent.');
+		}
+
+		if (ancestorNode.isConnected) {
+			(ancestorNode.ownerDocument || this)['_cacheID']++;
+		}
+
+		ancestorNode.childNodes.splice(index, 1);
+
+		(<Node>node)._connectToNode(null);
+
+		// MutationObserver
+		if ((<Node>ancestorNode)._observers.length > 0) {
+			const record = new MutationRecord();
+			record.target = ancestorNode;
+			record.type = MutationTypeEnum.childList;
+			record.removedNodes = [node];
+
+			for (const observer of (<Node>ancestorNode)._observers) {
+				(<Node>node)._unobserve(observer);
+				if (observer.options.childList) {
+					observer.callback([record]);
+				}
+			}
+		}
+
+		return node;
+	}
+
+	/**
+	 * Inserts a node before another.
+	 *
+	 * @param ancestorNode Ancestor node.
+	 * @param newNode Node to insert.
+	 * @param referenceNode Node to insert before.
+	 * @param [options] Options.
+	 * @param [options.disableAncestorValidation] Disables validation for checking if the node is an ancestor of the ancestorNode.
+	 * @returns Inserted node.
+	 */
+	public static insertBefore(
+		ancestorNode: INode,
+		newNode: INode,
+		referenceNode: INode | null,
+		options?: { disableAncestorValidation?: boolean }
+	): INode {
+		if (
+			!options?.disableAncestorValidation &&
+			this.isInclusiveAncestor(newNode, ancestorNode, true)
+		) {
+			throw new DOMException(
+				"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
+				DOMExceptionNameEnum.domException
+			);
+		}
+
+		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+			for (const child of newNode.childNodes.slice()) {
+				ancestorNode.insertBefore(child, referenceNode);
+			}
+			return newNode;
+		}
+
+		if (referenceNode === null) {
+			ancestorNode.appendChild(newNode);
+			return newNode;
+		}
+
+		if (!referenceNode) {
+			throw new DOMException(
+				"Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 1 present.",
+				'TypeError'
+			);
+		}
+
+		if (ancestorNode.childNodes.indexOf(referenceNode) === -1) {
+			throw new DOMException(
+				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
+			);
+		}
+
+		if (ancestorNode.isConnected) {
+			(ancestorNode.ownerDocument || this)['_cacheID']++;
+		}
+
+		if (newNode.parentNode) {
+			const index = newNode.parentNode.childNodes.indexOf(newNode);
+			if (index !== -1) {
+				newNode.parentNode.childNodes.splice(index, 1);
+			}
+		}
+
+		ancestorNode.childNodes.splice(ancestorNode.childNodes.indexOf(referenceNode), 0, newNode);
+
+		(<Node>newNode)._connectToNode(ancestorNode);
+
+		// MutationObserver
+		if ((<Node>ancestorNode)._observers.length > 0) {
+			const record = new MutationRecord();
+			record.target = ancestorNode;
+			record.type = MutationTypeEnum.childList;
+			record.addedNodes = [newNode];
+
+			for (const observer of (<Node>ancestorNode)._observers) {
+				if (observer.options.subtree) {
+					(<Node>newNode)._observe(observer);
+				}
+				if (observer.options.childList) {
+					observer.callback([record]);
+				}
+			}
+		}
+
+		return newNode;
+	}
+
 	/**
 	 * Returns whether the passed node is a text node, and narrows its type.
 	 *
@@ -23,46 +228,7 @@ export default class NodeUtility {
 	}
 
 	/**
-	 * Returns "true" if this node contains the other node.
-	 *
-	 * @param rootNode Root node.
-	 * @param otherNode Node to test with.
-	 * @param [includeShadowRoots = false] Include shadow roots.
-	 * @returns "true" if this node contains the other node.
-	 */
-	public static contains(
-		rootNode: INode,
-		otherNode: INode | null,
-		includeShadowRoots = false
-	): boolean {
-		if (otherNode === null) {
-			return false;
-		}
-
-		if (rootNode === otherNode) {
-			return true;
-		}
-
-		if (includeShadowRoots && rootNode === otherNode.ownerDocument && otherNode.isConnected) {
-			return true;
-		}
-
-		for (const childNode of rootNode.childNodes) {
-			if (
-				childNode === otherNode ||
-				this.contains(childNode, otherNode, includeShadowRoots) ||
-				(includeShadowRoots &&
-					(<IHTMLElement>childNode).shadowRoot &&
-					(<IHTMLElement>childNode).shadowRoot.contains(otherNode))
-			) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns boolean indicating if nodeB is an inclusive ancestor of nodeA.
+	 * Returns boolean indicating if "ancestorNode" is an inclusive ancestor of "referenceNode".
 	 *
 	 * Based on:
 	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/helpers/node.js
@@ -70,16 +236,52 @@ export default class NodeUtility {
 	 * @see https://dom.spec.whatwg.org/#concept-tree-inclusive-ancestor
 	 * @param ancestorNode Ancestor node.
 	 * @param referenceNode Reference node.
-	 * @returns "true" if following.
+	 * @param [includeShadowRoots = false] Include shadow roots.
+	 * @returns "true" if inclusive ancestor.
 	 */
-	public static isInclusiveAncestor(ancestorNode: INode, referenceNode: INode): boolean {
-		let parent: INode = referenceNode;
+	public static isInclusiveAncestor(
+		ancestorNode: INode,
+		referenceNode: INode,
+		includeShadowRoots = false
+	): boolean {
+		if (ancestorNode === null || referenceNode === null) {
+			return false;
+		}
+
+		if (ancestorNode === referenceNode) {
+			return true;
+		}
+
+		if (!ancestorNode.childNodes.length) {
+			return false;
+		}
+
+		if (includeShadowRoots && referenceNode.isConnected !== ancestorNode.isConnected) {
+			return false;
+		}
+
+		if (
+			includeShadowRoots &&
+			ancestorNode === referenceNode.ownerDocument &&
+			referenceNode.isConnected
+		) {
+			return true;
+		}
+
+		let parent: INode = referenceNode.parentNode;
+
 		while (parent) {
 			if (ancestorNode === parent) {
 				return true;
 			}
-			parent = parent.parentNode;
+
+			parent = parent.parentNode
+				? parent.parentNode
+				: includeShadowRoots && (<IShadowRoot>parent).host
+				? (<IShadowRoot>parent).host
+				: null;
 		}
+
 		return false;
 	}
 
