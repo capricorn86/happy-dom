@@ -1,6 +1,7 @@
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLFormElement from './IHTMLFormElement';
 import Event from '../../event/Event';
+import SubmitEvent from '../../event/events/SubmitEvent';
 import HTMLFormControlsCollection from './HTMLFormControlsCollection';
 import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
 import INode from '../node/INode';
@@ -209,7 +210,9 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	public requestSubmit(submitter?: IHTMLInputElement | IHTMLButtonElement): void {
 		const noValidate = submitter?.formNoValidate || this.noValidate;
 		if (noValidate || this.checkValidity()) {
-			this.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+			this.dispatchEvent(
+				new SubmitEvent('submit', { bubbles: true, cancelable: true, submitter: submitter || this })
+			);
 		}
 	}
 

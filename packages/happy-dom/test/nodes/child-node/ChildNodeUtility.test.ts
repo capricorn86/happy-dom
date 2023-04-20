@@ -1,9 +1,10 @@
 import Window from '../../../src/window/Window';
+import Document from '../../../src/nodes/document/Document';
 import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility';
 
 describe('ChildNodeUtility', () => {
-	let window;
-	let document;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();

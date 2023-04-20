@@ -804,7 +804,7 @@ describe('HTMLInputElement', () => {
 			const form = <IHTMLFormElement>document.createElement('form');
 			const button = <IHTMLInputElement>document.createElement('input');
 
-			let isSubmitTriggered = false;
+			let submitTriggeredCount = 0;
 
 			button.type = 'submit';
 
@@ -812,18 +812,18 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(form);
 
-			form.addEventListener('submit', () => (isSubmitTriggered = true));
+			form.addEventListener('submit', () => submitTriggeredCount++);
 
 			button.click();
 
-			expect(isSubmitTriggered).toBe(true);
+			expect(submitTriggeredCount).toBe(1);
 		});
 
 		it('Resets form if type is "reset" and is a "click" event.', () => {
 			const form = <IHTMLFormElement>document.createElement('form');
 			const button = <IHTMLInputElement>document.createElement('input');
 
-			let isResetTriggered = false;
+			let resetTriggeredCount = 0;
 
 			button.type = 'reset';
 
@@ -831,11 +831,11 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(form);
 
-			form.addEventListener('reset', () => (isResetTriggered = true));
+			form.addEventListener('reset', () => resetTriggeredCount++);
 
 			button.click();
 
-			expect(isResetTriggered).toBe(true);
+			expect(resetTriggeredCount).toBe(1);
 		});
 	});
 });

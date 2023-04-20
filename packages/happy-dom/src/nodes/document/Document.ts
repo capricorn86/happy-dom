@@ -4,6 +4,7 @@ import Text from '../text/Text';
 import Comment from '../comment/Comment';
 import IWindow from '../../window/IWindow';
 import Node from '../node/Node';
+import NodeIterator from '../../tree-walker/NodeIterator';
 import TreeWalker from '../../tree-walker/TreeWalker';
 import DocumentFragment from '../document-fragment/DocumentFragment';
 import XMLParser from '../../xml-parser/XMLParser';
@@ -57,10 +58,7 @@ export default class Document extends Node implements IDocument {
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation: DOMImplementation;
-	public readonly children: IHTMLCollection<IElement, IElement> = new HTMLCollection<
-		IElement,
-		IElement
-	>();
+	public readonly children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
@@ -293,7 +291,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
-		return this._cookie.getCookiesString(this.defaultView.location, true);
+		return this._cookie.getCookieString(this.defaultView.location, true);
 	}
 
 	/**
@@ -302,7 +300,7 @@ export default class Document extends Node implements IDocument {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		this._cookie.setCookiesString(cookie);
+		this._cookie.addCookieString(this.defaultView.location, cookie);
 	}
 
 	/**
@@ -421,10 +419,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Scripts.
 	 */
-	public get scripts(): IHTMLCollection<IHTMLScriptElement, IHTMLScriptElement> {
-		return <IHTMLCollection<IHTMLScriptElement, IHTMLScriptElement>>(
-			this.getElementsByTagName('script')
-		);
+	public get scripts(): IHTMLCollection<IHTMLScriptElement> {
+		return <IHTMLCollection<IHTMLScriptElement>>this.getElementsByTagName('script');
 	}
 
 	/**
@@ -538,7 +534,7 @@ export default class Document extends Node implements IDocument {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): IHTMLCollection<IElement, IElement> {
+	public getElementsByClassName(className: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -548,7 +544,7 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IHTMLCollection<IElement, IElement> {
+	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -559,10 +555,7 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(
-		namespaceURI: string,
-		tagName: string
-	): IHTMLCollection<IElement, IElement> {
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
@@ -627,25 +620,25 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * @override
 	 */
-	public appendChild(node: INode): INode {
-		ElementUtility.appendChild(this, node);
-		return super.appendChild(node);
+	public override appendChild(node: INode): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.appendChild(this, node);
 	}
 
 	/**
 	 * @override
 	 */
-	public removeChild(node: INode): INode {
-		ElementUtility.removeChild(this, node);
-		return super.removeChild(node);
+	public override removeChild(node: INode): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.removeChild(this, node);
 	}
 
 	/**
 	 * @override
 	 */
-	public insertBefore(newNode: INode, referenceNode?: INode): INode {
-		ElementUtility.insertBefore(this, newNode, referenceNode);
-		return super.insertBefore(newNode, referenceNode);
+	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}
 
 	/**
@@ -845,6 +838,21 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Creates a node iterator.
+	 *
+	 * @param root Root.
+	 * @param [whatToShow] What to show.
+	 * @param [filter] Filter.
+	 */
+	public createNodeIterator(
+		root: INode,
+		whatToShow = -1,
+		filter: INodeFilter = null
+	): NodeIterator {
+		return new NodeIterator(root, whatToShow, filter);
+	}
+
+	/**
 	 * Creates a Tree Walker.
 	 *
 	 * @param root Root.
@@ -953,19 +961,6 @@ export default class Document extends Node implements IDocument {
 	 */
 	public hasFocus(): boolean {
 		return !!this.activeElement;
-	}
-
-	/**
-	 * @override
-	 */
-	public dispatchEvent(event: Event): boolean {
-		const returnValue = super.dispatchEvent(event);
-
-		if (event.bubbles && !event._propagationStopped) {
-			return this.defaultView.dispatchEvent(event);
-		}
-
-		return returnValue;
 	}
 
 	/**

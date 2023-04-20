@@ -7,8 +7,7 @@ import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection.
  */
-export default interface IHTMLOptionsCollection
-	extends IHTMLCollection<IHTMLOptionElement, IHTMLOptionElement> {
+export default interface IHTMLOptionsCollection extends IHTMLCollection<IHTMLOptionElement> {
 	selectedIndex: number;
 	length: number;
 

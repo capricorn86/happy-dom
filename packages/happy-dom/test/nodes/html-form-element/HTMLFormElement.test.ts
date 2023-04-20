@@ -4,8 +4,10 @@ import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElemen
 import RadioNodeList from '../../../src/nodes/html-form-element/RadioNodeList';
 import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement';
 import Event from '../../../src/event/Event';
+import SubmitEvent from '../../../src/event/events/SubmitEvent';
 import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement';
 import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement';
+import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement';
 
 describe('HTMLFormElement', () => {
 	let window: Window;
@@ -91,13 +93,14 @@ describe('HTMLFormElement', () => {
                     <input type="radio" name="radio1" value="value1">
                     <input type="radio" name="radio1" value="value2" checked>
                     <input type="radio" name="radio1" value="value3">
+                    <input type="hidden" name="1" value="value1">
                 </div>
             `;
 			const elements = element.elements;
 			const root = element.children[0];
 
-			expect(element.length).toBe(8);
-			expect(elements.length).toBe(8);
+			expect(element.length).toBe(9);
+			expect(elements.length).toBe(9);
 
 			expect(element[0] === root.children[0]).toBe(true);
 			expect(element[1] === root.children[1]).toBe(true);
@@ -107,6 +110,7 @@ describe('HTMLFormElement', () => {
 			expect(element[5] === root.children[5]).toBe(true);
 			expect(element[6] === root.children[6]).toBe(true);
 			expect(element[7] === root.children[7]).toBe(true);
+			expect(element[8] === root.children[8]).toBe(true);
 
 			expect(elements[0] === root.children[0]).toBe(true);
 			expect(elements[1] === root.children[1]).toBe(true);
@@ -116,6 +120,7 @@ describe('HTMLFormElement', () => {
 			expect(elements[5] === root.children[5]).toBe(true);
 			expect(elements[6] === root.children[6]).toBe(true);
 			expect(elements[7] === root.children[7]).toBe(true);
+			expect(elements[8] === root.children[8]).toBe(true);
 
 			expect(elements.item(0) === root.children[0]).toBe(true);
 			expect(elements.item(1) === root.children[1]).toBe(true);
@@ -125,6 +130,7 @@ describe('HTMLFormElement', () => {
 			expect(elements.item(5) === root.children[5]).toBe(true);
 			expect(elements.item(6) === root.children[6]).toBe(true);
 			expect(elements.item(7) === root.children[7]).toBe(true);
+			expect(elements.item(8) === root.children[8]).toBe(true);
 
 			const radioNodeList1 = new RadioNodeList();
 			const radioNodeList2 = new RadioNodeList();
@@ -153,6 +159,7 @@ describe('HTMLFormElement', () => {
 			expect(elements.namedItem('checkbox1').value).toBe('value2');
 			expect(elements.namedItem('radio1')).toEqual(radioNodeList2);
 			expect(elements.namedItem('radio1').value).toBe('value2');
+			expect(elements.namedItem('1').value).toBe('value1');
 
 			(<IHTMLInputElement>elements.namedItem('text1')).name = 'text2';
 			(<IHTMLInputElement>elements.namedItem('text2')).id = 'text3';
@@ -181,26 +188,26 @@ describe('HTMLFormElement', () => {
 
 			root.appendChild(anotherElement);
 
-			expect(element.length).toBe(16);
-			expect(elements.length).toBe(16);
+			expect(element.length).toBe(17);
+			expect(elements.length).toBe(17);
 
-			expect(element[8] === anotherRoot.children[0]).toBe(true);
-			expect(element[9] === anotherRoot.children[1]).toBe(true);
-			expect(element[10] === anotherRoot.children[2]).toBe(true);
-			expect(element[11] === anotherRoot.children[3]).toBe(true);
-			expect(element[12] === anotherRoot.children[4]).toBe(true);
-			expect(element[13] === anotherRoot.children[5]).toBe(true);
-			expect(element[14] === anotherRoot.children[6]).toBe(true);
-			expect(element[15] === anotherRoot.children[7]).toBe(true);
+			expect(element[9] === anotherRoot.children[0]).toBe(true);
+			expect(element[10] === anotherRoot.children[1]).toBe(true);
+			expect(element[11] === anotherRoot.children[2]).toBe(true);
+			expect(element[12] === anotherRoot.children[3]).toBe(true);
+			expect(element[13] === anotherRoot.children[4]).toBe(true);
+			expect(element[14] === anotherRoot.children[5]).toBe(true);
+			expect(element[15] === anotherRoot.children[6]).toBe(true);
+			expect(element[16] === anotherRoot.children[7]).toBe(true);
 
-			expect(elements[8] === anotherRoot.children[0]).toBe(true);
-			expect(elements[9] === anotherRoot.children[1]).toBe(true);
-			expect(elements[10] === anotherRoot.children[2]).toBe(true);
-			expect(elements[11] === anotherRoot.children[3]).toBe(true);
-			expect(elements[12] === anotherRoot.children[4]).toBe(true);
-			expect(elements[13] === anotherRoot.children[5]).toBe(true);
-			expect(elements[14] === anotherRoot.children[6]).toBe(true);
-			expect(elements[15] === anotherRoot.children[7]).toBe(true);
+			expect(elements[9] === anotherRoot.children[0]).toBe(true);
+			expect(elements[10] === anotherRoot.children[1]).toBe(true);
+			expect(elements[11] === anotherRoot.children[2]).toBe(true);
+			expect(elements[12] === anotherRoot.children[3]).toBe(true);
+			expect(elements[13] === anotherRoot.children[4]).toBe(true);
+			expect(elements[14] === anotherRoot.children[5]).toBe(true);
+			expect(elements[15] === anotherRoot.children[6]).toBe(true);
+			expect(elements[16] === anotherRoot.children[7]).toBe(true);
 
 			const anotherRadioNodeList1 = new RadioNodeList();
 			const anotherRadioNodeList2 = new RadioNodeList();
@@ -293,7 +300,9 @@ describe('HTMLFormElement', () => {
 			element.noValidate = true;
 			element.requestSubmit();
 
+			expect(submitEvent).toBeInstanceOf(SubmitEvent);
 			expect(submitEvent.type).toBe('submit');
+			expect((<SubmitEvent>submitEvent).submitter).toBe(element);
 
 			submitEvent = null;
 
@@ -306,9 +315,10 @@ describe('HTMLFormElement', () => {
 			(<IHTMLInputElement>root.children[2]).click();
 			(<IHTMLInputElement>root.children[6]).click();
 
-			element.requestSubmit();
+			element.requestSubmit(<IHTMLButtonElement>root.children[1]);
 
 			expect(submitEvent.type).toBe('submit');
+			expect((<SubmitEvent>submitEvent).submitter).toBe(root.children[1]);
 		});
 
 		it('Skips validating if a submitter is sent that has "formNoValidate" set to "true".', () => {

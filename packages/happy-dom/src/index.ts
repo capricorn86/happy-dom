@@ -35,11 +35,13 @@ import IInputEventInit from './event/events/IInputEventInit';
 import IKeyboardEventInit from './event/events/IKeyboardEventInit';
 import IMouseEventInit from './event/events/IMouseEventInit';
 import IProgressEventInit from './event/events/IProgressEventInit';
+import ISubmitEventInit from './event/events/ISubmitEventInit';
 import IWheelEventInit from './event/events/IWheelEventInit';
 import InputEvent from './event/events/InputEvent';
 import KeyboardEvent from './event/events/KeyboardEvent';
 import MouseEvent from './event/events/MouseEvent';
 import ProgressEvent from './event/events/ProgressEvent';
+import SubmitEvent from './event/events/SubmitEvent';
 import WheelEvent from './event/events/WheelEvent';
 import DOMParser from './dom-parser/DOMParser';
 import Document from './nodes/document/Document';
@@ -106,6 +108,7 @@ import Comment from './nodes/comment/Comment';
 import IComment from './nodes/comment/IComment';
 import DocumentType from './nodes/document-type/DocumentType';
 import IDocumentType from './nodes/document-type/IDocumentType';
+import NodeIterator from './tree-walker/NodeIterator';
 import TreeWalker from './tree-walker/TreeWalker';
 import CustomElementRegistry from './custom-element/CustomElementRegistry';
 import XMLParser from './xml-parser/XMLParser';
@@ -140,6 +143,7 @@ import IResponse from './fetch/types/IResponse';
 import Headers from './fetch/Headers';
 import IHeaders from './fetch/types/IHeaders';
 import FormData from './form-data/FormData';
+import EventPhaseEnum from './event/EventPhaseEnum';
 
 export {
 	GlobalWindow,
@@ -179,11 +183,13 @@ export {
 	IKeyboardEventInit,
 	IMouseEventInit,
 	IProgressEventInit,
+	ISubmitEventInit,
 	IWheelEventInit,
 	InputEvent,
 	KeyboardEvent,
 	MouseEvent,
 	ProgressEvent,
+	SubmitEvent,
 	WheelEvent,
 	DOMParser,
 	Document,
@@ -250,6 +256,7 @@ export {
 	IComment,
 	DocumentType,
 	IDocumentType,
+	NodeIterator,
 	TreeWalker,
 	CustomElementRegistry,
 	XMLParser,
@@ -284,5 +291,6 @@ export {
 	IResponse,
 	Headers,
 	IHeaders,
-	FormData
+	FormData,
+	EventPhaseEnum
 };

@@ -1,12 +1,9 @@
 import IHTMLCollection from './IHTMLCollection';
 
 /**
- * Class list.
+ * HTML collection.
  */
-export default class HTMLCollection<T, NamedItem>
-	extends Array
-	implements IHTMLCollection<T, NamedItem>
-{
+export default class HTMLCollection<T> extends Array implements IHTMLCollection<T> {
 	protected _namedItems: { [k: string]: T[] } = {};
 
 	/**
@@ -24,8 +21,10 @@ export default class HTMLCollection<T, NamedItem>
 	 * @param name Name.
 	 * @returns Node.
 	 */
-	public namedItem(name: string): NamedItem | null {
-		return this[name] || null;
+	public namedItem(name: string): T | null {
+		return this._namedItems[name] && this._namedItems[name].length
+			? this._namedItems[name][0]
+			: null;
 	}
 
 	/**
@@ -42,7 +41,7 @@ export default class HTMLCollection<T, NamedItem>
 				this._namedItems[name].push(node);
 			}
 
-			if (!this[name]) {
+			if (!this[name] && this._isValidPropertyName(name)) {
 				this[name] = this._namedItems[name][0];
 			}
 		}
@@ -63,11 +62,23 @@ export default class HTMLCollection<T, NamedItem>
 
 				if (this._namedItems[name].length === 0) {
 					delete this._namedItems[name];
-					delete this[name];
-				} else {
+					if (this[name] && this._isValidPropertyName(name)) {
+						delete this[name];
+					}
+				} else if (this._isValidPropertyName(name)) {
 					this[name] = this._namedItems[name][0];
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns "true" if the property name is valid.
+	 *
+	 * @param name Name.
+	 * @returns True if the property name is valid.
+	 */
+	protected _isValidPropertyName(name: string): boolean {
+		return isNaN(Number(name)) || name.includes('.');
 	}
 }

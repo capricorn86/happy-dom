@@ -129,6 +129,20 @@ describe('Element', () => {
 			div.appendChild(textNode1);
 			expect(element.textContent).toBe('text1text2');
 		});
+
+		it('Converts specifial characters to HTML entities.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div>&gt;</div>';
+			expect(div.textContent).toBe('>');
+			const el = document.createElement('div');
+			el.innerHTML = '<div id="testnode">&gt;howdy</div>';
+			expect(el.textContent).toBe('>howdy');
+			div.appendChild(el);
+			expect(div.textContent).toBe('>>howdy');
+			const el2 = document.createElement('div');
+			el2.innerHTML = '<div id="testnode">&gt;&lt;&amp;&quot;&apos;&nbsp;&nbsp;</div>';
+			expect(el2.textContent).toBe('><&"\'  ');
+		});
 	});
 
 	describe('set textContent()', () => {
@@ -837,7 +851,7 @@ describe('Element', () => {
 				.mockImplementation((parentNode, requestedClassName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedClassName).toEqual(className);
-					return <IHTMLCollection<IElement, IElement>>[child];
+					return <IHTMLCollection<IElement>>[child];
 				});
 
 			const result = element.getElementsByClassName(className);
@@ -856,7 +870,7 @@ describe('Element', () => {
 				.mockImplementation((parentNode, requestedTagName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement, IElement>>[child];
+					return <IHTMLCollection<IElement>>[child];
 				});
 
 			const result = element.getElementsByTagName(tagName);
@@ -877,7 +891,7 @@ describe('Element', () => {
 					expect(parentNode).toBe(element);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement, IElement>>[child];
+					return <IHTMLCollection<IElement>>[child];
 				});
 
 			const result = element.getElementsByTagNameNS(namespaceURI, tagName);
@@ -1074,6 +1088,60 @@ describe('Element', () => {
 			expect(element.children[0] === div2).toBe(true);
 			expect(element.children[1] === div1).toBe(true);
 			expect(element.children[2] === span).toBe(true);
+		});
+
+		it('Inserts elements of the same parent correctly.', () => {
+			const div = document.createElement('div');
+			div.innerHTML =
+				'<span id="a"></span><span id="b"></span><span id="c"></span><span id="d"></span>';
+
+			const a = div.querySelector('#a');
+			const b = div.querySelector('#b');
+
+			div.insertBefore(a, b);
+
+			expect(div.innerHTML).toBe(
+				'<span id="a"></span><span id="b"></span><span id="c"></span><span id="d"></span>'
+			);
+		});
+
+		it('After should add child element correctly', () => {
+			document.body.innerHTML = `<div class="container"></div>\n`;
+			expect(document.body.children.length).toBe(1);
+			const container = document.querySelector('.container');
+
+			const div1 = document.createElement('div');
+			div1.classList.add('someClassName');
+			div1.innerHTML = 'div1';
+			container.after(div1);
+			expect(document.body.children.length).toBe(2);
+
+			const div2 = document.createElement('div');
+			div2.classList.add('someClassName');
+			div2.innerHTML = 'div2';
+			div1.after(div2);
+
+			expect(document.body.children.length).toBe(3);
+			expect(document.body.children[1] === div1).toBe(true);
+			expect(document.body.children[2] === div2).toBe(true);
+			expect(document.getElementsByClassName('someClassName').length).toBe(2);
+		});
+
+		it('Insert before comment node should be at the correct location.', () => {
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const span3 = document.createElement('span');
+			const comment = document.createComment('test');
+
+			element.appendChild(span1);
+			element.appendChild(comment);
+			element.appendChild(span2);
+			element.insertBefore(span3, comment);
+
+			expect(element.children.length).toBe(3);
+			expect(element.children[0] === span1).toBe(true);
+			expect(element.children[1] === span3).toBe(true);
+			expect(element.children[2] === span2).toBe(true);
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment

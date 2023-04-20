@@ -43,15 +43,14 @@ export default class Text extends CharacterData implements IText {
 	 * Breaks the Text node into two nodes at the specified offset, keeping both nodes in the tree as siblings.
 	 *
 	 * @see https://dom.spec.whatwg.org/#dom-text-splittext
-	 * @see https://dom.spec.whatwg.org/#dom-text-splittext
 	 * @param offset Offset.
 	 * @returns New text node.
 	 */
 	public splitText(offset: number): IText {
 		const length = this._data.length;
 
-		if (offset > length) {
-			new DOMException(
+		if (offset < 0 || offset > length) {
+			throw new DOMException(
 				'The index is not in the allowed range.',
 				DOMExceptionNameEnum.indexSizeError
 			);

@@ -11,7 +11,7 @@ import IHTMLOptionsCollection from './IHTMLOptionsCollection';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection.
  */
 export default class HTMLOptionsCollection
-	extends HTMLCollection<IHTMLOptionElement, IHTMLOptionElement>
+	extends HTMLCollection<IHTMLOptionElement>
 	implements IHTMLOptionsCollection
 {
 	private _selectElement: IHTMLSelectElement;
@@ -65,7 +65,7 @@ export default class HTMLOptionsCollection
 		}
 
 		if (!Number.isNaN(Number(before))) {
-			if (before < 0) {
+			if (<number>before < 0) {
 				return;
 			}
 

@@ -2,10 +2,8 @@ import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
 import IHTMLInputElement from '../html-input-element/IHTMLInputElement';
 import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement';
 import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
-import HTMLCollection from '../element/HTMLCollection';
 import RadioNodeList from './RadioNodeList';
 import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement';
-import IRadioNodeList from './IRadioNodeList';
 
 /**
  * HTMLFormControlsCollection.
@@ -13,17 +11,45 @@ import IRadioNodeList from './IRadioNodeList';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormControlsCollection
  */
 export default class HTMLFormControlsCollection
-	extends HTMLCollection<
-		IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
+	extends Array<IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement>
+	implements IHTMLFormControlsCollection
+{
+	public _namedItems: { [k: string]: RadioNodeList } = {};
+
+	/**
+	 * Returns item by index.
+	 *
+	 * @param index Index.
+	 */
+	public item(
+		index: number
+	): IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement | null {
+		return index >= 0 && this[index] ? this[index] : null;
+	}
+
+	/**
+	 * Returns named item.
+	 *
+	 * @param name Name.
+	 * @returns Node.
+	 */
+	public namedItem(
+		name: string
+	):
 		| IHTMLInputElement
 		| IHTMLTextAreaElement
 		| IHTMLSelectElement
 		| IHTMLButtonElement
-		| IRadioNodeList
-	>
-	implements IHTMLFormControlsCollection
-{
-	public _namedItems: { [k: string]: RadioNodeList } = {};
+		| RadioNodeList
+		| null {
+		if (this._namedItems[name] && this._namedItems[name].length) {
+			if (this._namedItems[name].length === 1) {
+				return this._namedItems[name][0];
+			}
+			return this._namedItems[name];
+		}
+		return null;
+	}
 
 	/**
 	 * Appends named item.
@@ -42,8 +68,10 @@ export default class HTMLFormControlsCollection
 				this._namedItems[name].push(node);
 			}
 
-			this[name] =
-				this._namedItems[name].length > 1 ? this._namedItems[name] : this._namedItems[name][0];
+			if (this._isValidPropertyName(name)) {
+				this[name] =
+					this._namedItems[name].length > 1 ? this._namedItems[name] : this._namedItems[name][0];
+			}
 		}
 	}
 
@@ -65,12 +93,24 @@ export default class HTMLFormControlsCollection
 
 				if (this._namedItems[name].length === 0) {
 					delete this._namedItems[name];
-					delete this[name];
-				} else {
+					if (this[name] && this._isValidPropertyName(name)) {
+						delete this[name];
+					}
+				} else if (this._isValidPropertyName(name)) {
 					this[name] =
 						this._namedItems[name].length > 1 ? this._namedItems[name] : this._namedItems[name][0];
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns "true" if the property name is valid.
+	 *
+	 * @param name Name.
+	 * @returns True if the property name is valid.
+	 */
+	protected _isValidPropertyName(name: string): boolean {
+		return isNaN(Number(name)) || name.includes('.');
 	}
 }

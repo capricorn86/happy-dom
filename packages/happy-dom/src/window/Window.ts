@@ -23,7 +23,7 @@ import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
 import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
 import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
-import { default as AudioImplementation } from '../nodes/html-audio-element/Audio';
+import AudioImplementation from '../nodes/html-audio-element/Audio';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
 import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
 import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement';
@@ -33,9 +33,10 @@ import SVGElement from '../nodes/svg-element/SVGElement';
 import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
-import { default as ImageImplementation } from '../nodes/html-image-element/Image';
+import ImageImplementation from '../nodes/html-image-element/Image';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
 import CharacterData from '../nodes/character-data/CharacterData';
+import NodeIterator from '../tree-walker/NodeIterator';
 import TreeWalker from '../tree-walker/TreeWalker';
 import Event from '../event/Event';
 import CustomEvent from '../event/events/CustomEvent';
@@ -51,13 +52,13 @@ import Location from '../location/Location';
 import NonImplementedEventTypes from '../event/NonImplementedEventTypes';
 import MutationObserver from '../mutation-observer/MutationObserver';
 import NonImplemenetedElementClasses from '../config/NonImplemenetedElementClasses';
-import { default as DOMParserImplementation } from '../dom-parser/DOMParser';
+import DOMParserImplementation from '../dom-parser/DOMParser';
 import XMLSerializer from '../xml-serializer/XMLSerializer';
 import ResizeObserver from '../resize-observer/ResizeObserver';
 import Blob from '../file/Blob';
 import File from '../file/File';
 import DOMException from '../exception/DOMException';
-import { default as FileReaderImplementation } from '../file/FileReader';
+import FileReaderImplementation from '../file/FileReader';
 import History from '../history/History';
 import CSSStyleSheet from '../css/CSSStyleSheet';
 import CSSStyleDeclaration from '../css/declaration/CSSStyleDeclaration';
@@ -82,6 +83,7 @@ import InputEvent from '../event/events/InputEvent';
 import UIEvent from '../event/UIEvent';
 import ErrorEvent from '../event/events/ErrorEvent';
 import StorageEvent from '../event/events/StorageEvent';
+import SubmitEvent from '../event/events/SubmitEvent';
 import Screen from '../screen/Screen';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
 import IResponse from '../fetch/types/IResponse';
@@ -91,8 +93,8 @@ import IRequestInit from '../fetch/types/IRequestInit';
 import IHeaders from '../fetch/types/IHeaders';
 import IHeadersInit from '../fetch/types/IHeadersInit';
 import Headers from '../fetch/Headers';
-import { default as RequestImplementation } from '../fetch/Request';
-import { default as ResponseImplementation } from '../fetch/Response';
+import RequestImplementation from '../fetch/Request';
+import ResponseImplementation from '../fetch/Response';
 import Storage from '../storage/Storage';
 import IWindow from './IWindow';
 import HTMLCollection from '../nodes/element/HTMLCollection';
@@ -106,7 +108,7 @@ import MimeTypeArray from '../navigator/MimeTypeArray';
 import Plugin from '../navigator/Plugin';
 import PluginArray from '../navigator/PluginArray';
 import Fetch from '../fetch/Fetch';
-import { default as RangeImplementation } from '../range/Range';
+import RangeImplementation from '../range/Range';
 import DOMRect from '../nodes/element/DOMRect';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript';
 import * as PerfHooks from 'perf_hooks';
@@ -214,6 +216,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly DocumentFragment = DocumentFragment;
 	public readonly CharacterData = CharacterData;
 	public readonly NodeFilter = NodeFilter;
+	public readonly NodeIterator = NodeIterator;
 	public readonly TreeWalker = TreeWalker;
 	public readonly MutationObserver = MutationObserver;
 	public readonly Document = Document;
@@ -233,6 +236,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly InputEvent = InputEvent;
 	public readonly ErrorEvent = ErrorEvent;
 	public readonly StorageEvent = StorageEvent;
+	public readonly SubmitEvent = SubmitEvent;
 	public readonly ProgressEvent = ProgressEvent;
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly EventTarget = EventTarget;
@@ -292,7 +296,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly AbortSignal = AbortSignal;
 	public readonly FormData = FormData;
 	public readonly XMLHttpRequest;
-	public readonly DOMParser;
+	public readonly DOMParser: typeof DOMParserImplementation;
 	public readonly Range;
 	public readonly FileReader;
 	public readonly Image;
@@ -388,6 +392,12 @@ export default class Window extends EventTarget implements IWindow {
 	public Array;
 	public Object;
 	public Function;
+
+	// Public internal properties
+
+	// Used for tracking capture event listeners to improve performance when they are not used.
+	// See EventTarget class.
+	public _captureEventListenerCount: { [eventType: string]: number } = {};
 
 	// Private properties
 	private _setTimeout;

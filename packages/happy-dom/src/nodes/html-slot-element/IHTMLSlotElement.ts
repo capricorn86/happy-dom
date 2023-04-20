@@ -47,5 +47,5 @@ export default interface IHTMLSlotElement extends IHTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IHTMLSlotElement;
+	cloneNode(deep?: boolean): IHTMLSlotElement;
 }

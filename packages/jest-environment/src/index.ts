@@ -23,9 +23,16 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	 * Constructor.
 	 *
 	 * @param config Jest config.
+	 * @param config.globalConfig jest global config.
+	 * @param config.projectConfig jest project config.
 	 * @param options Options.
 	 */
-	constructor(config: Config.ProjectConfig, options?: EnvironmentContext) {
+	constructor(
+		config:
+			| { globalConfig: Config.GlobalConfig; projectConfig: Config.ProjectConfig }
+			| Config.ProjectConfig,
+		options?: EnvironmentContext
+	) {
 		// Node's error-message stack size is limited to 10, but it's pretty useful to see more than that when a test fails.
 		this.global.Error.stackTraceLimit = 100;
 
@@ -35,7 +42,21 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		// Needed as Jest is using it
 		this.window['global'] = this.global;
 
-		JestUtil.installCommonGlobals(<typeof globalThis>(<unknown>this.window), config.globals);
+		let globals: Config.ConfigGlobals;
+		let projectConfig: Config.ProjectConfig;
+		if (isJestConfigVersion29(config)) {
+			// Jest 29
+			globals = config.globals;
+			projectConfig = config;
+		} else if (isJestConfigVersion28(config)) {
+			// Jest < 29
+			globals = config.projectConfig.globals;
+			projectConfig = config.projectConfig;
+		} else {
+			throw new Error('Unsupported jest version.');
+		}
+
+		JestUtil.installCommonGlobals(<typeof globalThis>(<unknown>this.window), globals);
 
 		// For some reason Jest removes the global setImmediate, so we need to add it back.
 		this.global.setImmediate = global.setImmediate;
@@ -45,8 +66,12 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			this.global.window['console'] = options.console;
 		}
 
+		if (projectConfig.testEnvironmentOptions['url']) {
+			this.window.happyDOM.setURL(String(projectConfig.testEnvironmentOptions['url']));
+		}
+
 		this.fakeTimers = new LegacyFakeTimers({
-			config,
+			config: projectConfig,
 			global: <typeof globalThis>(<unknown>this.window),
 			moduleMocker: this.moduleMocker,
 			timerConfig: {
@@ -56,7 +81,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		});
 
 		this.fakeTimersModern = new ModernFakeTimers({
-			config,
+			config: projectConfig,
 			global: <typeof globalThis>(<unknown>this.window)
 		});
 	}
@@ -102,4 +127,14 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	public getVmContext(): VM.Context {
 		return this.global;
 	}
+}
+
+function isJestConfigVersion29(config: unknown): config is Config.ProjectConfig {
+	return Object.getOwnPropertyDescriptor(config, 'globals') !== undefined;
+}
+
+function isJestConfigVersion28(
+	config: unknown
+): config is { globalConfig: Config.GlobalConfig; projectConfig: Config.ProjectConfig } {
+	return Object.getOwnPropertyDescriptor(config, 'projectConfig') !== undefined;
 }
