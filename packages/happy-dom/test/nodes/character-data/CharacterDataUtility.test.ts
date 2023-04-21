@@ -1,9 +1,10 @@
 import Window from '../../../src/window/Window';
+import Document from '../../../src/nodes/document/Document';
 import CharacterDataUtility from '../../../src/nodes/character-data/CharacterDataUtility';
 
 describe('CharacterDataTest', () => {
-	let window;
-	let document;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();

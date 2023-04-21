@@ -1,7 +1,14 @@
 import HTMLElement from '../html-element/HTMLElement';
-import IElement from '../element/IElement';
 import IHTMLFormElement from './IHTMLFormElement';
 import Event from '../../event/Event';
+import SubmitEvent from '../../event/events/SubmitEvent';
+import HTMLFormControlsCollection from './HTMLFormControlsCollection';
+import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
+import INode from '../node/INode';
+import IHTMLInputElement from '../html-input-element/IHTMLInputElement';
+import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement';
+import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
+import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement';
 
 /**
  * HTML Form Element.
@@ -10,10 +17,17 @@ import Event from '../../event/Event';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement.
  */
 export default class HTMLFormElement extends HTMLElement implements IHTMLFormElement {
+	// Public properties.
+	public readonly elements: IHTMLFormControlsCollection = new HTMLFormControlsCollection();
+	public readonly length = 0;
+
 	// Events
 	public onformdata: (event: Event) => void | null = null;
 	public onreset: (event: Event) => void | null = null;
 	public onsubmit: (event: Event) => void | null = null;
+
+	// Private properties
+	public _formNode: INode = this;
 
 	/**
 	 * Returns name.
@@ -21,7 +35,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Name.
 	 */
 	public get name(): string {
-		return this.getAttributeNS(null, 'name') || '';
+		return this.getAttribute('name') || '';
 	}
 
 	/**
@@ -30,7 +44,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param name Name.
 	 */
 	public set name(name: string) {
-		this.setAttributeNS(null, 'name', name);
+		this.setAttribute('name', name);
 	}
 
 	/**
@@ -39,7 +53,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Method.
 	 */
 	public get method(): string {
-		return this.getAttributeNS(null, 'method') || 'get';
+		return this.getAttribute('method') || 'get';
 	}
 
 	/**
@@ -48,7 +62,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param method Method.
 	 */
 	public set method(method: string) {
-		this.setAttributeNS(null, 'method', method);
+		this.setAttribute('method', method);
 	}
 
 	/**
@@ -57,7 +71,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Target.
 	 */
 	public get target(): string {
-		return this.getAttributeNS(null, 'target') || '';
+		return this.getAttribute('target') || '';
 	}
 
 	/**
@@ -66,7 +80,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param target Target.
 	 */
 	public set target(target: string) {
-		this.setAttributeNS(null, 'target', target);
+		this.setAttribute('target', target);
 	}
 
 	/**
@@ -75,7 +89,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Action.
 	 */
 	public get action(): string {
-		return this.getAttributeNS(null, 'action') || '';
+		return this.getAttribute('action') || '';
 	}
 
 	/**
@@ -84,7 +98,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param action Action.
 	 */
 	public set action(action: string) {
-		this.setAttributeNS(null, 'action', action);
+		this.setAttribute('action', action);
 	}
 
 	/**
@@ -93,7 +107,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Encoding.
 	 */
 	public get encoding(): string {
-		return this.getAttributeNS(null, 'encoding') || '';
+		return this.getAttribute('encoding') || '';
 	}
 
 	/**
@@ -102,7 +116,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param encoding Encoding.
 	 */
 	public set encoding(encoding: string) {
-		this.setAttributeNS(null, 'encoding', encoding);
+		this.setAttribute('encoding', encoding);
 	}
 
 	/**
@@ -111,7 +125,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Enctype.
 	 */
 	public get enctype(): string {
-		return this.getAttributeNS(null, 'enctype') || '';
+		return this.getAttribute('enctype') || '';
 	}
 
 	/**
@@ -120,7 +134,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param enctype Enctype.
 	 */
 	public set enctype(enctype: string) {
-		this.setAttributeNS(null, 'enctype', enctype);
+		this.setAttribute('enctype', enctype);
 	}
 
 	/**
@@ -129,7 +143,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Autocomplete.
 	 */
 	public get autocomplete(): string {
-		return this.getAttributeNS(null, 'autocomplete') || '';
+		return this.getAttribute('autocomplete') || '';
 	}
 
 	/**
@@ -138,7 +152,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param autocomplete Autocomplete.
 	 */
 	public set autocomplete(autocomplete: string) {
-		this.setAttributeNS(null, 'autocomplete', autocomplete);
+		this.setAttribute('autocomplete', autocomplete);
 	}
 
 	/**
@@ -147,7 +161,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Accept charset.
 	 */
 	public get acceptCharset(): string {
-		return this.getAttributeNS(null, 'acceptcharset') || '';
+		return this.getAttribute('acceptcharset') || '';
 	}
 
 	/**
@@ -156,7 +170,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param acceptCharset Accept charset.
 	 */
 	public set acceptCharset(acceptCharset: string) {
-		this.setAttributeNS(null, 'acceptcharset', acceptCharset);
+		this.setAttribute('acceptcharset', acceptCharset);
 	}
 
 	/**
@@ -164,8 +178,8 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 *
 	 * @returns No validate.
 	 */
-	public get noValidate(): string {
-		return this.getAttributeNS(null, 'novalidate') || '';
+	public get noValidate(): boolean {
+		return this.getAttribute('novalidate') !== null;
 	}
 
 	/**
@@ -173,42 +187,62 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 *
 	 * @param noValidate No validate.
 	 */
-	public set noValidate(noValidate: string) {
-		this.setAttributeNS(null, 'novalidate', noValidate);
+	public set noValidate(noValidate: boolean) {
+		if (!noValidate) {
+			this.removeAttribute('novalidate');
+		} else {
+			this.setAttribute('novalidate', '');
+		}
 	}
 
 	/**
-	 * Returns input elements.
+	 * Submits form. No submit event is raised. In particular, the form's "submit" event handler is not run.
 	 *
-	 * @returns Elements.
-	 */
-	public get elements(): IElement[] {
-		return this.querySelectorAll('input,textarea');
-	}
-
-	/**
-	 * Returns number of input elements.
-	 *
-	 * @returns Length.
-	 */
-	public get length(): number {
-		return this.elements.length;
-	}
-
-	/**
-	 * Submits form.
+	 * In Happy DOM this means that nothing happens.
 	 */
 	public submit(): void {}
 
 	/**
-	 * Resets form.
+	 * Submits form, reports validity and raises submit event.
+	 *
+	 * @param [submitter] Submitter.
 	 */
-	public reset(): void {}
+	public requestSubmit(submitter?: IHTMLInputElement | IHTMLButtonElement): void {
+		const noValidate = submitter?.formNoValidate || this.noValidate;
+		if (noValidate || this.checkValidity()) {
+			this.dispatchEvent(
+				new SubmitEvent('submit', { bubbles: true, cancelable: true, submitter: submitter || this })
+			);
+		}
+	}
 
 	/**
-	 * Reports validity.
+	 * Resets form.
 	 */
-	public reportValidity(): void {}
+	public reset(): void {
+		for (const element of this.elements) {
+			if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+				element['_value'] = null;
+				element['_checked'] = null;
+			} else if (element.tagName === 'TEXTAREA') {
+				element['_value'] = null;
+			} else if (element.tagName === 'SELECT') {
+				let hasSelectedAttribute = false;
+				for (const option of (<IHTMLSelectElement>element).options) {
+					if (option.hasAttribute('selected')) {
+						hasSelectedAttribute = true;
+						option.selected = true;
+						break;
+					}
+				}
+				if (!hasSelectedAttribute && (<IHTMLSelectElement>element).options.length > 0) {
+					(<IHTMLSelectElement>element).options[0].selected = true;
+				}
+			}
+		}
+
+		this.dispatchEvent(new Event('reset', { bubbles: true, cancelable: true }));
+	}
 
 	/**
 	 * Checks validity.
@@ -216,7 +250,32 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns "true" if validation does'nt fail.
 	 */
 	public checkValidity(): boolean {
-		return true;
+		const radioValidationState: { [k: string]: boolean } = {};
+		let isFormValid = true;
+
+		for (const element of this.elements) {
+			if (element.tagName === 'INPUT' && element.type === 'radio' && element.name) {
+				if (!radioValidationState[element.name]) {
+					radioValidationState[element.name] = true;
+					if (!element.checkValidity()) {
+						isFormValid = false;
+					}
+				}
+			} else if (!element.checkValidity()) {
+				isFormValid = false;
+			}
+		}
+
+		return isFormValid;
+	}
+
+	/**
+	 * Reports validity.
+	 *
+	 * @returns "true" if validation does'nt fail.
+	 */
+	public reportValidity(): boolean {
+		return this.checkValidity();
 	}
 
 	/**
@@ -228,5 +287,55 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 */
 	public cloneNode(deep = false): IHTMLFormElement {
 		return <IHTMLFormElement>super.cloneNode(deep);
+	}
+
+	/**
+	 * Appends a form control item.
+	 *
+	 * @param node Node.
+	 * @param name Name
+	 */
+	public _appendFormControlItem(
+		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
+		name: string
+	): void {
+		if (!this.elements.includes(node)) {
+			this[this.elements.length] = node;
+			this.elements.push(node);
+			(<number>this.length) = this.elements.length;
+		}
+
+		(<HTMLFormControlsCollection>this.elements)._appendNamedItem(node, name);
+		this[name] = this.elements[name];
+	}
+
+	/**
+	 * Remove a form control item.
+	 *
+	 * @param node Node.
+	 * @param name Name.
+	 */
+	public _removeFormControlItem(
+		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
+		name: string
+	): void {
+		const index = this.elements.indexOf(node);
+
+		if (index !== -1) {
+			this.elements.splice(index, 1);
+			for (let i = index; i < this.length; i++) {
+				this[i] = this[i + 1];
+			}
+			delete this[this.length - 1];
+			(<number>this.length)--;
+		}
+
+		(<HTMLFormControlsCollection>this.elements)._removeNamedItem(node, name);
+
+		if (this.elements[name]) {
+			this[name] = this.elements[name];
+		} else {
+			delete this[name];
+		}
 	}
 }

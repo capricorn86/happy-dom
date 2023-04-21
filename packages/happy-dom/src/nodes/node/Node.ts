@@ -1,19 +1,26 @@
 import EventTarget from '../../event/EventTarget';
-import MutationRecord from '../../mutation-observer/MutationRecord';
-import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
 import MutationListener from '../../mutation-observer/MutationListener';
-import Event from '../../event/Event';
 import INode from './INode';
-import DOMException from '../../exception/DOMException';
 import IDocument from '../document/IDocument';
 import IElement from '../element/IElement';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
-import INodeList from './INodeList';
-import NodeListFactory from './NodeListFactory';
 import NodeTypeEnum from './NodeTypeEnum';
 import NodeDocumentPositionEnum from './NodeDocumentPositionEnum';
 import NodeUtility from './NodeUtility';
 import IAttr from '../attr/IAttr';
+import NodeList from './NodeList';
+import INodeList from './INodeList';
+
+const JSON_CIRCULAR_PROPERTIES = [
+	'ownerDocument',
+	'parentNode',
+	'ownerElement',
+	'defaultView',
+	'_rootNode',
+	'_formNode',
+	'_selectNode',
+	'_textAreaNode'
+];
 
 /**
  * Node.
@@ -58,11 +65,14 @@ export default class Node extends EventTarget implements INode {
 	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
-	public readonly childNodes: INodeList<INode> = NodeListFactory.create();
+	public readonly childNodes: INodeList<INode> = new NodeList<INode>();
 	public readonly isConnected: boolean = false;
 
 	// Custom Properties (not part of HTML standard)
 	public _rootNode: INode = null;
+	public _formNode: INode = null;
+	public _selectNode: INode = null;
+	public _textAreaNode: INode = null;
 	public _observers: MutationListener[] = [];
 
 	/**
@@ -233,15 +243,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns "true" if this node contains the other node.
 	 */
 	public contains(otherNode: INode): boolean {
-		if (this === otherNode) {
-			return true;
-		}
-		for (const childNode of this.childNodes) {
-			if (childNode === otherNode || childNode.contains(otherNode)) {
-				return true;
-			}
-		}
-		return false;
+		return NodeUtility.isInclusiveAncestor(this, otherNode);
 	}
 
 	/**
@@ -299,53 +301,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Appended node.
 	 */
 	public appendChild(node: INode): INode {
-		if (node === this) {
-			throw new DOMException('Not possible to append a node as a child of itself.');
-		}
-
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-			for (const child of node.childNodes.slice()) {
-				this.appendChild(child);
-			}
-			return node;
-		}
-
-		// Remove the node from its previous parent if it has any.
-		if (node.parentNode) {
-			const index = node.parentNode.childNodes.indexOf(node);
-			if (index !== -1) {
-				node.parentNode.childNodes.splice(index, 1);
-			}
-		}
-
-		if (this.isConnected) {
-			(this.ownerDocument || this)['_cacheID']++;
-		}
-
-		this.childNodes.push(node);
-
-		(<Node>node)._connectToNode(this);
-
-		// MutationObserver
-		if (this._observers.length > 0) {
-			const record = new MutationRecord();
-			record.target = this;
-			record.type = MutationTypeEnum.childList;
-			record.addedNodes = [node];
-
-			for (const observer of this._observers) {
-				if (observer.options.subtree) {
-					(<Node>node)._observe(observer);
-				}
-				if (observer.options.childList) {
-					observer.callback([record]);
-				}
-			}
-		}
-
-		return node;
+		return NodeUtility.appendChild(this, node);
 	}
 
 	/**
@@ -355,36 +311,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Removed node.
 	 */
 	public removeChild(node: INode): INode {
-		const index = this.childNodes.indexOf(node);
-
-		if (index === -1) {
-			throw new DOMException('Failed to remove node. Node is not child of parent.');
-		}
-
-		if (this.isConnected) {
-			(this.ownerDocument || this)['_cacheID']++;
-		}
-
-		this.childNodes.splice(index, 1);
-
-		(<Node>node)._connectToNode(null);
-
-		// MutationObserver
-		if (this._observers.length > 0) {
-			const record = new MutationRecord();
-			record.target = this;
-			record.type = MutationTypeEnum.childList;
-			record.removedNodes = [node];
-
-			for (const observer of this._observers) {
-				(<Node>node)._unobserve(observer);
-				if (observer.options.childList) {
-					observer.callback([record]);
-				}
-			}
-		}
-
-		return node;
+		return NodeUtility.removeChild(this, node);
 	}
 
 	/**
@@ -395,69 +322,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode: INode | null): INode {
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-			for (const child of newNode.childNodes.slice()) {
-				this.insertBefore(child, referenceNode);
-			}
-			return newNode;
-		}
-
-		if (arguments.length === 1) {
-			throw new DOMException(
-				"Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 1 present.",
-				'TypeError'
-			);
-		}
-
-		// The incoming referenceNode may be undefined, and at this time, the newNode should be inserted at the end of the peer node.
-		if (referenceNode === null || referenceNode === undefined) {
-			this.appendChild(newNode);
-			return newNode;
-		}
-
-		const index = referenceNode ? this.childNodes.indexOf(referenceNode) : 0;
-
-		if (index === -1) {
-			throw new DOMException(
-				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
-			);
-		}
-
-		if (this.isConnected) {
-			(this.ownerDocument || this)['_cacheID']++;
-		}
-
-		if (newNode.parentNode) {
-			const index = newNode.parentNode.childNodes.indexOf(newNode);
-			if (index !== -1) {
-				newNode.parentNode.childNodes.splice(index, 1);
-			}
-		}
-
-		this.childNodes.splice(index, 0, newNode);
-
-		(<Node>newNode)._connectToNode(this);
-
-		// MutationObserver
-		if (this._observers.length > 0) {
-			const record = new MutationRecord();
-			record.target = this;
-			record.type = MutationTypeEnum.childList;
-			record.addedNodes = [newNode];
-
-			for (const observer of this._observers) {
-				if (observer.options.subtree) {
-					(<Node>newNode)._observe(observer);
-				}
-				if (observer.options.childList) {
-					observer.callback([record]);
-				}
-			}
-		}
-
-		return newNode;
+		return NodeUtility.insertBefore(this, newNode, referenceNode);
 	}
 
 	/**
@@ -472,27 +337,6 @@ export default class Node extends EventTarget implements INode {
 		this.removeChild(oldChild);
 
 		return oldChild;
-	}
-
-	/**
-	 * @override
-	 */
-	public dispatchEvent(event: Event): boolean {
-		const returnValue = super.dispatchEvent(event);
-
-		if (event.bubbles && !event._propagationStopped) {
-			if (this.parentNode) {
-				return this.parentNode.dispatchEvent(event);
-			}
-
-			// eslint-disable-next-line
-			if (event.composed && this.nodeType === NodeTypeEnum.documentFragmentNode && (<any>this).host) {
-				// eslint-disable-next-line
-				return (<any>this).host.dispatchEvent(event);
-			}
-		}
-
-		return returnValue;
 	}
 
 	/**
@@ -544,10 +388,25 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public _connectToNode(parentNode: INode = null): void {
 		const isConnected = !!parentNode && parentNode.isConnected;
+		const formNode = (<Node>this)._formNode;
+		const selectNode = (<Node>this)._selectNode;
+		const textAreaNode = (<Node>this)._textAreaNode;
 
-		if (this.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+		if (this.nodeType !== NodeTypeEnum.documentFragmentNode) {
 			(<INode>this.parentNode) = parentNode;
 			(<Node>this)._rootNode = isConnected && parentNode ? (<Node>parentNode)._rootNode : null;
+
+			if (this['tagName'] !== 'FORM') {
+				(<Node>this)._formNode = parentNode ? (<Node>parentNode)._formNode : null;
+			}
+
+			if (this['tagName'] !== 'SELECT') {
+				(<Node>this)._selectNode = parentNode ? (<Node>parentNode)._selectNode : null;
+			}
+
+			if (this['tagName'] !== 'TEXTAREA') {
+				(<Node>this)._textAreaNode = parentNode ? (<Node>parentNode)._textAreaNode : null;
+			}
 		}
 
 		if (this.isConnected !== isConnected) {
@@ -570,6 +429,14 @@ export default class Node extends EventTarget implements INode {
 			if ((<any>this)._shadowRoot) {
 				// eslint-disable-next-line
 				(<any>this)._shadowRoot._connectToNode(this);
+			}
+		} else if (
+			formNode !== this._formNode ||
+			selectNode !== this._selectNode ||
+			textAreaNode !== this._textAreaNode
+		) {
+			for (const child of this.childNodes) {
+				(<Node>child)._connectToNode(this);
 			}
 		}
 	}
@@ -745,5 +612,48 @@ export default class Node extends EventTarget implements INode {
 		return node1Index < node2Index
 			? Node.DOCUMENT_POSITION_PRECEDING
 			: Node.DOCUMENT_POSITION_FOLLOWING;
+	}
+
+	/**
+	 * Normalizes the sub-tree of the node, i.e. joins adjacent text nodes, and
+	 * removes all empty text nodes.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Node/normalize
+	 */
+	public normalize(): void {
+		let child = this.firstChild;
+		while (child) {
+			if (NodeUtility.isTextNode(child)) {
+				// Append text of all following text nodes, and remove them.
+				while (NodeUtility.isTextNode(child.nextSibling)) {
+					child.data += child.nextSibling.data;
+					child.nextSibling.remove();
+				}
+				// Remove text node if it is still empty.
+				if (!child.data.length) {
+					const node = child;
+					child = child.nextSibling;
+					node.remove();
+					continue;
+				}
+			} else {
+				// Normalize child nodes recursively.
+				child.normalize();
+			}
+			child = child.nextSibling;
+		}
+	}
+
+	/**
+	 * This will be called by JSON.stringify() when serializing this node.
+	 *
+	 * @returns Object without circular references.
+	 */
+	public toJSON(): { [key: string]: unknown } {
+		const result = {};
+		for (const key of Object.keys(this)) {
+			result[key] = !JSON_CIRCULAR_PROPERTIES.includes(key) ? this[key] : null;
+		}
+		return result;
 	}
 }

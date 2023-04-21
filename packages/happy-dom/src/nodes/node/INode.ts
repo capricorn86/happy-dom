@@ -38,13 +38,14 @@ export default interface INode extends IEventTarget {
 	connectedCallback?(): void;
 	disconnectedCallback?(): void;
 	getRootNode(options?: { composed: boolean }): INode;
-	cloneNode(deep: boolean): INode;
+	cloneNode(deep?: boolean): INode;
 	appendChild(node: INode): INode;
 	removeChild(node: INode): INode;
 	hasChildNodes(): boolean;
-	contains(otherNode: INode): boolean;
+	contains(otherNode: INode | null): boolean;
 	insertBefore(newNode: INode, referenceNode?: INode | null): INode;
 	replaceChild(newChild: INode, oldChild: INode): INode;
 	toString(): string;
 	compareDocumentPosition(otherNode: INode): number;
+	normalize(): void;
 }

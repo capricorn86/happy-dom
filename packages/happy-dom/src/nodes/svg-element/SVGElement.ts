@@ -4,6 +4,8 @@ import ISVGElement from './ISVGElement';
 import ISVGSVGElement from './ISVGSVGElement';
 import IAttr from '../attr/IAttr';
 import Event from '../../event/Event';
+import Dataset from '../element/Dataset';
+import HTMLElementUtility from '../html-element/HTMLElementUtility';
 
 /**
  * SVG Element.
@@ -20,7 +22,9 @@ export default class SVGElement extends Element implements ISVGElement {
 	public onscroll: (event: Event) => void | null = null;
 	public onunload: (event: Event) => void | null = null;
 
+	// Private properties
 	private _style: CSSStyleDeclaration = null;
+	private _dataset: Dataset = null;
 
 	/**
 	 * Returns viewport.
@@ -37,11 +41,13 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Element.
 	 */
 	public get ownerSVGElement(): ISVGSVGElement {
-		const parent = this.parentNode;
+		let parent = this.parentNode;
 		while (parent) {
 			if (parent['tagName'] === 'SVG') {
 				return <ISVGSVGElement>parent;
 			}
+
+			parent = parent.parentNode;
 		}
 		return null;
 	}
@@ -52,13 +58,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
-		const dataset = {};
-		for (const name of Object.keys(this._attributes)) {
-			if (name.startsWith('data-')) {
-				dataset[name.replace('data-', '')] = this._attributes[name].value;
-			}
-		}
-		return dataset;
+		return (this._dataset ??= new Dataset(this)).proxy;
 	}
 
 	/**
@@ -71,6 +71,43 @@ export default class SVGElement extends Element implements ISVGElement {
 			this._style = new CSSStyleDeclaration(this);
 		}
 		return this._style;
+	}
+
+	/**
+	 * Returns tab index.
+	 *
+	 * @returns Tab index.
+	 */
+	public get tabIndex(): number {
+		const tabIndex = this.getAttribute('tabindex');
+		return tabIndex !== null ? Number(tabIndex) : -1;
+	}
+
+	/**
+	 * Returns tab index.
+	 *
+	 * @param tabIndex Tab index.
+	 */
+	public set tabIndex(tabIndex: number) {
+		if (tabIndex === -1) {
+			this.removeAttribute('tabindex');
+		} else {
+			this.setAttribute('tabindex', String(tabIndex));
+		}
+	}
+
+	/**
+	 * Triggers a blur event.
+	 */
+	public blur(): void {
+		HTMLElementUtility.blur(this);
+	}
+
+	/**
+	 * Triggers a focus event.
+	 */
+	public focus(): void {
+		HTMLElementUtility.focus(this);
 	}
 
 	/**

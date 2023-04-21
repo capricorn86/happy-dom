@@ -1,6 +1,7 @@
 import IElement from '../element/IElement';
 import IHTMLElement from '../html-element/IHTMLElement';
 import IWindow from '../../window/IWindow';
+import NodeIterator from '../../tree-walker/NodeIterator';
 import TreeWalker from '../../tree-walker/TreeWalker';
 import Event from '../../event/Event';
 import DOMImplementation from '../../dom-implementation/DOMImplementation';
@@ -219,6 +220,15 @@ export default interface IDocument extends IParentNode {
 	createDocumentFragment(): IDocumentFragment;
 
 	/**
+	 * Creates a node iterator.
+	 *
+	 * @param root Root.
+	 * @param [whatToShow] What to show.
+	 * @param [filter] Filter.
+	 */
+	createNodeIterator(root: INode, whatToShow: number, filter: INodeFilter): NodeIterator;
+
+	/**
 	 * Creates a Tree Walker.
 	 *
 	 * @param root Root.
@@ -291,7 +301,7 @@ export default interface IDocument extends IParentNode {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IDocument;
+	cloneNode(deep?: boolean): IDocument;
 
 	/**
 	 * Adopts a node.

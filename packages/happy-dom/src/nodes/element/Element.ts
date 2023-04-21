@@ -21,15 +21,17 @@ import INode from '../node/INode';
 import IDocument from '../document/IDocument';
 import IHTMLCollection from './IHTMLCollection';
 import INodeList from '../node/INodeList';
-import HTMLCollectionFactory from './HTMLCollectionFactory';
 import { TInsertAdjacentPositions } from './IElement';
 import IText from '../text/IText';
 import IDOMRectList from './IDOMRectList';
 import DOMRectListFactory from './DOMRectListFactory';
 import IAttr from '../attr/IAttr';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap';
-
 import Event from '../../event/Event';
+import ElementUtility from './ElementUtility';
+import HTMLCollection from './HTMLCollection';
+import CharacterDataUtility from '../character-data/CharacterDataUtility';
+import EventPhaseEnum from '../../event/EventPhaseEnum';
 
 /**
  * Element.
@@ -46,7 +48,7 @@ export default class Element extends Node implements IElement {
 
 	public scrollTop = 0;
 	public scrollLeft = 0;
-	public children: IHTMLCollection<IElement> = HTMLCollectionFactory.create();
+	public children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public readonly namespaceURI: string = null;
 
 	// Events
@@ -188,7 +190,7 @@ export default class Element extends Node implements IElement {
 				result += childNode.textContent;
 			}
 		}
-		return result;
+		return CharacterDataUtility.decodeHTMLEntities(result);
 	}
 
 	/**
@@ -298,7 +300,7 @@ export default class Element extends Node implements IElement {
 	 * @param slot Slot.
 	 */
 	public set slot(title: string) {
-		this.setAttributeNS(null, 'slot', title);
+		this.setAttribute('slot', title);
 	}
 
 	/**
@@ -368,36 +370,24 @@ export default class Element extends Node implements IElement {
 	 * @override
 	 */
 	public override appendChild(node: INode): INode {
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (node.parentNode && node.parentNode['children']) {
-				const index = node.parentNode['children'].indexOf(node);
-				if (index !== -1) {
-					node.parentNode['children'].splice(index, 1);
-				}
-			}
-
-			if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-				this.children.push(<IElement>node);
-			}
-		}
-
-		return super.appendChild(node);
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.appendChild(this, node);
 	}
 
 	/**
 	 * @override
 	 */
 	public override removeChild(node: INode): INode {
-		if (node.nodeType === Node.ELEMENT_NODE) {
-			const index = this.children.indexOf(<IElement>node);
-			if (index !== -1) {
-				this.children.splice(index, 1);
-			}
-		}
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.removeChild(this, node);
+	}
 
-		return super.removeChild(node);
+	/**
+	 * @override
+	 */
+	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
+		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
+		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}
 
 	/**
@@ -405,38 +395,6 @@ export default class Element extends Node implements IElement {
 	 */
 	public remove(): void {
 		ChildNodeUtility.remove(this);
-	}
-
-	/**
-	 * @override
-	 */
-	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
-		const returnValue =
-			arguments.length === 2
-				? super.insertBefore(newNode, referenceNode)
-				: // @ts-expect-error - Arguments length is 1.
-				  super.insertBefore(newNode);
-
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (newNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
-			if (newNode.parentNode && newNode.parentNode['children']) {
-				const index = newNode.parentNode['children'].indexOf(newNode);
-				if (index !== -1) {
-					newNode.parentNode['children'].splice(index, 1);
-				}
-			}
-
-			this.children.length = 0;
-
-			for (const node of this.childNodes) {
-				if (node.nodeType === Node.ELEMENT_NODE) {
-					this.children.push(<IElement>node);
-				}
-			}
-		}
-
-		return returnValue;
 	}
 
 	/**
@@ -872,6 +830,23 @@ export default class Element extends Node implements IElement {
 			this._classList._updateIndices();
 		}
 
+		if (attribute.name === 'id' || attribute.name === 'name') {
+			if (this.parentNode && (<IElement>this.parentNode).children && attribute.value !== oldValue) {
+				if (oldValue) {
+					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(
+						this,
+						oldValue
+					);
+				}
+				if (attribute.value) {
+					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._appendNamedItem(
+						this,
+						attribute.value
+					);
+				}
+			}
+		}
+
 		if (
 			this.attributeChangedCallback &&
 			(<typeof Element>this.constructor)._observedAttributes &&
@@ -970,6 +945,15 @@ export default class Element extends Node implements IElement {
 			this._classList._updateIndices();
 		}
 
+		if (attribute.name === 'id' || attribute.name === 'name') {
+			if (this.parentNode && (<IElement>this.parentNode).children && attribute.value) {
+				(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(
+					this,
+					attribute.value
+				);
+			}
+		}
+
 		if (
 			this.attributeChangedCallback &&
 			(<typeof Element>this.constructor)._observedAttributes &&
@@ -1051,6 +1035,27 @@ export default class Element extends Node implements IElement {
 		y?: number
 	): void {
 		this.scroll(x, y);
+	}
+
+	/**
+	 * @override
+	 */
+	public override dispatchEvent(event: Event): boolean {
+		const returnValue = super.dispatchEvent(event);
+
+		if (
+			(event.eventPhase === EventPhaseEnum.atTarget ||
+				event.eventPhase === EventPhaseEnum.bubbling) &&
+			!event._immediatePropagationStopped
+		) {
+			const attribute = this.getAttribute('on' + event.type);
+
+			if (attribute && !event._immediatePropagationStopped) {
+				this.ownerDocument.defaultView.eval(attribute);
+			}
+		}
+
+		return returnValue;
 	}
 
 	/**

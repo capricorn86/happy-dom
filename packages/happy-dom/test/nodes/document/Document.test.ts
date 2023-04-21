@@ -5,6 +5,7 @@ import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
 import Text from '../../../src/nodes/text/Text';
 import Comment from '../../../src/nodes/comment/Comment';
 import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment';
+import NodeIterator from '../../../src/tree-walker/NodeIterator';
 import TreeWalker from '../../../src/tree-walker/TreeWalker';
 import Node from '../../../src/nodes/node/Node';
 import IDocument from '../../../src/nodes/document/IDocument';
@@ -22,8 +23,8 @@ import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement';
-import IResponse from '../../../src/fetch/IResponse';
-import ResourceFetchHandler from '../../../src/fetch/ResourceFetchHandler';
+import IResponse from '../../../src/fetch/types/IResponse';
+import ResourceFetch from '../../../src/fetch/ResourceFetch';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement';
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum';
 import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
@@ -215,6 +216,13 @@ describe('Document', () => {
 
 		it('Does not set cookie if "expires" is in the past.', () => {
 			document.cookie = 'name=value1; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+			expect(document.cookie).toBe('');
+		});
+
+		it('Unset previous cookie.', () => {
+			document.cookie = 'name=Dave; expires=Thu, 01 Jan 2030 00:00:00 GMT;';
+			expect(document.cookie).toBe('name=Dave');
+			document.cookie = 'name=; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
 			expect(document.cookie).toBe('');
 		});
 
@@ -969,8 +977,28 @@ describe('Document', () => {
 		});
 	});
 
+	describe('createNodeIterator()', () => {
+		it('Creates a node iterator.', () => {
+			const root = document.createElement('div');
+			const whatToShow = 1;
+			const filter = {
+				acceptNode(node) {
+					if (node === Node.ELEMENT_NODE) {
+						return NodeFilter.FILTER_ACCEPT;
+					}
+					return NodeFilter.FILTER_REJECT;
+				}
+			};
+			const nodeIterator = document.createNodeIterator(root, whatToShow, filter);
+			expect(nodeIterator.root).toBe(root);
+			expect(nodeIterator.whatToShow).toBe(whatToShow);
+			expect(nodeIterator.filter).toBe(filter);
+			expect(nodeIterator).toBeInstanceOf(NodeIterator);
+		});
+	});
+
 	describe('createTreeWalker()', () => {
-		it('Creates a document fragment.', () => {
+		it('Creates a tree walker.', () => {
 			const root = document.createElement('div');
 			const whatToShow = 1;
 			const filter = {
@@ -982,10 +1010,10 @@ describe('Document', () => {
 				}
 			};
 			const treeWalker = document.createTreeWalker(root, whatToShow, filter);
-			expect(treeWalker.root === root).toBe(true);
+			expect(treeWalker.root).toBe(root);
 			expect(treeWalker.whatToShow).toBe(whatToShow);
 			expect(treeWalker.filter).toBe(filter);
-			expect(treeWalker instanceof TreeWalker).toBe(true);
+			expect(treeWalker).toBeInstanceOf(TreeWalker);
 		});
 	});
 
@@ -1093,7 +1121,7 @@ describe('Document', () => {
 			let readyChangeEvent = null;
 
 			jest
-				.spyOn(ResourceFetchHandler, 'fetch')
+				.spyOn(ResourceFetch, 'fetch')
 				.mockImplementation(async (document: IDocument, url: string) => {
 					if (url.endsWith('.css')) {
 						resourceFetchCSSDocument = document;

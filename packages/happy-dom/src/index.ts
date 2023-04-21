@@ -35,11 +35,13 @@ import IInputEventInit from './event/events/IInputEventInit';
 import IKeyboardEventInit from './event/events/IKeyboardEventInit';
 import IMouseEventInit from './event/events/IMouseEventInit';
 import IProgressEventInit from './event/events/IProgressEventInit';
+import ISubmitEventInit from './event/events/ISubmitEventInit';
 import IWheelEventInit from './event/events/IWheelEventInit';
 import InputEvent from './event/events/InputEvent';
 import KeyboardEvent from './event/events/KeyboardEvent';
 import MouseEvent from './event/events/MouseEvent';
 import ProgressEvent from './event/events/ProgressEvent';
+import SubmitEvent from './event/events/SubmitEvent';
 import WheelEvent from './event/events/WheelEvent';
 import DOMParser from './dom-parser/DOMParser';
 import Document from './nodes/document/Document';
@@ -50,6 +52,9 @@ import SVGDocument from './nodes/svg-document/SVGDocument';
 import Element from './nodes/element/Element';
 import IElement from './nodes/element/IElement';
 import IHTMLCollection from './nodes/element/IHTMLCollection';
+import HTMLCollection from './nodes/element/HTMLCollection';
+import HTMLFormControlsCollection from './nodes/html-form-element/HTMLFormControlsCollection';
+import IHTMLFormControlsCollection from './nodes/html-form-element/IHTMLFormControlsCollection';
 import HTMLElement from './nodes/html-element/HTMLElement';
 import IHTMLElement from './nodes/html-element/IHTMLElement';
 import HTMLTemplateElement from './nodes/html-template-element/HTMLTemplateElement';
@@ -103,6 +108,7 @@ import Comment from './nodes/comment/Comment';
 import IComment from './nodes/comment/IComment';
 import DocumentType from './nodes/document-type/DocumentType';
 import IDocumentType from './nodes/document-type/IDocumentType';
+import NodeIterator from './tree-walker/NodeIterator';
 import TreeWalker from './tree-walker/TreeWalker';
 import CustomElementRegistry from './custom-element/CustomElementRegistry';
 import XMLParser from './xml-parser/XMLParser';
@@ -115,6 +121,7 @@ import CSSKeyframeRule from './css/rules/CSSKeyframeRule';
 import CSSKeyframesRule from './css/rules/CSSKeyframesRule';
 import CSSMediaRule from './css/rules/CSSMediaRule';
 import CSSStyleRule from './css/rules/CSSStyleRule';
+import CSSSupportsRule from './css/rules/CSSSupportsRule';
 import Storage from './storage/Storage';
 import DOMRect from './nodes/element/DOMRect';
 import Selection from './selection/Selection';
@@ -127,6 +134,16 @@ import ProcessingInstruction from './nodes/processing-instruction/ProcessingInst
 import IProcessingInstruction from './nodes/processing-instruction/IProcessingInstruction';
 import FileList from './nodes/html-input-element/FileList';
 import IFileList from './nodes/html-input-element/IFileList';
+import AbortController from './fetch/AbortController';
+import AbortSignal from './fetch/AbortSignal';
+import Request from './fetch/Request';
+import IRequest from './fetch/types/IRequest';
+import Response from './fetch/Response';
+import IResponse from './fetch/types/IResponse';
+import Headers from './fetch/Headers';
+import IHeaders from './fetch/types/IHeaders';
+import FormData from './form-data/FormData';
+import EventPhaseEnum from './event/EventPhaseEnum';
 
 export {
 	GlobalWindow,
@@ -166,11 +183,13 @@ export {
 	IKeyboardEventInit,
 	IMouseEventInit,
 	IProgressEventInit,
+	ISubmitEventInit,
 	IWheelEventInit,
 	InputEvent,
 	KeyboardEvent,
 	MouseEvent,
 	ProgressEvent,
+	SubmitEvent,
 	WheelEvent,
 	DOMParser,
 	Document,
@@ -181,6 +200,9 @@ export {
 	Element,
 	IElement,
 	IHTMLCollection,
+	HTMLCollection,
+	HTMLFormControlsCollection,
+	IHTMLFormControlsCollection,
 	HTMLElement,
 	IHTMLElement,
 	HTMLTemplateElement,
@@ -234,6 +256,7 @@ export {
 	IComment,
 	DocumentType,
 	IDocumentType,
+	NodeIterator,
 	TreeWalker,
 	CustomElementRegistry,
 	XMLParser,
@@ -246,6 +269,7 @@ export {
 	CSSKeyframesRule,
 	CSSMediaRule,
 	CSSStyleRule,
+	CSSSupportsRule,
 	Storage,
 	DOMRect,
 	URLSearchParams,
@@ -258,5 +282,15 @@ export {
 	ProcessingInstruction,
 	IProcessingInstruction,
 	FileList,
-	IFileList
+	IFileList,
+	AbortController,
+	AbortSignal,
+	Request,
+	IRequest,
+	Response,
+	IResponse,
+	Headers,
+	IHeaders,
+	FormData,
+	EventPhaseEnum
 };

@@ -5,6 +5,7 @@
 		"tsBuildInfoFile": "tmp/.tsbuildinfo",
 		"target": "es2020",
 		"declaration": true,
+		"declarationMap": true,
 		"module": "CommonJS",
 		"moduleResolution": "node",
 		"esModuleInterop": true,

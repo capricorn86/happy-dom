@@ -3,6 +3,8 @@ import CharacterData from '../character-data/CharacterData';
 import IText from './IText';
 import DOMException from '../../exception/DOMException';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
+import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement';
+import INode from '../node/INode';
 
 /**
  * Text node.
@@ -20,9 +22,26 @@ export default class Text extends CharacterData implements IText {
 	}
 
 	/**
+	 * @override
+	 */
+	public override get data(): string {
+		return this._data;
+	}
+
+	/**
+	 * @override
+	 */
+	public override set data(data: string) {
+		super.data = data;
+
+		if (this._textAreaNode) {
+			(<HTMLTextAreaElement>this._textAreaNode)._resetSelection();
+		}
+	}
+
+	/**
 	 * Breaks the Text node into two nodes at the specified offset, keeping both nodes in the tree as siblings.
 	 *
-	 * @see https://dom.spec.whatwg.org/#dom-text-splittext
 	 * @see https://dom.spec.whatwg.org/#dom-text-splittext
 	 * @param offset Offset.
 	 * @returns New text node.
@@ -30,8 +49,8 @@ export default class Text extends CharacterData implements IText {
 	public splitText(offset: number): IText {
 		const length = this._data.length;
 
-		if (offset > length) {
-			new DOMException(
+		if (offset < 0 || offset > length) {
+			throw new DOMException(
 				'The index is not in the allowed range.',
 				DOMExceptionNameEnum.indexSizeError
 			);
@@ -68,5 +87,23 @@ export default class Text extends CharacterData implements IText {
 	 */
 	public cloneNode(deep = false): IText {
 		return <Text>super.cloneNode(deep);
+	}
+
+	/**
+	 * @override
+	 */
+	public override _connectToNode(parentNode: INode = null): void {
+		const oldTextAreaNode = <HTMLTextAreaElement>this._textAreaNode;
+
+		super._connectToNode(parentNode);
+
+		if (oldTextAreaNode !== this._textAreaNode) {
+			if (oldTextAreaNode) {
+				oldTextAreaNode._resetSelection();
+			}
+			if (this._textAreaNode) {
+				(<HTMLTextAreaElement>this._textAreaNode)._resetSelection();
+			}
+		}
 	}
 }

@@ -1,21 +1,24 @@
 import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement';
+import IWindow from '../../../src/window/IWindow';
+import IDocument from '../../../src/nodes/document/IDocument';
+import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement';
 import DOMException from '../../../src/exception/DOMException';
 import File from '../../../src/file/File';
 import Event from '../../../src/event/Event';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
+import ValidityState from '../../../src/validity-state/ValidityState';
+import { IHTMLFormElement } from '../../../src';
 
 describe('HTMLInputElement', () => {
-	let window: Window;
-	let document: Document;
-	let element: HTMLInputElement;
+	let window: IWindow;
+	let document: IDocument;
+	let element: IHTMLInputElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLInputElement>document.createElement('input');
+		element = <IHTMLInputElement>document.createElement('input');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -266,7 +269,6 @@ describe('HTMLInputElement', () => {
 		'disabled',
 		'autofocus',
 		'required',
-		'checked',
 		'indeterminate',
 		'multiple',
 		'readOnly'
@@ -355,6 +357,90 @@ describe('HTMLInputElement', () => {
 		});
 	}
 
+	describe('get checked()', () => {
+		it('Returns attribute value if not set.', () => {
+			element.setAttribute('checked', '');
+			expect(element.checked).toBe(true);
+		});
+
+		it('Returns checked state overriding the attribute when set', () => {
+			element.setAttribute('checked', '');
+			element.checked = false;
+			expect(element.checked).toBe(false);
+		});
+	});
+
+	describe('set checked()', () => {
+		it('Sets the checked state.', () => {
+			element.setAttribute('checked', '');
+			element.checked = true;
+			element.removeAttribute('checked');
+
+			expect(element.checked).toBe(true);
+		});
+
+		it('Unchecks other radio buttons with the same name in a form.', () => {
+			const form = document.createElement('form');
+			const radio1 = <IHTMLInputElement>document.createElement('input');
+			const radio2 = <IHTMLInputElement>document.createElement('input');
+			const radio3 = <IHTMLInputElement>document.createElement('input');
+
+			radio1.type = 'radio';
+			radio2.type = 'radio';
+			radio3.type = 'radio';
+
+			radio1.name = 'radio';
+			radio2.name = 'radio';
+			radio3.name = 'radio';
+
+			form.appendChild(radio1);
+			form.appendChild(radio2);
+			form.appendChild(radio3);
+
+			radio1.checked = true;
+
+			expect(radio1.checked).toBe(true);
+			expect(radio2.checked).toBe(false);
+			expect(radio3.checked).toBe(false);
+
+			radio2.checked = true;
+
+			expect(radio1.checked).toBe(false);
+			expect(radio2.checked).toBe(true);
+			expect(radio3.checked).toBe(false);
+		});
+
+		it('Unchecks other radio buttons with the same name outside of a form', () => {
+			const radio1 = <IHTMLInputElement>document.createElement('input');
+			const radio2 = <IHTMLInputElement>document.createElement('input');
+			const radio3 = <IHTMLInputElement>document.createElement('input');
+
+			radio1.type = 'radio';
+			radio2.type = 'radio';
+			radio3.type = 'radio';
+
+			radio1.name = 'radio';
+			radio2.name = 'radio';
+			radio3.name = 'radio';
+
+			document.body.appendChild(radio1);
+			document.body.appendChild(radio2);
+			document.body.appendChild(radio3);
+
+			radio1.checked = true;
+
+			expect(radio1.checked).toBe(true);
+			expect(radio2.checked).toBe(false);
+			expect(radio3.checked).toBe(false);
+
+			radio2.checked = true;
+
+			expect(radio1.checked).toBe(false);
+			expect(radio2.checked).toBe(true);
+			expect(radio3.checked).toBe(false);
+		});
+	});
+
 	describe('get type()', () => {
 		it('Returns attribute value.', () => {
 			expect(element.type).toBe('text');
@@ -388,10 +474,56 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get formNoValidate()', () => {
+		it('Returns "true" if defined.', () => {
+			expect(element.formNoValidate).toBe(false);
+			element.setAttribute('formnovalidate', '');
+			expect(element.formNoValidate).toBe(true);
+		});
+	});
+
+	describe('set formNoValidate()', () => {
+		it('Sets attribute value.', () => {
+			element.formNoValidate = true;
+			expect(element.getAttribute('formnovalidate')).toBe('');
+		});
+	});
+
+	describe('get validity()', () => {
+		it('Returns an instance of ValidityState.', () => {
+			expect(element.validity).toBeInstanceOf(ValidityState);
+		});
+	});
+
 	describe('get validationMessage()', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');
 			expect(element.validationMessage).toBe('Error message');
+		});
+	});
+
+	describe(`get labels()`, () => {
+		it('Returns associated labels', () => {
+			const label1 = document.createElement('label');
+			const label2 = document.createElement('label');
+			const parentLabel = document.createElement('label');
+
+			label1.setAttribute('for', 'select1');
+			label2.setAttribute('for', 'select1');
+
+			element.id = 'select1';
+
+			parentLabel.appendChild(element);
+			document.body.appendChild(label1);
+			document.body.appendChild(label2);
+			document.body.appendChild(parentLabel);
+
+			const labels = element.labels;
+
+			expect(labels.length).toBe(3);
+			expect(labels[0] === label1).toBe(true);
+			expect(labels[1] === label2).toBe(true);
+			expect(labels[2] === parentLabel).toBe(true);
 		});
 	});
 
@@ -406,32 +538,29 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
-	describe('reportValidity()', () => {
-		it('Dispatches an "invalid" event.', () => {
-			let dispatchedEvent: Event = null;
-			element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
-			element.setCustomValidity('Error message');
-			element.reportValidity();
-			expect(dispatchedEvent.cancelable).toBe(true);
-			expect(dispatchedEvent.bubbles).toBe(true);
-		});
-
-		it('Does not dispatch an "invalid" event if the validation message is an empty string.', () => {
-			let dispatchedEvent: Event = null;
-			element.setCustomValidity('');
-			element.reportValidity();
-			element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
-			expect(dispatchedEvent).toBe(null);
+	describe('select()', () => {
+		it('Selects all text.', () => {
+			let triggeredEvent: Event | null = null;
+			element.addEventListener('select', (event) => (triggeredEvent = event));
+			element.value = 'TEST_VALUE';
+			element.select();
+			expect(element.selectionStart).toBe(0);
+			expect(element.selectionEnd).toBe(10);
+			expect(element.selectionDirection).toBe('none');
+			expect(triggeredEvent.type).toBe('select');
 		});
 	});
 
 	describe('setSelectionRange()', () => {
 		it('Sets selection range.', () => {
+			let triggeredEvent: Event | null = null;
+			element.addEventListener('select', (event) => (triggeredEvent = event));
 			element.value = 'TEST_VALUE';
 			element.setSelectionRange(1, 5, 'forward');
 			expect(element.selectionStart).toBe(1);
 			expect(element.selectionEnd).toBe(5);
 			expect(element.selectionDirection).toBe('forward');
+			expect(triggeredEvent.type).toBe('select');
 		});
 
 		it('Sets selection end to the value length if out of range.', () => {
@@ -477,11 +606,52 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
-	describe('checkValidity()', () => {
-		it('Returns "true".', () => {
-			expect(element.checkValidity()).toBe(true);
+	for (const method of ['checkValidity', 'reportValidity']) {
+		describe(`${method}()`, () => {
+			it('Returns "true" if the field is "disabled".', () => {
+				element.required = true;
+				element.disabled = true;
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "true" if the field is "readOnly".', () => {
+				element.required = true;
+				element.readOnly = true;
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "true" if the field type is "hidden".', () => {
+				element.required = true;
+				element.type = 'hidden';
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "true" if the field type is "reset".', () => {
+				element.required = true;
+				element.type = 'reset';
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "true" if the field type is "button".', () => {
+				element.required = true;
+				element.type = 'button';
+				expect(element[method]()).toBe(true);
+			});
+
+			it('Returns "false" if invalid.', () => {
+				element.required = true;
+				expect(element[method]()).toBe(false);
+			});
+
+			it('Triggers an "invalid" event when invalid.', () => {
+				element.required = true;
+				let dispatchedEvent: Event | null = null;
+				element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
+				element[method]();
+				expect(dispatchedEvent.type).toBe('invalid');
+			});
 		});
-	});
+	}
 
 	describe('stepUp()', () => {
 		it('Steps up with default value.', () => {
@@ -582,6 +752,90 @@ describe('HTMLInputElement', () => {
 			expect(clone.selectionStart).toEqual(element.selectionStart);
 			expect(clone.selectionEnd).toEqual(element.selectionEnd);
 			expect(clone.selectionDirection).toEqual(element.selectionDirection);
+		});
+	});
+
+	describe('dispatchEvent()', () => {
+		it('Sets "checked" to "true" if type is "checkbox" and is a "click" event.', () => {
+			let isInputTriggered = false;
+			let isChangeTriggered = false;
+
+			element.type = 'checkbox';
+
+			element.addEventListener('input', () => (isInputTriggered = true));
+			element.addEventListener('change', () => (isChangeTriggered = true));
+
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(isInputTriggered).toBe(true);
+			expect(isChangeTriggered).toBe(true);
+			expect(element.checked).toBe(true);
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(element.checked).toBe(false);
+		});
+
+		it('Sets "checked" to "true" if type is "radio" and is a "click" event.', () => {
+			let isInputTriggered = false;
+			let isChangeTriggered = false;
+
+			element.type = 'radio';
+
+			element.addEventListener('input', () => (isInputTriggered = true));
+			element.addEventListener('change', () => (isChangeTriggered = true));
+
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(isInputTriggered).toBe(true);
+			expect(isChangeTriggered).toBe(true);
+			expect(element.checked).toBe(true);
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(element.checked).toBe(true);
+		});
+
+		it('Submits form if type is "submit" and is a "click" event.', () => {
+			const form = <IHTMLFormElement>document.createElement('form');
+			const button = <IHTMLInputElement>document.createElement('input');
+
+			let submitTriggeredCount = 0;
+
+			button.type = 'submit';
+
+			form.appendChild(button);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			button.click();
+
+			expect(submitTriggeredCount).toBe(1);
+		});
+
+		it('Resets form if type is "reset" and is a "click" event.', () => {
+			const form = <IHTMLFormElement>document.createElement('form');
+			const button = <IHTMLInputElement>document.createElement('input');
+
+			let resetTriggeredCount = 0;
+
+			button.type = 'reset';
+
+			form.appendChild(button);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('reset', () => resetTriggeredCount++);
+
+			button.click();
+
+			expect(resetTriggeredCount).toBe(1);
 		});
 	});
 });

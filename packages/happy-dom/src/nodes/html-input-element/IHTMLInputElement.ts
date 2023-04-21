@@ -1,10 +1,12 @@
 import IHTMLElement from '../html-element/IHTMLElement';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
 import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum';
-import ValidityState from '../validity-state/ValidityState';
+import ValidityState from '../../validity-state/ValidityState';
 import Event from '../../event/Event';
 import File from '../../file/File';
 import IFileList from './IFileList';
+import INodeList from '../node/INodeList';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
 
 /**
  * HTML Input Element.
@@ -14,6 +16,8 @@ import IFileList from './IFileList';
  */
 export default interface IHTMLInputElement extends IHTMLElement {
 	readonly form: IHTMLFormElement;
+	readonly labels: INodeList<IHTMLLabelElement>;
+	readonly validity: ValidityState;
 	formAction: string;
 	formMethod: string;
 	formNoValidate: boolean;
@@ -49,7 +53,6 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	selectionStart: number;
 	selectionEnd: number;
 	selectionDirection: string;
-	validity: ValidityState;
 	willValidate: boolean;
 	valueAsDate: Date;
 	valueAsNumber: number;
@@ -73,6 +76,11 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	reportValidity(): void;
 
 	/**
+	 * Selects the text.
+	 */
+	select(): void;
+
+	/**
 	 * Set selection range.
 	 *
 	 * @param start Start.
@@ -88,12 +96,13 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	 * @param [start] Start.
 	 * @param [end] End.
 	 * @param [direction] Direction.
+	 * @param selectionMode
 	 */
 	setRangeText(
 		replacement: string,
-		start: number,
-		end: number,
-		selectionMode: HTMLInputElementSelectionModeEnum
+		start?: number,
+		end?: number,
+		selectionMode?: HTMLInputElementSelectionModeEnum
 	): void;
 
 	/**
@@ -124,5 +133,5 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean): IHTMLInputElement;
+	cloneNode(deep?: boolean): IHTMLInputElement;
 }

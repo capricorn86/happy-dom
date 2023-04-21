@@ -41,6 +41,27 @@ describe('EventTarget', () => {
 			expect(count).toBe(1);
 		});
 
+		it('Adds an event listener and set options once and bind the same event multiple times', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			const listener1 = (): void => {
+				count++;
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+			eventTarget.addEventListener(EVENT_TYPE, listener, { once: true });
+			eventTarget.addEventListener(EVENT_TYPE, listener1, { once: true });
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(count).toBe(2);
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(count).toBe(2);
+			eventTarget.addEventListener(EVENT_TYPE, listener, { once: true });
+			eventTarget.addEventListener(EVENT_TYPE, listener, { once: true });
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(count).toBe(3);
+		});
+
 		it('Adds a custom event listener and triggers it when calling dispatchEvent().', () => {
 			let recievedEvent: CustomEvent = null;
 			const DETAIL = {};
@@ -98,7 +119,7 @@ describe('EventTarget', () => {
 	});
 
 	describe('dispatchEvent()', () => {
-		it('Triggers callback properties with "on" as prefix.', () => {
+		it('Triggers listener properties with "on" as prefix.', () => {
 			let recievedEvent: Event = null;
 			const listener = (event: Event): void => {
 				recievedEvent = event;
@@ -109,6 +130,31 @@ describe('EventTarget', () => {
 			expect(recievedEvent).toBe(dispatchedEvent);
 			expect(recievedEvent.target).toBe(eventTarget);
 			expect(recievedEvent.currentTarget).toBe(eventTarget);
+		});
+
+		it('Triggers all listeners, even though listeners are removed while dispatching.', () => {
+			let recievedEvent1: Event = null;
+			let recievedEvent2: Event = null;
+			const listener1 = (event: Event): void => {
+				recievedEvent1 = event;
+				eventTarget.removeEventListener(EVENT_TYPE, listener1);
+			};
+			const listener2 = (event: Event): void => {
+				recievedEvent2 = event;
+				eventTarget.removeEventListener(EVENT_TYPE, listener2);
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+
+			eventTarget.addEventListener(EVENT_TYPE, listener1);
+			eventTarget.addEventListener(EVENT_TYPE, listener2);
+
+			eventTarget.dispatchEvent(dispatchedEvent);
+
+			expect(recievedEvent1).toBe(dispatchedEvent);
+			expect(recievedEvent2).toBe(dispatchedEvent);
+
+			expect(dispatchedEvent.target).toBe(eventTarget);
+			expect(dispatchedEvent.currentTarget).toBe(eventTarget);
 		});
 	});
 

@@ -1,5 +1,6 @@
 import IEventListener from './IEventListener';
 import Event from './Event';
+import IEventListenerOptions from './IEventListenerOptions';
 
 /**
  * Handles events.
@@ -11,7 +12,11 @@ export default interface IEventTarget {
 	 * @param type Event type.
 	 * @param listener Listener.
 	 */
-	addEventListener(type: string, listener: ((event: Event) => void) | IEventListener): void;
+	addEventListener(
+		type: string,
+		listener: ((event: Event) => void) | IEventListener,
+		options?: boolean | IEventListenerOptions
+	): void;
 
 	/**
 	 * Adds an event listener.

@@ -1,4 +1,7 @@
 import Window from '../../../src/window/Window';
+import Document from '../../../src/nodes/document/Document';
+import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment';
+import IDocumentFragment from '../../../src/nodes/document-fragment/IDocumentFragment';
 import Node from '../../../src/nodes/node/Node';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
 import QuerySelector from '../../../src/query-selector/QuerySelector';
@@ -8,9 +11,9 @@ import INodeList from '../../../src/nodes/node/INodeList';
 import IElement from '../../../src/nodes/element/IElement';
 
 describe('DocumentFragment', () => {
-	let window;
-	let document;
-	let documentFragment;
+	let window: Window;
+	let document: Document;
+	let documentFragment: IDocumentFragment;
 
 	beforeEach(() => {
 		window = new Window();
@@ -30,7 +33,7 @@ describe('DocumentFragment', () => {
 			documentFragment.appendChild(div);
 			documentFragment.appendChild(document.createTextNode('test'));
 			documentFragment.appendChild(span);
-			expect(documentFragment.children).toEqual([div, span]);
+			expect(Array.from(documentFragment.children)).toEqual([div, span]);
 		});
 	});
 
@@ -54,7 +57,7 @@ describe('DocumentFragment', () => {
 			documentFragment.appendChild(div);
 			documentFragment.appendChild(document.createTextNode('test'));
 			documentFragment.appendChild(span);
-			expect(documentFragment.firstElementChild).toEqual(div);
+			expect(documentFragment.firstElementChild === div).toBe(true);
 		});
 	});
 
@@ -66,7 +69,7 @@ describe('DocumentFragment', () => {
 			documentFragment.appendChild(div);
 			documentFragment.appendChild(document.createTextNode('test'));
 			documentFragment.appendChild(span);
-			expect(documentFragment.lastElementChild).toEqual(span);
+			expect(documentFragment.lastElementChild === span).toBe(true);
 		});
 	});
 
@@ -122,7 +125,7 @@ describe('DocumentFragment', () => {
 
 			jest.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode).toBe(documentFragment);
-				expect(nodes).toEqual([node1, node2]);
+				expect(Array.from(nodes)).toEqual([node1, node2]);
 				isCalled = true;
 			});
 
@@ -139,7 +142,7 @@ describe('DocumentFragment', () => {
 
 			jest.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode).toBe(documentFragment);
-				expect(nodes).toEqual([node1, node2]);
+				expect(Array.from(nodes)).toEqual([node1, node2]);
 				isCalled = true;
 			});
 
@@ -158,7 +161,7 @@ describe('DocumentFragment', () => {
 				.spyOn(ParentNodeUtility, 'replaceChildren')
 				.mockImplementation((parentNode, ...nodes) => {
 					expect(parentNode).toBe(documentFragment);
-					expect(nodes).toEqual([node1, node2]);
+					expect(Array.from(nodes)).toEqual([node1, node2]);
 					isCalled = true;
 				});
 
@@ -174,11 +177,11 @@ describe('DocumentFragment', () => {
 
 			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(documentFragment);
-				expect(selector).toEqual(expectedSelector);
+				expect(selector).toBe(expectedSelector);
 				return <INodeList<IElement>>[element];
 			});
 
-			expect(documentFragment.querySelectorAll(expectedSelector)).toEqual([element]);
+			expect(Array.from(documentFragment.querySelectorAll(expectedSelector))).toEqual([element]);
 		});
 	});
 
@@ -189,11 +192,11 @@ describe('DocumentFragment', () => {
 
 			jest.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(documentFragment);
-				expect(selector).toEqual(expectedSelector);
+				expect(selector).toBe(expectedSelector);
 				return element;
 			});
 
-			expect(documentFragment.querySelector(expectedSelector)).toEqual(element);
+			expect(documentFragment.querySelector(expectedSelector)).toBe(element);
 		});
 	});
 
@@ -207,7 +210,7 @@ describe('DocumentFragment', () => {
 			documentFragment.appendChild(document.createComment('test'));
 			documentFragment.appendChild(span);
 
-			expect(documentFragment.children).toEqual([div, span]);
+			expect(Array.from(documentFragment.children)).toEqual([div, span]);
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
@@ -220,8 +223,8 @@ describe('DocumentFragment', () => {
 
 			documentFragment.appendChild(clone);
 
-			expect(clone.childNodes).toEqual([]);
-			expect(clone.children).toEqual([]);
+			expect(Array.from(clone.childNodes)).toEqual([]);
+			expect(Array.from(clone.children)).toEqual([]);
 			expect(documentFragment.children.map((child) => child.outerHTML).join('')).toBe(
 				'<div>Div</div><span>Span</span>'
 			);
@@ -240,7 +243,7 @@ describe('DocumentFragment', () => {
 
 			documentFragment.removeChild(div);
 
-			expect(documentFragment.children).toEqual([span]);
+			expect(Array.from(documentFragment.children)).toEqual([span]);
 		});
 	});
 
@@ -256,7 +259,7 @@ describe('DocumentFragment', () => {
 			documentFragment.appendChild(span);
 			documentFragment.insertBefore(div2, div1);
 
-			expect(documentFragment.children).toEqual([div2, div1, span]);
+			expect(Array.from(documentFragment.children)).toEqual([div2, div1, span]);
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
@@ -294,7 +297,7 @@ describe('DocumentFragment', () => {
 			const clone = documentFragment.cloneNode(false);
 
 			expect(clone.nodeType).toBe(Node.DOCUMENT_FRAGMENT_NODE);
-			expect(clone._rootNode).toBe(clone);
+			expect((<DocumentFragment>clone)._rootNode).toBe(clone);
 			expect(clone.childNodes.length).toBe(0);
 			expect(clone.children.length).toBe(0);
 		});
@@ -311,10 +314,10 @@ describe('DocumentFragment', () => {
 			const clone = documentFragment.cloneNode(true);
 
 			expect(clone.nodeType).toBe(Node.DOCUMENT_FRAGMENT_NODE);
-			expect(clone._rootNode).toBe(clone);
+			expect((<DocumentFragment>clone)._rootNode).toBe(clone);
 			expect(clone.childNodes.length).toBe(3);
-			expect(clone.children).toEqual(
-				clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE)
+			expect(Array.from(clone.children)).toEqual(
+				Array.from(clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE))
 			);
 		});
 	});
