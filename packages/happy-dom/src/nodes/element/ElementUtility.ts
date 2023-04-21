@@ -123,7 +123,8 @@ export default class ElementUtility {
 		referenceNode: INode | null,
 		options?: { disableAncestorValidation?: boolean }
 	): INode {
-		if (newNode.nodeType === NodeTypeEnum.elementNode) {
+		// NodeUtility.insertBefore() will call appendChild() for the scenario where "referenceNode" is "null" or "undefined"
+		if (newNode.nodeType === NodeTypeEnum.elementNode && referenceNode) {
 			if (
 				!options?.disableAncestorValidation &&
 				NodeUtility.isInclusiveAncestor(newNode, ancestorNode)
@@ -152,36 +153,30 @@ export default class ElementUtility {
 				}
 			}
 
-			// Node.ts will call appendChild() for the scenario where "referenceNode" is "null"
+			if (referenceNode.nodeType === NodeTypeEnum.elementNode) {
+				const index = ancestorNode.children.indexOf(<IElement>referenceNode);
+				if (index !== -1) {
+					ancestorNode.children.splice(index, 0, <IElement>newNode);
+				}
+			} else {
+				ancestorNode.children.length = 0;
 
-			if (referenceNode) {
-				if (referenceNode.nodeType === NodeTypeEnum.elementNode) {
-					const index = ancestorNode.children.indexOf(<IElement>referenceNode);
-					if (index !== -1) {
-						ancestorNode.children.splice(index, 0, <IElement>newNode);
+				for (const node of ancestorNode.childNodes) {
+					if (node === referenceNode) {
+						ancestorNode.children.push(<IElement>newNode);
 					}
-				} else {
-					ancestorNode.children.length = 0;
-
-					for (const node of ancestorNode.childNodes) {
-						if (node === referenceNode) {
-							ancestorNode.children.push(<IElement>newNode);
-						}
-						if (node.nodeType === NodeTypeEnum.elementNode) {
-							ancestorNode.children.push(<IElement>node);
-						}
+					if (node.nodeType === NodeTypeEnum.elementNode) {
+						ancestorNode.children.push(<IElement>node);
 					}
 				}
 			}
 
-			if (referenceNode || referenceNode === null) {
-				for (const attribute of NAMED_ITEM_ATTRIBUTES) {
-					if ((<Element>newNode)._attributes[attribute]) {
-						(<HTMLCollection<IHTMLElement>>ancestorNode.children)._appendNamedItem(
-							<IHTMLElement>newNode,
-							(<Element>newNode)._attributes[attribute].value
-						);
-					}
+			for (const attribute of NAMED_ITEM_ATTRIBUTES) {
+				if ((<Element>newNode)._attributes[attribute]) {
+					(<HTMLCollection<IHTMLElement>>ancestorNode.children)._appendNamedItem(
+						<IHTMLElement>newNode,
+						(<Element>newNode)._attributes[attribute].value
+					);
 				}
 			}
 
