@@ -322,6 +322,11 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Inserted node.
 	 */
 	public insertBefore(newNode: INode, referenceNode: INode | null): INode {
+		if (arguments.length < 2) {
+			throw new TypeError(
+				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
 		return NodeUtility.insertBefore(this, newNode, referenceNode);
 	}
 
