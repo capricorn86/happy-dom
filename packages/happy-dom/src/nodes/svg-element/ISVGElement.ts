@@ -13,6 +13,7 @@ export default interface ISVGElement extends IElement {
 	readonly ownerSVGElement: ISVGSVGElement;
 	readonly dataset: { [key: string]: string };
 	readonly style: CSSStyleDeclaration;
+	tabIndex: number;
 
 	// Events
 	onabort: (event: Event) => void | null;
@@ -21,4 +22,14 @@ export default interface ISVGElement extends IElement {
 	onresize: (event: Event) => void | null;
 	onscroll: (event: Event) => void | null;
 	onunload: (event: Event) => void | null;
+
+	/**
+	 * Triggers a blur event.
+	 */
+	blur(): void;
+
+	/**
+	 * Triggers a focus event.
+	 */
+	focus(): void;
 }

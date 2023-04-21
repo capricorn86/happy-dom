@@ -2,12 +2,12 @@ import Element from '../element/Element';
 import IHTMLElement from './IHTMLElement';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
 import IAttr from '../attr/IAttr';
-import FocusEvent from '../../event/events/FocusEvent';
 import PointerEvent from '../../event/events/PointerEvent';
 import Dataset from '../element/Dataset';
 import NodeTypeEnum from '../node/NodeTypeEnum';
 import DOMException from '../../exception/DOMException';
 import Event from '../../event/Event';
+import HTMLElementUtility from './HTMLElementUtility';
 
 /**
  * HTML Element.
@@ -312,52 +312,14 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * Triggers a blur event.
 	 */
 	public blur(): void {
-		if (this.ownerDocument['_activeElement'] !== this || !this.isConnected) {
-			return;
-		}
-
-		this.ownerDocument['_activeElement'] = null;
-
-		this.dispatchEvent(
-			new FocusEvent('blur', {
-				bubbles: false,
-				composed: true
-			})
-		);
-		this.dispatchEvent(
-			new FocusEvent('focusout', {
-				bubbles: true,
-				composed: true
-			})
-		);
+		HTMLElementUtility.blur(this);
 	}
 
 	/**
 	 * Triggers a focus event.
 	 */
 	public focus(): void {
-		if (this.ownerDocument['_activeElement'] === this || !this.isConnected) {
-			return;
-		}
-
-		if (this.ownerDocument['_activeElement'] !== null) {
-			this.ownerDocument['_activeElement'].blur();
-		}
-
-		this.ownerDocument['_activeElement'] = this;
-
-		this.dispatchEvent(
-			new FocusEvent('focus', {
-				bubbles: false,
-				composed: true
-			})
-		);
-		this.dispatchEvent(
-			new FocusEvent('focusin', {
-				bubbles: true,
-				composed: true
-			})
-		);
+		HTMLElementUtility.focus(this);
 	}
 
 	/**
