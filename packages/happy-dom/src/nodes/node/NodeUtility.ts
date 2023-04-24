@@ -164,16 +164,11 @@ export default class NodeUtility {
 			return newNode;
 		}
 
-		if (referenceNode === null) {
+		// If the referenceNode is null or undefined, then the newNode should be appended to the ancestorNode.
+		// According to spec only null is valid, but browsers support undefined as well.
+		if (!referenceNode) {
 			ancestorNode.appendChild(newNode);
 			return newNode;
-		}
-
-		if (!referenceNode) {
-			throw new DOMException(
-				"Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 1 present.",
-				'TypeError'
-			);
 		}
 
 		if (ancestorNode.childNodes.indexOf(referenceNode) === -1) {

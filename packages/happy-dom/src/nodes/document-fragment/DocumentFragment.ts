@@ -171,6 +171,12 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @override
 	 */
 	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
+		if (arguments.length < 2) {
+			throw new TypeError(
+				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
+
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}

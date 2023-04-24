@@ -142,6 +142,9 @@ describe('Element', () => {
 			const el2 = document.createElement('div');
 			el2.innerHTML = '<div id="testnode">&gt;&lt;&amp;&quot;&apos;&nbsp;&nbsp;</div>';
 			expect(el2.textContent).toBe('><&"\'  ');
+			const el3 = document.createElement('div');
+			el3.innerHTML = '&#x3C;div&#x3E;Hello, world!&#x3C;/div&#x3E;';
+			expect(el3.textContent).toBe('<div>Hello, world!</div>');
 		});
 	});
 

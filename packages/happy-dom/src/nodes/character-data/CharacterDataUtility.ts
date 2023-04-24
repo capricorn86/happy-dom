@@ -2,23 +2,23 @@ import ICharacterData from './ICharacterData';
 
 const HTML_ENTITIES = [
 	{ regex: /&quot;/g, value: '"' },
-	{ regex: /&#34/g, value: '"' },
-	{ regex: /&#x22/g, value: '"' },
+	{ regex: /&#34;/g, value: '"' },
+	{ regex: /&#x22;/g, value: '"' },
 	{ regex: /&amp;/g, value: '&' },
-	{ regex: /&#38/g, value: '&' },
-	{ regex: /&#x26/g, value: '&' },
+	{ regex: /&#38;/g, value: '&' },
+	{ regex: /&#x26;/g, value: '&' },
 	{ regex: /&apos;/g, value: "'" },
-	{ regex: /&#39/g, value: "'" },
-	{ regex: /&#x27/g, value: "'" },
+	{ regex: /&#39;/g, value: "'" },
+	{ regex: /&#x27;/g, value: "'" },
 	{ regex: /&lt;/g, value: '<' },
-	{ regex: /&#60/g, value: '<' },
-	{ regex: /&#x3C/g, value: '<' },
+	{ regex: /&#60;/g, value: '<' },
+	{ regex: /&#x3C;/g, value: '<' },
 	{ regex: /&gt;/g, value: '>' },
-	{ regex: /&#62/g, value: '>' },
-	{ regex: /&#x3E/g, value: '>' },
+	{ regex: /&#62;/g, value: '>' },
+	{ regex: /&#x3E;/g, value: '>' },
 	{ regex: /&nbsp;/g, value: ' ' },
-	{ regex: /&#160/g, value: ' ' },
-	{ regex: /&#xA0/g, value: ' ' }
+	{ regex: /&#160;/g, value: ' ' },
+	{ regex: /&#xA0;/g, value: ' ' }
 ];
 
 /**
