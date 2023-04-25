@@ -530,6 +530,7 @@ describe('QuerySelector', () => {
 				<div data-foo class="foo"></div>
 				<div data-bar class="bar"></div>
 			`;
+			debugger;
 			const elements = document.querySelectorAll('[data-foo]:not([data-bar])');
 
 			expect(elements.length).toBe(1);

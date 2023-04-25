@@ -4,26 +4,45 @@ import Element from '../nodes/element/Element';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum';
 
+/**
+ * Group 1: All (e.g. "*")
+ * Group 2: Tag name (e.g. "div")
+ * Group 3: ID (e.g. "#id")
+ * Group 4: Class (e.g. ".class")
+ * Group 5: Extra group for class escaped characters
+ * Group 6: Attribute (e.g. "[attr1="value1"][attr2=value2]")
+ * Group 7: Pseudo (e.g. ":first-child")
+ * Group 8: Arguments of pseudo with parentheses (e.g. "(2n + 1)")
+ * Group 9: Arguments of pseudo (e.g. "2n + 1")
+ */
+const SELECTOR_REGEXP =
+	/(\*){0,1}([a-zA-Z0-9-]+){0,1}(#[a-zA-Z0-9-_]+){0,1}(\.([a-zA-Z0-9-_.]|\\.)+){0,1}(\[[^\]]+\]){0,}(:[a-zA-Z-:]+){0,1}(\(([^)]+)\)){0,1}/;
+
+/**
+ * Group 1: Attribute name when there is no value (e.g. "attr1")
+ * Group 2: Attribute name when it has an operator and value (e.g. "attr1")
+ * Group 3: Attribute operator (e.g. "~")
+ * Group 4: Attribute value (e.g. "value1")
+ */
 const ATTRIBUTE_REGEXP =
 	/\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']{0,1}([^"']+)["']{0,1}\]/g;
-const ATTRIBUTE_NAME_REGEXP = /[^a-zA-Z0-9-_$]/;
-const PSUEDO_REGEXP =
-	/(?<!\\):([a-zA-Z-]+)\(([0-9n+-]+|odd|even)\)|(?<!\\):not\(([^)]+)\)|(?<!\\):([a-zA-Z-]+)/g;
-const CLASS_REGEXP = /\.(([a-zA-Z0-9-_$]|\\.)+)/g;
-const TAG_NAME_REGEXP = /^[a-zA-Z0-9-]+/;
-const ID_REGEXP = /(?<!\\)#[A-Za-z][-A-Za-z0-9_]*/g;
-const CSS_ESCAPE_REGEXP = /(?<!\\):/g;
-const CSS_ESCAPE_CHAR_REGEXP = /\\/g;
+
+const CLASS_ESCAPED_CHARACTER_REGEXP = /\\/g;
+
+type ISelectorAttribute = {
+	name: string;
+	operator: string | null;
+	value: string | null;
+};
 
 type ISelectorInfo = {
 	isAll: boolean;
-	isID: boolean;
-	isAttribute: boolean;
-	isPseudo: boolean;
-	isClass: boolean;
-	isTagName: boolean;
-	tagName: string;
-	id: string;
+	tagName: string | null;
+	id: string | null;
+	classNames: string[] | null;
+	attributes: ISelectorAttribute[] | null;
+	pseudoClass: string | null;
+	pseudoArguments: string | null;
 };
 
 /**
@@ -60,50 +79,43 @@ export default class SelectorItem {
 
 		let priorityWeight = 0;
 
-		// Is all (*)
-		if (this.selectorInfo.isAll) {
-			return { priorityWeight: 0, matches: true };
-		}
-
-		// ID Match
-		if (this.selectorInfo.isID) {
-			priorityWeight += 100;
-
-			if (this.selectorInfo.id !== element.id) {
-				return { priorityWeight: 0, matches: false };
-			}
-		}
-
 		// Tag name match
-		if (this.selectorInfo.isTagName) {
-			priorityWeight += 1;
-
+		if (this.selectorInfo.tagName) {
 			if (this.selectorInfo.tagName !== element.tagName) {
 				return { priorityWeight: 0, matches: false };
 			}
+			priorityWeight += 1;
+		}
+
+		// ID Match
+		if (this.selectorInfo.id) {
+			if (this.selectorInfo.id !== element.id) {
+				return { priorityWeight: 0, matches: false };
+			}
+			priorityWeight += 100;
 		}
 
 		// Class match
-		if (this.selectorInfo.isClass) {
-			const result = this.matchesClass(element, selector);
-			priorityWeight += result.priorityWeight;
+		if (this.selectorInfo.classNames) {
+			const result = this.matchesClass(element);
 			if (!result.matches) {
 				return { priorityWeight: 0, matches: false };
 			}
-		}
-
-		// Pseudo match
-		if (this.selectorInfo.isPseudo && !this.matchesPsuedo(element, selector)) {
-			return { priorityWeight: 0, matches: false };
+			priorityWeight += result.priorityWeight;
 		}
 
 		// Attribute match
-		if (this.selectorInfo.isAttribute) {
-			const result = this.matchesAttribute(element, selector);
-			priorityWeight += result.priorityWeight;
+		if (this.selectorInfo.attributes) {
+			const result = this.matchesAttribute(element);
 			if (!result.matches) {
 				return { priorityWeight: 0, matches: false };
 			}
+			priorityWeight += result.priorityWeight;
+		}
+
+		// Pseudo match
+		if (this.selectorInfo.pseudoClass && !this.matchesPsuedo(element)) {
+			return { priorityWeight: 0, matches: false };
 		}
 
 		return { priorityWeight, matches: true };
@@ -113,126 +125,56 @@ export default class SelectorItem {
 	 * Matches a psuedo selector.
 	 *
 	 * @param element Element.
-	 * @param selector Selector.
-	 * @returns True if it is a match.
+	 * @returns Result.
 	 */
-	private matchesPsuedo(element: IElement, selector: string): boolean {
-		const regexp = new RegExp(PSUEDO_REGEXP, 'g');
-		let match: RegExpMatchArray;
-
-		while ((match = regexp.exec(selector))) {
-			const isNotClass = match[3] && match[3].trim()[0] === '.';
-			if (match[1] && !this.matchesNthChild(element, match[1], match[2])) {
-				return false;
-			} else if (match[3]) {
-				if (isNotClass && this.matchesClass(element, match[3]).matches) {
-					return false;
-				}
-				if (
-					!isNotClass &&
-					match[3].includes('[') &&
-					this.matchesAttribute(element, match[3]).matches
-				) {
-					return false;
-				}
-				if (!isNotClass && element.tagName.toLowerCase() === match[3]) {
-					return false;
-				}
-			} else if (match[4] && !this.matchesPsuedoExpression(element, match[4])) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Matches a nth-child selector.
-	 *
-	 * @param element Element.
-	 * @param psuedo Psuedo name.
-	 * @param place Place.
-	 * @returns True if it is a match.
-	 */
-	private matchesNthChild(element: IElement, psuedo: string, place: string): boolean {
-		let children = element.parentNode ? (<IElement>element.parentNode).children : [];
-
-		switch (psuedo.toLowerCase()) {
-			case 'nth-of-type':
-				children = children.filter((child) => child.tagName === element.tagName);
-				break;
-			case 'nth-last-child':
-				children = children.reverse();
-				break;
-			case 'nth-last-of-type':
-				children = children.filter((child) => child.tagName === element.tagName).reverse();
-				break;
-		}
-
-		if (place === 'odd') {
-			const index = children.indexOf(element);
-			return index !== -1 && (index + 1) % 2 !== 0;
-		} else if (place === 'even') {
-			const index = children.indexOf(element);
-			return index !== -1 && (index + 1) % 2 === 0;
-		} else if (place.includes('n')) {
-			const [a, b] = place.replace(/ /g, '').split('n');
-			const childIndex = children.indexOf(element);
-			const aNumber = a !== '' ? Number(a) : 1;
-			const bNumber = b !== undefined ? Number(b) : 0;
-			if (isNaN(aNumber) || isNaN(bNumber)) {
-				throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
-			}
-
-			for (let i = 0, max = children.length; i <= max; i += aNumber) {
-				if (childIndex === i + bNumber - 1) {
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		const number = Number(place);
-
-		if (isNaN(number)) {
-			throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
-		}
-
-		return children[number - 1] === element;
-	}
-
-	/**
-	 * Matches a psuedo selector expression.
-	 *
-	 * @param element Element.
-	 * @param psuedo Psuedo name.
-	 * @returns True if it is a match.
-	 */
-	private matchesPsuedoExpression(element: IElement, psuedo: string): boolean {
+	private matchesPsuedo(element: IElement): boolean {
 		const parent = <IElement>element.parentNode;
 
-		if (!parent) {
-			return false;
+		// Validation
+		switch (this.selectorInfo.pseudoClass) {
+			case ':not':
+			case ':nth-child':
+			case ':nth-of-type':
+			case ':nth-last-child':
+			case ':nth-last-of-type':
+				if (!this.selectorInfo.pseudoArguments) {
+					throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
+				}
+				break;
 		}
 
-		switch (psuedo.toLowerCase()) {
-			case 'first-child':
+		// Check if parent exists
+		if (!parent) {
+			switch (this.selectorInfo.pseudoClass) {
+				case ':first-child':
+				case ':last-child':
+				case ':only-child':
+				case ':first-of-type':
+				case ':last-of-type':
+				case ':only-of-type':
+				case ':nth-child':
+				case ':nth-of-type':
+				case ':nth-last-child':
+				case ':nth-last-of-type':
+					return false;
+			}
+		}
+
+		switch (this.selectorInfo.pseudoClass) {
+			case ':first-child':
 				return parent.children[0] === element;
-			case 'last-child':
-				const lastChildChildren = parent.children;
-				return lastChildChildren[lastChildChildren.length - 1] === element;
-			case 'only-child':
-				const onlyChildChildren = parent.children;
-				return onlyChildChildren.length === 1 && onlyChildChildren[0] === element;
-			case 'first-of-type':
+			case ':last-child':
+				return parent.children.length && parent.children[parent.children.length - 1] === element;
+			case ':only-child':
+				return parent.children.length === 1 && parent.children[0] === element;
+			case ':first-of-type':
 				for (const child of parent.children) {
 					if (child.tagName === element.tagName) {
 						return child === element;
 					}
 				}
 				return false;
-			case 'last-of-type':
+			case ':last-of-type':
 				for (let i = parent.children.length - 1; i >= 0; i--) {
 					const child = parent.children[i];
 					if (child.tagName === element.tagName) {
@@ -240,7 +182,7 @@ export default class SelectorItem {
 					}
 				}
 				return false;
-			case 'only-of-type':
+			case ':only-of-type':
 				let isFound = false;
 				for (const child of parent.children) {
 					if (child.tagName === element.tagName) {
@@ -251,39 +193,151 @@ export default class SelectorItem {
 					}
 				}
 				return isFound;
-			case 'checked':
+			case ':checked':
 				return element.tagName === 'INPUT' && (<IHTMLInputElement>element).checked;
+			case ':empty':
+				return !element.children.length;
+			case ':root':
+				return element.tagName === 'HTML';
+			case ':not':
+				return !new SelectorItem(this.selectorInfo.pseudoArguments).match(element).matches;
+			case ':nth-child':
+				return this.matchesNthChild(element, parent.children, this.selectorInfo.pseudoArguments);
+			case ':nth-of-type':
+				if (!element.parentNode) {
+					return false;
+				}
+				return this.matchesNthChild(
+					element,
+					parent.children.filter((child) => child.tagName === element.tagName),
+					this.selectorInfo.pseudoArguments
+				);
+			case ':nth-last-child':
+				return this.matchesNthChild(
+					element,
+					parent.children.reverse(),
+					this.selectorInfo.pseudoArguments
+				);
+			case ':nth-last-of-type':
+				return this.matchesNthChild(
+					element,
+					parent.children.filter((child) => child.tagName === element.tagName).reverse(),
+					this.selectorInfo.pseudoArguments
+				);
+		}
+	}
+
+	/**
+	 * Matches a nth-child selector.
+	 *
+	 * @param element Element.
+	 * @param parentChildren Parent children.
+	 * @param placement Placement.
+	 * @returns True if it is a match.
+	 */
+	private matchesNthChild(
+		element: IElement,
+		parentChildren: IElement[],
+		placement: string
+	): boolean {
+		if (placement === 'odd') {
+			const index = parentChildren.indexOf(element);
+			return index !== -1 && (index + 1) % 2 !== 0;
+		} else if (placement === 'even') {
+			const index = parentChildren.indexOf(element);
+			return index !== -1 && (index + 1) % 2 === 0;
+		} else if (placement.includes('n')) {
+			const [a, b] = placement.replace(/ /g, '').split('n');
+			const childIndex = parentChildren.indexOf(element);
+			const aNumber = a !== '' ? Number(a) : 1;
+			const bNumber = b !== undefined ? Number(b) : 0;
+			if (isNaN(aNumber) || isNaN(bNumber)) {
+				throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
+			}
+
+			for (let i = 0, max = parentChildren.length; i <= max; i += aNumber) {
+				if (childIndex === i + bNumber - 1) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
-		return false;
+		const number = Number(placement);
+
+		if (isNaN(number)) {
+			throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
+		}
+
+		return parentChildren[number - 1] === element;
 	}
 
 	/**
 	 * Matches attribute.
 	 *
 	 * @param element Element.
-	 * @param selector Selector.
 	 * @returns Result.
 	 */
-	private matchesAttribute(
-		element: IElement,
-		selector: string
-	): { priorityWeight: number; matches: boolean } {
-		const regexp = new RegExp(ATTRIBUTE_REGEXP, 'g');
-		let match: RegExpMatchArray;
+	private matchesAttribute(element: IElement): { priorityWeight: number; matches: boolean } {
+		if (!this.selectorInfo.attributes) {
+			return { priorityWeight: 0, matches: true };
+		}
+
 		let priorityWeight = 0;
 
-		while ((match = regexp.exec(selector))) {
-			const isPsuedo = match.index > 0 && selector[match.index - 1] === '(';
+		for (const attribute of this.selectorInfo.attributes) {
+			const elementAttribute = (<Element>element)._attributes[attribute.name];
+
+			if (!elementAttribute) {
+				return { priorityWeight: 0, matches: false };
+			}
 
 			priorityWeight += 10;
 
-			if (
-				!isPsuedo &&
-				((match[1] && !this.matchesAttributeName(element, match[1])) ||
-					(match[2] && !this.matchesAttributeNameAndValue(element, match[2], match[4], match[3])))
-			) {
-				return { priorityWeight: 0, matches: false };
+			if (attribute.value !== null) {
+				if (!elementAttribute.value) {
+					return { priorityWeight: 0, matches: false };
+				}
+
+				switch (attribute.operator) {
+					// [attribute~="value"] - Contains a specified word.
+					case null:
+						if (attribute.value !== elementAttribute.value) {
+							return { priorityWeight: 0, matches: false };
+						}
+						break;
+					// [attribute~="value"] - Contains a specified word.
+					case '~':
+						if (!elementAttribute.value.split(' ').includes(attribute.value)) {
+							return { priorityWeight: 0, matches: false };
+						}
+						break;
+					// [attribute|="value"] - Starts with the specified word.
+					case '|':
+						if (!new RegExp(`^${attribute.value}[- ]`).test(elementAttribute.value)) {
+							return { priorityWeight: 0, matches: false };
+						}
+						break;
+					// [attribute^="value"] - Begins with a specified value.
+					case '^':
+						if (!elementAttribute.value.startsWith(attribute.value)) {
+							return { priorityWeight: 0, matches: false };
+						}
+						break;
+					// [attribute$="value"] - Ends with a specified value.
+					case '$':
+						if (!elementAttribute.value.endsWith(attribute.value)) {
+							return { priorityWeight: 0, matches: false };
+						}
+						break;
+					// [attribute*="value"] - Contains a specified value.
+					case '*':
+						if (!elementAttribute.value.includes(attribute.value)) {
+							return { priorityWeight: 0, matches: false };
+						}
+						break;
+				}
 			}
 		}
 
@@ -294,99 +348,24 @@ export default class SelectorItem {
 	 * Matches class.
 	 *
 	 * @param element Element.
-	 * @param selector Selector.
 	 * @returns Result.
 	 */
-	private matchesClass(
-		element: IElement,
-		selector: string
-	): { priorityWeight: number; matches: boolean } {
-		const regexp = new RegExp(CLASS_REGEXP, 'g');
-		const classList = element.className.split(' ');
-		const classSelector = selector.split(CSS_ESCAPE_REGEXP)[0];
-		let priorityWeight = 0;
-		let match: RegExpMatchArray;
+	private matchesClass(element: IElement): { priorityWeight: number; matches: boolean } {
+		if (!this.selectorInfo.classNames) {
+			return { priorityWeight: 0, matches: true };
+		}
 
-		while ((match = regexp.exec(classSelector))) {
-			priorityWeight += 10;
-			if (!classList.includes(match[1].replace(CSS_ESCAPE_CHAR_REGEXP, ''))) {
+		const classList = element.className.split(' ');
+		let priorityWeight = 0;
+
+		for (const className of this.selectorInfo.classNames) {
+			if (!classList.includes(className)) {
 				return { priorityWeight: 0, matches: false };
 			}
+			priorityWeight += 10;
 		}
 
 		return { priorityWeight, matches: true };
-	}
-
-	/**
-	 * Matches attribute name only.
-	 *
-	 * @param element Element.
-	 * @param attributeName Attribute name.
-	 * @returns True if it is a match.
-	 */
-	private matchesAttributeName(element: IElement, attributeName: string): boolean {
-		if (ATTRIBUTE_NAME_REGEXP.test(attributeName)) {
-			throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
-		}
-
-		return !!(<Element>element)._attributes[attributeName.toLowerCase()];
-	}
-
-	/** .
-	 *
-	 * Matches attribute name and value.
-	 *
-	 * @param element Element.
-	 * @param attributeName Attribute name.
-	 * @param attributeValue Attribute value.
-	 * @param [matchType] Match type.
-	 * @returns True if it is a match.
-	 */
-	/**
-	 *
-	 * @param element
-	 * @param attributeName
-	 * @param attributeValue
-	 * @param matchType
-	 */
-	private matchesAttributeNameAndValue(
-		element: IElement,
-		attributeName: string,
-		attributeValue: string,
-		matchType: string = null
-	): boolean {
-		const attribute = (<Element>element)._attributes[attributeName.toLowerCase()];
-		const value = attributeValue;
-
-		if (ATTRIBUTE_NAME_REGEXP.test(attributeName)) {
-			throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
-		}
-
-		if (!attribute) {
-			return false;
-		}
-
-		if (matchType) {
-			switch (matchType) {
-				// [attribute~="value"] - Contains a specified word.
-				case '~':
-					return attribute.value && attribute.value.split(' ').includes(value);
-				// [attribute|="value"] - Starts with the specified word.
-				case '|':
-					return attribute && attribute.value && new RegExp(`^${value}[- ]`).test(attribute.value);
-				// [attribute^="value"] - Begins with a specified value.
-				case '^':
-					return attribute && attribute.value && attribute.value.startsWith(value);
-				// [attribute$="value"] - Ends with a specified value.
-				case '$':
-					return attribute && attribute.value && attribute.value.endsWith(value);
-				// [attribute*="value"] - Contains a specified value.
-				case '*':
-					return attribute && attribute.value && attribute.value.includes(value);
-			}
-		}
-
-		return attribute && attribute.value === value;
 	}
 
 	/**
@@ -396,29 +375,46 @@ export default class SelectorItem {
 	 * @returns Selector info.
 	 */
 	private getSelectorInfo(selectorString: string): ISelectorInfo {
-		const baseSelector = selectorString.replace(new RegExp(PSUEDO_REGEXP, 'g'), '');
-		const idMatch = selectorString.includes('#') ? baseSelector.match(ID_REGEXP) : null;
+		const match = selectorString.match(SELECTOR_REGEXP);
 
-		const isAll = baseSelector === '*';
-		const isID = !!idMatch;
-		const isAttribute = !isAll && baseSelector.includes('[');
-		// If baseSelector !== selector then some psuedo selector was replaced above
-		const isPseudo = !isAll && baseSelector !== selectorString;
-		const isClass = !isAll && new RegExp(CLASS_REGEXP, 'g').test(baseSelector) && !isAttribute;
-		const tagNameMatch = !isAll ? baseSelector.match(TAG_NAME_REGEXP) : null;
-		const tagName = tagNameMatch ? tagNameMatch[0].toUpperCase() : null;
-		const isTagName = tagName !== null;
-		const id = idMatch ? idMatch[0].replace('#', '') : null;
+		if (!match) {
+			throw new DOMException(`The selector "${selectorString}" is not valid.`);
+		}
+
+		let attributes: ISelectorAttribute[] | null = null;
+
+		if (match[6]) {
+			const regexp = new RegExp(ATTRIBUTE_REGEXP, 'g');
+			let attributeMatch;
+			attributes = [];
+
+			while ((attributeMatch = regexp.exec(match[6]))) {
+				if (attributeMatch[1]) {
+					attributes.push({
+						name: attributeMatch[1].toLowerCase(),
+						value: null,
+						operator: null
+					});
+				} else {
+					attributes.push({
+						name: attributeMatch[2].toLowerCase(),
+						operator: attributeMatch[3] || null,
+						value: attributeMatch[4] || null
+					});
+				}
+			}
+		}
 
 		return {
-			isAll,
-			isID,
-			isAttribute,
-			isPseudo,
-			isClass,
-			isTagName,
-			tagName,
-			id
+			isAll: match[1] === '*',
+			tagName: match[2] ? match[2].toUpperCase() : null,
+			id: match[3] ? match[3].replace('#', '') : null,
+			classNames: match[4]
+				? match[4].replace('.', '').replace(CLASS_ESCAPED_CHARACTER_REGEXP, '').split('.')
+				: null,
+			attributes,
+			pseudoClass: match[7] ? match[7] : null,
+			pseudoArguments: match[9] ? match[9] : null
 		};
 	}
 }
