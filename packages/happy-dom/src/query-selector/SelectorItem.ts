@@ -2,6 +2,7 @@ import DOMException from '../exception/DOMException';
 import IElement from '../nodes/element/IElement';
 import Element from '../nodes/element/Element';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
+import SelectorCombinatorEnum from './SelectorCombinatorEnum';
 
 const ATTRIBUTE_REGEXP =
 	/\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']{0,1}([^"']+)["']{0,1}\]/g;
@@ -14,41 +15,34 @@ const ID_REGEXP = /(?<!\\)#[A-Za-z][-A-Za-z0-9_]*/g;
 const CSS_ESCAPE_REGEXP = /(?<!\\):/g;
 const CSS_ESCAPE_CHAR_REGEXP = /\\/g;
 
+type ISelectorInfo = {
+	isAll: boolean;
+	isID: boolean;
+	isAttribute: boolean;
+	isPseudo: boolean;
+	isClass: boolean;
+	isTagName: boolean;
+	tagName: string;
+	id: string;
+};
+
 /**
  * Selector item.
  */
 export default class SelectorItem {
-	private isAll: boolean;
-	private isID: boolean;
-	private isAttribute: boolean;
-	private isPseudo: boolean;
-	private isClass: boolean;
-	private isTagName: boolean;
-	private tagName = null;
-	private selector: string;
-	private id: string;
+	public combinator: SelectorCombinatorEnum;
+	private selectorString;
+	private selectorInfo: ISelectorInfo | null = null;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param selector Selector.
+	 * @param [combinator] Combinator.
 	 */
-	constructor(selector: string) {
-		const baseSelector = selector.replace(new RegExp(PSUEDO_REGEXP, 'g'), '');
-		const idMatch = !this.isAll && selector.includes('#') ? baseSelector.match(ID_REGEXP) : null;
-
-		this.isAll = baseSelector === '*';
-		this.isID = !!idMatch;
-		this.isAttribute = !this.isAll && baseSelector.includes('[');
-		// If baseSelector !== selector then some psuedo selector was replaced above
-		this.isPseudo = !this.isAll && baseSelector !== selector;
-		this.isClass =
-			!this.isAll && new RegExp(CLASS_REGEXP, 'g').test(baseSelector) && !this.isAttribute;
-		this.tagName = !this.isAll ? baseSelector.match(TAG_NAME_REGEXP) : null;
-		this.tagName = this.tagName ? this.tagName[0].toUpperCase() : null;
-		this.isTagName = this.tagName !== null;
-		this.selector = selector;
-		this.id = idMatch ? idMatch[0].replace('#', '') : null;
+	constructor(selector: string, combinator = SelectorCombinatorEnum.descendant) {
+		this.selectorString = selector;
+		this.combinator = combinator;
 	}
 
 	/**
@@ -58,35 +52,39 @@ export default class SelectorItem {
 	 * @returns Result.
 	 */
 	public match(element: IElement): { priorityWeight: number; matches: boolean } {
-		const selector = this.selector;
+		const selector = this.selectorString;
+
+		if (!this.selectorInfo) {
+			this.selectorInfo = this.getSelectorInfo(selector);
+		}
 
 		let priorityWeight = 0;
 
 		// Is all (*)
-		if (this.isAll) {
+		if (this.selectorInfo.isAll) {
 			return { priorityWeight: 0, matches: true };
 		}
 
 		// ID Match
-		if (this.isID) {
+		if (this.selectorInfo.isID) {
 			priorityWeight += 100;
 
-			if (this.id !== element.id) {
+			if (this.selectorInfo.id !== element.id) {
 				return { priorityWeight: 0, matches: false };
 			}
 		}
 
 		// Tag name match
-		if (this.isTagName) {
+		if (this.selectorInfo.isTagName) {
 			priorityWeight += 1;
 
-			if (this.tagName !== element.tagName) {
+			if (this.selectorInfo.tagName !== element.tagName) {
 				return { priorityWeight: 0, matches: false };
 			}
 		}
 
 		// Class match
-		if (this.isClass) {
+		if (this.selectorInfo.isClass) {
 			const result = this.matchesClass(element, selector);
 			priorityWeight += result.priorityWeight;
 			if (!result.matches) {
@@ -95,12 +93,12 @@ export default class SelectorItem {
 		}
 
 		// Pseudo match
-		if (this.isPseudo && !this.matchesPsuedo(element, selector)) {
+		if (this.selectorInfo.isPseudo && !this.matchesPsuedo(element, selector)) {
 			return { priorityWeight: 0, matches: false };
 		}
 
 		// Attribute match
-		if (this.isAttribute) {
+		if (this.selectorInfo.isAttribute) {
 			const result = this.matchesAttribute(element, selector);
 			priorityWeight += result.priorityWeight;
 			if (!result.matches) {
@@ -183,7 +181,7 @@ export default class SelectorItem {
 			const aNumber = a !== '' ? Number(a) : 1;
 			const bNumber = b !== undefined ? Number(b) : 0;
 			if (isNaN(aNumber) || isNaN(bNumber)) {
-				throw new DOMException(`The selector "${this.selector}" is not valid.`);
+				throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
 			}
 
 			for (let i = 0, max = children.length; i <= max; i += aNumber) {
@@ -198,7 +196,7 @@ export default class SelectorItem {
 		const number = Number(place);
 
 		if (isNaN(number)) {
-			throw new DOMException(`The selector "${this.selector}" is not valid.`);
+			throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
 		}
 
 		return children[number - 1] === element;
@@ -328,7 +326,7 @@ export default class SelectorItem {
 	 */
 	private matchesAttributeName(element: IElement, attributeName: string): boolean {
 		if (ATTRIBUTE_NAME_REGEXP.test(attributeName)) {
-			throw new DOMException(`The selector "${this.selector}" is not valid.`);
+			throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
 		}
 
 		return !!(<Element>element)._attributes[attributeName.toLowerCase()];
@@ -361,7 +359,7 @@ export default class SelectorItem {
 		const value = attributeValue;
 
 		if (ATTRIBUTE_NAME_REGEXP.test(attributeName)) {
-			throw new DOMException(`The selector "${this.selector}" is not valid.`);
+			throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
 		}
 
 		if (!attribute) {
@@ -389,5 +387,38 @@ export default class SelectorItem {
 		}
 
 		return attribute && attribute.value === value;
+	}
+
+	/**
+	 * Returns selector info.
+	 *
+	 * @param selectorString Selector string.
+	 * @returns Selector info.
+	 */
+	private getSelectorInfo(selectorString: string): ISelectorInfo {
+		const baseSelector = selectorString.replace(new RegExp(PSUEDO_REGEXP, 'g'), '');
+		const idMatch = selectorString.includes('#') ? baseSelector.match(ID_REGEXP) : null;
+
+		const isAll = baseSelector === '*';
+		const isID = !!idMatch;
+		const isAttribute = !isAll && baseSelector.includes('[');
+		// If baseSelector !== selector then some psuedo selector was replaced above
+		const isPseudo = !isAll && baseSelector !== selectorString;
+		const isClass = !isAll && new RegExp(CLASS_REGEXP, 'g').test(baseSelector) && !isAttribute;
+		const tagNameMatch = !isAll ? baseSelector.match(TAG_NAME_REGEXP) : null;
+		const tagName = tagNameMatch ? tagNameMatch[0].toUpperCase() : null;
+		const isTagName = tagName !== null;
+		const id = idMatch ? idMatch[0].replace('#', '') : null;
+
+		return {
+			isAll,
+			isID,
+			isAttribute,
+			isPseudo,
+			isClass,
+			isTagName,
+			tagName,
+			id
+		};
 	}
 }

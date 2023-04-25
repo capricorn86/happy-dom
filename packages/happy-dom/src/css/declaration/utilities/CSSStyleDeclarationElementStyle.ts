@@ -289,7 +289,7 @@ export default class CSSStyleDeclarationElementStyle {
 						}
 					} else {
 						for (const element of options.elements) {
-							const matchResult = QuerySelector.match(element.element, selectorText);
+							const matchResult = QuerySelector.match(<IElement>element.element, selectorText);
 							if (matchResult.matches) {
 								element.cssTexts.push({
 									cssText: (<CSSStyleRule>rule)._cssText,

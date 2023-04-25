@@ -159,6 +159,33 @@ describe('QuerySelector', () => {
 			expect(elements[2]).toBe(container.children[0].children[1].children[2]);
 		});
 
+		it('Returns all elements with tag name and class ".a + .b".', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<div class="a">a1</div>
+				<div class="b">b1</div>
+				<div class="c">c1</div>
+				<div class="a">a2</div>
+				<div class="b">b2</div>
+				<div class="a">a3</div>
+			`;
+
+			const firstDivB = div.querySelector('.a + .b');
+
+			expect(firstDivB === div.children[1]).toBe(true);
+
+			const allDivB = div.querySelectorAll('.a + .b');
+
+			expect(allDivB.length).toBe(2);
+			expect(allDivB[0].textContent).toBe('b1');
+			expect(allDivB[1].textContent).toBe('b2');
+
+			const firstDivC = div.querySelector('.a + .c');
+
+			expect(firstDivC === null).toBe(true);
+		});
+
 		it('Returns all elements with matching attributes using "[attr1="value1"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
