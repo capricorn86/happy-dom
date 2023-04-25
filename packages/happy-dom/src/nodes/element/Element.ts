@@ -255,7 +255,23 @@ export default class Element extends Node implements IElement {
 	 * @returns Attributes.
 	 */
 	public get attributes(): INamedNodeMap {
-		return Object.assign(new NamedNodeMap(this), Object.values(this._attributes), this._attributes);
+		return new Proxy(new NamedNodeMap(this), {
+			get: (target, name) => {
+				if (name in target && typeof target[name] === 'function') {
+					return (...args) => target[name](...args);
+				}
+
+				if (typeof name === 'symbol') {
+					return target[name];
+				}
+
+				if (typeof name === 'string' && /^\d+$/.test(name)) {
+					return Object.values(this._attributes)[parseInt(name, 10)];
+				}
+
+				return this._attributes[name] || target[name];
+			}
+		});
 	}
 
 	/**
