@@ -656,7 +656,6 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public toJSON(): { [key: string]: unknown } {
 		const result = {};
-		debugger;
 		for (const key of Object.keys(this)) {
 			if (!JSON_CIRCULAR_PROPERTIES.includes(key)) {
 				if (this[key] !== null && typeof this[key] === 'object' && this[key].toJSON) {

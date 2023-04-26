@@ -3,21 +3,10 @@ import INodeList from '../nodes/node/INodeList';
 import SelectorItem from './SelectorItem';
 import NodeList from '../nodes/node/NodeList';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum';
 import IDocument from '../nodes/document/IDocument';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
-
-/**
- * Group 1: Combinator (e.g. " ", "+", ">" or ",")
- * Group 2: Tag or class name (e.g. "div", ".class" or "#id")
- * Group 3: Attribute selector (e.g. "[attr=value]")
- * Group 4: Pseudo selector (e.g. ":first-child")
- * Group 5: Arguments of pseudo selector (e.g. "(2n + 1)")
- */
-const SELECTOR_GROUP_REGEXP =
-	/([ ,+>]*)([a-zA-Z0-9-_.#*]*)(\[[^\]]+\]){0,}(:[a-zA-Z-:]+){0,1}(\([a-zA-Z0-9-+ ]+\)){0,1}/g;
+import SelectorParser from './SelectorParser';
 
 /**
  * Utility for query selection in an HTML element.
@@ -48,7 +37,7 @@ export default class QuerySelector {
 			return allMatches;
 		}
 
-		for (const items of this.getSelectorParts(selector)) {
+		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const matches =
 				node.nodeType === NodeTypeEnum.elementNode
 					? this.findAll(<IElement>node, [<IElement>node], items)
@@ -83,7 +72,7 @@ export default class QuerySelector {
 		if (selector === null || selector === undefined) {
 			return null;
 		}
-		for (const items of this.getSelectorParts(selector)) {
+		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =
 				node.nodeType === NodeTypeEnum.elementNode
 					? this.findFirst(<IElement>node, [<IElement>node], items)
@@ -108,7 +97,7 @@ export default class QuerySelector {
 		element: IElement,
 		selector: string
 	): { priorityWeight: number; matches: boolean } {
-		for (const items of this.getSelectorParts(selector)) {
+		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const result = this.matchesSelector(element, element, items.reverse());
 
 			if (result.matches) {
@@ -303,69 +292,5 @@ export default class QuerySelector {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Splits a selector string into parts.
-	 *
-	 * @param selector Selector.
-	 * @returns Selector parts.
-	 */
-	public static getSelectorParts(selector: string): Array<Array<SelectorItem>> {
-		if (
-			selector === '*' ||
-			(!selector.includes(',') &&
-				!selector.includes(' ') &&
-				!selector.includes('+') &&
-				!selector.includes('>'))
-		) {
-			return [[new SelectorItem(selector)]];
-		}
-
-		const regexp = new RegExp(SELECTOR_GROUP_REGEXP);
-		const groups: Array<Array<SelectorItem>> = [];
-		let currentGroup: SelectorItem[] = [];
-		let match;
-
-		while ((match = regexp.exec(selector))) {
-			const selectorPart = `${match[2] || ''}${match[3] || ''}${match[4] || ''}${match[5] || ''}`;
-			const combinator = match[1] ? match[1].trim() : '';
-
-			if (combinator && !selectorPart) {
-				throw new DOMException(
-					`Invalid selector: "${selector}".`,
-					DOMExceptionNameEnum.invalidStateError
-				);
-			}
-
-			if (!selectorPart) {
-				if (currentGroup.length) {
-					groups.push(currentGroup);
-				}
-				return groups;
-			}
-
-			switch (combinator) {
-				case ',':
-					groups.push(currentGroup);
-					currentGroup = [new SelectorItem(selectorPart, SelectorCombinatorEnum.descendant)];
-					break;
-				case '>':
-					currentGroup.push(new SelectorItem(selectorPart, SelectorCombinatorEnum.child));
-					break;
-				case '+':
-					currentGroup.push(new SelectorItem(selectorPart, SelectorCombinatorEnum.adjacentSibling));
-					break;
-				case '':
-					currentGroup.push(new SelectorItem(selectorPart, SelectorCombinatorEnum.descendant));
-					break;
-			}
-		}
-
-		if (currentGroup.length) {
-			groups.push(currentGroup);
-		}
-
-		return groups;
 	}
 }

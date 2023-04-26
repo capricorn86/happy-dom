@@ -3,65 +3,31 @@ import IElement from '../nodes/element/IElement';
 import Element from '../nodes/element/Element';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum';
-
-/**
- * Group 1: All (e.g. "*")
- * Group 2: Tag name (e.g. "div")
- * Group 3: ID (e.g. "#id")
- * Group 4: Class (e.g. ".class")
- * Group 5: Extra group for class escaped characters
- * Group 6: Attribute (e.g. "[attr1="value1"][attr2=value2]")
- * Group 7: Pseudo (e.g. ":first-child")
- * Group 8: Arguments of pseudo with parentheses (e.g. "(2n + 1)")
- * Group 9: Arguments of pseudo (e.g. "2n + 1")
- */
-const SELECTOR_REGEXP =
-	/(\*){0,1}([a-zA-Z0-9-]+){0,1}(#[a-zA-Z0-9-_]+){0,1}(\.([a-zA-Z0-9-_.]|\\.)+){0,1}(\[[^\]]+\]){0,}(:[a-zA-Z-:]+){0,1}(\(([^)]+)\)){0,1}/;
-
-/**
- * Group 1: Attribute name when there is no value (e.g. "attr1")
- * Group 2: Attribute name when it has an operator and value (e.g. "attr1")
- * Group 3: Attribute operator (e.g. "~")
- * Group 4: Attribute value (e.g. "value1")
- */
-const ATTRIBUTE_REGEXP =
-	/\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1})[ ]*=[ ]*["']{0,1}([^"']+)["']{0,1}\]/g;
-
-const CLASS_ESCAPED_CHARACTER_REGEXP = /\\/g;
-
-type ISelectorAttribute = {
-	name: string;
-	operator: string | null;
-	value: string | null;
-};
-
-type ISelectorInfo = {
-	isAll: boolean;
-	tagName: string | null;
-	id: string | null;
-	classNames: string[] | null;
-	attributes: ISelectorAttribute[] | null;
-	pseudoClass: string | null;
-	pseudoArguments: string | null;
-};
+import ISelectorAttribute from './ISelectorAttribute';
+import SelectorParser from './SelectorParser';
 
 /**
  * Selector item.
  */
 export default class SelectorItem {
-	public combinator: SelectorCombinatorEnum;
-	private selectorString;
-	private selectorInfo: ISelectorInfo | null = null;
+	public combinator = SelectorCombinatorEnum.descendant;
+	public all: string | null = null;
+	public tagName: string | null = null;
+	public id: string | null = null;
+	public classNames: string[] | null = null;
+	public attributes: ISelectorAttribute[] | null = null;
+	public pseudoClass: string | null = null;
+	public pseudoArguments: string | null = null;
+	public selectorString: string | null = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param selector Selector.
-	 * @param [combinator] Combinator.
+	 * @param [options] Options.
+	 * @param [options.selectorString] Selector string.
 	 */
-	constructor(selector: string, combinator = SelectorCombinatorEnum.descendant) {
-		this.selectorString = selector;
-		this.combinator = combinator;
+	constructor(options?: { selectorString?: string | null }) {
+		this.selectorString = options?.selectorString || null;
 	}
 
 	/**
@@ -71,32 +37,26 @@ export default class SelectorItem {
 	 * @returns Result.
 	 */
 	public match(element: IElement): { priorityWeight: number; matches: boolean } {
-		const selector = this.selectorString;
-
-		if (!this.selectorInfo) {
-			this.selectorInfo = this.getSelectorInfo(selector);
-		}
-
 		let priorityWeight = 0;
 
 		// Tag name match
-		if (this.selectorInfo.tagName) {
-			if (this.selectorInfo.tagName !== element.tagName) {
+		if (this.tagName) {
+			if (this.tagName !== element.tagName) {
 				return { priorityWeight: 0, matches: false };
 			}
 			priorityWeight += 1;
 		}
 
 		// ID Match
-		if (this.selectorInfo.id) {
-			if (this.selectorInfo.id !== element.id) {
+		if (this.id) {
+			if (this.id !== element.id) {
 				return { priorityWeight: 0, matches: false };
 			}
 			priorityWeight += 100;
 		}
 
 		// Class match
-		if (this.selectorInfo.classNames) {
+		if (this.classNames) {
 			const result = this.matchesClass(element);
 			if (!result.matches) {
 				return { priorityWeight: 0, matches: false };
@@ -105,7 +65,7 @@ export default class SelectorItem {
 		}
 
 		// Attribute match
-		if (this.selectorInfo.attributes) {
+		if (this.attributes) {
 			const result = this.matchesAttribute(element);
 			if (!result.matches) {
 				return { priorityWeight: 0, matches: false };
@@ -114,7 +74,7 @@ export default class SelectorItem {
 		}
 
 		// Pseudo match
-		if (this.selectorInfo.pseudoClass && !this.matchesPsuedo(element)) {
+		if (this.pseudoClass && !this.matchesPsuedo(element)) {
 			return { priorityWeight: 0, matches: false };
 		}
 
@@ -131,13 +91,13 @@ export default class SelectorItem {
 		const parent = <IElement>element.parentNode;
 
 		// Validation
-		switch (this.selectorInfo.pseudoClass) {
-			case ':not':
-			case ':nth-child':
-			case ':nth-of-type':
-			case ':nth-last-child':
-			case ':nth-last-of-type':
-				if (!this.selectorInfo.pseudoArguments) {
+		switch (this.pseudoClass) {
+			case 'not':
+			case 'nth-child':
+			case 'nth-of-type':
+			case 'nth-last-child':
+			case 'nth-last-of-type':
+				if (!this.pseudoArguments) {
 					throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
 				}
 				break;
@@ -145,36 +105,36 @@ export default class SelectorItem {
 
 		// Check if parent exists
 		if (!parent) {
-			switch (this.selectorInfo.pseudoClass) {
-				case ':first-child':
-				case ':last-child':
-				case ':only-child':
-				case ':first-of-type':
-				case ':last-of-type':
-				case ':only-of-type':
-				case ':nth-child':
-				case ':nth-of-type':
-				case ':nth-last-child':
-				case ':nth-last-of-type':
+			switch (this.pseudoClass) {
+				case 'first-child':
+				case 'last-child':
+				case 'only-child':
+				case 'first-of-type':
+				case 'last-of-type':
+				case 'only-of-type':
+				case 'nth-child':
+				case 'nth-of-type':
+				case 'nth-last-child':
+				case 'nth-last-of-type':
 					return false;
 			}
 		}
 
-		switch (this.selectorInfo.pseudoClass) {
-			case ':first-child':
+		switch (this.pseudoClass) {
+			case 'first-child':
 				return parent.children[0] === element;
-			case ':last-child':
+			case 'last-child':
 				return parent.children.length && parent.children[parent.children.length - 1] === element;
-			case ':only-child':
+			case 'only-child':
 				return parent.children.length === 1 && parent.children[0] === element;
-			case ':first-of-type':
+			case 'first-of-type':
 				for (const child of parent.children) {
 					if (child.tagName === element.tagName) {
 						return child === element;
 					}
 				}
 				return false;
-			case ':last-of-type':
+			case 'last-of-type':
 				for (let i = parent.children.length - 1; i >= 0; i--) {
 					const child = parent.children[i];
 					if (child.tagName === element.tagName) {
@@ -182,7 +142,7 @@ export default class SelectorItem {
 					}
 				}
 				return false;
-			case ':only-of-type':
+			case 'only-of-type':
 				let isFound = false;
 				for (const child of parent.children) {
 					if (child.tagName === element.tagName) {
@@ -193,36 +153,32 @@ export default class SelectorItem {
 					}
 				}
 				return isFound;
-			case ':checked':
+			case 'checked':
 				return element.tagName === 'INPUT' && (<IHTMLInputElement>element).checked;
-			case ':empty':
+			case 'empty':
 				return !element.children.length;
-			case ':root':
+			case 'root':
 				return element.tagName === 'HTML';
-			case ':not':
-				return !new SelectorItem(this.selectorInfo.pseudoArguments).match(element).matches;
-			case ':nth-child':
-				return this.matchesNthChild(element, parent.children, this.selectorInfo.pseudoArguments);
-			case ':nth-of-type':
+			case 'not':
+				return !SelectorParser.getSelectorItem(this.pseudoArguments).match(element).matches;
+			case 'nth-child':
+				return this.matchesNthChild(element, parent.children, this.pseudoArguments);
+			case 'nth-of-type':
 				if (!element.parentNode) {
 					return false;
 				}
 				return this.matchesNthChild(
 					element,
 					parent.children.filter((child) => child.tagName === element.tagName),
-					this.selectorInfo.pseudoArguments
+					this.pseudoArguments
 				);
-			case ':nth-last-child':
-				return this.matchesNthChild(
-					element,
-					parent.children.reverse(),
-					this.selectorInfo.pseudoArguments
-				);
-			case ':nth-last-of-type':
+			case 'nth-last-child':
+				return this.matchesNthChild(element, parent.children.reverse(), this.pseudoArguments);
+			case 'nth-last-of-type':
 				return this.matchesNthChild(
 					element,
 					parent.children.filter((child) => child.tagName === element.tagName).reverse(),
-					this.selectorInfo.pseudoArguments
+					this.pseudoArguments
 				);
 		}
 	}
@@ -280,13 +236,13 @@ export default class SelectorItem {
 	 * @returns Result.
 	 */
 	private matchesAttribute(element: IElement): { priorityWeight: number; matches: boolean } {
-		if (!this.selectorInfo.attributes) {
+		if (!this.attributes) {
 			return { priorityWeight: 0, matches: true };
 		}
 
 		let priorityWeight = 0;
 
-		for (const attribute of this.selectorInfo.attributes) {
+		for (const attribute of this.attributes) {
 			const elementAttribute = (<Element>element)._attributes[attribute.name];
 
 			if (!elementAttribute) {
@@ -351,14 +307,14 @@ export default class SelectorItem {
 	 * @returns Result.
 	 */
 	private matchesClass(element: IElement): { priorityWeight: number; matches: boolean } {
-		if (!this.selectorInfo.classNames) {
+		if (!this.classNames) {
 			return { priorityWeight: 0, matches: true };
 		}
 
 		const classList = element.className.split(' ');
 		let priorityWeight = 0;
 
-		for (const className of this.selectorInfo.classNames) {
+		for (const className of this.classNames) {
 			if (!classList.includes(className)) {
 				return { priorityWeight: 0, matches: false };
 			}
@@ -366,55 +322,5 @@ export default class SelectorItem {
 		}
 
 		return { priorityWeight, matches: true };
-	}
-
-	/**
-	 * Returns selector info.
-	 *
-	 * @param selectorString Selector string.
-	 * @returns Selector info.
-	 */
-	private getSelectorInfo(selectorString: string): ISelectorInfo {
-		const match = selectorString.match(SELECTOR_REGEXP);
-
-		if (!match) {
-			throw new DOMException(`The selector "${selectorString}" is not valid.`);
-		}
-
-		let attributes: ISelectorAttribute[] | null = null;
-
-		if (match[6]) {
-			const regexp = new RegExp(ATTRIBUTE_REGEXP, 'g');
-			let attributeMatch;
-			attributes = [];
-
-			while ((attributeMatch = regexp.exec(match[6]))) {
-				if (attributeMatch[1]) {
-					attributes.push({
-						name: attributeMatch[1].toLowerCase(),
-						value: null,
-						operator: null
-					});
-				} else {
-					attributes.push({
-						name: attributeMatch[2].toLowerCase(),
-						operator: attributeMatch[3] || null,
-						value: attributeMatch[4] || null
-					});
-				}
-			}
-		}
-
-		return {
-			isAll: match[1] === '*',
-			tagName: match[2] ? match[2].toUpperCase() : null,
-			id: match[3] ? match[3].replace('#', '') : null,
-			classNames: match[4]
-				? match[4].replace('.', '').replace(CLASS_ESCAPED_CHARACTER_REGEXP, '').split('.')
-				: null,
-			attributes,
-			pseudoClass: match[7] ? match[7] : null,
-			pseudoArguments: match[9] ? match[9] : null
-		};
 	}
 }
