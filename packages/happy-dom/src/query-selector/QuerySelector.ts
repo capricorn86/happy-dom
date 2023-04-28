@@ -7,6 +7,7 @@ import SelectorCombinatorEnum from './SelectorCombinatorEnum';
 import IDocument from '../nodes/document/IDocument';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
 import SelectorParser from './SelectorParser';
+import ISelectorMatch from './ISelectorMatch';
 
 /**
  * Utility for query selection in an HTML element.
@@ -25,7 +26,8 @@ export default class QuerySelector {
 		node: IElement | IDocument | IDocumentFragment,
 		selector: string
 	): INodeList<IElement> {
-		const allMatches = new NodeList<IElement>();
+		const nodeList = new NodeList<IElement>();
+		const allMatches = {};
 
 		if (selector === '') {
 			throw new Error(
@@ -34,7 +36,7 @@ export default class QuerySelector {
 		}
 
 		if (selector === null || selector === undefined) {
-			return allMatches;
+			return nodeList;
 		}
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
@@ -42,15 +44,14 @@ export default class QuerySelector {
 				node.nodeType === NodeTypeEnum.elementNode
 					? this.findAll(<IElement>node, [<IElement>node], items)
 					: this.findAll(null, node.children, items);
-
-			for (const match of matches) {
-				if (!allMatches.includes(match)) {
-					allMatches.push(match);
-				}
-			}
+			Object.assign(allMatches, matches);
 		}
 
-		return allMatches;
+		for (const key of Object.keys(allMatches).sort()) {
+			nodeList.push(allMatches[key]);
+		}
+
+		return nodeList;
 	}
 
 	/**
@@ -69,9 +70,11 @@ export default class QuerySelector {
 				"Failed to execute 'querySelector' on 'Element': The provided selector is empty."
 			);
 		}
+
 		if (selector === null || selector === undefined) {
 			return null;
 		}
+
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =
 				node.nodeType === NodeTypeEnum.elementNode
@@ -93,19 +96,16 @@ export default class QuerySelector {
 	 * @param selector Selector to match with.
 	 * @returns Result.
 	 */
-	public static match(
-		element: IElement,
-		selector: string
-	): { priorityWeight: number; matches: boolean } {
+	public static match(element: IElement, selector: string): ISelectorMatch | null {
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
-			const result = this.matchesSelector(element, element, items.reverse());
+			const result = this.matchSelector(element, element, items.reverse());
 
-			if (result.matches) {
+			if (result) {
 				return result;
 			}
 		}
 
-		return { priorityWeight: 0, matches: false };
+		return null;
 	}
 
 	/**
@@ -117,37 +117,33 @@ export default class QuerySelector {
 	 * @param [priorityWeight] Priority weight.
 	 * @returns Result.
 	 */
-	private static matchesSelector(
+	private static matchSelector(
 		targetElement: IElement,
 		currentElement: IElement,
 		selectorItems: SelectorItem[],
 		priorityWeight = 0
-	): {
-		priorityWeight: number;
-		matches: boolean;
-	} {
+	): ISelectorMatch | null {
 		const selectorItem = selectorItems[0];
 		const result = selectorItem.match(currentElement);
 
-		if (result.matches) {
+		if (result) {
 			if (selectorItems.length === 1) {
 				return {
-					priorityWeight: priorityWeight + result.priorityWeight,
-					matches: true
+					priorityWeight: priorityWeight + result.priorityWeight
 				};
 			}
 
 			switch (selectorItem.combinator) {
 				case SelectorCombinatorEnum.adjacentSibling:
 					if (currentElement.previousElementSibling) {
-						const match = this.matchesSelector(
+						const match = this.matchSelector(
 							targetElement,
 							currentElement.previousElementSibling,
 							selectorItems.slice(1),
 							priorityWeight + result.priorityWeight
 						);
 
-						if (match.matches) {
+						if (match) {
 							return match;
 						}
 					}
@@ -155,13 +151,13 @@ export default class QuerySelector {
 				case SelectorCombinatorEnum.child:
 				case SelectorCombinatorEnum.descendant:
 					if (currentElement.parentElement) {
-						const match = this.matchesSelector(
+						const match = this.matchSelector(
 							targetElement,
 							currentElement.parentElement,
 							selectorItems.slice(1),
 							priorityWeight + result.priorityWeight
 						);
-						if (match.matches) {
+						if (match) {
 							return match;
 						}
 					}
@@ -174,7 +170,7 @@ export default class QuerySelector {
 			targetElement !== currentElement &&
 			currentElement.parentElement
 		) {
-			return this.matchesSelector(
+			return this.matchSelector(
 				targetElement,
 				currentElement.parentElement,
 				selectorItems,
@@ -182,7 +178,7 @@ export default class QuerySelector {
 			);
 		}
 
-		return { priorityWeight: 0, matches: false };
+		return null;
 	}
 
 	/**
@@ -191,36 +187,48 @@ export default class QuerySelector {
 	 * @param rootElement Root element.
 	 * @param children Child elements.
 	 * @param selectorItems Selector items.
-	 * @returns HTML elements.
+	 * @param [documentPosition] Document position of the element.
+	 * @returns Document position and element map.
 	 */
 	private static findAll(
 		rootElement: IElement,
 		children: IElement[],
-		selectorItems: SelectorItem[]
-	): IElement[] {
+		selectorItems: SelectorItem[],
+		documentPosition?: string
+	): { [documentPosition: string]: IElement } {
 		const selectorItem = selectorItems[0];
 		const nextSelectorItem = selectorItems[1];
-		let matched = [];
+		const matched: { [documentPosition: string]: IElement } = {};
 
-		for (const child of children) {
-			if (selectorItem.match(child).matches) {
+		for (let i = 0, max = children.length; i < max; i++) {
+			const child = children[i];
+			const position = (documentPosition ? documentPosition + '>' : '') + i;
+
+			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
-						matched.push(child);
+						matched[position] = child;
 					}
 				} else {
 					switch (nextSelectorItem.combinator) {
 						case SelectorCombinatorEnum.adjacentSibling:
 							if (child.nextElementSibling) {
-								matched = matched.concat(
-									this.findAll(rootElement, [child.nextElementSibling], selectorItems.slice(1))
+								Object.assign(
+									matched,
+									this.findAll(
+										rootElement,
+										[child.nextElementSibling],
+										selectorItems.slice(1),
+										position
+									)
 								);
 							}
 							break;
 						case SelectorCombinatorEnum.descendant:
 						case SelectorCombinatorEnum.child:
-							matched = matched.concat(
-								this.findAll(rootElement, child.children, selectorItems.slice(1))
+							Object.assign(
+								matched,
+								this.findAll(rootElement, child.children, selectorItems.slice(1), position)
 							);
 							break;
 					}
@@ -228,7 +236,7 @@ export default class QuerySelector {
 			}
 
 			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && child.children.length) {
-				matched = matched.concat(this.findAll(rootElement, child.children, selectorItems));
+				Object.assign(matched, this.findAll(rootElement, child.children, selectorItems, position));
 			}
 		}
 
@@ -252,7 +260,7 @@ export default class QuerySelector {
 		const nextSelectorItem = selectorItems[1];
 
 		for (const child of children) {
-			if (selectorItem.match(child).matches) {
+			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
 						return child;

@@ -723,7 +723,7 @@ export default class Element extends Node implements IElement {
 	 * @returns "true" if matching.
 	 */
 	public matches(selector: string): boolean {
-		return QuerySelector.match(this, selector).matches;
+		return !!QuerySelector.match(this, selector);
 	}
 
 	/**
@@ -737,7 +737,7 @@ export default class Element extends Node implements IElement {
 		let parent: IElement = this;
 
 		while (parent) {
-			if (QuerySelector.match(parent, selector).matches) {
+			if (QuerySelector.match(parent, selector)) {
 				return parent;
 			}
 			parent = parent.parentElement;

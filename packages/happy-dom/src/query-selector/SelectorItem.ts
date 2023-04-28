@@ -5,29 +5,52 @@ import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum';
 import ISelectorAttribute from './ISelectorAttribute';
 import SelectorParser from './SelectorParser';
+import ISelectorMatch from './ISelectorMatch';
 
 /**
  * Selector item.
  */
 export default class SelectorItem {
-	public combinator = SelectorCombinatorEnum.descendant;
-	public all: string | null = null;
-	public tagName: string | null = null;
-	public id: string | null = null;
-	public classNames: string[] | null = null;
-	public attributes: ISelectorAttribute[] | null = null;
-	public pseudoClass: string | null = null;
-	public pseudoArguments: string | null = null;
-	public selectorString: string | null = null;
+	public all: string | null;
+	public tagName: string | null;
+	public id: string | null;
+	public classNames: string[] | null;
+	public attributes: ISelectorAttribute[] | null;
+	public pseudoClass: string | null;
+	public pseudoArguments: string | null;
+	public combinator: SelectorCombinatorEnum;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param [options] Options.
-	 * @param [options.selectorString] Selector string.
+	 * @param [options.combinator] Combinator.
+	 * @param [options.all] All.
+	 * @param [options.tagName] Tag name.
+	 * @param [options.id] ID.
+	 * @param [options.classNames] Class names.
+	 * @param [options.attributes] Attributes.
+	 * @param [options.pseudoClass] Pseudo class.
+	 * @param [options.pseudoArguments] Pseudo arguments.
 	 */
-	constructor(options?: { selectorString?: string | null }) {
-		this.selectorString = options?.selectorString || null;
+	constructor(options?: {
+		all?: string;
+		tagName?: string;
+		id?: string;
+		classNames?: string[];
+		attributes?: ISelectorAttribute[];
+		pseudoClass?: string;
+		pseudoArguments?: string;
+		combinator?: SelectorCombinatorEnum;
+	}) {
+		this.all = options?.all || null;
+		this.tagName = options?.tagName || null;
+		this.id = options?.id || null;
+		this.classNames = options?.classNames || null;
+		this.attributes = options?.attributes || null;
+		this.pseudoClass = options?.pseudoClass || null;
+		this.pseudoArguments = options?.pseudoArguments || null;
+		this.combinator = options?.combinator || SelectorCombinatorEnum.descendant;
 	}
 
 	/**
@@ -36,13 +59,13 @@ export default class SelectorItem {
 	 * @param element HTML element.
 	 * @returns Result.
 	 */
-	public match(element: IElement): { priorityWeight: number; matches: boolean } {
+	public match(element: IElement): ISelectorMatch | null {
 		let priorityWeight = 0;
 
 		// Tag name match
 		if (this.tagName) {
 			if (this.tagName !== element.tagName) {
-				return { priorityWeight: 0, matches: false };
+				return null;
 			}
 			priorityWeight += 1;
 		}
@@ -50,35 +73,35 @@ export default class SelectorItem {
 		// ID Match
 		if (this.id) {
 			if (this.id !== element.id) {
-				return { priorityWeight: 0, matches: false };
+				return null;
 			}
 			priorityWeight += 100;
 		}
 
 		// Class match
 		if (this.classNames) {
-			const result = this.matchesClass(element);
-			if (!result.matches) {
-				return { priorityWeight: 0, matches: false };
+			const result = this.matchClass(element);
+			if (!result) {
+				return null;
 			}
 			priorityWeight += result.priorityWeight;
 		}
 
 		// Attribute match
 		if (this.attributes) {
-			const result = this.matchesAttribute(element);
-			if (!result.matches) {
-				return { priorityWeight: 0, matches: false };
+			const result = this.matchAttributes(element);
+			if (!result) {
+				return null;
 			}
 			priorityWeight += result.priorityWeight;
 		}
 
 		// Pseudo match
-		if (this.pseudoClass && !this.matchesPsuedo(element)) {
-			return { priorityWeight: 0, matches: false };
+		if (this.pseudoClass && !this.matchPsuedo(element)) {
+			return null;
 		}
 
-		return { priorityWeight, matches: true };
+		return { priorityWeight };
 	}
 
 	/**
@@ -87,7 +110,7 @@ export default class SelectorItem {
 	 * @param element Element.
 	 * @returns Result.
 	 */
-	private matchesPsuedo(element: IElement): boolean {
+	private matchPsuedo(element: IElement): boolean {
 		const parent = <IElement>element.parentNode;
 
 		// Validation
@@ -98,7 +121,7 @@ export default class SelectorItem {
 			case 'nth-last-child':
 			case 'nth-last-of-type':
 				if (!this.pseudoArguments) {
-					throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
+					throw new DOMException(`The selector "${this.getSelectorString()}" is not valid.`);
 				}
 				break;
 		}
@@ -160,22 +183,22 @@ export default class SelectorItem {
 			case 'root':
 				return element.tagName === 'HTML';
 			case 'not':
-				return !SelectorParser.getSelectorItem(this.pseudoArguments).match(element).matches;
+				return !SelectorParser.getSelectorItem(this.pseudoArguments).match(element);
 			case 'nth-child':
-				return this.matchesNthChild(element, parent.children, this.pseudoArguments);
+				return this.matchNthChild(element, parent.children, this.pseudoArguments);
 			case 'nth-of-type':
 				if (!element.parentNode) {
 					return false;
 				}
-				return this.matchesNthChild(
+				return this.matchNthChild(
 					element,
 					parent.children.filter((child) => child.tagName === element.tagName),
 					this.pseudoArguments
 				);
 			case 'nth-last-child':
-				return this.matchesNthChild(element, parent.children.reverse(), this.pseudoArguments);
+				return this.matchNthChild(element, parent.children.reverse(), this.pseudoArguments);
 			case 'nth-last-of-type':
-				return this.matchesNthChild(
+				return this.matchNthChild(
 					element,
 					parent.children.filter((child) => child.tagName === element.tagName).reverse(),
 					this.pseudoArguments
@@ -191,11 +214,7 @@ export default class SelectorItem {
 	 * @param placement Placement.
 	 * @returns True if it is a match.
 	 */
-	private matchesNthChild(
-		element: IElement,
-		parentChildren: IElement[],
-		placement: string
-	): boolean {
+	private matchNthChild(element: IElement, parentChildren: IElement[], placement: string): boolean {
 		if (placement === 'odd') {
 			const index = parentChildren.indexOf(element);
 			return index !== -1 && (index + 1) % 2 !== 0;
@@ -208,7 +227,7 @@ export default class SelectorItem {
 			const aNumber = a !== '' ? Number(a) : 1;
 			const bNumber = b !== undefined ? Number(b) : 0;
 			if (isNaN(aNumber) || isNaN(bNumber)) {
-				throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
+				throw new DOMException(`The selector "${this.getSelectorString()}" is not valid.`);
 			}
 
 			for (let i = 0, max = parentChildren.length; i <= max; i += aNumber) {
@@ -223,7 +242,7 @@ export default class SelectorItem {
 		const number = Number(placement);
 
 		if (isNaN(number)) {
-			throw new DOMException(`The selector "${this.selectorString}" is not valid.`);
+			throw new DOMException(`The selector "${this.getSelectorString()}" is not valid.`);
 		}
 
 		return parentChildren[number - 1] === element;
@@ -235,9 +254,9 @@ export default class SelectorItem {
 	 * @param element Element.
 	 * @returns Result.
 	 */
-	private matchesAttribute(element: IElement): { priorityWeight: number; matches: boolean } {
+	private matchAttributes(element: IElement): ISelectorMatch | null {
 		if (!this.attributes) {
-			return { priorityWeight: 0, matches: true };
+			return null;
 		}
 
 		let priorityWeight = 0;
@@ -246,58 +265,58 @@ export default class SelectorItem {
 			const elementAttribute = (<Element>element)._attributes[attribute.name];
 
 			if (!elementAttribute) {
-				return { priorityWeight: 0, matches: false };
+				return null;
 			}
 
 			priorityWeight += 10;
 
 			if (attribute.value !== null) {
 				if (!elementAttribute.value) {
-					return { priorityWeight: 0, matches: false };
+					return null;
 				}
 
 				switch (attribute.operator) {
 					// [attribute~="value"] - Contains a specified word.
 					case null:
 						if (attribute.value !== elementAttribute.value) {
-							return { priorityWeight: 0, matches: false };
+							return null;
 						}
 						break;
 					// [attribute~="value"] - Contains a specified word.
 					case '~':
 						if (!elementAttribute.value.split(' ').includes(attribute.value)) {
-							return { priorityWeight: 0, matches: false };
+							return null;
 						}
 						break;
 					// [attribute|="value"] - Starts with the specified word.
 					case '|':
 						if (!new RegExp(`^${attribute.value}[- ]`).test(elementAttribute.value)) {
-							return { priorityWeight: 0, matches: false };
+							return null;
 						}
 						break;
 					// [attribute^="value"] - Begins with a specified value.
 					case '^':
 						if (!elementAttribute.value.startsWith(attribute.value)) {
-							return { priorityWeight: 0, matches: false };
+							return null;
 						}
 						break;
 					// [attribute$="value"] - Ends with a specified value.
 					case '$':
 						if (!elementAttribute.value.endsWith(attribute.value)) {
-							return { priorityWeight: 0, matches: false };
+							return null;
 						}
 						break;
 					// [attribute*="value"] - Contains a specified value.
 					case '*':
 						if (!elementAttribute.value.includes(attribute.value)) {
-							return { priorityWeight: 0, matches: false };
+							return null;
 						}
 						break;
 				}
 			}
 		}
 
-		return { priorityWeight, matches: true };
+		return { priorityWeight };
 	}
 
 	/**
@@ -306,9 +325,9 @@ export default class SelectorItem {
 	 * @param element Element.
 	 * @returns Result.
 	 */
-	private matchesClass(element: IElement): { priorityWeight: number; matches: boolean } {
+	private matchClass(element: IElement): ISelectorMatch | null {
 		if (!this.classNames) {
-			return { priorityWeight: 0, matches: true };
+			return null;
 		}
 
 		const classList = element.className.split(' ');
@@ -316,11 +335,33 @@ export default class SelectorItem {
 
 		for (const className of this.classNames) {
 			if (!classList.includes(className)) {
-				return { priorityWeight: 0, matches: false };
+				return null;
 			}
 			priorityWeight += 10;
 		}
 
-		return { priorityWeight, matches: true };
+		return { priorityWeight };
+	}
+
+	/**
+	 * Returns the selector string.
+	 *
+	 * @returns Selector string.
+	 */
+	private getSelectorString(): string {
+		return `${this.all || ''}${this.tagName || ''}${this.id ? `#${this.id}` : ''}${
+			this.classNames ? `.${this.classNames.join('.')}` : ''
+		}${
+			this.attributes
+				? this.attributes
+						.map(
+							(attribute) =>
+								`[${attribute.name}${
+									attribute.value ? `${attribute.operator || ''}="${attribute.value}"` : ''
+								}]`
+						)
+						.join('')
+				: ''
+		}${this.pseudoClass || ''}${this.pseudoArguments ? `(${this.pseudoArguments})` : ''}`;
 	}
 }
