@@ -11,17 +11,6 @@ import IAttr from '../attr/IAttr';
 import NodeList from './NodeList';
 import INodeList from './INodeList';
 
-const JSON_CIRCULAR_PROPERTIES = [
-	'ownerDocument',
-	'parentNode',
-	'ownerElement',
-	'defaultView',
-	'_rootNode',
-	'_formNode',
-	'_selectNode',
-	'_textAreaNode'
-];
-
 /**
  * Node.
  */
@@ -198,7 +187,7 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get parentElement(): IElement {
 		let parent = this.parentNode;
-		while (parent && parent.nodeType !== Node.ELEMENT_NODE) {
+		while (parent && parent.nodeType !== NodeTypeEnum.elementNode) {
 			parent = parent.parentNode;
 		}
 		return <IElement>parent;
@@ -647,18 +636,5 @@ export default class Node extends EventTarget implements INode {
 			}
 			child = child.nextSibling;
 		}
-	}
-
-	/**
-	 * This will be called by JSON.stringify() when serializing this node.
-	 *
-	 * @returns Object without circular references.
-	 */
-	public toJSON(): { [key: string]: unknown } {
-		const result = {};
-		for (const key of Object.keys(this)) {
-			result[key] = !JSON_CIRCULAR_PROPERTIES.includes(key) ? this[key] : null;
-		}
-		return result;
 	}
 }

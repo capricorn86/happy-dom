@@ -308,11 +308,11 @@ describe('Document', () => {
 				const styleSheets = document.styleSheets;
 
 				expect(styleSheets.length).toBe(2);
-				expect(styleSheets[0].cssRules.length).toBe(1);
-				expect(styleSheets[0].cssRules[0].cssText).toBe('button { background-color: red; }');
-				expect(styleSheets[1].cssRules.length).toBe(2);
-				expect(styleSheets[1].cssRules[0].cssText).toBe('body { background-color: red; }');
-				expect(styleSheets[1].cssRules[1].cssText).toBe('div { background-color: green; }');
+				expect(styleSheets[0].cssRules.length).toBe(2);
+				expect(styleSheets[0].cssRules[0].cssText).toBe('body { background-color: red; }');
+				expect(styleSheets[0].cssRules[1].cssText).toBe('div { background-color: green; }');
+				expect(styleSheets[1].cssRules.length).toBe(1);
+				expect(styleSheets[1].cssRules[0].cssText).toBe('button { background-color: red; }');
 
 				done();
 			}, 0);

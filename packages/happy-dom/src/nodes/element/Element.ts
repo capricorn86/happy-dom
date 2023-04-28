@@ -723,7 +723,7 @@ export default class Element extends Node implements IElement {
 	 * @returns "true" if matching.
 	 */
 	public matches(selector: string): boolean {
-		return QuerySelector.match(this, selector).matches;
+		return !!QuerySelector.match(this, selector);
 	}
 
 	/**
@@ -733,28 +733,14 @@ export default class Element extends Node implements IElement {
 	 * @returns Closest matching element.
 	 */
 	public closest(selector: string): IElement {
-		let rootElement: IElement = this.ownerDocument.documentElement;
-		if (!this.isConnected) {
-			rootElement = this;
-			while (rootElement.parentNode) {
-				rootElement = <IElement>rootElement.parentNode;
-			}
-		}
-		const elements = rootElement.querySelectorAll(selector);
-
 		// eslint-disable-next-line
 		let parent: IElement = this;
+
 		while (parent) {
-			if (elements.includes(parent)) {
+			if (QuerySelector.match(parent, selector)) {
 				return parent;
 			}
 			parent = parent.parentElement;
-		}
-
-		// QuerySelectorAll() will not match the element it is looking in when searched for
-		// Therefore we need to check if it matches the root
-		if (rootElement.matches(selector)) {
-			return rootElement;
 		}
 
 		return null;

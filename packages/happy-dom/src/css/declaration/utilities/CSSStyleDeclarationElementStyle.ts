@@ -289,8 +289,8 @@ export default class CSSStyleDeclarationElementStyle {
 						}
 					} else {
 						for (const element of options.elements) {
-							const matchResult = QuerySelector.match(element.element, selectorText);
-							if (matchResult.matches) {
+							const matchResult = QuerySelector.match(<IElement>element.element, selectorText);
+							if (matchResult) {
 								element.cssTexts.push({
 									cssText: (<CSSStyleRule>rule)._cssText,
 									priorityWeight: matchResult.priorityWeight
