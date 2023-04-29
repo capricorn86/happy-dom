@@ -18,7 +18,7 @@ import DOMException from '../exception/DOMException';
  * Group 11: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#([a-zA-Z0-9-_]+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *["']{0,1}([^"']+)["']{0,1}\]|:([a-zA-Z-:]+)|\(([^)]+)\)|([ ,+>]*)/g;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *["']{0,1}([^"']+)["']{0,1}\]|:([a-zA-Z-:]+)|\(([^)]+)\)|([ ,+>]*)/g;
 
 /**
  * Escaped Character RegExp.
@@ -85,7 +85,7 @@ export default class SelectorParser {
 				} else if (match[2]) {
 					currentSelectorItem.tagName = match[2].toUpperCase();
 				} else if (match[3]) {
-					currentSelectorItem.id = match[3];
+					currentSelectorItem.id = match[3].replace(CLASS_ESCAPED_CHARACTER_REGEXP, '');
 				} else if (match[4]) {
 					currentSelectorItem.classNames = currentSelectorItem.classNames || [];
 					currentSelectorItem.classNames.push(match[4].replace(CLASS_ESCAPED_CHARACTER_REGEXP, ''));
