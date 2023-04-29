@@ -914,7 +914,17 @@ describe('QuerySelector', () => {
 			div2.id = 'id';
 			div.appendChild(div2);
 
-			expect(div.querySelector('#id')).toEqual(div2);
+			expect(div.querySelector('#id') === div2).toBe(true);
+		});
+
+		it('Returns an element by id matching "#:id:".', () => {
+			const div = document.createElement('div');
+			const div2 = document.createElement('div');
+
+			div2.id = ':id:';
+			div.appendChild(div2);
+
+			expect(div.querySelector('#\\:id\\:') === div2).toBe(true);
 		});
 
 		it('Does not find input with selector of input:not([list])[type="search"]', () => {
