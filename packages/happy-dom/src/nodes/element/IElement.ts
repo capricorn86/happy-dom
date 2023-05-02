@@ -25,6 +25,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	scrollLeft: number;
 	id: string;
 	className: string;
+	role: string;
 	innerHTML: string;
 	outerHTML: string;
 	slot: string;

@@ -161,6 +161,24 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
+	 * Returns role.
+	 *
+	 * @returns Role.
+	 */
+	public get role(): string {
+		return this.getAttribute('role') || '';
+	}
+
+	/**
+	 * Sets role.
+	 *
+	 * @param role Role.
+	 */
+	public set role(role: string) {
+		this.setAttribute('role', role);
+	}
+
+	/**
 	 * Previous element sibling.
 	 *
 	 * @returns Element.

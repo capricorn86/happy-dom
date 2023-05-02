@@ -618,6 +618,20 @@ describe('QuerySelector', () => {
 			expect(elements[1] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
+		it('Returns all elements matching "input:not([type]):not([list])" to verify that "screen.getByRole(\'checkbox\')" works in Testing Library.', () => {
+			const container = document.createElement('div');
+
+			container.innerHTML = '<input type="checkbox"></input>';
+
+			expect(container.querySelectorAll('input:not([type]):not([list])').length).toBe(0);
+
+			container.innerHTML = '<input></input>';
+
+			const elements = container.querySelectorAll('input:not([type]):not([list])');
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
 		it('Returns all elements matching ".foo:not(.bar)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = `
