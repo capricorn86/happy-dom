@@ -570,18 +570,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param checked Checked.
 	 */
 	public set checked(checked: boolean) {
-		this._checked = checked;
-
-		if (checked && this.type === 'radio' && this.name) {
-			const root = <IHTMLElement>(<IHTMLFormElement>this._formNode || this.getRootNode());
-			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
-
-			for (const radioButton of radioButtons) {
-				if (radioButton !== this) {
-					radioButton['_checked'] = false;
-				}
-			}
-		}
+		this._setChecked(checked);
 	}
 
 	/**
@@ -1051,7 +1040,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			this.isConnected &&
 			(this.type === 'checkbox' || this.type === 'radio')
 		) {
-			this.checked = this.type === 'checkbox' ? !this.checked : true;
+			this._setChecked(this.type === 'checkbox' ? !this.checked : true);
 		}
 
 		const returnValue = super.dispatchEvent(event);
@@ -1147,5 +1136,25 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			this.type === 'tel' ||
 			this.type === 'password'
 		);
+	}
+
+	/**
+	 * Sets checked value.
+	 *
+	 * @param checked Checked.
+	 */
+	private _setChecked(checked: boolean): void {
+		this._checked = checked;
+
+		if (checked && this.type === 'radio' && this.name) {
+			const root = <IHTMLElement>(<IHTMLFormElement>this._formNode || this.getRootNode());
+			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
+
+			for (const radioButton of radioButtons) {
+				if (radioButton !== this) {
+					radioButton['_checked'] = false;
+				}
+			}
+		}
 	}
 }

@@ -6,6 +6,7 @@ import SelectorCombinatorEnum from './SelectorCombinatorEnum';
 import ISelectorAttribute from './ISelectorAttribute';
 import SelectorParser from './SelectorParser';
 import ISelectorMatch from './ISelectorMatch';
+import ISelectorPseudo from './ISelectorPseudo';
 
 /**
  * Selector item.
@@ -16,8 +17,7 @@ export default class SelectorItem {
 	public id: string | null;
 	public classNames: string[] | null;
 	public attributes: ISelectorAttribute[] | null;
-	public pseudoClass: string | null;
-	public pseudoArguments: string | null;
+	public pseudos: ISelectorPseudo[] | null;
 	public combinator: SelectorCombinatorEnum;
 
 	/**
@@ -30,8 +30,7 @@ export default class SelectorItem {
 	 * @param [options.id] ID.
 	 * @param [options.classNames] Class names.
 	 * @param [options.attributes] Attributes.
-	 * @param [options.pseudoClass] Pseudo class.
-	 * @param [options.pseudoArguments] Pseudo arguments.
+	 * @param [options.pseudos] Pseudos.
 	 */
 	constructor(options?: {
 		all?: string;
@@ -39,8 +38,7 @@ export default class SelectorItem {
 		id?: string;
 		classNames?: string[];
 		attributes?: ISelectorAttribute[];
-		pseudoClass?: string;
-		pseudoArguments?: string;
+		pseudos?: ISelectorPseudo[];
 		combinator?: SelectorCombinatorEnum;
 	}) {
 		this.all = options?.all || null;
@@ -48,8 +46,7 @@ export default class SelectorItem {
 		this.id = options?.id || null;
 		this.classNames = options?.classNames || null;
 		this.attributes = options?.attributes || null;
-		this.pseudoClass = options?.pseudoClass || null;
-		this.pseudoArguments = options?.pseudoArguments || null;
+		this.pseudos = options?.pseudos || null;
 		this.combinator = options?.combinator || SelectorCombinatorEnum.descendant;
 	}
 
@@ -97,7 +94,7 @@ export default class SelectorItem {
 		}
 
 		// Pseudo match
-		if (this.pseudoClass && !this.matchPsuedo(element)) {
+		if (this.pseudos && !this.matchPsuedo(element)) {
 			return null;
 		}
 
@@ -113,97 +110,105 @@ export default class SelectorItem {
 	private matchPsuedo(element: IElement): boolean {
 		const parent = <IElement>element.parentNode;
 
-		// Validation
-		switch (this.pseudoClass) {
-			case 'not':
-			case 'nth-child':
-			case 'nth-of-type':
-			case 'nth-last-child':
-			case 'nth-last-of-type':
-				if (!this.pseudoArguments) {
-					throw new DOMException(`The selector "${this.getSelectorString()}" is not valid.`);
-				}
-				break;
+		if (!this.pseudos) {
+			return true;
 		}
 
-		// Check if parent exists
-		if (!parent) {
-			switch (this.pseudoClass) {
-				case 'first-child':
-				case 'last-child':
-				case 'only-child':
-				case 'first-of-type':
-				case 'last-of-type':
-				case 'only-of-type':
+		for (const psuedo of this.pseudos) {
+			// Validation
+			switch (psuedo.name) {
+				case 'not':
 				case 'nth-child':
 				case 'nth-of-type':
 				case 'nth-last-child':
 				case 'nth-last-of-type':
+					if (!psuedo.arguments) {
+						throw new DOMException(`The selector "${this.getSelectorString()}" is not valid.`);
+					}
+					break;
+			}
+
+			// Check if parent exists
+			if (!parent) {
+				switch (psuedo.name) {
+					case 'first-child':
+					case 'last-child':
+					case 'only-child':
+					case 'first-of-type':
+					case 'last-of-type':
+					case 'only-of-type':
+					case 'nth-child':
+					case 'nth-of-type':
+					case 'nth-last-child':
+					case 'nth-last-of-type':
+						return false;
+				}
+			}
+
+			switch (psuedo.name) {
+				case 'first-child':
+					return parent.children[0] === element;
+				case 'last-child':
+					return parent.children.length && parent.children[parent.children.length - 1] === element;
+				case 'only-child':
+					return parent.children.length === 1 && parent.children[0] === element;
+				case 'first-of-type':
+					for (const child of parent.children) {
+						if (child.tagName === element.tagName) {
+							return child === element;
+						}
+					}
 					return false;
+				case 'last-of-type':
+					for (let i = parent.children.length - 1; i >= 0; i--) {
+						const child = parent.children[i];
+						if (child.tagName === element.tagName) {
+							return child === element;
+						}
+					}
+					return false;
+				case 'only-of-type':
+					let isFound = false;
+					for (const child of parent.children) {
+						if (child.tagName === element.tagName) {
+							if (isFound || child !== element) {
+								return false;
+							}
+							isFound = true;
+						}
+					}
+					return isFound;
+				case 'checked':
+					return element.tagName === 'INPUT' && (<IHTMLInputElement>element).checked;
+				case 'empty':
+					return !element.children.length;
+				case 'root':
+					return element.tagName === 'HTML';
+				case 'not':
+					return !SelectorParser.getSelectorItem(psuedo.arguments).match(element);
+				case 'nth-child':
+					return this.matchNthChild(element, parent.children, psuedo.arguments);
+				case 'nth-of-type':
+					if (!element.parentNode) {
+						return false;
+					}
+					return this.matchNthChild(
+						element,
+						parent.children.filter((child) => child.tagName === element.tagName),
+						psuedo.arguments
+					);
+				case 'nth-last-child':
+					return this.matchNthChild(element, parent.children.reverse(), psuedo.arguments);
+				case 'nth-last-of-type':
+					return this.matchNthChild(
+						element,
+						parent.children.filter((child) => child.tagName === element.tagName).reverse(),
+						psuedo.arguments
+					);
 			}
 		}
 
-		switch (this.pseudoClass) {
-			case 'first-child':
-				return parent.children[0] === element;
-			case 'last-child':
-				return parent.children.length && parent.children[parent.children.length - 1] === element;
-			case 'only-child':
-				return parent.children.length === 1 && parent.children[0] === element;
-			case 'first-of-type':
-				for (const child of parent.children) {
-					if (child.tagName === element.tagName) {
-						return child === element;
-					}
-				}
-				return false;
-			case 'last-of-type':
-				for (let i = parent.children.length - 1; i >= 0; i--) {
-					const child = parent.children[i];
-					if (child.tagName === element.tagName) {
-						return child === element;
-					}
-				}
-				return false;
-			case 'only-of-type':
-				let isFound = false;
-				for (const child of parent.children) {
-					if (child.tagName === element.tagName) {
-						if (isFound || child !== element) {
-							return false;
-						}
-						isFound = true;
-					}
-				}
-				return isFound;
-			case 'checked':
-				return element.tagName === 'INPUT' && (<IHTMLInputElement>element).checked;
-			case 'empty':
-				return !element.children.length;
-			case 'root':
-				return element.tagName === 'HTML';
-			case 'not':
-				return !SelectorParser.getSelectorItem(this.pseudoArguments).match(element);
-			case 'nth-child':
-				return this.matchNthChild(element, parent.children, this.pseudoArguments);
-			case 'nth-of-type':
-				if (!element.parentNode) {
-					return false;
-				}
-				return this.matchNthChild(
-					element,
-					parent.children.filter((child) => child.tagName === element.tagName),
-					this.pseudoArguments
-				);
-			case 'nth-last-child':
-				return this.matchNthChild(element, parent.children.reverse(), this.pseudoArguments);
-			case 'nth-last-of-type':
-				return this.matchNthChild(
-					element,
-					parent.children.filter((child) => child.tagName === element.tagName).reverse(),
-					this.pseudoArguments
-				);
-		}
+		return true;
 	}
 
 	/**
@@ -362,6 +367,12 @@ export default class SelectorItem {
 						)
 						.join('')
 				: ''
-		}${this.pseudoClass || ''}${this.pseudoArguments ? `(${this.pseudoArguments})` : ''}`;
+		}${
+			this.pseudos
+				? this.pseudos
+						.map((pseudo) => `:${pseudo.name}${pseudo.arguments ? `(${pseudo.arguments})` : ''}`)
+						.join('')
+				: ''
+		}`;
 	}
 }

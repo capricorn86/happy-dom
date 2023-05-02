@@ -87,17 +87,31 @@ describe('Element', () => {
 		});
 	});
 
+	describe('set className()', () => {
+		it('Sets the element "class" as an attribute.', () => {
+			element.className = 'class';
+			expect(element.getAttribute('class')).toBe('class');
+		});
+	});
+
+	describe('get role()', () => {
+		it('Returns the element "role" attribute.', () => {
+			element.setAttribute('role', 'role');
+			expect(element.role).toBe('role');
+		});
+	});
+
+	describe('set role()', () => {
+		it('Sets the element "role" as an attribute.', () => {
+			element.role = 'role';
+			expect(element.getAttribute('role')).toBe('role');
+		});
+	});
+
 	describe('get classList()', () => {
 		it('Returns a DOMTokenList object.', () => {
 			element.setAttribute('class', 'class1');
 			expect(element.classList.value).toBe('class1');
-		});
-	});
-
-	describe('set id()', () => {
-		it('Sets the element "class" as an attribute.', () => {
-			element.className = 'class';
-			expect(element.getAttribute('class')).toBe('class');
 		});
 	});
 

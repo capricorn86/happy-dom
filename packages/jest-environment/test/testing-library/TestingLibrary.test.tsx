@@ -32,4 +32,15 @@ describe('TestingLibrary', () => {
 		expect(handleSubmit).toHaveBeenCalledTimes(1);
 		expect(clickHandler).toHaveBeenCalledTimes(1);
 	});
+
+	it('Triggers change event once.', async () => {
+		const user = userEvent.setup();
+		const changeHandler = jest.fn();
+
+		render(<input type="checkbox" onChange={changeHandler} />);
+
+		await user.click(screen.getByRole('checkbox'));
+
+		expect(changeHandler).toHaveBeenCalledTimes(1);
+	});
 });

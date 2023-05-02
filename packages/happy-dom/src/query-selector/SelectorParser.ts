@@ -13,12 +13,13 @@ import DOMException from '../exception/DOMException';
  * Group 6: Attribute name when there is a value (e.g. "attr1")
  * Group 7: Attribute operator (e.g. "~")
  * Group 8: Attribute value (e.g. "value1")
- * Group 9: Pseudo (e.g. "nth-child")
+ * Group 9: Pseudo name when arguments (e.g. "nth-child")
  * Group 10: Arguments of pseudo (e.g. "2n + 1")
- * Group 11: Combinator.
+ * Group 11: Pseudo name when no arguments (e.g. "empty")
+ * Group 12: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *["']{0,1}([^"']*)["']{0,1}\]|:([a-zA-Z-:]+)|\(([^)]+)\)|([ ,+>]*)/g;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *["']{0,1}([^"']*)["']{0,1}\]|:([a-zA-Z-]+) *\(([^)]+)\)|:([a-zA-Z-]+)|([ ,+>]*)/g;
 
 /**
  * Escaped Character RegExp.
@@ -103,12 +104,20 @@ export default class SelectorParser {
 						operator: match[7] || null,
 						value: match[8]
 					});
-				} else if (match[9]) {
-					currentSelectorItem.pseudoClass = match[9].toLowerCase();
-				} else if (match[10]) {
-					currentSelectorItem.pseudoArguments = match[10];
+				} else if (match[9] && match[10]) {
+					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
+					currentSelectorItem.pseudos.push({
+						name: match[9].toLowerCase(),
+						arguments: match[10]
+					});
 				} else if (match[11]) {
-					switch (match[11].trim()) {
+					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
+					currentSelectorItem.pseudos.push({
+						name: match[11].toLowerCase(),
+						arguments: null
+					});
+				} else if (match[12]) {
+					switch (match[12].trim()) {
 						case ',':
 							currentSelectorItem = new SelectorItem({
 								combinator: SelectorCombinatorEnum.descendant
