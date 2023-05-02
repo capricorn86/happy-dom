@@ -17,7 +17,7 @@ import ProgressEvent from '../event/events/ProgressEvent';
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum';
 import XMLHttpRequestCertificate from './XMLHttpRequestCertificate';
 import XMLHttpRequestSyncRequestScriptBuilder from './utilities/XMLHttpRequestSyncRequestScriptBuilder';
-import iconv from 'iconv-lite';
+import IconvLite from 'iconv-lite';
 
 // These headers are not user setable.
 // The following are allowed but banned in the spec:
@@ -73,7 +73,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	// Private properties
 	private readonly _ownerDocument: IDocument = null;
 	private _state: {
-		incommingMessage: HTTP.IncomingMessage | { headers: object; statusCode: number };
+		incommingMessage:
+			| HTTP.IncomingMessage
+			| { headers: { [name: string]: string | string[] }; statusCode: number };
 		response: ArrayBuffer | Blob | IDocument | object | string;
 		responseType: XMLHttpResponseTypeEnum | '';
 		responseText: string;
@@ -334,7 +336,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this._state.incommingMessage.headers[lowerHeader] &&
 			!this._state.error
 		) {
-			return this._state.incommingMessage.headers[lowerHeader];
+			return Array.isArray(this._state.incommingMessage.headers[lowerHeader])
+				? (<string[]>this._state.incommingMessage.headers[lowerHeader]).join(', ')
+				: <string>this._state.incommingMessage.headers[lowerHeader];
 		}
 
 		return null;
@@ -610,7 +614,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			// Although it will immediately be set to loading,
 			// According to the spec, the state should be headersRecieved first.
 			this._setState(XMLHttpRequestReadyStateEnum.headersRecieved);
-			// Sync responseType === ''
 			this._setState(XMLHttpRequestReadyStateEnum.loading);
 			this._state.response = this._decodeResponseText(Buffer.from(response.data, 'base64'));
 			this._state.responseText = this._state.response;
@@ -630,7 +633,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			) {
 				const redirectUrl = RelativeURL.getAbsoluteURL(
 					this._ownerDocument.defaultView.location,
-					this._state.incommingMessage.headers['location']
+					<string>this._state.incommingMessage.headers['location']
 				);
 				ssl = redirectUrl.protocol === 'https:';
 				this._settings.url = redirectUrl.href;
@@ -905,7 +908,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this._state.incommingMessage = {
 			statusCode: 200,
 			headers: {
-				'content-length': data.length,
+				'content-length': String(data.length),
 				'content-type': XMLHttpRequestURLUtility.getMimeTypeFromExt(url)
 				// @TODO: 'last-modified':
 			}
@@ -1045,6 +1048,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.getResponseHeader('content-type') ?? this._state.requestHeaders['content-type'];
 		const charset = contextTypeEncodingRegexp.exec(contentType);
 		// Default encoding: utf-8.
-		return iconv.decode(data, charset ? charset[1] : 'utf-8');
+		return IconvLite.decode(data, charset ? charset[1] : 'utf-8');
 	}
 }
