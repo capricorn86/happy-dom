@@ -97,6 +97,12 @@ export default class QuerySelector {
 	 * @returns Result.
 	 */
 	public static match(element: IElement, selector: string): ISelectorMatch | null {
+		if (selector === '*') {
+			return {
+				priorityWeight: 1
+			};
+		}
+
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const result = this.matchSelector(element, element, items.reverse());
 

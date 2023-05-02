@@ -43,4 +43,17 @@ describe('TestingLibrary', () => {
 
 		expect(changeHandler).toHaveBeenCalledTimes(1);
 	});
+
+	it('Finds elements using "screen.getByText()".', async () => {
+		const user = userEvent.setup();
+		const clickHandler = jest.fn();
+
+		render(<input type="submit" value="Submit Button" onClick={clickHandler} />);
+
+		const element = screen.getByText('Submit Button');
+
+		await user.click(element);
+
+		expect(clickHandler).toHaveBeenCalledTimes(1);
+	});
 });
