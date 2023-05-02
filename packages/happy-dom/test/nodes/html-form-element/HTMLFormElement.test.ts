@@ -267,6 +267,79 @@ describe('HTMLFormElement', () => {
 			expect(elements['checkbox1'] === undefined).toBe(true);
 			expect(elements['radio1'] === undefined).toBe(true);
 		});
+
+		it('Returns control elements using the same name as properties and methods of the HTMLCollection class.', () => {
+			element.innerHTML = `
+                <div>
+                    <input type="text" name="length" value="value1">
+                    <input type="checkbox" name="namedItem" value="value1">
+                    <input type="checkbox" name="namedItem" value="value2" checked>
+                    <input type="checkbox" name="namedItem" value="value3">
+                    <input type="hidden" name="push" value="value1">
+                </div>
+            `;
+			const elements = element.elements;
+			const root = element.children[0];
+
+			expect(element.length).toBe(5);
+			expect(elements.length).toBe(5);
+
+			expect(element[0] === root.children[0]).toBe(true);
+			expect(element[1] === root.children[1]).toBe(true);
+			expect(element[2] === root.children[2]).toBe(true);
+			expect(element[3] === root.children[3]).toBe(true);
+			expect(element[4] === root.children[4]).toBe(true);
+
+			expect(elements[0] === root.children[0]).toBe(true);
+			expect(elements[1] === root.children[1]).toBe(true);
+			expect(elements[2] === root.children[2]).toBe(true);
+			expect(elements[3] === root.children[3]).toBe(true);
+			expect(elements[4] === root.children[4]).toBe(true);
+
+			expect(elements.item(0) === root.children[0]).toBe(true);
+			expect(elements.item(1) === root.children[1]).toBe(true);
+			expect(elements.item(2) === root.children[2]).toBe(true);
+			expect(elements.item(3) === root.children[3]).toBe(true);
+			expect(elements.item(4) === root.children[4]).toBe(true);
+
+			const radioNodeList = new RadioNodeList();
+			radioNodeList.push(root.children[1]);
+			radioNodeList.push(root.children[2]);
+			radioNodeList.push(root.children[3]);
+
+			expect(typeof elements.push).toBe('function');
+			expect(typeof elements.namedItem).toBe('function');
+			expect(elements.namedItem('length') === root.children[0]).toBe(true);
+			expect(elements.namedItem('namedItem')).toEqual(radioNodeList);
+			expect(elements.namedItem('push') === root.children[4]).toBe(true);
+
+			const children = root.children.slice();
+
+			for (const child of children) {
+				root.removeChild(child);
+			}
+
+			expect(element.length).toBe(0);
+
+			for (const child of children) {
+				root.appendChild(child);
+			}
+
+			expect(element.length).toBe(5);
+			expect(elements.length).toBe(5);
+
+			expect(elements[0] === root.children[0]).toBe(true);
+			expect(elements[1] === root.children[1]).toBe(true);
+			expect(elements[2] === root.children[2]).toBe(true);
+			expect(elements[3] === root.children[3]).toBe(true);
+			expect(elements[4] === root.children[4]).toBe(true);
+
+			expect(typeof elements.push).toBe('function');
+			expect(typeof elements.namedItem).toBe('function');
+			expect(elements.namedItem('length') === root.children[0]).toBe(true);
+			expect(elements.namedItem('namedItem')).toEqual(radioNodeList);
+			expect(elements.namedItem('push') === root.children[4]).toBe(true);
+		});
 	});
 
 	describe('submit()', () => {

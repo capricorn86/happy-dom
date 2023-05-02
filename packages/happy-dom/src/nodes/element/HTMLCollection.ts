@@ -41,7 +41,7 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 				this._namedItems[name].push(node);
 			}
 
-			if (!this[name] && this._isValidPropertyName(name)) {
+			if (!this.hasOwnProperty(name) && this._isValidPropertyName(name)) {
 				this[name] = this._namedItems[name][0];
 			}
 		}
@@ -62,7 +62,7 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 
 				if (this._namedItems[name].length === 0) {
 					delete this._namedItems[name];
-					if (this[name] && this._isValidPropertyName(name)) {
+					if (this.hasOwnProperty(name) && this._isValidPropertyName(name)) {
 						delete this[name];
 					}
 				} else if (this._isValidPropertyName(name)) {
@@ -79,6 +79,10 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 * @returns True if the property name is valid.
 	 */
 	protected _isValidPropertyName(name: string): boolean {
-		return isNaN(Number(name)) || name.includes('.');
+		return (
+			!this.constructor.prototype.hasOwnProperty(name) &&
+			!Array.prototype.hasOwnProperty(name) &&
+			(isNaN(Number(name)) || name.includes('.'))
+		);
 	}
 }

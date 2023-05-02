@@ -117,5 +117,45 @@ describe('HTMLCollection', () => {
 			expect(div.children.namedItem('0') === container3).toBe(true);
 			expect(div.children.namedItem('1') === container4).toBe(true);
 		});
+
+		it('Supports attributes that has the same name as properties and methods of the HTMLCollection class.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `<div name="length" class="container1"></div><div name="namedItem" class="container2"></div><div name="push" class="container3"></div>`;
+			const container1 = div.querySelector('.container1');
+			const container2 = div.querySelector('.container2');
+			const container3 = div.querySelector('.container3');
+
+			expect(div.children.length).toBe(3);
+			expect(div.children[0] === container1).toBe(true);
+			expect(div.children[1] === container2).toBe(true);
+			expect(div.children[2] === container3).toBe(true);
+			expect(div.children.namedItem('length') === container1).toBe(true);
+			expect(div.children.namedItem('namedItem') === container2).toBe(true);
+			expect(div.children.namedItem('push') === container3).toBe(true);
+
+			expect(typeof div.children['namedItem']).toBe('function');
+			expect(typeof div.children['push']).toBe('function');
+
+			container2.remove();
+
+			expect(div.children.length).toBe(2);
+			expect(div.children[0] === container1).toBe(true);
+			expect(div.children[1] === container3).toBe(true);
+			expect(div.children.namedItem('length') === container1).toBe(true);
+			expect(div.children.namedItem('push') === container3).toBe(true);
+
+			div.insertBefore(container2, container3);
+
+			expect(div.children.length).toBe(3);
+			expect(div.children[0] === container1).toBe(true);
+			expect(div.children[1] === container2).toBe(true);
+			expect(div.children[2] === container3).toBe(true);
+			expect(div.children.namedItem('length') === container1).toBe(true);
+			expect(div.children.namedItem('namedItem') === container2).toBe(true);
+			expect(div.children.namedItem('push') === container3).toBe(true);
+
+			expect(typeof div.children['namedItem']).toBe('function');
+			expect(typeof div.children['push']).toBe('function');
+		});
 	});
 });
