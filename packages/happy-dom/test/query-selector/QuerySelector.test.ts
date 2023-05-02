@@ -300,6 +300,16 @@ describe('QuerySelector', () => {
 			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
 		});
 
+		it('Returns all elements with matching attributes using "[attr1=""]".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML.replace(/attr1="value1"/gm, 'attr1=""');
+			const elements = container.querySelectorAll('[attr1=""]');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
+		});
+
 		it('Returns all elements with matching attributes using "[attr1="word1.word2"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;

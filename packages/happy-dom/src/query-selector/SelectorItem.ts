@@ -271,7 +271,7 @@ export default class SelectorItem {
 			priorityWeight += 10;
 
 			if (attribute.value !== null) {
-				if (!elementAttribute.value) {
+				if (elementAttribute.value === null) {
 					return null;
 				}
 
