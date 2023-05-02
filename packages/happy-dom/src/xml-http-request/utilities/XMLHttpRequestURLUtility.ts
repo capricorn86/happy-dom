@@ -7,6 +7,7 @@ const LOCAL_MIME_TYPES = {
 	xml: 'application/xml',
 	html: 'text/html',
 	text: 'text/plain',
+	txt: 'text/plain',
 	xhtml: 'application/xhtml+xml',
 	xht: 'application/xhtml+xml',
 	xsl: 'application/xml',
@@ -141,7 +142,7 @@ export default class XMLHttpRequestURLUtility {
 	 * @param url
 	 */
 	public static getMimeTypeFromExt(url: UrlObject): string {
-		const ext = Path.extname(url.pathname);
-		return LOCAL_MIME_TYPES[ext] || 'application/octet-stream';
+		const extension = Path.extname(url.pathname).replace('.', '').toLowerCase();
+		return LOCAL_MIME_TYPES[extension] || 'application/octet-stream';
 	}
 }

@@ -600,6 +600,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		if (error) {
 			this._onError(error);
+			return;
 		}
 
 		if (response) {
