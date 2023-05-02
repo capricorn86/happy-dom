@@ -10,16 +10,19 @@ import DOMException from '../exception/DOMException';
  * Group 3: ID (e.g. "#id")
  * Group 4: Class (e.g. ".class")
  * Group 5: Attribute name when no value (e.g. "attr1")
- * Group 6: Attribute name when there is a value (e.g. "attr1")
- * Group 7: Attribute operator (e.g. "~")
- * Group 8: Attribute value (e.g. "value1")
- * Group 9: Pseudo name when arguments (e.g. "nth-child")
- * Group 10: Arguments of pseudo (e.g. "2n + 1")
- * Group 11: Pseudo name when no arguments (e.g. "empty")
- * Group 12: Combinator.
+ * Group 6: Attribute name when there is a value using apostrophe (e.g. "attr1")
+ * Group 7: Attribute operator when using apostrophe (e.g. "~")
+ * Group 8: Attribute value when using apostrophe (e.g. "value1")
+ * Group 9: Attribute name when threre is a value not using apostrophe (e.g. "attr1")
+ * Group 10: Attribute operator when not using apostrophe (e.g. "~")
+ * Group 11: Attribute value when notusing apostrophe (e.g. "value1")
+ * Group 12: Pseudo name when arguments (e.g. "nth-child")
+ * Group 13: Arguments of pseudo (e.g. "2n + 1")
+ * Group 14: Pseudo name when no arguments (e.g. "empty")
+ * Group 15: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *["']{0,1}([^"']*)["']{0,1}\]|:([a-zA-Z-]+) *\(([^)]+)\)|:([a-zA-Z-]+)|([ ,+>]*)/g;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *["']{1}([^"']*)["']{1}\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *([^\]]*)\]|:([a-zA-Z-]+) *\(([^)]+)\)|:([a-zA-Z-]+)|([ ,+>]*)/g;
 
 /**
  * Escaped Character RegExp.
@@ -56,6 +59,10 @@ export default class SelectorParser {
 	 * @returns Selector groups.
 	 */
 	public static getSelectorGroups(selector: string): Array<Array<SelectorItem>> {
+		if (selector === '*') {
+			return [[new SelectorItem({ tagName: '*' })]];
+		}
+
 		const simpleMatch = selector.match(SIMPLE_SELECTOR_REGEXP);
 
 		if (simpleMatch) {
@@ -82,7 +89,7 @@ export default class SelectorParser {
 				isValid = true;
 
 				if (match[1]) {
-					currentSelectorItem.all = '*';
+					currentSelectorItem.tagName = '*';
 				} else if (match[2]) {
 					currentSelectorItem.tagName = match[2].toUpperCase();
 				} else if (match[3]) {
@@ -104,20 +111,27 @@ export default class SelectorParser {
 						operator: match[7] || null,
 						value: match[8]
 					});
-				} else if (match[9] && match[10]) {
-					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
-					currentSelectorItem.pseudos.push({
+				} else if (match[9] && match[11] !== undefined) {
+					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
+					currentSelectorItem.attributes.push({
 						name: match[9].toLowerCase(),
-						arguments: match[10]
+						operator: match[10] || null,
+						value: match[11]
 					});
-				} else if (match[11]) {
+				} else if (match[12] && match[13]) {
 					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
 					currentSelectorItem.pseudos.push({
-						name: match[11].toLowerCase(),
+						name: match[12].toLowerCase(),
+						arguments: match[13]
+					});
+				} else if (match[14]) {
+					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
+					currentSelectorItem.pseudos.push({
+						name: match[14].toLowerCase(),
 						arguments: null
 					});
-				} else if (match[12]) {
-					switch (match[12].trim()) {
+				} else if (match[15]) {
+					switch (match[15].trim()) {
 						case ',':
 							currentSelectorItem = new SelectorItem({
 								combinator: SelectorCombinatorEnum.descendant

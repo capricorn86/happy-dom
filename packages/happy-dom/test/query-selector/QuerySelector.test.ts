@@ -369,6 +369,20 @@ describe('QuerySelector', () => {
 			expect(elements[2] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
+		it('Returns all elements with tag name and matching attributes using Testing Library query "[type=submit], input[type=button], input[type=reset]".', () => {
+			const container = document.createElement('div');
+
+			container.innerHTML = `<input type="submit"></input><input type="reset"></input>`;
+
+			const elements = container.querySelectorAll(
+				'input[type=submit], input[type=button], input[type=reset]'
+			);
+
+			expect(elements.length).toBe(2);
+			expect(elements[0] === container.children[0]).toBe(true);
+			expect(elements[1] === container.children[1]).toBe(true);
+		});
+
 		it('Returns all elements with tag name and multiple matching attributes using "span[attr1="value1"][attr2="word1 word2"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;

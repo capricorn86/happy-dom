@@ -12,7 +12,6 @@ import ISelectorPseudo from './ISelectorPseudo';
  * Selector item.
  */
 export default class SelectorItem {
-	public all: string | null;
 	public tagName: string | null;
 	public id: string | null;
 	public classNames: string[] | null;
@@ -25,7 +24,6 @@ export default class SelectorItem {
 	 *
 	 * @param [options] Options.
 	 * @param [options.combinator] Combinator.
-	 * @param [options.all] All.
 	 * @param [options.tagName] Tag name.
 	 * @param [options.id] ID.
 	 * @param [options.classNames] Class names.
@@ -33,7 +31,6 @@ export default class SelectorItem {
 	 * @param [options.pseudos] Pseudos.
 	 */
 	constructor(options?: {
-		all?: string;
 		tagName?: string;
 		id?: string;
 		classNames?: string[];
@@ -41,7 +38,6 @@ export default class SelectorItem {
 		pseudos?: ISelectorPseudo[];
 		combinator?: SelectorCombinatorEnum;
 	}) {
-		this.all = options?.all || null;
 		this.tagName = options?.tagName || null;
 		this.id = options?.id || null;
 		this.classNames = options?.classNames || null;
@@ -61,7 +57,7 @@ export default class SelectorItem {
 
 		// Tag name match
 		if (this.tagName) {
-			if (this.tagName !== element.tagName) {
+			if (this.tagName !== '*' && this.tagName !== element.tagName) {
 				return null;
 			}
 			priorityWeight += 1;
@@ -354,7 +350,7 @@ export default class SelectorItem {
 	 * @returns Selector string.
 	 */
 	private getSelectorString(): string {
-		return `${this.all || ''}${this.tagName || ''}${this.id ? `#${this.id}` : ''}${
+		return `${this.tagName || ''}${this.id ? `#${this.id}` : ''}${
 			this.classNames ? `.${this.classNames.join('.')}` : ''
 		}${
 			this.attributes
