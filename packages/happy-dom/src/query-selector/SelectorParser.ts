@@ -18,7 +18,7 @@ import DOMException from '../exception/DOMException';
  * Group 11: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *["']{0,1}([^"']+)["']{0,1}\]|:([a-zA-Z-:]+)|\(([^)]+)\)|([ ,+>]*)/g;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *["']{0,1}([^"']*)["']{0,1}\]|:([a-zA-Z-:]+)|\(([^)]+)\)|([ ,+>]*)/g;
 
 /**
  * Escaped Character RegExp.
@@ -96,7 +96,7 @@ export default class SelectorParser {
 						operator: null,
 						value: null
 					});
-				} else if (match[6] && match[8]) {
+				} else if (match[6] && match[8] !== undefined) {
 					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
 					currentSelectorItem.attributes.push({
 						name: match[6].toLowerCase(),
