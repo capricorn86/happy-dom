@@ -1,12 +1,13 @@
-import Element from '../nodes/element/Element';
 import IElement from '../nodes/element/IElement';
-import INode from '../nodes/node/INode';
-import Node from '../nodes/node/Node';
 import INodeList from '../nodes/node/INodeList';
 import SelectorItem from './SelectorItem';
-import NodeListFactory from '../nodes/node/NodeListFactory';
-
-const SELECTOR_PART_REGEXP = /(\[[^\]]+\]|[a-zA-Z0-9-_.#"*:()\]]+)|([ ,>]+)/g;
+import NodeList from '../nodes/node/NodeList';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
+import SelectorCombinatorEnum from './SelectorCombinatorEnum';
+import IDocument from '../nodes/document/IDocument';
+import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
+import SelectorParser from './SelectorParser';
+import ISelectorMatch from './ISelectorMatch';
 
 /**
  * Utility for query selection in an HTML element.
@@ -21,18 +22,36 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll(node: INode, selector: string): INodeList<IElement> {
-		const matches = <INodeList<IElement>>NodeListFactory.create();
+	public static querySelectorAll(
+		node: IElement | IDocument | IDocumentFragment,
+		selector: string
+	): INodeList<IElement> {
+		const nodeList = new NodeList<IElement>();
+		const allMatches = {};
 
-		for (const parts of this.getSelectorParts(selector)) {
-			for (const element of this.findAll(node, [node], parts)) {
-				if (!matches.includes(element)) {
-					matches.push(element);
-				}
-			}
+		if (selector === '') {
+			throw new Error(
+				"Failed to execute 'querySelectorAll' on 'Element': The provided selector is empty."
+			);
 		}
 
-		return matches;
+		if (selector === null || selector === undefined) {
+			return nodeList;
+		}
+
+		for (const items of SelectorParser.getSelectorGroups(selector)) {
+			const matches =
+				node.nodeType === NodeTypeEnum.elementNode
+					? this.findAll(<IElement>node, [<IElement>node], items)
+					: this.findAll(null, node.children, items);
+			Object.assign(allMatches, matches);
+		}
+
+		for (const key of Object.keys(allMatches).sort()) {
+			nodeList.push(allMatches[key]);
+		}
+
+		return nodeList;
 	}
 
 	/**
@@ -42,9 +61,25 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML element.
 	 */
-	public static querySelector(node: INode, selector: string): IElement {
-		for (const parts of this.getSelectorParts(selector)) {
-			const match = this.findFirst(node, [node], parts);
+	public static querySelector(
+		node: IElement | IDocument | IDocumentFragment,
+		selector: string
+	): IElement {
+		if (selector === '') {
+			throw new Error(
+				"Failed to execute 'querySelector' on 'Element': The provided selector is empty."
+			);
+		}
+
+		if (selector === null || selector === undefined) {
+			return null;
+		}
+
+		for (const items of SelectorParser.getSelectorGroups(selector)) {
+			const match =
+				node.nodeType === NodeTypeEnum.elementNode
+					? this.findFirst(<IElement>node, [<IElement>node], items)
+					: this.findFirst(null, node.children, items);
 
 			if (match) {
 				return match;
@@ -55,115 +90,159 @@ export default class QuerySelector {
 	}
 
 	/**
-	 * Checks if a node matches a selector and returns priority weight.
+	 * Checks if an element matches a selector and returns priority weight.
 	 *
-	 * @param node Node to search in.
-	 * @param selector Selector.
+	 * @param element Element to match.
+	 * @param selector Selector to match with.
 	 * @returns Result.
 	 */
-	public static match(node: INode, selector: string): { priorityWeight: number; matches: boolean } {
-		for (const parts of this.getSelectorParts(selector)) {
-			const result = this.matchesSelector(node, node, parts.reverse());
+	public static match(element: IElement, selector: string): ISelectorMatch | null {
+		if (selector === '*') {
+			return {
+				priorityWeight: 1
+			};
+		}
 
-			if (result.matches) {
+		for (const items of SelectorParser.getSelectorGroups(selector)) {
+			const result = this.matchSelector(element, element, items.reverse());
+
+			if (result) {
 				return result;
 			}
 		}
 
-		return { priorityWeight: 0, matches: false };
+		return null;
 	}
 
 	/**
 	 * Checks if a node matches a selector.
 	 *
-	 * @param targetNode Target node.
-	 * @param currentNode Current node.
-	 * @param selectorParts Selector parts.
+	 * @param targetElement Target element.
+	 * @param currentElement Current element.
+	 * @param selectorItems Selector items.
 	 * @param [priorityWeight] Priority weight.
 	 * @returns Result.
 	 */
-	private static matchesSelector(
-		targetNode: INode,
-		currentNode: INode,
-		selectorParts: string[],
+	private static matchSelector(
+		targetElement: IElement,
+		currentElement: IElement,
+		selectorItems: SelectorItem[],
 		priorityWeight = 0
-	): {
-		priorityWeight: number;
-		matches: boolean;
-	} {
-		const isDirectChild = selectorParts[0] === '>';
-		if (isDirectChild) {
-			selectorParts = selectorParts.slice(1);
-			if (selectorParts.length === 0) {
-				return { priorityWeight: 0, matches: false };
+	): ISelectorMatch | null {
+		const selectorItem = selectorItems[0];
+		const result = selectorItem.match(currentElement);
+
+		if (result) {
+			if (selectorItems.length === 1) {
+				return {
+					priorityWeight: priorityWeight + result.priorityWeight
+				};
+			}
+
+			switch (selectorItem.combinator) {
+				case SelectorCombinatorEnum.adjacentSibling:
+					if (currentElement.previousElementSibling) {
+						const match = this.matchSelector(
+							targetElement,
+							currentElement.previousElementSibling,
+							selectorItems.slice(1),
+							priorityWeight + result.priorityWeight
+						);
+
+						if (match) {
+							return match;
+						}
+					}
+					break;
+				case SelectorCombinatorEnum.child:
+				case SelectorCombinatorEnum.descendant:
+					if (currentElement.parentElement) {
+						const match = this.matchSelector(
+							targetElement,
+							currentElement.parentElement,
+							selectorItems.slice(1),
+							priorityWeight + result.priorityWeight
+						);
+						if (match) {
+							return match;
+						}
+					}
+					break;
 			}
 		}
 
-		if (selectorParts.length === 0) {
-			return { priorityWeight, matches: true };
+		if (
+			selectorItem.combinator === SelectorCombinatorEnum.descendant &&
+			targetElement !== currentElement &&
+			currentElement.parentElement
+		) {
+			return this.matchSelector(
+				targetElement,
+				currentElement.parentElement,
+				selectorItems,
+				priorityWeight
+			);
 		}
 
-		const selector = new SelectorItem(selectorParts[0]);
-		const result = selector.match(<IElement>currentNode);
-
-		if (result.matches && selectorParts.length === 1) {
-			return {
-				priorityWeight: priorityWeight + result.priorityWeight,
-				matches: true
-			};
-		}
-
-		if (!currentNode.parentElement || (targetNode === currentNode && !result.matches)) {
-			return { priorityWeight: 0, matches: false };
-		}
-
-		return this.matchesSelector(
-			isDirectChild ? currentNode.parentElement : targetNode,
-			currentNode.parentElement,
-			result.matches ? selectorParts.slice(1) : selectorParts,
-			priorityWeight + result.priorityWeight
-		);
+		return null;
 	}
 
 	/**
 	 * Finds elements based on a query selector for a part of a list of selectors separated with comma.
 	 *
-	 * @param rootNode Root node.
-	 * @param nodes Nodes.
-	 * @param selectorParts Selector parts.
-	 * @param [selectorItem] Selector item.
-	 * @returns HTML elements.
+	 * @param rootElement Root element.
+	 * @param children Child elements.
+	 * @param selectorItems Selector items.
+	 * @param [documentPosition] Document position of the element.
+	 * @returns Document position and element map.
 	 */
 	private static findAll(
-		rootNode: INode,
-		nodes: INode[],
-		selectorParts: string[],
-		selectorItem?: SelectorItem
-	): IElement[] {
-		const isDirectChild = selectorParts[0] === '>';
-		if (isDirectChild) {
-			selectorParts = selectorParts.slice(1);
-		}
-		const selector = selectorItem || new SelectorItem(selectorParts[0]);
-		let matched = [];
+		rootElement: IElement,
+		children: IElement[],
+		selectorItems: SelectorItem[],
+		documentPosition?: string
+	): { [documentPosition: string]: IElement } {
+		const selectorItem = selectorItems[0];
+		const nextSelectorItem = selectorItems[1];
+		const matched: { [documentPosition: string]: IElement } = {};
 
-		for (const node of nodes) {
-			if (node.nodeType === Node.ELEMENT_NODE) {
-				if (selector.match(<Element>node).matches) {
-					if (selectorParts.length === 1) {
-						if (rootNode !== node) {
-							matched.push(node);
-						}
-					} else {
-						matched = matched.concat(
-							this.findAll(rootNode, (<Element>node).children, selectorParts.slice(1), null)
-						);
+		for (let i = 0, max = children.length; i < max; i++) {
+			const child = children[i];
+			const position = (documentPosition ? documentPosition + '>' : '') + i;
+
+			if (selectorItem.match(child)) {
+				if (!nextSelectorItem) {
+					if (rootElement !== child) {
+						matched[position] = child;
+					}
+				} else {
+					switch (nextSelectorItem.combinator) {
+						case SelectorCombinatorEnum.adjacentSibling:
+							if (child.nextElementSibling) {
+								Object.assign(
+									matched,
+									this.findAll(
+										rootElement,
+										[child.nextElementSibling],
+										selectorItems.slice(1),
+										position
+									)
+								);
+							}
+							break;
+						case SelectorCombinatorEnum.descendant:
+						case SelectorCombinatorEnum.child:
+							Object.assign(
+								matched,
+								this.findAll(rootElement, child.children, selectorItems.slice(1), position)
+							);
+							break;
 					}
 				}
 			}
 
-			if (!isDirectChild && node['children']) {
-				matched = matched.concat(this.findAll(rootNode, node['children'], selectorParts, selector));
+			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && child.children.length) {
+				Object.assign(matched, this.findAll(rootElement, child.children, selectorItems, position));
 			}
 		}
 
@@ -173,99 +252,59 @@ export default class QuerySelector {
 	/**
 	 * Finds an element based on a query selector for a part of a list of selectors separated with comma.
 	 *
-	 * @param rootNode
-	 * @param nodes Nodes.
-	 * @param selector Selector.
-	 * @param selectorParts
-	 * @param [selectorItem] Selector item.
+	 * @param rootElement Root element.
+	 * @param children Child elements.
+	 * @param selectorItems Selector items.
 	 * @returns HTML element.
 	 */
 	private static findFirst(
-		rootNode: INode,
-		nodes: INode[],
-		selectorParts: string[],
-		selectorItem?: SelectorItem
+		rootElement: IElement,
+		children: IElement[],
+		selectorItems: SelectorItem[]
 	): IElement {
-		const isDirectChild = selectorParts[0] === '>';
-		if (isDirectChild) {
-			selectorParts = selectorParts.slice(1);
-		}
-		const selector = selectorItem || new SelectorItem(selectorParts[0]);
+		const selectorItem = selectorItems[0];
+		const nextSelectorItem = selectorItems[1];
 
-		for (const node of nodes) {
-			if (node.nodeType === Node.ELEMENT_NODE && selector.match(<Element>node).matches) {
-				if (selectorParts.length === 1) {
-					if (rootNode !== node) {
-						return <Element>node;
+		for (const child of children) {
+			if (selectorItem.match(child)) {
+				if (!nextSelectorItem) {
+					if (rootElement !== child) {
+						return child;
 					}
 				} else {
-					const childSelector = this.findFirst(
-						rootNode,
-						(<Element>node).children,
-						selectorParts.slice(1),
-						null
-					);
-					if (childSelector) {
-						return childSelector;
+					switch (nextSelectorItem.combinator) {
+						case SelectorCombinatorEnum.adjacentSibling:
+							if (child.nextElementSibling) {
+								const match = this.findFirst(
+									rootElement,
+									[child.nextElementSibling],
+									selectorItems.slice(1)
+								);
+								if (match) {
+									return match;
+								}
+							}
+							break;
+						case SelectorCombinatorEnum.descendant:
+						case SelectorCombinatorEnum.child:
+							const match = this.findFirst(rootElement, child.children, selectorItems.slice(1));
+							if (match) {
+								return match;
+							}
+							break;
 					}
 				}
 			}
 
-			if (!isDirectChild && node['children']) {
-				const childSelector = this.findFirst(rootNode, node['children'], selectorParts, selector);
+			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && child.children.length) {
+				const match = this.findFirst(rootElement, child.children, selectorItems);
 
-				if (childSelector) {
-					return childSelector;
+				if (match) {
+					return match;
 				}
 			}
 		}
 
 		return null;
-	}
-
-	/**
-	 * Splits a selector string into groups and parts.
-	 *
-	 * @param selector Selector.
-	 * @returns HTML element.
-	 */
-	private static getSelectorParts(selector: string): string[][] {
-		if (selector === '*' || (!selector.includes(',') && !selector.includes(' '))) {
-			return [[selector]];
-		}
-
-		const regexp = new RegExp(SELECTOR_PART_REGEXP);
-		const groups = [];
-		let currentSelector = '';
-		let parts = [];
-		let match;
-
-		while ((match = regexp.exec(selector))) {
-			if (match[2]) {
-				const trimmed = match[2].trim();
-
-				parts.push(currentSelector);
-				currentSelector = '';
-
-				if (trimmed === ',') {
-					groups.push(parts);
-					parts = [];
-				} else if (trimmed === '>') {
-					parts.push('>');
-				}
-			} else if (match[1]) {
-				currentSelector += match[1];
-			}
-		}
-
-		if (currentSelector !== '') {
-			parts.push(currentSelector);
-		}
-
-		if (parts.length > 0) {
-			groups.push(parts);
-		}
-
-		return groups;
 	}
 }

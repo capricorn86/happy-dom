@@ -7,11 +7,10 @@ import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum';
 import Event from '../event/Event';
 import IDocument from '../nodes/document/IDocument';
 import Blob from '../file/Blob';
-import RelativeURL from '../location/RelativeURL';
 import XMLHttpRequestUpload from './XMLHttpRequestUpload';
 import DOMException from '../exception/DOMException';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import { UrlObject } from 'url';
+import { URL, UrlObject } from 'url';
 import XMLHttpRequestURLUtility from './utilities/XMLHttpRequestURLUtility';
 import ProgressEvent from '../event/events/ProgressEvent';
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum';
@@ -388,7 +387,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		const { location } = this._ownerDocument.defaultView;
 
-		const url = RelativeURL.getAbsoluteURL(location, this._settings.url);
+		const url = new URL(this._settings.url, location);
 
 		// Security check.
 		if (url.protocol === 'http:' && location.protocol === 'https:') {
@@ -572,7 +571,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			accept: '*/*',
 			referer: location.href,
 			'user-agent': navigator.userAgent,
-			cookie: document._cookie.getCookiesString(location, false)
+			cookie: document._cookie.getCookieString(location, false)
 		};
 	}
 
@@ -601,7 +600,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		if (error) {
 			this._onError(error);
-			return;
 		}
 
 		if (response) {
@@ -618,9 +616,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this._state.response = this._decodeResponseText(Buffer.from(response.data, 'base64'));
 			this._state.responseText = this._state.response;
 			this._state.responseXML = null;
-			this._state.responseURL = RelativeURL.getAbsoluteURL(
-				this._ownerDocument.defaultView.location,
-				this._settings.url
+			this._state.responseURL = new URL(
+				this._settings.url,
+				this._ownerDocument.defaultView.location
 			).href;
 			// Set Cookies.
 			this._setCookies(this._state.incommingMessage.headers);
@@ -631,9 +629,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				this._state.incommingMessage.statusCode === 303 ||
 				this._state.incommingMessage.statusCode === 307
 			) {
-				const redirectUrl = RelativeURL.getAbsoluteURL(
-					this._ownerDocument.defaultView.location,
-					<string>this._state.incommingMessage.headers['location']
+				const redirectUrl = new URL(
+					<string>this._state.incommingMessage.headers['location'],
+					this._ownerDocument.defaultView.location
 				);
 				ssl = redirectUrl.protocol === 'https:';
 				this._settings.url = redirectUrl.href;
@@ -698,7 +696,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 						this._state.asyncTaskID
 					);
 				}
-			).on('error', (error: Error) => {
+			);
+			this._state.asyncRequest.on('error', (error: Error) => {
 				this._onError(error);
 				resolve();
 
@@ -752,10 +751,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				// Change URL to the redirect location
 				this._settings.url = this._state.incommingMessage.headers.location;
 				// Parse the new URL.
-				const redirectUrl = RelativeURL.getAbsoluteURL(
-					this._ownerDocument.defaultView.location,
-					this._settings.url
-				);
+				const redirectUrl = new URL(this._settings.url, this._ownerDocument.defaultView.location);
 				this._settings.url = redirectUrl.href;
 				ssl = redirectUrl.protocol === 'https:';
 				// Issue the new request
@@ -813,9 +809,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					this._state.response = response;
 					this._state.responseXML = responseXML;
 					this._state.responseText = responseText;
-					this._state.responseURL = RelativeURL.getAbsoluteURL(
-						this._ownerDocument.defaultView.location,
-						this._settings.url
+					this._state.responseURL = new URL(
+						this._settings.url,
+						this._ownerDocument.defaultView.location
 					).href;
 					// Discard the 'end' event if the connection has been aborted
 					this._setState(XMLHttpRequestReadyStateEnum.done);
@@ -921,9 +917,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this._state.response = response;
 		this._state.responseXML = responseXML;
 		this._state.responseText = responseText;
-		this._state.responseURL = RelativeURL.getAbsoluteURL(
-			this._ownerDocument.defaultView.location,
-			this._settings.url
+		this._state.responseURL = new URL(
+			this._settings.url,
+			this._ownerDocument.defaultView.location
 		).href;
 
 		this._setState(XMLHttpRequestReadyStateEnum.done);
@@ -1016,9 +1012,21 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param headers Headers.
 	 */
-	private _setCookies(headers: object | HTTP.IncomingHttpHeaders): void {
-		for (const cookie of [...(headers['set-cookie'] ?? []), ...(headers['set-cookie2'] ?? [])]) {
-			this._ownerDocument.defaultView.document._cookie.setCookiesString(cookie);
+	private _setCookies(
+		headers: { [name: string]: string | string[] } | HTTP.IncomingHttpHeaders
+	): void {
+		const originURL = new URL(this._settings.url, this._ownerDocument.defaultView.location);
+		for (const header of ['set-cookie', 'set-cookie2']) {
+			if (Array.isArray(headers[header])) {
+				for (const cookie of headers[header]) {
+					this._ownerDocument.defaultView.document._cookie.addCookieString(originURL, cookie);
+				}
+			} else if (headers[header]) {
+				this._ownerDocument.defaultView.document._cookie.addCookieString(
+					originURL,
+					<string>headers[header]
+				);
+			}
 		}
 	}
 

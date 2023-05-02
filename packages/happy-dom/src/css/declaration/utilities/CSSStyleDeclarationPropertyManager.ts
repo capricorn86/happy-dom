@@ -339,7 +339,7 @@ export default class CSSStyleDeclarationPropertyManager {
 					important
 				);
 				break;
-			case 'border-bottom-right-radius':
+			case 'border-bottom-left-radius':
 				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomLeftRadius(
 					value,
 					important

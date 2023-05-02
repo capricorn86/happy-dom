@@ -1,4 +1,6 @@
 import { URL } from 'url';
+import DOMException from '../exception/DOMException';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 
 /**
  *
@@ -9,6 +11,35 @@ export default class Location extends URL {
 	 */
 	constructor() {
 		super('about:blank');
+	}
+
+	/**
+	 * Override set href.
+	 */
+	// @ts-ignore
+	public set href(value: string) {
+		try {
+			super.href = this.hostname ? new URL(value, this).href : value;
+		} catch (e) {
+			if (this.hostname) {
+				throw new DOMException(
+					`Failed to construct URL from string "${value}".`,
+					DOMExceptionNameEnum.uriMismatchError
+				);
+			} else {
+				throw new DOMException(
+					`Failed to construct URL from string "${value}" relative to URL "${super.href}".`,
+					DOMExceptionNameEnum.uriMismatchError
+				);
+			}
+		}
+	}
+
+	/**
+	 * Override set href.
+	 */
+	public get href(): string {
+		return super.href;
 	}
 
 	/**
@@ -29,7 +60,7 @@ export default class Location extends URL {
 	 * @see this.replace()
 	 */
 	public assign(url: string): void {
-		this.replace(url);
+		this.href = url;
 	}
 
 	/**

@@ -18,6 +18,7 @@ import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
 import IElement from '../../../src/nodes/element/IElement';
 import INodeList from '../../../src/nodes/node/INodeList';
 import IAttr from '../../../src/nodes/attr/IAttr';
+import Event from '../../../src/event/Event';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -86,17 +87,31 @@ describe('Element', () => {
 		});
 	});
 
+	describe('set className()', () => {
+		it('Sets the element "class" as an attribute.', () => {
+			element.className = 'class';
+			expect(element.getAttribute('class')).toBe('class');
+		});
+	});
+
+	describe('get role()', () => {
+		it('Returns the element "role" attribute.', () => {
+			element.setAttribute('role', 'role');
+			expect(element.role).toBe('role');
+		});
+	});
+
+	describe('set role()', () => {
+		it('Sets the element "role" as an attribute.', () => {
+			element.role = 'role';
+			expect(element.getAttribute('role')).toBe('role');
+		});
+	});
+
 	describe('get classList()', () => {
 		it('Returns a DOMTokenList object.', () => {
 			element.setAttribute('class', 'class1');
 			expect(element.classList.value).toBe('class1');
-		});
-	});
-
-	describe('set id()', () => {
-		it('Sets the element "class" as an attribute.', () => {
-			element.className = 'class';
-			expect(element.getAttribute('class')).toBe('class');
 		});
 	});
 
@@ -127,6 +142,23 @@ describe('Element', () => {
 			element.appendChild(textNode2);
 			div.appendChild(textNode1);
 			expect(element.textContent).toBe('text1text2');
+		});
+
+		it('Converts specifial characters to HTML entities.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div>&gt;</div>';
+			expect(div.textContent).toBe('>');
+			const el = document.createElement('div');
+			el.innerHTML = '<div id="testnode">&gt;howdy</div>';
+			expect(el.textContent).toBe('>howdy');
+			div.appendChild(el);
+			expect(div.textContent).toBe('>>howdy');
+			const el2 = document.createElement('div');
+			el2.innerHTML = '<div id="testnode">&gt;&lt;&amp;&quot;&apos;&nbsp;&nbsp;</div>';
+			expect(el2.textContent).toBe('><&"\'  ');
+			const el3 = document.createElement('div');
+			el3.innerHTML = '&#x3C;div&#x3E;Hello, world!&#x3C;/div&#x3E;';
+			expect(el3.textContent).toBe('<div>Hello, world!</div>');
 		});
 	});
 
@@ -980,6 +1012,56 @@ describe('Element', () => {
 			expect(clone.children.length).toBe(0);
 			expect(element.innerHTML).toBe('<div>Div</div><span>Span</span>');
 		});
+
+		it('Removes child from previous parent.', () => {
+			const otherParent = document.createElement('div');
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			const otherDiv = document.createElement('div');
+			const otherSpan = document.createElement('span');
+
+			div.setAttribute('id', 'div1');
+			div.setAttribute('name', 'div2');
+			span.setAttribute('id', 'span');
+			otherDiv.setAttribute('id', 'otherDiv');
+			otherSpan.setAttribute('id', 'otherSpan');
+
+			otherParent.appendChild(document.createComment('test'));
+			otherParent.appendChild(otherDiv);
+			otherParent.appendChild(document.createComment('test'));
+			otherParent.appendChild(div);
+			otherParent.appendChild(document.createComment('test'));
+			otherParent.appendChild(otherSpan);
+
+			expect(otherParent.children.length).toBe(3);
+			expect(otherParent.children[0] === otherDiv).toBe(true);
+			expect(otherParent.children[1] === div).toBe(true);
+			expect(otherParent.children[2] === otherSpan).toBe(true);
+			expect(otherParent.children['div1'] === div).toBe(true);
+			expect(otherParent.children['div2'] === div).toBe(true);
+			expect(otherParent.children['otherDiv'] === otherDiv).toBe(true);
+			expect(otherParent.children['otherSpan'] === otherSpan).toBe(true);
+
+			element.appendChild(document.createComment('test'));
+			element.appendChild(div);
+			element.appendChild(document.createComment('test'));
+			element.appendChild(span);
+
+			expect(otherParent.children.length).toBe(2);
+			expect(otherParent.children[0] === otherDiv).toBe(true);
+			expect(otherParent.children[1] === otherSpan).toBe(true);
+			expect(otherParent.children['div1'] === undefined).toBe(true);
+			expect(otherParent.children['div2'] === undefined).toBe(true);
+			expect(otherParent.children['otherDiv'] === otherDiv).toBe(true);
+			expect(otherParent.children['otherSpan'] === otherSpan).toBe(true);
+
+			expect(element.children.length).toBe(2);
+			expect(element.children[0] === div).toBe(true);
+			expect(element.children[1] === span).toBe(true);
+			expect(element.children['div1'] === div).toBe(true);
+			expect(element.children['div2'] === div).toBe(true);
+			expect(element.children['span'] === span).toBe(true);
+		});
 	});
 
 	describe('removeChild()', () => {
@@ -987,14 +1069,23 @@ describe('Element', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
+			div.setAttribute('name', 'div');
+			span.setAttribute('name', 'span');
+
 			element.appendChild(document.createComment('test'));
 			element.appendChild(div);
 			element.appendChild(document.createComment('test'));
 			element.appendChild(span);
 
+			expect(element.children['div'] === div).toBe(true);
+			expect(element.children['span'] === span).toBe(true);
+
 			element.removeChild(div);
 
-			expect(element.children).toEqual([span]);
+			expect(element.children.length).toBe(1);
+			expect(element.children[0] === span).toBe(true);
+			expect(element.children['div'] === undefined).toBe(true);
+			expect(element.children['span'] === span).toBe(true);
 		});
 	});
 
@@ -1016,6 +1107,60 @@ describe('Element', () => {
 			expect(element.children[2] === span).toBe(true);
 		});
 
+		it('Inserts elements of the same parent correctly.', () => {
+			const div = document.createElement('div');
+			div.innerHTML =
+				'<span id="a"></span><span id="b"></span><span id="c"></span><span id="d"></span>';
+
+			const a = div.querySelector('#a');
+			const b = div.querySelector('#b');
+
+			div.insertBefore(a, b);
+
+			expect(div.innerHTML).toBe(
+				'<span id="a"></span><span id="b"></span><span id="c"></span><span id="d"></span>'
+			);
+		});
+
+		it('After should add child element correctly', () => {
+			document.body.innerHTML = `<div class="container"></div>\n`;
+			expect(document.body.children.length).toBe(1);
+			const container = document.querySelector('.container');
+
+			const div1 = document.createElement('div');
+			div1.classList.add('someClassName');
+			div1.innerHTML = 'div1';
+			container.after(div1);
+			expect(document.body.children.length).toBe(2);
+
+			const div2 = document.createElement('div');
+			div2.classList.add('someClassName');
+			div2.innerHTML = 'div2';
+			div1.after(div2);
+
+			expect(document.body.children.length).toBe(3);
+			expect(document.body.children[1] === div1).toBe(true);
+			expect(document.body.children[2] === div2).toBe(true);
+			expect(document.getElementsByClassName('someClassName').length).toBe(2);
+		});
+
+		it('Insert before comment node should be at the correct location.', () => {
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const span3 = document.createElement('span');
+			const comment = document.createComment('test');
+
+			element.appendChild(span1);
+			element.appendChild(comment);
+			element.appendChild(span2);
+			element.insertBefore(span3, comment);
+
+			expect(element.children.length).toBe(3);
+			expect(element.children[0] === span1).toBe(true);
+			expect(element.children[1] === span3).toBe(true);
+			expect(element.children[2] === span2).toBe(true);
+		});
+
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		it('Insert the children instead of the actual element before another reference Node if the type is DocumentFragment.', () => {
 			const child1 = document.createElement('span');
@@ -1035,6 +1180,59 @@ describe('Element', () => {
 			expect(element.innerHTML).toEqual(
 				'<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>'
 			);
+		});
+
+		it('Removes child from previous parent node when moved.', () => {
+			const div = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const otherParent = document.createElement('div');
+			const otherSpan1 = document.createElement('span');
+			const otherSpan2 = document.createElement('span');
+
+			div.setAttribute('id', 'div');
+			span1.setAttribute('id', 'span1');
+			span2.setAttribute('id', 'span2');
+			otherSpan1.setAttribute('id', 'otherSpan1');
+			otherSpan2.setAttribute('id', 'otherSpan2');
+
+			otherParent.appendChild(document.createComment('test'));
+			otherParent.appendChild(otherSpan1);
+			otherParent.appendChild(document.createComment('test'));
+			otherParent.appendChild(otherSpan2);
+			otherParent.insertBefore(div, otherSpan2);
+
+			expect(otherParent.children.length).toBe(3);
+			expect(otherParent.children[0] === otherSpan1).toBe(true);
+			expect(otherParent.children[1] === div).toBe(true);
+			expect(otherParent.children[2] === otherSpan2).toBe(true);
+			expect(otherParent.children['otherSpan1'] === otherSpan1).toBe(true);
+			expect(otherParent.children['div'] === div).toBe(true);
+			expect(otherParent.children['otherSpan2'] === otherSpan2).toBe(true);
+
+			element.appendChild(document.createComment('test'));
+			element.appendChild(span1);
+			element.appendChild(document.createComment('test'));
+			element.appendChild(document.createComment('test'));
+			element.appendChild(span2);
+			element.appendChild(document.createComment('test'));
+
+			element.insertBefore(div, span2);
+
+			expect(otherParent.children.length).toBe(2);
+			expect(otherParent.children[0] === otherSpan1).toBe(true);
+			expect(otherParent.children[1] === otherSpan2).toBe(true);
+			expect(otherParent.children['div'] === undefined).toBe(true);
+			expect(otherParent.children['otherSpan1'] === otherSpan1).toBe(true);
+			expect(otherParent.children['otherSpan2'] === otherSpan2).toBe(true);
+
+			expect(element.children.length).toBe(3);
+			expect(element.children[0] === span1).toBe(true);
+			expect(element.children[1] === div).toBe(true);
+			expect(element.children[2] === span2).toBe(true);
+			expect(element.children['span1'] === span1).toBe(true);
+			expect(element.children['div'] === div).toBe(true);
+			expect(element.children['span2'] === span2).toBe(true);
 		});
 	});
 
@@ -1553,6 +1751,23 @@ describe('Element', () => {
 			div.scroll(10, 15);
 			expect(div.scrollLeft).toBe(10);
 			expect(div.scrollTop).toBe(15);
+		});
+	});
+
+	describe('dispatchEvent()', () => {
+		it('Evaluates attribute event listeners.', () => {
+			const div = document.createElement('div');
+			div.setAttribute('onclick', 'divClicked = true');
+			div.dispatchEvent(new Event('click'));
+			expect(window['divClicked']).toBe(true);
+		});
+
+		it("Doesn't evaluate attribute event listener is immediate propagation has been stopped.", () => {
+			const div = document.createElement('div');
+			div.addEventListener('click', (e: Event) => e.stopImmediatePropagation());
+			div.setAttribute('onclick', 'divClicked = true');
+			div.dispatchEvent(new Event('click'));
+			expect(window['divClicked']).toBe(undefined);
 		});
 	});
 });

@@ -1,10 +1,11 @@
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
 import Window from '../../../src/window/Window';
+import Document from '../../../src/nodes/document/Document';
 import CustomElement from '../../CustomElement';
 
 describe('ShadowRoot', () => {
-	let window;
-	let document;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -22,8 +23,8 @@ describe('ShadowRoot', () => {
 			shadowRoot.innerHTML = '<div attr1="value1" attr2="value2"><span>Test</span></div>';
 			expect(shadowRoot.childNodes.length).toBe(1);
 			expect(shadowRoot.childNodes[0].childNodes.length).toBe(1);
-			expect(shadowRoot.childNodes[0].tagName).toBe('DIV');
-			expect(shadowRoot.childNodes[0].childNodes[0].tagName).toBe('SPAN');
+			expect((<IHTMLElement>shadowRoot.childNodes[0]).tagName).toBe('DIV');
+			expect((<IHTMLElement>shadowRoot.childNodes[0].childNodes[0]).tagName).toBe('SPAN');
 		});
 	});
 

@@ -1,7 +1,13 @@
 import Window from '../../../src/window/Window';
+import Document from '../../../src/nodes/document/Document';
 import Node from '../../../src/nodes/node/Node';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
+import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
 import Event from '../../../src/event/Event';
+import DOMException from '../../../src/exception/DOMException';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
+import Text from '../../../src/nodes/text/Text';
+import EventPhaseEnum from '../../../src/event/EventPhaseEnum';
 
 /**
  *
@@ -55,8 +61,8 @@ class CustomButtonElement extends HTMLElement {
 }
 
 describe('Node', () => {
-	let window;
-	let document;
+	let window: Window;
+	let document: Document;
 	let customElementOutput;
 
 	beforeEach(() => {
@@ -293,6 +299,12 @@ describe('Node', () => {
 
 			expect(div.contains(text)).toBe(true);
 		});
+
+		it('Returns "false" if match node is null.', () => {
+			const div = document.createElement('div');
+
+			expect(div.contains(null)).toBe(false);
+		});
 	});
 
 	describe('getRootNode()', () => {
@@ -373,8 +385,8 @@ describe('Node', () => {
 			expect(div).toEqual(clone);
 			expect(div !== clone).toBe(true);
 
-			expect(clone.children).toEqual(
-				clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE)
+			expect(Array.from(clone.children)).toEqual(
+				Array.from(clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE))
 			);
 		});
 	});
@@ -388,12 +400,12 @@ describe('Node', () => {
 			parent1.appendChild(child);
 
 			expect(child.parentNode).toBe(parent1);
-			expect(parent1.childNodes).toEqual([child]);
+			expect(Array.from(parent1.childNodes)).toEqual([child]);
 
 			parent2.appendChild(child);
 			expect(child.parentNode).toBe(parent2);
-			expect(parent1.childNodes).toEqual([]);
-			expect(parent2.childNodes).toEqual([child]);
+			expect(Array.from(parent1.childNodes)).toEqual([]);
+			expect(Array.from(parent2.childNodes)).toEqual([child]);
 
 			expect(child.isConnected).toBe(false);
 
@@ -404,7 +416,7 @@ describe('Node', () => {
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		it('Append the child nodes instead of the actual node if the type is DocumentFragment.', () => {
-			const template = document.createElement('template');
+			const template = <HTMLTemplateElement>document.createElement('template');
 
 			template.innerHTML = '<div>Div</div><span>Span</span>';
 
@@ -413,8 +425,26 @@ describe('Node', () => {
 
 			div.appendChild(clone);
 
-			expect(clone.childNodes).toEqual([]);
+			expect(Array.from(clone.childNodes)).toEqual([]);
 			expect(div.innerHTML).toBe('<div>Div</div><span>Span</span>');
+		});
+
+		it('Throws an error if the node to append is the parent of the current node.', () => {
+			const parent = document.createElement('div');
+			const child1 = document.createElement('div');
+			const child2 = document.createElement('div');
+			child1.appendChild(child2);
+			parent.appendChild(child1);
+			try {
+				child2.appendChild(parent);
+			} catch (error) {
+				expect(error).toEqual(
+					new DOMException(
+						"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
+						DOMExceptionNameEnum.domException
+					)
+				);
+			}
 		});
 	});
 
@@ -426,7 +456,7 @@ describe('Node', () => {
 			parent.appendChild(child);
 
 			expect(child.parentNode).toBe(parent);
-			expect(parent.childNodes).toEqual([child]);
+			expect(Array.from(parent.childNodes)).toEqual([child]);
 			expect(child.isConnected).toBe(false);
 
 			document.body.appendChild(parent);
@@ -436,7 +466,7 @@ describe('Node', () => {
 			const removed = parent.removeChild(child);
 
 			expect(child.parentNode).toBe(null);
-			expect(parent.childNodes).toEqual([]);
+			expect(Array.from(parent.childNodes)).toEqual([]);
 			expect(child.isConnected).toBe(false);
 			expect(removed).toEqual(child);
 		});
@@ -454,7 +484,7 @@ describe('Node', () => {
 			parent.insertBefore(newNode, child2);
 
 			expect(newNode.parentNode).toBe(parent);
-			expect(parent.childNodes).toEqual([child1, newNode, child2]);
+			expect(Array.from(parent.childNodes)).toEqual([child1, newNode, child2]);
 			expect(newNode.isConnected).toBe(false);
 
 			document.body.appendChild(parent);
@@ -466,7 +496,7 @@ describe('Node', () => {
 		it('Insert the child nodes instead of the actual node before another reference Node if the type is DocumentFragment.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
-			const template = document.createElement('template');
+			const template = <HTMLTemplateElement>document.createElement('template');
 			const parent = document.createElement('div');
 
 			template.innerHTML = '<div>Template DIV 1</div><span>Template SPAN 1</span>';
@@ -517,6 +547,24 @@ describe('Node', () => {
 			);
 		});
 
+		it('If reference node is null or undefined, the newNode should be inserted at the end of the peer node.', () => {
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+			const newNode = document.createElement('span');
+			const newNode1 = document.createElement('span');
+			const parent = document.createElement('div');
+
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+			parent.insertBefore(newNode, null);
+			parent.insertBefore(newNode1, undefined);
+
+			expect(parent.childNodes[0]).toBe(child1);
+			expect(parent.childNodes[1]).toBe(child2);
+			expect(parent.childNodes[2]).toBe(newNode);
+			expect(parent.childNodes[3]).toBe(newNode1);
+		});
+
 		it('Throws an exception if reference node is not child of parent node.', () => {
 			const referenceNode = document.createElement('span');
 			const newNode = document.createElement('span');
@@ -525,6 +573,26 @@ describe('Node', () => {
 			expect(() => parent.insertBefore(newNode, referenceNode)).toThrow(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
+		});
+
+		it('Throws an error if the node to insert is the parent of the current node.', () => {
+			const parent = document.createElement('div');
+			const child1 = document.createElement('div');
+			const child2 = document.createElement('div');
+
+			child1.appendChild(child2);
+			parent.appendChild(child1);
+
+			try {
+				child2.insertBefore(parent, null);
+			} catch (error) {
+				expect(error).toEqual(
+					new DOMException(
+						"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
+						DOMExceptionNameEnum.domException
+					)
+				);
+			}
 		});
 	});
 
@@ -540,7 +608,7 @@ describe('Node', () => {
 			parent.replaceChild(newNode, child2);
 
 			expect(newNode.parentNode).toBe(parent);
-			expect(parent.childNodes).toEqual([child1, newNode]);
+			expect(Array.from(parent.childNodes)).toEqual([child1, newNode]);
 			expect(newNode.isConnected).toBe(false);
 
 			document.body.appendChild(parent);
@@ -631,6 +699,132 @@ describe('Node', () => {
 			expect(childEvent).toBe(event);
 			expect(parentEvent).toBe(event);
 		});
+
+		it('Supports capture events that are not bubbles.', () => {
+			const parent = document.createElement('div');
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+
+			child1.appendChild(child2);
+			parent.appendChild(child1);
+
+			const event = new Event('blur', { bubbles: false, cancelable: true });
+			const parentEvents = [];
+			const child1Events = [];
+			const child2Events = [];
+
+			parent.addEventListener(
+				'blur',
+				(event) => {
+					expect(event.eventPhase).toBe(EventPhaseEnum.capturing);
+					parentEvents.push(event);
+				},
+				true
+			);
+
+			child1.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.bubbling);
+				child1Events.push(event);
+			});
+
+			child2.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.atTarget);
+				child2Events.push(event);
+			});
+
+			child2.dispatchEvent(event);
+
+			expect(child1Events.length).toBe(0);
+			expect(child2Events.length).toBe(1);
+			expect(child2Events[0] === event).toBe(true);
+			expect(parentEvents.length).toBe(1);
+			expect(parentEvents[0] === event).toBe(true);
+		});
+
+		it('Supports capture events that bubbles.', () => {
+			const parent = document.createElement('div');
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+
+			child1.appendChild(child2);
+			parent.appendChild(child1);
+
+			const event = new Event('blur', { bubbles: true, cancelable: true });
+			const parentEvents = [];
+			const child1Events = [];
+			const child2Events = [];
+
+			parent.addEventListener(
+				'blur',
+				(event) => {
+					expect(event.eventPhase).toBe(EventPhaseEnum.capturing);
+					parentEvents.push(event);
+				},
+				true
+			);
+
+			child1.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.bubbling);
+				child1Events.push(event);
+			});
+
+			child2.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.atTarget);
+				child2Events.push(event);
+			});
+
+			child2.dispatchEvent(event);
+
+			expect(child1Events.length).toBe(1);
+			expect(child1Events[0] === event).toBe(true);
+			expect(child2Events.length).toBe(1);
+			expect(child2Events[0] === event).toBe(true);
+			expect(parentEvents.length).toBe(1);
+			expect(parentEvents[0] === event).toBe(true);
+		});
+
+		it('Supports capture events on document simulating what Test Library is doing when listenening to "blur" and "focus".', () => {
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+
+			child1.appendChild(child2);
+			document.body.appendChild(child1);
+
+			const event = new Event('blur', { bubbles: false, composed: true });
+			const documentEvents = [];
+			const child1Events = [];
+			const child2Events = [];
+
+			document.addEventListener(
+				'blur',
+				(event) => {
+					expect(event.eventPhase).toBe(EventPhaseEnum.capturing);
+					documentEvents.push(event);
+				},
+				{
+					capture: true,
+					passive: true
+				}
+			);
+
+			child1.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.bubbling);
+				child1Events.push(event);
+			});
+
+			child2.addEventListener('blur', (event) => {
+				expect(event.eventPhase).toBe(EventPhaseEnum.atTarget);
+				child2Events.push(event);
+			});
+
+			child2.dispatchEvent(event);
+
+			expect(child1Events.length).toBe(0);
+			expect(child2Events.length).toBe(1);
+			expect(child2Events[0] === event).toBe(true);
+			expect(documentEvents.length).toBe(1);
+			expect(documentEvents[0] === event).toBe(true);
+		});
 	});
 
 	describe('compareDocumentPosition()', () => {
@@ -707,6 +901,66 @@ describe('Node', () => {
 				.getElementById('child')
 				.compareDocumentPosition(document.getElementById('parent'));
 			expect(position).toEqual(10);
+		});
+	});
+
+	describe('normalize()', () => {
+		it('Normalizes an element.', () => {
+			const txt = document.createTextNode.bind(document);
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			span.append(txt('sp'), txt('an'));
+			const b = document.createElement('b');
+			b.append(txt(''), txt(''), txt(''));
+			div.append(txt(''), txt('d'), txt(''), txt('i'), txt('v'), span, txt(''), b, txt(''));
+			expect(div.childNodes).toHaveLength(9);
+			div.normalize();
+			expect(div.childNodes).toHaveLength(3);
+			expect(div.childNodes[0]).toBeInstanceOf(Text);
+			expect(div.childNodes[0].nodeValue).toBe('div');
+			expect(div.childNodes[1]).toBe(span);
+			expect(div.childNodes[2]).toBe(b);
+			expect(span.childNodes).toHaveLength(1);
+			expect(span.childNodes[0]).toBeInstanceOf(Text);
+			expect(span.childNodes[0].nodeValue).toBe('span');
+			expect(b.childNodes).toHaveLength(0);
+		});
+
+		it('Normalizes a document fragment.', () => {
+			const txt = document.createTextNode.bind(document);
+			const fragment = document.createDocumentFragment();
+			const span = document.createElement('span');
+			span.append(txt('sp'), txt('an'));
+			const b = document.createElement('b');
+			b.append(txt(''), txt(''), txt(''));
+			fragment.append(txt(''), txt('d'), txt(''), txt('i'), txt('v'), span, txt(''), b, txt(''));
+			expect(fragment.childNodes).toHaveLength(9);
+			fragment.normalize();
+			expect(fragment.childNodes).toHaveLength(3);
+			expect(fragment.childNodes[0]).toBeInstanceOf(Text);
+			expect(fragment.childNodes[0].nodeValue).toBe('div');
+			expect(fragment.childNodes[1]).toBe(span);
+			expect(fragment.childNodes[2]).toBe(b);
+			expect(span.childNodes).toHaveLength(1);
+			expect(span.childNodes[0]).toBeInstanceOf(Text);
+			expect(span.childNodes[0].nodeValue).toBe('span');
+			expect(b.childNodes).toHaveLength(0);
+		});
+
+		it('Normalizes the document.', () => {
+			const count = document.childNodes.length;
+			document.append(document.createTextNode(''));
+			expect(document.childNodes).toHaveLength(count + 1);
+			document.normalize();
+			expect(document.childNodes).toHaveLength(count);
+		});
+
+		it('Does nothing on a text node.', () => {
+			const div = document.createElement('div');
+			const node = div.appendChild(document.createTextNode(''));
+			node.normalize();
+			expect(div.childNodes).toHaveLength(1);
+			expect(div.childNodes[0]).toBe(node);
 		});
 	});
 });

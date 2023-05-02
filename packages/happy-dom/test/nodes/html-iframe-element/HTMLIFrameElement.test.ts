@@ -2,7 +2,7 @@ import Window from '../../../src/window/Window';
 import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import IHTMLIFrameElement from '../../../src/nodes/html-iframe-element/IHTMLIFrameElement';
-import IResponse from '../../../src/fetch/IResponse';
+import IResponse from '../../../src/fetch/types/IResponse';
 import ErrorEvent from '../../../src/event/events/ErrorEvent';
 import IFrameCrossOriginWindow from '../../../src/nodes/html-iframe-element/IFrameCrossOriginWindow';
 import MessageEvent from '../../../src/event/events/MessageEvent';
