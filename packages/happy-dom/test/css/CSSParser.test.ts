@@ -14,7 +14,7 @@ describe('CSSParser', () => {
 			const cssStyleSheet = new CSSStyleSheet();
 			const cssRules = CSSParser.parseFromString(cssStyleSheet, CSSParserInput);
 
-			expect(cssRules.length).toBe(8);
+			expect(cssRules.length).toBe(10);
 
 			// CSSStyleRule
 			expect((<CSSStyleRule>cssRules[0]).parentRule).toBe(null);
@@ -187,6 +187,22 @@ describe('CSSParser', () => {
 			expect(children6[0].style[0]).toBe('color');
 			expect(children6[0].style.color).toBe('green');
 			expect(children6[0].cssText).toBe('.container { color: green; }');
+
+			expect((<CSSStyleRule>cssRules[8]).parentRule).toBe(null);
+			expect((<CSSStyleRule>cssRules[8]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSStyleRule>cssRules[8]).selectorText).toBe(':root');
+			expect((<CSSStyleRule>cssRules[8]).cssText).toBe(':root { --my-var: 10px; }');
+			expect((<CSSStyleRule>cssRules[8]).style.parentRule).toBe(cssRules[8]);
+			expect((<CSSStyleRule>cssRules[8]).style.length).toBe(1);
+			expect((<CSSStyleRule>cssRules[8]).style.cssText).toBe('--my-var: 10px;');
+
+			expect((<CSSStyleRule>cssRules[9]).parentRule).toBe(null);
+			expect((<CSSStyleRule>cssRules[9]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSStyleRule>cssRules[9]).selectorText).toBe('.foo');
+			expect((<CSSStyleRule>cssRules[9]).cssText).toBe('.foo { color: red; }');
+			expect((<CSSStyleRule>cssRules[9]).style.parentRule).toBe(cssRules[9]);
+			expect((<CSSStyleRule>cssRules[9]).style.length).toBe(1);
+			expect((<CSSStyleRule>cssRules[9]).style.cssText).toBe('color: red;');
 		});
 	});
 });
