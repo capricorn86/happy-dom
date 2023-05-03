@@ -410,6 +410,13 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	/**
 	 * @override
 	 */
+	public override toString(): string {
+		return this.href;
+	}
+
+	/**
+	 * @override
+	 */
 	public override setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
