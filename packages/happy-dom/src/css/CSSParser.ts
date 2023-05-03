@@ -7,7 +7,7 @@ import CSSMediaRule from './rules/CSSMediaRule';
 import CSSContainerRule from './rules/CSSContainerRule';
 import CSSSupportsRule from './rules/CSSSupportsRule';
 
-const COMMENT_REGEXP = /\/\*[^*]*\*\//gm;
+const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
 
 /**
  * CSS parser.

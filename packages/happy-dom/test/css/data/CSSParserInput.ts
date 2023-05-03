@@ -1,4 +1,5 @@
 export default `
+
     :host {
         display: flex;
         overflow: hidden;
@@ -57,4 +58,15 @@ export default `
             color: green;
         }
     }
+
+    /*
+    * Multi-line comment with leading star
+    */
+    :root {
+        --my-var: 10px;
+    }
+
+    /* Single-line comment */
+    .foo { color: red; }
+    
 `.trim();
