@@ -11,6 +11,8 @@ import IRequestReferrerPolicy from '../../src/fetch/types/IRequestReferrerPolicy
 import IRequestRedirect from '../../src/fetch/types/IRequestRedirect';
 import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility';
 import Blob from '../../src/file/Blob';
+import { FormData } from '../../src';
+import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser';
 
 const TEST_URL = 'https://example.com/';
 
@@ -616,6 +618,42 @@ describe('Request', () => {
 
 			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
 			request.json();
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 2);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				done();
+			}, 12);
+		});
+	});
+
+	describe('formData()', () => {
+		it('Returns FormData', async () => {
+			const formData = new FormData();
+			formData.append('some', 'test');
+			const request = new Request(TEST_URL, { method: 'POST', body: formData });
+			const requestFormData = await request.formData();
+
+			expect(requestFormData).toEqual(formData);
+		});
+
+		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
+			const formData = new FormData();
+			formData.append('some', 'test');
+			const request = new Request(TEST_URL, { method: 'POST', body: formData });
+			let isAsyncComplete = false;
+
+			jest
+				.spyOn(MultipartFormDataParser, 'streamToFormData')
+				.mockImplementation(
+					() => new Promise((resolve) => setTimeout(() => resolve(formData), 10))
+				);
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			request.formData();
 
 			setTimeout(() => {
 				expect(isAsyncComplete).toBe(false);

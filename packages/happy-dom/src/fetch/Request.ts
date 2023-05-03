@@ -18,6 +18,8 @@ import IRequestRedirect from './types/IRequestRedirect';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility';
 import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility';
 import IRequestCredentials from './types/IRequestCredentials';
+import FormData from '../form-data/FormData';
+import MultipartFormDataParser from './multipart/MultipartFormDataParser';
 
 /**
  * Fetch request.
@@ -278,6 +280,38 @@ export default class Request implements IRequest {
 	public async json(): Promise<string> {
 		const text = await this.text();
 		return JSON.parse(text);
+	}
+
+	/**
+	 * Returns FormData.
+	 *
+	 * @returns FormData.
+	 */
+	public async formData(): Promise<FormData> {
+		if (this.bodyUsed) {
+			throw new DOMException(
+				`Body has already been used for "${this.url}".`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		(<boolean>this.bodyUsed) = true;
+
+		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
+		const taskID = taskManager.startTask(() => this.signal._abort());
+		let formData: FormData;
+
+		try {
+			const type = this._contentType;
+			formData = await MultipartFormDataParser.streamToFormData(this.body, type);
+		} catch (error) {
+			taskManager.endTask(taskID);
+			throw error;
+		}
+
+		taskManager.endTask(taskID);
+
+		return formData;
 	}
 
 	/**
