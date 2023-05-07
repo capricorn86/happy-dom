@@ -259,6 +259,13 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns a collection of all area elements and a elements in a document with a value for the href attribute.
+	 */
+	public get links(): IHTMLCollection<IHTMLElement> {
+		return <IHTMLCollection<IHTMLElement>>this.querySelectorAll('a[href],area[href]');
+	}
+
+	/**
 	 * Last element child.
 	 *
 	 * @returns Element.
