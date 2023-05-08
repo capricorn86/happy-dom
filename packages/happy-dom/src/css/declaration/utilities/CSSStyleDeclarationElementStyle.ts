@@ -289,6 +289,10 @@ export default class CSSStyleDeclarationElementStyle {
 						}
 					} else {
 						for (const element of options.elements) {
+							// Skip @-rules.
+							if (selectorText.startsWith('@')) {
+								continue;
+							}
 							const matchResult = QuerySelector.match(<IElement>element.element, selectorText);
 							if (matchResult) {
 								element.cssTexts.push({
