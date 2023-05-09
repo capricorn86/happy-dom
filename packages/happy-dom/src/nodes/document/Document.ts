@@ -236,9 +236,9 @@ export default class Document extends Node implements IDocument {
 	 * @returns Title.
 	 */
 	public get title(): string {
-		const el = this.querySelector('title');
-		if (el) {
-			return el.textContent;
+		const element = ParentNodeUtility.getElementByTagName(this, 'title');
+		if (element) {
+			return element.textContent;
 		}
 		return '';
 	}
@@ -248,13 +248,13 @@ export default class Document extends Node implements IDocument {
 	 *
 	 */
 	public set title(title: string) {
-		const el = this.querySelector('title');
-		if (el) {
-			el.textContent = title;
+		const element = ParentNodeUtility.getElementByTagName(this, 'title');
+		if (element) {
+			element.textContent = title;
 		} else {
-			const titleEl = this.createElement('title');
-			titleEl.textContent = title;
-			this.head.appendChild(titleEl);
+			const newElement = this.createElement('title');
+			newElement.textContent = title;
+			this.head.appendChild(newElement);
 		}
 	}
 
@@ -430,9 +430,9 @@ export default class Document extends Node implements IDocument {
 	 * @returns Base URI.
 	 */
 	public get baseURI(): string {
-		const base = <IHTMLBaseElement>this.querySelector('base');
-		if (base) {
-			return base.href;
+		const element = <IHTMLBaseElement | null>ParentNodeUtility.getElementByTagName(this, 'base');
+		if (element) {
+			return element.href;
 		}
 		return this.defaultView.location.href;
 	}
@@ -653,7 +653,7 @@ export default class Document extends Node implements IDocument {
 	 * @param html HTML.
 	 */
 	public write(html: string): void {
-		const root = XMLParser.parse(this, html, true);
+		const root = XMLParser.parse(this, html, { evaluateScripts: true });
 
 		if (this._isFirstWrite || this._isFirstWriteAfterOpen) {
 			if (this._isFirstWrite) {
@@ -688,8 +688,8 @@ export default class Document extends Node implements IDocument {
 
 					this.appendChild(documentElement);
 				} else {
-					const rootBody = root.querySelector('body');
-					const body = this.querySelector('body');
+					const rootBody = ParentNodeUtility.getElementByTagName(root, 'body');
+					const body = ParentNodeUtility.getElementByTagName(this, 'body');
 					if (rootBody && body) {
 						for (const child of rootBody.childNodes.slice()) {
 							body.appendChild(child);
@@ -697,7 +697,7 @@ export default class Document extends Node implements IDocument {
 					}
 				}
 
-				const body = this.querySelector('body');
+				const body = ParentNodeUtility.getElementByTagName(this, 'body');
 				if (body) {
 					for (const child of root.childNodes.slice()) {
 						if (child['tagName'] !== 'HTML' && child.nodeType !== Node.DOCUMENT_TYPE_NODE) {
@@ -720,9 +720,10 @@ export default class Document extends Node implements IDocument {
 				this.appendChild(documentElement);
 			}
 		} else {
-			const bodyNode = root.querySelector('body');
+			const bodyNode = ParentNodeUtility.getElementByTagName(root, 'body');
+			const body = ParentNodeUtility.getElementByTagName(this, 'body');
 			for (const child of (bodyNode || root).childNodes.slice()) {
-				this.body.appendChild(child);
+				body.appendChild(child);
 			}
 		}
 	}

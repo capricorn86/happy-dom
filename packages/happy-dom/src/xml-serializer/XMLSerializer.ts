@@ -6,6 +6,8 @@ import { escape } from 'he';
 import INode from '../nodes/node/INode';
 import IElement from '../nodes/element/IElement';
 import IHTMLTemplateElement from '../nodes/html-template-element/IHTMLTemplateElement';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
+import IProcessingInstruction from '../nodes/processing-instruction/IProcessingInstruction';
 
 /**
  * Utility for converting an element to string.
@@ -21,16 +23,16 @@ export default class XMLSerializer {
 	 */
 	public serializeToString(root: INode, options?: { includeShadowRoots?: boolean }): string {
 		switch (root.nodeType) {
-			case Node.ELEMENT_NODE:
+			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
 				const tagName = element.tagName.toLowerCase();
 
-				if (VoidElements.includes(tagName)) {
+				if (VoidElements[element.tagName]) {
 					return `<${tagName}${this._getAttributes(element)}>`;
 				}
 
 				const childNodes =
-					element.tagName === 'TEMPLATE'
+					tagName === 'template'
 						? (<IHTMLTemplateElement>root).content.childNodes
 						: root.childNodes;
 				let innerHTML = '';
@@ -57,11 +59,13 @@ export default class XMLSerializer {
 					html += this.serializeToString(node, options);
 				}
 				return html;
-			case Node.COMMENT_NODE:
+			case NodeTypeEnum.commentNode:
 				return `<!--${root.textContent}-->`;
-			case Node.TEXT_NODE:
-				return root['textContent'];
-			case Node.DOCUMENT_TYPE_NODE:
+			case NodeTypeEnum.processingInstructionNode:
+				return `<!--?${(<IProcessingInstruction>root).target} ${root.textContent}?-->`;
+			case NodeTypeEnum.textNode:
+				return root.textContent;
+			case NodeTypeEnum.documentTypeNode:
 				const doctype = <DocumentType>root;
 				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';
 				const publicId = doctype.publicId ? ` "${doctype.publicId}"` : '';

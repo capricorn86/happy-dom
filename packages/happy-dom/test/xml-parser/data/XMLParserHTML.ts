@@ -6,8 +6,9 @@ export default `
 		</head>
 		<body>
 			<div class="class1 class2" id="id">
-				<!-- Comment 1 !-->
-				<?Question mark comment>
+				<!--Comment 1!-->
+				<?processing instruction?>
+				<?processing-instruction>
 				<!Exclamation mark comment>
 				<b>Bold</b>
 				<!-- Comment 2 !-->
@@ -19,7 +20,7 @@ export default `
 				<!-- Comment 2 !-->
 			</article>
 			<img>
-			<self-closing-custom-tag />
+			<img />
 		</body>
 	</html>
 `.trim();

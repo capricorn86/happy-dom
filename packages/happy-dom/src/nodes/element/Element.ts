@@ -244,9 +244,7 @@ export default class Element extends Node implements IElement {
 			this.removeChild(child);
 		}
 
-		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
-			this.appendChild(node);
-		}
+		XMLParser.parse(this.ownerDocument, html, { rootNode: this });
 	}
 
 	/**

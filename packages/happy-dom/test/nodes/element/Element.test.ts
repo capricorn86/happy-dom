@@ -211,18 +211,18 @@ describe('Element', () => {
 
 	describe('set innerHTML()', () => {
 		it('Creates child nodes from provided HTML.', () => {
-			const root = document.createDocumentFragment();
 			const div = document.createElement('div');
 			const textNode = document.createTextNode('text1');
 
 			element.appendChild(document.createElement('div'));
 			div.appendChild(textNode);
-			root.appendChild(div);
 
-			jest.spyOn(XMLParser, 'parse').mockImplementation((parseDocument, html) => {
-				expect(parseDocument).toBe(document);
-				expect(html).toBe('SOME_HTML');
-				return root;
+			jest.spyOn(XMLParser, 'parse').mockImplementation(function (ownerDocument, xml, options) {
+				expect(ownerDocument).toBe(document);
+				expect(xml).toBe('SOME_HTML');
+				expect(options).toEqual({ rootNode: element });
+				element.appendChild(div);
+				return element;
 			});
 			element.innerHTML = 'SOME_HTML';
 

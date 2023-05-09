@@ -2,8 +2,8 @@ import HTMLElement from '../html-element/HTMLElement';
 import IDocumentFragment from '../document-fragment/IDocumentFragment';
 import INode from '../node/INode';
 import IHTMLTemplateElement from './IHTMLTemplateElement';
-import XMLParser from '../../xml-parser/XMLParser';
 import XMLSerializer from '../../xml-serializer/XMLSerializer';
+import XMLParser from '../../xml-parser/XMLParser';
 
 /**
  * HTML Template Element.
@@ -29,9 +29,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 			this.content.removeChild(child);
 		}
 
-		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
-			this.content.appendChild(node);
-		}
+		XMLParser.parse(this.ownerDocument, html, { rootNode: this.content });
 	}
 
 	/**
