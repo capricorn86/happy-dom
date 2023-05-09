@@ -78,6 +78,37 @@ describe('HTMLAnchorElement', () => {
 		});
 	});
 
+	describe('toString()', () => {
+		it('Returns the "href" attribute.', () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.setAttribute('href', 'test');
+			expect(element.toString()).toBe('https://www.somesite.com/test');
+		});
+
+		it('Returns the "href" attribute when scheme is http.', () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.setAttribute('href', 'http://www.example.com');
+			expect(element.toString()).toBe('http://www.example.com/');
+		});
+
+		it('Returns the "href" attribute when scheme is tel.', () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.setAttribute('href', 'tel:+123456789');
+			expect(element.toString()).toBe('tel:+123456789');
+		});
+
+		it('Returns the "href" attribute when scheme-relative', () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.setAttribute('href', '//example.com');
+			expect(element.toString()).toBe('https://example.com/');
+		});
+
+		it('Returns empty string if "href" attribute is empty.', () => {
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			expect(element.toString()).toBe('');
+		});
+	});
+
 	describe('set href()', () => {
 		it('Sets the attribute "href".', () => {
 			const element = <IHTMLAnchorElement>document.createElement('a');

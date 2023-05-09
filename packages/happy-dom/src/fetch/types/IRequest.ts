@@ -5,6 +5,7 @@ import Stream from 'stream';
 import IRequestReferrerPolicy from './IRequestReferrerPolicy';
 import IRequestRedirect from './IRequestRedirect';
 import IRequestCredentials from './IRequestCredentials';
+import FormData from '../../form-data/FormData';
 
 /**
  * Fetch request.
@@ -55,6 +56,13 @@ export default interface IRequest {
 	 * @returns JSON.
 	 */
 	json(): Promise<string>;
+
+	/**
+	 * Returns FormData.
+	 *
+	 * @returns FormData.
+	 */
+	formData(): Promise<FormData>;
 
 	/**
 	 * Clones request.
