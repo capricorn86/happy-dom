@@ -14,16 +14,16 @@ import { decode } from 'he';
 /**
  * Markup RegExp.
  *
- * Group 1: Comment (e.g. " Comment 1 " in "<!-- Comment 1 -->").
- * Group 2: Exclamation mark comment (e.g. "DOCTYPE html" in "<!DOCTYPE html>").
- * Group 3: Processing instruction(e.g. "xml"" in "<?xml version="1.0"?>").
- * Group 4: Start tag (e.g. "div" in "<div").
- * Group 5: Self-closing end of start tag (e.g. "/>" in "<div/>").
- * Group 6: End of start tag (e.g. ">" in "<div>").
- * Group 7: End tag (e.g. "div" in "</div>").
+ * Group 1: Start tag (e.g. "div" in "<div>").
+ * Group 2: End tag (e.g. "div" in "</div>").
+ * Group 3: Beginning of start tag (e.g. "div" in "<div").
+ * Group 4: Comment (e.g. " Comment 1 " in "<!-- Comment 1 -->").
+ * Group 5: Exclamation mark comment (e.g. "DOCTYPE html" in "<!DOCTYPE html>").
+ * Group 6: Processing instruction (e.g. "xml version="1.0"?" in "<?xml version="1.0"?>")..
+ * Group 7: End of start tag (e.g. ">" in "<div>" or "/>" in "<img/>").
  */
 const MARKUP_REGEXP =
-	/<!--([^->]+)-{0,2}>|<!([^>]+)>|<\?([^>]+)>|<([a-zA-Z0-9-]+)|\s*(\/>)|\s*(>)|<\/([a-zA-Z0-9-]+)>/gm;
+	/<([a-zA-Z0-9-]+)\s*\/{0,1}>|<\/([a-zA-Z0-9-]+)>|<([a-zA-Z0-9-]+)|<!--([^->]+)-{0,2}>|<!([^>]+)>|<\?([^>]+)>|(\/{0,1}>)/gm;
 
 /**
  * Attribute RegExp.
