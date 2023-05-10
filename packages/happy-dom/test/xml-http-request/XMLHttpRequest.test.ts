@@ -7,6 +7,9 @@ import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/u
 import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate';
 import ProgressEvent from '../../src/event/events/ProgressEvent';
 import HTTP from 'http';
+import { TextDecoder } from 'util';
+import Blob from '../../src/file/Blob';
+import IDocument from '../../src/nodes/document/IDocument';
 
 const WINDOW_URL = 'https://localhost:8080';
 const REQUEST_URL = '/path/to/resource/';
@@ -168,6 +171,189 @@ describe('XMLHttpRequest', () => {
 
 			request.addEventListener('load', () => {
 				expect(request.statusText).toBe(expectedStatusText);
+				done();
+			});
+
+			request.send();
+		});
+	});
+
+	describe('get response()', () => {
+		it('Returns ArrayBuffer when "responseType" is set to "arrayBuffer".', (done) => {
+			const expectedResponse = 'Test';
+
+			mockModule('https', {
+				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
+					return {
+						end: () => {
+							callback(<HTTP.IncomingMessage>(<unknown>{
+								statusCode: 200,
+								statusMessage: '',
+								headers: {},
+								on: (event, callback) => {
+									if (event === 'data') {
+										callback(Buffer.from(expectedResponse));
+									} else if (event === 'end') {
+										callback();
+									}
+								}
+							}));
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			request.responseType = XMLHttpResponseTypeEnum.arraybuffer;
+			request.open('GET', REQUEST_URL, true);
+
+			request.addEventListener('load', () => {
+				expect(new TextDecoder().decode(<ArrayBuffer>request.response)).toBe(expectedResponse);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Returns Blob when "responseType" is set to "blob".', (done) => {
+			const expectedResponse = 'Test';
+
+			mockModule('https', {
+				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
+					return {
+						end: () => {
+							callback(<HTTP.IncomingMessage>(<unknown>{
+								statusCode: 200,
+								statusMessage: '',
+								headers: {},
+								on: (event, callback) => {
+									if (event === 'data') {
+										callback(Buffer.from(expectedResponse));
+									} else if (event === 'end') {
+										callback();
+									}
+								}
+							}));
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			request.responseType = XMLHttpResponseTypeEnum.blob;
+			request.open('GET', REQUEST_URL, true);
+
+			request.addEventListener('load', () => {
+				expect((<Blob>request.response)._buffer.toString()).toBe(expectedResponse);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Returns Document when "responseType" is set to "document".', (done) => {
+			const expectedResponse = 'Test';
+
+			mockModule('https', {
+				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
+					return {
+						end: () => {
+							callback(<HTTP.IncomingMessage>(<unknown>{
+								statusCode: 200,
+								statusMessage: '',
+								headers: {},
+								on: (event, callback) => {
+									if (event === 'data') {
+										callback(Buffer.from(expectedResponse));
+									} else if (event === 'end') {
+										callback();
+									}
+								}
+							}));
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			request.responseType = XMLHttpResponseTypeEnum.document;
+			request.open('GET', REQUEST_URL, true);
+
+			request.addEventListener('load', () => {
+				expect((<IDocument>request.response).documentElement.outerHTML).toBe(
+					'<html><head></head><body>Test</body></html>'
+				);
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Returns JSON when "responseType" is set to "json".', (done) => {
+			const expectedResponse = '{ "key1": "value1", "key2": "value2" }';
+
+			mockModule('https', {
+				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
+					return {
+						end: () => {
+							callback(<HTTP.IncomingMessage>(<unknown>{
+								statusCode: 200,
+								statusMessage: '',
+								headers: {},
+								on: (event, callback) => {
+									if (event === 'data') {
+										callback(Buffer.from(expectedResponse));
+									} else if (event === 'end') {
+										callback();
+									}
+								}
+							}));
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			request.responseType = XMLHttpResponseTypeEnum.json;
+			request.open('GET', REQUEST_URL, true);
+
+			request.addEventListener('load', () => {
+				expect(<object>request.response).toEqual({ key1: 'value1', key2: 'value2' });
+				done();
+			});
+
+			request.send();
+		});
+
+		it('Defaults to text.', (done) => {
+			const expectedResponse = 'Test';
+
+			mockModule('https', {
+				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
+					return {
+						end: () => {
+							callback(<HTTP.IncomingMessage>(<unknown>{
+								statusCode: 200,
+								statusMessage: '',
+								headers: {},
+								on: (event, callback) => {
+									if (event === 'data') {
+										callback(Buffer.from(expectedResponse));
+									} else if (event === 'end') {
+										callback();
+									}
+								}
+							}));
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			request.open('GET', REQUEST_URL, true);
+
+			request.addEventListener('load', () => {
+				expect(<string>request.response).toEqual('Test');
 				done();
 			});
 
@@ -798,6 +984,7 @@ describe('XMLHttpRequest', () => {
 
 			expect(request.responseText).toBe(fileContent);
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+			expect(request.getAllResponseHeaders()).toBe('content-length: 4\r\ncontent-type: text/plain');
 		});
 
 		it('Performs an asynchronous request towards a local file.', (done) => {
