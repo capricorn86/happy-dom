@@ -146,6 +146,7 @@ describe('Element', () => {
 
 		it('Converts specifial characters to HTML entities.', () => {
 			const div = document.createElement('div');
+			const NonBreakingSpace = String.fromCharCode(160);
 			div.innerHTML = '<div>&gt;</div>';
 			expect(div.textContent).toBe('>');
 			const el = document.createElement('div');
@@ -155,7 +156,7 @@ describe('Element', () => {
 			expect(div.textContent).toBe('>>howdy');
 			const el2 = document.createElement('div');
 			el2.innerHTML = '<div id="testnode">&gt;&lt;&amp;&quot;&apos;&nbsp;&nbsp;</div>';
-			expect(el2.textContent).toBe('><&"\'  ');
+			expect(el2.textContent).toBe(`><&"'${NonBreakingSpace}${NonBreakingSpace}`);
 			const el3 = document.createElement('div');
 			el3.innerHTML = '&#x3C;div&#x3E;Hello, world!&#x3C;/div&#x3E;';
 			expect(el3.textContent).toBe('<div>Hello, world!</div>');

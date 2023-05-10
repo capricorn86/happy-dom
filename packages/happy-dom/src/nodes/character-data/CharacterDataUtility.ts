@@ -1,5 +1,6 @@
 import ICharacterData from './ICharacterData';
 
+const NonBreakingSpace = String.fromCharCode(160);
 const HTML_ENTITIES = [
 	{ regex: /&quot;/g, value: '"' },
 	{ regex: /&#34;/g, value: '"' },
@@ -16,9 +17,9 @@ const HTML_ENTITIES = [
 	{ regex: /&gt;/g, value: '>' },
 	{ regex: /&#62;/g, value: '>' },
 	{ regex: /&#x3E;/g, value: '>' },
-	{ regex: /&nbsp;/g, value: ' ' },
-	{ regex: /&#160;/g, value: ' ' },
-	{ regex: /&#xA0;/g, value: ' ' }
+	{ regex: /&nbsp;/g, value: NonBreakingSpace },
+	{ regex: /&#160;/g, value: NonBreakingSpace },
+	{ regex: /&#xA0;/g, value: NonBreakingSpace }
 ];
 
 /**
