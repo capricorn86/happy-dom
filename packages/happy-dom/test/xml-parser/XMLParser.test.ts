@@ -260,13 +260,13 @@ describe('XMLParser', () => {
 			const root2 = XMLParser.parse(
 				document,
 				`<html>
-	<head>
-		<title>Title</title>
-	</head>
-	<body>
-		<script type="text/javascript">var vars = []; for (var i=0;i<vars.length;i++) {}</script>
-	</body>
-</html>`
+                    <head>
+                        <title>Title</title>
+                    </head>
+                    <body>
+                        <script type="text/javascript">var vars = []; for (var i=0;i<vars.length;i++) {}</script>
+                    </body>
+                </html>`
 			);
 			expect((<IHTMLElement>root2.children[0].children[1].children[0]).innerText).toBe(
 				'var vars = []; for (var i=0;i<vars.length;i++) {}'
@@ -552,6 +552,12 @@ describe('XMLParser', () => {
                     </span>
                 </span>`.replace(/\s/gm, '')
 			);
+		});
+
+		it('Can read text with ">" in it.', () => {
+			const root = XMLParser.parse(document, `<span>1 > 0</span>`);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(`<span>1 > 0</span>`);
 		});
 
 		it('Parses malformed attributes.', () => {

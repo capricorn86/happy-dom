@@ -14,16 +14,17 @@ import { decode } from 'he';
 /**
  * Markup RegExp.
  *
- * Group 1: Start tag (e.g. "div" in "<div>").
+ * Group 1: Beginning of start tag (e.g. "div" in "<div").
  * Group 2: End tag (e.g. "div" in "</div>").
- * Group 3: Beginning of start tag (e.g. "div" in "<div").
- * Group 4: Comment (e.g. " Comment 1 " in "<!-- Comment 1 -->").
+ * Group 3: Comment with ending "--" (e.g. " Comment 1 " in "<!-- Comment 1 -->").
+ * Group 4: Comment without ending "--" (e.g. " Comment 1 " in "<!-- Comment 1 >").
  * Group 5: Exclamation mark comment (e.g. "DOCTYPE html" in "<!DOCTYPE html>").
- * Group 6: Processing instruction (e.g. "xml version="1.0"?" in "<?xml version="1.0"?>")..
- * Group 7: End of start tag (e.g. ">" in "<div>" or "/>" in "<img/>").
+ * Group 6: Processing instruction (e.g. "xml version="1.0"?" in "<?xml version="1.0"?>").
+ * Group 7: End of self closing start tag (e.g. "/>" in "<img/>").
+ * Group 8: End of start tag (e.g. ">" in "<div>").
  */
 const MARKUP_REGEXP =
-	/<([a-zA-Z0-9-]+)\s*\/{0,1}>|<\/([a-zA-Z0-9-]+)>|<([a-zA-Z0-9-]+)|<!--([^->]+)-{0,2}>|<!([^>]+)>|<\?([^>]+)>|(\/{0,1}>)/gm;
+	/<([a-zA-Z0-9-]+)|<\/([a-zA-Z0-9-]+)>|<!--([^-]+)-->|<!--([^>]+)>|<!([^>]+)>|<\?([^>]+)>|(\/>)|(>)/gm;
 
 /**
  * Attribute RegExp.
@@ -93,7 +94,7 @@ export default class XMLParser {
 					case MarkupReadStateEnum.startOrEndTag:
 						if (
 							match.index !== lastIndex &&
-							(match[1] || match[2] || match[3] || match[4] || match[7])
+							(match[1] || match[2] || match[3] || match[4] || match[5] || match[6])
 						) {
 							// Plain text between tags.
 
@@ -102,35 +103,10 @@ export default class XMLParser {
 							);
 						}
 
-						if (
-							match[1] ||
-							(match[3] && (<IElement>currentNode).namespaceURI === NamespaceURI.html)
-						) {
-							// Comment.
-
-							const comment = match[1] ? match[1] : '?' + match[3];
-
-							// @Refer https://en.wikipedia.org/wiki/Conditional_comment
-							// @Refer: https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/
-							if (comment.startsWith('[if ') && comment.endsWith(']')) {
-								readState = MarkupReadStateEnum.plainTextContent;
-								startTagIndex = match.index + 4;
-							} else {
-								currentNode.appendChild(document.createComment(comment));
-							}
-						} else if (match[2]) {
-							// Exclamation mark comment (usually <!DOCTYPE>).
-
-							currentNode.appendChild(
-								this.getDocumentTypeNode(document, match[2]) || document.createComment(match[2])
-							);
-						} else if (match[3]) {
-							// Processing instruction (not supported by HTML).
-							// TODO: Add support for processing instructions.
-						} else if (match[4]) {
+						if (match[1]) {
 							// Start tag.
 
-							const tagName = match[4].toUpperCase();
+							const tagName = match[1].toUpperCase();
 
 							// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 							// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
@@ -161,10 +137,10 @@ export default class XMLParser {
 							stack.push(currentNode);
 							readState = MarkupReadStateEnum.insideStartTag;
 							startTagIndex = markupRegexp.lastIndex;
-						} else if (match[7]) {
+						} else if (match[2]) {
 							// End tag.
 
-							if (match[7].toUpperCase() === (<IElement>currentNode).tagName) {
+							if (match[2].toUpperCase() === (<IElement>currentNode).tagName) {
 								// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 								// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
 								const unnestableTagNameIndex = unnestableTagNames.indexOf(
@@ -177,6 +153,25 @@ export default class XMLParser {
 								stack.pop();
 								currentNode = stack[stack.length - 1] || root;
 							}
+						} else if (
+							match[3] ||
+							match[4] ||
+							(match[6] && (<IElement>currentNode).namespaceURI === NamespaceURI.html)
+						) {
+							// Comment.
+
+							currentNode.appendChild(
+								document.createComment((match[6] ? '?' : '') + (match[3] || match[4] || match[6]))
+							);
+						} else if (match[5]) {
+							// Exclamation mark comment (usually <!DOCTYPE>).
+
+							currentNode.appendChild(
+								this.getDocumentTypeNode(document, match[5]) || document.createComment(match[5])
+							);
+						} else if (match[6]) {
+							// Processing instruction (not supported by HTML).
+							// TODO: Add support for processing instructions.
 						} else {
 							// Plain text between tags, including the match as it is not a valid start or end tag.
 
@@ -184,10 +179,11 @@ export default class XMLParser {
 								document.createTextNode(xml.substring(lastIndex, markupRegexp.lastIndex))
 							);
 						}
+
 						break;
 					case MarkupReadStateEnum.insideStartTag:
-						// Self-closing or non-self-closing tag.
-						if (match[5] || match[6]) {
+						// End of start tag
+						if (match[7] || match[8]) {
 							// End of start tag.
 
 							// Attribute name and value.
@@ -233,8 +229,8 @@ export default class XMLParser {
 								// Self closing tags are not allowed in the HTML namespace, but the parser should still allow it for void elements.
 								// Self closing tags is supported in the SVG namespace.
 								if (
-									(match[5] && (<IElement>currentNode).namespaceURI === NamespaceURI.svg) ||
-									VoidElements[(<IElement>currentNode).tagName]
+									VoidElements[(<IElement>currentNode).tagName] ||
+									(match[7] && (<IElement>currentNode).namespaceURI === NamespaceURI.svg)
 								) {
 									stack.pop();
 									currentNode = stack[stack.length - 1] || root;
@@ -260,7 +256,7 @@ export default class XMLParser {
 
 						break;
 					case MarkupReadStateEnum.plainTextContent:
-						if (!!plainTextTagName && match[7] && match[7].toUpperCase() === plainTextTagName) {
+						if (match[2] && match[2].toUpperCase() === plainTextTagName) {
 							// End of plain text tag.
 
 							// Scripts are not allowed to be executed when they are parsed using innerHTML, outerHTML, replaceWith() etc.
@@ -281,22 +277,6 @@ export default class XMLParser {
 							stack.pop();
 							currentNode = stack[stack.length - 1] || root;
 							plainTextTagName = null;
-							readState = MarkupReadStateEnum.startOrEndTag;
-						} else if (
-							!plainTextTagName &&
-							(match[1] === '[endif]' || match[2] === '[endif]' || match[2] === '[endif]--')
-						) {
-							// End of conditional comment.
-
-							currentNode.appendChild(
-								document.createComment(
-									xml.substring(
-										startTagIndex,
-										markupRegexp.lastIndex - 1 - ((match[1] || match[2]).endsWith('-') ? 2 : 0)
-									)
-								)
-							);
-
 							readState = MarkupReadStateEnum.startOrEndTag;
 						}
 
