@@ -142,9 +142,9 @@ describe('HTMLTemplateElement', () => {
 
 			jest
 				.spyOn(XMLSerializer.prototype, 'serializeToString')
-				.mockImplementation((rootElement, options) => {
+				.mockImplementation(function (rootElement) {
 					expect(rootElement).toBe(div);
-					expect(options).toEqual({ includeShadowRoots: true });
+					expect(this._options.includeShadowRoots).toBe(true);
 					return 'EXPECTED_HTML';
 				});
 

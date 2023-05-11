@@ -151,7 +151,7 @@ describe('XMLSerializer', () => {
 			document.body.appendChild(div);
 
 			expect(
-				xmlSerializer.serializeToString(div, { includeShadowRoots: true }).replace(/[\s]/gm, '')
+				new XMLSerializer({ includeShadowRoots: true }).serializeToString(div).replace(/[\s]/gm, '')
 			).toBe(
 				`
 					<div>

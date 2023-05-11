@@ -64,7 +64,7 @@ describe('DOMParser', () => {
 			);
 		});
 
-		it('Correctly parses JS script w/ `<!` in it', () => {
+		it('Correctly parses JS script with `<!` in it.', () => {
 			const newDocument = domParser.parseFromString(
 				`<html>
 					<body>
@@ -76,15 +76,24 @@ describe('DOMParser', () => {
 				'text/html'
 			);
 			// Spurious comment `<!--[a-z]/,end:/-->` should be solved
-			expect(new XMLSerializer().serializeToString(newDocument).replace(/\s{1,}/, ' ')).toBe(
+			expect(new XMLSerializer().serializeToString(newDocument).replace(/\s/g, '')).toBe(
 				`<html>
 					<body>
 						<script>
-							var test = {className:"meta",begin:/<![a-z]/,end:/>/,contains:[t,i,l,c]};
+                        var test = {className:"meta",begin:/&lt;![a-z]/,end:/&gt;/,contains:[t,i,l,c]};
 						</script>
 					</body>
-				</html>`.replace(/\s{1,}/, ' ')
+				</html>`.replace(/\s/g, '')
 			);
+		});
+
+		it('Decodes HTML entities.', () => {
+			const newDocument = domParser.parseFromString(
+				'<p>here is some</p> html el&#225;stica ',
+				'text/html'
+			);
+			// Spurious comment `<!--[a-z]/,end:/-->` should be solved
+			expect(newDocument.body.textContent).toBe('here is some html elástica ');
 		});
 	});
 });

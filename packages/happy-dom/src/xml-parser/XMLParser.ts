@@ -9,7 +9,7 @@ import PlainTextElements from '../config/PlainTextElements';
 import IDocumentType from '../nodes/document-type/IDocumentType';
 import INode from '../nodes/node/INode';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
-import { decode } from 'he';
+import * as Entities from 'entities';
 
 /**
  * Markup RegExp.
@@ -99,7 +99,7 @@ export default class XMLParser {
 							// Plain text between tags.
 
 							currentNode.appendChild(
-								document.createTextNode(xml.substring(lastIndex, match.index))
+								document.createTextNode(Entities.decodeHTML(xml.substring(lastIndex, match.index)))
 							);
 						}
 
@@ -161,13 +161,17 @@ export default class XMLParser {
 							// Comment.
 
 							currentNode.appendChild(
-								document.createComment((match[6] ? '?' : '') + (match[3] || match[4] || match[6]))
+								document.createComment(
+									Entities.decodeHTML((match[6] ? '?' : '') + (match[3] || match[4] || match[6]))
+								)
 							);
 						} else if (match[5]) {
 							// Exclamation mark comment (usually <!DOCTYPE>).
 
+							const exclamationComment = Entities.decodeHTML(match[5]);
 							currentNode.appendChild(
-								this.getDocumentTypeNode(document, match[5]) || document.createComment(match[5])
+								this.getDocumentTypeNode(document, exclamationComment) ||
+									document.createComment(exclamationComment)
 							);
 						} else if (match[6]) {
 							// Processing instruction (not supported by HTML).
@@ -176,7 +180,9 @@ export default class XMLParser {
 							// Plain text between tags, including the match as it is not a valid start or end tag.
 
 							currentNode.appendChild(
-								document.createTextNode(xml.substring(lastIndex, markupRegexp.lastIndex))
+								document.createTextNode(
+									Entities.decodeHTML(xml.substring(lastIndex, markupRegexp.lastIndex))
+								)
 							);
 						}
 
@@ -205,7 +211,7 @@ export default class XMLParser {
 
 										const name = attributeMatch[1] || attributeMatch[5] || attributeMatch[9] || '';
 										const rawValue = attributeMatch[3] || attributeMatch[7] || '';
-										const value = rawValue ? decode(rawValue) : '';
+										const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
 										const namespaceURI =
 											(<IElement>currentNode).tagName === 'SVG' && name === 'xmlns' ? value : null;
 
@@ -271,7 +277,9 @@ export default class XMLParser {
 
 							// Plain text elements such as <script> and <style> should only contain text.
 							currentNode.appendChild(
-								document.createTextNode(xml.substring(startTagIndex, match.index))
+								document.createTextNode(
+									Entities.decodeHTML(xml.substring(startTagIndex, match.index))
+								)
 							);
 
 							stack.pop();
@@ -289,7 +297,9 @@ export default class XMLParser {
 			if (lastIndex !== xml.length) {
 				// Plain text after tags.
 
-				currentNode.appendChild(document.createTextNode(xml.substring(lastIndex)));
+				currentNode.appendChild(
+					document.createTextNode(Entities.decodeHTML(xml.substring(lastIndex)))
+				);
 			}
 		}
 
