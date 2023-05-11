@@ -259,17 +259,16 @@ export default class SelectorParser {
 		}
 
 		if (partA >= 1 || partA <= -1) {
-			const innerExpression =
-				(partB ? '(n' + (partB > 0 ? '-' : '+') + Math.abs(partB) + ')' : 'n') +
-				'%' +
-				partA +
-				'==0';
 			if (partA >= 1) {
-				return eval(
-					'(n) => n>' + (partB - 1) + (Math.abs(partA) != 1 ? '&&' + innerExpression : '')
-				);
+				if (Math.abs(partA) === 1) {
+					return (n: number): boolean => n > partB - 1;
+				}
+				return (n: number): boolean => n > partB - 1 && (n + -1 * partB) % partA === 0;
 			}
-			return eval('(n) => n<' + (partB + 1) + (Math.abs(partA) != 1 ? '&&' + innerExpression : ''));
+			if (Math.abs(partA) === 1) {
+				return (n: number): boolean => n < partB + 1;
+			}
+			return (n) => n < partB + 1 && (n + -1 * partB) % partA === 0;
 		}
 
 		if (parts[0]) {
