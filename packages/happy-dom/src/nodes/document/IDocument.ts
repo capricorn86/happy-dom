@@ -45,6 +45,7 @@ export default interface IDocument extends IParentNode {
 	readonly documentURI: string;
 	readonly visibilityState: VisibilityStateEnum;
 	readonly hidden: boolean;
+	readonly links: IHTMLCollection<IHTMLElement>;
 	cookie: string;
 	title: string;
 
