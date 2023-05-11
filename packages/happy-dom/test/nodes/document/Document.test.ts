@@ -77,6 +77,28 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get links()', () => {
+		it('Returns a elements.', () => {
+			const link1 = document.createElement('a');
+			const link2 = document.createElement('a');
+			link1.setAttribute('href', '');
+
+			document.body.appendChild(link1);
+			document.body.appendChild(link2);
+
+			let links = document.links;
+
+			expect(links.length).toBe(1);
+			expect(links[0]).toBe(link1);
+
+			link2.setAttribute('href', '');
+			links = document.links;
+			expect(links.length).toBe(2);
+			expect(links[0]).toBe(link1);
+			expect(links[1]).toBe(link2);
+		});
+	});
+
 	describe('get scripts()', () => {
 		it('Returns script elements.', () => {
 			const div = document.createElement('div');

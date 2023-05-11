@@ -472,11 +472,11 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('[class*="s1 cl"]');
 
 			expect(elements.length).toBe(5);
-			expect(elements[0]).toBe(container.children[0]);
-			expect(elements[1]).toBe(container.children[0].children[1]);
-			expect(elements[2]).toBe(container.children[0].children[1].children[0]);
-			expect(elements[3]).toBe(container.children[0].children[1].children[1]);
-			expect(elements[4]).toBe(container.children[0].children[1].children[2]);
+			expect(elements[0] === container.children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1]).toBe(true);
+			expect(elements[2] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[3] === container.children[0].children[1].children[1]).toBe(true);
+			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
 		it('Returns all elements with an attribute value that contains a specified value using "[class*="s1 cl"]" or matches exactly a value using "[attr1="value1"]".', () => {
@@ -730,6 +730,18 @@ describe('QuerySelector', () => {
 			).toEqual(['span.n2', 'b.n4', 'div.n6', 'span.n8', 'i.n10']);
 		});
 
+		it('Returns all elements matching :nth-child(-n + 3).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll(':nth-child(-n + 3)');
+
+			expect(
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
+			).toEqual(['div.', 'b.n1', 'span.n2', 'div.n3']);
+		});
+
 		it('Returns all elements matching "div :nth-child(2n+1)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorNthChildHTML;
@@ -752,6 +764,42 @@ describe('QuerySelector', () => {
 					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
 				)
 			).toEqual(['div.', 'b.n1', 'b.n4', 'b.n7', 'i.n10']);
+		});
+
+		it('Returns all elements matching ":nth-child(3n+1 of b)".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll(':nth-child(3n+1 of b)');
+
+			expect(
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
+			).toEqual(['b.n1']);
+		});
+
+		it('Returns all elements matching ":nth-child(n+1 of span)".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll(':nth-child(n+1 of span)');
+
+			expect(
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
+			).toEqual(['span.n2', 'span.n5', 'span.n8']);
+		});
+
+		it('Returns all elements matching ":nth-last-child(n+1 of span)".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll(':nth-last-child(n+1 of span)');
+
+			expect(
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
+			).toEqual(['span.n2', 'span.n5', 'span.n8']);
 		});
 
 		it('Returns all elements matching "div :nth-child(3n+3)".', () => {
@@ -846,7 +894,7 @@ describe('QuerySelector', () => {
 			const span = document.createElement('span');
 			div1.appendChild(div2);
 			div2.appendChild(span);
-			expect(div1.querySelector('span')).toBe(span);
+			expect(div1.querySelector('span') === span).toBe(true);
 		});
 
 		it('Returns span wkith a specific class name matching ".spanClass".', () => {
@@ -856,7 +904,7 @@ describe('QuerySelector', () => {
 			span.className = 'spanClass';
 			div1.appendChild(div2);
 			div2.appendChild(span);
-			expect(div1.querySelector('.spanClass')).toBe(span);
+			expect(div1.querySelector('.spanClass') === span).toBe(true);
 		});
 
 		it('Returns span wkith a specific class name matching ".spanClass".', () => {
@@ -866,7 +914,7 @@ describe('QuerySelector', () => {
 			span.className = 'spanClass';
 			div1.appendChild(div2);
 			div2.appendChild(span);
-			expect(div1.querySelector('.spanClass')).toBe(span);
+			expect(div1.querySelector('.spanClass') === span).toBe(true);
 		});
 
 		it('Returns span with a specific class name and tag name matching "span.spanClass".', () => {
@@ -876,7 +924,7 @@ describe('QuerySelector', () => {
 			span.className = 'spanClass';
 			div1.appendChild(div2);
 			div2.appendChild(span);
-			expect(div1.querySelector('span.spanClass')).toBe(span);
+			expect(div1.querySelector('span.spanClass') === span).toBe(true);
 		});
 
 		it('Returns div with a specific id and tag name matching "div#divId".', () => {
@@ -886,7 +934,7 @@ describe('QuerySelector', () => {
 			div3.id = 'divId';
 			div1.appendChild(div2);
 			div2.appendChild(div3);
-			expect(div1.querySelector('div#divId')).toBe(div3);
+			expect(div1.querySelector('div#divId') === div3).toBe(true);
 		});
 
 		it('Returns span with a specific class name and tag name matching "custom-element.class1".', () => {
@@ -911,24 +959,24 @@ describe('QuerySelector', () => {
 			span.setAttribute('attr1', 'value1');
 			div1.appendChild(div2);
 			div2.appendChild(span);
-			expect(div1.querySelector('span[attr1="value1"]')).toBe(span);
-			expect(div1.querySelector('[attr1="value1"]')).toBe(span);
-			expect(div1.querySelector('span[attr1]')).toBe(span);
-			expect(div1.querySelector('[attr1]')).toBe(span);
+			expect(div1.querySelector('span[attr1="value1"]') === span).toBe(true);
+			expect(div1.querySelector('[attr1="value1"]') === span).toBe(true);
+			expect(div1.querySelector('span[attr1]') === span).toBe(true);
+			expect(div1.querySelector('[attr1]') === span).toBe(true);
 		});
 
 		it('Returns the first element matching "div > div > span".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
 			const span = container.querySelector('div > div > span');
-			expect(span).toBe(container.children[0].children[1].children[0]);
+			expect(span === container.children[0].children[1].children[0]).toBe(true);
 		});
 
 		it('Returns the first element matching "div > div > .class1.class2".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
 			const div = container.querySelector('div > div > .class1.class2');
-			expect(div).toBe(container.children[0].children[1]);
+			expect(div === container.children[0].children[1]).toBe(true);
 		});
 
 		it('Returns the first element matching "*".', () => {
@@ -937,7 +985,7 @@ describe('QuerySelector', () => {
 			const span = document.createElement('span');
 			div1.appendChild(div2);
 			div2.appendChild(span);
-			expect(div1.querySelector('*')).toBe(div2);
+			expect(div1.querySelector('*') === div2).toBe(true);
 		});
 
 		it('Returns "null" if no element is found.', () => {

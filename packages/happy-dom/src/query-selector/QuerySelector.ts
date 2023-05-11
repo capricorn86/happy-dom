@@ -9,6 +9,11 @@ import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
 import SelectorParser from './SelectorParser';
 import ISelectorMatch from './ISelectorMatch';
 
+type IDocumentPositionAndElement = {
+	documentPosition: string;
+	element: IElement;
+};
+
 /**
  * Utility for query selection in an HTML element.
  *
@@ -26,9 +31,6 @@ export default class QuerySelector {
 		node: IElement | IDocument | IDocumentFragment,
 		selector: string
 	): INodeList<IElement> {
-		const nodeList = new NodeList<IElement>();
-		const allMatches = {};
-
 		if (selector === '') {
 			throw new Error(
 				"Failed to execute 'querySelectorAll' on 'Element': The provided selector is empty."
@@ -36,19 +38,30 @@ export default class QuerySelector {
 		}
 
 		if (selector === null || selector === undefined) {
-			return nodeList;
+			return new NodeList<IElement>();
 		}
 
-		for (const items of SelectorParser.getSelectorGroups(selector)) {
-			const matches =
+		const groups = SelectorParser.getSelectorGroups(selector);
+		let matches: IDocumentPositionAndElement[] = [];
+
+		for (const items of groups) {
+			matches = matches.concat(
 				node.nodeType === NodeTypeEnum.elementNode
 					? this.findAll(<IElement>node, [<IElement>node], items)
-					: this.findAll(null, node.children, items);
-			Object.assign(allMatches, matches);
+					: this.findAll(null, node.children, items)
+			);
 		}
 
-		for (const key of Object.keys(allMatches).sort()) {
-			nodeList.push(allMatches[key]);
+		const nodeList = new NodeList<IElement>();
+		const matchesMap: { [position: string]: IElement } = {};
+
+		for (let i = 0, max = matches.length; i < max; i++) {
+			matchesMap[matches[i].documentPosition] = matches[i].element;
+		}
+
+		const keys = Object.keys(matchesMap).sort();
+		for (let i = 0, max = keys.length; i < max; i++) {
+			nodeList.push(matchesMap[keys[i]]);
 		}
 
 		return nodeList;
@@ -201,10 +214,10 @@ export default class QuerySelector {
 		children: IElement[],
 		selectorItems: SelectorItem[],
 		documentPosition?: string
-	): { [documentPosition: string]: IElement } {
+	): IDocumentPositionAndElement[] {
 		const selectorItem = selectorItems[0];
 		const nextSelectorItem = selectorItems[1];
-		const matched: { [documentPosition: string]: IElement } = {};
+		let matched: IDocumentPositionAndElement[] = [];
 
 		for (let i = 0, max = children.length; i < max; i++) {
 			const child = children[i];
@@ -213,14 +226,16 @@ export default class QuerySelector {
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
-						matched[position] = child;
+						matched.push({
+							documentPosition: position,
+							element: child
+						});
 					}
 				} else {
 					switch (nextSelectorItem.combinator) {
 						case SelectorCombinatorEnum.adjacentSibling:
 							if (child.nextElementSibling) {
-								Object.assign(
-									matched,
+								matched = matched.concat(
 									this.findAll(
 										rootElement,
 										[child.nextElementSibling],
@@ -232,8 +247,7 @@ export default class QuerySelector {
 							break;
 						case SelectorCombinatorEnum.descendant:
 						case SelectorCombinatorEnum.child:
-							Object.assign(
-								matched,
+							matched = matched.concat(
 								this.findAll(rootElement, child.children, selectorItems.slice(1), position)
 							);
 							break;
@@ -242,7 +256,9 @@ export default class QuerySelector {
 			}
 
 			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && child.children.length) {
-				Object.assign(matched, this.findAll(rootElement, child.children, selectorItems, position));
+				matched = matched.concat(
+					this.findAll(rootElement, child.children, selectorItems, position)
+				);
 			}
 		}
 

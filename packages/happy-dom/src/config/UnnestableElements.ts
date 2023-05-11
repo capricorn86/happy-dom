@@ -1,18 +1,18 @@
-export default [
-	'a',
-	'button',
-	'dd',
-	'dt',
-	'form',
-	'h1',
-	'h2',
-	'h3',
-	'h4',
-	'h5',
-	'h6',
-	'li',
-	'option',
-	'p',
-	'select',
-	'table'
-];
+export default {
+	A: true,
+	BUTTON: true,
+	DD: true,
+	DT: true,
+	FORM: true,
+	H1: true,
+	H2: true,
+	H3: true,
+	H4: true,
+	H5: true,
+	H6: true,
+	LI: true,
+	OPTION: true,
+	P: true,
+	SELECT: true,
+	TABLE: true
+};

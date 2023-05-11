@@ -406,7 +406,7 @@ export default class Range {
 	 */
 	public createContextualFragment(tagString: string): IDocumentFragment {
 		// TODO: We only have support for HTML in the parser currently, so it is not necessary to check which context it is
-		return XMLParser.parse(this._ownerDocument, tagString);
+		return <IDocumentFragment>XMLParser.parse(this._ownerDocument, tagString);
 	}
 
 	/**
