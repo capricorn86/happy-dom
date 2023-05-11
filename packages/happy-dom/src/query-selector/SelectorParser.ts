@@ -1,6 +1,7 @@
 import SelectorItem from './SelectorItem';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum';
 import DOMException from '../exception/DOMException';
+import ISelectorPseudo from './ISelectorPseudo';
 
 /**
  * Selector RegExp.
@@ -28,6 +29,20 @@ const SELECTOR_REGEXP =
  * Escaped Character RegExp.
  */
 const CLASS_ESCAPED_CHARACTER_REGEXP = /\\/g;
+
+/**
+ * Nth Function.
+ */
+const NTH_FUNCTION = {
+	odd: (n: number) => (n + 1) % 2 === 0,
+	even: (n: number) => (n + 1) % 2 !== 0,
+	alwaysFalse: () => false
+};
+
+/**
+ * Space RegExp.
+ */
+const SPACE_REGEXP = / /g;
 
 /**
  * Simple Selector RegExp.
@@ -120,16 +135,10 @@ export default class SelectorParser {
 					});
 				} else if (match[12] && match[13]) {
 					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
-					currentSelectorItem.pseudos.push({
-						name: match[12].toLowerCase(),
-						arguments: match[13]
-					});
+					currentSelectorItem.pseudos.push(this.getPseudo(match[12], match[13]));
 				} else if (match[14]) {
 					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
-					currentSelectorItem.pseudos.push({
-						name: match[14].toLowerCase(),
-						arguments: null
-					});
+					currentSelectorItem.pseudos.push(this.getPseudo(match[14]));
 				} else if (match[15]) {
 					switch (match[15].trim()) {
 						case ',':
@@ -167,5 +176,106 @@ export default class SelectorParser {
 		}
 
 		return groups;
+	}
+
+	/**
+	 * Returns pseudo.
+	 *
+	 * @param name Pseudo name.
+	 * @param args Pseudo arguments.
+	 * @returns Pseudo.
+	 */
+	private static getPseudo(name: string, args?: string): ISelectorPseudo {
+		const lowerName = name.toLowerCase();
+
+		if (!args) {
+			return { name: lowerName, arguments: null, selectorItem: null, nthFunction: null };
+		}
+
+		switch (lowerName) {
+			case 'nth-last-child':
+			case 'nth-child':
+				const nthOfIndex = args.indexOf(' of ');
+				const nthFunction = nthOfIndex !== -1 ? args.substring(0, nthOfIndex) : args;
+				const selectorItem =
+					nthOfIndex !== -1 ? this.getSelectorItem(args.substring(nthOfIndex + 4).trim()) : null;
+				return {
+					name: lowerName,
+					arguments: args,
+					selectorItem,
+					nthFunction: this.getPseudoNthFunction(nthFunction)
+				};
+			case 'nth-of-type':
+			case 'nth-last-of-type':
+				return {
+					name: lowerName,
+					arguments: args,
+					selectorItem: null,
+					nthFunction: this.getPseudoNthFunction(args)
+				};
+			case 'not':
+				return {
+					name: lowerName,
+					arguments: args,
+					selectorItem: this.getSelectorItem(args),
+					nthFunction: null
+				};
+			default:
+				return { name: lowerName, arguments: args, selectorItem: null, nthFunction: null };
+		}
+	}
+
+	/**
+	 * Returns pseudo nth function.
+	 *
+	 * Based on:
+	 * https://github.com/dperini/nwsapi/blob/master/src/nwsapi.js
+	 *
+	 * @param args Pseudo arguments.
+	 * @returns Pseudo nth function.
+	 */
+	private static getPseudoNthFunction(args?: string): ((n: number) => boolean) | null {
+		if (args === 'odd') {
+			return NTH_FUNCTION.odd;
+		} else if (args === 'even') {
+			return NTH_FUNCTION.even;
+		}
+
+		const parts = args.replace(SPACE_REGEXP, '').split('n');
+		let partA = parseInt(parts[0], 10) || 0;
+
+		if (parts[0] == '-') {
+			partA = -1;
+		}
+
+		if (parts.length === 1) {
+			return (n) => n == partA;
+		}
+
+		let partB = parseInt(parts[1], 10) || 0;
+
+		if (parts[0] == '+') {
+			partB = 1;
+		}
+
+		if (partA >= 1 || partA <= -1) {
+			const innerExpression =
+				(partB ? '(n' + (partB > 0 ? '-' : '+') + Math.abs(partB) + ')' : 'n') +
+				'%' +
+				partA +
+				'==0';
+			if (partA >= 1) {
+				return eval(
+					'(n) => n>' + (partB - 1) + (Math.abs(partA) != 1 ? '&&' + innerExpression : '')
+				);
+			}
+			return eval('(n) => n<' + (partB + 1) + (Math.abs(partA) != 1 ? '&&' + innerExpression : ''));
+		}
+
+		if (parts[0]) {
+			return (n) => n === partB;
+		}
+
+		return (n) => n > partB - 1;
 	}
 }
