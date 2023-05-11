@@ -62,7 +62,7 @@ export default class XMLSerializer {
 			case NodeTypeEnum.commentNode:
 				return `<!--${root.textContent}-->`;
 			case NodeTypeEnum.processingInstructionNode:
-                // TODO: Add support for processing instructions.
+				// TODO: Add support for processing instructions.
 				return `<!--?${(<IProcessingInstruction>root).target} ${root.textContent}?-->`;
 			case NodeTypeEnum.textNode:
 				return root.textContent;
