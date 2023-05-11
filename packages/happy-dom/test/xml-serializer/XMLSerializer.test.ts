@@ -154,32 +154,32 @@ describe('XMLSerializer', () => {
 				new XMLSerializer({ includeShadowRoots: true }).serializeToString(div).replace(/[\s]/gm, '')
 			).toBe(
 				`
-                        <div>
-                            <custom-element key1="value1" key2="value2">
-                                <span>Slotted content</span>
-                                <template shadowroot="open">
-                                    <style>
-                                        :host {
-                                            display: block;
-                                            font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-                                        }
-                                        span {
-                                            color: pink;
-                                        }
-                                        .class1 {
-                                            color: yellow;
-                                        }
-                                    </style>
-                                    <div>
-                                        <span class="class1">
-                                            key1 is "value1" and key2 is "value2".
-                                        </span>
-                                        <span><slot></slot></span>
-                                    </div>
-                                </template>
-                            </custom-element>
-                            <custom-element key1="value4" key2="value5"></custom-element>
-                        </div>`.replace(/[\s]/gm, '')
+					<div>
+						<custom-element key1="value1" key2="value2">
+							<span>Slotted content</span>
+							<template shadowrootmode="open">
+								<style>
+									:host {
+										display: block;
+                                        font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+									}
+									span {
+										color: pink;
+									}
+									.class1 {
+										color: yellow;
+									}
+								</style>
+								<div>
+									<span class="class1">
+										key1 is "value1" and key2 is "value2".
+									</span>
+									<span><slot></slot></span>
+								</div>
+							</template>
+						</custom-element>
+						<custom-element key1="value4" key2="value5"></custom-element>
+					</div>`.replace(/[\s]/gm, '')
 			);
 		});
 
