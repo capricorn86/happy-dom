@@ -42,7 +42,7 @@ export default class XMLSerializer {
 				}
 
 				if (options?.includeShadowRoots && element.shadowRoot) {
-					innerHTML += `<template shadowroot="${element.shadowRoot.mode}">`;
+					innerHTML += `<template shadowrootmode="${element.shadowRoot.mode}">`;
 
 					for (const node of element.shadowRoot.childNodes) {
 						innerHTML += this.serializeToString(node, options);

@@ -157,7 +157,7 @@ describe('XMLSerializer', () => {
 					<div>
 						<custom-element key1="value1" key2="value2">
 							<span>Slotted content</span>
-							<template shadowroot="open">
+							<template shadowrootmode="open">
 								<style>
 									:host {
 										display: block;
