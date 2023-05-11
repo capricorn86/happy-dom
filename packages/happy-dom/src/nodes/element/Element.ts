@@ -30,7 +30,6 @@ import INamedNodeMap from '../../named-node-map/INamedNodeMap';
 import Event from '../../event/Event';
 import ElementUtility from './ElementUtility';
 import HTMLCollection from './HTMLCollection';
-import CharacterDataUtility from '../character-data/CharacterDataUtility';
 import EventPhaseEnum from '../../event/EventPhaseEnum';
 
 /**
@@ -208,7 +207,7 @@ export default class Element extends Node implements IElement {
 				result += childNode.textContent;
 			}
 		}
-		return CharacterDataUtility.decodeHTMLEntities(result);
+		return result;
 	}
 
 	/**
@@ -253,7 +252,7 @@ export default class Element extends Node implements IElement {
 	 * @returns HTML.
 	 */
 	public get outerHTML(): string {
-		return new XMLSerializer().serializeToString(this);
+		return new XMLSerializer({ escapeEntities: false }).serializeToString(this);
 	}
 
 	/**
@@ -340,10 +339,13 @@ export default class Element extends Node implements IElement {
 	 * @returns HTML.
 	 */
 	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
-		const xmlSerializer = new XMLSerializer();
+		const xmlSerializer = new XMLSerializer({
+			includeShadowRoots: options && options.includeShadowRoots,
+			escapeEntities: false
+		});
 		let xml = '';
 		for (const node of this.childNodes) {
-			xml += xmlSerializer.serializeToString(node, options);
+			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
 	}

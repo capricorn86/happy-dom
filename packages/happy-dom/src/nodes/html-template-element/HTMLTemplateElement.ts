@@ -50,10 +50,13 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 * @override
 	 */
 	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
-		const xmlSerializer = new XMLSerializer();
+		const xmlSerializer = new XMLSerializer({
+			includeShadowRoots: options && options.includeShadowRoots,
+			escapeEntities: false
+		});
 		let xml = '';
 		for (const node of this.content.childNodes) {
-			xml += xmlSerializer.serializeToString(node, options);
+			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
 	}

@@ -144,7 +144,7 @@ describe('Element', () => {
 			expect(element.textContent).toBe('text1text2');
 		});
 
-		it('Converts specifial characters to HTML entities.', () => {
+		it('Returns values HTML entity encoded.', () => {
 			const div = document.createElement('div');
 			div.innerHTML = '<div>&gt;</div>';
 			expect(div.textContent).toBe('>');
@@ -154,8 +154,8 @@ describe('Element', () => {
 			div.appendChild(el);
 			expect(div.textContent).toBe('>>howdy');
 			const el2 = document.createElement('div');
-			el2.innerHTML = '<div id="testnode">&gt;&lt;&amp;&quot;&apos;&nbsp;&nbsp;</div>';
-			expect(el2.textContent).toBe('><&"\'  ');
+			el2.innerHTML = '<div id="testnode">&gt;&lt;&amp;&quot;&apos;&nbsp;</div>';
+			expect(el2.textContent).toBe('><&"\'' + String.fromCharCode(160));
 			const el3 = document.createElement('div');
 			el3.innerHTML = '&#x3C;div&#x3E;Hello, world!&#x3C;/div&#x3E;';
 			expect(el3.textContent).toBe('<div>Hello, world!</div>');
@@ -393,9 +393,9 @@ describe('Element', () => {
 
 			jest
 				.spyOn(XMLSerializer.prototype, 'serializeToString')
-				.mockImplementation((rootElement, options) => {
+				.mockImplementation(function (rootElement) {
 					expect(rootElement === div).toBe(true);
-					expect(options).toEqual({ includeShadowRoots: true });
+					expect(this._options.includeShadowRoots).toBe(true);
 					return 'EXPECTED_HTML';
 				});
 

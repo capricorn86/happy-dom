@@ -2,26 +2,48 @@ import Element from '../nodes/element/Element';
 import Node from '../nodes/node/Node';
 import VoidElements from '../config/VoidElements';
 import DocumentType from '../nodes/document-type/DocumentType';
-import { escape } from 'he';
 import INode from '../nodes/node/INode';
 import IElement from '../nodes/element/IElement';
 import IHTMLTemplateElement from '../nodes/html-template-element/IHTMLTemplateElement';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
 import IProcessingInstruction from '../nodes/processing-instruction/IProcessingInstruction';
+import * as Entities from 'entities';
 
 /**
  * Utility for converting an element to string.
  */
 export default class XMLSerializer {
+	public _options = {
+		includeShadowRoots: false,
+		escapeEntities: true
+	};
+
+	/**
+	 * Constructor.
+	 *
+	 * @param [options] Options.
+	 * @param [options.includeShadowRoots] Include shadow roots.
+	 * @param [options.escapeEntities] Escape text.
+	 */
+	constructor(options?: { includeShadowRoots?: boolean; escapeEntities?: boolean }) {
+		if (options) {
+			if (options.includeShadowRoots !== undefined) {
+				this._options.includeShadowRoots = options.includeShadowRoots;
+			}
+
+			if (options.escapeEntities !== undefined) {
+				this._options.escapeEntities = options.escapeEntities;
+			}
+		}
+	}
+
 	/**
 	 * Renders an element as HTML.
 	 *
 	 * @param root Root element.
-	 * @param [options] Options.
-	 * @param [options.includeShadowRoots] Set to "true" to include shadow roots.
 	 * @returns Result.
 	 */
-	public serializeToString(root: INode, options?: { includeShadowRoots?: boolean }): string {
+	public serializeToString(root: INode): string {
 		switch (root.nodeType) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
@@ -38,14 +60,14 @@ export default class XMLSerializer {
 				let innerHTML = '';
 
 				for (const node of childNodes) {
-					innerHTML += this.serializeToString(node, options);
+					innerHTML += this.serializeToString(node);
 				}
 
-				if (options?.includeShadowRoots && element.shadowRoot) {
+				if (this._options.includeShadowRoots && element.shadowRoot) {
 					innerHTML += `<template shadowroot="${element.shadowRoot.mode}">`;
 
 					for (const node of element.shadowRoot.childNodes) {
-						innerHTML += this.serializeToString(node, options);
+						innerHTML += this.serializeToString(node);
 					}
 
 					innerHTML += '</template>';
@@ -56,7 +78,7 @@ export default class XMLSerializer {
 			case Node.DOCUMENT_NODE:
 				let html = '';
 				for (const node of root.childNodes) {
-					html += this.serializeToString(node, options);
+					html += this.serializeToString(node);
 				}
 				return html;
 			case NodeTypeEnum.commentNode:
@@ -65,7 +87,9 @@ export default class XMLSerializer {
 				// TODO: Add support for processing instructions.
 				return `<!--?${(<IProcessingInstruction>root).target} ${root.textContent}?-->`;
 			case NodeTypeEnum.textNode:
-				return root.textContent;
+				return this._options.escapeEntities
+					? Entities.escapeText(root.textContent)
+					: root.textContent;
 			case NodeTypeEnum.documentTypeNode:
 				const doctype = <DocumentType>root;
 				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';
@@ -87,12 +111,15 @@ export default class XMLSerializer {
 		let attributeString = '';
 
 		if (!(<Element>element)._attributes.is && (<Element>element)._isValue) {
-			attributeString += ' is="' + escape((<Element>element)._isValue) + '"';
+			attributeString += ' is="' + (<Element>element)._isValue + '"';
 		}
 
 		for (const attribute of Object.values((<Element>element)._attributes)) {
 			if (attribute.value !== null) {
-				attributeString += ' ' + attribute.name + '="' + escape(attribute.value) + '"';
+				const escapedValue = this._options.escapeEntities
+					? Entities.escapeText(attribute.value)
+					: attribute.value;
+				attributeString += ' ' + attribute.name + '="' + escapedValue + '"';
 			}
 		}
 		return attributeString;
