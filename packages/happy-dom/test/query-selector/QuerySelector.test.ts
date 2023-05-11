@@ -730,6 +730,18 @@ describe('QuerySelector', () => {
 			).toEqual(['span.n2', 'b.n4', 'div.n6', 'span.n8', 'i.n10']);
 		});
 
+		it('Returns all elements matching :nth-child(-n + 3).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll(':nth-child(-n + 3)');
+
+			expect(
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
+			).toEqual(['div.', 'b.n1', 'span.n2', 'div.n3']);
+		});
+
 		it('Returns all elements matching "div :nth-child(2n+1)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorNthChildHTML;
@@ -752,6 +764,42 @@ describe('QuerySelector', () => {
 					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
 				)
 			).toEqual(['div.', 'b.n1', 'b.n4', 'b.n7', 'i.n10']);
+		});
+
+		it('Returns all elements matching ":nth-child(3n+1 of b)".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll(':nth-child(3n+1 of b)');
+
+			expect(
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
+			).toEqual(['b.n1']);
+		});
+
+		it('Returns all elements matching ":nth-child(n+1 of span)".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll(':nth-child(n+1 of span)');
+
+			expect(
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
+			).toEqual(['span.n2', 'span.n5', 'span.n8']);
+		});
+
+		it('Returns all elements matching ":nth-last-child(n+1 of span)".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll(':nth-last-child(n+1 of span)');
+
+			expect(
+				Array.from(
+					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				)
+			).toEqual(['span.n2', 'span.n5', 'span.n8']);
 		});
 
 		it('Returns all elements matching "div :nth-child(3n+3)".', () => {
