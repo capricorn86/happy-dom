@@ -16,16 +16,13 @@ export default class ParentNodeUtility {
 	 * @param parentNode Parent node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static append(parentNode: INode, ...nodes: (INode | string)[]): void {
+	public static append(
+		parentNode: IElement | IDocument | IDocumentFragment,
+		...nodes: (INode | string)[]
+	): void {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
-				const newChildNodes = XMLParser.parse(
-					<IDocument>parentNode.ownerDocument,
-					node
-				).childNodes.slice();
-				for (const newChildNode of newChildNodes) {
-					parentNode.appendChild(newChildNode);
-				}
+				XMLParser.parse(<IDocument>parentNode.ownerDocument, node, { rootNode: parentNode });
 			} else {
 				parentNode.appendChild(node);
 			}
@@ -38,9 +35,11 @@ export default class ParentNodeUtility {
 	 * @param parentNode Parent node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static prepend(parentNode: INode, ...nodes: (string | INode)[]): void {
+	public static prepend(
+		parentNode: IElement | IDocument | IDocumentFragment,
+		...nodes: (string | INode)[]
+	): void {
 		const firstChild = parentNode.firstChild;
-
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = XMLParser.parse(
@@ -62,7 +61,10 @@ export default class ParentNodeUtility {
 	 * @param parentNode Parent node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static replaceChildren(parentNode: INode, ...nodes: (string | INode)[]): void {
+	public static replaceChildren(
+		parentNode: IElement | IDocument | IDocumentFragment,
+		...nodes: (string | INode)[]
+	): void {
 		for (const node of parentNode.childNodes.slice()) {
 			parentNode.removeChild(node);
 		}
