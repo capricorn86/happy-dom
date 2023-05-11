@@ -4,7 +4,6 @@ import Element from '../nodes/element/Element';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum';
 import ISelectorAttribute from './ISelectorAttribute';
-import SelectorParser from './SelectorParser';
 import ISelectorMatch from './ISelectorMatch';
 import ISelectorPseudo from './ISelectorPseudo';
 
@@ -181,72 +180,38 @@ export default class SelectorItem {
 				case 'root':
 					return element.tagName === 'HTML';
 				case 'not':
-					return !SelectorParser.getSelectorItem(psuedo.arguments).match(element);
+					return !psuedo.selectorItem.match(element);
 				case 'nth-child':
-					return this.matchNthChild(element, parent.children, psuedo.arguments);
+					const nthChildIndex = psuedo.selectorItem
+						? parent.children.filter((child) => psuedo.selectorItem.match(child)).indexOf(element)
+						: parent.children.indexOf(element);
+					return nthChildIndex !== -1 && psuedo.nthFunction(nthChildIndex + 1);
 				case 'nth-of-type':
 					if (!element.parentNode) {
 						return false;
 					}
-					return this.matchNthChild(
-						element,
-						parent.children.filter((child) => child.tagName === element.tagName),
-						psuedo.arguments
-					);
+					const nthOfTypeIndex = parent.children
+						.filter((child) => child.tagName === element.tagName)
+						.indexOf(element);
+					return nthOfTypeIndex !== -1 && psuedo.nthFunction(nthOfTypeIndex + 1);
 				case 'nth-last-child':
-					return this.matchNthChild(element, parent.children.reverse(), psuedo.arguments);
+					const nthLastChildIndex = psuedo.selectorItem
+						? parent.children
+								.filter((child) => psuedo.selectorItem.match(child))
+								.reverse()
+								.indexOf(element)
+						: parent.children.reverse().indexOf(element);
+					return nthLastChildIndex !== -1 && psuedo.nthFunction(nthLastChildIndex + 1);
 				case 'nth-last-of-type':
-					return this.matchNthChild(
-						element,
-						parent.children.filter((child) => child.tagName === element.tagName).reverse(),
-						psuedo.arguments
-					);
+					const nthLastOfTypeIndex = parent.children
+						.filter((child) => child.tagName === element.tagName)
+						.reverse()
+						.indexOf(element);
+					return nthLastOfTypeIndex !== -1 && psuedo.nthFunction(nthLastOfTypeIndex + 1);
 			}
 		}
 
 		return true;
-	}
-
-	/**
-	 * Matches a nth-child selector.
-	 *
-	 * @param element Element.
-	 * @param parentChildren Parent children.
-	 * @param placement Placement.
-	 * @returns True if it is a match.
-	 */
-	private matchNthChild(element: IElement, parentChildren: IElement[], placement: string): boolean {
-		if (placement === 'odd') {
-			const index = parentChildren.indexOf(element);
-			return index !== -1 && (index + 1) % 2 !== 0;
-		} else if (placement === 'even') {
-			const index = parentChildren.indexOf(element);
-			return index !== -1 && (index + 1) % 2 === 0;
-		} else if (placement.includes('n')) {
-			const [a, b] = placement.replace(/ /g, '').split('n');
-			const childIndex = parentChildren.indexOf(element);
-			const aNumber = a !== '' ? Number(a) : 1;
-			const bNumber = b !== undefined ? Number(b) : 0;
-			if (isNaN(aNumber) || isNaN(bNumber)) {
-				throw new DOMException(`The selector "${this.getSelectorString()}" is not valid.`);
-			}
-
-			for (let i = 0, max = parentChildren.length; i <= max; i += aNumber) {
-				if (childIndex === i + bNumber - 1) {
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		const number = Number(placement);
-
-		if (isNaN(number)) {
-			throw new DOMException(`The selector "${this.getSelectorString()}" is not valid.`);
-		}
-
-		return parentChildren[number - 1] === element;
 	}
 
 	/**

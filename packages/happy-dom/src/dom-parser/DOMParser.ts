@@ -44,7 +44,7 @@ export default class DOMParser {
 		newDocument.childNodes.length = 0;
 		newDocument.children.length = 0;
 
-		const root = XMLParser.parse(newDocument, string, true);
+		const root = XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;
 
@@ -65,7 +65,7 @@ export default class DOMParser {
 				newDocument.appendChild(documentTypeNode);
 			}
 			newDocument.appendChild(documentElement);
-			const body = newDocument.querySelector('body');
+			const body = newDocument.body;
 			if (body) {
 				for (const child of root.childNodes.slice()) {
 					body.appendChild(child);
