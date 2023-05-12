@@ -814,6 +814,15 @@ describe('QuerySelector', () => {
 			).toEqual(['div.n3', 'div.n6', 'div.n9']);
 		});
 
+		it('Returns all elements matching "a[href]:not([href *= "javascript:" i])".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<a href="JAVASCRIPT:alert(1)">Link</a><a href="https://example.com">Link</a>`;
+			const elements = container.querySelectorAll('a[href]:not([href *= "javascript:" i])');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[1]).toBe(true);
+		});
+
 		it('Returns all elements matching ":nth-child(odd)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorNthChildHTML;
