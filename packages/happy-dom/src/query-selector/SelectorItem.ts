@@ -236,49 +236,13 @@ export default class SelectorItem {
 
 			priorityWeight += 10;
 
-			if (attribute.value !== null) {
-				if (elementAttribute.value === null) {
-					return null;
-				}
-
-				switch (attribute.operator) {
-					// [attribute~="value"] - Contains a specified word.
-					case null:
-						if (attribute.value !== elementAttribute.value) {
-							return null;
-						}
-						break;
-					// [attribute~="value"] - Contains a specified word.
-					case '~':
-						if (!elementAttribute.value.split(' ').includes(attribute.value)) {
-							return null;
-						}
-						break;
-					// [attribute|="value"] - Starts with the specified word.
-					case '|':
-						if (!new RegExp(`^${attribute.value}[- ]`).test(elementAttribute.value)) {
-							return null;
-						}
-						break;
-					// [attribute^="value"] - Begins with a specified value.
-					case '^':
-						if (!elementAttribute.value.startsWith(attribute.value)) {
-							return null;
-						}
-						break;
-					// [attribute$="value"] - Ends with a specified value.
-					case '$':
-						if (!elementAttribute.value.endsWith(attribute.value)) {
-							return null;
-						}
-						break;
-					// [attribute*="value"] - Contains a specified value.
-					case '*':
-						if (!elementAttribute.value.includes(attribute.value)) {
-							return null;
-						}
-						break;
-				}
+			if (
+				attribute.value !== null &&
+				(elementAttribute.value === null ||
+					(attribute.regExp && !attribute.regExp.test(elementAttribute.value)) ||
+					(!attribute.regExp && attribute.value !== elementAttribute.value))
+			) {
+				return null;
 			}
 		}
 

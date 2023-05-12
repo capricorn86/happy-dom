@@ -14,16 +14,17 @@ import ISelectorPseudo from './ISelectorPseudo';
  * Group 6: Attribute name when there is a value using apostrophe (e.g. "attr1")
  * Group 7: Attribute operator when using apostrophe (e.g. "~")
  * Group 8: Attribute value when using apostrophe (e.g. "value1")
- * Group 9: Attribute name when threre is a value not using apostrophe (e.g. "attr1")
- * Group 10: Attribute operator when not using apostrophe (e.g. "~")
- * Group 11: Attribute value when notusing apostrophe (e.g. "value1")
- * Group 12: Pseudo name when arguments (e.g. "nth-child")
- * Group 13: Arguments of pseudo (e.g. "2n + 1")
- * Group 14: Pseudo name when no arguments (e.g. "empty")
- * Group 15: Combinator.
+ * Group 9: Attribute modifier when using apostrophe (e.g. "i" or "s")
+ * Group 10: Attribute name when threre is a value not using apostrophe (e.g. "attr1")
+ * Group 11: Attribute operator when not using apostrophe (e.g. "~")
+ * Group 12: Attribute value when notusing apostrophe (e.g. "value1")
+ * Group 13: Pseudo name when arguments (e.g. "nth-child")
+ * Group 14: Arguments of pseudo (e.g. "2n + 1")
+ * Group 15: Pseudo name when no arguments (e.g. "empty")
+ * Group 16: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *["']{1}([^"']*)["']{1}\]|\[([a-zA-Z0-9-_]+)([~|^$*]{0,1}) *= *([^\]]*)\]|:([a-zA-Z-]+) *\(([^)]+)\)|:([a-zA-Z-]+)|([ ,+>]*)/g;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *["']{1}([^"']*)["']{1} *(s|i){0,1}\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *([^\]]*)\]|:([a-zA-Z-]+) *\(([^)]+)\)|:([a-zA-Z-]+)|([ ,+>]*)/g;
 
 /**
  * Escaped Character RegExp.
@@ -117,30 +118,40 @@ export default class SelectorParser {
 					currentSelectorItem.attributes.push({
 						name: match[5].toLowerCase(),
 						operator: null,
-						value: null
+						value: null,
+						modifier: null,
+						regExp: null
 					});
 				} else if (match[6] && match[8] !== undefined) {
 					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
 					currentSelectorItem.attributes.push({
 						name: match[6].toLowerCase(),
 						operator: match[7] || null,
-						value: match[8]
+						value: match[8],
+						modifier: match[9] || null,
+						regExp: this.getAttributeRegExp({
+							operator: match[7],
+							value: match[8],
+							modifier: match[9]
+						})
 					});
-				} else if (match[9] && match[11] !== undefined) {
+				} else if (match[10] && match[12] !== undefined) {
 					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
 					currentSelectorItem.attributes.push({
-						name: match[9].toLowerCase(),
-						operator: match[10] || null,
-						value: match[11]
+						name: match[10].toLowerCase(),
+						operator: match[11] || null,
+						value: match[12],
+						modifier: null,
+						regExp: this.getAttributeRegExp({ operator: match[7], value: match[8] })
 					});
-				} else if (match[12] && match[13]) {
+				} else if (match[13] && match[14]) {
 					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
-					currentSelectorItem.pseudos.push(this.getPseudo(match[12], match[13]));
-				} else if (match[14]) {
-					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
-					currentSelectorItem.pseudos.push(this.getPseudo(match[14]));
+					currentSelectorItem.pseudos.push(this.getPseudo(match[13], match[14]));
 				} else if (match[15]) {
-					switch (match[15].trim()) {
+					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
+					currentSelectorItem.pseudos.push(this.getPseudo(match[15]));
+				} else if (match[16]) {
+					switch (match[16].trim()) {
 						case ',':
 							currentSelectorItem = new SelectorItem({
 								combinator: SelectorCombinatorEnum.descendant
@@ -176,6 +187,47 @@ export default class SelectorParser {
 		}
 
 		return groups;
+	}
+
+	/**
+	 * Returns attribute RegExp.
+	 *
+	 * @param attribute Attribute.
+	 * @param attribute.value Attribute value.
+	 * @param attribute.operator Attribute operator.
+	 * @param attribute.modifier Attribute modifier.
+	 * @returns Attribute RegExp.
+	 */
+	private static getAttributeRegExp(attribute: {
+		value?: string;
+		operator?: string;
+		modifier?: string;
+	}): RegExp | null {
+		const modifier = attribute.modifier === 'i' ? 'i' : '';
+
+		if (!attribute.operator || !attribute.value) {
+			return null;
+		}
+
+		switch (attribute.operator) {
+			// [attribute~="value"] - Contains a specified word.
+			case '~':
+				return new RegExp(`[- ]${attribute.value}|${attribute.value}[- ]`, modifier);
+			// [attribute|="value"] - Starts with the specified word.
+			case '|':
+				return new RegExp(`^${attribute.value}[- ]`, modifier);
+			// [attribute^="value"] - Begins with a specified value.
+			case '^':
+				return new RegExp(`^${attribute.value}`, modifier);
+			// [attribute$="value"] - Ends with a specified value.
+			case '$':
+				return new RegExp(`${attribute.value}$`, modifier);
+			// [attribute*="value"] - Contains a specified value.
+			case '*':
+				return new RegExp(`${attribute.value}`, modifier);
+			default:
+				return null;
+		}
 	}
 
 	/**
