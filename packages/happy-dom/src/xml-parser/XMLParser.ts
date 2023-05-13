@@ -24,7 +24,7 @@ import * as Entities from 'entities';
  * Group 8: End of start tag (e.g. ">" in "<div>").
  */
 const MARKUP_REGEXP =
-	/<([a-zA-Z0-9-]+)|<\/([a-zA-Z0-9-]+)>|<!--([\s\S]+)-->|<!--([^>]+)>|<!([^>]+)>|<\?([^>]+)>|(\/>)|(>)/gm;
+	/<([a-zA-Z0-9-]+)|<\/([a-zA-Z0-9-]+)>|<!--([^-]+)-->|<!--([^>]+)>|<!([^>]+)>|<\?([^>]+)>|(\/>)|(>)/gm;
 
 /**
  * Attribute RegExp.
@@ -160,11 +160,17 @@ export default class XMLParser {
 						) {
 							// Comment.
 
-							currentNode.appendChild(
-								document.createComment(
-									Entities.decodeHTML((match[6] ? '?' : '') + (match[3] || match[4] || match[6]))
-								)
-							);
+							let comment: string;
+
+							if (match[3]) {
+								comment = match[3];
+							} else if (match[4]) {
+								comment = match[4].endsWith('--') ? match[4].slice(0, -2) : match[4];
+							} else {
+								comment = '?' + match[6];
+							}
+
+							currentNode.appendChild(document.createComment(Entities.decodeHTML(comment)));
 						} else if (match[5]) {
 							// Exclamation mark comment (usually <!DOCTYPE>).
 
