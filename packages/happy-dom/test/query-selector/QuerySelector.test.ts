@@ -427,6 +427,16 @@ describe('QuerySelector', () => {
 			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
+		it('Returns all elements with an attribute value containing a specified word using "[attr1~="value1"]" (which doesn\'t include spaces).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('[attr1~="value1"]');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
+		});
+
 		it('Returns all elements with an attribute value starting with the specified word using "[class|="class1"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -438,6 +448,16 @@ describe('QuerySelector', () => {
 			expect(elements[2] === container.children[0].children[1].children[0]).toBe(true);
 			expect(elements[3] === container.children[0].children[1].children[1]).toBe(true);
 			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
+		});
+
+		it('Returns all elements with an attribute value containing a specified word using "[attr1|="value1"]" (which doesn\'t include spaces).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('[attr1|="value1"]');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
 		});
 
 		it('Returns all elements with an attribute value that begins with a specified value using "[class^="cl"]".', () => {
