@@ -54,7 +54,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 */
 	public set data(data: string) {
 		const oldValue = this._data;
-		this._data = data;
+		this._data = String(data);
 
 		if (this.isConnected) {
 			this.ownerDocument['_cacheID']++;
