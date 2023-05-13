@@ -506,6 +506,13 @@ describe('XMLParser', () => {
 			}
 		});
 
+		it('Parses comments with dash in them', () => {
+			const root = XMLParser.parse(document, '<!-- comment with - in it -->');
+			expect(root.childNodes.length).toBe(1);
+			expect(root.childNodes[0].nodeType).toBe(Node.COMMENT_NODE);
+			expect(root.childNodes[0].nodeValue).toBe(' comment with - in it ');
+		});
+
 		it('Parses <template> elements, including its content.', () => {
 			const root = XMLParser.parse(document, '<div><template><tr><td></td></tr></template></div>');
 			expect(root.childNodes.length).toBe(1);

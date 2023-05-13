@@ -24,7 +24,7 @@ import * as Entities from 'entities';
  * Group 8: End of start tag (e.g. ">" in "<div>").
  */
 const MARKUP_REGEXP =
-	/<([a-zA-Z0-9-]+)|<\/([a-zA-Z0-9-]+)>|<!--([^-]+)-->|<!--([^>]+)>|<!([^>]+)>|<\?([^>]+)>|(\/>)|(>)/gm;
+	/<([a-zA-Z0-9-]+)|<\/([a-zA-Z0-9-]+)>|<!--([^-]+(?:-[^-]+)*)-->|<!--([^>]+)>|<!([^>]+)>|<\?([^>]+)>|(\/>)|(>)/gm;
 
 /**
  * Attribute RegExp.
