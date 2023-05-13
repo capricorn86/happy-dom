@@ -37,6 +37,8 @@ describe('CharaterData', () => {
 			const node = <CharacterData>document.createComment('test');
 			node.data = 'new text';
 			expect(node.data).toBe('new text');
+			node.data = <string>(<unknown>0);
+			expect(node.data).toBe('0');
 		});
 	});
 
@@ -52,6 +54,8 @@ describe('CharaterData', () => {
 			const node = document.createTextNode('test');
 			node.nodeValue = 'new text';
 			expect(node.nodeValue).toBe('new text');
+			node.nodeValue = <string>(<unknown>0);
+			expect(node.nodeValue).toBe('0');
 		});
 	});
 
@@ -67,6 +71,8 @@ describe('CharaterData', () => {
 			const node = document.createComment('test');
 			node.textContent = 'new text';
 			expect(node.textContent).toBe('new text');
+			node.textContent = <string>(<unknown>0);
+			expect(node.textContent).toBe('0');
 		});
 	});
 
