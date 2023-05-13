@@ -1,14 +1,13 @@
 import IAttr from '../attr/IAttr';
 import CSSStyleSheet from '../../css/CSSStyleSheet';
-import ResourceFetch from '../../fetch/ResourceFetch';
 import HTMLElement from '../html-element/HTMLElement';
-import Document from '../document/Document';
 import IHTMLLinkElement from './IHTMLLinkElement';
 import Event from '../../event/Event';
 import ErrorEvent from '../../event/events/ErrorEvent';
 import INode from '../../nodes/node/INode';
 import DOMTokenList from '../../dom-token-list/DOMTokenList';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
+import HTMLLinkElementUtility from './HTMLLinkElementUtility';
 
 /**
  * HTML Link Element.
@@ -184,51 +183,13 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 */
 	public override setAttributeNode(attribute: IAttr): IAttr {
 		const replacedAttribute = super.setAttributeNode(attribute);
-		const rel = this.getAttribute('rel');
-		const href = this.getAttribute('href');
 
 		if (attribute.name === 'rel' && this._relList) {
 			this._relList._updateIndices();
 		}
 
-		if (
-			(attribute.name === 'rel' || attribute.name === 'href') &&
-			href !== null &&
-			rel &&
-			rel.toLowerCase() === 'stylesheet' &&
-			this.isConnected &&
-			!this.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading
-		) {
-			(<Document>this.ownerDocument)._readyStateManager.startTask();
-			ResourceFetch.fetch(this.ownerDocument, href)
-				.then((code) => {
-					const styleSheet = new CSSStyleSheet();
-					styleSheet.replaceSync(code);
-					(<CSSStyleSheet>this.sheet) = styleSheet;
-					this.dispatchEvent(new Event('load'));
-					(<Document>this.ownerDocument)._readyStateManager.endTask();
-				})
-				.catch((error) => {
-					this.dispatchEvent(
-						new ErrorEvent('error', {
-							message: error.message,
-							error
-						})
-					);
-					this.ownerDocument.defaultView.dispatchEvent(
-						new ErrorEvent('error', {
-							message: error.message,
-							error
-						})
-					);
-					(<Document>this.ownerDocument)._readyStateManager.endTask();
-					if (
-						!this['_listeners']['error'] &&
-						!this.ownerDocument.defaultView['_listeners']['error']
-					) {
-						this.ownerDocument.defaultView.console.error(error);
-					}
-				});
+		if (attribute.name === 'rel' || attribute.name === 'href') {
+			HTMLLinkElementUtility.loadExternalStylesheet(this);
 		}
 
 		return replacedAttribute;
@@ -256,47 +217,8 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 
 		super._connectToNode(parentNode);
 
-		if (
-			isParentConnected &&
-			isConnected !== isParentConnected &&
-			this._evaluateCSS &&
-			!this.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading
-		) {
-			const href = this.getAttribute('href');
-			const rel = this.getAttribute('rel');
-
-			if (href !== null && rel && rel.toLowerCase() === 'stylesheet') {
-				(<Document>this.ownerDocument)._readyStateManager.startTask();
-				ResourceFetch.fetch(this.ownerDocument, href)
-					.then((code) => {
-						const styleSheet = new CSSStyleSheet();
-						styleSheet.replaceSync(code);
-						(<CSSStyleSheet>this.sheet) = styleSheet;
-						this.dispatchEvent(new Event('load'));
-						(<Document>this.ownerDocument)._readyStateManager.endTask();
-					})
-					.catch((error) => {
-						this.dispatchEvent(
-							new ErrorEvent('error', {
-								message: error.message,
-								error
-							})
-						);
-						this.ownerDocument.defaultView.dispatchEvent(
-							new ErrorEvent('error', {
-								message: error.message,
-								error
-							})
-						);
-						(<Document>this.ownerDocument)._readyStateManager.endTask();
-						if (
-							!this['_listeners']['error'] &&
-							!this.ownerDocument.defaultView['_listeners']['error']
-						) {
-							this.ownerDocument.defaultView.console.error(error);
-						}
-					});
-			}
+		if (isParentConnected && isConnected !== isParentConnected && this._evaluateCSS) {
+			HTMLLinkElementUtility.loadExternalStylesheet(this);
 		}
 	}
 }

@@ -3,6 +3,7 @@ import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement';
 import ResourceFetch from '../../../src/fetch/ResourceFetch';
+import ErrorEvent from '../../../src/event/events/ErrorEvent';
 
 describe('HTMLLinkElement', () => {
 	let window: IWindow;
@@ -74,7 +75,7 @@ describe('HTMLLinkElement', () => {
 			expect(element.getAttribute('href')).toBe('test');
 		});
 
-		it('Loads and evaluates an external CSS file when the attribute "href" and "rel" is set and the element is connected to DOM.', (done) => {
+		it('Loads and evaluates an external CSS file when the attribute "href" and "rel" is set and the element is connected to DOM.', async () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadedDocument = null;
@@ -98,17 +99,16 @@ describe('HTMLLinkElement', () => {
 			element.rel = 'stylesheet';
 			element.href = 'test';
 
-			setTimeout(() => {
-				expect(loadedDocument).toBe(document);
-				expect(loadedURL).toBe('test');
-				expect(element.sheet.cssRules.length).toBe(1);
-				expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
-				expect(loadEvent.target).toBe(element);
-				done();
-			}, 0);
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(loadedDocument).toBe(document);
+			expect(loadedURL).toBe('test');
+			expect(element.sheet.cssRules.length).toBe(1);
+			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
+			expect(loadEvent.target).toBe(element);
 		});
 
-		it('Triggers error event when fetching a CSS file fails during setting the "href" and "rel" attributes.', (done) => {
+		it('Triggers error event when fetching a CSS file fails during setting the "href" and "rel" attributes.', async () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const thrownError = new Error('error');
 			let errorEvent = null;
@@ -126,11 +126,10 @@ describe('HTMLLinkElement', () => {
 			element.rel = 'stylesheet';
 			element.href = 'test';
 
-			setTimeout(() => {
-				expect(errorEvent.error).toEqual(thrownError);
-				expect(errorEvent.message).toEqual('error');
-				done();
-			}, 0);
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(errorEvent.error).toEqual(thrownError);
+			expect(errorEvent.message).toEqual('error');
 		});
 
 		it('Does not load and evaluate external CSS files if the element is not connected to DOM.', () => {
@@ -156,7 +155,7 @@ describe('HTMLLinkElement', () => {
 	});
 
 	describe('set isConnected()', () => {
-		it('Loads and evaluates an external script when "href" attribute has been set, but does not evaluate text content.', (done) => {
+		it('Loads and evaluates an external CSS file when "href" attribute has been set, but does not evaluate text content.', async () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadEvent = null;
@@ -179,17 +178,16 @@ describe('HTMLLinkElement', () => {
 
 			document.body.appendChild(element);
 
-			setTimeout(() => {
-				expect(loadedDocument).toBe(document);
-				expect(loadedURL).toBe('test');
-				expect(element.sheet.cssRules.length).toBe(1);
-				expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
-				expect(loadEvent.target).toBe(element);
-				done();
-			}, 0);
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(loadedDocument).toBe(document);
+			expect(loadedURL).toBe('test');
+			expect(element.sheet.cssRules.length).toBe(1);
+			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
+			expect(loadEvent.target).toBe(element);
 		});
 
-		it('Triggers error event when fetching a CSS file fails while appending the element to the document.', (done) => {
+		it('Triggers error event when fetching a CSS file fails while appending the element to the document.', async () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const thrownError = new Error('error');
 			let errorEvent = null;
@@ -206,14 +204,13 @@ describe('HTMLLinkElement', () => {
 
 			document.body.appendChild(element);
 
-			setTimeout(() => {
-				expect(errorEvent.error).toEqual(thrownError);
-				expect(errorEvent.message).toEqual('error');
-				done();
-			}, 0);
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(errorEvent.error).toEqual(thrownError);
+			expect(errorEvent.message).toEqual('error');
 		});
 
-		it('Does not load external scripts when "href" attribute has been set if the element is not connected to DOM.', () => {
+		it('Does not load external CSS file when "href" attribute has been set if the element is not connected to DOM.', () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadedDocument = null;
@@ -233,6 +230,24 @@ describe('HTMLLinkElement', () => {
 			expect(loadedDocument).toBe(null);
 			expect(loadedURL).toBe(null);
 			expect(element.sheet).toBe(null);
+		});
+
+		it('Triggers an error event when "window.happyDOM.settings.disableCSSFileLoading" is set to "true".', async () => {
+			const element = <IHTMLLinkElement>document.createElement('link');
+			let errorEvent: ErrorEvent = null;
+
+			element.rel = 'stylesheet';
+			element.href = '/test/path/file.css';
+			element.addEventListener('error', (event: ErrorEvent) => (errorEvent = event));
+
+			window.happyDOM.settings.disableCSSFileLoading = true;
+
+			document.body.appendChild(element);
+
+			expect(element.sheet).toBe(null);
+			expect(errorEvent.message).toBe(
+				'Failed to load external stylesheet "/test/path/file.css". CSS file loading is disabled.'
+			);
 		});
 	});
 });
