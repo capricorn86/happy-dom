@@ -19,8 +19,8 @@ describe('Location', () => {
 	});
 
 	describe('assign()', () => {
-		it('Replaces the url.', () => {
-			location.replace(HREF);
+		it('Assign the url.', () => {
+			location.assign(HREF);
 			expect(location.href).toBe(HREF);
 		});
 	});
