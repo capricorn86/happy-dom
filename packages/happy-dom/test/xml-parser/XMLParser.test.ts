@@ -9,6 +9,7 @@ import NamespaceURI from '../../src/config/NamespaceURI';
 import DocumentType from '../../src/nodes/document-type/DocumentType';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
 import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTemplateElement';
+import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum';
 
 const GET_EXPECTED_HTML = (html: string): string =>
 	html
@@ -504,6 +505,13 @@ describe('XMLParser', () => {
 				const root = XMLParser.parse(document, html);
 				expect(new XMLSerializer().serializeToString(root)).toBe(html);
 			}
+		});
+
+		it('Parses comments with dash in them.', () => {
+			const root = XMLParser.parse(document, '<!-- comment with - in - it -->');
+			expect(root.childNodes.length).toBe(1);
+			expect(root.childNodes[0].nodeType).toBe(NodeTypeEnum.commentNode);
+			expect(root.childNodes[0].nodeValue).toBe(' comment with - in - it ');
 		});
 
 		it('Parses <template> elements, including its content.', () => {
