@@ -1,7 +1,9 @@
 import Window from '../../../src/window/Window';
 import Document from '../../../src/nodes/document/Document';
 import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement';
-import ScriptUtility from '../../../src/nodes/html-script-element/ScriptUtility';
+import IDocument from '../../../src/nodes/document/IDocument';
+import IResponse from '../../../src/fetch/types/IResponse';
+import ResourceFetch from '../../../src/fetch/ResourceFetch';
 
 describe('HTMLScriptElement', () => {
 	let window: Window;
@@ -74,12 +76,15 @@ describe('HTMLScriptElement', () => {
 			expect(element.getAttribute('src')).toBe('test');
 		});
 
-		it('Loads and evaluates an external script when the attribute "src" is set and the element is connected to DOM.', () => {
+		it('Loads and evaluates an external script when the attribute "src" is set and the element is connected to DOM.', async () => {
 			const element = <HTMLScriptElement>document.createElement('script');
-			let loadedElement = null;
 
-			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async (element) => {
-				loadedElement = element;
+			jest.spyOn(window, 'fetch').mockImplementation(() => {
+				return Promise.resolve(<IResponse>{
+					text: async () => 'globalThis.test = "test";',
+					ok: true,
+					status: 200
+				});
 			});
 
 			document.body.appendChild(element);
@@ -87,21 +92,28 @@ describe('HTMLScriptElement', () => {
 			element.async = true;
 			element.src = 'test';
 
-			expect(loadedElement).toBe(element);
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(window['test']).toBe('test');
 		});
 
-		it('Does not evaluate script if the element is not connected to DOM.', () => {
+		it('Does not evaluate script if the element is not connected to DOM.', async () => {
 			const element = <HTMLScriptElement>document.createElement('script');
-			let loadedElement = null;
 
-			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async (element) => {
-				loadedElement = element;
+			jest.spyOn(window, 'fetch').mockImplementation(() => {
+				return Promise.resolve(<IResponse>{
+					text: async () => 'globalThis.test = "test";',
+					ok: true,
+					status: 200
+				});
 			});
 
 			element.async = true;
 			element.src = 'test';
 
-			expect(loadedElement).toBe(null);
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(window['test']).toBe(undefined);
 		});
 	});
 
@@ -144,6 +156,112 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(element);
 
 			expect(window['test']).toBe('test');
+		});
+
+		it('Loads external script asynchronously.', async () => {
+			let fetchedURL = null;
+			let loadEvent = null;
+
+			jest.spyOn(window, 'fetch').mockImplementation((url: string) => {
+				fetchedURL = url;
+				return Promise.resolve(<IResponse>{
+					text: async () => 'globalThis.test = "test";',
+					ok: true
+				});
+			});
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.async = true;
+			script.addEventListener('load', (event) => {
+				loadEvent = event;
+			});
+
+			document.body.appendChild(script);
+
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(loadEvent.target).toBe(script);
+			expect(fetchedURL).toBe('path/to/script/');
+			expect(window['test']).toBe('test');
+		});
+
+		it('Triggers error event when loading external script asynchronously.', async () => {
+			let errorEvent = null;
+
+			jest.spyOn(window, 'fetch').mockImplementation(() => {
+				return Promise.resolve(<IResponse>{
+					text: () => null,
+					ok: false,
+					status: 404
+				});
+			});
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.async = true;
+			script.addEventListener('error', (event) => {
+				errorEvent = event;
+			});
+
+			document.body.appendChild(script);
+
+			await window.happyDOM.whenAsyncComplete();
+
+			expect(errorEvent.message).toBe(
+				'Failed to perform request to "path/to/script/". Status code: 404'
+			);
+		});
+
+		it('Loads external script synchronously with relative URL.', async () => {
+			let fetchedDocument = null;
+			let fetchedURL = null;
+			let loadEvent = null;
+
+			window.location.href = 'https://localhost:8080/base/';
+
+			jest
+				.spyOn(ResourceFetch, 'fetchSync')
+				.mockImplementation((document: IDocument, url: string) => {
+					fetchedDocument = document;
+					fetchedURL = url;
+					return 'globalThis.test = "test";';
+				});
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.addEventListener('load', (event) => {
+				loadEvent = event;
+			});
+
+			document.body.appendChild(script);
+
+			expect(loadEvent.target).toBe(script);
+			expect(fetchedDocument).toBe(document);
+			expect(fetchedURL).toBe('path/to/script/');
+			expect(window['test']).toBe('test');
+		});
+
+		it('Triggers error event when loading external script synchronously with relative URL.', () => {
+			const thrownError = new Error('error');
+			let errorEvent = null;
+
+			window.location.href = 'https://localhost:8080/base/';
+
+			jest.spyOn(ResourceFetch, 'fetchSync').mockImplementation(() => {
+				throw thrownError;
+			});
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.addEventListener('error', (event) => {
+				errorEvent = event;
+			});
+
+			document.body.appendChild(script);
+
+			expect(errorEvent.message).toBe('error');
+			expect(errorEvent.error).toBe(thrownError);
 		});
 
 		it('Does not evaluate types that are not supported.', () => {
@@ -190,34 +308,106 @@ describe('HTMLScriptElement', () => {
 
 		it('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
-			let loadedElement = null;
 
-			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async (element) => {
-				loadedElement = element;
-			});
+			jest
+				.spyOn(ResourceFetch, 'fetchSync')
+				.mockImplementation(() => 'globalThis.testFetch = "test";');
 
 			element.src = 'test';
-			element.text = 'globalThis.test = "test";';
+			element.text = 'globalThis.testContent = "test";';
 
 			document.body.appendChild(element);
 
-			expect(window['test']).toBe(undefined);
-			expect(loadedElement).toBe(element);
+			expect(window['testFetch']).toBe('test');
+			expect(window['testContent']).toBe(undefined);
 		});
 
 		it('Does not load external scripts when "src" attribute has been set if the element is not connected to DOM.', () => {
 			const element = <HTMLScriptElement>document.createElement('script');
-			let loadedElement = null;
 
-			jest.spyOn(ScriptUtility, 'loadExternalScript').mockImplementation(async (element) => {
-				loadedElement = element;
-			});
+			jest
+				.spyOn(ResourceFetch, 'fetchSync')
+				.mockImplementation(() => 'globalThis.testFetch = "test";');
 
 			element.src = 'test';
 			element.text = 'globalThis.test = "test";';
 
-			expect(window['test']).toBe(undefined);
-			expect(loadedElement).toBe(null);
+			expect(window['testFetch']).toBe(undefined);
+			expect(window['testContent']).toBe(undefined);
+		});
+
+		it('Triggers an error event when attempting to perform an asynchrounous request and "window.happyDOM.settings.disableJavaScriptFileLoading" is set to "true".', () => {
+			let errorEvent = null;
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.async = true;
+			script.addEventListener('error', (event) => {
+				errorEvent = event;
+			});
+
+			window.happyDOM.settings.disableJavaScriptFileLoading = true;
+
+			document.body.appendChild(script);
+
+			expect(errorEvent.message).toBe(
+				'Failed to load external script "path/to/script/". JavaScript file loading is disabled.'
+			);
+		});
+
+		it('Triggers an error event when attempting to perform a synchrounous request and "window.happyDOM.settings.disableJavaScriptFileLoading" is set to "true".', () => {
+			let errorEvent = null;
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.addEventListener('error', (event) => {
+				errorEvent = event;
+			});
+
+			window.happyDOM.settings.disableJavaScriptFileLoading = true;
+
+			document.body.appendChild(script);
+
+			expect(errorEvent.message).toBe(
+				'Failed to load external script "path/to/script/". JavaScript file loading is disabled.'
+			);
+		});
+
+		it('Triggers an error event when attempting to perform an asynchrounous request and "window.happyDOM.settings.disableJavaScriptEvaluation" is set to "true".', () => {
+			let errorEvent = null;
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.async = true;
+			script.addEventListener('error', (event) => {
+				errorEvent = event;
+			});
+
+			window.happyDOM.settings.disableJavaScriptEvaluation = true;
+
+			document.body.appendChild(script);
+
+			expect(errorEvent.message).toBe(
+				'Failed to load external script "path/to/script/". JavaScript file loading is disabled.'
+			);
+		});
+
+		it('Triggers an error event when attempting to perform a synchrounous request and "window.happyDOM.settings.disableJavaScriptEvaluation" is set to "true".', () => {
+			let errorEvent = null;
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'path/to/script/';
+			script.addEventListener('error', (event) => {
+				errorEvent = event;
+			});
+
+			window.happyDOM.settings.disableJavaScriptEvaluation = true;
+
+			document.body.appendChild(script);
+
+			expect(errorEvent.message).toBe(
+				'Failed to load external script "path/to/script/". JavaScript file loading is disabled.'
+			);
 		});
 	});
 });

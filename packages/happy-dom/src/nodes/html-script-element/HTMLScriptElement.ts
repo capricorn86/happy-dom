@@ -1,7 +1,7 @@
 import IAttr from '../attr/IAttr';
 import HTMLElement from '../html-element/HTMLElement';
 import IHTMLScriptElement from './IHTMLScriptElement';
-import ScriptUtility from './ScriptUtility';
+import HTMLScriptElementUtility from './HTMLScriptElementUtility';
 import Event from '../../event/Event';
 import ErrorEvent from '../../event/events/ErrorEvent';
 import INode from '../../nodes/node/INode';
@@ -162,7 +162,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'src' && attribute.value !== null && this.isConnected) {
-			ScriptUtility.loadExternalScript(this);
+			HTMLScriptElementUtility.loadExternalScript(this);
 		}
 
 		return replacedAttribute;
@@ -192,7 +192,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 			const src = this.getAttribute('src');
 
 			if (src !== null) {
-				ScriptUtility.loadExternalScript(this);
+				HTMLScriptElementUtility.loadExternalScript(this);
 			} else if (!this.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation) {
 				const textContent = this.textContent;
 				const type = this.getAttribute('type');
