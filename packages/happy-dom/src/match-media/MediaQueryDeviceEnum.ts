@@ -1,7 +1,7 @@
-enum SelectorCombinatorEnum {
-	descendant = 'descendant',
-	child = 'child',
-	adjacentSibling = 'adjacentSibling'
+enum MediaQueryDeviceEnum {
+	all = 'all',
+	print = 'print',
+	screen = 'screen'
 }
 
-export default SelectorCombinatorEnum;
+export default MediaQueryDeviceEnum;

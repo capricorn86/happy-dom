@@ -1,284 +1,67 @@
-import SelectorItem from './MediaQueryItem';
-import SelectorCombinatorEnum from './MediaQueryDeviceEnum';
-import DOMException from '../exception/DOMException';
-import ISelectorPseudo from './ISelectorPseudo';
+import IMediaQueryItem from './IMediaQueryItem';
+import MediaQueryDeviceEnum from './MediaQueryDeviceEnum';
 
 /**
  * Utility for parsing a selection string.
  */
 export default class MediaQueryParser {
 	/**
-	 * Parses a selector string and returns an instance of SelectorItem.
+	 * Parses a media query string.
 	 *
-	 * @param selector Selector.
-	 * @returns Selector itme.
+	 * @param mediaQuery Selector.
+	 * @returns Media query items.
 	 */
-	public static getSelectorItem(selector: string): SelectorItem {
-		return this.getSelectorGroups(selector)[0][0];
-	}
+	public static getMediaQueryItems(mediaQuery: string): IMediaQueryItem[] {
+		const mediaQueryItems: IMediaQueryItem[] = [];
 
-	/**
-	 * Parses a selector string and returns groups with SelectorItem instances.
-	 *
-	 * @param selector Selector.
-	 * @returns Selector groups.
-	 */
-	public static getSelectorGroups(selector: string): Array<Array<SelectorItem>> {
-		if (selector === '*') {
-			return [[new SelectorItem({ tagName: '*' })]];
-		}
+		for (const item of mediaQuery.split(',')) {
+			const trimmedItem = item.trim();
 
-		const simpleMatch = selector.match(SIMPLE_SELECTOR_REGEXP);
-
-		if (simpleMatch) {
-			if (simpleMatch[1]) {
-				return [[new SelectorItem({ tagName: selector.toUpperCase() })]];
-			} else if (simpleMatch[2]) {
-				return [[new SelectorItem({ classNames: selector.replace('.', '').split('.') })]];
-			} else if (simpleMatch[3]) {
-				return [[new SelectorItem({ id: selector.replace('#', '') })]];
+			if (!trimmedItem) {
+				return [];
 			}
-		}
 
-		const regexp = new RegExp(SELECTOR_REGEXP);
-		let currentSelectorItem: SelectorItem = new SelectorItem({
-			combinator: SelectorCombinatorEnum.descendant
-		});
-		let currentGroup: SelectorItem[] = [currentSelectorItem];
-		const groups: Array<Array<SelectorItem>> = [currentGroup];
-		let isValid = false;
-		let match;
+			const parts = trimmedItem.split(' ');
+			const mediaQueryItem: IMediaQueryItem = {
+				device: MediaQueryDeviceEnum.all,
+				not: false,
+				rule: null
+			};
 
-		while ((match = regexp.exec(selector))) {
-			if (match[0]) {
-				isValid = true;
+			for (const part of parts) {
+				const trimmedPart = part.trim();
+				if (!trimmedPart) {
+					return [];
+				}
 
-				if (match[1]) {
-					currentSelectorItem.tagName = '*';
-				} else if (match[2]) {
-					currentSelectorItem.tagName = match[2].toUpperCase();
-				} else if (match[3]) {
-					currentSelectorItem.id = match[3].replace(CLASS_ESCAPED_CHARACTER_REGEXP, '');
-				} else if (match[4]) {
-					currentSelectorItem.classNames = currentSelectorItem.classNames || [];
-					currentSelectorItem.classNames.push(match[4].replace(CLASS_ESCAPED_CHARACTER_REGEXP, ''));
-				} else if (match[5]) {
-					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
-					currentSelectorItem.attributes.push({
-						name: match[5].toLowerCase(),
-						operator: null,
-						value: null,
-						modifier: null,
-						regExp: null
-					});
-				} else if (match[6] && match[8] !== undefined) {
-					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
-					currentSelectorItem.attributes.push({
-						name: match[6].toLowerCase(),
-						operator: match[7] || null,
-						value: match[8],
-						modifier: match[9] || null,
-						regExp: this.getAttributeRegExp({
-							operator: match[7],
-							value: match[8],
-							modifier: match[9]
-						})
-					});
-				} else if (match[10] && match[12] !== undefined) {
-					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
-					currentSelectorItem.attributes.push({
-						name: match[10].toLowerCase(),
-						operator: match[11] || null,
-						value: match[12],
-						modifier: null,
-						regExp: this.getAttributeRegExp({ operator: match[7], value: match[8] })
-					});
-				} else if (match[13] && match[14]) {
-					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
-					currentSelectorItem.pseudos.push(this.getPseudo(match[13], match[14]));
-				} else if (match[15]) {
-					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
-					currentSelectorItem.pseudos.push(this.getPseudo(match[15]));
-				} else if (match[16]) {
-					switch (match[16].trim()) {
-						case ',':
-							currentSelectorItem = new SelectorItem({
-								combinator: SelectorCombinatorEnum.descendant
-							});
-							currentGroup = [currentSelectorItem];
-							groups.push(currentGroup);
-							break;
-						case '>':
-							currentSelectorItem = new SelectorItem({ combinator: SelectorCombinatorEnum.child });
-							currentGroup.push(currentSelectorItem);
-							break;
-						case '+':
-							currentSelectorItem = new SelectorItem({
-								combinator: SelectorCombinatorEnum.adjacentSibling
-							});
-							currentGroup.push(currentSelectorItem);
-							break;
-						case '':
-							currentSelectorItem = new SelectorItem({
-								combinator: SelectorCombinatorEnum.descendant
-							});
-							currentGroup.push(currentSelectorItem);
-							break;
+				if (trimmedPart === 'not') {
+					mediaQueryItem.not = true;
+				} else if (trimmedPart === 'and') {
+					// Do nothing.
+				} else if (trimmedPart === 'all') {
+					mediaQueryItem.device = MediaQueryDeviceEnum.all;
+				} else if (trimmedPart === 'print') {
+					mediaQueryItem.device = MediaQueryDeviceEnum.print;
+				} else if (trimmedPart === 'screen') {
+					mediaQueryItem.device = MediaQueryDeviceEnum.screen;
+				} else if (trimmedPart.startsWith('(')) {
+					const parsedRule = trimmedPart.replace('(', '').replace(')', '').trim().toLowerCase();
+					if (!parsedRule) {
+						return [];
 					}
+					const [key, value] = parsedRule.split(':');
+					if (!key) {
+						return [];
+					}
+					mediaQueryItem.rule = { key, value: value || null };
+				} else {
+					return [];
 				}
-			} else {
-				break;
 			}
+
+			mediaQueryItems.push(mediaQueryItem);
 		}
 
-		if (!isValid) {
-			throw new DOMException(`Invalid selector: "${selector}"`);
-		}
-
-		return groups;
-	}
-
-	/**
-	 * Returns attribute RegExp.
-	 *
-	 * @param attribute Attribute.
-	 * @param attribute.value Attribute value.
-	 * @param attribute.operator Attribute operator.
-	 * @param attribute.modifier Attribute modifier.
-	 * @returns Attribute RegExp.
-	 */
-	private static getAttributeRegExp(attribute: {
-		value?: string;
-		operator?: string;
-		modifier?: string;
-	}): RegExp | null {
-		const modifier = attribute.modifier === 'i' ? 'i' : '';
-
-		if (!attribute.operator || !attribute.value) {
-			return null;
-		}
-
-		switch (attribute.operator) {
-			// [attribute~="value"] - Contains a specified word.
-			case '~':
-				return new RegExp(
-					`[- ]${attribute.value}|${attribute.value}[- ]|^${attribute.value}$`,
-					modifier
-				);
-			// [attribute|="value"] - Starts with the specified word.
-			case '|':
-				return new RegExp(`^${attribute.value}[- ]|^${attribute.value}$`, modifier);
-			// [attribute^="value"] - Begins with a specified value.
-			case '^':
-				return new RegExp(`^${attribute.value}`, modifier);
-			// [attribute$="value"] - Ends with a specified value.
-			case '$':
-				return new RegExp(`${attribute.value}$`, modifier);
-			// [attribute*="value"] - Contains a specified value.
-			case '*':
-				return new RegExp(`${attribute.value}`, modifier);
-			default:
-				return null;
-		}
-	}
-
-	/**
-	 * Returns pseudo.
-	 *
-	 * @param name Pseudo name.
-	 * @param args Pseudo arguments.
-	 * @returns Pseudo.
-	 */
-	private static getPseudo(name: string, args?: string): ISelectorPseudo {
-		const lowerName = name.toLowerCase();
-
-		if (!args) {
-			return { name: lowerName, arguments: null, selectorItem: null, nthFunction: null };
-		}
-
-		switch (lowerName) {
-			case 'nth-last-child':
-			case 'nth-child':
-				const nthOfIndex = args.indexOf(' of ');
-				const nthFunction = nthOfIndex !== -1 ? args.substring(0, nthOfIndex) : args;
-				const selectorItem =
-					nthOfIndex !== -1 ? this.getSelectorItem(args.substring(nthOfIndex + 4).trim()) : null;
-				return {
-					name: lowerName,
-					arguments: args,
-					selectorItem,
-					nthFunction: this.getPseudoNthFunction(nthFunction)
-				};
-			case 'nth-of-type':
-			case 'nth-last-of-type':
-				return {
-					name: lowerName,
-					arguments: args,
-					selectorItem: null,
-					nthFunction: this.getPseudoNthFunction(args)
-				};
-			case 'not':
-				return {
-					name: lowerName,
-					arguments: args,
-					selectorItem: this.getSelectorItem(args),
-					nthFunction: null
-				};
-			default:
-				return { name: lowerName, arguments: args, selectorItem: null, nthFunction: null };
-		}
-	}
-
-	/**
-	 * Returns pseudo nth function.
-	 *
-	 * Based on:
-	 * https://github.com/dperini/nwsapi/blob/master/src/nwsapi.js
-	 *
-	 * @param args Pseudo arguments.
-	 * @returns Pseudo nth function.
-	 */
-	private static getPseudoNthFunction(args?: string): ((n: number) => boolean) | null {
-		if (args === 'odd') {
-			return NTH_FUNCTION.odd;
-		} else if (args === 'even') {
-			return NTH_FUNCTION.even;
-		}
-
-		const parts = args.replace(SPACE_REGEXP, '').split('n');
-		let partA = parseInt(parts[0], 10) || 0;
-
-		if (parts[0] == '-') {
-			partA = -1;
-		}
-
-		if (parts.length === 1) {
-			return (n) => n == partA;
-		}
-
-		let partB = parseInt(parts[1], 10) || 0;
-
-		if (parts[0] == '+') {
-			partB = 1;
-		}
-
-		if (partA >= 1 || partA <= -1) {
-			if (partA >= 1) {
-				if (Math.abs(partA) === 1) {
-					return (n: number): boolean => n > partB - 1;
-				}
-				return (n: number): boolean => n > partB - 1 && (n + -1 * partB) % partA === 0;
-			}
-			if (Math.abs(partA) === 1) {
-				return (n: number): boolean => n < partB + 1;
-			}
-			return (n) => n < partB + 1 && (n + -1 * partB) % partA === 0;
-		}
-
-		if (parts[0]) {
-			return (n) => n === partB;
-		}
-
-		return (n) => n > partB - 1;
+		return mediaQueryItems;
 	}
 }
