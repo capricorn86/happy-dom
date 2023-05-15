@@ -36,7 +36,7 @@ export default class MediaQueryList extends EventTarget {
 	 * @returns Matches.
 	 */
 	public get matches(): boolean {
-		const match = MEDIA_REGEXP.exec(this.media);
+		const match = this.media.match(MEDIA_REGEXP);
 		if (match) {
 			if (match[1]) {
 				return this._ownerWindow.innerWidth >= parseInt(match[1]);

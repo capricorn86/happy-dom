@@ -7,4 +7,5 @@ export default interface IHappyDOMSettings {
 	disableCSSFileLoading: boolean;
 	disableIframePageLoading: boolean;
 	enableFileSystemHttpRequests: boolean;
+	colorScheme: string;
 }
