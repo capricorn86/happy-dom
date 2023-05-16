@@ -53,7 +53,10 @@ export default class MediaQueryParser {
 			} else if (match[1] === 'not') {
 				currentMediaQueryItem.not = true;
 			} else if (match[2]) {
-				const resolutionMatch = match[2].match(RESOLUTION_REGEXP);
+				const resolutionMatch =
+					match[2].includes('<') || match[2].includes('>')
+						? match[2].match(RESOLUTION_REGEXP)
+						: null;
 				if (resolutionMatch && (resolutionMatch[1] || resolutionMatch[6])) {
 					if (resolutionMatch[1] && resolutionMatch[2] && resolutionMatch[3]) {
 						const value = parseInt(resolutionMatch[1], 10);
