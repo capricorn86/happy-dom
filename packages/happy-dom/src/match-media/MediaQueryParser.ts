@@ -14,6 +14,11 @@ import IWindow from '../window/IWindow';
 const MEDIA_QUERY_REGEXP = /(not|only|all|screen|print)|\(([^\)]+)(\)){0,1}|(,)| +(or|and) +/g;
 
 /**
+ * Check if resolution RegExp.
+ */
+const IS_RESOLUTION_REGEXP = /[<>]/;
+
+/**
  * Resolution RegExp.
  *
  * Group 1: First resolution number.
@@ -53,10 +58,9 @@ export default class MediaQueryParser {
 			} else if (match[1] === 'not') {
 				currentMediaQueryItem.not = true;
 			} else if (match[2]) {
-				const resolutionMatch =
-					match[2].includes('<') || match[2].includes('>')
-						? match[2].match(RESOLUTION_REGEXP)
-						: null;
+				const resolutionMatch = IS_RESOLUTION_REGEXP.test(match[2])
+					? match[2].match(RESOLUTION_REGEXP)
+					: null;
 				if (resolutionMatch && (resolutionMatch[1] || resolutionMatch[6])) {
 					if (resolutionMatch[1] && resolutionMatch[2] && resolutionMatch[3]) {
 						const value = parseInt(resolutionMatch[1], 10);
