@@ -2,7 +2,7 @@ import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyVal
 import CSSStyleDeclarationPropertySetParser from './CSSStyleDeclarationPropertySetParser';
 import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser';
 import CSSStyleDeclarationPropertyGetParser from './CSSStyleDeclarationPropertyGetParser';
-import CSSStyleDeclarationCSSParser from './CSSStyleDeclarationCSSParser';
+import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSParser';
 
 const TO_STRING_SHORTHAND_PROPERTIES = [
 	['margin'],
@@ -44,7 +44,7 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param name Property name.
 	 * @returns Property value.
 	 */
-	public get(name: string): ICSSStyleDeclarationPropertyValue {
+	public get(name: string): ICSSStyleDeclarationPropertyValue | null {
 		if (this.properties[name]) {
 			return this.properties[name];
 		}

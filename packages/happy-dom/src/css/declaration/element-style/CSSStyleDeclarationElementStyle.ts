@@ -3,16 +3,17 @@ import IElement from '../../../nodes/element/IElement';
 import IDocument from '../../../nodes/document/IDocument';
 import IHTMLStyleElement from '../../../nodes/html-style-element/IHTMLStyleElement';
 import INodeList from '../../../nodes/node/INodeList';
-import CSSStyleDeclarationPropertyManager from './CSSStyleDeclarationPropertyManager';
+import CSSStyleDeclarationPropertyManager from '../property-manager/CSSStyleDeclarationPropertyManager';
 import NodeTypeEnum from '../../../nodes/node/NodeTypeEnum';
 import CSSRuleTypeEnum from '../../CSSRuleTypeEnum';
 import CSSMediaRule from '../../rules/CSSMediaRule';
 import CSSRule from '../../CSSRule';
 import CSSStyleRule from '../../rules/CSSStyleRule';
-import CSSStyleDeclarationElementDefaultCSS from './CSSStyleDeclarationElementDefaultCSS';
-import CSSStyleDeclarationElementInheritedProperties from './CSSStyleDeclarationElementInheritedProperties';
-import CSSStyleDeclarationCSSParser from './CSSStyleDeclarationCSSParser';
+import CSSStyleDeclarationElementDefaultCSS from './config/CSSStyleDeclarationElementDefaultCSS';
+import CSSStyleDeclarationElementInheritedProperties from './config/CSSStyleDeclarationElementInheritedProperties';
+import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSParser';
 import QuerySelector from '../../../query-selector/QuerySelector';
+import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConverter';
 
 const CSS_VARIABLE_REGEXP = /var\( *(--[^) ]+)\)/g;
 
@@ -160,98 +161,63 @@ export default class CSSStyleDeclarationElementStyle {
 
 		// Concatenates all parent element CSS to one string.
 		const targetElement = parentElements[parentElements.length - 1];
-		let inheritedCSSText = '';
+		const propertyManager = new CSSStyleDeclarationPropertyManager();
+		const contextProperties: {
+			rootFontSize: string | null;
+			parentFontSize: string | null;
+			cssVariables: { [k: string]: string };
+		} = {
+			rootFontSize: null,
+			parentFontSize: null,
+			cssVariables: {}
+		};
 
 		for (const parentElement of parentElements) {
-			if (parentElement !== targetElement) {
-				parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
+			parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
 
-				if (CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName]) {
-					inheritedCSSText +=
-						CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName];
-				}
-
-				for (const cssText of parentElement.cssTexts) {
-					inheritedCSSText += cssText.cssText;
-				}
-
-				if (parentElement.element['_attributes']['style']?.value) {
-					inheritedCSSText += parentElement.element['_attributes']['style'].value;
-				}
-			}
-		}
-
-		const cssVariables: { [k: string]: string } = {};
-		const properties = {};
-		let targetCSSText =
-			CSSStyleDeclarationElementDefaultCSS[(<IElement>targetElement.element).tagName] || '';
-
-		targetElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
-
-		for (const cssText of targetElement.cssTexts) {
-			targetCSSText += cssText.cssText;
-		}
-
-		if (targetElement.element['_attributes']['style']?.value) {
-			targetCSSText += targetElement.element['_attributes']['style'].value;
-		}
-
-		const combinedCSSText = inheritedCSSText + targetCSSText;
-
-		if (this.cache.propertyManager && this.cache.cssText === combinedCSSText) {
-			return this.cache.propertyManager;
-		}
-
-		// Parses the parent element CSS and stores CSS variables and inherited properties.
-		CSSStyleDeclarationCSSParser.parse(inheritedCSSText, (name, value, important) => {
-			if (name.startsWith('--')) {
-				const cssValue = this.getCSSValue(value, cssVariables);
-				if (cssValue) {
-					cssVariables[name] = cssValue;
-				}
-				return;
+			let elementCSSText = '';
+			if (CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName]) {
+				elementCSSText +=
+					CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName];
 			}
 
-			if (CSSStyleDeclarationElementInheritedProperties[name]) {
-				const cssValue = this.getCSSValue(value, cssVariables);
-				if (cssValue && (!properties[name]?.important || important)) {
-					properties[name] = {
-						value: cssValue,
-						important
-					};
-				}
+			for (const cssText of parentElement.cssTexts) {
+				elementCSSText += cssText.cssText;
 			}
-		});
 
-		// Parses the target element CSS.
-		CSSStyleDeclarationCSSParser.parse(targetCSSText, (name, value, important) => {
-			if (name.startsWith('--')) {
-				const cssValue = this.getCSSValue(value, cssVariables);
-				if (cssValue && (!properties[name]?.important || important)) {
-					cssVariables[name] = cssValue;
-					properties[name] = {
-						value,
-						important
-					};
-				}
-			} else {
-				const cssValue = this.getCSSValue(value, cssVariables);
-				if (cssValue && (!properties[name]?.important || important)) {
-					properties[name] = {
-						value: cssValue,
-						important
-					};
-				}
+			if (parentElement.element['_attributes']['style']?.value) {
+				elementCSSText += parentElement.element['_attributes']['style'].value;
 			}
-		});
 
-		const propertyManager = new CSSStyleDeclarationPropertyManager();
+			CSSStyleDeclarationCSSParser.parse(elementCSSText, (name, value, important) => {
+				if (name.startsWith('--')) {
+					const cssValue = this.getCSSValue(value, contextProperties);
+					if (cssValue) {
+						contextProperties.cssVariables[name] = cssValue;
+					}
+					return;
+				}
 
-		for (const name of Object.keys(properties)) {
-			propertyManager.set(name, properties[name].value, properties[name].important);
+				if (
+					CSSStyleDeclarationElementInheritedProperties[name] ||
+					parentElement === targetElement
+				) {
+					const cssValue = this.getCSSValue(value, contextProperties);
+					if (cssValue && (!propertyManager.get(name)?.important || important)) {
+						propertyManager.set(name, cssValue, important);
+						const fontSize = propertyManager.get('font-size');
+						if (fontSize !== null) {
+							if ((<IElement>parentElement.element).tagName === 'HTML') {
+								contextProperties.rootFontSize = fontSize.value;
+							} else if (parentElement !== targetElement) {
+								contextProperties.parentFontSize = fontSize.value;
+							}
+						}
+					}
+				}
+			});
 		}
 
-		this.cache.cssText = combinedCSSText;
 		this.cache.propertyManager = propertyManager;
 
 		return propertyManager;
@@ -320,20 +286,43 @@ export default class CSSStyleDeclarationElementStyle {
 	 * Returns CSS value.
 	 *
 	 * @param value Value.
-	 * @param cssVariables CSS variables.
+	 * @param contextProperties Context properties.
+	 * @param contextProperties.rootFontSize Root font size.
+	 * @param contextProperties.parentFontSize Parent font size.
+	 * @param contextProperties.cssVariables CSS variables.
 	 * @returns CSS value.
 	 */
-	private getCSSValue(value: string, cssVariables: { [k: string]: string }): string {
+	private getCSSValue(
+		value: string,
+		contextProperties: {
+			rootFontSize: string | null;
+			parentFontSize: string | null;
+			cssVariables: { [k: string]: string };
+		}
+	): string {
 		const regexp = new RegExp(CSS_VARIABLE_REGEXP);
 		let newValue = value;
 		let match;
+
 		while ((match = regexp.exec(value)) !== null) {
-			const cssVariableValue = cssVariables[match[1]];
+			const cssVariableValue = contextProperties.cssVariables[match[1]];
 			if (!cssVariableValue) {
 				return null;
 			}
 			newValue = newValue.replace(match[0], cssVariableValue);
 		}
+
+		const valueInPixels = CSSMeasurementConverter.toPixels({
+			ownerWindow: this.element.ownerDocument.defaultView,
+			value: newValue,
+			rootFontSize: contextProperties.rootFontSize || 16,
+			parentFontSize: contextProperties.parentFontSize || 16
+		});
+
+		if (valueInPixels !== null) {
+			return valueInPixels + 'px';
+		}
+
 		return newValue;
 	}
 }

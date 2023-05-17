@@ -1,3 +1,4 @@
+import CSSMeasurementConverter from '../css/declaration/measurement-converter/CSSMeasurementConverter';
 import IWindow from '../window/IWindow';
 import IMediaQueryRange from './IMediaQueryRange';
 import IMediaQueryRule from './IMediaQueryRule';
@@ -11,6 +12,7 @@ export default class MediaQueryItem {
 	public not: boolean;
 	public rules: IMediaQueryRule[];
 	public ranges: IMediaQueryRange[];
+	private rootFontSize: number | null = null;
 	private ownerWindow: IWindow;
 
 	/**
@@ -128,7 +130,7 @@ export default class MediaQueryItem {
 			range.type === 'width' ? this.ownerWindow.innerWidth : this.ownerWindow.innerHeight;
 
 		if (range.before) {
-			const beforeValue = parseInt(range.before.value, 10);
+			const beforeValue = this.toPixels(range.before.value);
 			if (!isNaN(beforeValue)) {
 				switch (range.before.operator) {
 					case '<':
@@ -156,7 +158,7 @@ export default class MediaQueryItem {
 		}
 
 		if (range.after) {
-			const afterValue = parseInt(range.after.value, 10);
+			const afterValue = this.toPixels(range.after.value);
 			if (!isNaN(afterValue)) {
 				switch (range.after.operator) {
 					case '<':
@@ -216,16 +218,16 @@ export default class MediaQueryItem {
 
 		switch (rule.name) {
 			case 'min-width':
-				const minWidth = parseInt(rule.value, 10);
+				const minWidth = this.toPixels(rule.value);
 				return !isNaN(minWidth) && this.ownerWindow.innerWidth >= minWidth;
 			case 'max-width':
-				const maxWidth = parseInt(rule.value, 10);
+				const maxWidth = this.toPixels(rule.value);
 				return !isNaN(maxWidth) && this.ownerWindow.innerWidth <= maxWidth;
 			case 'min-height':
-				const minHeight = parseInt(rule.value, 10);
+				const minHeight = this.toPixels(rule.value);
 				return !isNaN(minHeight) && this.ownerWindow.innerHeight >= minHeight;
 			case 'max-height':
-				const maxHeight = parseInt(rule.value, 10);
+				const maxHeight = this.toPixels(rule.value);
 				return !isNaN(maxHeight) && this.ownerWindow.innerHeight <= maxHeight;
 			case 'orientation':
 				return rule.value === 'landscape'
@@ -281,5 +283,25 @@ export default class MediaQueryItem {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Convert to pixels.
+	 *
+	 * @param value Value.
+	 * @returns Value in pixels.
+	 */
+	private toPixels(value: string): number {
+		this.rootFontSize =
+			this.rootFontSize ||
+			parseFloat(
+				this.ownerWindow.getComputedStyle(this.ownerWindow.document.documentElement).fontSize
+			);
+		return CSSMeasurementConverter.toPixels({
+			ownerWindow: this.ownerWindow,
+			value,
+			rootFontSize: this.rootFontSize,
+			parentFontSize: this.rootFontSize
+		});
 	}
 }

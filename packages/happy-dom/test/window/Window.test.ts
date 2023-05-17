@@ -330,7 +330,8 @@ describe('Window', () => {
 				customElement.shadowRoot.querySelector('span')
 			);
 
-			expect(elementComputedStyle.font).toBe('');
+			// Default value on HTML is "16px Times New Roman"
+			expect(elementComputedStyle.font).toBe('16px "Times New Roman"');
 			expect(elementComputedStyle.color).toBe('green');
 
 			expect(customElementComputedStyle.color).toBe('yellow');
@@ -351,15 +352,16 @@ describe('Window', () => {
 			parentStyle.innerHTML = `
 				div {
 					--color-variable: #000;
-					--valid-variable: 1px solid var(--color-variable);
-					--invalid-variable: invalid;
+					--border-variable: 1px solid var(--color-variable);
+					--font-variable: 14px "Tahoma";
 				}
 			`;
 
 			elementStyle.innerHTML = `
 				span {
-					border: var(--valid-variable);
-					font: var(--invalid-variable);
+					border: var(--border-variable);
+					font: var(--font-variable);
+                    color: var(--invalid-variable);
 				}
 			`;
 
@@ -370,8 +372,65 @@ describe('Window', () => {
 			document.body.appendChild(parent);
 
 			expect(computedStyle.border).toBe('1px solid #000');
-			expect(computedStyle.font).toBe('');
+			expect(computedStyle.font).toBe('14px "Tahoma"');
+			expect(computedStyle.color).toBe('');
 		});
+
+		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values converted to pixels.', () => {
+			const parent = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			window.happyDOM.setInnerWidth(1024);
+
+			parentStyle.innerHTML = `
+                html {
+                    font-size: 10px;
+                }
+
+				div {
+                    font-size: 1.5rem;
+				}
+			`;
+
+			elementStyle.innerHTML = `
+                span {
+					width: 10rem;
+                    height: 10em;
+                }
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.width).toBe('100px');
+			expect(computedStyle.height).toBe('150px');
+		});
+
+		for (const measurement of [
+			{ value: '100vw', result: '1024px' },
+			{ value: '100vh', result: '768px' },
+			{ value: '100vmin', result: '768px' },
+			{ value: '100vmax', result: '1024px' },
+			{ value: '1cm', result: '37.7812px' },
+			{ value: '1mm', result: '3.7781px' },
+			{ value: '1in', result: '96px' },
+			{ value: '1pt', result: '1.3281px' },
+			{ value: '1pc', result: '16px' },
+			{ value: '1Q', result: '0.945px' }
+		]) {
+			it(`Returns a CSSStyleDeclaration object with computed styles for a "${measurement.value}" measurement value converted to pixels.`, () => {
+				const element = <IHTMLElement>document.createElement('div');
+				element.style.width = measurement.value;
+				document.body.appendChild(element);
+				expect(window.getComputedStyle(element).width).toBe(measurement.result);
+			});
+		}
 	});
 
 	describe('eval()', () => {
