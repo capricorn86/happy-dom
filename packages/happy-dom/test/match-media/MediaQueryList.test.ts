@@ -2,6 +2,8 @@ import IWindow from '../../src/window/IWindow';
 import Window from '../../src/window/Window';
 import MediaQueryList from '../../src/match-media/MediaQueryList';
 import MediaQueryListEvent from '../../src/event/events/MediaQueryListEvent';
+import HappyDOMSettingsPrefersColorSchemeEnum from '../../src/window/HappyDOMSettingsPrefersColorSchemeEnum';
+import HappyDOMSettingsMediaTypeEnum from '../../src/window/HappyDOMSettingsMediaTypeEnum';
 
 describe('MediaQueryList', () => {
 	let window: IWindow;
@@ -22,6 +24,20 @@ describe('MediaQueryList', () => {
 			expect(new MediaQueryList(window, 'all and (hover: none').media).toBe(
 				'all and (hover: none)'
 			);
+			expect(
+				new MediaQueryList(
+					window,
+					'all and (400px <= height <= 2000px) and (400px <= width <= 2000px)'
+				).media
+			).toBe('all and (400px <= height <= 2000px) and (400px <= width <= 2000px)');
+			expect(
+				new MediaQueryList(
+					window,
+					'all and (400px <= height <= 2000px) and (400px <= width <= 2000px) and (min-width: 400px)'
+				).media
+			).toBe(
+				'all and (400px <= height <= 2000px) and (400px <= width <= 2000px) and (min-width: 400px)'
+			);
 			expect(new MediaQueryList(window, 'prefers-color-scheme').media).toBe('');
 			expect(new MediaQueryList(window, '(prefers-color-scheme').media).toBe('not all');
 			expect(new MediaQueryList(window, '(prefers-color-scheme)').media).toBe(
@@ -31,16 +47,21 @@ describe('MediaQueryList', () => {
 	});
 
 	describe('get matches()', () => {
-		it('Handles device with name "all".', () => {
+		it('Handles media type with name "all".', () => {
 			expect(new MediaQueryList(window, 'all and (min-width: 1024px)').matches).toBe(true);
 		});
 
-		it('Handles device with name "print".', () => {
+		it('Handles media type with name "print".', () => {
 			expect(new MediaQueryList(window, 'print').matches).toBe(false);
 			expect(new MediaQueryList(window, 'print and (min-width: 1024px)').matches).toBe(false);
+
+			window.happyDOM.settings.device.mediaType = HappyDOMSettingsMediaTypeEnum.print;
+
+			expect(new MediaQueryList(window, 'print').matches).toBe(true);
+			expect(new MediaQueryList(window, 'print and (min-width: 1024px)').matches).toBe(true);
 		});
 
-		it('Handles device with name "screen".', () => {
+		it('Handles media type with name "screen".', () => {
 			expect(new MediaQueryList(window, 'screen').matches).toBe(true);
 			expect(new MediaQueryList(window, 'screen and (min-width: 1024px)').matches).toBe(true);
 		});
@@ -50,6 +71,12 @@ describe('MediaQueryList', () => {
 			expect(new MediaQueryList(window, 'not print').matches).toBe(true);
 			expect(new MediaQueryList(window, 'not (min-width: 1025px)').matches).toBe(true);
 			expect(new MediaQueryList(window, 'not (min-width: 1024px)').matches).toBe(false);
+		});
+
+		it('Handles "only" keyword.', () => {
+			expect(new MediaQueryList(window, 'only all').matches).toBe(true);
+			expect(new MediaQueryList(window, 'only print').matches).toBe(false);
+			expect(new MediaQueryList(window, 'only screen and (min-width: 1024px)').matches).toBe(true);
 		});
 
 		it('Handles "min-width".', () => {
@@ -93,7 +120,8 @@ describe('MediaQueryList', () => {
 			expect(new MediaQueryList(window, '(prefers-color-scheme: dark)').matches).toBe(false);
 			expect(new MediaQueryList(window, '(prefers-color-scheme: light)').matches).toBe(true);
 
-			window.happyDOM.settings.colorScheme = 'dark';
+			window.happyDOM.settings.device.prefersColorScheme =
+				HappyDOMSettingsPrefersColorSchemeEnum.dark;
 
 			expect(new MediaQueryList(window, '(prefers-color-scheme: dark)').matches).toBe(true);
 			expect(new MediaQueryList(window, '(prefers-color-scheme: light)').matches).toBe(false);
@@ -120,6 +148,70 @@ describe('MediaQueryList', () => {
 			expect(new MediaQueryList(window, '(any-pointer: none)').matches).toBe(false);
 			expect(new MediaQueryList(window, '(any-pointer: coarse)').matches).toBe(false);
 			expect(new MediaQueryList(window, '(any-pointer: fine)').matches).toBe(true);
+		});
+
+		it('Handles "display-mode".', () => {
+			expect(new MediaQueryList(window, '(display-mode)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(display-mode: invalid)').matches).toBe(false);
+			expect(new MediaQueryList(window, '(display-mode: browser)').matches).toBe(true);
+		});
+
+		it('Handles "min-aspect-ratio".', () => {
+			expect(new MediaQueryList(window, '(min-aspect-ratio)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(min-aspect-ratio: 1024/770)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(min-aspect-ratio: 1024/760)').matches).toBe(false);
+		});
+
+		it('Handles "max-aspect-ratio".', () => {
+			expect(new MediaQueryList(window, '(max-aspect-ratio)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(max-aspect-ratio: 1024/760)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(max-aspect-ratio: 1024/770)').matches).toBe(false);
+		});
+
+		it('Handles "aspect-ratio".', () => {
+			expect(new MediaQueryList(window, '(aspect-ratio)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(aspect-ratio: 1024/768)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(aspect-ratio: 1024/769)').matches).toBe(false);
+			expect(new MediaQueryList(window, '(aspect-ratio: 1024/767)').matches).toBe(false);
+		});
+
+		it('Handles defining a resolution range using the range syntax.', () => {
+			expect(new MediaQueryList(window, '(400px <= width)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(400px < width)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(2000px < width)').matches).toBe(false);
+			expect(new MediaQueryList(window, '(400px <= width <= 2000px)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(400px <= width <= 1023px)').matches).toBe(false);
+			expect(new MediaQueryList(window, '(400px <= width <= 1024px)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(2000px => width)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(2000px > width)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(700px > width)').matches).toBe(false);
+
+			expect(new MediaQueryList(window, '(400px <= height)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(400px < height)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(2000px < height)').matches).toBe(false);
+			expect(new MediaQueryList(window, '(400px <= height <= 2000px)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(400px <= height <= 767px)').matches).toBe(false);
+			expect(new MediaQueryList(window, '(400px <= height <= 768px)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(2000px => height)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(2000px > height)').matches).toBe(true);
+			expect(new MediaQueryList(window, '(700px > height)').matches).toBe(false);
+
+			expect(
+				new MediaQueryList(window, '(400px <= height <= 2000px) and (400px <= width <= 2000px)')
+					.matches
+			).toBe(true);
+		});
+
+		it('Handles multiple rules.', () => {
+			expect(
+				new MediaQueryList(window, '(min-width: 1024px) and (max-width: 2000px)').matches
+			).toBe(true);
+			expect(new MediaQueryList(window, '(min-width: 768px) and (max-width: 1023px)').matches).toBe(
+				false
+			);
+			expect(
+				new MediaQueryList(window, 'screen and (min-width: 1024px) and (max-width: 2000px)').matches
+			).toBe(true);
 		});
 	});
 

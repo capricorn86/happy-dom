@@ -135,6 +135,8 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import IHappyDOMOptions from './IHappyDOMOptions';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
 import ValidityState from '../validity-state/ValidityState';
+import HappyDOMSettingsPrefersColorSchemeEnum from './HappyDOMSettingsPrefersColorSchemeEnum';
+import HappyDOMSettingsMediaTypeEnum from './HappyDOMSettingsMediaTypeEnum';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -178,7 +180,10 @@ export default class Window extends EventTarget implements IWindow {
 			disableCSSFileLoading: false,
 			disableIframePageLoading: false,
 			enableFileSystemHttpRequests: false,
-			colorScheme: 'light'
+			device: {
+				prefersColorScheme: HappyDOMSettingsPrefersColorSchemeEnum.light,
+				mediaType: HappyDOMSettingsMediaTypeEnum.screen
+			}
 		}
 	};
 
@@ -434,7 +439,14 @@ export default class Window extends EventTarget implements IWindow {
 		}
 
 		if (options?.settings) {
-			this.happyDOM.settings = Object.assign(this.happyDOM.settings, options.settings);
+			this.happyDOM.settings = {
+				...this.happyDOM.settings,
+				...options.settings,
+				device: {
+					...this.happyDOM.settings.device,
+					...options.settings.device
+				}
+			};
 		}
 
 		this._setTimeout = ORIGINAL_SET_TIMEOUT;

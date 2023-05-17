@@ -1,5 +1,5 @@
 import MediaQueryItem from './MediaQueryItem';
-import MediaQueryDeviceEnum from './MediaQueryDeviceEnum';
+import MediaQueryTypeEnum from './MediaQueryTypeEnum';
 import IWindow from '../window/IWindow';
 
 /**
@@ -21,16 +21,14 @@ const IS_RESOLUTION_REGEXP = /[<>]/;
 /**
  * Resolution RegExp.
  *
- * Group 1: First resolution number.
- * Group 2: First resolution entity.
- * Group 3: First resolution operator.
- * Group 4: Resolution type.
- * Group 5: Second resolution operator.
- * Group 6: Second resolution number.
- * Group 7: Second resolution entity.
+ * Group 1: First resolution value.
+ * Group 2: First resolution operator.
+ * Group 3: Resolution type.
+ * Group 4: Second resolution operator.
+ * Group 5: Second resolution value.
  */
 const RESOLUTION_REGEXP =
-	/(?:([0-9]+)([a-z]+) *(<|<=|>|=>)){0,1} *(width|height) *(?:(<|<=|>|=>) *([0-9]+)([a-z]+)){0,1}/;
+	/(?:([0-9]+[a-z]+) *(<|<=|>|=>)){0,1} *(width|height) *(?:(<|<=|>|=>) *([0-9]+[a-z]+)){0,1}/;
 
 /**
  * Utility for parsing a query string.
@@ -54,49 +52,35 @@ export default class MediaQueryParser {
 				currentMediaQueryItem = new MediaQueryItem(ownerWindow);
 				mediaQueryItems.push(currentMediaQueryItem);
 			} else if (match[1] === 'all' || match[1] === 'screen' || match[1] === 'print') {
-				currentMediaQueryItem.devices.push(<MediaQueryDeviceEnum>match[1]);
+				currentMediaQueryItem.mediaTypes.push(<MediaQueryTypeEnum>match[1]);
 			} else if (match[1] === 'not') {
 				currentMediaQueryItem.not = true;
 			} else if (match[2]) {
 				const resolutionMatch = IS_RESOLUTION_REGEXP.test(match[2])
 					? match[2].match(RESOLUTION_REGEXP)
 					: null;
-				if (resolutionMatch && (resolutionMatch[1] || resolutionMatch[6])) {
-					if (resolutionMatch[1] && resolutionMatch[2] && resolutionMatch[3]) {
-						const value = parseInt(resolutionMatch[1], 10);
-						const parsedValue =
-							resolutionMatch[1] === '<'
-								? value - 1
-								: resolutionMatch[1] === '>'
-								? value + 1
-								: value;
-						currentMediaQueryItem.rules.push({
-							name: `${resolutionMatch[3] === '<' || resolutionMatch[3] === '<=' ? 'max' : 'min'}-${
-								resolutionMatch[3]
-							}`,
-							value: `${parsedValue}${resolutionMatch[2]}`
-						});
-					} else if (resolutionMatch[4] && resolutionMatch[5] && resolutionMatch[6]) {
-						const value = parseInt(resolutionMatch[1], 10);
-						const parsedValue =
-							resolutionMatch[6] === '<'
-								? value + 1
-								: resolutionMatch[6] === '>'
-								? value - 1
-								: value;
-						currentMediaQueryItem.rules.push({
-							name: `${resolutionMatch[6] === '<' || resolutionMatch[6] === '<=' ? 'min' : 'max'}-${
-								resolutionMatch[5]
-							}`,
-							value: `${parsedValue}${resolutionMatch[5]}`
-						});
-					}
+				if (resolutionMatch && (resolutionMatch[1] || resolutionMatch[5])) {
+					currentMediaQueryItem.ranges.push({
+						before: resolutionMatch[1]
+							? {
+									value: resolutionMatch[1],
+									operator: resolutionMatch[2]
+							  }
+							: null,
+						type: resolutionMatch[3],
+						after: resolutionMatch[5]
+							? {
+									value: resolutionMatch[5],
+									operator: resolutionMatch[4]
+							  }
+							: null
+					});
 				} else {
 					const [name, value] = match[2].split(':');
 					const trimmedValue = value ? value.trim() : null;
 					if (!trimmedValue && !match[3]) {
 						return [
-							new MediaQueryItem(ownerWindow, { not: true, devices: [MediaQueryDeviceEnum.all] })
+							new MediaQueryItem(ownerWindow, { not: true, mediaTypes: [MediaQueryTypeEnum.all] })
 						];
 					}
 					currentMediaQueryItem.rules.push({

@@ -1,13 +1,16 @@
 import IWindow from '../window/IWindow';
-import MediaQueryDeviceEnum from './MediaQueryDeviceEnum';
+import IMediaQueryRange from './IMediaQueryRange';
+import IMediaQueryRule from './IMediaQueryRule';
+import MediaQueryTypeEnum from './MediaQueryTypeEnum';
 
 /**
  * Media query this.
  */
 export default class MediaQueryItem {
-	public devices: MediaQueryDeviceEnum[];
+	public mediaTypes: MediaQueryTypeEnum[];
 	public not: boolean;
-	public rules: Array<{ name: string; value: string | null }>;
+	public rules: IMediaQueryRule[];
+	public ranges: IMediaQueryRange[];
 	private ownerWindow: IWindow;
 
 	/**
@@ -15,30 +18,42 @@ export default class MediaQueryItem {
 	 *
 	 * @param ownerWindow Window.
 	 * @param [options] Options.
-	 * @param [options.devices] Devices.
+	 * @param [options.mediaTypes] Media types.
 	 * @param [options.not] Not.
 	 * @param [options.rules] Rules.
+	 * @param options.ranges
 	 */
 	constructor(
 		ownerWindow: IWindow,
 		options?: {
-			devices?: MediaQueryDeviceEnum[];
+			mediaTypes?: MediaQueryTypeEnum[];
 			not?: boolean;
-			rules?: Array<{ name: string; value: string | null }>;
+			rules?: IMediaQueryRule[];
+			ranges?: IMediaQueryRange[];
 		}
 	) {
 		this.ownerWindow = ownerWindow;
-		this.devices = (options && options.devices) || [];
+		this.mediaTypes = (options && options.mediaTypes) || [];
 		this.not = (options && options.not) || false;
 		this.rules = (options && options.rules) || [];
+		this.ranges = (options && options.ranges) || [];
 	}
 
 	/**
 	 * Returns media string.
 	 */
 	public toString(): string {
-		return `${this.not ? 'not ' : ''}${this.devices.join(', ')}${
-			(this.not || this.devices.length > 0) && !!this.rules.length ? ' and ' : ''
+		return `${this.not ? 'not ' : ''}${this.mediaTypes.join(', ')}${
+			(this.not || this.mediaTypes.length > 0) && !!this.ranges.length ? ' and ' : ''
+		}${this.ranges
+			.map(
+				(range) =>
+					`(${range.before ? `${range.before.value} ${range.before.operator} ` : ''}${range.type}${
+						range.after ? ` ${range.after.operator} ${range.after.value}` : ''
+					})`
+			)
+			.join(' and ')}${
+			(this.not || this.mediaTypes.length > 0) && !!this.rules.length ? ' and ' : ''
 		}${this.rules
 			.map((rule) => (rule.value ? `(${rule.name}: ${rule.value})` : `(${rule.name})`))
 			.join(' and ')}`;
@@ -57,16 +72,16 @@ export default class MediaQueryItem {
 	 * @returns "true" if all matches.
 	 */
 	private matchesAll(): boolean {
-		if (!!this.devices.length) {
-			let isDeviceMatch = false;
-			for (const device of this.devices) {
-				if (this.matchesDevice(device)) {
-					isDeviceMatch = true;
+		if (!!this.mediaTypes.length) {
+			let isMediaTypeMatch = false;
+			for (const mediaType of this.mediaTypes) {
+				if (this.matchesMediaType(mediaType)) {
+					isMediaTypeMatch = true;
 					break;
 				}
 			}
 
-			if (!isDeviceMatch) {
+			if (!isMediaTypeMatch) {
 				return false;
 			}
 		}
@@ -77,35 +92,107 @@ export default class MediaQueryItem {
 			}
 		}
 
+		for (const range of this.ranges) {
+			if (!this.matchesRange(range)) {
+				return false;
+			}
+		}
+
 		return true;
 	}
 
 	/**
-	 * Returns "true" if the device matches.
+	 * Returns "true" if the mediaType matches.
 	 *
-	 * @param device Device.
-	 * @returns "true" if the device matches.
+	 * @param mediaType Media type.
+	 * @returns "true" if the mediaType matches.
 	 */
-	private matchesDevice(device: MediaQueryDeviceEnum): boolean {
-		switch (device) {
-			case MediaQueryDeviceEnum.all:
-				return true;
-			case MediaQueryDeviceEnum.screen:
-				return true;
-			case MediaQueryDeviceEnum.print:
-				return false;
+	private matchesMediaType(mediaType: MediaQueryTypeEnum): boolean {
+		if (mediaType === MediaQueryTypeEnum.all) {
+			return true;
 		}
+		return (
+			mediaType ===
+			<MediaQueryTypeEnum>(<unknown>this.ownerWindow.happyDOM.settings.device.mediaType)
+		);
+	}
+
+	/**
+	 * Returns "true" if the range matches.
+	 *
+	 * @param range Range.
+	 * @returns "true" if the range matches.
+	 */
+	private matchesRange(range: IMediaQueryRange): boolean {
+		const size =
+			range.type === 'width' ? this.ownerWindow.innerWidth : this.ownerWindow.innerHeight;
+
+		if (range.before) {
+			const beforeValue = parseInt(range.before.value, 10);
+			if (!isNaN(beforeValue)) {
+				switch (range.before.operator) {
+					case '<':
+						if (beforeValue >= size) {
+							return false;
+						}
+						break;
+					case '<=':
+						if (beforeValue > size) {
+							return false;
+						}
+						break;
+					case '>':
+						if (beforeValue <= size) {
+							return false;
+						}
+						break;
+					case '>=':
+						if (beforeValue < size) {
+							return false;
+						}
+						break;
+				}
+			}
+		}
+
+		if (range.after) {
+			const afterValue = parseInt(range.after.value, 10);
+			if (!isNaN(afterValue)) {
+				switch (range.after.operator) {
+					case '<':
+						if (size >= afterValue) {
+							return false;
+						}
+						break;
+					case '<=':
+						if (size > afterValue) {
+							return false;
+						}
+						break;
+					case '>':
+						if (size <= afterValue) {
+							return false;
+						}
+						break;
+					case '>=':
+						if (size < afterValue) {
+							return false;
+						}
+						break;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**
 	 * Returns "true" if the rule matches.
 	 *
 	 * @param rule Rule.
-	 * @param rule.name Rule name.
-	 * @param rule.value Rule value.
 	 * @returns "true" if the rule matches.
 	 */
-	private matchesRule(rule: { name: string; value: string | null }): boolean {
+	private matchesRule(rule: IMediaQueryRule): boolean {
 		if (!rule.value) {
 			switch (rule.name) {
 				case 'min-width':
@@ -145,7 +232,7 @@ export default class MediaQueryItem {
 					? this.ownerWindow.innerWidth > this.ownerWindow.innerHeight
 					: this.ownerWindow.innerWidth < this.ownerWindow.innerHeight;
 			case 'prefers-color-scheme':
-				return rule.value === this.ownerWindow.happyDOM.settings.colorScheme;
+				return rule.value === this.ownerWindow.happyDOM.settings.device.prefersColorScheme;
 			case 'any-hover':
 			case 'hover':
 				if (rule.value === 'none') {

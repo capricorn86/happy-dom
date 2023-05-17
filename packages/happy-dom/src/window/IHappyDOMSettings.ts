@@ -1,3 +1,6 @@
+import HappyDOMSettingsMediaTypeEnum from './HappyDOMSettingsMediaTypeEnum';
+import HappyDOMSettingsPrefersColorSchemeEnum from './HappyDOMSettingsPrefersColorSchemeEnum';
+
 /**
  * Happy DOM settings.
  */
@@ -7,5 +10,8 @@ export default interface IHappyDOMSettings {
 	disableCSSFileLoading: boolean;
 	disableIframePageLoading: boolean;
 	enableFileSystemHttpRequests: boolean;
-	colorScheme: string;
+	device: {
+		prefersColorScheme: HappyDOMSettingsPrefersColorSchemeEnum;
+		mediaType: HappyDOMSettingsMediaTypeEnum;
+	};
 }
