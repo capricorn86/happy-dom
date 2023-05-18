@@ -209,7 +209,7 @@ export default class CSSStyleDeclarationElementStyle {
 									value: fontSize.value,
 									rootFontSize,
 									parentFontSize,
-									parentWidth: parentFontSize
+									parentSize: parentFontSize
 								});
 								if ((<IElement>parentElement.element).tagName === 'HTML') {
 									rootFontSize = parsedValue;
@@ -230,10 +230,9 @@ export default class CSSStyleDeclarationElementStyle {
 					value: property.value,
 					rootFontSize,
 					parentFontSize,
-					parentWidth:
-						name === 'font-size'
-							? parentFontSize
-							: this.element.ownerDocument.defaultView.innerWidth
+
+					// TODO: Only "font-size" is supported when using percentage values. Add support for other properties.
+					parentSize: name === 'font-size' ? parentFontSize : 0
 				});
 			}
 		}
@@ -329,14 +328,14 @@ export default class CSSStyleDeclarationElementStyle {
 	 * @param options.value Value.
 	 * @param options.rootFontSize Root font size.
 	 * @param options.parentFontSize Parent font size.
-	 * @param [options.parentWidth] Parent width.
+	 * @param [options.parentSize] Parent width.
 	 * @returns CSS value.
 	 */
 	private parseMeasurementsInValue(options: {
 		value: string;
 		rootFontSize: string | number;
 		parentFontSize: string | number;
-		parentWidth: string | number;
+		parentSize: string | number;
 	}): string {
 		const regexp = new RegExp(CSS_MEASUREMENT_REGEXP);
 		let newValue = options.value;
@@ -349,7 +348,7 @@ export default class CSSStyleDeclarationElementStyle {
 					value: match[0],
 					rootFontSize: options.rootFontSize,
 					parentFontSize: options.parentFontSize,
-					parentWidth: options.parentWidth
+					parentSize: options.parentSize
 				});
 
 				if (valueInPixels !== null) {

@@ -124,62 +124,68 @@ export default class MediaQueryItem {
 	 * @returns "true" if the range matches.
 	 */
 	private matchesRange(range: IMediaQueryRange): boolean {
-		const size =
+		const windowSize =
 			range.type === 'width' ? this.ownerWindow.innerWidth : this.ownerWindow.innerHeight;
 
 		if (range.before) {
 			const beforeValue = this.toPixels(range.before.value);
-			if (!isNaN(beforeValue)) {
-				switch (range.before.operator) {
-					case '<':
-						if (beforeValue >= size) {
-							return false;
-						}
-						break;
-					case '<=':
-						if (beforeValue > size) {
-							return false;
-						}
-						break;
-					case '>':
-						if (beforeValue <= size) {
-							return false;
-						}
-						break;
-					case '>=':
-						if (beforeValue < size) {
-							return false;
-						}
-						break;
-				}
+
+			if (beforeValue === null) {
+				return false;
+			}
+
+			switch (range.before.operator) {
+				case '<':
+					if (beforeValue >= windowSize) {
+						return false;
+					}
+					break;
+				case '<=':
+					if (beforeValue > windowSize) {
+						return false;
+					}
+					break;
+				case '>':
+					if (beforeValue <= windowSize) {
+						return false;
+					}
+					break;
+				case '>=':
+					if (beforeValue < windowSize) {
+						return false;
+					}
+					break;
 			}
 		}
 
 		if (range.after) {
 			const afterValue = this.toPixels(range.after.value);
-			if (!isNaN(afterValue)) {
-				switch (range.after.operator) {
-					case '<':
-						if (size >= afterValue) {
-							return false;
-						}
-						break;
-					case '<=':
-						if (size > afterValue) {
-							return false;
-						}
-						break;
-					case '>':
-						if (size <= afterValue) {
-							return false;
-						}
-						break;
-					case '>=':
-						if (size < afterValue) {
-							return false;
-						}
-						break;
-				}
+
+			if (afterValue === null) {
+				return false;
+			}
+
+			switch (range.after.operator) {
+				case '<':
+					if (windowSize >= afterValue) {
+						return false;
+					}
+					break;
+				case '<=':
+					if (windowSize > afterValue) {
+						return false;
+					}
+					break;
+				case '>':
+					if (windowSize <= afterValue) {
+						return false;
+					}
+					break;
+				case '>=':
+					if (windowSize < afterValue) {
+						return false;
+					}
+					break;
 			}
 		}
 
@@ -217,16 +223,16 @@ export default class MediaQueryItem {
 		switch (rule.name) {
 			case 'min-width':
 				const minWidth = this.toPixels(rule.value);
-				return !isNaN(minWidth) && this.ownerWindow.innerWidth >= minWidth;
+				return minWidth !== null && this.ownerWindow.innerWidth >= minWidth;
 			case 'max-width':
 				const maxWidth = this.toPixels(rule.value);
-				return !isNaN(maxWidth) && this.ownerWindow.innerWidth <= maxWidth;
+				return maxWidth !== null && this.ownerWindow.innerWidth <= maxWidth;
 			case 'min-height':
 				const minHeight = this.toPixels(rule.value);
-				return !isNaN(minHeight) && this.ownerWindow.innerHeight >= minHeight;
+				return minHeight !== null && this.ownerWindow.innerHeight >= minHeight;
 			case 'max-height':
 				const maxHeight = this.toPixels(rule.value);
-				return !isNaN(maxHeight) && this.ownerWindow.innerHeight <= maxHeight;
+				return maxHeight !== null && this.ownerWindow.innerHeight <= maxHeight;
 			case 'orientation':
 				return rule.value === 'landscape'
 					? this.ownerWindow.innerWidth > this.ownerWindow.innerHeight
@@ -289,7 +295,7 @@ export default class MediaQueryItem {
 	 * @param value Value.
 	 * @returns Value in pixels.
 	 */
-	private toPixels(value: string): number {
+	private toPixels(value: string): number | null {
 		if (value.endsWith('em')) {
 			this.rootFontSize =
 				this.rootFontSize ||
@@ -300,16 +306,14 @@ export default class MediaQueryItem {
 				ownerWindow: this.ownerWindow,
 				value,
 				rootFontSize: this.rootFontSize,
-				parentFontSize: this.rootFontSize,
-				parentWidth: this.ownerWindow.innerWidth
+				parentFontSize: this.rootFontSize
 			});
 		}
 		return CSSMeasurementConverter.toPixels({
 			ownerWindow: this.ownerWindow,
 			value,
 			rootFontSize: 16,
-			parentFontSize: 16,
-			parentWidth: this.ownerWindow.innerWidth
+			parentFontSize: 16
 		});
 	}
 }

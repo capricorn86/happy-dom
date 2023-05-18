@@ -436,6 +436,42 @@ describe('Window', () => {
 			expect(computedStyle.height).toBe('150px');
 		});
 
+		it('Returns a CSSStyleDeclaration object with computed styles containing "%" measurement values converted to pixels.', () => {
+			const parent = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			window.happyDOM.setInnerWidth(1024);
+
+			parentStyle.innerHTML = `
+                html {
+                    font-size: 62.5%;
+                }
+
+				div {
+                    font-size: 1.5rem;
+				}
+			`;
+
+			elementStyle.innerHTML = `
+                span {
+					width: 100%;
+                    height: 10em;
+                }
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.width).toBe('0px');
+			expect(computedStyle.height).toBe('150px');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },

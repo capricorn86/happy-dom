@@ -130,6 +130,11 @@ describe('MediaQueryList', () => {
 				true
 			);
 
+			// Percentages should never match
+			expect(new MediaQueryList({ ownerWindow: window, media: '(min-width: 0%)' }).matches).toBe(
+				false
+			);
+
 			window.document.documentElement.style.fontSize = '10px';
 
 			expect(
@@ -179,6 +184,11 @@ describe('MediaQueryList', () => {
 			expect(
 				new MediaQueryList({ ownerWindow: window, media: '(min-height: 100vh)' }).matches
 			).toBe(true);
+
+			// Percentages should never match
+			expect(new MediaQueryList({ ownerWindow: window, media: '(min-height: 0%)' }).matches).toBe(
+				false
+			);
 
 			expect(
 				new MediaQueryList({ ownerWindow: window, media: `(min-height: ${769 / 16}rem)` }).matches

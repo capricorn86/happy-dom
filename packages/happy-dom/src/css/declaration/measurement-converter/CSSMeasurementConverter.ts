@@ -12,7 +12,7 @@ export default class CSSMeasurementConverter {
 	 * @param options.value Measurement (e.g. "10px", "10rem" or "10em").
 	 * @param options.rootFontSize Root font size in pixels.
 	 * @param options.parentFontSize Parent font size in pixels.
-	 * @param options.parentWidth
+	 * @param [options.parentSize] Parent size in pixels.
 	 * @returns Measurement in pixels.
 	 */
 	public static toPixels(options: {
@@ -20,7 +20,7 @@ export default class CSSMeasurementConverter {
 		value: string;
 		rootFontSize: string | number;
 		parentFontSize: string | number;
-		parentWidth: string | number;
+		parentSize?: string | number | null;
 	}): number | null {
 		const value = parseFloat(options.value);
 		const unit = options.value.replace(value.toString(), '');
@@ -41,7 +41,9 @@ export default class CSSMeasurementConverter {
 			case 'vh':
 				return this.round((value * options.ownerWindow.innerHeight) / 100);
 			case '%':
-				return this.round((value * parseFloat(<string>options.parentWidth)) / 100);
+				return options.parentSize !== undefined && options.parentSize !== null
+					? this.round((value * parseFloat(<string>options.parentSize)) / 100)
+					: null;
 			case 'vmin':
 				return this.round(
 					(value * Math.min(options.ownerWindow.innerWidth, options.ownerWindow.innerHeight)) / 100
