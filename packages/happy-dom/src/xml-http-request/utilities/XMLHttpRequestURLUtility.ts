@@ -26,6 +26,7 @@ const LOCAL_MIME_TYPES = {
 	rtf: 'text/rtf',
 	js: 'application/javascript',
 	css: 'text/css',
+	apng: 'image/apng',
 	png: 'image/png',
 	jpg: 'image/jpeg',
 	jpeg: 'image/jpeg',
