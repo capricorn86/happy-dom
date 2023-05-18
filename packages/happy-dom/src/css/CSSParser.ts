@@ -33,7 +33,10 @@ export default class CSSParser {
 			if (match[0] === '{') {
 				const selectorText = css.substring(lastIndex, match.index).trim();
 
-				if (selectorText.startsWith('@keyframes')) {
+				if (
+					selectorText.startsWith('@keyframes') ||
+					selectorText.startsWith('@-webkit-keyframes')
+				) {
 					const newRule = new CSSKeyframesRule();
 
 					(<string>newRule.name) = selectorText.replace('@keyframes ', '');
@@ -51,7 +54,10 @@ export default class CSSParser {
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
-				} else if (selectorText.startsWith('@container')) {
+				} else if (
+					selectorText.startsWith('@container') ||
+					selectorText.startsWith('@-webkit-container')
+				) {
 					const conditionText = selectorText.replace(/@container */, '');
 					const newRule = new CSSContainerRule();
 
@@ -59,7 +65,10 @@ export default class CSSParser {
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
-				} else if (selectorText.startsWith('@supports')) {
+				} else if (
+					selectorText.startsWith('@supports') ||
+					selectorText.startsWith('@-webkit-supports')
+				) {
 					const conditionText = selectorText.replace(/@supports */, '');
 					const newRule = new CSSSupportsRule();
 
@@ -67,6 +76,9 @@ export default class CSSParser {
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
+				} else if (selectorText.startsWith('@')) {
+					// Unknown rule.
+					// Ignore.
 				} else if (parentRule && parentRule.type === CSSRule.KEYFRAMES_RULE) {
 					const newRule = new CSSKeyframeRule();
 					(<string>newRule.keyText) = selectorText.trim();

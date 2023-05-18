@@ -90,17 +90,37 @@ describe('Window', () => {
 			const windowWithOptions = new Window({
 				innerWidth: 1920,
 				innerHeight: 1080,
-				url: 'http://localhost:8080'
+				url: 'http://localhost:8080',
+				settings: {
+					disableJavaScriptEvaluation: true,
+					device: {
+						prefersColorScheme: 'dark'
+					}
+				}
 			});
 			const windowWithoutOptions = new Window();
 
 			expect(windowWithOptions.innerWidth).toBe(1920);
 			expect(windowWithOptions.innerHeight).toBe(1080);
 			expect(windowWithOptions.location.href).toBe('http://localhost:8080/');
+			expect(windowWithOptions.happyDOM.settings.disableJavaScriptEvaluation).toBe(true);
+			expect(windowWithOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.device.prefersColorScheme).toBe('dark');
+			expect(windowWithOptions.happyDOM.settings.device.mediaType).toBe('screen');
 
 			expect(windowWithoutOptions.innerWidth).toBe(1024);
 			expect(windowWithoutOptions.innerHeight).toBe(768);
 			expect(windowWithoutOptions.location.href).toBe('about:blank');
+			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptEvaluation).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.device.prefersColorScheme).toBe('light');
+			expect(windowWithoutOptions.happyDOM.settings.device.mediaType).toBe('screen');
 		});
 	});
 
@@ -350,10 +370,14 @@ describe('Window', () => {
 			window.happyDOM.setInnerWidth(1024);
 
 			parentStyle.innerHTML = `
+                html {
+                    font: 14px "Times New Roman";
+                }
+
 				div {
 					--color-variable: #000;
 					--border-variable: 1px solid var(--color-variable);
-					--font-variable: 14px "Tahoma";
+					--font-variable: 1rem "Tahoma";
 				}
 			`;
 

@@ -135,8 +135,6 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
 import IHappyDOMOptions from './IHappyDOMOptions';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
 import ValidityState from '../validity-state/ValidityState';
-import HappyDOMSettingsPrefersColorSchemeEnum from './HappyDOMSettingsPrefersColorSchemeEnum';
-import HappyDOMSettingsMediaTypeEnum from './HappyDOMSettingsMediaTypeEnum';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -181,8 +179,8 @@ export default class Window extends EventTarget implements IWindow {
 			disableIframePageLoading: false,
 			enableFileSystemHttpRequests: false,
 			device: {
-				prefersColorScheme: HappyDOMSettingsPrefersColorSchemeEnum.light,
-				mediaType: HappyDOMSettingsMediaTypeEnum.screen
+				prefersColorScheme: 'light',
+				mediaType: 'screen'
 			}
 		}
 	};
@@ -607,7 +605,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns CSS style declaration.
 	 */
 	public getComputedStyle(element: IElement): CSSStyleDeclaration {
-		return new CSSStyleDeclaration(element, true);
+		element['_computedStyle'] = element['_computedStyle'] || new CSSStyleDeclaration(element, true);
+		return element['_computedStyle'];
 	}
 
 	/**

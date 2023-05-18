@@ -36,6 +36,57 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	}
 
 	/**
+	 * Returns outline.
+	 *
+	 * @param properties Properties.
+	 * @returns Property value
+	 */
+	public static getOutline(properties: {
+		[k: string]: ICSSStyleDeclarationPropertyValue;
+	}): ICSSStyleDeclarationPropertyValue {
+		if (
+			!properties['outline-color']?.value ||
+			!properties['outline-style']?.value ||
+			!properties['outline-width']?.value
+		) {
+			return null;
+		}
+
+		const important =
+			properties['outline-color'].important &&
+			properties['outline-style'].important &&
+			properties['outline-width'].important;
+
+		if (
+			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['outline-width'].value) &&
+			properties['outline-width'].value === properties['outline-style'].value &&
+			properties['outline-width'].value === properties['outline-color'].value
+		) {
+			return {
+				important,
+				value: properties['outline-width'].value
+			};
+		}
+
+		const values = [];
+
+		if (!CSSStyleDeclarationValueParser.getInitial(properties['outline-color']?.value)) {
+			values.push(properties['outline-color'].value);
+		}
+		if (!CSSStyleDeclarationValueParser.getInitial(properties['outline-style']?.value)) {
+			values.push(properties['outline-style'].value);
+		}
+		if (!CSSStyleDeclarationValueParser.getInitial(properties['outline-width'].value)) {
+			values.push(properties['outline-width'].value);
+		}
+
+		return {
+			important,
+			value: values.join(' ')
+		};
+	}
+
+	/**
 	 * Returns border.
 	 *
 	 * @param properties Properties.

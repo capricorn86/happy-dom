@@ -23,7 +23,7 @@ export default class MediaQueryItem {
 	 * @param [options.mediaTypes] Media types.
 	 * @param [options.not] Not.
 	 * @param [options.rules] Rules.
-	 * @param options.ranges
+	 * @param [options.ranges] Ranges.
 	 */
 	constructor(
 		ownerWindow: IWindow,
@@ -113,10 +113,7 @@ export default class MediaQueryItem {
 		if (mediaType === MediaQueryTypeEnum.all) {
 			return true;
 		}
-		return (
-			mediaType ===
-			<MediaQueryTypeEnum>(<unknown>this.ownerWindow.happyDOM.settings.device.mediaType)
-		);
+		return mediaType === this.ownerWindow.happyDOM.settings.device.mediaType;
 	}
 
 	/**
@@ -292,16 +289,26 @@ export default class MediaQueryItem {
 	 * @returns Value in pixels.
 	 */
 	private toPixels(value: string): number {
-		this.rootFontSize =
-			this.rootFontSize ||
-			parseFloat(
-				this.ownerWindow.getComputedStyle(this.ownerWindow.document.documentElement).fontSize
-			);
+		if (value.endsWith('em')) {
+			this.rootFontSize =
+				this.rootFontSize ||
+				parseFloat(
+					this.ownerWindow.getComputedStyle(this.ownerWindow.document.documentElement).fontSize
+				);
+			return CSSMeasurementConverter.toPixels({
+				ownerWindow: this.ownerWindow,
+				value,
+				rootFontSize: this.rootFontSize,
+				parentFontSize: this.rootFontSize,
+				parentWidth: this.ownerWindow.innerWidth
+			});
+		}
 		return CSSMeasurementConverter.toPixels({
 			ownerWindow: this.ownerWindow,
 			value,
-			rootFontSize: this.rootFontSize,
-			parentFontSize: this.rootFontSize
+			rootFontSize: 16,
+			parentFontSize: 16,
+			parentWidth: this.ownerWindow.innerWidth
 		});
 	}
 }

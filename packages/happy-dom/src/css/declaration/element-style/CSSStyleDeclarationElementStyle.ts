@@ -11,11 +11,13 @@ import CSSRule from '../../CSSRule';
 import CSSStyleRule from '../../rules/CSSStyleRule';
 import CSSStyleDeclarationElementDefaultCSS from './config/CSSStyleDeclarationElementDefaultCSS';
 import CSSStyleDeclarationElementInheritedProperties from './config/CSSStyleDeclarationElementInheritedProperties';
+import CSSStyleDeclarationElementMeasurementProperties from './config/CSSStyleDeclarationElementMeasurementProperties';
 import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSParser';
 import QuerySelector from '../../../query-selector/QuerySelector';
 import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConverter';
 
 const CSS_VARIABLE_REGEXP = /var\( *(--[^) ]+)\)/g;
+const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 
 type IStyleAndElement = {
 	element: IElement | IShadowRoot | IDocument;
@@ -162,15 +164,9 @@ export default class CSSStyleDeclarationElementStyle {
 		// Concatenates all parent element CSS to one string.
 		const targetElement = parentElements[parentElements.length - 1];
 		const propertyManager = new CSSStyleDeclarationPropertyManager();
-		const contextProperties: {
-			rootFontSize: string | null;
-			parentFontSize: string | null;
-			cssVariables: { [k: string]: string };
-		} = {
-			rootFontSize: null,
-			parentFontSize: null,
-			cssVariables: {}
-		};
+		const cssVariables: { [k: string]: string } = {};
+		let rootFontSize: string | number = 16;
+		let parentFontSize: string | number = 16;
 
 		for (const parentElement of parentElements) {
 			parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
@@ -191,9 +187,9 @@ export default class CSSStyleDeclarationElementStyle {
 
 			CSSStyleDeclarationCSSParser.parse(elementCSSText, (name, value, important) => {
 				if (name.startsWith('--')) {
-					const cssValue = this.getCSSValue(value, contextProperties);
+					const cssValue = this.parseCSSVariablesInValue(value, cssVariables);
 					if (cssValue) {
-						contextProperties.cssVariables[name] = cssValue;
+						cssVariables[name] = cssValue;
 					}
 					return;
 				}
@@ -202,20 +198,43 @@ export default class CSSStyleDeclarationElementStyle {
 					CSSStyleDeclarationElementInheritedProperties[name] ||
 					parentElement === targetElement
 				) {
-					const cssValue = this.getCSSValue(value, contextProperties);
+					const cssValue = this.parseCSSVariablesInValue(value, cssVariables);
 					if (cssValue && (!propertyManager.get(name)?.important || important)) {
 						propertyManager.set(name, cssValue, important);
-						const fontSize = propertyManager.get('font-size');
-						if (fontSize !== null) {
-							if ((<IElement>parentElement.element).tagName === 'HTML') {
-								contextProperties.rootFontSize = fontSize.value;
-							} else if (parentElement !== targetElement) {
-								contextProperties.parentFontSize = fontSize.value;
+						if (name === 'font' || name === 'font-size') {
+							const fontSize = propertyManager.properties['font-size'];
+							if (fontSize !== null) {
+								const parsedValue = this.parseMeasurementsInValue({
+									value: fontSize.value,
+									rootFontSize,
+									parentFontSize,
+									parentWidth: parentFontSize
+								});
+								if ((<IElement>parentElement.element).tagName === 'HTML') {
+									rootFontSize = parsedValue;
+								} else if (parentElement !== targetElement) {
+									parentFontSize = parsedValue;
+								}
 							}
 						}
 					}
 				}
 			});
+		}
+
+		for (const name of CSSStyleDeclarationElementMeasurementProperties) {
+			const property = propertyManager.properties[name];
+			if (property) {
+				property.value = this.parseMeasurementsInValue({
+					value: property.value,
+					rootFontSize,
+					parentFontSize,
+					parentWidth:
+						name === 'font-size'
+							? parentFontSize
+							: this.element.ownerDocument.defaultView.innerWidth
+				});
+			}
 		}
 
 		this.cache.propertyManager = propertyManager;
@@ -240,7 +259,7 @@ export default class CSSStyleDeclarationElementStyle {
 			return;
 		}
 
-		const defaultView = options.elements[0].element.ownerDocument.defaultView;
+		const defaultView = this.element.ownerDocument.defaultView;
 
 		for (const rule of options.cssRules) {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
@@ -255,10 +274,6 @@ export default class CSSStyleDeclarationElementStyle {
 						}
 					} else {
 						for (const element of options.elements) {
-							// Skip @-rules.
-							if (selectorText.startsWith('@')) {
-								continue;
-							}
 							const matchResult = QuerySelector.match(<IElement>element.element, selectorText);
 							if (matchResult) {
 								element.cssTexts.push({
@@ -271,6 +286,8 @@ export default class CSSStyleDeclarationElementStyle {
 				}
 			} else if (
 				rule.type === CSSRuleTypeEnum.mediaRule &&
+				// TODO: Gettings the root font causes a never ending loop as we need to the computed styles for the <html> element (root element) to get the font size. How to fix this?
+				this.element.tagName !== 'HTML' &&
 				defaultView.matchMedia((<CSSMediaRule>rule).conditionText).matches
 			) {
 				this.parseCSSRules({
@@ -283,44 +300,58 @@ export default class CSSStyleDeclarationElementStyle {
 	}
 
 	/**
-	 * Returns CSS value.
+	 * Parses CSS variables in a value.
 	 *
 	 * @param value Value.
-	 * @param contextProperties Context properties.
-	 * @param contextProperties.rootFontSize Root font size.
-	 * @param contextProperties.parentFontSize Parent font size.
-	 * @param contextProperties.cssVariables CSS variables.
+	 * @param cssVariables CSS variables.
 	 * @returns CSS value.
 	 */
-	private getCSSValue(
-		value: string,
-		contextProperties: {
-			rootFontSize: string | null;
-			parentFontSize: string | null;
-			cssVariables: { [k: string]: string };
-		}
-	): string {
+	private parseCSSVariablesInValue(value: string, cssVariables: { [k: string]: string }): string {
 		const regexp = new RegExp(CSS_VARIABLE_REGEXP);
 		let newValue = value;
 		let match;
 
 		while ((match = regexp.exec(value)) !== null) {
-			const cssVariableValue = contextProperties.cssVariables[match[1]];
-			if (!cssVariableValue) {
-				return null;
-			}
-			newValue = newValue.replace(match[0], cssVariableValue);
+			newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
 		}
 
-		const valueInPixels = CSSMeasurementConverter.toPixels({
-			ownerWindow: this.element.ownerDocument.defaultView,
-			value: newValue,
-			rootFontSize: contextProperties.rootFontSize || 16,
-			parentFontSize: contextProperties.parentFontSize || 16
-		});
+		return newValue;
+	}
 
-		if (valueInPixels !== null) {
-			return valueInPixels + 'px';
+	/**
+	 * Parses measurements in a value.
+	 *
+	 * @param options Options.
+	 * @param options.value Value.
+	 * @param options.rootFontSize Root font size.
+	 * @param options.parentFontSize Parent font size.
+	 * @param [options.parentWidth] Parent width.
+	 * @returns CSS value.
+	 */
+	private parseMeasurementsInValue(options: {
+		value: string;
+		rootFontSize: string | number;
+		parentFontSize: string | number;
+		parentWidth: string | number;
+	}): string {
+		const regexp = new RegExp(CSS_MEASUREMENT_REGEXP);
+		let newValue = options.value;
+		let match;
+
+		while ((match = regexp.exec(options.value)) !== null) {
+			if (match[1] !== 'px') {
+				const valueInPixels = CSSMeasurementConverter.toPixels({
+					ownerWindow: this.element.ownerDocument.defaultView,
+					value: match[0],
+					rootFontSize: options.rootFontSize,
+					parentFontSize: options.parentFontSize,
+					parentWidth: options.parentWidth
+				});
+
+				if (valueInPixels !== null) {
+					newValue = newValue.replace(match[0], valueInPixels + 'px');
+				}
+			}
 		}
 
 		return newValue;

@@ -31,6 +31,7 @@ import Event from '../../event/Event';
 import ElementUtility from './ElementUtility';
 import HTMLCollection from './HTMLCollection';
 import EventPhaseEnum from '../../event/EventPhaseEnum';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
 
 /**
  * Element.
@@ -92,6 +93,7 @@ export default class Element extends Node implements IElement {
 
 	private _classList: DOMTokenList = null;
 	public _isValue?: string;
+	public _computedStyle: CSSStyleDeclaration | null = null;
 
 	/**
 	 * Returns class list.
