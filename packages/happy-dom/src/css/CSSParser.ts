@@ -39,7 +39,7 @@ export default class CSSParser {
 				) {
 					const newRule = new CSSKeyframesRule();
 
-					(<string>newRule.name) = selectorText.replace('@keyframes ', '');
+					(<string>newRule.name) = selectorText.replace(/@(-webkit-){0,1}keyframes +/, '');
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
@@ -58,7 +58,7 @@ export default class CSSParser {
 					selectorText.startsWith('@container') ||
 					selectorText.startsWith('@-webkit-container')
 				) {
-					const conditionText = selectorText.replace(/@container */, '');
+					const conditionText = selectorText.replace(/@(-webkit-){0,1}container +/, '');
 					const newRule = new CSSContainerRule();
 
 					(<string>newRule.conditionText) = conditionText;
@@ -69,7 +69,7 @@ export default class CSSParser {
 					selectorText.startsWith('@supports') ||
 					selectorText.startsWith('@-webkit-supports')
 				) {
-					const conditionText = selectorText.replace(/@supports */, '');
+					const conditionText = selectorText.replace(/@(-webkit-){0,1}supports +/, '');
 					const newRule = new CSSSupportsRule();
 
 					(<string>newRule.conditionText) = conditionText;
@@ -78,7 +78,10 @@ export default class CSSParser {
 					parentRule = newRule;
 				} else if (selectorText.startsWith('@')) {
 					// Unknown rule.
-					// Ignore.
+					// We will create a new rule to let it grab its content, but we will not add it to the cssRules array.
+					const newRule = new CSSRule();
+					newRule.parentStyleSheet = parentStyleSheet;
+					parentRule = newRule;
 				} else if (parentRule && parentRule.type === CSSRule.KEYFRAMES_RULE) {
 					const newRule = new CSSKeyframeRule();
 					(<string>newRule.keyText) = selectorText.trim();
