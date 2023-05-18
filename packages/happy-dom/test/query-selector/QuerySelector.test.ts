@@ -473,6 +473,19 @@ describe('QuerySelector', () => {
 			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
+		it('Returns all elements with an attribute value that begins with a specified value using "[class^=cl]".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('[class^=cl]');
+
+			expect(elements.length).toBe(5);
+			expect(elements[0] === container.children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1]).toBe(true);
+			expect(elements[2] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[3] === container.children[0].children[1].children[1]).toBe(true);
+			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
+		});
+
 		it('Returns all elements with an attribute value that ends with a specified value using "[class$="ss2"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
