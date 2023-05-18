@@ -142,7 +142,7 @@ export default class SelectorParser {
 						operator: match[11] || null,
 						value: match[12],
 						modifier: null,
-						regExp: this.getAttributeRegExp({ operator: match[7], value: match[8] })
+						regExp: this.getAttributeRegExp({ operator: match[11], value: match[12] })
 					});
 				} else if (match[13] && match[14]) {
 					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
