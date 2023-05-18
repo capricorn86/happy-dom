@@ -298,7 +298,7 @@ describe('Window', () => {
 					}
 				}
 
-				@media (max-width: 768px) {
+				@media (max-width: ${768 / 16}rem) {
 					div {
 						font-size: 20px;
 					}
