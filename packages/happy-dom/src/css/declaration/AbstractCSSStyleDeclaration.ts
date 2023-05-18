@@ -3,8 +3,8 @@ import Attr from '../../nodes/attr/Attr';
 import CSSRule from '../CSSRule';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
 import DOMException from '../../exception/DOMException';
-import CSSStyleDeclarationElementStyle from './utilities/CSSStyleDeclarationElementStyle';
-import CSSStyleDeclarationPropertyManager from './utilities/CSSStyleDeclarationPropertyManager';
+import CSSStyleDeclarationElementStyle from './element-style/CSSStyleDeclarationElementStyle';
+import CSSStyleDeclarationPropertyManager from './property-manager/CSSStyleDeclarationPropertyManager';
 
 /**
  * CSS Style Declaration.

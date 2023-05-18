@@ -258,7 +258,11 @@ const window = new Window({
 		disableJavaScriptEvaluation: true,
 		disableCSSFileLoading: true,
 		disableIframePageLoading: true,
-		enableFileSystemHttpRequests: true
+		enableFileSystemHttpRequests: true,
+        device: {
+            mediaType: 'print',
+            prefersColorScheme = 'dark
+        }
 	}
 });
 ```
@@ -273,6 +277,8 @@ window.happyDOM.settings.disableJavaScriptEvaluation = true;
 window.happyDOM.settings.disableCSSFileLoading = true;
 window.happyDOM.settings.disableIframePageLoading = true;
 window.happyDOM.settings.enableFileSystemHttpRequests = true;
+window.happyDOM.settings.device.mediaType = 'print';
+window.happyDOM.settings.device.prefersColorScheme = 'dark';
 ```
 
 **disableJavaScriptFileLoading**
@@ -294,6 +300,14 @@ Set it to "true" to disable page loading in HTMLIFrameElement. Defaults to "fals
 **enableFileSystemHttpRequests**
 
 Set it to "true" to enable file system HTTP requests using XMLHttpRequest. Defaults to "false".
+
+**device.mediaType**
+
+Used by media queries. Acceptable values are "screen" or "print". Defaults to "screen".
+
+**device.prefersColorScheme**
+
+Used by media queries. Acceptable values are "light" or "dark". Defaults to "dark".
 
 # Performance
 

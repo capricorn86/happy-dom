@@ -90,17 +90,37 @@ describe('Window', () => {
 			const windowWithOptions = new Window({
 				innerWidth: 1920,
 				innerHeight: 1080,
-				url: 'http://localhost:8080'
+				url: 'http://localhost:8080',
+				settings: {
+					disableJavaScriptEvaluation: true,
+					device: {
+						prefersColorScheme: 'dark'
+					}
+				}
 			});
 			const windowWithoutOptions = new Window();
 
 			expect(windowWithOptions.innerWidth).toBe(1920);
 			expect(windowWithOptions.innerHeight).toBe(1080);
 			expect(windowWithOptions.location.href).toBe('http://localhost:8080/');
+			expect(windowWithOptions.happyDOM.settings.disableJavaScriptEvaluation).toBe(true);
+			expect(windowWithOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.device.prefersColorScheme).toBe('dark');
+			expect(windowWithOptions.happyDOM.settings.device.mediaType).toBe('screen');
 
 			expect(windowWithoutOptions.innerWidth).toBe(1024);
 			expect(windowWithoutOptions.innerHeight).toBe(768);
 			expect(windowWithoutOptions.location.href).toBe('about:blank');
+			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptEvaluation).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.device.prefersColorScheme).toBe('light');
+			expect(windowWithoutOptions.happyDOM.settings.device.mediaType).toBe('screen');
 		});
 	});
 
@@ -278,7 +298,7 @@ describe('Window', () => {
 					}
 				}
 
-				@media (max-width: 768px) {
+				@media (max-width: ${768 / 16}rem) {
 					div {
 						font-size: 20px;
 					}
@@ -330,7 +350,8 @@ describe('Window', () => {
 				customElement.shadowRoot.querySelector('span')
 			);
 
-			expect(elementComputedStyle.font).toBe('');
+			// Default value on HTML is "16px Times New Roman"
+			expect(elementComputedStyle.font).toBe('16px "Times New Roman"');
 			expect(elementComputedStyle.color).toBe('green');
 
 			expect(customElementComputedStyle.color).toBe('yellow');
@@ -349,17 +370,22 @@ describe('Window', () => {
 			window.happyDOM.setInnerWidth(1024);
 
 			parentStyle.innerHTML = `
+                html {
+                    font: 14px "Times New Roman";
+                }
+
 				div {
 					--color-variable: #000;
-					--valid-variable: 1px solid var(--color-variable);
-					--invalid-variable: invalid;
+					--border-variable: 1px solid var(--color-variable);
+					--font-variable: 1rem "Tahoma";
 				}
 			`;
 
 			elementStyle.innerHTML = `
 				span {
-					border: var(--valid-variable);
-					font: var(--invalid-variable);
+					border: var(--border-variable);
+					font: var(--font-variable);
+                    color: var(--invalid-variable);
 				}
 			`;
 
@@ -370,8 +396,101 @@ describe('Window', () => {
 			document.body.appendChild(parent);
 
 			expect(computedStyle.border).toBe('1px solid #000');
-			expect(computedStyle.font).toBe('');
+			expect(computedStyle.font).toBe('14px "Tahoma"');
+			expect(computedStyle.color).toBe('');
 		});
+
+		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values converted to pixels.', () => {
+			const parent = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			window.happyDOM.setInnerWidth(1024);
+
+			parentStyle.innerHTML = `
+                html {
+                    font-size: 10px;
+                }
+
+				div {
+                    font-size: 1.5rem;
+				}
+			`;
+
+			elementStyle.innerHTML = `
+                span {
+					width: 10rem;
+                    height: 10em;
+                }
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.width).toBe('100px');
+			expect(computedStyle.height).toBe('150px');
+		});
+
+		it('Returns a CSSStyleDeclaration object with computed styles containing "%" measurement values converted to pixels.', () => {
+			const parent = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			window.happyDOM.setInnerWidth(1024);
+
+			parentStyle.innerHTML = `
+                html {
+                    font-size: 62.5%;
+                }
+
+				div {
+                    font-size: 1.5rem;
+				}
+			`;
+
+			elementStyle.innerHTML = `
+                span {
+					width: 100%;
+                    height: 10em;
+                }
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.width).toBe('0px');
+			expect(computedStyle.height).toBe('150px');
+		});
+
+		for (const measurement of [
+			{ value: '100vw', result: '1024px' },
+			{ value: '100vh', result: '768px' },
+			{ value: '100vmin', result: '768px' },
+			{ value: '100vmax', result: '1024px' },
+			{ value: '1cm', result: '37.7812px' },
+			{ value: '1mm', result: '3.7781px' },
+			{ value: '1in', result: '96px' },
+			{ value: '1pt', result: '1.3281px' },
+			{ value: '1pc', result: '16px' },
+			{ value: '1Q', result: '0.945px' }
+		]) {
+			it(`Returns a CSSStyleDeclaration object with computed styles for a "${measurement.value}" measurement value converted to pixels.`, () => {
+				const element = <IHTMLElement>document.createElement('div');
+				element.style.width = measurement.value;
+				document.body.appendChild(element);
+				expect(window.getComputedStyle(element).width).toBe(measurement.result);
+			});
+		}
 	});
 
 	describe('eval()', () => {

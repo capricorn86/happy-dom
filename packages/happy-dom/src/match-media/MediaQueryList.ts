@@ -3,9 +3,8 @@ import Event from '../event/Event';
 import IWindow from '../window/IWindow';
 import IEventListener from '../event/IEventListener';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
-
-const MEDIA_REGEXP =
-	/min-width: *([0-9]+) *px|max-width: *([0-9]+) *px|min-height: *([0-9]+) *px|max-height: *([0-9]+) *px/;
+import IMediaQueryItem from './MediaQueryItem';
+import MediaQueryParser from './MediaQueryParser';
 
 /**
  * Media Query List.
@@ -14,20 +13,42 @@ const MEDIA_REGEXP =
  * https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList.
  */
 export default class MediaQueryList extends EventTarget {
-	public readonly media: string = '';
 	public onchange: (event: Event) => void = null;
 	private _ownerWindow: IWindow;
+	private _items: IMediaQueryItem[] | null = null;
+	private _media: string;
+	private _rootFontSize: string | number | null = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param ownerWindow Window.
-	 * @param media Media.
+	 * @param options Options.
+	 * @param options.ownerWindow Owner window.
+	 * @param options.media Media.
+	 * @param [options.rootFontSize] Root font size.
 	 */
-	constructor(ownerWindow: IWindow, media: string) {
+	constructor(options: { ownerWindow: IWindow; media: string; rootFontSize?: string | number }) {
 		super();
-		this._ownerWindow = ownerWindow;
-		this.media = media;
+		this._ownerWindow = options.ownerWindow;
+		this._media = options.media;
+		this._rootFontSize = options.rootFontSize || null;
+	}
+
+	/**
+	 * Returns media.
+	 *
+	 * @returns Media.
+	 */
+	public get media(): string {
+		this._items =
+			this._items ||
+			MediaQueryParser.parse({
+				ownerWindow: this._ownerWindow,
+				mediaQuery: this._media,
+				rootFontSize: this._rootFontSize
+			});
+
+		return this._items.map((item) => item.toString()).join(', ');
 	}
 
 	/**
@@ -36,19 +57,21 @@ export default class MediaQueryList extends EventTarget {
 	 * @returns Matches.
 	 */
 	public get matches(): boolean {
-		const match = MEDIA_REGEXP.exec(this.media);
-		if (match) {
-			if (match[1]) {
-				return this._ownerWindow.innerWidth >= parseInt(match[1]);
-			} else if (match[2]) {
-				return this._ownerWindow.innerWidth <= parseInt(match[2]);
-			} else if (match[3]) {
-				return this._ownerWindow.innerHeight >= parseInt(match[3]);
-			} else if (match[4]) {
-				return this._ownerWindow.innerHeight <= parseInt(match[4]);
+		this._items =
+			this._items ||
+			MediaQueryParser.parse({
+				ownerWindow: this._ownerWindow,
+				mediaQuery: this._media,
+				rootFontSize: this._rootFontSize
+			});
+
+		for (const item of this._items) {
+			if (!item.matches()) {
+				return false;
 			}
 		}
-		return false;
+
+		return true;
 	}
 
 	/**
