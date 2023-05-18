@@ -17,17 +17,21 @@ export default class MediaQueryList extends EventTarget {
 	private _ownerWindow: IWindow;
 	private _items: IMediaQueryItem[] | null = null;
 	private _media: string;
+	private _rootFontSize: string | number | null = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param ownerWindow Window.
-	 * @param media Media.
+	 * @param options Options.
+	 * @param options.ownerWindow Owner window.
+	 * @param options.media Media.
+	 * @param [options.rootFontSize] Root font size.
 	 */
-	constructor(ownerWindow: IWindow, media: string) {
+	constructor(options: { ownerWindow: IWindow; media: string; rootFontSize?: string | number }) {
 		super();
-		this._ownerWindow = ownerWindow;
-		this._media = media;
+		this._ownerWindow = options.ownerWindow;
+		this._media = options.media;
+		this._rootFontSize = options.rootFontSize || null;
 	}
 
 	/**
@@ -36,7 +40,14 @@ export default class MediaQueryList extends EventTarget {
 	 * @returns Media.
 	 */
 	public get media(): string {
-		this._items = this._items || MediaQueryParser.parse(this._ownerWindow, this._media);
+		this._items =
+			this._items ||
+			MediaQueryParser.parse({
+				ownerWindow: this._ownerWindow,
+				mediaQuery: this._media,
+				rootFontSize: this._rootFontSize
+			});
+
 		return this._items.map((item) => item.toString()).join(', ');
 	}
 
@@ -46,7 +57,13 @@ export default class MediaQueryList extends EventTarget {
 	 * @returns Matches.
 	 */
 	public get matches(): boolean {
-		this._items = this._items || MediaQueryParser.parse(this._ownerWindow, this._media);
+		this._items =
+			this._items ||
+			MediaQueryParser.parse({
+				ownerWindow: this._ownerWindow,
+				mediaQuery: this._media,
+				rootFontSize: this._rootFontSize
+			});
 
 		for (const item of this._items) {
 			if (!item.matches()) {

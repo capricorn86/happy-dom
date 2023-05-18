@@ -15,6 +15,7 @@ import CSSStyleDeclarationElementMeasurementProperties from './config/CSSStyleDe
 import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSParser';
 import QuerySelector from '../../../query-selector/QuerySelector';
 import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConverter';
+import MediaQueryList from '../../../match-media/MediaQueryList';
 
 const CSS_VARIABLE_REGEXP = /var\( *(--[^) ]+)\)/g;
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
@@ -259,7 +260,7 @@ export default class CSSStyleDeclarationElementStyle {
 			return;
 		}
 
-		const defaultView = this.element.ownerDocument.defaultView;
+		const ownerWindow = this.element.ownerDocument.defaultView;
 
 		for (const rule of options.cssRules) {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
@@ -286,9 +287,12 @@ export default class CSSStyleDeclarationElementStyle {
 				}
 			} else if (
 				rule.type === CSSRuleTypeEnum.mediaRule &&
-				// TODO: Gettings the root font causes a never ending loop as we need to the computed styles for the <html> element (root element) to get the font size. How to fix this?
-				this.element.tagName !== 'HTML' &&
-				defaultView.matchMedia((<CSSMediaRule>rule).conditionText).matches
+				// TODO: We need to send in a predfined root font size as it will otherwise be calculated using Window.getComputedStyle(), which will cause a never ending loop. Is there another solution?
+				new MediaQueryList({
+					ownerWindow,
+					media: (<CSSMediaRule>rule).conditionText,
+					rootFontSize: this.element.tagName === 'HTML' ? 16 : null
+				}).matches
 			) {
 				this.parseCSSRules({
 					elements: options.elements,

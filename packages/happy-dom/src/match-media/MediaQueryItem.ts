@@ -12,33 +12,34 @@ export default class MediaQueryItem {
 	public not: boolean;
 	public rules: IMediaQueryRule[];
 	public ranges: IMediaQueryRange[];
-	private rootFontSize: number | null = null;
+	private rootFontSize: string | number | null = null;
 	private ownerWindow: IWindow;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param ownerWindow Window.
-	 * @param [options] Options.
+	 * @param options Options.
+	 * @param options.ownerWindow Owner window.
+	 * @param [options.rootFontSize] Root font size.
 	 * @param [options.mediaTypes] Media types.
 	 * @param [options.not] Not.
 	 * @param [options.rules] Rules.
 	 * @param [options.ranges] Ranges.
 	 */
-	constructor(
-		ownerWindow: IWindow,
-		options?: {
-			mediaTypes?: MediaQueryTypeEnum[];
-			not?: boolean;
-			rules?: IMediaQueryRule[];
-			ranges?: IMediaQueryRange[];
-		}
-	) {
-		this.ownerWindow = ownerWindow;
-		this.mediaTypes = (options && options.mediaTypes) || [];
-		this.not = (options && options.not) || false;
-		this.rules = (options && options.rules) || [];
-		this.ranges = (options && options.ranges) || [];
+	constructor(options: {
+		ownerWindow: IWindow;
+		rootFontSize?: string | number | null;
+		mediaTypes?: MediaQueryTypeEnum[];
+		not?: boolean;
+		rules?: IMediaQueryRule[];
+		ranges?: IMediaQueryRange[];
+	}) {
+		this.ownerWindow = options.ownerWindow;
+		this.rootFontSize = options.rootFontSize || null;
+		this.mediaTypes = options.mediaTypes || [];
+		this.not = options.not || false;
+		this.rules = options.rules || [];
+		this.ranges = options.ranges || [];
 	}
 
 	/**

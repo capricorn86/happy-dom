@@ -669,7 +669,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns A new MediaQueryList.
 	 */
 	public matchMedia(mediaQueryString: string): MediaQueryList {
-		return new MediaQueryList(this, mediaQueryString);
+		return new MediaQueryList({ ownerWindow: this, media: mediaQueryString });
 	}
 
 	/**
