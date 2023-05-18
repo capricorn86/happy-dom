@@ -205,6 +205,8 @@ export default class MediaQueryItem {
 				case 'max-width':
 				case 'min-height':
 				case 'max-height':
+				case 'width':
+				case 'height':
 				case 'orientation':
 				case 'prefers-color-scheme':
 				case 'hover':
@@ -233,6 +235,12 @@ export default class MediaQueryItem {
 			case 'max-height':
 				const maxHeight = this.toPixels(rule.value);
 				return maxHeight !== null && this.ownerWindow.innerHeight <= maxHeight;
+			case 'width':
+				const width = this.toPixels(rule.value);
+				return width !== null && this.ownerWindow.innerWidth === width;
+			case 'height':
+				const height = this.toPixels(rule.value);
+				return height !== null && this.ownerWindow.innerHeight === height;
 			case 'orientation':
 				return rule.value === 'landscape'
 					? this.ownerWindow.innerWidth > this.ownerWindow.innerHeight
@@ -269,20 +277,29 @@ export default class MediaQueryItem {
 			case 'max-aspect-ratio':
 			case 'aspect-ratio':
 				const aspectRatio = rule.value.split('/');
-				const width = parseInt(aspectRatio[0], 10);
-				const height = parseInt(aspectRatio[1], 10);
+				const aspectRatioWidth = parseInt(aspectRatio[0], 10);
+				const aspectRatioHeight = parseInt(aspectRatio[1], 10);
 
-				if (isNaN(width) || isNaN(height)) {
+				if (isNaN(aspectRatioWidth) || isNaN(aspectRatioHeight)) {
 					return false;
 				}
 
 				switch (rule.name) {
 					case 'min-aspect-ratio':
-						return width / height <= this.ownerWindow.innerWidth / this.ownerWindow.innerHeight;
+						return (
+							aspectRatioWidth / aspectRatioHeight <=
+							this.ownerWindow.innerWidth / this.ownerWindow.innerHeight
+						);
 					case 'max-aspect-ratio':
-						return width / height >= this.ownerWindow.innerWidth / this.ownerWindow.innerHeight;
+						return (
+							aspectRatioWidth / aspectRatioHeight >=
+							this.ownerWindow.innerWidth / this.ownerWindow.innerHeight
+						);
 					case 'aspect-ratio':
-						return width / height === this.ownerWindow.innerWidth / this.ownerWindow.innerHeight;
+						return (
+							aspectRatioWidth / aspectRatioHeight ===
+							this.ownerWindow.innerWidth / this.ownerWindow.innerHeight
+						);
 				}
 		}
 

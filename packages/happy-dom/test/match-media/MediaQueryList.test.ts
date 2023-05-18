@@ -215,6 +215,26 @@ describe('MediaQueryList', () => {
 			).toBe(true);
 		});
 
+		it('Handles "width".', () => {
+			expect(new MediaQueryList({ ownerWindow: window, media: '(width)' }).matches).toBe(true);
+			expect(new MediaQueryList({ ownerWindow: window, media: '(width: 1023px)' }).matches).toBe(
+				false
+			);
+			expect(new MediaQueryList({ ownerWindow: window, media: '(width: 1024px)' }).matches).toBe(
+				true
+			);
+		});
+
+		it('Handles "height".', () => {
+			expect(new MediaQueryList({ ownerWindow: window, media: '(height)' }).matches).toBe(true);
+			expect(new MediaQueryList({ ownerWindow: window, media: '(height: 767px)' }).matches).toBe(
+				false
+			);
+			expect(new MediaQueryList({ ownerWindow: window, media: '(height: 768px)' }).matches).toBe(
+				true
+			);
+		});
+
 		it('Handles "orientation".', () => {
 			expect(new MediaQueryList({ ownerWindow: window, media: '(orientation)' }).matches).toBe(
 				true
