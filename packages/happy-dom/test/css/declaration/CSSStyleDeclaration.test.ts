@@ -113,6 +113,12 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.borderImageSource).toBe('inherit');
 			expect(declaration.borderImageWidth).toBe('inherit');
 
+			element.setAttribute('style', 'border: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.border).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border: 2px solid green');
 
 			expect(declaration.border).toBe('2px solid green');
@@ -205,6 +211,12 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.borderTopWidth).toBe('inherit');
 			expect(declaration.borderTopStyle).toBe('inherit');
 
+			element.setAttribute('style', 'border-top: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.borderTop).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-top: green 2px solid');
 
 			expect(declaration.border).toBe('');
@@ -226,10 +238,18 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'border-right: inherit');
 
+			expect(declaration.length).toBe(3);
+
 			expect(declaration.borderRight).toBe('inherit');
 			expect(declaration.borderRightColor).toBe('inherit');
 			expect(declaration.borderRightWidth).toBe('inherit');
 			expect(declaration.borderRightStyle).toBe('inherit');
+
+			element.setAttribute('style', 'border-right: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.borderRight).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-right: green solid 2px');
 
@@ -252,10 +272,18 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'border-bottom: inherit');
 
+			expect(declaration.length).toBe(3);
+
 			expect(declaration.borderBottom).toBe('inherit');
 			expect(declaration.borderBottomColor).toBe('inherit');
 			expect(declaration.borderBottomWidth).toBe('inherit');
 			expect(declaration.borderBottomStyle).toBe('inherit');
+
+			element.setAttribute('style', 'border-bottom: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.borderBottom).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-bottom: green solid 2px');
 
@@ -278,10 +306,18 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'border-left: inherit');
 
+			expect(declaration.length).toBe(3);
+
 			expect(declaration.borderLeft).toBe('inherit');
 			expect(declaration.borderLeftColor).toBe('inherit');
 			expect(declaration.borderLeftWidth).toBe('inherit');
 			expect(declaration.borderLeftStyle).toBe('inherit');
+
+			element.setAttribute('style', 'border-left: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.borderLeft).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-left: green solid 2px');
 
@@ -304,10 +340,18 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'border-width: inherit');
 
+			expect(declaration.length).toBe(4);
+
 			expect(declaration.borderTopWidth).toBe('inherit');
 			expect(declaration.borderRightWidth).toBe('inherit');
 			expect(declaration.borderBottomWidth).toBe('inherit');
 			expect(declaration.borderLeftWidth).toBe('inherit');
+
+			element.setAttribute('style', 'border-width: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.borderWidth).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-width: 1px 2px 3px 4px');
 
@@ -331,10 +375,18 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'border-style: inherit');
 
+			expect(declaration.length).toBe(4);
+
 			expect(declaration.borderTopStyle).toBe('inherit');
 			expect(declaration.borderRightStyle).toBe('inherit');
 			expect(declaration.borderBottomStyle).toBe('inherit');
 			expect(declaration.borderLeftStyle).toBe('inherit');
+
+			element.setAttribute('style', 'border-style: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.borderStyle).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-style: none hidden dotted dashed');
 
@@ -358,10 +410,18 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'border-color: inherit');
 
+			expect(declaration.length).toBe(4);
+
 			expect(declaration.borderTopColor).toBe('inherit');
 			expect(declaration.borderRightColor).toBe('inherit');
 			expect(declaration.borderBottomColor).toBe('inherit');
 			expect(declaration.borderLeftColor).toBe('inherit');
+
+			element.setAttribute('style', 'border-color: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.borderColor).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-color: #000 #ffffff rgba(135,200,150,0.5) blue');
 
@@ -384,12 +444,21 @@ describe('CSSStyleDeclaration', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
 			element.setAttribute('style', 'border-image: inherit');
+
+			expect(declaration.length).toBe(5);
+
 			expect(declaration.borderImage).toBe('inherit');
 			expect(declaration.borderImageSource).toBe('inherit');
 			expect(declaration.borderImageOutset).toBe('inherit');
 			expect(declaration.borderImageRepeat).toBe('inherit');
 			expect(declaration.borderImageSlice).toBe('inherit');
 			expect(declaration.borderImageWidth).toBe('inherit');
+
+			element.setAttribute('style', 'border-image: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.borderImage).toBe('var(--test-variable)');
 
 			element.setAttribute(
 				'style',
@@ -443,6 +512,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderImageSource).toBe('inherit');
 
+			element.setAttribute('style', `border-image-source: var(--test-variable)`);
+
+			expect(declaration.borderImageSource).toBe('var(--test-variable)');
+
 			element.setAttribute(
 				'style',
 				`border-image-source: url('/media/examples/border-diamonds.png')`
@@ -473,6 +546,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderImageSlice).toBe('inherit');
 
+			element.setAttribute('style', 'border-image-slice: var(--test-variable)');
+
+			expect(declaration.borderImageSlice).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-image-slice: 30');
 
 			expect(declaration.borderImageSlice).toBe('30');
@@ -498,6 +575,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderImageWidth).toBe('inherit');
 
+			element.setAttribute('style', 'border-image-width: var(--test-variable)');
+
+			expect(declaration.borderImageWidth).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-image-width: auto');
 
 			expect(declaration.borderImageWidth).toBe('auto');
@@ -519,6 +600,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'border-image-outset: inherit');
 
 			expect(declaration.borderImageOutset).toBe('inherit');
+
+			element.setAttribute('style', 'border-image-outset: var(--test-variable)');
+
+			expect(declaration.borderImageOutset).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-image-outset: 1rem');
 
@@ -542,6 +627,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderImageRepeat).toBe('inherit');
 
+			element.setAttribute('style', 'border-image-repeat: var(--test-variable)');
+
+			expect(declaration.borderImageRepeat).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-image-repeat: stretch');
 
 			expect(declaration.borderImageRepeat).toBe('stretch');
@@ -564,6 +653,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderTopWidth).toBe('inherit');
 
+			element.setAttribute('style', 'border-top-width: var(--test-variable)');
+
+			expect(declaration.borderTopWidth).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-top-width: thick');
 
 			expect(declaration.borderTopWidth).toBe('thick');
@@ -581,6 +674,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'border-right-width: inherit');
 
 			expect(declaration.borderRightWidth).toBe('inherit');
+
+			element.setAttribute('style', 'border-right-width: var(--test-variable)');
+
+			expect(declaration.borderRightWidth).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-right-width: thick');
 
@@ -600,6 +697,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderBottomWidth).toBe('inherit');
 
+			element.setAttribute('style', 'border-bottom-width: var(--test-variable)');
+
+			expect(declaration.borderBottomWidth).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-bottom-width: thick');
 
 			expect(declaration.borderBottomWidth).toBe('thick');
@@ -617,6 +718,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'border-left-width: inherit');
 
 			expect(declaration.borderLeftWidth).toBe('inherit');
+
+			element.setAttribute('style', 'border-left-width: var(--test-variable)');
+
+			expect(declaration.borderLeftWidth).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-left-width: thick');
 
@@ -636,6 +741,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderTopColor).toBe('inherit');
 
+			element.setAttribute('style', 'border-top-color: var(--test-variable)');
+
+			expect(declaration.borderTopColor).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-top-color: red');
 
 			expect(declaration.borderTopColor).toBe('red');
@@ -653,6 +762,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'border-right-color: inherit');
 
 			expect(declaration.borderRightColor).toBe('inherit');
+
+			element.setAttribute('style', 'border-right-color: var(--test-variable)');
+
+			expect(declaration.borderRightColor).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-right-color: red');
 
@@ -672,6 +785,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderBottomColor).toBe('inherit');
 
+			element.setAttribute('style', 'border-bottom-color: var(--test-variable)');
+
+			expect(declaration.borderBottomColor).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-bottom-color: red');
 
 			expect(declaration.borderBottomColor).toBe('red');
@@ -689,6 +806,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'border-left-color: inherit');
 
 			expect(declaration.borderLeftColor).toBe('inherit');
+
+			element.setAttribute('style', 'border-left-color: var(--test-variable)');
+
+			expect(declaration.borderLeftColor).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-left-color: red');
 
@@ -708,6 +829,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderTopStyle).toBe('inherit');
 
+			element.setAttribute('style', 'border-top-style: var(--test-variable)');
+
+			expect(declaration.borderTopStyle).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-top-style: dotted');
 
 			expect(declaration.borderTopStyle).toBe('dotted');
@@ -725,6 +850,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'border-right-style: inherit');
 
 			expect(declaration.borderRightStyle).toBe('inherit');
+
+			element.setAttribute('style', 'border-right-style: var(--test-variable)');
+
+			expect(declaration.borderRightStyle).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-right-style: dotted');
 
@@ -744,6 +873,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderBottomStyle).toBe('inherit');
 
+			element.setAttribute('style', 'border-bottom-style: var(--test-variable)');
+
+			expect(declaration.borderBottomStyle).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-bottom-style: dotted');
 
 			expect(declaration.borderBottomStyle).toBe('dotted');
@@ -762,6 +895,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderLeftStyle).toBe('inherit');
 
+			element.setAttribute('style', 'border-left-style: var(--test-variable)');
+
+			expect(declaration.borderLeftStyle).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-left-style: dotted');
 
 			expect(declaration.borderLeftStyle).toBe('dotted');
@@ -778,11 +915,19 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'border-radius: inherit');
 
+			expect(declaration.length).toBe(4);
+
 			expect(declaration.borderRadius).toBe('inherit');
 			expect(declaration.borderTopLeftRadius).toBe('inherit');
 			expect(declaration.borderTopRightRadius).toBe('inherit');
 			expect(declaration.borderBottomRightRadius).toBe('inherit');
 			expect(declaration.borderBottomLeftRadius).toBe('inherit');
+
+			element.setAttribute('style', 'border-radius: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.borderRadius).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-radius: 1px     2px 3px 4px');
 
@@ -814,6 +959,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderTopLeftRadius).toBe('inherit');
 
+			element.setAttribute('style', 'border-top-left-radius: var(--test-variable)');
+
+			expect(declaration.borderTopLeftRadius).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-top-left-radius: 1rem');
 
 			expect(declaration.borderTopLeftRadius).toBe('1rem');
@@ -827,6 +976,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'border-top-right-radius: inherit');
 
 			expect(declaration.borderTopRightRadius).toBe('inherit');
+
+			element.setAttribute('style', 'border-top-right-radius: var(--test-variable)');
+
+			expect(declaration.borderTopRightRadius).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'border-top-right-radius: 1rem');
 
@@ -842,6 +995,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderBottomRightRadius).toBe('inherit');
 
+			element.setAttribute('style', 'border-bottom-right-radius: var(--test-variable)');
+
+			expect(declaration.borderBottomRightRadius).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-bottom-right-radius: 1rem');
 
 			expect(declaration.borderBottomRightRadius).toBe('1rem');
@@ -856,6 +1013,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderBottomLeftRadius).toBe('inherit');
 
+			element.setAttribute('style', 'border-bottom-left-radius: var(--test-variable)');
+
+			expect(declaration.borderBottomLeftRadius).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'border-bottom-left-radius: 1rem');
 
 			expect(declaration.borderBottomLeftRadius).toBe('1rem');
@@ -866,7 +1027,7 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const value of ['collapse', 'separate', 'inherit']) {
+			for (const value of ['collapse', 'separate', 'inherit', 'var(--test-variable)']) {
 				element.setAttribute('style', `border-collapse: ${value}`);
 
 				expect(declaration.borderCollapse).toBe(value);
@@ -874,11 +1035,172 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
+	describe('get outline()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'outline: inherit');
+
+			expect(declaration.length).toBe(3);
+
+			expect(declaration.outline).toBe('inherit');
+			expect(declaration.outlineColor).toBe('inherit');
+			expect(declaration.outlineWidth).toBe('inherit');
+			expect(declaration.outlineStyle).toBe('inherit');
+
+			element.setAttribute('style', 'outline: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.outline).toBe('var(--test-variable)');
+
+			element.setAttribute('style', 'outline: green 2px solid');
+
+			expect(declaration.border).toBe('');
+
+			expect(declaration.outlineColor).toBe('green');
+			expect(declaration.outlineWidth).toBe('2px');
+			expect(declaration.outlineStyle).toBe('solid');
+
+			element.setAttribute('style', 'outline: thick double #32a1ce');
+
+			expect(declaration.outlineColor).toBe('#32a1ce');
+			expect(declaration.outlineWidth).toBe('thick');
+			expect(declaration.outlineStyle).toBe('double');
+		});
+	});
+
+	describe('get outlineColor()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'outline-color: inherit');
+
+			expect(declaration.outlineColor).toBe('inherit');
+
+			element.setAttribute('style', 'outline-color: var(--test-variable)');
+
+			expect(declaration.outlineColor).toBe('var(--test-variable)');
+
+			element.setAttribute('style', 'outline-color: #32a1ce');
+
+			expect(declaration.outlineColor).toBe('#32a1ce');
+		});
+	});
+
+	describe('get outlineWidth()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'outline-width: inherit');
+
+			expect(declaration.outlineWidth).toBe('inherit');
+
+			element.setAttribute('style', 'outline-width: var(--test-variable)');
+
+			expect(declaration.outlineWidth).toBe('var(--test-variable)');
+
+			element.setAttribute('style', 'outline-width: 2px');
+
+			expect(declaration.outlineWidth).toBe('2px');
+		});
+	});
+
+	describe('get outlineStyle()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'outline-style: inherit');
+
+			expect(declaration.outlineStyle).toBe('inherit');
+
+			element.setAttribute('style', 'outline-style: var(--test-variable)');
+
+			expect(declaration.outlineStyle).toBe('var(--test-variable)');
+
+			element.setAttribute('style', 'outline-style: solid');
+
+			expect(declaration.outlineStyle).toBe('solid');
+		});
+	});
+
+	describe('get outlineOffset()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'outline-offset: inherit');
+
+			expect(declaration.outlineOffset).toBe('inherit');
+
+			element.setAttribute('style', 'outline-offset: var(--test-variable)');
+
+			expect(declaration.outlineOffset).toBe('var(--test-variable)');
+
+			element.setAttribute('style', 'outline-offset: 2px');
+
+			expect(declaration.outlineOffset).toBe('2px');
+		});
+	});
+
+	describe('get letterSpacing()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'letter-spacing: inherit');
+
+			expect(declaration.letterSpacing).toBe('inherit');
+
+			element.setAttribute('style', 'letter-spacing: var(--test-variable)');
+
+			expect(declaration.letterSpacing).toBe('var(--test-variable)');
+
+			element.setAttribute('style', 'letter-spacing: 2px');
+
+			expect(declaration.letterSpacing).toBe('2px');
+		});
+	});
+
+	describe('get wordSpacing()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'word-spacing: inherit');
+
+			expect(declaration.wordSpacing).toBe('inherit');
+
+			element.setAttribute('style', 'word-spacing: var(--test-variable)');
+
+			expect(declaration.wordSpacing).toBe('var(--test-variable)');
+
+			element.setAttribute('style', 'word-spacing: 2px');
+
+			expect(declaration.wordSpacing).toBe('2px');
+		});
+	});
+
+	describe('get textIndent()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'text-indent: inherit');
+
+			expect(declaration.textIndent).toBe('inherit');
+
+			element.setAttribute('style', 'text-indent: var(--test-variable)');
+
+			expect(declaration.textIndent).toBe('var(--test-variable)');
+
+			element.setAttribute('style', 'text-indent: 2px');
+
+			expect(declaration.textIndent).toBe('2px');
+		});
+	});
+
 	describe('get clear()', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const value of ['inherit', 'none', 'left', 'right', 'both']) {
+			for (const value of ['inherit', 'var(--test-variable)', 'none', 'left', 'right', 'both']) {
 				element.setAttribute('style', `clear: ${value}`);
 
 				expect(declaration.clear).toBe(value);
@@ -894,6 +1216,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.clip).toBe('inherit');
 
+			element.setAttribute('style', 'clip: var(--test-variable)');
+
+			expect(declaration.clip).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'clip: auto');
 
 			expect(declaration.clip).toBe('auto');
@@ -908,7 +1234,15 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const value of ['inherit', 'none', 'left', 'right', 'inline-start', 'inline-end']) {
+			for (const value of [
+				'inherit',
+				'var(--test-variable)',
+				'none',
+				'left',
+				'right',
+				'inline-start',
+				'inline-end'
+			]) {
 				element.setAttribute('style', `css-float: ${value}`);
 
 				expect(declaration.cssFloat).toBe(value);
@@ -920,7 +1254,15 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const value of ['inherit', 'none', 'left', 'right', 'inline-start', 'inline-end']) {
+			for (const value of [
+				'inherit',
+				'var(--test-variable)',
+				'none',
+				'left',
+				'right',
+				'inline-start',
+				'inline-end'
+			]) {
 				element.setAttribute('style', `float: ${value}`);
 
 				expect(declaration.float).toBe(value);
@@ -971,7 +1313,15 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const value of ['inherit', 'initial', 'revert', 'unset', 'ltr', 'rtl']) {
+			for (const value of [
+				'inherit',
+				'initial',
+				'revert',
+				'unset',
+				'var(--test-variable)',
+				'ltr',
+				'rtl'
+			]) {
 				element.setAttribute('style', `direction: ${value}`);
 
 				expect(declaration.direction).toBe(value);
@@ -985,10 +1335,18 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'flex: inherit');
 
+			expect(declaration.length).toBe(3);
+
 			expect(declaration.flex).toBe('inherit');
 			expect(declaration.flexGrow).toBe('inherit');
 			expect(declaration.flexShrink).toBe('inherit');
 			expect(declaration.flexBasis).toBe('inherit');
+
+			element.setAttribute('style', 'flex: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.flex).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'flex: none');
 
@@ -1049,6 +1407,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.flexShrink).toBe('inherit');
 
+			element.setAttribute('style', 'flex-shrink: var(--test-variable)');
+
+			expect(declaration.flexShrink).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'flex-shrink: 2');
 
 			expect(declaration.flexShrink).toBe('2');
@@ -1066,6 +1428,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'flex-grow: inherit');
 
 			expect(declaration.flexGrow).toBe('inherit');
+
+			element.setAttribute('style', 'flex-grow: var(--test-variable)');
+
+			expect(declaration.flexGrow).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'flex-grow: 2');
 
@@ -1094,6 +1460,7 @@ describe('CSSStyleDeclaration', () => {
 				'initial',
 				'revert',
 				'unset',
+				'var(--test-variable)',
 				'auto',
 				'fill',
 				'content',
@@ -1114,23 +1481,51 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'padding: inherit');
 
+			expect(declaration.length).toBe(4);
+
 			expect(declaration.padding).toBe('inherit');
+			expect(declaration.paddingTop).toBe('inherit');
+			expect(declaration.paddingRight).toBe('inherit');
+			expect(declaration.paddingBottom).toBe('inherit');
+			expect(declaration.paddingLeft).toBe('inherit');
+
+			element.setAttribute('style', 'padding: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.padding).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'padding: 1px 2px 3px 4px');
 
 			expect(declaration.padding).toBe('1px 2px 3px 4px');
+			expect(declaration.paddingTop).toBe('1px');
+			expect(declaration.paddingRight).toBe('2px');
+			expect(declaration.paddingBottom).toBe('3px');
+			expect(declaration.paddingLeft).toBe('4px');
 
 			element.setAttribute('style', 'padding: 1px 2px 3px');
 
 			expect(declaration.padding).toBe('1px 2px 3px');
+			expect(declaration.paddingTop).toBe('1px');
+			expect(declaration.paddingRight).toBe('2px');
+			expect(declaration.paddingBottom).toBe('3px');
+			expect(declaration.paddingLeft).toBe('2px');
 
 			element.setAttribute('style', 'padding: 1px 2px');
 
 			expect(declaration.padding).toBe('1px 2px');
+			expect(declaration.paddingTop).toBe('1px');
+			expect(declaration.paddingRight).toBe('2px');
+			expect(declaration.paddingBottom).toBe('1px');
+			expect(declaration.paddingLeft).toBe('2px');
 
 			element.setAttribute('style', 'padding: 1px');
 
 			expect(declaration.padding).toBe('1px');
+			expect(declaration.paddingTop).toBe('1px');
+			expect(declaration.paddingRight).toBe('1px');
+			expect(declaration.paddingBottom).toBe('1px');
+			expect(declaration.paddingLeft).toBe('1px');
 
 			element.setAttribute('style', 'padding: auto');
 
@@ -1145,6 +1540,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'padding-top: inherit');
 
 			expect(declaration.paddingTop).toBe('inherit');
+
+			element.setAttribute('style', 'padding-top: var(--test-variable)');
+
+			expect(declaration.paddingTop).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'padding-top: 1px');
 
@@ -1164,6 +1563,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.paddingRight).toBe('inherit');
 
+			element.setAttribute('style', 'padding-right: var(--test-variable)');
+
+			expect(declaration.paddingRight).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'padding-right: 1px');
 
 			expect(declaration.paddingRight).toBe('1px');
@@ -1181,6 +1584,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'padding-bottom: inherit');
 
 			expect(declaration.paddingBottom).toBe('inherit');
+
+			element.setAttribute('style', 'padding-bottom: var(--test-variable)');
+
+			expect(declaration.paddingBottom).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'padding-bottom: 1px');
 
@@ -1200,6 +1607,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.paddingLeft).toBe('inherit');
 
+			element.setAttribute('style', 'padding-left: var(--test-variable)');
+
+			expect(declaration.paddingLeft).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'padding-left: 1px');
 
 			expect(declaration.paddingLeft).toBe('1px');
@@ -1216,27 +1627,59 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'margin: inherit');
 
+			expect(declaration.length).toBe(4);
+
 			expect(declaration.margin).toBe('inherit');
+			expect(declaration.marginTop).toBe('inherit');
+			expect(declaration.marginRight).toBe('inherit');
+			expect(declaration.marginBottom).toBe('inherit');
+			expect(declaration.marginLeft).toBe('inherit');
+
+			element.setAttribute('style', 'margin: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.margin).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'margin: 1px 2px 3px 4px');
 
 			expect(declaration.margin).toBe('1px 2px 3px 4px');
+			expect(declaration.marginTop).toBe('1px');
+			expect(declaration.marginRight).toBe('2px');
+			expect(declaration.marginBottom).toBe('3px');
+			expect(declaration.marginLeft).toBe('4px');
 
 			element.setAttribute('style', 'margin: 1px 2px 3px');
 
 			expect(declaration.margin).toBe('1px 2px 3px');
+			expect(declaration.marginTop).toBe('1px');
+			expect(declaration.marginRight).toBe('2px');
+			expect(declaration.marginBottom).toBe('3px');
+			expect(declaration.marginLeft).toBe('2px');
 
 			element.setAttribute('style', 'margin: 1px 2px');
 
 			expect(declaration.margin).toBe('1px 2px');
+			expect(declaration.marginTop).toBe('1px');
+			expect(declaration.marginRight).toBe('2px');
+			expect(declaration.marginBottom).toBe('1px');
+			expect(declaration.marginLeft).toBe('2px');
 
 			element.setAttribute('style', 'margin: 1px');
 
 			expect(declaration.margin).toBe('1px');
+			expect(declaration.marginTop).toBe('1px');
+			expect(declaration.marginRight).toBe('1px');
+			expect(declaration.marginBottom).toBe('1px');
+			expect(declaration.marginLeft).toBe('1px');
 
 			element.setAttribute('style', 'margin: auto');
 
 			expect(declaration.margin).toBe('auto');
+			expect(declaration.marginTop).toBe('auto');
+			expect(declaration.marginRight).toBe('auto');
+			expect(declaration.marginBottom).toBe('auto');
+			expect(declaration.marginLeft).toBe('auto');
 		});
 	});
 
@@ -1247,6 +1690,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'margin-top: inherit');
 
 			expect(declaration.marginTop).toBe('inherit');
+
+			element.setAttribute('style', 'margin-top: var(--test-variable)');
+
+			expect(declaration.marginTop).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'margin-top: 1px');
 
@@ -1270,6 +1717,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.marginRight).toBe('inherit');
 
+			element.setAttribute('style', 'margin-right: var(--test-variable)');
+
+			expect(declaration.marginRight).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'margin-right: 1px');
 
 			expect(declaration.marginRight).toBe('1px');
@@ -1291,6 +1742,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'margin-bottom: inherit');
 
 			expect(declaration.marginBottom).toBe('inherit');
+
+			element.setAttribute('style', 'margin-bottom: var(--test-variable)');
+
+			expect(declaration.marginBottom).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'margin-bottom: 1px');
 
@@ -1314,6 +1769,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.marginLeft).toBe('inherit');
 
+			element.setAttribute('style', 'margin-left: var(--test-variable)');
+
+			expect(declaration.marginLeft).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'margin-left: 1px');
 
 			expect(declaration.marginLeft).toBe('1px');
@@ -1334,18 +1793,37 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'background: inherit');
 
+			expect(declaration.length).toBe(9);
+
 			expect(declaration.background).toBe('inherit');
 			expect(declaration.backgroundAttachment).toBe('inherit');
 			expect(declaration.backgroundClip).toBe('inherit');
 			expect(declaration.backgroundColor).toBe('inherit');
 			expect(declaration.backgroundImage).toBe('inherit');
-			expect(declaration.backgroundPosition).toBe('inherit');
+			expect(declaration.backgroundOrigin).toBe('inherit');
+			expect(declaration.backgroundPositionX).toBe('inherit');
+			expect(declaration.backgroundPositionY).toBe('inherit');
 			expect(declaration.backgroundRepeat).toBe('inherit');
 			expect(declaration.backgroundSize).toBe('inherit');
+
+			element.setAttribute('style', 'background: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.background).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'background: green');
 
 			expect(declaration.background).toBe('green');
+			expect(declaration.backgroundAttachment).toBe('initial');
+			expect(declaration.backgroundClip).toBe('initial');
+			expect(declaration.backgroundColor).toBe('green');
+			expect(declaration.backgroundImage).toBe('initial');
+			expect(declaration.backgroundOrigin).toBe('initial');
+			expect(declaration.backgroundPositionX).toBe('initial');
+			expect(declaration.backgroundPositionY).toBe('initial');
+			expect(declaration.backgroundRepeat).toBe('initial');
+			expect(declaration.backgroundSize).toBe('initial');
 
 			element.setAttribute('style', 'background: rgb(255, 255, 255)');
 
@@ -1362,6 +1840,15 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'background: no-repeat center/80% url("../img/image.png")');
 
 			expect(declaration.background).toBe('url("../img/image.png") center center / 80% no-repeat');
+			expect(declaration.backgroundAttachment).toBe('initial');
+			expect(declaration.backgroundClip).toBe('initial');
+			expect(declaration.backgroundColor).toBe('initial');
+			expect(declaration.backgroundImage).toBe('url("../img/image.png")');
+			expect(declaration.backgroundOrigin).toBe('initial');
+			expect(declaration.backgroundPositionX).toBe('center');
+			expect(declaration.backgroundPositionY).toBe('center');
+			expect(declaration.backgroundRepeat).toBe('no-repeat');
+			expect(declaration.backgroundSize).toBe('80%');
 
 			element.setAttribute(
 				'style',
@@ -1381,6 +1868,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'background-image: inherit');
 
 			expect(declaration.backgroundImage).toBe('inherit');
+
+			element.setAttribute('style', 'background-image: var(--test-variable)');
+
+			expect(declaration.backgroundImage).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'background-image: url("test.jpg")');
 
@@ -1404,6 +1895,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.backgroundColor).toBe('inherit');
 
+			element.setAttribute('style', 'background-color: var(--test-variable)');
+
+			expect(declaration.backgroundColor).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'background-color: red');
 
 			expect(declaration.backgroundColor).toBe('red');
@@ -1423,6 +1918,7 @@ describe('CSSStyleDeclaration', () => {
 				'initial',
 				'revert',
 				'unset',
+				'var(--test-variable)',
 				'repeat',
 				'repeat-x',
 				'repeat-y',
@@ -1438,7 +1934,15 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const repeat of ['inherit', 'initial', 'revert', 'unset', 'scroll', 'fixed']) {
+			for (const repeat of [
+				'inherit',
+				'initial',
+				'revert',
+				'unset',
+				'var(--test-variable)',
+				'scroll',
+				'fixed'
+			]) {
 				element.setAttribute('style', `background-attachment: ${repeat}`);
 				expect(declaration.backgroundAttachment).toBe(repeat);
 			}
@@ -1451,7 +1955,17 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'background-position: inherit');
 
+			expect(declaration.length).toBe(2);
+
 			expect(declaration.backgroundPosition).toBe('inherit');
+			expect(declaration.backgroundPositionX).toBe('inherit');
+			expect(declaration.backgroundPositionY).toBe('inherit');
+
+			element.setAttribute('style', 'background-position: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.backgroundPosition).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'background-position: top');
 
@@ -1559,6 +2073,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.width).toBe('inherit');
 
+			element.setAttribute('style', 'width: var(--test-variable)');
+
+			expect(declaration.width).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'width: 75%');
 
 			expect(declaration.width).toBe('75%');
@@ -1570,6 +2088,40 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'width: fit-content(20em)');
 
 			expect(declaration.width).toBe('fit-content(20em)');
+
+			element.setAttribute('style', 'width: 0');
+
+			expect(declaration.width).toBe('0px');
+		});
+	});
+
+	describe('get height()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'height: inherit');
+
+			expect(declaration.height).toBe('inherit');
+
+			element.setAttribute('style', 'height: var(--test-variable)');
+
+			expect(declaration.height).toBe('var(--test-variable)');
+
+			element.setAttribute('style', 'height: 75%');
+
+			expect(declaration.height).toBe('75%');
+
+			element.setAttribute('style', 'height: 75px');
+
+			expect(declaration.height).toBe('75px');
+
+			element.setAttribute('style', 'height: fit-content(20em)');
+
+			expect(declaration.height).toBe('fit-content(20em)');
+
+			element.setAttribute('style', 'height: 0');
+
+			expect(declaration.height).toBe('0px');
 		});
 	});
 
@@ -1580,6 +2132,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'top: inherit');
 
 			expect(declaration.top).toBe('inherit');
+
+			element.setAttribute('style', 'top: var(--test-variable)');
+
+			expect(declaration.top).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'top: 75%');
 
@@ -1607,6 +2163,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.right).toBe('inherit');
 
+			element.setAttribute('style', 'right: var(--test-variable)');
+
+			expect(declaration.right).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'right: 75%');
 
 			expect(declaration.right).toBe('75%');
@@ -1628,6 +2188,10 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'bottom: inherit');
 
 			expect(declaration.bottom).toBe('inherit');
+
+			element.setAttribute('style', 'bottom: var(--test-variable)');
+
+			expect(declaration.bottom).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'bottom: 75%');
 
@@ -1651,6 +2215,10 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.left).toBe('inherit');
 
+			element.setAttribute('style', 'left: var(--test-variable)');
+
+			expect(declaration.left).toBe('var(--test-variable)');
+
 			element.setAttribute('style', 'left: 75%');
 
 			expect(declaration.left).toBe('75%');
@@ -1671,7 +2239,22 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'font: inherit');
 
+			expect(declaration.length).toBe(7);
+
 			expect(declaration.font).toBe('inherit');
+			expect(declaration.fontFamily).toBe('inherit');
+			expect(declaration.fontSize).toBe('inherit');
+			expect(declaration.fontStretch).toBe('inherit');
+			expect(declaration.fontStyle).toBe('inherit');
+			expect(declaration.fontVariant).toBe('inherit');
+			expect(declaration.fontWeight).toBe('inherit');
+			expect(declaration.lineHeight).toBe('inherit');
+
+			element.setAttribute('style', 'font: var(--test-variable)');
+
+			expect(declaration.length).toBe(1);
+
+			expect(declaration.font).toBe('var(--test-variable)');
 
 			element.setAttribute('style', 'font: 1.2em "Fira Sans", sans-serif');
 
@@ -1712,7 +2295,14 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const property of ['inherit', 'normal', 'italic', 'oblique', 'oblique 10deg']) {
+			for (const property of [
+				'inherit',
+				'var(--test-variable)',
+				'normal',
+				'italic',
+				'oblique',
+				'oblique 10deg'
+			]) {
 				element.setAttribute('style', `font-style: ${property}`);
 				expect(declaration.fontStyle).toBe(property);
 			}
@@ -1723,7 +2313,7 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const property of ['inherit', 'normal', 'small-caps']) {
+			for (const property of ['inherit', 'var(--test-variable)', 'normal', 'small-caps']) {
 				element.setAttribute('style', `font-variant: ${property}`);
 				expect(declaration.fontVariant).toBe(property);
 			}
@@ -1736,6 +2326,7 @@ describe('CSSStyleDeclaration', () => {
 
 			for (const property of [
 				'inherit',
+				'var(--test-variable)',
 				'normal',
 				'bold',
 				'bolder',
@@ -1762,6 +2353,7 @@ describe('CSSStyleDeclaration', () => {
 
 			for (const property of [
 				'inherit',
+				'var(--test-variable)',
 				'normal',
 				'ultra-condensed',
 				'extra-condensed',
@@ -1784,6 +2376,7 @@ describe('CSSStyleDeclaration', () => {
 
 			for (const property of [
 				'inherit',
+				'var(--test-variable)',
 				'medium',
 				'xx-small',
 				'x-small',
@@ -1807,7 +2400,15 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const property of ['inherit', 'normal', '10px', '10em', '10%', '10']) {
+			for (const property of [
+				'inherit',
+				'var(--test-variable)',
+				'normal',
+				'10px',
+				'10em',
+				'10%',
+				'10'
+			]) {
 				element.setAttribute('style', `line-height: ${property}`);
 				expect(declaration.lineHeight).toBe(property);
 			}
@@ -1820,6 +2421,7 @@ describe('CSSStyleDeclaration', () => {
 
 			for (const property of [
 				'inherit',
+				'var(--test-variable)',
 				'serif',
 				'sans-serif',
 				'cursive',
@@ -1848,7 +2450,13 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const property of ['inherit', 'red', 'rgb(255, 0, 0)', '#ff0000']) {
+			for (const property of [
+				'inherit',
+				'var(--test-variable)',
+				'red',
+				'rgb(255, 0, 0)',
+				'#ff0000'
+			]) {
 				element.setAttribute('style', `color: ${property}`);
 				expect(declaration.color).toBe(property);
 			}
@@ -1859,7 +2467,13 @@ describe('CSSStyleDeclaration', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(element);
 
-			for (const property of ['inherit', 'red', 'rgb(255, 0, 0)', '#ff0000']) {
+			for (const property of [
+				'inherit',
+				'var(--test-variable)',
+				'red',
+				'rgb(255, 0, 0)',
+				'#ff0000'
+			]) {
 				element.setAttribute('style', `flood-color: ${property}`);
 				expect(declaration.floodColor).toBe(property);
 			}

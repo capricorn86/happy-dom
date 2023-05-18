@@ -175,6 +175,66 @@ export default class CSSStyleDeclarationPropertySetParser {
 	}
 
 	/**
+	 * Returns letter spacing.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getLetterSpacing(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
+		return parsedValue ? { 'letter-spacing': { value: parsedValue, important } } : null;
+	}
+
+	/**
+	 * Returns word spacing.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getWordSpacing(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
+		return parsedValue ? { 'word-spacing': { value: parsedValue, important } } : null;
+	}
+
+	/**
+	 * Returns text indent.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getTextIndent(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
+		return parsedValue ? { 'text-indent': { value: parsedValue, important } } : null;
+	}
+
+	/**
 	 * Returns width.
 	 *
 	 * @param value Value.
@@ -187,14 +247,31 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const variable = CSSStyleDeclarationValueParser.getVariable(value);
-		if (variable) {
-			return { width: { value: variable, important } };
-		}
 		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
 			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return parsedValue ? { width: { value: parsedValue, important } } : null;
+	}
+
+	/**
+	 * Returns height.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getHeight(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getContentMeasurement(value);
+		return parsedValue ? { height: { value: parsedValue, important } } : null;
 	}
 
 	/**
@@ -210,11 +287,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const variable = CSSStyleDeclarationValueParser.getVariable(value);
-		if (variable) {
-			return { top: { value: variable, important } };
-		}
 		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
 			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return parsedValue ? { top: { value: parsedValue, important } } : null;
@@ -233,11 +307,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const variable = CSSStyleDeclarationValueParser.getVariable(value);
-		if (variable) {
-			return { right: { value: variable, important } };
-		}
 		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
 			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return parsedValue ? { right: { value: parsedValue, important } } : null;
@@ -256,11 +327,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const variable = CSSStyleDeclarationValueParser.getVariable(value);
-		if (variable) {
-			return { bottom: { value: variable, important } };
-		}
 		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
 			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return parsedValue ? { bottom: { value: parsedValue, important } } : null;
@@ -279,11 +347,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
-		const variable = CSSStyleDeclarationValueParser.getVariable(value);
-		if (variable) {
-			return { left: { value: variable, important } };
-		}
 		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
 			CSSStyleDeclarationValueParser.getContentMeasurement(value);
 		return parsedValue ? { left: { value: parsedValue, important } } : null;
@@ -396,6 +461,156 @@ export default class CSSStyleDeclarationPropertySetParser {
 		}
 		const float = this.getFloat(value, important);
 		return float ? { 'css-float': float['float'] } : null;
+	}
+
+	/**
+	 * Returns outline.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values.
+	 */
+	public static getOutline(
+		value: string,
+		important: boolean
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+		const variable = CSSStyleDeclarationValueParser.getVariable(value);
+		if (variable) {
+			return { outline: { value: variable, important } };
+		}
+
+		const globalValue = CSSStyleDeclarationValueParser.getGlobal(value);
+
+		if (globalValue) {
+			return {
+				...this.getOutlineColor(globalValue, important),
+				...this.getOutlineStyle(globalValue, important),
+				...this.getOutlineWidth(globalValue, important)
+			};
+		}
+
+		const properties = {
+			...this.getOutlineColor('initial', important),
+			...this.getOutlineStyle('initial', important),
+			...this.getOutlineWidth('initial', important)
+		};
+
+		const parts = value.split(/ +/);
+
+		for (const part of parts) {
+			const width = this.getOutlineWidth(part, important);
+			const style = this.getOutlineStyle(part, important);
+			const color = this.getOutlineColor(part, important);
+
+			if (width === null && style === null && color === null) {
+				return null;
+			}
+
+			Object.assign(properties, width, style, color);
+		}
+
+		return properties;
+	}
+
+	/**
+	 * Returns outline color.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getOutlineColor(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const color =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
+			CSSStyleDeclarationValueParser.getGlobal(value) ||
+			CSSStyleDeclarationValueParser.getColor(value);
+		return color
+			? {
+					'outline-color': { value: color, important }
+			  }
+			: null;
+	}
+
+	/**
+	 * Returns outline offset.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getOutlineOffset(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const parsedValue =
+			CSSStyleDeclarationValueParser.getVariable(value) ||
+			CSSStyleDeclarationValueParser.getLength(value);
+		return parsedValue ? { 'outline-offset': { value: parsedValue, important } } : null;
+	}
+
+	/**
+	 * Returns outline style.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getOutlineStyle(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const variable = CSSStyleDeclarationValueParser.getVariable(value);
+		if (variable) {
+			return { 'outline-style': { value: variable, important } };
+		}
+
+		const lowerValue = value.toLowerCase();
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || BORDER_STYLE.includes(lowerValue)) {
+			return {
+				'outline-style': { value: lowerValue, important }
+			};
+		}
+		return null;
+	}
+
+	/**
+	 * Returns outline width.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getOutlineWidth(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const variable = CSSStyleDeclarationValueParser.getVariable(value);
+		if (variable) {
+			return { 'outline-width': { value: variable, important } };
+		}
+
+		const lowerValue = value.toLowerCase();
+		const parsedValue =
+			BORDER_WIDTH.includes(lowerValue) || CSSStyleDeclarationValueParser.getGlobal(lowerValue)
+				? lowerValue
+				: CSSStyleDeclarationValueParser.getLength(value);
+		if (parsedValue) {
+			return {
+				'outline-width': { value: parsedValue, important }
+			};
+		}
+		return null;
 	}
 
 	/**

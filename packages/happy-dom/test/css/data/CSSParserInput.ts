@@ -31,13 +31,19 @@ export default `
         }
     }
 
-    @keyframes keyframes2 {
+    @-webkit-keyframes keyframes2 {
         0% {
             transform: rotate(0deg);
         }
 
         100% {
             transform: rotate(360deg);
+        }
+    }
+
+    @unknown-rule {
+        .unknown-class {
+            text-spacing: 1px;
         }
     }
 

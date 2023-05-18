@@ -11,5 +11,9 @@ export default interface IHappyDOMOptions {
 		disableCSSFileLoading?: boolean;
 		disableIframePageLoading?: boolean;
 		enableFileSystemHttpRequests?: boolean;
+		device?: {
+			prefersColorScheme?: string;
+			mediaType?: string;
+		};
 	};
 }

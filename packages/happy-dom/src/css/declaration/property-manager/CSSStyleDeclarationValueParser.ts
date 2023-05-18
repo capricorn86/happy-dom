@@ -1,7 +1,8 @@
 const COLOR_REGEXP =
 	/^#([0-9a-fA-F]{3,4}){1,2}$|^rgb\(([^)]*)\)$|^rgba\(([^)]*)\)$|^hsla?\(\s*(-?\d+|-?\d*.\d+)\s*,\s*(-?\d+|-?\d*.\d+)%\s*,\s*(-?\d+|-?\d*.\d+)%\s*(,\s*(-?\d+|-?\d*.\d+)\s*)?\)/;
 
-const LENGTH_REGEXP = /^(0|[-+]?[0-9]*\.?[0-9]+(in|cm|em|mm|pt|pc|px|ex|rem|vh|vw|ch))$/;
+const LENGTH_REGEXP =
+	/^(0|[-+]?[0-9]*\.?[0-9]+(in|cm|em|mm|pt|pc|px|ex|rem|vh|vw|ch|vw|vh|vmin|vmax|Q))$/;
 const PERCENTAGE_REGEXP = /^[-+]?[0-9]*\.?[0-9]+%$/;
 const DEGREE_REGEXP = /^[0-9]+deg$/;
 const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;

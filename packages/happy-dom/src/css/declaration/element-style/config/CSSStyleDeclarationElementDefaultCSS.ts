@@ -69,7 +69,7 @@ export default {
 	HEADER: 'display: block;',
 	HGROUP: 'display: block;',
 	HR: 'display: block;',
-	HTML: 'display: block;direction: ltr;',
+	HTML: 'display: block;direction: ltr;font: 16px "Times New Roman";',
 	I: '',
 	IFRAME: '',
 	INS: '',

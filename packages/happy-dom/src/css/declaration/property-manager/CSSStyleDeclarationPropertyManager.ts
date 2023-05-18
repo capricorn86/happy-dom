@@ -2,7 +2,7 @@ import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyVal
 import CSSStyleDeclarationPropertySetParser from './CSSStyleDeclarationPropertySetParser';
 import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser';
 import CSSStyleDeclarationPropertyGetParser from './CSSStyleDeclarationPropertyGetParser';
-import CSSStyleDeclarationCSSParser from './CSSStyleDeclarationCSSParser';
+import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSParser';
 
 const TO_STRING_SHORTHAND_PROPERTIES = [
 	['margin'],
@@ -44,7 +44,7 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param name Property name.
 	 * @returns Property value.
 	 */
-	public get(name: string): ICSSStyleDeclarationPropertyValue {
+	public get(name: string): ICSSStyleDeclarationPropertyValue | null {
 		if (this.properties[name]) {
 			return this.properties[name];
 		}
@@ -73,6 +73,8 @@ export default class CSSStyleDeclarationPropertyManager {
 				return CSSStyleDeclarationPropertyGetParser.getBorderRadius(this.properties);
 			case 'border-image':
 				return CSSStyleDeclarationPropertyGetParser.getBorderImage(this.properties);
+			case 'outline':
+				return CSSStyleDeclarationPropertyGetParser.getOutline(this.properties);
 			case 'background':
 				return CSSStyleDeclarationPropertyGetParser.getBackground(this.properties);
 			case 'background-position':
@@ -185,6 +187,11 @@ export default class CSSStyleDeclarationPropertyManager {
 				delete this.properties['border-top-right-radius'];
 				delete this.properties['border-bottom-right-radius'];
 				delete this.properties['border-bottom-left-radius'];
+				break;
+			case 'outline':
+				delete this.properties['outline-color'];
+				delete this.properties['outline-style'];
+				delete this.properties['outline-width'];
 				break;
 			case 'background':
 				delete this.properties['background-color'];
@@ -348,6 +355,24 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'border-collapse':
 				properties = CSSStyleDeclarationPropertySetParser.getBorderCollapse(value, important);
 				break;
+			case 'outline':
+				properties = CSSStyleDeclarationPropertySetParser.getOutline(value, important);
+				break;
+			case 'outline-width':
+				properties = CSSStyleDeclarationPropertySetParser.getOutlineWidth(value, important);
+				break;
+			case 'outline-style':
+				properties = CSSStyleDeclarationPropertySetParser.getOutlineStyle(value, important);
+				break;
+			case 'outline-color':
+				properties = CSSStyleDeclarationPropertySetParser.getOutlineColor(value, important);
+				break;
+			case 'letter-spacing':
+				properties = CSSStyleDeclarationPropertySetParser.getLetterSpacing(value, important);
+				break;
+			case 'word-spacing':
+				properties = CSSStyleDeclarationPropertySetParser.getWordSpacing(value, important);
+				break;
 			case 'clear':
 				properties = CSSStyleDeclarationPropertySetParser.getClear(value, important);
 				break;
@@ -429,6 +454,9 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'width':
 				properties = CSSStyleDeclarationPropertySetParser.getWidth(value, important);
 				break;
+			case 'height':
+				properties = CSSStyleDeclarationPropertySetParser.getHeight(value, important);
+				break;
 			case 'top':
 				properties = CSSStyleDeclarationPropertySetParser.getTop(value, important);
 				break;
@@ -462,6 +490,9 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'line-height':
 				properties = CSSStyleDeclarationPropertySetParser.getLineHeight(value, important);
 				break;
+			case 'text-indent':
+				properties = CSSStyleDeclarationPropertySetParser.getTextIndent(value, important);
+				break;
 			case 'font-family':
 				properties = CSSStyleDeclarationPropertySetParser.getFontFamily(value, important);
 				break;
@@ -477,6 +508,7 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'visibility':
 				properties = CSSStyleDeclarationPropertySetParser.getVisibility(value, important);
 				break;
+
 			default:
 				const trimmedValue = value.trim();
 				if (trimmedValue) {

@@ -177,7 +177,11 @@ export default class Window extends EventTarget implements IWindow {
 			disableJavaScriptFileLoading: false,
 			disableCSSFileLoading: false,
 			disableIframePageLoading: false,
-			enableFileSystemHttpRequests: false
+			enableFileSystemHttpRequests: false,
+			device: {
+				prefersColorScheme: 'light',
+				mediaType: 'screen'
+			}
 		}
 	};
 
@@ -433,7 +437,14 @@ export default class Window extends EventTarget implements IWindow {
 		}
 
 		if (options?.settings) {
-			this.happyDOM.settings = Object.assign(this.happyDOM.settings, options.settings);
+			this.happyDOM.settings = {
+				...this.happyDOM.settings,
+				...options.settings,
+				device: {
+					...this.happyDOM.settings.device,
+					...options.settings.device
+				}
+			};
 		}
 
 		this._setTimeout = ORIGINAL_SET_TIMEOUT;
@@ -594,7 +605,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns CSS style declaration.
 	 */
 	public getComputedStyle(element: IElement): CSSStyleDeclaration {
-		return new CSSStyleDeclaration(element, true);
+		element['_computedStyle'] = element['_computedStyle'] || new CSSStyleDeclaration(element, true);
+		return element['_computedStyle'];
 	}
 
 	/**
@@ -657,7 +669,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns A new MediaQueryList.
 	 */
 	public matchMedia(mediaQueryString: string): MediaQueryList {
-		return new MediaQueryList(this, mediaQueryString);
+		return new MediaQueryList({ ownerWindow: this, media: mediaQueryString });
 	}
 
 	/**

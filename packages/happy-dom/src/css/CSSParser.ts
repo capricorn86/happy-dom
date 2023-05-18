@@ -33,10 +33,13 @@ export default class CSSParser {
 			if (match[0] === '{') {
 				const selectorText = css.substring(lastIndex, match.index).trim();
 
-				if (selectorText.startsWith('@keyframes')) {
+				if (
+					selectorText.startsWith('@keyframes') ||
+					selectorText.startsWith('@-webkit-keyframes')
+				) {
 					const newRule = new CSSKeyframesRule();
 
-					(<string>newRule.name) = selectorText.replace('@keyframes ', '');
+					(<string>newRule.name) = selectorText.replace(/@(-webkit-){0,1}keyframes +/, '');
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
@@ -51,21 +54,33 @@ export default class CSSParser {
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
-				} else if (selectorText.startsWith('@container')) {
-					const conditionText = selectorText.replace(/@container */, '');
+				} else if (
+					selectorText.startsWith('@container') ||
+					selectorText.startsWith('@-webkit-container')
+				) {
+					const conditionText = selectorText.replace(/@(-webkit-){0,1}container +/, '');
 					const newRule = new CSSContainerRule();
 
 					(<string>newRule.conditionText) = conditionText;
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
-				} else if (selectorText.startsWith('@supports')) {
-					const conditionText = selectorText.replace(/@supports */, '');
+				} else if (
+					selectorText.startsWith('@supports') ||
+					selectorText.startsWith('@-webkit-supports')
+				) {
+					const conditionText = selectorText.replace(/@(-webkit-){0,1}supports +/, '');
 					const newRule = new CSSSupportsRule();
 
 					(<string>newRule.conditionText) = conditionText;
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
+					parentRule = newRule;
+				} else if (selectorText.startsWith('@')) {
+					// Unknown rule.
+					// We will create a new rule to let it grab its content, but we will not add it to the cssRules array.
+					const newRule = new CSSRule();
+					newRule.parentStyleSheet = parentStyleSheet;
 					parentRule = newRule;
 				} else if (parentRule && parentRule.type === CSSRule.KEYFRAMES_RULE) {
 					const newRule = new CSSKeyframeRule();
