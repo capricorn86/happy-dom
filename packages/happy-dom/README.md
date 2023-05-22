@@ -258,6 +258,7 @@ const window = new Window({
 		disableJavaScriptEvaluation: true,
 		disableCSSFileLoading: true,
 		disableIframePageLoading: true,
+		disableComputedStyleRendering: true,
 		enableFileSystemHttpRequests: true,
         device: {
             mediaType: 'print',
@@ -276,6 +277,7 @@ window.happyDOM.settings.disableJavaScriptFileLoading = true;
 window.happyDOM.settings.disableJavaScriptEvaluation = true;
 window.happyDOM.settings.disableCSSFileLoading = true;
 window.happyDOM.settings.disableIframePageLoading = true;
+window.happyDOM.settings.disableComputedStyleRendering = true;
 window.happyDOM.settings.enableFileSystemHttpRequests = true;
 window.happyDOM.settings.device.mediaType = 'print';
 window.happyDOM.settings.device.prefersColorScheme = 'dark';
@@ -296,6 +298,9 @@ Set it to "true" to disable CSS file loading in HTMLLinkElement. Defaults to "fa
 **disableIframePageLoading**
 
 Set it to "true" to disable page loading in HTMLIFrameElement. Defaults to "false".
+
+**disableComputedStyleRendering**
+Set it to "true" to disable the simulation of rendering when calculating computed style. The rendering process will convert values such as "rem", "em", "cm" etc. to pixels. However, it is currently very limited and will therefore not give the same result as the browser. Defaults to "false".
 
 **enableFileSystemHttpRequests**
 

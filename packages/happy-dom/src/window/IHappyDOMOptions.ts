@@ -10,6 +10,7 @@ export default interface IHappyDOMOptions {
 		disableJavaScriptFileLoading?: boolean;
 		disableCSSFileLoading?: boolean;
 		disableIframePageLoading?: boolean;
+		disableComputedStyleRendering?: boolean;
 		enableFileSystemHttpRequests?: boolean;
 		device?: {
 			prefersColorScheme?: string;

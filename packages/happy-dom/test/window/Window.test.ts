@@ -436,7 +436,7 @@ describe('Window', () => {
 			expect(computedStyle.height).toBe('150px');
 		});
 
-		it('Returns a CSSStyleDeclaration object with computed styles containing "%" measurement values converted to pixels.', () => {
+		it('Returns a CSSStyleDeclaration object with computed styles containing "%" measurement values that have not been converted, as it is not supported yet.', () => {
 			const parent = <IHTMLElement>document.createElement('div');
 			const element = <IHTMLElement>document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
@@ -457,7 +457,7 @@ describe('Window', () => {
 
 			elementStyle.innerHTML = `
                 span {
-					width: 100%;
+					width: 80%;
                     height: 10em;
                 }
 			`;
@@ -468,8 +468,46 @@ describe('Window', () => {
 			document.body.appendChild(parentStyle);
 			document.body.appendChild(parent);
 
-			expect(computedStyle.width).toBe('0px');
+			expect(computedStyle.width).toBe('80%');
 			expect(computedStyle.height).toBe('150px');
+		});
+
+		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values that has not been converted to pixels if Window.happyDOM.settings.disableComputedStyleRendering is set to "true".', () => {
+			const parent = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			window.happyDOM.setInnerWidth(1024);
+
+			parentStyle.innerHTML = `
+                html {
+                    font-size: 10px;
+                }
+
+				div {
+                    font-size: 1.5rem;
+				}
+			`;
+
+			elementStyle.innerHTML = `
+                span {
+					width: 10rem;
+                    height: 10em;
+                }
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			window.happyDOM.settings.disableComputedStyleRendering = true;
+
+			expect(computedStyle.width).toBe('10rem');
+			expect(computedStyle.height).toBe('10em');
 		});
 
 		for (const measurement of [
