@@ -313,7 +313,7 @@ export default class MediaQueryItem {
 	 * @returns Value in pixels.
 	 */
 	private toPixels(value: string): number | null {
-		if (value.endsWith('em')) {
+		if (!this.ownerWindow.happyDOM.settings.disableComputedStyleRendering && value.endsWith('em')) {
 			this.rootFontSize =
 				this.rootFontSize ||
 				parseFloat(

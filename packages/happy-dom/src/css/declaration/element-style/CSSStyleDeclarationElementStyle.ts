@@ -232,7 +232,7 @@ export default class CSSStyleDeclarationElementStyle {
 					parentFontSize,
 
 					// TODO: Only "font-size" is supported when using percentage values. Add support for other properties.
-					parentSize: name === 'font-size' ? parentFontSize : 0
+					parentSize: name === 'font-size' ? parentFontSize : null
 				});
 			}
 		}
@@ -335,8 +335,12 @@ export default class CSSStyleDeclarationElementStyle {
 		value: string;
 		rootFontSize: string | number;
 		parentFontSize: string | number;
-		parentSize: string | number;
+		parentSize: string | number | null;
 	}): string {
+		if (this.element.ownerDocument.defaultView.happyDOM.settings.disableComputedStyleRendering) {
+			return options.value;
+		}
+
 		const regexp = new RegExp(CSS_MEASUREMENT_REGEXP);
 		let newValue = options.value;
 		let match;

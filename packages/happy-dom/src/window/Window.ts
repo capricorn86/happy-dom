@@ -177,6 +177,7 @@ export default class Window extends EventTarget implements IWindow {
 			disableJavaScriptFileLoading: false,
 			disableCSSFileLoading: false,
 			disableIframePageLoading: false,
+			disableComputedStyleRendering: false,
 			enableFileSystemHttpRequests: false,
 			device: {
 				prefersColorScheme: 'light',

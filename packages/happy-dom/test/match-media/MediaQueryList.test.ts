@@ -485,6 +485,26 @@ describe('MediaQueryList', () => {
 				}).matches
 			).toBe(true);
 		});
+
+		it('Handles disabling computed style rendering with Window.happyDOM.settings.disableComputedStyleRendering.', () => {
+			window.document.documentElement.style.fontSize = '10px';
+
+			expect(
+				new MediaQueryList({ ownerWindow: window, media: `(max-width: ${1023 / 10}rem)` }).matches
+			).toBe(false);
+			expect(
+				new MediaQueryList({ ownerWindow: window, media: `(max-width: ${1024 / 10}rem)` }).matches
+			).toBe(true);
+
+			window.happyDOM.settings.disableComputedStyleRendering = true;
+
+			expect(
+				new MediaQueryList({ ownerWindow: window, media: `(max-width: ${1023 / 16}rem)` }).matches
+			).toBe(false);
+			expect(
+				new MediaQueryList({ ownerWindow: window, media: `(max-width: ${1024 / 16}rem)` }).matches
+			).toBe(true);
+		});
 	});
 
 	describe('addEventListener()', () => {
