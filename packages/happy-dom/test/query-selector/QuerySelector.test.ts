@@ -128,6 +128,29 @@ describe('QuerySelector', () => {
 				'ccb',
 				'ccc'
 			]);
+
+			element.innerHTML = `
+            <div>0</div>
+            <button>1</button>
+            <div>2</div>
+            <div>3</div>
+            <div>4</div>
+            <div>5</div>
+            <div>6</div>
+            <div>7</div>
+            <button>8</button>
+            <button>9</button>
+            <button>10</button>
+            <button>11</button>
+            `;
+
+			expect(Array.from(element.querySelectorAll('button')).map((div) => div.textContent)).toEqual([
+				'1',
+				'8',
+				'9',
+				'10',
+				'11'
+			]);
 		});
 
 		it('Returns a NodeList with the method item().', () => {

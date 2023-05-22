@@ -221,7 +221,7 @@ export default class QuerySelector {
 
 		for (let i = 0, max = children.length; i < max; i++) {
 			const child = children[i];
-			const position = (documentPosition ? documentPosition + '>' : '') + i;
+			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
 
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
