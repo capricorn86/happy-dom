@@ -47,6 +47,7 @@ import ProcessingInstruction from '../processing-instruction/ProcessingInstructi
 import ElementUtility from '../element/ElementUtility';
 import HTMLCollection from '../element/HTMLCollection';
 import VisibilityStateEnum from './VisibilityStateEnum';
+import NodeTypeEnum from '../node/NodeTypeEnum';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -678,7 +679,7 @@ export default class Document extends Node implements IDocument {
 			for (const node of root.childNodes) {
 				if (node['tagName'] === 'HTML') {
 					documentElement = node;
-				} else if (node.nodeType === Node.DOCUMENT_TYPE_NODE) {
+				} else if (node.nodeType === NodeTypeEnum.documentTypeNode) {
 					documentTypeNode = node;
 				}
 
@@ -704,10 +705,11 @@ export default class Document extends Node implements IDocument {
 					}
 				}
 
+				// Remaining nodes outside the <html> element are added to the <body> element.
 				const body = ParentNodeUtility.getElementByTagName(this, 'body');
 				if (body) {
 					for (const child of root.childNodes.slice()) {
-						if (child['tagName'] !== 'HTML' && child.nodeType !== Node.DOCUMENT_TYPE_NODE) {
+						if (child['tagName'] !== 'HTML' && child.nodeType !== NodeTypeEnum.documentTypeNode) {
 							body.appendChild(child);
 						}
 					}
