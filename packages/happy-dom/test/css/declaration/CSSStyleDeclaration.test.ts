@@ -2,17 +2,17 @@ import CSSStyleDeclaration from '../../../src/css/declaration/CSSStyleDeclaratio
 import Window from '../../../src/window/Window';
 import IWindow from '../../../src/window/IWindow';
 import IDocument from '../../../src/nodes/document/IDocument';
-import IElement from '../../../src/nodes/element/IElement';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
 
 describe('CSSStyleDeclaration', () => {
 	let window: IWindow;
 	let document: IDocument;
-	let element: IElement;
+	let element: IHTMLElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = document.createElement('div');
+		element = <IHTMLElement>document.createElement('div');
 	});
 
 	describe(`get {number}()`, () => {
@@ -2720,6 +2720,23 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(element.getAttribute('style')).toBe('border: 2px solid green; --test-key: value;');
 			expect(declaration.getPropertyValue('--test-key')).toBe('value');
+		});
+
+		it('Can set a CSS variable.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', `border: 2px solid green;`);
+
+			declaration.setProperty('--test-key', 'value');
+
+			expect(element.getAttribute('style')).toBe('border: 2px solid green; --test-key: value;');
+			expect(declaration.getPropertyValue('--test-key')).toBe('value');
+		});
+
+		it('Can set a CSS variable as element style property.', () => {
+			element.style.setProperty('--test-key', 'value');
+			document.body.appendChild(element);
+			expect(new CSSStyleDeclaration(element, true).getPropertyValue('--test-key')).toBe('value');
 		});
 	});
 
