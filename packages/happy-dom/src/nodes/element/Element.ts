@@ -92,7 +92,7 @@ export default class Element extends Node implements IElement {
 	public _attributes: { [k: string]: IAttr } = {};
 
 	private _classList: DOMTokenList = null;
-	public _isValue?: string;
+	public _isValue?: string | null = null;
 	public _computedStyle: CSSStyleDeclaration | null = null;
 
 	/**

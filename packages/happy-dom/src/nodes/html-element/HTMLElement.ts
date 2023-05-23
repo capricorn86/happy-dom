@@ -27,8 +27,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly clientHeight = 0;
 	public readonly clientWidth = 0;
 
-	private _style: CSSStyleDeclaration = null;
-	private _dataset: Dataset = null;
+	public _style: CSSStyleDeclaration = null;
+	public _dataset: Dataset = null;
 
 	// Events
 	public oncopy: (event: Event) => void | null = null;

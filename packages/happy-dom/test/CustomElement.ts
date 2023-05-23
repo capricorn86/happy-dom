@@ -48,16 +48,22 @@ export default class CustomElement extends new Window().HTMLElement {
                 span {
                     color: pink;
                 }
-				.class1 {
+				.propKey {
 					color: yellow;
 				}
             </style>
             <div>
-                <span class="class1">
+                <span class="propKey">
                     key1 is "${this.getAttribute('key1')}" and key2 is "${this.getAttribute(
 			'key2'
 		)}".
                 </span>
+                <span class="children">${this.childNodes
+									.map(
+										(child) =>
+											'#' + child['nodeType'] + (child['tagName'] || '') + child.textContent
+									)
+									.join(', ')}</span>
                 <span><slot></slot></span>
             </div>
         `;
