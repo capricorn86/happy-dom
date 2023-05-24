@@ -262,7 +262,7 @@ const window = new Window({
 		enableFileSystemHttpRequests: true,
         device: {
             mediaType: 'print',
-            prefersColorScheme = 'dark
+            prefersColorScheme: 'dark
         }
 	}
 });
