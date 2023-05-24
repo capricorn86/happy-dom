@@ -203,7 +203,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 						type === 'application/x-javascript' ||
 						type.startsWith('text/javascript'))
 				) {
-					this.ownerDocument.defaultView.eval(textContent);
+					HTMLScriptElementUtility.eval(this, textContent);
 				}
 			}
 		}

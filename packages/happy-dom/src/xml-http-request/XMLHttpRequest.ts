@@ -17,6 +17,7 @@ import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum';
 import XMLHttpRequestCertificate from './XMLHttpRequestCertificate';
 import XMLHttpRequestSyncRequestScriptBuilder from './utilities/XMLHttpRequestSyncRequestScriptBuilder';
 import IconvLite from 'iconv-lite';
+import ErrorEvent from '../event/events/ErrorEvent';
 
 // These headers are not user setable.
 // The following are allowed but banned in the spec:
@@ -1042,6 +1043,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this._state.responseText = error instanceof Error ? error.stack : '';
 		this._state.error = true;
 		this._setState(XMLHttpRequestReadyStateEnum.done);
+
+		const errorObject = error instanceof Error ? error : new Error(error);
+		const event = new ErrorEvent('error', {
+			message: errorObject.message,
+			error: errorObject
+		});
+
+		this._ownerDocument.defaultView.console.error(errorObject);
+		this.dispatchEvent(event);
+		this._ownerDocument.defaultView.dispatchEvent(event);
 	}
 
 	/**

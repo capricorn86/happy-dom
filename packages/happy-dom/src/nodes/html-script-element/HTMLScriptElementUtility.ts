@@ -47,7 +47,7 @@ export default class HTMLScriptElementUtility {
 				return;
 			}
 
-			element.ownerDocument.defaultView.eval(code);
+			this.eval(element, code);
 			element.dispatchEvent(new Event('load'));
 			(<Document>element.ownerDocument)._readyStateManager.endTask();
 		} else {
@@ -60,8 +60,28 @@ export default class HTMLScriptElementUtility {
 				return;
 			}
 
-			element.ownerDocument.defaultView.eval(code);
+			this.eval(element, code);
 			element.dispatchEvent(new Event('load'));
+		}
+	}
+
+	/**
+	 * Evaluates a script code.
+	 *
+	 * @param element Element.
+	 * @param code Code.
+	 */
+	public static eval(element: HTMLScriptElement, code: string): void {
+		try {
+			element.ownerDocument.defaultView.eval(code);
+		} catch (error) {
+			element.ownerDocument.defaultView.console.error(error);
+			element.ownerDocument.defaultView.dispatchEvent(
+				new ErrorEvent('error', {
+					message: error.message,
+					error: error
+				})
+			);
 		}
 	}
 

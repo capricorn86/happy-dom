@@ -195,6 +195,7 @@ export default class Fetch {
 	 */
 	private onError(error: Error): void {
 		this.finalizeRequest();
+		this.ownerDocument.defaultView.console.error(error);
 		this.reject(
 			new DOMException(
 				`Fetch to "${this.request.url}" failed. Error: ${error.message}`,

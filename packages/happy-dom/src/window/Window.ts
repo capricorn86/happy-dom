@@ -636,7 +636,6 @@ export default class Window extends EventTarget implements IWindow {
 		if (VM.isContext(this)) {
 			return VM.runInContext(code, this);
 		}
-
 		return eval(code);
 	}
 
