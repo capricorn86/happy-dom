@@ -86,10 +86,10 @@ describe('Window', () => {
 			expect(thirdComment.ownerDocument === thirdWindow.document).toBe(true);
 		});
 
-		it('Initializes by using given options', () => {
+		it('Initializes by using given options.', () => {
 			const windowWithOptions = new Window({
-				innerWidth: 1920,
-				innerHeight: 1080,
+				width: 1920,
+				height: 1080,
 				url: 'http://localhost:8080',
 				settings: {
 					disableJavaScriptEvaluation: true,
@@ -102,6 +102,8 @@ describe('Window', () => {
 
 			expect(windowWithOptions.innerWidth).toBe(1920);
 			expect(windowWithOptions.innerHeight).toBe(1080);
+			expect(windowWithOptions.outerWidth).toBe(1920);
+			expect(windowWithOptions.outerHeight).toBe(1080);
 			expect(windowWithOptions.location.href).toBe('http://localhost:8080/');
 			expect(windowWithOptions.happyDOM.settings.disableJavaScriptEvaluation).toBe(true);
 			expect(windowWithOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
@@ -113,6 +115,8 @@ describe('Window', () => {
 
 			expect(windowWithoutOptions.innerWidth).toBe(1024);
 			expect(windowWithoutOptions.innerHeight).toBe(768);
+			expect(windowWithoutOptions.outerWidth).toBe(1024);
+			expect(windowWithoutOptions.outerHeight).toBe(768);
 			expect(windowWithoutOptions.location.href).toBe('about:blank');
 			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptEvaluation).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
@@ -121,6 +125,197 @@ describe('Window', () => {
 			expect(windowWithoutOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.device.prefersColorScheme).toBe('light');
 			expect(windowWithoutOptions.happyDOM.settings.device.mediaType).toBe('screen');
+		});
+
+		it('Supports deprecated "innerWidth" and "innerHeight".', () => {
+			const window = new Window({
+				innerWidth: 1920,
+				innerHeight: 1080
+			});
+
+			expect(window.innerWidth).toBe(1920);
+			expect(window.innerHeight).toBe(1080);
+			expect(window.outerWidth).toBe(1920);
+			expect(window.outerHeight).toBe(1080);
+		});
+	});
+
+	describe('happyDOM.whenAsyncComplete()', () => {
+		it('Resolves the Promise returned by whenAsyncComplete() when all async tasks has been completed.', async () => {
+			const responseText = '{ "test": "test" }';
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = '';
+								response.headers = {
+									'content-length': '0'
+								};
+								response.rawHeaders = ['content-length', '0'];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			window.location.href = 'https://localhost:8080';
+			let isFirstWhenAsyncCompleteCalled = false;
+			window.happyDOM.whenAsyncComplete().then(() => {
+				isFirstWhenAsyncCompleteCalled = true;
+			});
+			let tasksDone = 0;
+			const intervalID = window.setInterval(() => {
+				tasksDone++;
+			});
+			window.clearInterval(intervalID);
+			window.setTimeout(() => {
+				tasksDone++;
+			});
+			window.setTimeout(() => {
+				tasksDone++;
+			});
+			window.requestAnimationFrame(() => {
+				tasksDone++;
+			});
+			window.requestAnimationFrame(() => {
+				tasksDone++;
+			});
+			window.fetch('/url/').then((response) =>
+				response.json().then(() => {
+					tasksDone++;
+				})
+			);
+			window.fetch('/url/').then((response) =>
+				response.text().then(() => {
+					tasksDone++;
+				})
+			);
+			await window.happyDOM.whenAsyncComplete();
+			expect(tasksDone).toBe(6);
+			expect(isFirstWhenAsyncCompleteCalled).toBe(true);
+		});
+	});
+
+	describe('happyDOM.cancelAsync()', () => {
+		it('Cancels all ongoing asynchrounous tasks.', (done) => {
+			window.location.href = 'https://localhost:8080';
+			let isFirstWhenAsyncCompleteCalled = false;
+			window.happyDOM.whenAsyncComplete().then(() => {
+				isFirstWhenAsyncCompleteCalled = true;
+			});
+			let tasksDone = 0;
+			const intervalID = window.setInterval(() => {
+				tasksDone++;
+			});
+			window.clearInterval(intervalID);
+			window.setTimeout(() => {
+				tasksDone++;
+			});
+			window.setTimeout(() => {
+				tasksDone++;
+			});
+			window.requestAnimationFrame(() => {
+				tasksDone++;
+			});
+			window.requestAnimationFrame(() => {
+				tasksDone++;
+			});
+
+			window
+				.fetch('/url/')
+				.then((response) =>
+					response
+						.json()
+						.then(() => {
+							tasksDone++;
+						})
+						.catch(() => {})
+				)
+				.catch(() => {});
+
+			window
+				.fetch('/url/')
+				.then((response) =>
+					response
+						.json()
+						.then(() => {
+							tasksDone++;
+						})
+						.catch(() => {})
+				)
+				.catch(() => {});
+
+			let isSecondWhenAsyncCompleteCalled = false;
+			window.happyDOM.whenAsyncComplete().then(() => {
+				isSecondWhenAsyncCompleteCalled = true;
+			});
+
+			window.happyDOM.cancelAsync();
+
+			expect(tasksDone).toBe(0);
+
+			global.setTimeout(() => {
+				expect(isFirstWhenAsyncCompleteCalled).toBe(true);
+				expect(isSecondWhenAsyncCompleteCalled).toBe(true);
+				done();
+			}, 1);
+		});
+	});
+
+	describe('happyDOM.setURL()', () => {
+		it('Sets URL.', () => {
+			window.happyDOM.setURL('https://localhost:8080');
+			expect(window.location.href).toBe('https://localhost:8080/');
+		});
+	});
+
+	describe('happyDOM.setWindowSize()', () => {
+		it('Sets window width.', () => {
+			window.happyDOM.setWindowSize({ width: 1920 });
+			expect(window.innerWidth).toBe(1920);
+			expect(window.outerWidth).toBe(1920);
+		});
+
+		it('Sets window height.', () => {
+			window.happyDOM.setWindowSize({ height: 1080 });
+			expect(window.innerHeight).toBe(1080);
+			expect(window.outerHeight).toBe(1080);
+		});
+
+		it('Sets window width and height.', () => {
+			window.happyDOM.setWindowSize({ width: 1920, height: 1080 });
+			expect(window.innerWidth).toBe(1920);
+			expect(window.innerHeight).toBe(1080);
+			expect(window.outerWidth).toBe(1920);
+			expect(window.outerHeight).toBe(1080);
+		});
+	});
+
+	describe('setInnerWidth()', () => {
+		it('Sets window width.', () => {
+			window.happyDOM.setInnerWidth(1920);
+			expect(window.innerWidth).toBe(1920);
+			expect(window.outerWidth).toBe(1920);
+		});
+	});
+
+	describe('setInnerHeight()', () => {
+		it('Sets window height.', () => {
+			window.happyDOM.setInnerHeight(1080);
+			expect(window.innerHeight).toBe(1080);
+			expect(window.outerHeight).toBe(1080);
 		});
 	});
 
@@ -273,7 +468,7 @@ describe('Window', () => {
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
 
-			window.happyDOM.setInnerWidth(1024);
+			window.happyDOM.setWindowSize({ width: 1024 });
 
 			parentStyle.innerHTML = `
 				div {
@@ -367,7 +562,7 @@ describe('Window', () => {
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
 
-			window.happyDOM.setInnerWidth(1024);
+			window.happyDOM.setWindowSize({ width: 1024 });
 
 			parentStyle.innerHTML = `
                 html {
@@ -407,7 +602,7 @@ describe('Window', () => {
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
 
-			window.happyDOM.setInnerWidth(1024);
+			window.happyDOM.setWindowSize({ width: 1024 });
 
 			parentStyle.innerHTML = `
                 html {
@@ -443,7 +638,7 @@ describe('Window', () => {
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
 
-			window.happyDOM.setInnerWidth(1024);
+			window.happyDOM.setWindowSize({ width: 1024 });
 
 			parentStyle.innerHTML = `
                 html {
@@ -479,7 +674,7 @@ describe('Window', () => {
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
 
-			window.happyDOM.setInnerWidth(1024);
+			window.happyDOM.setWindowSize({ width: 1024 });
 
 			parentStyle.innerHTML = `
                 html {
@@ -667,7 +862,7 @@ describe('Window', () => {
 
 	describe('matchMedia()', () => {
 		it('Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.', () => {
-			window.happyDOM.setInnerWidth(1024);
+			window.happyDOM.setWindowSize({ width: 1024 });
 
 			const mediaQueryString = '(max-width: 512px)';
 			const mediaQueryList = window.matchMedia(mediaQueryString);
@@ -704,140 +899,6 @@ describe('Window', () => {
 			expect(response).toBe(expectedResponse);
 			expect(request.url).toBe(expectedURL);
 			expect(request.headers.get('test-header')).toBe('test-value');
-		});
-	});
-
-	describe('happyDOM.whenAsyncComplete()', () => {
-		it('Resolves the Promise returned by whenAsyncComplete() when all async tasks has been completed.', async () => {
-			const responseText = '{ "test": "test" }';
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = '';
-								response.headers = {
-									'content-length': '0'
-								};
-								response.rawHeaders = ['content-length', '0'];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
-
-			window.location.href = 'https://localhost:8080';
-			let isFirstWhenAsyncCompleteCalled = false;
-			window.happyDOM.whenAsyncComplete().then(() => {
-				isFirstWhenAsyncCompleteCalled = true;
-			});
-			let tasksDone = 0;
-			const intervalID = window.setInterval(() => {
-				tasksDone++;
-			});
-			window.clearInterval(intervalID);
-			window.setTimeout(() => {
-				tasksDone++;
-			});
-			window.setTimeout(() => {
-				tasksDone++;
-			});
-			window.requestAnimationFrame(() => {
-				tasksDone++;
-			});
-			window.requestAnimationFrame(() => {
-				tasksDone++;
-			});
-			window.fetch('/url/').then((response) =>
-				response.json().then(() => {
-					tasksDone++;
-				})
-			);
-			window.fetch('/url/').then((response) =>
-				response.text().then(() => {
-					tasksDone++;
-				})
-			);
-			await window.happyDOM.whenAsyncComplete();
-			expect(tasksDone).toBe(6);
-			expect(isFirstWhenAsyncCompleteCalled).toBe(true);
-		});
-	});
-
-	describe('happyDOM.cancelAsync()', () => {
-		it('Cancels all ongoing asynchrounous tasks.', (done) => {
-			window.location.href = 'https://localhost:8080';
-			let isFirstWhenAsyncCompleteCalled = false;
-			window.happyDOM.whenAsyncComplete().then(() => {
-				isFirstWhenAsyncCompleteCalled = true;
-			});
-			let tasksDone = 0;
-			const intervalID = window.setInterval(() => {
-				tasksDone++;
-			});
-			window.clearInterval(intervalID);
-			window.setTimeout(() => {
-				tasksDone++;
-			});
-			window.setTimeout(() => {
-				tasksDone++;
-			});
-			window.requestAnimationFrame(() => {
-				tasksDone++;
-			});
-			window.requestAnimationFrame(() => {
-				tasksDone++;
-			});
-
-			window
-				.fetch('/url/')
-				.then((response) =>
-					response
-						.json()
-						.then(() => {
-							tasksDone++;
-						})
-						.catch(() => {})
-				)
-				.catch(() => {});
-
-			window
-				.fetch('/url/')
-				.then((response) =>
-					response
-						.json()
-						.then(() => {
-							tasksDone++;
-						})
-						.catch(() => {})
-				)
-				.catch(() => {});
-
-			let isSecondWhenAsyncCompleteCalled = false;
-			window.happyDOM.whenAsyncComplete().then(() => {
-				isSecondWhenAsyncCompleteCalled = true;
-			});
-
-			window.happyDOM.cancelAsync();
-
-			expect(tasksDone).toBe(0);
-
-			global.setTimeout(() => {
-				expect(isFirstWhenAsyncCompleteCalled).toBe(true);
-				expect(isSecondWhenAsyncCompleteCalled).toBe(true);
-				done();
-			}, 1);
 		});
 	});
 

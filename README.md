@@ -58,14 +58,6 @@ This package makes it possible to use Happy DOM with [Jest](https://jestjs.io/).
 
 A utility that registers Happy DOM globally, which makes it possible to use Happy DOM for testing in a Node environment.
 
----
-
-### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/server-rendering.svg)](https://www.npmjs.com/package/@happy-dom/server-rendering) [server-rendering](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering)
-
-This package has been deprecated.
-
-Happy DOM now supports [Declarative Shadow DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom#server-side-rendering-of-web-components) which can be used for server-side rendering of web components.
-
 # Performance
 
 | Operation                            | JSDOM   | Happy DOM |

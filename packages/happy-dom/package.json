@@ -6,7 +6,22 @@
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "Happy DOM is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG DOM and HTML.",
-	"main": "lib/index.js",
+	"main": "cjs/index.js",
+	"module": "lib/index.js",
+	"exports": {
+		".": {
+			"import": "./lib/index.js",
+			"require": "./cjs/index.js",
+			"default": "./lib/index.js"
+		},
+		"./lib/*.js": {
+			"import": "./lib/*.js",
+			"require": "./cjs/*.js",
+			"default": "./lib/*.js"
+		},
+		"./package.json": "./package.json",
+		"./.eslintrc": "./.eslintrc.js"
+	},
 	"keywords": [
 		"jsdom",
 		"dom",
@@ -23,7 +38,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc",
+		"compile": "tsc && tsc --module CommonJS --outDir cjs",
 		"watch": "tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",

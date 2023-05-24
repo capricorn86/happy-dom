@@ -7,7 +7,7 @@ describe('MediaQueryList', () => {
 	let window: IWindow;
 
 	beforeEach(() => {
-		window = new Window({ innerWidth: 1024, innerHeight: 768 });
+		window = new Window({ width: 1024, height: 768 });
 	});
 
 	describe('get media()', () => {

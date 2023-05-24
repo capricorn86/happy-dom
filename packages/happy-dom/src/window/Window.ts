@@ -157,20 +157,26 @@ export default class Window extends EventTarget implements IWindow {
 			this.happyDOM.asyncTaskManager.cancelAll();
 		},
 		asyncTaskManager: new AsyncTaskManager(),
-		setInnerWidth: (width: number): void => {
-			if (this.innerWidth !== width) {
-				(<number>this.innerWidth) = width;
-				this.dispatchEvent(new Event('resize'));
-			}
-		},
-		setInnerHeight: (height: number): void => {
-			if (this.innerHeight !== height) {
-				(<number>this.innerHeight) = height;
-				this.dispatchEvent(new Event('resize'));
-			}
-		},
 		setURL: (url: string) => {
 			this.location.href = url;
+		},
+		setWindowSize: (options: { width?: number; height?: number }): void => {
+			if (
+				(options.width !== undefined && this.innerWidth !== options.width) ||
+				(options.height !== undefined && this.innerHeight !== options.height)
+			) {
+				if (options.width !== undefined && this.innerWidth !== options.width) {
+					(<number>this.innerWidth) = options.width;
+					(<number>this.outerWidth) = options.width;
+				}
+
+				if (options.height !== undefined && this.innerHeight !== options.height) {
+					(<number>this.innerHeight) = options.height;
+					(<number>this.outerHeight) = options.height;
+				}
+
+				this.dispatchEvent(new Event('resize'));
+			}
 		},
 		settings: {
 			disableJavaScriptEvaluation: false,
@@ -183,7 +189,19 @@ export default class Window extends EventTarget implements IWindow {
 				prefersColorScheme: 'light',
 				mediaType: 'screen'
 			}
-		}
+		},
+
+		/**
+		 * @param width The width of the viewport.
+		 * @deprecated
+		 */
+		setInnerWidth: (width: number): void => this.happyDOM.setWindowSize({ width }),
+
+		/**
+		 * @param height The height of the viewport.
+		 * @deprecated
+		 */
+		setInnerHeight: (height: number): void => this.happyDOM.setWindowSize({ height })
 	};
 
 	// Global classes
@@ -330,6 +348,8 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly performance = PerfHooks.performance;
 	public readonly innerWidth: number;
 	public readonly innerHeight: number;
+	public readonly outerWidth: number;
+	public readonly outerHeight: number;
 
 	// Node.js Globals
 	public ArrayBuffer;
@@ -414,8 +434,10 @@ export default class Window extends EventTarget implements IWindow {
 	 * Constructor.
 	 *
 	 * @param [options] Options.
-	 * @param [options.innerWidth] Inner width. Defaults to "1024".
-	 * @param [options.innerHeight] Inner height. Defaults to "768".
+	 * @param [options.width] Window width. Defaults to "1024".
+	 * @param [options.height] Window height. Defaults to "768".
+	 * @param [options.innerWidth] Inner width. Deprecated. Defaults to "1024".
+	 * @param [options.innerHeight] Inner height. Deprecated. Defaults to "768".
 	 * @param [options.url] URL.
 	 * @param [options.settings] Settings.
 	 */
@@ -430,14 +452,33 @@ export default class Window extends EventTarget implements IWindow {
 		this.sessionStorage = new Storage();
 		this.localStorage = new Storage();
 
-		this.innerWidth = options?.innerWidth ? options.innerWidth : 1024;
-		this.innerHeight = options?.innerHeight ? options.innerHeight : 768;
+		if (options && options.width !== undefined) {
+			this.innerWidth = options.width;
+			this.outerWidth = options.width;
+		} else if (options && options.innerWidth !== undefined) {
+			this.innerWidth = options.innerWidth;
+			this.outerWidth = options.innerWidth;
+		} else {
+			this.innerWidth = 1024;
+			this.outerWidth = 1024;
+		}
 
-		if (options?.url) {
+		if (options && options.height !== undefined) {
+			this.innerHeight = options.height;
+			this.outerHeight = options.height;
+		} else if (options && options.innerHeight !== undefined) {
+			this.innerHeight = options.innerHeight;
+			this.outerHeight = options.innerHeight;
+		} else {
+			this.innerHeight = 768;
+			this.outerHeight = 768;
+		}
+
+		if (options && options.url !== undefined) {
 			this.location.href = options.url;
 		}
 
-		if (options?.settings) {
+		if (options && options.settings) {
 			this.happyDOM.settings = {
 				...this.happyDOM.settings,
 				...options.settings,

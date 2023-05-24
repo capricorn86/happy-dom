@@ -132,10 +132,19 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 		whenAsyncComplete: () => Promise<void>;
 		cancelAsync: () => void;
 		asyncTaskManager: AsyncTaskManager;
-		setInnerWidth: (width: number) => void;
-		setInnerHeight: (height: number) => void;
+		setWindowSize: (options: { width?: number; height?: number }) => void;
 		setURL: (url: string) => void;
 		settings: IHappyDOMSettings;
+
+		/**
+		 * @deprecated
+		 */
+		setInnerWidth: (width: number) => void;
+
+		/**
+		 * @deprecated
+		 */
+		setInnerHeight: (height: number) => void;
 	};
 
 	// Global classes
@@ -274,6 +283,8 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly screen: Screen;
 	readonly innerWidth: number;
 	readonly innerHeight: number;
+	readonly outerWidth: number;
+	readonly outerHeight: number;
 	readonly sessionStorage: Storage;
 	readonly localStorage: Storage;
 	readonly performance: Performance;

@@ -74,6 +74,10 @@ GlobalRegistrator.unregister();
 console.log(global.document);
 ```
 
+# Documentation
+
+Read more about how Happy DOM works in our [documentation](https://github.com/capricorn86/happy-dom/wiki).
+
 # Performance
 
 | Operation                            | JSDOM   | Happy DOM |

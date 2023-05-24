@@ -6,7 +6,7 @@
 		"target": "es2020",
 		"declaration": true,
 		"declarationMap": true,
-		"module": "CommonJS",
+		"module": "es2020",
 		"moduleResolution": "node",
 		"esModuleInterop": true,
 		"experimentalDecorators": true,

@@ -1,4 +1,5 @@
 node_modules
 tmp
 lib
+cjs
 .DS_Store

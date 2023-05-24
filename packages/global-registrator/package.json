@@ -6,7 +6,21 @@
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "Use Happy DOM globally in a Node.js environment for testing.",
-	"main": "lib/index.js",
+	"main": "cjs/index.js",
+	"module": "lib/index.js",
+	"exports": {
+		".": {
+			"import": "./lib/index.js",
+			"require": "./cjs/index.js",
+			"default": "./lib/index.js"
+		},
+		"./lib/*.js": {
+			"import": "./lib/*.js",
+			"require": "./cjs/*.js",
+			"default": "./lib/*.js"
+		},
+		"./package.json": "./package.json"
+	},
 	"keywords": [
 		"jsdom",
 		"happy",
@@ -24,7 +38,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc",
+		"compile": "tsc && tsc --module CommonJS --outDir cjs",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
