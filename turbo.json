@@ -3,7 +3,7 @@
 	"pipeline": {
 		"compile": {
 			"dependsOn": ["^compile"],
-			"outputs": ["lib/**"]
+			"outputs": ["lib/**", "cjs/**"]
 		},
 		"global-registrator#compile": {
 			"dependsOn": ["happy-dom#compile"]
