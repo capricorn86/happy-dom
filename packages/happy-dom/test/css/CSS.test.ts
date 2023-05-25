@@ -1,6 +1,6 @@
-import CSS from '../../src/css/CSS';
-import CSSUnits from '../../src/css/CSSUnits';
-import CSSUnitValue from '../../src/css/CSSUnitValue';
+import CSS from '../../src/css/CSS.js';
+import CSSUnits from '../../src/css/CSSUnits.js';
+import CSSUnitValue from '../../src/css/CSSUnitValue.js';
 
 describe('CSS', () => {
 	let css: CSS = null;

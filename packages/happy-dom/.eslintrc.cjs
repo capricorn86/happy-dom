@@ -154,7 +154,6 @@ module.exports = {
 				'import/no-named-as-default': WARN,
 				'import/no-extraneous-dependencies': WARN,
 				'import/no-absolute-path': WARN,
-                "import/extensions": [ERROR, "ignorePackages"],
 				'@typescript-eslint/naming-convention': [
 					WARN,
 					{

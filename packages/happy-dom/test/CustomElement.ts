@@ -1,5 +1,5 @@
-import Window from '../src/window/Window';
-import IShadowRoot from '../src/nodes/shadow-root/IShadowRoot';
+import Window from '../src/window/Window.js';
+import IShadowRoot from '../src/nodes/shadow-root/IShadowRoot.js';
 
 /**
  * CustomElement test class.

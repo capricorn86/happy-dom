@@ -1,10 +1,10 @@
-import Window from '../../src/window/Window';
-import IWindow from '../../src/window/IWindow';
-import IDocument from '../../src/nodes/document/IDocument';
-import ResourceFetch from '../../src/fetch/ResourceFetch';
-import IResponse from '../../src/fetch/types/IResponse';
-import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder';
-import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import ResourceFetch from '../../src/fetch/ResourceFetch.js';
+import IResponse from '../../src/fetch/types/IResponse.js';
+import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder.js';
+import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate.js';
 
 const URL = 'https://localhost:8080/base/';
 

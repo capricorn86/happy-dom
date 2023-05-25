@@ -1,6 +1,6 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import HTMLOptGroupElement from '../../../src/nodes/html-opt-group-element/HTMLOptGroupElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLOptGroupElement from '../../../src/nodes/html-opt-group-element/HTMLOptGroupElement.js';
 
 describe('HTMLOptGroupElement', () => {
 	let window: Window;

@@ -1,14 +1,14 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import IDocument from '../../../src/nodes/document/IDocument';
-import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement';
-import DOMException from '../../../src/exception/DOMException';
-import File from '../../../src/file/File';
-import Event from '../../../src/event/Event';
-import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
-import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
-import ValidityState from '../../../src/validity-state/ValidityState';
-import { IHTMLFormElement } from '../../../src';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import DOMException from '../../../src/exception/DOMException.js';
+import File from '../../../src/file/File.js';
+import Event from '../../../src/event/Event.js';
+import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
+import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
+import ValidityState from '../../../src/validity-state/ValidityState.js';
+import { IHTMLFormElement } from '../../../src.js';
 
 describe('HTMLInputElement', () => {
 	let window: IWindow;

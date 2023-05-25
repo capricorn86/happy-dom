@@ -1,10 +1,10 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import IDocument from '../../../src/nodes/document/IDocument';
-import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement';
-import IHTMLOptionElement from '../../../src/nodes/html-option-element/IHTMLOptionElement';
-import ValidityState from '../../../src/validity-state/ValidityState';
-import Event from '../../../src/event/Event';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement.js';
+import IHTMLOptionElement from '../../../src/nodes/html-option-element/IHTMLOptionElement.js';
+import ValidityState from '../../../src/validity-state/ValidityState.js';
+import Event from '../../../src/event/Event.js';
 
 describe('HTMLSelectElement', () => {
 	let window: IWindow;

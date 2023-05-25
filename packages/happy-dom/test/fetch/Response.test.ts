@@ -1,17 +1,17 @@
-import IWindow from '../../src/window/IWindow';
-import Window from '../../src/window/Window';
-import IDocument from '../../src/nodes/document/IDocument';
-import Response from '../../src/fetch/Response';
-import Headers from '../../src/fetch/Headers';
-import Blob from '../../src/file/Blob';
-import FormData from '../../src/form-data/FormData';
-import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility';
-import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import Response from '../../src/fetch/Response.js';
+import Headers from '../../src/fetch/Headers.js';
+import Blob from '../../src/file/Blob.js';
+import FormData from '../../src/form-data/FormData.js';
+import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
+import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser.js';
 import FS from 'fs';
 import Path from 'path';
-import { File } from '../../src';
-import DOMException from '../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
+import { File } from '../../src.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import { URLSearchParams } from 'url';
 
 describe('Response', () => {

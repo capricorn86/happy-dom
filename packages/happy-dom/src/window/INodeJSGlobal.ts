@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-interface INodeJSGlobal {
+export default interface INodeJSGlobal {
 	Array: typeof Array;
 	ArrayBuffer: typeof ArrayBuffer;
 	Boolean: typeof Boolean;

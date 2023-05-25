@@ -1,5 +1,5 @@
-import Document from '../../src/nodes/document/Document';
-import DOMImplementation from '../../src/dom-implementation/DOMImplementation';
+import Document from '../../src/nodes/document/Document.js';
+import DOMImplementation from '../../src/dom-implementation/DOMImplementation.js';
 
 describe('DOMImplementation', () => {
 	let ownerDocument: Document;

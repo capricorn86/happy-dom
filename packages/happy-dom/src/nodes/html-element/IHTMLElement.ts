@@ -1,6 +1,6 @@
-import Event from '../../event/Event';
-import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
-import IElement from '../element/IElement';
+import Event from '../../event/Event.js';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import IElement from '../element/IElement.js';
 
 /**
  * HTML Element.

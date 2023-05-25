@@ -1,6 +1,6 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import IHTMLLabelElement from '../../../src/nodes/html-label-element/IHTMLLabelElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import IHTMLLabelElement from '../../../src/nodes/html-label-element/IHTMLLabelElement.js';
 
 describe('HTMLLabelElement', () => {
 	let window: Window;

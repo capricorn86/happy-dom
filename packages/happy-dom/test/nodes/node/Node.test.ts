@@ -1,13 +1,13 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import Node from '../../../src/nodes/node/Node';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
-import Event from '../../../src/event/Event';
-import DOMException from '../../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
-import Text from '../../../src/nodes/text/Text';
-import EventPhaseEnum from '../../../src/event/EventPhaseEnum';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import Node from '../../../src/nodes/node/Node.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import Event from '../../../src/event/Event.js';
+import DOMException from '../../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
+import Text from '../../../src/nodes/text/Text.js';
+import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';
 
 /**
  *

@@ -1,14 +1,14 @@
-import IShadowRoot from '../shadow-root/IShadowRoot';
-import IAttr from '../attr/IAttr';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap';
-import DOMRect from './DOMRect';
-import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
-import INode from './../node/INode';
-import IChildNode from '../child-node/IChildNode';
-import IParentNode from '../parent-node/IParentNode';
-import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode';
-import IDOMRectList from './IDOMRectList';
-import Event from '../../event/Event';
+import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import IAttr from '../attr/IAttr.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import DOMRect from './DOMRect.js';
+import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
+import INode from './../node/INode.js';
+import IChildNode from '../child-node/IChildNode.js';
+import IParentNode from '../parent-node/IParentNode.js';
+import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
+import IDOMRectList from './IDOMRectList.js';
+import Event from '../../event/Event.js';
 
 export type TInsertAdjacentPositions = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 

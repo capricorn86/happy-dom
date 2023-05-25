@@ -1,11 +1,11 @@
-import IHeaders from './IHeaders';
-import IBlob from '../../file/IBlob';
-import AbortSignal from '../AbortSignal';
+import IHeaders from './IHeaders.js';
+import IBlob from '../../file/IBlob.js';
+import AbortSignal from '../AbortSignal.js';
 import Stream from 'stream';
-import IRequestReferrerPolicy from './IRequestReferrerPolicy';
-import IRequestRedirect from './IRequestRedirect';
-import IRequestCredentials from './IRequestCredentials';
-import FormData from '../../form-data/FormData';
+import IRequestReferrerPolicy from './IRequestReferrerPolicy.js';
+import IRequestRedirect from './IRequestRedirect.js';
+import IRequestCredentials from './IRequestCredentials.js';
+import FormData from '../../form-data/FormData.js';
 
 /**
  * Fetch request.

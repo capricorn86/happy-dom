@@ -1,8 +1,8 @@
-import { ISVGElement } from '../../../src';
-import IDocument from '../../../src/nodes/document/IDocument';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
-import IWindow from '../../../src/window/IWindow';
-import Window from '../../../src/window/Window';
+import { ISVGElement } from '../../../src.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import IWindow from '../../../src/window/IWindow.js';
+import Window from '../../../src/window/Window.js';
 
 describe('HTMLElementUtility', () => {
 	let window: IWindow = null;

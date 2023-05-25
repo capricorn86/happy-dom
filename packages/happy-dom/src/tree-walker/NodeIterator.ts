@@ -1,6 +1,6 @@
-import INodeFilter from './INodeFilter';
-import TreeWalker from './TreeWalker';
-import INode from '../nodes/node/INode';
+import INodeFilter from './INodeFilter.js';
+import TreeWalker from './TreeWalker.js';
+import INode from '../nodes/node/INode.js';
 
 /**
  * The NodeIterator object represents the nodes of a document subtree and a position within them.

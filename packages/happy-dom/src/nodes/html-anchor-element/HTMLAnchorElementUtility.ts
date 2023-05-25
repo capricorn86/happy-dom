@@ -1,4 +1,4 @@
-import IDocument from '../document/IDocument';
+import IDocument from '../document/IDocument.js';
 import { URL } from 'url';
 
 /**

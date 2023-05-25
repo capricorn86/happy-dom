@@ -1,5 +1,5 @@
-import File from '../../file/File';
-import IFileList from './IFileList';
+import File from '../../file/File.js';
+import IFileList from './IFileList.js';
 
 /**
  * FileList.

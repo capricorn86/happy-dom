@@ -1,14 +1,14 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment';
-import IDocumentFragment from '../../../src/nodes/document-fragment/IDocumentFragment';
-import Node from '../../../src/nodes/node/Node';
-import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
-import QuerySelector from '../../../src/query-selector/QuerySelector';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
-import Text from '../../../src/nodes/text/Text';
-import INodeList from '../../../src/nodes/node/INodeList';
-import IElement from '../../../src/nodes/element/IElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment.js';
+import IDocumentFragment from '../../../src/nodes/document-fragment/IDocumentFragment.js';
+import Node from '../../../src/nodes/node/Node.js';
+import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
+import QuerySelector from '../../../src/query-selector/QuerySelector.js';
+import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import Text from '../../../src/nodes/text/Text.js';
+import INodeList from '../../../src/nodes/node/INodeList.js';
+import IElement from '../../../src/nodes/element/IElement.js';
 
 describe('DocumentFragment', () => {
 	let window: Window;

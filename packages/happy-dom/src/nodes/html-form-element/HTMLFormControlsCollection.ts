@@ -1,9 +1,9 @@
-import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
-import IHTMLInputElement from '../html-input-element/IHTMLInputElement';
-import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement';
-import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
-import RadioNodeList from './RadioNodeList';
-import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement';
+import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
+import IHTMLInputElement from '../html-input-element/IHTMLInputElement.js';
+import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement.js';
+import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
+import RadioNodeList from './RadioNodeList.js';
+import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
 
 /**
  * HTMLFormControlsCollection.

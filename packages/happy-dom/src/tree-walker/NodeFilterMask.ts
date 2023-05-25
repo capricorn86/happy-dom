@@ -1,4 +1,4 @@
-import NodeFilter from './NodeFilter';
+import NodeFilter from './NodeFilter.js';
 
 export default {
 	/* ELEMENT_NODE */

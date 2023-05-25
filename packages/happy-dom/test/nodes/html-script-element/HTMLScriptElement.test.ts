@@ -1,9 +1,9 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement';
-import IDocument from '../../../src/nodes/document/IDocument';
-import IResponse from '../../../src/fetch/types/IResponse';
-import ResourceFetch from '../../../src/fetch/ResourceFetch';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IResponse from '../../../src/fetch/types/IResponse.js';
+import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 
 describe('HTMLScriptElement', () => {
 	let window: Window;

@@ -1,9 +1,9 @@
-import IAttr from '../attr/IAttr';
-import HTMLElement from '../html-element/HTMLElement';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import HTMLSelectElement from '../html-select-element/HTMLSelectElement';
-import INode from '../node/INode';
-import IHTMLOptionElement from './IHTMLOptionElement';
+import IAttr from '../attr/IAttr.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import INode from '../node/INode.js';
+import IHTMLOptionElement from './IHTMLOptionElement.js';
 
 /**
  * HTML Option Element.

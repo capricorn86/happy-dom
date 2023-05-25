@@ -1,25 +1,25 @@
-import IBlob from '../file/IBlob';
-import IDocument from '../nodes/document/IDocument';
-import IRequestInit from './types/IRequestInit';
+import IBlob from '../file/IBlob.js';
+import IDocument from '../nodes/document/IDocument.js';
+import IRequestInit from './types/IRequestInit.js';
 import { URL } from 'url';
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import IRequestInfo from './types/IRequestInfo';
-import IRequest from './types/IRequest';
-import Headers from './Headers';
-import FetchBodyUtility from './utilities/FetchBodyUtility';
-import AbortSignal from './AbortSignal';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import IRequestInfo from './types/IRequestInfo.js';
+import IRequest from './types/IRequest.js';
+import Headers from './Headers.js';
+import FetchBodyUtility from './utilities/FetchBodyUtility.js';
+import AbortSignal from './AbortSignal.js';
 import Stream from 'stream';
-import Blob from '../file/Blob';
+import Blob from '../file/Blob.js';
 import { TextDecoder } from 'util';
-import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility';
-import IRequestReferrerPolicy from './types/IRequestReferrerPolicy';
-import IRequestRedirect from './types/IRequestRedirect';
-import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility';
-import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility';
-import IRequestCredentials from './types/IRequestCredentials';
-import FormData from '../form-data/FormData';
-import MultipartFormDataParser from './multipart/MultipartFormDataParser';
+import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
+import IRequestReferrerPolicy from './types/IRequestReferrerPolicy.js';
+import IRequestRedirect from './types/IRequestRedirect.js';
+import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
+import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js';
+import IRequestCredentials from './types/IRequestCredentials.js';
+import FormData from '../form-data/FormData.js';
+import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 
 /**
  * Fetch request.

@@ -1,7 +1,7 @@
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import CustomElement from '../../CustomElement';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import CustomElement from '../../CustomElement.js';
 
 describe('ShadowRoot', () => {
 	let window: Window;

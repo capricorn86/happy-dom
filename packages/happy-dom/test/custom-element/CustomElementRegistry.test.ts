@@ -1,5 +1,5 @@
-import CustomElement from '../CustomElement';
-import CustomElementRegistry from '../../src/custom-element/CustomElementRegistry';
+import CustomElement from '../CustomElement.js';
+import CustomElementRegistry from '../../src/custom-element/CustomElementRegistry.js';
 
 describe('CustomElementRegistry', () => {
 	let customElements;

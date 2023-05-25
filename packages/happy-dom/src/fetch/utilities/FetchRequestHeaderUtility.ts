@@ -1,5 +1,5 @@
-import Headers from '../Headers';
-import IHeaders from '../types/IHeaders';
+import Headers from '../Headers.js';
+import IHeaders from '../types/IHeaders.js';
 
 const FORBIDDEN_HEADER_NAMES = [
 	'accept-charset',

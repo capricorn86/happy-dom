@@ -1,9 +1,9 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import IDocument from '../../../src/nodes/document/IDocument';
-import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement';
-import ResourceFetch from '../../../src/fetch/ResourceFetch';
-import ErrorEvent from '../../../src/event/events/ErrorEvent';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement.js';
+import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
+import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 
 describe('HTMLLinkElement', () => {
 	let window: IWindow;

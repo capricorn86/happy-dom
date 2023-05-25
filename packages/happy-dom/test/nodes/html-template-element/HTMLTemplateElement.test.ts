@@ -1,7 +1,7 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
-import XMLSerializer from '../../../src/xml-serializer/XMLSerializer';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import XMLSerializer from '../../../src/xml-serializer/XMLSerializer.js';
 
 describe('HTMLTemplateElement', () => {
 	let window: Window;

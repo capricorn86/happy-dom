@@ -1,12 +1,12 @@
-import IHTMLElement from '../html-element/IHTMLElement';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
-import INodeList from '../node/INodeList';
-import IHTMLOptionsCollection from './IHTMLOptionsCollection';
-import ValidityState from '../../validity-state/ValidityState';
-import Event from '../../event/Event';
-import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
-import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
+import INodeList from '../node/INodeList.js';
+import IHTMLOptionsCollection from './IHTMLOptionsCollection.js';
+import ValidityState from '../../validity-state/ValidityState.js';
+import Event from '../../event/Event.js';
+import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement.js';
+import IHTMLOptGroupElement from '../html-opt-group-element/IHTMLOptGroupElement.js';
 
 /**
  * HTML Select Element.

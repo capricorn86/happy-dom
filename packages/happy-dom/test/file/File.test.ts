@@ -1,4 +1,4 @@
-import File from '../../src/file/File';
+import File from '../../src/file/File.js';
 
 const NOW = 1;
 

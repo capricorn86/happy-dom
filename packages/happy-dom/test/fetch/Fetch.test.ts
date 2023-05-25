@@ -1,17 +1,17 @@
-import Window from '../../src/window/Window';
-import IWindow from '../../src/window/IWindow';
-import Response from '../../src/fetch/Response';
-import Headers from '../../src/fetch/Headers';
-import DOMException from '../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
-import AbortController from '../../src/fetch/AbortController';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import Response from '../../src/fetch/Response.js';
+import Headers from '../../src/fetch/Headers.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import AbortController from '../../src/fetch/AbortController.js';
 import HTTP from 'http';
 import Net from 'net';
 import Stream from 'stream';
 import Zlib from 'zlib';
 import { TextEncoder } from 'util';
-import Blob from '../../src/file/Blob';
-import FormData from '../../src/form-data/FormData';
+import Blob from '../../src/file/Blob.js';
+import FormData from '../../src/form-data/FormData.js';
 import { URLSearchParams } from 'url';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');

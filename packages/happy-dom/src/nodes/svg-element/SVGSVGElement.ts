@@ -1,14 +1,14 @@
-import SVGGraphicsElement from './SVGGraphicsElement';
-import SVGRect from './SVGRect';
-import SVGPoint from './SVGPoint';
-import SVGLength from './SVGLength';
-import SVGAngle from './SVGAngle';
-import SVGNumber from './SVGNumber';
-import SVGTransform from './SVGTransform';
-import SVGAnimatedRect from './SVGAnimatedRect';
-import ISVGSVGElement from './ISVGSVGElement';
-import INode from '../node/INode';
-import Event from '../../event/Event';
+import SVGGraphicsElement from './SVGGraphicsElement.js';
+import SVGRect from './SVGRect.js';
+import SVGPoint from './SVGPoint.js';
+import SVGLength from './SVGLength.js';
+import SVGAngle from './SVGAngle.js';
+import SVGNumber from './SVGNumber.js';
+import SVGTransform from './SVGTransform.js';
+import SVGAnimatedRect from './SVGAnimatedRect.js';
+import ISVGSVGElement from './ISVGSVGElement.js';
+import INode from '../node/INode.js';
+import Event from '../../event/Event.js';
 
 /**
  * SVGSVGElement.

@@ -1,15 +1,15 @@
-import XMLHttpRequest from '../../src/xml-http-request/XMLHttpRequest';
-import Window from '../../src/window/Window';
-import IWindow from '../../src/window/IWindow';
-import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequestReadyStateEnum';
-import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum';
-import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder';
-import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate';
-import ProgressEvent from '../../src/event/events/ProgressEvent';
+import XMLHttpRequest from '../../src/xml-http-request/XMLHttpRequest.js';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequestReadyStateEnum.js';
+import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum.js';
+import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder.js';
+import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate.js';
+import ProgressEvent from '../../src/event/events/ProgressEvent.js';
 import HTTP from 'http';
 import { TextDecoder } from 'util';
-import Blob from '../../src/file/Blob';
-import IDocument from '../../src/nodes/document/IDocument';
+import Blob from '../../src/file/Blob.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
 
 const WINDOW_URL = 'https://localhost:8080';
 const REQUEST_URL = '/path/to/resource/';

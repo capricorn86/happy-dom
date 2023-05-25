@@ -1,18 +1,18 @@
-import IWindow from '../../src/window/IWindow';
-import Window from '../../src/window/Window';
-import IDocument from '../../src/nodes/document/IDocument';
-import Request from '../../src/fetch/Request';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import Request from '../../src/fetch/Request.js';
 import { URL } from 'url';
-import Headers from '../../src/fetch/Headers';
-import AbortSignal from '../../src/fetch/AbortSignal';
-import DOMException from '../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
-import IRequestReferrerPolicy from '../../src/fetch/types/IRequestReferrerPolicy';
-import IRequestRedirect from '../../src/fetch/types/IRequestRedirect';
-import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility';
-import Blob from '../../src/file/Blob';
-import { FormData } from '../../src';
-import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser';
+import Headers from '../../src/fetch/Headers.js';
+import AbortSignal from '../../src/fetch/AbortSignal.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import IRequestReferrerPolicy from '../../src/fetch/types/IRequestReferrerPolicy.js';
+import IRequestRedirect from '../../src/fetch/types/IRequestRedirect.js';
+import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
+import Blob from '../../src/file/Blob.js';
+import { FormData } from '../../src.js';
+import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser.js';
 
 const TEST_URL = 'https://example.com/';
 

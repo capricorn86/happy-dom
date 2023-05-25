@@ -1,5 +1,5 @@
-import History from '../../src/history/History';
-import HistoryScrollRestorationEnum from '../../src/history/HistoryScrollRestorationEnum';
+import History from '../../src/history/History.js';
+import HistoryScrollRestorationEnum from '../../src/history/HistoryScrollRestorationEnum.js';
 
 describe('History', () => {
 	let history: History;

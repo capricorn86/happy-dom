@@ -1,8 +1,8 @@
-import IWindow from '../../src/window/IWindow';
-import Window from '../../src/window/Window';
-import IDocument from '../../src/nodes/document/IDocument';
-import Event from '../../src/event/Event';
-import CustomElement from '../CustomElement';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import Event from '../../src/event/Event.js';
+import CustomElement from '../CustomElement.js';
 import { performance } from 'perf_hooks';
 
 describe('Event', () => {

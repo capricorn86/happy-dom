@@ -1,10 +1,10 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement';
-import Event from '../../../src/event/Event';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
-import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement';
-import ValidityState from '../../../src/validity-state/ValidityState';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement.js';
+import Event from '../../../src/event/Event.js';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
+import ValidityState from '../../../src/validity-state/ValidityState.js';
 
 describe('HTMLButtonElement', () => {
 	let window: Window;

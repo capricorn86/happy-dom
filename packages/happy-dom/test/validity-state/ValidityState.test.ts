@@ -1,7 +1,7 @@
-import IWindow from '../../src/window/IWindow';
-import Window from '../../src/window/Window';
-import IDocument from '../../src/nodes/document/IDocument';
-import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
 
 describe('ValidityState', () => {
 	let window: IWindow;

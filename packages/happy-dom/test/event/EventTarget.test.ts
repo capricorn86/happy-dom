@@ -1,6 +1,6 @@
-import EventTarget from '../../src/event/EventTarget';
-import Event from '../../src/event/Event';
-import CustomEvent from '../../src/event/events/CustomEvent';
+import EventTarget from '../../src/event/EventTarget.js';
+import Event from '../../src/event/Event.js';
+import CustomEvent from '../../src/event/events/CustomEvent.js';
 
 const EVENT_TYPE = 'click';
 /**

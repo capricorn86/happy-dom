@@ -1,25 +1,25 @@
-import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration';
-import IDocument from '../../src/nodes/document/IDocument';
-import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement';
-import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
-import ResourceFetch from '../../src/fetch/ResourceFetch';
-import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement';
-import Window from '../../src/window/Window';
-import IWindow from '../../src/window/IWindow';
-import Navigator from '../../src/navigator/Navigator';
-import Headers from '../../src/fetch/Headers';
-import Selection from '../../src/selection/Selection';
-import DOMException from '../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
-import CustomElement from '../../test/CustomElement';
-import Request from '../../src/fetch/Request';
-import Response from '../../src/fetch/Response';
-import IRequest from '../../src/fetch/types/IRequest';
-import IResponse from '../../src/fetch/types/IResponse';
-import Fetch from '../../src/fetch/Fetch';
+import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement.js';
+import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
+import ResourceFetch from '../../src/fetch/ResourceFetch.js';
+import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement.js';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import Navigator from '../../src/navigator/Navigator.js';
+import Headers from '../../src/fetch/Headers.js';
+import Selection from '../../src/selection/Selection.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import CustomElement from '../../test/CustomElement.js';
+import Request from '../../src/fetch/Request.js';
+import Response from '../../src/fetch/Response.js';
+import IRequest from '../../src/fetch/types/IRequest.js';
+import IResponse from '../../src/fetch/types/IResponse.js';
+import Fetch from '../../src/fetch/Fetch.js';
 import HTTP from 'http';
 import Stream from 'stream';
-import MessageEvent from '../../src/event/events/MessageEvent';
+import MessageEvent from '../../src/event/events/MessageEvent.js';
 
 describe('Window', () => {
 	let window: IWindow;
@@ -728,6 +728,11 @@ describe('Window', () => {
 
 	describe('eval()', () => {
 		it('Evaluates code and returns the result.', () => {
+			const result = <() => number>window.eval('() => 5');
+			expect(result()).toBe(5);
+		});
+
+		it('Captures errors and triggers an error event.', () => {
 			const result = <() => number>window.eval('() => 5');
 			expect(result()).toBe(5);
 		});

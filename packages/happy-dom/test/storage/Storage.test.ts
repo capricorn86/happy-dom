@@ -1,4 +1,4 @@
-import Storage from '../../src/storage/Storage';
+import Storage from '../../src/storage/Storage.js';
 
 describe('Storage', () => {
 	let storage: Storage;

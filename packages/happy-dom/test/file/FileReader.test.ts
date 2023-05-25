@@ -1,6 +1,6 @@
-import Blob from '../../src/file/Blob';
-import FileReader from '../../src/file/FileReader';
-import Window from '../../src/window/Window';
+import Blob from '../../src/file/Blob.js';
+import FileReader from '../../src/file/FileReader.js';
+import Window from '../../src/window/Window.js';
 
 describe('FileReader', () => {
 	let window: Window = null;

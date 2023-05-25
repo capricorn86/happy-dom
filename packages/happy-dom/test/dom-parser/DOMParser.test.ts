@@ -1,7 +1,7 @@
-import Window from '../../src/window/Window';
-import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
-import DOMParser from '../../src/dom-parser/DOMParser';
-import DOMParserHTML from './data/DOMParserHTML';
+import Window from '../../src/window/Window.js';
+import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
+import DOMParser from '../../src/dom-parser/DOMParser.js';
+import DOMParserHTML from './data/DOMParserHTML.js';
 
 describe('DOMParser', () => {
 	let domParser: DOMParser;

@@ -1,4 +1,4 @@
-import Node from '../node/Node';
+import Node from '../node/Node.js';
 
 /**
  * DocumentType.

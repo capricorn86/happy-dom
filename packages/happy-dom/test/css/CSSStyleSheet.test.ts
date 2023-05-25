@@ -1,6 +1,6 @@
-import DOMException from '../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
-import CSSStyleSheet from '../../src/css/CSSStyleSheet';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 
 describe('CSSStyleSheet', () => {
 	let cssStyleSheet: CSSStyleSheet = null;

@@ -1,7 +1,7 @@
-import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
-import Window from '../../src/window/Window';
-import Document from '../../src/nodes/document/Document';
-import CustomElement from '../CustomElement';
+import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
+import Window from '../../src/window/Window.js';
+import Document from '../../src/nodes/document/Document.js';
+import CustomElement from '../CustomElement.js';
 
 describe('XMLSerializer', () => {
 	let window: Window;

@@ -1,11 +1,11 @@
-import IEventListener from './IEventListener';
-import Event from './Event';
-import IEventTarget from './IEventTarget';
-import IEventListenerOptions from './IEventListenerOptions';
-import EventPhaseEnum from './EventPhaseEnum';
-import INode from '../nodes/node/INode';
-import IDocument from '../nodes/document/IDocument';
-import IWindow from '../window/IWindow';
+import IEventListener from './IEventListener.js';
+import Event from './Event.js';
+import IEventTarget from './IEventTarget.js';
+import IEventListenerOptions from './IEventListenerOptions.js';
+import EventPhaseEnum from './EventPhaseEnum.js';
+import INode from '../nodes/node/INode.js';
+import IDocument from '../nodes/document/IDocument.js';
+import IWindow from '../window/IWindow.js';
 
 /**
  * Handles events.

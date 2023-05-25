@@ -1,14 +1,14 @@
-import NodeTypeEnum from '../node/NodeTypeEnum';
-import IElement from './IElement';
-import INode from '../node/INode';
-import HTMLCollection from './HTMLCollection';
-import IDocument from '../document/IDocument';
-import IDocumentFragment from '../document-fragment/IDocumentFragment';
-import IHTMLElement from '../html-element/IHTMLElement';
-import Element from './Element';
-import NodeUtility from '../node/NodeUtility';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import IElement from './IElement.js';
+import INode from '../node/INode.js';
+import HTMLCollection from './HTMLCollection.js';
+import IDocument from '../document/IDocument.js';
+import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import Element from './Element.js';
+import NodeUtility from '../node/NodeUtility.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 const NAMED_ITEM_ATTRIBUTES = ['id', 'name'];
 

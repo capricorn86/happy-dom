@@ -1,5 +1,5 @@
-import DOMRect from './DOMRect';
-import IDOMRectList from './IDOMRectList';
+import DOMRect from './DOMRect.js';
+import IDOMRectList from './IDOMRectList.js';
 
 /**
  * DOM rect list factory.

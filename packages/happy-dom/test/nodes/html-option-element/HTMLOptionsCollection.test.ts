@@ -1,9 +1,9 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import IDocument from '../../../src/nodes/document/IDocument';
-import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement';
-import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement';
-import DOMException from '../../../src/exception/DOMException';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
+import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';
+import DOMException from '../../../src/exception/DOMException.js';
 
 describe('HTMLOptionsCollection', () => {
 	let window: IWindow;

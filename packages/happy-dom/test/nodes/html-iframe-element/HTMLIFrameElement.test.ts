@@ -1,13 +1,13 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import IDocument from '../../../src/nodes/document/IDocument';
-import IHTMLIFrameElement from '../../../src/nodes/html-iframe-element/IHTMLIFrameElement';
-import IResponse from '../../../src/fetch/types/IResponse';
-import ErrorEvent from '../../../src/event/events/ErrorEvent';
-import IFrameCrossOriginWindow from '../../../src/nodes/html-iframe-element/IFrameCrossOriginWindow';
-import MessageEvent from '../../../src/event/events/MessageEvent';
-import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
-import DOMException from '../../../src/exception/DOMException';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLIFrameElement from '../../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
+import IResponse from '../../../src/fetch/types/IResponse.js';
+import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
+import IFrameCrossOriginWindow from '../../../src/nodes/html-iframe-element/IFrameCrossOriginWindow.js';
+import MessageEvent from '../../../src/event/events/MessageEvent.js';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
+import DOMException from '../../../src/exception/DOMException.js';
 
 describe('HTMLIFrameElement', () => {
 	let window: IWindow;

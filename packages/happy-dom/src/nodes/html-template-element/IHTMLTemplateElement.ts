@@ -1,5 +1,5 @@
-import IDocumentFragment from '../document-fragment/IDocumentFragment';
-import IHTMLElement from '../html-element/IHTMLElement';
+import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
 
 /**
  * HTML Template Element.

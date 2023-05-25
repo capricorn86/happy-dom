@@ -1,5 +1,5 @@
-import GlobalWindow from '../../src/window/GlobalWindow';
-import IWindow from '../../src/window/IWindow';
+import GlobalWindow from '../../src/window/GlobalWindow.js';
+import IWindow from '../../src/window/IWindow.js';
 
 describe('GlobalWindow', () => {
 	let window: IWindow;

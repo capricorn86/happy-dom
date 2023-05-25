@@ -1,5 +1,5 @@
-import AbortSignal from '../../src/fetch/AbortSignal';
-import Event from '../../src/event/Event';
+import AbortSignal from '../../src/fetch/AbortSignal.js';
+import Event from '../../src/event/Event.js';
 
 describe('AbortSignal', () => {
 	describe('_abort()', () => {

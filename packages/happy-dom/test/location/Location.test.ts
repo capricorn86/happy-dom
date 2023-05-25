@@ -1,6 +1,6 @@
-import DOMException from '../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
-import Location from '../../src/location/Location';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import Location from '../../src/location/Location.js';
 
 const HREF = 'https://google.com/some-path/?key=value&key2=value2#hash';
 

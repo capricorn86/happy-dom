@@ -1,6 +1,6 @@
-import DOMException from '../exception/DOMException';
-import HTMLElement from '../nodes/html-element/HTMLElement';
-import Node from '../nodes/node/Node';
+import DOMException from '../exception/DOMException.js';
+import HTMLElement from '../nodes/html-element/HTMLElement.js';
+import Node from '../nodes/node/Node.js';
 
 /**
  * Custom elements registry.

@@ -1,13 +1,13 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement';
-import RadioNodeList from '../../../src/nodes/html-form-element/RadioNodeList';
-import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement';
-import Event from '../../../src/event/Event';
-import SubmitEvent from '../../../src/event/events/SubmitEvent';
-import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement';
-import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement';
-import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
+import RadioNodeList from '../../../src/nodes/html-form-element/RadioNodeList.js';
+import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import Event from '../../../src/event/Event.js';
+import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
+import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement.js';
+import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement.js';
+import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement.js';
 
 describe('HTMLFormElement', () => {
 	let window: Window;

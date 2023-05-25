@@ -1,6 +1,6 @@
-import Window from '../../src/window/Window';
-import Document from '../../src/nodes/document/Document';
-import MutationObserver from '../../src/mutation-observer/MutationObserver';
+import Window from '../../src/window/Window.js';
+import Document from '../../src/nodes/document/Document.js';
+import MutationObserver from '../../src/mutation-observer/MutationObserver.js';
 
 describe('MutationObserver', () => {
 	let window: Window;

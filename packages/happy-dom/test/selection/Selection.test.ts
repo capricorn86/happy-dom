@@ -1,11 +1,11 @@
-import Window from '../../src/window/Window';
-import IWindow from '../../src/window/IWindow';
-import IDocument from '../../src/nodes/document/IDocument';
-import Selection from '../../src/selection/Selection';
-import SelectionDirectionEnum from '../../src/selection/SelectionDirectionEnum';
-import DOMException from '../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
-import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import Selection from '../../src/selection/Selection.js';
+import SelectionDirectionEnum from '../../src/selection/SelectionDirectionEnum.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
 
 describe('Selection', () => {
 	let window: IWindow;

@@ -1,10 +1,10 @@
-import PointerEvent from '../../../src/event/events/PointerEvent';
-import IDocument from '../../../src/nodes/document/IDocument';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
-import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
-import IWindow from '../../../src/window/IWindow';
-import Window from '../../../src/window/Window';
+import PointerEvent from '../../../src/event/events/PointerEvent.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import IWindow from '../../../src/window/IWindow.js';
+import Window from '../../../src/window/Window.js';
 
 describe('HTMLElement', () => {
 	let window: IWindow = null;

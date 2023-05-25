@@ -1,10 +1,10 @@
-import IAttr from '../attr/IAttr';
-import HTMLElement from '../html-element/HTMLElement';
-import IHTMLScriptElement from './IHTMLScriptElement';
-import HTMLScriptElementUtility from './HTMLScriptElementUtility';
-import Event from '../../event/Event';
-import ErrorEvent from '../../event/events/ErrorEvent';
-import INode from '../../nodes/node/INode';
+import IAttr from '../attr/IAttr.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IHTMLScriptElement from './IHTMLScriptElement.js';
+import HTMLScriptElementUtility from './HTMLScriptElementUtility.js';
+import Event from '../../event/Event.js';
+import ErrorEvent from '../../event/events/ErrorEvent.js';
+import INode from '../../nodes/node/INode.js';
 
 /**
  * HTML Script Element.

@@ -1,4 +1,4 @@
-import Headers from '../../src/fetch/Headers';
+import Headers from '../../src/fetch/Headers.js';
 
 describe('Headers', () => {
 	describe('constructor()', () => {

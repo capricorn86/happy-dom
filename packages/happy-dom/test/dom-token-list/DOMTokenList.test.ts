@@ -1,8 +1,8 @@
-import IWindow from '../../src/window/IWindow';
-import Window from '../../src/window/Window';
-import IDocument from '../../src/nodes/document/IDocument';
-import IElement from '../../src/nodes/element/IElement';
-import IDOMTokenList from '../../src/dom-token-list/IDOMTokenList';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import IElement from '../../src/nodes/element/IElement.js';
+import IDOMTokenList from '../../src/dom-token-list/IDOMTokenList.js';
 
 describe('DOMTokenList', () => {
 	let window: IWindow;

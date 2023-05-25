@@ -1,5 +1,5 @@
-import CSSStyleSheet from './CSSStyleSheet';
-import CSSRuleTypeEnum from './CSSRuleTypeEnum';
+import CSSStyleSheet from './CSSStyleSheet.js';
+import CSSRuleTypeEnum from './CSSRuleTypeEnum.js';
 
 /**
  * CSSRule interface.

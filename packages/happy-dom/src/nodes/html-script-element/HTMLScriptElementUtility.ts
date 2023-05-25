@@ -1,10 +1,10 @@
-import Document from '../document/Document';
-import Event from '../../event/Event';
-import ErrorEvent from '../../event/events/ErrorEvent';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import ResourceFetch from '../../fetch/ResourceFetch';
-import HTMLScriptElement from './HTMLScriptElement';
+import Document from '../document/Document.js';
+import Event from '../../event/Event.js';
+import ErrorEvent from '../../event/events/ErrorEvent.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import ResourceFetch from '../../fetch/ResourceFetch.js';
+import HTMLScriptElement from './HTMLScriptElement.js';
 
 /**
  * Helper class for getting the URL relative to a Location object.

@@ -1,4 +1,4 @@
-import CookieJar from '../../src/cookie/CookieJar';
+import CookieJar from '../../src/cookie/CookieJar.js';
 import { URL } from 'url';
 
 describe('CookieJar', () => {

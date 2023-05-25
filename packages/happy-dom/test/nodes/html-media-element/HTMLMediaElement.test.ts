@@ -1,10 +1,10 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import DOMException from '../../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
-import IDocument from '../../../src/nodes/document/IDocument';
-import IHTMLMediaElement from '../../../src/nodes/html-media-element/IHTMLMediaElement';
-import Event from '../../../src/event/Event';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import DOMException from '../../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLMediaElement from '../../../src/nodes/html-media-element/IHTMLMediaElement.js';
+import Event from '../../../src/event/Event.js';
 
 describe('HTMLMediaElement', () => {
 	let window: IWindow;

@@ -1,4 +1,4 @@
-import Window from '../../src/window/Window';
+import Window from '../../src/window/Window.js';
 
 describe('URL', () => {
 	let window: Window;

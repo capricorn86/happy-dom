@@ -1,11 +1,11 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement';
-import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
-import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
-import ValidityState from '../../../src/validity-state/ValidityState';
-import Event from '../../../src/event/Event';
-import IText from '../../../src/nodes/text/IText';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement.js';
+import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
+import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
+import ValidityState from '../../../src/validity-state/ValidityState.js';
+import Event from '../../../src/event/Event.js';
+import IText from '../../../src/nodes/text/IText.js';
 
 describe('HTMLTextAreaElement', () => {
 	let window: Window;

@@ -1,14 +1,14 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement';
-import NamespaceURI from '../../../src/config/NamespaceURI';
-import SVGRect from '../../../src/nodes/svg-element/SVGRect';
-import SVGPoint from '../../../src/nodes/svg-element/SVGPoint';
-import SVGAnimatedRect from '../../../src/nodes/svg-element/SVGAnimatedRect';
-import SVGNumber from '../../../src/nodes/svg-element/SVGNumber';
-import SVGLength from '../../../src/nodes/svg-element/SVGLength';
-import SVGAngle from '../../../src/nodes/svg-element/SVGAngle';
-import SVGTransform from '../../../src/nodes/svg-element/SVGTransform';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement.js';
+import NamespaceURI from '../../../src/config/NamespaceURI.js';
+import SVGRect from '../../../src/nodes/svg-element/SVGRect.js';
+import SVGPoint from '../../../src/nodes/svg-element/SVGPoint.js';
+import SVGAnimatedRect from '../../../src/nodes/svg-element/SVGAnimatedRect.js';
+import SVGNumber from '../../../src/nodes/svg-element/SVGNumber.js';
+import SVGLength from '../../../src/nodes/svg-element/SVGLength.js';
+import SVGAngle from '../../../src/nodes/svg-element/SVGAngle.js';
+import SVGTransform from '../../../src/nodes/svg-element/SVGTransform.js';
 
 describe('SVGSVGElement', () => {
 	let window: Window;

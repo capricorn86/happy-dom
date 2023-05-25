@@ -1,12 +1,12 @@
-import CSSStyleSheet from '../../src/css/CSSStyleSheet';
-import CSSParser from '../../src/css/CSSParser';
-import CSSStyleRule from '../../src/css/rules/CSSStyleRule';
-import CSSMediaRule from '../../src/css/rules/CSSMediaRule';
-import CSSParserInput from './data/CSSParserInput';
-import CSSKeyframeRule from '../../src/css/rules/CSSKeyframeRule';
-import CSSKeyframesRule from '../../src/css/rules/CSSKeyframesRule';
-import CSSContainerRule from '../../src/css/rules/CSSContainerRule';
-import { CSSSupportsRule } from '../../src';
+import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
+import CSSParser from '../../src/css/CSSParser.js';
+import CSSStyleRule from '../../src/css/rules/CSSStyleRule.js';
+import CSSMediaRule from '../../src/css/rules/CSSMediaRule.js';
+import CSSParserInput from './data/CSSParserInput.js';
+import CSSKeyframeRule from '../../src/css/rules/CSSKeyframeRule.js';
+import CSSKeyframesRule from '../../src/css/rules/CSSKeyframesRule.js';
+import CSSContainerRule from '../../src/css/rules/CSSContainerRule.js';
+import { CSSSupportsRule } from '../../src.js';
 
 describe('CSSParser', () => {
 	describe('parseFromString()', () => {

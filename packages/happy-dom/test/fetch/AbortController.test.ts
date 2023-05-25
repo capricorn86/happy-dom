@@ -1,5 +1,5 @@
-import Event from '../../src/event/Event';
-import AbortController from '../../src/fetch/AbortController';
+import Event from '../../src/event/Event.js';
+import AbortController from '../../src/fetch/AbortController.js';
 
 describe('AbortController', () => {
 	describe('abort()', () => {

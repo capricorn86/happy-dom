@@ -1,19 +1,19 @@
-import IResponse from './types/IResponse';
-import IBlob from '../file/IBlob';
-import IDocument from '../nodes/document/IDocument';
-import IResponseInit from './types/IResponseInit';
-import IResponseBody from './types/IResponseBody';
-import Headers from './Headers';
-import IHeaders from './types/IHeaders';
+import IResponse from './types/IResponse.js';
+import IBlob from '../file/IBlob.js';
+import IDocument from '../nodes/document/IDocument.js';
+import IResponseInit from './types/IResponseInit.js';
+import IResponseBody from './types/IResponseBody.js';
+import Headers from './Headers.js';
+import IHeaders from './types/IHeaders.js';
 import { URL, URLSearchParams } from 'url';
-import Blob from '../file/Blob';
+import Blob from '../file/Blob.js';
 import Stream from 'stream';
-import FormData from '../form-data/FormData';
-import FetchBodyUtility from './utilities/FetchBodyUtility';
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import FormData from '../form-data/FormData.js';
+import FetchBodyUtility from './utilities/FetchBodyUtility.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import { TextDecoder } from 'util';
-import MultipartFormDataParser from './multipart/MultipartFormDataParser';
+import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 

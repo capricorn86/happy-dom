@@ -1,9 +1,9 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import ISVGSVGElement from '../../../src/nodes/svg-element/ISVGSVGElement';
-import NamespaceURI from '../../../src/config/NamespaceURI';
-import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
-import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import ISVGSVGElement from '../../../src/nodes/svg-element/ISVGSVGElement.js';
+import NamespaceURI from '../../../src/config/NamespaceURI.js';
+import ISVGElement from '../../../src/nodes/svg-element/ISVGElement.js';
+import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
 
 describe('SVGElement', () => {
 	let window: Window;

@@ -1,6 +1,6 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import HTMLStyleElement from '../../../src/nodes/html-style-element/HTMLStyleElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLStyleElement from '../../../src/nodes/html-style-element/HTMLStyleElement.js';
 
 describe('HTMLStyleElement', () => {
 	let window: Window;

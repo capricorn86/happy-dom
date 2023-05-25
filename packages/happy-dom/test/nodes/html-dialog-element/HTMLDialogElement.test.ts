@@ -1,8 +1,8 @@
-import Event from '../../../src/event/Event';
-import IHTMLDialogElement from '../../../src/nodes/html-dialog-element/IHTMLDialogElement';
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import IDocument from '../../../src/nodes/document/IDocument';
+import Event from '../../../src/event/Event.js';
+import IHTMLDialogElement from '../../../src/nodes/html-dialog-element/IHTMLDialogElement.js';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
 
 describe('HTMLDialogElement', () => {
 	let window: IWindow;

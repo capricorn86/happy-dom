@@ -1,8 +1,8 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/Window';
-import IDocument from '../../../src/nodes/document/IDocument';
-import File from '../../../src/file/File';
-import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/Window.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import File from '../../../src/file/File.js';
+import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
 
 describe('FileList', () => {
 	let window: IWindow;

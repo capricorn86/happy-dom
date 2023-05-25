@@ -1,7 +1,7 @@
-import IWindow from '../../src/window/IWindow';
-import Window from '../../src/window/Window';
-import MediaQueryList from '../../src/match-media/MediaQueryList';
-import MediaQueryListEvent from '../../src/event/events/MediaQueryListEvent';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import MediaQueryList from '../../src/match-media/MediaQueryList.js';
+import MediaQueryListEvent from '../../src/event/events/MediaQueryListEvent.js';
 
 describe('MediaQueryList', () => {
 	let window: IWindow;

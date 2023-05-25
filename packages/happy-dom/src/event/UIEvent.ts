@@ -1,6 +1,6 @@
-import IWindow from '../window/IWindow';
-import Event from './Event';
-import IUIEventInit from './IUIEventInit';
+import IWindow from '../window/IWindow.js';
+import Event from './Event.js';
+import IUIEventInit from './IUIEventInit.js';
 
 /**
  *

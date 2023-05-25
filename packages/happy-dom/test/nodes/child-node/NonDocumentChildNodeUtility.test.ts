@@ -1,6 +1,6 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility.js';
 
 describe('NonDocumentChildNodeUtility', () => {
 	let window: Window;

@@ -1,6 +1,6 @@
-import type Element from '../nodes/element/Element';
-import IAttr from '../nodes/attr/IAttr';
-import INamedNodeMap from './INamedNodeMap';
+import type Element from '../nodes/element/Element.js';
+import IAttr from '../nodes/attr/IAttr.js';
+import INamedNodeMap from './INamedNodeMap.js';
 
 /**
  * NamedNodeMap.

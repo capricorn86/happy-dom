@@ -1,5 +1,5 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
 
 describe('HTMLCollection', () => {
 	let window: Window;

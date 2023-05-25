@@ -1,4 +1,4 @@
-import HTMLAudioElement from './HTMLAudioElement';
+import HTMLAudioElement from './HTMLAudioElement.js';
 
 /**
  * Image as constructor.

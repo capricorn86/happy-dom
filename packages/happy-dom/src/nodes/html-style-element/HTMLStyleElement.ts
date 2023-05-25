@@ -1,6 +1,6 @@
-import CSSStyleSheet from '../../css/CSSStyleSheet';
-import HTMLElement from '../html-element/HTMLElement';
-import IHTMLStyleElement from './IHTMLStyleElement';
+import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IHTMLStyleElement from './IHTMLStyleElement.js';
 
 /**
  * HTML Style Element.

@@ -1,9 +1,9 @@
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy';
-import IRequestRedirect from '../types/IRequestRedirect';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy.js';
+import IRequestRedirect from '../types/IRequestRedirect.js';
 import { URL } from 'url';
-import IRequest from '../types/IRequest';
+import IRequest from '../types/IRequest.js';
 
 const VALID_REFERRER_POLICIES = [
 	'',

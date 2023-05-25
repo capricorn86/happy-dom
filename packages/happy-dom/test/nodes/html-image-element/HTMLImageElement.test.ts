@@ -1,6 +1,6 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import HTMLImageElement from '../../../src/nodes/html-image-element/HTMLImageElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLImageElement from '../../../src/nodes/html-image-element/HTMLImageElement.js';
 
 describe('HTMLImageElement', () => {
 	let window: Window;

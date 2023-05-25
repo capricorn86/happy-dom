@@ -1,10 +1,10 @@
-import Window from '../../src/window/Window';
-import Document from '../../src/nodes/document/Document';
-import NodeFilter from '../../src/tree-walker/NodeFilter';
-import Element from '../../src/nodes/element/Element';
-import Comment from '../../src/nodes/comment/Comment';
-import Node from '../../src/nodes/node/Node';
-import TreeWalkerHTML from './data/TreeWalkerHTML';
+import Window from '../../src/window/Window.js';
+import Document from '../../src/nodes/document/Document.js';
+import NodeFilter from '../../src/tree-walker/NodeFilter.js';
+import Element from '../../src/nodes/element/Element.js';
+import Comment from '../../src/nodes/comment/Comment.js';
+import Node from '../../src/nodes/node/Node.js';
+import TreeWalkerHTML from './data/TreeWalkerHTML.js';
 
 const NODE_TO_STRING = (node: Node): string => {
 	if (node instanceof Element) {

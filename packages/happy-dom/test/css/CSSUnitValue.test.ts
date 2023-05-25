@@ -1,4 +1,4 @@
-import CSSUnitValue from '../../src/css/CSSUnitValue';
+import CSSUnitValue from '../../src/css/CSSUnitValue.js';
 
 describe('CSSUnitValue', () => {
 	describe('constructor()', () => {
