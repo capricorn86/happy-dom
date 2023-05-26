@@ -260,11 +260,11 @@ const window = new Window({
 		disableIframePageLoading: true,
 		disableComputedStyleRendering: true,
 		enableFileSystemHttpRequests: true,
-        device: {
-            mediaType: 'print',
-            prefersColorScheme = 'dark
-        }
-	}
+		device: {
+			mediaType: 'print',
+			prefersColorScheme: 'dark',
+		},
+	},
 });
 ```
 
