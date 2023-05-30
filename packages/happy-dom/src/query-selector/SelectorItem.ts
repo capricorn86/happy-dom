@@ -16,6 +16,7 @@ export default class SelectorItem {
 	public classNames: string[] | null;
 	public attributes: ISelectorAttribute[] | null;
 	public pseudos: ISelectorPseudo[] | null;
+	public isPseudoElement: boolean;
 	public combinator: SelectorCombinatorEnum;
 
 	/**
@@ -28,6 +29,7 @@ export default class SelectorItem {
 	 * @param [options.classNames] Class names.
 	 * @param [options.attributes] Attributes.
 	 * @param [options.pseudos] Pseudos.
+	 * @param [options.isPseudoElement] Is pseudo element.
 	 */
 	constructor(options?: {
 		tagName?: string;
@@ -35,6 +37,7 @@ export default class SelectorItem {
 		classNames?: string[];
 		attributes?: ISelectorAttribute[];
 		pseudos?: ISelectorPseudo[];
+		isPseudoElement?: boolean;
 		combinator?: SelectorCombinatorEnum;
 	}) {
 		this.tagName = options?.tagName || null;
@@ -42,6 +45,7 @@ export default class SelectorItem {
 		this.classNames = options?.classNames || null;
 		this.attributes = options?.attributes || null;
 		this.pseudos = options?.pseudos || null;
+		this.isPseudoElement = options?.isPseudoElement || false;
 		this.combinator = options?.combinator || SelectorCombinatorEnum.descendant;
 	}
 
@@ -53,6 +57,10 @@ export default class SelectorItem {
 	 */
 	public match(element: IElement): ISelectorMatch | null {
 		let priorityWeight = 0;
+
+		if (this.isPseudoElement) {
+			return null;
+		}
 
 		// Tag name match
 		if (this.tagName) {
