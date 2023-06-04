@@ -201,6 +201,80 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get valueAsNumber()', () => {
+		describe('Should return NaN for non-numeric input type', () => {
+			for (const type of [
+				'button',
+				'checkbox',
+				'color',
+				'email',
+				'file',
+				'hidden',
+				'image',
+				'password',
+				'radio',
+				'reset',
+				'search',
+				'submit',
+				'tel',
+				'text',
+				'url'
+			]) {
+				it(`"${type}"`, () => {
+					element.setAttribute('type', type);
+					if (type === 'file') {
+						element.value = '';
+					} else {
+						element.value = '0';
+					}
+					expect(element.valueAsNumber).toBeNaN();
+				});
+			}
+		});
+		describe('with default value', () => {
+			for (const type of ['date', 'datetime-local', 'month', 'number', 'time', 'week']) {
+				it(`Should return NaN for type ${type}.`, () => {
+					element.type = type;
+					element.value = '';
+					expect(element.valueAsNumber).toBeNaN();
+				});
+			}
+			it(`Should return middle range value for type "range".`, () => {
+				element.type = 'range';
+				element.value = '';
+				const min = element.min ? parseFloat(element.min) : 0;
+				const max = element.max ? parseFloat(element.max) : 100;
+				expect(element.valueAsNumber).toBe((max - min) / 2);
+			});
+		});
+
+		describe('With valid value', () => {
+			const testData: { type: string; value: string; want: number }[] = [
+				{ type: 'number', value: '123', want: 123 },
+				{ type: 'number', value: '1.23', want: 1.23 },
+				{ type: 'range', value: '75', want: 75 },
+				{ type: 'range', value: '12.5', want: 12.5 },
+				{ type: 'date', value: '2019-01-01', want: new Date('2019-01-01').getTime() },
+				{
+					type: 'datetime-local',
+					value: '2019-01-01T00:00',
+					want:
+						new Date('2019-01-01T00:00').getTime() -
+						new Date('2019-01-01T00:00').getTimezoneOffset() * 60000
+				},
+				{ type: 'month', value: '2019-01', want: 588 },
+				{ type: 'time', value: '00:00', want: 0 },
+				{ type: 'time', value: '12:00', want: 43200000 },
+				{ type: 'time', value: '18:55', want: 68100000 },
+				{ type: 'week', value: '2023-W22', want: 1685318400000 }
+			];
+			it.each(testData)(`Should return valid number for type $type`, ({ type, value, want }) => {
+				element.type = type;
+				element.value = value;
+				expect(element.valueAsNumber).toEqual(want);
+			});
+		});
+	});
 	describe('get selectionStart()', () => {
 		it('Returns the length of the attribute "value" if value has not been set using the property.', () => {
 			element.setAttribute('value', 'TEST_VALUE');

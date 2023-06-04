@@ -797,7 +797,48 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Number.
 	 */
 	public get valueAsNumber(): number {
-		return this.value ? parseFloat(this.value) : NaN;
+		const value = this.value;
+		if (!this.type.match(/^(range|number|date|datetime-local|month|time|week)$/) || !value) {
+			return NaN;
+		}
+		switch (this.type) {
+			case 'number':
+				return parseFloat(value);
+			case 'range': {
+				const number = parseFloat(value);
+				const min = parseFloat(this.min) || 0;
+				const max = parseFloat(this.max) || 100;
+				if (isNaN(number)) {
+					return max < min ? min : (min + max) / 2;
+				} else if (number < min) {
+					return min;
+				} else if (number > max) {
+					return max;
+				}
+				return number;
+			}
+			case 'date':
+				return new Date(value).getTime();
+			case 'datetime-local':
+				return new Date(value).getTime() - new Date(value).getTimezoneOffset() * 60000;
+			case 'month':
+				return (new Date(value).getFullYear() - 1970) * 12 + new Date(value).getMonth();
+			case 'time':
+				return (
+					new Date('1970-01-01T' + value).getTime() - new Date('1970-01-01T00:00:00').getTime()
+				);
+			case 'week': {
+				// https://html.spec.whatwg.org/multipage/input.html#week-state-(type=week)
+				const match = value.match(/^(\d{4})-W(\d{2})$/);
+				if (!match) {
+					return NaN;
+				}
+				const d = new Date(Date.UTC(parseInt(match[1], 10), 0));
+				const day = d.getUTCDay();
+				const diff = ((day === 0 ? -6 : 1) - day) * 86400000 + parseInt(match[2], 10) * 604800000;
+				return d.getTime() + diff;
+			}
+		}
 	}
 
 	/**

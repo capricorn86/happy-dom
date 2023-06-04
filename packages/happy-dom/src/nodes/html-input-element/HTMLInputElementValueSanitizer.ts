@@ -36,7 +36,7 @@ export default class HTMLInputElementValueSanitizer {
 			case 'number':
 				// https://html.spec.whatwg.org/multipage/input.html#number-state-(type=number):value-sanitization-algorithm
 				return !isNaN(Number.parseFloat(value)) ? value : '';
-			case 'range':
+			case 'range': {
 				// https://html.spec.whatwg.org/multipage/input.html#range-state-(type=range):value-sanitization-algorithm
 				const number = Number.parseFloat(value);
 				const min = parseFloat(input.min) || 0;
@@ -51,6 +51,7 @@ export default class HTMLInputElementValueSanitizer {
 				}
 
 				return value;
+			}
 			case 'url':
 				// https://html.spec.whatwg.org/multipage/forms.html#url-state-(type=url):value-sanitization-algorithm
 				return value.trim().replace(NEW_LINES_REGEXP, '');
