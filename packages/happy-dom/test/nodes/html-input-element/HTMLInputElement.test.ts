@@ -9,6 +9,7 @@ import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-ele
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
 import ValidityState from '../../../src/validity-state/ValidityState';
 import { IHTMLFormElement } from '../../../src';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
 
 describe('HTMLInputElement', () => {
 	let window: IWindow;
@@ -275,6 +276,84 @@ describe('HTMLInputElement', () => {
 			});
 		});
 	});
+	describe('set valueAsNumber()', () => {
+		describe('Should throw exception for non-numeric input', () => {
+			it.each([
+				'button',
+				'checkbox',
+				'color',
+				'email',
+				'file',
+				'hidden',
+				'image',
+				'password',
+				'radio',
+				'reset',
+				'search',
+				'submit',
+				'tel',
+				'text',
+				'url'
+			])('Of type %s.', (type) => {
+				element.type = type;
+				expect(() => (element.valueAsNumber = 0)).toThrowError(
+					new DOMException(
+						"Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.",
+						DOMExceptionNameEnum.invalidStateError
+					)
+				);
+			});
+		});
+
+		describe('With invalid value for', () => {
+			it.each(['number', 'date', 'datetime-local', 'month', 'time', 'week'])(
+				'Type "%s" should set default empty value.',
+				(type) => {
+					element.type = type;
+					expect(() => {
+						// @ts-ignore
+						element.valueAsNumber = 'x';
+					}).not.toThrow();
+					expect(element.value).toBe('');
+				}
+			);
+			it(`Type "range" should set default middle range value.`, () => {
+				element.type = 'range';
+				expect(() => {
+					// @ts-ignore
+					element.valueAsNumber = 'x';
+				}).not.toThrow();
+				expect(element.value).toBe('50');
+			});
+		});
+
+		describe('With valid value for', () => {
+			const testCases = [
+				{ type: 'number', value: 123, want: '123' },
+				{ type: 'number', value: 1.23, want: '1.23' },
+				{ type: 'range', value: 75, want: '75' },
+				{ type: 'range', value: 12.5, want: '12.5' },
+				{ type: 'date', value: new Date('2019-01-01').getTime(), want: '2019-01-01' },
+				{ type: 'datetime-local', value: 1546300800000, want: '2019-01-01T00:00' },
+				{ type: 'month', value: 588, want: '2019-01' },
+				{ type: 'time', value: 0, want: '00:00' },
+				{ type: 'time', value: 43200000, want: '12:00' },
+				{ type: 'time', value: 68100000, want: '18:55' },
+				{ type: 'time', value: 83709010, want: '23:15:09.01' },
+				{ type: 'week', value: 1685318400000, want: '2023-W22' },
+				{ type: 'week', value: 1672531200000, want: '2022-W52' }
+			];
+			it.each(testCases)(
+				`Type "$type" should set a corresponding value`,
+				({ type, value, want }) => {
+					element.type = type;
+					element.valueAsNumber = value;
+					expect(element.value).toEqual(want);
+				}
+			);
+		});
+	});
+
 	describe('get selectionStart()', () => {
 		it('Returns the length of the attribute "value" if value has not been set using the property.', () => {
 			element.setAttribute('value', 'TEST_VALUE');

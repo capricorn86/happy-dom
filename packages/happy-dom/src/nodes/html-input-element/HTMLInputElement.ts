@@ -24,6 +24,24 @@ import NodeList from '../node/NodeList';
 import EventPhaseEnum from '../../event/EventPhaseEnum';
 
 /**
+ * Return iso-week number from given date
+ *
+ * @param date Date|number.
+ * @returns Iso-week string.
+ */
+export const dateIsoWeek = (date: Date | number): string => {
+	date = new Date(date);
+	const day = (date.getDay() + 6) % 7;
+	date.setDate(date.getDate() - day + 3);
+	const firstThursday = date.getTime();
+	date.setMonth(0, 1);
+	if (date.getDay() !== 4) {
+		date.setMonth(0, 1 + ((4 - date.getDay() + 7) % 7));
+	}
+	return String(1 + Math.ceil((firstThursday - date.getTime()) / 604800000)).padStart(2, '0');
+};
+
+/**
  * HTML Input Element.
  *
  * Reference:
@@ -838,6 +856,67 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				const diff = ((day === 0 ? -6 : 1) - day) * 86400000 + parseInt(match[2], 10) * 604800000;
 				return d.getTime() + diff;
 			}
+		}
+	}
+
+	/**
+	 * Sets value from a number.
+	 *
+	 * @param value number.
+	 */
+	public set valueAsNumber(value: number) {
+		// Specs at https://html.spec.whatwg.org/multipage/input.html
+		switch (this.type) {
+			case 'number':
+			case 'range':
+				// We Rely on HTMLInputElementValueSanitizer
+				this.value = Number(value).toString();
+				break;
+			case 'date':
+			case 'datetime-local': {
+				const d = new Date(Number(value));
+				if (isNaN(d.getTime())) {
+					// Reset to default value
+					this.value = '';
+					break;
+				}
+				if (this.type == 'date') {
+					this.value = d.toISOString().slice(0, 10);
+				} else {
+					this.value = d.toISOString().slice(0, -1);
+				}
+				break;
+			}
+			case 'month':
+				if (!Number.isInteger(value) || value < 0) {
+					this.value = '';
+				} else {
+					this.value = new Date(Date.UTC(1970, Number(value))).toISOString().slice(0, 7);
+				}
+				break;
+			case 'time':
+				if (!Number.isInteger(value) || value < 0) {
+					this.value = '';
+				} else {
+					this.value = new Date(Number(value)).toISOString().slice(11, -1);
+				}
+				break;
+			case 'week':
+			case 'week': {
+				const d = new Date(Number(value));
+				if (isNaN(d.getTime())) {
+					this.value = '';
+				} else {
+					d.setTime(d.getTime() + d.getTimezoneOffset() * 60000);
+					this.value = d.toISOString().split('T')[0].slice(0, 5) + 'W' + dateIsoWeek(d);
+				}
+				break;
+			}
+			default:
+				throw new DOMException(
+					"Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.",
+					DOMExceptionNameEnum.invalidStateError
+				);
 		}
 	}
 
