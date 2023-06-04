@@ -194,15 +194,19 @@ export default class HTMLInputElementValueSanitizer {
 	 * @param value
 	 */
 	private static sanitizeTime(value: string): string {
-		const match = value.match(/^(\d{2}):(\d{2})(?::(\d{2}(?:\.\d{1,3})?))?$/);
+		const match = value.match(/^(\d{2}):(\d{2})(?::(\d{2}(?:\.(\d{1,3}))?))?$/);
 		if (!match) {
 			return '';
 		}
 		const [intH, intM] = parseInts(match.slice(1, 3));
-		const floatS = parseFloat(match[3] || '0');
-		if (intH > 23 || intM > 59 || floatS > 59.999) {
+		const ms = parseFloat(match[3] || '0') * 1000;
+		if (intH > 23 || intM > 59 || ms > 59999) {
 			return '';
 		}
-		return value;
+		if (ms === 0) {
+			return `${match[1]}:${match[2]}`;
+		} else {
+			return `${match[1]}:${match[2]}${ms >= 10000 ? `:${ms / 1000}` : `:0${ms / 1000}`}`;
+		}
 	}
 }
