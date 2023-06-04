@@ -31,14 +31,18 @@ import EventPhaseEnum from '../../event/EventPhaseEnum';
  */
 export const dateIsoWeek = (date: Date | number): string => {
 	date = new Date(date);
-	const day = (date.getDay() + 6) % 7;
-	date.setDate(date.getDate() - day + 3);
+	const day = (date.getUTCDay() + 6) % 7;
+	date.setUTCDate(date.getUTCDate() - day + 3);
 	const firstThursday = date.getTime();
-	date.setMonth(0, 1);
+	date.setUTCMonth(0, 1);
 	if (date.getDay() !== 4) {
-		date.setMonth(0, 1 + ((4 - date.getDay() + 7) % 7));
+		date.setUTCMonth(0, 1 + ((4 - date.getDay() + 7) % 7));
 	}
-	return String(1 + Math.ceil((firstThursday - date.getTime()) / 604800000)).padStart(2, '0');
+	return (
+		date.getUTCFullYear() +
+		'-W' +
+		String(1 + Math.ceil((firstThursday - date.getTime()) / 604800000)).padStart(2, '0')
+	);
 };
 
 /**
@@ -840,7 +844,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			case 'datetime-local':
 				return new Date(value).getTime() - new Date(value).getTimezoneOffset() * 60000;
 			case 'month':
-				return (new Date(value).getFullYear() - 1970) * 12 + new Date(value).getMonth();
+				return (new Date(value).getUTCFullYear() - 1970) * 12 + new Date(value).getUTCMonth();
 			case 'time':
 				return (
 					new Date('1970-01-01T' + value).getTime() - new Date('1970-01-01T00:00:00').getTime()
@@ -904,12 +908,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			case 'week':
 			case 'week': {
 				const d = new Date(Number(value));
-				if (isNaN(d.getTime())) {
-					this.value = '';
-				} else {
-					d.setTime(d.getTime() + d.getTimezoneOffset() * 60000);
-					this.value = d.toISOString().split('T')[0].slice(0, 5) + 'W' + dateIsoWeek(d);
-				}
+				this.value = isNaN(d.getTime()) ? '' : dateIsoWeek(d);
 				break;
 			}
 			default:
