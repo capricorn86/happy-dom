@@ -1081,7 +1081,7 @@ describe('Window', () => {
 	});
 
 	describe('postMessage()', () => {
-		it('Posts a message.', function () {
+		it('Posts a message.', function (done) {
 			const message = 'test';
 			const parentOrigin = 'https://localhost:8080';
 			const parent = new Window({
@@ -1094,20 +1094,29 @@ describe('Window', () => {
 			window.addEventListener('message', (event) => (triggeredEvent = event));
 			window.postMessage(message);
 
-			expect(triggeredEvent.data).toBe(message);
-			expect(triggeredEvent.origin).toBe(parentOrigin);
-			expect(triggeredEvent.source).toBe(parent);
-			expect(triggeredEvent.lastEventId).toBe('');
+			expect(triggeredEvent).toBe(null);
 
-			window.postMessage(message, '*');
+			setImmediate(() => {
+				expect(triggeredEvent.data).toBe(message);
+				expect(triggeredEvent.origin).toBe(parentOrigin);
+				expect(triggeredEvent.source).toBe(parent);
+				expect(triggeredEvent.lastEventId).toBe('');
 
-			expect(triggeredEvent.data).toBe(message);
-			expect(triggeredEvent.origin).toBe(parentOrigin);
-			expect(triggeredEvent.source).toBe(parent);
-			expect(triggeredEvent.lastEventId).toBe('');
+				triggeredEvent = null;
+				window.postMessage(message, '*');
+				expect(triggeredEvent).toBe(null);
+
+				setImmediate(() => {
+					expect(triggeredEvent.data).toBe(message);
+					expect(triggeredEvent.origin).toBe(parentOrigin);
+					expect(triggeredEvent.source).toBe(parent);
+					expect(triggeredEvent.lastEventId).toBe('');
+					done();
+				});
+			});
 		});
 
-		it('Posts a data object as message.', function () {
+		it('Posts a data object as message.', function (done) {
 			const message = {
 				test: 'test'
 			};
@@ -1116,7 +1125,12 @@ describe('Window', () => {
 			window.addEventListener('message', (event) => (triggeredEvent = event));
 			window.postMessage(message);
 
-			expect(triggeredEvent.data).toBe(message);
+			expect(triggeredEvent).toBe(null);
+
+			setImmediate(() => {
+				expect(triggeredEvent.data).toBe(message);
+				done();
+			});
 		});
 
 		it("Throws an exception if the provided object can't be serialized.", function () {

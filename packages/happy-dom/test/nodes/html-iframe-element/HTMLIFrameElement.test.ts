@@ -120,12 +120,16 @@ describe('HTMLIFrameElement', () => {
 					(event: MessageEvent) => (triggeredEvent = event)
 				);
 				element.contentWindow.postMessage(message, iframeOrigin);
-				expect(element.contentDocument).toBe(null);
-				expect(triggeredEvent.data).toBe(message);
-				expect(triggeredEvent.origin).toBe(documentOrigin);
-				expect(triggeredEvent.source === window).toBe(true);
-				expect(triggeredEvent.lastEventId).toBe('');
-				done();
+				expect(triggeredEvent).toBe(null);
+
+				setImmediate(() => {
+					expect(element.contentDocument).toBe(null);
+					expect(triggeredEvent.data).toBe(message);
+					expect(triggeredEvent.origin).toBe(documentOrigin);
+					expect(triggeredEvent.source === window).toBe(true);
+					expect(triggeredEvent.lastEventId).toBe('');
+					done();
+				});
 			});
 			document.body.appendChild(element);
 		});
