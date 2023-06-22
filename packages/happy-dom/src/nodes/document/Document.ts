@@ -198,6 +198,7 @@ export default class Document extends Node implements IDocument {
 		this.implementation = new DOMImplementation(this);
 
 		this._readyStateManager = new DocumentReadyStateManager(this.defaultView);
+		this._rootNode = this;
 
 		const doctype = this.implementation.createDocumentType('html', '', '');
 		const documentElement = this.createElement('html');

@@ -341,6 +341,10 @@ describe('Node', () => {
 
 			expect(rootNode === document).toBe(true);
 		});
+
+		it('Returns Document when called on Document', () => {
+			expect(document.getRootNode() === document).toBe(true);
+		});
 	});
 
 	describe('cloneNode()', () => {
