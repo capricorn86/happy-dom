@@ -166,13 +166,16 @@ describe('XMLSerializer', () => {
 									span {
 										color: pink;
 									}
-									.class1 {
+									.propKey {
 										color: yellow;
 									}
 								</style>
 								<div>
-									<span class="class1">
+									<span class="propKey">
 										key1 is "value1" and key2 is "value2".
+									</span>
+									<span class="children">
+                                        #1SPANSlottedcontent
 									</span>
 									<span><slot></slot></span>
 								</div>
@@ -180,6 +183,67 @@ describe('XMLSerializer', () => {
 						</custom-element>
 						<custom-element key1="value4" key2="value5"></custom-element>
 					</div>`.replace(/[\s]/gm, '')
+			);
+		});
+
+		it('Renders the code from the documentation for server-side rendering as expected.', () => {
+			document.write(`
+                <html>
+                    <head>
+                         <title>Test page</title>
+                    </head>
+                    <body>
+                        <div>
+                            <my-custom-element>
+                                <span>Slotted content</span>
+                            </my-custom-element>
+                        </div>
+                        <script>
+                            class MyCustomElement extends HTMLElement {
+                                constructor() {
+                                    super();
+                                    this.attachShadow({ mode: 'open' });
+                                }
+            
+                                connectedCallback() {
+                                    this.shadowRoot.innerHTML = \`
+                                        <style>
+                                            :host {
+                                                display: inline-block;
+                                                background: red;
+                                            }
+                                        </style>
+                                        <div><slot></slot></div>
+                                    \`;
+                                }
+                            }
+            
+                            customElements.define('my-custom-element', MyCustomElement);
+                        </script>
+                    </body>
+                </html>
+            `);
+
+			expect(
+				document.body
+					.querySelector('div')
+					.getInnerHTML({ includeShadowRoots: true })
+					.replace(/\s/gm, '')
+			).toBe(
+				`
+            <my-custom-element>
+                <span>Slotted content</span>
+                <template shadowrootmode="open">
+                    <style>
+                        :host {
+                            display: inline-block;
+                            background: red;
+                        }
+                    </style>
+                    <div><slot></slot></div>
+                </template>
+            </my-custom-element>
+            `.replace(/\s/gm, '')
 			);
 		});
 

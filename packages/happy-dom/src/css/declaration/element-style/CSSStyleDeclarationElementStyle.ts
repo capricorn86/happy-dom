@@ -187,22 +187,19 @@ export default class CSSStyleDeclarationElementStyle {
 			}
 
 			CSSStyleDeclarationCSSParser.parse(elementCSSText, (name, value, important) => {
-				if (name.startsWith('--')) {
-					const cssValue = this.parseCSSVariablesInValue(value, cssVariables);
-					if (cssValue) {
-						cssVariables[name] = cssValue;
-					}
-					return;
-				}
-
+				const isCSSVariable = name.startsWith('--');
 				if (
+					isCSSVariable ||
 					CSSStyleDeclarationElementInheritedProperties[name] ||
 					parentElement === targetElement
 				) {
 					const cssValue = this.parseCSSVariablesInValue(value, cssVariables);
 					if (cssValue && (!propertyManager.get(name)?.important || important)) {
 						propertyManager.set(name, cssValue, important);
-						if (name === 'font' || name === 'font-size') {
+
+						if (isCSSVariable) {
+							cssVariables[name] = cssValue;
+						} else if (name === 'font' || name === 'font-size') {
 							const fontSize = propertyManager.properties['font-size'];
 							if (fontSize !== null) {
 								const parsedValue = this.parseMeasurementsInValue({
