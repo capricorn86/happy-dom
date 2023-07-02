@@ -48,7 +48,6 @@ export default class Element extends Node implements IElement {
 
 	public scrollTop = 0;
 	public scrollLeft = 0;
-	public children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public readonly namespaceURI: string = null;
 
 	// Events
@@ -87,6 +86,8 @@ export default class Element extends Node implements IElement {
 	public ontouchmove: (event: Event) => void | null = null;
 	public ontouchstart: (event: Event) => void | null = null;
 
+	public _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
+
 	// Used for being able to access closed shadow roots
 	public _shadowRoot: IShadowRoot = null;
 	public _attributes: { [k: string]: IAttr } = {};
@@ -94,6 +95,13 @@ export default class Element extends Node implements IElement {
 	private _classList: DOMTokenList = null;
 	public _isValue?: string | null = null;
 	public _computedStyle: CSSStyleDeclaration | null = null;
+
+	/**
+	 * Returns element children.
+	 */
+	public get children(): IHTMLCollection<IElement> {
+		return this._children;
+	}
 
 	/**
 	 * Returns class list.

@@ -14,8 +14,15 @@ import INodeList from '../node/INodeList';
  */
 export default class DocumentFragment extends Node implements IDocumentFragment {
 	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
-	public readonly children: IHTMLCollection<IElement> = new HTMLCollection();
+	public _children: IHTMLCollection<IElement> = new HTMLCollection();
 	public _rootNode: INode = this;
+
+	/**
+	 * Returns the document fragment children.
+	 */
+	public get children(): IHTMLCollection<IElement> {
+		return this._children;
+	}
 
 	/**
 	 * Last element child.

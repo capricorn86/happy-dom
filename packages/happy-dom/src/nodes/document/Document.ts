@@ -59,11 +59,11 @@ export default class Document extends Node implements IDocument {
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation: DOMImplementation;
-	public readonly children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
 	public readonly _readyStateManager: DocumentReadyStateManager;
+	public _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public _activeElement: IHTMLElement = null;
 
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
@@ -209,6 +209,13 @@ export default class Document extends Node implements IDocument {
 
 		documentElement.appendChild(headElement);
 		documentElement.appendChild(bodyElement);
+	}
+
+	/**
+	 * Returns document children.
+	 */
+	public get children(): IHTMLCollection<IElement> {
+		return this._children;
 	}
 
 	/**

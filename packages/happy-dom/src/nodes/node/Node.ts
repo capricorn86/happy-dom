@@ -54,7 +54,6 @@ export default class Node extends EventTarget implements INode {
 	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
-	public readonly childNodes: INodeList<INode> = new NodeList<INode>();
 	public readonly isConnected: boolean = false;
 
 	// Custom Properties (not part of HTML standard)
@@ -63,6 +62,7 @@ export default class Node extends EventTarget implements INode {
 	public _selectNode: INode = null;
 	public _textAreaNode: INode = null;
 	public _observers: MutationListener[] = [];
+	public _childNodes: INodeList<INode> = new NodeList<INode>();
 
 	/**
 	 * Constructor.
@@ -79,6 +79,15 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
+	}
+
+	/**
+	 * Get child nodes.
+	 *
+	 * @returns Child nodes list.
+	 */
+	public get childNodes(): INodeList<INode> {
+		return this._childNodes;
 	}
 
 	/**

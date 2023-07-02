@@ -33,8 +33,6 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 				const callback = (): void => {
 					if (this.parentNode) {
 						const newElement = <HTMLElement>this.ownerDocument.createElement(tagName);
-						(<INodeList<INode>>newElement.childNodes) = this.childNodes;
-						(<IHTMLCollection<IElement>>newElement.children) = this.children;
 						(<boolean>newElement.isConnected) = this.isConnected;
 
 						newElement._rootNode = this._rootNode;
@@ -44,9 +42,11 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						newElement._observers = this._observers;
 						newElement._isValue = this._isValue;
 						newElement._attributes = this._attributes;
+						(<INodeList<INode>>newElement._childNodes) = this.childNodes;
+						(<IHTMLCollection<IElement>>newElement._children) = this.children;
 
-						(<INodeList<INode>>this.childNodes) = new NodeList();
-						(<IHTMLCollection<IElement>>this.children) = new HTMLCollection();
+						(<INodeList<INode>>this._childNodes) = new NodeList();
+						(<IHTMLCollection<IElement>>this._children) = new HTMLCollection();
 						this._rootNode = null;
 						this._formNode = null;
 						this._selectNode = null;
