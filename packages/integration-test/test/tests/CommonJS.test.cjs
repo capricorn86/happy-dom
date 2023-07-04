@@ -1,4 +1,4 @@
-const { Window } = 'happy-dom';
+const { Window } = require('happy-dom');
 
 const window = new Window();
 const document = window.document;

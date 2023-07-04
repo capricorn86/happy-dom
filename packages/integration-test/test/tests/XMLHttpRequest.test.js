@@ -13,7 +13,6 @@ describe('XMLHttpRequest', () => {
 		});
 
 		const server = express.listen(3000);
-
 		const request = new window.XMLHttpRequest();
 
 		request.open('GET', 'http://localhost:3000/get/json', true);

@@ -1,7 +1,7 @@
-import GlobalRegistrator from '../../cjs/GlobalRegistrator';
+import GlobalRegistrator from '../../cjs/GlobalRegistrator.cjs';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ReactComponent from './ReactComponent';
+import ReactComponent from './ReactComponent.js';
 
 GlobalRegistrator.register();
 

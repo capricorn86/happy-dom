@@ -6,23 +6,48 @@
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "Happy DOM is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG DOM and HTML.",
-	"main": "cjs/index.js",
-	"module": "lib/index.js",
+	"main": "lib/index.js",
 	"type": "module",
 	"exports": {
 		".": {
 			"import": "./lib/index.js",
-			"require": "./cjs/index.js",
+			"require": "./cjs/index.cjs",
 			"default": "./lib/index.js"
 		},
 		"./lib/*.js": {
 			"import": "./lib/*.js",
-			"require": "./cjs/*.js",
+			"require": "./cjs/*.cjs",
 			"default": "./lib/*.js"
+		},
+		"./lib/*.ts": {
+			"import": "./lib/*.ts",
+			"require": "./cjs/*.ts",
+			"default": "./lib/*.ts"
+		},
+		"./lib/*.map": {
+			"import": "./lib/*.map",
+			"require": "./cjs/*.map",
+			"default": "./lib/*.map"
+		},
+		"./cjs/*.js": {
+			"import": "./lib/*.js",
+			"require": "./cjs/*.cjs",
+			"default": "./lib/*.js"
+		},
+		"./cjs/*.ts": {
+			"import": "./lib/*.ts",
+			"require": "./cjs/*.ts",
+			"default": "./lib/*.ts"
+		},
+		"./cjs/*.map": {
+			"import": "./lib/*.map",
+			"require": "./cjs/*.map",
+			"default": "./lib/*.map"
 		},
 		"./src/*.ts": "./src/*.ts",
 		"./package.json": "./package.json",
-		"./.eslintrc": "./.eslintrc.js"
+		"./.eslintrc.cjs": "./.eslintrc.cjs",
+		"./.prettierrc.cjs": "./.prettierrc.cjs"
 	},
 	"keywords": [
 		"jsdom",
@@ -40,7 +65,8 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && tsc --module CommonJS --outDir cjs",
+		"compile": "tsc && tsc --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
+		"change-cjs-file-extension": "node ./bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"watch": "tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",

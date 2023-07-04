@@ -7,7 +7,7 @@
 		"declaration": true,
 		"declarationMap": true,
 		"module": "es2020",
-		"moduleResolution": "node",
+		"moduleResolution": "node16",
 		"esModuleInterop": true,
 		"experimentalDecorators": true,
 		"allowSyntheticDefaultImports": true,
@@ -22,9 +22,6 @@
 		"composite": true,
 		"incremental": true,
 		"jsx": "react",
-		"typeRoots": [
-			"node_modules/@types"
-		],
 		"types": [
 			"node"
 		],

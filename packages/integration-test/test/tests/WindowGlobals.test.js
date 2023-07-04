@@ -8,7 +8,7 @@ describe('WindowGlobals', () => {
 		window.addEventListener('error', (event) => (error = event.error));
 		window.document.write(`
             <script>
-                if(() => {}).constructor !== Function) {
+                if((() => {}).constructor !== Function) {
                     throw new Error('Error');
                 }
             </script>

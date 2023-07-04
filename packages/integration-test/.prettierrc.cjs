@@ -1,1 +1,1 @@
-module.exports = require('../happy-dom/.prettierrc.js');
+module.exports = require('../happy-dom/.prettierrc.cjs');

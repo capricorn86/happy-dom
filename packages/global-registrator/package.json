@@ -6,23 +6,49 @@
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "Use Happy DOM globally in a Node.js environment for testing.",
-	"main": "cjs/index.js",
-	"module": "lib/index.js",
+	"main": "lib/index.js",
+    "type": "module",
 	"exports": {
 		".": {
 			"import": "./lib/index.js",
-			"require": "./cjs/index.js",
+			"require": "./cjs/index.cjs",
 			"default": "./lib/index.js"
 		},
 		"./lib/*.js": {
 			"import": "./lib/*.js",
-			"require": "./cjs/*.js",
+			"require": "./cjs/*.cjs",
 			"default": "./lib/*.js"
 		},
+		"./lib/*.ts": {
+			"import": "./lib/*.ts",
+			"require": "./cjs/*.ts",
+			"default": "./lib/*.ts"
+		},
+		"./lib/*.map": {
+			"import": "./lib/*.map",
+			"require": "./cjs/*.map",
+			"default": "./lib/*.map"
+		},
+		"./cjs/*.js": {
+			"import": "./lib/*.js",
+			"require": "./cjs/*.cjs",
+			"default": "./lib/*.js"
+		},
+		"./cjs/*.ts": {
+			"import": "./lib/*.ts",
+			"require": "./cjs/*.ts",
+			"default": "./lib/*.ts"
+		},
+		"./cjs/*.map": {
+			"import": "./lib/*.map",
+			"require": "./cjs/*.map",
+			"default": "./lib/*.map"
+		},
 		"./src/*.ts": "./src/*.ts",
-		"./package.json": "./package.json"
+		"./package.json": "./package.json",
+		"./.eslintrc": "./.eslintrc.js"
 	},
-	"keywords": [
+    "keywords": [
 		"jsdom",
 		"happy",
 		"dom",
@@ -39,11 +65,12 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && tsc --module CommonJS --outDir cjs",
+		"compile": "tsc && tsc --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
+		"change-cjs-file-extension": "node ../happy-dom/bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
-		"test": "tsc --project ./test && node ./tmp/react/React.test.js",
+		"test": "tsc --project ./test && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node ./tmp/react/React.test.cjs",
 		"test:debug": "tsc --project ./test && node --inspect-brk ./tmp/react/React.test.js"
 	},
 	"dependencies": {

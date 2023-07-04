@@ -1,22 +1,55 @@
+/* eslint-disable no-console*/
+
+const tests = [];
+let timeout = null;
+let testDescribe = '';
 let testDescription = '';
 
 export function describe(description, callback) {
-	testDescription += testDescription ? ' > ' : ' - ';
-	testDescription += description;
+	testDescribe = '- ' + description;
 	callback();
 }
 
 export function it(description, callback) {
-	testDescription += testDescription ? ' > ' : ' - ';
-	testDescription += description;
-	console.log(testDescription);
-	const result = callback(() => {});
-	if (result instanceof Promise) {
-		result.catch((error) => {
-			console.error(testDescription);
-			console.error(error);
-		});
-	}
+	testDescription = testDescribe + ' > ' + description;
+	run(testDescription, callback);
+}
+
+export function run(description, callback) {
+	tests.push({
+		description,
+		callback
+	});
+	clearTimeout(timeout);
+	timeout = setTimeout(async () => {
+		for (const test of tests) {
+			console.log(test.description);
+			const callbackString = test.callback.toString();
+			const callback =
+				callbackString.startsWith('()') || callbackString.startsWith('async ()')
+					? test.callback
+					: () => {
+							return new Promise((resolve) => test.callback(() => resolve()));
+					  };
+			const result = callback();
+			if (result instanceof Promise) {
+				const testTimeout = setTimeout(() => {
+					console.error('Test timed out.');
+					process.exit(1);
+				}, 2000);
+				try {
+					await result;
+					clearTimeout(testTimeout);
+				} catch (error) {
+					console.error(error);
+					process.exit(1);
+				}
+			}
+		}
+
+		console.log('');
+		console.log('All tests passed.');
+	}, 100);
 }
 
 export function expect(value) {
