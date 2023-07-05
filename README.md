@@ -83,7 +83,7 @@ See how the test was done [here](https://github.com/capricorn86/happy-dom-perfor
 
 # Contributing
 
-[Read more about how to develop and contribute](https://github.com/capricorn86/happy-dom/blob/master/docs/contributing.md)
+See [Contributing Guide](https://github.com/capricorn86/happy-dom/blob/master/docs/contributing.md).
 
 # Sponsors
 
