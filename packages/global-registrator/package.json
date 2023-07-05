@@ -30,19 +30,19 @@
 			"default": "./lib/*.map"
 		},
 		"./cjs/*.js": {
-			"import": "./lib/*.js",
+			"import": "./cjs/*.cjs",
 			"require": "./cjs/*.cjs",
-			"default": "./lib/*.js"
+			"default": "./cjs/*.cjs"
 		},
 		"./cjs/*.ts": {
-			"import": "./lib/*.ts",
+			"import": "./cjs/*.ts",
 			"require": "./cjs/*.ts",
-			"default": "./lib/*.ts"
+			"default": "./cjs/*.ts"
 		},
 		"./cjs/*.map": {
-			"import": "./lib/*.map",
+			"import": "./cjs/*.map",
 			"require": "./cjs/*.map",
-			"default": "./lib/*.map"
+			"default": "./cjs/*.map"
 		},
 		"./src/*.ts": "./src/*.ts",
 		"./package.json": "./package.json",
