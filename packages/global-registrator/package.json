@@ -7,7 +7,7 @@
 	"author": "David Ortner",
 	"description": "Use Happy DOM globally in a Node.js environment for testing.",
 	"main": "lib/index.js",
-    "type": "module",
+	"type": "module",
 	"exports": {
 		".": {
 			"import": "./lib/index.js",
@@ -48,7 +48,7 @@
 		"./package.json": "./package.json",
 		"./.eslintrc": "./.eslintrc.js"
 	},
-    "keywords": [
+	"keywords": [
 		"jsdom",
 		"happy",
 		"dom",

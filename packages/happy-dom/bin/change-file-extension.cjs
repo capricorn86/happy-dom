@@ -64,6 +64,7 @@ async function renameFiles(files, args) {
 	for (const file of newFiles) {
 		writePromises.push(
 			FS.promises.readFile(file.oldPath).then((content) => {
+				debugger;
 				return FS.promises
 					.writeFile(
 						file.newPath,
