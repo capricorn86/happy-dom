@@ -38,7 +38,8 @@ And much more..
 
 ### Module Systems
 
-[Happy DOM](https://github.com/capricorn86/happy-dom) has support for both [ESM](https://nodejs.org/api/esm.html#introduction) and [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules).
+- [ESM](https://nodejs.org/api/esm.html#introduction)
+- [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules).
 
 # Installation
 
@@ -71,7 +72,9 @@ container.appendChild(button);
 console.log(document.body.innerHTML);
 ```
 
-[Read more in our documentation](https://github.com/capricorn86/happy-dom/wiki)
+# Documentation
+
+Read more about how to use Happy DOM in our [Wiki](https://github.com/capricorn86/happy-dom/wiki).
 
 # Performance
 
@@ -87,7 +90,7 @@ console.log(document.body.innerHTML);
 | querySelectorAll('[class~="name"]')  | 5.5 ms  | 2.9 ms    |
 | querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
 
-[See how the test was done here](https://github.com/capricorn86/happy-dom-performance-test)
+See how the test was done [here](https://github.com/capricorn86/happy-dom-performance-test)
 
 # Jest
 
