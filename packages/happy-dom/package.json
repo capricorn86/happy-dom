@@ -29,7 +29,7 @@
 			"require": "./cjs/*.map",
 			"default": "./lib/*.map"
 		},
-		"./cjs/*.js": {
+		"./cjs/*.cjs": {
 			"import": "./cjs/*.cjs",
 			"require": "./cjs/*.cjs",
 			"default": "./cjs/*.cjs"

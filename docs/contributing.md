@@ -54,7 +54,7 @@ npm run test:watch
 
 ## Branch
 
-Branche names currently have the pattern "task/{issueID}-name-of-branch". However, there is a plan to change this in the future and remove "task/".
+Branch names currently have the pattern "task/{issueID}-name-of-branch". However, there is a plan to change this in the future and remove "task/".
 
 ## Commit Convention
 
