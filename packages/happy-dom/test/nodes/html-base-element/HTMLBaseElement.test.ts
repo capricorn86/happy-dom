@@ -1,7 +1,8 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import IDocument from '../../../src/nodes/document/IDocument';
-import IHTMLBaseElement from '../../../src/nodes/html-base-element/IHTMLBaseElement';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLBaseElement from '../../../src/nodes/html-base-element/IHTMLBaseElement.js';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('HTMLBaseElement', () => {
 	let window: IWindow;

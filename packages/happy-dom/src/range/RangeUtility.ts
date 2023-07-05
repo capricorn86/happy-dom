@@ -1,10 +1,10 @@
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
-import INode from '../nodes/node/INode';
-import NodeUtility from '../nodes/node/NodeUtility';
-import Range from './Range';
-import IRangeBoundaryPoint from './IRangeBoundaryPoint';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import INode from '../nodes/node/INode.js';
+import NodeUtility from '../nodes/node/NodeUtility.js';
+import Range from './Range.js';
+import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
 
 /**
  * Range utility.

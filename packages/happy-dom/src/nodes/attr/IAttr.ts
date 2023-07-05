@@ -1,5 +1,5 @@
-import IElement from '../element/IElement';
-import INode from './../node/INode';
+import IElement from '../element/IElement.js';
+import INode from './../node/INode.js';
 
 /**
  * Attr.

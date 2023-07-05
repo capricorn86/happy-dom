@@ -1,4 +1,5 @@
-import Window from '../../src/window/Window';
+import Window from '../../src/window/Window.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('URL', () => {
 	let window: Window;

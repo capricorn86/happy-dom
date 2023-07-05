@@ -1,5 +1,5 @@
-import Event from '../../event/Event';
-import IHTMLElement from '../html-element/IHTMLElement';
+import Event from '../../event/Event.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
 
 /**
  * HTML Dialog Element.

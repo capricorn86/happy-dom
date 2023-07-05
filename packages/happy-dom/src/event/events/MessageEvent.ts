@@ -1,7 +1,7 @@
-import IWindow from '../../window/IWindow';
-import Event from '../Event';
-import IMessagePort from '../IMessagePort';
-import IMessageEventInit from './IMessageEventInit';
+import IWindow from '../../window/IWindow.js';
+import Event from '../Event.js';
+import IMessagePort from '../IMessagePort.js';
+import IMessageEventInit from './IMessageEventInit.js';
 
 /**
  * Message event.

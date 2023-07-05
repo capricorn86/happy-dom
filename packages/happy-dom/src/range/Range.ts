@@ -1,19 +1,19 @@
-import INode from '../nodes/node/INode';
-import IDocument from '../nodes/document/IDocument';
-import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
-import DOMRect from '../nodes/element/DOMRect';
-import RangeHowEnum from './RangeHowEnum';
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import RangeUtility from './RangeUtility';
-import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
-import NodeUtility from '../nodes/node/NodeUtility';
-import XMLParser from '../xml-parser/XMLParser';
-import IComment from '../nodes/comment/IComment';
-import IText from '../nodes/text/IText';
-import DOMRectListFactory from '../nodes/element/DOMRectListFactory';
-import IDOMRectList from '../nodes/element/IDOMRectList';
-import IRangeBoundaryPoint from './IRangeBoundaryPoint';
+import INode from '../nodes/node/INode.js';
+import IDocument from '../nodes/document/IDocument.js';
+import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
+import DOMRect from '../nodes/element/DOMRect.js';
+import RangeHowEnum from './RangeHowEnum.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import RangeUtility from './RangeUtility.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import NodeUtility from '../nodes/node/NodeUtility.js';
+import XMLParser from '../xml-parser/XMLParser.js';
+import IComment from '../nodes/comment/IComment.js';
+import IText from '../nodes/text/IText.js';
+import DOMRectListFactory from '../nodes/element/DOMRectListFactory.js';
+import IDOMRectList from '../nodes/element/IDOMRectList.js';
+import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
 
 /**
  * Range.

@@ -1,4 +1,5 @@
-import Blob from '../../src/file/Blob';
+import Blob from '../../src/file/Blob.js';
+import { describe, it, expect } from 'vitest';
 
 describe('Blob', () => {
 	describe('get size()', () => {

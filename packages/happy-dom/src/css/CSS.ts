@@ -1,5 +1,5 @@
-import CSSUnitValue from './CSSUnitValue';
-import CSSUnits from './CSSUnits';
+import CSSUnitValue from './CSSUnitValue.js';
+import CSSUnits from './CSSUnits.js';
 import CSSEscape from 'css.escape';
 
 /**

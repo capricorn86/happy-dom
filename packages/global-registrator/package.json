@@ -7,6 +7,47 @@
 	"author": "David Ortner",
 	"description": "Use Happy DOM globally in a Node.js environment for testing.",
 	"main": "lib/index.js",
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./lib/index.js",
+			"require": "./cjs/index.cjs",
+			"default": "./lib/index.js"
+		},
+		"./lib/*.js": {
+			"import": "./lib/*.js",
+			"require": "./cjs/*.cjs",
+			"default": "./lib/*.js"
+		},
+		"./lib/*.ts": {
+			"import": "./lib/*.ts",
+			"require": "./cjs/*.ts",
+			"default": "./lib/*.ts"
+		},
+		"./lib/*.map": {
+			"import": "./lib/*.map",
+			"require": "./cjs/*.map",
+			"default": "./lib/*.map"
+		},
+		"./cjs/*.js": {
+			"import": "./cjs/*.cjs",
+			"require": "./cjs/*.cjs",
+			"default": "./cjs/*.cjs"
+		},
+		"./cjs/*.ts": {
+			"import": "./cjs/*.ts",
+			"require": "./cjs/*.ts",
+			"default": "./cjs/*.ts"
+		},
+		"./cjs/*.map": {
+			"import": "./cjs/*.map",
+			"require": "./cjs/*.map",
+			"default": "./cjs/*.map"
+		},
+		"./src/*.ts": "./src/*.ts",
+		"./package.json": "./package.json",
+		"./.eslintrc": "./.eslintrc.js"
+	},
 	"keywords": [
 		"jsdom",
 		"happy",
@@ -24,11 +65,12 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc",
+		"compile": "tsc && tsc --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
+		"change-cjs-file-extension": "node ../happy-dom/bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
-		"test": "tsc --project ./test && node ./tmp/react/React.test.js",
+		"test": "tsc --project ./test && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node ./tmp/react/React.test.cjs",
 		"test:debug": "tsc --project ./test && node --inspect-brk ./tmp/react/React.test.js"
 	},
 	"dependencies": {
@@ -42,13 +84,12 @@
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-prettier": "^4.0.0",
 		"eslint-plugin-filenames": "^1.3.2",
-		"eslint-plugin-import": "^2.25.4",
-		"eslint-plugin-jest": "^26.1.2",
+		"eslint-plugin-import": "^2.27.5",
 		"eslint-plugin-jsdoc": "^38.0.6",
 		"eslint-plugin-json": "^3.1.0",
 		"eslint-plugin-turbo": "^0.0.7",
 		"prettier": "^2.6.0",
-		"typescript": "^4.6.2",
+		"typescript": "^5.0.4",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2"
 	}

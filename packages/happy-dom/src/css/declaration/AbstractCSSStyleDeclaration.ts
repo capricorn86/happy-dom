@@ -1,10 +1,10 @@
-import IElement from '../../nodes/element/IElement';
-import Attr from '../../nodes/attr/Attr';
-import CSSRule from '../CSSRule';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import DOMException from '../../exception/DOMException';
-import CSSStyleDeclarationElementStyle from './element-style/CSSStyleDeclarationElementStyle';
-import CSSStyleDeclarationPropertyManager from './property-manager/CSSStyleDeclarationPropertyManager';
+import IElement from '../../nodes/element/IElement.js';
+import Attr from '../../nodes/attr/Attr.js';
+import CSSRule from '../CSSRule.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import DOMException from '../../exception/DOMException.js';
+import CSSStyleDeclarationElementStyle from './element-style/CSSStyleDeclarationElementStyle.js';
+import CSSStyleDeclarationPropertyManager from './property-manager/CSSStyleDeclarationPropertyManager.js';
 
 /**
  * CSS Style Declaration.

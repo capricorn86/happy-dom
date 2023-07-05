@@ -38,6 +38,10 @@ And much more..
 
 -   [Vue](https://vuejs.org/)
 
+### Module Systems
+
+[Happy DOM](https://github.com/capricorn86/happy-dom) has support for both [ESM](https://nodejs.org/api/esm.html#introduction) and [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules).
+
 # Packages
 
 This repository is a _Monorepo_. Each package lives under `packages/<package>`.
@@ -57,14 +61,6 @@ This package makes it possible to use Happy DOM with [Jest](https://jestjs.io/).
 ### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/global-registrator.svg)](https://www.npmjs.com/package/@happy-dom/global-registrator) [global-registrator](https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator)
 
 A utility that registers Happy DOM globally, which makes it possible to use Happy DOM for testing in a Node environment.
-
----
-
-### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/server-rendering.svg)](https://www.npmjs.com/package/@happy-dom/server-rendering) [server-rendering](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering)
-
-This package has been deprecated.
-
-Happy DOM now supports [Declarative Shadow DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom#server-side-rendering-of-web-components) which can be used for server-side rendering of web components.
 
 # Performance
 

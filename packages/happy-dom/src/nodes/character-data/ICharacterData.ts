@@ -1,6 +1,6 @@
-import INode from '../node/INode';
-import IChildNode from '../child-node/IChildNode';
-import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode';
+import INode from '../node/INode.js';
+import IChildNode from '../child-node/IChildNode.js';
+import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
 
 export default interface ICharacterData extends INode, IChildNode, INonDocumentTypeChildNode {
 	data: string;

@@ -1,6 +1,6 @@
-import IElement from '../element/IElement';
-import NodeList from '../node/NodeList';
-import IRadioNodeList from './IRadioNodeList';
+import IElement from '../element/IElement.js';
+import NodeList from '../node/NodeList.js';
+import IRadioNodeList from './IRadioNodeList.js';
 
 /**
  * RadioNodeList

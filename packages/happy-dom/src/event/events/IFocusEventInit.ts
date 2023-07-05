@@ -1,5 +1,5 @@
-import EventTarget from '../EventTarget';
-import IUIEventInit from '../IUIEventInit';
+import EventTarget from '../EventTarget.js';
+import IUIEventInit from '../IUIEventInit.js';
 
 export default interface IFocusEventInit extends IUIEventInit {
 	relatedTarget?: EventTarget;

@@ -1,8 +1,8 @@
-import Event from '../../event/Event';
-import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement';
-import IHTMLElement from '../html-element/IHTMLElement';
-import IHTMLInputElement from '../html-input-element/IHTMLInputElement';
-import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
+import Event from '../../event/Event.js';
+import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import IHTMLInputElement from '../html-input-element/IHTMLInputElement.js';
+import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
 
 /**
  * HTML Form Element.

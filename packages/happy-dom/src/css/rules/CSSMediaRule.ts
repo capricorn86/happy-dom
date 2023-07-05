@@ -1,5 +1,5 @@
-import CSSRule from '../CSSRule';
-import MediaList from '../MediaList';
+import CSSRule from '../CSSRule.js';
+import MediaList from '../MediaList.js';
 
 /**
  * CSSRule interface.

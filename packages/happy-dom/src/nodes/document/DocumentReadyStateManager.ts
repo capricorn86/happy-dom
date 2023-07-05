@@ -1,4 +1,4 @@
-import IWindow from '../../window/IWindow';
+import IWindow from '../../window/IWindow.js';
 
 /**
  * Document ready state manager.

@@ -1,11 +1,11 @@
-import Node from '../node/Node';
-import CharacterDataUtility from './CharacterDataUtility';
-import ICharacterData from './ICharacterData';
-import IElement from '../element/IElement';
-import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility';
-import ChildNodeUtility from '../child-node/ChildNodeUtility';
-import MutationRecord from '../../mutation-observer/MutationRecord';
-import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
+import Node from '../node/Node.js';
+import CharacterDataUtility from './CharacterDataUtility.js';
+import ICharacterData from './ICharacterData.js';
+import IElement from '../element/IElement.js';
+import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
+import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
+import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 
 /**
  * Character data base class.

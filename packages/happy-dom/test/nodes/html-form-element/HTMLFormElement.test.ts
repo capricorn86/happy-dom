@@ -1,13 +1,14 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement';
-import RadioNodeList from '../../../src/nodes/html-form-element/RadioNodeList';
-import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement';
-import Event from '../../../src/event/Event';
-import SubmitEvent from '../../../src/event/events/SubmitEvent';
-import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement';
-import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement';
-import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
+import RadioNodeList from '../../../src/nodes/html-form-element/RadioNodeList.js';
+import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import Event from '../../../src/event/Event.js';
+import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
+import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement.js';
+import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement.js';
+import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLFormElement', () => {
 	let window: Window;
@@ -156,10 +157,10 @@ describe('HTMLFormElement', () => {
 			expect(elements.namedItem('text1') === root.children[0]).toBe(true);
 			expect(elements.namedItem('button1') === root.children[1]).toBe(true);
 			expect(elements.namedItem('checkbox1')).toEqual(radioNodeList1);
-			expect(elements.namedItem('checkbox1').value).toBe('value2');
+			expect(elements.namedItem('checkbox1')?.value).toBe('value2');
 			expect(elements.namedItem('radio1')).toEqual(radioNodeList2);
-			expect(elements.namedItem('radio1').value).toBe('value2');
-			expect(elements.namedItem('1').value).toBe('value1');
+			expect(elements.namedItem('radio1')?.value).toBe('value2');
+			expect(elements.namedItem('1')?.value).toBe('value1');
 
 			(<IHTMLInputElement>elements.namedItem('text1')).name = 'text2';
 			(<IHTMLInputElement>elements.namedItem('text2')).id = 'text3';
@@ -374,8 +375,8 @@ describe('HTMLFormElement', () => {
 			element.requestSubmit();
 
 			expect(submitEvent).toBeInstanceOf(SubmitEvent);
-			expect(submitEvent.type).toBe('submit');
-			expect((<SubmitEvent>submitEvent).submitter).toBe(element);
+			expect((<SubmitEvent>(<unknown>submitEvent)).type).toBe('submit');
+			expect((<SubmitEvent>(<unknown>submitEvent)).submitter).toBe(element);
 
 			submitEvent = null;
 
@@ -390,8 +391,8 @@ describe('HTMLFormElement', () => {
 
 			element.requestSubmit(<IHTMLButtonElement>root.children[1]);
 
-			expect(submitEvent.type).toBe('submit');
-			expect((<SubmitEvent>submitEvent).submitter).toBe(root.children[1]);
+			expect((<SubmitEvent>(<unknown>submitEvent)).type).toBe('submit');
+			expect((<SubmitEvent>(<unknown>submitEvent)).submitter).toBe(root.children[1]);
 		});
 
 		it('Skips validating if a submitter is sent that has "formNoValidate" set to "true".', () => {
@@ -419,7 +420,7 @@ describe('HTMLFormElement', () => {
 			submitter.formNoValidate = true;
 			element.requestSubmit(submitter);
 
-			expect(submitEvent.type).toBe('submit');
+			expect((<SubmitEvent>(<unknown>submitEvent)).type).toBe('submit');
 		});
 	});
 
@@ -459,7 +460,7 @@ describe('HTMLFormElement', () => {
 
 			element.reset();
 
-			expect(resetEvent.type).toBe('reset');
+			expect((<Event>(<unknown>resetEvent)).type).toBe('reset');
 
 			expect((<IHTMLInputElement>root.children[0]).value).toBe('Default value');
 			expect((<IHTMLSelectElement>root.children[1]).value).toBe('value2');

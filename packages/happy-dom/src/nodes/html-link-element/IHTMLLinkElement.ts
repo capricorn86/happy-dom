@@ -1,6 +1,6 @@
-import CSSStyleSheet from '../../css/CSSStyleSheet';
-import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
-import IHTMLElement from '../html-element/IHTMLElement';
+import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
 
 /**
  * HTML Link Element.

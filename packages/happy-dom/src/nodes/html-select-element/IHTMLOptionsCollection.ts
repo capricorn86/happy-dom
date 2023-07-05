@@ -1,5 +1,5 @@
-import IHTMLCollection from '../element/IHTMLCollection';
-import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement.js';
 
 /**
  * HTML Options Collection.

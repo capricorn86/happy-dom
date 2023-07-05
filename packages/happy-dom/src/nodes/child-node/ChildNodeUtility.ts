@@ -1,9 +1,9 @@
-import DOMException from '../../exception/DOMException';
-import XMLParser from '../../xml-parser/XMLParser';
-import Document from '../document/Document';
-import INode from '../node/INode';
-import IParentNode from '../parent-node/IParentNode';
-import IChildNode from './IChildNode';
+import DOMException from '../../exception/DOMException.js';
+import XMLParser from '../../xml-parser/XMLParser.js';
+import Document from '../document/Document.js';
+import INode from '../node/INode.js';
+import IParentNode from '../parent-node/IParentNode.js';
+import IChildNode from './IChildNode.js';
 
 /**
  * Child node utility.

@@ -1,13 +1,13 @@
-import IAttr from '../attr/IAttr';
-import CSSStyleSheet from '../../css/CSSStyleSheet';
-import HTMLElement from '../html-element/HTMLElement';
-import IHTMLLinkElement from './IHTMLLinkElement';
-import Event from '../../event/Event';
-import ErrorEvent from '../../event/events/ErrorEvent';
-import INode from '../../nodes/node/INode';
-import DOMTokenList from '../../dom-token-list/DOMTokenList';
-import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
-import HTMLLinkElementUtility from './HTMLLinkElementUtility';
+import IAttr from '../attr/IAttr.js';
+import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IHTMLLinkElement from './IHTMLLinkElement.js';
+import Event from '../../event/Event.js';
+import ErrorEvent from '../../event/events/ErrorEvent.js';
+import INode from '../../nodes/node/INode.js';
+import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
+import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
+import HTMLLinkElementUtility from './HTMLLinkElementUtility.js';
 
 /**
  * HTML Link Element.

@@ -1,4 +1,4 @@
-import DOMException from '../../exception/DOMException';
+import DOMException from '../../exception/DOMException.js';
 
 /**
  * HTML input element value stepping.

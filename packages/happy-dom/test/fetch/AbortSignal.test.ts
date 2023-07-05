@@ -1,5 +1,6 @@
-import AbortSignal from '../../src/fetch/AbortSignal';
-import Event from '../../src/event/Event';
+import AbortSignal from '../../src/fetch/AbortSignal.js';
+import Event from '../../src/event/Event.js';
+import { describe, it, expect } from 'vitest';
 
 describe('AbortSignal', () => {
 	describe('_abort()', () => {
@@ -14,7 +15,7 @@ describe('AbortSignal', () => {
 
 			expect(signal.aborted).toBe(true);
 			expect(signal.reason).toBe(reason);
-			expect(triggeredEvent.type).toBe('abort');
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('abort');
 		});
 	});
 

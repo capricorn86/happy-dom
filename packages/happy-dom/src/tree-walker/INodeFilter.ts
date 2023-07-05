@@ -1,4 +1,4 @@
-import INode from '../nodes/node/INode';
+import INode from '../nodes/node/INode.js';
 
 type INodeFilter = ((node: INode) => number) | { acceptNode(node: INode): number };
 

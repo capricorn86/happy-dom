@@ -1,9 +1,9 @@
-import DOMException from '../exception/DOMException';
-import INode from '../nodes/node/INode';
-import Node from '../nodes/node/Node';
-import IMutationObserverInit from './IMutationObserverInit';
-import MutationObserverListener from './MutationListener';
-import MutationRecord from './MutationRecord';
+import DOMException from '../exception/DOMException.js';
+import INode from '../nodes/node/INode.js';
+import Node from '../nodes/node/Node.js';
+import IMutationObserverInit from './IMutationObserverInit.js';
+import MutationObserverListener from './MutationListener.js';
+import MutationRecord from './MutationRecord.js';
 
 /**
  * The MutationObserver interface provides the ability to watch for changes being made to the DOM tree.

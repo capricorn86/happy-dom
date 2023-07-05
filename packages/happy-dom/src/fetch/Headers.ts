@@ -1,7 +1,7 @@
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import IHeaders from './types/IHeaders';
-import IHeadersInit from './types/IHeadersInit';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import IHeaders from './types/IHeaders.js';
+import IHeadersInit from './types/IHeadersInit.js';
 
 /**
  * Fetch headers.

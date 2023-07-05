@@ -1,11 +1,11 @@
-import HTMLElement from '../html-element/HTMLElement';
-import INode from '../node/INode';
-import IHTMLElement from '../html-element/IHTMLElement';
-import INodeList from '../node/INodeList';
-import IHTMLCollection from '../element/IHTMLCollection';
-import IElement from '../element/IElement';
-import NodeList from '../node/NodeList';
-import HTMLCollection from '../element/HTMLCollection';
+import HTMLElement from '../html-element/HTMLElement.js';
+import INode from '../node/INode.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import INodeList from '../node/INodeList.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import IElement from '../element/IElement.js';
+import NodeList from '../node/NodeList.js';
+import HTMLCollection from '../element/HTMLCollection.js';
 
 /**
  * HTML Unknown Element.

@@ -1,14 +1,14 @@
-import IDocument from '../nodes/document/IDocument';
-import VoidElements from '../config/VoidElements';
-import UnnestableElements from '../config/UnnestableElements';
-import NamespaceURI from '../config/NamespaceURI';
-import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
-import IElement from '../nodes/element/IElement';
-import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
-import PlainTextElements from '../config/PlainTextElements';
-import IDocumentType from '../nodes/document-type/IDocumentType';
-import INode from '../nodes/node/INode';
-import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
+import IDocument from '../nodes/document/IDocument.js';
+import VoidElements from '../config/VoidElements.js';
+import UnnestableElements from '../config/UnnestableElements.js';
+import NamespaceURI from '../config/NamespaceURI.js';
+import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
+import IElement from '../nodes/element/IElement.js';
+import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
+import PlainTextElements from '../config/PlainTextElements.js';
+import IDocumentType from '../nodes/document-type/IDocumentType.js';
+import INode from '../nodes/node/INode.js';
+import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
 import * as Entities from 'entities';
 
 /**

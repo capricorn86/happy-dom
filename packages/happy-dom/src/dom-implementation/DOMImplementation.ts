@@ -1,5 +1,5 @@
-import DocumentType from '../nodes/document-type/DocumentType';
-import IDocument from '../nodes/document/IDocument';
+import DocumentType from '../nodes/document-type/DocumentType.js';
+import IDocument from '../nodes/document/IDocument.js';
 
 /**
  * The DOMImplementation interface represents an object providing methods which are not dependent on any particular document. Such an object is returned by the.

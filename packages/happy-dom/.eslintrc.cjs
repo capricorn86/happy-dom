@@ -3,7 +3,7 @@ const ERROR = 'error';
 const OFF = 'off';
 
 const COMMON_CONFIG = {
-	plugins: ['turbo', 'jsdoc', 'filenames', 'jest', 'import', 'prettier'],
+	plugins: ['turbo', 'jsdoc', 'filenames', 'import', 'prettier'],
 	extends: ['plugin:@typescript-eslint/recommended', 'prettier', 'plugin:prettier/recommended'],
 	rules: {
 		'prettier/prettier': WARN,
@@ -48,18 +48,6 @@ const COMMON_CONFIG = {
 		'jsdoc/require-returns-description': WARN,
 		'jsdoc/valid-types': WARN,
 		'filenames/match-exported': WARN,
-		'jest/consistent-test-it': [WARN, { fn: 'it', withinDescribe: 'it' }],
-		'jest/valid-title': [
-			WARN,
-			{
-				mustMatch: {
-					// Describe: '^[A-Z][a-zA-Z0-9]+$|^[a-z][a-zA-Z0-9]+\\(\\)$',
-					it: '^[A-Z](.+).$'
-				}
-			}
-		],
-		'jest/prefer-hooks-on-top': WARN,
-		'jest/no-duplicate-hooks': WARN,
 		'no-useless-constructor': WARN,
 		'jsdoc/require-jsdoc': [
 			WARN,
@@ -92,8 +80,7 @@ module.exports = {
 	env: {
 		es6: true,
 		browser: true,
-		node: true,
-		jest: true
+		node: true
 	},
 	overrides: [
 		{
@@ -115,7 +102,7 @@ module.exports = {
 		{
 			files: ['*.json'],
 			plugins: ['json'],
-			extends: ['eslint:recommended', 'plugin:json/recommended', 'plugin:jest/recommended']
+			extends: ['eslint:recommended', 'plugin:json/recommended']
 		},
 		{
 			files: ['*.ts', '*.tsx'],
@@ -153,6 +140,7 @@ module.exports = {
 				'import/named': WARN,
 				'import/no-named-as-default': WARN,
 				'import/no-extraneous-dependencies': WARN,
+				'import/no-absolute-path': WARN,
 				'@typescript-eslint/naming-convention': [
 					WARN,
 					{

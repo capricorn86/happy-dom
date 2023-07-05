@@ -1,6 +1,6 @@
-import Element from '../element/Element';
-import IElement from '../element/IElement';
-import INonDocumentTypeChildNode from './INonDocumentTypeChildNode';
+import Element from '../element/Element.js';
+import IElement from '../element/IElement.js';
+import INonDocumentTypeChildNode from './INonDocumentTypeChildNode.js';
 
 /**
  * Non Document Child node utility.

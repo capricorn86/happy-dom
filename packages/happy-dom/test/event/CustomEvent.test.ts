@@ -1,4 +1,5 @@
-import CustomEvent from '../../src/event/events/CustomEvent';
+import CustomEvent from '../../src/event/events/CustomEvent.js';
+import { describe, it, expect } from 'vitest';
 
 describe('CustomEvent', () => {
 	it('Create a CustomEvent', () => {

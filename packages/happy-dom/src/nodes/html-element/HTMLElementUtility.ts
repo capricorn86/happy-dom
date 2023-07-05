@@ -1,6 +1,6 @@
-import FocusEvent from '../../event/events/FocusEvent';
-import IHTMLElement from '../html-element/IHTMLElement';
-import ISVGElement from '../svg-element/ISVGElement';
+import FocusEvent from '../../event/events/FocusEvent.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import ISVGElement from '../svg-element/ISVGElement.js';
 
 /**
  * HTMLElement utility.

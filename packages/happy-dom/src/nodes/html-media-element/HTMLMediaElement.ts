@@ -1,9 +1,9 @@
-import ErrorEvent from 'src/event/events/ErrorEvent';
-import Event from '../../event/Event';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import HTMLElement from '../html-element/HTMLElement';
-import IHTMLMediaElement, { IMediaError } from './IHTMLMediaElement';
+import ErrorEvent from '../../event/events/ErrorEvent.js';
+import Event from '../../event/Event.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IHTMLMediaElement, { IMediaError } from './IHTMLMediaElement.js';
 
 /**
  *
