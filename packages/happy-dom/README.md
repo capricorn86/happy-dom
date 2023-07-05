@@ -39,7 +39,7 @@ And much more..
 ### Module Systems
 
 - [ESM](https://nodejs.org/api/esm.html#introduction)
-- [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules).
+- [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules)
 
 # Installation
 
