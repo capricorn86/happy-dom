@@ -38,6 +38,10 @@ And much more..
 
 - [Vue](https://vuejs.org/)
 
+### Module Systems
+
+[Happy DOM](https://github.com/capricorn86/happy-dom) has support for both [ESM](https://nodejs.org/api/esm.html#introduction) and [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules).
+
 # Installation
 
 ```bash
