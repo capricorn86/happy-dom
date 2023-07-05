@@ -8,8 +8,6 @@ The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate 
 
 [Happy DOM](https://github.com/capricorn86/happy-dom) focuses heavily on performance and can be used as an alternative to [JSDOM](https://github.com/jsdom/jsdom).
 
-[Read more about how to use Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom)
-
 ### DOM Features
 
 -   Custom Elements (Web Components)
@@ -40,7 +38,12 @@ And much more..
 
 ### Module Systems
 
-[Happy DOM](https://github.com/capricorn86/happy-dom) has support for both [ESM](https://nodejs.org/api/esm.html#introduction) and [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules).
+-   [ESM](https://nodejs.org/api/esm.html#introduction)
+-   [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules).
+
+# Documentation
+
+Read more about how to use Happy DOM in our [Wiki](https://github.com/capricorn86/happy-dom/wiki).
 
 # Packages
 
@@ -76,11 +79,11 @@ A utility that registers Happy DOM globally, which makes it possible to use Happ
 | querySelectorAll('[class~="name"]')  | 5.5 ms  | 2.9 ms    |
 | querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
 
-[See how the test was done here](https://github.com/capricorn86/happy-dom-performance-test)
+See how the test was done [here](https://github.com/capricorn86/happy-dom-performance-test)
 
 # Contributing
 
-[Read more about how to develop and contribute](https://github.com/capricorn86/happy-dom/blob/master/docs/contributing.md)
+See [Contributing Guide](https://github.com/capricorn86/happy-dom/blob/master/docs/contributing.md).
 
 # Sponsors
 

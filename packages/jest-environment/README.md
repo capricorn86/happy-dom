@@ -40,7 +40,7 @@ And much more..
 
 ### Module Systems
 
-[Happy DOM](https://github.com/capricorn86/happy-dom) has support for both [ESM](https://nodejs.org/api/esm.html#introduction) and [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules). However, [@happy-dom/jest-environment](https://github.com/capricorn86/happy-dom/packages/jest-environment) only has support for [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules) because of limitations with [Jest](https://jestjs.io/).
+- [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules) (ESM is not supported due to limitations with Jest)
 
 # Installation
 
@@ -113,7 +113,7 @@ Read more about how Happy DOM works in our [documentation](https://github.com/ca
 | querySelectorAll('[class~="name"]')  | 5.5 ms  | 2.9 ms    |
 | querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
 
-[See how the test was done here](https://github.com/capricorn86/happy-dom-performance-test)
+See how the test was done [here](https://github.com/capricorn86/happy-dom-performance-test)
 
 # Sponsors
 
