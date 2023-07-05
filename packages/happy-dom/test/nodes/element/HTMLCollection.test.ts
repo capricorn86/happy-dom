@@ -1,5 +1,6 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('HTMLCollection', () => {
 	let window: Window;
@@ -8,10 +9,6 @@ describe('HTMLCollection', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-	});
-
-	afterEach(() => {
-		jest.restoreAllMocks();
 	});
 
 	describe('item()', () => {

@@ -1,6 +1,7 @@
 import EventTarget from '../../src/event/EventTarget.js';
 import Event from '../../src/event/Event.js';
 import CustomEvent from '../../src/event/events/CustomEvent.js';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 const EVENT_TYPE = 'click';
 /**
@@ -17,7 +18,7 @@ describe('EventTarget', () => {
 
 	describe('addEventListener()', () => {
 		it('Adds an event listener and triggers it when calling dispatchEvent().', () => {
-			let recievedEvent: Event = null;
+			let recievedEvent: Event | null = null;
 			const listener = (event: Event): void => {
 				recievedEvent = event;
 			};
@@ -25,8 +26,8 @@ describe('EventTarget', () => {
 			eventTarget.addEventListener(EVENT_TYPE, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
 			expect(recievedEvent).toBe(dispatchedEvent);
-			expect(recievedEvent.target).toBe(eventTarget);
-			expect(recievedEvent.currentTarget).toBe(eventTarget);
+			expect((<Event>(<unknown>recievedEvent)).target).toBe(eventTarget);
+			expect((<Event>(<unknown>recievedEvent)).currentTarget).toBe(eventTarget);
 		});
 
 		it('Adds an event listener and set options once', () => {
@@ -63,22 +64,22 @@ describe('EventTarget', () => {
 		});
 
 		it('Adds a custom event listener and triggers it when calling dispatchEvent().', () => {
-			let recievedEvent: CustomEvent = null;
+			let recievedEvent: CustomEvent | null = null;
 			const DETAIL = {};
-			const listener = (event: CustomEvent): void => {
-				recievedEvent = event;
+			const listener = (event): void => {
+				recievedEvent = <CustomEvent>event;
 			};
 			const dispatchedEvent = new CustomEvent(EVENT_TYPE, { detail: DETAIL });
 			eventTarget.addEventListener(EVENT_TYPE, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
 			expect(recievedEvent).toBe(dispatchedEvent);
-			expect(recievedEvent.detail).toBe(DETAIL);
-			expect(recievedEvent.target).toBe(eventTarget);
-			expect(recievedEvent.currentTarget).toBe(eventTarget);
+			expect((<CustomEvent>(<unknown>recievedEvent)).detail).toBe(DETAIL);
+			expect((<CustomEvent>(<unknown>recievedEvent)).target).toBe(eventTarget);
+			expect((<CustomEvent>(<unknown>recievedEvent)).currentTarget).toBe(eventTarget);
 		});
 
 		it('Adds an event listener using object with handleEvent as property and triggers it when calling dispatchEvent().', () => {
-			let recievedEvent: CustomEvent = null;
+			let recievedEvent: CustomEvent | null = null;
 			const listener = {
 				handleEvent: (event: CustomEvent): void => {
 					recievedEvent = event;
@@ -88,8 +89,8 @@ describe('EventTarget', () => {
 			eventTarget.addEventListener(EVENT_TYPE, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
 			expect(recievedEvent).toBe(dispatchedEvent);
-			expect(recievedEvent.target).toBe(eventTarget);
-			expect(recievedEvent.currentTarget).toBe(eventTarget);
+			expect((<CustomEvent>(<unknown>recievedEvent)).target).toBe(eventTarget);
+			expect((<CustomEvent>(<unknown>recievedEvent)).currentTarget).toBe(eventTarget);
 		});
 
 		it('Event listener is called in the scope of the EventTarget when calling dispatchEvent().', () => {
@@ -106,7 +107,7 @@ describe('EventTarget', () => {
 
 	describe('removeEventListener()', () => {
 		it('Removes an event listener and does not call it when calling dispatchEvent().', () => {
-			let recievedEvent: Event = null;
+			let recievedEvent: Event | null = null;
 			const listener = (event: Event): void => {
 				recievedEvent = event;
 			};
@@ -120,7 +121,7 @@ describe('EventTarget', () => {
 
 	describe('dispatchEvent()', () => {
 		it('Triggers listener properties with "on" as prefix.', () => {
-			let recievedEvent: Event = null;
+			let recievedEvent: Event | null = null;
 			const listener = (event: Event): void => {
 				recievedEvent = event;
 			};
@@ -128,13 +129,13 @@ describe('EventTarget', () => {
 			eventTarget[`on${EVENT_TYPE}`] = listener;
 			eventTarget.dispatchEvent(dispatchedEvent);
 			expect(recievedEvent).toBe(dispatchedEvent);
-			expect(recievedEvent.target).toBe(eventTarget);
-			expect(recievedEvent.currentTarget).toBe(eventTarget);
+			expect((<Event>(<unknown>recievedEvent)).target).toBe(eventTarget);
+			expect((<Event>(<unknown>recievedEvent)).currentTarget).toBe(eventTarget);
 		});
 
 		it('Triggers all listeners, even though listeners are removed while dispatching.', () => {
-			let recievedEvent1: Event = null;
-			let recievedEvent2: Event = null;
+			let recievedEvent1: Event | null = null;
+			let recievedEvent2: Event | null = null;
 			const listener1 = (event: Event): void => {
 				recievedEvent1 = event;
 				eventTarget.removeEventListener(EVENT_TYPE, listener1);
@@ -160,7 +161,7 @@ describe('EventTarget', () => {
 
 	describe('attachEvent()', () => {
 		it('Adds an event listener in older browsers for backward compatibility.', () => {
-			let recievedEvent: Event = null;
+			let recievedEvent: Event | null = null;
 			const listener = (event: Event): void => {
 				recievedEvent = event;
 			};
@@ -168,15 +169,15 @@ describe('EventTarget', () => {
 			eventTarget.attachEvent(`on${EVENT_TYPE}`, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
 			expect(recievedEvent).toBe(dispatchedEvent);
-			expect(recievedEvent.type).toBe(EVENT_TYPE);
-			expect(recievedEvent.target).toBe(eventTarget);
-			expect(recievedEvent.currentTarget).toBe(eventTarget);
+			expect((<Event>(<unknown>recievedEvent)).type).toBe(EVENT_TYPE);
+			expect((<Event>(<unknown>recievedEvent)).target).toBe(eventTarget);
+			expect((<Event>(<unknown>recievedEvent)).currentTarget).toBe(eventTarget);
 		});
 	});
 
 	describe('detachEvent()', () => {
 		it('Removes an event listener in older browsers for backward compatibility.', () => {
-			let recievedEvent: Event = null;
+			let recievedEvent: Event | null = null;
 			const listener = (event: Event): void => {
 				recievedEvent = event;
 			};

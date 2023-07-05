@@ -2,6 +2,7 @@ import Window from '../../src/window/Window.js';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
 import DOMParser from '../../src/dom-parser/DOMParser.js';
 import DOMParserHTML from './data/DOMParserHTML.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('DOMParser', () => {
 	let domParser: DOMParser;

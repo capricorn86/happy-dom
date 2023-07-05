@@ -4,6 +4,7 @@ import IHTMLSlotElement from '../../../src/nodes/html-slot-element/IHTMLSlotElem
 import CustomElementWithNamedSlots from './CustomElementWithNamedSlots.js';
 import CustomElementWithSlot from './CustomElementWithSlot.js';
 import INodeList from '../../../src/nodes/node/INodeList.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLSlotElement', () => {
 	let window: Window;

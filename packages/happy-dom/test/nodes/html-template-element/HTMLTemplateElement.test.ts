@@ -1,21 +1,23 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLTemplateElement from '../../../src/nodes/html-template-element/IHTMLTemplateElement.js';
 import XMLSerializer from '../../../src/xml-serializer/XMLSerializer.js';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('HTMLTemplateElement', () => {
-	let window: Window;
-	let document: Document;
-	let element: HTMLTemplateElement;
+	let window: IWindow;
+	let document: IDocument;
+	let element: IHTMLTemplateElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLTemplateElement>document.createElement('template');
+		element = <IHTMLTemplateElement>document.createElement('template');
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -140,13 +142,13 @@ describe('HTMLTemplateElement', () => {
 
 			element.appendChild(div);
 
-			jest
-				.spyOn(XMLSerializer.prototype, 'serializeToString')
-				.mockImplementation(function (rootElement) {
-					expect(rootElement).toBe(div);
-					expect(this._options.includeShadowRoots).toBe(true);
-					return 'EXPECTED_HTML';
-				});
+			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation(function (
+				rootElement
+			) {
+				expect(rootElement === div).toBe(true);
+				expect(this._options.includeShadowRoots).toBe(true);
+				return 'EXPECTED_HTML';
+			});
 
 			expect(element.getInnerHTML({ includeShadowRoots: true })).toBe('EXPECTED_HTML');
 		});

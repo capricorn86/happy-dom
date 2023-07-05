@@ -2,6 +2,7 @@ import Window from '../../../src/window/Window.js';
 import IWindow from '../../../src/window/IWindow.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLAnchorElement from '../../../src/nodes/html-anchor-element/IHTMLAnchorElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 const BLOB_URL = 'blob:https://mozilla.org';
 

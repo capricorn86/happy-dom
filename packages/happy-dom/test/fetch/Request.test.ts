@@ -11,8 +11,10 @@ import IRequestReferrerPolicy from '../../src/fetch/types/IRequestReferrerPolicy
 import IRequestRedirect from '../../src/fetch/types/IRequestRedirect.js';
 import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
 import Blob from '../../src/file/Blob.js';
-import { FormData } from '../../src.js';
+import FormData from '../../src/form-data/FormData.js';
 import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser.js';
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
+import Stream from 'stream';
 
 const TEST_URL = 'https://example.com/';
 
@@ -27,7 +29,7 @@ describe('Request', () => {
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('constructor()', () => {
@@ -111,9 +113,9 @@ describe('Request', () => {
 		it('Supports body from Request object.', async () => {
 			const otherRequest = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 			const request = new Request(otherRequest);
-			const chunks = [];
+			const chunks: Buffer[] = [];
 
-			for await (const chunk of request.body) {
+			for await (const chunk of <Stream.Readable>request.body) {
 				chunks.push(Buffer.from(chunk));
 			}
 
@@ -122,9 +124,9 @@ describe('Request', () => {
 
 		it('Supports body from init object.', async () => {
 			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
-			const chunks = [];
+			const chunks: Buffer[] = [];
 
-			for await (const chunk of request.body) {
+			for await (const chunk of <Stream.Readable>request.body) {
 				chunks.push(Buffer.from(chunk));
 			}
 
@@ -466,27 +468,28 @@ describe('Request', () => {
 			expect(Buffer.from(arrayBuffer).toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
-			let isAsyncComplete = false;
+		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+			await new Promise((resolve) => {
+				const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+				let isAsyncComplete = false;
 
-			jest
-				.spyOn(FetchBodyUtility, 'consumeBodyStream')
-				.mockImplementation(
-					() => new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
+				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
+					(): Promise<Buffer> =>
+						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
-			request.arrayBuffer();
+				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				request.arrayBuffer();
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(false);
-			}, 2);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(false);
+				}, 2);
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(true);
-				done();
-			}, 12);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(true);
+					resolve(null);
+				}, 12);
+			});
 		});
 	});
 
@@ -506,27 +509,28 @@ describe('Request', () => {
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
-			let isAsyncComplete = false;
+		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+			await new Promise((resolve) => {
+				const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+				let isAsyncComplete = false;
 
-			jest
-				.spyOn(FetchBodyUtility, 'consumeBodyStream')
-				.mockImplementation(
-					() => new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
+				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
+					(): Promise<Buffer> =>
+						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
-			request.blob();
+				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				request.blob();
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(false);
-			}, 2);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(false);
+				}, 2);
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(true);
-				done();
-			}, 12);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(true);
+					resolve(null);
+				}, 12);
+			});
 		});
 	});
 
@@ -539,27 +543,28 @@ describe('Request', () => {
 			expect(buffer.toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
-			let isAsyncComplete = false;
+		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+			await new Promise((resolve) => {
+				const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+				let isAsyncComplete = false;
 
-			jest
-				.spyOn(FetchBodyUtility, 'consumeBodyStream')
-				.mockImplementation(
-					() => new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
+				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
+					(): Promise<Buffer> =>
+						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
-			request.buffer();
+				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				request.buffer();
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(false);
-			}, 2);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(false);
+				}, 2);
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(true);
-				done();
-			}, 12);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(true);
+					resolve(null);
+				}, 12);
+			});
 		});
 	});
 
@@ -571,27 +576,28 @@ describe('Request', () => {
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
-			let isAsyncComplete = false;
+		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+			await new Promise((resolve) => {
+				const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+				let isAsyncComplete = false;
 
-			jest
-				.spyOn(FetchBodyUtility, 'consumeBodyStream')
-				.mockImplementation(
-					() => new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
+				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
+					(): Promise<Buffer> =>
+						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
-			request.text();
+				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				request.text();
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(false);
-			}, 2);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(false);
+				}, 2);
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(true);
-				done();
-			}, 12);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(true);
+					resolve(null);
+				}, 12);
+			});
 		});
 	});
 
@@ -603,30 +609,30 @@ describe('Request', () => {
 			expect(json).toEqual({ key1: 'value1' });
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
-			const request = new Request(TEST_URL, { method: 'POST', body: '{ "key1": "value1" }' });
-			let isAsyncComplete = false;
+		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+			await new Promise((resolve) => {
+				const request = new Request(TEST_URL, { method: 'POST', body: '{ "key1": "value1" }' });
+				let isAsyncComplete = false;
 
-			jest
-				.spyOn(FetchBodyUtility, 'consumeBodyStream')
-				.mockImplementation(
-					() =>
+				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
+					(): Promise<Buffer> =>
 						new Promise((resolve) =>
 							setTimeout(() => resolve(Buffer.from('{ "key1": "value1" }')), 10)
 						)
 				);
 
-			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
-			request.json();
+				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				request.json();
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(false);
-			}, 2);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(false);
+				}, 2);
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(true);
-				done();
-			}, 12);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(true);
+					resolve(null);
+				}, 12);
+			});
 		});
 	});
 
@@ -640,29 +646,29 @@ describe('Request', () => {
 			expect(requestFormData).toEqual(formData);
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
-			const formData = new FormData();
-			formData.append('some', 'test');
-			const request = new Request(TEST_URL, { method: 'POST', body: formData });
-			let isAsyncComplete = false;
+		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+			await new Promise((resolve) => {
+				const formData = new FormData();
+				formData.append('some', 'test');
+				const request = new Request(TEST_URL, { method: 'POST', body: formData });
+				let isAsyncComplete = false;
 
-			jest
-				.spyOn(MultipartFormDataParser, 'streamToFormData')
-				.mockImplementation(
-					() => new Promise((resolve) => setTimeout(() => resolve(formData), 10))
+				vi.spyOn(MultipartFormDataParser, 'streamToFormData').mockImplementation(
+					(): Promise<FormData> => new Promise((resolve) => setTimeout(() => resolve(formData), 10))
 				);
 
-			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
-			request.formData();
+				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				request.formData();
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(false);
-			}, 2);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(false);
+				}, 2);
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(true);
-				done();
-			}, 12);
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(true);
+					resolve(null);
+				}, 12);
+			});
 		});
 	});
 

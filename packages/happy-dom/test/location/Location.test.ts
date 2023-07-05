@@ -1,6 +1,7 @@
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import Location from '../../src/location/Location.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 const HREF = 'https://google.com/some-path/?key=value&key2=value2#hash';
 

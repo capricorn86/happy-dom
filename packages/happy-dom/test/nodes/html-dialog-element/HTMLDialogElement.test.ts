@@ -3,6 +3,7 @@ import IHTMLDialogElement from '../../../src/nodes/html-dialog-element/IHTMLDial
 import Window from '../../../src/window/Window.js';
 import IWindow from '../../../src/window/IWindow.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLDialogElement', () => {
 	let window: IWindow;
@@ -60,14 +61,14 @@ describe('HTMLDialogElement', () => {
 			element.show();
 			element.close();
 			expect(element.open).toBe(false);
-			expect(element.getAttributeNS(null, 'open')).toBe(null);
+			expect(element.getAttribute('open')).toBe(null);
 		});
 
 		it('Should be possible to close an open modal dialog', () => {
 			element.showModal();
 			element.close();
 			expect(element.open).toBe(false);
-			expect(element.getAttributeNS(null, 'open')).toBe(null);
+			expect(element.getAttribute('open')).toBe(null);
 		});
 
 		it('Should be possible to close the dialog with a return value', () => {
@@ -83,21 +84,21 @@ describe('HTMLDialogElement', () => {
 		});
 
 		it('Should dispatch a close event', () => {
-			let dispatched: Event = null;
+			let dispatched: Event | null = null;
 			element.addEventListener('close', (event: Event) => (dispatched = event));
 			element.show();
 			element.close();
-			expect(dispatched.cancelable).toBe(false);
-			expect(dispatched.bubbles).toBe(false);
+			expect((<Event>(<unknown>dispatched)).cancelable).toBe(false);
+			expect((<Event>(<unknown>dispatched)).bubbles).toBe(false);
 		});
 
 		it('Should dispatch a close event when closing a modal', () => {
-			let dispatched: Event = null;
+			let dispatched: Event | null = null;
 			element.addEventListener('close', (event: Event) => (dispatched = event));
 			element.showModal();
 			element.close();
-			expect(dispatched.cancelable).toBe(false);
-			expect(dispatched.bubbles).toBe(false);
+			expect((<Event>(<unknown>dispatched)).cancelable).toBe(false);
+			expect((<Event>(<unknown>dispatched)).bubbles).toBe(false);
 		});
 	});
 

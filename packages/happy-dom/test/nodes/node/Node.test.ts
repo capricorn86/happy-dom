@@ -1,5 +1,6 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
 import Node from '../../../src/nodes/node/Node.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
@@ -8,12 +9,13 @@ import DOMException from '../../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import Text from '../../../src/nodes/text/Text.js';
 import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 /**
  *
  */
 class CustomCounterElement extends HTMLElement {
-	public static output = [];
+	public static output: string[] = [];
 
 	/**
 	 * Constructor.
@@ -43,7 +45,7 @@ class CustomCounterElement extends HTMLElement {
  *
  */
 class CustomButtonElement extends HTMLElement {
-	public static output = [];
+	public static output: string[] = [];
 
 	/**
 	 * Connected.
@@ -61,8 +63,8 @@ class CustomButtonElement extends HTMLElement {
 }
 
 describe('Node', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 	let customElementOutput;
 
 	beforeEach(() => {
@@ -73,10 +75,6 @@ describe('Node', () => {
 		CustomButtonElement.output = customElementOutput;
 		window.customElements.define('custom-counter', CustomCounterElement);
 		window.customElements.define('custom-button', CustomButtonElement);
-	});
-
-	afterEach(() => {
-		jest.restoreAllMocks();
 	});
 
 	describe('get isConnected()', () => {
@@ -622,8 +620,8 @@ describe('Node', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: false });
-			let childEvent = null;
-			let parentEvent = null;
+			let childEvent: Event | null = null;
+			let parentEvent: Event | null = null;
 
 			parent.appendChild(child);
 
@@ -633,8 +631,8 @@ describe('Node', () => {
 			expect(child.dispatchEvent(event)).toBe(true);
 
 			expect(childEvent).toBe(event);
-			expect(childEvent.target).toBe(child);
-			expect(childEvent.currentTarget).toBe(child);
+			expect((<Event>(<unknown>childEvent)).target).toBe(child);
+			expect((<Event>(<unknown>childEvent)).currentTarget).toBe(child);
 			expect(parentEvent).toBe(null);
 		});
 
@@ -642,8 +640,8 @@ describe('Node', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: true });
-			let childEvent = null;
-			let parentEvent = null;
+			let childEvent: Event | null = null;
+			let parentEvent: Event | null = null;
 
 			parent.appendChild(child);
 
@@ -654,16 +652,16 @@ describe('Node', () => {
 
 			expect(childEvent).toBe(event);
 			expect(parentEvent).toBe(event);
-			expect(parentEvent.target).toBe(child);
-			expect(parentEvent.currentTarget).toBe(parent);
+			expect((<Event>(<unknown>parentEvent)).target).toBe(child);
+			expect((<Event>(<unknown>parentEvent)).currentTarget).toBe(parent);
 		});
 
 		it('Does not bubble to parent if propagation is stopped.', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: false });
-			let childEvent = null;
-			let parentEvent = null;
+			let childEvent: Event | null = null;
+			let parentEvent: Event | null = null;
 
 			parent.appendChild(child);
 
@@ -683,8 +681,8 @@ describe('Node', () => {
 			const child = document.createElement('span');
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: true, cancelable: true });
-			let childEvent = null;
-			let parentEvent = null;
+			let childEvent: Event | null = null;
+			let parentEvent: Event | null = null;
 
 			parent.appendChild(child);
 
@@ -709,9 +707,9 @@ describe('Node', () => {
 			parent.appendChild(child1);
 
 			const event = new Event('blur', { bubbles: false, cancelable: true });
-			const parentEvents = [];
-			const child1Events = [];
-			const child2Events = [];
+			const parentEvents: Event[] = [];
+			const child1Events: Event[] = [];
+			const child2Events: Event[] = [];
 
 			parent.addEventListener(
 				'blur',
@@ -750,9 +748,9 @@ describe('Node', () => {
 			parent.appendChild(child1);
 
 			const event = new Event('blur', { bubbles: true, cancelable: true });
-			const parentEvents = [];
-			const child1Events = [];
-			const child2Events = [];
+			const parentEvents: Event[] = [];
+			const child1Events: Event[] = [];
+			const child2Events: Event[] = [];
 
 			parent.addEventListener(
 				'blur',
@@ -791,9 +789,9 @@ describe('Node', () => {
 			document.body.appendChild(child1);
 
 			const event = new Event('blur', { bubbles: false, composed: true });
-			const documentEvents = [];
-			const child1Events = [];
-			const child2Events = [];
+			const documentEvents: Event[] = [];
+			const child1Events: Event[] = [];
+			const child2Events: Event[] = [];
 
 			document.addEventListener(
 				'blur',

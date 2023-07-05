@@ -1,5 +1,6 @@
 import History from '../../src/history/History.js';
 import HistoryScrollRestorationEnum from '../../src/history/HistoryScrollRestorationEnum.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('History', () => {
 	let history: History;

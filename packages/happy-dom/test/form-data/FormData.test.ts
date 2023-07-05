@@ -4,6 +4,7 @@ import IDocument from '../../src/nodes/document/IDocument.js';
 import IHTMLFormElement from '../../src/nodes/html-form-element/IHTMLFormElement.js';
 import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
 import File from '../../src/file/File.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('FormData', () => {
 	let window: IWindow;
@@ -89,7 +90,7 @@ describe('FormData', () => {
 			const formData = new window.FormData();
 			formData.set('key1', 'value1');
 			formData.set('key2', 'value2');
-			const values = [];
+			const values: Array<{ key: string; value: string | File }> = [];
 
 			formData.forEach((key, value) => values.push({ key, value }));
 
@@ -187,7 +188,7 @@ describe('FormData', () => {
 	describe('keys()', () => {
 		it('Returns iterator for keys.', () => {
 			const formData = new window.FormData();
-			const keys = [];
+			const keys: string[] = [];
 
 			formData.append('key1', 'value1');
 			formData.append('key1', 'value2');
@@ -205,7 +206,7 @@ describe('FormData', () => {
 	describe('values()', () => {
 		it('Returns iterator for values.', () => {
 			const formData = new window.FormData();
-			const values = [];
+			const values: Array<string | File> = [];
 
 			formData.append('key1', 'value1');
 			formData.append('key1', 'value2');
@@ -223,7 +224,7 @@ describe('FormData', () => {
 	describe('entries()', () => {
 		it('Returns iterator for entries.', () => {
 			const formData = new window.FormData();
-			const entries = [];
+			const entries: Array<{ key: string; value: string | File }> = [];
 
 			formData.append('key1', 'value1');
 			formData.append('key1', 'value2');
@@ -246,7 +247,7 @@ describe('FormData', () => {
 	describe('*[Symbol.iterator]()', () => {
 		it('Returns iterator for entries.', () => {
 			const formData = new window.FormData();
-			const entries = [];
+			const entries: Array<{ key: string; value: string | File }> = [];
 
 			formData.append('key1', 'value1');
 			formData.append('key1', 'value2');

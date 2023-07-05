@@ -1,20 +1,18 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLStyleElement from '../../../src/nodes/html-style-element/HTMLStyleElement.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLStyleElement from '../../../src/nodes/html-style-element/IHTMLStyleElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLStyleElement', () => {
-	let window: Window;
-	let document: Document;
-	let element: HTMLStyleElement;
+	let window: IWindow;
+	let document: IDocument;
+	let element: IHTMLStyleElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLStyleElement>document.createElement('style');
-	});
-
-	afterEach(() => {
-		jest.restoreAllMocks();
+		element = <IHTMLStyleElement>document.createElement('style');
 	});
 
 	describe('Object.prototype.toString', () => {

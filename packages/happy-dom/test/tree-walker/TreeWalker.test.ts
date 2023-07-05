@@ -1,10 +1,13 @@
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import IWindow from '../../src/window/IWindow.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
 import NodeFilter from '../../src/tree-walker/NodeFilter.js';
 import Element from '../../src/nodes/element/Element.js';
 import Comment from '../../src/nodes/comment/Comment.js';
 import Node from '../../src/nodes/node/Node.js';
 import TreeWalkerHTML from './data/TreeWalkerHTML.js';
+import { beforeEach, describe, it, expect } from 'vitest';
+import INode from '../../src/nodes/node/INode.js';
 
 const NODE_TO_STRING = (node: Node): string => {
 	if (node instanceof Element) {
@@ -17,8 +20,8 @@ const NODE_TO_STRING = (node: Node): string => {
 };
 
 describe('TreeWalker', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window();
@@ -29,7 +32,7 @@ describe('TreeWalker', () => {
 	describe('nextNode()', () => {
 		it('Walks into each node in the DOM tree.', () => {
 			const treeWalker = document.createTreeWalker(document.body);
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = treeWalker.nextNode())) {
@@ -66,7 +69,7 @@ describe('TreeWalker', () => {
 
 		it('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT.', () => {
 			const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = treeWalker.nextNode())) {
@@ -87,7 +90,7 @@ describe('TreeWalker', () => {
 				document.body,
 				NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_COMMENT
 			);
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = treeWalker.nextNode())) {
@@ -112,7 +115,7 @@ describe('TreeWalker', () => {
 				acceptNode: (node: Node) =>
 					node.nodeType === Node.ELEMENT_NODE ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
 			});
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = treeWalker.nextNode())) {
@@ -139,7 +142,7 @@ describe('TreeWalker', () => {
 					return NodeFilter.FILTER_ACCEPT;
 				}
 			});
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = treeWalker.nextNode())) {
@@ -165,9 +168,9 @@ describe('TreeWalker', () => {
 	describe('previousNode()', () => {
 		it('Returns the previous node when executed after a nextNode() call.', () => {
 			const treeWalker = document.createTreeWalker(document.body);
-			let expectedPreviousNode = null;
-			let previousNode = null;
-			let currentNode = null;
+			let expectedPreviousNode: INode | null = null;
+			let previousNode: INode | null = null;
+			let currentNode: INode | null = null;
 
 			while ((currentNode = treeWalker.nextNode())) {
 				if (previousNode) {

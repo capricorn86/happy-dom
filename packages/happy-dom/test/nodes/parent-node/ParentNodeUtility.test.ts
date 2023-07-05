@@ -3,6 +3,7 @@ import Document from '../../../src/nodes/document/Document.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('ParentNodeUtility', () => {
 	let window: Window;

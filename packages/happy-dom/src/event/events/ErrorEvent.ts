@@ -9,7 +9,7 @@ export default class ErrorEvent extends UIEvent {
 	public readonly filename: string = '';
 	public readonly lineno: number = 0;
 	public readonly colno: number = 0;
-	public readonly error: object = null;
+	public readonly error: Error | null = null;
 
 	/**
 	 * Constructor.

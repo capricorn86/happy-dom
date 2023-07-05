@@ -1,5 +1,6 @@
 import CustomElement from '../CustomElement.js';
 import CustomElementRegistry from '../../src/custom-element/CustomElementRegistry.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('CustomElementRegistry', () => {
 	let customElements;
@@ -53,14 +54,18 @@ describe('CustomElementRegistry', () => {
 	});
 
 	describe('whenDefined()', () => {
-		it('Returns a promise which is fulfilled when an element is defined.', (done) => {
-			customElements.whenDefined('custom-element').then(done);
-			customElements.define('custom-element', CustomElement);
+		it('Returns a promise which is fulfilled when an element is defined.', async () => {
+			await new Promise((resolve) => {
+				customElements.whenDefined('custom-element').then(resolve);
+				customElements.define('custom-element', CustomElement);
+			});
 		});
 
-		it('Resolves directly if the element is already defined.', (done) => {
-			customElements.define('custom-element', CustomElement);
-			customElements.whenDefined('custom-element').then(done);
+		it('Resolves directly if the element is already defined.', async () => {
+			await new Promise((resolve) => {
+				customElements.define('custom-element', CustomElement);
+				customElements.whenDefined('custom-element').then(resolve);
+			});
 		});
 	});
 });

@@ -5,6 +5,7 @@ import Event from '../../../src/event/Event.js';
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
 import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('HTMLButtonElement', () => {
 	let window: Window;
@@ -122,7 +123,7 @@ describe('HTMLButtonElement', () => {
 			element.type = 'menu';
 			expect(element.getAttribute('type')).toBe('menu');
 
-			element.type = null;
+			(<null>(<unknown>element.type)) = null;
 			expect(element.getAttribute('type')).toBe('submit');
 		});
 	});
@@ -194,7 +195,7 @@ describe('HTMLButtonElement', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');
 			expect(element.validationMessage).toBe('Error message');
-			element.setCustomValidity(null);
+			element.setCustomValidity(<string>(<unknown>null));
 			expect(element.validationMessage).toBe('null');
 			element.setCustomValidity('');
 			expect(element.validationMessage).toBe('');
@@ -231,7 +232,7 @@ describe('HTMLButtonElement', () => {
 				let dispatchedEvent: Event | null = null;
 				element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
 				element[method]();
-				expect(dispatchedEvent.type).toBe('invalid');
+				expect((<Event>(<unknown>dispatchedEvent)).type).toBe('invalid');
 			});
 		});
 	}

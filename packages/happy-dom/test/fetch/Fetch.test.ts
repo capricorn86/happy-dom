@@ -13,6 +13,8 @@ import { TextEncoder } from 'util';
 import Blob from '../../src/file/Blob.js';
 import FormData from '../../src/form-data/FormData.js';
 import { URLSearchParams } from 'url';
+import '../types.d.js';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -25,13 +27,13 @@ describe('Fetch', () => {
 
 	afterEach(() => {
 		resetMockedModules();
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('send()', () => {
 		it('Rejects with error if url is protocol relative.', async () => {
 			const url = '//example.com/';
-			let error: Error = null;
+			let error: Error | null = null;
 
 			try {
 				await window.fetch(url);
@@ -49,7 +51,7 @@ describe('Fetch', () => {
 
 		it('Rejects with error if url is relative path and no location is set on the document.', async () => {
 			const url = '/some/path';
-			let error: Error = null;
+			let error: Error | null = null;
 
 			try {
 				await window.fetch(url);
@@ -67,7 +69,7 @@ describe('Fetch', () => {
 
 		it('Rejects with error if protocol is unsupported.', async () => {
 			const url = 'ftp://example.com/';
-			let error: Error = null;
+			let error: Error | null = null;
 
 			try {
 				await window.fetch(url);
@@ -1444,8 +1446,8 @@ describe('Fetch', () => {
 
 			mockModule('https', {
 				request: () => {
-					let requestCloseListener = null;
-					let socketCloseListener = null;
+					let requestCloseListener: (() => void) | null = null;
+					let socketCloseListener: (() => void) | null = null;
 					const socket = <Net.Socket>(<unknown>{
 						prependListener: (event: string, listener: () => void) => {
 							if (event === 'close') {
@@ -1464,7 +1466,7 @@ describe('Fetch', () => {
 
 					return {
 						end: () => {
-							requestCloseListener();
+							(<() => void>requestCloseListener)();
 						},
 						on: (
 							event: string,
@@ -1481,11 +1483,11 @@ describe('Fetch', () => {
 
 								callback(response);
 
-								socketCloseListener();
+								(<() => void>socketCloseListener)();
 							} else if (event === 'socket') {
 								callback(socket);
 							} else if (event === 'close') {
-								requestCloseListener = callback;
+								requestCloseListener = <() => void>callback;
 							}
 						},
 						setTimeout: () => {}
@@ -1505,9 +1507,9 @@ describe('Fetch', () => {
 
 			mockModule('https', {
 				request: () => {
-					let requestCloseListener = null;
-					let socketCloseListener = null;
-					let socketDataListener = null;
+					let requestCloseListener: (() => void) | null = null;
+					let socketCloseListener: (() => void) | null = null;
+					let socketDataListener: ((chunk: Buffer) => void) | null = null;
 					const socket = <Net.Socket>(<unknown>{
 						prependListener: (event: string, listener: () => void) => {
 							if (event === 'close') {
@@ -1524,7 +1526,7 @@ describe('Fetch', () => {
 
 					return {
 						end: () => {
-							requestCloseListener();
+							(<() => void>requestCloseListener)();
 						},
 						on: (
 							event: string,
@@ -1534,20 +1536,20 @@ describe('Fetch', () => {
 								async function* generate(): AsyncGenerator<Buffer> {
 									yield await new Promise((resolve) => {
 										setTimeout(() => {
-											socketDataListener(Buffer.from(chunks[0]));
+											(<(chunk: Buffer) => void>socketDataListener)(Buffer.from(chunks[0]));
 											resolve(Buffer.from(chunks[0]));
 										}, 10);
 									});
 									yield await new Promise((resolve) => {
 										setTimeout(() => {
-											socketDataListener(Buffer.from(chunks[1]));
+											(<(chunk: Buffer) => void>socketDataListener)(Buffer.from(chunks[1]));
 											resolve(Buffer.from(chunks[1]));
 										}, 10);
 									});
 									yield await new Promise((resolve) => {
-										socketCloseListener();
+										(<() => void>socketCloseListener)();
 										setTimeout(() => {
-											socketDataListener(Buffer.from(chunks[2]));
+											(<(chunk: Buffer) => void>socketDataListener)(Buffer.from(chunks[2]));
 											resolve(Buffer.from(chunks[2]));
 										}, 10);
 									});
@@ -1561,7 +1563,7 @@ describe('Fetch', () => {
 							} else if (event === 'socket') {
 								callback(socket);
 							} else if (event === 'close') {
-								requestCloseListener = callback;
+								requestCloseListener = <() => void>callback;
 							}
 						},
 						setTimeout: () => {}
@@ -1649,9 +1651,9 @@ describe('Fetch', () => {
 
 			mockModule('https', {
 				request: (requestURL) => {
-					let requestCloseListener = null;
-					let socketCloseListener = null;
-					let socketDataListener = null;
+					let requestCloseListener: (() => void) | null = null;
+					let socketCloseListener: (() => void) | null = null;
+					let socketDataListener: ((chunk: Buffer) => void) | null = null;
 					const socket = <Net.Socket>(<unknown>{
 						prependListener: (event: string, listener: () => void) => {
 							if (event === 'close') {
@@ -1676,11 +1678,13 @@ describe('Fetch', () => {
 								async function* generate2(): AsyncGenerator<Buffer> {
 									yield await new Promise((resolve) => {
 										setTimeout(() => {
-											socketDataListener(Buffer.concat([Buffer.from(chunks[0]), LAST_CHUNK]));
+											(<(chunk: Buffer) => void>socketDataListener)(
+												Buffer.concat([Buffer.from(chunks[0]), LAST_CHUNK])
+											);
 											resolve(Buffer.from(chunks[0]));
 											setTimeout(() => {
-												socketCloseListener();
-												requestCloseListener();
+												(<() => void>socketCloseListener)();
+												(<() => void>requestCloseListener)();
 											}, 10);
 										}, 10);
 									});
@@ -1702,7 +1706,7 @@ describe('Fetch', () => {
 							} else if (event === 'socket') {
 								callback(socket);
 							} else if (event === 'close') {
-								requestCloseListener = callback;
+								requestCloseListener = <() => void>callback;
 							}
 						},
 						setTimeout: () => {},
@@ -2200,65 +2204,67 @@ describe('Fetch', () => {
 		});
 	});
 
-	it('Supports aborting multiple ongoing requests using AbortController.', (done) => {
-		const url = 'https://localhost:8080/test/';
-		const responseText = 'some response text';
+	it('Supports aborting multiple ongoing requests using AbortController.', async () => {
+		await new Promise((resolve) => {
+			const url = 'https://localhost:8080/test/';
+			const responseText = 'some response text';
 
-		mockModule('https', {
-			request: () => {
-				return {
-					end: () => {},
-					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield Buffer.from(responseText);
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								setTimeout(() => {
+									async function* generate(): AsyncGenerator<Buffer> {
+										yield Buffer.from(responseText);
+									}
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = [];
+									response.statusCode = 200;
+									response.headers = {};
+									response.rawHeaders = [];
 
-								callback(response);
-							}, 20);
-						}
-					},
-					setTimeout: () => {},
-					destroy: () => {}
-				};
-			}
-		});
+									callback(response);
+								}, 20);
+							}
+						},
+						setTimeout: () => {},
+						destroy: () => {}
+					};
+				}
+			});
 
-		const abortController = new AbortController();
-		const abortSignal = abortController.signal;
-		let error1: Error | null = null;
-		let error2: Error | null = null;
+			const abortController = new AbortController();
+			const abortSignal = abortController.signal;
+			let error1: Error | null = null;
+			let error2: Error | null = null;
 
-		setTimeout(() => {
-			abortController.abort();
-		}, 10);
+			setTimeout(() => {
+				abortController.abort();
+			}, 10);
 
-		const onFetchCatch = (): void => {
-			if (error1 && error2) {
-				expect(error1).toEqual(
-					new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
-				);
-				expect(error2).toEqual(
-					new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
-				);
-				done();
-			}
-		};
+			const onFetchCatch = (): void => {
+				if (error1 && error2) {
+					expect(error1).toEqual(
+						new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+					);
+					expect(error2).toEqual(
+						new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+					);
+					resolve(null);
+				}
+			};
 
-		window.fetch(url, { method: 'GET', signal: abortSignal }).catch((e) => {
-			error1 = e;
-			onFetchCatch();
-		});
+			window.fetch(url, { method: 'GET', signal: abortSignal }).catch((e) => {
+				error1 = e;
+				onFetchCatch();
+			});
 
-		window.fetch(url, { method: 'GET', signal: abortSignal }).catch((e) => {
-			error2 = e;
-			onFetchCatch();
+			window.fetch(url, { method: 'GET', signal: abortSignal }).catch((e) => {
+				error2 = e;
+				onFetchCatch();
+			});
 		});
 	});
 
@@ -3207,7 +3213,7 @@ describe('Fetch', () => {
 	it('Supports POST request with body as FormData.', async () => {
 		const formData = new FormData();
 
-		jest.spyOn(Math, 'random').mockImplementation(() => 0.8);
+		vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
 
 		formData.set('key1', 'value1');
 		formData.set('key2', 'value2');
@@ -3352,74 +3358,76 @@ describe('Fetch', () => {
 		expect(response.status).toBe(200);
 	});
 
-	it('Supports window.happyDOM.whenAsyncComplete().', (done) => {
-		const chunks = ['chunk1', 'chunk2', 'chunk3'];
-		async function* generate(): AsyncGenerator<Buffer> {
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[0]));
-				}, 10);
-			});
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[1]));
-				}, 10);
-			});
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[2]));
-				}, 10);
-			});
-		}
-
-		let isAsyncComplete = false;
-
-		mockModule('https', {
-			request: () => {
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (_chunk, _encoding, callback) => {
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						}, 100);
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => {};
-
-				return request;
+	it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		await new Promise((resolve) => {
+			const chunks = ['chunk1', 'chunk2', 'chunk3'];
+			async function* generate(): AsyncGenerator<Buffer> {
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[0]));
+					}, 10);
+				});
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[1]));
+					}, 10);
+				});
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[2]));
+					}, 10);
+				});
 			}
+
+			let isAsyncComplete = false;
+
+			mockModule('https', {
+				request: () => {
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (_chunk, _encoding, callback) => {
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							}, 100);
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => {};
+
+					return request;
+				}
+			});
+
+			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+
+			window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: Stream.Readable.from(generate())
+			});
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(false);
+			}, 10);
+
+			setTimeout(() => {
+				expect(isAsyncComplete).toBe(true);
+				resolve(null);
+			}, 110);
 		});
-
-		window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
-
-		window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: Stream.Readable.from(generate())
-		});
-
-		setTimeout(() => {
-			expect(isAsyncComplete).toBe(false);
-		}, 10);
-
-		setTimeout(() => {
-			expect(isAsyncComplete).toBe(true);
-			done();
-		}, 110);
 	});
 });

@@ -24,14 +24,7 @@ export function run(description, callback) {
 	timeout = setTimeout(async () => {
 		for (const test of tests) {
 			console.log(test.description);
-			const callbackString = test.callback.toString();
-			const callback =
-				callbackString.startsWith('()') || callbackString.startsWith('async ()')
-					? test.callback
-					: () => {
-							return new Promise((resolve) => test.callback(() => resolve()));
-					  };
-			const result = callback();
+			const result = test.callback();
 			if (result instanceof Promise) {
 				const testTimeout = setTimeout(() => {
 					console.error('Test timed out.');

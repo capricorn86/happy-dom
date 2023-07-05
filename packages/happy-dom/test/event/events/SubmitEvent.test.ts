@@ -1,6 +1,7 @@
 import Event from '../../../src/event/Event.js';
 import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
 import HTMLButtonElement from '../../../src/nodes/html-button-element/HTMLButtonElement.js';
+import { describe, it, expect } from 'vitest';
 
 describe('SubmitEvent', () => {
 	describe('constructor', () => {

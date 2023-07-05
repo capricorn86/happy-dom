@@ -5,5 +5,5 @@ export default interface IErrorEventInit extends IEventInit {
 	filename?: string;
 	lineno?: number;
 	colno?: number;
-	error?: object;
+	error?: Error;
 }

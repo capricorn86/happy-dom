@@ -8,7 +8,8 @@ import Event from '../../../src/event/Event.js';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
-import { IHTMLFormElement } from '../../../src.js';
+import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLInputElement', () => {
 	let window: IWindow;
@@ -531,7 +532,7 @@ describe('HTMLInputElement', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');
 			expect(element.validationMessage).toBe('Error message');
-			element.setCustomValidity(null);
+			element.setCustomValidity(<string>(<unknown>null));
 			expect(element.validationMessage).toBe('null');
 			element.setCustomValidity('');
 			expect(element.validationMessage).toBe('');
@@ -547,7 +548,7 @@ describe('HTMLInputElement', () => {
 			expect(element.selectionStart).toBe(0);
 			expect(element.selectionEnd).toBe(10);
 			expect(element.selectionDirection).toBe('none');
-			expect(triggeredEvent.type).toBe('select');
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('select');
 		});
 	});
 
@@ -560,7 +561,7 @@ describe('HTMLInputElement', () => {
 			expect(element.selectionStart).toBe(1);
 			expect(element.selectionEnd).toBe(5);
 			expect(element.selectionDirection).toBe('forward');
-			expect(triggeredEvent.type).toBe('select');
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('select');
 		});
 
 		it('Sets selection end to the value length if out of range.', () => {
@@ -648,7 +649,7 @@ describe('HTMLInputElement', () => {
 				let dispatchedEvent: Event | null = null;
 				element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
 				element[method]();
-				expect(dispatchedEvent.type).toBe('invalid');
+				expect((<Event>(<unknown>dispatchedEvent)).type).toBe('invalid');
 			});
 		});
 	}

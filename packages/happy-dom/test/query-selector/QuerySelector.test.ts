@@ -5,6 +5,7 @@ import IDocument from '../../src/nodes/document/IDocument.js';
 import QuerySelectorHTML from './data/QuerySelectorHTML.js';
 import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
 import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('QuerySelector', () => {
 	let window: IWindow;

@@ -227,7 +227,7 @@ export default interface IDocument extends IParentNode {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	createNodeIterator(root: INode, whatToShow: number, filter: INodeFilter): NodeIterator;
+	createNodeIterator(root: INode, whatToShow?: number, filter?: INodeFilter): NodeIterator;
 
 	/**
 	 * Creates a Tree Walker.
@@ -236,7 +236,7 @@ export default interface IDocument extends IParentNode {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	createTreeWalker(root: INode, whatToShow: number, filter: INodeFilter): TreeWalker;
+	createTreeWalker(root: INode, whatToShow?: number, filter?: INodeFilter): TreeWalker;
 
 	/**
 	 * Creates an event.

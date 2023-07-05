@@ -2,6 +2,7 @@ import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
 import MediaQueryList from '../../src/match-media/MediaQueryList.js';
 import MediaQueryListEvent from '../../src/event/events/MediaQueryListEvent.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('MediaQueryList', () => {
 	let window: IWindow;
@@ -509,31 +510,31 @@ describe('MediaQueryList', () => {
 
 	describe('addEventListener()', () => {
 		it('Listens for window "resize" event when sending in a "change" event.', () => {
-			let triggeredEvent = null;
+			let triggeredEvent: MediaQueryListEvent | null = null;
 			const media = '(min-width: 1025px)';
 			const mediaQueryList = new MediaQueryList({ ownerWindow: window, media: media });
 
-			mediaQueryList.addEventListener('change', (event: MediaQueryListEvent): void => {
-				triggeredEvent = event;
+			mediaQueryList.addEventListener('change', (event): void => {
+				triggeredEvent = <MediaQueryListEvent>event;
 			});
 
 			expect(mediaQueryList.matches).toBe(false);
 
 			window.happyDOM.setInnerWidth(1025);
 
-			expect(triggeredEvent.matches).toBe(true);
-			expect(triggeredEvent.media).toBe(media);
+			expect((<MediaQueryListEvent>(<unknown>triggeredEvent)).matches).toBe(true);
+			expect((<MediaQueryListEvent>(<unknown>triggeredEvent)).media).toBe(media);
 		});
 	});
 
 	describe('removeEventListener()', () => {
 		it('Removes listener for window "resize" event when sending in a "change" event.', () => {
-			let triggeredEvent = null;
+			let triggeredEvent: MediaQueryListEvent | null = null;
 			const mediaQueryList = new MediaQueryList({
 				ownerWindow: window,
 				media: '(min-width: 1025px)'
 			});
-			const listener = (event: MediaQueryListEvent): void => {
+			const listener = (event): void => {
 				triggeredEvent = event;
 			};
 

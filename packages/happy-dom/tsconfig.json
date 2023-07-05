@@ -17,22 +17,22 @@
 		"removeComments": false,
 		"preserveConstEnums": true,
 		"sourceMap": true,
-		"skipLibCheck": true,
+		"skipLibCheck": false,
 		"baseUrl": ".",
 		"composite": true,
 		"incremental": true,
+        "lib": [
+            "es2020"
+        ],
 		"types": [
 			"node"
-		],
-		"lib": [
-			"es2015",
-			"es2016",
-			"es2017"
 		]
 	},
 	"include": [
 		"@types/node",
-		"src",
-		"src/**/*.json"
-	]
+		"src"
+	],
+    "exclude": [
+        "@types/dom"
+    ]
 }

@@ -3,6 +3,7 @@ import IWindow from '../../../src/window/Window.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import File from '../../../src/file/File.js';
 import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('FileList', () => {
 	let window: IWindow;
@@ -11,10 +12,6 @@ describe('FileList', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-	});
-
-	afterEach(() => {
-		jest.restoreAllMocks();
 	});
 
 	describe('item()', () => {

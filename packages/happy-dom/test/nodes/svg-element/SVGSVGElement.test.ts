@@ -9,6 +9,7 @@ import SVGNumber from '../../../src/nodes/svg-element/SVGNumber.js';
 import SVGLength from '../../../src/nodes/svg-element/SVGLength.js';
 import SVGAngle from '../../../src/nodes/svg-element/SVGAngle.js';
 import SVGTransform from '../../../src/nodes/svg-element/SVGTransform.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('SVGSVGElement', () => {
 	let window: Window;

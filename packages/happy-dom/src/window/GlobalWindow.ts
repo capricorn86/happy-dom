@@ -1,4 +1,6 @@
+import IWindow from './IWindow.js';
 import Window from './Window.js';
+import { Buffer } from 'buffer';
 
 /**
  * Browser window.
@@ -6,67 +8,72 @@ import Window from './Window.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/Window.
  */
-export default class GlobalWindow extends Window {
+export default class GlobalWindow extends Window implements IWindow {
 	// Node.js Globals
-	public ArrayBuffer = globalThis.ArrayBuffer;
-	public Boolean = globalThis.Boolean;
-	public Buffer = globalThis.global ? globalThis.global.Buffer : Buffer;
-	public DataView = globalThis.DataView;
-	public Date = globalThis.Date;
-	public Error = globalThis.Error;
-	public EvalError = globalThis.EvalError;
-	public Float32Array = globalThis.Float32Array;
-	public Float64Array = globalThis.Float64Array;
-	public GLOBAL = globalThis.GLOBAL;
-	public Infinity = globalThis.Infinity;
-	public Int16Array = globalThis.Int16Array;
-	public Int32Array = globalThis.Int32Array;
-	public Int8Array = globalThis.Int8Array;
-	public Intl = globalThis.Intl;
-	public JSON = globalThis.JSON;
-	public Map = globalThis.Map;
-	public Math = globalThis.Math;
-	public NaN = globalThis.NaN;
-	public Number = globalThis.Number;
-	public Promise = globalThis.Promise;
-	public RangeError = globalThis.RangeError;
-	public ReferenceError = globalThis.ReferenceError;
-	public RegExp = globalThis.RegExp;
-	public Reflect = globalThis.ArrayBuffer;
-	public Set = globalThis.Set;
-	public Symbol = globalThis.Symbol;
-	public SyntaxError = globalThis.SyntaxError;
-	public String = globalThis.String;
-	public TypeError = globalThis.TypeError;
-	public URIError = globalThis.URIError;
-	public Uint16Array = globalThis.Uint16Array;
-	public Uint32Array = globalThis.Uint32Array;
-	public Uint8Array = globalThis.Uint8Array;
-	public Uint8ClampedArray = globalThis.Uint8ClampedArray;
-	public WeakMap = globalThis.WeakMap;
-	public WeakSet = globalThis.WeakSet;
-	public clearImmediate = globalThis.clearImmediate;
-	public decodeURI = globalThis.decodeURI;
-	public decodeURIComponent = globalThis.decodeURIComponent;
-	public encodeURI = globalThis.encodeURI;
-	public encodeURIComponent = globalThis.encodeURIComponent;
-	public escape = globalThis.escape;
-	public global = globalThis.global;
-	public isFinite = globalThis.isFinite;
-	public isNaN = globalThis.isNaN;
-	public parseFloat = globalThis.parseFloat;
-	public parseInt = globalThis.parseInt;
-	public process = globalThis.process;
-	public root = globalThis.ArrayBuffer;
-	public setImmediate = globalThis.setImmediate;
-	public queueMicrotask = globalThis.queueMicrotask;
-	public undefined = globalThis.ArrayBuffer;
-	public unescape = globalThis.unescape;
-	public gc = globalThis.gc;
-	public v8debug = globalThis.v8debug;
-	public Array = globalThis.Array;
-	public Object = globalThis.Object;
-	public Function = globalThis.Function;
+	public Array: typeof Array = globalThis.Array;
+	public ArrayBuffer: typeof ArrayBuffer = globalThis.ArrayBuffer;
+	public Boolean: typeof Boolean = globalThis.Boolean;
+	public Buffer = Buffer;
+	public DataView: typeof DataView = globalThis.DataView;
+	public Date: typeof Date = globalThis.Date;
+	public Error: typeof Error = globalThis.Error;
+	public EvalError: typeof EvalError = globalThis.EvalError;
+	public Float32Array: typeof Float32Array = globalThis.Float32Array;
+	public Float64Array: typeof Float64Array = globalThis.Float64Array;
+	public Function: typeof Function = globalThis.Function;
+	public Infinity: typeof Infinity = globalThis.Infinity;
+	public Int16Array: typeof Int16Array = globalThis.Int16Array;
+	public Int32Array: typeof Int32Array = globalThis.Int32Array;
+	public Int8Array: typeof Int8Array = globalThis.Int8Array;
+	public Intl: typeof Intl = globalThis.Intl;
+	public JSON: typeof JSON = globalThis.JSON;
+	public Map: MapConstructor = globalThis.Map;
+	public Math: typeof Math = globalThis.Math;
+	public NaN: typeof NaN = globalThis.NaN;
+	public Number: typeof Number = globalThis.Number;
+	public Object: typeof Object = globalThis.Object;
+	public Promise: typeof Promise = globalThis.Promise;
+	public RangeError: typeof RangeError = globalThis.RangeError;
+	public ReferenceError: typeof ReferenceError = globalThis.ReferenceError;
+	public RegExp: typeof RegExp = globalThis.RegExp;
+	public Set: SetConstructor = globalThis.Set;
+	public String: typeof String = globalThis.String;
+	public Symbol: Function = globalThis.Symbol;
+	public SyntaxError: typeof SyntaxError = globalThis.SyntaxError;
+	public TypeError: typeof TypeError = globalThis.TypeError;
+	public URIError: typeof URIError = globalThis.URIError;
+	public Uint16Array: typeof Uint16Array = globalThis.Uint16Array;
+	public Uint32Array: typeof Uint32Array = globalThis.Uint32Array;
+	public Uint8Array: typeof Uint8Array = globalThis.Uint8Array;
+	public Uint8ClampedArray: typeof Uint8ClampedArray = globalThis.Uint8ClampedArray;
+	public WeakMap: WeakMapConstructor = globalThis.WeakMap;
+	public WeakSet: WeakSetConstructor = globalThis.WeakSet;
+	public clearImmediate: (immediateId: NodeJS.Immediate) => void = globalThis.clearImmediate;
+	public decodeURI: typeof decodeURI = globalThis.decodeURI;
+	public decodeURIComponent: typeof decodeURIComponent = globalThis.decodeURIComponent;
+	public encodeURI: typeof encodeURI = globalThis.encodeURI;
+	public encodeURIComponent: typeof encodeURIComponent = globalThis.encodeURIComponent;
+	/**
+	 * @deprecated
+	 */
+	public escape: (str: string) => string = globalThis.escape;
+	public global: typeof globalThis = globalThis;
+	public isFinite: typeof isFinite = globalThis.isFinite;
+	public isNaN: typeof isNaN = globalThis.isNaN;
+	public parseFloat: typeof parseFloat = globalThis.parseFloat;
+	public parseInt: typeof parseInt = globalThis.parseInt;
+	public setImmediate: (
+		callback: (...args: unknown[]) => void,
+		...args: unknown[]
+	) => NodeJS.Immediate = globalThis.setImmediate;
+	public queueMicrotask: typeof queueMicrotask = globalThis.queueMicrotask;
+	public undefined: typeof undefined = globalThis.undefined;
+	/**
+	 * @deprecated
+	 */
+	public unescape: (str: string) => string = globalThis.unescape;
+	public gc: () => void = globalThis.gc;
+	public v8debug?: unknown = globalThis.v8debug;
 
 	/**
 	 * Evaluates code.
@@ -74,16 +81,14 @@ export default class GlobalWindow extends Window {
 	 * @param code Code.
 	 * @returns Result.
 	 */
-	public eval(code: string): unknown {
+	public override eval(code: string): unknown {
 		return eval(code);
 	}
 
 	/**
 	 * Setup of VM context.
-	 *
-	 * @override
 	 */
-	protected _setupVMContext(): void {
+	protected override _setupVMContext(): void {
 		// Do nothing
 	}
 }

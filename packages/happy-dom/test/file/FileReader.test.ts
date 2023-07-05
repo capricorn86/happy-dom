@@ -1,10 +1,11 @@
 import Blob from '../../src/file/Blob.js';
 import FileReader from '../../src/file/FileReader.js';
 import Window from '../../src/window/Window.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('FileReader', () => {
-	let window: Window = null;
-	let fileReader: FileReader = null;
+	let window: Window;
+	let fileReader: FileReader;
 
 	beforeEach(() => {
 		window = new Window();
@@ -17,9 +18,9 @@ describe('FileReader', () => {
 			const blob = new Blob(['TEST'], {
 				type: 'text/plain;charset=utf-8'
 			});
-			let result = null;
+			let result: string | null = null;
 			fileReader.addEventListener('load', () => {
-				result = fileReader.result;
+				result = <string>fileReader.result;
 			});
 			fileReader.readAsDataURL(blob);
 			await window.happyDOM.whenAsyncComplete();

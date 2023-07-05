@@ -5,6 +5,7 @@ import Range from '../../src/range/Range.js';
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
 import IText from '../../src/nodes/text/IText.js';
 import DOMRect from '../../src/nodes/element/DOMRect.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('Range', () => {
 	let window: IWindow;

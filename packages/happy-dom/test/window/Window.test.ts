@@ -20,6 +20,10 @@ import Fetch from '../../src/fetch/Fetch.js';
 import HTTP from 'http';
 import Stream from 'stream';
 import MessageEvent from '../../src/event/events/MessageEvent.js';
+import Event from '../../src/event/Event.js';
+import ErrorEvent from '../../src/event/events/ErrorEvent.js';
+import '../types.d.js';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('Window', () => {
 	let window: IWindow;
@@ -33,7 +37,7 @@ describe('Window', () => {
 
 	afterEach(() => {
 		resetMockedModules();
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('constructor()', () => {
@@ -209,68 +213,70 @@ describe('Window', () => {
 	});
 
 	describe('happyDOM.cancelAsync()', () => {
-		it('Cancels all ongoing asynchrounous tasks.', (done) => {
-			window.location.href = 'https://localhost:8080';
-			let isFirstWhenAsyncCompleteCalled = false;
-			window.happyDOM.whenAsyncComplete().then(() => {
-				isFirstWhenAsyncCompleteCalled = true;
-			});
-			let tasksDone = 0;
-			const intervalID = window.setInterval(() => {
-				tasksDone++;
-			});
-			window.clearInterval(intervalID);
-			window.setTimeout(() => {
-				tasksDone++;
-			});
-			window.setTimeout(() => {
-				tasksDone++;
-			});
-			window.requestAnimationFrame(() => {
-				tasksDone++;
-			});
-			window.requestAnimationFrame(() => {
-				tasksDone++;
-			});
+		it('Cancels all ongoing asynchrounous tasks.', async () => {
+			await new Promise((resolve) => {
+				window.location.href = 'https://localhost:8080';
+				let isFirstWhenAsyncCompleteCalled = false;
+				window.happyDOM.whenAsyncComplete().then(() => {
+					isFirstWhenAsyncCompleteCalled = true;
+				});
+				let tasksDone = 0;
+				const intervalID = window.setInterval(() => {
+					tasksDone++;
+				});
+				window.clearInterval(intervalID);
+				window.setTimeout(() => {
+					tasksDone++;
+				});
+				window.setTimeout(() => {
+					tasksDone++;
+				});
+				window.requestAnimationFrame(() => {
+					tasksDone++;
+				});
+				window.requestAnimationFrame(() => {
+					tasksDone++;
+				});
 
-			window
-				.fetch('/url/')
-				.then((response) =>
-					response
-						.json()
-						.then(() => {
-							tasksDone++;
-						})
-						.catch(() => {})
-				)
-				.catch(() => {});
+				window
+					.fetch('/url/')
+					.then((response) =>
+						response
+							.json()
+							.then(() => {
+								tasksDone++;
+							})
+							.catch(() => {})
+					)
+					.catch(() => {});
 
-			window
-				.fetch('/url/')
-				.then((response) =>
-					response
-						.json()
-						.then(() => {
-							tasksDone++;
-						})
-						.catch(() => {})
-				)
-				.catch(() => {});
+				window
+					.fetch('/url/')
+					.then((response) =>
+						response
+							.json()
+							.then(() => {
+								tasksDone++;
+							})
+							.catch(() => {})
+					)
+					.catch(() => {});
 
-			let isSecondWhenAsyncCompleteCalled = false;
-			window.happyDOM.whenAsyncComplete().then(() => {
-				isSecondWhenAsyncCompleteCalled = true;
+				let isSecondWhenAsyncCompleteCalled = false;
+				window.happyDOM.whenAsyncComplete().then(() => {
+					isSecondWhenAsyncCompleteCalled = true;
+				});
+
+				window.happyDOM.cancelAsync();
+
+				expect(tasksDone).toBe(0);
+
+				global.setTimeout(() => {
+					expect(isFirstWhenAsyncCompleteCalled).toBe(true);
+					expect(isSecondWhenAsyncCompleteCalled).toBe(true);
+					resolve(null);
+				}, 1);
 			});
-
-			window.happyDOM.cancelAsync();
-
-			expect(tasksDone).toBe(0);
-
-			global.setTimeout(() => {
-				expect(isFirstWhenAsyncCompleteCalled).toBe(true);
-				expect(isSecondWhenAsyncCompleteCalled).toBe(true);
-				done();
-			}, 1);
 		});
 	});
 
@@ -739,38 +745,44 @@ describe('Window', () => {
 	});
 
 	describe('setTimeout()', () => {
-		it('Sets a timeout.', (done) => {
-			const timeoutId = window.setTimeout(() => done());
-			expect(timeoutId.constructor.name).toBe('Timeout');
+		it('Sets a timeout.', async () => {
+			await new Promise((resolve) => {
+				const timeoutId = window.setTimeout(resolve);
+				expect(timeoutId.constructor.name).toBe('Timeout');
+			});
 		});
 
-		it('Sets a timeout with single argument.', (done) => {
-			const callbackArgumentOne = 'hello';
-			const timeoutId = window.setTimeout(
-				(message: string) => {
-					expect(message).toBe(callbackArgumentOne);
-					done();
-				},
-				0,
-				callbackArgumentOne
-			);
-			expect(timeoutId.constructor.name).toBe('Timeout');
+		it('Sets a timeout with single argument.', async () => {
+			await new Promise((resolve) => {
+				const callbackArgumentOne = 'hello';
+				const timeoutId = window.setTimeout(
+					(message: string) => {
+						expect(message).toBe(callbackArgumentOne);
+						resolve(null);
+					},
+					0,
+					callbackArgumentOne
+				);
+				expect(timeoutId.constructor.name).toBe('Timeout');
+			});
 		});
 
-		it('Sets a timeout with multiple arguments.', (done) => {
-			const callbackArgumentOne = 'hello';
-			const callbackArgumentTwo = 1337;
-			const timeoutId = window.setTimeout(
-				(message: string, num: number) => {
-					expect(message).toBe(callbackArgumentOne);
-					expect(num).toBe(callbackArgumentTwo);
-					done();
-				},
-				0,
-				callbackArgumentOne,
-				callbackArgumentTwo
-			);
-			expect(timeoutId.constructor.name).toBe('Timeout');
+		it('Sets a timeout with multiple arguments.', async () => {
+			await new Promise((resolve) => {
+				const callbackArgumentOne = 'hello';
+				const callbackArgumentTwo = 1337;
+				const timeoutId = window.setTimeout(
+					(message: string, num: number) => {
+						expect(message).toBe(callbackArgumentOne);
+						expect(num).toBe(callbackArgumentTwo);
+						resolve(null);
+					},
+					0,
+					callbackArgumentOne,
+					callbackArgumentTwo
+				);
+				expect(timeoutId.constructor.name).toBe('Timeout');
+			});
 		});
 	});
 
@@ -784,52 +796,58 @@ describe('Window', () => {
 	});
 
 	describe('setInterval()', () => {
-		it('Sets an interval.', (done) => {
-			let count = 0;
-			const intervalId = window.setInterval(() => {
-				count++;
-				if (count > 2) {
-					clearInterval(intervalId);
-					done();
-				}
+		it('Sets an interval.', async () => {
+			await new Promise((resolve) => {
+				let count = 0;
+				const intervalId = window.setInterval(() => {
+					count++;
+					if (count > 2) {
+						clearInterval(intervalId);
+						resolve(null);
+					}
+				});
 			});
 		});
 
-		it('Sets an interval with single argument.', (done) => {
-			const callbackArgumentOne = 'hello';
-			let count = 0;
-			const intervalId = window.setInterval(
-				(message: string) => {
-					expect(message).toBe(callbackArgumentOne);
-					count++;
-					if (count > 2) {
-						clearInterval(intervalId);
-						done();
-					}
-				},
-				0,
-				callbackArgumentOne
-			);
+		it('Sets an interval with single argument.', async () => {
+			await new Promise((resolve) => {
+				const callbackArgumentOne = 'hello';
+				let count = 0;
+				const intervalId = window.setInterval(
+					(message: string) => {
+						expect(message).toBe(callbackArgumentOne);
+						count++;
+						if (count > 2) {
+							clearInterval(intervalId);
+							resolve(null);
+						}
+					},
+					0,
+					callbackArgumentOne
+				);
+			});
 		});
 
-		it('Sets an interval with multiple arguments.', (done) => {
-			const callbackArgumentOne = 'hello';
-			const callbackArgumentTwo = 1337;
-			let count = 0;
-			const intervalId = window.setInterval(
-				(message: string, num: number) => {
-					expect(message).toBe(callbackArgumentOne);
-					expect(num).toBe(callbackArgumentTwo);
-					count++;
-					if (count > 2) {
-						clearInterval(intervalId);
-						done();
-					}
-				},
-				0,
-				callbackArgumentOne,
-				callbackArgumentTwo
-			);
+		it('Sets an interval with multiple arguments.', async () => {
+			await new Promise((resolve) => {
+				const callbackArgumentOne = 'hello';
+				const callbackArgumentTwo = 1337;
+				let count = 0;
+				const intervalId = window.setInterval(
+					(message: string, num: number) => {
+						expect(message).toBe(callbackArgumentOne);
+						expect(num).toBe(callbackArgumentTwo);
+						count++;
+						if (count > 2) {
+							clearInterval(intervalId);
+							resolve(null);
+						}
+					},
+					0,
+					callbackArgumentOne,
+					callbackArgumentTwo
+				);
+			});
 		});
 	});
 
@@ -843,15 +861,19 @@ describe('Window', () => {
 	});
 
 	describe('requestAnimationFrame()', () => {
-		it('Requests an animation frame.', (done) => {
-			const timeoutId = window.requestAnimationFrame(() => done());
-			expect(timeoutId.constructor.name).toBe('Timeout');
+		it('Requests an animation frame.', async () => {
+			await new Promise((resolve) => {
+				const timeoutId = window.requestAnimationFrame(resolve);
+				expect(timeoutId.constructor.name).toBe('Timeout');
+			});
 		});
 
-		it('Calls passed callback with current time', (done) => {
-			window.requestAnimationFrame((now) => {
-				expect(Math.abs(now - window.performance.now())).toBeLessThan(100);
-				done();
+		it('Calls passed callback with current time', async () => {
+			await new Promise((resolve) => {
+				window.requestAnimationFrame((now) => {
+					expect(Math.abs(now - window.performance.now())).toBeLessThan(100);
+					resolve(null);
+				});
 			});
 		});
 	});
@@ -892,18 +914,18 @@ describe('Window', () => {
 					'test-header': 'test-value'
 				}
 			};
-			let request: IRequest = null;
+			let request: IRequest | null = null;
 
-			jest.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				request = this.request;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = <IRequest>this.request;
 				return Promise.resolve(expectedResponse);
 			});
 
 			const response = await window.fetch(expectedURL, requestInit);
 
 			expect(response).toBe(expectedResponse);
-			expect(request.url).toBe(expectedURL);
-			expect(request.headers.get('test-header')).toBe('test-value');
+			expect((<IRequest>(<unknown>request)).url).toBe(expectedURL);
+			expect((<IRequest>(<unknown>request)).headers.get('test-header')).toBe('test-value');
 		});
 	});
 
@@ -977,120 +999,126 @@ describe('Window', () => {
 	});
 
 	describe('addEventListener()', () => {
-		it('Triggers "load" event if no resources needs to be loaded.', (done) => {
-			let loadEvent = null;
+		it('Triggers "load" event if no resources needs to be loaded.', async () => {
+			await new Promise((resolve) => {
+				let loadEvent: Event | null = null;
 
-			window.addEventListener('load', (event) => {
-				loadEvent = event;
+				window.addEventListener('load', (event) => {
+					loadEvent = event;
+				});
+
+				setTimeout(() => {
+					expect((<Event>loadEvent).target).toBe(document);
+					resolve(null);
+				}, 1);
 			});
-
-			setTimeout(() => {
-				expect(loadEvent.target).toBe(document);
-				done();
-			}, 1);
 		});
 
-		it('Triggers "load" event when all resources have been loaded.', (done) => {
-			const cssURL = '/path/to/file.css';
-			const jsURL = '/path/to/file.js';
-			const cssResponse = 'body { background-color: red; }';
-			const jsResponse = 'globalThis.test = "test";';
-			let resourceFetchCSSDocument = null;
-			let resourceFetchCSSURL = null;
-			let resourceFetchJSDocument = null;
-			let resourceFetchJSURL = null;
-			let loadEvent = null;
+		it('Triggers "load" event when all resources have been loaded.', async () => {
+			await new Promise((resolve) => {
+				const cssURL = '/path/to/file.css';
+				const jsURL = '/path/to/file.js';
+				const cssResponse = 'body { background-color: red; }';
+				const jsResponse = 'globalThis.test = "test";';
+				let resourceFetchCSSDocument: IDocument | null = null;
+				let resourceFetchCSSURL: string | null = null;
+				let resourceFetchJSDocument: IDocument | null = null;
+				let resourceFetchJSURL: string | null = null;
+				let loadEvent: Event | null = null;
 
-			jest
-				.spyOn(ResourceFetch, 'fetch')
-				.mockImplementation(async (document: IDocument, url: string) => {
-					if (url.endsWith('.css')) {
-						resourceFetchCSSDocument = document;
-						resourceFetchCSSURL = url;
-						return cssResponse;
+				vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
+					async (document: IDocument, url: string) => {
+						if (url.endsWith('.css')) {
+							resourceFetchCSSDocument = document;
+							resourceFetchCSSURL = url;
+							return cssResponse;
+						}
+
+						resourceFetchJSDocument = document;
+						resourceFetchJSURL = url;
+						return jsResponse;
 					}
+				);
 
-					resourceFetchJSDocument = document;
-					resourceFetchJSURL = url;
-					return jsResponse;
+				window.addEventListener('load', (event) => {
+					loadEvent = event;
 				});
 
-			window.addEventListener('load', (event) => {
-				loadEvent = event;
+				const script = <IHTMLScriptElement>document.createElement('script');
+				script.async = true;
+				script.src = jsURL;
+
+				const link = <IHTMLLinkElement>document.createElement('link');
+				link.href = cssURL;
+				link.rel = 'stylesheet';
+
+				document.body.appendChild(script);
+				document.body.appendChild(link);
+
+				setTimeout(() => {
+					expect(resourceFetchCSSDocument).toBe(document);
+					expect(resourceFetchCSSURL).toBe(cssURL);
+					expect(resourceFetchJSDocument).toBe(document);
+					expect(resourceFetchJSURL).toBe(jsURL);
+					expect((<Event>loadEvent).target).toBe(document);
+					expect(document.styleSheets.length).toBe(1);
+					expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
+
+					expect(window['test']).toBe('test');
+
+					resolve(null);
+				}, 0);
 			});
-
-			const script = <IHTMLScriptElement>document.createElement('script');
-			script.async = true;
-			script.src = jsURL;
-
-			const link = <IHTMLLinkElement>document.createElement('link');
-			link.href = cssURL;
-			link.rel = 'stylesheet';
-
-			document.body.appendChild(script);
-			document.body.appendChild(link);
-
-			setTimeout(() => {
-				expect(resourceFetchCSSDocument).toBe(document);
-				expect(resourceFetchCSSURL).toBe(cssURL);
-				expect(resourceFetchJSDocument).toBe(document);
-				expect(resourceFetchJSURL).toBe(jsURL);
-				expect(loadEvent.target).toBe(document);
-				expect(document.styleSheets.length).toBe(1);
-				expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
-
-				expect(window['test']).toBe('test');
-
-				done();
-			}, 0);
 		});
 
-		it('Triggers "error" event if there are problems loading resources.', (done) => {
-			const cssURL = '/path/to/file.css';
-			const jsURL = '/path/to/file.js';
-			const errorEvents = [];
+		it('Triggers "error" event if there are problems loading resources.', async () => {
+			await new Promise((resolve) => {
+				const cssURL = '/path/to/file.css';
+				const jsURL = '/path/to/file.js';
+				const errorEvents: ErrorEvent[] = [];
 
-			jest
-				.spyOn(ResourceFetch, 'fetch')
-				.mockImplementation(async (_document: IDocument, url: string) => {
-					throw new Error(url);
+				vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
+					async (_document: IDocument, url: string) => {
+						throw new Error(url);
+					}
+				);
+
+				window.addEventListener('error', (event) => {
+					errorEvents.push(<ErrorEvent>event);
 				});
 
-			window.addEventListener('error', (event) => {
-				errorEvents.push(event);
+				const script = <IHTMLScriptElement>document.createElement('script');
+				script.async = true;
+				script.src = jsURL;
+
+				const link = <IHTMLLinkElement>document.createElement('link');
+				link.href = cssURL;
+				link.rel = 'stylesheet';
+
+				document.body.appendChild(script);
+				document.body.appendChild(link);
+
+				setTimeout(() => {
+					expect(errorEvents.length).toBe(2);
+					expect(errorEvents[0].target).toBe(window);
+					expect((<Error>errorEvents[0].error).message).toBe(jsURL);
+					expect(errorEvents[1].target).toBe(window);
+					expect((<Error>errorEvents[1].error).message).toBe(cssURL);
+
+					resolve(null);
+				}, 0);
 			});
-
-			const script = <IHTMLScriptElement>document.createElement('script');
-			script.async = true;
-			script.src = jsURL;
-
-			const link = <IHTMLLinkElement>document.createElement('link');
-			link.href = cssURL;
-			link.rel = 'stylesheet';
-
-			document.body.appendChild(script);
-			document.body.appendChild(link);
-
-			setTimeout(() => {
-				expect(errorEvents.length).toBe(2);
-				expect(errorEvents[0].target).toBe(window);
-				expect(errorEvents[0].error.message).toBe(jsURL);
-				expect(errorEvents[1].target).toBe(window);
-				expect(errorEvents[1].error.message).toBe(cssURL);
-
-				done();
-			}, 0);
 		});
 	});
 
 	describe('atob()', () => {
-		it('Decode "hello my happy dom!"', function () {
+		it('Decode "hello my happy dom!"', () => {
 			const encoded = 'aGVsbG8gbXkgaGFwcHkgZG9tIQ==';
 			const decoded = window.atob(encoded);
 			expect(decoded).toBe('hello my happy dom!');
 		});
 
-		it('Decode Unicode (throw error)', function () {
+		it('Decode Unicode (throw error)', () => {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
 				window.atob(data);
@@ -1102,7 +1130,7 @@ describe('Window', () => {
 			);
 		});
 
-		it('Data not in base64list', function () {
+		it('Data not in base64list', () => {
 			expect(() => {
 				const data = '\x11GVsbG8gbXkgaGFwcHkgZG9tIQ==';
 				window.atob(data);
@@ -1113,7 +1141,7 @@ describe('Window', () => {
 				)
 			);
 		});
-		it('Data length not valid', function () {
+		it('Data length not valid', () => {
 			expect(() => {
 				const data = 'aGVsbG8gbXkgaGFwcHkgZG9tI';
 				window.atob(data);
@@ -1127,13 +1155,13 @@ describe('Window', () => {
 	});
 
 	describe('btoa()', () => {
-		it('Encode "hello my happy dom!"', function () {
+		it('Encode "hello my happy dom!"', () => {
 			const data = 'hello my happy dom!';
 			const encoded = window.btoa(data);
 			expect(encoded).toBe('aGVsbG8gbXkgaGFwcHkgZG9tIQ==');
 		});
 
-		it('Encode Unicode (throw error)', function () {
+		it('Encode Unicode (throw error)', () => {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
 				window.btoa(data);
@@ -1147,7 +1175,7 @@ describe('Window', () => {
 	});
 
 	describe('postMessage()', () => {
-		it('Posts a message.', function () {
+		it('Posts a message.', () => {
 			const message = 'test';
 			const parentOrigin = 'https://localhost:8080';
 			const parent = new Window({
@@ -1160,20 +1188,20 @@ describe('Window', () => {
 			window.addEventListener('message', (event) => (triggeredEvent = event));
 			window.postMessage(message);
 
-			expect(triggeredEvent.data).toBe(message);
-			expect(triggeredEvent.origin).toBe(parentOrigin);
-			expect(triggeredEvent.source).toBe(parent);
-			expect(triggeredEvent.lastEventId).toBe('');
+			expect((<MessageEvent>(<unknown>triggeredEvent)).data).toBe(message);
+			expect((<MessageEvent>(<unknown>triggeredEvent)).origin).toBe(parentOrigin);
+			expect((<MessageEvent>(<unknown>triggeredEvent)).source).toBe(parent);
+			expect((<MessageEvent>(<unknown>triggeredEvent)).lastEventId).toBe('');
 
 			window.postMessage(message, '*');
 
-			expect(triggeredEvent.data).toBe(message);
-			expect(triggeredEvent.origin).toBe(parentOrigin);
-			expect(triggeredEvent.source).toBe(parent);
-			expect(triggeredEvent.lastEventId).toBe('');
+			expect((<MessageEvent>(<unknown>triggeredEvent)).data).toBe(message);
+			expect((<MessageEvent>(<unknown>triggeredEvent)).origin).toBe(parentOrigin);
+			expect((<MessageEvent>(<unknown>triggeredEvent)).source).toBe(parent);
+			expect((<MessageEvent>(<unknown>triggeredEvent)).lastEventId).toBe('');
 		});
 
-		it('Posts a data object as message.', function () {
+		it('Posts a data object as message.', () => {
 			const message = {
 				test: 'test'
 			};
@@ -1182,7 +1210,7 @@ describe('Window', () => {
 			window.addEventListener('message', (event) => (triggeredEvent = event));
 			window.postMessage(message);
 
-			expect(triggeredEvent.data).toBe(message);
+			expect((<MessageEvent>(<unknown>triggeredEvent)).data).toBe(message);
 		});
 
 		it("Throws an exception if the provided object can't be serialized.", function () {
@@ -1194,7 +1222,7 @@ describe('Window', () => {
 			);
 		});
 
-		it('Throws an exception if the target origin differs from the document origin.', function () {
+		it('Throws an exception if the target origin differs from the document origin.', () => {
 			const message = 'test';
 			const targetOrigin = 'https://localhost:8081';
 			const documentOrigin = 'https://localhost:8080';

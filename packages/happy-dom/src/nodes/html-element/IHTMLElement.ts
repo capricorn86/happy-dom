@@ -48,7 +48,7 @@ export default interface IHTMLElement extends IElement {
 	ontransitionstart: (event: Event) => void | null;
 
 	get style(): CSSStyleDeclaration;
-	set style(cssText: CSSStyleDeclaration | string);
+	set style(cssText: string | CSSStyleDeclaration | null);
 
 	/**
 	 * Triggers a click event.

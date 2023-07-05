@@ -4,6 +4,7 @@ import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility.js'
 import CharacterData from '../../../src/nodes/character-data/CharacterData.js';
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('CharaterData', () => {
 	let window: Window;
@@ -15,7 +16,7 @@ describe('CharaterData', () => {
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('get length()', () => {
@@ -82,7 +83,7 @@ describe('CharaterData', () => {
 			const expectedData = 'data';
 			let isCalled = false;
 
-			jest.spyOn(CharacterDataUtility, 'appendData').mockImplementation((characterData, data) => {
+			vi.spyOn(CharacterDataUtility, 'appendData').mockImplementation((characterData, data) => {
 				expect(characterData).toBe(node);
 				expect(data).toBe(expectedData);
 				isCalled = true;
@@ -100,14 +101,14 @@ describe('CharaterData', () => {
 			const expectedCount = -1;
 			let isCalled = false;
 
-			jest
-				.spyOn(CharacterDataUtility, 'deleteData')
-				.mockImplementation((characterData, offset, count) => {
+			vi.spyOn(CharacterDataUtility, 'deleteData').mockImplementation(
+				(characterData, offset, count) => {
 					expect(characterData).toBe(node);
 					expect(offset).toBe(expectedOffset);
 					expect(count).toBe(expectedCount);
 					isCalled = true;
-				});
+				}
+			);
 
 			node.deleteData(expectedOffset, expectedCount);
 			expect(isCalled).toBe(true);
@@ -121,14 +122,14 @@ describe('CharaterData', () => {
 			const expectedData = 'data';
 			let isCalled = false;
 
-			jest
-				.spyOn(CharacterDataUtility, 'insertData')
-				.mockImplementation((characterData, offset, data) => {
+			vi.spyOn(CharacterDataUtility, 'insertData').mockImplementation(
+				(characterData, offset, data) => {
 					expect(characterData).toBe(node);
 					expect(offset).toBe(expectedOffset);
 					expect(data).toBe(expectedData);
 					isCalled = true;
-				});
+				}
+			);
 
 			node.insertData(expectedOffset, expectedData);
 			expect(isCalled).toBe(true);
@@ -143,15 +144,15 @@ describe('CharaterData', () => {
 			const expectedData = 'data';
 			let isCalled = false;
 
-			jest
-				.spyOn(CharacterDataUtility, 'replaceData')
-				.mockImplementation((characterData, offset, count, data) => {
+			vi.spyOn(CharacterDataUtility, 'replaceData').mockImplementation(
+				(characterData, offset, count, data) => {
 					expect(characterData).toBe(node);
 					expect(offset).toBe(expectedOffset);
 					expect(count).toBe(expectedCount);
 					expect(data).toBe(expectedData);
 					isCalled = true;
-				});
+				}
+			);
 
 			node.replaceData(expectedOffset, expectedCount, expectedData);
 			expect(isCalled).toBe(true);
@@ -164,14 +165,14 @@ describe('CharaterData', () => {
 			const expectedOffset = -1;
 			const expectedCount = -1;
 
-			jest
-				.spyOn(CharacterDataUtility, 'substringData')
-				.mockImplementation((characterData, offset, count) => {
+			vi.spyOn(CharacterDataUtility, 'substringData').mockImplementation(
+				(characterData, offset, count) => {
 					expect(characterData).toBe(node);
 					expect(offset).toBe(expectedOffset);
 					expect(count).toBe(expectedCount);
 					return 'substring';
-				});
+				}
+			);
 
 			expect(node.substringData(expectedOffset, expectedCount)).toBe('substring');
 		});
@@ -181,12 +182,12 @@ describe('CharaterData', () => {
 		it('Returns previous element sibling..', () => {
 			const node = document.createComment('test');
 			const previousElementSibling = document.createElement('div');
-			jest
-				.spyOn(NonDocumentChildNodeUtility, 'previousElementSibling')
-				.mockImplementation((childNode) => {
+			vi.spyOn(NonDocumentChildNodeUtility, 'previousElementSibling').mockImplementation(
+				(childNode) => {
 					expect(childNode).toBe(node);
 					return previousElementSibling;
-				});
+				}
+			);
 
 			expect(node.previousElementSibling).toBe(previousElementSibling);
 		});
@@ -196,12 +197,12 @@ describe('CharaterData', () => {
 		it('Returns next element sibling..', () => {
 			const node = document.createComment('test');
 			const nextElementSibling = document.createElement('div');
-			jest
-				.spyOn(NonDocumentChildNodeUtility, 'nextElementSibling')
-				.mockImplementation((childNode) => {
+			vi.spyOn(NonDocumentChildNodeUtility, 'nextElementSibling').mockImplementation(
+				(childNode) => {
 					expect(childNode).toBe(node);
 					return nextElementSibling;
-				});
+				}
+			);
 
 			expect(node.nextElementSibling).toBe(nextElementSibling);
 		});
@@ -212,7 +213,7 @@ describe('CharaterData', () => {
 			const comment = document.createComment('test');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'remove').mockImplementation((childNode) => {
+			vi.spyOn(ChildNodeUtility, 'remove').mockImplementation((childNode) => {
 				expect(childNode).toBe(comment);
 				isCalled = true;
 			});
@@ -229,7 +230,7 @@ describe('CharaterData', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'replaceWith').mockImplementation((childNode, ...nodes) => {
+			vi.spyOn(ChildNodeUtility, 'replaceWith').mockImplementation((childNode, ...nodes) => {
 				expect(childNode).toBe(comment);
 				expect(nodes).toEqual([node1, node2]);
 				isCalled = true;
@@ -247,7 +248,7 @@ describe('CharaterData', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'before').mockImplementation((childNode, ...nodes) => {
+			vi.spyOn(ChildNodeUtility, 'before').mockImplementation((childNode, ...nodes) => {
 				expect(childNode).toBe(comment);
 				expect(nodes).toEqual([node1, node2]);
 				isCalled = true;
@@ -265,7 +266,7 @@ describe('CharaterData', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'after').mockImplementation((childNode, ...nodes) => {
+			vi.spyOn(ChildNodeUtility, 'after').mockImplementation((childNode, ...nodes) => {
 				expect(childNode).toBe(comment);
 				expect(nodes).toEqual([node1, node2]);
 				isCalled = true;

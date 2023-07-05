@@ -473,10 +473,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			method: this._settings.method,
 			headers: { ...this._getDefaultRequestHeaders(), ...this._state.requestHeaders },
 			agent: false,
-			rejectUnauthorized: true,
-			key: ssl ? XMLHttpRequestCertificate.key : null,
-			cert: ssl ? XMLHttpRequestCertificate.cert : null
+			rejectUnauthorized: true
 		};
+
+		if (ssl) {
+			options.key = XMLHttpRequestCertificate.key;
+			options.cert = XMLHttpRequestCertificate.cert;
+		}
 
 		// Reset error flag
 		this._state.error = false;

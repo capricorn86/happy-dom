@@ -4,6 +4,7 @@ import IDocument from '../../../src/nodes/document/IDocument.js';
 import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
 import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';
 import DOMException from '../../../src/exception/DOMException.js';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('HTMLOptionsCollection', () => {
 	let window: IWindow;
@@ -12,10 +13,6 @@ describe('HTMLOptionsCollection', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-	});
-
-	afterEach(() => {
-		jest.restoreAllMocks();
 	});
 
 	describe('get selectedIndex()', () => {

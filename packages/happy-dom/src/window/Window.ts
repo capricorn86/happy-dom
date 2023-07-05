@@ -352,71 +352,70 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly outerHeight: number;
 
 	// Node.js Globals
-	public ArrayBuffer;
-	public Boolean;
+	public Array: typeof Array;
+	public ArrayBuffer: typeof ArrayBuffer;
+	public Boolean: typeof Boolean;
 	public Buffer = Buffer;
-	public DataView;
-	public Date;
-	public Error;
-	public EvalError;
-	public Float32Array;
-	public Float64Array;
-	public GLOBAL;
-	public Infinity;
-	public Int16Array;
-	public Int32Array;
-	public Int8Array;
-	public Intl;
-	public JSON;
-	public Map;
-	public Math;
-	public NaN;
-	public Number;
-	public Promise;
-	public RangeError;
-	public ReferenceError;
-	public RegExp;
-	public Reflect;
-	public Set;
-	public Symbol;
-	public SyntaxError;
-	public String;
-	public TypeError;
-	public URIError;
-	public Uint16Array;
-	public Uint32Array;
-	public Uint8Array;
-	public Uint8ClampedArray;
-	public WeakMap;
-	public WeakSet;
-	public clearImmediate;
-	public decodeURI;
-	public decodeURIComponent;
-	public encodeURI;
-	public encodeURIComponent;
+	public DataView: typeof DataView;
+	public Date: typeof Date;
+	public Error: typeof Error;
+	public EvalError: typeof EvalError;
+	public Float32Array: typeof Float32Array;
+	public Float64Array: typeof Float64Array;
+	public Function: typeof Function;
+	public Infinity: typeof Infinity;
+	public Int16Array: typeof Int16Array;
+	public Int32Array: typeof Int32Array;
+	public Int8Array: typeof Int8Array;
+	public Intl: typeof Intl;
+	public JSON: typeof JSON;
+	public Map: MapConstructor;
+	public Math: typeof Math;
+	public NaN: typeof NaN;
+	public Number: typeof Number;
+	public Object: typeof Object;
+	public Promise: typeof Promise;
+	public RangeError: typeof RangeError;
+	public ReferenceError: typeof ReferenceError;
+	public RegExp: typeof RegExp;
+	public Set: SetConstructor;
+	public String: typeof String;
+	public Symbol: Function;
+	public SyntaxError: typeof SyntaxError;
+	public TypeError: typeof TypeError;
+	public URIError: typeof URIError;
+	public Uint16Array: typeof Uint16Array;
+	public Uint32Array: typeof Uint32Array;
+	public Uint8Array: typeof Uint8Array;
+	public Uint8ClampedArray: typeof Uint8ClampedArray;
+	public WeakMap: WeakMapConstructor;
+	public WeakSet: WeakSetConstructor;
+	public clearImmediate: (immediateId: NodeJS.Immediate) => void;
+	public decodeURI: typeof decodeURI;
+	public decodeURIComponent: typeof decodeURIComponent;
+	public encodeURI: typeof encodeURI;
+	public encodeURIComponent: typeof encodeURIComponent;
 	/**
 	 * @deprecated
 	 */
-	public escape;
-	public global;
-	public isFinite;
-	public isNaN;
-	public parseFloat;
-	public parseInt;
-	public process;
-	public root;
-	public setImmediate;
-	public queueMicrotask;
-	public undefined;
+	public escape: (str: string) => string;
+	public global: typeof globalThis;
+	public isFinite: typeof isFinite;
+	public isNaN: typeof isNaN;
+	public parseFloat: typeof parseFloat;
+	public parseInt: typeof parseInt;
+	public setImmediate: (
+		callback: (...args: unknown[]) => void,
+		...args: unknown[]
+	) => NodeJS.Immediate;
+	public queueMicrotask: typeof queueMicrotask;
+	public undefined: typeof undefined;
 	/**
 	 * @deprecated
 	 */
-	public unescape;
-	public gc;
-	public v8debug;
-	public Array;
-	public Object;
-	public Function;
+	public unescape: (str: string) => string;
+	public gc: () => void;
+	public v8debug?: unknown;
 
 	// Public internal properties
 

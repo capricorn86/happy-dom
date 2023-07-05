@@ -4,6 +4,8 @@ import ISVGSVGElement from '../../../src/nodes/svg-element/ISVGSVGElement.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import ISVGElement from '../../../src/nodes/svg-element/ISVGElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
 
 describe('SVGElement', () => {
 	let window: Window;
@@ -16,6 +18,10 @@ describe('SVGElement', () => {
 		document = window.document;
 		element = <ISVGSVGElement>document.createElementNS(NamespaceURI.svg, 'svg');
 		line = <ISVGElement>document.createElementNS(NamespaceURI.svg, 'line');
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe('get ownerSVGElement()', () => {
@@ -88,9 +94,11 @@ describe('SVGElement', () => {
 		it('Calls HTMLElementUtility.blur().', () => {
 			let blurredElement: ISVGElement | null = null;
 
-			jest
-				.spyOn(HTMLElementUtility, 'blur')
-				.mockImplementation((element: ISVGElement) => (blurredElement = element));
+			vi.spyOn(HTMLElementUtility, 'blur').mockImplementation(
+				(element: ISVGElement | IHTMLElement) => {
+					blurredElement = <ISVGElement>element;
+				}
+			);
 
 			element.blur();
 
@@ -102,9 +110,11 @@ describe('SVGElement', () => {
 		it('Calls HTMLElementUtility.focus().', () => {
 			let focusedElement: ISVGElement | null = null;
 
-			jest
-				.spyOn(HTMLElementUtility, 'focus')
-				.mockImplementation((element: ISVGElement) => (focusedElement = element));
+			vi.spyOn(HTMLElementUtility, 'focus').mockImplementation(
+				(element: ISVGElement | IHTMLElement) => {
+					focusedElement = <ISVGElement>element;
+				}
+			);
 
 			element.focus();
 

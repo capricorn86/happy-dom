@@ -6,6 +6,8 @@ import SelectionDirectionEnum from '../../src/selection/SelectionDirectionEnum.j
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
+import { beforeEach, describe, it, expect } from 'vitest';
+import Event from '../../src/event/Event.js';
 
 describe('Selection', () => {
 	let window: IWindow;
@@ -181,12 +183,12 @@ describe('Selection', () => {
 		});
 
 		it('Triggers a "selectionchange" event.', () => {
-			let triggeredEvent = null;
+			let triggeredEvent: Event | null = null;
 			document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 			const range = document.createRange();
 			selection.addRange(range);
-			expect(triggeredEvent.bubbles).toBe(false);
-			expect(triggeredEvent.cancelable).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
 	});
 
@@ -239,13 +241,13 @@ describe('Selection', () => {
 		});
 
 		it('Triggers a "selectionchange" event.', () => {
-			let triggeredEvent = null;
+			let triggeredEvent: Event | null = null;
 			const range = document.createRange();
 			selection.addRange(range);
 			document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 			selection.removeRange(range);
-			expect(triggeredEvent.bubbles).toBe(false);
-			expect(triggeredEvent.cancelable).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
 	});
 
@@ -259,13 +261,13 @@ describe('Selection', () => {
 			});
 
 			it('Triggers a "selectionchange" event.', () => {
-				let triggeredEvent = null;
+				let triggeredEvent: Event | null = null;
 				const range = document.createRange();
 				selection.addRange(range);
 				document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 				selection[method]();
-				expect(triggeredEvent.bubbles).toBe(false);
-				expect(triggeredEvent.cancelable).toBe(false);
+				expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
+				expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 			});
 		});
 	}
@@ -318,7 +320,7 @@ describe('Selection', () => {
 			it('Triggers a "selectionchange" event.', () => {
 				const range = document.createRange();
 				const text = document.createTextNode('Text');
-				let triggeredEvent = null;
+				let triggeredEvent: Event | null = null;
 
 				selection.addRange(range);
 
@@ -326,8 +328,8 @@ describe('Selection', () => {
 
 				selection[method](text, 2);
 
-				expect(triggeredEvent.bubbles).toBe(false);
-				expect(triggeredEvent.cancelable).toBe(false);
+				expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
+				expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 			});
 		});
 	}
@@ -367,7 +369,7 @@ describe('Selection', () => {
 
 		it('Triggers a "selectionchange" event.', () => {
 			const range = document.createRange();
-			let triggeredEvent = null;
+			let triggeredEvent: Event | null = null;
 
 			selection.addRange(range);
 
@@ -375,8 +377,8 @@ describe('Selection', () => {
 
 			selection.collapseToEnd();
 
-			expect(triggeredEvent.bubbles).toBe(false);
-			expect(triggeredEvent.cancelable).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
 	});
 
@@ -415,7 +417,7 @@ describe('Selection', () => {
 
 		it('Triggers a "selectionchange" event.', () => {
 			const range = document.createRange();
-			let triggeredEvent = null;
+			let triggeredEvent: Event | null = null;
 
 			selection.addRange(range);
 
@@ -423,8 +425,8 @@ describe('Selection', () => {
 
 			selection.collapseToStart();
 
-			expect(triggeredEvent.bubbles).toBe(false);
-			expect(triggeredEvent.cancelable).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
 	});
 
@@ -548,7 +550,7 @@ describe('Selection', () => {
 			const start = document.createTextNode('start');
 			const end = document.createTextNode('end');
 			const after = document.createTextNode('after');
-			let triggeredEvent = null;
+			let triggeredEvent: Event | null = null;
 
 			document.body.appendChild(start);
 			document.body.appendChild(end);
@@ -563,8 +565,8 @@ describe('Selection', () => {
 
 			selection.extend(after, 3);
 
-			expect(triggeredEvent.bubbles).toBe(false);
-			expect(triggeredEvent.cancelable).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
 	});
 
@@ -603,7 +605,7 @@ describe('Selection', () => {
 		it('Triggers a "selectionchange" event.', () => {
 			const container = document.createElement('div');
 			const child = document.createTextNode('child');
-			let triggeredEvent = null;
+			let triggeredEvent: Event | null = null;
 
 			container.appendChild(child);
 
@@ -611,8 +613,8 @@ describe('Selection', () => {
 
 			selection.selectAllChildren(container);
 
-			expect(triggeredEvent.bubbles).toBe(false);
-			expect(triggeredEvent.cancelable).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
 	});
 
@@ -674,7 +676,7 @@ describe('Selection', () => {
 		it('Triggers a "selectionchange" event.', () => {
 			const start = document.createTextNode('start');
 			const end = document.createTextNode('end');
-			let triggeredEvent = null;
+			let triggeredEvent: Event | null = null;
 
 			document.body.appendChild(start);
 			document.body.appendChild(end);
@@ -683,8 +685,8 @@ describe('Selection', () => {
 
 			selection.setBaseAndExtent(start, 1, end, 2);
 
-			expect(triggeredEvent.bubbles).toBe(false);
-			expect(triggeredEvent.cancelable).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
+			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
 	});
 

@@ -106,7 +106,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param name Name.
 	 * @param value Value.
 	 */
-	setAttributeNS(namespaceURI: string, name: string, value: string): void;
+	setAttributeNS(namespaceURI: string | null, name: string, value: string): void;
 
 	/**
 	 * Returns attribute names.
@@ -128,7 +128,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param namespace Namespace URI.
 	 * @param localName Local name.
 	 */
-	getAttributeNS(namespace: string, localName: string): string;
+	getAttributeNS(namespace: string | null, localName: string): string;
 
 	/**
 	 * Returns a boolean value indicating whether the specified element has the attribute or not.
@@ -145,7 +145,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param localName Local name.
 	 * @returns True if attribute exists, false otherwise.
 	 */
-	hasAttributeNS(namespace: string, localName: string): boolean;
+	hasAttributeNS(namespace: string | null, localName: string): boolean;
 
 	/**
 	 * Returns "true" if the element has attributes.
@@ -167,7 +167,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param namespace Namespace URI.
 	 * @param localName Local name.
 	 */
-	removeAttributeNS(namespace: string, localName: string): void;
+	removeAttributeNS(namespace: string | null, localName: string): void;
 
 	/**
 	 * Toggle an attribute.
@@ -263,7 +263,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param nodeName Node name.
 	 * @returns Replaced attribute.
 	 */
-	getAttributeNodeNS(namespace: string, nodeName: string): IAttr;
+	getAttributeNodeNS(namespace: string | null, nodeName: string): IAttr;
 
 	/**
 	 * Removes an Attr node.

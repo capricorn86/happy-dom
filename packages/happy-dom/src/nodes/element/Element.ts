@@ -609,7 +609,7 @@ export default class Element extends Node implements IElement {
 	 * @param namespace Namespace URI.
 	 * @param localName Local name.
 	 */
-	public getAttributeNS(namespace: string, localName: string): string {
+	public getAttributeNS(namespace: string | null, localName: string): string {
 		const attribute = this.getAttributeNodeNS(namespace, localName);
 		if (attribute) {
 			return attribute.value;
@@ -634,7 +634,7 @@ export default class Element extends Node implements IElement {
 	 * @param localName Local name.
 	 * @returns True if attribute exists, false otherwise.
 	 */
-	public hasAttributeNS(namespace: string, localName: string): boolean {
+	public hasAttributeNS(namespace: string | null, localName: string): boolean {
 		for (const name of Object.keys(this._attributes)) {
 			const attribute = this._attributes[name];
 			if (attribute.namespaceURI === namespace && attribute.localName === localName) {
@@ -671,7 +671,7 @@ export default class Element extends Node implements IElement {
 	 * @param namespace Namespace URI.
 	 * @param localName Local name.
 	 */
-	public removeAttributeNS(namespace: string, localName: string): void {
+	public removeAttributeNS(namespace: string | null, localName: string): void {
 		for (const name of Object.keys(this._attributes)) {
 			const attribute = this._attributes[name];
 			if (attribute.namespaceURI === namespace && attribute.localName === localName) {
@@ -914,7 +914,7 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 * @returns Replaced attribute.
 	 */
-	public getAttributeNodeNS(namespace: string, name: string): IAttr {
+	public getAttributeNodeNS(namespace: string | null, name: string): IAttr {
 		const attributeName = this._getAttributeName(name);
 		if (
 			this._attributes[attributeName] &&

@@ -5,6 +5,7 @@ import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSele
 import IHTMLOptionElement from '../../../src/nodes/html-option-element/IHTMLOptionElement.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import Event from '../../../src/event/Event.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLSelectElement', () => {
 	let window: IWindow;
@@ -180,7 +181,7 @@ describe('HTMLSelectElement', () => {
 
 			expect(element.options.selectedIndex).toBe(0);
 
-			element.selectedIndex = undefined;
+			element.selectedIndex = <number>(<unknown>undefined);
 			expect(element.options.selectedIndex).toBe(0);
 
 			element.selectedIndex = 1000;
@@ -454,7 +455,7 @@ describe('HTMLSelectElement', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');
 			expect(element.validationMessage).toBe('Error message');
-			element.setCustomValidity(null);
+			element.setCustomValidity(<string>(<unknown>null));
 			expect(element.validationMessage).toBe('null');
 			element.setCustomValidity('');
 			expect(element.validationMessage).toBe('');
@@ -496,7 +497,7 @@ describe('HTMLSelectElement', () => {
 
 				element[method]();
 
-				expect(dispatchedEvent.type).toBe('invalid');
+				expect((<Event>(<unknown>dispatchedEvent)).type).toBe('invalid');
 			});
 		});
 	}

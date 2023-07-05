@@ -6,7 +6,8 @@ import CSSParserInput from './data/CSSParserInput.js';
 import CSSKeyframeRule from '../../src/css/rules/CSSKeyframeRule.js';
 import CSSKeyframesRule from '../../src/css/rules/CSSKeyframesRule.js';
 import CSSContainerRule from '../../src/css/rules/CSSContainerRule.js';
-import { CSSSupportsRule } from '../../src.js';
+import CSSSupportsRule from '../../src/css/rules/CSSSupportsRule.js';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('CSSParser', () => {
 	describe('parseFromString()', () => {
