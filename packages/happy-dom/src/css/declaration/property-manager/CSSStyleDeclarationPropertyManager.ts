@@ -1,8 +1,8 @@
-import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue';
-import CSSStyleDeclarationPropertySetParser from './CSSStyleDeclarationPropertySetParser';
-import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser';
-import CSSStyleDeclarationPropertyGetParser from './CSSStyleDeclarationPropertyGetParser';
-import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSParser';
+import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
+import CSSStyleDeclarationPropertySetParser from './CSSStyleDeclarationPropertySetParser.js';
+import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js';
+import CSSStyleDeclarationPropertyGetParser from './CSSStyleDeclarationPropertyGetParser.js';
+import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSParser.js';
 
 const TO_STRING_SHORTHAND_PROPERTIES = [
 	['margin'],

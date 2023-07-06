@@ -1,10 +1,10 @@
-import HTMLElement from '../html-element/HTMLElement';
-import DOMTokenList from '../../dom-token-list/DOMTokenList';
-import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
-import IHTMLAnchorElement from './IHTMLAnchorElement';
+import HTMLElement from '../html-element/HTMLElement.js';
+import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
+import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
+import IHTMLAnchorElement from './IHTMLAnchorElement.js';
 import { URL } from 'url';
-import IAttr from '../attr/IAttr';
-import HTMLAnchorElementUtility from './HTMLAnchorElementUtility';
+import IAttr from '../attr/IAttr.js';
+import HTMLAnchorElementUtility from './HTMLAnchorElementUtility.js';
 
 /**
  * HTML Anchor Element.

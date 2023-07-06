@@ -1,11 +1,11 @@
-import DocumentFragment from '../document-fragment/DocumentFragment';
-import XMLParser from '../../xml-parser/XMLParser';
-import XMLSerializer from '../../xml-serializer/XMLSerializer';
-import IElement from '../element/IElement';
-import CSSStyleSheet from '../../css/CSSStyleSheet';
-import IShadowRoot from './IShadowRoot';
-import IHTMLElement from '../../nodes/html-element/IHTMLElement';
-import Event from '../../event/Event';
+import DocumentFragment from '../document-fragment/DocumentFragment.js';
+import XMLParser from '../../xml-parser/XMLParser.js';
+import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
+import IElement from '../element/IElement.js';
+import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import IShadowRoot from './IShadowRoot.js';
+import IHTMLElement from '../../nodes/html-element/IHTMLElement.js';
+import Event from '../../event/Event.js';
 
 /**
  * ShadowRoot.

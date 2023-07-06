@@ -1,5 +1,5 @@
-import ProgressEvent from '../event/events/ProgressEvent';
-import EventTarget from '../event/EventTarget';
+import ProgressEvent from '../event/events/ProgressEvent.js';
+import EventTarget from '../event/EventTarget.js';
 
 export type ProgressEventListener = (event: ProgressEvent) => void;
 

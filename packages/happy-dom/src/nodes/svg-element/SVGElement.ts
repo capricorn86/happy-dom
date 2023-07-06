@@ -1,11 +1,11 @@
-import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
-import Element from '../element/Element';
-import ISVGElement from './ISVGElement';
-import ISVGSVGElement from './ISVGSVGElement';
-import IAttr from '../attr/IAttr';
-import Event from '../../event/Event';
-import Dataset from '../element/Dataset';
-import HTMLElementUtility from '../html-element/HTMLElementUtility';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import Element from '../element/Element.js';
+import ISVGElement from './ISVGElement.js';
+import ISVGSVGElement from './ISVGSVGElement.js';
+import IAttr from '../attr/IAttr.js';
+import Event from '../../event/Event.js';
+import Dataset from '../element/Dataset.js';
+import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
 
 /**
  * SVG Element.

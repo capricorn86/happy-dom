@@ -1,10 +1,10 @@
-import Event from '../../event/Event';
-import ValidityState from '../../validity-state/ValidityState';
-import IHTMLElement from '../html-element/IHTMLElement';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
-import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
-import INodeList from '../node/INodeList';
+import Event from '../../event/Event.js';
+import ValidityState from '../../validity-state/ValidityState.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum.js';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
+import INodeList from '../node/INodeList.js';
 
 /**
  * HTML Text Area Element.

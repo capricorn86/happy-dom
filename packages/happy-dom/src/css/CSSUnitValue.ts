@@ -1,4 +1,4 @@
-import CSSUnits from './CSSUnits';
+import CSSUnits from './CSSUnits.js';
 
 /**
  * CSS unit value.

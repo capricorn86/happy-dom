@@ -1,5 +1,5 @@
-import EventTarget from '../event/EventTarget';
-import Event from '../event/Event';
+import EventTarget from '../event/EventTarget.js';
+import Event from '../event/Event.js';
 
 /**
  * AbortSignal.

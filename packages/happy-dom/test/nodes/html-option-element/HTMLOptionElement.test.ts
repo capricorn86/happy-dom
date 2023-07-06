@@ -1,7 +1,8 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import IHTMLOptionElement from '../../../src/nodes/html-option-element/IHTMLOptionElement';
-import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import IHTMLOptionElement from '../../../src/nodes/html-option-element/IHTMLOptionElement.js';
+import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLOptionElement', () => {
 	let window: Window;

@@ -2,21 +2,22 @@ import FS from 'fs';
 import ChildProcess from 'child_process';
 import HTTP from 'http';
 import HTTPS from 'https';
-import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget';
-import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum';
-import Event from '../event/Event';
-import IDocument from '../nodes/document/IDocument';
-import Blob from '../file/Blob';
-import XMLHttpRequestUpload from './XMLHttpRequestUpload';
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
+import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget.js';
+import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum.js';
+import Event from '../event/Event.js';
+import IDocument from '../nodes/document/IDocument.js';
+import Blob from '../file/Blob.js';
+import XMLHttpRequestUpload from './XMLHttpRequestUpload.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import { URL, UrlObject } from 'url';
-import XMLHttpRequestURLUtility from './utilities/XMLHttpRequestURLUtility';
-import ProgressEvent from '../event/events/ProgressEvent';
-import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum';
-import XMLHttpRequestCertificate from './XMLHttpRequestCertificate';
-import XMLHttpRequestSyncRequestScriptBuilder from './utilities/XMLHttpRequestSyncRequestScriptBuilder';
+import XMLHttpRequestURLUtility from './utilities/XMLHttpRequestURLUtility.js';
+import ProgressEvent from '../event/events/ProgressEvent.js';
+import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum.js';
+import XMLHttpRequestCertificate from './XMLHttpRequestCertificate.js';
+import XMLHttpRequestSyncRequestScriptBuilder from './utilities/XMLHttpRequestSyncRequestScriptBuilder.js';
 import IconvLite from 'iconv-lite';
+import ErrorEvent from '../event/events/ErrorEvent.js';
 
 // These headers are not user setable.
 // The following are allowed but banned in the spec:
@@ -472,10 +473,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			method: this._settings.method,
 			headers: { ...this._getDefaultRequestHeaders(), ...this._state.requestHeaders },
 			agent: false,
-			rejectUnauthorized: true,
-			key: ssl ? XMLHttpRequestCertificate.key : null,
-			cert: ssl ? XMLHttpRequestCertificate.cert : null
+			rejectUnauthorized: true
 		};
+
+		if (ssl) {
+			options.key = XMLHttpRequestCertificate.key;
+			options.cert = XMLHttpRequestCertificate.cert;
+		}
 
 		// Reset error flag
 		this._state.error = false;
@@ -1042,6 +1046,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this._state.responseText = error instanceof Error ? error.stack : '';
 		this._state.error = true;
 		this._setState(XMLHttpRequestReadyStateEnum.done);
+
+		const errorObject = error instanceof Error ? error : new Error(error);
+		const event = new ErrorEvent('error', {
+			message: errorObject.message,
+			error: errorObject
+		});
+
+		this._ownerDocument.defaultView.console.error(errorObject);
+		this.dispatchEvent(event);
+		this._ownerDocument.defaultView.dispatchEvent(event);
 	}
 
 	/**

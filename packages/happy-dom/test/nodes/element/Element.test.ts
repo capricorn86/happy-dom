@@ -1,24 +1,26 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import XMLSerializer from '../../../src/xml-serializer/XMLSerializer';
-import XMLParser from '../../../src/xml-parser/XMLParser';
-import CustomElement from '../../CustomElement';
-import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot';
-import IDocument from '../../../src/nodes/document/IDocument';
-import Text from '../../../src/nodes/text/Text';
-import DOMRect from '../../../src/nodes/element/DOMRect';
-import NamespaceURI from '../../../src/config/NamespaceURI';
-import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
-import QuerySelector from '../../../src/query-selector/QuerySelector';
-import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility';
-import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
-import Node from '../../../src/nodes/node/Node';
-import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
-import IElement from '../../../src/nodes/element/IElement';
-import INodeList from '../../../src/nodes/node/INodeList';
-import IAttr from '../../../src/nodes/attr/IAttr';
-import Event from '../../../src/event/Event';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import XMLSerializer from '../../../src/xml-serializer/XMLSerializer.js';
+import XMLParser from '../../../src/xml-parser/XMLParser.js';
+import CustomElement from '../../CustomElement.js';
+import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import Text from '../../../src/nodes/text/Text.js';
+import DOMRect from '../../../src/nodes/element/DOMRect.js';
+import NamespaceURI from '../../../src/config/NamespaceURI.js';
+import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
+import QuerySelector from '../../../src/query-selector/QuerySelector.js';
+import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility.js';
+import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility.js';
+import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import Node from '../../../src/nodes/node/Node.js';
+import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection.js';
+import IElement from '../../../src/nodes/element/IElement.js';
+import INodeList from '../../../src/nodes/node/INodeList.js';
+import IAttr from '../../../src/nodes/attr/IAttr.js';
+import Event from '../../../src/event/Event.js';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import INode from '../../../src/nodes/node/INode.js';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -35,7 +37,7 @@ describe('Element', () => {
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('children', () => {
@@ -200,7 +202,7 @@ describe('Element', () => {
 
 			element.appendChild(div);
 
-			jest.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
+			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
 				expect(rootElement).toBe(div);
 				return 'EXPECTED_HTML';
 			});
@@ -217,7 +219,7 @@ describe('Element', () => {
 			element.appendChild(document.createElement('div'));
 			div.appendChild(textNode);
 
-			jest.spyOn(XMLParser, 'parse').mockImplementation(function (ownerDocument, xml, options) {
+			vi.spyOn(XMLParser, 'parse').mockImplementation(function (ownerDocument, xml, options) {
 				expect(ownerDocument).toBe(document);
 				expect(xml).toBe('SOME_HTML');
 				expect(options).toEqual({ rootNode: element });
@@ -378,7 +380,7 @@ describe('Element', () => {
 
 			element.appendChild(div);
 
-			jest.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
+			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
 				expect(rootElement === div).toBe(true);
 				return 'EXPECTED_HTML';
 			});
@@ -391,13 +393,13 @@ describe('Element', () => {
 
 			element.appendChild(div);
 
-			jest
-				.spyOn(XMLSerializer.prototype, 'serializeToString')
-				.mockImplementation(function (rootElement) {
-					expect(rootElement === div).toBe(true);
-					expect(this._options.includeShadowRoots).toBe(true);
-					return 'EXPECTED_HTML';
-				});
+			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation(function (
+				rootElement
+			) {
+				expect(rootElement === div).toBe(true);
+				expect(this._options.includeShadowRoots).toBe(true);
+				return 'EXPECTED_HTML';
+			});
 
 			expect(element.getInnerHTML({ includeShadowRoots: true })).toBe('EXPECTED_HTML');
 		});
@@ -409,7 +411,7 @@ describe('Element', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
+			vi.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode === document).toBe(true);
 				expect(nodes.length).toBe(2);
 				expect(nodes[0] === node1).toBe(true);
@@ -428,7 +430,7 @@ describe('Element', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
+			vi.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode === document).toBe(true);
 				expect(nodes.length).toBe(2);
 				expect(nodes[0] === node1).toBe(true);
@@ -448,7 +450,7 @@ describe('Element', () => {
 
 			document.body.appendChild(parent);
 
-			const insertedNode = parent.insertAdjacentElement('beforebegin', newNode);
+			const insertedNode = <INode>parent.insertAdjacentElement('beforebegin', newNode);
 
 			expect(insertedNode === newNode).toBe(true);
 			expect(parent.childNodes.length).toEqual(0);
@@ -474,7 +476,7 @@ describe('Element', () => {
 
 			document.body.appendChild(parent);
 
-			const insertedNode = parent.insertAdjacentElement('afterbegin', newNode);
+			const insertedNode = <INode>parent.insertAdjacentElement('afterbegin', newNode);
 
 			expect(insertedNode === newNode).toBe(true);
 			expect(parent.childNodes[0] === insertedNode).toBe(true);
@@ -489,7 +491,7 @@ describe('Element', () => {
 			parent.appendChild(child);
 			document.body.appendChild(parent);
 
-			const insertedNode = parent.insertAdjacentElement('beforeend', newNode);
+			const insertedNode = <INode>parent.insertAdjacentElement('beforeend', newNode);
 
 			expect(insertedNode === newNode).toBe(true);
 			expect(parent.childNodes[1] === insertedNode).toBe(true);
@@ -502,7 +504,7 @@ describe('Element', () => {
 
 			document.body.appendChild(parent);
 
-			const insertedNode = parent.insertAdjacentElement('afterend', newNode);
+			const insertedNode = <INode>parent.insertAdjacentElement('afterend', newNode);
 
 			expect(insertedNode === newNode).toBe(true);
 			expect(parent.childNodes.length).toEqual(0);
@@ -697,13 +699,11 @@ describe('Element', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest
-				.spyOn(ParentNodeUtility, 'replaceChildren')
-				.mockImplementation((parentNode, ...nodes) => {
-					expect(parentNode).toBe(document);
-					expect(nodes).toEqual([node1, node2]);
-					isCalled = true;
-				});
+			vi.spyOn(ParentNodeUtility, 'replaceChildren').mockImplementation((parentNode, ...nodes) => {
+				expect(parentNode).toBe(document);
+				expect(nodes).toEqual([node1, node2]);
+				isCalled = true;
+			});
 
 			document.replaceChildren(node1, node2);
 			expect(isCalled).toBe(true);
@@ -831,7 +831,7 @@ describe('Element', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(document);
 				expect(selector).toEqual(expectedSelector);
 				return <INodeList<IElement>>[element];
@@ -848,7 +848,7 @@ describe('Element', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
-			jest.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
+			vi.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(document);
 				expect(selector).toEqual(expectedSelector);
 				return element;
@@ -863,13 +863,13 @@ describe('Element', () => {
 			const child = document.createElement('div');
 			const className = 'className';
 
-			jest
-				.spyOn(ParentNodeUtility, 'getElementsByClassName')
-				.mockImplementation((parentNode, requestedClassName) => {
+			vi.spyOn(ParentNodeUtility, 'getElementsByClassName').mockImplementation(
+				(parentNode, requestedClassName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedClassName).toEqual(className);
 					return <IHTMLCollection<IElement>>[child];
-				});
+				}
+			);
 
 			const result = element.getElementsByClassName(className);
 			expect(result.length).toBe(1);
@@ -882,13 +882,13 @@ describe('Element', () => {
 			const child = document.createElement('div');
 			const tagName = 'tag-name';
 
-			jest
-				.spyOn(ParentNodeUtility, 'getElementsByTagName')
-				.mockImplementation((parentNode, requestedTagName) => {
+			vi.spyOn(ParentNodeUtility, 'getElementsByTagName').mockImplementation(
+				(parentNode, requestedTagName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedTagName).toEqual(tagName);
 					return <IHTMLCollection<IElement>>[child];
-				});
+				}
+			);
 
 			const result = element.getElementsByTagName(tagName);
 			expect(result.length).toBe(1);
@@ -902,14 +902,14 @@ describe('Element', () => {
 			const tagName = 'tag-name';
 			const namespaceURI = '/namespace/uri/';
 
-			jest
-				.spyOn(ParentNodeUtility, 'getElementsByTagNameNS')
-				.mockImplementation((parentNode, requestedNamespaceURI, requestedTagName) => {
+			vi.spyOn(ParentNodeUtility, 'getElementsByTagNameNS').mockImplementation(
+				(parentNode, requestedNamespaceURI, requestedTagName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
 					return <IHTMLCollection<IElement>>[child];
-				});
+				}
+			);
 
 			const result = element.getElementsByTagNameNS(namespaceURI, tagName);
 			expect(result.length).toBe(1);
@@ -922,7 +922,7 @@ describe('Element', () => {
 			const element = document.createElement('div');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'remove').mockImplementation((childNode) => {
+			vi.spyOn(ChildNodeUtility, 'remove').mockImplementation((childNode) => {
 				expect(childNode).toBe(element);
 				isCalled = true;
 			});
@@ -938,7 +938,7 @@ describe('Element', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'replaceWith').mockImplementation((childNode, ...nodes) => {
+			vi.spyOn(ChildNodeUtility, 'replaceWith').mockImplementation((childNode, ...nodes) => {
 				expect(childNode).toBe(element);
 				expect(nodes).toEqual([node1, node2]);
 				isCalled = true;
@@ -955,7 +955,7 @@ describe('Element', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'before').mockImplementation((childNode, ...nodes) => {
+			vi.spyOn(ChildNodeUtility, 'before').mockImplementation((childNode, ...nodes) => {
 				expect(childNode).toBe(element);
 				expect(nodes).toEqual([node1, node2]);
 				isCalled = true;
@@ -972,7 +972,7 @@ describe('Element', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ChildNodeUtility, 'after').mockImplementation((childNode, ...nodes) => {
+			vi.spyOn(ChildNodeUtility, 'after').mockImplementation((childNode, ...nodes) => {
 				expect(childNode).toBe(element);
 				expect(nodes).toEqual([node1, node2]);
 				isCalled = true;
@@ -1240,12 +1240,12 @@ describe('Element', () => {
 		it('Returns previous element sibling..', () => {
 			const node = document.createComment('test');
 			const previousElementSibling = document.createElement('div');
-			jest
-				.spyOn(NonDocumentChildNodeUtility, 'previousElementSibling')
-				.mockImplementation((childNode) => {
+			vi.spyOn(NonDocumentChildNodeUtility, 'previousElementSibling').mockImplementation(
+				(childNode) => {
 					expect(childNode).toBe(node);
 					return previousElementSibling;
-				});
+				}
+			);
 
 			expect(node.previousElementSibling === previousElementSibling).toBe(true);
 		});
@@ -1255,12 +1255,12 @@ describe('Element', () => {
 		it('Returns next element sibling..', () => {
 			const node = document.createComment('test');
 			const nextElementSibling = document.createElement('div');
-			jest
-				.spyOn(NonDocumentChildNodeUtility, 'nextElementSibling')
-				.mockImplementation((childNode) => {
+			vi.spyOn(NonDocumentChildNodeUtility, 'nextElementSibling').mockImplementation(
+				(childNode) => {
 					expect(childNode).toBe(node);
 					return nextElementSibling;
-				});
+				}
+			);
 
 			expect(node.nextElementSibling === nextElementSibling).toBe(true);
 		});

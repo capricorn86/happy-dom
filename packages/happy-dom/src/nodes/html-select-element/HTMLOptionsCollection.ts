@@ -1,8 +1,8 @@
-import DOMException from '../../exception/DOMException';
-import HTMLCollection from '../element/HTMLCollection';
-import IHTMLSelectElement from './IHTMLSelectElement';
-import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement';
-import IHTMLOptionsCollection from './IHTMLOptionsCollection';
+import DOMException from '../../exception/DOMException.js';
+import HTMLCollection from '../element/HTMLCollection.js';
+import IHTMLSelectElement from './IHTMLSelectElement.js';
+import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement.js';
+import IHTMLOptionsCollection from './IHTMLOptionsCollection.js';
 
 /**
  * HTML Options Collection.

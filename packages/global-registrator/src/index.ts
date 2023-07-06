@@ -1,3 +1,3 @@
-import GlobalRegistrator from './GlobalRegistrator';
+import GlobalRegistrator from './GlobalRegistrator.js';
 
 export { GlobalRegistrator };

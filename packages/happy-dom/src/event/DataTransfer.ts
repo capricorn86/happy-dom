@@ -1,5 +1,5 @@
-import File from '../file/File';
-import DataTransferItemList from './DataTransferItemList';
+import File from '../file/File.js';
+import DataTransferItemList from './DataTransferItemList.js';
 
 /**
  *

@@ -5,6 +5,7 @@
 		"rootDir": "../test",
 		"tsBuildInfoFile": "../tmp/.tsbuildinfo-test",
 		"jsx": "react",
+        "module": "CommonJS",
 		"lib": [
 			"es2015",
 			"es2016",

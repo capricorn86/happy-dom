@@ -1,4 +1,4 @@
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 
 /**
  * Custom element test class.

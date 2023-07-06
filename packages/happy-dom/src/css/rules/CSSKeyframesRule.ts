@@ -1,6 +1,6 @@
-import CSSRule from '../CSSRule';
-import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration';
-import CSSKeyframeRule from './CSSKeyframeRule';
+import CSSRule from '../CSSRule.js';
+import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
+import CSSKeyframeRule from './CSSKeyframeRule.js';
 
 const CSS_RULE_REGEXP = /([^{]+){([^}]+)}/;
 

@@ -1,5 +1,5 @@
-import Cookie from './Cookie';
-import CookieSameSiteEnum from './CookieSameSiteEnum';
+import Cookie from './Cookie.js';
+import CookieSameSiteEnum from './CookieSameSiteEnum.js';
 import { URL } from 'url';
 
 /**

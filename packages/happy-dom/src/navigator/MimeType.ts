@@ -1,4 +1,4 @@
-import Plugin from './Plugin';
+import Plugin from './Plugin.js';
 
 /**
  * MimeType.

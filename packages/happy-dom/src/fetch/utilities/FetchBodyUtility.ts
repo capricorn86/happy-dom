@@ -1,13 +1,13 @@
-import MultipartFormDataParser from '../multipart/MultipartFormDataParser';
+import MultipartFormDataParser from '../multipart/MultipartFormDataParser.js';
 import Stream from 'stream';
 import { URLSearchParams } from 'url';
-import FormData from '../../form-data/FormData';
-import Blob from '../../file/Blob';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import IRequestBody from '../types/IRequestBody';
-import IResponseBody from '../types/IResponseBody';
-import Request from '../Request';
+import FormData from '../../form-data/FormData.js';
+import Blob from '../../file/Blob.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import IRequestBody from '../types/IRequestBody.js';
+import IResponseBody from '../types/IResponseBody.js';
+import Request from '../Request.js';
 
 /**
  * Fetch body utility.

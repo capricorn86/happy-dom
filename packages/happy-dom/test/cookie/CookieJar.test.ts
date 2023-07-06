@@ -1,5 +1,6 @@
-import CookieJar from '../../src/cookie/CookieJar';
+import CookieJar from '../../src/cookie/CookieJar.js';
 import { URL } from 'url';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('CookieJar', () => {
 	let cookieJar: CookieJar;
@@ -9,7 +10,7 @@ describe('CookieJar', () => {
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('addCookieString()', () => {
@@ -56,7 +57,7 @@ describe('CookieJar', () => {
 				'key6=value6'
 			);
 
-			jest.spyOn(Date, 'now').mockImplementation(() => expires + 1000);
+			vi.spyOn(Date, 'now').mockImplementation(() => expires + 1000);
 
 			expect(cookieJar.getCookieString(new URL('https://example.com/path/to/page/'), false)).toBe(
 				'key3=value3; key7=value7; key8=value8; key9=value9; key10; key10=newValue10'

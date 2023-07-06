@@ -2,8 +2,8 @@
  * Happy DOM options.
  */
 export default interface IHappyDOMOptions {
-	innerWidth?: number;
-	innerHeight?: number;
+	width?: number;
+	height?: number;
 	url?: string;
 	settings?: {
 		disableJavaScriptEvaluation?: boolean;
@@ -17,4 +17,14 @@ export default interface IHappyDOMOptions {
 			mediaType?: string;
 		};
 	};
+
+	/**
+	 * @deprecated
+	 */
+	innerWidth?: number;
+
+	/**
+	 * @deprecated
+	 */
+	innerHeight?: number;
 }

@@ -1,9 +1,9 @@
-import IEventTarget from '../../event/IEventTarget';
-import IDocument from '../document/IDocument';
-import IElement from '../element/IElement';
-import INodeList from './INodeList';
-import NodeTypeEnum from './NodeTypeEnum';
-import NodeDocumentPositionEnum from './NodeDocumentPositionEnum';
+import IEventTarget from '../../event/IEventTarget.js';
+import IDocument from '../document/IDocument.js';
+import IElement from '../element/IElement.js';
+import INodeList from './INodeList.js';
+import NodeTypeEnum from './NodeTypeEnum.js';
+import NodeDocumentPositionEnum from './NodeDocumentPositionEnum.js';
 
 export default interface INode extends IEventTarget {
 	readonly ELEMENT_NODE: NodeTypeEnum;

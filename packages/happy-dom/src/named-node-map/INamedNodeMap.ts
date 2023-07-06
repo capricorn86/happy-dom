@@ -1,4 +1,4 @@
-import IAttr from '../nodes/attr/IAttr';
+import IAttr from '../nodes/attr/IAttr.js';
 
 /**
  * NamedNodeMap.

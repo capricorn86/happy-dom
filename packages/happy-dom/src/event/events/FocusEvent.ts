@@ -1,6 +1,6 @@
-import UIEvent from '../UIEvent';
-import EventTarget from '../EventTarget';
-import IFocusEventInit from './IFocusEventInit';
+import UIEvent from '../UIEvent.js';
+import EventTarget from '../EventTarget.js';
+import IFocusEventInit from './IFocusEventInit.js';
 
 /**
  *

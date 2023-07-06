@@ -1,5 +1,5 @@
-import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser';
-import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue';
+import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js';
+import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
 
 /**
  * Computed style property parser.

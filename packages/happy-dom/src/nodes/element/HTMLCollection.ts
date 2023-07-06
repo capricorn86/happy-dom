@@ -1,4 +1,4 @@
-import IHTMLCollection from './IHTMLCollection';
+import IHTMLCollection from './IHTMLCollection.js';
 
 /**
  * HTML collection.

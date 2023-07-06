@@ -1,10 +1,11 @@
-import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
-import Window from '../../src/window/Window';
-import IWindow from '../../src/window/IWindow';
-import IDocument from '../../src/nodes/document/IDocument';
-import QuerySelectorHTML from './data/QuerySelectorHTML';
-import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML';
-import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement';
+import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import QuerySelectorHTML from './data/QuerySelectorHTML.js';
+import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
+import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('QuerySelector', () => {
 	let window: IWindow;

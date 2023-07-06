@@ -1,4 +1,4 @@
-import HTMLInputElement from './HTMLInputElement';
+import HTMLInputElement from './HTMLInputElement.js';
 
 const NEW_LINES_REGEXP = /[\n\r]/gm;
 

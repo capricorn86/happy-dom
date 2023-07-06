@@ -1,6 +1,6 @@
-import Node from '../node/Node';
-import CharacterData from '../character-data/CharacterData';
-import IComment from './IComment';
+import Node from '../node/Node.js';
+import CharacterData from '../character-data/CharacterData.js';
+import IComment from './IComment.js';
 
 /**
  * Comment node.

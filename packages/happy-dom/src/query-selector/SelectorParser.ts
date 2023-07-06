@@ -1,7 +1,7 @@
-import SelectorItem from './SelectorItem';
-import SelectorCombinatorEnum from './SelectorCombinatorEnum';
-import DOMException from '../exception/DOMException';
-import ISelectorPseudo from './ISelectorPseudo';
+import SelectorItem from './SelectorItem.js';
+import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
+import DOMException from '../exception/DOMException.js';
+import ISelectorPseudo from './ISelectorPseudo.js';
 
 /**
  * Selector RegExp.

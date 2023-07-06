@@ -1,10 +1,10 @@
-import XMLParser from '../../xml-parser/XMLParser';
-import IDocumentFragment from '../document-fragment/IDocumentFragment';
-import IDocument from '../document/IDocument';
-import IElement from '../element/IElement';
-import IHTMLCollection from '../element/IHTMLCollection';
-import INode from '../node/INode';
-import HTMLCollection from '../element/HTMLCollection';
+import XMLParser from '../../xml-parser/XMLParser.js';
+import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
+import IDocument from '../document/IDocument.js';
+import IElement from '../element/IElement.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import INode from '../node/INode.js';
+import HTMLCollection from '../element/HTMLCollection.js';
 
 /**
  * Parent node utility.

@@ -1,4 +1,4 @@
-import IEventTarget from './IEventTarget';
+import IEventTarget from './IEventTarget.js';
 
 /**
  * Message port.

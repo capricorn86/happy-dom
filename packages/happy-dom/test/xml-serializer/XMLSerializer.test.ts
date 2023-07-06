@@ -1,11 +1,13 @@
-import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
-import Window from '../../src/window/Window';
-import Document from '../../src/nodes/document/Document';
-import CustomElement from '../CustomElement';
+import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import CustomElement from '../CustomElement.js';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('XMLSerializer', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 	let xmlSerializer: XMLSerializer;
 
 	beforeEach(() => {

@@ -1,4 +1,4 @@
-import INodeList from './INodeList';
+import INodeList from './INodeList.js';
 
 /**
  * Class list.
