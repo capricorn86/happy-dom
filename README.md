@@ -8,8 +8,6 @@ The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate 
 
 [Happy DOM](https://github.com/capricorn86/happy-dom) focuses heavily on performance and can be used as an alternative to [JSDOM](https://github.com/jsdom/jsdom).
 
-[Read more about how to use Happy DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom)
-
 ### DOM Features
 
 -   Custom Elements (Web Components)
@@ -38,6 +36,15 @@ And much more..
 
 -   [Vue](https://vuejs.org/)
 
+### Module Systems
+
+-   [ESM](https://nodejs.org/api/esm.html#introduction)
+-   [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules)
+
+# Documentation
+
+Read more about how to use Happy DOM in our [Wiki](https://github.com/capricorn86/happy-dom/wiki).
+
 # Packages
 
 This repository is a _Monorepo_. Each package lives under `packages/<package>`.
@@ -58,14 +65,6 @@ This package makes it possible to use Happy DOM with [Jest](https://jestjs.io/).
 
 A utility that registers Happy DOM globally, which makes it possible to use Happy DOM for testing in a Node environment.
 
----
-
-### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/server-rendering.svg)](https://www.npmjs.com/package/@happy-dom/server-rendering) [server-rendering](https://github.com/capricorn86/happy-dom/tree/master/packages/server-rendering)
-
-This package has been deprecated.
-
-Happy DOM now supports [Declarative Shadow DOM](https://github.com/capricorn86/happy-dom/tree/master/packages/happy-dom#server-side-rendering-of-web-components) which can be used for server-side rendering of web components.
-
 # Performance
 
 | Operation                            | JSDOM   | Happy DOM |
@@ -80,11 +79,11 @@ Happy DOM now supports [Declarative Shadow DOM](https://github.com/capricorn86/h
 | querySelectorAll('[class~="name"]')  | 5.5 ms  | 2.9 ms    |
 | querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
 
-[See how the test was done here](https://github.com/capricorn86/happy-dom-performance-test)
+See how the test was done [here](https://github.com/capricorn86/happy-dom-performance-test)
 
 # Contributing
 
-[Read more about how to develop and contribute](https://github.com/capricorn86/happy-dom/blob/master/docs/contributing.md)
+See [Contributing Guide](https://github.com/capricorn86/happy-dom/blob/master/docs/contributing.md).
 
 # Sponsors
 

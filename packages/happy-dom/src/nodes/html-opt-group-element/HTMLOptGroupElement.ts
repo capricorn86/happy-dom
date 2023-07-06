@@ -1,5 +1,5 @@
-import HTMLElement from '../html-element/HTMLElement';
-import IHTMLOptGroupElement from './IHTMLOptGroupElement';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IHTMLOptGroupElement from './IHTMLOptGroupElement.js';
 
 /**
  * HTML Opt Group Element.

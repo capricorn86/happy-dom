@@ -1,5 +1,5 @@
-import IHeaders from './IHeaders';
-import IBlob from 'src/file/IBlob';
+import IHeaders from './IHeaders.js';
+import IBlob from '../../file/IBlob.js';
 import Stream from 'stream';
 
 /**

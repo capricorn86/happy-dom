@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-interface INodeJSGlobal {
+export default interface INodeJSGlobal {
 	Array: typeof Array;
 	ArrayBuffer: typeof ArrayBuffer;
 	Boolean: typeof Boolean;
@@ -51,7 +51,7 @@ interface INodeJSGlobal {
 	 */
 	escape: (str: string) => string;
 	eval: typeof eval;
-	global: NodeJS.Global;
+	global: typeof globalThis;
 	isFinite: typeof isFinite;
 	isNaN: typeof isNaN;
 	parseFloat: typeof parseFloat;

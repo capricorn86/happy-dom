@@ -1,11 +1,11 @@
-import IHTMLButtonElement from '../nodes/html-button-element/IHTMLButtonElement';
-import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement';
-import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
-import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
-import IHTMLSelectElement from '../nodes/html-select-element/IHTMLSelectElement';
-import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
-import IHTMLTextAreaElement from '../nodes/html-text-area-element/IHTMLTextAreaElement';
-import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
+import IHTMLButtonElement from '../nodes/html-button-element/IHTMLButtonElement.js';
+import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement.js';
+import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
+import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
+import IHTMLSelectElement from '../nodes/html-select-element/IHTMLSelectElement.js';
+import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement.js';
+import IHTMLTextAreaElement from '../nodes/html-text-area-element/IHTMLTextAreaElement.js';
+import IShadowRoot from '../nodes/shadow-root/IShadowRoot.js';
 
 const EMAIL_REGEXP =
 	/^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;

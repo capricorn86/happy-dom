@@ -1,14 +1,14 @@
-import HTMLElement from '../html-element/HTMLElement';
-import IHTMLFormElement from './IHTMLFormElement';
-import Event from '../../event/Event';
-import SubmitEvent from '../../event/events/SubmitEvent';
-import HTMLFormControlsCollection from './HTMLFormControlsCollection';
-import IHTMLFormControlsCollection from './IHTMLFormControlsCollection';
-import INode from '../node/INode';
-import IHTMLInputElement from '../html-input-element/IHTMLInputElement';
-import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement';
-import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement';
-import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IHTMLFormElement from './IHTMLFormElement.js';
+import Event from '../../event/Event.js';
+import SubmitEvent from '../../event/events/SubmitEvent.js';
+import HTMLFormControlsCollection from './HTMLFormControlsCollection.js';
+import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
+import INode from '../node/INode.js';
+import IHTMLInputElement from '../html-input-element/IHTMLInputElement.js';
+import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement.js';
+import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
+import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
 
 /**
  * HTML Form Element.

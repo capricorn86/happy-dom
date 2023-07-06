@@ -1,6 +1,7 @@
-import Window from '../../../src/window/Window';
-import Image from '../../../src/nodes/html-image-element/Image';
-import HTMLImageElement from '../../../src/nodes/html-image-element/HTMLImageElement';
+import Window from '../../../src/window/Window.js';
+import Image from '../../../src/nodes/html-image-element/Image.js';
+import HTMLImageElement from '../../../src/nodes/html-image-element/HTMLImageElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('Image', () => {
 	let window: Window;

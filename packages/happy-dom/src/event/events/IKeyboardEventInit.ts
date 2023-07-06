@@ -1,4 +1,4 @@
-import IUIEventInit from '../IUIEventInit';
+import IUIEventInit from '../IUIEventInit.js';
 
 export default interface IKeyboardEventInit extends IUIEventInit {
 	key?: string;

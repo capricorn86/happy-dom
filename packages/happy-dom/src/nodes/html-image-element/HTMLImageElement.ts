@@ -1,5 +1,5 @@
-import HTMLElement from '../html-element/HTMLElement';
-import IHTMLImageElement from './IHTMLImageElement';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IHTMLImageElement from './IHTMLImageElement.js';
 
 /**
  * HTML Image Element.

@@ -1,6 +1,6 @@
-import IDocumentFragment from '../document-fragment/IDocumentFragment';
-import IElement from '../element/IElement';
-import Event from '../../event/Event';
+import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
+import IElement from '../element/IElement.js';
+import Event from '../../event/Event.js';
 
 /**
  * ShadowRoot.

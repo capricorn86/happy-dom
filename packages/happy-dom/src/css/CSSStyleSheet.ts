@@ -1,8 +1,8 @@
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import CSSParser from './CSSParser';
-import CSSRule from './CSSRule';
-import MediaList from './MediaList';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import CSSParser from './CSSParser.js';
+import CSSRule from './CSSRule.js';
+import MediaList from './MediaList.js';
 
 /**
  * CSS StyleSheet.

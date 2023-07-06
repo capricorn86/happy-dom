@@ -1,5 +1,5 @@
-import DataTransfer from '../DataTransfer';
-import IUIEventInit from '../IUIEventInit';
+import DataTransfer from '../DataTransfer.js';
+import IUIEventInit from '../IUIEventInit.js';
 
 export default interface IInputEventInit extends IUIEventInit {
 	inputType?: string;

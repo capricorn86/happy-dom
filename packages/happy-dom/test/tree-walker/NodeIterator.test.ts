@@ -1,24 +1,26 @@
-import Window from '../../src/window/Window';
-import Document from '../../src/nodes/document/Document';
-import NodeFilter from '../../src/tree-walker/NodeFilter';
-import Element from '../../src/nodes/element/Element';
-import Comment from '../../src/nodes/comment/Comment';
-import Node from '../../src/nodes/node/Node';
-import TreeWalkerHTML from './data/TreeWalkerHTML';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import NodeFilter from '../../src/tree-walker/NodeFilter.js';
+import Element from '../../src/nodes/element/Element.js';
+import Comment from '../../src/nodes/comment/Comment.js';
+import Node from '../../src/nodes/node/Node.js';
+import TreeWalkerHTML from './data/TreeWalkerHTML.js';
+import { beforeEach, describe, it, expect } from 'vitest';
+import INode from '../../src/nodes/node/INode.js';
 
 const NODE_TO_STRING = (node: Node): string => {
 	if (node instanceof Element) {
 		return node.outerHTML;
 	} else if (node instanceof Comment) {
 		return '<!--' + node.textContent + '-->';
-	} else {
-		return node['textContent'];
 	}
+	return node['textContent'];
 };
 
 describe('NodeIterator', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window();
@@ -29,7 +31,7 @@ describe('NodeIterator', () => {
 	describe('nextNode()', () => {
 		it('Walks into each node in the DOM tree.', () => {
 			const nodeIterator = document.createNodeIterator(document.body);
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = nodeIterator.nextNode())) {
@@ -66,7 +68,7 @@ describe('NodeIterator', () => {
 
 		it('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT.', () => {
 			const nodeIterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = nodeIterator.nextNode())) {
@@ -87,7 +89,7 @@ describe('NodeIterator', () => {
 				document.body,
 				NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_COMMENT
 			);
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = nodeIterator.nextNode())) {
@@ -112,7 +114,7 @@ describe('NodeIterator', () => {
 				acceptNode: (node: Node) =>
 					node.nodeType === Node.ELEMENT_NODE ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
 			});
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = nodeIterator.nextNode())) {
@@ -139,7 +141,7 @@ describe('NodeIterator', () => {
 					return NodeFilter.FILTER_ACCEPT;
 				}
 			});
-			const html = [];
+			const html: string[] = [];
 			let currentNode;
 
 			while ((currentNode = NodeIterator.nextNode())) {
@@ -165,9 +167,9 @@ describe('NodeIterator', () => {
 	describe('previousNode()', () => {
 		it('Returns the previous node when executed after a nextNode() call.', () => {
 			const NodeIterator = document.createNodeIterator(document.body);
-			let expectedPreviousNode = null;
-			let previousNode = null;
-			let currentNode = null;
+			let expectedPreviousNode: INode | null = null;
+			let previousNode: INode | null = null;
+			let currentNode: INode | null = null;
 
 			while ((currentNode = NodeIterator.nextNode())) {
 				if (previousNode) {

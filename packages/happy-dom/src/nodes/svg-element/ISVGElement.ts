@@ -1,7 +1,7 @@
-import Event from '../../event/Event';
-import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
-import IElement from '../element/IElement';
-import ISVGSVGElement from './ISVGSVGElement';
+import Event from '../../event/Event.js';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import IElement from '../element/IElement.js';
+import ISVGSVGElement from './ISVGSVGElement.js';
 
 /**
  * SVG Element.

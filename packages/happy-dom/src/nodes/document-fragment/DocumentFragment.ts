@@ -1,13 +1,13 @@
-import Node from '../node/Node';
-import IElement from '../element/IElement';
-import QuerySelector from '../../query-selector/QuerySelector';
-import ParentNodeUtility from '../parent-node/ParentNodeUtility';
-import IDocumentFragment from './IDocumentFragment';
-import INode from '../node/INode';
-import IHTMLCollection from '../element/IHTMLCollection';
-import ElementUtility from '../element/ElementUtility';
-import HTMLCollection from '../element/HTMLCollection';
-import INodeList from '../node/INodeList';
+import Node from '../node/Node.js';
+import IElement from '../element/IElement.js';
+import QuerySelector from '../../query-selector/QuerySelector.js';
+import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
+import IDocumentFragment from './IDocumentFragment.js';
+import INode from '../node/INode.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import ElementUtility from '../element/ElementUtility.js';
+import HTMLCollection from '../element/HTMLCollection.js';
+import INodeList from '../node/INodeList.js';
 
 /**
  * DocumentFragment.

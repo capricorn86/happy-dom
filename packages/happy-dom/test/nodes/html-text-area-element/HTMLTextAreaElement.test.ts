@@ -1,15 +1,17 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement';
-import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum';
-import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum';
-import ValidityState from '../../../src/validity-state/ValidityState';
-import Event from '../../../src/event/Event';
-import IText from '../../../src/nodes/text/IText';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement.js';
+import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
+import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
+import ValidityState from '../../../src/validity-state/ValidityState.js';
+import Event from '../../../src/event/Event.js';
+import IText from '../../../src/nodes/text/IText.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLTextAreaElement', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 	let element: IHTMLTextAreaElement;
 
 	beforeEach(() => {
@@ -222,10 +224,10 @@ describe('HTMLTextAreaElement', () => {
 
 			it('Triggers an "invalid" event when invalid.', () => {
 				element.required = true;
-				let dispatchedEvent: Event | null = null;
-				element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
+				let triggeredEvent: Event | null = null;
+				element.addEventListener('invalid', (event: Event) => (triggeredEvent = event));
 				element[method]();
-				expect(dispatchedEvent.type).toBe('invalid');
+				expect((<Event>(<unknown>triggeredEvent)).type).toBe('invalid');
 			});
 		});
 	}
@@ -239,7 +241,7 @@ describe('HTMLTextAreaElement', () => {
 			expect(element.selectionStart).toBe(0);
 			expect(element.selectionEnd).toBe(10);
 			expect(element.selectionDirection).toBe('none');
-			expect(triggeredEvent.type).toBe('select');
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('select');
 		});
 	});
 
@@ -252,7 +254,7 @@ describe('HTMLTextAreaElement', () => {
 			expect(element.selectionStart).toBe(1);
 			expect(element.selectionEnd).toBe(5);
 			expect(element.selectionDirection).toBe('forward');
-			expect(triggeredEvent.type).toBe('select');
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('select');
 		});
 
 		it('Sets selection end to the value length if out of range.', () => {

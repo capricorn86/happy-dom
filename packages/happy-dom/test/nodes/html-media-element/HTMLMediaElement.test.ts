@@ -1,10 +1,11 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import DOMException from '../../../src/exception/DOMException';
-import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
-import IDocument from '../../../src/nodes/document/IDocument';
-import IHTMLMediaElement from '../../../src/nodes/html-media-element/IHTMLMediaElement';
-import Event from '../../../src/event/Event';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import DOMException from '../../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import IHTMLMediaElement from '../../../src/nodes/html-media-element/IHTMLMediaElement.js';
+import Event from '../../../src/event/Event.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLMediaElement', () => {
 	let window: IWindow;
@@ -15,10 +16,6 @@ describe('HTMLMediaElement', () => {
 		window = new Window();
 		document = window.document;
 		element = <IHTMLMediaElement>document.createElement('audio');
-	});
-
-	afterEach(() => {
-		jest.restoreAllMocks();
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -121,14 +118,14 @@ describe('HTMLMediaElement', () => {
 
 	describe('canplay event', () => {
 		it('Should dispatch after src set', () => {
-			let dispatchedEvent: Event = null;
+			let dispatchedEvent: Event | null = null;
 			element.addEventListener('canplay', (event: Event) => (dispatchedEvent = event));
 			element.src = 'https://songURL';
-			expect(dispatchedEvent.cancelable).toBe(false);
-			expect(dispatchedEvent.bubbles).toBe(false);
+			expect((<Event>(<unknown>dispatchedEvent)).cancelable).toBe(false);
+			expect((<Event>(<unknown>dispatchedEvent)).bubbles).toBe(false);
 		});
 		it('Should not dispatch if src is empty', () => {
-			let dispatchedEvent: Event = null;
+			let dispatchedEvent: Event | null = null;
 			element.addEventListener('canplay', (event: Event) => (dispatchedEvent = event));
 			element.src = '';
 			expect(dispatchedEvent).toBeNull();
@@ -214,7 +211,7 @@ describe('HTMLMediaElement', () => {
 	describe('CrossOrigin', () => {
 		for (const crossOrigin of ['', null, 'use-credentials', 'anonymous']) {
 			it(`Set ${crossOrigin} as a valid crossOrigin`, () => {
-				element.crossOrigin = crossOrigin;
+				element.crossOrigin = <string>crossOrigin;
 				expect(element.getAttribute('crossorigin')).toBe(crossOrigin);
 				expect(element.crossOrigin).toBe(crossOrigin);
 			});
@@ -324,7 +321,7 @@ describe('HTMLMediaElement', () => {
 
 		for (const property of [null, undefined, false]) {
 			it(`Set false with ${property}`, () => {
-				element.preservesPitch = property;
+				element.preservesPitch = <boolean>property;
 				expect(element.preservesPitch).toBe(false);
 			});
 		}
@@ -338,13 +335,13 @@ describe('HTMLMediaElement', () => {
 
 	describe('load', () => {
 		it('Dispatch emptied event', () => {
-			let dispatchedEvent: Event = null;
+			let dispatchedEvent: Event | null = null;
 			element.addEventListener('emptied', (event: Event) => (dispatchedEvent = event));
 
 			element.load();
 
-			expect(dispatchedEvent.cancelable).toBe(false);
-			expect(dispatchedEvent.bubbles).toBe(false);
+			expect((<Event>(<unknown>dispatchedEvent)).cancelable).toBe(false);
+			expect((<Event>(<unknown>dispatchedEvent)).bubbles).toBe(false);
 		});
 	});
 });

@@ -1,5 +1,5 @@
-import EventTarget from './EventTarget';
-import IMessagePort from './IMessagePort';
+import EventTarget from './EventTarget.js';
+import IMessagePort from './IMessagePort.js';
 
 /**
  * Message port.

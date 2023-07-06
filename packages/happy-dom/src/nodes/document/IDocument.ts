@@ -1,27 +1,27 @@
-import IElement from '../element/IElement';
-import IHTMLElement from '../html-element/IHTMLElement';
-import IWindow from '../../window/IWindow';
-import NodeIterator from '../../tree-walker/NodeIterator';
-import TreeWalker from '../../tree-walker/TreeWalker';
-import Event from '../../event/Event';
-import DOMImplementation from '../../dom-implementation/DOMImplementation';
-import INodeFilter from '../../tree-walker/INodeFilter';
-import IAttr from '../attr/IAttr';
-import IDocumentType from '../document-type/IDocumentType';
-import IParentNode from '../parent-node/IParentNode';
-import INode from '../node/INode';
-import ICharacterData from '../character-data/ICharacterData';
-import IDocumentFragment from '../document-fragment/IDocumentFragment';
-import Selection from '../../selection/Selection';
-import IHTMLCollection from '../element/IHTMLCollection';
-import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement';
-import CSSStyleSheet from '../../css/CSSStyleSheet';
-import Location from '../../location/Location';
-import DocumentReadyStateEnum from './DocumentReadyStateEnum';
-import INodeList from '../node/INodeList';
-import Range from '../../range/Range';
-import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
-import VisibilityStateEnum from './VisibilityStateEnum';
+import IElement from '../element/IElement.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import IWindow from '../../window/IWindow.js';
+import NodeIterator from '../../tree-walker/NodeIterator.js';
+import TreeWalker from '../../tree-walker/TreeWalker.js';
+import Event from '../../event/Event.js';
+import DOMImplementation from '../../dom-implementation/DOMImplementation.js';
+import INodeFilter from '../../tree-walker/INodeFilter.js';
+import IAttr from '../attr/IAttr.js';
+import IDocumentType from '../document-type/IDocumentType.js';
+import IParentNode from '../parent-node/IParentNode.js';
+import INode from '../node/INode.js';
+import ICharacterData from '../character-data/ICharacterData.js';
+import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
+import Selection from '../../selection/Selection.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement.js';
+import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import Location from '../../location/Location.js';
+import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
+import INodeList from '../node/INodeList.js';
+import Range from '../../range/Range.js';
+import IProcessingInstruction from '../processing-instruction/IProcessingInstruction.js';
+import VisibilityStateEnum from './VisibilityStateEnum.js';
 
 /**
  * Document.
@@ -227,7 +227,7 @@ export default interface IDocument extends IParentNode {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	createNodeIterator(root: INode, whatToShow: number, filter: INodeFilter): NodeIterator;
+	createNodeIterator(root: INode, whatToShow?: number, filter?: INodeFilter): NodeIterator;
 
 	/**
 	 * Creates a Tree Walker.
@@ -236,7 +236,7 @@ export default interface IDocument extends IParentNode {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	createTreeWalker(root: INode, whatToShow: number, filter: INodeFilter): TreeWalker;
+	createTreeWalker(root: INode, whatToShow?: number, filter?: INodeFilter): TreeWalker;
 
 	/**
 	 * Creates an event.

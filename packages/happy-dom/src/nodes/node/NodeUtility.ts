@@ -1,17 +1,17 @@
-import IText from '../text/IText';
-import IComment from '../comment/IComment';
-import INode from './INode';
-import NodeTypeEnum from './NodeTypeEnum';
-import IElement from '../element/IElement';
-import IDocumentType from '../document-type/IDocumentType';
-import IAttr from '../attr/IAttr';
-import IProcessingInstruction from '../processing-instruction/IProcessingInstruction';
-import IShadowRoot from '../shadow-root/IShadowRoot';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import Node from './Node';
-import MutationRecord from '../../mutation-observer/MutationRecord';
-import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum';
+import IText from '../text/IText.js';
+import IComment from '../comment/IComment.js';
+import INode from './INode.js';
+import NodeTypeEnum from './NodeTypeEnum.js';
+import IElement from '../element/IElement.js';
+import IDocumentType from '../document-type/IDocumentType.js';
+import IAttr from '../attr/IAttr.js';
+import IProcessingInstruction from '../processing-instruction/IProcessingInstruction.js';
+import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import Node from './Node.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
+import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 
 /**
  * Node utility.

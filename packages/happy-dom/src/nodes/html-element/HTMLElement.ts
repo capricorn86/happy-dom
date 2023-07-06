@@ -1,13 +1,13 @@
-import Element from '../element/Element';
-import IHTMLElement from './IHTMLElement';
-import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
-import IAttr from '../attr/IAttr';
-import PointerEvent from '../../event/events/PointerEvent';
-import Dataset from '../element/Dataset';
-import NodeTypeEnum from '../node/NodeTypeEnum';
-import DOMException from '../../exception/DOMException';
-import Event from '../../event/Event';
-import HTMLElementUtility from './HTMLElementUtility';
+import Element from '../element/Element.js';
+import IHTMLElement from './IHTMLElement.js';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import IAttr from '../attr/IAttr.js';
+import PointerEvent from '../../event/events/PointerEvent.js';
+import Dataset from '../element/Dataset.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import DOMException from '../../exception/DOMException.js';
+import Event from '../../event/Event.js';
+import HTMLElementUtility from './HTMLElementUtility.js';
 
 /**
  * HTML Element.
@@ -206,7 +206,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param cssText Style as text.
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style#setting_styles
 	 */
-	public set style(cssText: string | CSSStyleDeclaration) {
+	public set style(cssText: string | CSSStyleDeclaration | null) {
 		this.style.cssText = typeof cssText === 'string' ? <string>cssText : '';
 	}
 

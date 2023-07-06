@@ -1,17 +1,17 @@
-import Event from '../../event/Event';
-import EventPhaseEnum from '../../event/EventPhaseEnum';
-import ValidityState from '../../validity-state/ValidityState';
-import IAttr from '../attr/IAttr';
-import IDocument from '../document/IDocument';
-import HTMLElement from '../html-element/HTMLElement';
-import HTMLFormElement from '../html-form-element/HTMLFormElement';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
-import INode from '../node/INode';
-import INodeList from '../node/INodeList';
-import NodeList from '../node/NodeList';
-import IShadowRoot from '../shadow-root/IShadowRoot';
-import IHTMLButtonElement from './IHTMLButtonElement';
+import Event from '../../event/Event.js';
+import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import ValidityState from '../../validity-state/ValidityState.js';
+import IAttr from '../attr/IAttr.js';
+import IDocument from '../document/IDocument.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
+import INode from '../node/INode.js';
+import INodeList from '../node/INodeList.js';
+import NodeList from '../node/NodeList.js';
+import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import IHTMLButtonElement from './IHTMLButtonElement.js';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
 

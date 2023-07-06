@@ -1,6 +1,6 @@
-import MediaQueryItem from './MediaQueryItem';
-import MediaQueryTypeEnum from './MediaQueryTypeEnum';
-import IWindow from '../window/IWindow';
+import MediaQueryItem from './MediaQueryItem.js';
+import MediaQueryTypeEnum from './MediaQueryTypeEnum.js';
+import IWindow from '../window/IWindow.js';
 
 /**
  * Media query RegExp.
