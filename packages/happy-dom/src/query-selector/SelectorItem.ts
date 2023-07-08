@@ -1,11 +1,11 @@
-import DOMException from '../exception/DOMException';
-import IElement from '../nodes/element/IElement';
-import Element from '../nodes/element/Element';
-import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
-import SelectorCombinatorEnum from './SelectorCombinatorEnum';
-import ISelectorAttribute from './ISelectorAttribute';
-import ISelectorMatch from './ISelectorMatch';
-import ISelectorPseudo from './ISelectorPseudo';
+import DOMException from '../exception/DOMException.js';
+import IElement from '../nodes/element/IElement.js';
+import Element from '../nodes/element/Element.js';
+import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
+import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
+import ISelectorAttribute from './ISelectorAttribute.js';
+import ISelectorMatch from './ISelectorMatch.js';
+import ISelectorPseudo from './ISelectorPseudo.js';
 
 /**
  * Selector item.

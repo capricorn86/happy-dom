@@ -1,15 +1,16 @@
-import XMLParser from '../../src/xml-parser/XMLParser';
-import Window from '../../src/window/Window';
-import IWindow from '../../src/window/IWindow';
-import IDocument from '../../src/nodes/document/IDocument';
-import Node from '../../src/nodes/node/Node';
-import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
-import XMLParserHTML from './data/XMLParserHTML';
-import NamespaceURI from '../../src/config/NamespaceURI';
-import DocumentType from '../../src/nodes/document-type/DocumentType';
-import XMLSerializer from '../../src/xml-serializer/XMLSerializer';
-import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTemplateElement';
-import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum';
+import XMLParser from '../../src/xml-parser/XMLParser.js';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import Node from '../../src/nodes/node/Node.js';
+import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
+import XMLParserHTML from './data/XMLParserHTML.js';
+import NamespaceURI from '../../src/config/NamespaceURI.js';
+import DocumentType from '../../src/nodes/document-type/DocumentType.js';
+import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
+import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTemplateElement.js';
+import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 const GET_EXPECTED_HTML = (html: string): string =>
 	html
@@ -441,10 +442,10 @@ describe('XMLParser', () => {
 		});
 
 		it('Handles different value types.', () => {
-			const root1 = XMLParser.parse(document, null);
+			const root1 = XMLParser.parse(document, <string>(<unknown>null));
 			expect(new XMLSerializer().serializeToString(root1)).toBe('');
 
-			const root2 = XMLParser.parse(document, undefined);
+			const root2 = XMLParser.parse(document, <string>(<unknown>undefined));
 			expect(new XMLSerializer().serializeToString(root2)).toBe('');
 
 			const root3 = XMLParser.parse(document, <string>(<unknown>1000));

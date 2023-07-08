@@ -1,9 +1,9 @@
-import Node from '../nodes/node/Node';
-import NodeFilter from './NodeFilter';
-import INodeFilter from './INodeFilter';
-import NodeFilterMask from './NodeFilterMask';
-import DOMException from '../exception/DOMException';
-import INode from '../nodes/node/INode';
+import Node from '../nodes/node/Node.js';
+import NodeFilter from './NodeFilter.js';
+import INodeFilter from './INodeFilter.js';
+import NodeFilterMask from './NodeFilterMask.js';
+import DOMException from '../exception/DOMException.js';
+import INode from '../nodes/node/INode.js';
 
 /**
  * The TreeWalker object represents the nodes of a document subtree and a position within them.

@@ -1,10 +1,10 @@
-import Node from '../node/Node';
-import CharacterData from '../character-data/CharacterData';
-import IText from './IText';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement';
-import INode from '../node/INode';
+import Node from '../node/Node.js';
+import CharacterData from '../character-data/CharacterData.js';
+import IText from './IText.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import INode from '../node/INode.js';
 
 /**
  * Text node.

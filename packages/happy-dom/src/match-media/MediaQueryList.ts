@@ -1,10 +1,10 @@
-import EventTarget from '../event/EventTarget';
-import Event from '../event/Event';
-import IWindow from '../window/IWindow';
-import IEventListener from '../event/IEventListener';
-import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
-import IMediaQueryItem from './MediaQueryItem';
-import MediaQueryParser from './MediaQueryParser';
+import EventTarget from '../event/EventTarget.js';
+import Event from '../event/Event.js';
+import IWindow from '../window/IWindow.js';
+import IEventListener from '../event/IEventListener.js';
+import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
+import IMediaQueryItem from './MediaQueryItem.js';
+import MediaQueryParser from './MediaQueryParser.js';
 
 /**
  * Media Query List.

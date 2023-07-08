@@ -1,8 +1,10 @@
-import IWindow from '../../src/window/IWindow';
-import Window from '../../src/window/Window';
-import IDocument from '../../src/nodes/document/IDocument';
-import IElement from '../../src/nodes/element/IElement';
-import INamedNodeMap from 'src/named-node-map/INamedNodeMap';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import IElement from '../../src/nodes/element/IElement.js';
+import INamedNodeMap from '../../src/named-node-map/INamedNodeMap.js';
+import IAttr from '../../src/nodes/attr/IAttr.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('NamedNodeMap', () => {
 	let window: IWindow;
@@ -34,7 +36,7 @@ describe('NamedNodeMap', () => {
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', 'value2');
 
-			const attributeList = [];
+			const attributeList: IAttr[] = [];
 
 			for (const attribute of attributes) {
 				attributeList.push(attribute);

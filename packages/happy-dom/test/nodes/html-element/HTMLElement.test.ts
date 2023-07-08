@@ -1,15 +1,17 @@
-import PointerEvent from '../../../src/event/events/PointerEvent';
-import IDocument from '../../../src/nodes/document/IDocument';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
-import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
-import IWindow from '../../../src/window/IWindow';
-import Window from '../../../src/window/Window';
+import PointerEvent from '../../../src/event/events/PointerEvent.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import ISVGElement from '../../../src/nodes/svg-element/ISVGElement.js';
+import IWindow from '../../../src/window/IWindow.js';
+import Window from '../../../src/window/Window.js';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('HTMLElement', () => {
-	let window: IWindow = null;
-	let document: IDocument = null;
-	let element: IHTMLElement = null;
+	let window: IWindow;
+	let document: IDocument;
+	let element: IHTMLElement;
 
 	beforeEach(() => {
 		window = new Window();
@@ -18,7 +20,7 @@ describe('HTMLElement', () => {
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -376,18 +378,18 @@ describe('HTMLElement', () => {
 
 	describe('click()', () => {
 		it('Dispatches "click" event.', () => {
-			let triggeredEvent: PointerEvent = null;
+			let triggeredEvent: PointerEvent | null = null;
 
-			element.addEventListener('click', (event: PointerEvent) => (triggeredEvent = event));
+			element.addEventListener('click', (event) => (triggeredEvent = <PointerEvent>event));
 
 			element.click();
 
-			expect(triggeredEvent instanceof PointerEvent).toBe(true);
-			expect(triggeredEvent.type).toBe('click');
-			expect(triggeredEvent.bubbles).toBe(true);
-			expect(triggeredEvent.composed).toBe(true);
-			expect(triggeredEvent.target === element).toBe(true);
-			expect(triggeredEvent.currentTarget === element).toBe(true);
+			expect(<PointerEvent>(<unknown>triggeredEvent) instanceof PointerEvent).toBe(true);
+			expect((<PointerEvent>(<unknown>triggeredEvent)).type).toBe('click');
+			expect((<PointerEvent>(<unknown>triggeredEvent)).bubbles).toBe(true);
+			expect((<PointerEvent>(<unknown>triggeredEvent)).composed).toBe(true);
+			expect((<PointerEvent>(<unknown>triggeredEvent)).target === element).toBe(true);
+			expect((<PointerEvent>(<unknown>triggeredEvent)).currentTarget === element).toBe(true);
 		});
 	});
 
@@ -395,9 +397,11 @@ describe('HTMLElement', () => {
 		it('Calls HTMLElementUtility.blur().', () => {
 			let blurredElement: IHTMLElement | null = null;
 
-			jest
-				.spyOn(HTMLElementUtility, 'blur')
-				.mockImplementation((element: IHTMLElement) => (blurredElement = element));
+			vi.spyOn(HTMLElementUtility, 'blur').mockImplementation(
+				(element: IHTMLElement | ISVGElement) => {
+					blurredElement = <IHTMLElement>element;
+				}
+			);
 
 			element.blur();
 
@@ -409,9 +413,11 @@ describe('HTMLElement', () => {
 		it('Calls HTMLElementUtility.focus().', () => {
 			let focusedElement: IHTMLElement | null = null;
 
-			jest
-				.spyOn(HTMLElementUtility, 'focus')
-				.mockImplementation((element: IHTMLElement) => (focusedElement = element));
+			vi.spyOn(HTMLElementUtility, 'focus').mockImplementation(
+				(element: IHTMLElement | ISVGElement) => {
+					focusedElement = <IHTMLElement>element;
+				}
+			);
 
 			element.focus();
 

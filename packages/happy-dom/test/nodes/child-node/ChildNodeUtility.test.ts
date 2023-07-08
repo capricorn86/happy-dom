@@ -1,6 +1,7 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility.js';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('ChildNodeUtility', () => {
 	let window: Window;

@@ -3,9 +3,26 @@
 	"pipeline": {
 		"compile": {
 			"dependsOn": ["^compile"],
-			"outputs": ["lib/**"]
+			"inputs": ["src/**", "src/tsconfig.json", "src/package.json"],
+			"outputs": ["lib/**", "cjs/**", "tmp/**"]
 		},
 		"global-registrator#compile": {
+			"dependsOn": ["happy-dom#compile"]
+		},
+		"jest-environment#compile": {
+			"dependsOn": ["happy-dom#compile"]
+		},
+		"happy-dom#test": {
+			"outputs": ["node_modules/vitest/**"]
+		},
+		"global-registrator#test": {
+			"dependsOn": ["happy-dom#compile"],
+			"outputs": ["tmp/**"]
+		},
+		"jest-environment#test": {
+			"dependsOn": ["happy-dom#compile"]
+		},
+		"integration-test#test": {
 			"dependsOn": ["happy-dom#compile"]
 		},
 		"lint": {
@@ -15,16 +32,7 @@
 			"outputs": []
 		},
 		"test": {
-			"outputs": []
-		},
-		"test:watch": {
-			"outputs": []
-		},
-		"version": {
-			"outputs": []
-		},
-		"publish": {
-			"outputs": []
+			"inputs": ["test/**"]
 		}
 	}
 }

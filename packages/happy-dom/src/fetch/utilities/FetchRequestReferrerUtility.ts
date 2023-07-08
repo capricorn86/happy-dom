@@ -1,9 +1,9 @@
 import { URL } from 'url';
-import IRequest from '../types/IRequest';
-import IDocument from '../../nodes/document/IDocument';
+import IRequest from '../types/IRequest.js';
+import IDocument from '../../nodes/document/IDocument.js';
 import { isIP } from 'net';
-import Headers from '../Headers';
-import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy';
+import Headers from '../Headers.js';
+import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy.js';
 
 const REQUEST_REFERRER_UNSUPPORTED_PROTOCOL_REGEXP = /^(about|blob|data):$/;
 const REFERRER_POLICIES: IRequestReferrerPolicy[] = [

@@ -1,4 +1,4 @@
-import DOMExceptionNameEnum from './DOMExceptionNameEnum';
+import DOMExceptionNameEnum from './DOMExceptionNameEnum.js';
 
 /**
  * DOM Exception.

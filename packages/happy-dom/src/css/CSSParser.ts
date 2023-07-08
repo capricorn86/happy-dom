@@ -1,11 +1,11 @@
-import CSSRule from './CSSRule';
-import CSSStyleSheet from './CSSStyleSheet';
-import CSSStyleRule from './rules/CSSStyleRule';
-import CSSKeyframeRule from './rules/CSSKeyframeRule';
-import CSSKeyframesRule from './rules/CSSKeyframesRule';
-import CSSMediaRule from './rules/CSSMediaRule';
-import CSSContainerRule from './rules/CSSContainerRule';
-import CSSSupportsRule from './rules/CSSSupportsRule';
+import CSSRule from './CSSRule.js';
+import CSSStyleSheet from './CSSStyleSheet.js';
+import CSSStyleRule from './rules/CSSStyleRule.js';
+import CSSKeyframeRule from './rules/CSSKeyframeRule.js';
+import CSSKeyframesRule from './rules/CSSKeyframesRule.js';
+import CSSMediaRule from './rules/CSSMediaRule.js';
+import CSSContainerRule from './rules/CSSContainerRule.js';
+import CSSSupportsRule from './rules/CSSSupportsRule.js';
 
 const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
 

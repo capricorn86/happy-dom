@@ -1,4 +1,4 @@
-import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget';
+import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget.js';
 
 /**
  * References: https://xhr.spec.whatwg.org/#xmlhttprequestupload.

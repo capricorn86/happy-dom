@@ -1,6 +1,8 @@
-import Window from '../../src/window/Window';
-import Document from '../../src/nodes/document/Document';
-import MutationObserver from '../../src/mutation-observer/MutationObserver';
+import Window from '../../src/window/Window.js';
+import Document from '../../src/nodes/document/Document.js';
+import MutationObserver from '../../src/mutation-observer/MutationObserver.js';
+import MutationRecord from '../../src/mutation-observer/MutationRecord.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('MutationObserver', () => {
 	let window: Window;
@@ -13,7 +15,7 @@ describe('MutationObserver', () => {
 
 	describe('observe()', () => {
 		it('Observes attributes.', () => {
-			let records = [];
+			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver((mutationRecords) => {
 				records = mutationRecords;
@@ -36,7 +38,7 @@ describe('MutationObserver', () => {
 		});
 
 		it('Observes attributes and old attribute values.', () => {
-			let records = [];
+			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver((mutationRecords) => {
 				records = mutationRecords;
@@ -60,7 +62,7 @@ describe('MutationObserver', () => {
 		});
 
 		it('Only observes a list of filtered attributes if defined.', () => {
-			const records = [];
+			const records: MutationRecord[][] = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
@@ -92,7 +94,7 @@ describe('MutationObserver', () => {
 		});
 
 		it('Observers character data changes on text node.', () => {
-			const records = [];
+			const records: MutationRecord[][] = [];
 			const text = document.createTextNode('old');
 			const observer = new MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
@@ -117,7 +119,7 @@ describe('MutationObserver', () => {
 		});
 
 		it('Observers character data changes to child text nodes.', () => {
-			const records = [];
+			const records: MutationRecord[][] = [];
 			const div = document.createElement('div');
 			const text = document.createTextNode('old');
 			const observer = new MutationObserver((mutationRecords) => {
@@ -144,7 +146,7 @@ describe('MutationObserver', () => {
 		});
 
 		it('Observers added and removed nodes.', () => {
-			const records = [];
+			const records: MutationRecord[][] = [];
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			const article = document.createElement('article');
@@ -217,7 +219,7 @@ describe('MutationObserver', () => {
 
 	describe('disconnect()', () => {
 		it('Disconnects the observer.', () => {
-			let records = [];
+			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver((mutationRecords) => {
 				records = mutationRecords;

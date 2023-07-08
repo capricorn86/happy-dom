@@ -1,4 +1,4 @@
-import File from '../file/File';
+import File from '../file/File.js';
 
 /**
  *

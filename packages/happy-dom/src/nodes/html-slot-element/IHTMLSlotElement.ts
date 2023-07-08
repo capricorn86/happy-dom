@@ -1,8 +1,8 @@
-import IHTMLElement from '../html-element/IHTMLElement';
-import IText from '../text/IText';
-import IElement from '../element/IElement';
-import INode from '../node/INode';
-import Event from '../../event/Event';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import IText from '../text/IText.js';
+import IElement from '../element/IElement.js';
+import INode from '../node/INode.js';
+import Event from '../../event/Event.js';
 
 /**
  * HTML Slot Element.

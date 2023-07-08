@@ -1,8 +1,9 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import IDocument from '../../../src/nodes/document/IDocument';
-import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnknownElement';
-import CustomElement from '../../CustomElement';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnknownElement.js';
+import CustomElement from '../../CustomElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLUnknownElement', () => {
 	let window: IWindow;

@@ -1,7 +1,7 @@
-import HTMLElement from '../html-element/HTMLElement';
-import IHTMLElement from '../html-element/IHTMLElement';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import IHTMLLabelElement from './IHTMLLabelElement';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import IHTMLLabelElement from './IHTMLLabelElement.js';
 
 /**
  * HTML Label Element.

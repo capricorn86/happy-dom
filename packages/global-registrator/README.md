@@ -38,6 +38,11 @@ And much more..
 
 - [Vue](https://vuejs.org/)
 
+### Module Systems
+
+- [ESM](https://nodejs.org/api/esm.html#introduction)
+- [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules)
+
 # Installation
 
 ```bash
@@ -74,6 +79,10 @@ GlobalRegistrator.unregister();
 console.log(global.document);
 ```
 
+# Documentation
+
+Read more about how Happy DOM works in our [documentation](https://github.com/capricorn86/happy-dom/wiki).
+
 # Performance
 
 | Operation                            | JSDOM   | Happy DOM |
@@ -88,7 +97,7 @@ console.log(global.document);
 | querySelectorAll('[class~="name"]')  | 5.5 ms  | 2.9 ms    |
 | querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
 
-[See how the test was done here](https://github.com/capricorn86/happy-dom-performance-test)
+See how the test was done [here](https://github.com/capricorn86/happy-dom-performance-test)
 
 # Sponsors
 

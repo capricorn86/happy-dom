@@ -1,7 +1,7 @@
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import File from '../../file/File';
-import FormData from '../../form-data/FormData';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import File from '../../file/File.js';
+import FormData from '../../form-data/FormData.js';
 
 enum MultiparParserStateEnum {
 	boundary = 0,

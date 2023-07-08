@@ -1,5 +1,5 @@
-import Element from '../nodes/element/Element';
-import IDOMTokenList from './IDOMTokenList';
+import Element from '../nodes/element/Element.js';
+import IDOMTokenList from './IDOMTokenList.js';
 
 /**
  * DOM Token List.

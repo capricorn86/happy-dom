@@ -1,22 +1,22 @@
-import IRequestInit from './types/IRequestInit';
-import IDocument from '../nodes/document/IDocument';
-import IResponse from './types/IResponse';
-import Request from './Request';
-import IRequestInfo from './types/IRequestInfo';
-import Headers from './Headers';
-import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility';
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import Response from './Response';
+import IRequestInit from './types/IRequestInit.js';
+import IDocument from '../nodes/document/IDocument.js';
+import IResponse from './types/IResponse.js';
+import Request from './Request.js';
+import IRequestInfo from './types/IRequestInfo.js';
+import Headers from './Headers.js';
+import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import Response from './Response.js';
 import HTTP, { IncomingMessage } from 'http';
 import HTTPS from 'https';
 import Zlib from 'zlib';
 import { URL } from 'url';
 import { Socket } from 'net';
 import Stream from 'stream';
-import DataURIParser from './data-uri/DataURIParser';
-import FetchCORSUtility from './utilities/FetchCORSUtility';
-import CookieJar from '../cookie/CookieJar';
+import DataURIParser from './data-uri/DataURIParser.js';
+import FetchCORSUtility from './utilities/FetchCORSUtility.js';
+import CookieJar from '../cookie/CookieJar.js';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -195,6 +195,7 @@ export default class Fetch {
 	 */
 	private onError(error: Error): void {
 		this.finalizeRequest();
+		this.ownerDocument.defaultView.console.error(error);
 		this.reject(
 			new DOMException(
 				`Fetch to "${this.request.url}" failed. Error: ${error.message}`,

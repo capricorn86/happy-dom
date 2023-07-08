@@ -1,6 +1,6 @@
-import DataTransfer from '../DataTransfer';
-import UIEvent from '../UIEvent';
-import IInputEventInit from './IInputEventInit';
+import DataTransfer from '../DataTransfer.js';
+import UIEvent from '../UIEvent.js';
+import IInputEventInit from './IInputEventInit.js';
 
 /**
  *

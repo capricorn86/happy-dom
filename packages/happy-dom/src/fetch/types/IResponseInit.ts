@@ -1,4 +1,4 @@
-import IHeadersInit from './IHeadersInit';
+import IHeadersInit from './IHeadersInit.js';
 
 /**
  * Response init.

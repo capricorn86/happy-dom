@@ -1,6 +1,6 @@
 import { URLSearchParams } from 'url';
-import FormData from '../../form-data/FormData';
-import Blob from '../../file/Blob';
+import FormData from '../../form-data/FormData.js';
+import Blob from '../../file/Blob.js';
 
 type IResponseBody =
 	| ArrayBuffer

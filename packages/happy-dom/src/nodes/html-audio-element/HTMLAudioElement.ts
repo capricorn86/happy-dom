@@ -1,5 +1,5 @@
-import HTMLMediaElement from '../html-media-element/HTMLMediaElement';
-import IHTMLAudioElement from './IHTMLAudioElement';
+import HTMLMediaElement from '../html-media-element/HTMLMediaElement.js';
+import IHTMLAudioElement from './IHTMLAudioElement.js';
 
 /**
  * HTML Audio Element.
