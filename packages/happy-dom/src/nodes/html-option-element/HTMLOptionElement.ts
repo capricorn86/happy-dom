@@ -120,7 +120,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	/**
 	 * @override
 	 */
-	public setAttributeNode(attribute: IAttr): IAttr {
+	public setAttributeNode(attribute: IAttr): IAttr | null {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (

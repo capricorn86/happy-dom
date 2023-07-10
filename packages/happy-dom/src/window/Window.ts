@@ -845,13 +845,15 @@ export default class Window extends EventTarget implements IWindow {
 			);
 		}
 
-		this.dispatchEvent(
-			new MessageEvent('message', {
-				data: message,
-				origin: this.parent.location.origin,
-				source: this.parent,
-				lastEventId: ''
-			})
+		this.window.setTimeout(() =>
+			this.dispatchEvent(
+				new MessageEvent('message', {
+					data: message,
+					origin: this.parent.location.origin,
+					source: this.parent,
+					lastEventId: ''
+				})
+			)
 		);
 	}
 

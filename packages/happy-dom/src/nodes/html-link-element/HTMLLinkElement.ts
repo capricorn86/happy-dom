@@ -181,7 +181,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * @override
 	 */
-	public override setAttributeNode(attribute: IAttr): IAttr {
+	public override setAttributeNode(attribute: IAttr): IAttr | null {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'rel' && this._relList) {

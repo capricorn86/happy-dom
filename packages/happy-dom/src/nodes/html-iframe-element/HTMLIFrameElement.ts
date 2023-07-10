@@ -1,13 +1,12 @@
-import { URL } from 'url';
 import Event from '../../event/Event.js';
-import ErrorEvent from '../../event/events/ErrorEvent.js';
 import IWindow from '../../window/IWindow.js';
-import Window from '../../window/Window.js';
 import IDocument from '../document/IDocument.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import INode from '../node/INode.js';
 import IFrameCrossOriginWindow from './IFrameCrossOriginWindow.js';
 import IHTMLIFrameElement from './IHTMLIFrameElement.js';
+import HTMLIFrameUtility from './HTMLIFrameUtility.js';
+import IAttr from '../attr/IAttr.js';
 
 /**
  * HTML Iframe Element.
@@ -20,8 +19,8 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	public onload: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
 
-	// Private
-	#contentWindow: IWindow | IFrameCrossOriginWindow | null = null;
+	// Internal properties
+	public _contentWindow: IWindow | IFrameCrossOriginWindow | null = null;
 
 	/**
 	 * Returns source.
@@ -155,7 +154,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 * @returns Content document.
 	 */
 	public get contentDocument(): IDocument | null {
-		return (<IWindow>this.#contentWindow)?.document || null;
+		return (<IWindow>this._contentWindow)?.document || null;
 	}
 
 	/**
@@ -164,7 +163,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 * @returns Content window.
 	 */
 	public get contentWindow(): IWindow | IFrameCrossOriginWindow | null {
-		return this.#contentWindow || null;
+		return this._contentWindow;
 	}
 
 	/**
@@ -176,81 +175,26 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 
 		super._connectToNode(parentNode);
 
-		if (
-			isParentConnected &&
-			isConnected !== isParentConnected &&
-			!this.ownerDocument.defaultView.happyDOM.settings.disableIframePageLoading
-		) {
-			const src = this.src;
-
-			if (src !== null) {
-				const contentWindow = new (<typeof Window>this.ownerDocument.defaultView.constructor)({
-					url: src,
-					settings: {
-						...this.ownerDocument.defaultView.happyDOM.settings
-					}
-				});
-
-				(<IWindow>contentWindow.parent) = this.ownerDocument.defaultView;
-				(<IWindow>contentWindow.top) = this.ownerDocument.defaultView;
-
-				if (src === 'about:blank') {
-					this.#contentWindow = contentWindow;
-					return;
-				}
-
-				if (src.startsWith('javascript:')) {
-					this.#contentWindow = contentWindow;
-					this.#contentWindow.eval(src.replace('javascript:', ''));
-					return;
-				}
-
-				const originURL = this.ownerDocument.defaultView.location;
-				const targetURL = new URL(src, originURL);
-				const isCORS =
-					(originURL.hostname !== targetURL.hostname &&
-						!originURL.hostname.endsWith(targetURL.hostname)) ||
-					originURL.protocol !== targetURL.protocol;
-
-				const onError = (error): void => {
-					this.dispatchEvent(
-						new ErrorEvent('error', {
-							message: error.message,
-							error
-						})
-					);
-					this.ownerDocument.defaultView.dispatchEvent(
-						new ErrorEvent('error', {
-							message: error.message,
-							error
-						})
-					);
-					if (
-						!this['_listeners']['error'] &&
-						!this.ownerDocument.defaultView['_listeners']['error']
-					) {
-						this.ownerDocument.defaultView.console.error(error);
-					}
-				};
-
-				this.#contentWindow = null;
-				this.ownerDocument.defaultView
-					.fetch(src)
-					.then((response) => {
-						response
-							.text()
-							.then((text) => {
-								this.#contentWindow = isCORS
-									? new IFrameCrossOriginWindow(this.ownerDocument.defaultView, contentWindow)
-									: contentWindow;
-								contentWindow.document.write(text);
-								this.dispatchEvent(new Event('load'));
-							})
-							.catch(onError);
-					})
-					.catch(onError);
-			}
+		if (isParentConnected && isConnected !== isParentConnected) {
+			HTMLIFrameUtility.loadPage(this);
 		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override setAttributeNode(attribute: IAttr): IAttr | null {
+		const replacedAttribute = super.setAttributeNode(attribute);
+
+		if (
+			attribute.name === 'src' &&
+			attribute.value &&
+			attribute.value !== replacedAttribute?.value
+		) {
+			HTMLIFrameUtility.loadPage(this);
+		}
+
+		return replacedAttribute;
 	}
 
 	/**

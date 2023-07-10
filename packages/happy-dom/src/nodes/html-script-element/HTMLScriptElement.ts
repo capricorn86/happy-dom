@@ -158,7 +158,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: IAttr): IAttr {
+	public setAttributeNode(attribute: IAttr): IAttr | null {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'src' && attribute.value !== null && this.isConnected) {
