@@ -1,5 +1,5 @@
-import DOMException from '../exception/DOMException';
-import IDocument from '../nodes/document/IDocument';
+import DOMException from '../exception/DOMException.js';
+import IDocument from '../nodes/document/IDocument.js';
 import { URL } from 'url';
 
 /**

@@ -1,4 +1,4 @@
-import Document from '../document/Document';
+import Document from '../document/Document.js';
 
 /**
  * Document.

@@ -1,9 +1,10 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import IHTMLSlotElement from '../../../src/nodes/html-slot-element/IHTMLSlotElement';
-import CustomElementWithNamedSlots from './CustomElementWithNamedSlots';
-import CustomElementWithSlot from './CustomElementWithSlot';
-import INodeList from '../../../src/nodes/node/INodeList';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import IHTMLSlotElement from '../../../src/nodes/html-slot-element/IHTMLSlotElement.js';
+import CustomElementWithNamedSlots from './CustomElementWithNamedSlots.js';
+import CustomElementWithSlot from './CustomElementWithSlot.js';
+import INodeList from '../../../src/nodes/node/INodeList.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLSlotElement', () => {
 	let window: Window;

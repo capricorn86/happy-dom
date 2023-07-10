@@ -1,12 +1,12 @@
-import IEventInit from './IEventInit';
-import INode from '../nodes/node/INode';
-import IWindow from '../window/IWindow';
-import IShadowRoot from '../nodes/shadow-root/IShadowRoot';
-import IEventTarget from './IEventTarget';
-import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
+import IEventInit from './IEventInit.js';
+import INode from '../nodes/node/INode.js';
+import IWindow from '../window/IWindow.js';
+import IShadowRoot from '../nodes/shadow-root/IShadowRoot.js';
+import IEventTarget from './IEventTarget.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import { performance } from 'perf_hooks';
-import EventPhaseEnum from './EventPhaseEnum';
-import IDocument from '../nodes/document/IDocument';
+import EventPhaseEnum from './EventPhaseEnum.js';
+import IDocument from '../nodes/document/IDocument.js';
 
 /**
  * Event.

@@ -1,13 +1,13 @@
-import Event from '../event/Event';
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import IDocument from '../nodes/document/IDocument';
-import INode from '../nodes/node/INode';
-import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
-import NodeUtility from '../nodes/node/NodeUtility';
-import Range from '../range/Range';
-import RangeUtility from '../range/RangeUtility';
-import SelectionDirectionEnum from './SelectionDirectionEnum';
+import Event from '../event/Event.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import IDocument from '../nodes/document/IDocument.js';
+import INode from '../nodes/node/INode.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import NodeUtility from '../nodes/node/NodeUtility.js';
+import Range from '../range/Range.js';
+import RangeUtility from '../range/RangeUtility.js';
+import SelectionDirectionEnum from './SelectionDirectionEnum.js';
 
 /**
  * Selection.

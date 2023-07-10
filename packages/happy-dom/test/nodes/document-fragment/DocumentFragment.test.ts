@@ -1,14 +1,15 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment';
-import IDocumentFragment from '../../../src/nodes/document-fragment/IDocumentFragment';
-import Node from '../../../src/nodes/node/Node';
-import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
-import QuerySelector from '../../../src/query-selector/QuerySelector';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
-import Text from '../../../src/nodes/text/Text';
-import INodeList from '../../../src/nodes/node/INodeList';
-import IElement from '../../../src/nodes/element/IElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment.js';
+import IDocumentFragment from '../../../src/nodes/document-fragment/IDocumentFragment.js';
+import Node from '../../../src/nodes/node/Node.js';
+import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
+import QuerySelector from '../../../src/query-selector/QuerySelector.js';
+import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import Text from '../../../src/nodes/text/Text.js';
+import INodeList from '../../../src/nodes/node/INodeList.js';
+import IElement from '../../../src/nodes/element/IElement.js';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('DocumentFragment', () => {
 	let window: Window;
@@ -22,7 +23,7 @@ describe('DocumentFragment', () => {
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('get children()', () => {
@@ -123,7 +124,7 @@ describe('DocumentFragment', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
+			vi.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode).toBe(documentFragment);
 				expect(Array.from(nodes)).toEqual([node1, node2]);
 				isCalled = true;
@@ -140,7 +141,7 @@ describe('DocumentFragment', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
+			vi.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode).toBe(documentFragment);
 				expect(Array.from(nodes)).toEqual([node1, node2]);
 				isCalled = true;
@@ -157,13 +158,11 @@ describe('DocumentFragment', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest
-				.spyOn(ParentNodeUtility, 'replaceChildren')
-				.mockImplementation((parentNode, ...nodes) => {
-					expect(parentNode).toBe(documentFragment);
-					expect(Array.from(nodes)).toEqual([node1, node2]);
-					isCalled = true;
-				});
+			vi.spyOn(ParentNodeUtility, 'replaceChildren').mockImplementation((parentNode, ...nodes) => {
+				expect(parentNode).toBe(documentFragment);
+				expect(Array.from(nodes)).toEqual([node1, node2]);
+				isCalled = true;
+			});
 
 			documentFragment.replaceChildren(node1, node2);
 			expect(isCalled).toBe(true);
@@ -175,7 +174,7 @@ describe('DocumentFragment', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(documentFragment);
 				expect(selector).toBe(expectedSelector);
 				return <INodeList<IElement>>[element];
@@ -190,7 +189,7 @@ describe('DocumentFragment', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
-			jest.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
+			vi.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(documentFragment);
 				expect(selector).toBe(expectedSelector);
 				return element;

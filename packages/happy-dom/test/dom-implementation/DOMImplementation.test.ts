@@ -1,5 +1,6 @@
-import Document from '../../src/nodes/document/Document';
-import DOMImplementation from '../../src/dom-implementation/DOMImplementation';
+import Document from '../../src/nodes/document/Document.js';
+import DOMImplementation from '../../src/dom-implementation/DOMImplementation.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('DOMImplementation', () => {
 	let ownerDocument: Document;

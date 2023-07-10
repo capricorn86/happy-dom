@@ -1,14 +1,14 @@
-import IShadowRoot from '../shadow-root/IShadowRoot';
-import IAttr from '../attr/IAttr';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap';
-import DOMRect from './DOMRect';
-import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
-import INode from './../node/INode';
-import IChildNode from '../child-node/IChildNode';
-import IParentNode from '../parent-node/IParentNode';
-import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode';
-import IDOMRectList from './IDOMRectList';
-import Event from '../../event/Event';
+import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import IAttr from '../attr/IAttr.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import DOMRect from './DOMRect.js';
+import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
+import INode from './../node/INode.js';
+import IChildNode from '../child-node/IChildNode.js';
+import IParentNode from '../parent-node/IParentNode.js';
+import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
+import IDOMRectList from './IDOMRectList.js';
+import Event from '../../event/Event.js';
 
 export type TInsertAdjacentPositions = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -106,7 +106,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param name Name.
 	 * @param value Value.
 	 */
-	setAttributeNS(namespaceURI: string, name: string, value: string): void;
+	setAttributeNS(namespaceURI: string | null, name: string, value: string): void;
 
 	/**
 	 * Returns attribute names.
@@ -128,7 +128,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param namespace Namespace URI.
 	 * @param localName Local name.
 	 */
-	getAttributeNS(namespace: string, localName: string): string;
+	getAttributeNS(namespace: string | null, localName: string): string;
 
 	/**
 	 * Returns a boolean value indicating whether the specified element has the attribute or not.
@@ -145,7 +145,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param localName Local name.
 	 * @returns True if attribute exists, false otherwise.
 	 */
-	hasAttributeNS(namespace: string, localName: string): boolean;
+	hasAttributeNS(namespace: string | null, localName: string): boolean;
 
 	/**
 	 * Returns "true" if the element has attributes.
@@ -167,7 +167,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param namespace Namespace URI.
 	 * @param localName Local name.
 	 */
-	removeAttributeNS(namespace: string, localName: string): void;
+	removeAttributeNS(namespace: string | null, localName: string): void;
 
 	/**
 	 * Toggle an attribute.
@@ -263,7 +263,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	 * @param nodeName Node name.
 	 * @returns Replaced attribute.
 	 */
-	getAttributeNodeNS(namespace: string, nodeName: string): IAttr;
+	getAttributeNodeNS(namespace: string | null, nodeName: string): IAttr;
 
 	/**
 	 * Removes an Attr node.

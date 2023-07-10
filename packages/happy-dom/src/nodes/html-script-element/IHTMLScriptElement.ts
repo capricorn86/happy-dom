@@ -1,4 +1,4 @@
-import IHTMLElement from '../html-element/IHTMLElement';
+import IHTMLElement from '../html-element/IHTMLElement.js';
 
 /**
  * HTML Script Element.

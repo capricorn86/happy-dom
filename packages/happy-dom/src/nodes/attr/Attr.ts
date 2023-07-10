@@ -1,6 +1,6 @@
-import IElement from '../element/IElement';
-import Node from '../node/Node';
-import IAttr from './IAttr';
+import IElement from '../element/IElement.js';
+import Node from '../node/Node.js';
+import IAttr from './IAttr.js';
 
 /**
  * Attribute node interface.

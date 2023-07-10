@@ -1,11 +1,11 @@
-import IDocument from '../nodes/document/IDocument';
-import XMLParser from '../xml-parser/XMLParser';
-import Node from '../nodes/node/Node';
-import DOMException from '../exception/DOMException';
-import HTMLDocument from '../nodes/html-document/HTMLDocument';
-import XMLDocument from '../nodes/xml-document/XMLDocument';
-import SVGDocument from '../nodes/svg-document/SVGDocument';
-import IWindow from '../window/IWindow';
+import IDocument from '../nodes/document/IDocument.js';
+import XMLParser from '../xml-parser/XMLParser.js';
+import Node from '../nodes/node/Node.js';
+import DOMException from '../exception/DOMException.js';
+import HTMLDocument from '../nodes/html-document/HTMLDocument.js';
+import XMLDocument from '../nodes/xml-document/XMLDocument.js';
+import SVGDocument from '../nodes/svg-document/SVGDocument.js';
+import IWindow from '../window/IWindow.js';
 
 /**
  * DOM parser.

@@ -1,10 +1,11 @@
-import File from '../../src/file/File';
+import File from '../../src/file/File.js';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 
 const NOW = 1;
 
 describe('File', () => {
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('get name()', () => {
@@ -16,7 +17,7 @@ describe('File', () => {
 
 	describe('get lastModified()', () => {
 		it('Returns the current time if not provided to the constructor.', () => {
-			jest.spyOn(Date, 'now').mockImplementation(() => NOW);
+			vi.spyOn(Date, 'now').mockImplementation(() => NOW);
 			const file = new File(['TEST'], 'filename.jpg');
 			expect(file.lastModified).toBe(NOW);
 		});

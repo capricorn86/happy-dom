@@ -1,13 +1,13 @@
-import IElement from '../nodes/element/IElement';
-import INodeList from '../nodes/node/INodeList';
-import SelectorItem from './SelectorItem';
-import NodeList from '../nodes/node/NodeList';
-import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
-import SelectorCombinatorEnum from './SelectorCombinatorEnum';
-import IDocument from '../nodes/document/IDocument';
-import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment';
-import SelectorParser from './SelectorParser';
-import ISelectorMatch from './ISelectorMatch';
+import IElement from '../nodes/element/IElement.js';
+import INodeList from '../nodes/node/INodeList.js';
+import SelectorItem from './SelectorItem.js';
+import NodeList from '../nodes/node/NodeList.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
+import IDocument from '../nodes/document/IDocument.js';
+import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
+import SelectorParser from './SelectorParser.js';
+import ISelectorMatch from './ISelectorMatch.js';
 
 type IDocumentPositionAndElement = {
 	documentPosition: string;

@@ -1,8 +1,8 @@
-import FormData from '../../form-data/FormData';
+import FormData from '../../form-data/FormData.js';
 import Stream from 'stream';
-import MultipartReader from './MultipartReader';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
+import MultipartReader from './MultipartReader.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 /**
  * Multipart form data factory.

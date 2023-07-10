@@ -1,5 +1,5 @@
-import Event from '../Event';
-import ICustomEventInit from './ICustomEventInit';
+import Event from '../Event.js';
+import ICustomEventInit from './ICustomEventInit.js';
 
 /**
  *

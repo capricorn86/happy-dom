@@ -1,4 +1,4 @@
-import ICharacterData from './ICharacterData';
+import ICharacterData from './ICharacterData.js';
 
 /**
  * Child node utility.

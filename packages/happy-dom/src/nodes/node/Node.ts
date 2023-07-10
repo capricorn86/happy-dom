@@ -1,15 +1,15 @@
-import EventTarget from '../../event/EventTarget';
-import MutationListener from '../../mutation-observer/MutationListener';
-import INode from './INode';
-import IDocument from '../document/IDocument';
-import IElement from '../element/IElement';
-import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement';
-import NodeTypeEnum from './NodeTypeEnum';
-import NodeDocumentPositionEnum from './NodeDocumentPositionEnum';
-import NodeUtility from './NodeUtility';
-import IAttr from '../attr/IAttr';
-import NodeList from './NodeList';
-import INodeList from './INodeList';
+import EventTarget from '../../event/EventTarget.js';
+import MutationListener from '../../mutation-observer/MutationListener.js';
+import INode from './INode.js';
+import IDocument from '../document/IDocument.js';
+import IElement from '../element/IElement.js';
+import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement.js';
+import NodeTypeEnum from './NodeTypeEnum.js';
+import NodeDocumentPositionEnum from './NodeDocumentPositionEnum.js';
+import NodeUtility from './NodeUtility.js';
+import IAttr from '../attr/IAttr.js';
+import NodeList from './NodeList.js';
+import INodeList from './INodeList.js';
 
 /**
  * Node.

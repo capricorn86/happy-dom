@@ -1,5 +1,5 @@
-import Window from '../src/window/Window';
-import IShadowRoot from '../src/nodes/shadow-root/IShadowRoot';
+import Window from '../src/window/Window.js';
+import IShadowRoot from '../src/nodes/shadow-root/IShadowRoot.js';
 
 /**
  * CustomElement test class.
@@ -7,8 +7,12 @@ import IShadowRoot from '../src/nodes/shadow-root/IShadowRoot';
 export default class CustomElement extends new Window().HTMLElement {
 	public static observedAttributesCallCount = 0;
 	public static shadowRootMode = 'open';
-	public changedAttributes = [];
-	private internalShadowRoot: IShadowRoot = null;
+	public changedAttributes: Array<{
+		name: string;
+		oldValue: string | null;
+		newValue: string | null;
+	}> = [];
+	private internalShadowRoot: IShadowRoot;
 
 	/**
 	 * Constructor.

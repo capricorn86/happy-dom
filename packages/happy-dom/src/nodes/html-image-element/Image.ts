@@ -1,4 +1,4 @@
-import HTMLImageElement from './HTMLImageElement';
+import HTMLImageElement from './HTMLImageElement.js';
 
 /**
  * Image as constructor.

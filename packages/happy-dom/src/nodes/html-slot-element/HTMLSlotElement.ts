@@ -1,10 +1,10 @@
-import HTMLElement from '../html-element/HTMLElement';
-import IShadowRoot from '../shadow-root/IShadowRoot';
-import IHTMLSlotElement from './IHTMLSlotElement';
-import IText from '../text/IText';
-import IElement from '../element/IElement';
-import INode from '../node/INode';
-import Event from '../../event/Event';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import IHTMLSlotElement from './IHTMLSlotElement.js';
+import IText from '../text/IText.js';
+import IElement from '../element/IElement.js';
+import INode from '../node/INode.js';
+import Event from '../../event/Event.js';
 
 /**
  * HTML Slot Element.

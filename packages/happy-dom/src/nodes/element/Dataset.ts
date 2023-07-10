@@ -1,4 +1,4 @@
-import Element from '../element/Element';
+import Element from '../element/Element.js';
 
 /**
  * Storage type for a dataset proxy.

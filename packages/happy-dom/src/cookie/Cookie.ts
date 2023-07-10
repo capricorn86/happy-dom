@@ -1,6 +1,6 @@
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import CookieSameSiteEnum from './CookieSameSiteEnum';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import CookieSameSiteEnum from './CookieSameSiteEnum.js';
 import { URL } from 'url';
 
 /**

@@ -1,6 +1,7 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import CharacterDataUtility from '../../../src/nodes/character-data/CharacterDataUtility';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import CharacterDataUtility from '../../../src/nodes/character-data/CharacterDataUtility.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('CharacterDataTest', () => {
 	let window: Window;

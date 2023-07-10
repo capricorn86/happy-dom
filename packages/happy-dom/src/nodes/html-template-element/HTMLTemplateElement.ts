@@ -1,9 +1,9 @@
-import HTMLElement from '../html-element/HTMLElement';
-import IDocumentFragment from '../document-fragment/IDocumentFragment';
-import INode from '../node/INode';
-import IHTMLTemplateElement from './IHTMLTemplateElement';
-import XMLSerializer from '../../xml-serializer/XMLSerializer';
-import XMLParser from '../../xml-parser/XMLParser';
+import HTMLElement from '../html-element/HTMLElement.js';
+import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
+import INode from '../node/INode.js';
+import IHTMLTemplateElement from './IHTMLTemplateElement.js';
+import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
+import XMLParser from '../../xml-parser/XMLParser.js';
 
 /**
  * HTML Template Element.

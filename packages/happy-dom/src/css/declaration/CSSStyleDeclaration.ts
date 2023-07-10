@@ -1,4 +1,4 @@
-import AbstractCSSStyleDeclaration from './AbstractCSSStyleDeclaration';
+import AbstractCSSStyleDeclaration from './AbstractCSSStyleDeclaration.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 

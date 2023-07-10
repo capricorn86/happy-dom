@@ -1,5 +1,5 @@
-import IHTMLMetaElement from './IHTMLMetaElement';
-import HTMLElement from '../html-element/HTMLElement';
+import IHTMLMetaElement from './IHTMLMetaElement.js';
+import HTMLElement from '../html-element/HTMLElement.js';
 
 /**
  * HTML Meta Element.

@@ -1,7 +1,7 @@
-import SVGElement from './SVGElement';
-import DOMRect from '../element/DOMRect';
-import DOMMatrix from './DOMMatrix';
-import ISVGGraphicsElement from './ISVGGraphicsElement';
+import SVGElement from './SVGElement.js';
+import DOMRect from '../element/DOMRect.js';
+import DOMMatrix from './DOMMatrix.js';
+import ISVGGraphicsElement from './ISVGGraphicsElement.js';
 
 /**
  * SVG Graphics Element.

@@ -1,6 +1,6 @@
-import Event from '../../event/Event';
-import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration';
-import IElement from '../element/IElement';
+import Event from '../../event/Event.js';
+import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import IElement from '../element/IElement.js';
 
 /**
  * HTML Element.
@@ -48,7 +48,7 @@ export default interface IHTMLElement extends IElement {
 	ontransitionstart: (event: Event) => void | null;
 
 	get style(): CSSStyleDeclaration;
-	set style(cssText: CSSStyleDeclaration | string);
+	set style(cssText: string | CSSStyleDeclaration | null);
 
 	/**
 	 * Triggers a click event.

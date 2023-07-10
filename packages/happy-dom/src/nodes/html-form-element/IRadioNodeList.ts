@@ -1,5 +1,5 @@
-import IElement from '../element/IElement';
-import INodeList from '../node/INodeList';
+import IElement from '../element/IElement.js';
+import INodeList from '../node/INodeList.js';
 
 /**
  * RadioNodeList.

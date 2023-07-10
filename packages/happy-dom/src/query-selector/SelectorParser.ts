@@ -1,7 +1,7 @@
-import SelectorItem from './SelectorItem';
-import SelectorCombinatorEnum from './SelectorCombinatorEnum';
-import DOMException from '../exception/DOMException';
-import ISelectorPseudo from './ISelectorPseudo';
+import SelectorItem from './SelectorItem.js';
+import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
+import DOMException from '../exception/DOMException.js';
+import ISelectorPseudo from './ISelectorPseudo.js';
 
 /**
  * Selector RegExp.
@@ -21,10 +21,11 @@ import ISelectorPseudo from './ISelectorPseudo';
  * Group 13: Pseudo name when arguments (e.g. "nth-child")
  * Group 14: Arguments of pseudo (e.g. "2n + 1")
  * Group 15: Pseudo name when no arguments (e.g. "empty")
- * Group 16: Combinator.
+ * Group 16: Pseudo element (e.g. "::after", "::-webkit-inner-spin-button").
+ * Group 17: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *["']{1}([^"']*)["']{1} *(s|i){0,1}\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *([^\]]*)\]|:([a-zA-Z-]+) *\(([^)]+)\)|:([a-zA-Z-]+)|([ ,+>]*)/g;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *["']{1}([^"']*)["']{1} *(s|i){0,1}\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *([^\]]*)\]|:([a-zA-Z-]+) *\(([^)]+)\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([ ,+>]*)/g;
 
 /**
  * Escaped Character RegExp.
@@ -151,7 +152,9 @@ export default class SelectorParser {
 					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
 					currentSelectorItem.pseudos.push(this.getPseudo(match[15]));
 				} else if (match[16]) {
-					switch (match[16].trim()) {
+					currentSelectorItem.isPseudoElement = true;
+				} else if (match[17]) {
+					switch (match[17].trim()) {
 						case ',':
 							currentSelectorItem = new SelectorItem({
 								combinator: SelectorCombinatorEnum.descendant

@@ -1,8 +1,8 @@
-import EventTarget from '../../event/EventTarget';
-import IWindow from '../../window/IWindow';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import Location from '../../location/Location';
+import EventTarget from '../../event/EventTarget.js';
+import IWindow from '../../window/IWindow.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import Location from '../../location/Location.js';
 
 /**
  * Browser window with limited access due to CORS restrictions in iframes.

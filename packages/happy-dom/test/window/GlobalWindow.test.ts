@@ -1,5 +1,6 @@
-import GlobalWindow from '../../src/window/GlobalWindow';
-import IWindow from '../../src/window/IWindow';
+import GlobalWindow from '../../src/window/GlobalWindow.js';
+import IWindow from '../../src/window/IWindow.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('GlobalWindow', () => {
 	let window: IWindow;
@@ -8,19 +9,15 @@ describe('GlobalWindow', () => {
 		window = new GlobalWindow();
 	});
 
-	afterEach(() => {
-		jest.restoreAllMocks();
-	});
-
 	describe('get Object()', () => {
 		it('Is the same as {}.constructor.', () => {
 			expect({}.constructor).toBe(window.Object);
 		});
 
 		it('Is the same as {}.constructor when using eval().', () => {
-			global['window'] = window;
-			expect(window.eval('({}).constructor === window.Object')).toBe(true);
-			delete global['window'];
+			global['globalWindow'] = window;
+			expect(window.eval('({}).constructor === globalWindow.Object')).toBe(true);
+			delete global['globalWindow'];
 		});
 	});
 
@@ -30,9 +27,9 @@ describe('GlobalWindow', () => {
 		});
 
 		it('Is the same as (() => {}).constructor when using eval().', () => {
-			global['window'] = window;
-			expect(window.eval('(() => {}).constructor === window.Function')).toBe(true);
-			delete global['window'];
+			global['globalWindow'] = window;
+			expect(window.eval('(() => {}).constructor === globalWindow.Function')).toBe(true);
+			delete global['globalWindow'];
 		});
 	});
 
@@ -42,9 +39,9 @@ describe('GlobalWindow', () => {
 		});
 
 		it('Is the same as [].constructor when using eval().', () => {
-			global['window'] = window;
-			expect(window.eval('[].constructor === window.Array')).toBe(true);
-			delete global['window'];
+			global['globalWindow'] = window;
+			expect(window.eval('[].constructor === globalWindow.Array')).toBe(true);
+			delete global['globalWindow'];
 		});
 	});
 });

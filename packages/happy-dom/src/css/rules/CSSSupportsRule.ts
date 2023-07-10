@@ -1,4 +1,4 @@
-import CSSRule from '../CSSRule';
+import CSSRule from '../CSSRule.js';
 
 /**
  * CSSRule interface.
