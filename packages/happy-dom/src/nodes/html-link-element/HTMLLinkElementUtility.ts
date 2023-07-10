@@ -72,11 +72,6 @@ export default class HTMLLinkElementUtility {
 			})
 		);
 		(<Document>element.ownerDocument)._readyStateManager.endTask();
-		if (
-			!element['_listeners']['error'] &&
-			!element.ownerDocument.defaultView['_listeners']['error']
-		) {
-			element.ownerDocument.defaultView.console.error(error);
-		}
+		element.ownerDocument.defaultView.console.error(error);
 	}
 }

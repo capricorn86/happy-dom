@@ -6,8 +6,10 @@ We are very happy that you would like to contribute. In this guide you will find
 
 ### Install
 
+We need to add "--legacy-peer-deps" to the install as a workaround to be able to install Vitest. Otherwise we get an "Cannot set properties of null (setting 'parent')" error as Vitest has "happy-dom" as peer dependency. Hopefully we can find a better solution in the future.
+
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
 
 ### Compile
@@ -72,6 +74,12 @@ The release process in Happy DOM is completely automated. In order to determine 
 | patch   | Bug fixes should use this version type.                                                                                 |
 | minor   | New features that doesn't break anything for the end user should have this version type.                                |
 | major   | Breaking changes should use this version type.                                                                          |
+
+### Rebasing
+
+The commit convention can cause problems when editing a message when rebasing. You can then set the setting "core.commentChar" to "auto" to workaround the problem.
+
+We should consider moving over to Conventional Commit as it is more of a standard and doesn't have this problem.
 
 # Pull Request
 
