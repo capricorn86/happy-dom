@@ -52,6 +52,8 @@ export default class HTMLIFrameUtility {
 
 				let responseText: string;
 
+				element._contentWindow = null;
+
 				try {
 					const response = await element.ownerDocument.defaultView.fetch(src);
 					responseText = await response.text();
