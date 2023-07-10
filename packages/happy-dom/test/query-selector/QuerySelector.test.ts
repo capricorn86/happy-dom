@@ -951,6 +951,14 @@ describe('QuerySelector', () => {
 				)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});
+
+		it('Returns empty node list when match pseudo element "::-webkit-inner-spin-button".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll('::-webkit-inner-spin-button');
+
+			expect(elements.length).toBe(0);
+		});
 	});
 
 	describe('querySelector', () => {
@@ -1086,6 +1094,12 @@ describe('QuerySelector', () => {
 			div.appendChild(input);
 
 			expect(div.querySelector('input:not([list])[type="search"]')).toBeNull();
+		});
+
+		it('Returns null by pseudo element selector of ::-webkit-inner-spin-button', () => {
+			const div = document.createElement('div');
+			expect(div.querySelector('::-webkit-inner-spin-button')).toBeNull();
+			expect(document.querySelector('::-webkit-inner-spin-button')).toBeNull();
 		});
 	});
 });
