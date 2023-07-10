@@ -1,6 +1,6 @@
-import IElement from '../element/IElement';
-import INode from '../node/INode';
-import INodeList from '../node/INodeList';
+import IElement from '../element/IElement.js';
+import INode from '../node/INode.js';
+import INodeList from '../node/INodeList.js';
 
 export default interface IDocumentFragment extends INode {
 	readonly childElementCount: number;

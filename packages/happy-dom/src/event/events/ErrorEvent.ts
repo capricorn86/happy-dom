@@ -1,5 +1,5 @@
-import UIEvent from '../UIEvent';
-import IErrorEventInit from './IErrorEventInit';
+import UIEvent from '../UIEvent.js';
+import IErrorEventInit from './IErrorEventInit.js';
 
 /**
  *
@@ -9,7 +9,7 @@ export default class ErrorEvent extends UIEvent {
 	public readonly filename: string = '';
 	public readonly lineno: number = 0;
 	public readonly colno: number = 0;
-	public readonly error: object = null;
+	public readonly error: Error | null = null;
 
 	/**
 	 * Constructor.

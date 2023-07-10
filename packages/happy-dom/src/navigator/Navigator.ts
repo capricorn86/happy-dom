@@ -1,5 +1,5 @@
-import MimeTypeArray from './MimeTypeArray';
-import PluginArray from './PluginArray';
+import MimeTypeArray from './MimeTypeArray.js';
+import PluginArray from './PluginArray.js';
 
 /**
  * Browser Navigator API.

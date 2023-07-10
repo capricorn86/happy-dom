@@ -1,5 +1,5 @@
-import CSSStyleSheet from '../../css/CSSStyleSheet';
-import IHTMLElement from '../html-element/IHTMLElement';
+import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
 
 /**
  * HTML Style Element.

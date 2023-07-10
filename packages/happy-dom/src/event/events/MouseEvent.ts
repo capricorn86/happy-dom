@@ -1,6 +1,6 @@
-import UIEvent from '../UIEvent';
-import EventTarget from '../EventTarget';
-import IMouseEventInit from './IMouseEventInit';
+import UIEvent from '../UIEvent.js';
+import EventTarget from '../EventTarget.js';
+import IMouseEventInit from './IMouseEventInit.js';
 
 /**
  *

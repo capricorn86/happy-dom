@@ -1,5 +1,5 @@
-import Event from '../Event';
-import IProgressEventInit from './IProgressEventInit';
+import Event from '../Event.js';
+import IProgressEventInit from './IProgressEventInit.js';
 
 /**
  *

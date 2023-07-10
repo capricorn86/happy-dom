@@ -1,6 +1,6 @@
-import IEventListener from './IEventListener';
-import Event from './Event';
-import IEventListenerOptions from './IEventListenerOptions';
+import IEventListener from './IEventListener.js';
+import Event from './Event.js';
+import IEventListenerOptions from './IEventListenerOptions.js';
 
 /**
  * Handles events.

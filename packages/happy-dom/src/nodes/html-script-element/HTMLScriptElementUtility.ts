@@ -1,10 +1,10 @@
-import Document from '../document/Document';
-import Event from '../../event/Event';
-import ErrorEvent from '../../event/events/ErrorEvent';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import ResourceFetch from '../../fetch/ResourceFetch';
-import HTMLScriptElement from './HTMLScriptElement';
+import Document from '../document/Document.js';
+import Event from '../../event/Event.js';
+import ErrorEvent from '../../event/events/ErrorEvent.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import ResourceFetch from '../../fetch/ResourceFetch.js';
+import HTMLScriptElement from './HTMLScriptElement.js';
 
 /**
  * Helper class for getting the URL relative to a Location object.
@@ -47,7 +47,7 @@ export default class HTMLScriptElementUtility {
 				return;
 			}
 
-			element.ownerDocument.defaultView.eval(code);
+			this.eval(element, code);
 			element.dispatchEvent(new Event('load'));
 			(<Document>element.ownerDocument)._readyStateManager.endTask();
 		} else {
@@ -60,8 +60,28 @@ export default class HTMLScriptElementUtility {
 				return;
 			}
 
-			element.ownerDocument.defaultView.eval(code);
+			this.eval(element, code);
 			element.dispatchEvent(new Event('load'));
+		}
+	}
+
+	/**
+	 * Evaluates a script code.
+	 *
+	 * @param element Element.
+	 * @param code Code.
+	 */
+	public static eval(element: HTMLScriptElement, code: string): void {
+		try {
+			element.ownerDocument.defaultView.eval(code);
+		} catch (error) {
+			element.ownerDocument.defaultView.console.error(error);
+			element.ownerDocument.defaultView.dispatchEvent(
+				new ErrorEvent('error', {
+					message: error.message,
+					error: error
+				})
+			);
 		}
 	}
 

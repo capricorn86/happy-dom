@@ -1,4 +1,4 @@
-import IHeaders from './IHeaders';
+import IHeaders from './IHeaders.js';
 
 type IHeadersInit = string[][] | { [key: string]: string } | IHeaders;
 

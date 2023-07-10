@@ -1,4 +1,4 @@
-import INode from '../nodes/node/INode';
+import INode from '../nodes/node/INode.js';
 
 /**
  * Range boundary point.

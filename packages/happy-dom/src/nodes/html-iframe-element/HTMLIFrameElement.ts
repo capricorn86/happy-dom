@@ -1,13 +1,13 @@
 import { URL } from 'url';
-import Event from '../../event/Event';
-import ErrorEvent from '../../event/events/ErrorEvent';
-import IWindow from '../../window/IWindow';
-import Window from '../../window/Window';
-import IDocument from '../document/IDocument';
-import HTMLElement from '../html-element/HTMLElement';
-import INode from '../node/INode';
-import IFrameCrossOriginWindow from './IFrameCrossOriginWindow';
-import IHTMLIFrameElement from './IHTMLIFrameElement';
+import Event from '../../event/Event.js';
+import ErrorEvent from '../../event/events/ErrorEvent.js';
+import IWindow from '../../window/IWindow.js';
+import Window from '../../window/Window.js';
+import IDocument from '../document/IDocument.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import INode from '../node/INode.js';
+import IFrameCrossOriginWindow from './IFrameCrossOriginWindow.js';
+import IHTMLIFrameElement from './IHTMLIFrameElement.js';
 
 /**
  * HTML Iframe Element.

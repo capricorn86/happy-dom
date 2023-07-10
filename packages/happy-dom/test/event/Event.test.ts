@@ -1,9 +1,11 @@
-import IWindow from '../../src/window/IWindow';
-import Window from '../../src/window/Window';
-import IDocument from '../../src/nodes/document/IDocument';
-import Event from '../../src/event/Event';
-import CustomElement from '../CustomElement';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import Event from '../../src/event/Event.js';
+import CustomElement from '../CustomElement.js';
 import { performance } from 'perf_hooks';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import IEventTarget from '../../src/event/IEventTarget.js';
 
 describe('Event', () => {
 	let window: IWindow;
@@ -17,7 +19,7 @@ describe('Event', () => {
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('get target()', () => {
@@ -160,13 +162,13 @@ describe('Event', () => {
 	describe('get timeStamp()', () => {
 		it('Returns the value returned by performance.now() at the time it was created.', () => {
 			Object.defineProperty(performance, 'now', {
-				value: jest.fn(),
+				value: vi.fn(),
 				configurable: true,
 				writable: true
 			});
 
 			const performanceNow = 12345;
-			jest.spyOn(performance, 'now').mockImplementation(() => performanceNow);
+			vi.spyOn(performance, 'now').mockImplementation(() => performanceNow);
 			const event = new Event('click');
 			expect(event.timeStamp).toBe(performanceNow);
 		});
@@ -176,7 +178,7 @@ describe('Event', () => {
 		it('Returns a composed path.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
-			let composedPath = null;
+			let composedPath: IEventTarget[] | null = null;
 
 			div.appendChild(span);
 			document.body.appendChild(div);
@@ -191,19 +193,19 @@ describe('Event', () => {
 				})
 			);
 
-			expect(composedPath.length).toBe(6);
-			expect(composedPath[0] === span).toBe(true);
-			expect(composedPath[1] === div).toBe(true);
-			expect(composedPath[2] === document.body).toBe(true);
-			expect(composedPath[3] === document.documentElement).toBe(true);
-			expect(composedPath[4] === document).toBe(true);
-			expect(composedPath[5] === window).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath)).length).toBe(6);
+			expect((<IEventTarget[]>(<unknown>composedPath))[0] === span).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[1] === div).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[2] === document.body).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[3] === document.documentElement).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[4] === document).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[5] === window).toBe(true);
 		});
 
 		it('Goes through shadow roots if composed is set to "true".', () => {
 			const div = document.createElement('div');
 			const customELement = document.createElement('custom-element');
-			let composedPath = null;
+			let composedPath: IEventTarget[] | null = null;
 
 			div.appendChild(customELement);
 
@@ -220,21 +222,26 @@ describe('Event', () => {
 				})
 			);
 
-			expect(composedPath.length).toBe(9);
-			expect(composedPath[0] === customELement.shadowRoot.children[1].children[0]).toBe(true);
-			expect(composedPath[1] === customELement.shadowRoot.children[1]).toBe(true);
-			expect(composedPath[2] === customELement.shadowRoot).toBe(true);
-			expect(composedPath[3] === customELement).toBe(true);
-			expect(composedPath[4] === div).toBe(true);
-			expect(composedPath[5] === document.body).toBe(true);
-			expect(composedPath[6] === document.documentElement).toBe(true);
-			expect(composedPath[7] === document).toBe(true);
-			expect(composedPath[8] === window).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath)).length).toBe(9);
+			expect(
+				(<IEventTarget[]>(<unknown>composedPath))[0] ===
+					customELement.shadowRoot.children[1].children[0]
+			).toBe(true);
+			expect(
+				(<IEventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot.children[1]
+			).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[2] === customELement.shadowRoot).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[3] === customELement).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[4] === div).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[5] === document.body).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[6] === document.documentElement).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[7] === document).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[8] === window).toBe(true);
 		});
 
 		it('Does not go through shadow roots if composed is set to "false".', () => {
 			const customELement = document.createElement('custom-element');
-			let composedPath = null;
+			let composedPath: IEventTarget[] | null = null;
 
 			document.body.appendChild(customELement);
 
@@ -248,16 +255,21 @@ describe('Event', () => {
 				})
 			);
 
-			expect(composedPath.length).toBe(3);
-			expect(composedPath[0] === customELement.shadowRoot.children[1].children[0]).toBe(true);
-			expect(composedPath[1] === customELement.shadowRoot.children[1]).toBe(true);
-			expect(composedPath[2] === customELement.shadowRoot).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath)).length).toBe(3);
+			expect(
+				(<IEventTarget[]>(<unknown>composedPath))[0] ===
+					customELement.shadowRoot.children[1].children[0]
+			).toBe(true);
+			expect(
+				(<IEventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot.children[1]
+			).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[2] === customELement.shadowRoot).toBe(true);
 		});
 
 		it('Returns correct composed for HTMLAnchorElement event target and composed is set to "true".', () => {
 			const anchor = document.createElement('a');
 			anchor.setAttribute('href', 'https://example.com');
-			let composedPath = null;
+			let composedPath: IEventTarget[] | null = null;
 
 			document.body.appendChild(anchor);
 
@@ -272,12 +284,12 @@ describe('Event', () => {
 				})
 			);
 
-			expect(composedPath.length).toBe(5);
-			expect(composedPath[0] === anchor).toBe(true);
-			expect(composedPath[1] === document.body).toBe(true);
-			expect(composedPath[2] === document.documentElement).toBe(true);
-			expect(composedPath[3] === document).toBe(true);
-			expect(composedPath[4] === window).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath)).length).toBe(5);
+			expect((<IEventTarget[]>(<unknown>composedPath))[0] === anchor).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[1] === document.body).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[2] === document.documentElement).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[3] === document).toBe(true);
+			expect((<IEventTarget[]>(<unknown>composedPath))[4] === window).toBe(true);
 		});
 	});
 });

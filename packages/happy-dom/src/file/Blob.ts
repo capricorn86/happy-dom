@@ -1,4 +1,4 @@
-import IBlob from './IBlob';
+import IBlob from './IBlob.js';
 
 /**
  * Reference:

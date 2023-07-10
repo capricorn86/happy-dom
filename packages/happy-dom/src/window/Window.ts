@@ -1,140 +1,140 @@
-import CustomElementRegistry from '../custom-element/CustomElementRegistry';
-import Document from '../nodes/document/Document';
-import HTMLDocument from '../nodes/html-document/HTMLDocument';
-import XMLDocument from '../nodes/xml-document/XMLDocument';
-import SVGDocument from '../nodes/svg-document/SVGDocument';
-import Node from '../nodes/node/Node';
-import NodeFilter from '../tree-walker/NodeFilter';
-import Text from '../nodes/text/Text';
-import Comment from '../nodes/comment/Comment';
-import ShadowRoot from '../nodes/shadow-root/ShadowRoot';
-import Element from '../nodes/element/Element';
-import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement';
-import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement';
-import HTMLElement from '../nodes/html-element/HTMLElement';
-import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement';
-import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement';
-import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement';
-import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement';
-import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement';
-import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement';
-import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
-import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement';
-import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement';
-import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement';
-import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement';
-import AudioImplementation from '../nodes/html-audio-element/Audio';
-import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement';
-import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement';
-import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement';
-import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement';
-import SVGSVGElement from '../nodes/svg-element/SVGSVGElement';
-import SVGElement from '../nodes/svg-element/SVGElement';
-import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement';
-import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement';
-import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement';
-import ImageImplementation from '../nodes/html-image-element/Image';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment';
-import CharacterData from '../nodes/character-data/CharacterData';
-import NodeIterator from '../tree-walker/NodeIterator';
-import TreeWalker from '../tree-walker/TreeWalker';
-import Event from '../event/Event';
-import CustomEvent from '../event/events/CustomEvent';
-import AnimationEvent from '../event/events/AnimationEvent';
-import KeyboardEvent from '../event/events/KeyboardEvent';
-import MessageEvent from '../event/events/MessageEvent';
-import ProgressEvent from '../event/events/ProgressEvent';
-import MediaQueryListEvent from '../event/events/MediaQueryListEvent';
-import EventTarget from '../event/EventTarget';
-import MessagePort from '../event/MessagePort';
+import CustomElementRegistry from '../custom-element/CustomElementRegistry.js';
+import Document from '../nodes/document/Document.js';
+import HTMLDocument from '../nodes/html-document/HTMLDocument.js';
+import XMLDocument from '../nodes/xml-document/XMLDocument.js';
+import SVGDocument from '../nodes/svg-document/SVGDocument.js';
+import Node from '../nodes/node/Node.js';
+import NodeFilter from '../tree-walker/NodeFilter.js';
+import Text from '../nodes/text/Text.js';
+import Comment from '../nodes/comment/Comment.js';
+import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import Element from '../nodes/element/Element.js';
+import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
+import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
+import HTMLElement from '../nodes/html-element/HTMLElement.js';
+import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement.js';
+import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
+import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement.js';
+import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement.js';
+import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
+import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement.js';
+import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement.js';
+import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement.js';
+import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement.js';
+import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement.js';
+import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement.js';
+import AudioImplementation from '../nodes/html-audio-element/Audio.js';
+import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement.js';
+import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement.js';
+import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement.js';
+import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement.js';
+import SVGSVGElement from '../nodes/svg-element/SVGSVGElement.js';
+import SVGElement from '../nodes/svg-element/SVGElement.js';
+import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement.js';
+import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
+import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement.js';
+import ImageImplementation from '../nodes/html-image-element/Image.js';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import CharacterData from '../nodes/character-data/CharacterData.js';
+import NodeIterator from '../tree-walker/NodeIterator.js';
+import TreeWalker from '../tree-walker/TreeWalker.js';
+import Event from '../event/Event.js';
+import CustomEvent from '../event/events/CustomEvent.js';
+import AnimationEvent from '../event/events/AnimationEvent.js';
+import KeyboardEvent from '../event/events/KeyboardEvent.js';
+import MessageEvent from '../event/events/MessageEvent.js';
+import ProgressEvent from '../event/events/ProgressEvent.js';
+import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
+import EventTarget from '../event/EventTarget.js';
+import MessagePort from '../event/MessagePort.js';
 import { URL, URLSearchParams } from 'url';
-import Location from '../location/Location';
-import NonImplementedEventTypes from '../event/NonImplementedEventTypes';
-import MutationObserver from '../mutation-observer/MutationObserver';
-import NonImplemenetedElementClasses from '../config/NonImplemenetedElementClasses';
-import DOMParserImplementation from '../dom-parser/DOMParser';
-import XMLSerializer from '../xml-serializer/XMLSerializer';
-import ResizeObserver from '../resize-observer/ResizeObserver';
-import Blob from '../file/Blob';
-import File from '../file/File';
-import DOMException from '../exception/DOMException';
-import FileReaderImplementation from '../file/FileReader';
-import History from '../history/History';
-import CSSStyleSheet from '../css/CSSStyleSheet';
-import CSSStyleDeclaration from '../css/declaration/CSSStyleDeclaration';
-import CSS from '../css/CSS';
-import CSSUnitValue from '../css/CSSUnitValue';
-import CSSRule from '../css/CSSRule';
-import CSSContainerRule from '../css/rules/CSSContainerRule';
-import CSSFontFaceRule from '../css/rules/CSSFontFaceRule';
-import CSSKeyframeRule from '../css/rules/CSSKeyframeRule';
-import CSSKeyframesRule from '../css/rules/CSSKeyframesRule';
-import CSSMediaRule from '../css/rules/CSSMediaRule';
-import CSSStyleRule from '../css/rules/CSSStyleRule';
-import CSSSupportsRule from '../css/rules/CSSSupportsRule';
-import MouseEvent from '../event/events/MouseEvent';
-import PointerEvent from '../event/events/PointerEvent';
-import FocusEvent from '../event/events/FocusEvent';
-import WheelEvent from '../event/events/WheelEvent';
-import DataTransfer from '../event/DataTransfer';
-import DataTransferItem from '../event/DataTransferItem';
-import DataTransferItemList from '../event/DataTransferItemList';
-import InputEvent from '../event/events/InputEvent';
-import UIEvent from '../event/UIEvent';
-import ErrorEvent from '../event/events/ErrorEvent';
-import StorageEvent from '../event/events/StorageEvent';
-import SubmitEvent from '../event/events/SubmitEvent';
-import Screen from '../screen/Screen';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager';
-import IResponse from '../fetch/types/IResponse';
-import IResponseInit from '../fetch/types/IResponseInit';
-import IRequest from '../fetch/types/IRequest';
-import IRequestInit from '../fetch/types/IRequestInit';
-import IHeaders from '../fetch/types/IHeaders';
-import IHeadersInit from '../fetch/types/IHeadersInit';
-import Headers from '../fetch/Headers';
-import RequestImplementation from '../fetch/Request';
-import ResponseImplementation from '../fetch/Response';
-import Storage from '../storage/Storage';
-import IWindow from './IWindow';
-import HTMLCollection from '../nodes/element/HTMLCollection';
-import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection';
-import NodeList from '../nodes/node/NodeList';
-import MediaQueryList from '../match-media/MediaQueryList';
-import Selection from '../selection/Selection';
-import Navigator from '../navigator/Navigator';
-import MimeType from '../navigator/MimeType';
-import MimeTypeArray from '../navigator/MimeTypeArray';
-import Plugin from '../navigator/Plugin';
-import PluginArray from '../navigator/PluginArray';
-import Fetch from '../fetch/Fetch';
-import RangeImplementation from '../range/Range';
-import DOMRect from '../nodes/element/DOMRect';
-import VMGlobalPropertyScript from './VMGlobalPropertyScript';
+import Location from '../location/Location.js';
+import NonImplementedEventTypes from '../event/NonImplementedEventTypes.js';
+import MutationObserver from '../mutation-observer/MutationObserver.js';
+import NonImplemenetedElementClasses from '../config/NonImplemenetedElementClasses.js';
+import DOMParserImplementation from '../dom-parser/DOMParser.js';
+import XMLSerializer from '../xml-serializer/XMLSerializer.js';
+import ResizeObserver from '../resize-observer/ResizeObserver.js';
+import Blob from '../file/Blob.js';
+import File from '../file/File.js';
+import DOMException from '../exception/DOMException.js';
+import FileReaderImplementation from '../file/FileReader.js';
+import History from '../history/History.js';
+import CSSStyleSheet from '../css/CSSStyleSheet.js';
+import CSSStyleDeclaration from '../css/declaration/CSSStyleDeclaration.js';
+import CSS from '../css/CSS.js';
+import CSSUnitValue from '../css/CSSUnitValue.js';
+import CSSRule from '../css/CSSRule.js';
+import CSSContainerRule from '../css/rules/CSSContainerRule.js';
+import CSSFontFaceRule from '../css/rules/CSSFontFaceRule.js';
+import CSSKeyframeRule from '../css/rules/CSSKeyframeRule.js';
+import CSSKeyframesRule from '../css/rules/CSSKeyframesRule.js';
+import CSSMediaRule from '../css/rules/CSSMediaRule.js';
+import CSSStyleRule from '../css/rules/CSSStyleRule.js';
+import CSSSupportsRule from '../css/rules/CSSSupportsRule.js';
+import MouseEvent from '../event/events/MouseEvent.js';
+import PointerEvent from '../event/events/PointerEvent.js';
+import FocusEvent from '../event/events/FocusEvent.js';
+import WheelEvent from '../event/events/WheelEvent.js';
+import DataTransfer from '../event/DataTransfer.js';
+import DataTransferItem from '../event/DataTransferItem.js';
+import DataTransferItemList from '../event/DataTransferItemList.js';
+import InputEvent from '../event/events/InputEvent.js';
+import UIEvent from '../event/UIEvent.js';
+import ErrorEvent from '../event/events/ErrorEvent.js';
+import StorageEvent from '../event/events/StorageEvent.js';
+import SubmitEvent from '../event/events/SubmitEvent.js';
+import Screen from '../screen/Screen.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import IResponse from '../fetch/types/IResponse.js';
+import IResponseInit from '../fetch/types/IResponseInit.js';
+import IRequest from '../fetch/types/IRequest.js';
+import IRequestInit from '../fetch/types/IRequestInit.js';
+import IHeaders from '../fetch/types/IHeaders.js';
+import IHeadersInit from '../fetch/types/IHeadersInit.js';
+import Headers from '../fetch/Headers.js';
+import RequestImplementation from '../fetch/Request.js';
+import ResponseImplementation from '../fetch/Response.js';
+import Storage from '../storage/Storage.js';
+import IWindow from './IWindow.js';
+import HTMLCollection from '../nodes/element/HTMLCollection.js';
+import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
+import NodeList from '../nodes/node/NodeList.js';
+import MediaQueryList from '../match-media/MediaQueryList.js';
+import Selection from '../selection/Selection.js';
+import Navigator from '../navigator/Navigator.js';
+import MimeType from '../navigator/MimeType.js';
+import MimeTypeArray from '../navigator/MimeTypeArray.js';
+import Plugin from '../navigator/Plugin.js';
+import PluginArray from '../navigator/PluginArray.js';
+import Fetch from '../fetch/Fetch.js';
+import RangeImplementation from '../range/Range.js';
+import DOMRect from '../nodes/element/DOMRect.js';
+import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
-import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest';
-import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload';
-import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget';
-import Base64 from '../base64/Base64';
-import IDocument from '../nodes/document/IDocument';
-import Attr from '../nodes/attr/Attr';
-import NamedNodeMap from '../named-node-map/NamedNodeMap';
-import IElement from '../nodes/element/IElement';
-import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction';
-import RequestInfo from '../fetch/types/IRequestInfo';
-import FileList from '../nodes/html-input-element/FileList';
+import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
+import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload.js';
+import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget.js';
+import Base64 from '../base64/Base64.js';
+import IDocument from '../nodes/document/IDocument.js';
+import Attr from '../nodes/attr/Attr.js';
+import NamedNodeMap from '../named-node-map/NamedNodeMap.js';
+import IElement from '../nodes/element/IElement.js';
+import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
+import RequestInfo from '../fetch/types/IRequestInfo.js';
+import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
-import FormData from '../form-data/FormData';
-import AbortController from '../fetch/AbortController';
-import AbortSignal from '../fetch/AbortSignal';
-import IResponseBody from '../fetch/types/IResponseBody';
-import IRequestInfo from '../fetch/types/IRequestInfo';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import IHappyDOMOptions from './IHappyDOMOptions';
-import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
-import ValidityState from '../validity-state/ValidityState';
+import FormData from '../form-data/FormData.js';
+import AbortController from '../fetch/AbortController.js';
+import AbortSignal from '../fetch/AbortSignal.js';
+import IResponseBody from '../fetch/types/IResponseBody.js';
+import IRequestInfo from '../fetch/types/IRequestInfo.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import IHappyDOMOptions from './IHappyDOMOptions.js';
+import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
+import ValidityState from '../validity-state/ValidityState.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -157,20 +157,26 @@ export default class Window extends EventTarget implements IWindow {
 			this.happyDOM.asyncTaskManager.cancelAll();
 		},
 		asyncTaskManager: new AsyncTaskManager(),
-		setInnerWidth: (width: number): void => {
-			if (this.innerWidth !== width) {
-				(<number>this.innerWidth) = width;
-				this.dispatchEvent(new Event('resize'));
-			}
-		},
-		setInnerHeight: (height: number): void => {
-			if (this.innerHeight !== height) {
-				(<number>this.innerHeight) = height;
-				this.dispatchEvent(new Event('resize'));
-			}
-		},
 		setURL: (url: string) => {
 			this.location.href = url;
+		},
+		setWindowSize: (options: { width?: number; height?: number }): void => {
+			if (
+				(options.width !== undefined && this.innerWidth !== options.width) ||
+				(options.height !== undefined && this.innerHeight !== options.height)
+			) {
+				if (options.width !== undefined && this.innerWidth !== options.width) {
+					(<number>this.innerWidth) = options.width;
+					(<number>this.outerWidth) = options.width;
+				}
+
+				if (options.height !== undefined && this.innerHeight !== options.height) {
+					(<number>this.innerHeight) = options.height;
+					(<number>this.outerHeight) = options.height;
+				}
+
+				this.dispatchEvent(new Event('resize'));
+			}
 		},
 		settings: {
 			disableJavaScriptEvaluation: false,
@@ -183,7 +189,19 @@ export default class Window extends EventTarget implements IWindow {
 				prefersColorScheme: 'light',
 				mediaType: 'screen'
 			}
-		}
+		},
+
+		/**
+		 * @param width The width of the viewport.
+		 * @deprecated
+		 */
+		setInnerWidth: (width: number): void => this.happyDOM.setWindowSize({ width }),
+
+		/**
+		 * @param height The height of the viewport.
+		 * @deprecated
+		 */
+		setInnerHeight: (height: number): void => this.happyDOM.setWindowSize({ height })
 	};
 
 	// Global classes
@@ -330,73 +348,74 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly performance = PerfHooks.performance;
 	public readonly innerWidth: number;
 	public readonly innerHeight: number;
+	public readonly outerWidth: number;
+	public readonly outerHeight: number;
 
 	// Node.js Globals
-	public ArrayBuffer;
-	public Boolean;
+	public Array: typeof Array;
+	public ArrayBuffer: typeof ArrayBuffer;
+	public Boolean: typeof Boolean;
 	public Buffer = Buffer;
-	public DataView;
-	public Date;
-	public Error;
-	public EvalError;
-	public Float32Array;
-	public Float64Array;
-	public GLOBAL;
-	public Infinity;
-	public Int16Array;
-	public Int32Array;
-	public Int8Array;
-	public Intl;
-	public JSON;
-	public Map;
-	public Math;
-	public NaN;
-	public Number;
-	public Promise;
-	public RangeError;
-	public ReferenceError;
-	public RegExp;
-	public Reflect;
-	public Set;
-	public Symbol;
-	public SyntaxError;
-	public String;
-	public TypeError;
-	public URIError;
-	public Uint16Array;
-	public Uint32Array;
-	public Uint8Array;
-	public Uint8ClampedArray;
-	public WeakMap;
-	public WeakSet;
-	public clearImmediate;
-	public decodeURI;
-	public decodeURIComponent;
-	public encodeURI;
-	public encodeURIComponent;
+	public DataView: typeof DataView;
+	public Date: typeof Date;
+	public Error: typeof Error;
+	public EvalError: typeof EvalError;
+	public Float32Array: typeof Float32Array;
+	public Float64Array: typeof Float64Array;
+	public Function: typeof Function;
+	public Infinity: typeof Infinity;
+	public Int16Array: typeof Int16Array;
+	public Int32Array: typeof Int32Array;
+	public Int8Array: typeof Int8Array;
+	public Intl: typeof Intl;
+	public JSON: typeof JSON;
+	public Map: MapConstructor;
+	public Math: typeof Math;
+	public NaN: typeof NaN;
+	public Number: typeof Number;
+	public Object: typeof Object;
+	public Promise: typeof Promise;
+	public RangeError: typeof RangeError;
+	public ReferenceError: typeof ReferenceError;
+	public RegExp: typeof RegExp;
+	public Set: SetConstructor;
+	public String: typeof String;
+	public Symbol: Function;
+	public SyntaxError: typeof SyntaxError;
+	public TypeError: typeof TypeError;
+	public URIError: typeof URIError;
+	public Uint16Array: typeof Uint16Array;
+	public Uint32Array: typeof Uint32Array;
+	public Uint8Array: typeof Uint8Array;
+	public Uint8ClampedArray: typeof Uint8ClampedArray;
+	public WeakMap: WeakMapConstructor;
+	public WeakSet: WeakSetConstructor;
+	public clearImmediate: (immediateId: NodeJS.Immediate) => void;
+	public decodeURI: typeof decodeURI;
+	public decodeURIComponent: typeof decodeURIComponent;
+	public encodeURI: typeof encodeURI;
+	public encodeURIComponent: typeof encodeURIComponent;
 	/**
 	 * @deprecated
 	 */
-	public escape;
-	public global;
-	public isFinite;
-	public isNaN;
-	public parseFloat;
-	public parseInt;
-	public process;
-	public root;
-	public setImmediate;
-	public queueMicrotask;
-	public undefined;
+	public escape: (str: string) => string;
+	public global: typeof globalThis;
+	public isFinite: typeof isFinite;
+	public isNaN: typeof isNaN;
+	public parseFloat: typeof parseFloat;
+	public parseInt: typeof parseInt;
+	public setImmediate: (
+		callback: (...args: unknown[]) => void,
+		...args: unknown[]
+	) => NodeJS.Immediate;
+	public queueMicrotask: typeof queueMicrotask;
+	public undefined: typeof undefined;
 	/**
 	 * @deprecated
 	 */
-	public unescape;
-	public gc;
-	public v8debug;
-	public Array;
-	public Object;
-	public Function;
+	public unescape: (str: string) => string;
+	public gc: () => void;
+	public v8debug?: unknown;
 
 	// Public internal properties
 
@@ -414,8 +433,10 @@ export default class Window extends EventTarget implements IWindow {
 	 * Constructor.
 	 *
 	 * @param [options] Options.
-	 * @param [options.innerWidth] Inner width. Defaults to "1024".
-	 * @param [options.innerHeight] Inner height. Defaults to "768".
+	 * @param [options.width] Window width. Defaults to "1024".
+	 * @param [options.height] Window height. Defaults to "768".
+	 * @param [options.innerWidth] Inner width. Deprecated. Defaults to "1024".
+	 * @param [options.innerHeight] Inner height. Deprecated. Defaults to "768".
 	 * @param [options.url] URL.
 	 * @param [options.settings] Settings.
 	 */
@@ -430,14 +451,33 @@ export default class Window extends EventTarget implements IWindow {
 		this.sessionStorage = new Storage();
 		this.localStorage = new Storage();
 
-		this.innerWidth = options?.innerWidth ? options.innerWidth : 1024;
-		this.innerHeight = options?.innerHeight ? options.innerHeight : 768;
+		if (options && options.width !== undefined) {
+			this.innerWidth = options.width;
+			this.outerWidth = options.width;
+		} else if (options && options.innerWidth !== undefined) {
+			this.innerWidth = options.innerWidth;
+			this.outerWidth = options.innerWidth;
+		} else {
+			this.innerWidth = 1024;
+			this.outerWidth = 1024;
+		}
 
-		if (options?.url) {
+		if (options && options.height !== undefined) {
+			this.innerHeight = options.height;
+			this.outerHeight = options.height;
+		} else if (options && options.innerHeight !== undefined) {
+			this.innerHeight = options.innerHeight;
+			this.outerHeight = options.innerHeight;
+		} else {
+			this.innerHeight = 768;
+			this.outerHeight = 768;
+		}
+
+		if (options && options.url !== undefined) {
 			this.location.href = options.url;
 		}
 
-		if (options?.settings) {
+		if (options && options.settings) {
 			this.happyDOM.settings = {
 				...this.happyDOM.settings,
 				...options.settings,
@@ -595,7 +635,6 @@ export default class Window extends EventTarget implements IWindow {
 		if (VM.isContext(this)) {
 			return VM.runInContext(code, this);
 		}
-
 		return eval(code);
 	}
 

@@ -1,5 +1,6 @@
-import Event from '../../src/event/Event';
-import AbortController from '../../src/fetch/AbortController';
+import Event from '../../src/event/Event.js';
+import AbortController from '../../src/fetch/AbortController.js';
+import { describe, it, expect } from 'vitest';
 
 describe('AbortController', () => {
 	describe('abort()', () => {
@@ -15,7 +16,7 @@ describe('AbortController', () => {
 
 			expect(signal.aborted).toBe(true);
 			expect(signal.reason).toBe(reason);
-			expect(triggeredEvent.type).toBe('abort');
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('abort');
 		});
 	});
 });

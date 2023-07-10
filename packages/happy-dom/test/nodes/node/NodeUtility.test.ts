@@ -1,9 +1,10 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import NodeUtility from '../../../src/nodes/node/NodeUtility';
-import NodeTypeEnum from '../../../src/nodes/node/NodeTypeEnum';
-import DOMImplementation from '../../../src/dom-implementation/DOMImplementation';
-import IDocument from '../../../src/nodes/document/IDocument';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import NodeUtility from '../../../src/nodes/node/NodeUtility.js';
+import NodeTypeEnum from '../../../src/nodes/node/NodeTypeEnum.js';
+import DOMImplementation from '../../../src/dom-implementation/DOMImplementation.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('NodeUtility', () => {
 	let window: Window;
@@ -12,10 +13,6 @@ describe('NodeUtility', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-	});
-
-	afterEach(() => {
-		jest.restoreAllMocks();
 	});
 
 	describe('isTextNode()', () => {

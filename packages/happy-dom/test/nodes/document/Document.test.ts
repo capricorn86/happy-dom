@@ -1,38 +1,40 @@
-import Window from '../../../src/window/Window';
-import IWindow from '../../../src/window/IWindow';
-import CustomElement from '../../CustomElement';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement';
-import Text from '../../../src/nodes/text/Text';
-import Comment from '../../../src/nodes/comment/Comment';
-import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment';
-import NodeIterator from '../../../src/tree-walker/NodeIterator';
-import TreeWalker from '../../../src/tree-walker/TreeWalker';
-import Node from '../../../src/nodes/node/Node';
-import IDocument from '../../../src/nodes/document/IDocument';
-import Element from '../../../src/nodes/element/Element';
-import Event from '../../../src/event/Event';
-import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement';
-import NamespaceURI from '../../../src/config/NamespaceURI';
-import Attr from '../../../src/nodes/attr/Attr';
-import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility';
-import QuerySelector from '../../../src/query-selector/QuerySelector';
-import NodeFilter from '../../../src/tree-walker/NodeFilter';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement';
-import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection';
-import IElement from '../../../src/nodes/element/IElement';
-import INodeList from '../../../src/nodes/node/INodeList';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
-import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement';
-import IResponse from '../../../src/fetch/types/IResponse';
-import ResourceFetch from '../../../src/fetch/ResourceFetch';
-import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement';
-import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum';
-import ISVGElement from '../../../src/nodes/svg-element/ISVGElement';
-import CustomEvent from '../../../src/event/events/CustomEvent';
-import Selection from '../../../src/selection/Selection';
-import Range from '../../../src/range/Range';
-import ProcessingInstruction from '../../../src/nodes/processing-instruction/ProcessingInstruction';
-import DOMException from '../../../src/exception/DOMException';
+import Window from '../../../src/window/Window.js';
+import IWindow from '../../../src/window/IWindow.js';
+import CustomElement from '../../CustomElement.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import Text from '../../../src/nodes/text/Text.js';
+import Comment from '../../../src/nodes/comment/Comment.js';
+import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment.js';
+import NodeIterator from '../../../src/tree-walker/NodeIterator.js';
+import TreeWalker from '../../../src/tree-walker/TreeWalker.js';
+import Node from '../../../src/nodes/node/Node.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
+import Element from '../../../src/nodes/element/Element.js';
+import Event from '../../../src/event/Event.js';
+import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement.js';
+import NamespaceURI from '../../../src/config/NamespaceURI.js';
+import Attr from '../../../src/nodes/attr/Attr.js';
+import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
+import QuerySelector from '../../../src/query-selector/QuerySelector.js';
+import NodeFilter from '../../../src/tree-walker/NodeFilter.js';
+import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection.js';
+import IElement from '../../../src/nodes/element/IElement.js';
+import INodeList from '../../../src/nodes/node/INodeList.js';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement.js';
+import IResponse from '../../../src/fetch/types/IResponse.js';
+import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
+import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement.js';
+import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum.js';
+import ISVGElement from '../../../src/nodes/svg-element/ISVGElement.js';
+import CustomEvent from '../../../src/event/events/CustomEvent.js';
+import Selection from '../../../src/selection/Selection.js';
+import Range from '../../../src/range/Range.js';
+import ProcessingInstruction from '../../../src/nodes/processing-instruction/ProcessingInstruction.js';
+import DOMException from '../../../src/exception/DOMException.js';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import IRequestInit from '../../../src/fetch/types/IRequestInit.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -46,7 +48,7 @@ describe('Document', () => {
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	for (const property of ['charset', 'characterSet']) {
@@ -297,47 +299,49 @@ describe('Document', () => {
 	});
 
 	describe('get styleSheets()', () => {
-		it('Returns all stylesheets loaded to the document.', (done) => {
-			const textNode = document.createTextNode(
-				'body { background-color: red }\ndiv { background-color: green }'
-			);
-			const style = document.createElement('style');
-			const link = <IHTMLLinkElement>document.createElement('link');
-			let fetchedUrl = null;
-			let fetchedInit = null;
+		it('Returns all stylesheets loaded to the document.', async () => {
+			await new Promise((resolve) => {
+				const textNode = document.createTextNode(
+					'body { background-color: red }\ndiv { background-color: green }'
+				);
+				const style = document.createElement('style');
+				const link = <IHTMLLinkElement>document.createElement('link');
+				let fetchedUrl: string | null = null;
+				let fetchedInit: IRequestInit | null = null;
 
-			link.rel = 'stylesheet';
-			link.href = '/path/to/file.css';
+				link.rel = 'stylesheet';
+				link.href = '/path/to/file.css';
 
-			jest.spyOn(window, 'fetch').mockImplementation((url, init) => {
-				fetchedUrl = url;
-				fetchedInit = init;
-				return <Promise<IResponse>>Promise.resolve({
-					text: () => Promise.resolve('button { background-color: red }'),
-					ok: true
+				vi.spyOn(window, 'fetch').mockImplementation((url, init) => {
+					fetchedUrl = <string>url;
+					fetchedInit = <IRequestInit>init;
+					return <Promise<IResponse>>Promise.resolve({
+						text: () => Promise.resolve('button { background-color: red }'),
+						ok: true
+					});
 				});
+
+				style.appendChild(textNode);
+
+				document.appendChild(style);
+				document.appendChild(link);
+
+				setTimeout(() => {
+					expect(fetchedUrl).toBe('/path/to/file.css');
+					expect(fetchedInit).toBe(undefined);
+
+					const styleSheets = document.styleSheets;
+
+					expect(styleSheets.length).toBe(2);
+					expect(styleSheets[0].cssRules.length).toBe(2);
+					expect(styleSheets[0].cssRules[0].cssText).toBe('body { background-color: red; }');
+					expect(styleSheets[0].cssRules[1].cssText).toBe('div { background-color: green; }');
+					expect(styleSheets[1].cssRules.length).toBe(1);
+					expect(styleSheets[1].cssRules[0].cssText).toBe('button { background-color: red; }');
+
+					resolve(null);
+				}, 0);
 			});
-
-			style.appendChild(textNode);
-
-			document.appendChild(style);
-			document.appendChild(link);
-
-			setTimeout(() => {
-				expect(fetchedUrl).toBe('/path/to/file.css');
-				expect(fetchedInit).toBe(undefined);
-
-				const styleSheets = document.styleSheets;
-
-				expect(styleSheets.length).toBe(2);
-				expect(styleSheets[0].cssRules.length).toBe(2);
-				expect(styleSheets[0].cssRules[0].cssText).toBe('body { background-color: red; }');
-				expect(styleSheets[0].cssRules[1].cssText).toBe('div { background-color: green; }');
-				expect(styleSheets[1].cssRules.length).toBe(1);
-				expect(styleSheets[1].cssRules[0].cssText).toBe('button { background-color: red; }');
-
-				done();
-			}, 0);
 		});
 	});
 
@@ -484,7 +488,7 @@ describe('Document', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
+			vi.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode === document).toBe(true);
 				expect(nodes.length).toBe(2);
 				expect(nodes[0] === node1).toBe(true);
@@ -503,7 +507,7 @@ describe('Document', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
+			vi.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
 				expect(parentNode === document).toBe(true);
 				expect(nodes.length).toBe(2);
 				expect(nodes[0] === node1).toBe(true);
@@ -522,15 +526,13 @@ describe('Document', () => {
 			const node2 = document.createComment('test2');
 			let isCalled = false;
 
-			jest
-				.spyOn(ParentNodeUtility, 'replaceChildren')
-				.mockImplementation((parentNode, ...nodes) => {
-					expect(parentNode === document).toBe(true);
-					expect(nodes.length).toBe(2);
-					expect(nodes[0] === node1).toBe(true);
-					expect(nodes[1] === node2).toBe(true);
-					isCalled = true;
-				});
+			vi.spyOn(ParentNodeUtility, 'replaceChildren').mockImplementation((parentNode, ...nodes) => {
+				expect(parentNode === document).toBe(true);
+				expect(nodes.length).toBe(2);
+				expect(nodes[0] === node1).toBe(true);
+				expect(nodes[1] === node2).toBe(true);
+				isCalled = true;
+			});
 
 			document.replaceChildren(node1, node2);
 			expect(isCalled).toBe(true);
@@ -542,7 +544,7 @@ describe('Document', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
-			jest.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
+			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode === document).toBe(true);
 				expect(selector).toEqual(expectedSelector);
 				return <INodeList<IElement>>[element];
@@ -560,7 +562,7 @@ describe('Document', () => {
 			const element = document.createElement('div');
 			const expectedSelector = 'selector';
 
-			jest.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
+			vi.spyOn(QuerySelector, 'querySelector').mockImplementation((parentNode, selector) => {
 				expect(parentNode === document).toBe(true);
 				expect(selector).toEqual(expectedSelector);
 				return element;
@@ -575,13 +577,13 @@ describe('Document', () => {
 			const element = document.createElement('div');
 			const className = 'className';
 
-			jest
-				.spyOn(ParentNodeUtility, 'getElementsByClassName')
-				.mockImplementation((parentNode, requestedClassName) => {
+			vi.spyOn(ParentNodeUtility, 'getElementsByClassName').mockImplementation(
+				(parentNode, requestedClassName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedClassName).toEqual(className);
 					return <IHTMLCollection<IElement>>[element];
-				});
+				}
+			);
 
 			const result = document.getElementsByClassName(className);
 			expect(result.length).toBe(1);
@@ -594,13 +596,13 @@ describe('Document', () => {
 			const element = document.createElement('div');
 			const tagName = 'tag-name';
 
-			jest
-				.spyOn(ParentNodeUtility, 'getElementsByTagName')
-				.mockImplementation((parentNode, requestedTagName) => {
+			vi.spyOn(ParentNodeUtility, 'getElementsByTagName').mockImplementation(
+				(parentNode, requestedTagName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedTagName).toEqual(tagName);
 					return <IHTMLCollection<IElement>>[element];
-				});
+				}
+			);
 
 			const result = document.getElementsByTagName(tagName);
 			expect(result.length).toBe(1);
@@ -614,14 +616,14 @@ describe('Document', () => {
 			const tagName = 'tag-name';
 			const namespaceURI = '/namespace/uri/';
 
-			jest
-				.spyOn(ParentNodeUtility, 'getElementsByTagNameNS')
-				.mockImplementation((parentNode, requestedNamespaceURI, requestedTagName) => {
+			vi.spyOn(ParentNodeUtility, 'getElementsByTagNameNS').mockImplementation(
+				(parentNode, requestedNamespaceURI, requestedTagName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
 					return <IHTMLCollection<IElement>>[element];
-				});
+				}
+			);
 
 			const result = document.getElementsByTagNameNS(namespaceURI, tagName);
 
@@ -635,13 +637,13 @@ describe('Document', () => {
 			const element = document.createElement('div');
 			const id = 'id';
 
-			jest
-				.spyOn(ParentNodeUtility, 'getElementById')
-				.mockImplementation((parentNode, requestedID) => {
+			vi.spyOn(ParentNodeUtility, 'getElementById').mockImplementation(
+				(parentNode, requestedID) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedID).toEqual(id);
 					return element;
-				});
+				}
+			);
 
 			expect(document.getElementById(id) === element).toBe(true);
 		});
@@ -916,7 +918,9 @@ describe('Document', () => {
 		});
 
 		it("Creates an element when tag name isn't a string.", () => {
-			const element = <ISVGElement>document.createElementNS(null, <string>(<unknown>true));
+			const element = <ISVGElement>(
+				document.createElementNS(<string>(<unknown>null), <string>(<unknown>true))
+			);
 			expect(element.tagName).toBe('TRUE');
 		});
 	});
@@ -1115,80 +1119,84 @@ describe('Document', () => {
 	});
 
 	describe('addEventListener()', () => {
-		it('Triggers "readystatechange" event if no resources needs to be loaded.', (done) => {
-			let readyChangeEvent = null;
+		it('Triggers "readystatechange" event if no resources needs to be loaded.', async () => {
+			await new Promise((resolve) => {
+				let readyChangeEvent: Event | null = null;
 
-			document.addEventListener('readystatechange', (event) => {
-				readyChangeEvent = event;
-			});
-
-			expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
-
-			setTimeout(() => {
-				expect(readyChangeEvent.target).toBe(document);
-				expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
-				done();
-			}, 1);
-		});
-
-		it('Triggers "readystatechange" event when all resources have been loaded.', (done) => {
-			const cssURL = '/path/to/file.css';
-			const jsURL = '/path/to/file.js';
-			const cssResponse = 'body { background-color: red; }';
-			const jsResponse = 'globalThis.test = "test";';
-			let resourceFetchCSSDocument = null;
-			let resourceFetchCSSURL = null;
-			let resourceFetchJSDocument = null;
-			let resourceFetchJSURL = null;
-			let readyChangeEvent = null;
-
-			jest
-				.spyOn(ResourceFetch, 'fetch')
-				.mockImplementation(async (document: IDocument, url: string) => {
-					if (url.endsWith('.css')) {
-						resourceFetchCSSDocument = document;
-						resourceFetchCSSURL = url;
-						return cssResponse;
-					}
-
-					resourceFetchJSDocument = document;
-					resourceFetchJSURL = url;
-					return jsResponse;
+				document.addEventListener('readystatechange', (event) => {
+					readyChangeEvent = event;
 				});
 
-			document.addEventListener('readystatechange', (event) => {
-				readyChangeEvent = event;
+				expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
+
+				setTimeout(() => {
+					expect((<Event>readyChangeEvent).target).toBe(document);
+					expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
+					resolve(null);
+				}, 1);
 			});
+		});
 
-			const script = <IHTMLScriptElement>document.createElement('script');
-			script.async = true;
-			script.src = jsURL;
+		it('Triggers "readystatechange" event when all resources have been loaded.', async () => {
+			await new Promise((resolve) => {
+				const cssURL = '/path/to/file.css';
+				const jsURL = '/path/to/file.js';
+				const cssResponse = 'body { background-color: red; }';
+				const jsResponse = 'globalThis.test = "test";';
+				let resourceFetchCSSDocument: IDocument | null = null;
+				let resourceFetchCSSURL: string | null = null;
+				let resourceFetchJSDocument: IDocument | null = null;
+				let resourceFetchJSURL: string | null = null;
+				let readyChangeEvent: Event | null = null;
 
-			const link = <IHTMLLinkElement>document.createElement('link');
-			link.href = cssURL;
-			link.rel = 'stylesheet';
+				vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
+					async (document: IDocument, url: string) => {
+						if (url.endsWith('.css')) {
+							resourceFetchCSSDocument = document;
+							resourceFetchCSSURL = url;
+							return cssResponse;
+						}
 
-			document.body.appendChild(script);
-			document.body.appendChild(link);
+						resourceFetchJSDocument = document;
+						resourceFetchJSURL = url;
+						return jsResponse;
+					}
+				);
 
-			expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
+				document.addEventListener('readystatechange', (event) => {
+					readyChangeEvent = event;
+				});
 
-			setTimeout(() => {
-				expect(resourceFetchCSSDocument).toBe(document);
-				expect(resourceFetchCSSURL).toBe(cssURL);
-				expect(resourceFetchJSDocument).toBe(document);
-				expect(resourceFetchJSURL).toBe(jsURL);
-				expect(readyChangeEvent.target).toBe(document);
-				expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
-				expect(document.styleSheets.length).toBe(1);
-				expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
+				const script = <IHTMLScriptElement>document.createElement('script');
+				script.async = true;
+				script.src = jsURL;
 
-				expect(window['test']).toBe('test');
+				const link = <IHTMLLinkElement>document.createElement('link');
+				link.href = cssURL;
+				link.rel = 'stylesheet';
 
-				delete window['test'];
+				document.body.appendChild(script);
+				document.body.appendChild(link);
 
-				done();
-			}, 0);
+				expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
+
+				setTimeout(() => {
+					expect(resourceFetchCSSDocument).toBe(document);
+					expect(resourceFetchCSSURL).toBe(cssURL);
+					expect(resourceFetchJSDocument).toBe(document);
+					expect(resourceFetchJSURL).toBe(jsURL);
+					expect((<Event>readyChangeEvent).target).toBe(document);
+					expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
+					expect(document.styleSheets.length).toBe(1);
+					expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
+
+					expect(window['test']).toBe('test');
+
+					delete window['test'];
+
+					resolve(null);
+				}, 0);
+			});
 		});
 	});
 
@@ -1221,7 +1229,7 @@ describe('Document', () => {
 	describe('dispatchEvent()', () => {
 		it('Bubbles events to Window.', () => {
 			const event = new Event('click', { bubbles: true });
-			let emittedEvent = null;
+			let emittedEvent: Event | null = null;
 
 			window.addEventListener('click', (event) => (emittedEvent = event));
 			document.dispatchEvent(event);

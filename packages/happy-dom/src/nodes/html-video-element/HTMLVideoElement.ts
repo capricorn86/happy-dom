@@ -1,5 +1,5 @@
-import HTMLMediaElement from '../html-media-element/HTMLMediaElement';
-import IHTMLVideoElement from './IHTMLVideoElement';
+import HTMLMediaElement from '../html-media-element/HTMLMediaElement.js';
+import IHTMLVideoElement from './IHTMLVideoElement.js';
 
 /**
  * HTML Video Element.

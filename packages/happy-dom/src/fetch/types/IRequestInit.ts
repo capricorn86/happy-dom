@@ -1,10 +1,10 @@
-import IHeadersInit from './IHeadersInit';
-import AbortSignal from '../AbortSignal';
+import IHeadersInit from './IHeadersInit.js';
+import AbortSignal from '../AbortSignal.js';
 import { URL } from 'url';
-import IRequestReferrerPolicy from './IRequestReferrerPolicy';
-import IRequestRedirect from './IRequestRedirect';
-import IRequestBody from './IRequestBody';
-import IRequestCredentials from './IRequestCredentials';
+import IRequestReferrerPolicy from './IRequestReferrerPolicy.js';
+import IRequestRedirect from './IRequestRedirect.js';
+import IRequestBody from './IRequestBody.js';
+import IRequestCredentials from './IRequestCredentials.js';
 
 /**
  * Fetch request init.

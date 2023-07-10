@@ -1,6 +1,6 @@
-import IDOMTokenList from '../../dom-token-list/IDOMTokenList';
-import IHTMLElement from '../html-element/IHTMLElement';
-import IHTMLHyperlinkElementUtils from './IHTMLHyperlinkElementUtils';
+import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import IHTMLHyperlinkElementUtils from './IHTMLHyperlinkElementUtils.js';
 
 /**
  * HTML Anchor Element.

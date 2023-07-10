@@ -1,9 +1,9 @@
-import Blob from '../file/Blob';
-import File from '../file/File';
-import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement';
-import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement';
-import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection';
-import RadioNodeList from '../nodes/html-form-element/RadioNodeList';
+import Blob from '../file/Blob.js';
+import File from '../file/File.js';
+import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
+import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement.js';
+import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
+import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 
 type FormDataEntry = {
 	name: string;

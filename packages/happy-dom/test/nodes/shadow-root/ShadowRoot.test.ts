@@ -1,7 +1,8 @@
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement';
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import CustomElement from '../../CustomElement';
+import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import CustomElement from '../../CustomElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('ShadowRoot', () => {
 	let window: Window;
@@ -11,10 +12,6 @@ describe('ShadowRoot', () => {
 		window = new Window();
 		document = window.document;
 		window.customElements.define('custom-element', CustomElement);
-	});
-
-	afterEach(() => {
-		jest.restoreAllMocks();
 	});
 
 	describe('set innerHTML()', () => {

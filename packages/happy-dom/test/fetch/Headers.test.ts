@@ -1,4 +1,5 @@
-import Headers from '../../src/fetch/Headers';
+import Headers from '../../src/fetch/Headers.js';
+import { describe, it, expect } from 'vitest';
 
 describe('Headers', () => {
 	describe('constructor()', () => {
@@ -141,7 +142,7 @@ describe('Headers', () => {
 				headers.append('Content-Type', 'x-www-form-urlencoded');
 				headers.append('Content-Encoding', 'gzip');
 
-				const keys = [];
+				const keys: string[] = [];
 
 				for (const key of headers.keys()) {
 					keys.push(key);
@@ -159,7 +160,7 @@ describe('Headers', () => {
 				headers.append('Content-Type', 'x-www-form-urlencoded');
 				headers.append('Content-Encoding', 'gzip');
 
-				const values = [];
+				const values: string[] = [];
 
 				for (const value of headers.values()) {
 					values.push(value);

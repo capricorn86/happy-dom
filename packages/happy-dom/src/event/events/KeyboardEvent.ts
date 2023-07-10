@@ -1,5 +1,5 @@
-import UIEvent from '../UIEvent';
-import IKeyboardEventInit from './IKeyboardEventInit';
+import UIEvent from '../UIEvent.js';
+import IKeyboardEventInit from './IKeyboardEventInit.js';
 
 /**
  *

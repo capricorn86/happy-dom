@@ -1,12 +1,12 @@
-import Element from '../nodes/element/Element';
-import Node from '../nodes/node/Node';
-import VoidElements from '../config/VoidElements';
-import DocumentType from '../nodes/document-type/DocumentType';
-import INode from '../nodes/node/INode';
-import IElement from '../nodes/element/IElement';
-import IHTMLTemplateElement from '../nodes/html-template-element/IHTMLTemplateElement';
-import NodeTypeEnum from '../nodes/node/NodeTypeEnum';
-import IProcessingInstruction from '../nodes/processing-instruction/IProcessingInstruction';
+import Element from '../nodes/element/Element.js';
+import Node from '../nodes/node/Node.js';
+import VoidElements from '../config/VoidElements.js';
+import DocumentType from '../nodes/document-type/DocumentType.js';
+import INode from '../nodes/node/INode.js';
+import IElement from '../nodes/element/IElement.js';
+import IHTMLTemplateElement from '../nodes/html-template-element/IHTMLTemplateElement.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import IProcessingInstruction from '../nodes/processing-instruction/IProcessingInstruction.js';
 import * as Entities from 'entities';
 
 /**

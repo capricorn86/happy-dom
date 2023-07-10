@@ -1,4 +1,4 @@
-import SVGRect from './SVGRect';
+import SVGRect from './SVGRect.js';
 
 /**
  * Rect object.

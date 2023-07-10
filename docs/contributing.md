@@ -1,4 +1,8 @@
-# How to Develop
+# Happy DOM Contributing Guide
+
+We are very happy that you would like to contribute. In this guide you will find instructions on how to setup the repo locally and how to branch and create a pull request.
+
+## Setup
 
 ### Install
 
@@ -18,15 +22,16 @@ npm run compile
 npm run watch
 ```
 
-
-### Debug
+### Debugging
 
 1. Go to the package you wish to test in the terminal (e.g. "cd ./packages/happy-dom")
 2. Write "debugger;" at the place you want to place a breakpoint in the code.
 3. Run the following command in the terminal:
+
 ```bash
 npm run test:debug
 ```
+
 4. Open Chrome.
 5. Open developer tools.
 6. A green ball should appear to the left of the menu bar in developer tools.
@@ -47,17 +52,9 @@ npm test
 npm run test:watch
 ```
 
+## Branch
 
-
-# Pull Request
-
-Do your changes on a branch. When you are done with your changes you can create a pull request.
-
-Each pushed commit will trigger a Github Action that will run tests. All tests has to pass before it is possible to merge a pull request.
-
-## Branch Name Convention
-
-task/{taskId}-{taskDescription}
+Branch names currently have the pattern "task/{issueID}-name-of-branch". However, there is a plan to change this in the future and remove "task/".
 
 ## Commit Convention
 
@@ -69,9 +66,17 @@ The release process in Happy DOM is completely automated. In order to determine 
 
 #### Version Types
 
-| Type    | Description                                                  |
-| ------- | ------------------------------------------------------------ |
+| Type    | Description                                                                                                             |
+| ------- | ----------------------------------------------------------------------------------------------------------------------- |
 | trivial | Use this version type if the change doesn't affect the end user. The change will not be displayed in the release notes. |
-| patch   | Bug fixes should use this version type.                      |
-| minor   | New features that doesn't break anything for the end user should have this version type. |
-| major   | Breaking changes should use this version type.                |
+| patch   | Bug fixes should use this version type.                                                                                 |
+| minor   | New features that doesn't break anything for the end user should have this version type.                                |
+| major   | Breaking changes should use this version type.                                                                          |
+
+# Pull Request
+
+Do your changes on a branch. When you are done with your changes you can create a pull request.
+
+Each pushed commit will trigger a Github Workflow that will compile, run tests, lint and check that the commit convention is followed. The Github Workflow has to comple successfully in order to merge the pull request.
+
+One code owner has to approve the pull request. The code owner will usually merge the pull request if the build has passed and the code looks good.

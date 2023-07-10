@@ -1,4 +1,4 @@
-import AbortSignal from './AbortSignal';
+import AbortSignal from './AbortSignal.js';
 
 /**
  * AbortController.

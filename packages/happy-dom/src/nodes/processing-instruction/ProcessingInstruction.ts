@@ -1,6 +1,6 @@
-import IProcessingInstruction from './IProcessingInstruction';
-import CharacterData from '../character-data/CharacterData';
-import NodeTypeEnum from '../node/NodeTypeEnum';
+import IProcessingInstruction from './IProcessingInstruction.js';
+import CharacterData from '../character-data/CharacterData.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * Processing instruction node interface.

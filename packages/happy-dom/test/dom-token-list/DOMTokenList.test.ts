@@ -1,8 +1,9 @@
-import IWindow from '../../src/window/IWindow';
-import Window from '../../src/window/Window';
-import IDocument from '../../src/nodes/document/IDocument';
-import IElement from '../../src/nodes/element/IElement';
-import IDOMTokenList from '../../src/dom-token-list/IDOMTokenList';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import IElement from '../../src/nodes/element/IElement.js';
+import IDOMTokenList from '../../src/dom-token-list/IDOMTokenList.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('DOMTokenList', () => {
 	let window: IWindow;
@@ -172,11 +173,11 @@ describe('DOMTokenList', () => {
 
 	describe('forEach()', () => {
 		it('Executes a provided callback function once for each DOMTokenList element.', () => {
-			const items = [];
+			const items: Array<{ token: string; index: number }> = [];
 
 			element.className = 'class1 class2 class3';
 
-			classList.forEach((token, index) => {
+			classList.forEach((token: string, index: number) => {
 				items.push({ token, index });
 			});
 

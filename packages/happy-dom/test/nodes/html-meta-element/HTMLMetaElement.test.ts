@@ -1,6 +1,7 @@
-import Window from '../../../src/window/Window';
-import Document from '../../../src/nodes/document/Document';
-import IHTMLMetaElement from '../../../src/nodes/html-meta-element/IHTMLMetaElement';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import IHTMLMetaElement from '../../../src/nodes/html-meta-element/IHTMLMetaElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLMetaElement', () => {
 	let window: Window;

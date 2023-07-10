@@ -1,8 +1,8 @@
-import Event from '../../event/Event';
-import IWindow from '../../window/IWindow';
-import IDocument from '../document/IDocument';
-import IHTMLElement from '../html-element/IHTMLElement';
-import IFrameCrossOriginWindow from './IFrameCrossOriginWindow';
+import Event from '../../event/Event.js';
+import IWindow from '../../window/IWindow.js';
+import IDocument from '../document/IDocument.js';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import IFrameCrossOriginWindow from './IFrameCrossOriginWindow.js';
 
 /**
  * HTML Iframe Element.

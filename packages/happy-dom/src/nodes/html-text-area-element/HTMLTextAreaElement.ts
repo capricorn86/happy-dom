@@ -1,20 +1,20 @@
-import Event from '../../event/Event';
-import DOMException from '../../exception/DOMException';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum';
-import IAttr from '../attr/IAttr';
-import HTMLElement from '../html-element/HTMLElement';
-import HTMLFormElement from '../html-form-element/HTMLFormElement';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum';
-import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum';
-import INode from '../node/INode';
-import ValidityState from '../../validity-state/ValidityState';
-import IHTMLTextAreaElement from './IHTMLTextAreaElement';
-import INodeList from '../node/INodeList';
-import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
-import IDocument from '../document/IDocument';
-import IShadowRoot from '../shadow-root/IShadowRoot';
-import NodeList from '../node/NodeList';
+import Event from '../../event/Event.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import IAttr from '../attr/IAttr.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum.js';
+import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum.js';
+import INode from '../node/INode.js';
+import ValidityState from '../../validity-state/ValidityState.js';
+import IHTMLTextAreaElement from './IHTMLTextAreaElement.js';
+import INodeList from '../node/INodeList.js';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
+import IDocument from '../document/IDocument.js';
+import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import NodeList from '../node/NodeList.js';
 
 /**
  * HTML Text Area Element.

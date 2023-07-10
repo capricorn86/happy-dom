@@ -1,4 +1,4 @@
-import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum';
+import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
 
 /**
  * History API.

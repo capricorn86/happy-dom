@@ -1,12 +1,12 @@
-import IHTMLElement from '../html-element/IHTMLElement';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement';
-import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum';
-import ValidityState from '../../validity-state/ValidityState';
-import Event from '../../event/Event';
-import File from '../../file/File';
-import IFileList from './IFileList';
-import INodeList from '../node/INodeList';
-import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement';
+import IHTMLElement from '../html-element/IHTMLElement.js';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum.js';
+import ValidityState from '../../validity-state/ValidityState.js';
+import Event from '../../event/Event.js';
+import File from '../../file/File.js';
+import IFileList from './IFileList.js';
+import INodeList from '../node/INodeList.js';
+import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
 
 /**
  * HTML Input Element.

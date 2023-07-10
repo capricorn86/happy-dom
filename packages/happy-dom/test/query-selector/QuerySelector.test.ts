@@ -1,10 +1,11 @@
-import IHTMLElement from '../../src/nodes/html-element/IHTMLElement';
-import Window from '../../src/window/Window';
-import IWindow from '../../src/window/IWindow';
-import IDocument from '../../src/nodes/document/IDocument';
-import QuerySelectorHTML from './data/QuerySelectorHTML';
-import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML';
-import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement';
+import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
+import Window from '../../src/window/Window.js';
+import IWindow from '../../src/window/IWindow.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import QuerySelectorHTML from './data/QuerySelectorHTML.js';
+import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
+import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('QuerySelector', () => {
 	let window: IWindow;
@@ -950,6 +951,14 @@ describe('QuerySelector', () => {
 				)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});
+
+		it('Returns empty node list when match pseudo element "::-webkit-inner-spin-button".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll('::-webkit-inner-spin-button');
+
+			expect(elements.length).toBe(0);
+		});
 	});
 
 	describe('querySelector', () => {
@@ -1085,6 +1094,12 @@ describe('QuerySelector', () => {
 			div.appendChild(input);
 
 			expect(div.querySelector('input:not([list])[type="search"]')).toBeNull();
+		});
+
+		it('Returns null by pseudo element selector of ::-webkit-inner-spin-button', () => {
+			const div = document.createElement('div');
+			expect(div.querySelector('::-webkit-inner-spin-button')).toBeNull();
+			expect(document.querySelector('::-webkit-inner-spin-button')).toBeNull();
 		});
 	});
 });

@@ -1,14 +1,14 @@
 import WhatwgMIMEType from 'whatwg-mimetype';
 import WhatwgEncoding from 'whatwg-encoding';
-import IDocument from '../nodes/document/IDocument';
-import ProgressEvent from '../event/events/ProgressEvent';
-import DOMException from '../exception/DOMException';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum';
-import Blob from './Blob';
-import FileReaderReadyStateEnum from './FileReaderReadyStateEnum';
-import FileReaderFormatEnum from './FileReaderFormatEnum';
-import EventTarget from '../event/EventTarget';
-import FileReaderEventTypeEnum from './FileReaderEventTypeEnum';
+import IDocument from '../nodes/document/IDocument.js';
+import ProgressEvent from '../event/events/ProgressEvent.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import Blob from './Blob.js';
+import FileReaderReadyStateEnum from './FileReaderReadyStateEnum.js';
+import FileReaderFormatEnum from './FileReaderFormatEnum.js';
+import EventTarget from '../event/EventTarget.js';
+import FileReaderEventTypeEnum from './FileReaderEventTypeEnum.js';
 
 /**
  * Reference:
