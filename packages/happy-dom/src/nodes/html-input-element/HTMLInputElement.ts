@@ -1074,7 +1074,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * @override
 	 */
-	public override setAttributeNode(attribute: IAttr): IAttr {
+	public override setAttributeNode(attribute: IAttr): IAttr | null {
 		const replacedAttribute = super.setAttributeNode(attribute);
 		const oldValue = replacedAttribute ? replacedAttribute.value : null;
 

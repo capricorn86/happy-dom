@@ -405,7 +405,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	/**
 	 * @override
 	 */
-	public override setAttributeNode(attribute: IAttr): IAttr {
+	public override setAttributeNode(attribute: IAttr): IAttr | null {
 		const replacedAttribute = super.setAttributeNode(attribute);
 		const oldValue = replacedAttribute ? replacedAttribute.value : null;
 
