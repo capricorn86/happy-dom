@@ -1,8 +1,5 @@
-import { URL } from 'url';
 import Event from '../../event/Event.js';
-import ErrorEvent from '../../event/events/ErrorEvent.js';
 import IWindow from '../../window/IWindow.js';
-import Window from '../../window/Window.js';
 import IDocument from '../document/IDocument.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import INode from '../node/INode.js';
