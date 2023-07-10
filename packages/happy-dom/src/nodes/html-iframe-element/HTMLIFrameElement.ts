@@ -163,7 +163,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 * @returns Content window.
 	 */
 	public get contentWindow(): IWindow | IFrameCrossOriginWindow | null {
-		return this._contentWindow || null;
+		return this._contentWindow;
 	}
 
 	/**
