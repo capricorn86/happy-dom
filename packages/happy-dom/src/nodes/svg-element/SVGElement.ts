@@ -113,7 +113,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	/**
 	 * @override
 	 */
-	public setAttributeNode(attribute: IAttr): IAttr {
+	public setAttributeNode(attribute: IAttr): IAttr | null {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'style' && this._style) {

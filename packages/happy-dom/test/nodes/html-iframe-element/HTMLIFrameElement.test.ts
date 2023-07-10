@@ -8,7 +8,7 @@ import IFrameCrossOriginWindow from '../../../src/nodes/html-iframe-element/IFra
 import MessageEvent from '../../../src/event/events/MessageEvent.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import DOMException from '../../../src/exception/DOMException.js';
-import { beforeEach, describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 
 describe('HTMLIFrameElement', () => {
@@ -20,6 +20,10 @@ describe('HTMLIFrameElement', () => {
 		window = new Window();
 		document = window.document;
 		element = <IHTMLIFrameElement>document.createElement('iframe');
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -104,6 +108,7 @@ describe('HTMLIFrameElement', () => {
 				});
 
 				window.happyDOM.setURL(documentOrigin);
+				document.body.appendChild(element);
 				element.src = iframeSrc;
 				element.addEventListener('load', () => {
 					const message = 'test';
@@ -130,14 +135,14 @@ describe('HTMLIFrameElement', () => {
 					element.contentWindow?.postMessage(message, iframeOrigin);
 					expect(triggeredEvent).toBe(null);
 
-					window.setImmediate(() => {
+					setTimeout(() => {
 						expect(element.contentDocument).toBe(null);
 						expect((<MessageEvent>triggeredEvent).data).toBe(message);
 						expect((<MessageEvent>triggeredEvent).origin).toBe(documentOrigin);
 						expect((<MessageEvent>triggeredEvent).source === window).toBe(true);
 						expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
 						resolve(null);
-					});
+					}, 10);
 				});
 			});
 		});

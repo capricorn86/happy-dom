@@ -417,7 +417,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	/**
 	 * @override
 	 */
-	public override setAttributeNode(attribute: IAttr): IAttr {
+	public override setAttributeNode(attribute: IAttr): IAttr | null {
 		const replacedAttribute = super.setAttributeNode(attribute);
 
 		if (attribute.name === 'rel' && this._relList) {

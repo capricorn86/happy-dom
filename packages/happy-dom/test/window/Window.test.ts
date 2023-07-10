@@ -1191,7 +1191,7 @@ describe('Window', () => {
 
 				expect(triggeredEvent).toBe(null);
 
-				window.setImmediate(() => {
+				setTimeout(() => {
 					expect((<MessageEvent>triggeredEvent).data).toBe(message);
 					expect((<MessageEvent>triggeredEvent).origin).toBe(parentOrigin);
 					expect((<MessageEvent>triggeredEvent).source).toBe(parent);
@@ -1201,14 +1201,14 @@ describe('Window', () => {
 					window.postMessage(message, '*');
 					expect(triggeredEvent).toBe(null);
 
-					window.setImmediate(() => {
+					setTimeout(() => {
 						expect((<MessageEvent>triggeredEvent).data).toBe(message);
 						expect((<MessageEvent>triggeredEvent).origin).toBe(parentOrigin);
 						expect((<MessageEvent>triggeredEvent).source).toBe(parent);
 						expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
 						resolve(null);
-					});
-				});
+					}, 10);
+				}, 10);
 			});
 		});
 
@@ -1224,10 +1224,10 @@ describe('Window', () => {
 
 				expect(triggeredEvent).toBe(null);
 
-				window.setImmediate(() => {
+				setTimeout(() => {
 					expect((<MessageEvent>triggeredEvent).data).toBe(message);
 					resolve(null);
-				});
+				}, 10);
 			});
 		});
 

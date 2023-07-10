@@ -104,11 +104,6 @@ export default class HTMLScriptElementUtility {
 				error
 			})
 		);
-		if (
-			!element['_listeners']['error'] &&
-			!element.ownerDocument.defaultView['_listeners']['error']
-		) {
-			element.ownerDocument.defaultView.console.error(error);
-		}
+		element.ownerDocument.defaultView.console.error(error);
 	}
 }

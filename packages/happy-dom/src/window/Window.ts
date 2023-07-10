@@ -845,13 +845,7 @@ export default class Window extends EventTarget implements IWindow {
 			);
 		}
 
-		const setImmediate =
-			globalThis.setImmediate || <typeof globalThis.setImmediate>(<unknown>setTimeout);
-		const clearImmediate =
-			globalThis.clearImmediate || <typeof globalThis.clearImmediate>(<unknown>clearTimeout);
-		const taskId = this.happyDOM.asyncTaskManager.startTask(() => clearImmediate(immediateId));
-		const immediateId = setImmediate(() => {
-			this.happyDOM.asyncTaskManager.endTask(taskId);
+		this.window.setTimeout(() =>
 			this.dispatchEvent(
 				new MessageEvent('message', {
 					data: message,
@@ -859,8 +853,8 @@ export default class Window extends EventTarget implements IWindow {
 					source: this.parent,
 					lastEventId: ''
 				})
-			);
-		});
+			)
+		);
 	}
 
 	/**
