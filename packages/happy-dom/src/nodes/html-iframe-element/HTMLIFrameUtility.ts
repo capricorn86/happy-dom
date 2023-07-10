@@ -35,6 +35,7 @@ export default class HTMLIFrameUtility {
 
 				if (src === 'about:blank') {
 					element._contentWindow = contentWindow;
+					return;
 				}
 
 				if (src.startsWith('javascript:')) {
