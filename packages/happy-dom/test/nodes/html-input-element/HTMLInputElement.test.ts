@@ -355,6 +355,68 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get valueAsDate()', () => {
+		const inputTypes = [
+			'button',
+			'checkbox',
+			'color',
+			'date',
+			'datetime-local',
+			'email',
+			'file',
+			'hidden',
+			'image',
+			'month',
+			'number',
+			'password',
+			'radio',
+			'range',
+			'reset',
+			'search',
+			'submit',
+			'tel',
+			'text',
+			'time',
+			'url',
+			'week'
+		];
+		for (const type of inputTypes) {
+			it(`Should return null for type ${type} with default value`, () => {
+				element.type = type;
+				element.value = '';
+				expect(element.valueAsDate).toBeNull();
+			});
+		}
+		describe('With invalid value', () => {
+			const testData: { type: string; value: string; want: Date | null }[] = [
+				{ type: 'date', value: '2019-01-32', want: null },
+				{ type: 'month', value: '2019-13', want: null },
+				{ type: 'time', value: '25:00', want: null },
+				{ type: 'week', value: '2023-W53', want: null }
+			];
+			it.each(testData)(`Should return null for type $type`, ({ type, value, want }) => {
+				element.type = type;
+				element.value = value;
+				expect(element.valueAsDate).toEqual(want);
+			});
+		});
+		describe('With valid value', () => {
+			const testData: { type: string; value: string; want: Date | null }[] = [
+				{ type: 'date', value: '2019-01-01', want: new Date('2019-01-01T00:00Z') },
+				{ type: 'month', value: '2019-01', want: new Date('2019-01-01') },
+				{ type: 'time', value: '00:00', want: new Date('1970-01-01T00:00Z') },
+				{ type: 'time', value: '12:00', want: new Date('1970-01-01T12:00Z') },
+				{ type: 'time', value: '18:55', want: new Date('1970-01-01T18:55Z') },
+				{ type: 'week', value: '2023-W22', want: new Date('2023-05-29T00:00Z') }
+			];
+			it.each(testData)(`Should return valid date for type $type`, ({ type, value, want }) => {
+				element.type = type;
+				element.value = value;
+				expect(element.valueAsDate).toEqual(want);
+			});
+		});
+	});
+
 	describe('get selectionStart()', () => {
 		it('Returns the length of the attribute "value" if value has not been set using the property.', () => {
 			element.setAttribute('value', 'TEST_VALUE');

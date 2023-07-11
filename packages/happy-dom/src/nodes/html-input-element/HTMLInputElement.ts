@@ -22,7 +22,7 @@ import IDocument from '../document/IDocument.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
 import NodeList from '../node/NodeList.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import { dateIsoWeek } from './HTMLInputDateUtility.js';
+import { dateIsoWeek, isoWeekDate } from './HTMLInputDateUtility.js';
 
 /**
  * HTML Input Element.
@@ -789,7 +789,21 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Date.
 	 */
 	public get valueAsDate(): Date {
-		return this.value ? new Date(this.value) : null;
+		switch (this.type) {
+			case 'date':
+			case 'month':
+				return isNaN(new Date(String(this.value)).getTime()) ? null : new Date(this.value);
+			case 'week': {
+				const d = isoWeekDate(this.value);
+				return isNaN(d.getTime()) ? null : d;
+			}
+			case 'time': {
+				const d = new Date(`1970-01-01T${this.value}Z`);
+				return isNaN(d.getTime()) ? null : d;
+			}
+			default:
+				return null;
+		}
 	}
 
 	/**
