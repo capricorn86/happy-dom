@@ -48,7 +48,6 @@ export default class GlobalWindow extends Window implements IWindow {
 	public Uint8ClampedArray: typeof Uint8ClampedArray = globalThis.Uint8ClampedArray;
 	public WeakMap: WeakMapConstructor = globalThis.WeakMap;
 	public WeakSet: WeakSetConstructor = globalThis.WeakSet;
-	public clearImmediate: (immediateId: NodeJS.Immediate) => void = globalThis.clearImmediate;
 	public decodeURI: typeof decodeURI = globalThis.decodeURI;
 	public decodeURIComponent: typeof decodeURIComponent = globalThis.decodeURIComponent;
 	public encodeURI: typeof encodeURI = globalThis.encodeURI;
@@ -62,11 +61,6 @@ export default class GlobalWindow extends Window implements IWindow {
 	public isNaN: typeof isNaN = globalThis.isNaN;
 	public parseFloat: typeof parseFloat = globalThis.parseFloat;
 	public parseInt: typeof parseInt = globalThis.parseInt;
-	public setImmediate: (
-		callback: (...args: unknown[]) => void,
-		...args: unknown[]
-	) => NodeJS.Immediate = globalThis.setImmediate;
-	public queueMicrotask: typeof queueMicrotask = globalThis.queueMicrotask;
 	public undefined: typeof undefined = globalThis.undefined;
 	/**
 	 * @deprecated
