@@ -807,6 +807,47 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
+	 * Sets value from a Date.
+	 *
+	 * @param value Date.
+	 */
+	public set valueAsDate(value: Date | null) {
+		// Specs at https://html.spec.whatwg.org/multipage/input.html#dom-input-valueasdate
+		if (!['date', 'month', 'time', 'week'].includes(this.type)) {
+			throw new DOMException(
+				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.",
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+		if (typeof value !== 'object') {
+			throw new TypeError(
+				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': Failed to convert value to 'object'."
+			);
+		} else if (value && !(value instanceof Date)) {
+			throw new TypeError(
+				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date."
+			);
+		} else if (value === null || isNaN(value.getTime())) {
+			this.value = '';
+			return;
+		}
+		switch (this.type) {
+			case 'date':
+				this.value = value.toISOString().split('T')[0];
+				break;
+			case 'month':
+				this.value = value.toISOString().split('T')[0].slice(0, -3);
+				break;
+			case 'time':
+				this.value = value.toISOString().split('T')[1].slice(0, 5);
+				break;
+			case 'week':
+				this.value = dateIsoWeek(value);
+				break;
+		}
+	}
+
+	/**
 	 * Returns value as number.
 	 *
 	 * @returns Number.

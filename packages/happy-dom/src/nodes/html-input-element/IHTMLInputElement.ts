@@ -54,7 +54,7 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	selectionEnd: number;
 	selectionDirection: string;
 	willValidate: boolean;
-	valueAsDate: Date;
+	valueAsDate: Date | null;
 	valueAsNumber: number;
 	validationMessage: string;
 

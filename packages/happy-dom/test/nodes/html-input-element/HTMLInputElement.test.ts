@@ -356,7 +356,7 @@ describe('HTMLInputElement', () => {
 	});
 
 	describe('get valueAsDate()', () => {
-		const inputTypes = [
+		it.each([
 			'button',
 			'checkbox',
 			'color',
@@ -379,41 +379,98 @@ describe('HTMLInputElement', () => {
 			'time',
 			'url',
 			'week'
-		];
-		for (const type of inputTypes) {
-			it(`Should return null for type ${type} with default value`, () => {
-				element.type = type;
-				element.value = '';
-				expect(element.valueAsDate).toBeNull();
-			});
-		}
-		describe('With invalid value', () => {
-			const testData: { type: string; value: string; want: Date | null }[] = [
-				{ type: 'date', value: '2019-01-32', want: null },
-				{ type: 'month', value: '2019-13', want: null },
-				{ type: 'time', value: '25:00', want: null },
-				{ type: 'week', value: '2023-W53', want: null }
-			];
-			it.each(testData)(`Should return null for type $type`, ({ type, value, want }) => {
-				element.type = type;
-				element.value = value;
-				expect(element.valueAsDate).toEqual(want);
-			});
+		])(`Should return null for type '%s' with default value`, (type) => {
+			element.type = type;
+			element.value = '';
+			expect(element.valueAsDate).toBeNull();
 		});
-		describe('With valid value', () => {
-			const testData: { type: string; value: string; want: Date | null }[] = [
-				{ type: 'date', value: '2019-01-01', want: new Date('2019-01-01T00:00Z') },
-				{ type: 'month', value: '2019-01', want: new Date('2019-01-01') },
-				{ type: 'time', value: '00:00', want: new Date('1970-01-01T00:00Z') },
-				{ type: 'time', value: '12:00', want: new Date('1970-01-01T12:00Z') },
-				{ type: 'time', value: '18:55', want: new Date('1970-01-01T18:55Z') },
-				{ type: 'week', value: '2023-W22', want: new Date('2023-05-29T00:00Z') }
-			];
-			it.each(testData)(`Should return valid date for type $type`, ({ type, value, want }) => {
-				element.type = type;
-				element.value = value;
-				expect(element.valueAsDate).toEqual(want);
-			});
+		it.each(<{ type: string; value: string; want: Date | null }[]>[
+			{ type: 'date', value: '2019-01-01', want: new Date('2019-01-01T00:00Z') },
+			{ type: 'month', value: '2019-01', want: new Date('2019-01-01') },
+			{ type: 'time', value: '00:00', want: new Date('1970-01-01T00:00Z') },
+			{ type: 'time', value: '12:00', want: new Date('1970-01-01T12:00Z') },
+			{ type: 'time', value: '18:55', want: new Date('1970-01-01T18:55Z') },
+			{ type: 'week', value: '2023-W22', want: new Date('2023-05-29T00:00Z') }
+		])(`Should return valid date for type $type with valid value`, ({ type, value, want }) => {
+			element.type = type;
+			element.value = value;
+			expect(element.valueAsDate).toEqual(want);
+		});
+	});
+
+	describe('set valueAsDate()', () => {
+		const dateInputs = ['date', 'month', 'time', 'week'];
+		it.each([
+			'button',
+			'checkbox',
+			'color',
+			'datetime-local',
+			'email',
+			'file',
+			'hidden',
+			'image',
+			'number',
+			'password',
+			'radio',
+			'range',
+			'reset',
+			'search',
+			'submit',
+			'tel',
+			'text',
+			'url'
+		])('Should throw for type "%s"', (type) => {
+			element.type = type;
+			expect(() => {
+				element.valueAsDate = new Date();
+			}).toThrow(
+				new DOMException(
+					"Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.",
+					DOMExceptionNameEnum.invalidStateError
+				)
+			);
+		});
+		it('Should throw with invalid value', () => {
+			element.type = 'date';
+			expect(() => {
+				// @ts-ignore
+				element.valueAsDate = 'x';
+			}).toThrow(
+				new TypeError(
+					"Failed to set the 'valueAsDate' property on 'HTMLInputElement': Failed to convert value to 'object'."
+				)
+			);
+			expect(() => {
+				// @ts-ignore
+				element.valueAsDate = {};
+			}).toThrow(
+				new TypeError(
+					"Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date."
+				)
+			);
+		});
+		it.each(dateInputs)('Should accept Date object for type "%s"', (type) => {
+			element.type = type;
+			expect(() => {
+				element.valueAsDate = new Date();
+			}).not.toThrow();
+		});
+		it.each(dateInputs)('Should accept null for type "%s"', (type) => {
+			element.type = type;
+			expect(() => {
+				element.valueAsDate = null;
+			}).not.toThrow();
+			expect(element.value).toBe('');
+		});
+		it.each([
+			{ type: 'date', value: new Date('2019-01-01T00:00+01:00'), want: '2018-12-31' },
+			{ type: 'month', value: new Date('2019-01-01T00:00+01:00'), want: '2018-12' },
+			{ type: 'time', value: new Date('2019-01-01T00:00+01:00'), want: '23:00' },
+			{ type: 'week', value: new Date('1982-01-03T00:00Z'), want: '1981-W53' }
+		])(`Should set UTC value for type $type with valid date object`, ({ type, value, want }) => {
+			element.type = type;
+			element.valueAsDate = value;
+			expect(element.value).toEqual(want);
 		});
 	});
 
