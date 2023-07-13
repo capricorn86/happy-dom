@@ -22,7 +22,7 @@ import IDocument from '../document/IDocument.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
 import NodeList from '../node/NodeList.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import { dateIsoWeek } from './HTMLInputDateUtility.js';
+import { dateIsoWeek, isoWeekDate } from './HTMLInputDateUtility.js';
 
 /**
  * HTML Input Element.
@@ -789,7 +789,62 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Date.
 	 */
 	public get valueAsDate(): Date {
-		return this.value ? new Date(this.value) : null;
+		switch (this.type) {
+			case 'date':
+			case 'month':
+				return isNaN(new Date(String(this.value)).getTime()) ? null : new Date(this.value);
+			case 'week': {
+				const d = isoWeekDate(this.value);
+				return isNaN(d.getTime()) ? null : d;
+			}
+			case 'time': {
+				const d = new Date(`1970-01-01T${this.value}Z`);
+				return isNaN(d.getTime()) ? null : d;
+			}
+			default:
+				return null;
+		}
+	}
+
+	/**
+	 * Sets value from a Date.
+	 *
+	 * @param value Date.
+	 */
+	public set valueAsDate(value: Date | null) {
+		// Specs at https://html.spec.whatwg.org/multipage/input.html#dom-input-valueasdate
+		if (!['date', 'month', 'time', 'week'].includes(this.type)) {
+			throw new DOMException(
+				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.",
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+		if (typeof value !== 'object') {
+			throw new TypeError(
+				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': Failed to convert value to 'object'."
+			);
+		} else if (value && !(value instanceof Date)) {
+			throw new TypeError(
+				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date."
+			);
+		} else if (value === null || isNaN(value.getTime())) {
+			this.value = '';
+			return;
+		}
+		switch (this.type) {
+			case 'date':
+				this.value = value.toISOString().split('T')[0];
+				break;
+			case 'month':
+				this.value = value.toISOString().split('T')[0].slice(0, -3);
+				break;
+			case 'time':
+				this.value = value.toISOString().split('T')[1].slice(0, 5);
+				break;
+			case 'week':
+				this.value = dateIsoWeek(value);
+				break;
+		}
 	}
 
 	/**
