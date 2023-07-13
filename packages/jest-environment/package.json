@@ -54,7 +54,7 @@
 		"@jest/types": "^29.4.0",
 		"jest-mock": "^29.4.0",
 		"jest-util": "^29.4.0",
-		"happy-dom": "^0.0.0"
+		"happy-dom": "0.0.0"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",

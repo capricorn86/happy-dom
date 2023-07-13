@@ -28,7 +28,7 @@ export default interface IDocumentFragment extends INode {
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	querySelector(selector: string): IElement;
+	querySelector(selector: string): IElement | null;
 
 	/**
 	 * Query CSS selector to find matching nodes.
