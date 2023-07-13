@@ -39,32 +39,36 @@ export default interface INodeJSGlobal {
 	Uint8ClampedArray: typeof Uint8ClampedArray;
 	WeakMap: WeakMapConstructor;
 	WeakSet: WeakSetConstructor;
-	clearImmediate: (immediateId: NodeJS.Immediate) => void;
 	clearInterval: (intervalId: NodeJS.Timeout) => void;
 	clearTimeout: (timeoutId: NodeJS.Timeout) => void;
 	decodeURI: typeof decodeURI;
 	decodeURIComponent: typeof decodeURIComponent;
 	encodeURI: typeof encodeURI;
 	encodeURIComponent: typeof encodeURIComponent;
-	/**
-	 * @deprecated
-	 */
-	escape: (str: string) => string;
 	eval: typeof eval;
 	global: typeof globalThis;
 	isFinite: typeof isFinite;
 	isNaN: typeof isNaN;
 	parseFloat: typeof parseFloat;
 	parseInt: typeof parseInt;
-	setImmediate: (callback: (...args: any[]) => void, ...args: any[]) => NodeJS.Immediate;
 	setInterval: (callback: (...args: any[]) => void, ms?: number, ...args: any[]) => NodeJS.Timeout;
 	setTimeout: (callback: (...args: any[]) => void, ms?: number, ...args: any[]) => NodeJS.Timeout;
 	queueMicrotask: typeof queueMicrotask;
 	undefined: typeof undefined;
+	gc: () => void;
+	v8debug?: any;
+
+	/**
+	 * @deprecated
+	 */
+	escape: (str: string) => string;
 	/**
 	 * @deprecated
 	 */
 	unescape: (str: string) => string;
-	gc: () => void;
-	v8debug?: any;
+
+	/**
+	 * Not part of W3C standard
+	 */
+	// SetImmediate: (callback: (...args: any[]) => void, ...args: any[]) => NodeJS.Immediate;
 }

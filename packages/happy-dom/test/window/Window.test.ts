@@ -786,6 +786,31 @@ describe('Window', () => {
 		});
 	});
 
+	describe('queueMicrotask()', () => {
+		it('Queues a microtask.', async () => {
+			await new Promise((resolve) => {
+				window.queueMicrotask(() => {
+					resolve(null);
+				});
+			});
+		});
+
+		it('Makes it possible to cancel an ongoing microtask.', async () => {
+			await new Promise((resolve) => {
+				let isCallbackCalled = false;
+				window.queueMicrotask(() => {
+					isCallbackCalled = true;
+					resolve(null);
+				});
+				window.happyDOM.cancelAsync();
+				setTimeout(() => {
+					expect(isCallbackCalled).toBe(false);
+					resolve(null);
+				});
+			});
+		});
+	});
+
 	describe('clearTimeout()', () => {
 		it('Clears a timeout.', () => {
 			const timeoutId = window.setTimeout(() => {
