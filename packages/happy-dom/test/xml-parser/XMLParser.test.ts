@@ -639,5 +639,21 @@ describe('XMLParser', () => {
 			expect(root.children[8].attributes[0].name).toBe('key1');
 			expect(root.children[8].attributes[0].value).toBe('value1 /> value2');
 		});
+
+		it('Parses attributes with characters that lit-html is using (".", "$", "@").', () => {
+			const root = XMLParser.parse(
+				document,
+				`
+                <img key1="value1" key2/>
+                <img key1="value1"/>
+                <span .key$lit$="{{lit-11111}}"></span>
+                <div @event="{{lit-22222}}"></div>
+                <img key1="value1" key2/>
+                `
+			);
+
+			expect(root.querySelector('span')?.getAttribute('.key$lit$')).toBe('{{lit-11111}}');
+			expect(root.querySelector('div')?.getAttribute('@event')).toBe('{{lit-22222}}');
+		});
 	});
 });
