@@ -798,6 +798,20 @@ describe('HTMLInputElement', () => {
 			expect(labels[1] === label2).toBe(true);
 			expect(labels[2] === parentLabel).toBe(true);
 		});
+
+		it('Returns associated labels for elements with no ID', () => {
+			const parentLabel = document.createElement('label');
+
+			element.id = '';
+
+			parentLabel.appendChild(element);
+			document.body.appendChild(parentLabel);
+
+			const labels = element.labels;
+
+			expect(labels.length).toBe(1);
+			expect(labels[0] === parentLabel).toBe(true);
+		});
 	});
 
 	describe('setCustomValidity()', () => {

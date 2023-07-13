@@ -15,9 +15,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import IAttr from '../attr/IAttr.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
-import NodeList from '../node/NodeList.js';
-import IDocument from '../document/IDocument.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import { getHTMLLabels } from '../html-input-element/HTMLLabelsUtility.js';
 
 /**
  * HTML Select Element.
@@ -226,23 +224,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		const id = this.id;
-		if (id) {
-			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
-			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
-
-			let parent = this.parentNode;
-			while (parent) {
-				if (parent['tagName'] === 'LABEL') {
-					labels.push(<IHTMLLabelElement>parent);
-					break;
-				}
-				parent = parent.parentNode;
-			}
-
-			return <INodeList<IHTMLLabelElement>>labels;
-		}
-		return new NodeList<IHTMLLabelElement>();
+		return getHTMLLabels(this);
 	}
 
 	/**

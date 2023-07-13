@@ -2,15 +2,13 @@ import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 import IAttr from '../attr/IAttr.js';
-import IDocument from '../document/IDocument.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import { getHTMLLabels } from '../html-input-element/HTMLLabelsUtility.js';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
 import INode from '../node/INode.js';
 import INodeList from '../node/INodeList.js';
-import NodeList from '../node/NodeList.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
 import IHTMLButtonElement from './IHTMLButtonElement.js';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
@@ -138,23 +136,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		const id = this.id;
-		if (id) {
-			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
-			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
-
-			let parent = this.parentNode;
-			while (parent) {
-				if (parent['tagName'] === 'LABEL') {
-					labels.push(<IHTMLLabelElement>parent);
-					break;
-				}
-				parent = parent.parentNode;
-			}
-
-			return <INodeList<IHTMLLabelElement>>labels;
-		}
-		return new NodeList<IHTMLLabelElement>();
+		return getHTMLLabels(this);
 	}
 
 	/**

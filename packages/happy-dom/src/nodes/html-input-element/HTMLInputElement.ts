@@ -18,11 +18,9 @@ import INode from '../node/INode.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import INodeList from '../node/INodeList.js';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
-import IDocument from '../document/IDocument.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
-import NodeList from '../node/NodeList.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import { dateIsoWeek, isoWeekDate } from './HTMLInputDateUtility.js';
+import { getHTMLLabels } from './HTMLLabelsUtility.js';
 
 /**
  * HTML Input Element.
@@ -959,23 +957,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		const id = this.id;
-		if (id) {
-			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
-			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
-
-			let parent = this.parentNode;
-			while (parent) {
-				if (parent['tagName'] === 'LABEL') {
-					labels.push(<IHTMLLabelElement>parent);
-					break;
-				}
-				parent = parent.parentNode;
-			}
-
-			return <INodeList<IHTMLLabelElement>>labels;
-		}
-		return new NodeList<IHTMLLabelElement>();
+		return getHTMLLabels(this);
 	}
 
 	/**
