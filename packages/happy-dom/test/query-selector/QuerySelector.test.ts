@@ -265,6 +265,22 @@ describe('QuerySelector', () => {
 			expect(elements[2] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
+		it('Returns only first child elements for selector "div>span"', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <div>
+                    <article></article>
+                    <span><span></span></span>
+                    <span><span></span></span>
+                    <article></article>
+                </div>
+            `;
+			const elements = div.querySelectorAll('div>span');
+			expect(elements.length).toBe(2);
+			expect(elements[0] === div.children[0].children[1]).toBe(true);
+			expect(elements[1] === div.children[0].children[2]).toBe(true);
+		});
+
 		it('Returns all elements matching "div > div > .class1.class2".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
