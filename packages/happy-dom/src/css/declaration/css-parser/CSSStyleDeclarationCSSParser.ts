@@ -12,24 +12,19 @@ export default class CSSStyleDeclarationCSSParser {
 		cssText: string,
 		callback: (name: string, value: string, important: boolean) => void
 	): void {
-		const parts = cssText.split(';');
-
-		for (const part of parts) {
-			if (part) {
-				const [name, value]: string[] = part.trim().split(':');
-				if (value) {
-					const trimmedName = name.trim();
-					const trimmedValue = value.trim();
-					if (trimmedName && trimmedValue) {
-						const important = trimmedValue.endsWith(' !important');
-						const valueWithoutImportant = trimmedValue.replace(' !important', '');
-
-						if (valueWithoutImportant) {
-							callback(trimmedName, valueWithoutImportant, important);
-						}
-					}
-				}
+		const rules = [
+			...cssText.matchAll(
+				// PropName   => \s*([^:;]+?)\s*:
+				// PropValue  => \s*((?:[^(;]*?(?:\([^)]*\))?)*?) <- will match any non ';' char except inside (), nested parentheses are not supported
+				// !important => \s*(!important)?
+				// EndOfRule  => \s*(?:$|;)
+				/\s*([^:;]+?)\s*:\s*((?:[^(;]*?(?:\([^)]*\))?)*?)\s*(!important)?\s*(?:$|;)/g
+			)
+		];
+		rules.forEach(([, key, value, important]) => {
+			if (key && value) {
+				callback(key.trim(), value.trim(), !!important);
 			}
-		}
+		});
 	}
 }
