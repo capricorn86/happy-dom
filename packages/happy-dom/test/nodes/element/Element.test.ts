@@ -1512,6 +1512,12 @@ describe('Element', () => {
 		});
 	}
 
+	describe('scrollHeight', () => {
+		it('Returns the scroll height.', () => {
+			expect(element.scrollHeight).toBe(0);
+		});
+	});
+
 	describe('toString()', () => {
 		it('Returns the same as outerHTML.', () => {
 			expect(element.toString()).toBe(element.outerHTML);
