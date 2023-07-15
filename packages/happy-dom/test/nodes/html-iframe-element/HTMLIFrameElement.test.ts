@@ -8,7 +8,7 @@ import IFrameCrossOriginWindow from '../../../src/nodes/html-iframe-element/IFra
 import MessageEvent from '../../../src/event/events/MessageEvent.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import DOMException from '../../../src/exception/DOMException.js';
-import { beforeEach, describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 
 describe('HTMLIFrameElement', () => {
@@ -20,6 +20,10 @@ describe('HTMLIFrameElement', () => {
 		window = new Window();
 		document = window.document;
 		element = <IHTMLIFrameElement>document.createElement('iframe');
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -104,37 +108,42 @@ describe('HTMLIFrameElement', () => {
 				});
 
 				window.happyDOM.setURL(documentOrigin);
+				document.body.appendChild(element);
 				element.src = iframeSrc;
 				element.addEventListener('load', () => {
 					const message = 'test';
 					let triggeredEvent: MessageEvent | null = null;
 					expect(fetchedURL).toBe(iframeSrc);
 					expect(element.contentWindow instanceof IFrameCrossOriginWindow).toBe(true);
-					if (element.contentWindow instanceof IFrameCrossOriginWindow) {
-						expect(() => element.contentWindow?.location.href).toThrowError(
-							new DOMException(
-								`Blocked a frame with origin "${documentOrigin}" from accessing a cross-origin frame.`,
-								DOMExceptionNameEnum.securityError
-							)
-						);
-						expect(element.contentWindow.self === element.contentWindow).toBe(true);
-						expect(element.contentWindow.window === element.contentWindow).toBe(true);
-						expect(element.contentWindow.parent === window).toBe(true);
-						expect(element.contentWindow.top === window).toBe(true);
-						element.contentWindow['_targetWindow'].addEventListener(
-							'message',
-							(event: MessageEvent) => (triggeredEvent = event)
-						);
-						element.contentWindow.postMessage(message, iframeOrigin);
+					expect(() => element.contentWindow?.location.href).toThrowError(
+						new DOMException(
+							`Blocked a frame with origin "${documentOrigin}" from accessing a cross-origin frame.`,
+							DOMExceptionNameEnum.securityError
+						)
+					);
+					const targetWindow = <IWindow>(
+						(<IWindow | IFrameCrossOriginWindow>element.contentWindow)['_targetWindow']
+					);
+					expect(element.contentWindow?.self === element.contentWindow).toBe(true);
+					expect(element.contentWindow?.window === element.contentWindow).toBe(true);
+					expect(element.contentWindow?.parent === window).toBe(true);
+					expect(element.contentWindow?.top === window).toBe(true);
+					targetWindow.addEventListener(
+						'message',
+						(event: MessageEvent) => (triggeredEvent = event)
+					);
+					element.contentWindow?.postMessage(message, iframeOrigin);
+					expect(triggeredEvent).toBe(null);
+
+					setTimeout(() => {
 						expect(element.contentDocument).toBe(null);
-						expect((<MessageEvent>(<unknown>triggeredEvent)).data).toBe(message);
-						expect((<MessageEvent>(<unknown>triggeredEvent)).origin).toBe(documentOrigin);
-						expect((<MessageEvent>(<unknown>triggeredEvent)).source === window).toBe(true);
-						expect((<MessageEvent>(<unknown>triggeredEvent)).lastEventId).toBe('');
+						expect((<MessageEvent>triggeredEvent).data).toBe(message);
+						expect((<MessageEvent>triggeredEvent).origin).toBe(documentOrigin);
+						expect((<MessageEvent>triggeredEvent).source === window).toBe(true);
+						expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
 						resolve(null);
-					}
+					}, 10);
 				});
-				document.body.appendChild(element);
 			});
 		});
 

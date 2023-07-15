@@ -140,6 +140,7 @@ const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
 const ORIGINAL_SET_INTERVAL = setInterval;
 const ORIGINAL_CLEAR_INTERVAL = clearInterval;
+const ORIGINAL_QUEUE_MICROTASK = queueMicrotask;
 
 /**
  * Browser window.
@@ -390,7 +391,6 @@ export default class Window extends EventTarget implements IWindow {
 	public Uint8ClampedArray: typeof Uint8ClampedArray;
 	public WeakMap: WeakMapConstructor;
 	public WeakSet: WeakSetConstructor;
-	public clearImmediate: (immediateId: NodeJS.Immediate) => void;
 	public decodeURI: typeof decodeURI;
 	public decodeURIComponent: typeof decodeURIComponent;
 	public encodeURI: typeof encodeURI;
@@ -404,11 +404,6 @@ export default class Window extends EventTarget implements IWindow {
 	public isNaN: typeof isNaN;
 	public parseFloat: typeof parseFloat;
 	public parseInt: typeof parseInt;
-	public setImmediate: (
-		callback: (...args: unknown[]) => void,
-		...args: unknown[]
-	) => NodeJS.Immediate;
-	public queueMicrotask: typeof queueMicrotask;
 	public undefined: typeof undefined;
 	/**
 	 * @deprecated
@@ -424,10 +419,11 @@ export default class Window extends EventTarget implements IWindow {
 	public _captureEventListenerCount: { [eventType: string]: number } = {};
 
 	// Private properties
-	private _setTimeout;
-	private _clearTimeout;
-	private _setInterval;
-	private _clearInterval;
+	private _setTimeout: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
+	private _clearTimeout: (id: NodeJS.Timeout) => void;
+	private _setInterval: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
+	private _clearInterval: (id: NodeJS.Timeout) => void;
+	private _queueMicrotask: (callback: Function) => void;
 
 	/**
 	 * Constructor.
@@ -492,6 +488,7 @@ export default class Window extends EventTarget implements IWindow {
 		this._clearTimeout = ORIGINAL_CLEAR_TIMEOUT;
 		this._setInterval = ORIGINAL_SET_INTERVAL;
 		this._clearInterval = ORIGINAL_CLEAR_INTERVAL;
+		this._queueMicrotask = ORIGINAL_QUEUE_MICROTASK;
 
 		// Non-implemented event types
 		for (const eventType of NonImplementedEventTypes) {
@@ -785,6 +782,22 @@ export default class Window extends EventTarget implements IWindow {
 	}
 
 	/**
+	 * Queues a microtask to be executed at a safe time prior to control returning to the browser's event loop.
+	 *
+	 * @param callback Function to be executed.
+	 */
+	public queueMicrotask(callback: Function): void {
+		let isAborted = false;
+		const taskId = this.happyDOM.asyncTaskManager.startTask(() => (isAborted = true));
+		this._queueMicrotask(() => {
+			if (!isAborted) {
+				this.happyDOM.asyncTaskManager.endTask(taskId);
+				callback();
+			}
+		});
+	}
+
+	/**
 	 * This method provides an easy, logical way to fetch resources asynchronously across the network.
 	 *
 	 * @param url URL.
@@ -845,13 +858,15 @@ export default class Window extends EventTarget implements IWindow {
 			);
 		}
 
-		this.dispatchEvent(
-			new MessageEvent('message', {
-				data: message,
-				origin: this.parent.location.origin,
-				source: this.parent,
-				lastEventId: ''
-			})
+		this.window.setTimeout(() =>
+			this.dispatchEvent(
+				new MessageEvent('message', {
+					data: message,
+					origin: this.parent.location.origin,
+					source: this.parent,
+					lastEventId: ''
+				})
+			)
 		);
 	}
 

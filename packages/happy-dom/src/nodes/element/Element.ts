@@ -823,7 +823,7 @@ export default class Element extends Node implements IElement {
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNode(attribute: IAttr): IAttr {
+	public setAttributeNode(attribute: IAttr): IAttr | null {
 		const name = this._getAttributeName(attribute.name);
 		const replacedAttribute = this._attributes[name];
 		const oldValue = replacedAttribute ? replacedAttribute.value : null;

@@ -265,6 +265,22 @@ describe('QuerySelector', () => {
 			expect(elements[2] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
+		it('Returns only first child elements for selector "div>span"', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <div>
+                    <article></article>
+                    <span><span></span></span>
+                    <span><span></span></span>
+                    <article></article>
+                </div>
+            `;
+			const elements = div.querySelectorAll('div>span');
+			expect(elements.length).toBe(2);
+			expect(elements[0] === div.children[0].children[1]).toBe(true);
+			expect(elements[1] === div.children[0].children[2]).toBe(true);
+		});
+
 		it('Returns all elements matching "div > div > .class1.class2".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -951,6 +967,14 @@ describe('QuerySelector', () => {
 				)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});
+
+		it('Returns empty node list when match pseudo element "::-webkit-inner-spin-button".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorNthChildHTML;
+			const elements = container.querySelectorAll('::-webkit-inner-spin-button');
+
+			expect(elements.length).toBe(0);
+		});
 	});
 
 	describe('querySelector', () => {
@@ -1086,6 +1110,12 @@ describe('QuerySelector', () => {
 			div.appendChild(input);
 
 			expect(div.querySelector('input:not([list])[type="search"]')).toBeNull();
+		});
+
+		it('Returns null by pseudo element selector of ::-webkit-inner-spin-button', () => {
+			const div = document.createElement('div');
+			expect(div.querySelector('::-webkit-inner-spin-button')).toBeNull();
+			expect(document.querySelector('::-webkit-inner-spin-button')).toBeNull();
 		});
 	});
 });

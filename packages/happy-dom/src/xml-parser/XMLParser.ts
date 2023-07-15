@@ -24,23 +24,23 @@ import * as Entities from 'entities';
  * Group 8: End of start tag (e.g. ">" in "<div>").
  */
 const MARKUP_REGEXP =
-	/<([a-zA-Z0-9-]+)|<\/([a-zA-Z0-9-]+)>|<!--([^-]+)-->|<!--([^>]+)>|<!([^>]+)>|<\?([^>]+)>|(\/>)|(>)/gm;
+	/<([a-zA-Z0-9-]+)|<\/([a-zA-Z0-9-]+)\s*>|<!--([^-]+)-->|<!--([^>]+)>|<!([^>]+)>|<\?([^>]+)>|(\/>)|(>)/gm;
 
 /**
  * Attribute RegExp.
  *
  * Group 1: Attribute name when the attribute has a value using double apostrophe (e.g. "name" in "<div name="value">").
- * Group 2: Attribute apostrophe value using double apostrophe (e.g. "value" in "<div name="value">").
- * Group 3: Attribute value when the attribute has a value using double apostrophe (e.g. "value" in "<div name="value">").
- * Group 4: Attribute apostrophe when the attribute has a value using double apostrophe (e.g. "value" in "<div name="value">").
- * Group 5: Attribute name when the attribute has a value using single apostrophe (e.g. "name" in "<div name='value'>").
- * Group 6: Attribute apostrophe when the attribute has a value using single apostrophe (e.g. "name" in "<div name='value'>").
+ * Group 2: Attribute value when the attribute has a value using double apostrophe (e.g. "value" in "<div name="value">").
+ * Group 3: Attribute name when the attribute has a value using double apostrophe (e.g. "name" in "<div name="value">").
+ * Group 4: Attribute value when the attribute has a value using double apostrophe (e.g. "value" in "<div name="value">").
+ * Group 5: Attribute end apostrophe when the attribute has a value using double apostrophe (e.g. '"' in "<div name="value">").
+ * Group 6: Attribute name when the attribute has a value using single apostrophe (e.g. "name" in "<div name='value'>").
  * Group 7: Attribute value when the attribute has a value using single apostrophe (e.g. "value" in "<div name='value'>").
- * Group 8: Attribute apostrophe when the attribute has a value using single apostrophe (e.g. "name" in "<div name='value'>").
+ * Group 8: Attribute end apostrophe when the attribute has a value using single apostrophe (e.g. "'" in "<div name='value'>").
  * Group 9: Attribute name when the attribute has no value (e.g. "disabled" in "<div disabled>").
  */
 const ATTRIBUTE_REGEXP =
-	/\s*([a-zA-Z0-9-_:]+) *= *("{0,1})([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:]+) *= *('{0,1})([^']*)('{0,1})|\s*([a-zA-Z0-9-_:]+)/gm;
+	/\s*([a-zA-Z0-9-_:.$@?]+) *= *([a-zA-Z0-9-_:.$@?{}]+)|\s*([a-zA-Z0-9-_:.$@?]+) *= *"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?]+) *= *'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?]+)/gm;
 
 enum MarkupReadStateEnum {
 	startOrEndTag = 'startOrEndTag',
@@ -209,14 +209,21 @@ export default class XMLParser {
 
 								while ((attributeMatch = attributeRegexp.exec(attributeString))) {
 									if (
-										(attributeMatch[1] && attributeMatch[2] === attributeMatch[4]) ||
-										(attributeMatch[5] && attributeMatch[6] === attributeMatch[8]) ||
+										(attributeMatch[1] && attributeMatch[2]) ||
+										(attributeMatch[3] && attributeMatch[5] === '"') ||
+										(attributeMatch[6] && attributeMatch[8] === "'") ||
 										attributeMatch[9]
 									) {
 										// Valid attribute name and value.
 
-										const name = attributeMatch[1] || attributeMatch[5] || attributeMatch[9] || '';
-										const rawValue = attributeMatch[3] || attributeMatch[7] || '';
+										const name =
+											attributeMatch[1] ||
+											attributeMatch[3] ||
+											attributeMatch[6] ||
+											attributeMatch[9] ||
+											'';
+										const rawValue =
+											attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
 										const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
 										const namespaceURI =
 											(<IElement>currentNode).tagName === 'SVG' && name === 'xmlns' ? value : null;
@@ -224,7 +231,11 @@ export default class XMLParser {
 										(<IElement>currentNode).setAttributeNS(namespaceURI, name, value);
 
 										startTagIndex += attributeMatch[0].length;
-									} else if (!attributeMatch[4] && !attributeMatch[8]) {
+									} else if (
+										!attributeMatch[1] &&
+										((attributeMatch[3] && !attributeMatch[5]) ||
+											(attributeMatch[6] && !attributeMatch[8]))
+									) {
 										// End attribute apostrophe is missing (e.g. "attr='value" or 'attr="value').
 
 										hasAttributeStringEnded = false;
