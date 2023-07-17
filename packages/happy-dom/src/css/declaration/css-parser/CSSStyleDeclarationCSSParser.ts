@@ -1,3 +1,10 @@
+// PropName   => \s*([^:;]+?)\s*:
+// PropValue  => \s*((?:[^(;]*?(?:\([^)]*\))?)*?) <- will match any non ';' char except inside (), nested parentheses are not supported
+// !important => \s*(!important)?
+// EndOfRule  => \s*(?:$|;)
+const SPLIT_RULES_REGEXP =
+	/\s*([^:;]+?)\s*:\s*((?:[^(;]*?(?:\([^)]*\))?)*?)\s*(!important)?\s*(?:$|;)/g;
+
 /**
  * CSS parser.
  */
@@ -12,23 +19,10 @@ export default class CSSStyleDeclarationCSSParser {
 		cssText: string,
 		callback: (name: string, value: string, important: boolean) => void
 	): void {
-		const parts = cssText.split(';');
-
-		for (const part of parts) {
-			if (part) {
-				const [name, value]: string[] = part.trim().split(':');
-				if (value) {
-					const trimmedName = name.trim();
-					const trimmedValue = value.trim();
-					if (trimmedName && trimmedValue) {
-						const important = trimmedValue.endsWith(' !important');
-						const valueWithoutImportant = trimmedValue.replace(' !important', '');
-
-						if (valueWithoutImportant) {
-							callback(trimmedName, valueWithoutImportant, important);
-						}
-					}
-				}
+		const rules = Array.from(cssText.matchAll(SPLIT_RULES_REGEXP));
+		for (const [, key, value, important] of rules) {
+			if (key && value) {
+				callback(key.trim(), value.trim(), !!important);
 			}
 		}
 	}

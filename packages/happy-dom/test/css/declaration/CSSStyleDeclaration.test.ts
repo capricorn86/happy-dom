@@ -1885,6 +1885,15 @@ describe('CSSStyleDeclaration', () => {
 			element.setAttribute('style', 'background-image: url(test.jpg),  url(test2.jpg)');
 
 			expect(declaration.backgroundImage).toBe('url("test.jpg"), url("test2.jpg")');
+
+			element.setAttribute(
+				'style',
+				'background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=)'
+			);
+
+			expect(declaration.backgroundImage).toBe(
+				'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=")'
+			);
 		});
 	});
 
