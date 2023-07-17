@@ -23,7 +23,7 @@ export default class HTMLIFrameUtility {
 			const src = element.src;
 
 			if (src) {
-				const contentWindow = new (<typeof Window>element.ownerDocument.defaultView.constructor)({
+				const contentWindow = new Window({
 					url: src,
 					settings: {
 						...element.ownerDocument.defaultView.happyDOM.settings
