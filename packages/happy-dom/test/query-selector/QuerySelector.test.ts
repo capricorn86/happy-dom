@@ -1117,5 +1117,14 @@ describe('QuerySelector', () => {
 			expect(div.querySelector('::-webkit-inner-spin-button')).toBeNull();
 			expect(document.querySelector('::-webkit-inner-spin-button')).toBeNull();
 		});
+
+		it('Has support for attributes containing colon', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<meta ab="a:b"></meta>';
+			const element = div.querySelector('[ab="a\\:b"]');
+			const element2 = div.querySelector('[ab="a:b"]');
+			expect(element === div.children[0]).toBe(true);
+			expect(element2 === div.children[0]).toBe(true);
+		});
 	});
 });
