@@ -24,7 +24,6 @@ import Event from '../../src/event/Event.js';
 import ErrorEvent from '../../src/event/events/ErrorEvent.js';
 import '../types.d.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import IElement from '../../src/nodes/element/IElement.js';
 
 describe('Window', () => {
 	let window: IWindow;
@@ -549,7 +548,7 @@ describe('Window', () => {
 			document.body.appendChild(customElement);
 
 			const customElementComputedStyle = window.getComputedStyle(
-				<IElement>customElement.shadowRoot.querySelector('span')
+				<IHTMLElement>customElement.shadowRoot.querySelector('span')
 			);
 
 			// Default value on HTML is "16px Times New Roman"
