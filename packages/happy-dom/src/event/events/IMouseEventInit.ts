@@ -10,6 +10,8 @@ export default interface IMouseEventInit extends IUIEventInit {
 	shiftKey?: boolean;
 	altKey?: boolean;
 	metaKey?: boolean;
+	movementX?: number;
+	movementY?: number;
 	button?: number;
 	buttons?: number;
 	relatedTarget?: EventTarget;

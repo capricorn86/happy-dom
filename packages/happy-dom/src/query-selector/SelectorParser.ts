@@ -30,7 +30,7 @@ const SELECTOR_REGEXP =
 /**
  * Escaped Character RegExp.
  */
-const CLASS_ESCAPED_CHARACTER_REGEXP = /\\/g;
+const ESCAPED_CHARACTER_REGEXP = /\\/g;
 
 /**
  * Nth Function.
@@ -110,10 +110,10 @@ export default class SelectorParser {
 				} else if (match[2]) {
 					currentSelectorItem.tagName = match[2].toUpperCase();
 				} else if (match[3]) {
-					currentSelectorItem.id = match[3].replace(CLASS_ESCAPED_CHARACTER_REGEXP, '');
+					currentSelectorItem.id = match[3].replace(ESCAPED_CHARACTER_REGEXP, '');
 				} else if (match[4]) {
 					currentSelectorItem.classNames = currentSelectorItem.classNames || [];
-					currentSelectorItem.classNames.push(match[4].replace(CLASS_ESCAPED_CHARACTER_REGEXP, ''));
+					currentSelectorItem.classNames.push(match[4].replace(ESCAPED_CHARACTER_REGEXP, ''));
 				} else if (match[5]) {
 					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
 					currentSelectorItem.attributes.push({
@@ -128,7 +128,7 @@ export default class SelectorParser {
 					currentSelectorItem.attributes.push({
 						name: match[6].toLowerCase(),
 						operator: match[7] || null,
-						value: match[8],
+						value: match[8].replace(ESCAPED_CHARACTER_REGEXP, ''),
 						modifier: match[9] || null,
 						regExp: this.getAttributeRegExp({
 							operator: match[7],
@@ -141,7 +141,7 @@ export default class SelectorParser {
 					currentSelectorItem.attributes.push({
 						name: match[10].toLowerCase(),
 						operator: match[11] || null,
-						value: match[12],
+						value: match[12].replace(ESCAPED_CHARACTER_REGEXP, ''),
 						modifier: null,
 						regExp: this.getAttributeRegExp({ operator: match[11], value: match[12] })
 					});

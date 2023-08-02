@@ -41,22 +41,26 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[1]).parentStyleSheet).toBe(cssStyleSheet);
 			expect((<CSSStyleRule>cssRules[1]).selectorText).toBe('.container');
 			expect((<CSSStyleRule>cssRules[1]).cssText).toBe(
-				'.container { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px; }'
+				'.container { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url("test.jpg"); }'
 			);
-			expect((<CSSStyleRule>cssRules[1]).style.length).toBe(5);
+			expect((<CSSStyleRule>cssRules[1]).style.length).toBe(6);
 			expect((<CSSStyleRule>cssRules[1]).style.parentRule).toBe(cssRules[1]);
 			expect((<CSSStyleRule>cssRules[1]).style[0]).toBe('flex-grow');
 			expect((<CSSStyleRule>cssRules[1]).style[1]).toBe('display');
 			expect((<CSSStyleRule>cssRules[1]).style[2]).toBe('flex-direction');
 			expect((<CSSStyleRule>cssRules[1]).style[3]).toBe('overflow');
 			expect((<CSSStyleRule>cssRules[1]).style[4]).toBe('--css-variable');
+			expect((<CSSStyleRule>cssRules[1]).style[5]).toBe('background-image');
 			expect((<CSSStyleRule>cssRules[1]).style.flexGrow).toBe('1');
 			expect((<CSSStyleRule>cssRules[1]).style.display).toBe('flex');
 			expect((<CSSStyleRule>cssRules[1]).style.flexDirection).toBe('column');
 			expect((<CSSStyleRule>cssRules[1]).style.overflow).toBe('hidden');
 			expect((<CSSStyleRule>cssRules[1]).style.getPropertyValue('--css-variable')).toBe('1px');
+			expect((<CSSStyleRule>cssRules[1]).style.backgroundImage).toBe(
+				'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url("test.jpg")'
+			);
 			expect((<CSSStyleRule>cssRules[1]).style.cssText).toBe(
-				'flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px;'
+				'flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url("test.jpg");'
 			);
 
 			// CSSMediaRule

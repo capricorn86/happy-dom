@@ -6,7 +6,8 @@ import INode from '../node/INode.js';
 import IFrameCrossOriginWindow from './IFrameCrossOriginWindow.js';
 import IHTMLIFrameElement from './IHTMLIFrameElement.js';
 import HTMLIFrameUtility from './HTMLIFrameUtility.js';
-import IAttr from '../attr/IAttr.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
 
 /**
  * HTML Iframe Element.
@@ -15,6 +16,8 @@ import IAttr from '../attr/IAttr.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement.
  */
 export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFrameElement {
+	public override readonly attributes: INamedNodeMap = new HTMLIFrameElementNamedNodeMap(this);
+
 	// Events
 	public onload: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
@@ -178,23 +181,6 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 		if (isParentConnected && isConnected !== isParentConnected) {
 			HTMLIFrameUtility.loadPage(this);
 		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr | null {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		if (
-			attribute.name === 'src' &&
-			attribute.value &&
-			attribute.value !== replacedAttribute?.value
-		) {
-			HTMLIFrameUtility.loadPage(this);
-		}
-
-		return replacedAttribute;
 	}
 
 	/**

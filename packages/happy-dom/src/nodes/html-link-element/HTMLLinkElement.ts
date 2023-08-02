@@ -1,4 +1,3 @@
-import IAttr from '../attr/IAttr.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLLinkElement from './IHTMLLinkElement.js';
@@ -8,6 +7,8 @@ import INode from '../../nodes/node/INode.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
 import HTMLLinkElementUtility from './HTMLLinkElementUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLLinkElementNamedNodeMap from './HTMLLinkElementNamedNodeMap.js';
 
 /**
  * HTML Link Element.
@@ -16,11 +17,12 @@ import HTMLLinkElementUtility from './HTMLLinkElementUtility.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement.
  */
 export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkElement {
+	public override readonly attributes: INamedNodeMap = new HTMLLinkElementNamedNodeMap(this);
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
 	public readonly sheet: CSSStyleSheet = null;
 	public _evaluateCSS = true;
-	private _relList: DOMTokenList = null;
+	public _relList: DOMTokenList = null;
 
 	/**
 	 * Returns rel list.
@@ -176,36 +178,6 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 */
 	public set type(type: string) {
 		this.setAttribute('type', type);
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr | null {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		if (attribute.name === 'rel' && this._relList) {
-			this._relList._updateIndices();
-		}
-
-		if (attribute.name === 'rel' || attribute.name === 'href') {
-			HTMLLinkElementUtility.loadExternalStylesheet(this);
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public override removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if (attribute.name === 'rel' && this._relList) {
-			this._relList._updateIndices();
-		}
-
-		return attribute;
 	}
 
 	/**

@@ -1,13 +1,14 @@
 import Element from '../element/Element.js';
 import IHTMLElement from './IHTMLElement.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
-import IAttr from '../attr/IAttr.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import Dataset from '../element/Dataset.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import DOMException from '../../exception/DOMException.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLElementNamedNodeMap from './HTMLElementNamedNodeMap.js';
 
 /**
  * HTML Element.
@@ -16,6 +17,7 @@ import HTMLElementUtility from './HTMLElementUtility.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement.
  */
 export default class HTMLElement extends Element implements IHTMLElement {
+	public override readonly attributes: INamedNodeMap = new HTMLElementNamedNodeMap(this);
 	public readonly accessKey = '';
 	public readonly accessKeyLabel = '';
 	public readonly contentEditable = 'inherit';
@@ -27,7 +29,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly clientHeight = 0;
 	public readonly clientWidth = 0;
 
-	private _style: CSSStyleDeclaration = null;
+	public _style: CSSStyleDeclaration = null;
 	private _dataset: Dataset = null;
 
 	// Events
@@ -320,32 +322,6 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 */
 	public focus(): void {
 		HTMLElementUtility.focus(this);
-	}
-
-	/**
-	 * @override
-	 */
-	public setAttributeNode(attribute: IAttr): IAttr | null {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		if (attribute.name === 'style' && this._style) {
-			this._style.cssText = attribute.value;
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if (attribute.name === 'style' && this._style) {
-			this._style.cssText = '';
-		}
-
-		return attribute;
 	}
 
 	/**

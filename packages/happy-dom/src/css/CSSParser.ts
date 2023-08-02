@@ -118,7 +118,10 @@ export default class CSSParser {
 				stack.push(parentRule);
 			} else {
 				if (parentRule) {
-					const cssText = css.substring(lastIndex, match.index).trim();
+					const cssText = css
+						.substring(lastIndex, match.index)
+						.trim()
+						.replace(/([^;])$/, '$1;'); // Ensure last semicolon
 					switch (parentRule.type) {
 						case CSSRule.FONT_FACE_RULE:
 						case CSSRule.KEYFRAME_RULE:
