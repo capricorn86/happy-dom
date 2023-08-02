@@ -548,7 +548,7 @@ describe('Window', () => {
 			document.body.appendChild(customElement);
 
 			const customElementComputedStyle = window.getComputedStyle(
-				customElement.shadowRoot.querySelector('span')
+				<IHTMLElement>customElement.shadowRoot.querySelector('span')
 			);
 
 			// Default value on HTML is "16px Times New Roman"
