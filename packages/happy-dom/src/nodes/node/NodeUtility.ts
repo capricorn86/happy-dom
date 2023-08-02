@@ -395,33 +395,16 @@ export default class NodeUtility {
 	 * @param elementB
 	 */
 	public static attributeListsEqual(elementA: IElement, elementB: IElement): boolean {
-		const listA = <Array<IAttr>>Object.values(elementA['_attributes']);
-		const listB = <Array<IAttr>>Object.values(elementB['_attributes']);
-
-		const lengthA = listA.length;
-		const lengthB = listB.length;
-
-		if (lengthA !== lengthB) {
-			return false;
-		}
-
-		for (let i = 0; i < lengthA; ++i) {
-			const attrA = listA[i];
-
-			if (
-				!listB.some((attrB) => {
-					return (
-						(typeof attrA === 'number' && typeof attrB === 'number' && attrA === attrB) ||
-						(typeof attrA === 'object' &&
-							typeof attrB === 'object' &&
-							NodeUtility.isEqualNode(attrA, attrB))
-					);
-				})
-			) {
+		for (let i = 0, max = elementA.attributes.length; i < max; i++) {
+			const attributeA = elementA.attributes[i];
+			const attributeB = elementB.attributes.getNamedItemNS(
+				attributeA.namespaceURI,
+				attributeA.localName
+			);
+			if (!attributeB || attributeB.value !== attributeA.value) {
 				return false;
 			}
 		}
-
 		return true;
 	}
 

@@ -3,8 +3,9 @@ import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
 import IHTMLAnchorElement from './IHTMLAnchorElement.js';
 import { URL } from 'url';
-import IAttr from '../attr/IAttr.js';
 import HTMLAnchorElementUtility from './HTMLAnchorElementUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLAnchorElementNamedNodeMap from './HTMLAnchorElementNamedNodeMap.js';
 
 /**
  * HTML Anchor Element.
@@ -13,8 +14,9 @@ import HTMLAnchorElementUtility from './HTMLAnchorElementUtility.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement.
  */
 export default class HTMLAnchorElement extends HTMLElement implements IHTMLAnchorElement {
-	private _relList: DOMTokenList = null;
-	private _url: URL | null = null;
+	public override readonly attributes: INamedNodeMap = new HTMLAnchorElementNamedNodeMap(this);
+	public _relList: DOMTokenList = null;
+	public _url: URL | null = null;
 
 	/**
 	 * Returns download.
@@ -412,35 +414,5 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 */
 	public override toString(): string {
 		return this.href;
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr | null {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		if (attribute.name === 'rel' && this._relList) {
-			this._relList._updateIndices();
-		} else if (attribute.name === 'href') {
-			this._url = HTMLAnchorElementUtility.getUrl(this.ownerDocument, attribute.value);
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public override removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if (attribute.name === 'rel' && this._relList) {
-			this._relList._updateIndices();
-		} else if (attribute.name === 'href') {
-			this._url = null;
-		}
-
-		return attribute;
 	}
 }

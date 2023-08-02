@@ -1,10 +1,11 @@
 import IElement from '../../nodes/element/IElement.js';
-import Attr from '../../nodes/attr/Attr.js';
+import IAttr from '../../nodes/attr/IAttr.js';
 import CSSRule from '../CSSRule.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import DOMException from '../../exception/DOMException.js';
 import CSSStyleDeclarationElementStyle from './element-style/CSSStyleDeclarationElementStyle.js';
 import CSSStyleDeclarationPropertyManager from './property-manager/CSSStyleDeclarationPropertyManager.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 
 /**
  * CSS Style Declaration.
@@ -77,17 +78,21 @@ export default abstract class AbstractCSSStyleDeclaration {
 
 		if (this._ownerElement) {
 			const style = new CSSStyleDeclarationPropertyManager({ cssText });
-			if (!this._ownerElement['_attributes']['style']) {
-				Attr._ownerDocument = this._ownerElement.ownerDocument;
-				this._ownerElement['_attributes']['style'] = new Attr();
-				this._ownerElement['_attributes']['style'].name = 'style';
+			let styleAttribute = <IAttr>this._ownerElement.attributes['style'];
+
+			if (!styleAttribute) {
+				styleAttribute = this._ownerElement.ownerDocument.createAttribute('style');
+				// We use "_setNamedItemWithoutConsequences" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
+				(<NamedNodeMap>this._ownerElement.attributes)._setNamedItemWithoutConsequences(
+					styleAttribute
+				);
 			}
 
 			if (this._ownerElement.isConnected) {
 				this._ownerElement.ownerDocument['_cacheID']++;
 			}
 
-			this._ownerElement['_attributes']['style'].value = style.toString();
+			styleAttribute.value = style.toString();
 		} else {
 			this._style = new CSSStyleDeclarationPropertyManager({ cssText });
 		}
@@ -130,20 +135,25 @@ export default abstract class AbstractCSSStyleDeclaration {
 		if (!stringValue) {
 			this.removeProperty(name);
 		} else if (this._ownerElement) {
-			if (!this._ownerElement['_attributes']['style']) {
-				Attr._ownerDocument = this._ownerElement.ownerDocument;
-				this._ownerElement['_attributes']['style'] = new Attr();
-				this._ownerElement['_attributes']['style'].name = 'style';
-			}
+			let styleAttribute = <IAttr>this._ownerElement.attributes['style'];
 
-			const style = this._elementStyle.getElementStyle();
-			style.set(name, stringValue, !!priority);
+			if (!styleAttribute) {
+				styleAttribute = this._ownerElement.ownerDocument.createAttribute('style');
+
+				// We use "_setNamedItemWithoutConsequences" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
+				(<NamedNodeMap>this._ownerElement.attributes)._setNamedItemWithoutConsequences(
+					styleAttribute
+				);
+			}
 
 			if (this._ownerElement.isConnected) {
 				this._ownerElement.ownerDocument['_cacheID']++;
 			}
 
-			this._ownerElement['_attributes']['style'].value = style.toString();
+			const style = this._elementStyle.getElementStyle();
+			style.set(name, stringValue, !!priority);
+
+			styleAttribute.value = style.toString();
 		} else {
 			this._style.set(name, stringValue, !!priority);
 		}
@@ -168,14 +178,16 @@ export default abstract class AbstractCSSStyleDeclaration {
 			const style = this._elementStyle.getElementStyle();
 			style.remove(name);
 			const newCSSText = style.toString();
-			if (newCSSText) {
-				if (this._ownerElement.isConnected) {
-					this._ownerElement.ownerDocument['_cacheID']++;
-				}
 
-				this._ownerElement['_attributes']['style'].value = newCSSText;
+			if (this._ownerElement.isConnected) {
+				this._ownerElement.ownerDocument['_cacheID']++;
+			}
+
+			if (newCSSText) {
+				(<IAttr>this._ownerElement.attributes['style']).value = newCSSText;
 			} else {
-				delete this._ownerElement['_attributes']['style'];
+				// We use "_removeNamedItemWithoutConsequences" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
+				(<NamedNodeMap>this._ownerElement.attributes)._removeNamedItemWithoutConsequences('style');
 			}
 		} else {
 			this._style.remove(name);

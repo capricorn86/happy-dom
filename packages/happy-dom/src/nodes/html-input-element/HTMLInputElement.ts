@@ -13,16 +13,15 @@ import HTMLInputElementValueStepping from './HTMLInputElementValueStepping.js';
 import FileList from './FileList.js';
 import File from '../../file/File.js';
 import IFileList from './IFileList.js';
-import IAttr from '../attr/IAttr.js';
 import INode from '../node/INode.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import INodeList from '../node/INodeList.js';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
-import IDocument from '../document/IDocument.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
-import NodeList from '../node/NodeList.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import { dateIsoWeek, isoWeekDate } from './HTMLInputDateUtility.js';
+import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
+import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
 
 /**
  * HTML Input Element.
@@ -34,6 +33,8 @@ import { dateIsoWeek, isoWeekDate } from './HTMLInputDateUtility.js';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/nodes/HTMLInputElement-impl.js (MIT licensed).
  */
 export default class HTMLInputElement extends HTMLElement implements IHTMLInputElement {
+	public override readonly attributes: INamedNodeMap = new HTMLInputElementNamedNodeMap(this);
+
 	// Related to parent form.
 	public formAction = '';
 	public formMethod = '';
@@ -794,7 +795,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			case 'month':
 				return isNaN(new Date(String(this.value)).getTime()) ? null : new Date(this.value);
 			case 'week': {
-				const d = isoWeekDate(this.value);
+				const d = HTMLInputElementDateUtility.isoWeekDate(this.value);
 				return isNaN(d.getTime()) ? null : d;
 			}
 			case 'time': {
@@ -842,7 +843,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				this.value = value.toISOString().split('T')[1].slice(0, 5);
 				break;
 			case 'week':
-				this.value = dateIsoWeek(value);
+				this.value = HTMLInputElementDateUtility.dateIsoWeek(value);
 				break;
 		}
 	}
@@ -942,7 +943,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			case 'week':
 			case 'week': {
 				const d = new Date(Number(value));
-				this.value = isNaN(d.getTime()) ? '' : dateIsoWeek(d);
+				this.value = isNaN(d.getTime()) ? '' : HTMLInputElementDateUtility.dateIsoWeek(d);
 				break;
 			}
 			default:
@@ -959,23 +960,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		const id = this.id;
-		if (id) {
-			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
-			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
-
-			let parent = this.parentNode;
-			while (parent) {
-				if (parent['tagName'] === 'LABEL') {
-					labels.push(<IHTMLLabelElement>parent);
-					break;
-				}
-				parent = parent.parentNode;
-			}
-
-			return <INodeList<IHTMLLabelElement>>labels;
-		}
-		return new NodeList<IHTMLLabelElement>();
+		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
 	/**
@@ -1222,38 +1207,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr | null {
-		const replacedAttribute = super.setAttributeNode(attribute);
-		const oldValue = replacedAttribute ? replacedAttribute.value : null;
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			if (oldValue) {
-				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
-			}
-			if (attribute.value) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
-			}
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public override removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
-		}
-
-		return attribute;
 	}
 
 	/**

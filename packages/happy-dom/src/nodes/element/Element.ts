@@ -1,13 +1,10 @@
 import Node from '../node/Node.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import Attr from '../attr/Attr.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import DOMRect from './DOMRect.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import MutationRecord from '../../mutation-observer/MutationRecord.js';
-import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
@@ -32,6 +29,7 @@ import ElementUtility from './ElementUtility.js';
 import HTMLCollection from './HTMLCollection.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import ElementNamedNodeMap from './ElementNamedNodeMap.js';
 
 /**
  * Element.
@@ -89,9 +87,9 @@ export default class Element extends Node implements IElement {
 
 	// Used for being able to access closed shadow roots
 	public _shadowRoot: IShadowRoot = null;
-	public _attributes: { [k: string]: IAttr } = {};
+	public readonly attributes: INamedNodeMap = new ElementNamedNodeMap(this);
 
-	private _classList: DOMTokenList = null;
+	public _classList: DOMTokenList = null;
 	public _isValue?: string | null = null;
 	public _computedStyle: CSSStyleDeclaration | null = null;
 
@@ -267,15 +265,6 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Returns attributes.
-	 *
-	 * @returns Attributes.
-	 */
-	public get attributes(): INamedNodeMap {
-		return Object.assign(new NamedNodeMap(this), Object.values(this._attributes), this._attributes);
-	}
-
-	/**
 	 * First element child.
 	 *
 	 * @returns Element.
@@ -364,10 +353,9 @@ export default class Element extends Node implements IElement {
 
 		Attr._ownerDocument = this.ownerDocument;
 
-		for (const key of Object.keys(this._attributes)) {
-			const attr = Object.assign(new Attr(), this._attributes[key]);
-			(<IElement>attr.ownerElement) = clone;
-			(<Element>clone)._attributes[key] = attr;
+		for (let i = 0, max = this.attributes.length; i < max; i++) {
+			const attribute = this.attributes[i];
+			clone.attributes.setNamedItem(Object.assign(new Attr(), attribute));
 		}
 
 		if (deep) {
@@ -563,7 +551,11 @@ export default class Element extends Node implements IElement {
 	 * @returns Attribute names.
 	 */
 	public getAttributeNames(): string[] {
-		return Object.keys(this._attributes);
+		const attributeNames = [];
+		for (let i = 0, max = this.attributes.length; i < max; i++) {
+			attributeNames.push(this.attributes[i].name);
+		}
+		return attributeNames;
 	}
 
 	/**
@@ -635,13 +627,7 @@ export default class Element extends Node implements IElement {
 	 * @returns True if attribute exists, false otherwise.
 	 */
 	public hasAttributeNS(namespace: string | null, localName: string): boolean {
-		for (const name of Object.keys(this._attributes)) {
-			const attribute = this._attributes[name];
-			if (attribute.namespaceURI === namespace && attribute.localName === localName) {
-				return true;
-			}
-		}
-		return false;
+		return this.attributes.getNamedItemNS(namespace, localName) !== null;
 	}
 
 	/**
@@ -650,7 +636,7 @@ export default class Element extends Node implements IElement {
 	 * @returns "true" if the element has attributes.
 	 */
 	public hasAttributes(): boolean {
-		return Object.keys(this._attributes).length > 0;
+		return this.attributes.length > 0;
 	}
 
 	/**
@@ -659,10 +645,7 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 */
 	public removeAttribute(name: string): void {
-		const attribute = this._attributes[this._getAttributeName(name)];
-		if (attribute) {
-			this.removeAttributeNode(attribute);
-		}
+		this.attributes.removeNamedItem(name);
 	}
 
 	/**
@@ -672,12 +655,7 @@ export default class Element extends Node implements IElement {
 	 * @param localName Local name.
 	 */
 	public removeAttributeNS(namespace: string | null, localName: string): void {
-		for (const name of Object.keys(this._attributes)) {
-			const attribute = this._attributes[name];
-			if (attribute.namespaceURI === namespace && attribute.localName === localName) {
-				this.removeAttribute(attribute.name);
-			}
-		}
+		this.attributes.removeNamedItemNS(namespace, localName);
 	}
 
 	/**
@@ -824,67 +802,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Replaced attribute.
 	 */
 	public setAttributeNode(attribute: IAttr): IAttr | null {
-		const name = this._getAttributeName(attribute.name);
-		const replacedAttribute = this._attributes[name];
-		const oldValue = replacedAttribute ? replacedAttribute.value : null;
-
-		attribute.name = name;
-		(<IElement>attribute.ownerElement) = <IElement>this;
-		(<IDocument>attribute.ownerDocument) = this.ownerDocument;
-
-		if (this.isConnected) {
-			this.ownerDocument['_cacheID']++;
-		}
-
-		this._attributes[name] = attribute;
-
-		if (attribute.name === 'class' && this._classList) {
-			this._classList._updateIndices();
-		}
-
-		if (attribute.name === 'id' || attribute.name === 'name') {
-			if (this.parentNode && (<IElement>this.parentNode).children && attribute.value !== oldValue) {
-				if (oldValue) {
-					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(
-						this,
-						oldValue
-					);
-				}
-				if (attribute.value) {
-					(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._appendNamedItem(
-						this,
-						attribute.value
-					);
-				}
-			}
-		}
-
-		if (
-			this.attributeChangedCallback &&
-			(<typeof Element>this.constructor)._observedAttributes &&
-			(<typeof Element>this.constructor)._observedAttributes.includes(name)
-		) {
-			this.attributeChangedCallback(name, oldValue, attribute.value);
-		}
-
-		// MutationObserver
-		if (this._observers.length > 0) {
-			for (const observer of this._observers) {
-				if (
-					observer.options.attributes &&
-					(!observer.options.attributeFilter || observer.options.attributeFilter.includes(name))
-				) {
-					const record = new MutationRecord();
-					record.target = this;
-					record.type = MutationTypeEnum.attributes;
-					record.attributeName = name;
-					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
-					observer.callback([record]);
-				}
-			}
-		}
-
-		return replacedAttribute || null;
+		return this.attributes.setNamedItem(attribute);
 	}
 
 	/**
@@ -893,8 +811,8 @@ export default class Element extends Node implements IElement {
 	 * @param attribute Attribute.
 	 * @returns Replaced attribute.
 	 */
-	public setAttributeNodeNS(attribute: IAttr): IAttr {
-		return this.setAttributeNode(attribute);
+	public setAttributeNodeNS(attribute: IAttr): IAttr | null {
+		return this.attributes.setNamedItemNS(attribute);
 	}
 
 	/**
@@ -903,33 +821,19 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 * @returns Replaced attribute.
 	 */
-	public getAttributeNode(name: string): IAttr {
-		return this._attributes[this._getAttributeName(name)] || null;
+	public getAttributeNode(name: string): IAttr | null {
+		return this.attributes.getNamedItem(name);
 	}
 
 	/**
 	 * Returns a namespaced Attr node.
 	 *
 	 * @param namespace Namespace.
-	 * @param name Name.
+	 * @param localName Name.
 	 * @returns Replaced attribute.
 	 */
-	public getAttributeNodeNS(namespace: string | null, name: string): IAttr {
-		const attributeName = this._getAttributeName(name);
-		if (
-			this._attributes[attributeName] &&
-			this._attributes[attributeName].namespaceURI === namespace &&
-			this._attributes[attributeName].localName === attributeName
-		) {
-			return this._attributes[attributeName];
-		}
-		for (const name of Object.keys(this._attributes)) {
-			const attribute = this._attributes[name];
-			if (attribute.namespaceURI === namespace && attribute.localName === attributeName) {
-				return attribute;
-			}
-		}
-		return null;
+	public getAttributeNodeNS(namespace: string | null, localName: string): IAttr | null {
+		return this.attributes.getNamedItemNS(namespace, localName);
 	}
 
 	/**
@@ -938,61 +842,8 @@ export default class Element extends Node implements IElement {
 	 * @param attribute Attribute.
 	 * @returns Removed attribute.
 	 */
-	public removeAttributeNode(attribute: IAttr): IAttr {
-		const removedAttribute = this._attributes[attribute.name];
-
-		if (removedAttribute !== attribute) {
-			throw new DOMException(
-				`Failed to execute 'removeAttributeNode' on 'Element': The node provided is owned by another element.`
-			);
-		}
-
-		delete this._attributes[attribute.name];
-
-		if (this.isConnected) {
-			this.ownerDocument['_cacheID']++;
-		}
-
-		if (attribute.name === 'class' && this._classList) {
-			this._classList._updateIndices();
-		}
-
-		if (attribute.name === 'id' || attribute.name === 'name') {
-			if (this.parentNode && (<IElement>this.parentNode).children && attribute.value) {
-				(<HTMLCollection<IElement>>(<IElement>this.parentNode).children)._removeNamedItem(
-					this,
-					attribute.value
-				);
-			}
-		}
-
-		if (
-			this.attributeChangedCallback &&
-			(<typeof Element>this.constructor)._observedAttributes &&
-			(<typeof Element>this.constructor)._observedAttributes.includes(attribute.name)
-		) {
-			this.attributeChangedCallback(attribute.name, attribute.value, null);
-		}
-
-		// MutationObserver
-		if (this._observers.length > 0) {
-			for (const observer of this._observers) {
-				if (
-					observer.options.attributes &&
-					(!observer.options.attributeFilter ||
-						observer.options.attributeFilter.includes(attribute.name))
-				) {
-					const record = new MutationRecord();
-					record.target = this;
-					record.type = MutationTypeEnum.attributes;
-					record.attributeName = attribute.name;
-					record.oldValue = observer.options.attributeOldValue ? attribute.value : null;
-					observer.callback([record]);
-				}
-			}
-		}
-
-		return attribute;
+	public removeAttributeNode(attribute: IAttr): IAttr | null {
+		return this.attributes.removeNamedItem(attribute.name);
 	}
 
 	/**
@@ -1001,8 +852,8 @@ export default class Element extends Node implements IElement {
 	 * @param attribute Attribute.
 	 * @returns Removed attribute.
 	 */
-	public removeAttributeNodeNS(attribute: IAttr): IAttr {
-		return this.removeAttributeNode(attribute);
+	public removeAttributeNodeNS(attribute: IAttr): IAttr | null {
+		return this.attributes.removeNamedItemNS(attribute.namespaceURI, attribute.localName);
 	}
 
 	/**
