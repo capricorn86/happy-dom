@@ -15,27 +15,25 @@ export default class HTMLLabelElementUtility {
 	 * @param element Element to get labels for.
 	 * @returns Label elements.
 	 */
-	public static getAssociatedLabelElements(
-		element: IHTMLElement
-	): INodeList<IHTMLLabelElement> {
-        const id = element.id;
-        let labels: INodeList<IHTMLLabelElement>;
-        if (id) {
-            const rootNode = <IDocument | IShadowRoot>element.getRootNode();
-            labels = <INodeList<IHTMLLabelElement>>rootNode.querySelectorAll(`label[for="${id}"]`);
-        } else {
-            labels = new NodeList<IHTMLLabelElement>();
-        }
-    
-        let parent = element.parentNode;
-        while (parent) {
-            if (parent['tagName'] === 'LABEL') {
-                labels.push(<IHTMLLabelElement>parent);
-                break;
-            }
-            parent = parent.parentNode;
-        }
-    
-        return labels;
+	public static getAssociatedLabelElements(element: IHTMLElement): INodeList<IHTMLLabelElement> {
+		const id = element.id;
+		let labels: INodeList<IHTMLLabelElement>;
+		if (id) {
+			const rootNode = <IDocument | IShadowRoot>element.getRootNode();
+			labels = <INodeList<IHTMLLabelElement>>rootNode.querySelectorAll(`label[for="${id}"]`);
+		} else {
+			labels = new NodeList<IHTMLLabelElement>();
+		}
+
+		let parent = element.parentNode;
+		while (parent) {
+			if (parent['tagName'] === 'LABEL') {
+				labels.push(<IHTMLLabelElement>parent);
+				break;
+			}
+			parent = parent.parentNode;
+		}
+
+		return labels;
 	}
 }
