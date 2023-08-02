@@ -6,6 +6,7 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import IElement from '../element/IElement.js';
 import NodeList from '../node/NodeList.js';
 import HTMLCollection from '../element/HTMLCollection.js';
+import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 
 /**
  * HTML Unknown Element.
@@ -43,7 +44,10 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						newElement._textAreaNode = this._textAreaNode;
 						newElement._observers = this._observers;
 						newElement._isValue = this._isValue;
-						newElement._attributes = this._attributes;
+
+						for (let i = 0, max = this.attributes.length; i < max; i++) {
+							newElement.attributes.setNamedItem(this.attributes[i]);
+						}
 
 						(<INodeList<INode>>this.childNodes) = new NodeList();
 						(<IHTMLCollection<IElement>>this.children) = new HTMLCollection();
@@ -53,7 +57,7 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						this._textAreaNode = null;
 						this._observers = [];
 						this._isValue = null;
-						this._attributes = {};
+						(<HTMLElementNamedNodeMap>this.attributes) = new HTMLElementNamedNodeMap(this);
 
 						for (let i = 0, max = this.parentNode.childNodes.length; i < max; i++) {
 							if (this.parentNode.childNodes[i] === this) {
