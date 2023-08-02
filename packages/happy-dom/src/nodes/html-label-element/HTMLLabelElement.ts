@@ -42,12 +42,9 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 		if (htmlFor) {
 			return <IHTMLElement>this.ownerDocument.getElementById(htmlFor);
 		}
-		for (const child of this.children) {
-			if (child.tagName === 'INPUT') {
-				return <IHTMLElement>child;
-			}
-		}
-		return null;
+		return <IHTMLElement>(
+			this.querySelector('button,input:not([type="hidden"]),meter,output,progress,select,textarea')
+		);
 	}
 
 	/**
