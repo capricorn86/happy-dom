@@ -236,7 +236,7 @@ export default class SelectorItem {
 		let priorityWeight = 0;
 
 		for (const attribute of this.attributes) {
-			const elementAttribute = (<Element>element)._attributes[attribute.name];
+			const elementAttribute = (<Element>element).attributes.getNamedItem(attribute.name);
 
 			if (!elementAttribute) {
 				return null;

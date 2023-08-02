@@ -6,65 +6,65 @@ import IAttr from '../nodes/attr/IAttr.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap.
  */
-export default interface INamedNodeMap extends Iterable<IAttr> {
+export default interface INamedNodeMap {
 	[index: number]: IAttr;
 	[Symbol.toStringTag]: string;
 	readonly length: number;
 
 	/**
-	 * Returns attribute by index.
+	 * Returns item by index.
 	 *
 	 * @param index Index.
 	 */
-	item: (index: number) => IAttr;
+	item: (index: number) => IAttr | null;
 
 	/**
-	 * Returns attribute by name.
+	 * Returns named item.
 	 *
-	 * @param qualifiedName Name.
-	 * @returns Attribute.
+	 * @param name Name.
+	 * @returns Itme.
 	 */
-	getNamedItem: (qualifiedName: string) => IAttr;
+	getNamedItem(name: string): IAttr | null;
 
 	/**
-	 * Returns attribute by name and namespace.
-	 *
-	 * @param namespace Namespace.
-	 * @param localName Local name of the attribute.
-	 * @returns Attribute.
-	 */
-	getNamedItemNS: (namespace: string, localName: string) => IAttr;
-
-	/**
-	 * Adds a new attribute node.
-	 *
-	 * @param attr Attribute.
-	 * @returns Replaced attribute.
-	 */
-	setNamedItem: (attr: IAttr) => IAttr;
-
-	/**
-	 * Adds a new namespaced attribute node.
-	 *
-	 * @param attr Attribute.
-	 * @returns Replaced attribute.
-	 */
-	setNamedItemNS: (attr: IAttr) => IAttr;
-
-	/**
-	 * Removes an attribute.
-	 *
-	 * @param qualifiedName Name of the attribute.
-	 * @returns Removed attribute.
-	 */
-	removeNamedItem: (qualifiedName: string) => IAttr;
-
-	/**
-	 * Removes a namespaced attribute.
+	 * Returns item by name and namespace.
 	 *
 	 * @param namespace Namespace.
 	 * @param localName Local name of the attribute.
-	 * @returns Removed attribute.
+	 * @returns Item.
 	 */
-	removeNamedItemNS: (namespace: string, localName: string) => IAttr;
+	getNamedItemNS(namespace: string, localName: string): IAttr | null;
+
+	/**
+	 * Sets named item.
+	 *
+	 * @param item Item.
+	 * @returns Replaced item.
+	 */
+	setNamedItem(item: IAttr): IAttr | null;
+
+	/**
+	 * Adds a new namespaced item.
+	 *
+	 * @param item Item.
+	 * @returns Replaced item.
+	 */
+	setNamedItemNS(item: IAttr): IAttr | null;
+
+	/**
+	 * Removes an item.
+	 *
+	 * @param name Name of item.
+	 * @returns Removed item.
+	 */
+	removeNamedItem(name: string): IAttr | null;
+
+	/**
+	 * Removes a namespaced item.
+	 *
+	 * @param namespace Namespace.
+	 * @param localName Local name of the item.
+	 * @returns Removed item.
+	 */
+	removeNamedItemNS(namespace: string, localName: string): IAttr | null;
 }
