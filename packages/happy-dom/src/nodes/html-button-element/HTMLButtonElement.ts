@@ -5,7 +5,7 @@ import ValidityState from '../../validity-state/ValidityState.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
-import { getHTMLLabels } from '../html-input-element/HTMLLabelsUtility.js';
+import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
 import INode from '../node/INode.js';
 import INodeList from '../node/INodeList.js';
@@ -138,7 +138,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		return getHTMLLabels(this);
+		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
 	/**

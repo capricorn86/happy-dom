@@ -18,8 +18,8 @@ import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import INodeList from '../node/INodeList.js';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import { dateIsoWeek, isoWeekDate } from './HTMLInputDateUtility.js';
-import { getHTMLLabels } from './HTMLLabelsUtility.js';
+import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
+import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
 
@@ -795,7 +795,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			case 'month':
 				return isNaN(new Date(String(this.value)).getTime()) ? null : new Date(this.value);
 			case 'week': {
-				const d = isoWeekDate(this.value);
+				const d = HTMLInputElementDateUtility.isoWeekDate(this.value);
 				return isNaN(d.getTime()) ? null : d;
 			}
 			case 'time': {
@@ -843,7 +843,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				this.value = value.toISOString().split('T')[1].slice(0, 5);
 				break;
 			case 'week':
-				this.value = dateIsoWeek(value);
+				this.value = HTMLInputElementDateUtility.dateIsoWeek(value);
 				break;
 		}
 	}
@@ -943,7 +943,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			case 'week':
 			case 'week': {
 				const d = new Date(Number(value));
-				this.value = isNaN(d.getTime()) ? '' : dateIsoWeek(d);
+				this.value = isNaN(d.getTime()) ? '' : HTMLInputElementDateUtility.dateIsoWeek(d);
 				break;
 			}
 			default:
@@ -960,7 +960,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		return getHTMLLabels(this);
+		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
 	/**

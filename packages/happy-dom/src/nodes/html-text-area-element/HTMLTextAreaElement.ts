@@ -11,7 +11,7 @@ import ValidityState from '../../validity-state/ValidityState.js';
 import IHTMLTextAreaElement from './IHTMLTextAreaElement.js';
 import INodeList from '../node/INodeList.js';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
-import { getHTMLLabels } from '../html-input-element/HTMLLabelsUtility.js';
+import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.js';
 
@@ -410,7 +410,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		return getHTMLLabels(this);
+		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
 	/**
