@@ -51,6 +51,10 @@ describe('HTMLUnknownElement', () => {
 
 			document.body.appendChild(element);
 
+			const attribute1 = document.createAttribute('test');
+			attribute1.value = 'test';
+			element.attributes.setNamedItem(attribute1);
+
 			const childNodes = element.childNodes;
 			const children = element.children;
 			const rootNode = (element._rootNode = document.createElement('div'));
@@ -59,7 +63,6 @@ describe('HTMLUnknownElement', () => {
 			const textAreaNode = (element._textAreaNode = document.createElement('div'));
 			const observers = element._observers;
 			const isValue = (element._isValue = 'test');
-			const attributes = element._attributes;
 
 			window.customElements.define('custom-element', CustomElement);
 
@@ -79,7 +82,8 @@ describe('HTMLUnknownElement', () => {
 			expect(customElement._textAreaNode === textAreaNode).toBe(true);
 			expect(customElement._observers === observers).toBe(true);
 			expect(customElement._isValue === isValue).toBe(true);
-			expect(customElement._attributes === attributes).toBe(true);
+			expect(customElement.attributes.length).toBe(1);
+			expect(customElement.attributes[0] === attribute1).toBe(true);
 		});
 	});
 });

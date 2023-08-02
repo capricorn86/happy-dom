@@ -13,7 +13,6 @@ import HTMLInputElementValueStepping from './HTMLInputElementValueStepping.js';
 import FileList from './FileList.js';
 import File from '../../file/File.js';
 import IFileList from './IFileList.js';
-import IAttr from '../attr/IAttr.js';
 import INode from '../node/INode.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import INodeList from '../node/INodeList.js';
@@ -21,6 +20,8 @@ import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import { dateIsoWeek, isoWeekDate } from './HTMLInputDateUtility.js';
 import { getHTMLLabels } from './HTMLLabelsUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
 
 /**
  * HTML Input Element.
@@ -32,6 +33,8 @@ import { getHTMLLabels } from './HTMLLabelsUtility.js';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/nodes/HTMLInputElement-impl.js (MIT licensed).
  */
 export default class HTMLInputElement extends HTMLElement implements IHTMLInputElement {
+	public override readonly attributes: INamedNodeMap = new HTMLInputElementNamedNodeMap(this);
+
 	// Related to parent form.
 	public formAction = '';
 	public formMethod = '';
@@ -1204,38 +1207,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr | null {
-		const replacedAttribute = super.setAttributeNode(attribute);
-		const oldValue = replacedAttribute ? replacedAttribute.value : null;
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			if (oldValue) {
-				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
-			}
-			if (attribute.value) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
-			}
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public override removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
-		}
-
-		return attribute;
 	}
 
 	/**

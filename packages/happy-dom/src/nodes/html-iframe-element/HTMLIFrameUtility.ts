@@ -2,7 +2,6 @@ import { URL } from 'url';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import IWindow from '../../window/IWindow.js';
-import Window from '../../window/Window.js';
 import IFrameCrossOriginWindow from './IFrameCrossOriginWindow.js';
 import HTMLIFrameElement from './HTMLIFrameElement.js';
 
@@ -23,7 +22,8 @@ export default class HTMLIFrameUtility {
 			const src = element.src;
 
 			if (src) {
-				const contentWindow = new (<typeof Window>element.ownerDocument.defaultView.constructor)({
+				// To avoid circular dependency, we use a reference to the window class instead of importing it.
+				const contentWindow = <IWindow>new element.ownerDocument['_windowClass']({
 					url: src,
 					settings: {
 						...element.ownerDocument.defaultView.happyDOM.settings

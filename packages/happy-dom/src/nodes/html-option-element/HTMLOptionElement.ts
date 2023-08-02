@@ -1,8 +1,9 @@
-import IAttr from '../attr/IAttr.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import INode from '../node/INode.js';
+import HTMLOptionElementNamedNodeMap from './HTMLOptionElementNamedNodeMap.js';
 import IHTMLOptionElement from './IHTMLOptionElement.js';
 
 /**
@@ -12,6 +13,7 @@ import IHTMLOptionElement from './IHTMLOptionElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionElement.
  */
 export default class HTMLOptionElement extends HTMLElement implements IHTMLOptionElement {
+	public override readonly attributes: INamedNodeMap = new HTMLOptionElementNamedNodeMap(this);
 	public _index: number;
 	public _selectedness = false;
 	public _dirtyness = false;
@@ -115,48 +117,6 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 */
 	public set value(value: string) {
 		this.setAttribute('value', value);
-	}
-
-	/**
-	 * @override
-	 */
-	public setAttributeNode(attribute: IAttr): IAttr | null {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		if (
-			!this._dirtyness &&
-			attribute.name === 'selected' &&
-			replacedAttribute?.value !== attribute.value
-		) {
-			const selectNode = <HTMLSelectElement>this._selectNode;
-
-			this._selectedness = true;
-
-			if (selectNode) {
-				selectNode._updateOptionItems(this);
-			}
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if (!this._dirtyness && attribute.name === 'selected') {
-			const selectNode = <HTMLSelectElement>this._selectNode;
-
-			this._selectedness = false;
-
-			if (selectNode) {
-				selectNode._updateOptionItems();
-			}
-		}
-
-		return attribute;
 	}
 
 	/**

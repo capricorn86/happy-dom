@@ -13,9 +13,10 @@ import IHTMLOptionsCollection from './IHTMLOptionsCollection.js';
 import INode from '../node/INode.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import IAttr from '../attr/IAttr.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
 import { getHTMLLabels } from '../html-input-element/HTMLLabelsUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLSelectElementNamedNodeMap from './HTMLSelectElementNamedNodeMap.js';
 
 /**
  * HTML Select Element.
@@ -24,6 +25,8 @@ import { getHTMLLabels } from '../html-input-element/HTMLLabelsUtility.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement.
  */
 export default class HTMLSelectElement extends HTMLElement implements IHTMLSelectElement {
+	public override readonly attributes: INamedNodeMap = new HTMLSelectElementNamedNodeMap(this);
+
 	// Public properties.
 	public readonly length = 0;
 	public readonly options: IHTMLOptionsCollection = new HTMLOptionsCollection(this);
@@ -382,38 +385,6 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 				(<HTMLOptionElement>optionElements[i])._selectedness = i === selected.length - 1;
 			}
 		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr | null {
-		const replacedAttribute = super.setAttributeNode(attribute);
-		const oldValue = replacedAttribute ? replacedAttribute.value : null;
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			if (oldValue) {
-				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
-			}
-			if (attribute.value) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
-			}
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public override removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
-		}
-
-		return attribute;
 	}
 
 	/**

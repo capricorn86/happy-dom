@@ -40,6 +40,8 @@ export default class MouseEvent extends UIEvent {
 			this.clientY = eventInit.clientY !== undefined ? eventInit.clientY : 0;
 			this.ctrlKey = eventInit.ctrlKey || false;
 			this.metaKey = eventInit.metaKey || false;
+			this.movementX = eventInit.movementX || 0;
+			this.movementY = eventInit.movementY || 0;
 			this.region = eventInit.region || '';
 			this.relatedTarget = eventInit.relatedTarget || null;
 			this.screenX = eventInit.screenX !== undefined ? eventInit.screenX : 0;

@@ -519,6 +519,7 @@ export default class Window extends EventTarget implements IWindow {
 		}
 
 		HTMLDocument._defaultView = this;
+		HTMLDocument._windowClass = Window;
 
 		const document = new HTMLDocument();
 

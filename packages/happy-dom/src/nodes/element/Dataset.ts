@@ -20,11 +20,12 @@ export default class Dataset {
 	constructor(element: Element) {
 		// Build the initial dataset record from all data attributes.
 		const dataset: DatasetRecord = {};
-		const attributes = element._attributes;
-		for (const name of Object.keys(attributes)) {
-			if (name.startsWith('data-')) {
-				const key = Dataset.kebabToCamelCase(name.replace('data-', ''));
-				dataset[key] = attributes[name].value;
+
+		for (let i = 0, max = element.attributes.length; i < max; i++) {
+			const attribute = element.attributes[i];
+			if (attribute.name.startsWith('data-')) {
+				const key = Dataset.kebabToCamelCase(attribute.name.replace('data-', ''));
+				dataset[key] = attribute.value;
 			}
 		}
 
@@ -32,9 +33,9 @@ export default class Dataset {
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
 		this.proxy = new Proxy(dataset, {
 			get(dataset: DatasetRecord, key: string): string {
-				const name = 'data-' + Dataset.camelCaseToKebab(key);
-				if (name in attributes) {
-					return (dataset[key] = attributes[name].value);
+				const attribute = element.attributes.getNamedItem('data-' + Dataset.camelCaseToKebab(key));
+				if (attribute) {
+					return (dataset[key] = attribute.value);
 				}
 				delete dataset[key];
 				return undefined;
@@ -45,10 +46,10 @@ export default class Dataset {
 				return true;
 			},
 			deleteProperty(dataset: DatasetRecord, key: string): boolean {
-				const name = 'data-' + Dataset.camelCaseToKebab(key);
-				const result1 = delete attributes[name];
-				const result2 = delete dataset[key];
-				return result1 && result2;
+				return (
+					!!element.attributes.removeNamedItem('data-' + Dataset.camelCaseToKebab(key)) &&
+					delete dataset[key]
+				);
 			},
 			ownKeys(dataset: DatasetRecord): string[] {
 				// According to Mozilla we have to update the dataset object (target) to contain the same keys as what we return:
@@ -56,11 +57,12 @@ export default class Dataset {
 				// "The result List must contain the keys of all non-configurable own properties of the target object."
 				const keys = [];
 				const deleteKeys = [];
-				for (const name of Object.keys(attributes)) {
-					if (name.startsWith('data-')) {
-						const key = Dataset.kebabToCamelCase(name.replace('data-', ''));
+				for (let i = 0, max = element.attributes.length; i < max; i++) {
+					const attribute = element.attributes[i];
+					if (attribute.name.startsWith('data-')) {
+						const key = Dataset.kebabToCamelCase(attribute.name.replace('data-', ''));
 						keys.push(key);
-						dataset[key] = attributes[name].value;
+						dataset[key] = attribute.value;
 						if (!dataset[key]) {
 							deleteKeys.push(key);
 						}
@@ -72,7 +74,7 @@ export default class Dataset {
 				return keys;
 			},
 			has(_dataset: DatasetRecord, key: string): boolean {
-				return !!attributes['data-' + Dataset.camelCaseToKebab(key)];
+				return !!element.attributes.getNamedItem('data-' + Dataset.camelCaseToKebab(key));
 			}
 		});
 	}

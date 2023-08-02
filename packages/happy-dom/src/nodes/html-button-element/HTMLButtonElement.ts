@@ -1,7 +1,7 @@
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import IAttr from '../attr/IAttr.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
@@ -9,6 +9,7 @@ import { getHTMLLabels } from '../html-input-element/HTMLLabelsUtility.js';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
 import INode from '../node/INode.js';
 import INodeList from '../node/INodeList.js';
+import HTMLButtonElementNamedNodeMap from './HTMLButtonElementNamedNodeMap.js';
 import IHTMLButtonElement from './IHTMLButtonElement.js';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
@@ -20,6 +21,7 @@ const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement.
  */
 export default class HTMLButtonElement extends HTMLElement implements IHTMLButtonElement {
+	public override readonly attributes: INamedNodeMap = new HTMLButtonElementNamedNodeMap(this);
 	public readonly validationMessage = '';
 	public readonly validity = new ValidityState(this);
 
@@ -218,38 +220,6 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr | null {
-		const replacedAttribute = super.setAttributeNode(attribute);
-		const oldValue = replacedAttribute ? replacedAttribute.value : null;
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			if (oldValue) {
-				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
-			}
-			if (attribute.value) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
-			}
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public override removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
-		}
-
-		return attribute;
 	}
 
 	/**

@@ -63,7 +63,7 @@ export default class CSSStyleDeclarationElementStyle {
 			return this.getComputedElementStyle();
 		}
 
-		const cssText = this.element['_attributes']['style']?.value;
+		const cssText = this.element.attributes['style']?.value;
 
 		if (cssText) {
 			if (this.cache.propertyManager && this.cache.cssText === cssText) {
@@ -182,8 +182,9 @@ export default class CSSStyleDeclarationElementStyle {
 				elementCSSText += cssText.cssText;
 			}
 
-			if (parentElement.element['_attributes']['style']?.value) {
-				elementCSSText += parentElement.element['_attributes']['style'].value;
+			const elementStyleAttribute = (<IElement>parentElement.element).attributes['style'];
+			if (elementStyleAttribute) {
+				elementCSSText += elementStyleAttribute.value;
 			}
 
 			CSSStyleDeclarationCSSParser.parse(elementCSSText, (name, value, important) => {
