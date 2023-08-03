@@ -44,6 +44,7 @@ export default class Element extends Node implements IElement {
 	public shadowRoot: IShadowRoot = null;
 	public prefix: string = null;
 
+	public scrollHeight = 0;
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
@@ -369,6 +370,7 @@ export default class Element extends Node implements IElement {
 		(<string>clone.tagName) = this.tagName;
 		clone.scrollLeft = this.scrollLeft;
 		clone.scrollTop = this.scrollTop;
+		clone.scrollHeight = this.scrollHeight;
 		(<string>clone.namespaceURI) = this.namespaceURI;
 
 		return <IElement>clone;
