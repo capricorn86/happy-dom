@@ -75,7 +75,12 @@ describe('HTMLButtonElement', () => {
 	});
 
 	describe(`set disabled()`, () => {
-		it('Sets attribute value.', () => {
+		it('Sets attribute value to false.', () => {
+			element.disabled = false;
+			expect(element.getAttribute('disabled')).toBe(null);
+		});
+
+		it('Sets attribute value to true.', () => {
 			element.disabled = true;
 			expect(element.getAttribute('disabled')).toBe('');
 		});

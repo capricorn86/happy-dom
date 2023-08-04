@@ -42,6 +42,7 @@ export default class HTMLButtonElementNamedNodeMap extends HTMLElementNamedNodeM
 		const removedItem = super.removeNamedItem(name);
 
 		if (
+			removedItem &&
 			(removedItem.name === 'id' || removedItem.name === 'name') &&
 			this._ownerElement._formNode
 		) {
