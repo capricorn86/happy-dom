@@ -24,7 +24,7 @@ export default class HTMLIFrameUtility {
 			if (src) {
 				// To avoid circular dependency, we use a reference to the window class instead of importing it.
 				const contentWindow = <IWindow>new element.ownerDocument['_windowClass']({
-					url: src,
+					url: new URL(src, element.ownerDocument.defaultView.location.href).href,
 					settings: {
 						...element.ownerDocument.defaultView.happyDOM.settings
 					}

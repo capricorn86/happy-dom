@@ -81,10 +81,59 @@ describe('HTMLIFrameElement', () => {
 				window.happyDOM.setURL('https://localhost:8080');
 				element.src = 'https://localhost:8080/iframe.html';
 				element.addEventListener('load', () => {
+					expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
 					expect(fetchedURL).toBe('https://localhost:8080/iframe.html');
 					expect(element.contentWindow === element.contentDocument?.defaultView).toBe(true);
 					expect(`<html>${element.contentDocument?.documentElement.innerHTML}</html>`).toBe(
 						responseHTML
+					);
+					resolve(null);
+				});
+				document.body.appendChild(element);
+			});
+		});
+
+		it('Returns content window for relative URL.', async () => {
+			await new Promise((resolve) => {
+				const responseHTML = '<html><head></head><body>Test</body></html>';
+				let fetchedURL: string | null = null;
+
+				vi.spyOn(window, 'fetch').mockImplementation((url: IRequestInfo) => {
+					fetchedURL = <string>url;
+					return Promise.resolve(<IResponse>{
+						text: () => Promise.resolve(responseHTML),
+						ok: true
+					});
+				});
+
+				window.happyDOM.setURL('https://localhost:8080');
+				element.src = '/iframe.html';
+				element.addEventListener('load', () => {
+					expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
+					resolve(null);
+				});
+				document.body.appendChild(element);
+			});
+		});
+
+		it('Returns content window for without protocol.', async () => {
+			await new Promise((resolve) => {
+				const responseHTML = '<html><head></head><body>Test</body></html>';
+				let fetchedURL: string | null = null;
+
+				vi.spyOn(window, 'fetch').mockImplementation((url: IRequestInfo) => {
+					fetchedURL = <string>url;
+					return Promise.resolve(<IResponse>{
+						text: () => Promise.resolve(responseHTML),
+						ok: true
+					});
+				});
+
+				window.happyDOM.setURL('https://localhost:8080');
+				element.src = '//www.github.com/iframe.html';
+				element.addEventListener('load', () => {
+					expect((<IWindow>element.contentWindow?.['_targetWindow']).document.location.href).toBe(
+						'https://www.github.com/iframe.html'
 					);
 					resolve(null);
 				});
