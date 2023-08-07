@@ -48,4 +48,13 @@ export default interface INode extends IEventTarget {
 	toString(): string;
 	compareDocumentPosition(otherNode: INode): number;
 	normalize(): void;
+
+	/**
+	 * Determines whether the given node is equal to the current node.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Node/isSameNode
+	 * @param node Node to check.
+	 * @returns True if the given node is equal to the current node, otherwise false.
+	 */
+	isSameNode(node: INode): boolean;
 }
