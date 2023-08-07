@@ -965,4 +965,17 @@ describe('Node', () => {
 			expect(div.childNodes[0]).toBe(node);
 		});
 	});
+
+	describe('isSameNode()', () => {
+		it('Returns true if the nodes are the same.', () => {
+			const div = document.createElement('div');
+			expect(div.isSameNode(div)).toBe(true);
+		});
+
+		it('Returns false if the nodes are not the same.', () => {
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			expect(div1.isSameNode(div2)).toBe(false);
+		});
+	});
 });
