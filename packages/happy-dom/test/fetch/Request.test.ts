@@ -244,6 +244,16 @@ describe('Request', () => {
 			expect(request._contentType).toBe('text/plain;charset=UTF-8');
 		});
 
+		it('Supports content type header from Request object.', () => {
+			const request = new Request(new Request(TEST_URL, { method: 'POST', body: 'Hello World' }));
+			expect(request.headers.get('Content-Type')).toBe('text/plain;charset=UTF-8');
+		});
+
+		it('Supports content type header from init object.', () => {
+			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			expect(request.headers.get('Content-Type')).toBe('text/plain;charset=UTF-8');
+		});
+
 		it('Supports redirect from Request object.', () => {
 			const request = new Request(new Request(TEST_URL, { redirect: 'manual' }));
 			expect(request.redirect).toBe('manual');

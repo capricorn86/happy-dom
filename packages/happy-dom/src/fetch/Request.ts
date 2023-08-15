@@ -86,6 +86,9 @@ export default class Request implements IRequest {
 		}
 
 		if (contentType) {
+			if (!this.headers.has('Content-Type')) {
+				this.headers.set('Content-Type', contentType);
+			}
 			this._contentType = contentType;
 		} else if (input instanceof Request && input._contentType) {
 			this._contentType = input._contentType;
