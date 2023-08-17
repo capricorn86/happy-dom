@@ -37,7 +37,7 @@ export default class CSS {
 	 * @param value Value to escape.
 	 * @returns Escaped string.
 	 */
-	public escape(value: string): boolean {
+	public escape(value: string): string {
 		return CSSEscape(value);
 	}
 }
