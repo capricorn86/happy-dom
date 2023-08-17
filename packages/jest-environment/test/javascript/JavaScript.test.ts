@@ -9,6 +9,10 @@ describe('JavaScript', () => {
 		expect({}.constructor).toBe(Object);
 	});
 
+	it('Document.location.href should be "http://localhost/", which is the default for the JSDOM Jest environment', () => {
+		expect(document.location.href).toBe('http://localhost/');
+	});
+
 	it('Can perform a real fetch()', async () => {
 		const express = Express();
 
