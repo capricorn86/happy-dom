@@ -84,6 +84,7 @@
 		"whatwg-mimetype": "^3.0.0"
 	},
 	"devDependencies": {
+		"@types/css.escape": "^1.5.0",
 		"@types/node": "^15.6.0",
 		"@types/node-fetch": "^2.6.1",
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
