@@ -262,7 +262,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @returns Parsed value.
 	 */
 	public static getMeasurement(value: string): string {
-		return this.getLength(value) || this.getPercentage(value);
+		return this.getLength(value) || this.getPercentage(value) || this.getCalc(value);
 	}
 
 	/**

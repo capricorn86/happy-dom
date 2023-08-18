@@ -2103,6 +2103,14 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.width).toBe('0px');
 		});
+
+		it('Returns width for "width: calc(10% - 1px)".', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.setAttribute('style', 'width: calc(10% - 1px)');
+
+			expect(declaration.width).toBe('calc(10% - 1px)');
+		});
 	});
 
 	describe('get height()', () => {
