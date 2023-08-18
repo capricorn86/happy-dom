@@ -40,7 +40,7 @@ const MARKUP_REGEXP =
  * Group 9: Attribute name when the attribute has no value (e.g. "disabled" in "<div disabled>").
  */
 const ATTRIBUTE_REGEXP =
-	/\s*([a-zA-Z0-9-_:.$@?]+) *= *([a-zA-Z0-9-_:.$@?{}]+)|\s*([a-zA-Z0-9-_:.$@?]+) *= *"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?]+) *= *'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?]+)/gm;
+	/\s*([a-zA-Z0-9-_:.$@?]+) *= *([a-zA-Z0-9-_:.$@?{}/]+)|\s*([a-zA-Z0-9-_:.$@?]+) *= *"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?]+) *= *'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?]+)/gm;
 
 enum MarkupReadStateEnum {
 	startOrEndTag = 'startOrEndTag',

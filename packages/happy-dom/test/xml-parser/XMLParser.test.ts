@@ -669,6 +669,14 @@ describe('XMLParser', () => {
 			);
 		});
 
+		it('Parses attributes with URL without apostrophs.', () => {
+			const root = XMLParser.parse(document, `<a href=http://www.github.com/path>Click me</a>`);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(
+				'<a href="http://www.github.com/path">Click me</a>'
+			);
+		});
+
 		it('Parses attributes with single apostrophs.', () => {
 			const root = XMLParser.parse(document, `<div key1='value1' key2='value2'>Test</div>`);
 
