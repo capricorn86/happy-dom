@@ -42,8 +42,8 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						newElement._observers = this._observers;
 						newElement._isValue = this._isValue;
 						newElement._attributes = this._attributes;
-						(<INodeList<INode>>newElement._childNodes) = this.childNodes;
-						(<IHTMLCollection<IElement>>newElement._children) = this.children;
+						(<INodeList<INode>>newElement._childNodes) = this._childNodes;
+						(<IHTMLCollection<IElement>>newElement._children) = this._children;
 
 						(<INodeList<INode>>this._childNodes) = new NodeList();
 						(<IHTMLCollection<IElement>>this._children) = new HTMLCollection();
@@ -55,17 +55,17 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						this._isValue = null;
 						this._attributes = {};
 
-						for (let i = 0, max = this.parentNode.childNodes.length; i < max; i++) {
-							if (this.parentNode.childNodes[i] === this) {
-								this.parentNode.childNodes[i] = newElement;
+						for (let i = 0, max = (<HTMLElement>this.parentNode)._childNodes.length; i < max; i++) {
+							if ((<HTMLElement>this.parentNode)._childNodes[i] === this) {
+								(<HTMLElement>this.parentNode)._childNodes[i] = newElement;
 								break;
 							}
 						}
 
-						if ((<IElement>this.parentNode).children) {
-							for (let i = 0, max = (<IElement>this.parentNode).children.length; i < max; i++) {
-								if ((<IElement>this.parentNode).children[i] === this) {
-									(<IElement>this.parentNode).children[i] = newElement;
+						if ((<HTMLElement>this.parentNode)._children) {
+							for (let i = 0, max = (<HTMLElement>this.parentNode)._children.length; i < max; i++) {
+								if ((<HTMLElement>this.parentNode)._children[i] === this) {
+									(<HTMLElement>this.parentNode)._children[i] = newElement;
 									break;
 								}
 							}

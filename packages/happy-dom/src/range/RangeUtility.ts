@@ -2,6 +2,7 @@ import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import INode from '../nodes/node/INode.js';
+import Node from '../nodes/node/Node.js';
 import NodeUtility from '../nodes/node/NodeUtility.js';
 import Range from './Range.js';
 import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
@@ -49,7 +50,7 @@ export default class RangeUtility {
 				child = child.parentNode;
 			}
 
-			if (child.parentNode.childNodes.indexOf(child) < pointA.offset) {
+			if ((<Node>child.parentNode)._childNodes.indexOf(child) < pointA.offset) {
 				return 1;
 			}
 		}

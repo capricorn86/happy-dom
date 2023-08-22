@@ -8,6 +8,7 @@ import IDocument from '../nodes/document/IDocument.js';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
 import SelectorParser from './SelectorParser.js';
 import ISelectorMatch from './ISelectorMatch.js';
+import Element from '../nodes/element/Element.js';
 
 type IDocumentPositionAndElement = {
 	documentPosition: string;
@@ -48,7 +49,7 @@ export default class QuerySelector {
 			matches = matches.concat(
 				node.nodeType === NodeTypeEnum.elementNode
 					? this.findAll(<IElement>node, [<IElement>node], items)
-					: this.findAll(null, node.children, items)
+					: this.findAll(null, (<Element>node)._children, items)
 			);
 		}
 
@@ -92,7 +93,7 @@ export default class QuerySelector {
 			const match =
 				node.nodeType === NodeTypeEnum.elementNode
 					? this.findFirst(<IElement>node, [<IElement>node], items)
-					: this.findFirst(null, node.children, items);
+					: this.findFirst(null, (<Element>node)._children, items);
 
 			if (match) {
 				return match;
@@ -248,16 +249,24 @@ export default class QuerySelector {
 						case SelectorCombinatorEnum.descendant:
 						case SelectorCombinatorEnum.child:
 							matched = matched.concat(
-								this.findAll(rootElement, child.children, selectorItems.slice(1), position)
+								this.findAll(
+									rootElement,
+									(<Element>child)._children,
+									selectorItems.slice(1),
+									position
+								)
 							);
 							break;
 					}
 				}
 			}
 
-			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && child.children.length) {
+			if (
+				selectorItem.combinator === SelectorCombinatorEnum.descendant &&
+				(<Element>child)._children.length
+			) {
 				matched = matched.concat(
-					this.findAll(rootElement, child.children, selectorItems, position)
+					this.findAll(rootElement, (<Element>child)._children, selectorItems, position)
 				);
 			}
 		}
@@ -303,7 +312,11 @@ export default class QuerySelector {
 							break;
 						case SelectorCombinatorEnum.descendant:
 						case SelectorCombinatorEnum.child:
-							const match = this.findFirst(rootElement, child.children, selectorItems.slice(1));
+							const match = this.findFirst(
+								rootElement,
+								(<Element>child)._children,
+								selectorItems.slice(1)
+							);
 							if (match) {
 								return match;
 							}
@@ -312,8 +325,11 @@ export default class QuerySelector {
 				}
 			}
 
-			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && child.children.length) {
-				const match = this.findFirst(rootElement, child.children, selectorItems);
+			if (
+				selectorItem.combinator === SelectorCombinatorEnum.descendant &&
+				(<Element>child)._children.length
+			) {
+				const match = this.findFirst(rootElement, (<Element>child)._children, selectorItems);
 
 				if (match) {
 					return match;

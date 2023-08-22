@@ -1,4 +1,5 @@
 import INode from '../nodes/node/INode.js';
+import Node from '../nodes/node/Node.js';
 import IDocument from '../nodes/document/IDocument.js';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
 import DOMRect from '../nodes/element/DOMRect.js';
@@ -309,7 +310,7 @@ export default class Range {
 
 		const containedChildren = [];
 
-		for (const node of commonAncestor.childNodes) {
+		for (const node of (<Node>commonAncestor)._childNodes) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
 					throw new DOMException(
@@ -462,7 +463,7 @@ export default class Range {
 			}
 
 			newNode = referenceNode.parentNode;
-			newOffset = referenceNode.parentNode.childNodes.indexOf(referenceNode) + 1;
+			newOffset = (<Node>referenceNode.parentNode)._childNodes.indexOf(referenceNode) + 1;
 		}
 
 		if (
@@ -567,7 +568,7 @@ export default class Range {
 
 		const containedChildren = [];
 
-		for (const node of commonAncestor.childNodes) {
+		for (const node of (<Node>commonAncestor)._childNodes) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
 					throw new DOMException(
@@ -595,7 +596,7 @@ export default class Range {
 			}
 
 			newNode = referenceNode.parentNode;
-			newOffset = referenceNode.parentNode.childNodes.indexOf(referenceNode) + 1;
+			newOffset = (<Node>referenceNode.parentNode)._childNodes.indexOf(referenceNode) + 1;
 		}
 
 		if (
@@ -741,7 +742,7 @@ export default class Range {
 		let referenceNode =
 			this._start.node.nodeType === NodeTypeEnum.textNode
 				? this._start.node
-				: this._start.node.childNodes[this.startOffset] || null;
+				: (<Node>this._start.node)._childNodes[this.startOffset] || null;
 		const parent = !referenceNode ? this._start.node : referenceNode.parentNode;
 
 		if (this._start.node.nodeType === NodeTypeEnum.textNode) {
@@ -759,7 +760,7 @@ export default class Range {
 
 		let newOffset = !referenceNode
 			? NodeUtility.getNodeLength(parent)
-			: referenceNode.parentNode.childNodes.indexOf(referenceNode);
+			: (<Node>referenceNode.parentNode)._childNodes.indexOf(referenceNode);
 		newOffset +=
 			newNode.nodeType === NodeTypeEnum.documentFragmentNode
 				? NodeUtility.getNodeLength(newNode)
@@ -791,7 +792,7 @@ export default class Range {
 			return true;
 		}
 
-		const offset = parent.childNodes.indexOf(node);
+		const offset = (<Node>parent)._childNodes.indexOf(node);
 
 		return (
 			RangeUtility.compareBoundaryPointsPosition(
@@ -819,7 +820,7 @@ export default class Range {
 			);
 		}
 
-		const index = node.parentNode.childNodes.indexOf(node);
+		const index = (<Node>node.parentNode)._childNodes.indexOf(node);
 
 		this._start.node = node.parentNode;
 		this._start.offset = index;
@@ -914,7 +915,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setEnd(node.parentNode, node.parentNode.childNodes.indexOf(node) + 1);
+		this.setEnd(node.parentNode, (<Node>node.parentNode)._childNodes.indexOf(node) + 1);
 	}
 
 	/**
@@ -930,7 +931,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setEnd(node.parentNode, node.parentNode.childNodes.indexOf(node));
+		this.setEnd(node.parentNode, (<Node>node.parentNode)._childNodes.indexOf(node));
 	}
 
 	/**
@@ -946,7 +947,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(node.parentNode, node.parentNode.childNodes.indexOf(node) + 1);
+		this.setStart(node.parentNode, (<Node>node.parentNode)._childNodes.indexOf(node) + 1);
 	}
 
 	/**
@@ -962,7 +963,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(node.parentNode, node.parentNode.childNodes.indexOf(node));
+		this.setStart(node.parentNode, (<Node>node.parentNode)._childNodes.indexOf(node));
 	}
 
 	/**
