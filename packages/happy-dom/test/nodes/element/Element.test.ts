@@ -1130,7 +1130,7 @@ describe('Element', () => {
 			const div1 = document.createElement('div');
 			div1.classList.add('someClassName');
 			div1.innerHTML = 'div1';
-			container.after(div1);
+			container?.after(div1);
 			expect(document.body.children.length).toBe(2);
 
 			const div2 = document.createElement('div');

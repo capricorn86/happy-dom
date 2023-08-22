@@ -53,8 +53,9 @@ export default class ElementUtility {
 							if (attribute) {
 								parentNodeChildren._removeNamedItem(<IHTMLElement>node, attribute.value);
 							}
-							parentNodeChildren.splice(index, 1);
 						}
+
+						parentNodeChildren.splice(index, 1);
 					}
 				}
 			}
@@ -149,6 +150,8 @@ export default class ElementUtility {
 								parentNodeChildren._removeNamedItem(<IHTMLElement>newNode, attribute.value);
 							}
 						}
+
+						parentNodeChildren.splice(index, 1);
 					}
 				}
 			}
