@@ -34,6 +34,8 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 				const callback = (): void => {
 					if (this.parentNode) {
 						const newElement = <HTMLElement>this.ownerDocument.createElement(tagName);
+						(<INodeList<INode>>newElement._childNodes) = this._childNodes;
+						(<IHTMLCollection<IElement>>newElement._children) = this._children;
 						(<boolean>newElement.isConnected) = this.isConnected;
 
 						newElement._rootNode = this._rootNode;
