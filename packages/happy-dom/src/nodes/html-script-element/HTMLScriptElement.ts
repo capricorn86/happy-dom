@@ -1,10 +1,11 @@
-import IAttr from '../attr/IAttr.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLScriptElement from './IHTMLScriptElement.js';
 import HTMLScriptElementUtility from './HTMLScriptElementUtility.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import INode from '../../nodes/node/INode.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLScriptElementNamedNodeMap from './HTMLScriptElementNamedNodeMap.js';
 
 /**
  * HTML Script Element.
@@ -13,6 +14,7 @@ import INode from '../../nodes/node/INode.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement.
  */
 export default class HTMLScriptElement extends HTMLElement implements IHTMLScriptElement {
+	public override readonly attributes: INamedNodeMap = new HTMLScriptElementNamedNodeMap(this);
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
 	public _evaluateScript = true;
@@ -149,23 +151,6 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 */
 	public set text(text: string) {
 		this.textContent = text;
-	}
-
-	/**
-	 * The setAttributeNode() method adds a new Attr node to the specified element.
-	 *
-	 * @override
-	 * @param attribute Attribute.
-	 * @returns Replaced attribute.
-	 */
-	public setAttributeNode(attribute: IAttr): IAttr {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		if (attribute.name === 'src' && attribute.value !== null && this.isConnected) {
-			HTMLScriptElementUtility.loadExternalScript(this);
-		}
-
-		return replacedAttribute;
 	}
 
 	/**

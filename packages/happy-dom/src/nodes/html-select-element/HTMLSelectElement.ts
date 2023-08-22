@@ -13,11 +13,10 @@ import IHTMLOptionsCollection from './IHTMLOptionsCollection.js';
 import INode from '../node/INode.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import IAttr from '../attr/IAttr.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
-import NodeList from '../node/NodeList.js';
-import IDocument from '../document/IDocument.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLSelectElementNamedNodeMap from './HTMLSelectElementNamedNodeMap.js';
 
 /**
  * HTML Select Element.
@@ -26,6 +25,8 @@ import IShadowRoot from '../shadow-root/IShadowRoot.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement.
  */
 export default class HTMLSelectElement extends HTMLElement implements IHTMLSelectElement {
+	public override readonly attributes: INamedNodeMap = new HTMLSelectElementNamedNodeMap(this);
+
 	// Public properties.
 	public readonly length = 0;
 	public readonly options: IHTMLOptionsCollection = new HTMLOptionsCollection(this);
@@ -226,23 +227,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		const id = this.id;
-		if (id) {
-			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
-			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
-
-			let parent = this.parentNode;
-			while (parent) {
-				if (parent['tagName'] === 'LABEL') {
-					labels.push(<IHTMLLabelElement>parent);
-					break;
-				}
-				parent = parent.parentNode;
-			}
-
-			return <INodeList<IHTMLLabelElement>>labels;
-		}
-		return new NodeList<IHTMLLabelElement>();
+		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
 	/**
@@ -400,38 +385,6 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 				(<HTMLOptionElement>optionElements[i])._selectedness = i === selected.length - 1;
 			}
 		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr {
-		const replacedAttribute = super.setAttributeNode(attribute);
-		const oldValue = replacedAttribute ? replacedAttribute.value : null;
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			if (oldValue) {
-				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
-			}
-			if (attribute.value) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
-			}
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public override removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
-		}
-
-		return attribute;
 	}
 
 	/**

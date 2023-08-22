@@ -50,6 +50,21 @@ describe('HTMLLabelElement', () => {
 			element.appendChild(input);
 			expect(element.control === input).toBe(true);
 		});
+
+		it('Returns a descendent input if "for" attribute is not defined.', () => {
+			const input = document.createElement('input');
+			const span = document.createElement('span');
+			span.appendChild(input);
+			element.appendChild(span);
+			expect(element.control === input).toBe(true);
+		});
+
+		it('Does not return hidden inputs.', () => {
+			const input = document.createElement('input');
+			input.setAttribute('type', 'hidden');
+			element.appendChild(input);
+			expect(element.control).toBe(null);
+		});
 	});
 
 	describe('get form()', () => {

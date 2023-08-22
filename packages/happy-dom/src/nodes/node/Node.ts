@@ -649,4 +649,15 @@ export default class Node extends EventTarget implements INode {
 			child = child.nextSibling;
 		}
 	}
+
+	/**
+	 * Determines whether the given node is equal to the current node.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Node/isSameNode
+	 * @param node Node to check.
+	 * @returns True if the given node is equal to the current node, otherwise false.
+	 */
+	public isSameNode(node: INode): boolean {
+		return this === node;
+	}
 }

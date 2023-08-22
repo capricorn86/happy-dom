@@ -2,10 +2,11 @@ import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import Element from '../element/Element.js';
 import ISVGElement from './ISVGElement.js';
 import ISVGSVGElement from './ISVGSVGElement.js';
-import IAttr from '../attr/IAttr.js';
 import Event from '../../event/Event.js';
 import Dataset from '../element/Dataset.js';
 import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import SVGElementNamedNodeMap from './SVGElementNamedNodeMap.js';
 
 /**
  * SVG Element.
@@ -14,6 +15,8 @@ import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/SVGElement.
  */
 export default class SVGElement extends Element implements ISVGElement {
+	public override readonly attributes: INamedNodeMap = new SVGElementNamedNodeMap(this);
+
 	// Events
 	public onabort: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
@@ -23,7 +26,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	public onunload: (event: Event) => void | null = null;
 
 	// Private properties
-	private _style: CSSStyleDeclaration = null;
+	public _style: CSSStyleDeclaration = null;
 	private _dataset: Dataset = null;
 
 	/**
@@ -108,31 +111,5 @@ export default class SVGElement extends Element implements ISVGElement {
 	 */
 	public focus(): void {
 		HTMLElementUtility.focus(this);
-	}
-
-	/**
-	 * @override
-	 */
-	public setAttributeNode(attribute: IAttr): IAttr {
-		const replacedAttribute = super.setAttributeNode(attribute);
-
-		if (attribute.name === 'style' && this._style) {
-			this._style.cssText = attribute.value;
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if (attribute.name === 'style' && this._style) {
-			this._style.cssText = '';
-		}
-
-		return attribute;
 	}
 }

@@ -21,15 +21,16 @@ import ISelectorPseudo from './ISelectorPseudo.js';
  * Group 13: Pseudo name when arguments (e.g. "nth-child")
  * Group 14: Arguments of pseudo (e.g. "2n + 1")
  * Group 15: Pseudo name when no arguments (e.g. "empty")
- * Group 16: Combinator.
+ * Group 16: Pseudo element (e.g. "::after", "::-webkit-inner-spin-button").
+ * Group 17: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *["']{1}([^"']*)["']{1} *(s|i){0,1}\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *([^\]]*)\]|:([a-zA-Z-]+) *\(([^)]+)\)|:([a-zA-Z-]+)|([ ,+>]*)/g;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_]+)\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *["']{1}([^"']*)["']{1} *(s|i){0,1}\]|\[([a-zA-Z0-9-_]+) *([~|^$*]{0,1}) *= *([^\]]*)\]|:([a-zA-Z-]+) *\(([^)]+)\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([ ,+>]*)/g;
 
 /**
  * Escaped Character RegExp.
  */
-const CLASS_ESCAPED_CHARACTER_REGEXP = /\\/g;
+const ESCAPED_CHARACTER_REGEXP = /\\/g;
 
 /**
  * Nth Function.
@@ -109,10 +110,10 @@ export default class SelectorParser {
 				} else if (match[2]) {
 					currentSelectorItem.tagName = match[2].toUpperCase();
 				} else if (match[3]) {
-					currentSelectorItem.id = match[3].replace(CLASS_ESCAPED_CHARACTER_REGEXP, '');
+					currentSelectorItem.id = match[3].replace(ESCAPED_CHARACTER_REGEXP, '');
 				} else if (match[4]) {
 					currentSelectorItem.classNames = currentSelectorItem.classNames || [];
-					currentSelectorItem.classNames.push(match[4].replace(CLASS_ESCAPED_CHARACTER_REGEXP, ''));
+					currentSelectorItem.classNames.push(match[4].replace(ESCAPED_CHARACTER_REGEXP, ''));
 				} else if (match[5]) {
 					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
 					currentSelectorItem.attributes.push({
@@ -127,7 +128,7 @@ export default class SelectorParser {
 					currentSelectorItem.attributes.push({
 						name: match[6].toLowerCase(),
 						operator: match[7] || null,
-						value: match[8],
+						value: match[8].replace(ESCAPED_CHARACTER_REGEXP, ''),
 						modifier: match[9] || null,
 						regExp: this.getAttributeRegExp({
 							operator: match[7],
@@ -140,7 +141,7 @@ export default class SelectorParser {
 					currentSelectorItem.attributes.push({
 						name: match[10].toLowerCase(),
 						operator: match[11] || null,
-						value: match[12],
+						value: match[12].replace(ESCAPED_CHARACTER_REGEXP, ''),
 						modifier: null,
 						regExp: this.getAttributeRegExp({ operator: match[11], value: match[12] })
 					});
@@ -151,7 +152,9 @@ export default class SelectorParser {
 					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
 					currentSelectorItem.pseudos.push(this.getPseudo(match[15]));
 				} else if (match[16]) {
-					switch (match[16].trim()) {
+					currentSelectorItem.isPseudoElement = true;
+				} else if (match[17]) {
+					switch (match[17].trim()) {
 						case ',':
 							currentSelectorItem = new SelectorItem({
 								combinator: SelectorCombinatorEnum.descendant

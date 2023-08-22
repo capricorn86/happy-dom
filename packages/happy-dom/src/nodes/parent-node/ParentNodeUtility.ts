@@ -190,6 +190,7 @@ export default class ParentNodeUtility {
 		parentNode: IElement | IDocumentFragment | IDocument,
 		id: string
 	): IElement {
+		id = String(id);
 		for (const child of (<DocumentFragment>parentNode)._children) {
 			if (child.id === id) {
 				return <IElement>child;

@@ -68,6 +68,8 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 
 		if (projectConfig.testEnvironmentOptions['url']) {
 			this.window.happyDOM.setURL(String(projectConfig.testEnvironmentOptions['url']));
+		} else {
+			this.window.happyDOM.setURL('http://localhost/');
 		}
 
 		this.fakeTimers = new LegacyFakeTimers({

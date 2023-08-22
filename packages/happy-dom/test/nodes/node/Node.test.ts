@@ -339,6 +339,10 @@ describe('Node', () => {
 
 			expect(rootNode === document).toBe(true);
 		});
+
+		it('Returns Document when called on Document', () => {
+			expect(document.getRootNode() === document).toBe(true);
+		});
 	});
 
 	describe('cloneNode()', () => {
@@ -959,6 +963,19 @@ describe('Node', () => {
 			node.normalize();
 			expect(div.childNodes).toHaveLength(1);
 			expect(div.childNodes[0]).toBe(node);
+		});
+	});
+
+	describe('isSameNode()', () => {
+		it('Returns true if the nodes are the same.', () => {
+			const div = document.createElement('div');
+			expect(div.isSameNode(div)).toBe(true);
+		});
+
+		it('Returns false if the nodes are not the same.', () => {
+			const div1 = document.createElement('div');
+			const div2 = document.createElement('div');
+			expect(div1.isSameNode(div2)).toBe(false);
 		});
 	});
 });

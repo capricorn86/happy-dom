@@ -12,6 +12,10 @@ export default `
         flex-direction: column;
         overflow: hidden;
         --css-variable: 1px;
+        background-image:
+            url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
+            url(test.jpg)
+        ;
     }
 
     @media screen and (max-width: 36rem) {
@@ -58,7 +62,7 @@ export default `
             color: red;
         }
     }
-    
+
     @supports (display: flex) {
         .container {
             color: green;
@@ -74,5 +78,5 @@ export default `
 
     /* Single-line comment */
     .foo { color: red; }
-    
+
 `.trim();

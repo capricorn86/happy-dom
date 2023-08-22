@@ -59,10 +59,10 @@ describe('NamedNodeMap', () => {
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', 'value2');
 
-			expect(attributes.item(0).name).toBe('key1');
-			expect(attributes.item(0).value).toBe('value1');
-			expect(attributes.item(1).name).toBe('key2');
-			expect(attributes.item(1).value).toBe('value2');
+			expect(attributes.item(0)?.name).toBe('key1');
+			expect(attributes.item(0)?.value).toBe('value1');
+			expect(attributes.item(1)?.name).toBe('key2');
+			expect(attributes.item(1)?.value).toBe('value2');
 		});
 	});
 
@@ -71,10 +71,10 @@ describe('NamedNodeMap', () => {
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', 'value2');
 
-			expect(attributes.getNamedItem('key1').name).toBe('key1');
-			expect(attributes.getNamedItem('key1').value).toBe('value1');
-			expect(attributes.getNamedItem('key2').name).toBe('key2');
-			expect(attributes.getNamedItem('key2').value).toBe('value2');
+			expect(attributes.getNamedItem('key1')?.name).toBe('key1');
+			expect(attributes.getNamedItem('key1')?.value).toBe('value1');
+			expect(attributes.getNamedItem('key2')?.name).toBe('key2');
+			expect(attributes.getNamedItem('key2')?.value).toBe('value2');
 		});
 	});
 
@@ -83,10 +83,10 @@ describe('NamedNodeMap', () => {
 			element.setAttributeNS('namespace', 'key1', 'value1');
 			element.setAttributeNS('namespace', 'key2', 'value2');
 
-			expect(attributes.getNamedItemNS('namespace', 'key1').name).toBe('key1');
-			expect(attributes.getNamedItemNS('namespace', 'key1').value).toBe('value1');
-			expect(attributes.getNamedItemNS('namespace', 'key2').name).toBe('key2');
-			expect(attributes.getNamedItemNS('namespace', 'key2').value).toBe('value2');
+			expect(attributes.getNamedItemNS('namespace', 'key1')?.name).toBe('key1');
+			expect(attributes.getNamedItemNS('namespace', 'key1')?.value).toBe('value1');
+			expect(attributes.getNamedItemNS('namespace', 'key2')?.name).toBe('key2');
+			expect(attributes.getNamedItemNS('namespace', 'key2')?.value).toBe('value2');
 		});
 	});
 
@@ -97,7 +97,9 @@ describe('NamedNodeMap', () => {
 
 			expect(attributes.getNamedItem('key')).toBe(null);
 
-			attributes.setNamedItem(attr);
+			if (attr) {
+				attributes.setNamedItem(attr);
+			}
 
 			expect(attributes.getNamedItem('key')).toBe(attr);
 		});
@@ -109,8 +111,8 @@ describe('NamedNodeMap', () => {
 
 			const replaced = attributes.setNamedItem(attr);
 
-			expect(replaced.name).toBe('key');
-			expect(replaced.value).toBe('value1');
+			expect(replaced?.name).toBe('key');
+			expect(replaced?.value).toBe('value1');
 			expect(attributes.getNamedItem('key')).toBe(attr);
 			expect(element.getAttribute('key')).toBe('value2');
 		});
@@ -121,7 +123,9 @@ describe('NamedNodeMap', () => {
 			element.setAttributeNS('namespace', 'key', 'value');
 			const attr = attributes.removeNamedItemNS('namespace', 'key');
 
-			attributes.setNamedItemNS(attr);
+			if (attr) {
+				attributes.setNamedItemNS(attr);
+			}
 
 			expect(attributes.getNamedItem('key')).toBe(attr);
 			expect(element.getAttributeNS('namespace', 'key')).toBe('value');
@@ -134,8 +138,8 @@ describe('NamedNodeMap', () => {
 
 			const replaced = attributes.setNamedItemNS(attr);
 
-			expect(replaced.name).toBe('key');
-			expect(replaced.value).toBe('value1');
+			expect(replaced?.name).toBe('key');
+			expect(replaced?.value).toBe('value1');
 
 			expect(attributes.getNamedItemNS('namespace', 'key')).toBe(attr);
 			expect(element.getAttributeNS('namespace', 'key')).toBe('value2');
@@ -147,8 +151,8 @@ describe('NamedNodeMap', () => {
 			element.setAttribute('key', 'value');
 			const removed = attributes.removeNamedItem('key');
 
-			expect(removed.name).toBe('key');
-			expect(removed.value).toBe('value');
+			expect(removed?.name).toBe('key');
+			expect(removed?.value).toBe('value');
 
 			expect(element.getAttribute('key')).toBe(null);
 		});

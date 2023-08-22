@@ -112,11 +112,12 @@ export default class XMLSerializer {
 	private _getAttributes(element: IElement): string {
 		let attributeString = '';
 
-		if (!(<Element>element)._attributes.is && (<Element>element)._isValue) {
+		if (!(<Element>element).attributes.getNamedItem('is') && (<Element>element)._isValue) {
 			attributeString += ' is="' + (<Element>element)._isValue + '"';
 		}
 
-		for (const attribute of Object.values((<Element>element)._attributes)) {
+		for (let i = 0, max = (<Element>element).attributes.length; i < max; i++) {
+			const attribute = (<Element>element).attributes[i];
 			if (attribute.value !== null) {
 				const escapedValue = this._options.escapeEntities
 					? Entities.escapeText(attribute.value)
@@ -124,6 +125,7 @@ export default class XMLSerializer {
 				attributeString += ' ' + attribute.name + '="' + escapedValue + '"';
 			}
 		}
+
 		return attributeString;
 	}
 }

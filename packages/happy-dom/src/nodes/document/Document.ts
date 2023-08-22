@@ -56,12 +56,14 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
  */
 export default class Document extends Node implements IDocument {
 	public static _defaultView: IWindow = null;
+	public static _windowClass: {} | null = null;
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation: DOMImplementation;
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
+	public readonly _windowClass: {} | null = null;
 	public readonly _readyStateManager: DocumentReadyStateManager;
 	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public _activeElement: IHTMLElement = null;
@@ -197,7 +199,9 @@ export default class Document extends Node implements IDocument {
 		this.defaultView = (<typeof Document>this.constructor)._defaultView;
 		this.implementation = new DOMImplementation(this);
 
+		this._windowClass = (<typeof Document>this.constructor)._windowClass;
 		this._readyStateManager = new DocumentReadyStateManager(this.defaultView);
+		this._rootNode = this;
 
 		const doctype = this.implementation.createDocumentType('html', '', '');
 		const documentElement = this.createElement('html');

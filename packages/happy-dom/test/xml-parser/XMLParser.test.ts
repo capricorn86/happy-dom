@@ -639,5 +639,67 @@ describe('XMLParser', () => {
 			expect(root.children[8].attributes[0].name).toBe('key1');
 			expect(root.children[8].attributes[0].value).toBe('value1 /> value2');
 		});
+
+		it('Parses attributes with characters that lit-html is using (".", "$", "@").', () => {
+			const root = XMLParser.parse(
+				document,
+				`
+                <img key1="value1" key2/>
+                <img key1="value1"/>
+                <span .key$lit$="{{lit-11111}}"></span>
+                <div @event="{{lit-22222}}"></div>
+                <article ?checked="{{lit-33333}}"></div>
+                <img key1="value1" key2/>
+                `
+			);
+
+			expect(root.querySelector('span')?.getAttribute('.key$lit$')).toBe('{{lit-11111}}');
+			expect(root.querySelector('div')?.getAttribute('@event')).toBe('{{lit-22222}}');
+			expect(root.querySelector('article')?.getAttribute('?checked')).toBe('{{lit-33333}}');
+		});
+
+		it('Parses attributes without apostrophs.', () => {
+			const root = XMLParser.parse(
+				document,
+				`<div .theme$lit$={{lit-12345}} key1="value1">Test</div>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(
+				'<div .theme$lit$="{{lit-12345}}" key1="value1">Test</div>'
+			);
+		});
+
+		it('Parses attributes with URL without apostrophs.', () => {
+			const root = XMLParser.parse(document, `<a href=http://www.github.com/path>Click me</a>`);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(
+				'<a href="http://www.github.com/path">Click me</a>'
+			);
+		});
+
+		it('Parses attributes with single apostrophs.', () => {
+			const root = XMLParser.parse(document, `<div key1='value1' key2='value2'>Test</div>`);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(
+				`<div key1="value1" key2="value2">Test</div>`
+			);
+		});
+
+		it('Parses HTML with end ">" on a new line.', () => {
+			const root = XMLParser.parse(
+				document,
+				`
+                <div key1="value1">
+                    Test
+                </div
+                >
+                `
+			);
+
+			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+				'<divkey1="value1">Test</div>'
+			);
+			expect(root.children[0].textContent.replace(/\s/gm, '')).toBe('Test');
+		});
 	});
 });

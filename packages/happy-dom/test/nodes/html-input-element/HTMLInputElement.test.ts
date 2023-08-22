@@ -9,6 +9,7 @@ import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-ele
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLInputElement', () => {
@@ -199,6 +200,277 @@ describe('HTMLInputElement', () => {
 			element.type = 'url';
 			element.value = '  \n\rhttp://www.test.com\n\r ';
 			expect(element.value).toBe('http://www.test.com');
+		});
+	});
+
+	describe('get valueAsNumber()', () => {
+		describe('Should return NaN for non-numeric input type', () => {
+			for (const type of [
+				'button',
+				'checkbox',
+				'color',
+				'email',
+				'file',
+				'hidden',
+				'image',
+				'password',
+				'radio',
+				'reset',
+				'search',
+				'submit',
+				'tel',
+				'text',
+				'url'
+			]) {
+				it(`"${type}"`, () => {
+					element.setAttribute('type', type);
+					if (type === 'file') {
+						element.value = '';
+					} else {
+						element.value = '0';
+					}
+					expect(element.valueAsNumber).toBeNaN();
+				});
+			}
+		});
+		describe('with default value', () => {
+			for (const type of ['date', 'datetime-local', 'month', 'number', 'time', 'week']) {
+				it(`Should return NaN for type ${type}.`, () => {
+					element.type = type;
+					element.value = '';
+					expect(element.valueAsNumber).toBeNaN();
+				});
+			}
+			it(`Should return middle range value for type "range".`, () => {
+				element.type = 'range';
+				element.value = '';
+				const min = element.min ? parseFloat(element.min) : 0;
+				const max = element.max ? parseFloat(element.max) : 100;
+				expect(element.valueAsNumber).toBe((max - min) / 2);
+			});
+		});
+
+		describe('With valid value', () => {
+			const testData: { type: string; value: string; want: number }[] = [
+				{ type: 'number', value: '123', want: 123 },
+				{ type: 'number', value: '1.23', want: 1.23 },
+				{ type: 'range', value: '75', want: 75 },
+				{ type: 'range', value: '12.5', want: 12.5 },
+				{ type: 'date', value: '2019-01-01', want: new Date('2019-01-01').getTime() },
+				{
+					type: 'datetime-local',
+					value: '2019-01-01T00:00',
+					want:
+						new Date('2019-01-01T00:00').getTime() -
+						new Date('2019-01-01T00:00').getTimezoneOffset() * 60000
+				},
+				{ type: 'month', value: '2019-01', want: 588 },
+				{ type: 'time', value: '00:00', want: 0 },
+				{ type: 'time', value: '12:00', want: 43200000 },
+				{ type: 'time', value: '18:55', want: 68100000 },
+				{ type: 'week', value: '2023-W22', want: 1685318400000 }
+			];
+			it.each(testData)(`Should return valid number for type $type`, ({ type, value, want }) => {
+				element.type = type;
+				element.value = value;
+				expect(element.valueAsNumber).toEqual(want);
+			});
+		});
+	});
+	describe('set valueAsNumber()', () => {
+		describe('Should throw exception for non-numeric input', () => {
+			it.each([
+				'button',
+				'checkbox',
+				'color',
+				'email',
+				'file',
+				'hidden',
+				'image',
+				'password',
+				'radio',
+				'reset',
+				'search',
+				'submit',
+				'tel',
+				'text',
+				'url'
+			])('Of type %s.', (type) => {
+				element.type = type;
+				expect(() => (element.valueAsNumber = 0)).toThrowError(
+					new DOMException(
+						"Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.",
+						DOMExceptionNameEnum.invalidStateError
+					)
+				);
+			});
+		});
+
+		describe('With invalid value for', () => {
+			it.each(['number', 'date', 'datetime-local', 'month', 'time', 'week'])(
+				'Type "%s" should set default empty value.',
+				(type) => {
+					element.type = type;
+					expect(() => {
+						// @ts-ignore
+						element.valueAsNumber = 'x';
+					}).not.toThrow();
+					expect(element.value).toBe('');
+				}
+			);
+			it(`Type "range" should set default middle range value.`, () => {
+				element.type = 'range';
+				expect(() => {
+					// @ts-ignore
+					element.valueAsNumber = 'x';
+				}).not.toThrow();
+				expect(element.value).toBe('50');
+			});
+		});
+
+		describe('With valid value for', () => {
+			const testCases = [
+				{ type: 'number', value: 123, want: '123' },
+				{ type: 'number', value: 1.23, want: '1.23' },
+				{ type: 'range', value: 75, want: '75' },
+				{ type: 'range', value: 12.5, want: '12.5' },
+				{ type: 'date', value: new Date('2019-01-01').getTime(), want: '2019-01-01' },
+				{ type: 'datetime-local', value: 1546300800000, want: '2019-01-01T00:00' },
+				{ type: 'month', value: 588, want: '2019-01' },
+				{ type: 'time', value: 0, want: '00:00' },
+				{ type: 'time', value: 43200000, want: '12:00' },
+				{ type: 'time', value: 68100000, want: '18:55' },
+				{ type: 'time', value: 83709010, want: '23:15:09.01' },
+				{ type: 'week', value: 1685318400000, want: '2023-W22' },
+				{ type: 'week', value: 1672531200000, want: '2022-W52' }
+			];
+			it.each(testCases)(
+				`Type "$type" should set a corresponding value`,
+				({ type, value, want }) => {
+					element.type = type;
+					element.valueAsNumber = value;
+					expect(element.value).toEqual(want);
+				}
+			);
+		});
+	});
+
+	describe('get valueAsDate()', () => {
+		it.each([
+			'button',
+			'checkbox',
+			'color',
+			'date',
+			'datetime-local',
+			'email',
+			'file',
+			'hidden',
+			'image',
+			'month',
+			'number',
+			'password',
+			'radio',
+			'range',
+			'reset',
+			'search',
+			'submit',
+			'tel',
+			'text',
+			'time',
+			'url',
+			'week'
+		])(`Should return null for type '%s' with default value`, (type) => {
+			element.type = type;
+			element.value = '';
+			expect(element.valueAsDate).toBeNull();
+		});
+		it.each(<{ type: string; value: string; want: Date | null }[]>[
+			{ type: 'date', value: '2019-01-01', want: new Date('2019-01-01T00:00Z') },
+			{ type: 'month', value: '2019-01', want: new Date('2019-01-01') },
+			{ type: 'time', value: '00:00', want: new Date('1970-01-01T00:00Z') },
+			{ type: 'time', value: '12:00', want: new Date('1970-01-01T12:00Z') },
+			{ type: 'time', value: '18:55', want: new Date('1970-01-01T18:55Z') },
+			{ type: 'week', value: '2023-W22', want: new Date('2023-05-29T00:00Z') }
+		])(`Should return valid date for type $type with valid value`, ({ type, value, want }) => {
+			element.type = type;
+			element.value = value;
+			expect(element.valueAsDate).toEqual(want);
+		});
+	});
+
+	describe('set valueAsDate()', () => {
+		const dateInputs = ['date', 'month', 'time', 'week'];
+		it.each([
+			'button',
+			'checkbox',
+			'color',
+			'datetime-local',
+			'email',
+			'file',
+			'hidden',
+			'image',
+			'number',
+			'password',
+			'radio',
+			'range',
+			'reset',
+			'search',
+			'submit',
+			'tel',
+			'text',
+			'url'
+		])('Should throw for type "%s"', (type) => {
+			element.type = type;
+			expect(() => {
+				element.valueAsDate = new Date();
+			}).toThrow(
+				new DOMException(
+					"Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.",
+					DOMExceptionNameEnum.invalidStateError
+				)
+			);
+		});
+		it('Should throw with invalid value', () => {
+			element.type = 'date';
+			expect(() => {
+				// @ts-ignore
+				element.valueAsDate = 'x';
+			}).toThrow(
+				new TypeError(
+					"Failed to set the 'valueAsDate' property on 'HTMLInputElement': Failed to convert value to 'object'."
+				)
+			);
+			expect(() => {
+				// @ts-ignore
+				element.valueAsDate = {};
+			}).toThrow(
+				new TypeError(
+					"Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date."
+				)
+			);
+		});
+		it.each(dateInputs)('Should accept Date object for type "%s"', (type) => {
+			element.type = type;
+			expect(() => {
+				element.valueAsDate = new Date();
+			}).not.toThrow();
+		});
+		it.each(dateInputs)('Should accept null for type "%s"', (type) => {
+			element.type = type;
+			expect(() => {
+				element.valueAsDate = null;
+			}).not.toThrow();
+			expect(element.value).toBe('');
+		});
+		it.each([
+			{ type: 'date', value: new Date('2019-01-01T00:00+01:00'), want: '2018-12-31' },
+			{ type: 'month', value: new Date('2019-01-01T00:00+01:00'), want: '2018-12' },
+			{ type: 'time', value: new Date('2019-01-01T00:00+01:00'), want: '23:00' },
+			{ type: 'week', value: new Date('1982-01-03T00:00Z'), want: '1981-W53' }
+		])(`Should set UTC value for type $type with valid date object`, ({ type, value, want }) => {
+			element.type = type;
+			element.valueAsDate = value;
+			expect(element.value).toEqual(want);
 		});
 	});
 
@@ -525,6 +797,20 @@ describe('HTMLInputElement', () => {
 			expect(labels[0] === label1).toBe(true);
 			expect(labels[1] === label2).toBe(true);
 			expect(labels[2] === parentLabel).toBe(true);
+		});
+
+		it('Returns associated labels for elements with no ID', () => {
+			const parentLabel = document.createElement('label');
+
+			element.id = '';
+
+			parentLabel.appendChild(element);
+			document.body.appendChild(parentLabel);
+
+			const labels = element.labels;
+
+			expect(labels.length).toBe(1);
+			expect(labels[0] === parentLabel).toBe(true);
 		});
 	});
 

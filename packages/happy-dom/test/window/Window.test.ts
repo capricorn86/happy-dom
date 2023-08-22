@@ -271,7 +271,7 @@ describe('Window', () => {
 
 				expect(tasksDone).toBe(0);
 
-				global.setTimeout(() => {
+				window.setTimeout(() => {
 					expect(isFirstWhenAsyncCompleteCalled).toBe(true);
 					expect(isSecondWhenAsyncCompleteCalled).toBe(true);
 					resolve(null);
@@ -548,7 +548,7 @@ describe('Window', () => {
 			document.body.appendChild(customElement);
 
 			const customElementComputedStyle = window.getComputedStyle(
-				customElement.shadowRoot.querySelector('span')
+				<IHTMLElement>customElement.shadowRoot.querySelector('span')
 			);
 
 			// Default value on HTML is "16px Times New Roman"
@@ -782,6 +782,31 @@ describe('Window', () => {
 					callbackArgumentTwo
 				);
 				expect(timeoutId.constructor.name).toBe('Timeout');
+			});
+		});
+	});
+
+	describe('queueMicrotask()', () => {
+		it('Queues a microtask.', async () => {
+			await new Promise((resolve) => {
+				window.queueMicrotask(() => {
+					resolve(null);
+				});
+			});
+		});
+
+		it('Makes it possible to cancel an ongoing microtask.', async () => {
+			await new Promise((resolve) => {
+				let isCallbackCalled = false;
+				window.queueMicrotask(() => {
+					isCallbackCalled = true;
+					resolve(null);
+				});
+				window.happyDOM.cancelAsync();
+				setTimeout(() => {
+					expect(isCallbackCalled).toBe(false);
+					resolve(null);
+				});
 			});
 		});
 	});
@@ -1175,42 +1200,60 @@ describe('Window', () => {
 	});
 
 	describe('postMessage()', () => {
-		it('Posts a message.', () => {
-			const message = 'test';
-			const parentOrigin = 'https://localhost:8080';
-			const parent = new Window({
-				url: parentOrigin
+		it('Posts a message.', async () => {
+			await new Promise((resolve) => {
+				const message = 'test';
+				const parentOrigin = 'https://localhost:8080';
+				const parent = new Window({
+					url: parentOrigin
+				});
+				let triggeredEvent: MessageEvent | null = null;
+
+				(<Window>window.parent) = parent;
+
+				window.addEventListener('message', (event) => (triggeredEvent = event));
+				window.postMessage(message);
+
+				expect(triggeredEvent).toBe(null);
+
+				setTimeout(() => {
+					expect((<MessageEvent>triggeredEvent).data).toBe(message);
+					expect((<MessageEvent>triggeredEvent).origin).toBe(parentOrigin);
+					expect((<MessageEvent>triggeredEvent).source).toBe(parent);
+					expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
+
+					triggeredEvent = null;
+					window.postMessage(message, '*');
+					expect(triggeredEvent).toBe(null);
+
+					setTimeout(() => {
+						expect((<MessageEvent>triggeredEvent).data).toBe(message);
+						expect((<MessageEvent>triggeredEvent).origin).toBe(parentOrigin);
+						expect((<MessageEvent>triggeredEvent).source).toBe(parent);
+						expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
+						resolve(null);
+					}, 10);
+				}, 10);
 			});
-			let triggeredEvent: MessageEvent | null = null;
-
-			(<Window>window.parent) = parent;
-
-			window.addEventListener('message', (event) => (triggeredEvent = event));
-			window.postMessage(message);
-
-			expect((<MessageEvent>(<unknown>triggeredEvent)).data).toBe(message);
-			expect((<MessageEvent>(<unknown>triggeredEvent)).origin).toBe(parentOrigin);
-			expect((<MessageEvent>(<unknown>triggeredEvent)).source).toBe(parent);
-			expect((<MessageEvent>(<unknown>triggeredEvent)).lastEventId).toBe('');
-
-			window.postMessage(message, '*');
-
-			expect((<MessageEvent>(<unknown>triggeredEvent)).data).toBe(message);
-			expect((<MessageEvent>(<unknown>triggeredEvent)).origin).toBe(parentOrigin);
-			expect((<MessageEvent>(<unknown>triggeredEvent)).source).toBe(parent);
-			expect((<MessageEvent>(<unknown>triggeredEvent)).lastEventId).toBe('');
 		});
 
-		it('Posts a data object as message.', () => {
-			const message = {
-				test: 'test'
-			};
-			let triggeredEvent: MessageEvent | null = null;
+		it('Posts a data object as message.', async () => {
+			await new Promise((resolve) => {
+				const message = {
+					test: 'test'
+				};
+				let triggeredEvent: MessageEvent | null = null;
 
-			window.addEventListener('message', (event) => (triggeredEvent = event));
-			window.postMessage(message);
+				window.addEventListener('message', (event) => (triggeredEvent = event));
+				window.postMessage(message);
 
-			expect((<MessageEvent>(<unknown>triggeredEvent)).data).toBe(message);
+				expect(triggeredEvent).toBe(null);
+
+				setTimeout(() => {
+					expect((<MessageEvent>triggeredEvent).data).toBe(message);
+					resolve(null);
+				}, 10);
+			});
 		});
 
 		it("Throws an exception if the provided object can't be serialized.", function () {

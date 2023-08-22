@@ -2,6 +2,7 @@ import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js'
 import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
 
 const RECT_REGEXP = /^rect\((.*)\)$/i;
+const SPLIT_PARTS_REGEXP = /,(?=(?:(?:(?!\))[\s\S])*\()|[^\(\)]*$)/; // Split on commas that are outside of parentheses
 const BORDER_STYLE = [
 	'none',
 	'hidden',
@@ -2383,7 +2384,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-size': { value: lowerValue, important } };
 		}
 
-		const imageParts = lowerValue.split(',');
+		const imageParts = lowerValue.split(SPLIT_PARTS_REGEXP);
 		const parsed = [];
 
 		for (const imagePart of imageParts) {
@@ -2554,7 +2555,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const imageParts = value.replace(/ *, */g, ',').split(',');
+		const imageParts = value.split(SPLIT_PARTS_REGEXP);
 		let x = '';
 		let y = '';
 
@@ -2667,7 +2668,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-position-x': { value: lowerValue, important } };
 		}
 
-		const imageParts = lowerValue.replace(/ *, */g, ',').split(',');
+		const imageParts = lowerValue.split(SPLIT_PARTS_REGEXP);
 		let parsedValue = '';
 
 		for (const imagePart of imageParts) {
@@ -2718,7 +2719,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-position-y': { value: lowerValue, important } };
 		}
 
-		const imageParts = lowerValue.replace(/ *, */g, ',').split(',');
+		const imageParts = lowerValue.split(SPLIT_PARTS_REGEXP);
 		let parsedValue = '';
 
 		for (const imagePart of imageParts) {
@@ -2794,7 +2795,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-image': { value: lowerValue, important } };
 		}
 
-		const parts = value.replace(/ *, */g, ',').split(',');
+		const parts = value.split(SPLIT_PARTS_REGEXP);
 		const parsed = [];
 
 		for (const part of parts) {

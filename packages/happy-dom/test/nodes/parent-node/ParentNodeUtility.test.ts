@@ -293,5 +293,15 @@ describe('ParentNodeUtility', () => {
 
 			expect(ParentNodeUtility.getElementById(parent, 'div3')).toEqual(div3);
 		});
+
+		it('Converts number IDs to string.', () => {
+			const parent = document.createElement('div');
+			const div = document.createElement('div');
+
+			parent.appendChild(div);
+			div.id = <string>(<unknown>12345);
+
+			expect(ParentNodeUtility.getElementById(parent, <string>(<unknown>12345))).toEqual(div);
+		});
 	});
 });

@@ -1,7 +1,6 @@
 import Event from '../../event/Event.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import IAttr from '../attr/IAttr.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
@@ -12,9 +11,9 @@ import ValidityState from '../../validity-state/ValidityState.js';
 import IHTMLTextAreaElement from './IHTMLTextAreaElement.js';
 import INodeList from '../node/INodeList.js';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
-import IDocument from '../document/IDocument.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
-import NodeList from '../node/NodeList.js';
+import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.js';
 
 /**
  * HTML Text Area Element.
@@ -23,6 +22,7 @@ import NodeList from '../node/NodeList.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement.
  */
 export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTextAreaElement {
+	public override readonly attributes: INamedNodeMap = new HTMLTextAreaElementNamedNodeMap(this);
 	public readonly type = 'textarea';
 	public readonly validationMessage = '';
 	public readonly validity = new ValidityState(this);
@@ -410,23 +410,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		const id = this.id;
-		if (id) {
-			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
-			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
-
-			let parent = this.parentNode;
-			while (parent) {
-				if (parent['tagName'] === 'LABEL') {
-					labels.push(<IHTMLLabelElement>parent);
-					break;
-				}
-				parent = parent.parentNode;
-			}
-
-			return <INodeList<IHTMLLabelElement>>labels;
-		}
-		return new NodeList<IHTMLLabelElement>();
+		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
 	/**
@@ -586,38 +570,6 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 			this._selectionEnd = null;
 			this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr {
-		const replacedAttribute = super.setAttributeNode(attribute);
-		const oldValue = replacedAttribute ? replacedAttribute.value : null;
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			if (oldValue) {
-				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
-			}
-			if (attribute.value) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
-			}
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public override removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
-		}
-
-		return attribute;
 	}
 
 	/**

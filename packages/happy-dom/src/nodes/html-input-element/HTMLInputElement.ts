@@ -13,15 +13,15 @@ import HTMLInputElementValueStepping from './HTMLInputElementValueStepping.js';
 import FileList from './FileList.js';
 import File from '../../file/File.js';
 import IFileList from './IFileList.js';
-import IAttr from '../attr/IAttr.js';
 import INode from '../node/INode.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import INodeList from '../node/INodeList.js';
 import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
-import IDocument from '../document/IDocument.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
-import NodeList from '../node/NodeList.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
+import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
+import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
 
 /**
  * HTML Input Element.
@@ -33,6 +33,8 @@ import EventPhaseEnum from '../../event/EventPhaseEnum.js';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/nodes/HTMLInputElement-impl.js (MIT licensed).
  */
 export default class HTMLInputElement extends HTMLElement implements IHTMLInputElement {
+	public override readonly attributes: INamedNodeMap = new HTMLInputElementNamedNodeMap(this);
+
 	// Related to parent form.
 	public formAction = '';
 	public formMethod = '';
@@ -788,7 +790,62 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Date.
 	 */
 	public get valueAsDate(): Date {
-		return this.value ? new Date(this.value) : null;
+		switch (this.type) {
+			case 'date':
+			case 'month':
+				return isNaN(new Date(String(this.value)).getTime()) ? null : new Date(this.value);
+			case 'week': {
+				const d = HTMLInputElementDateUtility.isoWeekDate(this.value);
+				return isNaN(d.getTime()) ? null : d;
+			}
+			case 'time': {
+				const d = new Date(`1970-01-01T${this.value}Z`);
+				return isNaN(d.getTime()) ? null : d;
+			}
+			default:
+				return null;
+		}
+	}
+
+	/**
+	 * Sets value from a Date.
+	 *
+	 * @param value Date.
+	 */
+	public set valueAsDate(value: Date | null) {
+		// Specs at https://html.spec.whatwg.org/multipage/input.html#dom-input-valueasdate
+		if (!['date', 'month', 'time', 'week'].includes(this.type)) {
+			throw new DOMException(
+				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.",
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+		if (typeof value !== 'object') {
+			throw new TypeError(
+				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': Failed to convert value to 'object'."
+			);
+		} else if (value && !(value instanceof Date)) {
+			throw new TypeError(
+				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date."
+			);
+		} else if (value === null || isNaN(value.getTime())) {
+			this.value = '';
+			return;
+		}
+		switch (this.type) {
+			case 'date':
+				this.value = value.toISOString().split('T')[0];
+				break;
+			case 'month':
+				this.value = value.toISOString().split('T')[0].slice(0, -3);
+				break;
+			case 'time':
+				this.value = value.toISOString().split('T')[1].slice(0, 5);
+				break;
+			case 'week':
+				this.value = HTMLInputElementDateUtility.dateIsoWeek(value);
+				break;
+		}
 	}
 
 	/**
@@ -797,7 +854,104 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Number.
 	 */
 	public get valueAsNumber(): number {
-		return this.value ? parseFloat(this.value) : NaN;
+		const value = this.value;
+		if (!this.type.match(/^(range|number|date|datetime-local|month|time|week)$/) || !value) {
+			return NaN;
+		}
+		switch (this.type) {
+			case 'number':
+				return parseFloat(value);
+			case 'range': {
+				const number = parseFloat(value);
+				const min = parseFloat(this.min) || 0;
+				const max = parseFloat(this.max) || 100;
+				if (isNaN(number)) {
+					return max < min ? min : (min + max) / 2;
+				} else if (number < min) {
+					return min;
+				} else if (number > max) {
+					return max;
+				}
+				return number;
+			}
+			case 'date':
+				return new Date(value).getTime();
+			case 'datetime-local':
+				return new Date(value).getTime() - new Date(value).getTimezoneOffset() * 60000;
+			case 'month':
+				return (new Date(value).getUTCFullYear() - 1970) * 12 + new Date(value).getUTCMonth();
+			case 'time':
+				return (
+					new Date('1970-01-01T' + value).getTime() - new Date('1970-01-01T00:00:00').getTime()
+				);
+			case 'week': {
+				// https://html.spec.whatwg.org/multipage/input.html#week-state-(type=week)
+				const match = value.match(/^(\d{4})-W(\d{2})$/);
+				if (!match) {
+					return NaN;
+				}
+				const d = new Date(Date.UTC(parseInt(match[1], 10), 0));
+				const day = d.getUTCDay();
+				const diff = ((day === 0 ? -6 : 1) - day) * 86400000 + parseInt(match[2], 10) * 604800000;
+				return d.getTime() + diff;
+			}
+		}
+	}
+
+	/**
+	 * Sets value from a number.
+	 *
+	 * @param value number.
+	 */
+	public set valueAsNumber(value: number) {
+		// Specs at https://html.spec.whatwg.org/multipage/input.html
+		switch (this.type) {
+			case 'number':
+			case 'range':
+				// We Rely on HTMLInputElementValueSanitizer
+				this.value = Number(value).toString();
+				break;
+			case 'date':
+			case 'datetime-local': {
+				const d = new Date(Number(value));
+				if (isNaN(d.getTime())) {
+					// Reset to default value
+					this.value = '';
+					break;
+				}
+				if (this.type == 'date') {
+					this.value = d.toISOString().slice(0, 10);
+				} else {
+					this.value = d.toISOString().slice(0, -1);
+				}
+				break;
+			}
+			case 'month':
+				if (!Number.isInteger(value) || value < 0) {
+					this.value = '';
+				} else {
+					this.value = new Date(Date.UTC(1970, Number(value))).toISOString().slice(0, 7);
+				}
+				break;
+			case 'time':
+				if (!Number.isInteger(value) || value < 0) {
+					this.value = '';
+				} else {
+					this.value = new Date(Number(value)).toISOString().slice(11, -1);
+				}
+				break;
+			case 'week':
+			case 'week': {
+				const d = new Date(Number(value));
+				this.value = isNaN(d.getTime()) ? '' : HTMLInputElementDateUtility.dateIsoWeek(d);
+				break;
+			}
+			default:
+				throw new DOMException(
+					"Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.",
+					DOMExceptionNameEnum.invalidStateError
+				);
+		}
 	}
 
 	/**
@@ -806,23 +960,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Label elements.
 	 */
 	public get labels(): INodeList<IHTMLLabelElement> {
-		const id = this.id;
-		if (id) {
-			const rootNode = <IDocument | IShadowRoot>this.getRootNode();
-			const labels = rootNode.querySelectorAll(`label[for="${id}"]`);
-
-			let parent = this.parentNode;
-			while (parent) {
-				if (parent['tagName'] === 'LABEL') {
-					labels.push(<IHTMLLabelElement>parent);
-					break;
-				}
-				parent = parent.parentNode;
-			}
-
-			return <INodeList<IHTMLLabelElement>>labels;
-		}
-		return new NodeList<IHTMLLabelElement>();
+		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
 	/**
@@ -1069,38 +1207,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override setAttributeNode(attribute: IAttr): IAttr {
-		const replacedAttribute = super.setAttributeNode(attribute);
-		const oldValue = replacedAttribute ? replacedAttribute.value : null;
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			if (oldValue) {
-				(<HTMLFormElement>this._formNode)._removeFormControlItem(this, oldValue);
-			}
-			if (attribute.value) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, attribute.value);
-			}
-		}
-
-		return replacedAttribute;
-	}
-
-	/**
-	 * @override
-	 */
-	public override removeAttributeNode(attribute: IAttr): IAttr {
-		super.removeAttributeNode(attribute);
-
-		if ((attribute.name === 'id' || attribute.name === 'name') && this._formNode) {
-			(<HTMLFormElement>this._formNode)._removeFormControlItem(this, attribute.value);
-		}
-
-		return attribute;
 	}
 
 	/**
