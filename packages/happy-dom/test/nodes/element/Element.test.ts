@@ -16,6 +16,7 @@ import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTe
 import Node from '../../../src/nodes/node/Node.js';
 import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection.js';
 import IElement from '../../../src/nodes/element/IElement.js';
+import Element from '../../../src/nodes/element/Element.js';
 import INodeList from '../../../src/nodes/node/INodeList.js';
 import IAttr from '../../../src/nodes/attr/IAttr.js';
 import Event from '../../../src/event/Event.js';
@@ -51,6 +52,12 @@ describe('Element', () => {
 			expect(element.children.length).toBe(2);
 			expect(element.children[0] === div1).toBe(true);
 			expect(element.children[1] === div2).toBe(true);
+		});
+
+		it('Is a getter.', () => {
+			expect(typeof Object.getOwnPropertyDescriptor(Element.prototype, 'children')?.get).toBe(
+				'function'
+			);
 		});
 	});
 

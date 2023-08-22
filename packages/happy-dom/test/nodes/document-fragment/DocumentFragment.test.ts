@@ -36,6 +36,12 @@ describe('DocumentFragment', () => {
 			documentFragment.appendChild(span);
 			expect(Array.from(documentFragment.children)).toEqual([div, span]);
 		});
+
+		it('Is a getter.', () => {
+			expect(
+				typeof Object.getOwnPropertyDescriptor(DocumentFragment.prototype, 'children')?.get
+			).toBe('function');
+		});
 	});
 
 	describe('get childElementCount()', () => {

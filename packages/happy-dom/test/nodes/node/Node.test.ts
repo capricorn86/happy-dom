@@ -98,6 +98,29 @@ describe('Node', () => {
 		});
 	});
 
+	describe('get childNodes()', () => {
+		it('Returns child nodes.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			const text = document.createTextNode('text');
+			const comment = document.createComment('comment');
+
+			div.appendChild(span);
+			div.appendChild(text);
+			div.appendChild(comment);
+
+			expect(div.childNodes.length).toBe(3);
+			expect(div.childNodes[0] === span).toBe(true);
+			expect(div.childNodes[1] === text).toBe(true);
+			expect(div.childNodes[2] === comment).toBe(true);
+		});
+		it('Is a getter.', () => {
+			expect(typeof Object.getOwnPropertyDescriptor(Node.prototype, 'childNodes')?.get).toBe(
+				'function'
+			);
+		});
+	});
+
 	describe('get nodeValue()', () => {
 		it('Returns null.', () => {
 			expect(new Node().nodeValue).toBe(null);
