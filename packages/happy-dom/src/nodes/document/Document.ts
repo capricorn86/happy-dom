@@ -60,12 +60,12 @@ export default class Document extends Node implements IDocument {
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation: DOMImplementation;
-	public readonly children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
 	public readonly _windowClass: {} | null = null;
 	public readonly _readyStateManager: DocumentReadyStateManager;
+	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public _activeElement: IHTMLElement = null;
 
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
@@ -216,6 +216,13 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns document children.
+	 */
+	public get children(): IHTMLCollection<IElement> {
+		return this._children;
+	}
+
+	/**
 	 * Returns character set.
 	 *
 	 * @deprecated
@@ -276,7 +283,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this.children.length;
+		return this._children.length;
 	}
 
 	/**
@@ -285,7 +292,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
-		return this.children ? this.children[0] || null : null;
+		return this._children[0] ?? null;
 	}
 
 	/**
@@ -294,7 +301,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
-		return this.children ? this.children[this.children.length - 1] || null : null;
+		return this._children[this._children.length - 1] ?? null;
 	}
 
 	/**
@@ -339,7 +346,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document type.
 	 */
 	public get doctype(): IDocumentType {
-		for (const node of this.childNodes) {
+		for (const node of this._childNodes) {
 			if (node instanceof DocumentType) {
 				return node;
 			}
@@ -588,22 +595,22 @@ export default class Document extends Node implements IDocument {
 	 * @param name
 	 */
 	public getElementsByName(name: string): INodeList<IElement> {
-		const _getElementsByName = (
-			_parentNode: IElement | IDocumentFragment | IDocument,
-			_name: string
+		const getElementsByName = (
+			parentNode: IElement | IDocumentFragment | IDocument,
+			name: string
 		): INodeList<IElement> => {
 			const matches = new NodeList<IElement>();
-			for (const child of _parentNode.children) {
-				if (child.getAttributeNS(null, 'name') === _name) {
+			for (const child of (<Element | Document>parentNode)._children) {
+				if (child.getAttributeNS(null, 'name') === name) {
 					matches.push(child);
 				}
-				for (const match of _getElementsByName(<IElement>child, _name)) {
+				for (const match of getElementsByName(<IElement>child, name)) {
 					matches.push(match);
 				}
 			}
 			return matches;
 		};
-		return _getElementsByName(this, name);
+		return getElementsByName(this, name);
 	}
 
 	/**
@@ -619,9 +626,9 @@ export default class Document extends Node implements IDocument {
 		const clone = <Document>super.cloneNode(deep);
 
 		if (deep) {
-			for (const node of clone.childNodes) {
+			for (const node of clone._childNodes) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
-					clone.children.push(<IElement>node);
+					clone._children.push(<IElement>node);
 				}
 			}
 		}
@@ -665,7 +672,7 @@ export default class Document extends Node implements IDocument {
 	 * @param html HTML.
 	 */
 	public write(html: string): void {
-		const root = XMLParser.parse(this, html, { evaluateScripts: true });
+		const root = <DocumentFragment>XMLParser.parse(this, html, { evaluateScripts: true });
 
 		if (this._isFirstWrite || this._isFirstWriteAfterOpen) {
 			if (this._isFirstWrite) {
@@ -680,7 +687,7 @@ export default class Document extends Node implements IDocument {
 			let documentElement = null;
 			let documentTypeNode = null;
 
-			for (const node of root.childNodes) {
+			for (const node of root._childNodes) {
 				if (node['tagName'] === 'HTML') {
 					documentElement = node;
 				} else if (node.nodeType === NodeTypeEnum.documentTypeNode) {
@@ -700,10 +707,10 @@ export default class Document extends Node implements IDocument {
 
 					this.appendChild(documentElement);
 				} else {
-					const rootBody = ParentNodeUtility.getElementByTagName(root, 'body');
+					const rootBody = <Element>ParentNodeUtility.getElementByTagName(root, 'body');
 					const body = ParentNodeUtility.getElementByTagName(this, 'body');
 					if (rootBody && body) {
-						for (const child of rootBody.childNodes.slice()) {
+						for (const child of rootBody._childNodes.slice()) {
 							body.appendChild(child);
 						}
 					}
@@ -712,7 +719,7 @@ export default class Document extends Node implements IDocument {
 				// Remaining nodes outside the <html> element are added to the <body> element.
 				const body = ParentNodeUtility.getElementByTagName(this, 'body');
 				if (body) {
-					for (const child of root.childNodes.slice()) {
+					for (const child of root._childNodes.slice()) {
 						if (child['tagName'] !== 'HTML' && child.nodeType !== NodeTypeEnum.documentTypeNode) {
 							body.appendChild(child);
 						}
@@ -723,7 +730,7 @@ export default class Document extends Node implements IDocument {
 				const bodyElement = this.createElement('body');
 				const headElement = this.createElement('head');
 
-				for (const child of root.childNodes.slice()) {
+				for (const child of root._childNodes.slice()) {
 					bodyElement.appendChild(child);
 				}
 
@@ -735,7 +742,7 @@ export default class Document extends Node implements IDocument {
 		} else {
 			const bodyNode = ParentNodeUtility.getElementByTagName(root, 'body');
 			const body = ParentNodeUtility.getElementByTagName(this, 'body');
-			for (const child of (bodyNode || root).childNodes.slice()) {
+			for (const child of (<Element>(bodyNode || root))._childNodes.slice()) {
 				body.appendChild(child);
 			}
 		}
@@ -758,7 +765,7 @@ export default class Document extends Node implements IDocument {
 			}
 		}
 
-		for (const child of this.childNodes.slice()) {
+		for (const child of this._childNodes.slice()) {
 			this.removeChild(child);
 		}
 

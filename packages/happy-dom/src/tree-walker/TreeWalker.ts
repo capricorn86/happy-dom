@@ -83,7 +83,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public firstChild(): INode {
-		const childNodes = this.currentNode ? this.currentNode.childNodes : [];
+		const childNodes = this.currentNode ? (<Node>this.currentNode)._childNodes : [];
 
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[0];
@@ -104,7 +104,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public lastChild(): INode {
-		const childNodes = this.currentNode ? this.currentNode.childNodes : [];
+		const childNodes = this.currentNode ? (<Node>this.currentNode)._childNodes : [];
 
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[childNodes.length - 1];
@@ -126,7 +126,7 @@ export default class TreeWalker {
 	 */
 	public previousSibling(): INode {
 		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
-			const siblings = this.currentNode.parentNode.childNodes;
+			const siblings = (<Node>this.currentNode.parentNode)._childNodes;
 			const index = siblings.indexOf(this.currentNode);
 
 			if (index > 0) {
@@ -150,7 +150,7 @@ export default class TreeWalker {
 	 */
 	public nextSibling(): INode {
 		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
-			const siblings = this.currentNode.parentNode.childNodes;
+			const siblings = (<Node>this.currentNode.parentNode)._childNodes;
 			const index = siblings.indexOf(this.currentNode);
 
 			if (index + 1 < siblings.length) {

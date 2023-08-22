@@ -95,7 +95,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		let result = '';
 
-		for (const childNode of this.childNodes) {
+		for (const childNode of this._childNodes) {
 			if (childNode.nodeType === NodeTypeEnum.elementNode) {
 				const childElement = <IHTMLElement>childNode;
 				const computedStyle = this.ownerDocument.defaultView.getComputedStyle(childElement);
@@ -141,7 +141,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param innerText Inner text.
 	 */
 	public set innerText(text: string) {
-		for (const child of this.childNodes.slice()) {
+		for (const child of this._childNodes.slice()) {
 			this.removeChild(child);
 		}
 

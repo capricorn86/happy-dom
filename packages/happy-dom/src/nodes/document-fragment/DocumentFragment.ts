@@ -14,8 +14,15 @@ import INodeList from '../node/INodeList.js';
  */
 export default class DocumentFragment extends Node implements IDocumentFragment {
 	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
-	public readonly children: IHTMLCollection<IElement> = new HTMLCollection();
+	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection();
 	public _rootNode: INode = this;
+
+	/**
+	 * Returns the document fragment children.
+	 */
+	public get children(): IHTMLCollection<IElement> {
+		return this._children;
+	}
 
 	/**
 	 * Last element child.
@@ -23,7 +30,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this.children.length;
+		return this._children.length;
 	}
 
 	/**
@@ -32,7 +39,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
-		return this.children ? this.children[0] || null : null;
+		return this._children[0] ?? null;
 	}
 
 	/**
@@ -41,7 +48,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
-		return this.children ? this.children[this.children.length - 1] || null : null;
+		return this._children[this._children.length - 1] ?? null;
 	}
 
 	/**
@@ -51,7 +58,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 */
 	public get textContent(): string {
 		let result = '';
-		for (const childNode of this.childNodes) {
+		for (const childNode of this._childNodes) {
 			if (childNode.nodeType === Node.ELEMENT_NODE || childNode.nodeType === Node.TEXT_NODE) {
 				result += childNode.textContent;
 			}
@@ -65,7 +72,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		for (const child of this.childNodes.slice()) {
+		for (const child of this._childNodes.slice()) {
 			this.removeChild(child);
 		}
 		if (textContent) {
@@ -138,12 +145,12 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IDocumentFragment {
-		const clone = <IDocumentFragment>super.cloneNode(deep);
+		const clone = <DocumentFragment>super.cloneNode(deep);
 
 		if (deep) {
-			for (const node of clone.childNodes) {
+			for (const node of clone._childNodes) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
-					clone.children.push(<IElement>node);
+					clone._children.push(<IElement>node);
 				}
 			}
 		}

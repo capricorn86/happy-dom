@@ -47,7 +47,7 @@ export default class NodeUtility {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node.nodeType === NodeTypeEnum.documentFragmentNode) {
-			for (const child of node.childNodes.slice()) {
+			for (const child of (<Node>node)._childNodes.slice()) {
 				ancestorNode.appendChild(child);
 			}
 			return node;
@@ -55,9 +55,9 @@ export default class NodeUtility {
 
 		// Remove the node from its previous parent if it has any.
 		if (node.parentNode) {
-			const index = node.parentNode.childNodes.indexOf(node);
+			const index = (<Node>node.parentNode)._childNodes.indexOf(node);
 			if (index !== -1) {
-				node.parentNode.childNodes.splice(index, 1);
+				(<Node>node.parentNode)._childNodes.splice(index, 1);
 			}
 		}
 
@@ -65,7 +65,7 @@ export default class NodeUtility {
 			(ancestorNode.ownerDocument || this)['_cacheID']++;
 		}
 
-		ancestorNode.childNodes.push(node);
+		(<Node>ancestorNode)._childNodes.push(node);
 
 		(<Node>node)._connectToNode(ancestorNode);
 
@@ -97,7 +97,7 @@ export default class NodeUtility {
 	 * @returns Removed node.
 	 */
 	public static removeChild(ancestorNode: INode, node: INode): INode {
-		const index = ancestorNode.childNodes.indexOf(node);
+		const index = (<Node>ancestorNode)._childNodes.indexOf(node);
 
 		if (index === -1) {
 			throw new DOMException('Failed to remove node. Node is not child of parent.');
@@ -107,7 +107,7 @@ export default class NodeUtility {
 			(ancestorNode.ownerDocument || this)['_cacheID']++;
 		}
 
-		ancestorNode.childNodes.splice(index, 1);
+		(<Node>ancestorNode)._childNodes.splice(index, 1);
 
 		(<Node>node)._connectToNode(null);
 
@@ -158,7 +158,7 @@ export default class NodeUtility {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-			for (const child of newNode.childNodes.slice()) {
+			for (const child of (<Node>newNode)._childNodes.slice()) {
 				ancestorNode.insertBefore(child, referenceNode);
 			}
 			return newNode;
@@ -171,7 +171,7 @@ export default class NodeUtility {
 			return newNode;
 		}
 
-		if (ancestorNode.childNodes.indexOf(referenceNode) === -1) {
+		if ((<Node>ancestorNode)._childNodes.indexOf(referenceNode) === -1) {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
@@ -182,13 +182,17 @@ export default class NodeUtility {
 		}
 
 		if (newNode.parentNode) {
-			const index = newNode.parentNode.childNodes.indexOf(newNode);
+			const index = (<Node>newNode.parentNode)._childNodes.indexOf(newNode);
 			if (index !== -1) {
-				newNode.parentNode.childNodes.splice(index, 1);
+				(<Node>newNode.parentNode)._childNodes.splice(index, 1);
 			}
 		}
 
-		ancestorNode.childNodes.splice(ancestorNode.childNodes.indexOf(referenceNode), 0, newNode);
+		(<Node>ancestorNode)._childNodes.splice(
+			(<Node>ancestorNode)._childNodes.indexOf(referenceNode),
+			0,
+			newNode
+		);
 
 		(<Node>newNode)._connectToNode(ancestorNode);
 
@@ -247,7 +251,7 @@ export default class NodeUtility {
 			return true;
 		}
 
-		if (!ancestorNode.childNodes.length) {
+		if (!(<Node>ancestorNode)._childNodes.length) {
 			return false;
 		}
 
@@ -330,7 +334,7 @@ export default class NodeUtility {
 				return (<IText | IComment>node).data.length;
 
 			default:
-				return node.childNodes.length;
+				return (<Node>node)._childNodes.length;
 		}
 	}
 
@@ -488,13 +492,13 @@ export default class NodeUtility {
 			return false;
 		}
 
-		if (nodeA.childNodes.length !== nodeB.childNodes.length) {
+		if ((<Node>nodeA)._childNodes.length !== (<Node>nodeB)._childNodes.length) {
 			return false;
 		}
 
-		for (let i = 0; i < nodeA.childNodes.length; i++) {
-			const childNodeA = nodeA.childNodes[i];
-			const childNodeB = nodeB.childNodes[i];
+		for (let i = 0; i < (<Node>nodeA)._childNodes.length; i++) {
+			const childNodeA = (<Node>nodeA)._childNodes[i];
+			const childNodeB = (<Node>nodeB)._childNodes[i];
 
 			if (!NodeUtility.isEqualNode(childNodeA, childNodeB)) {
 				return false;

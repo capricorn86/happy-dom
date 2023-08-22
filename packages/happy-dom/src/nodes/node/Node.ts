@@ -54,7 +54,6 @@ export default class Node extends EventTarget implements INode {
 	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
-	public readonly childNodes: INodeList<INode> = new NodeList<INode>();
 	public readonly isConnected: boolean = false;
 
 	// Custom Properties (not part of HTML standard)
@@ -63,6 +62,7 @@ export default class Node extends EventTarget implements INode {
 	public _selectNode: INode = null;
 	public _textAreaNode: INode = null;
 	public _observers: MutationListener[] = [];
+	public readonly _childNodes: INodeList<INode> = new NodeList<INode>();
 
 	/**
 	 * Constructor.
@@ -79,6 +79,15 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
+	}
+
+	/**
+	 * Get child nodes.
+	 *
+	 * @returns Child nodes list.
+	 */
+	public get childNodes(): INodeList<INode> {
+		return this._childNodes;
 	}
 
 	/**
@@ -133,9 +142,9 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get previousSibling(): INode {
 		if (this.parentNode) {
-			const index = this.parentNode.childNodes.indexOf(this);
+			const index = (<Node>this.parentNode)._childNodes.indexOf(this);
 			if (index > 0) {
-				return this.parentNode.childNodes[index - 1];
+				return (<Node>this.parentNode)._childNodes[index - 1];
 			}
 		}
 		return null;
@@ -148,9 +157,9 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get nextSibling(): INode {
 		if (this.parentNode) {
-			const index = this.parentNode.childNodes.indexOf(this);
-			if (index > -1 && index + 1 < this.parentNode.childNodes.length) {
-				return this.parentNode.childNodes[index + 1];
+			const index = (<Node>this.parentNode)._childNodes.indexOf(this);
+			if (index > -1 && index + 1 < (<Node>this.parentNode)._childNodes.length) {
+				return (<Node>this.parentNode)._childNodes[index + 1];
 			}
 		}
 		return null;
@@ -162,8 +171,8 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public get firstChild(): INode {
-		if (this.childNodes.length > 0) {
-			return this.childNodes[0];
+		if (this._childNodes.length > 0) {
+			return this._childNodes[0];
 		}
 		return null;
 	}
@@ -174,8 +183,8 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public get lastChild(): INode {
-		if (this.childNodes.length > 0) {
-			return this.childNodes[this.childNodes.length - 1];
+		if (this._childNodes.length > 0) {
+			return this._childNodes[this._childNodes.length - 1];
 		}
 		return null;
 	}
@@ -222,7 +231,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns "true" if the node has child nodes.
 	 */
 	public hasChildNodes(): boolean {
-		return this.childNodes.length > 0;
+		return this._childNodes.length > 0;
 	}
 
 	/**
@@ -264,17 +273,17 @@ export default class Node extends EventTarget implements INode {
 		const clone = new (<typeof Node>this.constructor)();
 
 		// Document has childNodes directly when it is created
-		if (clone.childNodes.length) {
-			for (const node of clone.childNodes.slice()) {
+		if (clone._childNodes.length) {
+			for (const node of clone._childNodes.slice()) {
 				node.parentNode.removeChild(node);
 			}
 		}
 
 		if (deep) {
-			for (const childNode of this.childNodes) {
+			for (const childNode of this._childNodes) {
 				const childClone = childNode.cloneNode(true);
 				(<Node>childClone.parentNode) = clone;
-				clone.childNodes.push(childClone);
+				clone._childNodes.push(childClone);
 			}
 		}
 
@@ -351,7 +360,7 @@ export default class Node extends EventTarget implements INode {
 	public _observe(listener: MutationListener): void {
 		this._observers.push(listener);
 		if (listener.options.subtree) {
-			for (const node of this.childNodes) {
+			for (const node of this._childNodes) {
 				(<Node>node)._observe(listener);
 			}
 		}
@@ -369,7 +378,7 @@ export default class Node extends EventTarget implements INode {
 			this._observers.splice(index, 1);
 		}
 		if (listener.options.subtree) {
-			for (const node of this.childNodes) {
+			for (const node of this._childNodes) {
 				(<Node>node)._unobserve(listener);
 			}
 		}
@@ -418,7 +427,7 @@ export default class Node extends EventTarget implements INode {
 				this.disconnectedCallback();
 			}
 
-			for (const child of this.childNodes) {
+			for (const child of this._childNodes) {
 				(<Node>child)._connectToNode(this);
 			}
 
@@ -432,7 +441,7 @@ export default class Node extends EventTarget implements INode {
 			selectNode !== this._selectNode ||
 			textAreaNode !== this._textAreaNode
 		) {
-			for (const child of this.childNodes) {
+			for (const child of this._childNodes) {
 				(<Node>child)._connectToNode(this);
 			}
 		}
@@ -584,7 +593,7 @@ export default class Node extends EventTarget implements INode {
 
 		const computeNodeIndexes = (nodes: INode[]): void => {
 			for (const childNode of nodes) {
-				computeNodeIndexes(childNode.childNodes);
+				computeNodeIndexes((<Node>childNode)._childNodes);
 
 				if (childNode === node2Node) {
 					node2Index = indexes;
@@ -600,7 +609,7 @@ export default class Node extends EventTarget implements INode {
 			}
 		};
 
-		computeNodeIndexes(commonAncestor.childNodes);
+		computeNodeIndexes((<Node>commonAncestor)._childNodes);
 
 		/**
 		 * 9. If node1 is preceding node2, then return DOCUMENT_POSITION_PRECEDING.

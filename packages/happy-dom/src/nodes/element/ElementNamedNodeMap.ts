@@ -66,17 +66,17 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 		if (item.name === 'id' || item.name === 'name') {
 			if (
 				this._ownerElement.parentNode &&
-				(<IElement>this._ownerElement.parentNode).children &&
+				(<Element>this._ownerElement.parentNode)._children &&
 				item.value !== oldValue
 			) {
 				if (oldValue) {
 					(<HTMLCollection<IElement>>(
-						(<IElement>this._ownerElement.parentNode).children
+						(<Element>this._ownerElement.parentNode)._children
 					))._removeNamedItem(this._ownerElement, oldValue);
 				}
 				if (item.value) {
 					(<HTMLCollection<IElement>>(
-						(<IElement>this._ownerElement.parentNode).children
+						(<Element>this._ownerElement.parentNode)._children
 					))._appendNamedItem(this._ownerElement, item.value);
 				}
 			}
@@ -132,11 +132,11 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 		if (removedItem.name === 'id' || removedItem.name === 'name') {
 			if (
 				this._ownerElement.parentNode &&
-				(<IElement>this._ownerElement.parentNode).children &&
+				(<Element>this._ownerElement.parentNode)._children &&
 				removedItem.value
 			) {
 				(<HTMLCollection<IElement>>(
-					(<IElement>this._ownerElement.parentNode).children
+					(<Element>this._ownerElement.parentNode)._children
 				))._removeNamedItem(this._ownerElement, removedItem.value);
 			}
 		}

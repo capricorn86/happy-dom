@@ -112,6 +112,7 @@ export default class SelectorItem {
 	 */
 	private matchPsuedo(element: IElement): boolean {
 		const parent = <IElement>element.parentNode;
+		const parentChildren = element.parentNode ? (<Element>element.parentNode)._children : [];
 
 		if (!this.pseudos) {
 			return true;
@@ -150,21 +151,21 @@ export default class SelectorItem {
 
 			switch (psuedo.name) {
 				case 'first-child':
-					return parent.children[0] === element;
+					return parentChildren[0] === element;
 				case 'last-child':
-					return parent.children.length && parent.children[parent.children.length - 1] === element;
+					return parentChildren.length && parentChildren[parentChildren.length - 1] === element;
 				case 'only-child':
-					return parent.children.length === 1 && parent.children[0] === element;
+					return parentChildren.length === 1 && parentChildren[0] === element;
 				case 'first-of-type':
-					for (const child of parent.children) {
+					for (const child of parentChildren) {
 						if (child.tagName === element.tagName) {
 							return child === element;
 						}
 					}
 					return false;
 				case 'last-of-type':
-					for (let i = parent.children.length - 1; i >= 0; i--) {
-						const child = parent.children[i];
+					for (let i = parentChildren.length - 1; i >= 0; i--) {
+						const child = parentChildren[i];
 						if (child.tagName === element.tagName) {
 							return child === element;
 						}
@@ -172,7 +173,7 @@ export default class SelectorItem {
 					return false;
 				case 'only-of-type':
 					let isFound = false;
-					for (const child of parent.children) {
+					for (const child of parentChildren) {
 						if (child.tagName === element.tagName) {
 							if (isFound || child !== element) {
 								return false;
@@ -184,34 +185,34 @@ export default class SelectorItem {
 				case 'checked':
 					return element.tagName === 'INPUT' && (<IHTMLInputElement>element).checked;
 				case 'empty':
-					return !element.children.length;
+					return !(<Element>element)._children.length;
 				case 'root':
 					return element.tagName === 'HTML';
 				case 'not':
 					return !psuedo.selectorItem.match(element);
 				case 'nth-child':
 					const nthChildIndex = psuedo.selectorItem
-						? parent.children.filter((child) => psuedo.selectorItem.match(child)).indexOf(element)
-						: parent.children.indexOf(element);
+						? parentChildren.filter((child) => psuedo.selectorItem.match(child)).indexOf(element)
+						: parentChildren.indexOf(element);
 					return nthChildIndex !== -1 && psuedo.nthFunction(nthChildIndex + 1);
 				case 'nth-of-type':
 					if (!element.parentNode) {
 						return false;
 					}
-					const nthOfTypeIndex = parent.children
+					const nthOfTypeIndex = parentChildren
 						.filter((child) => child.tagName === element.tagName)
 						.indexOf(element);
 					return nthOfTypeIndex !== -1 && psuedo.nthFunction(nthOfTypeIndex + 1);
 				case 'nth-last-child':
 					const nthLastChildIndex = psuedo.selectorItem
-						? parent.children
+						? parentChildren
 								.filter((child) => psuedo.selectorItem.match(child))
 								.reverse()
 								.indexOf(element)
-						: parent.children.reverse().indexOf(element);
+						: parentChildren.reverse().indexOf(element);
 					return nthLastChildIndex !== -1 && psuedo.nthFunction(nthLastChildIndex + 1);
 				case 'nth-last-of-type':
-					const nthLastOfTypeIndex = parent.children
+					const nthLastOfTypeIndex = parentChildren
 						.filter((child) => child.tagName === element.tagName)
 						.reverse()
 						.indexOf(element);

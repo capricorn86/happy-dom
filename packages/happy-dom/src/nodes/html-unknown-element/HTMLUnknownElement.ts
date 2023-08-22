@@ -34,8 +34,8 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 				const callback = (): void => {
 					if (this.parentNode) {
 						const newElement = <HTMLElement>this.ownerDocument.createElement(tagName);
-						(<INodeList<INode>>newElement.childNodes) = this.childNodes;
-						(<IHTMLCollection<IElement>>newElement.children) = this.children;
+						(<INodeList<INode>>newElement._childNodes) = this._childNodes;
+						(<IHTMLCollection<IElement>>newElement._children) = this._children;
 						(<boolean>newElement.isConnected) = this.isConnected;
 
 						newElement._rootNode = this._rootNode;
@@ -49,8 +49,8 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 							newElement.attributes.setNamedItem(this.attributes[i]);
 						}
 
-						(<INodeList<INode>>this.childNodes) = new NodeList();
-						(<IHTMLCollection<IElement>>this.children) = new HTMLCollection();
+						(<INodeList<INode>>this._childNodes) = new NodeList();
+						(<IHTMLCollection<IElement>>this._children) = new HTMLCollection();
 						this._rootNode = null;
 						this._formNode = null;
 						this._selectNode = null;
@@ -59,17 +59,17 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						this._isValue = null;
 						(<HTMLElementNamedNodeMap>this.attributes) = new HTMLElementNamedNodeMap(this);
 
-						for (let i = 0, max = this.parentNode.childNodes.length; i < max; i++) {
-							if (this.parentNode.childNodes[i] === this) {
-								this.parentNode.childNodes[i] = newElement;
+						for (let i = 0, max = (<HTMLElement>this.parentNode)._childNodes.length; i < max; i++) {
+							if ((<HTMLElement>this.parentNode)._childNodes[i] === this) {
+								(<HTMLElement>this.parentNode)._childNodes[i] = newElement;
 								break;
 							}
 						}
 
-						if ((<IElement>this.parentNode).children) {
-							for (let i = 0, max = (<IElement>this.parentNode).children.length; i < max; i++) {
-								if ((<IElement>this.parentNode).children[i] === this) {
-									(<IElement>this.parentNode).children[i] = newElement;
+						if ((<HTMLElement>this.parentNode)._children) {
+							for (let i = 0, max = (<HTMLElement>this.parentNode)._children.length; i < max; i++) {
+								if ((<HTMLElement>this.parentNode)._children[i] === this) {
+									(<HTMLElement>this.parentNode)._children[i] = newElement;
 									break;
 								}
 							}

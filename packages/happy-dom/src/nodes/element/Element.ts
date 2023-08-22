@@ -29,6 +29,7 @@ import ElementUtility from './ElementUtility.js';
 import HTMLCollection from './HTMLCollection.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import ElementNamedNodeMap from './ElementNamedNodeMap.js';
 
 /**
@@ -47,7 +48,6 @@ export default class Element extends Node implements IElement {
 	public scrollHeight = 0;
 	public scrollTop = 0;
 	public scrollLeft = 0;
-	public children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public readonly namespaceURI: string = null;
 
 	// Events
@@ -86,6 +86,8 @@ export default class Element extends Node implements IElement {
 	public ontouchmove: (event: Event) => void | null = null;
 	public ontouchstart: (event: Event) => void | null = null;
 
+	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
+
 	// Used for being able to access closed shadow roots
 	public _shadowRoot: IShadowRoot = null;
 	public readonly attributes: INamedNodeMap = new ElementNamedNodeMap(this);
@@ -93,6 +95,13 @@ export default class Element extends Node implements IElement {
 	public _classList: DOMTokenList = null;
 	public _isValue?: string | null = null;
 	public _computedStyle: CSSStyleDeclaration | null = null;
+
+	/**
+	 * Returns element children.
+	 */
+	public get children(): IHTMLCollection<IElement> {
+		return this._children;
+	}
 
 	/**
 	 * Returns class list.
@@ -203,7 +212,7 @@ export default class Element extends Node implements IElement {
 	 */
 	public get textContent(): string {
 		let result = '';
-		for (const childNode of this.childNodes) {
+		for (const childNode of this._childNodes) {
 			if (childNode.nodeType === Node.ELEMENT_NODE || childNode.nodeType === Node.TEXT_NODE) {
 				result += childNode.textContent;
 			}
@@ -217,7 +226,7 @@ export default class Element extends Node implements IElement {
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		for (const child of this.childNodes.slice()) {
+		for (const child of this._childNodes.slice()) {
 			this.removeChild(child);
 		}
 		if (textContent) {
@@ -240,7 +249,7 @@ export default class Element extends Node implements IElement {
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		for (const child of this.childNodes.slice()) {
+		for (const child of this._childNodes.slice()) {
 			this.removeChild(child);
 		}
 
@@ -271,7 +280,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
-		return this.children ? this.children[0] || null : null;
+		return this._children[0] ?? null;
 	}
 
 	/**
@@ -280,7 +289,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
-		return this.children ? this.children[this.children.length - 1] || null : null;
+		return this._children[this._children.length - 1] ?? null;
 	}
 
 	/**
@@ -289,7 +298,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this.children.length;
+		return this._children.length;
 	}
 
 	/**
@@ -336,7 +345,7 @@ export default class Element extends Node implements IElement {
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of this.childNodes) {
+		for (const node of this._childNodes) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
@@ -350,7 +359,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IElement {
-		const clone = <Element | IElement>super.cloneNode(deep);
+		const clone = <Element>super.cloneNode(deep);
 
 		Attr._ownerDocument = this.ownerDocument;
 
@@ -360,9 +369,9 @@ export default class Element extends Node implements IElement {
 		}
 
 		if (deep) {
-			for (const node of clone.childNodes) {
+			for (const node of clone._childNodes) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
-					clone.children.push(<IElement>node);
+					clone._children.push(<IElement>node);
 				}
 			}
 		}
@@ -503,7 +512,9 @@ export default class Element extends Node implements IElement {
 	 * @param text HTML string to insert.
 	 */
 	public insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void {
-		for (const node of XMLParser.parse(this.ownerDocument, text).childNodes.slice()) {
+		for (const node of (<DocumentFragment>(
+			XMLParser.parse(this.ownerDocument, text)
+		))._childNodes.slice()) {
 			this.insertAdjacentElement(position, node);
 		}
 	}

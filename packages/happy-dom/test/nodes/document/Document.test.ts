@@ -9,6 +9,7 @@ import NodeIterator from '../../../src/tree-walker/NodeIterator.js';
 import TreeWalker from '../../../src/tree-walker/TreeWalker.js';
 import Node from '../../../src/nodes/node/Node.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
+import Document from '../../../src/nodes/document/Document.js';
 import Element from '../../../src/nodes/element/Element.js';
 import Event from '../../../src/event/Event.js';
 import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement.js';
@@ -76,6 +77,12 @@ describe('Document', () => {
 			document.appendChild(document.createTextNode('test'));
 			expect(document.children.length).toEqual(1);
 			expect(document.children[0] === document.documentElement).toBe(true);
+		});
+
+		it('Is a getter.', () => {
+			expect(typeof Object.getOwnPropertyDescriptor(Document.prototype, 'children')?.get).toBe(
+				'function'
+			);
 		});
 	});
 

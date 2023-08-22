@@ -4,6 +4,7 @@ import INode from '../node/INode.js';
 import IHTMLTemplateElement from './IHTMLTemplateElement.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
+import DocumentFragment from '../document-fragment/DocumentFragment.js';
 
 /**
  * HTML Template Element.
@@ -25,7 +26,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 * @override
 	 */
 	public set innerHTML(html: string) {
-		for (const child of this.content.childNodes.slice()) {
+		for (const child of (<DocumentFragment>this.content)._childNodes.slice()) {
 			this.content.removeChild(child);
 		}
 
@@ -55,7 +56,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of this.content.childNodes) {
+		for (const node of (<DocumentFragment>this.content)._childNodes) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;

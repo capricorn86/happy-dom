@@ -40,34 +40,35 @@ export default class ElementUtility {
 					DOMExceptionNameEnum.domException
 				);
 			}
+			if (node.parentNode) {
+				const parentNodeChildren = <HTMLCollection<IHTMLElement>>(
+					(<Element>node.parentNode)._children
+				);
 
-			if (node.parentNode && (<IHTMLElement>node.parentNode).children) {
-				const index = (<IHTMLElement>node.parentNode).children.indexOf(<IHTMLElement>node);
-				if (index !== -1) {
-					for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
-						const attribute = (<Element>node).attributes.getNamedItem(attributeName);
-						if (attribute) {
-							(<HTMLCollection<IHTMLElement>>(<IElement>node.parentNode).children)._removeNamedItem(
-								<IHTMLElement>node,
-								attribute.value
-							);
+				if (parentNodeChildren) {
+					const index = parentNodeChildren.indexOf(<IHTMLElement>node);
+					if (index !== -1) {
+						for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
+							const attribute = (<Element>node).attributes.getNamedItem(attributeName);
+							if (attribute) {
+								parentNodeChildren._removeNamedItem(<IHTMLElement>node, attribute.value);
+							}
 						}
+
+						parentNodeChildren.splice(index, 1);
 					}
-					(<IHTMLElement>node.parentNode).children.splice(index, 1);
 				}
 			}
+			const ancestorNodeChildren = <HTMLCollection<IHTMLElement>>(<Element>ancestorNode)._children;
 
 			for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 				const attribute = (<Element>node).attributes.getNamedItem(attributeName);
 				if (attribute) {
-					(<HTMLCollection<IHTMLElement>>ancestorNode.children)._appendNamedItem(
-						<IHTMLElement>node,
-						attribute.value
-					);
+					ancestorNodeChildren._appendNamedItem(<IHTMLElement>node, attribute.value);
 				}
 			}
 
-			ancestorNode.children.push(<IElement>node);
+			ancestorNodeChildren.push(<IElement>node);
 
 			NodeUtility.appendChild(ancestorNode, node, { disableAncestorValidation: true });
 		} else {
@@ -89,18 +90,16 @@ export default class ElementUtility {
 		node: INode
 	): INode {
 		if (node.nodeType === NodeTypeEnum.elementNode) {
-			const index = ancestorNode.children.indexOf(<IElement>node);
+			const ancestorNodeChildren = <HTMLCollection<IHTMLElement>>(<Element>ancestorNode)._children;
+			const index = ancestorNodeChildren.indexOf(<IElement>node);
 			if (index !== -1) {
 				for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 					const attribute = (<Element>node).attributes.getNamedItem(attributeName);
 					if (attribute) {
-						(<HTMLCollection<IHTMLElement>>ancestorNode.children)._removeNamedItem(
-							<IHTMLElement>node,
-							attribute.value
-						);
+						ancestorNodeChildren._removeNamedItem(<IHTMLElement>node, attribute.value);
 					}
 				}
-				ancestorNode.children.splice(index, 1);
+				ancestorNodeChildren.splice(index, 1);
 			}
 		}
 
@@ -137,37 +136,42 @@ export default class ElementUtility {
 					DOMExceptionNameEnum.domException
 				);
 			}
+			if (newNode.parentNode) {
+				const parentNodeChildren = <HTMLCollection<IHTMLElement>>(
+					(<Element>newNode.parentNode)._children
+				);
 
-			if (newNode.parentNode && (<IHTMLElement>newNode.parentNode).children) {
-				const index = (<IHTMLElement>newNode.parentNode).children.indexOf(<IHTMLElement>newNode);
-				if (index !== -1) {
-					for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
-						const attribute = (<Element>newNode).attributes.getNamedItem(attributeName);
-						if (attribute) {
-							(<HTMLCollection<IHTMLElement>>(
-								(<IElement>newNode.parentNode).children
-							))._removeNamedItem(<IHTMLElement>newNode, attribute.value);
+				if (parentNodeChildren) {
+					const index = parentNodeChildren.indexOf(<IHTMLElement>newNode);
+					if (index !== -1) {
+						for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
+							const attribute = (<Element>newNode).attributes.getNamedItem(attributeName);
+							if (attribute) {
+								parentNodeChildren._removeNamedItem(<IHTMLElement>newNode, attribute.value);
+							}
 						}
-					}
 
-					(<IElement>newNode.parentNode).children.splice(index, 1);
+						parentNodeChildren.splice(index, 1);
+					}
 				}
 			}
 
+			const ancestorNodeChildren = <HTMLCollection<IHTMLElement>>(<Element>ancestorNode)._children;
+
 			if (referenceNode.nodeType === NodeTypeEnum.elementNode) {
-				const index = ancestorNode.children.indexOf(<IElement>referenceNode);
+				const index = ancestorNodeChildren.indexOf(<IElement>referenceNode);
 				if (index !== -1) {
-					ancestorNode.children.splice(index, 0, <IElement>newNode);
+					ancestorNodeChildren.splice(index, 0, <IElement>newNode);
 				}
 			} else {
-				ancestorNode.children.length = 0;
+				ancestorNodeChildren.length = 0;
 
-				for (const node of ancestorNode.childNodes) {
+				for (const node of (<Element>ancestorNode)._childNodes) {
 					if (node === referenceNode) {
-						ancestorNode.children.push(<IElement>newNode);
+						ancestorNodeChildren.push(<IElement>newNode);
 					}
 					if (node.nodeType === NodeTypeEnum.elementNode) {
-						ancestorNode.children.push(<IElement>node);
+						ancestorNodeChildren.push(<IElement>node);
 					}
 				}
 			}
@@ -175,10 +179,7 @@ export default class ElementUtility {
 			for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 				const attribute = (<Element>newNode).attributes.getNamedItem(attributeName);
 				if (attribute) {
-					(<HTMLCollection<IHTMLElement>>ancestorNode.children)._appendNamedItem(
-						<IHTMLElement>newNode,
-						attribute.value
-					);
+					ancestorNodeChildren._appendNamedItem(<IHTMLElement>newNode, attribute.value);
 				}
 			}
 

@@ -8,6 +8,8 @@ import IHTMLTemplateElement from '../nodes/html-template-element/IHTMLTemplateEl
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import IProcessingInstruction from '../nodes/processing-instruction/IProcessingInstruction.js';
 import * as Entities from 'entities';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 
 /**
  * Utility for converting an element to string.
@@ -55,8 +57,8 @@ export default class XMLSerializer {
 
 				const childNodes =
 					tagName === 'template'
-						? (<IHTMLTemplateElement>root).content.childNodes
-						: root.childNodes;
+						? (<DocumentFragment>(<IHTMLTemplateElement>root).content)._childNodes
+						: (<DocumentFragment>root)._childNodes;
 				let innerHTML = '';
 
 				for (const node of childNodes) {
@@ -66,7 +68,7 @@ export default class XMLSerializer {
 				if (this._options.includeShadowRoots && element.shadowRoot) {
 					innerHTML += `<template shadowrootmode="${element.shadowRoot.mode}">`;
 
-					for (const node of element.shadowRoot.childNodes) {
+					for (const node of (<ShadowRoot>element.shadowRoot)._childNodes) {
 						innerHTML += this.serializeToString(node);
 					}
 
@@ -77,7 +79,7 @@ export default class XMLSerializer {
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
 				let html = '';
-				for (const node of root.childNodes) {
+				for (const node of (<Node>root)._childNodes) {
 					html += this.serializeToString(node);
 				}
 				return html;

@@ -6,6 +6,8 @@ import HTMLDocument from '../nodes/html-document/HTMLDocument.js';
 import XMLDocument from '../nodes/xml-document/XMLDocument.js';
 import SVGDocument from '../nodes/svg-document/SVGDocument.js';
 import IWindow from '../window/IWindow.js';
+import Document from '../nodes/document/Document.js';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 
 /**
  * DOM parser.
@@ -38,17 +40,17 @@ export default class DOMParser {
 		}
 
 		const ownerDocument = this._ownerDocument;
-		const newDocument = this._createDocument(mimeType);
+		const newDocument = <Document>this._createDocument(mimeType);
 
 		(<IWindow>newDocument.defaultView) = ownerDocument.defaultView;
-		newDocument.childNodes.length = 0;
-		newDocument.children.length = 0;
+		newDocument._childNodes.length = 0;
+		newDocument._children.length = 0;
 
-		const root = XMLParser.parse(newDocument, string, { evaluateScripts: true });
+		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;
 
-		for (const node of root.childNodes) {
+		for (const node of root._childNodes) {
 			if (node['tagName'] === 'HTML') {
 				documentElement = node;
 			} else if (node.nodeType === Node.DOCUMENT_TYPE_NODE) {
@@ -67,7 +69,7 @@ export default class DOMParser {
 			newDocument.appendChild(documentElement);
 			const body = newDocument.body;
 			if (body) {
-				for (const child of root.childNodes.slice()) {
+				for (const child of root._childNodes.slice()) {
 					body.appendChild(child);
 				}
 			}
@@ -80,7 +82,7 @@ export default class DOMParser {
 			documentElement.appendChild(bodyElement);
 			newDocument.appendChild(documentElement);
 
-			for (const node of root.childNodes.slice()) {
+			for (const node of root._childNodes.slice()) {
 				bodyElement.appendChild(node);
 			}
 		}

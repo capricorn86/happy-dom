@@ -1,5 +1,6 @@
 import DOMException from '../../exception/DOMException.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
+import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Document from '../document/Document.js';
 import INode from '../node/INode.js';
 import IParentNode from '../parent-node/IParentNode.js';
@@ -35,10 +36,9 @@ export default class ChildNodeUtility {
 
 		for (const node of nodes) {
 			if (typeof node === 'string') {
-				const newChildNodes = XMLParser.parse(
-					<Document>childNode.ownerDocument,
-					node
-				).childNodes.slice();
+				const newChildNodes = (<DocumentFragment>(
+					XMLParser.parse(<Document>childNode.ownerDocument, node)
+				))._childNodes.slice();
 				for (const newChildNode of newChildNodes) {
 					parent.insertBefore(newChildNode, childNode);
 				}
@@ -65,10 +65,9 @@ export default class ChildNodeUtility {
 
 		for (const node of nodes) {
 			if (typeof node === 'string') {
-				const newChildNodes = XMLParser.parse(
-					<Document>childNode.ownerDocument,
-					node
-				).childNodes.slice();
+				const newChildNodes = (<DocumentFragment>(
+					XMLParser.parse(<Document>childNode.ownerDocument, node)
+				))._childNodes.slice();
 				for (const newChildNode of newChildNodes) {
 					parent.insertBefore(newChildNode, childNode);
 				}
@@ -95,10 +94,9 @@ export default class ChildNodeUtility {
 
 		for (const node of nodes) {
 			if (typeof node === 'string') {
-				const newChildNodes = XMLParser.parse(
-					<Document>childNode.ownerDocument,
-					node
-				).childNodes.slice();
+				const newChildNodes = (<DocumentFragment>(
+					XMLParser.parse(<Document>childNode.ownerDocument, node)
+				))._childNodes.slice();
 				for (const newChildNode of newChildNodes) {
 					if (!nextSibling) {
 						parent.appendChild(newChildNode);
