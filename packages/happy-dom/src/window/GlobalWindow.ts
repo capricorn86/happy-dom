@@ -75,9 +75,7 @@ export default class GlobalWindow extends Window implements IWindow {
 	 * @param code Code.
 	 * @returns Result.
 	 */
-	public override eval(code: string): unknown {
-		return eval(code);
-	}
+	public eval: (code: string) => unknown = globalThis.eval;
 
 	/**
 	 * Setup of VM context.

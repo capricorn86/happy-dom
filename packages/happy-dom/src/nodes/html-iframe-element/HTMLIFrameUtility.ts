@@ -40,7 +40,7 @@ export default class HTMLIFrameUtility {
 
 				if (src.startsWith('javascript:')) {
 					element._contentWindow = contentWindow;
-					element._contentWindow.eval(src.replace('javascript:', ''));
+					element._contentWindow.happyDOM.evaluate(src.replace('javascript:', ''));
 					return;
 				}
 

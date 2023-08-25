@@ -73,7 +73,7 @@ export default class HTMLScriptElementUtility {
 	 */
 	public static eval(element: HTMLScriptElement, code: string): void {
 		try {
-			element.ownerDocument.defaultView.eval(code);
+			element.ownerDocument.defaultView.happyDOM.evaluate(code);
 		} catch (error) {
 			element.ownerDocument.defaultView.console.error(error);
 			element.ownerDocument.defaultView.dispatchEvent(

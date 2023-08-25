@@ -135,6 +135,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 		asyncTaskManager: AsyncTaskManager;
 		setWindowSize: (options: { width?: number; height?: number }) => void;
 		setURL: (url: string) => void;
+		evaluate: (code: string) => unknown;
 		settings: IHappyDOMSettings;
 
 		/**
@@ -293,14 +294,6 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly pageYOffset: number;
 	readonly scrollX: number;
 	readonly scrollY: number;
-
-	/**
-	 * Evaluates code.
-	 *
-	 * @param code Code.
-	 * @returns Result.
-	 */
-	eval(code: string): unknown;
 
 	/**
 	 * Returns an object containing the values of all CSS properties of an element.

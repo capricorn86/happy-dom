@@ -179,6 +179,12 @@ export default class Window extends EventTarget implements IWindow {
 				this.dispatchEvent(new Event('resize'));
 			}
 		},
+		evaluate: (code: string): unknown => {
+			if (VM.isContext(this)) {
+				return VM.runInContext(code, this);
+			}
+			return eval(code);
+		},
 		settings: {
 			disableJavaScriptEvaluation: false,
 			disableJavaScriptFileLoading: false,
@@ -620,20 +626,6 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public get CSS(): CSS {
 		return new CSS();
-	}
-
-	/**
-	 * Evaluates code.
-	 *
-	 * @override
-	 * @param code Code.
-	 * @returns Result.
-	 */
-	public eval(code: string): unknown {
-		if (VM.isContext(this)) {
-			return VM.runInContext(code, this);
-		}
-		return eval(code);
 	}
 
 	/**

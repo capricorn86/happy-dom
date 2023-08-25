@@ -331,8 +331,8 @@ describe('Window', () => {
 			expect({}.constructor).not.toBe(window.Object);
 		});
 
-		it('Is the same as {}.constructor when using eval().', () => {
-			expect(window.eval('({}).constructor === window.Object')).toBe(true);
+		it('Is the same as {}.constructor when using evaluate().', () => {
+			expect(window.happyDOM.evaluate('({}).constructor === window.Object')).toBe(true);
 		});
 	});
 
@@ -342,8 +342,8 @@ describe('Window', () => {
 			expect((() => {}).constructor).not.toBe(window.Function);
 		});
 
-		it('Is the same as (() => {}).constructor when using eval().', () => {
-			expect(window.eval('(() => {}).constructor === window.Function')).toBe(true);
+		it('Is the same as (() => {}).constructor when using evaluate().', () => {
+			expect(window.happyDOM.evaluate('(() => {}).constructor === window.Function')).toBe(true);
 		});
 	});
 
@@ -353,8 +353,8 @@ describe('Window', () => {
 			expect([].constructor).not.toBe(window.Array);
 		});
 
-		it('Is the same as [].constructor when using eval().', () => {
-			expect(window.eval('[].constructor === window.Array')).toBe(true);
+		it('Is the same as [].constructor when using evaluate().', () => {
+			expect(window.happyDOM.evaluate('[].constructor === window.Array')).toBe(true);
 		});
 	});
 
@@ -732,15 +732,37 @@ describe('Window', () => {
 		}
 	});
 
-	describe('eval()', () => {
+	describe('evaluate()', () => {
 		it('Evaluates code and returns the result.', () => {
-			const result = <() => number>window.eval('() => 5');
+			const result = <() => number>window.happyDOM.evaluate('() => 5');
 			expect(result()).toBe(5);
 		});
 
 		it('Captures errors and triggers an error event.', () => {
-			const result = <() => number>window.eval('() => 5');
+			const result = <() => number>window.happyDOM.evaluate('() => 5');
 			expect(result()).toBe(5);
+		});
+
+		it('Respects direct eval.', () => {
+			const result = <string>window.happyDOM.evaluate(`
+			variable = 'globally defined';
+			(function () {
+				var variable = 'locally defined';
+				return eval('variable');
+			})()`);
+			expect(result).toBe('locally defined');
+			expect(window['variable']).toBe('globally defined');
+		});
+
+		it('Respects indirect eval.', () => {
+			const result = <string>window.happyDOM.evaluate(`
+			variable = 'globally defined';
+			(function () {
+				var variable = 'locally defined';
+				return (0,eval)('variable');
+			})()`);
+			expect(result).toBe('globally defined');
+			expect(window['variable']).toBe('globally defined');
 		});
 	});
 

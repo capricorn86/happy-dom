@@ -44,4 +44,34 @@ describe('GlobalWindow', () => {
 			delete global['globalWindow'];
 		});
 	});
+
+	describe('eval', () => {
+		it('Respects direct eval.', () => {
+			global['globalWindow'] = window;
+			const result = window.eval(`
+			global.variable = 'globally defined';
+			(function () {
+				var variable = 'locally defined';
+				return eval('variable');
+			})()`);
+			expect(result).toBe('locally defined');
+			expect(global['variable']).toBe('globally defined');
+			delete global['globalWindow'];
+			delete global['variable'];
+		});
+
+		it('Respects indirect eval.', () => {
+			global['globalWindow'] = window;
+			const result = window.eval(`
+			global.variable = 'globally defined';
+			(function () {
+				var variable = 'locally defined';
+				return (0,eval)('variable');
+			})()`);
+			expect(result).toBe('globally defined');
+			expect(global['variable']).toBe('globally defined');
+			delete global['globalWindow'];
+			delete global['variable'];
+		});
+	});
 });

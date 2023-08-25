@@ -927,7 +927,7 @@ export default class Element extends Node implements IElement {
 			const attribute = this.getAttribute('on' + event.type);
 
 			if (attribute && !event._immediatePropagationStopped) {
-				this.ownerDocument.defaultView.eval(attribute);
+				this.ownerDocument.defaultView.happyDOM.evaluate(attribute);
 			}
 		}
 

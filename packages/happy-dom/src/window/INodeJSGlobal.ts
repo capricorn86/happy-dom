@@ -45,7 +45,6 @@ export default interface INodeJSGlobal {
 	decodeURIComponent: typeof decodeURIComponent;
 	encodeURI: typeof encodeURI;
 	encodeURIComponent: typeof encodeURIComponent;
-	eval: typeof eval;
 	global: typeof globalThis;
 	isFinite: typeof isFinite;
 	isNaN: typeof isNaN;
