@@ -152,12 +152,12 @@ export default class HTMLInputElementValueSanitizer {
 	 */
 	private static lastIsoWeekOfYear = (year: string | number): number => {
 		const date = new Date(+year, 11, 31);
-		const day = (date.getDay() + 6) % 7;
+		const day = (date.getUTCDay() + 6) % 7;
 		date.setDate(date.getDate() - day + 3);
 		const firstThursday = date.getTime();
 		date.setMonth(0, 1);
-		if (date.getDay() !== 4) {
-			date.setMonth(0, 1 + ((4 - date.getDay() + 7) % 7));
+		if (date.getUTCDay() !== 4) {
+			date.setMonth(0, 1 + ((4 - date.getUTCDay() + 7) % 7));
 		}
 		return 1 + Math.ceil((firstThursday - date.getTime()) / 604800000);
 	};
