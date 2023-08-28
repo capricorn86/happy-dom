@@ -1,10 +1,10 @@
 import CSS from '../../src/css/CSS.js';
 import CSSUnits from '../../src/css/CSSUnits.js';
 import CSSUnitValue from '../../src/css/CSSUnitValue.js';
-import { beforeEach, afterEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('CSS', () => {
-	let css: CSS = null;
+	let css: CSS;
 
 	beforeEach(() => {
 		css = new CSS();
