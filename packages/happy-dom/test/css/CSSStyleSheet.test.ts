@@ -4,7 +4,7 @@ import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('CSSStyleSheet', () => {
-	let cssStyleSheet: CSSStyleSheet = null;
+	let cssStyleSheet: CSSStyleSheet;
 
 	beforeEach(() => {
 		cssStyleSheet = new CSSStyleSheet();
