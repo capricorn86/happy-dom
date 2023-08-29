@@ -6,6 +6,7 @@ import CSSKeyframesRule from './rules/CSSKeyframesRule.js';
 import CSSMediaRule from './rules/CSSMediaRule.js';
 import CSSContainerRule from './rules/CSSContainerRule.js';
 import CSSSupportsRule from './rules/CSSSupportsRule.js';
+import SelectorParser from '../query-selector/SelectorParser.js';
 
 const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
 
@@ -96,23 +97,27 @@ export default class CSSParser {
 						parentRule.type === CSSRule.CONTAINER_RULE ||
 						parentRule.type === CSSRule.SUPPORTS_RULE)
 				) {
-					const newRule = new CSSStyleRule();
-					(<string>newRule.selectorText) = selectorText;
-					newRule.parentStyleSheet = parentStyleSheet;
-					newRule.parentRule = parentRule;
-					(<CSSMediaRule>parentRule).cssRules.push(newRule);
-					parentRule = newRule;
-				} else {
-					const newRule = new CSSStyleRule();
-					(<string>newRule.selectorText) = selectorText;
-					newRule.parentStyleSheet = parentStyleSheet;
-					newRule.parentRule = parentRule;
-
-					if (!parentRule) {
-						cssRules.push(newRule);
+					if (this.validateSelectorText(selectorText)) {
+						const newRule = new CSSStyleRule();
+						(<string>newRule.selectorText) = selectorText;
+						newRule.parentStyleSheet = parentStyleSheet;
+						newRule.parentRule = parentRule;
+						(<CSSMediaRule>parentRule).cssRules.push(newRule);
+						parentRule = newRule;
 					}
+				} else {
+					if (this.validateSelectorText(selectorText)) {
+						const newRule = new CSSStyleRule();
+						(<string>newRule.selectorText) = selectorText;
+						newRule.parentStyleSheet = parentStyleSheet;
+						newRule.parentRule = parentRule;
 
-					parentRule = newRule;
+						if (!parentRule) {
+							cssRules.push(newRule);
+						}
+
+						parentRule = newRule;
+					}
 				}
 
 				stack.push(parentRule);
@@ -139,5 +144,21 @@ export default class CSSParser {
 		}
 
 		return cssRules;
+	}
+
+	/**
+	 * Validates a selector text.
+	 *
+	 * @see https://www.w3.org/TR/CSS21/syndata.html#rule-sets
+	 * @param selectorText Selector text.
+	 * @returns True if valid, false otherwise.
+	 */
+	private static validateSelectorText(selectorText: string): boolean {
+		try {
+			SelectorParser.getSelectorGroups(selectorText);
+		} catch (e) {
+			return false;
+		}
+		return true;
 	}
 }
