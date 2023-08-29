@@ -15,7 +15,7 @@ describe('CSSParser', () => {
 			const cssStyleSheet = new CSSStyleSheet();
 			const cssRules = CSSParser.parseFromString(cssStyleSheet, CSSParserInput);
 
-			expect(cssRules.length).toBe(10);
+			expect(cssRules.length).toBe(11);
 
 			// CSSStyleRule
 			expect((<CSSStyleRule>cssRules[0]).parentRule).toBe(null);
@@ -208,6 +208,16 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[9]).style.parentRule).toBe(cssRules[9]);
 			expect((<CSSStyleRule>cssRules[9]).style.length).toBe(1);
 			expect((<CSSStyleRule>cssRules[9]).style.cssText).toBe('color: red;');
+
+			expect((<CSSStyleRule>cssRules[10]).parentRule).toBe(null);
+			expect((<CSSStyleRule>cssRules[10]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSStyleRule>cssRules[10]).selectorText).toBe('.validAsThereIsNoSemicolon');
+			expect((<CSSStyleRule>cssRules[10]).cssText).toBe(
+				'.validAsThereIsNoSemicolon { color: pink; }'
+			);
+			expect((<CSSStyleRule>cssRules[10]).style.parentRule).toBe(cssRules[10]);
+			expect((<CSSStyleRule>cssRules[10]).style.length).toBe(1);
+			expect((<CSSStyleRule>cssRules[10]).style.cssText).toBe('color: pink;');
 		});
 	});
 });
