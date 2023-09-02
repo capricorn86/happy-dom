@@ -658,7 +658,11 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 */
 	public removeAttribute(name: string): void {
-		this.attributes.removeNamedItem(name);
+		try {
+			this.attributes.removeNamedItem(name);
+		} catch (error) {
+			// Ignore DOMException when the attribute does not exist.
+		}
 	}
 
 	/**

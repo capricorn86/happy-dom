@@ -46,10 +46,12 @@ export default class Dataset {
 				return true;
 			},
 			deleteProperty(dataset: DatasetRecord, key: string): boolean {
-				if (element.attributes.removeNamedItem('data-' + Dataset.camelCaseToKebab(key))) {
-					return delete dataset[key];
+				try {
+					element.attributes.removeNamedItem('data-' + Dataset.camelCaseToKebab(key));
+				} catch (error) {
+					// Ignore DOMException when the attribute does not exist.
 				}
-				return true;
+				return delete dataset[key];
 			},
 			ownKeys(dataset: DatasetRecord): string[] {
 				// According to Mozilla we have to update the dataset object (target) to contain the same keys as what we return:

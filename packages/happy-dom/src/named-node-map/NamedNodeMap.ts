@@ -1,5 +1,7 @@
 import INamedNodeMap from './INamedNodeMap.js';
 import IAttr from '../nodes/attr/IAttr.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 /**
  * Named Node Map.
@@ -97,11 +99,19 @@ export default class NamedNodeMap implements INamedNodeMap {
 	/**
 	 * Removes an item.
 	 *
+	 * @throws DOMException
 	 * @param name Name of item.
 	 * @returns Removed item.
 	 */
-	public removeNamedItem(name: string): IAttr | null {
-		return this._removeNamedItemWithoutConsequences(name);
+	public removeNamedItem(name: string): IAttr {
+		const item = this._removeNamedItemWithoutConsequences(name);
+		if (!item) {
+			throw new DOMException(
+				`Failed to execute 'removeNamedItem' on 'NamedNodeMap': No item with name '${name}' was found.`,
+				DOMExceptionNameEnum.notFoundError
+			);
+		}
+		return item;
 	}
 
 	/**
@@ -151,7 +161,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * Removes an item without calling listeners for certain attributes.
 	 *
 	 * @param name Name of item.
-	 * @returns Removed item.
+	 * @returns Removed item, or null if it didn't exist.
 	 */
 	public _removeNamedItemWithoutConsequences(name: string): IAttr | null {
 		const removedItem = this._namedItems[name] || null;
