@@ -52,6 +52,7 @@ export default class GlobalWindow extends Window implements IWindow {
 	public decodeURIComponent: typeof decodeURIComponent = globalThis.decodeURIComponent;
 	public encodeURI: typeof encodeURI = globalThis.encodeURI;
 	public encodeURIComponent: typeof encodeURIComponent = globalThis.encodeURIComponent;
+	public eval: typeof eval = globalThis.eval;
 	/**
 	 * @deprecated
 	 */
@@ -68,16 +69,6 @@ export default class GlobalWindow extends Window implements IWindow {
 	public unescape: (str: string) => string = globalThis.unescape;
 	public gc: () => void = globalThis.gc;
 	public v8debug?: unknown = globalThis.v8debug;
-
-	/**
-	 * Evaluates code.
-	 *
-	 * @param code Code.
-	 * @returns Result.
-	 */
-	public override eval(code: string): unknown {
-		return eval(code);
-	}
 
 	/**
 	 * Setup of VM context.

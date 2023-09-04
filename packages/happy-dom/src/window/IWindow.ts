@@ -295,14 +295,6 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly scrollY: number;
 
 	/**
-	 * Evaluates code.
-	 *
-	 * @param code Code.
-	 * @returns Result.
-	 */
-	eval(code: string): unknown;
-
-	/**
 	 * Returns an object containing the values of all CSS properties of an element.
 	 *
 	 * @param element Element.

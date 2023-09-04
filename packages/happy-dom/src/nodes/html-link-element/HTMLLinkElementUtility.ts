@@ -40,6 +40,7 @@ export default class HTMLLinkElementUtility {
 			try {
 				code = await ResourceFetch.fetch(element.ownerDocument, href);
 			} catch (error) {
+				(<Document>element.ownerDocument)._readyStateManager.endTask();
 				this.onError(element, error);
 				return;
 			}
@@ -71,7 +72,6 @@ export default class HTMLLinkElementUtility {
 				error
 			})
 		);
-		(<Document>element.ownerDocument)._readyStateManager.endTask();
 		element.ownerDocument.defaultView.console.error(error);
 	}
 }

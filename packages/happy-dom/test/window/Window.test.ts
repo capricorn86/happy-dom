@@ -309,7 +309,7 @@ describe('Window', () => {
 		});
 	});
 
-	describe('setInnerWidth()', () => {
+	describe('happyDOM.setInnerWidth()', () => {
 		it('Sets window width.', () => {
 			window.happyDOM.setInnerWidth(1920);
 			expect(window.innerWidth).toBe(1920);
@@ -317,7 +317,7 @@ describe('Window', () => {
 		});
 	});
 
-	describe('setInnerHeight()', () => {
+	describe('happyDOM.setInnerHeight()', () => {
 		it('Sets window height.', () => {
 			window.happyDOM.setInnerHeight(1080);
 			expect(window.innerHeight).toBe(1080);
@@ -434,6 +434,30 @@ describe('Window', () => {
 			for (const propertyKey in referenceValues) {
 				expect(window.navigator[propertyKey]).toEqual(referenceValues[propertyKey]);
 			}
+		});
+	});
+
+	describe('eval()', () => {
+		it('Respects direct eval.', () => {
+			const result = window.eval(`
+			variable = 'globally defined';
+			(function () {
+				var variable = 'locally defined';
+				return eval('variable');
+			})()`);
+			expect(result).toBe('locally defined');
+			expect(window['variable']).toBe('globally defined');
+		});
+
+		it('Respects indirect eval.', () => {
+			const result = window.eval(`
+			variable = 'globally defined';
+			(function () {
+				var variable = 'locally defined';
+				return (0,eval)('variable');
+			})()`);
+			expect(result).toBe('globally defined');
+			expect(window['variable']).toBe('globally defined');
 		});
 	});
 

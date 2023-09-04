@@ -158,9 +158,6 @@ export default class Window extends EventTarget implements IWindow {
 			this.happyDOM.asyncTaskManager.cancelAll();
 		},
 		asyncTaskManager: new AsyncTaskManager(),
-		setURL: (url: string) => {
-			this.location.href = url;
-		},
 		setWindowSize: (options: { width?: number; height?: number }): void => {
 			if (
 				(options.width !== undefined && this.innerWidth !== options.width) ||
@@ -178,6 +175,9 @@ export default class Window extends EventTarget implements IWindow {
 
 				this.dispatchEvent(new Event('resize'));
 			}
+		},
+		setURL: (url: string) => {
+			this.location.href = url;
 		},
 		settings: {
 			disableJavaScriptEvaluation: false,
@@ -395,6 +395,7 @@ export default class Window extends EventTarget implements IWindow {
 	public decodeURIComponent: typeof decodeURIComponent;
 	public encodeURI: typeof encodeURI;
 	public encodeURIComponent: typeof encodeURIComponent;
+	public eval: typeof eval;
 	/**
 	 * @deprecated
 	 */
@@ -620,20 +621,6 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public get CSS(): CSS {
 		return new CSS();
-	}
-
-	/**
-	 * Evaluates code.
-	 *
-	 * @override
-	 * @param code Code.
-	 * @returns Result.
-	 */
-	public eval(code: string): unknown {
-		if (VM.isContext(this)) {
-			return VM.runInContext(code, this);
-		}
-		return eval(code);
 	}
 
 	/**
