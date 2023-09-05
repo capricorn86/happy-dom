@@ -79,4 +79,13 @@ export default `
     /* Single-line comment */
     .foo { color: red; }
 
+    ;
+
+	.invalidAsThereIsASemicolon {
+		color: red;
+	}
+
+    .validAsThereIsNoSemicolon {
+        color: pink;
+    }
 `.trim();
