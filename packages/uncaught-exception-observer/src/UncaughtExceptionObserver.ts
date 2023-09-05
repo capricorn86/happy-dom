@@ -1,8 +1,7 @@
-import IWindow from './IWindow.js';
-import WindowErrorUtility from './WindowErrorUtility.js';
+import { IWindow, ErrorEvent } from 'happy-dom';
 
 /**
- * Listens for uncaught exceptions on the running Node process and dispatches error events.
+ * Listens for uncaught exceptions coming from Happy DOM on the running Node process and dispatches error events on the Window instance.
  */
 export default class UncaughtExceptionObserver {
 	private static listenerCount = 0;
@@ -14,18 +13,17 @@ export default class UncaughtExceptionObserver {
 	private uncaughtRejectionListener: (error: Error) => void | null = null;
 
 	/**
-	 * Constructor.
-	 *
-	 * @param window Window.
-	 */
-	constructor(window: IWindow) {
-		this.window = window;
-	}
-
-	/**
 	 * Observes the Node process for uncaught exceptions.
+	 *
+	 * @param window
 	 */
-	public observe(): void {
+	public observe(window: IWindow): void {
+		if (this.window) {
+			throw new Error('Already observing.');
+		}
+
+		this.window = window;
+
 		(<typeof UncaughtExceptionObserver>this.constructor).listenerCount++;
 
 		this.uncaughtExceptionListener = (
@@ -41,7 +39,8 @@ export default class UncaughtExceptionObserver {
 				error.stack?.includes('at main (eval') &&
 				error.stack?.includes('/happy-dom/')
 			) {
-				WindowErrorUtility.dispatchError(this.window, error);
+				this.window.console.error(error);
+				this.window.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
 			} else if (
 				process.listenerCount('uncaughtException') ===
 				(<typeof UncaughtExceptionObserver>this.constructor).listenerCount
@@ -59,7 +58,8 @@ export default class UncaughtExceptionObserver {
 				error.stack?.includes('at main (eval') &&
 				error.stack?.includes('/happy-dom/')
 			) {
-				WindowErrorUtility.dispatchError(this.window, error);
+				this.window.console.error(error);
+				this.window.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
 			} else if (
 				process.listenerCount('unhandledRejection') ===
 				(<typeof UncaughtExceptionObserver>this.constructor).listenerCount

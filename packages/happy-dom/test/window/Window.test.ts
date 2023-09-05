@@ -280,42 +280,6 @@ describe('Window', () => {
 		});
 	});
 
-	describe('happyDOM.uncaughtExceptionObserver.observe()', () => {
-		it('Observers uncaught exceptions thrown inside evaluated code.', async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return new Promise((resolve) => {
-					setTimeout(() => {
-						resolve(<IResponse>{});
-					}, 2);
-				});
-			});
-
-			let errorEvent: ErrorEvent | null = null;
-
-			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
-
-			window.happyDOM.uncaughtExceptionObserver.observe();
-
-			document.write(`
-                <script>
-                    async function main() {
-                        await fetch('https://localhost:3000/path/');
-                        throw new Error('Something went wrong.');
-                    }
-                    main();
-                </script>
-            `);
-
-			await new Promise((resolve) => setTimeout(resolve, 10));
-
-			expect((<ErrorEvent>(<unknown>errorEvent)).error).instanceOf(window.Error);
-			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Something went wrong.');
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Something went wrong.');
-
-			window.happyDOM.uncaughtExceptionObserver.disconnect();
-		});
-	});
-
 	describe('happyDOM.setURL()', () => {
 		it('Sets URL.', () => {
 			window.happyDOM.setURL('https://localhost:8080');
