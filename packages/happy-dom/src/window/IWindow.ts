@@ -123,6 +123,7 @@ import IHeadersInit from '../fetch/types/IHeadersInit.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
+import UncaughtExceptionObserver from './UncaughtExceptionObserver.js';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -133,8 +134,10 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 		whenAsyncComplete: () => Promise<void>;
 		cancelAsync: () => void;
 		asyncTaskManager: AsyncTaskManager;
+		uncaughtExceptionObserver: UncaughtExceptionObserver;
 		setWindowSize: (options: { width?: number; height?: number }) => void;
 		setURL: (url: string) => void;
+		destroy: () => void;
 		settings: IHappyDOMSettings;
 
 		/**

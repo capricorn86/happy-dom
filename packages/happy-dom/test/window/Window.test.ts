@@ -280,6 +280,42 @@ describe('Window', () => {
 		});
 	});
 
+	describe('happyDOM.uncaughtExceptionObserver.observe()', () => {
+		it('Observers uncaught exceptions thrown inside evaluated code.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(<IResponse>{});
+					}, 2);
+				});
+			});
+
+			let errorEvent: ErrorEvent | null = null;
+
+			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+
+			window.happyDOM.uncaughtExceptionObserver.observe();
+
+			document.write(`
+                <script>
+                    async function main() {
+                        await fetch('https://localhost:3000/path/');
+                        throw new Error('Something went wrong.');
+                    }
+                    main();
+                </script>
+            `);
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect((<ErrorEvent>(<unknown>errorEvent)).error).instanceOf(window.Error);
+			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Something went wrong.');
+			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Something went wrong.');
+
+			window.happyDOM.uncaughtExceptionObserver.disconnect();
+		});
+	});
+
 	describe('happyDOM.setURL()', () => {
 		it('Sets URL.', () => {
 			window.happyDOM.setURL('https://localhost:8080');
@@ -458,6 +494,11 @@ describe('Window', () => {
 			})()`);
 			expect(result).toBe('globally defined');
 			expect(window['variable']).toBe('globally defined');
+		});
+
+		it('Has access to the window and document.', () => {
+			window.eval(`window.variable = document.characterSet;`);
+			expect(window['variable']).toBe('UTF-8');
 		});
 	});
 
@@ -808,6 +849,22 @@ describe('Window', () => {
 				expect(timeoutId.constructor.name).toBe('Timeout');
 			});
 		});
+
+		it('Catches errors thrown in the callback.', async () => {
+			await new Promise((resolve) => {
+				let errorEvent: ErrorEvent | null = null;
+				window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+				window.setTimeout(() => {
+					throw new window.Error('Test error');
+				});
+				setTimeout(() => {
+					expect((<ErrorEvent>(<unknown>errorEvent)).error).instanceOf(window.Error);
+					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
+					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
+					resolve(null);
+				}, 2);
+			});
+		});
 	});
 
 	describe('queueMicrotask()', () => {
@@ -829,6 +886,22 @@ describe('Window', () => {
 				window.happyDOM.cancelAsync();
 				setTimeout(() => {
 					expect(isCallbackCalled).toBe(false);
+					resolve(null);
+				});
+			});
+		});
+
+		it('Catches errors thrown in the callback.', async () => {
+			await new Promise((resolve) => {
+				let errorEvent: ErrorEvent | null = null;
+				window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+				window.queueMicrotask(() => {
+					throw new window.Error('Test error');
+				});
+				setTimeout(() => {
+					expect((<ErrorEvent>(<unknown>errorEvent)).error).instanceOf(window.Error);
+					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
+					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
 					resolve(null);
 				});
 			});
@@ -898,6 +971,23 @@ describe('Window', () => {
 				);
 			});
 		});
+
+		it('Catches errors thrown in the callback.', async () => {
+			await new Promise((resolve) => {
+				let errorEvent: ErrorEvent | null = null;
+				window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+				const interval = window.setInterval(() => {
+					throw new window.Error('Test error');
+				});
+				setTimeout(() => {
+					window.clearInterval(interval);
+					expect((<ErrorEvent>(<unknown>errorEvent)).error).instanceOf(window.Error);
+					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
+					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
+					resolve(null);
+				});
+			});
+		});
 	});
 
 	describe('clearInterval()', () => {
@@ -921,6 +1011,22 @@ describe('Window', () => {
 			await new Promise((resolve) => {
 				window.requestAnimationFrame((now) => {
 					expect(Math.abs(now - window.performance.now())).toBeLessThan(100);
+					resolve(null);
+				});
+			});
+		});
+
+		it('Catches errors thrown in the callback.', async () => {
+			await new Promise((resolve) => {
+				let errorEvent: ErrorEvent | null = null;
+				window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+				window.requestAnimationFrame(() => {
+					throw new window.Error('Test error');
+				});
+				setTimeout(() => {
+					expect((<ErrorEvent>(<unknown>errorEvent)).error).instanceOf(window.Error);
+					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
+					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
 					resolve(null);
 				});
 			});

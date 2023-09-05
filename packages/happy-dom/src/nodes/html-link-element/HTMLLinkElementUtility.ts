@@ -1,11 +1,11 @@
 import Document from '../document/Document.js';
 import Event from '../../event/Event.js';
-import ErrorEvent from '../../event/events/ErrorEvent.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import HTMLLinkElement from './HTMLLinkElement.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 
 /**
  * Helper class for getting the URL relative to a Location object.
@@ -24,54 +24,32 @@ export default class HTMLLinkElementUtility {
 
 		if (href !== null && rel && rel.toLowerCase() === 'stylesheet' && element.isConnected) {
 			if (element.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading) {
-				this.onError(
+				WindowErrorUtility.dispatchError(
 					element,
 					new DOMException(
 						`Failed to load external stylesheet "${href}". CSS file loading is disabled.`,
 						DOMExceptionNameEnum.notSupportedError
 					)
 				);
+
 				return;
 			}
 
 			(<Document>element.ownerDocument)._readyStateManager.startTask();
 
-			let code: string;
-			try {
-				code = await ResourceFetch.fetch(element.ownerDocument, href);
-			} catch (error) {
-				(<Document>element.ownerDocument)._readyStateManager.endTask();
-				this.onError(element, error);
-				return;
+			const code: string | null = await WindowErrorUtility.captureErrorAsync<string>(
+				element,
+				async () => await ResourceFetch.fetch(element.ownerDocument, href)
+			);
+
+			if (code) {
+				const styleSheet = new CSSStyleSheet();
+				styleSheet.replaceSync(code);
+				(<CSSStyleSheet>element.sheet) = styleSheet;
+				element.dispatchEvent(new Event('load'));
 			}
 
-			const styleSheet = new CSSStyleSheet();
-			styleSheet.replaceSync(code);
-			(<CSSStyleSheet>element.sheet) = styleSheet;
-			element.dispatchEvent(new Event('load'));
 			(<Document>element.ownerDocument)._readyStateManager.endTask();
 		}
-	}
-
-	/**
-	 * Triggered when an error occurs.
-	 *
-	 * @param element Element.
-	 * @param error Error.
-	 */
-	private static onError(element: HTMLLinkElement, error: Error): void {
-		element.dispatchEvent(
-			new ErrorEvent('error', {
-				message: error.message,
-				error
-			})
-		);
-		element.ownerDocument.defaultView.dispatchEvent(
-			new ErrorEvent('error', {
-				message: error.message,
-				error
-			})
-		);
-		element.ownerDocument.defaultView.console.error(error);
 	}
 }

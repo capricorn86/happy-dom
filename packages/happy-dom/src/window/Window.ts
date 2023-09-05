@@ -135,6 +135,8 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IHappyDOMOptions from './IHappyDOMOptions.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
+import WindowErrorUtility from './WindowErrorUtility.js';
+import UncaughtExceptionObserver from './UncaughtExceptionObserver.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -157,6 +159,7 @@ export default class Window extends EventTarget implements IWindow {
 		cancelAsync: (): void => {
 			this.happyDOM.asyncTaskManager.cancelAll();
 		},
+		uncaughtExceptionObserver: new UncaughtExceptionObserver(this),
 		asyncTaskManager: new AsyncTaskManager(),
 		setWindowSize: (options: { width?: number; height?: number }): void => {
 			if (
@@ -178,6 +181,10 @@ export default class Window extends EventTarget implements IWindow {
 		},
 		setURL: (url: string) => {
 			this.location.href = url;
+		},
+		destroy: (): void => {
+			this.happyDOM.cancelAsync();
+			this.happyDOM.uncaughtExceptionObserver.disconnect();
 		},
 		settings: {
 			disableJavaScriptEvaluation: false,
@@ -706,9 +713,9 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Timeout ID.
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
-		const id = this._setTimeout(() => {
+		const id = this._setTimeout(async () => {
 			this.happyDOM.asyncTaskManager.endTimer(id);
-			callback(...args);
+			WindowErrorUtility.captureErrorAsync(this, async () => await callback(...args));
 		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
@@ -733,7 +740,10 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Interval ID.
 	 */
 	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
-		const id = this._setInterval(callback, delay, ...args);
+		const id = this._setInterval(async () => {
+			this.happyDOM.asyncTaskManager.endTimer(id);
+			WindowErrorUtility.captureErrorAsync(this, async () => await callback(...args));
+		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
 	}
@@ -755,9 +765,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Timeout ID.
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout {
-		return this.setTimeout(() => {
-			callback(this.performance.now());
-		});
+		return this.setTimeout(() => callback(this.performance.now()));
 	}
 
 	/**
@@ -777,10 +785,10 @@ export default class Window extends EventTarget implements IWindow {
 	public queueMicrotask(callback: Function): void {
 		let isAborted = false;
 		const taskId = this.happyDOM.asyncTaskManager.startTask(() => (isAborted = true));
-		this._queueMicrotask(() => {
+		this._queueMicrotask(async () => {
 			if (!isAborted) {
+				WindowErrorUtility.captureErrorAsync(this, async () => await callback());
 				this.happyDOM.asyncTaskManager.endTask(taskId);
-				callback();
 			}
 		});
 	}

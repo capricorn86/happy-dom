@@ -6,6 +6,7 @@ import EventPhaseEnum from './EventPhaseEnum.js';
 import INode from '../nodes/node/INode.js';
 import IDocument from '../nodes/document/IDocument.js';
 import IWindow from '../window/IWindow.js';
+import WindowErrorUtility from '../window/WindowErrorUtility.js';
 
 /**
  * Handles events.
@@ -88,11 +89,12 @@ export default abstract class EventTarget implements IEventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
+		const window = this._getWindow();
+
 		if (event.eventPhase === EventPhaseEnum.none) {
 			event._target = this;
 
 			const composedPath = event.composedPath();
-			const window = this._getWindow();
 
 			// Capturing phase
 
@@ -137,7 +139,10 @@ export default abstract class EventTarget implements IEventTarget {
 			const onEventName = 'on' + event.type.toLowerCase();
 
 			if (typeof this[onEventName] === 'function') {
-				this[onEventName].call(this, event);
+				WindowErrorUtility.captureErrorAsync(
+					window,
+					async () => await this[onEventName].call(this, event)
+				);
 			}
 		}
 
@@ -164,7 +169,10 @@ export default abstract class EventTarget implements IEventTarget {
 				if ((<IEventListener>listener).handleEvent) {
 					(<IEventListener>listener).handleEvent(event);
 				} else {
-					(<(event: Event) => void>listener).call(this, event);
+					WindowErrorUtility.captureErrorAsync(
+						window,
+						async () => await (<(event: Event) => void>listener).call(this, event)
+					);
 				}
 
 				event._isInPassiveEventListener = false;

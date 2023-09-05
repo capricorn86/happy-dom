@@ -1,10 +1,10 @@
 import Document from '../document/Document.js';
 import Event from '../../event/Event.js';
-import ErrorEvent from '../../event/events/ErrorEvent.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import HTMLScriptElement from './HTMLScriptElement.js';
+import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 
 /**
  * Helper class for getting the URL relative to a Location object.
@@ -25,7 +25,7 @@ export default class HTMLScriptElementUtility {
 			element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptFileLoading ||
 			element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation
 		) {
-			this.onError(
+			WindowErrorUtility.dispatchError(
 				element,
 				new DOMException(
 					`Failed to load external script "${src}". JavaScript file loading is disabled.`,
@@ -38,54 +38,29 @@ export default class HTMLScriptElementUtility {
 		if (async) {
 			(<Document>element.ownerDocument)._readyStateManager.startTask();
 
-			let code = null;
+			const code = await WindowErrorUtility.captureErrorAsync<string>(
+				element,
+				async () => await ResourceFetch.fetch(element.ownerDocument, src)
+			);
 
-			try {
-				code = await ResourceFetch.fetch(element.ownerDocument, src);
-			} catch (error) {
-				(<Document>element.ownerDocument)._readyStateManager.endTask();
-				this.onError(element, error);
-				return;
+			if (code) {
+				WindowErrorUtility.captureErrorSync(element.ownerDocument.defaultView, () =>
+					element.ownerDocument.defaultView.eval(code)
+				);
+				element.dispatchEvent(new Event('load'));
 			}
-
-			element.ownerDocument.defaultView.eval(code);
-			element.dispatchEvent(new Event('load'));
-
 			(<Document>element.ownerDocument)._readyStateManager.endTask();
 		} else {
-			let code = null;
+			const code = WindowErrorUtility.captureErrorSync<string>(element, () =>
+				ResourceFetch.fetchSync(element.ownerDocument, src)
+			);
 
-			try {
-				code = ResourceFetch.fetchSync(element.ownerDocument, src);
-			} catch (error) {
-				this.onError(element, error);
-				return;
+			if (code) {
+				WindowErrorUtility.captureErrorSync(element.ownerDocument.defaultView, () =>
+					element.ownerDocument.defaultView.eval(code)
+				);
+				element.dispatchEvent(new Event('load'));
 			}
-
-			element.ownerDocument.defaultView.eval(code);
-			element.dispatchEvent(new Event('load'));
 		}
-	}
-
-	/**
-	 * Triggered when an error occurs.
-	 *
-	 * @param element Element.
-	 * @param error Error.
-	 */
-	private static onError(element: HTMLScriptElement, error: Error): void {
-		element.dispatchEvent(
-			new ErrorEvent('error', {
-				message: error.message,
-				error
-			})
-		);
-		element.ownerDocument.defaultView.dispatchEvent(
-			new ErrorEvent('error', {
-				message: error.message,
-				error
-			})
-		);
-		element.ownerDocument.defaultView.console.error(error);
 	}
 }
