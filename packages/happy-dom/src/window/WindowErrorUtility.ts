@@ -56,10 +56,12 @@ export default class WindowErrorUtility {
 	 */
 	public static dispatchError(elementOrWindow: IWindow | IElement, error: Error): void {
 		if ((<IWindow>elementOrWindow).console) {
-			(<IWindow>elementOrWindow).console.error(error);
+			(<IWindow>elementOrWindow).console.error(error.message + '\n' + error.stack);
 			elementOrWindow.dispatchEvent(new ErrorEvent('error', { message: error.message, error }));
 		} else {
-			(<IElement>elementOrWindow).ownerDocument.defaultView.console.error(error);
+			(<IElement>elementOrWindow).ownerDocument.defaultView.console.error(
+				error.message + '\n' + error.stack
+			);
 			(<IElement>elementOrWindow).dispatchEvent(
 				new ErrorEvent('error', { message: error.message, error })
 			);

@@ -34,17 +34,15 @@ export default class UncaughtExceptionObserver {
 				return;
 			}
 
-			if (
-				error instanceof this.window.Error &&
-				error.stack?.includes('at main (eval') &&
-				error.stack?.includes('/happy-dom/')
-			) {
-				this.window.console.error(error);
+			if (error instanceof this.window.Error && error.stack?.includes('/happy-dom/')) {
+				this.window.console.error(error.message + '\n' + error.stack);
 				this.window.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
 			} else if (
 				process.listenerCount('uncaughtException') ===
 				(<typeof UncaughtExceptionObserver>this.constructor).listenerCount
 			) {
+				// eslint-disable-next-line no-console
+				console.error(error.message + '\n' + error.stack);
 				// Exit if there are no other listeners handling the error.
 				process.exit(1);
 			}
@@ -53,17 +51,15 @@ export default class UncaughtExceptionObserver {
 		// The "uncaughtException" event is not always triggered for unhandled rejections.
 		// Therefore we want to use the "unhandledRejection" event as well.
 		this.uncaughtRejectionListener = (error: Error) => {
-			if (
-				error instanceof this.window.Error &&
-				error.stack?.includes('at main (eval') &&
-				error.stack?.includes('/happy-dom/')
-			) {
-				this.window.console.error(error);
+			if (error instanceof this.window.Error && error.stack?.includes('/happy-dom/')) {
+				this.window.console.error(error.message + '\n' + error.stack);
 				this.window.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
 			} else if (
 				process.listenerCount('unhandledRejection') ===
 				(<typeof UncaughtExceptionObserver>this.constructor).listenerCount
 			) {
+				// eslint-disable-next-line no-console
+				console.error(error.message + '\n' + error.stack);
 				// Exit if there are no other listeners handling the error.
 				process.exit(1);
 			}
@@ -77,6 +73,10 @@ export default class UncaughtExceptionObserver {
 	 * Disconnects observer.
 	 */
 	public disconnect(): void {
+		if (!this.window) {
+			return;
+		}
+
 		(<typeof UncaughtExceptionObserver>this.constructor).listenerCount--;
 
 		process.off('uncaughtException', this.uncaughtExceptionListener);

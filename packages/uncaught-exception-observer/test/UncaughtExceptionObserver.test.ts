@@ -55,7 +55,7 @@ async function itObservesUncaughtExceptions(): Promise<void> {
 
 	window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
-	window['customSetTimeout'] = setTimeout;
+	window['customSetTimeout'] = setTimeout.bind(globalThis);
 
 	document.write(`
         <script>
@@ -63,7 +63,7 @@ async function itObservesUncaughtExceptions(): Promise<void> {
                 function main() {
                     customSetTimeout(() => {
                         throw new Error('Test error');
-                    });
+                    }, 0);
                 }
 
                 main();
@@ -75,8 +75,17 @@ async function itObservesUncaughtExceptions(): Promise<void> {
 
 	observer.disconnect();
 
-	const actualConsoleOutput = window.happyDOM.virtualConsolePrinter.readAsString();
-	const expectedConsoleOutput = ``;
+	const actualConsoleOutput = window.happyDOM.virtualConsolePrinter
+		.readAsString()
+		.replace(/[\s0-9]|\(file:.+\/happy-dom\//gm, '');
+	const expectedConsoleOutput = `Test error
+    Error: Test error
+        at Timeout.eval [as _onTimeout] (eval at <anonymous> (file:///home/user/happy-dom/packages/happy-dom/lib/nodes/html-script-element/HTMLScriptElement.js:171:126), <anonymous>:5:31)
+        at listOnTimeout (node:internal/timers:559:17)
+        at processTimers (node:internal/timers:502:7)`.replace(
+		/[\s0-9]|\(file:.+\/happy-dom\//gm,
+		''
+	);
 
 	if (actualConsoleOutput !== expectedConsoleOutput) {
 		throw new Error(`Console output not correct.`);
@@ -95,5 +104,15 @@ async function itObservesUncaughtExceptions(): Promise<void> {
 	}
 }
 
-itObservesUnhandledRejections();
-itObservesUncaughtExceptions();
+async function main(): Promise<void> {
+	try {
+		await itObservesUnhandledRejections();
+		await itObservesUncaughtExceptions();
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error(error);
+		process.exit(1);
+	}
+}
+
+main();
