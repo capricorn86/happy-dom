@@ -74,16 +74,30 @@ export default class DOMParser {
 				}
 			}
 		} else {
-			const documentElement = newDocument.createElement('html');
-			const bodyElement = newDocument.createElement('body');
-			const headElement = newDocument.createElement('head');
+			switch (mimeType) {
+				case 'image/svg+xml':
+					{
+						for (const node of root._childNodes.slice()) {
+							newDocument.appendChild(node);
+						}
+					}
+					break;
+				case 'text/html':
+				default:
+					{
+						const documentElement = newDocument.createElement('html');
+						const bodyElement = newDocument.createElement('body');
+						const headElement = newDocument.createElement('head');
 
-			documentElement.appendChild(headElement);
-			documentElement.appendChild(bodyElement);
-			newDocument.appendChild(documentElement);
+						documentElement.appendChild(headElement);
+						documentElement.appendChild(bodyElement);
+						newDocument.appendChild(documentElement);
 
-			for (const node of root._childNodes.slice()) {
-				bodyElement.appendChild(node);
+						for (const node of root._childNodes.slice()) {
+							bodyElement.appendChild(node);
+						}
+					}
+					break;
 			}
 		}
 
