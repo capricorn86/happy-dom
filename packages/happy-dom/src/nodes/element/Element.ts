@@ -42,7 +42,7 @@ export default class Element extends Node implements IElement {
 	public static observedAttributes: string[];
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
-	public shadowRoot: IShadowRoot = null;
+	public shadowRoot: IShadowRoot | null = null;
 	public prefix: string = null;
 
 	public scrollHeight = 0;

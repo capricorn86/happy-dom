@@ -1,12 +1,13 @@
-import IVirtualConsoleLogEntry from './IVirtualConsoleLogEntry.js';
-import VirtualConsoleLogLevelEnum from './VirtualConsoleLogLevelEnum.js';
+import IVirtualConsoleLogEntry from './types/IVirtualConsoleLogEntry.js';
+import VirtualConsoleLogLevelEnum from './enums/VirtualConsoleLogLevelEnum.js';
 import Event from '../event/Event.js';
-import VirtualConsoleUtility from './VirtualConsoleUtility.js';
+import VirtualConsoleLogEntryStringifier from './utilities/VirtualConsoleLogEntryStringifier.js';
+import IVirtualConsolePrinter from './types/IVirtualConsolePrinter.js';
 
 /**
  * Virtual console printer.
  */
-export default class VirtualConsolePrinter {
+export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	private _logEntries: IVirtualConsoleLogEntry[] = [];
 	private _listeners: {
 		print: Array<(event: Event) => void>;
@@ -98,7 +99,7 @@ export default class VirtualConsolePrinter {
 		let output = '';
 		for (const logEntry of logEntries) {
 			if (logEntry.level >= logLevel) {
-				output += VirtualConsoleUtility.stringifyMessage(logEntry.message);
+				output += VirtualConsoleLogEntryStringifier.toString(logEntry);
 			}
 		}
 		return output;

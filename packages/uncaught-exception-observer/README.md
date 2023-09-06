@@ -8,7 +8,9 @@ The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate 
 
 [Happy DOM](https://github.com/capricorn86/happy-dom) focuses heavily on performance and can be used as an alternative to [JSDOM](https://github.com/jsdom/jsdom).
 
-This package contains a utility that registers [Happy DOM](https://github.com/capricorn86/happy-dom) globally, which makes it possible to use [Happy DOM](https://github.com/capricorn86/happy-dom) for testing in a Node environment.
+This package contains a tool that observes uncaught exceptions and Promise rejections in [Happy DOM](https://github.com/capricorn86/happy-dom). It will dispatch uncaught errors as events on the [Happy DOM](https://github.com/capricorn86/happy-dom) Window instance.
+
+Uncaught exceptions and rejections must be listened to on the NodeJS process at a global level. This tool will therefore not work in all environments as there may already be listeners added by other libraries on the NodeJS process that may conflict.
 
 ### DOM Features
 
@@ -46,37 +48,41 @@ And much more..
 # Installation
 
 ```bash
-npm install @happy-dom/global-registrator --save-dev
+npm install happy-dom @happy-dom/uncaught-exception-observer
 ```
 
 # Usage
 
-## Register
-
 ```javascript
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
+import { Window } from 'happy-dom';
+import { UncaughtExceptionObserver } from '@happy-dom/uncaught-exception-observer';
 
-GlobalRegistrator.register();
+const window = new Window();
+const document = window.document;
+const observer = new UncaughtExceptionObserver();
 
-document.body.innerHTML = `<button>My button</button>`;
+// Connects observer
+observer.observe(window);
 
-const button = document.querySelector('button');
+window.addEventListener((error) => {
+	// Do something on error
+});
 
-// Outputs: "My button"
-console.log(button.innerText);
-```
+document.write(`
+    <script>
+        (() => {
+            async function main() {
+                await fetch('https://localhost:3000/')
+                throw Error('This error will be caught, but would otherwise have terminated the process.');
+            }
 
-## Unregister
+            main();
+        })();
+    </script>
+`);
 
-```javascript
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-
-GlobalRegistrator.register();
-
-GlobalRegistrator.unregister();
-
-// Outputs: "undefined"
-console.log(global.document);
+// Disconnects observer
+observer.disconnect();
 ```
 
 # Documentation

@@ -139,10 +139,12 @@ export default abstract class EventTarget implements IEventTarget {
 			const onEventName = 'on' + event.type.toLowerCase();
 
 			if (typeof this[onEventName] === 'function') {
-				WindowErrorUtility.captureErrorAsync(
-					window,
-					async () => await this[onEventName].call(this, event)
-				);
+				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
+				if (window && (this !== <IEventTarget>window || event.type !== 'error')) {
+					WindowErrorUtility.captureErrorSync(window, this[onEventName].bind(this, event));
+				} else {
+					this[onEventName].call(this, event);
+				}
 			}
 		}
 
@@ -166,13 +168,25 @@ export default abstract class EventTarget implements IEventTarget {
 					event._isInPassiveEventListener = true;
 				}
 
-				if ((<IEventListener>listener).handleEvent) {
-					(<IEventListener>listener).handleEvent(event);
+				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
+				if (window && (this !== <IEventTarget>window || event.type !== 'error')) {
+					if ((<IEventListener>listener).handleEvent) {
+						WindowErrorUtility.captureErrorSync(
+							window,
+							(<IEventListener>listener).handleEvent.bind(this, event)
+						);
+					} else {
+						WindowErrorUtility.captureErrorSync(
+							window,
+							(<(event: Event) => void>listener).bind(this, event)
+						);
+					}
 				} else {
-					WindowErrorUtility.captureErrorAsync(
-						window,
-						async () => await (<(event: Event) => void>listener).call(this, event)
-					);
+					if ((<IEventListener>listener).handleEvent) {
+						(<IEventListener>listener).handleEvent(event);
+					} else {
+						(<(event: Event) => void>listener).call(this, event);
+					}
 				}
 
 				event._isInPassiveEventListener = false;

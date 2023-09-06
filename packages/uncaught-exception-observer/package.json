@@ -74,8 +74,8 @@
 		"test": "tsc --project ./test && node ./tmp/UncaughtExceptionObserver.test.js",
 		"test:debug": "tsc --project ./test && node --inspect-brk ./tmp/UncaughtExceptionObserver.test.js"
 	},
-	"dependencies": {
-		"happy-dom": "^0.0.0"
+	"peerDependencies": {
+		"happy-dom": ">= 2.25.2"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
@@ -90,6 +90,7 @@
 		"eslint-plugin-json": "^3.1.0",
 		"eslint-plugin-turbo": "^0.0.7",
 		"prettier": "^2.6.0",
-		"typescript": "^5.0.4"
+		"typescript": "^5.0.4",
+		"happy-dom": "^0.0.0"
 	}
 }

@@ -1,4 +1,4 @@
-import { IWindow, ErrorEvent } from 'happy-dom';
+import IWindow from 'happy-dom/lib/window/IWindow.js';
 
 /**
  * Listens for uncaught exceptions coming from Happy DOM on the running Node process and dispatches error events on the Window instance.
@@ -35,14 +35,16 @@ export default class UncaughtExceptionObserver {
 			}
 
 			if (error instanceof this.window.Error && error.stack?.includes('/happy-dom/')) {
-				this.window.console.error(error.message + '\n' + error.stack);
-				this.window.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
+				this.window.console.error(error);
+				this.window.dispatchEvent(
+					new this.window.ErrorEvent('error', { error, message: error.message })
+				);
 			} else if (
 				process.listenerCount('uncaughtException') ===
 				(<typeof UncaughtExceptionObserver>this.constructor).listenerCount
 			) {
 				// eslint-disable-next-line no-console
-				console.error(error.message + '\n' + error.stack);
+				console.error(error);
 				// Exit if there are no other listeners handling the error.
 				process.exit(1);
 			}
@@ -52,14 +54,16 @@ export default class UncaughtExceptionObserver {
 		// Therefore we want to use the "unhandledRejection" event as well.
 		this.uncaughtRejectionListener = (error: Error) => {
 			if (error instanceof this.window.Error && error.stack?.includes('/happy-dom/')) {
-				this.window.console.error(error.message + '\n' + error.stack);
-				this.window.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
+				this.window.console.error(error);
+				this.window.dispatchEvent(
+					new this.window.ErrorEvent('error', { error, message: error.message })
+				);
 			} else if (
 				process.listenerCount('unhandledRejection') ===
 				(<typeof UncaughtExceptionObserver>this.constructor).listenerCount
 			) {
 				// eslint-disable-next-line no-console
-				console.error(error.message + '\n' + error.stack);
+				console.error(error);
 				// Exit if there are no other listeners handling the error.
 				process.exit(1);
 			}

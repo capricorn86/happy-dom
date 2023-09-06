@@ -13,39 +13,62 @@ export default class WindowErrorUtility {
 	 *
 	 * @param elementOrWindow Element or Window.
 	 * @param callback Callback.
+	 * @param [cleanup] Cleanup callback on error.
 	 * @returns Promise.
 	 */
 	public static async captureErrorAsync<T>(
 		elementOrWindow: IWindow | IElement,
-		callback: () => Promise<T>
+		callback: () => Promise<T>,
+		cleanup?: () => void
 	): Promise<T | null> {
 		try {
 			return await callback();
 		} catch (error) {
 			this.dispatchError(elementOrWindow, error);
+			if (cleanup) {
+				cleanup();
+			}
 		}
 		return null;
 	}
 
 	/**
 	 * Calls a function synchronously wrapped in a try/catch block to capture errors and dispatch error events.
+	 * If the callback returns a Promise, it will catch errors from the promise.
 	 *
 	 * It will also output the errors to the console.
 	 *
 	 * @param elementOrWindow Element or Window.
 	 * @param callback Callback.
+	 * @param [cleanup] Cleanup callback on error.
 	 * @returns Result.
 	 */
 	public static captureErrorSync<T>(
 		elementOrWindow: IWindow | IElement,
-		callback: () => T
+		callback: () => T,
+		cleanup?: () => void
 	): T | null {
+		let result = null;
+
 		try {
-			return callback();
+			result = callback();
 		} catch (error) {
 			this.dispatchError(elementOrWindow, error);
+			if (cleanup) {
+				cleanup();
+			}
 		}
-		return null;
+
+		if (result && result instanceof Promise) {
+			result.catch((error) => {
+				this.dispatchError(elementOrWindow, error);
+				if (cleanup) {
+					cleanup();
+				}
+			});
+		}
+
+		return result;
 	}
 
 	/**
@@ -56,12 +79,10 @@ export default class WindowErrorUtility {
 	 */
 	public static dispatchError(elementOrWindow: IWindow | IElement, error: Error): void {
 		if ((<IWindow>elementOrWindow).console) {
-			(<IWindow>elementOrWindow).console.error(error.message + '\n' + error.stack);
+			(<IWindow>elementOrWindow).console.error(error);
 			elementOrWindow.dispatchEvent(new ErrorEvent('error', { message: error.message, error }));
 		} else {
-			(<IElement>elementOrWindow).ownerDocument.defaultView.console.error(
-				error.message + '\n' + error.stack
-			);
+			(<IElement>elementOrWindow).ownerDocument.defaultView.console.error(error);
 			(<IElement>elementOrWindow).dispatchEvent(
 				new ErrorEvent('error', { message: error.message, error })
 			);

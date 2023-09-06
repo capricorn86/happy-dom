@@ -722,9 +722,9 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Timeout ID.
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
-		const id = this._setTimeout(async () => {
+		const id = this._setTimeout(() => {
 			this.happyDOM.asyncTaskManager.endTimer(id);
-			WindowErrorUtility.captureErrorAsync(this, async () => await callback(...args));
+			WindowErrorUtility.captureErrorSync(this, () => callback(...args));
 		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
@@ -749,9 +749,12 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Interval ID.
 	 */
 	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
-		const id = this._setInterval(async () => {
-			this.happyDOM.asyncTaskManager.endTimer(id);
-			WindowErrorUtility.captureErrorAsync(this, async () => await callback(...args));
+		const id = this._setInterval(() => {
+			WindowErrorUtility.captureErrorSync(
+				this,
+				() => callback(...args),
+				() => this.clearInterval(id)
+			);
 		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
@@ -794,9 +797,9 @@ export default class Window extends EventTarget implements IWindow {
 	public queueMicrotask(callback: Function): void {
 		let isAborted = false;
 		const taskId = this.happyDOM.asyncTaskManager.startTask(() => (isAborted = true));
-		this._queueMicrotask(async () => {
+		this._queueMicrotask(() => {
 			if (!isAborted) {
-				WindowErrorUtility.captureErrorAsync(this, async () => await callback());
+				WindowErrorUtility.captureErrorSync(this, <() => unknown>callback);
 				this.happyDOM.asyncTaskManager.endTask(taskId);
 			}
 		});

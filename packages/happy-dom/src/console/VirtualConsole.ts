@@ -1,7 +1,7 @@
-import VirtualConsolePrinter from './VirtualConsolePrinter.js';
-import VirtualConsoleLogLevelEnum from './VirtualConsoleLogLevelEnum.js';
-import VirtualConsoleLogTypeEnum from './VirtualConsoleLogTypeEnum.js';
-import IVirtualConsoleLogGroup from './IVirtualConsoleLogGroup.js';
+import IVirtualConsolePrinter from './types/IVirtualConsolePrinter.js';
+import VirtualConsoleLogLevelEnum from './enums/VirtualConsoleLogLevelEnum.js';
+import VirtualConsoleLogTypeEnum from './enums/VirtualConsoleLogTypeEnum.js';
+import IVirtualConsoleLogGroup from './types/IVirtualConsoleLogGroup.js';
 import * as PerfHooks from 'perf_hooks';
 
 /**
@@ -14,7 +14,7 @@ export default class VirtualConsole implements Console {
 	// This is not part of the browser specs.
 	public Console: NodeJS.ConsoleConstructor;
 
-	private _printer: VirtualConsolePrinter;
+	private _printer: IVirtualConsolePrinter;
 	private _count: { [label: string]: number } = {};
 	private _time: { [label: string]: number } = {};
 	private _groupID = 0;
@@ -25,7 +25,7 @@ export default class VirtualConsole implements Console {
 	 *
 	 * @param printer Console printer.
 	 */
-	constructor(printer: VirtualConsolePrinter) {
+	constructor(printer: IVirtualConsolePrinter) {
 		this._printer = printer;
 	}
 
@@ -40,7 +40,7 @@ export default class VirtualConsole implements Console {
 			this._printer.print({
 				type: VirtualConsoleLogTypeEnum.assert,
 				level: VirtualConsoleLogLevelEnum.error,
-				message: args,
+				message: ['Assertion failed:', ...args],
 				group: this._groups[this._groups.length - 1] || null
 			});
 		}
@@ -165,7 +165,7 @@ export default class VirtualConsole implements Console {
 		this._groupID++;
 		const group = {
 			id: this._groupID,
-			label: label || '',
+			label: label || 'default',
 			collapsed: false,
 			parent: this._groups[this._groups.length - 1] || null
 		};
@@ -173,7 +173,7 @@ export default class VirtualConsole implements Console {
 		this._printer.print({
 			type: VirtualConsoleLogTypeEnum.group,
 			level: VirtualConsoleLogLevelEnum.log,
-			message: [label || ''],
+			message: [label || 'default'],
 			group
 		});
 	}
@@ -187,15 +187,15 @@ export default class VirtualConsole implements Console {
 		this._groupID++;
 		const group = {
 			id: this._groupID,
-			label: label || '',
+			label: label || 'default',
 			collapsed: true,
 			parent: this._groups[this._groups.length - 1] || null
 		};
 		this._groups.push(group);
 		this._printer.print({
-			type: VirtualConsoleLogTypeEnum.group,
+			type: VirtualConsoleLogTypeEnum.groupCollapsed,
 			level: VirtualConsoleLogLevelEnum.log,
-			message: [label || ''],
+			message: [label || 'default'],
 			group
 		});
 	}
@@ -335,7 +335,7 @@ export default class VirtualConsole implements Console {
 		this._printer.print({
 			type: VirtualConsoleLogTypeEnum.trace,
 			level: VirtualConsoleLogLevelEnum.log,
-			message: [...args, new Error('stack').stack],
+			message: [...args, new Error('stack').stack.replace('Error: stack', '')],
 			group: this._groups[this._groups.length - 1] || null
 		});
 	}
