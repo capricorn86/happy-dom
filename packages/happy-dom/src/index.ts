@@ -144,6 +144,13 @@ import Headers from './fetch/Headers.js';
 import IHeaders from './fetch/types/IHeaders.js';
 import FormData from './form-data/FormData.js';
 import EventPhaseEnum from './event/EventPhaseEnum.js';
+import VirtualConsoleLogLevelEnum from './console/enums/VirtualConsoleLogLevelEnum.js';
+import VirtualConsoleLogTypeEnum from './console/enums/VirtualConsoleLogTypeEnum.js';
+import IVirtualConsoleLogEntry from './console/types/IVirtualConsoleLogEntry.js';
+import IVirtualConsoleLogGroup from './console/types/IVirtualConsoleLogGroup.js';
+import IVirtualConsolePrinter from './console/types/IVirtualConsolePrinter.js';
+import VirtualConsole from './console/VirtualConsole.js';
+import VirtualConsolePrinter from './console/VirtualConsolePrinter.js';
 
 export {
 	GlobalWindow,
@@ -292,5 +299,12 @@ export {
 	Headers,
 	IHeaders,
 	FormData,
-	EventPhaseEnum
+	EventPhaseEnum,
+	VirtualConsoleLogLevelEnum,
+	VirtualConsoleLogTypeEnum,
+	IVirtualConsoleLogEntry,
+	IVirtualConsoleLogGroup,
+	IVirtualConsolePrinter,
+	VirtualConsole,
+	VirtualConsolePrinter
 };

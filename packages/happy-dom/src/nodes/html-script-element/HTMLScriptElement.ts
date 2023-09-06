@@ -6,6 +6,7 @@ import ErrorEvent from '../../event/events/ErrorEvent.js';
 import INode from '../../nodes/node/INode.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLScriptElementNamedNodeMap from './HTMLScriptElementNamedNodeMap.js';
+import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 
 /**
  * HTML Script Element.
@@ -188,7 +189,9 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 						type === 'application/x-javascript' ||
 						type.startsWith('text/javascript'))
 				) {
-					HTMLScriptElementUtility.eval(this, textContent);
+					WindowErrorUtility.captureErrorSync(this.ownerDocument.defaultView, () =>
+						this.ownerDocument.defaultView.eval(textContent)
+					);
 				}
 			}
 		}

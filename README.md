@@ -63,6 +63,10 @@ This package makes it possible to use Happy DOM with [Jest](https://jestjs.io/).
 
 ### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/global-registrator.svg)](https://www.npmjs.com/package/@happy-dom/global-registrator) [global-registrator](https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator)
 
+---
+
+### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/uncaught-exception-observer.svg)](https://www.npmjs.com/package/@happy-dom/uncaught-exception-observer) [global-registrator](https://github.com/capricorn86/happy-dom/tree/master/packages/uncaught-exception-observer)
+
 A utility that registers Happy DOM globally, which makes it possible to use Happy DOM for testing in a Node environment.
 
 # Performance

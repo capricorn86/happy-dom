@@ -39,6 +39,7 @@ this.decodeURI = globalThis.decodeURI;
 this.decodeURIComponent = globalThis.decodeURIComponent;
 this.encodeURI = globalThis.encodeURI;
 this.encodeURIComponent = globalThis.encodeURIComponent;
+this.eval = globalThis.eval;
 this.escape = globalThis.escape;
 this.global = globalThis.global;
 this.isFinite = globalThis.isFinite;
