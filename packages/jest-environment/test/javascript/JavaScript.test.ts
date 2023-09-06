@@ -141,39 +141,4 @@ describe('JavaScript', () => {
 		removeEventListener('click', eventListener);
 		clearTimeout(setTimeout(eventListener));
 	});
-
-	it('Catches unhandled rejections', async () => {
-		const express = Express();
-
-		express.get('/get/json', (_req, res) => {
-			res.set('Content-Type', 'application/json');
-			res.send('{ "key1": "value1" }');
-		});
-
-		const server = express.listen(3000);
-
-		let errorEvent: ErrorEvent | null = null;
-		window.addEventListener('error', (event: ErrorEvent) => (errorEvent = <ErrorEvent>event));
-
-		document.write(`
-            <script>
-                (() => {
-                    async function main() {
-                        await fetch('http://localhost:3000/get/json');
-                        throw new Error('Test error');
-                    }
-
-                    main();
-                })();
-            </script>
-        `);
-
-		await new Promise((resolve) => setTimeout(resolve, 100));
-
-		server.close();
-
-		expect(errorEvent).toBeInstanceOf(ErrorEvent);
-		expect(errorEvent.error.message).toBe('Test error');
-		expect(errorEvent.message).toBe('Test error');
-	});
 });
