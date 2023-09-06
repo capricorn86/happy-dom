@@ -137,7 +137,7 @@ module.exports = {
 				],
 				'@typescript-eslint/ban-ts-comment': OFF,
 				'jsdoc/no-types': WARN,
-				'import/named': WARN,
+				'import/named': OFF,
 				'import/no-named-as-default': WARN,
 				'import/no-extraneous-dependencies': WARN,
 				'import/no-absolute-path': WARN,

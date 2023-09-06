@@ -5,6 +5,7 @@ export default interface IHappyDOMOptions {
 	width?: number;
 	height?: number;
 	url?: string;
+	console?: Console;
 	settings?: {
 		disableJavaScriptEvaluation?: boolean;
 		disableJavaScriptFileLoading?: boolean;
