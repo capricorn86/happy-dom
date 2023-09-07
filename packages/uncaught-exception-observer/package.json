@@ -5,7 +5,7 @@
 	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/uncaught-exception-observer",
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
-	"description": "Observes uncaught exceptions thrown in Happy DOM and dispatches them as events on the Happy DOM window.",
+	"description": "A utility for observing uncaught exceptions thrown in Happy DOM and dispatch them as events on the Happy DOM window.",
 	"main": "lib/index.js",
 	"type": "module",
 	"exports": {
