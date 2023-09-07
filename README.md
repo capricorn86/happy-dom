@@ -65,6 +65,12 @@ This package makes it possible to use Happy DOM with [Jest](https://jestjs.io/).
 
 A utility that registers Happy DOM globally, which makes it possible to use Happy DOM for testing in a Node environment.
 
+---
+
+### [![Published on npm](https://img.shields.io/npm/v/@happy-dom/uncaught-exception-observer.svg)](https://www.npmjs.com/package/@happy-dom/uncaught-exception-observer) [uncaught-exception-observer](https://github.com/capricorn86/happy-dom/tree/master/packages/uncaught-exception-observer)
+
+A utility for observing uncaught exceptions thrown in Happy DOM and dispatch them as events on the Happy DOM window.
+
 # Performance
 
 | Operation                            | JSDOM   | Happy DOM |

@@ -6,6 +6,7 @@ import EventPhaseEnum from './EventPhaseEnum.js';
 import INode from '../nodes/node/INode.js';
 import IDocument from '../nodes/document/IDocument.js';
 import IWindow from '../window/IWindow.js';
+import WindowErrorUtility from '../window/WindowErrorUtility.js';
 
 /**
  * Handles events.
@@ -88,11 +89,12 @@ export default abstract class EventTarget implements IEventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
+		const window = this._getWindow();
+
 		if (event.eventPhase === EventPhaseEnum.none) {
 			event._target = this;
 
 			const composedPath = event.composedPath();
-			const window = this._getWindow();
 
 			// Capturing phase
 
@@ -137,7 +139,12 @@ export default abstract class EventTarget implements IEventTarget {
 			const onEventName = 'on' + event.type.toLowerCase();
 
 			if (typeof this[onEventName] === 'function') {
-				this[onEventName].call(this, event);
+				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
+				if (window && (this !== <IEventTarget>window || event.type !== 'error')) {
+					WindowErrorUtility.captureErrorSync(window, this[onEventName].bind(this, event));
+				} else {
+					this[onEventName].call(this, event);
+				}
 			}
 		}
 
@@ -161,10 +168,25 @@ export default abstract class EventTarget implements IEventTarget {
 					event._isInPassiveEventListener = true;
 				}
 
-				if ((<IEventListener>listener).handleEvent) {
-					(<IEventListener>listener).handleEvent(event);
+				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
+				if (window && (this !== <IEventTarget>window || event.type !== 'error')) {
+					if ((<IEventListener>listener).handleEvent) {
+						WindowErrorUtility.captureErrorSync(
+							window,
+							(<IEventListener>listener).handleEvent.bind(this, event)
+						);
+					} else {
+						WindowErrorUtility.captureErrorSync(
+							window,
+							(<(event: Event) => void>listener).bind(this, event)
+						);
+					}
 				} else {
-					(<(event: Event) => void>listener).call(this, event);
+					if ((<IEventListener>listener).handleEvent) {
+						(<IEventListener>listener).handleEvent(event);
+					} else {
+						(<(event: Event) => void>listener).call(this, event);
+					}
 				}
 
 				event._isInPassiveEventListener = false;

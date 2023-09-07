@@ -5,7 +5,7 @@ import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
 import { LegacyFakeTimers, ModernFakeTimers } from '@jest/fake-timers';
 import { JestEnvironment, EnvironmentContext } from '@jest/environment';
-import { Window } from 'happy-dom';
+import { Window, IWindow } from 'happy-dom';
 import { Script } from 'vm';
 import { Global, Config } from '@jest/types';
 
@@ -15,7 +15,7 @@ import { Global, Config } from '@jest/types';
 export default class HappyDOMEnvironment implements JestEnvironment {
 	public fakeTimers: LegacyFakeTimers<number> = null;
 	public fakeTimersModern: ModernFakeTimers = null;
-	public window = new Window();
+	public window: IWindow = new Window({ console: globalThis.console });
 	public global: Global.Global = <Global.Global>(<unknown>this.window);
 	public moduleMocker: ModuleMocker = new ModuleMocker(<typeof globalThis>(<unknown>this.window));
 
@@ -103,7 +103,8 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	public async teardown(): Promise<void> {
 		this.fakeTimers.dispose();
 		this.fakeTimersModern.dispose();
-		this.global.happyDOM['cancelAsync']();
+
+		(<IWindow>(<unknown>this.global)).happyDOM.cancelAsync();
 
 		this.global = null;
 		this.moduleMocker = null;

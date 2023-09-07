@@ -135,6 +135,10 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IHappyDOMOptions from './IHappyDOMOptions.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
+import WindowErrorUtility from './WindowErrorUtility.js';
+import VirtualConsole from '../console/VirtualConsole.js';
+import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
+import IHappyDOMSettings from './IHappyDOMSettings.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -150,7 +154,25 @@ const ORIGINAL_QUEUE_MICROTASK = queueMicrotask;
  */
 export default class Window extends EventTarget implements IWindow {
 	// The Happy DOM property
-	public readonly happyDOM = {
+	public readonly happyDOM: {
+		whenAsyncComplete: () => Promise<void>;
+		cancelAsync: () => void;
+		asyncTaskManager: AsyncTaskManager;
+		setWindowSize: (options: { width?: number; height?: number }) => void;
+		setURL: (url: string) => void;
+		virtualConsolePrinter: VirtualConsolePrinter | null;
+		settings: IHappyDOMSettings;
+
+		/**
+		 * @deprecated
+		 */
+		setInnerWidth: (width: number) => void;
+
+		/**
+		 * @deprecated
+		 */
+		setInnerHeight: (height: number) => void;
+	} = {
 		whenAsyncComplete: async (): Promise<void> => {
 			return await this.happyDOM.asyncTaskManager.whenComplete();
 		},
@@ -158,9 +180,6 @@ export default class Window extends EventTarget implements IWindow {
 			this.happyDOM.asyncTaskManager.cancelAll();
 		},
 		asyncTaskManager: new AsyncTaskManager(),
-		setURL: (url: string) => {
-			this.location.href = url;
-		},
 		setWindowSize: (options: { width?: number; height?: number }): void => {
 			if (
 				(options.width !== undefined && this.innerWidth !== options.width) ||
@@ -179,6 +198,10 @@ export default class Window extends EventTarget implements IWindow {
 				this.dispatchEvent(new Event('resize'));
 			}
 		},
+		virtualConsolePrinter: null,
+		setURL: (url: string) => {
+			this.location.href = url;
+		},
 		settings: {
 			disableJavaScriptEvaluation: false,
 			disableJavaScriptFileLoading: false,
@@ -191,17 +214,7 @@ export default class Window extends EventTarget implements IWindow {
 				mediaType: 'screen'
 			}
 		},
-
-		/**
-		 * @param width The width of the viewport.
-		 * @deprecated
-		 */
 		setInnerWidth: (width: number): void => this.happyDOM.setWindowSize({ width }),
-
-		/**
-		 * @param height The height of the viewport.
-		 * @deprecated
-		 */
 		setInnerHeight: (height: number): void => this.happyDOM.setWindowSize({ height })
 	};
 
@@ -336,7 +349,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly location: Location;
 	public readonly history: History;
 	public readonly navigator: Navigator;
-	public readonly console = console;
+	public readonly console: Console;
 	public readonly self = this;
 	public readonly top = this;
 	public readonly parent = this;
@@ -347,10 +360,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly sessionStorage: Storage;
 	public readonly localStorage: Storage;
 	public readonly performance = PerfHooks.performance;
-	public readonly innerWidth: number;
-	public readonly innerHeight: number;
-	public readonly outerWidth: number;
-	public readonly outerHeight: number;
+	public readonly innerWidth: number = 1024;
+	public readonly innerHeight: number = 768;
+	public readonly outerWidth: number = 1024;
+	public readonly outerHeight: number = 768;
 
 	// Node.js Globals
 	public Array: typeof Array;
@@ -395,6 +408,7 @@ export default class Window extends EventTarget implements IWindow {
 	public decodeURIComponent: typeof decodeURIComponent;
 	public encodeURI: typeof encodeURI;
 	public encodeURIComponent: typeof encodeURIComponent;
+	public eval: typeof eval;
 	/**
 	 * @deprecated
 	 */
@@ -447,41 +461,44 @@ export default class Window extends EventTarget implements IWindow {
 		this.sessionStorage = new Storage();
 		this.localStorage = new Storage();
 
-		if (options && options.width !== undefined) {
-			this.innerWidth = options.width;
-			this.outerWidth = options.width;
-		} else if (options && options.innerWidth !== undefined) {
-			this.innerWidth = options.innerWidth;
-			this.outerWidth = options.innerWidth;
+		if (options) {
+			if (options.width !== undefined) {
+				this.innerWidth = options.width;
+				this.outerWidth = options.width;
+			} else if (options.innerWidth !== undefined) {
+				this.innerWidth = options.innerWidth;
+				this.outerWidth = options.innerWidth;
+			}
+
+			if (options.height !== undefined) {
+				this.innerHeight = options.height;
+				this.outerHeight = options.height;
+			} else if (options.innerHeight !== undefined) {
+				this.innerHeight = options.innerHeight;
+				this.outerHeight = options.innerHeight;
+			}
+
+			if (options.url !== undefined) {
+				this.location.href = options.url;
+			}
+
+			if (options.settings) {
+				this.happyDOM.settings = {
+					...this.happyDOM.settings,
+					...options.settings,
+					device: {
+						...this.happyDOM.settings.device,
+						...options.settings.device
+					}
+				};
+			}
+		}
+
+		if (options && options.console) {
+			this.console = options.console;
 		} else {
-			this.innerWidth = 1024;
-			this.outerWidth = 1024;
-		}
-
-		if (options && options.height !== undefined) {
-			this.innerHeight = options.height;
-			this.outerHeight = options.height;
-		} else if (options && options.innerHeight !== undefined) {
-			this.innerHeight = options.innerHeight;
-			this.outerHeight = options.innerHeight;
-		} else {
-			this.innerHeight = 768;
-			this.outerHeight = 768;
-		}
-
-		if (options && options.url !== undefined) {
-			this.location.href = options.url;
-		}
-
-		if (options && options.settings) {
-			this.happyDOM.settings = {
-				...this.happyDOM.settings,
-				...options.settings,
-				device: {
-					...this.happyDOM.settings.device,
-					...options.settings.device
-				}
-			};
+			this.happyDOM.virtualConsolePrinter = new VirtualConsolePrinter();
+			this.console = new VirtualConsole(this.happyDOM.virtualConsolePrinter);
 		}
 
 		this._setTimeout = ORIGINAL_SET_TIMEOUT;
@@ -623,20 +640,6 @@ export default class Window extends EventTarget implements IWindow {
 	}
 
 	/**
-	 * Evaluates code.
-	 *
-	 * @override
-	 * @param code Code.
-	 * @returns Result.
-	 */
-	public eval(code: string): unknown {
-		if (VM.isContext(this)) {
-			return VM.runInContext(code, this);
-		}
-		return eval(code);
-	}
-
-	/**
 	 * Returns an object containing the values of all CSS properties of an element.
 	 *
 	 * @param element Element.
@@ -721,7 +724,7 @@ export default class Window extends EventTarget implements IWindow {
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this._setTimeout(() => {
 			this.happyDOM.asyncTaskManager.endTimer(id);
-			callback(...args);
+			WindowErrorUtility.captureErrorSync(this, () => callback(...args));
 		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
@@ -746,7 +749,13 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Interval ID.
 	 */
 	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
-		const id = this._setInterval(callback, delay, ...args);
+		const id = this._setInterval(() => {
+			WindowErrorUtility.captureErrorSync(
+				this,
+				() => callback(...args),
+				() => this.clearInterval(id)
+			);
+		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
 	}
@@ -768,9 +777,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Timeout ID.
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout {
-		return this.setTimeout(() => {
-			callback(this.performance.now());
-		});
+		return this.setTimeout(() => callback(this.performance.now()));
 	}
 
 	/**
@@ -792,8 +799,8 @@ export default class Window extends EventTarget implements IWindow {
 		const taskId = this.happyDOM.asyncTaskManager.startTask(() => (isAborted = true));
 		this._queueMicrotask(() => {
 			if (!isAborted) {
+				WindowErrorUtility.captureErrorSync(this, <() => unknown>callback);
 				this.happyDOM.asyncTaskManager.endTask(taskId);
-				callback();
 			}
 		});
 	}

@@ -9,7 +9,9 @@ import DOMException from '../../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import Text from '../../../src/nodes/text/Text.js';
 import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';
+import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
 
 /**
  *
@@ -29,7 +31,7 @@ class CustomCounterElement extends HTMLElement {
 	 * Connected.
 	 */
 	public connectedCallback(): void {
-		this.shadowRoot.innerHTML = '<div><span>Test</span></div>';
+		(<IShadowRoot>this.shadowRoot).innerHTML = '<div><span>Test</span></div>';
 		(<typeof CustomCounterElement>this.constructor).output.push('Counter:connected');
 	}
 
@@ -334,7 +336,7 @@ describe('Node', () => {
 
 			document.body.appendChild(customElement);
 
-			const rootNode = customElement.shadowRoot.querySelector('span').getRootNode();
+			const rootNode = (<IShadowRoot>customElement.shadowRoot).querySelector('span')?.getRootNode();
 
 			expect(rootNode === customElement.shadowRoot).toBe(true);
 		});
@@ -344,9 +346,9 @@ describe('Node', () => {
 
 			document.body.appendChild(customElement);
 
-			const rootNode = customElement.shadowRoot
+			const rootNode = (<IShadowRoot>customElement.shadowRoot)
 				.querySelector('span')
-				.getRootNode({ composed: true });
+				?.getRootNode({ composed: true });
 
 			expect(rootNode === document).toBe(true);
 		});
@@ -849,6 +851,44 @@ describe('Node', () => {
 			expect(child2Events[0] === event).toBe(true);
 			expect(documentEvents.length).toBe(1);
 			expect(documentEvents[0] === event).toBe(true);
+		});
+
+		it('Catches errors thrown in event listeners.', () => {
+			const node = document.createElement('span');
+			const listener = (): void => {
+				throw new Error('Test');
+			};
+
+			let errorEvent: ErrorEvent | null = null;
+			window.addEventListener('error', (event) => {
+				errorEvent = <ErrorEvent>event;
+			});
+			node.addEventListener('click', listener);
+			node.dispatchEvent(new Event('click'));
+			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test');
+			expect(window.happyDOM.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
+				true
+			);
+		});
+
+		it('Catches async errors thrown in event listeners.', async () => {
+			const node = document.createElement('span');
+			const listener = async (): Promise<void> => {
+				await new Promise((resolve) => setTimeout(resolve, 0));
+				throw new Error('Test');
+			};
+
+			let errorEvent: ErrorEvent | null = null;
+			window.addEventListener('error', (event) => {
+				errorEvent = <ErrorEvent>event;
+			});
+			node.addEventListener('click', listener);
+			node.dispatchEvent(new Event('click'));
+			await new Promise((resolve) => setTimeout(resolve, 2));
+			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test');
+			expect(window.happyDOM.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
+				true
+			);
 		});
 	});
 

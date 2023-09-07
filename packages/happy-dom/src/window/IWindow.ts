@@ -123,6 +123,7 @@ import IHeadersInit from '../fetch/types/IHeadersInit.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
+import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -135,6 +136,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 		asyncTaskManager: AsyncTaskManager;
 		setWindowSize: (options: { width?: number; height?: number }) => void;
 		setURL: (url: string) => void;
+		virtualConsolePrinter: VirtualConsolePrinter | null;
 		settings: IHappyDOMSettings;
 
 		/**
@@ -293,14 +295,6 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly pageYOffset: number;
 	readonly scrollX: number;
 	readonly scrollY: number;
-
-	/**
-	 * Evaluates code.
-	 *
-	 * @param code Code.
-	 * @returns Result.
-	 */
-	eval(code: string): unknown;
 
 	/**
 	 * Returns an object containing the values of all CSS properties of an element.
