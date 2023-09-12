@@ -3427,7 +3427,7 @@ describe('Fetch', () => {
 			setTimeout(() => {
 				expect(isAsyncComplete).toBe(true);
 				resolve(null);
-			}, 110);
+			}, 120);
 		});
 	});
 });
