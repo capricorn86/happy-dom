@@ -137,7 +137,7 @@ export default class AsyncTaskManager {
 					} else {
 						this.endTimer(timerID);
 					}
-				});
+				}, 10);
 				this.startTimer(timerID);
 			}
 		}
