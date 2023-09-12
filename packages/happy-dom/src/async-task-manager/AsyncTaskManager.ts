@@ -5,7 +5,7 @@ export default class AsyncTaskManager {
 	private static taskID = 0;
 	private runningTasks: { [k: string]: () => void } = {};
 	private runningTimers: NodeJS.Timeout[] = [];
-	private queue: { resolve: () => void; reject: (error: Error) => void }[] = [];
+	private callbacks: Array<() => void> = [];
 
 	/**
 	 * Returns a promise that is fulfilled when async tasks are complete.
@@ -13,13 +13,10 @@ export default class AsyncTaskManager {
 	 *
 	 * @returns Promise.
 	 */
-	public async whenComplete(): Promise<void> {
-		return new Promise((resolve, reject) => {
-			const timerID = global.setTimeout(() => {
-				this.endTimer(timerID);
-			}, 0);
-			this.startTimer(timerID);
-			this.queue.push({ resolve, reject });
+	public whenComplete(): Promise<void> {
+		return new Promise((resolve) => {
+			this.callbacks.push(resolve);
+			this.endTask(null);
 		});
 	}
 
@@ -28,30 +25,8 @@ export default class AsyncTaskManager {
 	 *
 	 * @param [error] Error.
 	 */
-	public cancelAll(error?: Error): void {
-		const runningTimers = this.runningTimers;
-		const runningTasks = this.runningTasks;
-		const promises = this.queue;
-
-		this.runningTasks = {};
-		this.runningTimers = [];
-		this.queue = [];
-
-		for (const timer of runningTimers) {
-			global.clearTimeout(timer);
-		}
-
-		for (const key of Object.keys(runningTasks)) {
-			runningTasks[key]();
-		}
-
-		for (const promise of promises) {
-			if (error) {
-				promise.reject(error);
-			} else {
-				promise.resolve();
-			}
-		}
+	public cancelAll(): void {
+		this.endAll(true);
 	}
 
 	/**
@@ -74,7 +49,7 @@ export default class AsyncTaskManager {
 			this.runningTimers.splice(index, 1);
 		}
 		if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {
-			this.cancelAll();
+			this.endAll();
 		}
 	}
 
@@ -98,10 +73,9 @@ export default class AsyncTaskManager {
 	public endTask(taskID: number): void {
 		if (this.runningTasks[taskID]) {
 			delete this.runningTasks[taskID];
-
-			if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {
-				this.cancelAll();
-			}
+		}
+		if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {
+			this.endAll();
 		}
 	}
 
@@ -122,5 +96,50 @@ export default class AsyncTaskManager {
 	private newTaskID(): number {
 		(<typeof AsyncTaskManager>this.constructor).taskID++;
 		return (<typeof AsyncTaskManager>this.constructor).taskID;
+	}
+
+	/**
+	 * Ends all tasks.
+	 *
+	 * @param [canceled] Canceled.
+	 */
+	private endAll(canceled?: boolean): void {
+		const runningTimers = this.runningTimers;
+		const runningTasks = this.runningTasks;
+
+		this.runningTasks = {};
+		this.runningTimers = [];
+
+		for (const timer of runningTimers) {
+			global.clearTimeout(timer);
+		}
+
+		for (const key of Object.keys(runningTasks)) {
+			runningTasks[key]();
+		}
+
+		if (this.callbacks.length) {
+			if (canceled) {
+				const callbacks = this.callbacks;
+				this.callbacks = [];
+				for (const callback of callbacks) {
+					callback();
+				}
+			} else {
+				const timerID = global.setTimeout(() => {
+					if (!Object.keys(this.runningTasks).length && this.runningTimers.length === 1) {
+						const callbacks = this.callbacks;
+						this.callbacks = [];
+						this.runningTimers = [];
+						for (const callback of callbacks) {
+							callback();
+						}
+					} else {
+						this.endTimer(timerID);
+					}
+				});
+				this.startTimer(timerID);
+			}
+		}
 	}
 }
