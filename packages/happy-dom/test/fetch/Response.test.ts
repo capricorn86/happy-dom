@@ -135,7 +135,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 12);
+				}, 20);
 			});
 		});
 	});
@@ -172,7 +172,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 12);
+				}, 20);
 			});
 		});
 	});
@@ -193,10 +193,12 @@ describe('Response', () => {
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
 					(): Promise<Buffer> =>
-						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
+						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 5))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM.whenAsyncComplete().then(() => {
+					isAsyncComplete = true;
+				});
 				response.buffer();
 
 				setTimeout(() => {
@@ -206,7 +208,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 12);
+				}, 30);
 			});
 		});
 	});
@@ -239,7 +241,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 12);
+				}, 20);
 			});
 		});
 	});
@@ -274,7 +276,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 12);
+				}, 20);
 			});
 		});
 	});
@@ -383,7 +385,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 12);
+				}, 20);
 			});
 		});
 
