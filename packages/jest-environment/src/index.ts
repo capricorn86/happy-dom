@@ -5,7 +5,7 @@ import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
 import { LegacyFakeTimers, ModernFakeTimers } from '@jest/fake-timers';
 import { JestEnvironment, EnvironmentContext } from '@jest/environment';
-import { Window, IWindow } from 'happy-dom';
+import { Window, IWindow, ErrorEvent } from 'happy-dom';
 import { Script } from 'vm';
 import { Global, Config } from '@jest/types';
 
@@ -18,6 +18,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	public window: IWindow = new Window({ console: globalThis.console });
 	public global: Global.Global = <Global.Global>(<unknown>this.window);
 	public moduleMocker: ModuleMocker = new ModuleMocker(<typeof globalThis>(<unknown>this.window));
+	private errorEventListener: (event: ErrorEvent) => void | null = null;
 
 	/**
 	 * Constructor.
@@ -72,6 +73,16 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			this.window.happyDOM.setURL('http://localhost/');
 		}
 
+		// Report uncaught errors.
+		this.errorEventListener = (event: ErrorEvent) => {
+			if (this.window['_listeners']?.['error']?.length === 0 && event.error !== null) {
+				process.emit('uncaughtException', event.error);
+			}
+		};
+		this.window.addEventListener('error', this.errorEventListener);
+
+		this.moduleMocker = new ModuleMocker(global);
+
 		this.fakeTimers = new LegacyFakeTimers({
 			config: projectConfig,
 			global: <typeof globalThis>(<unknown>this.window),
@@ -86,6 +97,16 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			config: projectConfig,
 			global: <typeof globalThis>(<unknown>this.window)
 		});
+
+		// Jest is using the setTimeout function from Happy DOM internally for detecting when a test times out, but this causes Window.happyDOM.whenAsyncComplete() and Window.happyDOM.cancelAsync() to not work as expected.
+		// Hopefully Jest can fix this in the future as this fix is not very pretty.
+		const happyDOMSetTimeout = this.global.setTimeout;
+		(<(...args: unknown[]) => number>this.global.setTimeout) = (...args: unknown[]): number => {
+			if (new Error('stack').stack.includes('/jest-jasmine')) {
+				return global.setTimeout.call(global, ...args);
+			}
+			return happyDOMSetTimeout.call(this.global, ...args);
+		};
 	}
 
 	/**
@@ -105,6 +126,11 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.fakeTimersModern.dispose();
 
 		(<IWindow>(<unknown>this.global)).happyDOM.cancelAsync();
+
+		if (this.errorEventListener) {
+			this.window.removeEventListener('error', this.errorEventListener);
+			this.errorEventListener = null;
+		}
 
 		this.global = null;
 		this.moduleMocker = null;
