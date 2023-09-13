@@ -59,7 +59,7 @@
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
 		"@typescript-eslint/parser": "^5.16.0",
-		"@types/node": "^15.6.0",
+		"@types/node": "^16.11.7",
 		"@types/react": "^17.0.2",
 		"@testing-library/react": "^12.1.2",
 		"@testing-library/user-event": "^14.4.3",
