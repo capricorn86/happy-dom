@@ -30,9 +30,12 @@ export default class HTMLDialogElement extends HTMLElement implements IHTMLDialo
 	 * @param [returnValue] ReturnValue.
 	 */
 	public close(returnValue = ''): void {
+		const wasOpen = this.open;
 		this.removeAttribute('open');
 		this.returnValue = returnValue;
-		this.dispatchEvent(new Event('close'));
+		if (wasOpen) {
+			this.dispatchEvent(new Event('close'));
+		}
 	}
 
 	/**
