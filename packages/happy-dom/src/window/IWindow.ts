@@ -114,6 +114,7 @@ import IHappyDOMSettings from './IHappyDOMSettings.js';
 import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
+import { webcrypto } from 'crypto';
 import FormData from '../form-data/FormData.js';
 import AbortController from '../fetch/AbortController.js';
 import AbortSignal from '../fetch/AbortSignal.js';
@@ -295,6 +296,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly pageYOffset: number;
 	readonly scrollX: number;
 	readonly scrollY: number;
+	readonly crypto: typeof webcrypto;
 
 	/**
 	 * Returns an object containing the values of all CSS properties of an element.
