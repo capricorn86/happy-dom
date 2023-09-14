@@ -81,8 +81,6 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		};
 		this.window.addEventListener('error', this.errorEventListener);
 
-		this.moduleMocker = new ModuleMocker(global);
-
 		this.fakeTimers = new LegacyFakeTimers({
 			config: projectConfig,
 			global: <typeof globalThis>(<unknown>this.window),

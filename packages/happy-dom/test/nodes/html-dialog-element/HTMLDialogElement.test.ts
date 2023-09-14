@@ -92,6 +92,13 @@ describe('HTMLDialogElement', () => {
 			expect((<Event>(<unknown>dispatched)).bubbles).toBe(false);
 		});
 
+		it('Should only dispatch a close event when dialog wasnt already closed', () => {
+			let dispatched: Event | null = null;
+			element.addEventListener('close', (event: Event) => (dispatched = event));
+			element.close();
+			expect(dispatched).toBe(null);
+		});
+
 		it('Should dispatch a close event when closing a modal', () => {
 			let dispatched: Event | null = null;
 			element.addEventListener('close', (event: Event) => (dispatched = event));

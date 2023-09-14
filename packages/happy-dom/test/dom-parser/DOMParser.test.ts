@@ -3,6 +3,7 @@ import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
 import DOMParser from '../../src/dom-parser/DOMParser.js';
 import DOMParserHTML from './data/DOMParserHTML.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import DOMParserSVG from './data/DOMParserSVG';
 
 describe('DOMParser', () => {
 	let domParser: DOMParser;
@@ -95,6 +96,13 @@ describe('DOMParser', () => {
 			);
 			// Spurious comment `<!--[a-z]/,end:/-->` should be solved
 			expect(newDocument.body.textContent).toBe('here is some html elástica ');
+		});
+
+		it('parses SVGs', () => {
+			const newDocument = domParser.parseFromString(DOMParserSVG, 'image/svg+xml');
+			expect(new XMLSerializer().serializeToString(newDocument).replace(/[\s]/gm, '')).toBe(
+				DOMParserSVG.replace(/[\s]/gm, '')
+			);
 		});
 	});
 });
