@@ -48,6 +48,7 @@ export default {
 	LABEL: HTMLLabelElement,
 	SLOT: HTMLSlotElement,
 	SVG: SVGSVGElement,
+	G: SVGElement,
 	CIRCLE: SVGElement,
 	ELLIPSE: SVGElement,
 	LINE: SVGElement,
