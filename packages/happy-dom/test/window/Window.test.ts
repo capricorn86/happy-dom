@@ -175,7 +175,7 @@ describe('Window', () => {
 								};
 								response.rawHeaders = ['content-length', '0'];
 
-								callback(response);
+								setTimeout(() => callback(response));
 							}
 						},
 						setTimeout: () => {}
@@ -205,16 +205,16 @@ describe('Window', () => {
 			window.requestAnimationFrame(() => {
 				tasksDone++;
 			});
-			window.fetch('/url/').then((response) =>
+			window.fetch('/url/').then((response) => {
 				response.json().then(() => {
 					tasksDone++;
-				})
-			);
-			window.fetch('/url/').then((response) =>
+				});
+			});
+			window.fetch('/url/').then((response) => {
 				response.text().then(() => {
 					tasksDone++;
-				})
-			);
+				});
+			});
 			await window.happyDOM.whenAsyncComplete();
 			expect(tasksDone).toBe(6);
 			expect(isFirstWhenAsyncCompleteCalled).toBe(true);
@@ -597,7 +597,7 @@ describe('Window', () => {
 			document.body.appendChild(customElement);
 
 			const customElementComputedStyle = window.getComputedStyle(
-				<IHTMLElement>customElement.shadowRoot.querySelector('span')
+				<IHTMLElement>customElement.shadowRoot?.querySelector('span')
 			);
 
 			// Default value on HTML is "16px Times New Roman"
@@ -863,7 +863,7 @@ describe('Window', () => {
 					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
 					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
 					resolve(null);
-				}, 10);
+				}, 15);
 			});
 		});
 	});

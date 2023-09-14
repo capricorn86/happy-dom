@@ -8,7 +8,7 @@ The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate 
 
 [Happy DOM](https://github.com/capricorn86/happy-dom) focuses heavily on performance and can be used as an alternative to [JSDOM](https://github.com/jsdom/jsdom).
 
-This package contains a tool that observes uncaught exceptions and Promise rejections in [Happy DOM](https://github.com/capricorn86/happy-dom). It will dispatch uncaught errors as events on the [Happy DOM](https://github.com/capricorn86/happy-dom) Window instance.
+This package contains a tool that can observe uncaught exceptions and Promise rejections in [Happy DOM](https://github.com/capricorn86/happy-dom). It will dispatch uncaught errors as events on the [Happy DOM](https://github.com/capricorn86/happy-dom) Window instance.
 
 Uncaught exceptions and rejections must be listened to on the NodeJS process at a global level. This tool will therefore not work in all environments as there may already be listeners added by other libraries on the NodeJS process that may conflict.
 
