@@ -1,4 +1,4 @@
-import { Window, ErrorEvent } from 'happy-dom';
+import { Window, ErrorEvent, IResponse } from 'happy-dom';
 import UncaughtExceptionObserver from '../lib/UncaughtExceptionObserver.js';
 
 async function itObservesUnhandledRejections(): Promise<void> {
@@ -12,7 +12,7 @@ async function itObservesUnhandledRejections(): Promise<void> {
 	window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
 	window.fetch = () => {
-		return new Promise((resolve) => setTimeout(resolve, 0));
+		return new Promise((resolve) => setTimeout(() => resolve(<IResponse>{}), 0));
 	};
 
 	document.write(`
