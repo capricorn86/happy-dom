@@ -1,0 +1,37 @@
+{
+	"compilerOptions": {
+		"outDir": "lib",
+		"rootDir": "src",
+		"target": "es2020",
+		"declaration": true,
+		"declarationMap": true,
+		"module": "es2020",
+		"moduleResolution": "node16",
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"removeComments": false,
+		"preserveConstEnums": true,
+		"sourceMap": true,
+		"skipLibCheck": true,
+		"baseUrl": ".",
+		"composite": false,
+		"incremental": false,
+        "lib": [
+            "es2020"
+        ],
+		"types": [
+			"node"
+		]
+	},
+	"include": [
+		"@types/node",
+		"src"
+	],
+    "exclude": [
+        "@types/dom"
+    ]
+}

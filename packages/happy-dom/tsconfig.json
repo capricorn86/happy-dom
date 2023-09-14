@@ -2,7 +2,6 @@
 	"compilerOptions": {
 		"outDir": "lib",
 		"rootDir": "src",
-		"tsBuildInfoFile": "tmp/.tsbuildinfo",
 		"target": "es2020",
 		"declaration": true,
 		"declarationMap": true,
@@ -19,8 +18,8 @@
 		"sourceMap": true,
 		"skipLibCheck": false,
 		"baseUrl": ".",
-		"composite": true,
-		"incremental": true,
+		"composite": false,
+		"incremental": false,
         "lib": [
             "es2020"
         ],

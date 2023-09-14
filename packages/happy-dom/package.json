@@ -73,7 +73,7 @@
 		"test": "vitest run",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest",
-		"test:debug": "vitest --inspect-brk --threads false"
+		"test:debug": "vitest run --inspect-brk --threads false"
 	},
 	"dependencies": {
 		"css.escape": "^1.5.1",

@@ -413,5 +413,77 @@ describe('HTMLScriptElement', () => {
 				'Failed to load external script "path/to/script/". JavaScript file loading is disabled.'
 			);
 		});
+
+		it('Triggers an error event on Window when attempting to perform an asynchrounous request containing invalid JavaScript.', async () => {
+			let errorEvent: ErrorEvent | null = null;
+
+			vi.spyOn(window, 'fetch').mockImplementation(() => {
+				return Promise.resolve(<IResponse>{
+					text: async () => 'globalThis.test = /;',
+					ok: true
+				});
+			});
+
+			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+
+			const script = <IHTMLScriptElement>window.document.createElement('script');
+			script.src = 'https://localhost:8080/base/path/to/script/';
+			script.async = true;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM.whenAsyncComplete();
+
+			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
+				'Invalid regular expression: missing /'
+			);
+
+			const consoleOutput = window.happyDOM.virtualConsolePrinter?.readAsString() || '';
+			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
+				true
+			);
+		});
+
+		it('Triggers an error event on Window when attempting to perform a synchrounous request containing invalid JavaScript.', () => {
+			let errorEvent: ErrorEvent | null = null;
+
+			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation(() => 'globalThis.test = /;');
+
+			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+
+			const script = <IHTMLScriptElement>window.document.createElement('script');
+			script.src = 'https://localhost:8080/base/path/to/script/';
+
+			document.body.appendChild(script);
+
+			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
+				'Invalid regular expression: missing /'
+			);
+
+			const consoleOutput = window.happyDOM.virtualConsolePrinter?.readAsString() || '';
+			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
+				true
+			);
+		});
+
+		it('Triggers an error event on Window when appending an element that contains invalid Javascript.', () => {
+			const element = <IHTMLScriptElement>document.createElement('script');
+			let errorEvent: ErrorEvent | null = null;
+
+			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+
+			element.text = 'globalThis.test = /;';
+
+			document.body.appendChild(element);
+
+			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
+				'Invalid regular expression: missing /'
+			);
+
+			const consoleOutput = window.happyDOM.virtualConsolePrinter?.readAsString() || '';
+			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
+				true
+			);
+		});
 	});
 });

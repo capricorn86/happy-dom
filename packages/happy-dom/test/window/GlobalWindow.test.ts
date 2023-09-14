@@ -1,5 +1,6 @@
 import GlobalWindow from '../../src/window/GlobalWindow.js';
 import IWindow from '../../src/window/IWindow.js';
+import ErrorEvent from '../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('GlobalWindow', () => {
@@ -42,6 +43,36 @@ describe('GlobalWindow', () => {
 			global['globalWindow'] = window;
 			expect(window.eval('[].constructor === globalWindow.Array')).toBe(true);
 			delete global['globalWindow'];
+		});
+	});
+
+	describe('eval()', () => {
+		it('Respects direct eval.', () => {
+			const result = window.eval(`
+			globalThis.variable = 'globally defined';
+			(function () {
+				var variable = 'locally defined';
+				return eval('variable');
+			})()`);
+
+			expect(result).toBe('locally defined');
+			expect(globalThis['variable']).toBe('globally defined');
+
+			delete globalThis['variable'];
+		});
+
+		it('Respects indirect eval.', () => {
+			const result = window.eval(`
+			globalThis.variable = 'globally defined';
+			(function () {
+				var variable = 'locally defined';
+				return (0,eval)('variable');
+			})()`);
+
+			expect(result).toBe('globally defined');
+			expect(globalThis['variable']).toBe('globally defined');
+
+			delete globalThis['variable'];
 		});
 	});
 });

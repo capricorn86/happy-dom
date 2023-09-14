@@ -64,25 +64,18 @@ async function renameFiles(files, args) {
 	for (const file of newFiles) {
 		writePromises.push(
 			FS.promises.readFile(file.oldPath).then((content) => {
-				return FS.promises
-					.writeFile(
-						file.newPath,
-						content
-							.toString()
-							.replace(
-								new RegExp(`${args.fromExt.replace('.', '\\.')}\\.map`, 'g'),
-								`${args.toExt}.map`
-							)
-							.replace(
-								new RegExp(`${args.fromExt.replace('.', '\\.')}(["'])`, 'g'),
-								`${args.toExt}$1`
-							)
+				const oldContent = content.toString();
+				const newContent = oldContent
+					.replace(
+						new RegExp(`${args.fromExt.replace('.', '\\.')}\\.map`, 'g'),
+						`${args.toExt}.map`
 					)
-					.then(() => {
-						if (file.oldPath !== file.newPath) {
-							return FS.promises.unlink(file.oldPath);
-						}
-					});
+					.replace(new RegExp(`${args.fromExt.replace('.', '\\.')}(["'])`, 'g'), `${args.toExt}$1`);
+				return FS.promises.writeFile(file.newPath, newContent).then(() => {
+					if (file.oldPath !== file.newPath) {
+						return FS.promises.unlink(file.oldPath);
+					}
+				});
 			})
 		);
 	}
