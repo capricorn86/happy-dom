@@ -418,6 +418,18 @@ describe('Window', () => {
 		});
 	});
 
+	describe('get crypto()', () => {
+		it('Exposes "crypto" from the NodeJS crypto package.', () => {
+			const array = new Uint32Array(5);
+			window.crypto.getRandomValues(array);
+			expect(array[0]).toBeGreaterThan(0);
+			expect(array[1]).toBeGreaterThan(0);
+			expect(array[2]).toBeGreaterThan(0);
+			expect(array[3]).toBeGreaterThan(0);
+			expect(array[4]).toBeGreaterThan(0);
+		});
+	});
+
 	describe('get navigator()', () => {
 		it('Returns an instance of Navigator with browser data.', () => {
 			expect(window.navigator instanceof Navigator).toBe(true);

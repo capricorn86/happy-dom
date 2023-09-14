@@ -85,7 +85,7 @@
 	},
 	"devDependencies": {
 		"@types/css.escape": "^1.5.0",
-		"@types/node": "^15.6.0",
+		"@types/node": "^16.11.7",
 		"@types/node-fetch": "^2.6.1",
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
 		"@typescript-eslint/parser": "^5.16.0",

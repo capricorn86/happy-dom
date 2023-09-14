@@ -114,6 +114,7 @@ import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
+import { webcrypto } from 'crypto';
 import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
 import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload.js';
 import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget.js';
@@ -364,6 +365,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly innerHeight: number = 768;
 	public readonly outerWidth: number = 1024;
 	public readonly outerHeight: number = 768;
+	public readonly crypto = webcrypto;
 
 	// Node.js Globals
 	public Array: typeof Array;
