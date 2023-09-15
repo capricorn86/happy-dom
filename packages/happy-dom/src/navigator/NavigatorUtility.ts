@@ -1,8 +1,5 @@
 import FS from 'fs';
 import Path from 'path';
-import { fileURLToPath, URL } from 'url';
-
-const __dirname = globalThis.__dirname ?? fileURLToPath(new URL('.', import.meta.url));
 
 /**
  * Utility for navigator.
@@ -14,7 +11,7 @@ export default class NavigatorUtility {
 	 * @returns Package version.
 	 */
 	public static getHappyDOMVersion(): string {
-		const content = FS.readFileSync(Path.join(__dirname, '..', '..', 'package.json')).toString();
+		const content = FS.readFileSync(Path.resolve('package.json')).toString();
 		const json = JSON.parse(content);
 		return json.version;
 	}
