@@ -89,14 +89,14 @@ jobs:
         run: |
           npm ci --ignore-scripts
 
+      - name: Set version
+        run: node ./bin/set-version.js --version=${{needs.check-next-version.outputs.next_version }}
+
       - name: Compile packages
         run: npm run compile
 
       - name: Run tests
         run: npm run test
-
-      - name: Set version
-        run: node ./bin/set-version.js --version=${{needs.check-next-version.outputs.next_version }}
 
       - name: Configures Git
         run: |

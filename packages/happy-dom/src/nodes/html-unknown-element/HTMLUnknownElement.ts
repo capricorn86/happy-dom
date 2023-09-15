@@ -27,7 +27,7 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 
 		// This element can potentially be a custom element that has not been defined yet
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
-		if (tagName.includes('-')) {
+		if (tagName.includes('-') && this.ownerDocument.defaultView.customElements._callbacks) {
 			const callbacks = this.ownerDocument.defaultView.customElements._callbacks;
 
 			if (parentNode && !this._customElementDefineCallback) {

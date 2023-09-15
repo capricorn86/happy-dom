@@ -4,6 +4,7 @@ import IDocument from '../../../src/nodes/document/IDocument.js';
 import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnknownElement.js';
 import CustomElement from '../../CustomElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
 
 describe('HTMLUnknownElement', () => {
 	let window: IWindow;
@@ -72,7 +73,7 @@ describe('HTMLUnknownElement', () => {
 			expect(customElement instanceof CustomElement).toBe(true);
 
 			expect(customElement.isConnected).toBe(true);
-			expect(customElement.shadowRoot.children.length).toBe(2);
+			expect(customElement.shadowRoot?.children.length).toBe(2);
 
 			expect(customElement.childNodes === childNodes).toBe(true);
 			expect(customElement.children === children).toBe(true);
@@ -84,6 +85,19 @@ describe('HTMLUnknownElement', () => {
 			expect(customElement._isValue === isValue).toBe(true);
 			expect(customElement.attributes.length).toBe(1);
 			expect(customElement.attributes[0] === attribute1).toBe(true);
+		});
+
+		it('Does nothing if the property "_callback" doesn\'t exist on Window.customElements.', () => {
+			(<CustomElementRegistry>window.customElements) = <CustomElementRegistry>(<unknown>{
+				get: () => undefined
+			});
+
+			const element = <HTMLUnknownElement>document.createElement('custom-element');
+			const parent = document.createElement('div');
+
+			expect(() => {
+				parent.appendChild(element);
+			}).not.toThrow();
 		});
 	});
 });

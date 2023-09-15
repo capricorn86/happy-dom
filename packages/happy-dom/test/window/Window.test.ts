@@ -26,14 +26,16 @@ import '../types.d.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import VirtualConsole from '../../src/console/VirtualConsole.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
-import NavigatorUtility from '../../src/navigator/NavigatorUtility.js';
-import PackageJson from '../../package.json';
+import PackageVersion from '../../src/version.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
-	const processPlatform = process.platform;
-	const processPlatformCapitalized =
-		processPlatform.charAt(0).toUpperCase() + processPlatform.slice(1);
-	return 'X11; ' + processPlatformCapitalized + ' ' + process.arch;
+	return (
+		'X11; ' +
+		process.platform.charAt(0).toUpperCase() +
+		process.platform.slice(1) +
+		' ' +
+		process.arch
+	);
 };
 
 describe('Window', () => {
@@ -151,7 +153,7 @@ describe('Window', () => {
 			expect(windowWithoutOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.navigator.userAgent).toBe(
 				`Mozilla/5.0 (${GET_NAVIGATOR_PLATFORM()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
-					PackageJson.version
+					PackageVersion.version
 				}`
 			);
 			expect(windowWithoutOptions.happyDOM.settings.device.prefersColorScheme).toBe('light');
@@ -457,9 +459,7 @@ describe('Window', () => {
 			const referenceValues = {
 				appCodeName: 'Mozilla',
 				appName: 'Netscape',
-				appVersion: `5.0 (${NavigatorUtility.getPlatform()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
-					PackageJson.version
-				}`,
+				appVersion: `5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
 				cookieEnabled: true,
 				credentials: null,
 				doNotTrack: 'unspecified',
@@ -480,7 +480,7 @@ describe('Window', () => {
 				},
 				product: 'Gecko',
 				productSub: '20100101',
-				userAgent: `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageJson.version}`,
+				userAgent: `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
 				vendor: '',
 				vendorSub: '',
 				webdriver: true
