@@ -1,5 +1,6 @@
 import MimeTypeArray from './MimeTypeArray.js';
 import PluginArray from './PluginArray.js';
+import IWindow from '../window/IWindow.js';
 
 /**
  * Browser Navigator API.
@@ -10,6 +11,16 @@ import PluginArray from './PluginArray.js';
  * https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator.
  */
 export default class Navigator {
+	private _ownerWindow: IWindow;
+
+	/**
+	 *
+	 * @param ownerWindow
+	 */
+	constructor(ownerWindow: IWindow) {
+		this._ownerWindow = ownerWindow;
+	}
+
 	/**
 	 * False if setting a cookie will be ignored and true otherwise.
 	 */
@@ -84,14 +95,19 @@ export default class Navigator {
 	 * Browser app version.
 	 */
 	public get appVersion(): string {
-		return '5.0 (Windows)';
+		const userAgent = this.userAgent;
+		const index = userAgent.indexOf('/');
+		return index > -1 ? userAgent.substring(index + 1) : '';
 	}
 
 	/**
 	 * Browser platform.
 	 */
 	public get platform(): string {
-		return 'Win32';
+		const userAgent = this.userAgent;
+		const indexStart = userAgent.indexOf('(');
+		const indexEnd = userAgent.indexOf(')');
+		return indexStart > -1 && indexEnd > -1 ? userAgent.substring(indexStart + 1, indexEnd) : '';
 	}
 
 	/**
@@ -128,7 +144,7 @@ export default class Navigator {
 	 * "appCodeName/appVersion number (Platform; Security; OS-or-CPU; Localization; rv: revision-version-number) product/productSub Application-Name Application-Name-version".
 	 */
 	public get userAgent(): string {
-		return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0';
+		return this._ownerWindow.happyDOM.settings.navigator.userAgent;
 	}
 
 	/**
