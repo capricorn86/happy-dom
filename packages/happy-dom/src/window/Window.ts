@@ -114,6 +114,7 @@ import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
+import { webcrypto } from 'crypto';
 import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
 import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload.js';
 import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget.js';
@@ -139,6 +140,7 @@ import WindowErrorUtility from './WindowErrorUtility.js';
 import VirtualConsole from '../console/VirtualConsole.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import IHappyDOMSettings from './IHappyDOMSettings.js';
+import PackageVersion from '../version.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -209,6 +211,11 @@ export default class Window extends EventTarget implements IWindow {
 			disableIframePageLoading: false,
 			disableComputedStyleRendering: false,
 			enableFileSystemHttpRequests: false,
+			navigator: {
+				userAgent: `Mozilla/5.0 (X11; ${
+					process.platform.charAt(0).toUpperCase() + process.platform.slice(1) + ' ' + process.arch
+				}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`
+			},
 			device: {
 				prefersColorScheme: 'light',
 				mediaType: 'screen'
@@ -364,6 +371,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly innerHeight: number = 768;
 	public readonly outerWidth: number = 1024;
 	public readonly outerHeight: number = 768;
+	public readonly crypto = webcrypto;
 
 	// Node.js Globals
 	public Array: typeof Array;
@@ -455,7 +463,7 @@ export default class Window extends EventTarget implements IWindow {
 
 		this.customElements = new CustomElementRegistry();
 		this.location = new Location();
-		this.navigator = new Navigator();
+		this.navigator = new Navigator(this);
 		this.history = new History();
 		this.screen = new Screen();
 		this.sessionStorage = new Storage();
@@ -486,6 +494,10 @@ export default class Window extends EventTarget implements IWindow {
 				this.happyDOM.settings = {
 					...this.happyDOM.settings,
 					...options.settings,
+					navigator: {
+						...this.happyDOM.settings.navigator,
+						...options.settings.navigator
+					},
 					device: {
 						...this.happyDOM.settings.device,
 						...options.settings.device

@@ -55,9 +55,13 @@ async function readDirectory(directory) {
 }
 
 async function renameFiles(files, args) {
+	const fromExtEscaped = args.fromExt.replace('.', '\\.');
 	const newFiles = files.map((file) => ({
 		oldPath: file,
-		newPath: file.replace(args.fromExt, args.toExt)
+		newPath: file.replace(
+			new RegExp(`${fromExtEscaped}$|${fromExtEscaped}(\\.)`),
+			`${args.toExt}$1`
+		)
 	}));
 	const writePromises = [];
 
@@ -66,11 +70,8 @@ async function renameFiles(files, args) {
 			FS.promises.readFile(file.oldPath).then((content) => {
 				const oldContent = content.toString();
 				const newContent = oldContent
-					.replace(
-						new RegExp(`${args.fromExt.replace('.', '\\.')}\\.map`, 'g'),
-						`${args.toExt}.map`
-					)
-					.replace(new RegExp(`${args.fromExt.replace('.', '\\.')}(["'])`, 'g'), `${args.toExt}$1`);
+					.replace(new RegExp(`${fromExtEscaped}\\.map`, 'g'), `${args.toExt}.map`)
+					.replace(new RegExp(`${fromExtEscaped}(["'])`, 'g'), `${args.toExt}$1`);
 				return FS.promises.writeFile(file.newPath, newContent).then(() => {
 					if (file.oldPath !== file.newPath) {
 						return FS.promises.unlink(file.oldPath);

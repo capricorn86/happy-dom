@@ -3,7 +3,6 @@
 	"compilerOptions": {
 		"outDir": "../tmp",
 		"rootDir": "../test",
-		"tsBuildInfoFile": "../tmp/.tsbuildinfo-test",
 		"jsx": "react",
         "module": "CommonJS",
 		"lib": [

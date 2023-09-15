@@ -3,6 +3,7 @@ import VirtualConsoleLogLevelEnum from './enums/VirtualConsoleLogLevelEnum.js';
 import VirtualConsoleLogTypeEnum from './enums/VirtualConsoleLogTypeEnum.js';
 import IVirtualConsoleLogGroup from './types/IVirtualConsoleLogGroup.js';
 import * as PerfHooks from 'perf_hooks';
+import { ConsoleConstructor } from 'console';
 
 /**
  * Virtual Console.
@@ -12,7 +13,7 @@ import * as PerfHooks from 'perf_hooks';
 export default class VirtualConsole implements Console {
 	// This is needed as the interface for the NodeJS Console also have a reference to the ConsoleConstructor class as a property for some reason.
 	// This is not part of the browser specs.
-	public Console: NodeJS.ConsoleConstructor;
+	public Console: ConsoleConstructor;
 
 	private _printer: IVirtualConsolePrinter;
 	private _count: { [label: string]: number } = {};
