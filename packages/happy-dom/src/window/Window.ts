@@ -140,7 +140,7 @@ import WindowErrorUtility from './WindowErrorUtility.js';
 import VirtualConsole from '../console/VirtualConsole.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import IHappyDOMSettings from './IHappyDOMSettings.js';
-import NavigatorUtility from '../navigator/NavigatorUtility.js';
+import PackageVersion from '../version.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -212,7 +212,9 @@ export default class Window extends EventTarget implements IWindow {
 			disableComputedStyleRendering: false,
 			enableFileSystemHttpRequests: false,
 			navigator: {
-				userAgent: `Mozilla/5.0 (${NavigatorUtility.getPlatform()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${NavigatorUtility.getHappyDOMVersion()}`
+				userAgent: `Mozilla/5.0 (X11; ${
+					process.platform.charAt(0).toUpperCase() + process.platform.slice(1) + ' ' + process.arch
+				}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`
 			},
 			device: {
 				prefersColorScheme: 'light',
