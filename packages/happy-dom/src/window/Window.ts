@@ -140,6 +140,7 @@ import WindowErrorUtility from './WindowErrorUtility.js';
 import VirtualConsole from '../console/VirtualConsole.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import IHappyDOMSettings from './IHappyDOMSettings.js';
+import NavigatorUtility from '../navigator/NavigatorUtility.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -210,6 +211,9 @@ export default class Window extends EventTarget implements IWindow {
 			disableIframePageLoading: false,
 			disableComputedStyleRendering: false,
 			enableFileSystemHttpRequests: false,
+			navigator: {
+				userAgent: `Mozilla/5.0 (${NavigatorUtility.getPlatform()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${NavigatorUtility.getHappyDOMVersion()}`
+			},
 			device: {
 				prefersColorScheme: 'light',
 				mediaType: 'screen'
@@ -457,7 +461,7 @@ export default class Window extends EventTarget implements IWindow {
 
 		this.customElements = new CustomElementRegistry();
 		this.location = new Location();
-		this.navigator = new Navigator();
+		this.navigator = new Navigator(this);
 		this.history = new History();
 		this.screen = new Screen();
 		this.sessionStorage = new Storage();
@@ -488,6 +492,10 @@ export default class Window extends EventTarget implements IWindow {
 				this.happyDOM.settings = {
 					...this.happyDOM.settings,
 					...options.settings,
+					navigator: {
+						...this.happyDOM.settings.navigator,
+						...options.settings.navigator
+					},
 					device: {
 						...this.happyDOM.settings.device,
 						...options.settings.device

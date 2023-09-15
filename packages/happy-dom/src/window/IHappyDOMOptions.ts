@@ -13,6 +13,9 @@ export default interface IHappyDOMOptions {
 		disableIframePageLoading?: boolean;
 		disableComputedStyleRendering?: boolean;
 		enableFileSystemHttpRequests?: boolean;
+		navigator?: {
+			userAgent?: string;
+		};
 		device?: {
 			prefersColorScheme?: string;
 			mediaType?: string;
