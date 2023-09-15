@@ -1,5 +1,8 @@
 import FS from 'fs';
 import Path from 'path';
+import { fileURLToPath, URL } from 'url';
+
+const __dirname = globalThis.__dirname ?? fileURLToPath(new URL('.', import.meta.url));
 
 /**
  * Utility for navigator.
