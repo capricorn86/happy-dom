@@ -66,6 +66,12 @@ describe('Document', () => {
 		});
 	}
 
+	describe('get referrer()', () => {
+		it('Returns empty string.', () => {
+			expect(document.referrer).toBe('');
+		});
+	});
+
 	describe('get nodeName()', () => {
 		it('Returns "#document".', () => {
 			expect(document.nodeName).toBe('#document');
