@@ -210,6 +210,7 @@ export default class Window extends EventTarget implements IWindow {
 			disableCSSFileLoading: false,
 			disableIframePageLoading: false,
 			disableComputedStyleRendering: false,
+			disableErrorCapturing: false,
 			enableFileSystemHttpRequests: false,
 			navigator: {
 				userAgent: `Mozilla/5.0 (X11; ${
@@ -736,7 +737,11 @@ export default class Window extends EventTarget implements IWindow {
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this._setTimeout(() => {
 			this.happyDOM.asyncTaskManager.endTimer(id);
-			WindowErrorUtility.captureErrorSync(this, () => callback(...args));
+			if (this.happyDOM.settings.disableErrorCapturing) {
+				callback(...args);
+			} else {
+				WindowErrorUtility.captureError(this, () => callback(...args));
+			}
 		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
@@ -762,11 +767,15 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this._setInterval(() => {
-			WindowErrorUtility.captureErrorSync(
-				this,
-				() => callback(...args),
-				() => this.clearInterval(id)
-			);
+			if (this.happyDOM.settings.disableErrorCapturing) {
+				callback(...args);
+			} else {
+				WindowErrorUtility.captureError(
+					this,
+					() => callback(...args),
+					() => this.clearInterval(id)
+				);
+			}
 		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
@@ -811,8 +820,13 @@ export default class Window extends EventTarget implements IWindow {
 		const taskId = this.happyDOM.asyncTaskManager.startTask(() => (isAborted = true));
 		this._queueMicrotask(() => {
 			if (!isAborted) {
-				WindowErrorUtility.captureErrorSync(this, <() => unknown>callback);
 				this.happyDOM.asyncTaskManager.endTask(taskId);
+
+				if (this.happyDOM.settings.disableErrorCapturing) {
+					callback();
+				} else {
+					WindowErrorUtility.captureError(this, <() => unknown>callback);
+				}
 			}
 		});
 	}

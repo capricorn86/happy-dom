@@ -189,9 +189,13 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 						type === 'application/x-javascript' ||
 						type.startsWith('text/javascript'))
 				) {
-					WindowErrorUtility.captureErrorSync(this.ownerDocument.defaultView, () =>
-						this.ownerDocument.defaultView.eval(textContent)
-					);
+					if (this.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+						this.ownerDocument.defaultView.eval(textContent);
+					} else {
+						WindowErrorUtility.captureError(this.ownerDocument.defaultView, () =>
+							this.ownerDocument.defaultView.eval(textContent)
+						);
+					}
 				}
 			}
 		}

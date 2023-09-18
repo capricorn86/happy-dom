@@ -7,32 +7,6 @@ import { IElement } from '../index.js';
  */
 export default class WindowErrorUtility {
 	/**
-	 * Calls a function asynchronously wrapped in a try/catch block to capture errors and dispatch error events.
-	 *
-	 * It will also output the errors to the console.
-	 *
-	 * @param elementOrWindow Element or Window.
-	 * @param callback Callback.
-	 * @param [cleanup] Cleanup callback on error.
-	 * @returns Promise.
-	 */
-	public static async captureErrorAsync<T>(
-		elementOrWindow: IWindow | IElement,
-		callback: () => Promise<T>,
-		cleanup?: () => void
-	): Promise<T | null> {
-		try {
-			return await callback();
-		} catch (error) {
-			this.dispatchError(elementOrWindow, error);
-			if (cleanup) {
-				cleanup();
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * Calls a function synchronously wrapped in a try/catch block to capture errors and dispatch error events.
 	 * If the callback returns a Promise, it will catch errors from the promise.
 	 *
@@ -43,7 +17,7 @@ export default class WindowErrorUtility {
 	 * @param [cleanup] Cleanup callback on error.
 	 * @returns Result.
 	 */
-	public static captureErrorSync<T>(
+	public static captureError<T>(
 		elementOrWindow: IWindow | IElement,
 		callback: () => T,
 		cleanup?: () => void

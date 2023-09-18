@@ -485,5 +485,17 @@ describe('HTMLScriptElement', () => {
 				true
 			);
 		});
+
+		it('Throws an exception when appending an element that contains invalid Javascript and Window.happyDOM.settings.disableErrorCapturing is set to true.', () => {
+			const element = <IHTMLScriptElement>document.createElement('script');
+
+			window.happyDOM.settings.disableErrorCapturing = true;
+
+			element.text = 'globalThis.test = /;';
+
+			expect(() => {
+				document.body.appendChild(element);
+			}).toThrow(new TypeError('Invalid regular expression: missing /'));
+		});
 	});
 });
