@@ -71,10 +71,10 @@
 		"watch": "tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
-		"test": "vitest run",
+		"test": "vitest run --singleThread",
 		"test:ui": "vitest --ui",
-		"test:watch": "vitest",
-		"test:debug": "vitest run --inspect-brk --threads false"
+		"test:watch": "vitest --singleThread",
+		"test:debug": "vitest run --inspect-brk --threads=false"
 	},
 	"dependencies": {
 		"css.escape": "^1.5.1",

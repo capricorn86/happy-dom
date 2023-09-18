@@ -22,6 +22,15 @@ describe('HTMLDialogElement', () => {
 		});
 	});
 
+	describe('set open()', () => {
+		it('Should set the open state', () => {
+			element.open = true;
+			expect(element.open).toBe(true);
+			element.open = false;
+			expect(element.open).toBe(false);
+		});
+	});
+
 	describe('get open()', () => {
 		it('Should be closed by default', () => {
 			expect(element.open).toBe(false);

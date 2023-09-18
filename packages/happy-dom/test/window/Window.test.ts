@@ -27,6 +27,7 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import VirtualConsole from '../../src/console/VirtualConsole.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
 import PackageVersion from '../../src/version.js';
+import { IHTMLDialogElement } from '../../src/index.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -528,10 +529,31 @@ describe('Window', () => {
 			const element = <IHTMLElement>document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
 
+			expect(computedStyle.display).toBe('');
+
 			window.document.body.appendChild(element);
 
 			expect(computedStyle.direction).toBe('ltr');
 			expect(computedStyle.display).toBe('block');
+		});
+
+		it('Handles default properties "display" on a dialog element.', () => {
+			const element = <IHTMLDialogElement>document.createElement('dialog');
+			const computedStyle = window.getComputedStyle(element);
+
+			expect(computedStyle.display).toBe('');
+
+			window.document.body.appendChild(element);
+
+			expect(computedStyle.display).toBe('none');
+
+			element.show();
+
+			expect(computedStyle.display).toBe('block');
+
+			element.close();
+
+			expect(computedStyle.display).toBe('none');
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {

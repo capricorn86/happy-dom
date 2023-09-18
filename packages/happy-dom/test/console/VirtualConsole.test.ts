@@ -1,4 +1,4 @@
-import { beforeEach, describe, it, expect } from 'vitest';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import VirtualConsole from '../../src/console/VirtualConsole.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
 
@@ -12,6 +12,10 @@ describe('VirtualConsole', () => {
 	beforeEach(() => {
 		virtualConsolePrinter = new VirtualConsolePrinter();
 		virtualConsole = new VirtualConsole(virtualConsolePrinter);
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe('assert()', () => {
@@ -221,37 +225,47 @@ describe('VirtualConsole', () => {
 
 	describe('time()', () => {
 		it('Should store time for the default label.', () => {
+			let performanceNow = 12345;
+			vi.spyOn(performance, 'now').mockImplementation(() => performanceNow++);
 			virtualConsole.time();
 			virtualConsole.timeEnd();
-			expect(virtualConsolePrinter.readAsString()).toMatch(/default: [\d.]+ms/);
+			expect(virtualConsolePrinter.readAsString()).toBe('default: 1ms - timer ended\n');
 		});
 
 		it('Should store time for a label.', () => {
+			let performanceNow = 12345;
+			vi.spyOn(performance, 'now').mockImplementation(() => performanceNow++);
 			virtualConsole.time('test');
 			virtualConsole.timeEnd('test');
-			expect(virtualConsolePrinter.readAsString()).toMatch(/test: [\d.]+ms/);
+			expect(virtualConsolePrinter.readAsString()).toBe('test: 1ms - timer ended\n');
 		});
 	});
 
 	describe('timeEnd()', () => {
 		it('Should print the time between the stored start time and when it was ended.', () => {
+			let performanceNow = 12345;
+			vi.spyOn(performance, 'now').mockImplementation(() => performanceNow++);
 			virtualConsole.time();
 			virtualConsole.timeEnd();
-			expect(virtualConsolePrinter.readAsString()).toMatch(/default: [\d.]+ms/);
+			expect(virtualConsolePrinter.readAsString()).toBe('default: 1ms - timer ended\n');
 		});
 	});
 
 	describe('timeLog()', () => {
 		it('Should print the time between the stored start time and when it was ended.', () => {
+			let performanceNow = 12345;
+			vi.spyOn(performance, 'now').mockImplementation(() => performanceNow++);
 			virtualConsole.time();
 			virtualConsole.timeLog();
-			expect(virtualConsolePrinter.readAsString()).toMatch(/default: [\d.]+ms/);
+			expect(virtualConsolePrinter.readAsString()).toMatch('default: 1ms');
 		});
 
 		it('Should print the time between the stored start time and when it was ended with a label.', () => {
+			let performanceNow = 12345;
+			vi.spyOn(performance, 'now').mockImplementation(() => performanceNow++);
 			virtualConsole.time('test');
 			virtualConsole.timeLog('test');
-			expect(virtualConsolePrinter.readAsString()).toMatch(/test: [\d.]+ms/);
+			expect(virtualConsolePrinter.readAsString()).toMatch('test: 1ms');
 		});
 	});
 
