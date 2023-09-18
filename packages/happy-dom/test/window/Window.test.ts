@@ -132,6 +132,7 @@ describe('Window', () => {
 			expect(windowWithOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.disableErrorCapturing).toBe(false);
 			expect(windowWithOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithOptions.happyDOM.settings.navigator.userAgent).toBe('test');
 			expect(windowWithOptions.happyDOM.settings.device.prefersColorScheme).toBe('dark');
@@ -150,6 +151,7 @@ describe('Window', () => {
 			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.disableErrorCapturing).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.navigator.userAgent).toBe(
 				`Mozilla/5.0 (${GET_NAVIGATOR_PLATFORM()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
@@ -818,11 +820,6 @@ describe('Window', () => {
 
 	describe('eval()', () => {
 		it('Evaluates code and returns the result.', () => {
-			const result = <() => number>window.eval('() => 5');
-			expect(result()).toBe(5);
-		});
-
-		it('Captures errors and triggers an error event.', () => {
 			const result = <() => number>window.eval('() => 5');
 			expect(result()).toBe(5);
 		});

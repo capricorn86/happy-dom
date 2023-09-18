@@ -5,7 +5,7 @@ import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
 import { LegacyFakeTimers, ModernFakeTimers } from '@jest/fake-timers';
 import { JestEnvironment, EnvironmentContext } from '@jest/environment';
-import { Window, IWindow, ErrorEvent } from 'happy-dom';
+import { Window, IWindow } from 'happy-dom';
 import { Script } from 'vm';
 import { Global, Config } from '@jest/types';
 
@@ -15,10 +15,12 @@ import { Global, Config } from '@jest/types';
 export default class HappyDOMEnvironment implements JestEnvironment {
 	public fakeTimers: LegacyFakeTimers<number> = null;
 	public fakeTimersModern: ModernFakeTimers = null;
-	public window: IWindow = new Window({ console: globalThis.console });
+	public window: IWindow = new Window({
+		console: globalThis.console,
+		settings: { disableErrorCapturing: true }
+	});
 	public global: Global.Global = <Global.Global>(<unknown>this.window);
 	public moduleMocker: ModuleMocker = new ModuleMocker(<typeof globalThis>(<unknown>this.window));
-	private errorEventListener: (event: ErrorEvent) => void | null = null;
 
 	/**
 	 * Constructor.
@@ -73,14 +75,6 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			this.window.happyDOM.setURL('http://localhost/');
 		}
 
-		// Report uncaught errors.
-		this.errorEventListener = (event: ErrorEvent) => {
-			if (this.window['_listeners']?.['error']?.length === 0 && event.error !== null) {
-				process.emit('uncaughtException', event.error);
-			}
-		};
-		this.window.addEventListener('error', this.errorEventListener);
-
 		this.fakeTimers = new LegacyFakeTimers({
 			config: projectConfig,
 			global: <typeof globalThis>(<unknown>this.window),
@@ -124,11 +118,6 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.fakeTimersModern.dispose();
 
 		(<IWindow>(<unknown>this.global)).happyDOM.cancelAsync();
-
-		if (this.errorEventListener) {
-			this.window.removeEventListener('error', this.errorEventListener);
-			this.errorEventListener = null;
-		}
 
 		this.global = null;
 		this.moduleMocker = null;
