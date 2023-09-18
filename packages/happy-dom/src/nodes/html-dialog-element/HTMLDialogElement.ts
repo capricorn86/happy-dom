@@ -16,12 +16,25 @@ export default class HTMLDialogElement extends HTMLElement implements IHTMLDialo
 	public onclose: (event: Event) => void | null = null;
 
 	/**
+	 * Sets the "open" attribute.
+	 *
+	 * @param open Open.
+	 */
+	public set open(open: boolean) {
+		if (open) {
+			this.setAttribute('open', '');
+		} else {
+			this.removeAttribute('open');
+		}
+	}
+
+	/**
 	 * Returns open.
 	 *
 	 * @returns Open.
 	 */
 	public get open(): boolean {
-		return this.hasAttributeNS(null, 'open');
+		return this.getAttribute('open') !== null;
 	}
 
 	/**

@@ -56,4 +56,12 @@ describe('TestingLibrary', () => {
 
 		expect(clickHandler).toHaveBeenCalledTimes(1);
 	});
+
+	it('Finds element using "screen.getByRole()".', () => {
+		render(<dialog open></dialog>);
+
+		const element = screen.getByRole('dialog');
+
+		expect(element).toBeInstanceOf(HTMLDialogElement);
+	});
 });
