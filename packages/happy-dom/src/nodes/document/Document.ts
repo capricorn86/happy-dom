@@ -63,6 +63,7 @@ export default class Document extends Node implements IDocument {
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
+	public readonly referrer = '';
 	public readonly _windowClass: {} | null = null;
 	public readonly _readyStateManager: DocumentReadyStateManager;
 	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
