@@ -2,8 +2,9 @@ import { URL } from 'url';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import IWindow from '../../window/IWindow.js';
-import IFrameCrossOriginWindow from './IFrameCrossOriginWindow.js';
+import CrossOriginWindow from '../../window/CrossOriginWindow.js';
 import HTMLIFrameElement from './HTMLIFrameElement.js';
+import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 
 /**
  * HTML Iframe Utility.
@@ -40,7 +41,15 @@ export default class HTMLIFrameUtility {
 
 				if (src.startsWith('javascript:')) {
 					element._contentWindow = contentWindow;
-					element._contentWindow.eval(src.replace('javascript:', ''));
+					if (!element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation) {
+						if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+							(<IWindow>element._contentWindow).eval(src.replace('javascript:', ''));
+						} else {
+							WindowErrorUtility.captureError(element, () =>
+								(<IWindow>element._contentWindow).eval(src.replace('javascript:', ''))
+							);
+						}
+					}
 					return;
 				}
 
@@ -76,7 +85,7 @@ export default class HTMLIFrameUtility {
 				}
 
 				element._contentWindow = isCORS
-					? new IFrameCrossOriginWindow(element.ownerDocument.defaultView, contentWindow)
+					? new CrossOriginWindow(element.ownerDocument.defaultView, contentWindow)
 					: contentWindow;
 				contentWindow.document.write(responseText);
 				element.dispatchEvent(new Event('load'));

@@ -3,11 +3,11 @@ import IWindow from '../../window/IWindow.js';
 import IDocument from '../document/IDocument.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import INode from '../node/INode.js';
-import IFrameCrossOriginWindow from './IFrameCrossOriginWindow.js';
 import IHTMLIFrameElement from './IHTMLIFrameElement.js';
 import HTMLIFrameUtility from './HTMLIFrameUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
+import ICrossOriginWindow from '../../window/ICrossOriginWindow.js';
 
 /**
  * HTML Iframe Element.
@@ -23,7 +23,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	public onerror: (event: Event) => void | null = null;
 
 	// Internal properties
-	public _contentWindow: IWindow | IFrameCrossOriginWindow | null = null;
+	public _contentWindow: IWindow | ICrossOriginWindow | null = null;
 
 	/**
 	 * Returns source.
@@ -165,7 +165,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 *
 	 * @returns Content window.
 	 */
-	public get contentWindow(): IWindow | IFrameCrossOriginWindow | null {
+	public get contentWindow(): IWindow | ICrossOriginWindow | null {
 		return this._contentWindow;
 	}
 

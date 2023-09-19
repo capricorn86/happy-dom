@@ -1,5 +1,6 @@
 import CustomElementRegistry from '../custom-element/CustomElementRegistry.js';
 import Document from '../nodes/document/Document.js';
+import IDocument from '../nodes/document/IDocument.js';
 import HTMLDocument from '../nodes/html-document/HTMLDocument.js';
 import XMLDocument from '../nodes/xml-document/XMLDocument.js';
 import SVGDocument from '../nodes/svg-document/SVGDocument.js';
@@ -125,6 +126,7 @@ import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
+import ICrossOriginWindow from './ICrossOriginWindow.js';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -273,7 +275,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	onerror: (event: ErrorEvent) => void;
 
 	// Public Properties
-	readonly document: Document;
+	readonly document: IDocument;
 	readonly customElements: CustomElementRegistry;
 	readonly location: Location;
 	readonly history: History;
@@ -281,14 +283,20 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly console: Console;
 	readonly self: IWindow;
 	readonly top: IWindow;
+	readonly opener: IWindow | null;
 	readonly parent: IWindow;
 	readonly window: IWindow;
 	readonly globalThis: IWindow;
+	readonly name: string;
 	readonly screen: Screen;
 	readonly innerWidth: number;
 	readonly innerHeight: number;
 	readonly outerWidth: number;
 	readonly outerHeight: number;
+	readonly screenLeft: number;
+	readonly screenTop: number;
+	readonly screenX: number;
+	readonly screenY: number;
 	readonly sessionStorage: Storage;
 	readonly localStorage: Storage;
 	readonly performance: Performance;
@@ -328,6 +336,15 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	 * @param y Y position.
 	 */
 	scrollTo(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void;
+
+	/**
+	 * Loads a specified resource into a new or existing browsing context (that is, a tab, a window, or an iframe) under a specified name.
+	 *
+	 * @param [url] URL.
+	 * @param [target] Target.
+	 * @param [windowFeatures] Window features.
+	 */
+	open(url?: string, target?: string, windowFeatures?: string): IWindow | ICrossOriginWindow | null;
 
 	/**
 	 * Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.

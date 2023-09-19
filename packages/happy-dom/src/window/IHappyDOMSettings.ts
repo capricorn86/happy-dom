@@ -1,19 +1,9 @@
+import IBrowserContextSettings from '../browser-context/IBrowserContextSettings.js';
+
 /**
  * Happy DOM settings.
+ *
+ * @deprecated
  */
-export default interface IHappyDOMSettings {
-	disableJavaScriptEvaluation: boolean;
-	disableJavaScriptFileLoading: boolean;
-	disableCSSFileLoading: boolean;
-	disableIframePageLoading: boolean;
-	disableComputedStyleRendering: boolean;
-	disableErrorCapturing: boolean;
-	enableFileSystemHttpRequests: boolean;
-	navigator: {
-		userAgent: string;
-	};
-	device: {
-		prefersColorScheme: string;
-		mediaType: string;
-	};
-}
+type IHappyDOMSettings = IBrowserContextSettings;
+export default IHappyDOMSettings;

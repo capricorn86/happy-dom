@@ -141,6 +141,8 @@ import VirtualConsole from '../console/VirtualConsole.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import IHappyDOMSettings from './IHappyDOMSettings.js';
 import PackageVersion from '../version.js';
+import ICrossOriginWindow from './ICrossOriginWindow.js';
+import BrowserContext from './BrowserContextLoader.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -209,6 +211,7 @@ export default class Window extends EventTarget implements IWindow {
 			disableJavaScriptFileLoading: false,
 			disableCSSFileLoading: false,
 			disableIframePageLoading: false,
+			disableWindowOpenPageLoading: false,
 			disableComputedStyleRendering: false,
 			disableErrorCapturing: false,
 			enableFileSystemHttpRequests: false,
@@ -352,17 +355,19 @@ export default class Window extends EventTarget implements IWindow {
 	public onerror: (event: ErrorEvent) => void = null;
 
 	// Public Properties
-	public readonly document: Document;
+	public readonly document: IDocument;
 	public readonly customElements: CustomElementRegistry;
 	public readonly location: Location;
 	public readonly history: History;
 	public readonly navigator: Navigator;
 	public readonly console: Console;
-	public readonly self = this;
-	public readonly top = this;
-	public readonly parent = this;
-	public readonly window = this;
-	public readonly globalThis = this;
+	public readonly opener: IWindow | null = null;
+	public readonly self: IWindow = this;
+	public readonly top: IWindow = this;
+	public readonly parent: IWindow = this;
+	public readonly window: IWindow = this;
+	public readonly globalThis: IWindow = this;
+	public readonly name: string = '';
 	public readonly screen: Screen;
 	public readonly devicePixelRatio = 1;
 	public readonly sessionStorage: Storage;
@@ -372,6 +377,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly innerHeight: number = 768;
 	public readonly outerWidth: number = 1024;
 	public readonly outerHeight: number = 768;
+	public readonly screenLeft: number = 0;
+	public readonly screenTop: number = 0;
+	public readonly screenX: number = 0;
+	public readonly screenY: number = 0;
 	public readonly crypto = webcrypto;
 
 	// Node.js Globals
@@ -714,6 +723,24 @@ export default class Window extends EventTarget implements IWindow {
 		y?: number
 	): void {
 		this.scroll(x, y);
+	}
+
+	/**
+	 * Loads a specified resource into a new or existing browsing context (that is, a tab, a window, or an iframe) under a specified name.
+	 *
+	 * @param [url] URL.
+	 * @param [target] Target.
+	 * @param [features] Window features.
+	 */
+	public open(
+		url?: string,
+		target?: string,
+		features?: string
+	): IWindow | ICrossOriginWindow | null {
+		if (this.happyDOM.settings.disableWindowOpenPageLoading) {
+			return null;
+		}
+		return BrowserContext.createContext(this, { url, target, features });
 	}
 
 	/**

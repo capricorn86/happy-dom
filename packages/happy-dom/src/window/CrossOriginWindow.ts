@@ -1,13 +1,14 @@
-import EventTarget from '../../event/EventTarget.js';
-import IWindow from '../../window/IWindow.js';
-import DOMException from '../../exception/DOMException.js';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import Location from '../../location/Location.js';
+import EventTarget from '../event/EventTarget.js';
+import IWindow from './IWindow.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import Location from '../location/Location.js';
+import ICrossOriginWindow from './ICrossOriginWindow.js';
 
 /**
  * Browser window with limited access due to CORS restrictions in iframes.
  */
-export default class IFrameCrossOriginWindow extends EventTarget {
+export default class CrossOriginWindow extends EventTarget implements ICrossOriginWindow {
 	public readonly self = this;
 	public readonly window = this;
 	public readonly parent: IWindow;
