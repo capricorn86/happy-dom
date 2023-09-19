@@ -1,7 +1,7 @@
 /**
- * Browser context settings.
+ * Browser settings.
  */
-export default interface IBrowserContextSettings {
+export default interface IBrowserSettings {
 	disableJavaScriptEvaluation: boolean;
 	disableJavaScriptFileLoading: boolean;
 	disableCSSFileLoading: boolean;

@@ -3,37 +3,28 @@ import IWindow from '../window/IWindow.js';
 import Event from '../event/Event.js';
 import Window from '../window/Window.js';
 import IBrowserContextOptions from './IBrowserContextOptions.js';
-import IBrowserContextSettings from './IBrowserContextSettings.js';
+import IBrowserContextSettings from './IBrowserSettings.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
+import BrowserPage from './BrowserPage.js';
+import IOptionalBrowserSettings from './IOptionalBrowserSettings.js';
 
 /**
  * Browser context.
  */
 export default class BrowserContext {
-	public window: IWindow;
-	public document: IDocument;
-	public settings: IBrowserContextSettings;
-	public consolePrinter: VirtualConsolePrinter | null;
-	private _asyncTaskManager = new AsyncTaskManager();
+	public pages: BrowserPage[] = [];
+	public default = false;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param [options] Options.
+	 * @param [options.default] Default.
 	 */
-	constructor(options?: IBrowserContextOptions) {
-		this.window = new Window(options);
-		this.document = this.window.document;
-
-		if (options?.html) {
-			this.document.write(options.html);
-		}
-
-		if (options?.ownerBrowserContext) {
-			(<IWindow>this.window.top) = options.ownerBrowserContext.window;
-			(<IWindow>this.window.parent) = options.ownerBrowserContext.window;
-			(<IWindow>this.window.opener) = options.ownerBrowserContext.window;
+	constructor(options?: { default?: boolean }) {
+		if (options?.default) {
+			this.default = true;
 		}
 	}
 
@@ -42,28 +33,26 @@ export default class BrowserContext {
 	 *
 	 * @returns Promise.
 	 */
-	public async destroy(): Promise<void> {
-		await this.abortAsyncTasks();
-		this.window = null;
-		this.document = null;
+	public async close(): Promise<void> {
+		await Promise.all(this.pages.map((page) => page.close()));
 	}
 
 	/**
-	 * Returns a promise that is resolved when all async tasks are complete.
+	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.
 	 *
 	 * @returns Promise.
 	 */
-	public async whenAsyncTasksComplete(): Promise<void> {
-		await this._asyncTaskManager.whenComplete();
+	public async whenComplete(): Promise<void> {
+		await Promise.all(this.pages.map((page) => page.whenComplete()));
 	}
 
 	/**
-	 * Aborts all async tasks.
+	 * Aborts all ongoing operations.
 	 *
 	 * @returns Promise.
 	 */
-	public async abortAsyncTasks(): Promise<void> {
-		this._asyncTaskManager.cancelAll();
+	public async abort(): Promise<void> {
+		await Promise.all(this.pages.map((page) => page.abort()));
 	}
 
 	/**
