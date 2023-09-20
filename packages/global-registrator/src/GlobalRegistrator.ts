@@ -23,13 +23,14 @@ export default class GlobalRegistrator {
 
 		for (const key of Object.keys(window)) {
 			if (global[key] !== window[key] && !IGNORE_LIST.includes(key)) {
-				this.registered[key] = global[key] !== window[key] ? global[key] : undefined;
+				this.registered[key] =
+					global[key] !== window[key] && global[key] !== undefined ? global[key] : null;
 				global[key] = window[key];
 			}
 		}
 
 		for (const key of SELF_REFERRING) {
-			this.registered[key] = undefined;
+			this.registered[key] = null;
 			global[key] = global;
 		}
 	}
@@ -45,7 +46,7 @@ export default class GlobalRegistrator {
 		}
 
 		for (const key of Object.keys(this.registered)) {
-			if (this.registered[key] !== undefined) {
+			if (this.registered[key] !== null) {
 				global[key] = this.registered[key];
 			} else {
 				delete global[key];
