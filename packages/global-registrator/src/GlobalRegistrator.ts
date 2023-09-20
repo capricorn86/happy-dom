@@ -25,7 +25,7 @@ export default class GlobalRegistrator {
 			if (global[key] !== window[key] && !IGNORE_LIST.includes(key)) {
 				this.registered[key] =
 					global[key] !== window[key] && global[key] !== undefined ? global[key] : null;
-				global[key] = window[key];
+				global[key] = typeof window[key] === 'function' ? window[key].bind(global) : window[key];
 			}
 		}
 
