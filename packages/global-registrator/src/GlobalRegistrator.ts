@@ -1,7 +1,7 @@
 import { GlobalWindow } from 'happy-dom';
 
 const IGNORE_LIST = ['undefined', 'NaN', 'global', 'globalThis', 'window', 'globalThis'];
-const SELF_REFERING = ['self', 'top', 'parent', 'window'];
+const SELF_REFERRING = ['self', 'top', 'parent', 'window'];
 
 /**
  *
@@ -28,7 +28,7 @@ export default class GlobalRegistrator {
 			}
 		}
 
-		for (const key of SELF_REFERING) {
+		for (const key of SELF_REFERRING) {
 			this.registered[key] = undefined;
 			global[key] = global;
 		}

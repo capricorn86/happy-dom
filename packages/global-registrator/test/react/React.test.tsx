@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactComponent from './ReactComponent.js';
 
-const selfReferingProperties = ['self', 'top', 'parent', 'window'];
+const selfReferringProperties = ['self', 'top', 'parent', 'window'];
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const originalSetTimeout = global.setTimeout;
@@ -33,9 +33,9 @@ if (global.setTimeout === originalSetTimeout) {
 	throw Error('Happy DOM function not registered.');
 }
 
-for (const property of selfReferingProperties) {
+for (const property of selfReferringProperties) {
 	if (global[property] !== global) {
-		throw Error('Self refering property property was not registered.');
+		throw Error('Self referring property property was not registered.');
 	}
 }
 
