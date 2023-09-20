@@ -1,6 +1,6 @@
 import { GlobalWindow } from 'happy-dom';
 
-const IGNORE_LIST = ['undefined', 'NaN', 'global', 'globalThis', 'window', 'globalThis'];
+const IGNORE_LIST = ['undefined', 'NaN', 'global', 'globalThis'];
 const SELF_REFERRING = ['self', 'top', 'parent', 'window'];
 
 /**
