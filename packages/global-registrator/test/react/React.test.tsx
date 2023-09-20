@@ -29,7 +29,7 @@ function unmountReactComponent(): void {
 	}
 }
 
-if (global.setTimeout !== window.setTimeout) {
+if (global.setTimeout === originalSetTimeout) {
 	throw Error('Happy DOM function not registered.');
 }
 
