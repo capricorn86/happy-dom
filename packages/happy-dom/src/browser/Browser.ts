@@ -1,7 +1,3 @@
-import IDocument from '../nodes/document/IDocument.js';
-import IWindow from '../window/IWindow.js';
-import Event from '../event/Event.js';
-import Window from '../window/Window.js';
 import IBrowserSettings from './IBrowserSettings.js';
 import BrowserContext from './BrowserContext.js';
 import PackageVersion from '../version.js';
@@ -11,7 +7,7 @@ import IOptionalBrowserSettings from './IOptionalBrowserSettings.js';
  * Browser context.
  */
 export default class Browser {
-	public browserContexts: BrowserContext[];
+	public contexts: BrowserContext[];
 	public defaultBrowserContext: BrowserContext;
 	public settings: IBrowserSettings = {
 		disableJavaScriptEvaluation: false,
@@ -57,69 +53,29 @@ export default class Browser {
 	}
 
 	/**
-	 * Aborts asynchronous tasks and destroys the context.
+	 * Aborts all ongoing operations and destroys the browser.
 	 *
 	 * @returns Promise.
 	 */
 	public async close(): Promise<void> {
-		await Promise.all(this.browserContexts.map((browserContext) => browserContext.close()));
+		await Promise.all(this.contexts.map((context) => context.close()));
 	}
 
 	/**
-	 * Returns a promise that is resolved when all async tasks are complete.
+	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.
 	 *
 	 * @returns Promise.
 	 */
-	public async whenAsyncTasksComplete(): Promise<void> {
-		await this._asyncTaskManager.whenComplete();
+	public async whenComplete(): Promise<void> {
+		await Promise.all(this.contexts.map((page) => page.whenComplete()));
 	}
 
 	/**
-	 * Aborts all async tasks.
+	 * Aborts all ongoing operations.
 	 *
 	 * @returns Promise.
 	 */
-	public async abortAsyncTasks(): Promise<void> {
-		this._asyncTaskManager.cancelAll();
-	}
-
-	/**
-	 * Sets the window size and triggers a resize event.
-	 *
-	 * @param options Options.
-	 * @param options.width Width.
-	 * @param options.height Height.
-	 */
-	public resizeWindow(options: { width?: number; height?: number }): void {
-		if (
-			(options.width !== undefined && this.window.innerWidth !== options.width) ||
-			(options.height !== undefined && this.window.innerHeight !== options.height)
-		) {
-			if (options.width !== undefined && this.window.innerWidth !== options.width) {
-				(<number>this.window.innerWidth) = options.width;
-				(<number>this.window.outerWidth) = options.width;
-			}
-
-			if (options.height !== undefined && this.window.innerHeight !== options.height) {
-				(<number>this.window.innerHeight) = options.height;
-				(<number>this.window.outerHeight) = options.height;
-			}
-
-			this.window.dispatchEvent(new Event('resize'));
-		}
-	}
-
-	/**
-	 * Go to a page.
-	 *
-	 * @param url URL.
-	 */
-	public async goto(url: string): Promise<void> {
-		this.window.location.href = url;
-
-		const response = await this.window.fetch(url);
-		const responseText = await response.text();
-
-		this.document.write(responseText);
+	public async abort(): Promise<void> {
+		await Promise.all(this.contexts.map((page) => page.abort()));
 	}
 }

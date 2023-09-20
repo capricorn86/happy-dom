@@ -1,5 +1,4 @@
 import Event from '../event/Event.js';
-import IBrowserContextSettings from './IBrowserSettings.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import BrowserFrame from './BrowserFrame.js';
@@ -9,10 +8,8 @@ import BrowserContext from './BrowserContext.js';
  * Browser page.
  */
 export default class BrowserPage {
-	public settings: IBrowserContextSettings;
 	public consolePrinter: VirtualConsolePrinter | null;
 	public mainFrame: BrowserFrame | null = null;
-	public frames: BrowserFrame[];
 	public context: BrowserContext;
 
 	/**
@@ -25,6 +22,13 @@ export default class BrowserPage {
 	}
 
 	/**
+	 * Returns frames.
+	 */
+	public get frames(): BrowserFrame[] {
+		return this._getFrames(this.mainFrame);
+	}
+
+	/**
 	 * Returns the viewport.
 	 */
 	public get content(): string {
@@ -32,12 +36,15 @@ export default class BrowserPage {
 	}
 
 	/**
-	 * Aborts asynchronous tasks and destroys the context.
+	 * Aborts all ongoing operations and destroys the page.
 	 *
 	 * @returns Promise.
 	 */
 	public async close(): Promise<void> {
-		await Promise.all(this.frames.map((frame) => frame.destroy()));
+		await this.mainFrame.close();
+		this.consolePrinter = null;
+		this.mainFrame = null;
+		this.context = null;
 	}
 
 	/**
@@ -46,16 +53,16 @@ export default class BrowserPage {
 	 * @returns Promise.
 	 */
 	public async whenComplete(): Promise<void> {
-		await Promise.all(this.frames.map((frame) => frame.whenComplete()));
+		await this.mainFrame.whenComplete();
 	}
 
 	/**
-	 * Aborts all async tasks.
+	 * Aborts all ongoing operations.
 	 *
 	 * @returns Promise.
 	 */
 	public async abort(): Promise<void> {
-		await Promise.all(this.frames.map((frame) => frame.abort()));
+		await this.mainFrame.abort();
 	}
 
 	/**
@@ -65,20 +72,20 @@ export default class BrowserPage {
 	 */
 	public setViewport(viewport: IBrowserPageViewport): void {
 		if (
-			(viewport.width !== undefined && this.window.innerWidth !== viewport.width) ||
-			(viewport.height !== undefined && this.window.innerHeight !== viewport.height)
+			(viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) ||
+			(viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height)
 		) {
-			if (viewport.width !== undefined && this.window.innerWidth !== viewport.width) {
-				(<number>this.window.innerWidth) = viewport.width;
-				(<number>this.window.outerWidth) = viewport.width;
+			if (viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) {
+				(<number>this.mainFrame.window.innerWidth) = viewport.width;
+				(<number>this.mainFrame.window.outerWidth) = viewport.width;
 			}
 
-			if (viewport.height !== undefined && this.window.innerHeight !== viewport.height) {
-				(<number>this.window.innerHeight) = viewport.height;
-				(<number>this.window.outerHeight) = viewport.height;
+			if (viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height) {
+				(<number>this.mainFrame.window.innerHeight) = viewport.height;
+				(<number>this.mainFrame.window.outerHeight) = viewport.height;
 			}
 
-			this.window.dispatchEvent(new Event('resize'));
+			this.mainFrame.window.dispatchEvent(new Event('resize'));
 		}
 	}
 
@@ -88,11 +95,19 @@ export default class BrowserPage {
 	 * @param url URL.
 	 */
 	public async goto(url: string): Promise<void> {
-		this.window.location.href = url;
+		this.mainFrame.goto(url);
+	}
 
-		const response = await this.window.fetch(url);
-		const responseText = await response.text();
-
-		this.document.write(responseText);
+	/**
+	 * Returns frames.
+	 *
+	 * @param parent Parent frame.
+	 */
+	public _getFrames(parent: BrowserFrame): BrowserFrame[] {
+		let frames = [parent];
+		for (const frame of parent.childFrames) {
+			frames = frames.concat(this._getFrames(frame));
+		}
+		return frames;
 	}
 }

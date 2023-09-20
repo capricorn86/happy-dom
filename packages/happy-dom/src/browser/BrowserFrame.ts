@@ -1,9 +1,7 @@
 import IWindow from '../window/IWindow.js';
-import Event from '../event/Event.js';
 import IBrowserContextSettings from './IBrowserSettings.js';
-import IViewport from './IBrowserPageViewport.js';
 import BrowserPage from './BrowserPage.js';
-import { AsyncTaskManager } from '../index.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 
 /**
  * Browser frame.
@@ -13,7 +11,6 @@ export default class BrowserFrame {
 	public detached = false;
 	public page: BrowserPage | null = null;
 	public window: IWindow | null = null;
-	public settings: IBrowserContextSettings;
 	private _asyncTaskManager = new AsyncTaskManager();
 
 	/**
@@ -42,47 +39,24 @@ export default class BrowserFrame {
 	}
 
 	/**
-	 * Aborts asynchronous tasks and destroys the context.
+	 * Aborts all ongoing operations.
 	 *
 	 * @returns Promise.
 	 */
 	public async abort(): Promise<void> {
-		await this._asyncTaskManager.cancelAll();
-		this.window = null;
+		await Promise.all(this.childFrames.map((frame) => frame.abort()));
+		this._asyncTaskManager.cancelAll();
 	}
 
 	/**
-	 * Aborts asynchronous tasks and destroys the context.
+	 * Aborts all ongoing operations and destroys the frame.
 	 *
 	 * @returns Promise.
 	 */
-	public async destroy(): Promise<void> {
+	public async close(): Promise<void> {
 		await this.abort();
+		this.page = null;
 		this.window = null;
-	}
-
-	/**
-	 * Sets the viewport.
-	 *
-	 * @param viewport Viewport.
-	 */
-	public setViewport(viewport: IViewport): void {
-		if (
-			(viewport.width !== undefined && this.window.innerWidth !== viewport.width) ||
-			(viewport.height !== undefined && this.window.innerHeight !== viewport.height)
-		) {
-			if (viewport.width !== undefined && this.window.innerWidth !== viewport.width) {
-				(<number>this.window.innerWidth) = viewport.width;
-				(<number>this.window.outerWidth) = viewport.width;
-			}
-
-			if (viewport.height !== undefined && this.window.innerHeight !== viewport.height) {
-				(<number>this.window.innerHeight) = viewport.height;
-				(<number>this.window.outerHeight) = viewport.height;
-			}
-
-			this.window.dispatchEvent(new Event('resize'));
-		}
 	}
 
 	/**
@@ -91,6 +65,8 @@ export default class BrowserFrame {
 	 * @param url URL.
 	 */
 	public async goto(url: string): Promise<void> {
+		await this.abort();
+
 		this.window.location.href = url;
 
 		const response = await this.window.fetch(url);

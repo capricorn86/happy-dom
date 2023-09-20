@@ -1,5 +1,3 @@
-import BrowserContext from './BrowserContext.js';
-
 /**
  * Browser context options.
  */
@@ -9,7 +7,6 @@ export default interface IBrowserContextOptions {
 	url?: string;
 	html?: string;
 	console?: Console;
-	ownerBrowserContext?: BrowserContext;
 	settings?: {
 		disableJavaScriptEvaluation?: boolean;
 		disableJavaScriptFileLoading?: boolean;
