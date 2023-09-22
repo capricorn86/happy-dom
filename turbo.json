@@ -12,18 +12,28 @@
 		"jest-environment#compile": {
 			"dependsOn": ["happy-dom#compile"]
 		},
+		"integration-test#compile": {
+			"dependsOn": ["happy-dom#compile"]
+		},
+		"uncaught-exception-observer#compile": {
+			"dependsOn": ["happy-dom#compile"]
+		},
 		"happy-dom#test": {
 			"outputs": ["node_modules/vitest/**"]
 		},
 		"global-registrator#test": {
-			"dependsOn": ["happy-dom#compile"],
+			"dependsOn": ["happy-dom#compile", "global-registrator#compile"],
 			"outputs": ["tmp/**"]
 		},
 		"jest-environment#test": {
-			"dependsOn": ["happy-dom#compile"]
+			"dependsOn": ["happy-dom#compile", "jest-environment#compile"]
 		},
 		"integration-test#test": {
-			"dependsOn": ["happy-dom#compile"]
+			"dependsOn": ["happy-dom#compile", "integration-test#compile"]
+		},
+		"uncaught-exception-observer#test": {
+			"dependsOn": ["happy-dom#compile", "uncaught-exception-observer#compile"],
+			"outputs": ["tmp/**"]
 		},
 		"lint": {
 			"outputs": []
