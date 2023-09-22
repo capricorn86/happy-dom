@@ -104,7 +104,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @returns Removed item.
 	 */
 	public removeNamedItem(name: string): IAttr {
-		const item = this._removeNamedItemWithoutConsequences(name);
+		const item = this._removeNamedItem(name);
 		if (!item) {
 			throw new DOMException(
 				`Failed to execute 'removeNamedItem' on 'NamedNodeMap': No item with name '${name}' was found.`,
@@ -155,6 +155,16 @@ export default class NamedNodeMap implements INamedNodeMap {
 			return replacedItem;
 		}
 		return null;
+	}
+
+	/**
+	 * Removes an item without throwing if it doesn't exist.
+	 *
+	 * @param name Name of item.
+	 * @returns Removed item, or null if it didn't exist.
+	 */
+	public _removeNamedItem(name: string): IAttr | null {
+		return this._removeNamedItemWithoutConsequences(name);
 	}
 
 	/**

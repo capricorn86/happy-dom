@@ -1,4 +1,5 @@
 import Element from '../element/Element.js';
+import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 
 /**
  * Storage type for a dataset proxy.
@@ -46,11 +47,9 @@ export default class Dataset {
 				return true;
 			},
 			deleteProperty(dataset: DatasetRecord, key: string): boolean {
-				try {
-					element.attributes.removeNamedItem('data-' + Dataset.camelCaseToKebab(key));
-				} catch (error) {
-					// Ignore DOMException when the attribute does not exist.
-				}
+				(<HTMLElementNamedNodeMap>element.attributes)._removeNamedItem(
+					'data-' + Dataset.camelCaseToKebab(key)
+				);
 				return delete dataset[key];
 			},
 			ownKeys(dataset: DatasetRecord): string[] {
