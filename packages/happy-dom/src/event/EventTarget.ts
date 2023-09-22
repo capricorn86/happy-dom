@@ -140,8 +140,12 @@ export default abstract class EventTarget implements IEventTarget {
 
 			if (typeof this[onEventName] === 'function') {
 				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
-				if (window && (this !== <IEventTarget>window || event.type !== 'error')) {
-					WindowErrorUtility.captureErrorSync(window, this[onEventName].bind(this, event));
+				if (
+					window &&
+					(this !== <IEventTarget>window || event.type !== 'error') &&
+					!window.happyDOM.settings.disableErrorCapturing
+				) {
+					WindowErrorUtility.captureError(window, this[onEventName].bind(this, event));
 				} else {
 					this[onEventName].call(this, event);
 				}
@@ -169,14 +173,18 @@ export default abstract class EventTarget implements IEventTarget {
 				}
 
 				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
-				if (window && (this !== <IEventTarget>window || event.type !== 'error')) {
+				if (
+					window &&
+					(this !== <IEventTarget>window || event.type !== 'error') &&
+					!window.happyDOM.settings.disableErrorCapturing
+				) {
 					if ((<IEventListener>listener).handleEvent) {
-						WindowErrorUtility.captureErrorSync(
+						WindowErrorUtility.captureError(
 							window,
 							(<IEventListener>listener).handleEvent.bind(this, event)
 						);
 					} else {
-						WindowErrorUtility.captureErrorSync(
+						WindowErrorUtility.captureError(
 							window,
 							(<(event: Event) => void>listener).bind(this, event)
 						);

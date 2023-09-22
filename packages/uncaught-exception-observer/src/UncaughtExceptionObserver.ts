@@ -27,14 +27,17 @@ export default class UncaughtExceptionObserver {
 		(<typeof UncaughtExceptionObserver>this.constructor).listenerCount++;
 
 		this.uncaughtExceptionListener = (
-			error: Error,
+			error: unknown,
 			origin: 'uncaughtException' | 'unhandledRejection'
 		) => {
 			if (origin === 'unhandledRejection') {
 				return;
 			}
 
-			if (error instanceof this.window.Error && error.stack?.includes('/happy-dom/')) {
+			if (
+				(error instanceof this.window.Error || error instanceof this.window.DOMException) &&
+				error.stack?.includes('/happy-dom/')
+			) {
 				this.window.console.error(error);
 				this.window.dispatchEvent(
 					new this.window.ErrorEvent('error', { error, message: error.message })
@@ -52,8 +55,11 @@ export default class UncaughtExceptionObserver {
 
 		// The "uncaughtException" event is not always triggered for unhandled rejections.
 		// Therefore we want to use the "unhandledRejection" event as well.
-		this.uncaughtRejectionListener = (error: Error) => {
-			if (error instanceof this.window.Error && error.stack?.includes('/happy-dom/')) {
+		this.uncaughtRejectionListener = (error: unknown) => {
+			if (
+				(error instanceof this.window.Error || error instanceof this.window.DOMException) &&
+				error.stack?.includes('/happy-dom/')
+			) {
 				this.window.console.error(error);
 				this.window.dispatchEvent(
 					new this.window.ErrorEvent('error', { error, message: error.message })

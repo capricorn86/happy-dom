@@ -25,40 +25,69 @@ export default class HTMLScriptElementUtility {
 			element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptFileLoading ||
 			element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation
 		) {
-			WindowErrorUtility.dispatchError(
-				element,
-				new DOMException(
-					`Failed to load external script "${src}". JavaScript file loading is disabled.`,
-					DOMExceptionNameEnum.notSupportedError
-				)
+			const error = new DOMException(
+				`Failed to load external script "${src}". JavaScript file loading is disabled.`,
+				DOMExceptionNameEnum.notSupportedError
 			);
+			WindowErrorUtility.dispatchError(element, error);
+			if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+				throw error;
+			}
 			return;
 		}
 
 		if (async) {
 			(<Document>element.ownerDocument)._readyStateManager.startTask();
 
-			const code = await WindowErrorUtility.captureErrorAsync<string>(
-				element,
-				async () => await ResourceFetch.fetch(element.ownerDocument, src)
-			);
+			let code: string | null = null;
+			let error: Error | null = null;
 
-			if (code) {
-				WindowErrorUtility.captureErrorSync(element.ownerDocument.defaultView, () =>
-					element.ownerDocument.defaultView.eval(code)
-				);
+			try {
+				code = await ResourceFetch.fetch(element.ownerDocument, src);
+			} catch (e) {
+				error = e;
+			}
+
+			(<Document>element.ownerDocument)._readyStateManager.endTask();
+
+			if (error) {
+				WindowErrorUtility.dispatchError(element, error);
+				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+					throw error;
+				}
+			} else {
+				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+					element.ownerDocument.defaultView.eval(code);
+				} else {
+					WindowErrorUtility.captureError(element.ownerDocument.defaultView, () =>
+						element.ownerDocument.defaultView.eval(code)
+					);
+				}
 				element.dispatchEvent(new Event('load'));
 			}
-			(<Document>element.ownerDocument)._readyStateManager.endTask();
 		} else {
-			const code = WindowErrorUtility.captureErrorSync<string>(element, () =>
-				ResourceFetch.fetchSync(element.ownerDocument, src)
-			);
+			let code: string | null = null;
+			let error: Error | null = null;
 
-			if (code) {
-				WindowErrorUtility.captureErrorSync(element.ownerDocument.defaultView, () =>
-					element.ownerDocument.defaultView.eval(code)
-				);
+			try {
+				code = ResourceFetch.fetchSync(element.ownerDocument, src);
+			} catch (e) {
+				error = e;
+			}
+
+			if (error) {
+				WindowErrorUtility.dispatchError(element, error);
+				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+					throw error;
+				}
+			} else {
+				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+					element.ownerDocument.defaultView.eval(code);
+				} else {
+					WindowErrorUtility.captureError(element.ownerDocument.defaultView, () =>
+						element.ownerDocument.defaultView.eval(code)
+					);
+				}
 				element.dispatchEvent(new Event('load'));
 			}
 		}

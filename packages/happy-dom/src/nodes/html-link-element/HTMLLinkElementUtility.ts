@@ -24,32 +24,41 @@ export default class HTMLLinkElementUtility {
 
 		if (href !== null && rel && rel.toLowerCase() === 'stylesheet' && element.isConnected) {
 			if (element.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading) {
-				WindowErrorUtility.dispatchError(
-					element,
-					new DOMException(
-						`Failed to load external stylesheet "${href}". CSS file loading is disabled.`,
-						DOMExceptionNameEnum.notSupportedError
-					)
+				const error = new DOMException(
+					`Failed to load external stylesheet "${href}". CSS file loading is disabled.`,
+					DOMExceptionNameEnum.notSupportedError
 				);
-
+				WindowErrorUtility.dispatchError(element, error);
+				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+					throw error;
+				}
 				return;
 			}
 
 			(<Document>element.ownerDocument)._readyStateManager.startTask();
 
-			const code: string | null = await WindowErrorUtility.captureErrorAsync<string>(
-				element,
-				async () => await ResourceFetch.fetch(element.ownerDocument, href)
-			);
+			let code: string | null = null;
+			let error: Error | null = null;
 
-			if (code) {
+			try {
+				code = await ResourceFetch.fetch(element.ownerDocument, href);
+			} catch (e) {
+				error = e;
+			}
+
+			(<Document>element.ownerDocument)._readyStateManager.endTask();
+
+			if (error) {
+				WindowErrorUtility.dispatchError(element, error);
+				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+					throw error;
+				}
+			} else {
 				const styleSheet = new CSSStyleSheet();
 				styleSheet.replaceSync(code);
 				(<CSSStyleSheet>element.sheet) = styleSheet;
 				element.dispatchEvent(new Event('load'));
 			}
-
-			(<Document>element.ownerDocument)._readyStateManager.endTask();
 		}
 	}
 }

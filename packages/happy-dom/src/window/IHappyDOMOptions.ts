@@ -12,6 +12,7 @@ export default interface IHappyDOMOptions {
 		disableCSSFileLoading?: boolean;
 		disableIframePageLoading?: boolean;
 		disableComputedStyleRendering?: boolean;
+		disableErrorCapturing?: boolean;
 		enableFileSystemHttpRequests?: boolean;
 		navigator?: {
 			userAgent?: string;

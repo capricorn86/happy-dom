@@ -161,14 +161,10 @@ describe('Event', () => {
 
 	describe('get timeStamp()', () => {
 		it('Returns the value returned by performance.now() at the time it was created.', () => {
-			Object.defineProperty(performance, 'now', {
-				value: vi.fn(),
-				configurable: true,
-				writable: true
-			});
-
 			const performanceNow = 12345;
-			vi.spyOn(performance, 'now').mockImplementation(() => performanceNow);
+			vi.spyOn(performance, 'now').mockImplementation(() => {
+				return performanceNow;
+			});
 			const event = new Event('click');
 			expect(event.timeStamp).toBe(performanceNow);
 		});

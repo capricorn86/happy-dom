@@ -27,6 +27,7 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import VirtualConsole from '../../src/console/VirtualConsole.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
 import PackageVersion from '../../src/version.js';
+import { IHTMLDialogElement } from '../../src/index.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -132,6 +133,7 @@ describe('Window', () => {
 			expect(windowWithOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithOptions.happyDOM.settings.disableErrorCapturing).toBe(false);
 			expect(windowWithOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithOptions.happyDOM.settings.navigator.userAgent).toBe('test');
 			expect(windowWithOptions.happyDOM.settings.device.prefersColorScheme).toBe('dark');
@@ -150,6 +152,7 @@ describe('Window', () => {
 			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM.settings.disableErrorCapturing).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithoutOptions.happyDOM.settings.navigator.userAgent).toBe(
 				`Mozilla/5.0 (${GET_NAVIGATOR_PLATFORM()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
@@ -526,10 +529,31 @@ describe('Window', () => {
 			const element = <IHTMLElement>document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
 
+			expect(computedStyle.display).toBe('');
+
 			window.document.body.appendChild(element);
 
 			expect(computedStyle.direction).toBe('ltr');
 			expect(computedStyle.display).toBe('block');
+		});
+
+		it('Handles default properties "display" on a dialog element.', () => {
+			const element = <IHTMLDialogElement>document.createElement('dialog');
+			const computedStyle = window.getComputedStyle(element);
+
+			expect(computedStyle.display).toBe('');
+
+			window.document.body.appendChild(element);
+
+			expect(computedStyle.display).toBe('none');
+
+			element.show();
+
+			expect(computedStyle.display).toBe('block');
+
+			element.close();
+
+			expect(computedStyle.display).toBe('none');
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
@@ -818,11 +842,6 @@ describe('Window', () => {
 
 	describe('eval()', () => {
 		it('Evaluates code and returns the result.', () => {
-			const result = <() => number>window.eval('() => 5');
-			expect(result()).toBe(5);
-		});
-
-		it('Captures errors and triggers an error event.', () => {
 			const result = <() => number>window.eval('() => 5');
 			expect(result()).toBe(5);
 		});

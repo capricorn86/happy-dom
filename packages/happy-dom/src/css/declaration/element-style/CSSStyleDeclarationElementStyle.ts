@@ -174,6 +174,24 @@ export default class CSSStyleDeclarationElementStyle {
 
 			let elementCSSText = '';
 			if (CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName]) {
+				if (
+					typeof CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName] ===
+					'string'
+				) {
+					elementCSSText +=
+						CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName];
+				} else {
+					for (const key of Object.keys(
+						CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName]
+					)) {
+						if (key === 'default' || !!parentElement.element[key]) {
+							elementCSSText +=
+								CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName][
+									key
+								];
+						}
+					}
+				}
 				elementCSSText +=
 					CSSStyleDeclarationElementDefaultCSS[(<IElement>parentElement.element).tagName];
 			}

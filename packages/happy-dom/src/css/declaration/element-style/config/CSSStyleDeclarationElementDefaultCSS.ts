@@ -49,7 +49,10 @@ export default {
 	DEL: '',
 	DETAILS: 'display: block;',
 	DFN: '',
-	DIALOG: 'display: none;',
+	DIALOG: {
+		default: 'display: none;',
+		open: 'display: block;'
+	},
 	DIV: 'display: block;',
 	DL: 'display: block;',
 	DT: 'display: block;',
