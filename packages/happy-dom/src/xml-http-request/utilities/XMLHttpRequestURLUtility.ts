@@ -1,4 +1,5 @@
-import { URL, UrlObject } from 'url';
+import { UrlObject } from 'url';
+import URL from '../../url/URL.js';
 import Path from 'path';
 
 // MIME type.

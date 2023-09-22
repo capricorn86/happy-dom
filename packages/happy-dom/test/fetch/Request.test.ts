@@ -2,7 +2,7 @@ import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import Request from '../../src/fetch/Request.js';
-import { URL } from 'url';
+import URL from '../../src/url/URL.js';
 import Headers from '../../src/fetch/Headers.js';
 import AbortSignal from '../../src/fetch/AbortSignal.js';
 import DOMException from '../../src/exception/DOMException.js';

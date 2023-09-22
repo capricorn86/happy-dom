@@ -1,5 +1,5 @@
 import IDocument from '../document/IDocument.js';
-import { URL } from 'url';
+import URL from '../../url/URL.js';
 
 /**
  * HTML Anchor Element utility.

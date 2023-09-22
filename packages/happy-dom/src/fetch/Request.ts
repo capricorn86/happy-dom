@@ -1,7 +1,7 @@
 import IBlob from '../file/IBlob.js';
 import IDocument from '../nodes/document/IDocument.js';
 import IRequestInit from './types/IRequestInit.js';
-import { URL } from 'url';
+import URL from '../url/URL.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IRequestInfo from './types/IRequestInfo.js';
