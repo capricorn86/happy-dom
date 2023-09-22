@@ -1,6 +1,6 @@
 import DOMException from '../exception/DOMException.js';
 import IDocument from '../nodes/document/IDocument.js';
-import { URL } from 'url';
+import URL from '../url/URL.js';
 
 /**
  * Helper class for performing fetch of resources.

@@ -1,6 +1,6 @@
 import IHeadersInit from './IHeadersInit.js';
 import AbortSignal from '../AbortSignal.js';
-import { URL } from 'url';
+import URL from '../../url/URL.js';
 import IRequestReferrerPolicy from './IRequestReferrerPolicy.js';
 import IRequestRedirect from './IRequestRedirect.js';
 import IRequestBody from './IRequestBody.js';
