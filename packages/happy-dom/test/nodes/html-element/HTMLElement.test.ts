@@ -44,7 +44,9 @@ describe('HTMLElement', () => {
 		'offsetLeft',
 		'offsetTop',
 		'clientHeight',
-		'clientWidth'
+		'clientWidth',
+		'clientLeft',
+		'clientTop'
 	]) {
 		describe(`${property}`, () => {
 			it('Returns "0".', () => {
