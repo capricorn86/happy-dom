@@ -9,11 +9,11 @@ import IMessageEventInit from './IMessageEventInit.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent
  */
 export default class MessageEvent extends Event {
-	public data?: unknown | null = null;
-	public origin?: string = '';
-	public lastEventId?: string = '';
-	public source?: IWindow | null = null;
-	public ports?: IMessagePort[] = [];
+	public readonly data: unknown | null;
+	public readonly origin: string;
+	public readonly lastEventId: string;
+	public readonly source: IWindow | null;
+	public readonly ports: IMessagePort[];
 
 	/**
 	 * Constructor.
@@ -21,12 +21,13 @@ export default class MessageEvent extends Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit?: IMessageEventInit) {
+	constructor(type: string, eventInit: IMessageEventInit = {}) {
 		super(type, eventInit);
-		this.data = eventInit?.data !== undefined ? eventInit.data : null;
-		this.origin = eventInit?.origin || '';
-		this.lastEventId = eventInit?.lastEventId || '';
-		this.source = eventInit?.source || null;
-		this.ports = eventInit?.ports || [];
+
+		this.data = eventInit.data ?? null;
+		this.origin = eventInit.origin ?? '';
+		this.lastEventId = eventInit.lastEventId ?? '';
+		this.source = eventInit.source ?? null;
+		this.ports = eventInit.ports ?? [];
 	}
 }
