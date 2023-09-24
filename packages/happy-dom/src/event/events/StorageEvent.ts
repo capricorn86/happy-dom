@@ -6,10 +6,11 @@ import Storage from '../../storage/Storage.js';
  *
  */
 export default class StorageEvent extends Event {
-	public readonly key: string = null;
-	public readonly newValue: string = null;
-	public readonly oldValue: string = null;
-	public readonly storageArea: Storage = null;
+	public readonly key: string | null;
+	public readonly oldValue: string | null;
+	public readonly newValue: string | null;
+	public readonly url: string;
+	public readonly storageArea: Storage | null;
 
 	/**
 	 * Constructor.
@@ -17,14 +18,13 @@ export default class StorageEvent extends Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IStorageEventInit = null) {
+	constructor(type: string, eventInit: IStorageEventInit = {}) {
 		super(type);
 
-		if (eventInit) {
-			this.key = eventInit.key !== undefined ? eventInit.key : null;
-			this.newValue = eventInit.newValue !== undefined ? eventInit.newValue : null;
-			this.oldValue = eventInit.oldValue !== undefined ? eventInit.oldValue : null;
-			this.storageArea = eventInit.storageArea !== undefined ? eventInit.storageArea : null;
-		}
+		this.key = eventInit.key ?? null;
+		this.oldValue = eventInit.oldValue ?? null;
+		this.newValue = eventInit.newValue ?? null;
+		this.url = eventInit.url ?? '';
+		this.storageArea = eventInit.storageArea ?? null;
 	}
 }

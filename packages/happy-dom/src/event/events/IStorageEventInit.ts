@@ -3,7 +3,8 @@ import Storage from '../../storage/Storage.js';
 
 export default interface IStorageEventInit extends IEventInit {
 	key?: string;
-	newValue?: string;
 	oldValue?: string;
+	newValue?: string;
+	url?: string;
 	storageArea?: Storage;
 }
