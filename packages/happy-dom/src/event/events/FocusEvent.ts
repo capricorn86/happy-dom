@@ -6,7 +6,7 @@ import IFocusEventInit from './IFocusEventInit.js';
  *
  */
 export default class FocusEvent extends UIEvent {
-	public readonly relatedTarget: EventTarget = null;
+	public readonly relatedTarget: EventTarget | null;
 
 	/**
 	 * Constructor.
@@ -14,11 +14,9 @@ export default class FocusEvent extends UIEvent {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IFocusEventInit = null) {
+	constructor(type: string, eventInit: IFocusEventInit = {}) {
 		super(type, eventInit);
 
-		if (eventInit) {
-			this.relatedTarget = eventInit.relatedTarget || null;
-		}
+		this.relatedTarget = eventInit.relatedTarget ?? null;
 	}
 }
