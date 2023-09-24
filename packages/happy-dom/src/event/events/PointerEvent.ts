@@ -5,20 +5,20 @@ import IPointerEventInit from './IPointerEventInit.js';
  *
  */
 export default class PointerEvent extends MouseEvent {
-	public readonly pointerId: number = 0;
-	public readonly width: number = 1;
-	public readonly height: number = 1;
-	public readonly pressure: number = 0;
-	public readonly tangentialPressure: number = 0;
-	public readonly tiltX: number = 0;
-	public readonly tiltY: number = 0;
-	public readonly twist: number = 0;
-	public readonly altitudeAngle: number = 0;
-	public readonly azimuthAngle: number = 0;
-	public readonly pointerType: string = '';
-	public readonly isPrimary: boolean = false;
-	public readonly coalescedEvents: PointerEvent[] = [];
-	public readonly predictedEvents: PointerEvent[] = [];
+	public readonly pointerId: number;
+	public readonly width: number;
+	public readonly height: number;
+	public readonly pressure: number;
+	public readonly tangentialPressure: number;
+	public readonly tiltX: number;
+	public readonly tiltY: number;
+	public readonly twist: number;
+	public readonly altitudeAngle: number;
+	public readonly azimuthAngle: number;
+	public readonly pointerType: string;
+	public readonly isPrimary: boolean;
+	public readonly coalescedEvents: PointerEvent[];
+	public readonly predictedEvents: PointerEvent[];
 
 	/**
 	 * Constructor.
