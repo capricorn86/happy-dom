@@ -5,9 +5,9 @@ import IAnimationEventInit from './IAnimationEventInit.js';
  *
  */
 export default class AnimationEvent extends Event {
-	public animationName = '';
-	public elapsedTime = 0;
-	public pseudoElement = '';
+	public readonly animationName: string;
+	public readonly elapsedTime: number;
+	public readonly pseudoElement: string;
 
 	/**
 	 * Constructor.
@@ -15,10 +15,11 @@ export default class AnimationEvent extends Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit?: IAnimationEventInit) {
+	constructor(type: string, eventInit: IAnimationEventInit = {}) {
 		super(type, eventInit);
-		this.animationName = eventInit?.animationName || '';
-		this.elapsedTime = eventInit?.elapsedTime || 0;
-		this.pseudoElement = eventInit?.pseudoElement || '';
+
+		this.animationName = eventInit.animationName ?? '';
+		this.elapsedTime = eventInit.elapsedTime ?? 0;
+		this.pseudoElement = eventInit.pseudoElement ?? '';
 	}
 }
