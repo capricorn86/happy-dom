@@ -5,8 +5,8 @@ import IMediaQueryListInit from './IMediaQueryListInit.js';
  *
  */
 export default class MediaQueryListEvent extends Event {
-	public readonly matches: boolean = false;
-	public readonly media: string = '';
+	public readonly matches: boolean;
+	public readonly media: string;
 
 	/**
 	 * Constructor.
@@ -17,9 +17,7 @@ export default class MediaQueryListEvent extends Event {
 	constructor(type: string, eventInit: IMediaQueryListInit = null) {
 		super(type, eventInit);
 
-		if (eventInit) {
-			this.matches = eventInit.matches || false;
-			this.media = eventInit.media || '';
-		}
+		this.matches = eventInit.matches ?? false;
+		this.media = eventInit.media ?? '';
 	}
 }
