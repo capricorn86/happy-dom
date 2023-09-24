@@ -12,9 +12,9 @@ import IDocument from '../nodes/document/IDocument.js';
  * Event.
  */
 export default class Event {
-	public composed = false;
-	public bubbles = false;
-	public cancelable = false;
+	public composed: boolean;
+	public bubbles: boolean;
+	public cancelable: boolean;
 	public defaultPrevented = false;
 	public eventPhase: EventPhaseEnum = EventPhaseEnum.none;
 	public _immediatePropagationStopped = false;
@@ -22,7 +22,7 @@ export default class Event {
 	public _target: IEventTarget = null;
 	public _currentTarget: IEventTarget = null;
 	public timeStamp: number = performance.now();
-	public type: string = null;
+	public type: string;
 	public _isInPassiveEventListener = false;
 	public NONE = EventPhaseEnum.none;
 	public CAPTURING_PHASE = EventPhaseEnum.capturing;
@@ -35,14 +35,12 @@ export default class Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IEventInit = null) {
+	constructor(type: string, eventInit: IEventInit = {}) {
 		this.type = type;
 
-		if (eventInit) {
-			this.bubbles = eventInit.bubbles || false;
-			this.cancelable = eventInit.cancelable || false;
-			this.composed = eventInit.composed || false;
-		}
+		this.bubbles = eventInit.bubbles ?? false;
+		this.cancelable = eventInit.cancelable ?? false;
+		this.composed = eventInit.composed ?? false;
 	}
 
 	/**
