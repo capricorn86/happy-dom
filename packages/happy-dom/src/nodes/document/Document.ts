@@ -68,6 +68,7 @@ export default class Document extends Node implements IDocument {
 	public readonly _readyStateManager: DocumentReadyStateManager;
 	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public _activeElement: IHTMLElement = null;
+	public _nextActiveElement: IHTMLElement = null;
 	public _currentScript: IHTMLScriptElement = null;
 
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
