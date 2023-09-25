@@ -1,4 +1,4 @@
-import { URL } from 'url';
+import URL from '../../url/URL.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import IWindow from '../../window/IWindow.js';

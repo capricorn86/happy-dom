@@ -1,5 +1,5 @@
 import CookieJar from '../../src/cookie/CookieJar.js';
-import { URL } from 'url';
+import URL from '../../src/url/URL.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('CookieJar', () => {

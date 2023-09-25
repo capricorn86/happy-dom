@@ -78,6 +78,8 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						if (newElement.isConnected && newElement.connectedCallback) {
 							newElement.connectedCallback();
 						}
+
+						this._connectToNode(null);
 					}
 				};
 				callbacks[tagName] = callbacks[tagName] || [];
