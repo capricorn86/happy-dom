@@ -37,8 +37,8 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override removeNamedItem(name: string): IAttr | null {
-		const removedItem = super.removeNamedItem(name);
+	public override _removeNamedItem(name: string): IAttr | null {
+		const removedItem = super._removeNamedItem(name);
 
 		if (removedItem && !this._ownerElement._dirtyness && removedItem.name === 'selected') {
 			const selectNode = <HTMLSelectElement>this._ownerElement._selectNode;

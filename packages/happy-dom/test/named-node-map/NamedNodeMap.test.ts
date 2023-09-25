@@ -4,6 +4,8 @@ import IDocument from '../../src/nodes/document/IDocument.js';
 import IElement from '../../src/nodes/element/IElement.js';
 import INamedNodeMap from '../../src/named-node-map/INamedNodeMap.js';
 import IAttr from '../../src/nodes/attr/IAttr.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('NamedNodeMap', () => {
@@ -20,13 +22,13 @@ describe('NamedNodeMap', () => {
 	});
 
 	describe('get toString()', () => {
-		it('Returns a stirng.', () => {
+		it('Returns a string.', () => {
 			expect(attributes.toString()).toBe('[object NamedNodeMap]');
 		});
 	});
 
 	describe('get toString()', () => {
-		it('Returns a stirng.', () => {
+		it('Returns a string.', () => {
 			expect(attributes.toString()).toBe('[object NamedNodeMap]');
 		});
 	});
@@ -155,6 +157,21 @@ describe('NamedNodeMap', () => {
 			expect(removed?.value).toBe('value');
 
 			expect(element.getAttribute('key')).toBe(null);
+		});
+
+		it('Throws a NotFoundError on a missing attribute.', () => {
+			let error: Error | null = null;
+			try {
+				attributes.removeNamedItem('non-existent-attribute');
+			} catch (e) {
+				error = e;
+			}
+			expect(error).toEqual(
+				new DOMException(
+					"Failed to execute 'removeNamedItem' on 'NamedNodeMap': No item with name 'non-existent-attribute' was found.",
+					DOMExceptionNameEnum.notFoundError
+				)
+			);
 		});
 	});
 });

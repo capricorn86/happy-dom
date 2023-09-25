@@ -1,4 +1,5 @@
 import Element from '../element/Element.js';
+import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 
 /**
  * Storage type for a dataset proxy.
@@ -46,10 +47,10 @@ export default class Dataset {
 				return true;
 			},
 			deleteProperty(dataset: DatasetRecord, key: string): boolean {
-				return (
-					!!element.attributes.removeNamedItem('data-' + Dataset.camelCaseToKebab(key)) &&
-					delete dataset[key]
+				(<HTMLElementNamedNodeMap>element.attributes)._removeNamedItem(
+					'data-' + Dataset.camelCaseToKebab(key)
 				);
+				return delete dataset[key];
 			},
 			ownKeys(dataset: DatasetRecord): string[] {
 				// According to Mozilla we have to update the dataset object (target) to contain the same keys as what we return:
