@@ -17,6 +17,8 @@ export default interface IHTMLElement extends IElement {
 	offsetTop: number;
 	clientHeight: number;
 	clientWidth: number;
+	clientLeft: number;
+	clientTop: number;
 	innerText: string;
 	outerText: string;
 
