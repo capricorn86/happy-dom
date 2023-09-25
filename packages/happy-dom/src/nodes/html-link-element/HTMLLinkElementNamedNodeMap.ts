@@ -31,8 +31,8 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 	/**
 	 * @override
 	 */
-	public override removeNamedItem(name: string): IAttr | null {
-		const removedItem = super.removeNamedItem(name);
+	public override _removeNamedItem(name: string): IAttr | null {
+		const removedItem = super._removeNamedItem(name);
 
 		if (removedItem && removedItem.name === 'rel' && this._ownerElement._relList) {
 			this._ownerElement._relList._updateIndices();

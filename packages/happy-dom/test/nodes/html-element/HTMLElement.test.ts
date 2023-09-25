@@ -302,6 +302,8 @@ describe('HTMLElement', () => {
 			expect(element.getAttribute('data-test-delta')).toBe(null);
 			expect(Object.keys(dataset)).toEqual(['testAlpha', 'testBeta', 'testGamma']);
 			expect(Object.values(dataset)).toEqual(['value2', 'value4', 'value5']);
+
+			delete dataset.nonExistentKey;
 		});
 
 		// https://github.com/capricorn86/happy-dom/issues/493

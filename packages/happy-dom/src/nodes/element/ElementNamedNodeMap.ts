@@ -114,8 +114,8 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override removeNamedItem(name: string): IAttr | null {
-		const removedItem = super.removeNamedItem(this._getAttributeName(name));
+	public override _removeNamedItem(name: string): IAttr | null {
+		const removedItem = super._removeNamedItem(this._getAttributeName(name));
 
 		if (!removedItem) {
 			return null;
