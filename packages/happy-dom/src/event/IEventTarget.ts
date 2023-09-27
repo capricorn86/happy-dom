@@ -7,6 +7,11 @@ import IEventListenerOptions from './IEventListenerOptions.js';
  */
 export default interface IEventTarget {
 	/**
+	 * Return a default description for the EventTarget class.
+	 */
+	[Symbol.toStringTag]: string;
+
+	/**
 	 * Adds an event listener.
 	 *
 	 * @param type Event type.
