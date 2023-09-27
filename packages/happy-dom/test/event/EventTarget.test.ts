@@ -189,7 +189,7 @@ describe('EventTarget', () => {
 		});
 	});
 
-	describe('toString()', () => {
+	describe('[Symbol.toStringTag]', () => {
 		it('Returns EventTarget string.', () => {
 			const description = 'EventTarget';
 

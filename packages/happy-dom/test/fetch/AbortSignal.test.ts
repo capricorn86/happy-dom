@@ -29,7 +29,7 @@ describe('AbortSignal', () => {
 		});
 	});
 
-	describe('AbortSignal.toString()', () => {
+	describe('AbortSignal[Symbol.toStringTag]', () => {
 		it('Returns AbortSignal string.', () => {
 			const description = 'AbortSignal';
 			const signal = new AbortSignal();
