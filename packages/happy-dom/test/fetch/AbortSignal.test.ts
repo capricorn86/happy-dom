@@ -28,4 +28,13 @@ describe('AbortSignal', () => {
 			expect(signal.reason).toBe(reason);
 		});
 	});
+
+	describe('AbortSignal.toString()', () => {
+		it('Returns AbortSignal string.', () => {
+			const description = 'AbortSignal';
+			const signal = new AbortSignal();
+
+			expect(signal[Symbol.toStringTag]).toBe(description);
+		});
+	});
 });

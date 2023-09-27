@@ -12,6 +12,13 @@ export default class AbortSignal extends EventTarget {
 	public onabort: ((this: AbortSignal, event: Event) => void) | null = null;
 
 	/**
+	 * Return a default description for the AbortSignal class.
+	 */
+	public get [Symbol.toStringTag](): string {
+		return 'AbortSignal';
+	}
+
+	/**
 	 * Aborts the signal.
 	 *
 	 * @param [reason] Reason.

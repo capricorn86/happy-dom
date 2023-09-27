@@ -20,6 +20,13 @@ export default abstract class EventTarget implements IEventTarget {
 	} = {};
 
 	/**
+	 * Return a default description for the EventTarget class.
+	 */
+	public get [Symbol.toStringTag](): string {
+		return 'EventTarget';
+	}
+
+	/**
 	 * Adds an event listener.
 	 *
 	 * @param type Event type.

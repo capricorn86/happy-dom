@@ -188,4 +188,12 @@ describe('EventTarget', () => {
 			expect(recievedEvent).toBe(null);
 		});
 	});
+
+	describe('toString()', () => {
+		it('Returns EventTarget string.', () => {
+			const description = 'EventTarget';
+
+			expect(eventTarget[Symbol.toStringTag]).toBe(description);
+		});
+	});
 });
