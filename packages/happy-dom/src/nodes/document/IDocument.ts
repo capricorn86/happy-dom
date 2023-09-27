@@ -47,6 +47,7 @@ export default interface IDocument extends IParentNode {
 	readonly hidden: boolean;
 	readonly links: IHTMLCollection<IHTMLElement>;
 	readonly referrer: string;
+	readonly currentScript: IHTMLScriptElement;
 	cookie: string;
 	title: string;
 

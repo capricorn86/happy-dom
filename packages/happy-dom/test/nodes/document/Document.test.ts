@@ -1290,4 +1290,20 @@ describe('Document', () => {
 			}
 		});
 	});
+
+	describe('currentScript', () => {
+		it('Returns the currently executing script element.', () => {
+			expect(document.currentScript).toBe(null);
+			const script1 = document.createElement('script');
+			script1.textContent = 'window.test = document.currentScript;';
+			document.body.appendChild(script1);
+			expect(window['test']).toBe(script1);
+			expect(document.currentScript).toBe(null);
+			const script2 = document.createElement('script');
+			script2.textContent = 'window.test = document.currentScript;';
+			document.body.appendChild(script2);
+			expect(window['test']).toBe(script2);
+			expect(document.currentScript).toBe(null);
+		});
+	});
 });
