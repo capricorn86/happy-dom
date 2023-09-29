@@ -914,7 +914,7 @@ export default class Window extends EventTarget implements IWindow {
 
 			// Sets global properties from the VM to the Window object.
 			// Otherwise "this.Array" will be undefined for example.
-			VM.runInContext(VMGlobalPropertyScript, this);
+			VMGlobalPropertyScript.runInContext(this);
 		}
 	}
 }
