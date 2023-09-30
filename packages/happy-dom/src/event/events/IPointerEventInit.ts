@@ -1,4 +1,5 @@
 import IMouseEventInit from './IMouseEventInit.js';
+import PointerEvent from './PointerEvent.js';
 
 export default interface IPointerEventInit extends IMouseEventInit {
 	pointerId?: number;
@@ -9,6 +10,10 @@ export default interface IPointerEventInit extends IMouseEventInit {
 	tiltX?: number;
 	tiltY?: number;
 	twist?: number;
+	altitudeAngle?: number;
+	azimuthAngle?: number;
 	pointerType?: string;
 	isPrimary?: boolean;
+	coalescedEvents?: PointerEvent[];
+	predictedEvents?: PointerEvent[];
 }

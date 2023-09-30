@@ -5,16 +5,20 @@ import IPointerEventInit from './IPointerEventInit.js';
  *
  */
 export default class PointerEvent extends MouseEvent {
-	public readonly pointerId: number = 0;
-	public readonly width: number = 0;
-	public readonly height: number = 0;
-	public readonly pressure: number = 0;
-	public readonly tangentialPressure: number = 0;
-	public readonly tiltX: number = 0;
-	public readonly tiltY: number = 0;
-	public readonly twist: number = 0;
-	public readonly pointerType: string = '';
-	public readonly isPrimary: boolean = false;
+	public readonly pointerId: number;
+	public readonly width: number;
+	public readonly height: number;
+	public readonly pressure: number;
+	public readonly tangentialPressure: number;
+	public readonly tiltX: number;
+	public readonly tiltY: number;
+	public readonly twist: number;
+	public readonly altitudeAngle: number;
+	public readonly azimuthAngle: number;
+	public readonly pointerType: string;
+	public readonly isPrimary: boolean;
+	public readonly coalescedEvents: PointerEvent[];
+	public readonly predictedEvents: PointerEvent[];
 
 	/**
 	 * Constructor.
@@ -22,21 +26,26 @@ export default class PointerEvent extends MouseEvent {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IPointerEventInit = null) {
+	constructor(type: string, eventInit: IPointerEventInit | null = null) {
 		super(type, eventInit);
 
-		if (eventInit) {
-			this.pointerId = eventInit.pointerId !== undefined ? eventInit.pointerId : 0;
-			this.width = eventInit.width !== undefined ? eventInit.width : 0;
-			this.height = eventInit.height !== undefined ? eventInit.height : 0;
-			this.pressure = eventInit.pressure !== undefined ? eventInit.pressure : 0;
-			this.tangentialPressure =
-				eventInit.tangentialPressure !== undefined ? eventInit.tangentialPressure : 0;
-			this.tiltX = eventInit.tiltX !== undefined ? eventInit.tiltX : 0;
-			this.tiltY = eventInit.tiltY !== undefined ? eventInit.tiltY : 0;
-			this.twist = eventInit.twist !== undefined ? eventInit.twist : 0;
-			this.pointerType = eventInit.pointerType !== undefined ? eventInit.pointerType : '';
-			this.isPrimary = eventInit.isPrimary || eventInit.isPrimary;
-		}
+		this.pointerId = eventInit?.pointerId ?? 0;
+		this.width = eventInit?.width ?? 1;
+		this.height = eventInit?.height ?? 1;
+		this.pressure = eventInit?.pressure ?? 0;
+		this.tangentialPressure = eventInit?.tangentialPressure ?? 0;
+		this.tiltX = eventInit?.tiltX ?? 0;
+		this.tiltY = eventInit?.tiltY ?? 0;
+		this.twist = eventInit?.twist ?? 0;
+		this.altitudeAngle = eventInit?.altitudeAngle ?? 0;
+		this.azimuthAngle = eventInit?.azimuthAngle ?? 0;
+		this.pointerType = eventInit?.pointerType ?? '';
+		this.isPrimary = eventInit?.isPrimary ?? false;
+		this.coalescedEvents = eventInit?.coalescedEvents ?? [];
+		this.predictedEvents = eventInit?.predictedEvents ?? [];
 	}
+
+	public getCoalescedEvents = (): PointerEvent[] => this.coalescedEvents;
+
+	public getPredictedEvents = (): PointerEvent[] => this.predictedEvents;
 }
