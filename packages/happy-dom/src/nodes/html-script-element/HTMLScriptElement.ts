@@ -189,19 +189,17 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 						type === 'application/x-javascript' ||
 						type.startsWith('text/javascript'))
 				) {
-					try {
-						this.ownerDocument['_currentScript'] = this;
+					this.ownerDocument['_currentScript'] = this;
 
-						if (this.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
-							this.ownerDocument.defaultView.eval(textContent);
-						} else {
-							WindowErrorUtility.captureError(this.ownerDocument.defaultView, () =>
-								this.ownerDocument.defaultView.eval(textContent)
-							);
-						}
-					} finally {
-						this.ownerDocument['_currentScript'] = null;
+					if (this.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+						this.ownerDocument.defaultView.eval(textContent);
+					} else {
+						WindowErrorUtility.captureError(this.ownerDocument.defaultView, () =>
+							this.ownerDocument.defaultView.eval(textContent)
+						);
 					}
+
+					this.ownerDocument['_currentScript'] = null;
 				}
 			}
 		}

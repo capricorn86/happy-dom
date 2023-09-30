@@ -36,6 +36,7 @@ import ProcessingInstruction from '../../../src/nodes/processing-instruction/Pro
 import DOMException from '../../../src/exception/DOMException.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import IRequestInit from '../../../src/fetch/types/IRequestInit.js';
+import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -277,7 +278,7 @@ describe('Document', () => {
 		it('Returns and sets title.', () => {
 			document.title = 'test title';
 			expect(document.title).toBe('test title');
-			const title = document.head.querySelector('title');
+			const title = <Element>document.head.querySelector('title');
 			expect(title.textContent).toBe('test title');
 			document.title = 'new title';
 			expect(document.title).toBe('new title');
@@ -405,7 +406,7 @@ describe('Document', () => {
 				}
 
 				public connectedCallback(): void {
-					this.shadowRoot.innerHTML = `
+					(<IShadowRoot>this.shadowRoot).innerHTML = `
 						<div>
 							<custom-element-b></custom-element-b>
 						</div>
@@ -419,7 +420,7 @@ describe('Document', () => {
 				}
 
 				public connectedCallback(): void {
-					this.shadowRoot.innerHTML = `
+					(<IShadowRoot>this.shadowRoot).innerHTML = `
 						<div>
 							<button tabindex="0"></button>
 						</div>
