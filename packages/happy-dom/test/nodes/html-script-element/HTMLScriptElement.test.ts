@@ -141,9 +141,10 @@ describe('HTMLScriptElement', () => {
 	describe('set isConnected()', () => {
 		it('Evaluates the text content as code when appended to an element that is connected to the document.', () => {
 			const element = <IHTMLScriptElement>document.createElement('script');
-			element.text = 'globalThis.test = "test";';
+			element.text = 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
 			document.body.appendChild(element);
 			expect(window['test']).toBe('test');
+			expect(window['currentScript']).toBe(element);
 		});
 
 		it('Evaluates the text content as code when inserted before an element that is connected to the document.', () => {
@@ -151,7 +152,7 @@ describe('HTMLScriptElement', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
 
-			element.text = 'globalThis.test = "test";';
+			element.text = 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
 
 			div1.appendChild(element);
 
@@ -160,6 +161,7 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(element);
 
 			expect(window['test']).toBe('test');
+			expect(window['currentScript']).toBe(element);
 		});
 
 		it('Loads external script asynchronously.', async () => {
@@ -169,7 +171,8 @@ describe('HTMLScriptElement', () => {
 			vi.spyOn(window, 'fetch').mockImplementation((url: IRequestInfo) => {
 				fetchedURL = <string>url;
 				return Promise.resolve(<IResponse>{
-					text: async () => 'globalThis.test = "test";',
+					text: async () =>
+						'globalThis.test = "test";globalThis.currentScript = document.currentScript;',
 					ok: true
 				});
 			});
@@ -188,6 +191,7 @@ describe('HTMLScriptElement', () => {
 			expect((<Event>(<unknown>loadEvent)).target).toBe(script);
 			expect(fetchedURL).toBe('path/to/script/');
 			expect(window['test']).toBe('test');
+			expect(window['currentScript']).toBe(script);
 		});
 
 		it('Triggers error event when loading external script asynchronously.', async () => {
@@ -228,7 +232,7 @@ describe('HTMLScriptElement', () => {
 				(document: IDocument, url: string) => {
 					fetchedDocument = document;
 					fetchedURL = url;
-					return 'globalThis.test = "test";';
+					return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
 				}
 			);
 
@@ -244,6 +248,7 @@ describe('HTMLScriptElement', () => {
 			expect(fetchedDocument).toBe(document);
 			expect(fetchedURL).toBe('path/to/script/');
 			expect(window['test']).toBe('test');
+			expect(window['currentScript']).toBe(script);
 		});
 
 		it('Triggers error event when loading external script synchronously with relative URL.', () => {

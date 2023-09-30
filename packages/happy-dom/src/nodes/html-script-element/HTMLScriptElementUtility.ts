@@ -56,6 +56,7 @@ export default class HTMLScriptElementUtility {
 					throw error;
 				}
 			} else {
+				element.ownerDocument['_currentScript'] = element;
 				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
 					element.ownerDocument.defaultView.eval(code);
 				} else {
@@ -63,6 +64,7 @@ export default class HTMLScriptElementUtility {
 						element.ownerDocument.defaultView.eval(code)
 					);
 				}
+				element.ownerDocument['_currentScript'] = null;
 				element.dispatchEvent(new Event('load'));
 			}
 		} else {
@@ -81,6 +83,7 @@ export default class HTMLScriptElementUtility {
 					throw error;
 				}
 			} else {
+				element.ownerDocument['_currentScript'] = element;
 				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
 					element.ownerDocument.defaultView.eval(code);
 				} else {
@@ -88,6 +91,7 @@ export default class HTMLScriptElementUtility {
 						element.ownerDocument.defaultView.eval(code)
 					);
 				}
+				element.ownerDocument['_currentScript'] = null;
 				element.dispatchEvent(new Event('load'));
 			}
 		}
