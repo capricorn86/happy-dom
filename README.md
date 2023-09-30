@@ -1,3 +1,5 @@
+<a href="https://npmjs.com/package/happy-dom"><img src="https://badgen.net/npm/v/happy-dom" alt="npm package">
+
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
 # About
