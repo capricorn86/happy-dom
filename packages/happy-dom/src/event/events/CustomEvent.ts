@@ -5,7 +5,8 @@ import ICustomEventInit from './ICustomEventInit.js';
  *
  */
 export default class CustomEvent extends Event {
-	public detail: object;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	public detail: any;
 
 	/**
 	 * Constructor.
