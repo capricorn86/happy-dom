@@ -6,7 +6,7 @@ import IHTMLElement from '../../nodes/html-element/IHTMLElement.js';
  * An event triggered by form submit buttons.
  */
 export default class SubmitEvent extends Event {
-	public readonly submitter: IHTMLElement;
+	public readonly submitter: IHTMLElement | null;
 
 	/**
 	 * Constructor.
@@ -14,9 +14,9 @@ export default class SubmitEvent extends Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: ISubmitEventInit = null) {
+	constructor(type: string, eventInit: ISubmitEventInit | null = null) {
 		super(type, eventInit);
 
-		this.submitter = eventInit?.submitter || null;
+		this.submitter = eventInit?.submitter ?? null;
 	}
 }
