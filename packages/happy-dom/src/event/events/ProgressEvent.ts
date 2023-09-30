@@ -15,11 +15,11 @@ export default class ProgressEvent extends Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IProgressEventInit = {}) {
+	constructor(type: string, eventInit: IProgressEventInit | null = null) {
 		super(type);
 
-		this.lengthComputable = eventInit.lengthComputable ?? false;
-		this.loaded = eventInit.loaded ?? 0;
-		this.total = eventInit.total ?? 0;
+		this.lengthComputable = eventInit?.lengthComputable ?? false;
+		this.loaded = eventInit?.loaded ?? 0;
+		this.total = eventInit?.total ?? 0;
 	}
 }

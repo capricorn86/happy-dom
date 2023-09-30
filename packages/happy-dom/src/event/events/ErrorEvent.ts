@@ -17,13 +17,13 @@ export default class ErrorEvent extends UIEvent {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IErrorEventInit = {}) {
+	constructor(type: string, eventInit: IErrorEventInit | null = null) {
 		super(type, eventInit);
 
-		this.message = eventInit.message ?? '';
-		this.filename = eventInit.filename ?? '';
-		this.lineno = eventInit.lineno ?? 0;
-		this.colno = eventInit.colno ?? 0;
-		this.error = eventInit.error ?? null;
+		this.message = eventInit?.message ?? '';
+		this.filename = eventInit?.filename ?? '';
+		this.lineno = eventInit?.lineno ?? 0;
+		this.colno = eventInit?.colno ?? 0;
+		this.error = eventInit?.error ?? null;
 	}
 }

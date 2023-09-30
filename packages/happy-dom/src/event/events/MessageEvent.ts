@@ -21,13 +21,13 @@ export default class MessageEvent extends Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IMessageEventInit = {}) {
+	constructor(type: string, eventInit: IMessageEventInit | null = null) {
 		super(type, eventInit);
 
-		this.data = eventInit.data ?? null;
-		this.origin = eventInit.origin ?? '';
-		this.lastEventId = eventInit.lastEventId ?? '';
-		this.source = eventInit.source ?? null;
-		this.ports = eventInit.ports ?? [];
+		this.data = eventInit?.data ?? null;
+		this.origin = eventInit?.origin ?? '';
+		this.lastEventId = eventInit?.lastEventId ?? '';
+		this.source = eventInit?.source ?? null;
+		this.ports = eventInit?.ports ?? [];
 	}
 }

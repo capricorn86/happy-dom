@@ -35,12 +35,12 @@ export default class Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IEventInit = {}) {
+	constructor(type: string, eventInit: IEventInit | null = null) {
 		this.type = type;
 
-		this.bubbles = eventInit.bubbles ?? false;
-		this.cancelable = eventInit.cancelable ?? false;
-		this.composed = eventInit.composed ?? false;
+		this.bubbles = eventInit?.bubbles ?? false;
+		this.cancelable = eventInit?.cancelable ?? false;
+		this.composed = eventInit?.composed ?? false;
 	}
 
 	/**

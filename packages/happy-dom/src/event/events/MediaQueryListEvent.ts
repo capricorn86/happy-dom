@@ -14,10 +14,10 @@ export default class MediaQueryListEvent extends Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IMediaQueryListInit = {}) {
+	constructor(type: string, eventInit: IMediaQueryListInit | null = null) {
 		super(type, eventInit);
 
-		this.matches = eventInit.matches ?? false;
-		this.media = eventInit.media ?? '';
+		this.matches = eventInit?.matches ?? false;
+		this.media = eventInit?.media ?? '';
 	}
 }

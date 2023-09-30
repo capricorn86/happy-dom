@@ -14,9 +14,9 @@ export default class SubmitEvent extends Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: ISubmitEventInit = {}) {
+	constructor(type: string, eventInit: ISubmitEventInit | null = null) {
 		super(type, eventInit);
 
-		this.submitter = eventInit.submitter ?? null;
+		this.submitter = eventInit?.submitter ?? null;
 	}
 }

@@ -13,10 +13,10 @@ export default class CustomEvent extends Event {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: ICustomEventInit = {}) {
+	constructor(type: string, eventInit: ICustomEventInit | null = null) {
 		super(type, eventInit);
 
-		this.detail = eventInit.detail ?? null;
+		this.detail = eventInit?.detail ?? null;
 	}
 
 	/**

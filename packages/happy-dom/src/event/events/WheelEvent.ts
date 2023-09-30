@@ -19,12 +19,12 @@ export default class WheelEvent extends UIEvent {
 	 * @param type Event type.
 	 * @param [eventInit] Event init.
 	 */
-	constructor(type: string, eventInit: IWheelEventInit = {}) {
+	constructor(type: string, eventInit: IWheelEventInit | null = null) {
 		super(type, eventInit);
 
-		this.deltaX = eventInit.deltaX ?? 0;
-		this.deltaY = eventInit.deltaY ?? 0;
-		this.deltaZ = eventInit.deltaZ ?? 0;
-		this.deltaMode = eventInit.deltaMode ?? 0;
+		this.deltaX = eventInit?.deltaX ?? 0;
+		this.deltaY = eventInit?.deltaY ?? 0;
+		this.deltaZ = eventInit?.deltaZ ?? 0;
+		this.deltaMode = eventInit?.deltaMode ?? 0;
 	}
 }
