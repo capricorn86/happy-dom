@@ -1,4 +1,6 @@
-export default `
+import { Script } from 'vm';
+
+export default new Script(`
 this.ArrayBuffer = globalThis.ArrayBuffer;
 this.Boolean = globalThis.Boolean;
 this.DataView = globalThis.DataView;
@@ -57,4 +59,4 @@ this.AbortSignal = globalThis.AbortSignal;
 this.Array = globalThis.Array;
 this.Object = globalThis.Object;
 this.Function = globalThis.Function;
-`;
+`);
