@@ -66,7 +66,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && tsc --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
+		"compile": "tsc && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
 		"change-cjs-file-extension": "node ../happy-dom/bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",

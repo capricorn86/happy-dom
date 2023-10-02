@@ -1,6 +1,6 @@
 import GlobalRegistrator from '../../cjs/GlobalRegistrator.cjs';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import ReactComponent from './ReactComponent.js';
 
 const selfReferringProperties = ['self', 'top', 'parent', 'window'];
@@ -11,10 +11,12 @@ const originalSetTimeout = global.setTimeout;
 GlobalRegistrator.register();
 
 const appElement = document.createElement('app');
+let root;
 document.body.appendChild(appElement);
 
 function mountReactComponent(): void {
-	ReactDOM.render(<ReactComponent />, appElement);
+	root = ReactDOM.createRoot(appElement);
+	root.render(<ReactComponent />);
 
 	if (appElement.innerHTML !== '<div>Test</div>') {
 		throw Error('React not rendered correctly.');
@@ -22,7 +24,7 @@ function mountReactComponent(): void {
 }
 
 function unmountReactComponent(): void {
-	ReactDOM.unmountComponentAtNode(appElement);
+	root.unmount();
 
 	if (appElement.innerHTML !== '') {
 		throw Error('React not unmounted correctly.');
