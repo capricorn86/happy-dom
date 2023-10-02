@@ -2,6 +2,9 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import IHTMLLabelElement from './IHTMLLabelElement.js';
+import Event from '../../event/Event.js';
+import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import PointerEvent from '../../event/events/PointerEvent.js';
 
 /**
  * HTML Label Element.
@@ -40,7 +43,8 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	public get control(): IHTMLElement {
 		const htmlFor = this.htmlFor;
 		if (htmlFor) {
-			return <IHTMLElement>this.ownerDocument.getElementById(htmlFor);
+			const control = <IHTMLElement>this.ownerDocument.getElementById(htmlFor);
+			return control !== this ? control : null;
 		}
 		return <IHTMLElement>(
 			this.querySelector('button,input:not([type="hidden"]),meter,output,progress,select,textarea')
@@ -65,5 +69,24 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 */
 	public cloneNode(deep = false): IHTMLLabelElement {
 		return <HTMLLabelElement>super.cloneNode(deep);
+	}
+
+	/**
+	 * @override
+	 */
+	public override dispatchEvent(event: Event): boolean {
+		const returnValue = super.dispatchEvent(event);
+
+		if (
+			event.type === 'click' &&
+			(event.eventPhase === EventPhaseEnum.atTarget || event.eventPhase === EventPhaseEnum.bubbling)
+		) {
+			const control = this.control;
+			if (control && event.target !== control) {
+				control.dispatchEvent(new PointerEvent('click', { bubbles: true, cancelable: true }));
+			}
+		}
+
+		return returnValue;
 	}
 }

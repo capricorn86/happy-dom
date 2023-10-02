@@ -1175,7 +1175,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			event.type === 'click' &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this.isConnected &&
 			(this.type === 'checkbox' || this.type === 'radio')
 		) {
 			this._setChecked(this.type === 'checkbox' ? !this.checked : true);
@@ -1187,7 +1186,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			event.type === 'click' &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this.isConnected &&
 			(!this.readOnly || this.type === 'checkbox' || this.type === 'radio')
 		) {
 			if (this.type === 'checkbox' || this.type === 'radio') {
@@ -1198,7 +1196,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				if (form) {
 					form.requestSubmit();
 				}
-			} else if (this.type === 'reset') {
+			} else if (this.type === 'reset' && this.isConnected) {
 				const form = <IHTMLFormElement>this._formNode;
 				if (form) {
 					form.reset();
