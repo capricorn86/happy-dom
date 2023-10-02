@@ -126,12 +126,17 @@ import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
+import Permissions from '../permissions/Permissions.js';
+import PermissionStatus from '../permissions/PermissionStatus.js';
+import Clipboard from '../clipboard/Clipboard.js';
+import ClipboardItem from '../clipboard/ClipboardItem.js';
+import ClipboardEvent from '../event/events/ClipboardEvent.js';
 
 /**
  * Window without dependencies to server side specific packages.
  */
 export default interface IWindow extends IEventTarget, INodeJSGlobal {
-	// Public Properties
+	// Happy DOM property.
 	readonly happyDOM: {
 		whenAsyncComplete: () => Promise<void>;
 		cancelAsync: () => void;
@@ -152,8 +157,24 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 		setInnerHeight: (height: number) => void;
 	};
 
-	// Global classes
+	// Nodes
 	readonly Node: typeof Node;
+	readonly Attr: typeof Attr;
+	readonly SVGSVGElement: typeof SVGSVGElement;
+	readonly SVGElement: typeof SVGElement;
+	readonly Text: typeof Text;
+	readonly Comment: typeof Comment;
+	readonly ShadowRoot: typeof ShadowRoot;
+	readonly Element: typeof Element;
+	readonly DocumentFragment: typeof DocumentFragment;
+	readonly CharacterData: typeof CharacterData;
+	readonly ProcessingInstruction: typeof ProcessingInstruction;
+	readonly Document: typeof Document;
+	readonly HTMLDocument: typeof HTMLDocument;
+	readonly XMLDocument: typeof XMLDocument;
+	readonly SVGDocument: typeof SVGDocument;
+
+	// Element classes
 	readonly HTMLElement: typeof HTMLElement;
 	readonly HTMLUnknownElement: typeof HTMLUnknownElement;
 	readonly HTMLTemplateElement: typeof HTMLTemplateElement;
@@ -174,27 +195,61 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly HTMLBaseElement: typeof HTMLBaseElement;
 	readonly HTMLIFrameElement: typeof HTMLIFrameElement;
 	readonly HTMLDialogElement: typeof HTMLDialogElement;
-	readonly Attr: typeof Attr;
-	readonly NamedNodeMap: typeof NamedNodeMap;
-	readonly SVGSVGElement: typeof SVGSVGElement;
-	readonly SVGElement: typeof SVGElement;
-	readonly Image: typeof Image;
-	readonly Text: typeof Text;
-	readonly Comment: typeof Comment;
-	readonly ShadowRoot: typeof ShadowRoot;
-	readonly Element: typeof Element;
-	readonly DocumentFragment: typeof DocumentFragment;
-	readonly CharacterData: typeof CharacterData;
-	readonly ProcessingInstruction: typeof ProcessingInstruction;
-	readonly NodeFilter: typeof NodeFilter;
-	readonly NodeIterator: typeof NodeIterator;
-	readonly TreeWalker: typeof TreeWalker;
-	readonly DOMParser: typeof DOMParser;
-	readonly MutationObserver: typeof MutationObserver;
-	readonly Document: typeof Document;
-	readonly HTMLDocument: typeof HTMLDocument;
-	readonly XMLDocument: typeof XMLDocument;
-	readonly SVGDocument: typeof SVGDocument;
+
+	/**
+	 * Non-implemented element classes
+	 */
+	readonly HTMLHeadElement: typeof HTMLElement;
+	readonly HTMLTitleElement: typeof HTMLElement;
+	readonly HTMLBodyElement: typeof HTMLElement;
+	readonly HTMLHeadingElement: typeof HTMLElement;
+	readonly HTMLParagraphElement: typeof HTMLElement;
+	readonly HTMLHRElement: typeof HTMLElement;
+	readonly HTMLPreElement: typeof HTMLElement;
+	readonly HTMLUListElement: typeof HTMLElement;
+	readonly HTMLOListElement: typeof HTMLElement;
+	readonly HTMLLIElement: typeof HTMLElement;
+	readonly HTMLMenuElement: typeof HTMLElement;
+	readonly HTMLDListElement: typeof HTMLElement;
+	readonly HTMLDivElement: typeof HTMLElement;
+	readonly HTMLAnchorElement: typeof HTMLElement;
+	readonly HTMLAreaElement: typeof HTMLElement;
+	readonly HTMLBRElement: typeof HTMLElement;
+	readonly HTMLButtonElement: typeof HTMLElement;
+	readonly HTMLCanvasElement: typeof HTMLElement;
+	readonly HTMLDataElement: typeof HTMLElement;
+	readonly HTMLDataListElement: typeof HTMLElement;
+	readonly HTMLDetailsElement: typeof HTMLElement;
+	readonly HTMLDirectoryElement: typeof HTMLElement;
+	readonly HTMLFieldSetElement: typeof HTMLElement;
+	readonly HTMLFontElement: typeof HTMLElement;
+	readonly HTMLHtmlElement: typeof HTMLElement;
+	readonly HTMLLegendElement: typeof HTMLElement;
+	readonly HTMLMapElement: typeof HTMLElement;
+	readonly HTMLMarqueeElement: typeof HTMLElement;
+	readonly HTMLMeterElement: typeof HTMLElement;
+	readonly HTMLModElement: typeof HTMLElement;
+	readonly HTMLOutputElement: typeof HTMLElement;
+	readonly HTMLPictureElement: typeof HTMLElement;
+	readonly HTMLProgressElement: typeof HTMLElement;
+	readonly HTMLQuoteElement: typeof HTMLElement;
+	readonly HTMLSourceElement: typeof HTMLElement;
+	readonly HTMLSpanElement: typeof HTMLElement;
+	readonly HTMLTableCaptionElement: typeof HTMLElement;
+	readonly HTMLTableCellElement: typeof HTMLElement;
+	readonly HTMLTableColElement: typeof HTMLElement;
+	readonly HTMLTableElement: typeof HTMLElement;
+	readonly HTMLTimeElement: typeof HTMLElement;
+	readonly HTMLTableRowElement: typeof HTMLElement;
+	readonly HTMLTableSectionElement: typeof HTMLElement;
+	readonly HTMLFrameElement: typeof HTMLElement;
+	readonly HTMLFrameSetElement: typeof HTMLElement;
+	readonly HTMLEmbedElement: typeof HTMLElement;
+	readonly HTMLObjectElement: typeof HTMLElement;
+	readonly HTMLParamElement: typeof HTMLElement;
+	readonly HTMLTrackElement: typeof HTMLElement;
+
+	// Event classes
 	readonly Event: typeof Event;
 	readonly UIEvent: typeof UIEvent;
 	readonly CustomEvent: typeof CustomEvent;
@@ -212,6 +267,55 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly MessagePort: typeof MessagePort;
 	readonly ProgressEvent: typeof ProgressEvent;
 	readonly MediaQueryListEvent: typeof MediaQueryListEvent;
+	readonly ClipboardEvent: typeof ClipboardEvent;
+
+	/**
+	 * Non-implemented event classes
+	 */
+	readonly AudioProcessingEvent: typeof Event;
+	readonly BeforeInputEvent: typeof Event;
+	readonly BeforeUnloadEvent: typeof Event;
+	readonly BlobEvent: typeof Event;
+	readonly CloseEvent: typeof Event;
+	readonly CompositionEvent: typeof Event;
+	readonly CSSFontFaceLoadEvent: typeof Event;
+	readonly DeviceLightEvent: typeof Event;
+	readonly DeviceMotionEvent: typeof Event;
+	readonly DeviceOrientationEvent: typeof Event;
+	readonly DeviceProximityEvent: typeof Event;
+	readonly DOMTransactionEvent: typeof Event;
+	readonly DragEvent: typeof Event;
+	readonly EditingBeforeInputEvent: typeof Event;
+	readonly FetchEvent: typeof Event;
+	readonly GamepadEvent: typeof Event;
+	readonly HashChangeEvent: typeof Event;
+	readonly IDBVersionChangeEvent: typeof Event;
+	readonly MediaStreamEvent: typeof Event;
+	readonly MutationEvent: typeof Event;
+	readonly OfflineAudioCompletionEvent: typeof Event;
+	readonly OverconstrainedError: typeof Event;
+	readonly PageTransitionEvent: typeof Event;
+	readonly PaymentRequestUpdateEvent: typeof Event;
+	readonly PopStateEvent: typeof Event;
+	readonly RelatedEvent: typeof Event;
+	readonly RTCDataChannelEvent: typeof Event;
+	readonly RTCIdentityErrorEvent: typeof Event;
+	readonly RTCIdentityEvent: typeof Event;
+	readonly RTCPeerConnectionIceEvent: typeof Event;
+	readonly SensorEvent: typeof Event;
+	readonly SVGEvent: typeof Event;
+	readonly SVGZoomEvent: typeof Event;
+	readonly TimeEvent: typeof Event;
+	readonly TouchEvent: typeof Event;
+	readonly TrackEvent: typeof Event;
+	readonly TransitionEvent: typeof Event;
+	readonly UserProximityEvent: typeof Event;
+	readonly WebGLContextEvent: typeof Event;
+	readonly TextEvent: typeof Event;
+
+	// Other classes
+	readonly Image: typeof Image;
+	readonly NamedNodeMap: typeof NamedNodeMap;
 	readonly EventTarget: typeof EventTarget;
 	readonly DataTransfer: typeof DataTransfer;
 	readonly DataTransferItem: typeof DataTransferItem;
@@ -268,6 +372,16 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly AbortSignal: typeof AbortSignal;
 	readonly RadioNodeList: typeof RadioNodeList;
 	readonly ValidityState: typeof ValidityState;
+	readonly Permissions: typeof Permissions;
+	readonly PermissionStatus: typeof PermissionStatus;
+	readonly Clipboard: typeof Clipboard;
+	readonly ClipboardItem: typeof ClipboardItem;
+
+	readonly NodeFilter: typeof NodeFilter;
+	readonly NodeIterator: typeof NodeIterator;
+	readonly TreeWalker: typeof TreeWalker;
+	readonly DOMParser: typeof DOMParser;
+	readonly MutationObserver: typeof MutationObserver;
 
 	// Events
 	onload: (event: Event) => void;

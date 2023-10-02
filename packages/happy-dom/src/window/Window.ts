@@ -50,9 +50,7 @@ import MessagePort from '../event/MessagePort.js';
 import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
 import Location from '../location/Location.js';
-import NonImplementedEventTypes from '../event/NonImplementedEventTypes.js';
 import MutationObserver from '../mutation-observer/MutationObserver.js';
-import NonImplemenetedElementClasses from '../config/NonImplemenetedElementClasses.js';
 import DOMParserImplementation from '../dom-parser/DOMParser.js';
 import XMLSerializer from '../xml-serializer/XMLSerializer.js';
 import ResizeObserver from '../resize-observer/ResizeObserver.js';
@@ -142,6 +140,11 @@ import VirtualConsole from '../console/VirtualConsole.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import IHappyDOMSettings from './IHappyDOMSettings.js';
 import PackageVersion from '../version.js';
+import Permissions from '../permissions/Permissions.js';
+import PermissionStatus from '../permissions/PermissionStatus.js';
+import Clipboard from '../clipboard/Clipboard.js';
+import ClipboardItem from '../clipboard/ClipboardItem.js';
+import ClipboardEvent from '../event/events/ClipboardEvent.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -156,7 +159,7 @@ const ORIGINAL_QUEUE_MICROTASK = queueMicrotask;
  * https://developer.mozilla.org/en-US/docs/Web/API/Window.
  */
 export default class Window extends EventTarget implements IWindow {
-	// The Happy DOM property
+	// Happy DOM property.
 	public readonly happyDOM: {
 		whenAsyncComplete: () => Promise<void>;
 		cancelAsync: () => void;
@@ -227,8 +230,24 @@ export default class Window extends EventTarget implements IWindow {
 		setInnerHeight: (height: number): void => this.happyDOM.setWindowSize({ height })
 	};
 
-	// Global classes
+	// Nodes
 	public readonly Node = Node;
+	public readonly Attr = Attr;
+	public readonly SVGSVGElement = SVGSVGElement;
+	public readonly SVGElement = SVGElement;
+	public readonly SVGGraphicsElement = SVGGraphicsElement;
+	public readonly Text = Text;
+	public readonly Comment = Comment;
+	public readonly ShadowRoot = ShadowRoot;
+	public readonly ProcessingInstruction = ProcessingInstruction;
+	public readonly Element = Element;
+	public readonly CharacterData = CharacterData;
+	public readonly Document = Document;
+	public readonly HTMLDocument = HTMLDocument;
+	public readonly XMLDocument = XMLDocument;
+	public readonly SVGDocument = SVGDocument;
+
+	// Element classes
 	public readonly HTMLElement = HTMLElement;
 	public readonly HTMLUnknownElement = HTMLUnknownElement;
 	public readonly HTMLTemplateElement = HTMLTemplateElement;
@@ -249,25 +268,59 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLBaseElement = HTMLBaseElement;
 	public readonly HTMLIFrameElement = HTMLIFrameElement;
 	public readonly HTMLDialogElement = HTMLDialogElement;
-	public readonly Attr = Attr;
-	public readonly NamedNodeMap = NamedNodeMap;
-	public readonly SVGSVGElement = SVGSVGElement;
-	public readonly SVGElement = SVGElement;
-	public readonly SVGGraphicsElement = SVGGraphicsElement;
-	public readonly Text = Text;
-	public readonly Comment = Comment;
-	public readonly ShadowRoot = ShadowRoot;
-	public readonly ProcessingInstruction = ProcessingInstruction;
-	public readonly Element = Element;
-	public readonly CharacterData = CharacterData;
-	public readonly NodeFilter = NodeFilter;
-	public readonly NodeIterator = NodeIterator;
-	public readonly TreeWalker = TreeWalker;
-	public readonly MutationObserver = MutationObserver;
-	public readonly Document = Document;
-	public readonly HTMLDocument = HTMLDocument;
-	public readonly XMLDocument = XMLDocument;
-	public readonly SVGDocument = SVGDocument;
+
+	// Non-implemented element classes
+	public readonly HTMLHeadElement = HTMLElement;
+	public readonly HTMLTitleElement = HTMLElement;
+	public readonly HTMLBodyElement = HTMLElement;
+	public readonly HTMLHeadingElement = HTMLElement;
+	public readonly HTMLParagraphElement = HTMLElement;
+	public readonly HTMLHRElement = HTMLElement;
+	public readonly HTMLPreElement = HTMLElement;
+	public readonly HTMLUListElement = HTMLElement;
+	public readonly HTMLOListElement = HTMLElement;
+	public readonly HTMLLIElement = HTMLElement;
+	public readonly HTMLMenuElement = HTMLElement;
+	public readonly HTMLDListElement = HTMLElement;
+	public readonly HTMLDivElement = HTMLElement;
+	public readonly HTMLAnchorElement = HTMLElement;
+	public readonly HTMLAreaElement = HTMLElement;
+	public readonly HTMLBRElement = HTMLElement;
+	public readonly HTMLButtonElement = HTMLElement;
+	public readonly HTMLCanvasElement = HTMLElement;
+	public readonly HTMLDataElement = HTMLElement;
+	public readonly HTMLDataListElement = HTMLElement;
+	public readonly HTMLDetailsElement = HTMLElement;
+	public readonly HTMLDirectoryElement = HTMLElement;
+	public readonly HTMLFieldSetElement = HTMLElement;
+	public readonly HTMLFontElement = HTMLElement;
+	public readonly HTMLHtmlElement = HTMLElement;
+	public readonly HTMLLegendElement = HTMLElement;
+	public readonly HTMLMapElement = HTMLElement;
+	public readonly HTMLMarqueeElement = HTMLElement;
+	public readonly HTMLMeterElement = HTMLElement;
+	public readonly HTMLModElement = HTMLElement;
+	public readonly HTMLOutputElement = HTMLElement;
+	public readonly HTMLPictureElement = HTMLElement;
+	public readonly HTMLProgressElement = HTMLElement;
+	public readonly HTMLQuoteElement = HTMLElement;
+	public readonly HTMLSourceElement = HTMLElement;
+	public readonly HTMLSpanElement = HTMLElement;
+	public readonly HTMLTableCaptionElement = HTMLElement;
+	public readonly HTMLTableCellElement = HTMLElement;
+	public readonly HTMLTableColElement = HTMLElement;
+	public readonly HTMLTableElement = HTMLElement;
+	public readonly HTMLTimeElement = HTMLElement;
+	public readonly HTMLTableRowElement = HTMLElement;
+	public readonly HTMLTableSectionElement = HTMLElement;
+	public readonly HTMLFrameElement = HTMLElement;
+	public readonly HTMLFrameSetElement = HTMLElement;
+	public readonly HTMLEmbedElement = HTMLElement;
+	public readonly HTMLObjectElement = HTMLElement;
+	public readonly HTMLParamElement = HTMLElement;
+	public readonly HTMLTrackElement = HTMLElement;
+
+	// Events classes
 	public readonly Event = Event;
 	public readonly UIEvent = UIEvent;
 	public readonly CustomEvent = CustomEvent;
@@ -284,6 +337,56 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly SubmitEvent = SubmitEvent;
 	public readonly ProgressEvent = ProgressEvent;
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
+	public readonly ClipboardEvent = ClipboardEvent;
+
+	// Non-implemented event classes
+	public readonly AudioProcessingEvent = Event;
+	public readonly BeforeInputEvent = Event;
+	public readonly BeforeUnloadEvent = Event;
+	public readonly BlobEvent = Event;
+	public readonly CloseEvent = Event;
+	public readonly CompositionEvent = Event;
+	public readonly CSSFontFaceLoadEvent = Event;
+	public readonly DeviceLightEvent = Event;
+	public readonly DeviceMotionEvent = Event;
+	public readonly DeviceOrientationEvent = Event;
+	public readonly DeviceProximityEvent = Event;
+	public readonly DOMTransactionEvent = Event;
+	public readonly DragEvent = Event;
+	public readonly EditingBeforeInputEvent = Event;
+	public readonly FetchEvent = Event;
+	public readonly GamepadEvent = Event;
+	public readonly HashChangeEvent = Event;
+	public readonly IDBVersionChangeEvent = Event;
+	public readonly MediaStreamEvent = Event;
+	public readonly MutationEvent = Event;
+	public readonly OfflineAudioCompletionEvent = Event;
+	public readonly OverconstrainedError = Event;
+	public readonly PageTransitionEvent = Event;
+	public readonly PaymentRequestUpdateEvent = Event;
+	public readonly PopStateEvent = Event;
+	public readonly RelatedEvent = Event;
+	public readonly RTCDataChannelEvent = Event;
+	public readonly RTCIdentityErrorEvent = Event;
+	public readonly RTCIdentityEvent = Event;
+	public readonly RTCPeerConnectionIceEvent = Event;
+	public readonly SensorEvent = Event;
+	public readonly SVGEvent = Event;
+	public readonly SVGZoomEvent = Event;
+	public readonly TimeEvent = Event;
+	public readonly TouchEvent = Event;
+	public readonly TrackEvent = Event;
+	public readonly TransitionEvent = Event;
+	public readonly UserProximityEvent = Event;
+	public readonly WebGLContextEvent = Event;
+	public readonly TextEvent = Event;
+
+	// Other classes
+	public readonly NamedNodeMap = NamedNodeMap;
+	public readonly NodeFilter = NodeFilter;
+	public readonly NodeIterator = NodeIterator;
+	public readonly TreeWalker = TreeWalker;
+	public readonly MutationObserver = MutationObserver;
 	public readonly EventTarget = EventTarget;
 	public readonly MessagePort = MessagePort;
 	public readonly DataTransfer = DataTransfer;
@@ -340,6 +443,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly AbortController = AbortController;
 	public readonly AbortSignal = AbortSignal;
 	public readonly FormData = FormData;
+	public readonly Permissions = Permissions;
+	public readonly PermissionStatus = PermissionStatus;
+	public readonly Clipboard = Clipboard;
+	public readonly ClipboardItem = ClipboardItem;
 	public readonly XMLHttpRequest;
 	public readonly DOMParser: typeof DOMParserImplementation;
 	public readonly Range;
@@ -352,7 +459,7 @@ export default class Window extends EventTarget implements IWindow {
 	public onload: (event: Event) => void = null;
 	public onerror: (event: ErrorEvent) => void = null;
 
-	// Public Properties
+	// Public properties.
 	public readonly document: Document;
 	public readonly customElements: CustomElementRegistry;
 	public readonly location: Location;
@@ -520,20 +627,6 @@ export default class Window extends EventTarget implements IWindow {
 		this._setInterval = ORIGINAL_SET_INTERVAL;
 		this._clearInterval = ORIGINAL_CLEAR_INTERVAL;
 		this._queueMicrotask = ORIGINAL_QUEUE_MICROTASK;
-
-		// Non-implemented event types
-		for (const eventType of NonImplementedEventTypes) {
-			if (!this[eventType]) {
-				this[eventType] = Event;
-			}
-		}
-
-		// Non implemented element classes
-		for (const className of NonImplemenetedElementClasses) {
-			if (!this[className]) {
-				this[className] = HTMLElement;
-			}
-		}
 
 		// Binds all methods to "this", so that it will use the correct context when called globally.
 		for (const key of Object.getOwnPropertyNames(Window.prototype).concat(
