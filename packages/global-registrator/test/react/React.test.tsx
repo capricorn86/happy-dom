@@ -1,51 +1,62 @@
 import GlobalRegistrator from '../../cjs/GlobalRegistrator.cjs';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { act } from 'react-dom/test-utils';
 import ReactComponent from './ReactComponent.js';
 
-const selfReferringProperties = ['self', 'top', 'parent', 'window'];
+async function main(): Promise<void> {
+	const selfReferringProperties = ['self', 'top', 'parent', 'window'];
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-const originalSetTimeout = global.setTimeout;
+	// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+	const originalSetTimeout = global.setTimeout;
 
-GlobalRegistrator.register();
+	GlobalRegistrator.register();
 
-const appElement = document.createElement('app');
-let root;
-document.body.appendChild(appElement);
+	const appElement = document.createElement('app');
+	let root;
+	document.body.appendChild(appElement);
 
-function mountReactComponent(): void {
-	root = ReactDOM.createRoot(appElement);
-	root.render(<ReactComponent />);
+	async function mountReactComponent(): Promise<void> {
+		act(() => {
+			root = ReactDOM.createRoot(appElement);
+			root.render(<ReactComponent />);
+		});
 
-	if (appElement.innerHTML !== '<div>Test</div>') {
-		throw Error('React not rendered correctly.');
+		await new Promise((resolve) => setTimeout(resolve, 2));
+
+		if (appElement.innerHTML !== '<div>Test</div>') {
+			throw Error('React not rendered correctly.');
+		}
+	}
+
+	function unmountReactComponent(): void {
+		act(() => {
+			root.unmount();
+		});
+
+		if (appElement.innerHTML !== '') {
+			throw Error('React not unmounted correctly.');
+		}
+	}
+
+	if (global.setTimeout === originalSetTimeout) {
+		throw Error('Happy DOM function not registered.');
+	}
+
+	for (const property of selfReferringProperties) {
+		if (global[property] !== global) {
+			throw Error('Self referring property property was not registered.');
+		}
+	}
+
+	await mountReactComponent();
+	unmountReactComponent();
+
+	GlobalRegistrator.unregister();
+
+	if (global.setTimeout !== originalSetTimeout) {
+		throw Error('Global property was not restored.');
 	}
 }
 
-function unmountReactComponent(): void {
-	root.unmount();
-
-	if (appElement.innerHTML !== '') {
-		throw Error('React not unmounted correctly.');
-	}
-}
-
-if (global.setTimeout === originalSetTimeout) {
-	throw Error('Happy DOM function not registered.');
-}
-
-for (const property of selfReferringProperties) {
-	if (global[property] !== global) {
-		throw Error('Self referring property property was not registered.');
-	}
-}
-
-mountReactComponent();
-unmountReactComponent();
-
-GlobalRegistrator.unregister();
-
-if (global.setTimeout !== originalSetTimeout) {
-	throw Error('Global property was not restored.');
-}
+main();
