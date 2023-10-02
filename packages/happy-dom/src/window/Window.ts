@@ -34,7 +34,7 @@ import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement.js';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement.js';
 import ImageImplementation from '../nodes/html-image-element/Image.js';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import DocumentFragmentImplementation from '../nodes/document-fragment/DocumentFragment.js';
 import CharacterData from '../nodes/character-data/CharacterData.js';
 import NodeIterator from '../tree-walker/NodeIterator.js';
 import TreeWalker from '../tree-walker/TreeWalker.js';
@@ -259,7 +259,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly ShadowRoot = ShadowRoot;
 	public readonly ProcessingInstruction = ProcessingInstruction;
 	public readonly Element = Element;
-	public readonly DocumentFragment = DocumentFragment;
 	public readonly CharacterData = CharacterData;
 	public readonly NodeFilter = NodeFilter;
 	public readonly NodeIterator = NodeIterator;
@@ -346,6 +345,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Range;
 	public readonly FileReader;
 	public readonly Image;
+	public readonly DocumentFragment;
 	public readonly Audio;
 
 	// Events
@@ -562,6 +562,7 @@ export default class Window extends EventTarget implements IWindow {
 		ResponseImplementation._ownerDocument = document;
 		RequestImplementation._ownerDocument = document;
 		ImageImplementation._ownerDocument = document;
+		DocumentFragmentImplementation._ownerDocument = document;
 		FileReaderImplementation._ownerDocument = document;
 		DOMParserImplementation._ownerDocument = document;
 		RangeImplementation._ownerDocument = document;
@@ -575,6 +576,9 @@ export default class Window extends EventTarget implements IWindow {
 			public static _ownerDocument: IDocument = document;
 		}
 		class Image extends ImageImplementation {
+			public static _ownerDocument: IDocument = document;
+		}
+		class DocumentFragment extends DocumentFragmentImplementation {
 			public static _ownerDocument: IDocument = document;
 		}
 		class FileReader extends FileReaderImplementation {
@@ -597,6 +601,7 @@ export default class Window extends EventTarget implements IWindow {
 		this.Response = Response;
 		this.Request = Request;
 		this.Image = Image;
+		this.DocumentFragment = DocumentFragment;
 		this.FileReader = FileReader;
 		this.DOMParser = DOMParser;
 		this.XMLHttpRequest = XMLHttpRequest;
