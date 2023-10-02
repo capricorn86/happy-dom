@@ -12,8 +12,8 @@ export default class Permissions {
 	 *
 	 * @param permissionDescriptor Permission descriptor.
 	 * @param permissionDescriptor.name Permission name.
-	 * @param permissionDescriptor.userVisibleOnly User visible only.
-	 * @param permissionDescriptor.sysex Sysex.
+	 * @param [permissionDescriptor.userVisibleOnly] User visible only.
+	 * @param [permissionDescriptor.sysex] Sysex.
 	 * @returns Permission status.
 	 */
 	public async query(permissionDescriptor: {
