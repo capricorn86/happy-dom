@@ -51,6 +51,7 @@ import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
 import Location from '../location/Location.js';
 import MutationObserver from '../mutation-observer/MutationObserver.js';
+import MutationRecord from '../mutation-observer/MutationRecord.js';
 import DOMParserImplementation from '../dom-parser/DOMParser.js';
 import XMLSerializer from '../xml-serializer/XMLSerializer.js';
 import ResizeObserver from '../resize-observer/ResizeObserver.js';
@@ -387,6 +388,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly NodeIterator = NodeIterator;
 	public readonly TreeWalker = TreeWalker;
 	public readonly MutationObserver = MutationObserver;
+	public readonly MutationRecord = MutationRecord;
 	public readonly EventTarget = EventTarget;
 	public readonly MessagePort = MessagePort;
 	public readonly DataTransfer = DataTransfer;

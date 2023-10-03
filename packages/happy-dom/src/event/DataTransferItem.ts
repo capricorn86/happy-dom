@@ -17,9 +17,9 @@ export default class DataTransferItem {
 	 * @param item Item.
 	 * @param type Type.
 	 */
-	constructor(item: string | File, type?: string) {
+	constructor(item: string | File, type = '') {
 		this.kind = typeof item === 'string' ? 'string' : 'file';
-		this.type = type ?? (this.kind === 'string' ? '' : (<File>item).type);
+		this.type = this.kind === 'string' ? type : (<File>item).type;
 		this.#item = item;
 	}
 

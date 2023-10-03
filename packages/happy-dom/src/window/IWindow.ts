@@ -46,6 +46,7 @@ import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
 import Location from '../location/Location.js';
 import MutationObserver from '../mutation-observer/MutationObserver.js';
+import MutationRecord from '../mutation-observer/MutationRecord.js';
 import DOMParser from '../dom-parser/DOMParser.js';
 import XMLSerializer from '../xml-serializer/XMLSerializer.js';
 import ResizeObserver from '../resize-observer/ResizeObserver.js';
@@ -382,6 +383,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly TreeWalker: typeof TreeWalker;
 	readonly DOMParser: typeof DOMParser;
 	readonly MutationObserver: typeof MutationObserver;
+	readonly MutationRecord: typeof MutationRecord;
 
 	// Events
 	onload: (event: Event) => void;

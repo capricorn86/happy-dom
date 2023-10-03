@@ -1052,17 +1052,25 @@ describe('HTMLInputElement', () => {
 			element.addEventListener('input', () => (isInputTriggered = true));
 			element.addEventListener('change', () => (isChangeTriggered = true));
 
+			// "input" and "change" events should only be triggered if connected to DOM
+			element.dispatchEvent(new Event('click'));
+
+			expect(isInputTriggered).toBe(false);
+			expect(isChangeTriggered).toBe(false);
+			expect(element.checked).toBe(true);
+
 			document.body.appendChild(element);
 
 			element.dispatchEvent(new Event('click'));
 
+			// "input" and "change" events should now have been triggered as it is connected to DOM
 			expect(isInputTriggered).toBe(true);
 			expect(isChangeTriggered).toBe(true);
-			expect(element.checked).toBe(true);
+			expect(element.checked).toBe(false);
 
 			element.dispatchEvent(new Event('click'));
 
-			expect(element.checked).toBe(false);
+			expect(element.checked).toBe(true);
 		});
 
 		it('Sets "checked" to "true" if type is "radio" and is a "click" event.', () => {
@@ -1074,13 +1082,111 @@ describe('HTMLInputElement', () => {
 			element.addEventListener('input', () => (isInputTriggered = true));
 			element.addEventListener('change', () => (isChangeTriggered = true));
 
+			element.dispatchEvent(new Event('click'));
+
+			// "input" and "change" events should only be triggered if connected to DOM
+			expect(isInputTriggered).toBe(false);
+			expect(isChangeTriggered).toBe(false);
+			expect(element.checked).toBe(true);
+
 			document.body.appendChild(element);
 
 			element.dispatchEvent(new Event('click'));
 
+			// "input" and "change" events should now have been triggered as it is connected to DOM
 			expect(isInputTriggered).toBe(true);
 			expect(isChangeTriggered).toBe(true);
 			expect(element.checked).toBe(true);
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(element.checked).toBe(true);
+		});
+
+		it('Sets "checked" to "true" before triggering listeners if type is "checkbox".', () => {
+			let isInputChecked = false;
+			let isChangeChecked = false;
+			let isClickChecked = false;
+
+			element.type = 'checkbox';
+
+			element.addEventListener('input', () => (isInputChecked = element.checked));
+			element.addEventListener('change', () => (isChangeChecked = element.checked));
+			element.addEventListener('click', () => (isClickChecked = element.checked));
+
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(isInputChecked).toBe(true);
+			expect(isChangeChecked).toBe(true);
+			expect(isClickChecked).toBe(true);
+			expect(element.checked).toBe(true);
+		});
+
+		it('Sets "checked" to "true" before triggering listeners if type is "radio".', () => {
+			let isInputChecked = false;
+			let isChangeChecked = false;
+			let isClickChecked = false;
+
+			element.type = 'radio';
+
+			element.addEventListener('input', () => (isInputChecked = element.checked));
+			element.addEventListener('change', () => (isChangeChecked = element.checked));
+			element.addEventListener('click', () => (isClickChecked = element.checked));
+
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(isInputChecked).toBe(true);
+			expect(isChangeChecked).toBe(true);
+			expect(isClickChecked).toBe(true);
+			expect(element.checked).toBe(true);
+		});
+
+		it('Sets "checked" to "true" before triggering listeners, but restores the value if preventDefault() is executed in the click listener, when type is "checkbox".', () => {
+			let isClickChecked = false;
+
+			element.type = 'checkbox';
+
+			element.addEventListener('click', (event) => {
+				event.preventDefault();
+				isClickChecked = element.checked;
+			});
+
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(isClickChecked).toBe(true);
+			expect(element.checked).toBe(false);
+
+			element.checked = true;
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(element.checked).toBe(true);
+		});
+
+		it('Sets "checked" to "true" before triggering listeners, but restores the value if preventDefault() is executed in the click listener, when type is "radio".', () => {
+			let isClickChecked = false;
+
+			element.type = 'radio';
+
+			element.addEventListener('click', (event) => {
+				event.preventDefault();
+				isClickChecked = element.checked;
+			});
+
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new Event('click'));
+
+			expect(isClickChecked).toBe(true);
+			expect(element.checked).toBe(false);
+
+			element.checked = true;
 
 			element.dispatchEvent(new Event('click'));
 

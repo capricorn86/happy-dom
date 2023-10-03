@@ -12,7 +12,11 @@ export default class DataTransferItemList extends Array<DataTransferItem> {
 	 * @param type Type.
 	 */
 	public add(item: File | string, type?: string): void {
-		if (!type && !(item instanceof File)) {
+		if (item instanceof File) {
+			this.push(new DataTransferItem(item));
+			return;
+		}
+		if (!type) {
 			throw new TypeError(
 				`Failed to execute 'add' on 'DataTransferItemList': parameter 1 is not of type 'File'.`
 			);

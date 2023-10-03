@@ -1173,6 +1173,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			return false;
 		}
 
+		let previousCheckedValue: boolean | null = null;
+
 		// The checkbox or radio button has to be checked before the click event is dispatched, so that event listeners can check the checked value.
 		// However, the value has to be restored if preventDefault() is called on the click event.
 		if (
@@ -1182,7 +1184,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		) {
 			const inputType = this.type;
 			if (inputType === 'checkbox' || inputType === 'radio') {
-				this._setChecked(inputType === 'checkbox' ? !this.checked : true);
+				previousCheckedValue = this.checked;
+				this._setChecked(inputType === 'checkbox' ? !previousCheckedValue : true);
 			}
 		}
 
@@ -1192,7 +1195,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			!event.defaultPrevented &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click'
+			event.type === 'click' &&
+			this.isConnected
 		) {
 			const inputType = this.type;
 			if (!this.readOnly || inputType === 'checkbox' || inputType === 'radio') {
@@ -1218,11 +1222,12 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			event.defaultPrevented &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click'
+			event.type === 'click' &&
+			previousCheckedValue !== null
 		) {
 			const inputType = this.type;
 			if (inputType === 'checkbox' || inputType === 'radio') {
-				this._setChecked(inputType === 'checkbox' ? !this.checked : true);
+				this._setChecked(previousCheckedValue);
 			}
 		}
 

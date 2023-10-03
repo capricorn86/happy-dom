@@ -8,6 +8,7 @@ import { URLSearchParams } from 'url';
 import URL from './url/URL.js';
 import Location from './location/Location.js';
 import MutationObserver from './mutation-observer/MutationObserver.js';
+import MutationRecord from './mutation-observer/MutationRecord.js';
 import ResizeObserver from './resize-observer/ResizeObserver.js';
 import Blob from './file/Blob.js';
 import File from './file/File.js';
@@ -169,6 +170,7 @@ export {
 	URL,
 	Location,
 	MutationObserver,
+	MutationRecord,
 	ResizeObserver,
 	Blob,
 	File,
