@@ -14,8 +14,6 @@ import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.js';
-import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import ClipboardEvent from '../../event/events/ClipboardEvent.js';
 
 /**
  * HTML Text Area Element.
