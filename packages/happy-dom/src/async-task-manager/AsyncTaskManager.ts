@@ -5,8 +5,14 @@ export default class AsyncTaskManager {
 	private static taskID = 0;
 	private runningTasks: { [k: string]: () => void } = {};
 	private runningTimers: NodeJS.Timeout[] = [];
-	private callbacks: Array<() => void> = [];
-	private callbackTimeout: NodeJS.Timeout | null = null;
+  private completionResolver?: { 
+    promise  : Promise<void>, 
+    resolve? : () => void | PromiseLike<void>, 
+    done     : boolean
+  } = {
+    promise : Promise.resolve(),
+    done    : true
+  };
 
 	/**
 	 * Returns a promise that is fulfilled when async tasks are complete.
@@ -15,10 +21,17 @@ export default class AsyncTaskManager {
 	 * @returns Promise.
 	 */
 	public whenComplete(): Promise<void> {
-		return new Promise((resolve) => {
-			this.callbacks.push(resolve);
-			this.endTask(null);
-		});
+    
+    // Reuse the promise existing or create a fresh one
+    if (!this.completionResolver) {
+      let resolve : () => void | PromiseLike<void>;
+
+      const promise = new Promise<void>((r) => resolve = r);
+
+      this.completionResolver = { resolve, promise, done: false };
+    } 
+
+    return this.completionResolver.promise!;
 	}
 
 	/**
@@ -36,11 +49,14 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public startTimer(timerID: NodeJS.Timeout): void {
+    
+    // New timer, force next call to `whenCompleted()` 
+    // to create a new promise
+    if (this.completionResolver?.done) {
+      this.completionResolver = null;
+    }
+
 		this.runningTimers.push(timerID);
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
 	}
 
 	/**
@@ -53,10 +69,7 @@ export default class AsyncTaskManager {
 		if (index !== -1) {
 			this.runningTimers.splice(index, 1);
 		}
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
+
 		if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {
 			this.endAll();
 		}
@@ -71,10 +84,7 @@ export default class AsyncTaskManager {
 	public startTask(abortHandler?: () => void): number {
 		const taskID = this.newTaskID();
 		this.runningTasks[taskID] = abortHandler ? abortHandler : () => {};
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
+
 		return taskID;
 	}
 
@@ -87,10 +97,7 @@ export default class AsyncTaskManager {
 		if (this.runningTasks[taskID]) {
 			delete this.runningTasks[taskID];
 		}
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
+
 		if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {
 			this.endAll();
 		}
@@ -135,27 +142,11 @@ export default class AsyncTaskManager {
 			runningTasks[key]();
 		}
 
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
-		if (this.callbacks.length) {
+		if (this.completionResolver) {
 			if (canceled) {
-				const callbacks = this.callbacks;
-				this.callbacks = [];
-				for (const callback of callbacks) {
-					callback();
-				}
+				this.completionResolver.resolve();
 			} else {
-				this.callbackTimeout = global.setTimeout(() => {
-					const callbacks = this.callbacks;
-					this.callbackTimeout = null;
-					this.callbacks = [];
-					this.runningTimers = [];
-					for (const callback of callbacks) {
-						callback();
-					}
-				}, 10);
+				this.completionResolver.resolve();
 			}
 		}
 	}
