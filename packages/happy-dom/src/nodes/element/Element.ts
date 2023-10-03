@@ -47,6 +47,7 @@ export default class Element extends Node implements IElement {
 	public prefix: string = null;
 
 	public scrollHeight = 0;
+	public scrollWidth = 0;
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public readonly namespaceURI: string = null;
@@ -380,6 +381,7 @@ export default class Element extends Node implements IElement {
 		(<string>clone.tagName) = this.tagName;
 		clone.scrollLeft = this.scrollLeft;
 		clone.scrollTop = this.scrollTop;
+		clone.scrollWidth = this.scrollWidth;
 		clone.scrollHeight = this.scrollHeight;
 		(<string>clone.namespaceURI) = this.namespaceURI;
 
