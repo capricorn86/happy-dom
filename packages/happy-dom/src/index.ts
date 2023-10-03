@@ -8,6 +8,7 @@ import { URLSearchParams } from 'url';
 import URL from './url/URL.js';
 import Location from './location/Location.js';
 import MutationObserver from './mutation-observer/MutationObserver.js';
+import MutationRecord from './mutation-observer/MutationRecord.js';
 import ResizeObserver from './resize-observer/ResizeObserver.js';
 import Blob from './file/Blob.js';
 import File from './file/File.js';
@@ -152,6 +153,12 @@ import IVirtualConsoleLogGroup from './console/types/IVirtualConsoleLogGroup.js'
 import IVirtualConsolePrinter from './console/types/IVirtualConsolePrinter.js';
 import VirtualConsole from './console/VirtualConsole.js';
 import VirtualConsolePrinter from './console/VirtualConsolePrinter.js';
+import Permissions from './permissions/Permissions.js';
+import PermissionStatus from './permissions/PermissionStatus.js';
+import Clipboard from './clipboard/Clipboard.js';
+import ClipboardItem from './clipboard/ClipboardItem.js';
+import ClipboardEvent from './event/events/ClipboardEvent.js';
+import IClipboardEventInit from './event/events/IClipboardEventInit.js';
 
 export {
 	GlobalWindow,
@@ -163,6 +170,7 @@ export {
 	URL,
 	Location,
 	MutationObserver,
+	MutationRecord,
 	ResizeObserver,
 	Blob,
 	File,
@@ -199,6 +207,8 @@ export {
 	ProgressEvent,
 	SubmitEvent,
 	WheelEvent,
+	ClipboardEvent,
+	IClipboardEventInit,
 	DOMParser,
 	Document,
 	IDocument,
@@ -307,5 +317,9 @@ export {
 	IVirtualConsoleLogGroup,
 	IVirtualConsolePrinter,
 	VirtualConsole,
-	VirtualConsolePrinter
+	VirtualConsolePrinter,
+	Permissions,
+	PermissionStatus,
+	Clipboard,
+	ClipboardItem
 };
