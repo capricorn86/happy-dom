@@ -1519,6 +1519,12 @@ describe('Element', () => {
 		});
 	}
 
+	describe('scrollWidth', () => {
+		it('Returns the scroll width.', () => {
+			expect(element.scrollWidth).toBe(0);
+		});
+	});
+
 	describe('scrollHeight', () => {
 		it('Returns the scroll height.', () => {
 			expect(element.scrollHeight).toBe(0);
