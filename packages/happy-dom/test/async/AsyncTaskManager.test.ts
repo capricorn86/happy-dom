@@ -19,55 +19,55 @@ describe('AsyncTaskManager', () => {
 		vi.restoreAllMocks();
 	});
 
-  it('Supports AsyncTaskManager.whenComplete() with multiple calls', async () => {
+	it('Supports AsyncTaskManager.whenComplete() with multiple calls', async () => {
 
-    await new Promise((resolve) => {
-      const response = new Response('Hello World');
-      let countComplete = 0;
+		await new Promise((resolve) => {
+			const response = new Response('Hello World');
+			let countComplete = 0;
 
-      vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
-        (): Promise<Buffer> =>
-          new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 50))
-      );
+			vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
+				(): Promise<Buffer> =>
+					new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 50))
+			);
 
-      window.happyDOM.whenAsyncComplete().then(() => countComplete++);
-      window.happyDOM.whenAsyncComplete().then(() => countComplete++);
-      window.happyDOM.whenAsyncComplete().then(() => countComplete++);
+			window.happyDOM.whenAsyncComplete().then(() => countComplete++);
+			window.happyDOM.whenAsyncComplete().then(() => countComplete++);
+			window.happyDOM.whenAsyncComplete().then(() => countComplete++);
 
-      setTimeout(() => {
-        // Should all have completed immediately
-        expect(countComplete).toBe(3);
+			setTimeout(() => {
+				// Should all have completed immediately
+				expect(countComplete).toBe(3);
 
-        // Timing of these 3 should not matter, all are in the duration of `.arrayBuffer()`
-        window.happyDOM.whenAsyncComplete().then(() => countComplete++);
-        setTimeout(() => window.happyDOM.whenAsyncComplete().then(() => countComplete++), 10);
-        setTimeout(() => window.happyDOM.whenAsyncComplete().then(() => countComplete++), 20);
-  
-        response.arrayBuffer();
-  
-        // Check nothing happened
-        setTimeout(() => expect(countComplete).toBe(3), 2);
-  
-        setTimeout(() => {
-          // Now ready
-          expect(countComplete).toBe(6);
+				// Timing of these 3 should not matter, all are in the duration of `.arrayBuffer()`
+				window.happyDOM.whenAsyncComplete().then(() => countComplete++);
+				setTimeout(() => window.happyDOM.whenAsyncComplete().then(() => countComplete++), 10);
+				setTimeout(() => window.happyDOM.whenAsyncComplete().then(() => countComplete++), 20);
+	
+				response.arrayBuffer();
+	
+				// Check nothing happened
+				setTimeout(() => expect(countComplete).toBe(3), 2);
+	
+				setTimeout(() => {
+					// Now ready
+					expect(countComplete).toBe(6);
 
-          // Check again if env is all is clean with different timings
-          window.happyDOM.whenAsyncComplete().then(() => countComplete++);
-          setTimeout(() => window.happyDOM.whenAsyncComplete().then(() => countComplete++), 5);
-          window.happyDOM.whenAsyncComplete().then(() => countComplete++);
+					// Check again if env is all is clean with different timings
+					window.happyDOM.whenAsyncComplete().then(() => countComplete++);
+					setTimeout(() => window.happyDOM.whenAsyncComplete().then(() => countComplete++), 5);
+					window.happyDOM.whenAsyncComplete().then(() => countComplete++);
 
-          // Should all have completed immediately
-          setTimeout(() => {
-            expect(countComplete).toBe(9);
-            resolve(null);
-          }, 10);
+					// Should all have completed immediately
+					setTimeout(() => {
+						expect(countComplete).toBe(9);
+						resolve(null);
+					}, 10);
 
-        }, 60);
+				}, 60);
 
-      }, 2);
+			}, 2);
 
-    });
+		});
 
-  });
+	});
 });
