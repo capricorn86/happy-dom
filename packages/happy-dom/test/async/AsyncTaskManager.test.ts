@@ -20,7 +20,6 @@ describe('AsyncTaskManager', () => {
 	});
 
 	it('Supports AsyncTaskManager.whenComplete() with multiple calls', async () => {
-
 		await new Promise((resolve) => {
 			const response = new Response('Hello World');
 			let countComplete = 0;
@@ -42,12 +41,12 @@ describe('AsyncTaskManager', () => {
 				window.happyDOM.whenAsyncComplete().then(() => countComplete++);
 				setTimeout(() => window.happyDOM.whenAsyncComplete().then(() => countComplete++), 10);
 				setTimeout(() => window.happyDOM.whenAsyncComplete().then(() => countComplete++), 20);
-	
+
 				response.arrayBuffer();
-	
+
 				// Check nothing happened
 				setTimeout(() => expect(countComplete).toBe(3), 2);
-	
+
 				setTimeout(() => {
 					// Now ready
 					expect(countComplete).toBe(6);
@@ -62,12 +61,8 @@ describe('AsyncTaskManager', () => {
 						expect(countComplete).toBe(9);
 						resolve(null);
 					}, 10);
-
 				}, 60);
-
 			}, 2);
-
 		});
-
 	});
 });

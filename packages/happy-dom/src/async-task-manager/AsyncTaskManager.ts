@@ -5,13 +5,13 @@ export default class AsyncTaskManager {
 	private static taskID = 0;
 	private runningTasks: { [k: string]: () => void } = {};
 	private runningTimers: NodeJS.Timeout[] = [];
-	private completionResolver?: { 
-		promise  : Promise<void>, 
-		resolve? : () => void | PromiseLike<void>, 
-		done     : boolean
+	private completionResolver?: {
+		promise: Promise<void>;
+		resolve?: () => void | PromiseLike<void>;
+		done: boolean;
 	} = {
-		promise : Promise.resolve(),
-		done    : true
+		promise: Promise.resolve(),
+		done: true
 	};
 
 	/**
@@ -21,15 +21,14 @@ export default class AsyncTaskManager {
 	 * @returns Promise.
 	 */
 	public whenComplete(): Promise<void> {
-		
 		// Reuse the promise existing or create a fresh one
 		if (!this.completionResolver) {
-			let resolve : () => void | PromiseLike<void>;
+			let resolve: () => void | PromiseLike<void>;
 
-			const promise = new Promise<void>((r) => resolve = r);
+			const promise = new Promise<void>((r) => (resolve = r));
 
 			this.completionResolver = { resolve, promise, done: false };
-		} 
+		}
 
 		return this.completionResolver.promise!;
 	}
@@ -49,9 +48,7 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public startTimer(timerID: NodeJS.Timeout): void {
-		
-		// New timer, force next call to `whenCompleted()` 
-		// to create a new promise
+		// New timer, force next call to `whenCompleted()` To create a new promise
 		if (this.completionResolver?.done) {
 			this.completionResolver = null;
 		}
