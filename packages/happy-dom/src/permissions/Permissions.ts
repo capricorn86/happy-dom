@@ -1,4 +1,5 @@
 import PermissionStatus from './PermissionStatus.js';
+import PermissionNameEnum from './PermissionNameEnum.js';
 
 /**
  * Permissions API.
@@ -7,6 +8,10 @@ import PermissionStatus from './PermissionStatus.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Permissions.
  */
 export default class Permissions {
+	#permissionStatus: {
+		[name in PermissionNameEnum]?: PermissionStatus;
+	} = {};
+
 	/**
 	 * Returns scroll restoration.
 	 *
@@ -21,40 +26,20 @@ export default class Permissions {
 		userVisibleOnly?: boolean;
 		sysex?: boolean;
 	}): Promise<PermissionStatus> {
-		switch (permissionDescriptor.name) {
-			case 'geolocation':
-			case 'notifications':
-			case 'push':
-			case 'midi':
-			case 'camera':
-			case 'microphone':
-			case 'background-fetch':
-			case 'background-sync':
-			case 'persistent-storage':
-			case 'ambient-light-sensor':
-			case 'accelerometer':
-			case 'gyroscope':
-			case 'magnetometer':
-			case 'screen-wake-lock':
-			case 'nfc':
-			case 'display-capture':
-			case 'accessibility-events':
-			case 'clipboard-read':
-			case 'clipboard-write':
-			case 'payment-handler':
-			case 'idle-detection':
-			case 'periodic-background-sync':
-			case 'system-wake-lock':
-			case 'storage-access':
-			case 'window-management':
-			case 'window-placement':
-			case 'local-fonts':
-			case 'top-level-storage-access':
-				return new PermissionStatus('granted');
+		if (this.#permissionStatus[permissionDescriptor.name]) {
+			return this.#permissionStatus[permissionDescriptor.name];
 		}
 
-		throw new Error(
-			`Failed to execute 'query' on 'Permissions': Failed to read the 'name' property from 'PermissionDescriptor': The provided value '${permissionDescriptor.name}' is not a valid enum value of type PermissionName.`
-		);
+		if (
+			!Object.values(PermissionNameEnum).includes(<PermissionNameEnum>permissionDescriptor.name)
+		) {
+			throw new Error(
+				`Failed to execute 'query' on 'Permissions': Failed to read the 'name' property from 'PermissionDescriptor': The provided value '${permissionDescriptor.name}' is not a valid enum value of type PermissionName.`
+			);
+		}
+
+		this.#permissionStatus[permissionDescriptor.name] = new PermissionStatus('granted');
+
+		return this.#permissionStatus[permissionDescriptor.name];
 	}
 }

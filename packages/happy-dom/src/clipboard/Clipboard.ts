@@ -47,11 +47,15 @@ export default class Clipboard {
 			name: 'clipboard-read'
 		});
 		if (permissionStatus.state === 'denied') {
-			throw new DOMException(`Failed to execute 'read' on 'Clipboard': The request is not allowed`);
+			throw new DOMException(
+				`Failed to execute 'readText' on 'Clipboard': The request is not allowed`
+			);
 		}
 		let text = '';
 		for (const item of this.#data) {
-			text += await (await item.getType('text/plain')).text();
+			if (item.types.includes('text/plain')) {
+				text += await (await item.getType('text/plain')).text();
+			}
 		}
 		return text;
 	}
@@ -84,7 +88,7 @@ export default class Clipboard {
 		});
 		if (permissionStatus.state === 'denied') {
 			throw new DOMException(
-				`Failed to execute 'write' on 'Clipboard': The request is not allowed`
+				`Failed to execute 'writeText' on 'Clipboard': The request is not allowed`
 			);
 		}
 		this.#data = [new ClipboardItem({ 'text/plain': new Blob([text], { type: 'text/plain' }) })];

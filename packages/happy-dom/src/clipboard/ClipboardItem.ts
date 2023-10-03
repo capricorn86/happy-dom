@@ -51,7 +51,7 @@ export default class ClipboardItem {
 	public async getType(type: string): Promise<Blob> {
 		if (!this.#data[type]) {
 			throw new DOMException(
-				"Failed to execute 'getType' on 'ClipboardItem': The type was not found"
+				`Failed to execute 'getType' on 'ClipboardItem': The type '${type}' was not found`
 			);
 		}
 		return this.#data[type];

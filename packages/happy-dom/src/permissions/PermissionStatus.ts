@@ -8,7 +8,7 @@ import Event from '../event/Event.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/PermissionStatus
  */
 export default class PermissionStatus extends EventTarget {
-	public readonly state: 'granted' | 'denied' | 'prompt';
+	public state: 'granted' | 'denied' | 'prompt';
 	public onchange: ((event: Event) => void) | null = null;
 
 	/**
