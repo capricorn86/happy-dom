@@ -1,4 +1,5 @@
 import IMutationObserverInit from './IMutationObserverInit.js';
+import MutationObserver from './MutationObserver.js';
 import MutationRecord from './MutationRecord.js';
 
 /**
@@ -6,5 +7,6 @@ import MutationRecord from './MutationRecord.js';
  */
 export default class MutationListener {
 	public options: IMutationObserverInit = null;
-	public callback: (record: MutationRecord[]) => void = null;
+	public observer: MutationObserver = null;
+	public callback: (record: MutationRecord[], observer: MutationObserver) => void = null;
 }

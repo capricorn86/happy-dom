@@ -68,7 +68,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 					record.target = this;
 					record.type = MutationTypeEnum.characterData;
 					record.oldValue = observer.options.characterDataOldValue ? oldValue : null;
-					observer.callback([record]);
+					observer.callback([record], observer.observer);
 				}
 			}
 		}
