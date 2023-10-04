@@ -140,13 +140,17 @@ export default class AsyncTaskManager {
 		}
 
 		if (this.completionResolver) {
-			queueMicrotask(() => {
+			if (canceled) {
+				this.completionResolver.resolve();
+			} else {
 				queueMicrotask(() => {
-					if (Object.keys(this.runningTasks).length == 0 && this.runningTimers.length == 0) {
-						this.completionResolver.resolve();
-					}
+					queueMicrotask(() => {
+						if (Object.keys(this.runningTasks).length == 0 && this.runningTimers.length == 0) {
+							this.completionResolver.resolve();
+						}
+					});
 				});
-			});
+			}
 		}
 	}
 }
