@@ -27,10 +27,12 @@ export default class AsyncTaskManager {
 	 */
 	public cancelAll(): void {
 		const runningTimers = this.runningTimers;
+		const runningImmediates = this.runningImmediates;
 		const runningTasks = this.runningTasks;
 
 		this.runningTasks = {};
 		this.runningTaskCount = 0;
+		this.runningImmediates = [];
 		this.runningTimers = [];
 
 		if (this.whenCompleteImmediate) {
@@ -38,12 +40,12 @@ export default class AsyncTaskManager {
 			this.whenCompleteImmediate = null;
 		}
 
-		for (const timer of runningTimers) {
-			global.clearTimeout(timer);
+		for (const immediate of runningImmediates) {
+			global.clearImmediate(immediate);
 		}
 
-		for (const immediate of this.runningImmediates) {
-			global.clearImmediate(immediate);
+		for (const timer of runningTimers) {
+			global.clearTimeout(timer);
 		}
 
 		for (const key of Object.keys(runningTasks)) {
