@@ -30,7 +30,7 @@ export default class AsyncTaskManager {
 			this.completionResolver = { resolve, promise, done: false };
 		}
 
-		return this.completionResolver.promise!;
+		return this.completionResolver.promise;
 	}
 
 	/**
@@ -140,11 +140,15 @@ export default class AsyncTaskManager {
 		}
 
 		if (this.completionResolver) {
-			if (canceled) {
-				this.completionResolver.resolve();
-			} else {
-				this.completionResolver.resolve();
-			}
+			queueMicrotask(() => {
+				if (Object.keys(this.runningTasks).length == 0 && this.runningTimers.length == 0) {
+					if (canceled) {
+						this.completionResolver.resolve();
+					} else {
+						this.completionResolver.resolve();
+					}
+				}
+			});
 		}
 	}
 }

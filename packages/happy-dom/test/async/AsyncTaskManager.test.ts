@@ -19,6 +19,54 @@ describe('AsyncTaskManager', () => {
 		vi.restoreAllMocks();
 	});
 
+	it('Nested `setTimeouts` are detected with `whenComplete()`', async () => {
+		let inOrder = '';
+
+		window.console.log = (a: string) => (inOrder += a);
+
+		window.document.write(`
+      <script>
+        setTimeout(() => { 
+          console.log('A');
+
+          setTimeout(() => console.log('B'));
+        });
+      </script>
+    `);
+
+		await window.happyDOM.whenAsyncComplete();
+
+		expect(inOrder).toBe('AB');
+	});
+
+	it('Nested async functions are detected with `whenComplete()`', async () => {
+		let inOrder = '';
+
+		window.console.log = (a: string) => (inOrder += a);
+
+		window.document.write(`
+      <script>
+        setTimeout(async () => { 
+          console.log('A');
+
+          setTimeout(async () => { 
+            console.log('B');
+  
+            setTimeout(async () => { 
+              console.log('C');
+    
+              setTimeout(async () => console.log('D'));
+            });
+          });
+        });
+      </script>
+    `);
+
+		await window.happyDOM.whenAsyncComplete();
+
+		expect(inOrder).toBe('ABCD');
+	});
+
 	it('Supports AsyncTaskManager.whenComplete() with multiple calls', async () => {
 		await new Promise((resolve) => {
 			const response = new Response('Hello World');
