@@ -11,7 +11,7 @@ import MutationRecord from './MutationRecord.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
  */
 export default class MutationObserver {
-	private callback: (records: MutationRecord[]) => void;
+	private callback: (records: MutationRecord[], observer: MutationObserver) => void;
 	private target: INode = null;
 	private listener: MutationObserverListener = null;
 
@@ -20,7 +20,7 @@ export default class MutationObserver {
 	 *
 	 * @param callback Callback.
 	 */
-	constructor(callback: (records: MutationRecord[]) => void) {
+	constructor(callback: (records: MutationRecord[], observer: MutationObserver) => void) {
 		this.callback = callback;
 	}
 
@@ -47,6 +47,7 @@ export default class MutationObserver {
 		this.listener = new MutationObserverListener();
 		this.listener.options = options;
 		this.listener.callback = this.callback.bind(this);
+		this.listener.observer = this;
 
 		(<Node>target)._observe(this.listener);
 	}

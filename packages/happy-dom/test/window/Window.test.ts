@@ -26,6 +26,8 @@ import '../types.d.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import VirtualConsole from '../../src/console/VirtualConsole.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
+import Permissions from '../../src/permissions/Permissions.js';
+import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
 import { IHTMLDialogElement } from '../../src/index.js';
 
@@ -476,7 +478,8 @@ describe('Window', () => {
 					length: 0
 				},
 				onLine: true,
-				permissions: null,
+				permissions: new Permissions(),
+				clipboard: new Clipboard(window),
 				platform,
 				plugins: {
 					length: 0

@@ -1,6 +1,8 @@
 import MimeTypeArray from './MimeTypeArray.js';
 import PluginArray from './PluginArray.js';
 import IWindow from '../window/IWindow.js';
+import Permissions from '../permissions/Permissions.js';
+import Clipboard from '../clipboard/Clipboard.js';
 
 /**
  * Browser Navigator API.
@@ -11,14 +13,19 @@ import IWindow from '../window/IWindow.js';
  * https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator.
  */
 export default class Navigator {
-	private _ownerWindow: IWindow;
+	#ownerWindow: IWindow;
+	#clipboard: Clipboard;
+	#permissions: Permissions;
 
 	/**
+	 * Constructor.
 	 *
-	 * @param ownerWindow
+	 * @param ownerWindow Owner window.
 	 */
 	constructor(ownerWindow: IWindow) {
-		this._ownerWindow = ownerWindow;
+		this.#ownerWindow = ownerWindow;
+		this.#clipboard = new Clipboard(ownerWindow);
+		this.#permissions = new Permissions();
 	}
 
 	/**
@@ -144,7 +151,7 @@ export default class Navigator {
 	 * "appCodeName/appVersion number (Platform; Security; OS-or-CPU; Localization; rv: revision-version-number) product/productSub Application-Name Application-Name-version".
 	 */
 	public get userAgent(): string {
-		return this._ownerWindow.happyDOM.settings.navigator.userAgent;
+		return this.#ownerWindow.happyDOM.settings.navigator.userAgent;
 	}
 
 	/**
@@ -155,10 +162,23 @@ export default class Navigator {
 	}
 
 	/**
-	 * TODO: Not implemented.
+	 * Returns a Permissions object that can be used to query and update permission status of APIs covered by the Permissions API.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Navigator/permissions
+	 * @returns Permissions.
 	 */
-	public get permissions(): string {
-		return null;
+	public get permissions(): Permissions {
+		return this.#permissions;
+	}
+
+	/**
+	 * Returns a Clipboard object providing access to the contents of the system clipboard.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Navigator/clipboard
+	 * @returns Clipboard.
+	 */
+	public get clipboard(): Clipboard {
+		return this.#clipboard;
 	}
 
 	/**
