@@ -837,12 +837,12 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this._setTimeout(() => {
-			this.happyDOM.asyncTaskManager.endTimer(id);
 			if (this.happyDOM.settings.disableErrorCapturing) {
 				callback(...args);
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(...args));
 			}
+			this.happyDOM.asyncTaskManager.endTimer(id);
 		}, delay);
 		this.happyDOM.asyncTaskManager.startTimer(id);
 		return id;
@@ -896,19 +896,29 @@ export default class Window extends EventTarget implements IWindow {
 	 * Mock animation frames with timeouts.
 	 *
 	 * @param callback Callback.
-	 * @returns Timeout ID.
+	 * @returns ID.
 	 */
-	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout {
-		return this.setTimeout(() => callback(this.performance.now()));
+	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Immediate {
+		const id = global.setImmediate(() => {
+			if (this.happyDOM.settings.disableErrorCapturing) {
+				callback(this.performance.now());
+			} else {
+				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
+			}
+			this.happyDOM.asyncTaskManager.endImmediate(id);
+		});
+		this.happyDOM.asyncTaskManager.startImmediate(id);
+		return id;
 	}
 
 	/**
 	 * Mock animation frames with timeouts.
 	 *
-	 * @param id Timeout ID.
+	 * @param id ID.
 	 */
-	public cancelAnimationFrame(id: NodeJS.Timeout): void {
-		this.clearTimeout(id);
+	public cancelAnimationFrame(id: NodeJS.Immediate): void {
+		global.clearImmediate(id);
+		this.happyDOM.asyncTaskManager.endImmediate(id);
 	}
 
 	/**
@@ -921,13 +931,12 @@ export default class Window extends EventTarget implements IWindow {
 		const taskId = this.happyDOM.asyncTaskManager.startTask(() => (isAborted = true));
 		this._queueMicrotask(() => {
 			if (!isAborted) {
-				this.happyDOM.asyncTaskManager.endTask(taskId);
-
 				if (this.happyDOM.settings.disableErrorCapturing) {
 					callback();
 				} else {
 					WindowErrorUtility.captureError(this, <() => unknown>callback);
 				}
+				this.happyDOM.asyncTaskManager.endTask(taskId);
 			}
 		});
 	}

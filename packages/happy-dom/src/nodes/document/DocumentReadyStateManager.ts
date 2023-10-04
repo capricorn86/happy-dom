@@ -7,7 +7,7 @@ export default class DocumentReadyStateManager {
 	private totalTasks = 0;
 	private readyStateCallbacks: (() => void)[] = [];
 	private window: IWindow = null;
-	private timer: NodeJS.Timeout = null;
+	private immediate: NodeJS.Immediate | null = null;
 	private isComplete = false;
 
 	/**
@@ -30,8 +30,8 @@ export default class DocumentReadyStateManager {
 				resolve();
 			} else {
 				this.readyStateCallbacks.push(resolve);
-				if (this.totalTasks === 0 && !this.timer) {
-					this.timer = this.window.setTimeout(this.endTask.bind(this));
+				if (this.totalTasks === 0 && !this.immediate) {
+					this.immediate = this.window.requestAnimationFrame(this.endTask.bind(this));
 				}
 			}
 		});
@@ -45,9 +45,9 @@ export default class DocumentReadyStateManager {
 			return;
 		}
 
-		if (this.timer) {
-			this.window.clearTimeout(this.timer);
-			this.timer = null;
+		if (this.immediate) {
+			this.window.cancelAnimationFrame(this.immediate);
+			this.immediate = null;
 		}
 
 		this.totalTasks++;
@@ -61,9 +61,9 @@ export default class DocumentReadyStateManager {
 			return;
 		}
 
-		if (this.timer) {
-			this.window.clearTimeout(this.timer);
-			this.timer = null;
+		if (this.immediate) {
+			this.window.cancelAnimationFrame(this.immediate);
+			this.immediate = null;
 		}
 
 		this.totalTasks--;
