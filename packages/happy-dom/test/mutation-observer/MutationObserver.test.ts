@@ -215,6 +215,15 @@ describe('MutationObserver', () => {
 				]
 			]);
 		});
+
+		it('Calls callback with the observer as second parameter.', () => {
+			const div = document.createElement('div');
+			const observer = new MutationObserver((mutationRecords, observer) => {
+				expect(observer).toBeInstanceOf(MutationObserver);
+			});
+			observer.observe(div, { attributes: true });
+			div.setAttribute('attr', 'value');
+		});
 	});
 
 	describe('disconnect()', () => {
