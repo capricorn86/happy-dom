@@ -103,7 +103,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 					record.type = MutationTypeEnum.attributes;
 					record.attributeName = item.name;
 					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
-					observer.callback([record]);
+					observer.callback([record], observer.observer);
 				}
 			}
 		}
@@ -164,7 +164,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 					record.type = MutationTypeEnum.attributes;
 					record.attributeName = removedItem.name;
 					record.oldValue = observer.options.attributeOldValue ? removedItem.value : null;
-					observer.callback([record]);
+					observer.callback([record], observer.observer);
 				}
 			}
 		}
