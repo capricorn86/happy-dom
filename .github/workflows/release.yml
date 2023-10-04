@@ -24,18 +24,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          cache: "npm"
 
-      - name: Cache node modules
-        uses: actions/cache@v3
-        id: cache-node-modules
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ./node_modules
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
-      
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
@@ -46,7 +36,7 @@ jobs:
           echo "next_version=$(node ./bin/print-next-version.js)" >> $GITHUB_OUTPUT
           echo "current_version=$(node ./bin/print-latest-version.js)" >> $GITHUB_OUTPUT
 
-  publish: 
+  publish:
     runs-on: ubuntu-latest
     needs: [check-next-version]
     if: ${{ needs.check-next-version.outputs.next_version != needs.check-next-version.outputs.current_version }}
@@ -64,17 +54,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Cache node modules
-        uses: actions/cache@v3
-        id: cache-node-modules
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ./node_modules
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+          cache: "npm"
 
       - name: Cache turbo build setup
         uses: actions/cache@v3
@@ -83,7 +63,7 @@ jobs:
           key: turbo-master-${{ github.sha }}
           restore-keys: |
             turbo-master
-      
+
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
@@ -138,20 +118,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          cache: "npm"
 
-      - name: Cache node modules
-        uses: actions/cache@v3
-        id: cache-node-modules
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ./node_modules
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
-      
       - name: Install Dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
           npm ci --ignore-scripts
 

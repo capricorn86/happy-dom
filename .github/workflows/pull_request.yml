@@ -16,17 +16,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Cache node modules
-        uses: actions/cache@v3
-        id: cache-node-modules
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ./node_modules
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+          cache: "npm"
 
       - name: Cache turbo
         uses: actions/cache@v3
@@ -43,12 +33,11 @@ jobs:
         with:
           path: .turbo
           key: turbo-master
-      
+
       - name: Install Dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
           npm ci
-  
+
       - run: node ./bin/validate-commit-messages.js
       - run: npm run compile
       - run: npm run lint
