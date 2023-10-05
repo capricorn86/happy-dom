@@ -35,12 +35,6 @@
 			"dependsOn": ["happy-dom#compile", "uncaught-exception-observer#compile"],
 			"outputs": ["tmp/**"]
 		},
-		"lint": {
-			"outputs": []
-		},
-		"lint:fix": {
-			"outputs": []
-		},
 		"test": {
 			"inputs": ["test/**"]
 		}

@@ -85,7 +85,6 @@ import ErrorEvent from '../event/events/ErrorEvent.js';
 import StorageEvent from '../event/events/StorageEvent.js';
 import SubmitEvent from '../event/events/SubmitEvent.js';
 import Screen from '../screen/Screen.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import IResponse from '../fetch/types/IResponse.js';
 import IResponseInit from '../fetch/types/IResponseInit.js';
 import IRequest from '../fetch/types/IRequest.js';
@@ -138,16 +137,15 @@ import ValidityState from '../validity-state/ValidityState.js';
 import WindowErrorUtility from './WindowErrorUtility.js';
 import VirtualConsole from '../console/VirtualConsole.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
-import IHappyDOMSettings from './IHappyDOMSettings.js';
-import PackageVersion from '../version.js';
 import ICrossOriginWindow from './ICrossOriginWindow.js';
-import BrowserContext from './BrowserContextLoader.js';
 import IBrowserSettings from '../browser/IBrowserSettings.js';
 import Permissions from '../permissions/Permissions.js';
 import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
+import DetachedWindowAPI from './DetachedWindowAPI.js';
+import IVirtualConsolePrinter from '../console/types/IVirtualConsolePrinter.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -162,77 +160,8 @@ const ORIGINAL_QUEUE_MICROTASK = queueMicrotask;
  * https://developer.mozilla.org/en-US/docs/Web/API/Window.
  */
 export default class Window extends EventTarget implements IWindow {
-	// Happy DOM property.
-	public readonly happyDOM: {
-		whenAsyncComplete: () => Promise<void>;
-		cancelAsync: () => void;
-		asyncTaskManager: AsyncTaskManager;
-		setWindowSize: (options: { width?: number; height?: number }) => void;
-		setURL: (url: string) => void;
-		virtualConsolePrinter: VirtualConsolePrinter | null;
-		settings: IHappyDOMSettings;
-
-		/**
-		 * @deprecated
-		 */
-		setInnerWidth: (width: number) => void;
-
-		/**
-		 * @deprecated
-		 */
-		setInnerHeight: (height: number) => void;
-	} = {
-		whenAsyncComplete: async (): Promise<void> => {
-			return await this.happyDOM.asyncTaskManager.whenComplete();
-		},
-		cancelAsync: (): void => {
-			this.happyDOM.asyncTaskManager.cancelAll();
-		},
-		asyncTaskManager: new AsyncTaskManager(),
-		setWindowSize: (options: { width?: number; height?: number }): void => {
-			if (
-				(options.width !== undefined && this.innerWidth !== options.width) ||
-				(options.height !== undefined && this.innerHeight !== options.height)
-			) {
-				if (options.width !== undefined && this.innerWidth !== options.width) {
-					(<number>this.innerWidth) = options.width;
-					(<number>this.outerWidth) = options.width;
-				}
-
-				if (options.height !== undefined && this.innerHeight !== options.height) {
-					(<number>this.innerHeight) = options.height;
-					(<number>this.outerHeight) = options.height;
-				}
-
-				this.dispatchEvent(new Event('resize'));
-			}
-		},
-		virtualConsolePrinter: null,
-		setURL: (url: string) => {
-			this.location.href = url;
-		},
-		settings: {
-			disableJavaScriptEvaluation: false,
-			disableJavaScriptFileLoading: false,
-			disableCSSFileLoading: false,
-			disableIframePageLoading: false,
-			disableWindowOpenPageLoading: false,
-			disableComputedStyleRendering: false,
-			disableErrorCapturing: false,
-			enableFileSystemHttpRequests: false,
-			navigator: {
-				userAgent: `Mozilla/5.0 (X11; ${
-					process.platform.charAt(0).toUpperCase() + process.platform.slice(1) + ' ' + process.arch
-				}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`
-			},
-			device: {
-				prefersColorScheme: 'light',
-				mediaType: 'screen'
-			}
-		},
-		setInnerWidth: (width: number): void => this.happyDOM.setWindowSize({ width }),
-		setInnerHeight: (height: number): void => this.happyDOM.setWindowSize({ height })
-	};
+	// Detached Window API.
+	public readonly happyDOM: DetachedWindowAPI;
 
 	// Nodes
 	public readonly Node = Node;
@@ -461,8 +390,8 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Audio;
 
 	// Events
-	public onload: (event: Event) => void = null;
-	public onerror: (event: ErrorEvent) => void = null;
+	public onload: ((event: Event) => void) | null = null;
+	public onerror: ((event: ErrorEvent) => void) | null = null;
 
 	// Public properties.
 	public readonly document: Document;
@@ -618,28 +547,23 @@ export default class Window extends EventTarget implements IWindow {
 			if (options.url !== undefined) {
 				this.location.href = options.url;
 			}
-
-			if (options.settings) {
-				this.happyDOM.settings = {
-					...this.happyDOM.settings,
-					...options.settings,
-					navigator: {
-						...this.happyDOM.settings.navigator,
-						...options.settings.navigator
-					},
-					device: {
-						...this.happyDOM.settings.device,
-						...options.settings.device
-					}
-				};
-			}
 		}
 
 		if (options && options.console) {
 			this.console = options.console;
+			this.happyDOM = new DetachedWindowAPI({
+				ownerWindow: this,
+				settings: options?.settings
+			});
 		} else {
-			this.happyDOM.virtualConsolePrinter = new VirtualConsolePrinter();
-			this.console = new VirtualConsole(this.happyDOM.virtualConsolePrinter);
+			this.happyDOM = new DetachedWindowAPI({
+				ownerWindow: this,
+				settings: options?.settings,
+				virtualConsolePrinter: new VirtualConsolePrinter()
+			});
+			this.console = new VirtualConsole(
+				<IVirtualConsolePrinter>this.happyDOM.virtualConsolePrinter
+			);
 		}
 
 		this._setTimeout = ORIGINAL_SET_TIMEOUT;

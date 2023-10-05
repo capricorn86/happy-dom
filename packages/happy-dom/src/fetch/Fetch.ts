@@ -1,5 +1,6 @@
 import IRequestInit from './types/IRequestInit.js';
 import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 import IResponse from './types/IResponse.js';
 import Request from './Request.js';
 import IRequestInfo from './types/IRequestInfo.js';
@@ -16,7 +17,6 @@ import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
-import CookieJar from '../cookie/CookieJar.js';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -559,7 +559,7 @@ export default class Fetch {
 			this.request.credentials === 'include' ||
 			(this.request.credentials === 'same-origin' && !isCORS)
 		) {
-			const cookie = document.defaultView.document._cookie.getCookieString(
+			const cookie = (<Document>document.defaultView.document)._cookie.getCookieString(
 				this.ownerDocument.defaultView.location,
 				false
 			);
@@ -619,7 +619,7 @@ export default class Fetch {
 				// Handles setting cookie headers to the document.
 				// "set-cookie" and "set-cookie2" are not allowed in response headers according to spec.
 				if (lowerKey === 'set-cookie' || lowerKey === 'set-cookie2') {
-					(<CookieJar>this.ownerDocument['_cookie']).addCookieString(this.request._url, header);
+					(<Document>this.ownerDocument)._cookie.addCookieString(this.request._url, header);
 				} else {
 					headers.append(key, header);
 				}

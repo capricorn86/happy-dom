@@ -8,8 +8,9 @@
 		"compile": "turbo run compile --cache-dir=.turbo",
 		"watch": "turbo run watch --parallel",
 		"clean": "git clean -Xdfq",
-		"lint": "turbo run lint --cache-dir=.turbo",
-		"lint:fix": "turbo run lint:fix",
+		"lint": "eslint --ignore-path .lintignore --max-warnings 0 .",
+		"lint:fix": "eslint --ignore-path .lintignore --max-warnings 0 --fix .",
+		"lint:changed": "eslint --ignore-path .lintignore --max-warnings 0 --fix $(git diff --diff-filter=d --name-only HEAD | grep -E '^[a-zA-Z0-9_].*\\.(cjs|mjs|js|jsx|ts|tsx|json)$' | xargs)",
 		"test": "turbo run test --cache-dir=.turbo",
 		"test:watch": "turbo run test:watch --parallel"
 	},

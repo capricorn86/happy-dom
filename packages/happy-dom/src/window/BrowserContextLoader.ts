@@ -6,6 +6,7 @@ import WindowErrorUtility from './WindowErrorUtility.js';
 import ICrossOriginWindow from './ICrossOriginWindow.js';
 import IHTMLElement from '../nodes/html-element/IHTMLElement.js';
 import Window from './Window.js';
+import DetachedWindowAPI from './DetachedWindowAPI.js';
 
 /**
  * Browser context.
@@ -43,12 +44,7 @@ export default class BrowserContextLoader {
 		const url = options?.url || 'about:blank';
 		const target = options?.target !== undefined ? String(options.target) : null;
 
-		contentWindow.happyDOM.virtualConsolePrinter = ownerWindow.happyDOM.virtualConsolePrinter;
-
-		// TODO: This can perhaps be improved, so that it is possible to watch async tasks on each child window.
-		contentWindow.happyDOM.asyncTaskManager = ownerWindow.happyDOM.asyncTaskManager;
-		contentWindow.happyDOM.whenAsyncComplete = ownerWindow.happyDOM.whenAsyncComplete;
-		contentWindow.happyDOM.cancelAsync = ownerWindow.happyDOM.cancelAsync;
+		(<DetachedWindowAPI>contentWindow.happyDOM) = contentWindow.happyDOM;
 
 		(<string>contentWindow.document.referrer) = !features.noreferrer
 			? ownerWindow.location.href

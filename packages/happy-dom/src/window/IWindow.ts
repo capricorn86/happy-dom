@@ -83,7 +83,6 @@ import SubmitEvent from '../event/events/SubmitEvent.js';
 import MessageEvent from '../event/events/MessageEvent.js';
 import MessagePort from '../event/MessagePort.js';
 import Screen from '../screen/Screen.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import Storage from '../storage/Storage.js';
 import NodeFilter from '../tree-walker/NodeFilter.js';
 import HTMLCollection from '../nodes/element/HTMLCollection.js';
@@ -113,7 +112,6 @@ import NamedNodeMap from '../named-node-map/NamedNodeMap.js';
 import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
-import IHappyDOMSettings from './IHappyDOMSettings.js';
 import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
@@ -127,38 +125,20 @@ import IHeadersInit from '../fetch/types/IHeadersInit.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
-import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import ICrossOriginWindow from './ICrossOriginWindow.js';
 import Permissions from '../permissions/Permissions.js';
 import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
+import DetachedWindowAPI from './DetachedWindowAPI.js';
 
 /**
  * Window without dependencies to server side specific packages.
  */
 export default interface IWindow extends IEventTarget, INodeJSGlobal {
-	// Happy DOM property.
-	readonly happyDOM: {
-		whenAsyncComplete: () => Promise<void>;
-		cancelAsync: () => void;
-		asyncTaskManager: AsyncTaskManager;
-		setWindowSize: (options: { width?: number; height?: number }) => void;
-		setURL: (url: string) => void;
-		virtualConsolePrinter: VirtualConsolePrinter | null;
-		settings: IHappyDOMSettings;
-
-		/**
-		 * @deprecated
-		 */
-		setInnerWidth: (width: number) => void;
-
-		/**
-		 * @deprecated
-		 */
-		setInnerHeight: (height: number) => void;
-	};
+	// Detached Window API.
+	readonly happyDOM: DetachedWindowAPI;
 
 	// Nodes
 	readonly Node: typeof Node;
@@ -388,8 +368,8 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly MutationRecord: typeof MutationRecord;
 
 	// Events
-	onload: (event: Event) => void;
-	onerror: (event: ErrorEvent) => void;
+	onload: ((event: Event) => void) | null;
+	onerror: ((event: ErrorEvent) => void) | null;
 
 	// Public Properties
 	readonly document: IDocument;

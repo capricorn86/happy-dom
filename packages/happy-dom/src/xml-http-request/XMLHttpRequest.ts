@@ -19,6 +19,7 @@ import XMLHttpRequestCertificate from './XMLHttpRequestCertificate.js';
 import XMLHttpRequestSyncRequestScriptBuilder from './utilities/XMLHttpRequestSyncRequestScriptBuilder.js';
 import IconvLite from 'iconv-lite';
 import ErrorEvent from '../event/events/ErrorEvent.js';
+import Document from '../nodes/document/Document.js';
 
 // These headers are not user setable.
 // The following are allowed but banned in the spec:
@@ -576,7 +577,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			accept: '*/*',
 			referer: location.href,
 			'user-agent': navigator.userAgent,
-			cookie: document._cookie.getCookieString(location, false)
+			cookie: (<Document>document)._cookie.getCookieString(location, false)
 		};
 	}
 
@@ -967,17 +968,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				}
 			case XMLHttpResponseTypeEnum.document:
 				const window = this._ownerDocument.defaultView;
-				const happyDOMSettings = window.happyDOM.settings;
 				let response: IDocument;
 
 				// Temporary disables unsecure features.
-				window.happyDOM.settings = {
-					...happyDOMSettings,
-					enableFileSystemHttpRequests: false,
-					disableJavaScriptEvaluation: true,
-					disableCSSFileLoading: true,
-					disableJavaScriptFileLoading: true
-				};
+				const originalSettings = Object.assign({}, window.happyDOM.settings);
+
+				window.happyDOM.settings.enableFileSystemHttpRequests = false;
+				window.happyDOM.settings.disableJavaScriptEvaluation = true;
+				window.happyDOM.settings.disableCSSFileLoading = true;
+				window.happyDOM.settings.disableJavaScriptFileLoading = true;
 
 				const domParser = new window.DOMParser();
 
@@ -988,7 +987,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				}
 
 				// Restores unsecure features.
-				window.happyDOM.settings = happyDOMSettings;
+				window.happyDOM.settings.enableFileSystemHttpRequests =
+					originalSettings.enableFileSystemHttpRequests;
+				window.happyDOM.settings.disableJavaScriptEvaluation =
+					originalSettings.disableJavaScriptEvaluation;
+				window.happyDOM.settings.disableCSSFileLoading = originalSettings.disableCSSFileLoading;
+				window.happyDOM.settings.disableJavaScriptFileLoading =
+					originalSettings.disableJavaScriptFileLoading;
 
 				return { response, responseText: null, responseXML: response };
 			case XMLHttpResponseTypeEnum.json:
@@ -1025,10 +1030,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		for (const header of ['set-cookie', 'set-cookie2']) {
 			if (Array.isArray(headers[header])) {
 				for (const cookie of headers[header]) {
-					this._ownerDocument.defaultView.document._cookie.addCookieString(originURL, cookie);
+					(<Document>this._ownerDocument.defaultView.document)._cookie.addCookieString(
+						originURL,
+						cookie
+					);
 				}
 			} else if (headers[header]) {
-				this._ownerDocument.defaultView.document._cookie.addCookieString(
+				(<Document>this._ownerDocument.defaultView.document)._cookie.addCookieString(
 					originURL,
 					<string>headers[header]
 				);

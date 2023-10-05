@@ -1,5 +1,4 @@
 import IWindow from '../window/IWindow.js';
-import IBrowserContextSettings from './IBrowserSettings.js';
 import BrowserPage from './BrowserPage.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 
