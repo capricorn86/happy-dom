@@ -4,30 +4,55 @@
 export default class AsyncTaskManager {
 	private static taskID = 0;
 	private runningTasks: { [k: string]: () => void } = {};
+	private runningTaskCount = 0;
 	private runningTimers: NodeJS.Timeout[] = [];
-	private callbacks: Array<() => void> = [];
-	private callbackTimeout: NodeJS.Timeout | null = null;
+	private runningImmediates: NodeJS.Immediate[] = [];
+	private whenCompleteImmediate: NodeJS.Immediate | null = null;
+	private whenCompleteResolvers: Array<() => void> = [];
 
 	/**
-	 * Returns a promise that is fulfilled when async tasks are complete.
-	 * This method is not part of the HTML standard.
+	 * Returns a promise that is resolved when async tasks are complete.
 	 *
 	 * @returns Promise.
 	 */
 	public whenComplete(): Promise<void> {
 		return new Promise((resolve) => {
-			this.callbacks.push(resolve);
-			this.endTask(null);
+			this.whenCompleteResolvers.push(resolve);
+			this.endTask(this.startTask());
 		});
 	}
 
 	/**
-	 * Ends all tasks.
-	 *
-	 * @param [error] Error.
+	 * Cancels all tasks.
 	 */
 	public cancelAll(): void {
-		this.endAll(true);
+		const runningTimers = this.runningTimers;
+		const runningImmediates = this.runningImmediates;
+		const runningTasks = this.runningTasks;
+
+		this.runningTasks = {};
+		this.runningTaskCount = 0;
+		this.runningImmediates = [];
+		this.runningTimers = [];
+
+		if (this.whenCompleteImmediate) {
+			global.clearImmediate(this.whenCompleteImmediate);
+			this.whenCompleteImmediate = null;
+		}
+
+		for (const immediate of runningImmediates) {
+			global.clearImmediate(immediate);
+		}
+
+		for (const timer of runningTimers) {
+			global.clearTimeout(timer);
+		}
+
+		for (const key of Object.keys(runningTasks)) {
+			runningTasks[key]();
+		}
+
+		this.resolveWhenComplete();
 	}
 
 	/**
@@ -37,10 +62,6 @@ export default class AsyncTaskManager {
 	 */
 	public startTimer(timerID: NodeJS.Timeout): void {
 		this.runningTimers.push(timerID);
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
 	}
 
 	/**
@@ -52,13 +73,33 @@ export default class AsyncTaskManager {
 		const index = this.runningTimers.indexOf(timerID);
 		if (index !== -1) {
 			this.runningTimers.splice(index, 1);
+			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+				this.resolveWhenComplete();
+			}
 		}
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
-		if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {
-			this.endAll();
+	}
+
+	/**
+	 * Starts an immediate.
+	 *
+	 * @param immediateID Immediate ID.
+	 */
+	public startImmediate(immediateID: NodeJS.Immediate): void {
+		this.runningImmediates.push(immediateID);
+	}
+
+	/**
+	 * Ends an immediate.
+	 *
+	 * @param immediateID Immediate ID.
+	 */
+	public endImmediate(immediateID: NodeJS.Immediate): void {
+		const index = this.runningImmediates.indexOf(immediateID);
+		if (index !== -1) {
+			this.runningImmediates.splice(index, 1);
+			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+				this.resolveWhenComplete();
+			}
 		}
 	}
 
@@ -71,10 +112,7 @@ export default class AsyncTaskManager {
 	public startTask(abortHandler?: () => void): number {
 		const taskID = this.newTaskID();
 		this.runningTasks[taskID] = abortHandler ? abortHandler : () => {};
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
+		this.runningTaskCount++;
 		return taskID;
 	}
 
@@ -86,13 +124,22 @@ export default class AsyncTaskManager {
 	public endTask(taskID: number): void {
 		if (this.runningTasks[taskID]) {
 			delete this.runningTasks[taskID];
-		}
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
-		if (!Object.keys(this.runningTasks).length && !this.runningTimers.length) {
-			this.endAll();
+			this.runningTaskCount--;
+			if (this.whenCompleteImmediate) {
+				global.clearImmediate(this.whenCompleteImmediate);
+			}
+			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+				this.whenCompleteImmediate = global.setImmediate(() => {
+					this.whenCompleteImmediate = null;
+					if (
+						!this.runningTaskCount &&
+						!this.runningTimers.length &&
+						!this.runningImmediates.length
+					) {
+						this.resolveWhenComplete();
+					}
+				});
+			}
 		}
 	}
 
@@ -102,7 +149,7 @@ export default class AsyncTaskManager {
 	 * @returns Count.
 	 */
 	public getTaskCount(): number {
-		return Object.keys(this.runningTasks).length;
+		return this.runningTaskCount;
 	}
 
 	/**
@@ -116,47 +163,13 @@ export default class AsyncTaskManager {
 	}
 
 	/**
-	 * Ends all tasks.
-	 *
-	 * @param [canceled] Canceled.
+	 * Resolves when complete.
 	 */
-	private endAll(canceled?: boolean): void {
-		const runningTimers = this.runningTimers;
-		const runningTasks = this.runningTasks;
-
-		this.runningTasks = {};
-		this.runningTimers = [];
-
-		for (const timer of runningTimers) {
-			global.clearTimeout(timer);
-		}
-
-		for (const key of Object.keys(runningTasks)) {
-			runningTasks[key]();
-		}
-
-		if (this.callbackTimeout) {
-			global.clearTimeout(this.callbackTimeout);
-			this.callbackTimeout = null;
-		}
-		if (this.callbacks.length) {
-			if (canceled) {
-				const callbacks = this.callbacks;
-				this.callbacks = [];
-				for (const callback of callbacks) {
-					callback();
-				}
-			} else {
-				this.callbackTimeout = global.setTimeout(() => {
-					const callbacks = this.callbacks;
-					this.callbackTimeout = null;
-					this.callbacks = [];
-					this.runningTimers = [];
-					for (const callback of callbacks) {
-						callback();
-					}
-				}, 10);
-			}
+	private resolveWhenComplete(): void {
+		const resolvers = this.whenCompleteResolvers;
+		this.whenCompleteResolvers = [];
+		for (const resolver of resolvers) {
+			resolver();
 		}
 	}
 }

@@ -92,12 +92,12 @@ export default class Fetch {
 			}
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
-				resolve(response);
 				taskManager.endTask(taskID);
+				resolve(response);
 			};
 			this.reject = (error: Error): void => {
-				reject(error);
 				taskManager.endTask(taskID);
+				reject(error);
 			};
 
 			this.prepareRequest();

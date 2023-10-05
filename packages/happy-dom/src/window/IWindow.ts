@@ -492,16 +492,16 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	 * Mock animation frames with timeouts.
 	 *
 	 * @param {Function} callback Callback.
-	 * @returns {NodeJS.Timeout} Timeout ID.
+	 * @returns {NodeJS.Timeout} ID.
 	 */
-	requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Timeout;
+	requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Immediate;
 
 	/**
 	 * Mock animation frames with timeouts.
 	 *
-	 * @param {NodeJS.Timeout} id Timeout ID.
+	 * @param {NodeJS.Timeout} id ID.
 	 */
-	cancelAnimationFrame(id: NodeJS.Timeout): void;
+	cancelAnimationFrame(id: NodeJS.Immediate): void;
 
 	/**
 	 * This method provides an easy, logical way to fetch resources asynchronously across the network.
