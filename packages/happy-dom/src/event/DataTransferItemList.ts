@@ -4,16 +4,24 @@ import DataTransferItem from './DataTransferItem.js';
 /**
  *
  */
-export default class DataTransferItemList {
-	public readonly DataTransferItem: DataTransferItem[] = [];
-
+export default class DataTransferItemList extends Array<DataTransferItem> {
 	/**
 	 * Adds an item.
 	 *
 	 * @param item Item.
+	 * @param type Type.
 	 */
-	public add(item: File | string): void {
-		this.DataTransferItem.push(new DataTransferItem(item));
+	public add(item: File | string, type?: string): void {
+		if (item instanceof File) {
+			this.push(new DataTransferItem(item));
+			return;
+		}
+		if (!type) {
+			throw new TypeError(
+				`Failed to execute 'add' on 'DataTransferItemList': parameter 1 is not of type 'File'.`
+			);
+		}
+		this.push(new DataTransferItem(item, type));
 	}
 
 	/**
@@ -22,13 +30,15 @@ export default class DataTransferItemList {
 	 * @param index Index.
 	 */
 	public remove(index: number): void {
-		this.DataTransferItem.splice(index, 1);
+		this.splice(index, 1);
 	}
 
 	/**
 	 * Clears list.
 	 */
 	public clear(): void {
-		(<DataTransferItem[]>this.DataTransferItem) = [];
+		while (this.length) {
+			this.pop();
+		}
 	}
 }

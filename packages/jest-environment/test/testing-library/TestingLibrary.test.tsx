@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import UserEvent from '@testing-library/user-event';
 import React from 'react';
 
 describe('TestingLibrary', () => {
 	it('Triggers change event in input when typing.', async () => {
-		const user = userEvent.setup();
+		const user = UserEvent.setup();
 		const onChange = jest.fn();
 
 		render(<input onChange={(event) => onChange(event.target.value)} />);
@@ -14,7 +14,7 @@ describe('TestingLibrary', () => {
 	});
 
 	it('Triggers click and submit event once.', async () => {
-		const user = userEvent.setup();
+		const user = UserEvent.setup();
 		const handleSubmit = jest.fn((ev) => {
 			ev.preventDefault();
 		});
@@ -34,7 +34,7 @@ describe('TestingLibrary', () => {
 	});
 
 	it('Triggers change event once.', async () => {
-		const user = userEvent.setup();
+		const user = UserEvent.setup();
 		const changeHandler = jest.fn();
 
 		render(<input type="checkbox" onChange={changeHandler} />);
@@ -45,7 +45,7 @@ describe('TestingLibrary', () => {
 	});
 
 	it('Finds elements using "screen.getByText()".', async () => {
-		const user = userEvent.setup();
+		const user = UserEvent.setup();
 		const clickHandler = jest.fn();
 
 		render(<input type="submit" value="Submit Button" onClick={clickHandler} />);

@@ -1167,42 +1167,66 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
+		// Do nothing if the input element is disabled and the event is a click event.
 		if (event.type === 'click' && event.eventPhase === EventPhaseEnum.none && this.disabled) {
 			return false;
 		}
 
+		let previousCheckedValue: boolean | null = null;
+
+		// The checkbox or radio button has to be checked before the click event is dispatched, so that event listeners can check the checked value.
+		// However, the value has to be restored if preventDefault() is called on the click event.
 		if (
-			event.type === 'click' &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this.isConnected &&
-			(this.type === 'checkbox' || this.type === 'radio')
+			event.type === 'click'
 		) {
-			this._setChecked(this.type === 'checkbox' ? !this.checked : true);
+			const inputType = this.type;
+			if (inputType === 'checkbox' || inputType === 'radio') {
+				previousCheckedValue = this.checked;
+				this._setChecked(inputType === 'checkbox' ? !previousCheckedValue : true);
+			}
 		}
 
 		const returnValue = super.dispatchEvent(event);
 
 		if (
-			event.type === 'click' &&
+			!event.defaultPrevented &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this.isConnected &&
-			(!this.readOnly || this.type === 'checkbox' || this.type === 'radio')
+			event.type === 'click' &&
+			this.isConnected
 		) {
-			if (this.type === 'checkbox' || this.type === 'radio') {
-				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
-				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-			} else if (this.type === 'submit') {
-				const form = <IHTMLFormElement>this._formNode;
-				if (form) {
-					form.requestSubmit();
+			const inputType = this.type;
+			if (!this.readOnly || inputType === 'checkbox' || inputType === 'radio') {
+				if (inputType === 'checkbox' || inputType === 'radio') {
+					this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+					this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+				} else if (inputType === 'submit') {
+					const form = <IHTMLFormElement>this._formNode;
+					if (form) {
+						form.requestSubmit();
+					}
+				} else if (inputType === 'reset' && this.isConnected) {
+					const form = <IHTMLFormElement>this._formNode;
+					if (form) {
+						form.reset();
+					}
 				}
-			} else if (this.type === 'reset') {
-				const form = <IHTMLFormElement>this._formNode;
-				if (form) {
-					form.reset();
-				}
+			}
+		}
+
+		// Restore checked state if preventDefault() is triggered on the click event.
+		if (
+			event.defaultPrevented &&
+			(event.eventPhase === EventPhaseEnum.atTarget ||
+				event.eventPhase === EventPhaseEnum.bubbling) &&
+			event.type === 'click' &&
+			previousCheckedValue !== null
+		) {
+			const inputType = this.type;
+			if (inputType === 'checkbox' || inputType === 'radio') {
+				this._setChecked(previousCheckedValue);
 			}
 		}
 
@@ -1235,12 +1259,13 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns "true" if selection is supported.
 	 */
 	private _isSelectionSupported(): boolean {
+		const inputType = this.type;
 		return (
-			this.type === 'text' ||
-			this.type === 'search' ||
-			this.type === 'url' ||
-			this.type === 'tel' ||
-			this.type === 'password'
+			inputType === 'text' ||
+			inputType === 'search' ||
+			inputType === 'url' ||
+			inputType === 'tel' ||
+			inputType === 'password'
 		);
 	}
 

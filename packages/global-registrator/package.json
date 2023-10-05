@@ -65,13 +65,13 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && tsc --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
+		"compile": "tsc && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
 		"change-cjs-file-extension": "node ../happy-dom/bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
 		"lint:fix": "eslint --ignore-path .gitignore --max-warnings 0 --fix .",
 		"test": "tsc --project ./test && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node ./tmp/react/React.test.cjs",
-		"test:debug": "tsc --project ./test && node --inspect-brk ./tmp/react/React.test.js"
+		"test:debug": "tsc --project ./test && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node --inspect-brk ./tmp/react/React.test.cjs"
 	},
 	"dependencies": {
 		"happy-dom": "0.0.0"
@@ -90,7 +90,7 @@
 		"eslint-plugin-turbo": "^0.0.7",
 		"prettier": "^2.6.0",
 		"typescript": "^5.0.4",
-		"react": "^17.0.2",
-		"react-dom": "^17.0.2"
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0"
 	}
 }

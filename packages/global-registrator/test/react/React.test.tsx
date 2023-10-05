@@ -1,30 +1,62 @@
 import GlobalRegistrator from '../../cjs/GlobalRegistrator.cjs';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
+import { act } from 'react-dom/test-utils';
 import ReactComponent from './ReactComponent.js';
 
-GlobalRegistrator.register();
+async function main(): Promise<void> {
+	const selfReferringProperties = ['self', 'top', 'parent', 'window'];
 
-const appElement = document.createElement('app');
-document.body.appendChild(appElement);
+	// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+	const originalSetTimeout = global.setTimeout;
 
-function mountReactComponent(): void {
-	ReactDOM.render(<ReactComponent />, appElement);
+	GlobalRegistrator.register();
 
-	if (appElement.innerHTML !== '<div>Test</div>') {
-		throw Error('React not rendered correctly.');
+	const appElement = document.createElement('app');
+	let root;
+	document.body.appendChild(appElement);
+
+	async function mountReactComponent(): Promise<void> {
+		act(() => {
+			root = ReactDOM.createRoot(appElement);
+			root.render(<ReactComponent />);
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 2));
+
+		if (appElement.innerHTML !== '<div>Test</div>') {
+			throw Error('React not rendered correctly.');
+		}
+	}
+
+	function unmountReactComponent(): void {
+		act(() => {
+			root.unmount();
+		});
+
+		if (appElement.innerHTML !== '') {
+			throw Error('React not unmounted correctly.');
+		}
+	}
+
+	if (global.setTimeout === originalSetTimeout) {
+		throw Error('Happy DOM function not registered.');
+	}
+
+	for (const property of selfReferringProperties) {
+		if (global[property] !== global) {
+			throw Error('Self referring property property was not registered.');
+		}
+	}
+
+	await mountReactComponent();
+	unmountReactComponent();
+
+	GlobalRegistrator.unregister();
+
+	if (global.setTimeout !== originalSetTimeout) {
+		throw Error('Global property was not restored.');
 	}
 }
 
-function unmountReactComponent(): void {
-	ReactDOM.unmountComponentAtNode(appElement);
-
-	if (appElement.innerHTML !== '') {
-		throw Error('React not unmounted correctly.');
-	}
-}
-
-mountReactComponent();
-unmountReactComponent();
-
-GlobalRegistrator.unregister();
+main();

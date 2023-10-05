@@ -26,8 +26,8 @@ export default class SVGElementNamedNodeMap extends ElementNamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override removeNamedItem(name: string): IAttr | null {
-		const removedItem = super.removeNamedItem(name);
+	public override _removeNamedItem(name: string): IAttr | null {
+		const removedItem = super._removeNamedItem(name);
 
 		if (removedItem && removedItem.name === 'style' && this._ownerElement._style) {
 			this._ownerElement._style.cssText = '';

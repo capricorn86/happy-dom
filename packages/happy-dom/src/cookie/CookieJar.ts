@@ -1,6 +1,6 @@
 import Cookie from './Cookie.js';
 import CookieSameSiteEnum from './CookieSameSiteEnum.js';
-import { URL } from 'url';
+import URL from '../url/URL.js';
 
 /**
  * CookieJar.

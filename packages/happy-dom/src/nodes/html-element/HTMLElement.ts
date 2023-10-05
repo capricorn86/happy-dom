@@ -28,6 +28,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly offsetTop = 0;
 	public readonly clientHeight = 0;
 	public readonly clientWidth = 0;
+	public readonly clientLeft = 0;
+	public readonly clientTop = 0;
 
 	public _style: CSSStyleDeclaration = null;
 	private _dataset: Dataset = null;

@@ -26,6 +26,8 @@ import '../types.d.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import VirtualConsole from '../../src/console/VirtualConsole.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
+import Permissions from '../../src/permissions/Permissions.js';
+import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
 import { IHTMLDialogElement } from '../../src/index.js';
 
@@ -228,12 +230,12 @@ describe('Window', () => {
 			window.requestAnimationFrame(() => {
 				tasksDone++;
 			});
-			window.fetch('/url/').then((response) => {
+			window.fetch('/url/1/').then((response) => {
 				response.json().then(() => {
 					tasksDone++;
 				});
 			});
-			window.fetch('/url/').then((response) => {
+			window.fetch('/url/2/').then((response) => {
 				response.text().then(() => {
 					tasksDone++;
 				});
@@ -476,7 +478,8 @@ describe('Window', () => {
 					length: 0
 				},
 				onLine: true,
-				permissions: null,
+				permissions: new Permissions(),
+				clipboard: new Clipboard(window),
 				platform,
 				plugins: {
 					length: 0
@@ -1091,7 +1094,7 @@ describe('Window', () => {
 		it('Requests an animation frame.', async () => {
 			await new Promise((resolve) => {
 				const timeoutId = window.requestAnimationFrame(resolve);
-				expect(timeoutId.constructor.name).toBe('Timeout');
+				expect(timeoutId.constructor.name).toBe('Immediate');
 			});
 		});
 

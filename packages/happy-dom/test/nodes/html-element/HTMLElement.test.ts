@@ -44,7 +44,9 @@ describe('HTMLElement', () => {
 		'offsetLeft',
 		'offsetTop',
 		'clientHeight',
-		'clientWidth'
+		'clientWidth',
+		'clientLeft',
+		'clientTop'
 	]) {
 		describe(`${property}`, () => {
 			it('Returns "0".', () => {
@@ -300,6 +302,8 @@ describe('HTMLElement', () => {
 			expect(element.getAttribute('data-test-delta')).toBe(null);
 			expect(Object.keys(dataset)).toEqual(['testAlpha', 'testBeta', 'testGamma']);
 			expect(Object.values(dataset)).toEqual(['value2', 'value4', 'value5']);
+
+			delete dataset.nonExistentKey;
 		});
 
 		// https://github.com/capricorn86/happy-dom/issues/493
@@ -390,6 +394,8 @@ describe('HTMLElement', () => {
 			expect((<PointerEvent>(<unknown>triggeredEvent)).composed).toBe(true);
 			expect((<PointerEvent>(<unknown>triggeredEvent)).target === element).toBe(true);
 			expect((<PointerEvent>(<unknown>triggeredEvent)).currentTarget === element).toBe(true);
+			expect((<PointerEvent>(<unknown>triggeredEvent)).width).toBe(1);
+			expect((<PointerEvent>(<unknown>triggeredEvent)).height).toBe(1);
 		});
 	});
 

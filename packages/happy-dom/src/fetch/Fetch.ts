@@ -11,7 +11,7 @@ import Response from './Response.js';
 import HTTP, { IncomingMessage } from 'http';
 import HTTPS from 'https';
 import Zlib from 'zlib';
-import { URL } from 'url';
+import URL from '../url/URL.js';
 import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
@@ -92,12 +92,12 @@ export default class Fetch {
 			}
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
-				resolve(response);
 				taskManager.endTask(taskID);
+				resolve(response);
 			};
 			this.reject = (error: Error): void => {
-				reject(error);
 				taskManager.endTask(taskID);
+				reject(error);
 			};
 
 			this.prepareRequest();

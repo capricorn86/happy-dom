@@ -81,7 +81,7 @@ export default class NodeUtility {
 					(<Node>node)._observe(observer);
 				}
 				if (observer.options.childList) {
-					observer.callback([record]);
+					observer.callback([record], observer.observer);
 				}
 			}
 		}
@@ -121,7 +121,7 @@ export default class NodeUtility {
 			for (const observer of (<Node>ancestorNode)._observers) {
 				(<Node>node)._unobserve(observer);
 				if (observer.options.childList) {
-					observer.callback([record]);
+					observer.callback([record], observer.observer);
 				}
 			}
 		}
@@ -208,7 +208,7 @@ export default class NodeUtility {
 					(<Node>newNode)._observe(observer);
 				}
 				if (observer.options.childList) {
-					observer.callback([record]);
+					observer.callback([record], observer.observer);
 				}
 			}
 		}

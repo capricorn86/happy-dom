@@ -1,7 +1,7 @@
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import CookieSameSiteEnum from './CookieSameSiteEnum.js';
-import { URL } from 'url';
+import URL from '../url/URL.js';
 
 /**
  * Cookie.

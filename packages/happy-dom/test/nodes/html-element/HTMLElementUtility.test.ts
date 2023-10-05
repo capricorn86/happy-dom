@@ -188,4 +188,87 @@ describe('HTMLElementUtility', () => {
 			}
 		});
 	});
+
+	describe('Related targets', () => {
+		it('Sets relatedTarget.', () => {
+			for (const element of [
+				<IHTMLElement>document.createElement('div'),
+				<ISVGElement>document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+			]) {
+				const focusElement = <IHTMLElement | ISVGElement>element.cloneNode();
+				const blurElement = <IHTMLElement | ISVGElement>element.cloneNode();
+				let triggeredBlurEvent: FocusEvent | null = null;
+				let triggeredFocusOutEvent: FocusEvent | null = null;
+				let triggeredFocusEvent: FocusEvent | null = null;
+				let triggeredFocusInEvent: FocusEvent | null = null;
+
+				document.body.appendChild(focusElement);
+				document.body.appendChild(blurElement);
+
+				blurElement.addEventListener('blur', (event) => {
+					triggeredBlurEvent = <FocusEvent>event;
+				});
+
+				blurElement.addEventListener('focusout', (event) => {
+					triggeredFocusOutEvent = <FocusEvent>event;
+				});
+
+				focusElement.addEventListener('focus', (event) => {
+					triggeredFocusEvent = <FocusEvent>event;
+				});
+
+				focusElement.addEventListener('focusin', (event) => {
+					triggeredFocusInEvent = <FocusEvent>event;
+				});
+
+				blurElement.focus();
+				focusElement.focus();
+
+				expect((<FocusEvent>(<unknown>triggeredBlurEvent)).type).toBe('blur');
+				expect((<FocusEvent>(<unknown>triggeredBlurEvent)).relatedTarget).toBe(focusElement);
+
+				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).type).toBe('focusout');
+				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).relatedTarget).toBe(focusElement);
+
+				expect((<FocusEvent>(<unknown>triggeredFocusEvent)).type).toBe('focus');
+				expect((<FocusEvent>(<unknown>triggeredFocusEvent)).relatedTarget).toBe(blurElement);
+
+				expect((<FocusEvent>(<unknown>triggeredFocusInEvent)).type).toBe('focusin');
+				expect((<FocusEvent>(<unknown>triggeredFocusInEvent)).relatedTarget).toBe(blurElement);
+			}
+		});
+
+		it('Sets relatedTarget to null if blur does not have new focus target.', () => {
+			for (const element of [
+				<IHTMLElement>document.createElement('div'),
+				<ISVGElement>document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+			]) {
+				const focusElement = <IHTMLElement | ISVGElement>element.cloneNode();
+				const blurElement = <IHTMLElement | ISVGElement>element.cloneNode();
+				let triggeredBlurEvent: FocusEvent | null = null;
+				let triggeredFocusOutEvent: FocusEvent | null = null;
+
+				document.body.appendChild(focusElement);
+				document.body.appendChild(blurElement);
+
+				focusElement.addEventListener('blur', (event) => {
+					triggeredBlurEvent = <FocusEvent>event;
+				});
+
+				focusElement.addEventListener('focusout', (event) => {
+					triggeredFocusOutEvent = <FocusEvent>event;
+				});
+
+				blurElement.focus();
+				focusElement.focus();
+				focusElement.blur();
+
+				expect((<FocusEvent>(<unknown>triggeredBlurEvent)).type).toBe('blur');
+				expect((<FocusEvent>(<unknown>triggeredBlurEvent)).relatedTarget).toBeNull();
+
+				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).type).toBe('focusout');
+				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).relatedTarget).toBeNull();
+			}
+		});
+	});
 });

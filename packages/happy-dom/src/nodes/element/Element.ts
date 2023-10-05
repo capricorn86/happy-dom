@@ -31,6 +31,7 @@ import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import ElementNamedNodeMap from './ElementNamedNodeMap.js';
+import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 
 /**
  * Element.
@@ -46,6 +47,7 @@ export default class Element extends Node implements IElement {
 	public prefix: string = null;
 
 	public scrollHeight = 0;
+	public scrollWidth = 0;
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public readonly namespaceURI: string = null;
@@ -379,6 +381,7 @@ export default class Element extends Node implements IElement {
 		(<string>clone.tagName) = this.tagName;
 		clone.scrollLeft = this.scrollLeft;
 		clone.scrollTop = this.scrollTop;
+		clone.scrollWidth = this.scrollWidth;
 		clone.scrollHeight = this.scrollHeight;
 		(<string>clone.namespaceURI) = this.namespaceURI;
 
@@ -658,7 +661,11 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 */
 	public removeAttribute(name: string): void {
-		this.attributes.removeNamedItem(name);
+		try {
+			this.attributes.removeNamedItem(name);
+		} catch (error) {
+			// Ignore DOMException when the attribute does not exist.
+		}
 	}
 
 	/**
@@ -927,7 +934,13 @@ export default class Element extends Node implements IElement {
 			const attribute = this.getAttribute('on' + event.type);
 
 			if (attribute && !event._immediatePropagationStopped) {
-				this.ownerDocument.defaultView.eval(attribute);
+				if (this.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+					this.ownerDocument.defaultView.eval(attribute);
+				} else {
+					WindowErrorUtility.captureError(this.ownerDocument.defaultView, () =>
+						this.ownerDocument.defaultView.eval(attribute)
+					);
+				}
 			}
 		}
 

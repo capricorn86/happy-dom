@@ -1,4 +1,4 @@
-import { URL } from 'url';
+import URL from '../../url/URL.js';
 import IRequest from '../types/IRequest.js';
 import IDocument from '../../nodes/document/IDocument.js';
 import { isIP } from 'net';

@@ -2,7 +2,7 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
 import IHTMLAnchorElement from './IHTMLAnchorElement.js';
-import { URL } from 'url';
+import URL from '../../url/URL.js';
 import HTMLAnchorElementUtility from './HTMLAnchorElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLAnchorElementNamedNodeMap from './HTMLAnchorElementNamedNodeMap.js';

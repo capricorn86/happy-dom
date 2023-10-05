@@ -2,7 +2,7 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy.js';
 import IRequestRedirect from '../types/IRequestRedirect.js';
-import { URL } from 'url';
+import URL from '../../url/URL.js';
 import IRequest from '../types/IRequest.js';
 
 const VALID_REFERRER_POLICIES = [

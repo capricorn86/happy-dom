@@ -38,8 +38,8 @@ export default class HTMLSelectElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override removeNamedItem(name: string): IAttr | null {
-		const removedItem = super.removeNamedItem(name);
+	public override _removeNamedItem(name: string): IAttr | null {
+		const removedItem = super._removeNamedItem(name);
 
 		if (
 			removedItem &&

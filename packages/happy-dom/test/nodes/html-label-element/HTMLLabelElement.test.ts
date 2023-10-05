@@ -1,6 +1,8 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import IHTMLLabelElement from '../../../src/nodes/html-label-element/IHTMLLabelElement.js';
+import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLLabelElement', () => {
@@ -74,6 +76,32 @@ describe('HTMLLabelElement', () => {
 			div.appendChild(element);
 			form.appendChild(div);
 			expect(element.form === form).toBe(true);
+		});
+	});
+
+	describe('dispatchEvent()', () => {
+		it('Dispatches a click event on the control element if it exists.', () => {
+			const input = <IHTMLInputElement>document.createElement('input');
+			const span = document.createElement('span');
+
+			input.type = 'checkbox';
+
+			span.appendChild(input);
+			element.appendChild(span);
+
+			let labelClickCount = 0;
+			let inputClickCount = 0;
+
+			element.addEventListener('click', () => labelClickCount++);
+			input.addEventListener('click', () => inputClickCount++);
+
+			expect(input.checked).toBe(false);
+
+			element.dispatchEvent(new PointerEvent('click'));
+
+			expect(input.checked).toBe(true);
+			expect(labelClickCount).toBe(2);
+			expect(inputClickCount).toBe(1);
 		});
 	});
 });
