@@ -143,6 +143,7 @@ import IHappyDOMSettings from './IHappyDOMSettings.js';
 import PackageVersion from '../version.js';
 import ICrossOriginWindow from './ICrossOriginWindow.js';
 import BrowserContext from './BrowserContextLoader.js';
+import IBrowserSettings from '../browser/IBrowserSettings.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -466,9 +467,18 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param [options.innerWidth] Inner width. Deprecated. Defaults to "1024".
 	 * @param [options.innerHeight] Inner height. Deprecated. Defaults to "768".
 	 * @param [options.url] URL.
+	 * @param [options.console] Console.
 	 * @param [options.settings] Settings.
 	 */
-	constructor(options?: IHappyDOMOptions) {
+	constructor(options?: {
+		width?: number;
+		height?: number;
+		innerWidth?: number;
+		innerHeight?: number;
+		url?: string;
+		console?: Console;
+		settings?: IBrowserSettings;
+	}) {
 		super();
 
 		this.customElements = new CustomElementRegistry();

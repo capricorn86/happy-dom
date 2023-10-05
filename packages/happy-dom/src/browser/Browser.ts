@@ -1,7 +1,7 @@
 import IBrowserSettings from './IBrowserSettings.js';
 import BrowserContext from './BrowserContext.js';
-import PackageVersion from '../version.js';
 import IOptionalBrowserSettings from './IOptionalBrowserSettings.js';
+import BrowserSettingsFactory from './BrowserSettingsFactory.js';
 
 /**
  * Browser context.
@@ -9,25 +9,7 @@ import IOptionalBrowserSettings from './IOptionalBrowserSettings.js';
 export default class Browser {
 	public contexts: BrowserContext[];
 	public defaultBrowserContext: BrowserContext;
-	public settings: IBrowserSettings = {
-		disableJavaScriptEvaluation: false,
-		disableJavaScriptFileLoading: false,
-		disableCSSFileLoading: false,
-		disableIframePageLoading: false,
-		disableWindowOpenPageLoading: false,
-		disableComputedStyleRendering: false,
-		disableErrorCapturing: false,
-		enableFileSystemHttpRequests: false,
-		navigator: {
-			userAgent: `Mozilla/5.0 (X11; ${
-				process.platform.charAt(0).toUpperCase() + process.platform.slice(1) + ' ' + process.arch
-			}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`
-		},
-		device: {
-			prefersColorScheme: 'light',
-			mediaType: 'screen'
-		}
-	};
+	public settings: IBrowserSettings;
 
 	/**
 	 * Constructor.
@@ -36,20 +18,7 @@ export default class Browser {
 	 * @param [options.settings] Browser settings.
 	 */
 	constructor(options?: { settings?: IOptionalBrowserSettings }) {
-		if (options.settings) {
-			this.settings = {
-				...this.settings,
-				...options.settings,
-				navigator: {
-					...this.settings.navigator,
-					...options.settings.navigator
-				},
-				device: {
-					...this.settings.device,
-					...options.settings.device
-				}
-			};
-		}
+		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
 	}
 
 	/**

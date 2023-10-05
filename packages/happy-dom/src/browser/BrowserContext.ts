@@ -1,4 +1,3 @@
-import Event from '../event/Event.js';
 import Browser from './Browser.js';
 import BrowserPage from './BrowserPage.js';
 
