@@ -63,7 +63,7 @@ export default class SelectorParser {
 	 * Parses a selector string and returns an instance of SelectorItem.
 	 *
 	 * @param selector Selector.
-	 * @returns Selector itme.
+	 * @returns Selector item.
 	 */
 	public static getSelectorItem(selector: string): SelectorItem {
 		return this.getSelectorGroups(selector)[0][0];

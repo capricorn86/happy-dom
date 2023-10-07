@@ -22,7 +22,7 @@ export default interface INamedNodeMap {
 	 * Returns named item.
 	 *
 	 * @param name Name.
-	 * @returns Itme.
+	 * @returns Item.
 	 */
 	getNamedItem(name: string): IAttr | null;
 
