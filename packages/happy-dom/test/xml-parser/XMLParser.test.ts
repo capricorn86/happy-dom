@@ -234,6 +234,117 @@ describe('XMLParser', () => {
 			);
 		});
 
+		it('Handles unclosed tags (Descendants of <dl>, <select>, <ruby> and <table>).', () => {
+			const root = XMLParser.parse(
+				document,
+				`
+				<div class="test" disabled>
+					<dl>
+						<dt>Test
+						<dd>Test</dt></dt></dt></dt>
+						<dt>Test</dt>
+						<dd>Test
+					</dl>
+					<select>
+						<option>Test 1
+						<optgroup>
+							<option>Test 2
+							<option>Test 3</option>
+							<option>Test 4
+						<optgroup>
+							<option>Test 5
+							<option>Test 6
+					</select>
+					<ruby>明日
+						<rp>(
+						<rt>Ashita
+						<rp>)
+					</ruby>
+					<table>
+						<caption>Test
+						<colgroup>
+							<col>
+							<col>
+							<col>
+					  	<thead>
+							<tr>
+								<th>Test 1</th><td>Test 2<td>Test 3
+							<tr>
+								<th>Test 4<td>Test 5<td>Test 6</th></th></th>
+						<tbody>
+							<tr>
+								<th>Test 7<td>Test 8<td>Test 9</td>
+							</tr>
+							<tr>
+								<th></td></td></td></td></td></td>Test 10<td>Test 11<td>Test 12
+						<tfoot>
+							<tr>
+								<th>Test 13<td>Test 14<td>Test 15
+					</table>
+				</div>
+				`
+			);
+
+			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+				`
+				<div class="test" disabled="">
+					<dl>
+						<dt>Test</dt>
+						<dd>Test</dd>
+						<dt>Test</dt>
+						<dd>Test</dd>
+					</dl>
+					<select>
+						<option>Test 1</option>
+						<optgroup>
+							<option>Test 2</option>
+							<option>Test 3</option>
+							<option>Test 4</option>
+						</optgroup>
+						<optgroup>
+							<option>Test 5</option>
+							<option>Test 6</option>
+						</optgroup>
+					</select>
+					<ruby>明日
+						<rp>(</rp>
+						<rt>Ashita</rt>
+						<rp>)</rp>
+					</ruby>
+					<table>
+						<caption>Test</caption>
+						<colgroup>
+							<col>
+							<col>
+							<col>
+						</colgroup>
+						<thead>
+							<tr>
+								<th>Test 1</th><td>Test 2</td><td>Test 3</td>
+							</tr>
+							<tr>
+								<th>Test 4</th><td>Test 5</td><td>Test 6</td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th>Test 7</th><td>Test 8</td><td>Test 9</td>
+							</tr>
+							<tr>
+								<th>Test 10</th><td>Test 11</td><td>Test 12</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<th>Test 13</th><td>Test 14</td><td>Test 15</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+				`.replace(/\s/gm, '')
+			);
+		});
+
 		it('Does not parse the content of script and style elements.', () => {
 			const root = XMLParser.parse(
 				document,

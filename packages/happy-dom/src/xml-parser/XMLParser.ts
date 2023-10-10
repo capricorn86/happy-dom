@@ -1,6 +1,7 @@
 import IDocument from '../nodes/document/IDocument.js';
 import VoidElements from '../config/VoidElements.js';
 import UnnestableElements from '../config/UnnestableElements.js';
+import OmittableEndTagElementsWithChildren from '../config/OmittableEndTagElementsWithChildren.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
 import IElement from '../nodes/element/IElement.js';
@@ -86,6 +87,15 @@ export default class XMLParser {
 		let startTagIndex = 0;
 		let lastIndex = 0;
 
+		function checkAndRemoveUnnestableTagFlag(tagName): Boolean {
+			const unnestableTagNameIndex = unnestableTagNames.indexOf(tagName);
+			if (unnestableTagNameIndex !== -1) {
+				unnestableTagNames.splice(unnestableTagNameIndex, 1);
+				return true;
+			}
+			return false;
+		}
+
 		if (xml !== null && xml !== undefined) {
 			xml = String(xml);
 
@@ -106,15 +116,32 @@ export default class XMLParser {
 						if (match[1]) {
 							// Start tag.
 
-							const tagName = match[1].toUpperCase();
+							const startTagName = match[1].toUpperCase();
+
+							// If currentNode is an omittable end tag, and the new start tag is not a child of currentNode,
+							// We need to auto-close the currentNode.
+							while (currentNode !== root) {
+								const isOmittableEndTag =
+									OmittableEndTagElementsWithChildren[(<IElement>currentNode).tagName];
+								if (!!isOmittableEndTag) {
+									const allowedElements = isOmittableEndTag;
+									if (allowedElements.indexOf(startTagName) === -1) {
+										checkAndRemoveUnnestableTagFlag((<IElement>currentNode).tagName);
+										stack.pop();
+										currentNode = stack[stack.length - 1] || root;
+									} else {
+										break;
+									}
+								} else {
+									break;
+								}
+							}
 
 							// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 							// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
-							const unnestableTagNameIndex = unnestableTagNames.indexOf(tagName);
-							if (unnestableTagNameIndex !== -1) {
-								unnestableTagNames.splice(unnestableTagNameIndex, 1);
+							if (checkAndRemoveUnnestableTagFlag(startTagName)) {
 								while (currentNode !== root) {
-									if ((<IElement>currentNode).tagName === tagName) {
+									if ((<IElement>currentNode).tagName === startTagName) {
 										stack.pop();
 										currentNode = stack[stack.length - 1] || root;
 										break;
@@ -127,10 +154,10 @@ export default class XMLParser {
 							// NamespaceURI is inherited from the parent element.
 							// It should default to SVG for SVG elements.
 							const namespaceURI =
-								tagName === 'SVG'
+								startTagName === 'SVG'
 									? NamespaceURI.svg
 									: (<IElement>currentNode).namespaceURI || NamespaceURI.html;
-							const newElement = document.createElementNS(namespaceURI, tagName);
+							const newElement = document.createElementNS(namespaceURI, startTagName);
 
 							currentNode.appendChild(newElement);
 							currentNode = newElement;
@@ -140,18 +167,40 @@ export default class XMLParser {
 						} else if (match[2]) {
 							// End tag.
 
-							if (match[2].toUpperCase() === (<IElement>currentNode).tagName) {
-								// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
-								// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
-								const unnestableTagNameIndex = unnestableTagNames.indexOf(
-									(<IElement>currentNode).tagName
-								);
-								if (unnestableTagNameIndex !== -1) {
-									unnestableTagNames.splice(unnestableTagNameIndex, 1);
-								}
+							const endTagName = match[2].toUpperCase();
 
-								stack.pop();
-								currentNode = stack[stack.length - 1] || root;
+							// The flag is set when, from the end of the stack, there are one or more nodes
+							// That can omit their end tags, and the next node.tagName matches the end tag.
+							let isEndTagOmitted = false;
+
+							for (let i = stack.length; i; ) {
+								const ancestorTagName = (<IElement>stack[--i]).tagName;
+								if (ancestorTagName === endTagName) {
+									isEndTagOmitted = ++i !== stack.length;
+									break;
+								} else if (!OmittableEndTagElementsWithChildren[ancestorTagName]) {
+									break;
+								}
+							}
+
+							while (currentNode !== root) {
+								const endTagFound = (<IElement>currentNode).tagName === endTagName;
+								if (
+									endTagFound ||
+									(isEndTagOmitted &&
+										!!OmittableEndTagElementsWithChildren[(<IElement>currentNode).tagName])
+								) {
+									// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
+									// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
+									checkAndRemoveUnnestableTagFlag((<IElement>currentNode).tagName);
+									stack.pop();
+									currentNode = stack[stack.length - 1] || root;
+									if (endTagFound) {
+										break;
+									}
+								} else {
+									break;
+								}
 							}
 						} else if (
 							match[3] ||
