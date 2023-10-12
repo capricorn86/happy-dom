@@ -16,16 +16,8 @@ import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser.
  */
 export default class DOMParser {
-	// Owner document is set by a sub-class in the Window constructor
-	public static _ownerDocument: IDocument = null;
-	public readonly _ownerDocument: IDocument = null;
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		this._ownerDocument = (<typeof DOMParser>this.constructor)._ownerDocument;
-	}
+	// Will be populated by a sub-class in Window.
+	public readonly _ownerDocument: IDocument;
 
 	/**
 	 * Parses HTML and returns a root element.

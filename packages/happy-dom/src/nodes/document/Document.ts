@@ -839,6 +839,8 @@ export default class Document extends Node implements IDocument {
 			element._isValue = String(options.is);
 		}
 
+		elementClass._ownerDocument = null;
+
 		return element;
 	}
 
@@ -852,7 +854,9 @@ export default class Document extends Node implements IDocument {
 	 */
 	public createTextNode(data?: string): IText {
 		Text._ownerDocument = this;
-		return new Text(data);
+		const text = new Text(data);
+		Text._ownerDocument = null;
+		return text;
 	}
 
 	/**
@@ -863,7 +867,9 @@ export default class Document extends Node implements IDocument {
 	 */
 	public createComment(data?: string): IComment {
 		Comment._ownerDocument = this;
-		return new Comment(data);
+		const comment = new Comment(data);
+		Comment._ownerDocument = null;
+		return comment;
 	}
 
 	/**
@@ -873,7 +879,9 @@ export default class Document extends Node implements IDocument {
 	 */
 	public createDocumentFragment(): IDocumentFragment {
 		DocumentFragment._ownerDocument = this;
-		return new DocumentFragment();
+		const fragment = new DocumentFragment();
+		DocumentFragment._ownerDocument = null;
+		return fragment;
 	}
 
 	/**
@@ -1034,6 +1042,7 @@ export default class Document extends Node implements IDocument {
 		ProcessingInstruction._ownerDocument = this;
 		const processingInstruction = new ProcessingInstruction(data);
 		processingInstruction.target = target;
+		ProcessingInstruction._ownerDocument = null;
 		return processingInstruction;
 	}
 }

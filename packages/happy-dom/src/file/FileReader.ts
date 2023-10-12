@@ -18,8 +18,9 @@ import FileReaderEventTypeEnum from './FileReaderEventTypeEnum.js';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/FileReader-impl.js (MIT licensed).
  */
 export default class FileReader extends EventTarget {
-	// Owner document is set by a sub-class in the Window constructor
-	public static _ownerDocument: IDocument = null;
+	// Will be populated by a sub-class in Window.
+	public readonly _ownerDocument: IDocument;
+
 	public readonly error: Error = null;
 	public readonly result: Buffer | ArrayBuffer | string = null;
 	public readonly readyState: number = FileReaderReadyStateEnum.empty;
@@ -29,18 +30,9 @@ export default class FileReader extends EventTarget {
 	public readonly onloadstart: (event: ProgressEvent) => void = null;
 	public readonly onloadend: (event: ProgressEvent) => void = null;
 	public readonly onprogress: (event: ProgressEvent) => void = null;
-	public readonly _ownerDocument: IDocument = null;
 	private _isTerminated = false;
 	private _loadTimeout: NodeJS.Timeout = null;
 	private _parseTimeout: NodeJS.Timeout = null;
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this._ownerDocument = (<typeof FileReader>this.constructor)._ownerDocument;
-	}
 
 	/**
 	 * Reads as ArrayBuffer.

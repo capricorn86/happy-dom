@@ -27,8 +27,7 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
  */
 export default class Response implements IResponse {
-	// Owner document is set by a sub-class in the Window constructor
-	public static _ownerDocument: IDocument = null;
+	// Will be populated by a sub-class in Window.
 	public readonly _ownerDocument: IDocument = null;
 
 	// Public properties
@@ -51,8 +50,6 @@ export default class Response implements IResponse {
 	 * @param [init] Init.
 	 */
 	constructor(body?: IResponseBody, init?: IResponseInit) {
-		this._ownerDocument = (<typeof Response>this.constructor)._ownerDocument;
-
 		this.status = init?.status !== undefined ? init.status : 200;
 		this.statusText = init?.statusText || '';
 		this.ok = this.status >= 200 && this.status < 300;

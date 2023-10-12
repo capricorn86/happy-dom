@@ -43,4 +43,15 @@ export default class BrowserContext {
 	public async abort(): Promise<void> {
 		await Promise.all(this.pages.map((page) => page.abort()));
 	}
+
+	/**
+	 * Creates a new page.
+	 *
+	 * @returns Page.
+	 */
+	public newPage(): BrowserPage {
+		const page = new BrowserPage(this);
+		this.pages.push(page);
+		return page;
+	}
 }

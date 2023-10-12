@@ -146,6 +146,7 @@ import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
 import DetachedWindowAPI from './DetachedWindowAPI.js';
 import IVirtualConsolePrinter from '../console/types/IVirtualConsolePrinter.js';
+import BrowserFrame from '../browser/BrowserFrame.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -495,6 +496,7 @@ export default class Window extends EventTarget implements IWindow {
 	private _setInterval: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
 	private _clearInterval: (id: NodeJS.Timeout) => void;
 	private _queueMicrotask: (callback: Function) => void;
+	#browserFrame: BrowserFrame;
 
 	/**
 	 * Constructor.
@@ -507,6 +509,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param [options.url] URL.
 	 * @param [options.console] Console.
 	 * @param [options.settings] Settings.
+	 * @param [options.browserFrame] Browser frame.
 	 */
 	constructor(options?: {
 		width?: number;
@@ -516,6 +519,7 @@ export default class Window extends EventTarget implements IWindow {
 		url?: string;
 		console?: Console;
 		settings?: IBrowserSettings;
+		browserFrame?: BrowserFrame;
 	}) {
 		super();
 
@@ -526,6 +530,12 @@ export default class Window extends EventTarget implements IWindow {
 		this.screen = new Screen();
 		this.sessionStorage = new Storage();
 		this.localStorage = new Storage();
+
+		if (options?.browserFrame) {
+			this.#browserFrame = options.browserFrame;
+		} else {
+			this.#browserFrame = new BrowserFrame();
+		}
 
 		if (options) {
 			if (options.width !== undefined) {
@@ -596,42 +606,33 @@ export default class Window extends EventTarget implements IWindow {
 		// We need to set the correct owner document when the class is constructed.
 		// To achieve this we will extend the original implementation with a class that sets the owner document.
 
-		ResponseImplementation._ownerDocument = document;
-		RequestImplementation._ownerDocument = document;
-		ImageImplementation._ownerDocument = document;
-		DocumentFragmentImplementation._ownerDocument = document;
-		FileReaderImplementation._ownerDocument = document;
-		DOMParserImplementation._ownerDocument = document;
-		RangeImplementation._ownerDocument = document;
-		XMLHttpRequestImplementation._ownerDocument = document;
-
 		/* eslint-disable jsdoc/require-jsdoc */
 		class Response extends ResponseImplementation {
-			public static _ownerDocument: IDocument = document;
+			public readonly _ownerDocument: IDocument = document;
 		}
 		class Request extends RequestImplementation {
-			public static _ownerDocument: IDocument = document;
+			public readonly _ownerDocument: IDocument = document;
 		}
 		class Image extends ImageImplementation {
-			public static _ownerDocument: IDocument = document;
+			public readonly ownerDocument: IDocument = document;
 		}
 		class DocumentFragment extends DocumentFragmentImplementation {
-			public static _ownerDocument: IDocument = document;
+			public readonly ownerDocument: IDocument = document;
 		}
 		class FileReader extends FileReaderImplementation {
-			public static _ownerDocument: IDocument = document;
+			public readonly _ownerDocument: IDocument = document;
 		}
 		class DOMParser extends DOMParserImplementation {
-			public static _ownerDocument: IDocument = document;
+			public readonly _ownerDocument: IDocument = document;
 		}
 		class XMLHttpRequest extends XMLHttpRequestImplementation {
-			public static _ownerDocument: IDocument = document;
+			public readonly ownerDocument: IDocument = document;
 		}
 		class Range extends RangeImplementation {
-			public static _ownerDocument: IDocument = document;
+			public readonly ownerDocument: IDocument = document;
 		}
 		class Audio extends AudioImplementation {
-			public static _ownerDocument: IDocument = document;
+			public readonly ownerDocument: IDocument = document;
 		}
 		/* eslint-enable jsdoc/require-jsdoc */
 

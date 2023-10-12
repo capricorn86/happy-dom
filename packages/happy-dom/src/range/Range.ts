@@ -26,8 +26,8 @@ import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Range.
  */
 export default class Range {
-	// Owner document is set by a sub-class in the Window constructor
-	public static _ownerDocument: IDocument = null;
+	// Will be populated by a sub-class in Window.
+	public readonly _ownerDocument: IDocument;
 	public static readonly END_TO_END: number = RangeHowEnum.endToEnd;
 	public static readonly END_TO_START: number = RangeHowEnum.endToStart;
 	public static readonly START_TO_END: number = RangeHowEnum.startToEnd;
@@ -36,7 +36,6 @@ export default class Range {
 	public readonly END_TO_START: number = RangeHowEnum.endToStart;
 	public readonly START_TO_END: number = RangeHowEnum.startToEnd;
 	public readonly START_TO_START: number = RangeHowEnum.startToStart;
-	public readonly _ownerDocument: IDocument = null;
 	public _start: IRangeBoundaryPoint = null;
 	public _end: IRangeBoundaryPoint = null;
 
@@ -44,7 +43,6 @@ export default class Range {
 	 * Constructor.
 	 */
 	constructor() {
-		this._ownerDocument = (<typeof Range>this.constructor)._ownerDocument;
 		this._start = { node: this._ownerDocument, offset: 0 };
 		this._end = { node: this._ownerDocument, offset: 0 };
 	}

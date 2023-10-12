@@ -2,13 +2,14 @@ import IBrowserSettings from './IBrowserSettings.js';
 import BrowserContext from './BrowserContext.js';
 import IOptionalBrowserSettings from './IOptionalBrowserSettings.js';
 import BrowserSettingsFactory from './BrowserSettingsFactory.js';
+import BrowserPage from './BrowserPage.js';
 
 /**
  * Browser context.
  */
 export default class Browser {
-	public contexts: BrowserContext[];
-	public defaultBrowserContext: BrowserContext;
+	public defaultContext: BrowserContext | null = new BrowserContext(this);
+	public contexts: BrowserContext[] = [this.defaultContext];
 	public settings: IBrowserSettings;
 
 	/**
@@ -28,6 +29,8 @@ export default class Browser {
 	 */
 	public async close(): Promise<void> {
 		await Promise.all(this.contexts.map((context) => context.close()));
+		this.contexts = [];
+		this.defaultContext = null;
 	}
 
 	/**
@@ -46,5 +49,14 @@ export default class Browser {
 	 */
 	public async abort(): Promise<void> {
 		await Promise.all(this.contexts.map((page) => page.abort()));
+	}
+
+	/**
+	 * Creates a new page.
+	 *
+	 * @returns Page.
+	 */
+	public newPage(): BrowserPage {
+		return this.defaultContext.newPage();
 	}
 }

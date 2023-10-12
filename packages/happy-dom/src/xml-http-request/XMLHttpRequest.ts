@@ -59,8 +59,8 @@ const CONTENT_TYPE_ENCODING_REGEXP = /charset=([^;]*)/i;
  * https://github.com/mjwwit/node-XMLHttpRequest/blob/master/lib/XMLHttpRequest.js
  */
 export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
-	// Owner document is set by a sub-class in the Window constructor
-	public static _ownerDocument: IDocument = null;
+	// Will be populated by a sub-class in Window.
+	public readonly _ownerDocument: IDocument;
 
 	// Constants
 	public static UNSENT = XMLHttpRequestReadyStateEnum.unsent;
@@ -73,7 +73,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public upload: XMLHttpRequestUpload = new XMLHttpRequestUpload();
 
 	// Private properties
-	private readonly _ownerDocument: IDocument = null;
 	private _state: {
 		incommingMessage:
 			| HTTP.IncomingMessage
@@ -123,14 +122,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		user: null,
 		password: null
 	};
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this._ownerDocument = XMLHttpRequest._ownerDocument;
-	}
 
 	/**
 	 * Returns the status.

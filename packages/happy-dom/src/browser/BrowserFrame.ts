@@ -10,15 +10,20 @@ export default class BrowserFrame {
 	public detached = false;
 	public page: BrowserPage | null = null;
 	public window: IWindow | null = null;
-	private _asyncTaskManager = new AsyncTaskManager();
+	public _asyncTaskManager = new AsyncTaskManager();
 
 	/**
 	 * Constructor.
 	 *
+	 * @param options
 	 * @param page Page.
+	 * @param [window] Window.
+	 * @param options.page
+	 * @param options.window
 	 */
-	constructor(page: BrowserPage) {
-		this.page = page;
+	constructor(options: { page?: BrowserPage; window: IWindow }) {
+		this.page = options.page ?? null;
+		this.window = options.window;
 	}
 
 	/**
@@ -44,7 +49,7 @@ export default class BrowserFrame {
 	 */
 	public async abort(): Promise<void> {
 		await Promise.all(this.childFrames.map((frame) => frame.abort()));
-		this._asyncTaskManager.cancelAll();
+		await this._asyncTaskManager.cancelAll();
 	}
 
 	/**
@@ -64,7 +69,8 @@ export default class BrowserFrame {
 	 * @param url URL.
 	 */
 	public async goto(url: string): Promise<void> {
-		await this.abort();
+		await Promise.all(this.childFrames.map((frame) => frame.close()));
+		this._asyncTaskManager.cancelAll();
 
 		this.window.location.href = url;
 

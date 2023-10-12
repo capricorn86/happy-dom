@@ -30,9 +30,8 @@ import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
  * @see https://fetch.spec.whatwg.org/#request-class
  */
 export default class Request implements IRequest {
-	// Owner document is set by a sub-class in the Window constructor
-	public static _ownerDocument: IDocument = null;
-	public readonly _ownerDocument: IDocument = null;
+	// Will be populated by a sub-class in Window.
+	public readonly _ownerDocument: IDocument;
 
 	// Public properties
 	public readonly method: string;
@@ -58,8 +57,6 @@ export default class Request implements IRequest {
 	 * @param [init] Init.
 	 */
 	constructor(input: IRequestInfo, init?: IRequestInit) {
-		this._ownerDocument = (<typeof Request>this.constructor)._ownerDocument;
-
 		if (!input) {
 			throw new TypeError(`Failed to contruct 'Request': 1 argument required, only 0 present.`);
 		}
