@@ -24,14 +24,13 @@ export default class HTMLLinkElementUtility {
 
 		if (href !== null && rel && rel.toLowerCase() === 'stylesheet' && element.isConnected) {
 			if (element.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading) {
-				const error = new DOMException(
-					`Failed to load external stylesheet "${href}". CSS file loading is disabled.`,
-					DOMExceptionNameEnum.notSupportedError
+				WindowErrorUtility.dispatchError(
+					element,
+					new DOMException(
+						`Failed to load external stylesheet "${href}". CSS file loading is disabled.`,
+						DOMExceptionNameEnum.notSupportedError
+					)
 				);
-				WindowErrorUtility.dispatchError(element, error);
-				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
-					throw error;
-				}
 				return;
 			}
 

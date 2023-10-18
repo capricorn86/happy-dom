@@ -20,6 +20,7 @@ import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js'
 import IRequestCredentials from './types/IRequestCredentials.js';
 import FormData from '../form-data/FormData.js';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 
 /**
  * Fetch request.
@@ -30,8 +31,9 @@ import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
  * @see https://fetch.spec.whatwg.org/#request-class
  */
 export default class Request implements IRequest {
-	// Will be populated by a sub-class in Window.
-	public readonly _ownerDocument: IDocument;
+	// Needs to be injected by a sub-class.
+	protected readonly _asyncTaskManager: AsyncTaskManager;
+	protected readonly _ownerDocument: IDocument;
 
 	// Public properties
 	public readonly method: string;
@@ -182,18 +184,17 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask(() => this.signal._abort());
+		const taskID = this._asyncTaskManager.startTask(() => this.signal._abort());
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this._asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this._asyncTaskManager.endTask(taskID);
 
 		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
@@ -225,18 +226,17 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask(() => this.signal._abort());
+		const taskID = this._asyncTaskManager.startTask(() => this.signal._abort());
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this._asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this._asyncTaskManager.endTask(taskID);
 
 		return buffer;
 	}
@@ -256,18 +256,17 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask(() => this.signal._abort());
+		const taskID = this._asyncTaskManager.startTask(() => this.signal._abort());
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this._asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this._asyncTaskManager.endTask(taskID);
 
 		return new TextDecoder().decode(buffer);
 	}
@@ -297,19 +296,18 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask(() => this.signal._abort());
+		const taskID = this._asyncTaskManager.startTask(() => this.signal._abort());
 		let formData: FormData;
 
 		try {
 			const type = this._contentType;
 			formData = await MultipartFormDataParser.streamToFormData(this.body, type);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this._asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this._asyncTaskManager.endTask(taskID);
 
 		return formData;
 	}

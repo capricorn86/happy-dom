@@ -1,6 +1,5 @@
 import IResponse from './types/IResponse.js';
 import IBlob from '../file/IBlob.js';
-import IDocument from '../nodes/document/IDocument.js';
 import IResponseInit from './types/IResponseInit.js';
 import IResponseBody from './types/IResponseBody.js';
 import Headers from './Headers.js';
@@ -15,6 +14,7 @@ import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import { TextDecoder } from 'util';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 
@@ -27,8 +27,8 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
  */
 export default class Response implements IResponse {
-	// Will be populated by a sub-class in Window.
-	public readonly _ownerDocument: IDocument = null;
+	// Needs to be injected by a sub-class.
+	protected readonly _asyncTaskManager: AsyncTaskManager;
 
 	// Public properties
 	public readonly body: Stream.Readable | null = null;
@@ -89,18 +89,17 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask();
+		const taskID = this._asyncTaskManager.startTask();
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this._asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this._asyncTaskManager.endTask(taskID);
 
 		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
@@ -132,18 +131,17 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask();
+		const taskID = this._asyncTaskManager.startTask();
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this._asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this._asyncTaskManager.endTask(taskID);
 
 		return buffer;
 	}
@@ -163,18 +161,17 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask();
+		const taskID = this._asyncTaskManager.startTask();
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this._asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this._asyncTaskManager.endTask(taskID);
 
 		return new TextDecoder().decode(buffer);
 	}
@@ -196,8 +193,7 @@ export default class Response implements IResponse {
 	 */
 	public async formData(): Promise<FormData> {
 		const contentType = this.headers.get('content-type');
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask();
+		const taskID = this._asyncTaskManager.startTask();
 
 		if (contentType.startsWith('application/x-www-form-urlencoded')) {
 			const formData = new FormData();
@@ -206,7 +202,7 @@ export default class Response implements IResponse {
 			try {
 				text = await this.text();
 			} catch (error) {
-				taskManager.endTask(taskID);
+				this._asyncTaskManager.endTask(taskID);
 				throw error;
 			}
 
@@ -216,7 +212,7 @@ export default class Response implements IResponse {
 				formData.append(name, value);
 			}
 
-			taskManager.endTask(taskID);
+			this._asyncTaskManager.endTask(taskID);
 
 			return formData;
 		}
@@ -226,11 +222,11 @@ export default class Response implements IResponse {
 		try {
 			formData = await MultipartFormDataParser.streamToFormData(this.body, contentType);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this._asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this._asyncTaskManager.endTask(taskID);
 
 		return formData;
 	}

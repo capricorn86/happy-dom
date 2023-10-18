@@ -927,6 +927,7 @@ export default class Element extends Node implements IElement {
 		const returnValue = super.dispatchEvent(event);
 
 		if (
+			!this.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			!event._immediatePropagationStopped

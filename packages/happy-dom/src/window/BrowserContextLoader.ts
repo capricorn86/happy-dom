@@ -6,7 +6,7 @@ import WindowErrorUtility from './WindowErrorUtility.js';
 import ICrossOriginWindow from './ICrossOriginWindow.js';
 import IHTMLElement from '../nodes/html-element/IHTMLElement.js';
 import Window from './Window.js';
-import DetachedWindowAPI from './DetachedWindowAPI.js';
+import DetachedWindowAPI from './HappyDOMWindowAPI.js';
 
 /**
  * Browser context.

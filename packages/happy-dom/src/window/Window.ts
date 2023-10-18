@@ -86,12 +86,7 @@ import StorageEvent from '../event/events/StorageEvent.js';
 import SubmitEvent from '../event/events/SubmitEvent.js';
 import Screen from '../screen/Screen.js';
 import IResponse from '../fetch/types/IResponse.js';
-import IResponseInit from '../fetch/types/IResponseInit.js';
-import IRequest from '../fetch/types/IRequest.js';
 import IRequestInit from '../fetch/types/IRequestInit.js';
-import IHeaders from '../fetch/types/IHeaders.js';
-import IHeadersInit from '../fetch/types/IHeadersInit.js';
-import Headers from '../fetch/Headers.js';
 import RequestImplementation from '../fetch/Request.js';
 import ResponseImplementation from '../fetch/Response.js';
 import Storage from '../storage/Storage.js';
@@ -129,14 +124,11 @@ import Stream from 'stream';
 import FormData from '../form-data/FormData.js';
 import AbortController from '../fetch/AbortController.js';
 import AbortSignal from '../fetch/AbortSignal.js';
-import IResponseBody from '../fetch/types/IResponseBody.js';
-import IRequestInfo from '../fetch/types/IRequestInfo.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
 import WindowErrorUtility from './WindowErrorUtility.js';
 import VirtualConsole from '../console/VirtualConsole.js';
-import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import ICrossOriginWindow from './ICrossOriginWindow.js';
 import IBrowserSettings from '../browser/IBrowserSettings.js';
 import Permissions from '../permissions/Permissions.js';
@@ -144,9 +136,11 @@ import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
-import DetachedWindowAPI from './DetachedWindowAPI.js';
-import IVirtualConsolePrinter from '../console/types/IVirtualConsolePrinter.js';
+import HappyDOMWindowAPI from './HappyDOMWindowAPI.js';
 import BrowserFrame from '../browser/BrowserFrame.js';
+import DetachedBrowserFrame from '../browser/DetachedBrowserFrame.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import Headers from '../fetch/Headers.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -162,7 +156,7 @@ const ORIGINAL_QUEUE_MICROTASK = queueMicrotask;
  */
 export default class Window extends EventTarget implements IWindow {
 	// Detached Window API.
-	public readonly happyDOM: DetachedWindowAPI;
+	public readonly happyDOM: HappyDOMWindowAPI;
 
 	// Nodes
 	public readonly Node = Node;
@@ -360,16 +354,12 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Plugin = Plugin;
 	public readonly PluginArray = PluginArray;
 	public readonly FileList = FileList;
-	public readonly Headers: { new (init?: IHeadersInit): IHeaders } = Headers;
 	public readonly DOMRect: typeof DOMRect;
 	public readonly RadioNodeList: typeof RadioNodeList;
 	public readonly ValidityState: typeof ValidityState;
-	public readonly Request: {
-		new (input: IRequestInfo, init?: IRequestInit): IRequest;
-	};
-	public readonly Response: {
-		new (body?: IResponseBody, init?: IResponseInit): IResponse;
-	};
+	public readonly Headers: typeof Headers;
+	public readonly Request: typeof RequestImplementation;
+	public readonly Response: typeof ResponseImplementation;
 	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
 	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
 	public readonly ReadableStream = Stream.Readable;
@@ -496,7 +486,7 @@ export default class Window extends EventTarget implements IWindow {
 	private _setInterval: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
 	private _clearInterval: (id: NodeJS.Timeout) => void;
 	private _queueMicrotask: (callback: Function) => void;
-	#browserFrame: BrowserFrame;
+	#browserFrame: BrowserFrame | DetachedBrowserFrame;
 
 	/**
 	 * Constructor.
@@ -533,9 +523,21 @@ export default class Window extends EventTarget implements IWindow {
 
 		if (options?.browserFrame) {
 			this.#browserFrame = options.browserFrame;
+			this.console =
+				options?.console ?? new VirtualConsole(this.#browserFrame.page.virtualConsolePrinter);
 		} else {
-			this.#browserFrame = new BrowserFrame();
+			this.#browserFrame = new DetachedBrowserFrame({
+				window: this,
+				settings: options?.settings
+			});
+			this.console =
+				options?.console ?? new VirtualConsole(this.#browserFrame.virtualConsolePrinter);
 		}
+
+		this.happyDOM = new HappyDOMWindowAPI({
+			window: this,
+			browserFrame: this.#browserFrame
+		});
 
 		if (options) {
 			if (options.width !== undefined) {
@@ -557,23 +559,6 @@ export default class Window extends EventTarget implements IWindow {
 			if (options.url !== undefined) {
 				this.location.href = options.url;
 			}
-		}
-
-		if (options && options.console) {
-			this.console = options.console;
-			this.happyDOM = new DetachedWindowAPI({
-				ownerWindow: this,
-				settings: options?.settings
-			});
-		} else {
-			this.happyDOM = new DetachedWindowAPI({
-				ownerWindow: this,
-				settings: options?.settings,
-				virtualConsolePrinter: new VirtualConsolePrinter()
-			});
-			this.console = new VirtualConsole(
-				<IVirtualConsolePrinter>this.happyDOM.virtualConsolePrinter
-			);
 		}
 
 		this._setTimeout = ORIGINAL_SET_TIMEOUT;
@@ -600,6 +585,7 @@ export default class Window extends EventTarget implements IWindow {
 		HTMLDocument._windowClass = Window;
 
 		const document = new HTMLDocument();
+		const browserFrame = this.#browserFrame;
 
 		this.document = document;
 
@@ -608,10 +594,11 @@ export default class Window extends EventTarget implements IWindow {
 
 		/* eslint-disable jsdoc/require-jsdoc */
 		class Response extends ResponseImplementation {
-			public readonly _ownerDocument: IDocument = document;
+			protected readonly _asyncTaskManager: AsyncTaskManager = browserFrame._asyncTaskManager;
 		}
 		class Request extends RequestImplementation {
-			public readonly _ownerDocument: IDocument = document;
+			protected readonly _ownerDocument: IDocument = document;
+			protected readonly _asyncTaskManager: AsyncTaskManager = browserFrame._asyncTaskManager;
 		}
 		class Image extends ImageImplementation {
 			public readonly ownerDocument: IDocument = document;
@@ -626,7 +613,18 @@ export default class Window extends EventTarget implements IWindow {
 			public readonly _ownerDocument: IDocument = document;
 		}
 		class XMLHttpRequest extends XMLHttpRequestImplementation {
-			public readonly ownerDocument: IDocument = document;
+			constructor() {
+				super({
+					ownerDocument: document,
+					asyncTaskManager: browserFrame._asyncTaskManager,
+					browserSettings: {
+						enableFileSystemHttpRequests:
+							browserFrame instanceof BrowserFrame
+								? browserFrame.page.context.browser.settings.enableFileSystemHttpRequests
+								: browserFrame.settings.enableFileSystemHttpRequests
+					}
+				});
+			}
 		}
 		class Range extends RangeImplementation {
 			public readonly ownerDocument: IDocument = document;
@@ -779,6 +777,19 @@ export default class Window extends EventTarget implements IWindow {
 	}
 
 	/**
+	 * Closes the window.
+	 */
+	public close(): void {
+		if (this.#browserFrame instanceof BrowserFrame) {
+			if (this.#browserFrame.page.mainFrame === this.#browserFrame) {
+				this.#browserFrame.page.close();
+			}
+		} else {
+			this.#browserFrame.destroy();
+		}
+	}
+
+	/**
 	 * Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.
 	 *
 	 * @param mediaQueryString A string specifying the media query to parse into a MediaQueryList.
@@ -803,9 +814,9 @@ export default class Window extends EventTarget implements IWindow {
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(...args));
 			}
-			this.happyDOM.asyncTaskManager.endTimer(id);
+			this.#browserFrame._asyncTaskManager.endTimer(id);
 		}, delay);
-		this.happyDOM.asyncTaskManager.startTimer(id);
+		this.#browserFrame._asyncTaskManager.startTimer(id);
 		return id;
 	}
 
@@ -816,7 +827,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
 		this._clearTimeout(id);
-		this.happyDOM.asyncTaskManager.endTimer(id);
+		this.#browserFrame._asyncTaskManager.endTimer(id);
 	}
 
 	/**
@@ -839,7 +850,7 @@ export default class Window extends EventTarget implements IWindow {
 				);
 			}
 		}, delay);
-		this.happyDOM.asyncTaskManager.startTimer(id);
+		this.#browserFrame._asyncTaskManager.startTimer(id);
 		return id;
 	}
 
@@ -850,7 +861,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
 		this._clearInterval(id);
-		this.happyDOM.asyncTaskManager.endTimer(id);
+		this.#browserFrame._asyncTaskManager.endTimer(id);
 	}
 
 	/**
@@ -866,9 +877,9 @@ export default class Window extends EventTarget implements IWindow {
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
 			}
-			this.happyDOM.asyncTaskManager.endImmediate(id);
+			this.#browserFrame._asyncTaskManager.endImmediate(id);
 		});
-		this.happyDOM.asyncTaskManager.startImmediate(id);
+		this.#browserFrame._asyncTaskManager.startImmediate(id);
 		return id;
 	}
 
@@ -879,7 +890,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public cancelAnimationFrame(id: NodeJS.Immediate): void {
 		global.clearImmediate(id);
-		this.happyDOM.asyncTaskManager.endImmediate(id);
+		this.#browserFrame._asyncTaskManager.endImmediate(id);
 	}
 
 	/**
@@ -889,7 +900,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public queueMicrotask(callback: Function): void {
 		let isAborted = false;
-		const taskId = this.happyDOM.asyncTaskManager.startTask(() => (isAborted = true));
+		const taskId = this.#browserFrame._asyncTaskManager.startTask(() => (isAborted = true));
 		this._queueMicrotask(() => {
 			if (!isAborted) {
 				if (this.happyDOM.settings.disableErrorCapturing) {
@@ -897,7 +908,7 @@ export default class Window extends EventTarget implements IWindow {
 				} else {
 					WindowErrorUtility.captureError(this, <() => unknown>callback);
 				}
-				this.happyDOM.asyncTaskManager.endTask(taskId);
+				this.#browserFrame._asyncTaskManager.endTask(taskId);
 			}
 		});
 	}
@@ -910,7 +921,12 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Promise.
 	 */
 	public async fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse> {
-		return await new Fetch({ ownerDocument: this.document, url, init }).send();
+		return await new Fetch({
+			ownerDocument: this.document,
+			asyncTaskManager: this.#browserFrame._asyncTaskManager,
+			url,
+			init
+		}).send();
 	}
 
 	/**

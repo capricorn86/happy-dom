@@ -3,7 +3,7 @@
  */
 export default class AsyncTaskManager {
 	private static taskID = 0;
-	private runningTasks: { [k: string]: () => void } = {};
+	private runningTasks: { [k: string]: (destroy: boolean) => void } = {};
 	private runningTaskCount = 0;
 	private runningTimers: NodeJS.Timeout[] = [];
 	private runningImmediates: NodeJS.Immediate[] = [];
@@ -23,9 +23,11 @@ export default class AsyncTaskManager {
 	}
 
 	/**
-	 * Cancels all tasks.
+	 * Aborts all tasks.
+	 *
+	 * @param destroy Destroy.
 	 */
-	public cancelAll(): void {
+	public abortAll(destroy = false): void {
 		const runningTimers = this.runningTimers;
 		const runningImmediates = this.runningImmediates;
 		const runningTasks = this.runningTasks;
@@ -49,10 +51,17 @@ export default class AsyncTaskManager {
 		}
 
 		for (const key of Object.keys(runningTasks)) {
-			runningTasks[key]();
+			runningTasks[key](destroy);
 		}
 
 		this.resolveWhenComplete();
+	}
+
+	/**
+	 * Destroys the manager.
+	 */
+	public destroy(): void {
+		this.abortAll();
 	}
 
 	/**

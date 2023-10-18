@@ -2,13 +2,11 @@ import IRequestInit from './types/IRequestInit.js';
 import IDocument from '../nodes/document/IDocument.js';
 import Document from '../nodes/document/Document.js';
 import IResponse from './types/IResponse.js';
-import Request from './Request.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import Headers from './Headers.js';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import Response from './Response.js';
 import HTTP, { IncomingMessage } from 'http';
 import HTTPS from 'https';
 import Zlib from 'zlib';
@@ -17,6 +15,9 @@ import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
+import Request from './Request.js';
+import Response from './Response.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -43,6 +44,7 @@ export default class Fetch {
 	private nodeRequest: HTTP.ClientRequest | null = null;
 	private response: Response | null = null;
 	private ownerDocument: IDocument;
+	private asyncTaskManager: AsyncTaskManager;
 	private request: Request;
 	private redirectCount = 0;
 
@@ -51,6 +53,7 @@ export default class Fetch {
 	 *
 	 * @param options Options.
 	 * @param options.document
+	 * @param options.asyncTaskManager Async task manager.
 	 * @param options.url URL.
 	 * @param [options.init] Init.
 	 * @param [options.ownerDocument] Owner document.
@@ -59,6 +62,7 @@ export default class Fetch {
 	 */
 	constructor(options: {
 		ownerDocument: IDocument;
+		asyncTaskManager: AsyncTaskManager;
 		url: IRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
@@ -67,9 +71,10 @@ export default class Fetch {
 		const url = options.url;
 
 		this.ownerDocument = options.ownerDocument;
+		this.asyncTaskManager = options.asyncTaskManager;
 		this.request =
 			typeof options.url === 'string' || options.url instanceof URL
-				? new Request(options.url, options.init)
+				? new options.ownerDocument.defaultView.Request(options.url, options.init)
 				: <Request>url;
 		if (options.contentType) {
 			(<string>this.request._contentType) = options.contentType;
@@ -84,19 +89,18 @@ export default class Fetch {
 	 */
 	public send(): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
-			const taskManager = this.ownerDocument.defaultView.happyDOM.asyncTaskManager;
-			const taskID = taskManager.startTask(() => this.abort());
+			const taskID = this.asyncTaskManager.startTask(() => this.abort());
 
 			if (this.resolve) {
 				throw new Error('Fetch already sent.');
 			}
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
-				taskManager.endTask(taskID);
+				this.asyncTaskManager.endTask(taskID);
 				resolve(response);
 			};
 			this.reject = (error: Error): void => {
-				taskManager.endTask(taskID);
+				this.asyncTaskManager.endTask(taskID);
 				reject(error);
 			};
 
@@ -105,7 +109,7 @@ export default class Fetch {
 
 			if (this.request._url.protocol === 'data:') {
 				const result = DataURIParser.parse(this.request.url);
-				this.response = new Response(result.buffer, {
+				this.response = new this.ownerDocument.defaultView.Response(result.buffer, {
 					headers: { 'Content-Type': result.type }
 				});
 				resolve(this.response);
@@ -247,7 +251,7 @@ export default class Fetch {
 			nodeResponse.statusCode === 204 ||
 			nodeResponse.statusCode === 304
 		) {
-			this.response = new Response(body, responseOptions);
+			this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -269,7 +273,7 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new Response(body, responseOptions);
+			this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -301,7 +305,7 @@ export default class Fetch {
 					});
 				}
 
-				this.response = new Response(body, responseOptions);
+				this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
 				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
@@ -309,7 +313,7 @@ export default class Fetch {
 			raw.on('end', () => {
 				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
 				if (!this.response) {
-					this.response = new Response(body, responseOptions);
+					this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
 					(<boolean>this.response.redirected) = this.redirectCount > 0;
 					(<string>this.response.url) = this.request.url;
 					this.resolve(this.response);
@@ -325,7 +329,7 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new Response(body, responseOptions);
+			this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -333,7 +337,7 @@ export default class Fetch {
 		}
 
 		// Otherwise, use response as is
-		this.response = new Response(body, responseOptions);
+		this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
 		(<boolean>this.response.redirected) = this.redirectCount > 0;
 		(<string>this.response.url) = this.request.url;
 		this.resolve(this.response);
@@ -471,6 +475,7 @@ export default class Fetch {
 
 				const fetch = new (<typeof Fetch>this.constructor)({
 					ownerDocument: this.ownerDocument,
+					asyncTaskManager: this.asyncTaskManager,
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,

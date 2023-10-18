@@ -8,17 +8,22 @@ import BrowserPage from './BrowserPage.js';
  * Browser context.
  */
 export default class Browser {
-	public defaultContext: BrowserContext | null = new BrowserContext(this);
-	public contexts: BrowserContext[] = [this.defaultContext];
-	public settings: IBrowserSettings;
+	public readonly defaultContext: BrowserContext;
+	public readonly contexts: BrowserContext[];
+	public readonly settings: IBrowserSettings;
+	public readonly console: Console | null;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param [options] Options.
 	 * @param [options.settings] Browser settings.
+	 * @param [options.console] Console.
 	 */
-	constructor(options?: { settings?: IOptionalBrowserSettings }) {
+	constructor(options?: { settings?: IOptionalBrowserSettings; console?: Console }) {
+		this.console = options?.console || null;
+		this.defaultContext = new BrowserContext(this);
+		this.contexts = [this.defaultContext];
 		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
 	}
 
@@ -29,8 +34,8 @@ export default class Browser {
 	 */
 	public async close(): Promise<void> {
 		await Promise.all(this.contexts.map((context) => context.close()));
-		this.contexts = [];
-		this.defaultContext = null;
+		(<BrowserContext[]>this.contexts) = [];
+		(<BrowserContext | null>this.defaultContext) = null;
 	}
 
 	/**

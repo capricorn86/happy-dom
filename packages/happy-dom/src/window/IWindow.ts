@@ -95,9 +95,6 @@ import MimeType from '../navigator/MimeType.js';
 import MimeTypeArray from '../navigator/MimeTypeArray.js';
 import Plugin from '../navigator/Plugin.js';
 import PluginArray from '../navigator/PluginArray.js';
-import IResponseInit from '../fetch/types/IResponseInit.js';
-import IRequest from '../fetch/types/IRequest.js';
-import IHeaders from '../fetch/types/IHeaders.js';
 import IRequestInit from '../fetch/types/IRequestInit.js';
 import IResponse from '../fetch/types/IResponse.js';
 import Range from '../range/Range.js';
@@ -119,9 +116,6 @@ import { webcrypto } from 'crypto';
 import FormData from '../form-data/FormData.js';
 import AbortController from '../fetch/AbortController.js';
 import AbortSignal from '../fetch/AbortSignal.js';
-import IResponseBody from '../fetch/types/IResponseBody.js';
-import IRequestInfo from '../fetch/types/IRequestInfo.js';
-import IHeadersInit from '../fetch/types/IHeadersInit.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
@@ -131,7 +125,10 @@ import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
-import DetachedWindowAPI from './DetachedWindowAPI.js';
+import DetachedWindowAPI from './HappyDOMWindowAPI.js';
+import Headers from '../fetch/Headers.js';
+import Request from '../fetch/Request.js';
+import Response from '../fetch/Response.js';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -337,11 +334,9 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly MimeTypeArray: typeof MimeTypeArray;
 	readonly Plugin: typeof Plugin;
 	readonly PluginArray: typeof PluginArray;
-	readonly Headers: { new (init?: IHeadersInit): IHeaders };
-	readonly Request: {
-		new (input: IRequestInfo, init?: IRequestInit): IRequest;
-	};
-	readonly Response: { new (body?: IResponseBody | null, init?: IResponseInit): IResponse };
+	readonly Headers: typeof Headers;
+	readonly Request: typeof Request;
+	readonly Response: typeof Response;
 	readonly Range: typeof Range;
 	readonly DOMRect: typeof DOMRect;
 	readonly XMLHttpRequest: typeof XMLHttpRequest;

@@ -3,6 +3,7 @@ import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import BrowserFrame from './BrowserFrame.js';
 import BrowserContext from './BrowserContext.js';
+import VirtualConsole from '../console/VirtualConsole.js';
 
 /**
  * Browser page.
@@ -11,6 +12,8 @@ export default class BrowserPage {
 	public consolePrinter: VirtualConsolePrinter | null;
 	public mainFrame: BrowserFrame | null = null;
 	public context: BrowserContext;
+	public readonly console: Console;
+	public readonly virtualConsolePrinter = new VirtualConsolePrinter();
 
 	/**
 	 * Constructor.
@@ -19,6 +22,7 @@ export default class BrowserPage {
 	 */
 	constructor(context: BrowserContext) {
 		this.context = context;
+		this.console = context.browser.console ?? new VirtualConsole(this.virtualConsolePrinter);
 	}
 
 	/**
@@ -41,7 +45,7 @@ export default class BrowserPage {
 	 * @returns Promise.
 	 */
 	public async close(): Promise<void> {
-		await this.mainFrame.close();
+		await this.mainFrame.destroy();
 		this.consolePrinter = null;
 		this.mainFrame = null;
 		this.context = null;

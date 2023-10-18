@@ -17,7 +17,6 @@ import DOMException from './exception/DOMException.js';
 import History from './history/History.js';
 import CSSStyleDeclaration from './css/declaration/CSSStyleDeclaration.js';
 import Screen from './screen/Screen.js';
-import AsyncTaskManager from './async-task-manager/AsyncTaskManager.js';
 import NodeFilter from './tree-walker/NodeFilter.js';
 import Event from './event/Event.js';
 import EventTarget from './event/EventTarget.js';
@@ -179,7 +178,6 @@ export {
 	History,
 	CSSStyleDeclaration,
 	Screen,
-	AsyncTaskManager,
 	NodeFilter,
 	Event,
 	EventTarget,

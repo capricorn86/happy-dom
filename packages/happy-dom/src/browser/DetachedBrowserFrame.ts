@@ -1,30 +1,33 @@
 import IWindow from '../window/IWindow.js';
-import BrowserPage from './BrowserPage.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import IBrowserFrame from './IBrowserFrame.js';
 import Window from '../window/Window.js';
+import IBrowserSettings from './IBrowserSettings.js';
+import { VirtualConsolePrinter } from '../index.js';
+import BrowserSettingsFactory from './BrowserSettingsFactory.js';
 
 /**
  * Browser frame.
  */
-export default class BrowserFrame implements IBrowserFrame {
-	public readonly childFrames: BrowserFrame[] = [];
+export default class DetachedBrowserFrame implements IBrowserFrame {
+	public readonly childFrames: DetachedBrowserFrame[] = [];
 	public detached = false;
-	public readonly page: BrowserPage;
 	public readonly window: IWindow;
 	public _asyncTaskManager = new AsyncTaskManager();
+	public readonly virtualConsolePrinter = new VirtualConsolePrinter();
+	public readonly settings: IBrowserSettings;
+	public readonly console: Console;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param page Page.
+	 * @param options Options.
+	 * @param options.window Window.
+	 * @param [options.settings] Browser settings.
 	 */
-	constructor(page: BrowserPage) {
-		this.page = page;
-		this.window = new Window({
-			browserFrame: this,
-			console: page.console
-		});
+	constructor(options: { window: Window; settings?: IBrowserSettings }) {
+		this.window = options.window;
+		this.settings = BrowserSettingsFactory.getSettings(options.settings);
 	}
 
 	/**
@@ -61,8 +64,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public async destroy(): Promise<void> {
 		await Promise.all(this.childFrames.map((frame) => frame.destroy()));
 		await this._asyncTaskManager.destroy();
-		(<BrowserPage>this.page) = null;
-		(<Window>this.window) = null;
+		(<Window | null>this.window) = null;
 	}
 
 	/**

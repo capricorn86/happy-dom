@@ -25,14 +25,13 @@ export default class HTMLScriptElementUtility {
 			element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptFileLoading ||
 			element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation
 		) {
-			const error = new DOMException(
-				`Failed to load external script "${src}". JavaScript file loading is disabled.`,
-				DOMExceptionNameEnum.notSupportedError
+			WindowErrorUtility.dispatchError(
+				element,
+				new DOMException(
+					`Failed to load external script "${src}". JavaScript file loading is disabled.`,
+					DOMExceptionNameEnum.notSupportedError
+				)
 			);
-			WindowErrorUtility.dispatchError(element, error);
-			if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
-				throw error;
-			}
 			return;
 		}
 
