@@ -9,11 +9,10 @@ import VirtualConsole from '../console/VirtualConsole.js';
  * Browser page.
  */
 export default class BrowserPage {
-	public consolePrinter: VirtualConsolePrinter | null;
-	public mainFrame: BrowserFrame | null = null;
-	public context: BrowserContext;
-	public readonly console: Console;
 	public readonly virtualConsolePrinter = new VirtualConsolePrinter();
+	public readonly mainFrame: BrowserFrame;
+	public readonly context: BrowserContext;
+	public readonly console: Console;
 
 	/**
 	 * Constructor.
@@ -23,6 +22,7 @@ export default class BrowserPage {
 	constructor(context: BrowserContext) {
 		this.context = context;
 		this.console = context.browser.console ?? new VirtualConsole(this.virtualConsolePrinter);
+		this.mainFrame = new BrowserFrame(this);
 	}
 
 	/**
@@ -46,9 +46,13 @@ export default class BrowserPage {
 	 */
 	public async close(): Promise<void> {
 		await this.mainFrame.destroy();
-		this.consolePrinter = null;
-		this.mainFrame = null;
-		this.context = null;
+		const index = this.context.pages.indexOf(this);
+		if (index !== -1) {
+			this.context.pages.splice(index, 1);
+		}
+		(<VirtualConsolePrinter | null>this.virtualConsolePrinter) = null;
+		(<BrowserFrame | null>this.mainFrame) = null;
+		(<BrowserContext | null>this.context) = null;
 	}
 
 	/**
@@ -75,22 +79,7 @@ export default class BrowserPage {
 	 * @param viewport Viewport.
 	 */
 	public setViewport(viewport: IBrowserPageViewport): void {
-		if (
-			(viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) ||
-			(viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height)
-		) {
-			if (viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) {
-				(<number>this.mainFrame.window.innerWidth) = viewport.width;
-				(<number>this.mainFrame.window.outerWidth) = viewport.width;
-			}
-
-			if (viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height) {
-				(<number>this.mainFrame.window.innerHeight) = viewport.height;
-				(<number>this.mainFrame.window.outerHeight) = viewport.height;
-			}
-
-			this.mainFrame.window.dispatchEvent(new Event('resize'));
-		}
+		this.mainFrame.setViewport(viewport);
 	}
 
 	/**
@@ -107,7 +96,7 @@ export default class BrowserPage {
 	 *
 	 * @param parent Parent frame.
 	 */
-	public _getFrames(parent: BrowserFrame): BrowserFrame[] {
+	private _getFrames(parent: BrowserFrame): BrowserFrame[] {
 		let frames = [parent];
 		for (const frame of parent.childFrames) {
 			frames = frames.concat(this._getFrames(frame));

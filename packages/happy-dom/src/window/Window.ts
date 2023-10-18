@@ -372,7 +372,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly PermissionStatus = PermissionStatus;
 	public readonly Clipboard = Clipboard;
 	public readonly ClipboardItem = ClipboardItem;
-	public readonly XMLHttpRequest;
+	public readonly XMLHttpRequest: { new (): XMLHttpRequestImplementation };
 	public readonly DOMParser: typeof DOMParserImplementation;
 	public readonly Range;
 	public readonly FileReader;

@@ -1,4 +1,5 @@
 import IWindow from '../window/IWindow.js';
+import IBrowserPageViewport from './IBrowserPageViewport.js';
 
 /**
  * Browser frame.
@@ -29,6 +30,13 @@ export default interface IBrowserFrame {
 	 * @returns Promise.
 	 */
 	destroy(): Promise<void>;
+
+	/**
+	 * Sets the viewport.
+	 *
+	 * @param viewport Viewport.
+	 */
+	setViewport(viewport: IBrowserPageViewport): void;
 
 	/**
 	 * Go to a page.

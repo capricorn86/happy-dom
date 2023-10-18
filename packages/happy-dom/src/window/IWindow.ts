@@ -339,7 +339,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly Response: typeof Response;
 	readonly Range: typeof Range;
 	readonly DOMRect: typeof DOMRect;
-	readonly XMLHttpRequest: typeof XMLHttpRequest;
+	readonly XMLHttpRequest: { new (): XMLHttpRequest };
 	readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
 	readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
 	readonly FileList: typeof FileList;

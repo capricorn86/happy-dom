@@ -5,6 +5,8 @@ import Window from '../window/Window.js';
 import IBrowserSettings from './IBrowserSettings.js';
 import { VirtualConsolePrinter } from '../index.js';
 import BrowserSettingsFactory from './BrowserSettingsFactory.js';
+import IBrowserPageViewport from './IBrowserPageViewport.js';
+import Event from '../event/Event.js';
 
 /**
  * Browser frame.
@@ -65,6 +67,30 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		await Promise.all(this.childFrames.map((frame) => frame.destroy()));
 		await this._asyncTaskManager.destroy();
 		(<Window | null>this.window) = null;
+	}
+
+	/**
+	 * Sets the viewport.
+	 *
+	 * @param viewport Viewport.
+	 */
+	public setViewport(viewport: IBrowserPageViewport): void {
+		if (
+			(viewport.width !== undefined && this.window.innerWidth !== viewport.width) ||
+			(viewport.height !== undefined && this.window.innerHeight !== viewport.height)
+		) {
+			if (viewport.width !== undefined && this.window.innerWidth !== viewport.width) {
+				(<number>this.window.innerWidth) = viewport.width;
+				(<number>this.window.outerWidth) = viewport.width;
+			}
+
+			if (viewport.height !== undefined && this.window.innerHeight !== viewport.height) {
+				(<number>this.window.innerHeight) = viewport.height;
+				(<number>this.window.outerHeight) = viewport.height;
+			}
+
+			this.window.dispatchEvent(new Event('resize'));
+		}
 	}
 
 	/**
