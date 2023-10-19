@@ -43,7 +43,6 @@ import Range from '../../range/Range.js';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement.js';
 import IAttr from '../attr/IAttr.js';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction.js';
-import ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
 import ElementUtility from '../element/ElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
@@ -55,8 +54,6 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
  * Document.
  */
 export default class Document extends Node implements IDocument {
-	public static _defaultView: IWindow = null;
-	public static _windowClass: {} | null = null;
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation: DOMImplementation;
@@ -64,6 +61,7 @@ export default class Document extends Node implements IDocument {
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
 	public readonly referrer = '';
+	public readonly ownerDocument: IDocument | null = null;
 	public readonly _windowClass: {} | null = null;
 	public readonly _readyStateManager: DocumentReadyStateManager;
 	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
@@ -199,10 +197,8 @@ export default class Document extends Node implements IDocument {
 	constructor() {
 		super();
 
-		this.defaultView = (<typeof Document>this.constructor)._defaultView;
 		this.implementation = new DOMImplementation(this);
 
-		this._windowClass = (<typeof Document>this.constructor)._windowClass;
 		this._readyStateManager = new DocumentReadyStateManager(this.defaultView);
 		this._rootNode = this;
 
@@ -633,8 +629,6 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IDocument {
-		(<typeof Document>this.constructor)._defaultView = this.defaultView;
-
 		const clone = <Document>super.cloneNode(deep);
 
 		if (deep) {
@@ -827,19 +821,18 @@ export default class Document extends Node implements IDocument {
 		}
 
 		const elementClass: typeof Element =
-			customElementClass || ElementTag[tagName] || HTMLUnknownElement;
-
-		elementClass._ownerDocument = this;
+			customElementClass || this.defaultView[ElementTag[tagName]] || HTMLUnknownElement;
 
 		const element = new elementClass();
 		element.tagName = tagName;
+
+		// TODO: Should not be necessary as the class should already extend the class created by WindowClassFactory?
 		(<IDocument>element.ownerDocument) = this;
+
 		(<string>element.namespaceURI) = namespaceURI;
 		if (element instanceof Element && options && options.is) {
 			element._isValue = String(options.is);
 		}
-
-		elementClass._ownerDocument = null;
 
 		return element;
 	}
@@ -853,10 +846,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createTextNode(data?: string): IText {
-		Text._ownerDocument = this;
-		const text = new Text(data);
-		Text._ownerDocument = null;
-		return text;
+		return new this.defaultView.Text(data);
 	}
 
 	/**
@@ -866,10 +856,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createComment(data?: string): IComment {
-		Comment._ownerDocument = this;
-		const comment = new Comment(data);
-		Comment._ownerDocument = null;
-		return comment;
+		return new this.defaultView.Comment(data);
 	}
 
 	/**
@@ -878,10 +865,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document fragment.
 	 */
 	public createDocumentFragment(): IDocumentFragment {
-		DocumentFragment._ownerDocument = this;
-		const fragment = new DocumentFragment();
-		DocumentFragment._ownerDocument = null;
-		return fragment;
+		return new this.defaultView.DocumentFragment();
 	}
 
 	/**
@@ -942,8 +926,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr {
-		Attr._ownerDocument = this;
-		const attribute = new Attr();
+		const attribute = new this.defaultView.Attr();
 		attribute.namespaceURI = namespaceURI;
 		attribute.name = qualifiedName;
 		return <IAttr>attribute;
@@ -1039,10 +1022,8 @@ export default class Document extends Node implements IDocument {
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
-		ProcessingInstruction._ownerDocument = this;
-		const processingInstruction = new ProcessingInstruction(data);
+		const processingInstruction = new this.defaultView.ProcessingInstruction(data);
 		processingInstruction.target = target;
-		ProcessingInstruction._ownerDocument = null;
 		return processingInstruction;
 	}
 }

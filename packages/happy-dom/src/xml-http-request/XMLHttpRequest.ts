@@ -6,6 +6,7 @@ import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget.js';
 import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum.js';
 import Event from '../event/Event.js';
 import IDocument from '../nodes/document/IDocument.js';
+import IWindow from '../window/IWindow.js';
 import Blob from '../file/Blob.js';
 import XMLHttpRequestUpload from './XMLHttpRequestUpload.js';
 import DOMException from '../exception/DOMException.js';
@@ -59,7 +60,7 @@ const CONTENT_TYPE_ENCODING_REGEXP = /charset=([^;]*)/i;
  * Based on:
  * https://github.com/mjwwit/node-XMLHttpRequest/blob/master/lib/XMLHttpRequest.js
  */
-export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
+export default abstract class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	// Constants
 	public static UNSENT = XMLHttpRequestReadyStateEnum.unsent;
 	public static OPENED = XMLHttpRequestReadyStateEnum.opened;
@@ -71,11 +72,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public upload: XMLHttpRequestUpload = new XMLHttpRequestUpload();
 
 	// Will be injected by a sub-class in Window.
-	readonly #ownerDocument: IDocument;
-	readonly #browserSettings: { enableFileSystemHttpRequests: boolean } = Object.freeze({
-		enableFileSystemHttpRequests: false
-	});
-	readonly #asyncTaskManager: AsyncTaskManager;
+	readonly #injected: {
+		readonly window: IWindow;
+		readonly asyncTaskManager: AsyncTaskManager;
+		readonly browserSettings: { readonly enableFileSystemHttpRequests: boolean };
+	};
 
 	// Private properties
 	readonly #internal: {
@@ -135,23 +136,19 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	/**
 	 * Constructor.
 	 *
-	 * @param [inject] Properties to inject.
-	 * @param [inject.browserSettings] Browser settings.
-	 * @param [inject.browserSettings.enableFileSystemHttpRequests] Enable file system HTTP requests.
-	 * @param inject.ownerDocument
-	 * @param inject.asyncTaskManager
+	 * @param inject Properties to inject.
+	 * @param inject.window Window.
+	 * @param inject.asyncTaskManager Async task manager.
+	 * @param inject.browserSettings Browser settings.
+	 * @param inject.browserSettings.enableFileSystemHttpRequests Enable file system HTTP requests.
 	 */
-	constructor(inject?: {
-		ownerDocument: IDocument;
+	constructor(inject: {
+		window: IWindow;
 		asyncTaskManager: AsyncTaskManager;
 		browserSettings: { enableFileSystemHttpRequests: boolean };
 	}) {
 		super();
-		this.#ownerDocument = inject.ownerDocument;
-		this.#asyncTaskManager = inject.asyncTaskManager;
-		this.#browserSettings = Object.freeze({
-			enableFileSystemHttpRequests: inject.browserSettings.enableFileSystemHttpRequests
-		});
+		this.#injected = inject;
 	}
 
 	/**
@@ -413,7 +410,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			);
 		}
 
-		const { location } = this.#ownerDocument.defaultView;
+		const { location } = this.#injected.window;
 
 		const url = new URL(this.#internal.settings.url, location);
 
@@ -427,7 +424,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		// Load files off the local filesystem (file://)
 		if (XMLHttpRequestURLUtility.isLocal(url)) {
-			if (!this.#browserSettings.enableFileSystemHttpRequests) {
+			if (!this.#injected.browserSettings.enableFileSystemHttpRequests) {
 				throw new DOMException(
 					'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.',
 					DOMExceptionNameEnum.securityError
@@ -550,7 +547,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#internal.state.readyState = XMLHttpRequestReadyStateEnum.unsent;
 
 		if (this.#internal.state.asyncTaskID !== null) {
-			this.#asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+			this.#injected.asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
 		}
 	}
 
@@ -599,7 +596,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @returns Default request headers.
 	 */
 	private _getDefaultRequestHeaders(): { [key: string]: string } {
-		const { location, navigator, document } = this.#ownerDocument.defaultView;
+		const { location, navigator, document } = this.#injected.window;
 
 		return {
 			accept: '*/*',
@@ -655,7 +652,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#internal.state.responseXML = null;
 			this.#internal.state.responseURL = new URL(
 				this.#internal.settings.url,
-				this.#ownerDocument.defaultView.location
+				this.#injected.window.location
 			).href;
 			// Set Cookies.
 			this._setCookies(this.#internal.state.incommingMessage.headers);
@@ -668,7 +665,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			) {
 				const redirectUrl = new URL(
 					<string>this.#internal.state.incommingMessage.headers['location'],
-					this.#ownerDocument.defaultView.location
+					this.#injected.window.location
 				);
 				ssl = redirectUrl.protocol === 'https:';
 				this.#internal.settings.url = redirectUrl.href;
@@ -710,7 +707,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	): Promise<void> {
 		return new Promise((resolve) => {
 			// Starts async task in Happy DOM
-			this.#internal.state.asyncTaskID = this.#asyncTaskManager.startTask(this.abort.bind(this));
+			this.#internal.state.asyncTaskID = this.#injected.asyncTaskManager.startTask(
+				this.abort.bind(this)
+			);
 
 			// Use the proper protocol
 			const sendRequest = ssl ? HTTPS.request : HTTP.request;
@@ -730,7 +729,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					resolve();
 
 					// Ends async task in Happy DOM
-					this.#asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+					this.#injected.asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
 				}
 			);
 			this.#internal.state.asyncRequest.on('error', (error: Error) => {
@@ -738,7 +737,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				resolve();
 
 				// Ends async task in Happy DOM
-				this.#asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+				this.#injected.asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
 			});
 
 			// Node 0.4 and later won't accept empty data. Make sure it's needed.
@@ -787,10 +786,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				// Change URL to the redirect location
 				this.#internal.settings.url = this.#internal.state.incommingMessage.headers.location;
 				// Parse the new URL.
-				const redirectUrl = new URL(
-					this.#internal.settings.url,
-					this.#ownerDocument.defaultView.location
-				);
+				const redirectUrl = new URL(this.#internal.settings.url, this.#injected.window.location);
 				this.#internal.settings.url = redirectUrl.href;
 				ssl = redirectUrl.protocol === 'https:';
 				// Issue the new request
@@ -855,7 +851,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					this.#internal.state.responseText = responseText;
 					this.#internal.state.responseURL = new URL(
 						this.#internal.settings.url,
-						this.#ownerDocument.defaultView.location
+						this.#injected.window.location
 					).href;
 					// Discard the 'end' event if the connection has been aborted
 					this._setState(XMLHttpRequestReadyStateEnum.done);
@@ -878,7 +874,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @returns Promise.
 	 */
 	private async _sendLocalAsyncRequest(url: UrlObject): Promise<void> {
-		this.#internal.state.asyncTaskID = this.#asyncTaskManager.startTask(this.abort.bind(this));
+		this.#internal.state.asyncTaskID = this.#injected.asyncTaskManager.startTask(
+			this.abort.bind(this)
+		);
 
 		let data: Buffer;
 
@@ -887,7 +885,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		} catch (error) {
 			this._onError(error);
 			// Release async task.
-			this.#asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+			this.#injected.asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
 			return;
 		}
 
@@ -908,7 +906,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		this._setState(XMLHttpRequestReadyStateEnum.done);
-		this.#asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+		this.#injected.asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
 	}
 
 	/**
@@ -961,7 +959,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#internal.state.responseText = responseText;
 		this.#internal.state.responseURL = new URL(
 			this.#internal.settings.url,
-			this.#ownerDocument.defaultView.location
+			this.#injected.window.location
 		).href;
 
 		this._setState(XMLHttpRequestReadyStateEnum.done);
@@ -992,7 +990,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			case XMLHttpResponseTypeEnum.blob:
 				try {
 					return {
-						response: new this.#ownerDocument.defaultView.Blob([new Uint8Array(data)], {
+						response: new this.#injected.window.Blob([new Uint8Array(data)], {
 							type: this.getResponseHeader('content-type') || ''
 						}),
 						responseText: null,
@@ -1002,7 +1000,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					return { response: null, responseText: null, responseXML: null };
 				}
 			case XMLHttpResponseTypeEnum.document:
-				const window = this.#ownerDocument.defaultView;
+				const window = this.#injected.window;
 				const domParser = new window.DOMParser();
 				let response: IDocument;
 
@@ -1043,20 +1041,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	private _setCookies(
 		headers: { [name: string]: string | string[] } | HTTP.IncomingHttpHeaders
 	): void {
-		const originURL = new URL(
-			this.#internal.settings.url,
-			this.#ownerDocument.defaultView.location
-		);
+		const originURL = new URL(this.#internal.settings.url, this.#injected.window.location);
 		for (const header of ['set-cookie', 'set-cookie2']) {
 			if (Array.isArray(headers[header])) {
 				for (const cookie of headers[header]) {
-					(<Document>this.#ownerDocument.defaultView.document)._cookie.addCookieString(
-						originURL,
-						cookie
-					);
+					(<Document>this.#injected.window.document)._cookie.addCookieString(originURL, cookie);
 				}
 			} else if (headers[header]) {
-				(<Document>this.#ownerDocument.defaultView.document)._cookie.addCookieString(
+				(<Document>this.#injected.window.document)._cookie.addCookieString(
 					originURL,
 					<string>headers[header]
 				);
@@ -1082,9 +1074,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			error: errorObject
 		});
 
-		this.#ownerDocument.defaultView.console.error(errorObject);
+		this.#injected.window.console.error(errorObject);
 		this.dispatchEvent(event);
-		this.#ownerDocument.defaultView.dispatchEvent(event);
+		this.#injected.window.dispatchEvent(event);
 	}
 
 	/**
