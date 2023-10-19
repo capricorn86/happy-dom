@@ -237,7 +237,7 @@ export default class Response implements IResponse {
 	 * @returns Clone.
 	 */
 	public clone(): IResponse {
-		const response = new Response();
+		const response = new (<typeof Response>this.constructor)();
 
 		(<number>response.status) = this.status;
 		(<string>response.statusText) = this.statusText;
@@ -266,7 +266,7 @@ export default class Response implements IResponse {
 			);
 		}
 
-		return new Response(null, {
+		return new (<typeof Response>this.constructor)(null, {
 			headers: {
 				location: new URL(url).toString()
 			},
@@ -282,7 +282,7 @@ export default class Response implements IResponse {
 	 * @returns Response.
 	 */
 	public static error(): IResponse {
-		const response = new Response(null, { status: 0, statusText: '' });
+		const response = new (<typeof Response>this.constructor)(null, { status: 0, statusText: '' });
 		(<string>response.type) = 'error';
 		return response;
 	}
@@ -307,7 +307,7 @@ export default class Response implements IResponse {
 			headers.set('content-type', 'application/json');
 		}
 
-		return new Response(body, {
+		return new (<typeof Response>this.constructor)(body, {
 			status: 200,
 			...init,
 			headers

@@ -7,6 +7,7 @@ import INode from '../nodes/node/INode.js';
 import IDocument from '../nodes/document/IDocument.js';
 import IWindow from '../window/IWindow.js';
 import WindowErrorUtility from '../window/WindowErrorUtility.js';
+import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
 
 /**
  * Handles events.
@@ -140,6 +141,8 @@ export default abstract class EventTarget implements IEventTarget {
 			return !(event.cancelable && event.defaultPrevented);
 		}
 
+		const browserSettings = WindowBrowserSettingsReader.getSettings(window);
+
 		event._currentTarget = this;
 
 		if (event.eventPhase !== EventPhaseEnum.capturing) {
@@ -150,7 +153,7 @@ export default abstract class EventTarget implements IEventTarget {
 				if (
 					window &&
 					(this !== <IEventTarget>window || event.type !== 'error') &&
-					!window.happyDOM.settings.disableErrorCapturing
+					!browserSettings.disableErrorCapturing
 				) {
 					WindowErrorUtility.captureError(window, this[onEventName].bind(this, event));
 				} else {
@@ -183,7 +186,7 @@ export default abstract class EventTarget implements IEventTarget {
 				if (
 					window &&
 					(this !== <IEventTarget>window || event.type !== 'error') &&
-					!window.happyDOM.settings.disableErrorCapturing
+					!browserSettings.disableErrorCapturing
 				) {
 					if ((<IEventListener>listener).handleEvent) {
 						WindowErrorUtility.captureError(

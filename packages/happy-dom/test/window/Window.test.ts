@@ -784,14 +784,20 @@ describe('Window', () => {
 			expect(computedStyle.height).toBe('150px');
 		});
 
-		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values that has not been converted to pixels if Window.happyDOM.settings.disableComputedStyleRendering is set to "true".', () => {
+		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values that has not been converted to pixels if the Happy DOM setting "disableComputedStyleRendering" is set to "true".', () => {
+			window = new Window({
+				width: 1024,
+				settings: {
+					disableComputedStyleRendering: true
+				}
+			});
+			document = window.document;
+
 			const parent = <IHTMLElement>document.createElement('div');
 			const element = <IHTMLElement>document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
-
-			window.happyDOM.setWindowSize({ width: 1024 });
 
 			parentStyle.innerHTML = `
                 html {
@@ -815,8 +821,6 @@ describe('Window', () => {
 
 			document.body.appendChild(parentStyle);
 			document.body.appendChild(parent);
-
-			window.happyDOM.settings.disableComputedStyleRendering = true;
 
 			expect(computedStyle.width).toBe('10rem');
 			expect(computedStyle.height).toBe('10em');
@@ -1448,7 +1452,7 @@ describe('Window', () => {
 
 				(<Window>window.parent) = parent;
 
-				window.addEventListener('message', (event) => (triggeredEvent = event));
+				window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
 				window.postMessage(message);
 
 				expect(triggeredEvent).toBe(null);
@@ -1481,7 +1485,7 @@ describe('Window', () => {
 				};
 				let triggeredEvent: MessageEvent | null = null;
 
-				window.addEventListener('message', (event) => (triggeredEvent = event));
+				window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
 				window.postMessage(message);
 
 				expect(triggeredEvent).toBe(null);

@@ -961,24 +961,28 @@ describe('XMLHttpRequest', () => {
 			);
 		});
 
-		it('Throws an exception when doing a synchronous request towards a local file if "window.happyDOM.settings.enableFileSystemHttpRequests" has not been enabled.', () => {
+		it('Throws an exception when doing a synchronous request towards a local file if the Happy DOM setting "enableFileSystemHttpRequests" has not been enabled.', () => {
 			request.open('GET', 'file://C:/path/to/file.txt', false);
 
 			expect(() => request.send()).toThrowError(
-				'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.'
+				'File system is disabled by default for security reasons. To enable it, set the Happy DOM setting "enableFileSystemHttpRequests" option to true.'
 			);
 		});
 
-		it('Throws an exception when doing an asynchronous request towards a local file if "window.happyDOM.settings.enableFileSystemHttpRequests" has not been enabled.', () => {
+		it('Throws an exception when doing an asynchronous request towards a local file if the Happy DOM setting "enableFileSystemHttpRequests" has not been enabled.', () => {
 			request.open('GET', 'file://C:/path/to/file.txt', true);
 
 			expect(() => request.send()).toThrowError(
-				'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.'
+				'File system is disabled by default for security reasons. To enable it, set the Happy DOM setting "enableFileSystemHttpRequests" option to true.'
 			);
 		});
 
 		it('Throws an exception when doing a synchronous request towards a local file with another method than "GET".', () => {
-			window.happyDOM.settings.enableFileSystemHttpRequests = true;
+			window = new Window({
+				settings: {
+					enableFileSystemHttpRequests: false
+				}
+			});
 
 			request.open('POST', 'file://C:/path/to/file.txt', false);
 
@@ -988,7 +992,11 @@ describe('XMLHttpRequest', () => {
 		});
 
 		it('Throws an exception when doing a asynchronous request towards a local file with another method than "GET".', () => {
-			window.happyDOM.settings.enableFileSystemHttpRequests = true;
+			window = new Window({
+				settings: {
+					enableFileSystemHttpRequests: true
+				}
+			});
 
 			request.open('POST', 'file://C:/path/to/file.txt', true);
 
@@ -998,6 +1006,12 @@ describe('XMLHttpRequest', () => {
 		});
 
 		it('Performs a synchronous request towards a local file.', () => {
+			window = new Window({
+				settings: {
+					enableFileSystemHttpRequests: true
+				}
+			});
+
 			const filepath = 'C:/path/to/file.txt';
 			const fileContent = 'test';
 
@@ -1007,8 +1021,6 @@ describe('XMLHttpRequest', () => {
 					return Buffer.from(fileContent);
 				}
 			});
-
-			window.happyDOM.settings.enableFileSystemHttpRequests = true;
 
 			request.open('GET', `file://${filepath}`, false);
 
@@ -1020,6 +1032,12 @@ describe('XMLHttpRequest', () => {
 		});
 
 		it('Performs an asynchronous request towards a local file.', async () => {
+			window = new Window({
+				settings: {
+					enableFileSystemHttpRequests: true
+				}
+			});
+
 			await new Promise((resolve) => {
 				const filepath = 'C:/path/to/file.txt';
 				const fileContent = 'test';
@@ -1032,8 +1050,6 @@ describe('XMLHttpRequest', () => {
 						}
 					}
 				});
-
-				window.happyDOM.settings.enableFileSystemHttpRequests = true;
 
 				request.open('GET', `file://${filepath}`, true);
 

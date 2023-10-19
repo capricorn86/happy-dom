@@ -337,7 +337,7 @@ export default class Range {
 			const clone = firstPartialContainedChild.cloneNode();
 			fragment.appendChild(clone);
 
-			const subRange = new Range();
+			const subRange = new (<typeof Range>this.constructor)();
 			subRange._start.node = this._start.node;
 			subRange._start.offset = startOffset;
 			subRange._end.node = firstPartialContainedChild;
@@ -366,7 +366,7 @@ export default class Range {
 			const clone = lastPartiallyContainedChild.cloneNode(false);
 			fragment.appendChild(clone);
 
-			const subRange = new Range();
+			const subRange = new (<typeof Range>this.constructor)();
 			subRange._start.node = lastPartiallyContainedChild;
 			subRange._start.offset = 0;
 			subRange._end.node = this._end.node;
@@ -386,7 +386,7 @@ export default class Range {
 	 * @returns Range.
 	 */
 	public cloneRange(): Range {
-		const clone = new Range();
+		const clone = new (<typeof Range>this.constructor)();
 
 		clone._start.node = this._start.node;
 		clone._start.offset = this._start.offset;
@@ -620,7 +620,7 @@ export default class Range {
 			const clone = firstPartialContainedChild.cloneNode(false);
 			fragment.appendChild(clone);
 
-			const subRange = new Range();
+			const subRange = new (<typeof Range>this.constructor)();
 			subRange._start.node = this._start.node;
 			subRange._start.offset = startOffset;
 			subRange._end.node = firstPartialContainedChild;
@@ -650,7 +650,7 @@ export default class Range {
 			const clone = lastPartiallyContainedChild.cloneNode(false);
 			fragment.appendChild(clone);
 
-			const subRange = new Range();
+			const subRange = new (<typeof Range>this.constructor)();
 			subRange._start.node = lastPartiallyContainedChild;
 			subRange._start.offset = 0;
 			subRange._end.node = this._end.node;

@@ -234,15 +234,18 @@ describe('HTMLLinkElement', () => {
 			expect(element.sheet).toBe(null);
 		});
 
-		it('Triggers an error event when "window.happyDOM.settings.disableCSSFileLoading" is set to "true".', async () => {
+		it('Triggers an error event when the Happy DOM setting "disableCSSFileLoading" is set to "true".', async () => {
+			window = new Window({
+				settings: { disableCSSFileLoading: true }
+			});
+			document = window.document;
+
 			const element = <IHTMLLinkElement>document.createElement('link');
 			let errorEvent: ErrorEvent | null = null;
 
 			element.rel = 'stylesheet';
 			element.href = '/test/path/file.css';
 			element.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
-
-			window.happyDOM.settings.disableCSSFileLoading = true;
 
 			document.body.appendChild(element);
 

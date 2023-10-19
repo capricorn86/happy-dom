@@ -3,6 +3,7 @@ import PluginArray from './PluginArray.js';
 import IWindow from '../window/IWindow.js';
 import Permissions from '../permissions/Permissions.js';
 import Clipboard from '../clipboard/Clipboard.js';
+import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
 
 /**
  * Browser Navigator API.
@@ -151,7 +152,7 @@ export default class Navigator {
 	 * "appCodeName/appVersion number (Platform; Security; OS-or-CPU; Localization; rv: revision-version-number) product/productSub Application-Name Application-Name-version".
 	 */
 	public get userAgent(): string {
-		return this.#ownerWindow.happyDOM.settings.navigator.userAgent;
+		return WindowBrowserSettingsReader.getSettings(this.#ownerWindow).navigator.userAgent;
 	}
 
 	/**

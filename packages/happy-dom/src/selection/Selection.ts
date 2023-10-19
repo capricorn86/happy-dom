@@ -249,7 +249,7 @@ export default class Selection {
 			return;
 		}
 
-		const newRange = new Range();
+		const newRange = new this._ownerDocument.defaultView.Range();
 
 		newRange._start.node = node;
 		newRange._start.offset = offset;
@@ -285,7 +285,7 @@ export default class Selection {
 		}
 
 		const { node, offset } = this._range._end;
-		const newRange = new Range();
+		const newRange = new this._ownerDocument.defaultView.Range();
 
 		newRange._start.node = node;
 		newRange._start.offset = offset;
@@ -309,7 +309,7 @@ export default class Selection {
 		}
 
 		const { node, offset } = this._range._start;
-		const newRange = new Range();
+		const newRange = new this._ownerDocument.defaultView.Range();
 
 		newRange._start.node = node;
 		newRange._start.offset = offset;
@@ -379,7 +379,7 @@ export default class Selection {
 
 		const anchorNode = this.anchorNode;
 		const anchorOffset = this.anchorOffset;
-		const newRange = new Range();
+		const newRange = new this._ownerDocument.defaultView.Range();
 		newRange._start.node = node;
 		newRange._start.offset = 0;
 		newRange._end.node = node;
@@ -435,7 +435,7 @@ export default class Selection {
 		}
 
 		const length = node.childNodes.length;
-		const newRange = new Range();
+		const newRange = new this._ownerDocument.defaultView.Range();
 
 		newRange._start.node = node;
 		newRange._start.offset = 0;
@@ -479,7 +479,7 @@ export default class Selection {
 
 		const anchor = { node: anchorNode, offset: anchorOffset };
 		const focus = { node: focusNode, offset: focusOffset };
-		const newRange = new Range();
+		const newRange = new this._ownerDocument.defaultView.Range();
 
 		if (RangeUtility.compareBoundaryPointsPosition(anchor, focus) === -1) {
 			newRange._start = anchor;

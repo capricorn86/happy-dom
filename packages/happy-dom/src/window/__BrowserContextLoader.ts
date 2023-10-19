@@ -11,7 +11,7 @@ import DetachedWindowAPI from './HappyDOMWindowAPI.js';
 /**
  * Browser context.
  */
-export default class BrowserContextLoader {
+export default class __BrowserContextLoader {
 	/**
 	 * Creates a new browser context for an iframe or a new window using Window.open().
 	 *

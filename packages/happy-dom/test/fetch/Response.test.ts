@@ -23,7 +23,6 @@ describe('Response', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		Response._ownerDocument = document;
 	});
 
 	afterEach(() => {
@@ -32,7 +31,7 @@ describe('Response', () => {
 
 	describe('constructor()', () => {
 		it('Sets default values for properties.', () => {
-			const response = new Response();
+			const response = new window.Response();
 			let headersLength = 0;
 
 			for (const _header of response.headers) {
@@ -49,20 +48,20 @@ describe('Response', () => {
 		});
 
 		it('Sets status from init object.', () => {
-			const response = new Response(null, { status: 404 });
+			const response = new window.Response(null, { status: 404 });
 			expect(response.status).toBe(404);
 		});
 
 		it('Sets status text from init object.', () => {
-			const response = new Response(null, { statusText: 'test' });
+			const response = new window.Response(null, { statusText: 'test' });
 			expect(response.statusText).toBe('test');
 		});
 
 		it('Sets ok state correctly based on status code.', () => {
-			const response199 = new Response(null, { status: 199 });
-			const response200 = new Response(null, { status: 200 });
-			const response299 = new Response(null, { status: 299 });
-			const response300 = new Response(null, { status: 300 });
+			const response199 = new window.Response(null, { status: 199 });
+			const response200 = new window.Response(null, { status: 200 });
+			const response299 = new window.Response(null, { status: 299 });
+			const response300 = new window.Response(null, { status: 300 });
 			expect(response199.ok).toBe(false);
 			expect(response200.ok).toBe(true);
 			expect(response299.ok).toBe(true);
@@ -76,7 +75,7 @@ describe('Response', () => {
 			};
 
 			const headers = new Headers(headerValues);
-			const response = new Response(null, { headers });
+			const response = new window.Response(null, { headers });
 
 			const headerEntries = {};
 
@@ -89,7 +88,7 @@ describe('Response', () => {
 		});
 
 		it('Sets body from init object.', async () => {
-			const response = new Response('Hello World');
+			const response = new window.Response('Hello World');
 			const chunks: Buffer[] = [];
 
 			for await (const chunk of <Stream.Readable>response.body) {
@@ -102,13 +101,13 @@ describe('Response', () => {
 
 	describe('get [Symbol.toStringTag]()', () => {
 		it('Returns class name.', () => {
-			expect(String(new Response())).toBe('[object Response]');
+			expect(String(new window.Response())).toBe('[object Response]');
 		});
 	});
 
 	describe('arrayBuffer()', () => {
 		it('Returns ArrayBuffer.', async () => {
-			const response = new Response('Hello World');
+			const response = new window.Response('Hello World');
 			const arrayBuffer = await response.arrayBuffer();
 
 			expect(arrayBuffer).toBeInstanceOf(ArrayBuffer);
@@ -117,7 +116,7 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('Hello World');
+				const response = new window.Response('Hello World');
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -142,7 +141,9 @@ describe('Response', () => {
 
 	describe('blob()', () => {
 		it('Returns Blob.', async () => {
-			const response = new Response('Hello World', { headers: { 'Content-Type': 'text/plain' } });
+			const response = new window.Response('Hello World', {
+				headers: { 'Content-Type': 'text/plain' }
+			});
 			const blob = await response.blob();
 
 			expect(blob).toBeInstanceOf(Blob);
@@ -154,7 +155,9 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('Hello World', { headers: { 'Content-Type': 'text/plain' } });
+				const response = new window.Response('Hello World', {
+					headers: { 'Content-Type': 'text/plain' }
+				});
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -179,7 +182,7 @@ describe('Response', () => {
 
 	describe('buffer()', () => {
 		it('Returns Buffer.', async () => {
-			const response = new Response('Hello World');
+			const response = new window.Response('Hello World');
 			const buffer = await response.buffer();
 
 			expect(buffer).toBeInstanceOf(Buffer);
@@ -188,7 +191,7 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('Hello World');
+				const response = new window.Response('Hello World');
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -215,7 +218,7 @@ describe('Response', () => {
 
 	describe('text()', () => {
 		it('Returns text string.', async () => {
-			const response = new Response('Hello World');
+			const response = new window.Response('Hello World');
 			const text = await response.text();
 
 			expect(text).toBe('Hello World');
@@ -223,7 +226,7 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('Hello World');
+				const response = new window.Response('Hello World');
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -248,7 +251,7 @@ describe('Response', () => {
 
 	describe('json()', () => {
 		it('Returns JSON.', async () => {
-			const response = new Response('{ "key1": "value1" }');
+			const response = new window.Response('{ "key1": "value1" }');
 			const json = await response.json();
 
 			expect(json).toEqual({ key1: 'value1' });
@@ -256,7 +259,7 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('{ "key1": "value1" }');
+				const response = new window.Response('{ "key1": "value1" }');
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -289,7 +292,7 @@ describe('Response', () => {
 			urlSearchParams.set('key2', 'value2');
 			urlSearchParams.set('key3', 'value3');
 
-			const response = new Response(urlSearchParams);
+			const response = new window.Response(urlSearchParams);
 			const formDataResponse = await response.formData();
 			let size = 0;
 
@@ -312,7 +315,7 @@ describe('Response', () => {
 			formData.set('key2', 'value2');
 			formData.set('key3', 'value3');
 
-			const response = new Response(formData);
+			const response = new window.Response(formData);
 			const formDataResponse = await response.formData();
 			let size = 0;
 
@@ -339,7 +342,7 @@ describe('Response', () => {
 			formData.set('key2', 'value2');
 			formData.set('file2', new File([imageBuffer], 'test-image-2.jpg', { type: 'image/jpeg' }));
 
-			const response = new Response(formData);
+			const response = new window.Response(formData);
 			const formDataResponse = await response.formData();
 			let size = 0;
 
@@ -367,7 +370,7 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete() for "application/x-www-form-urlencoded" content.', async () => {
 			await new Promise((resolve) => {
-				const response = new Response(new URLSearchParams());
+				const response = new window.Response(new URLSearchParams());
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -391,7 +394,7 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete() for multipart content.', async () => {
 			await new Promise((resolve) => {
-				const response = new Response(new FormData());
+				const response = new window.Response(new FormData());
 				let isAsyncComplete = false;
 
 				vi.spyOn(MultipartFormDataParser, 'streamToFormData').mockImplementation(
@@ -416,7 +419,7 @@ describe('Response', () => {
 
 	describe('clone()', () => {
 		it('Returns a clone.', async () => {
-			const response = new Response('Hello World', {
+			const response = new window.Response('Hello World', {
 				status: 404,
 				statusText: 'Not Found',
 				headers: { 'Content-Type': 'text/plain' }

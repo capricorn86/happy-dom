@@ -9,8 +9,7 @@ describe('FileReader', () => {
 
 	beforeEach(() => {
 		window = new Window();
-		FileReader._ownerDocument = window.document;
-		fileReader = new FileReader();
+		fileReader = new window.FileReader();
 	});
 
 	describe('readAsDataURL()', () => {

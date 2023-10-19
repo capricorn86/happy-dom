@@ -6,6 +6,7 @@ import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
+import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 
 /**
  * Helper class for getting the URL relative to a Location object.
@@ -21,9 +22,12 @@ export default class HTMLLinkElementUtility {
 	public static async loadExternalStylesheet(element: HTMLLinkElement): Promise<void> {
 		const href = element.getAttribute('href');
 		const rel = element.getAttribute('rel');
+		const browserSettings = WindowBrowserSettingsReader.getSettings(
+			element.ownerDocument.defaultView
+		);
 
 		if (href !== null && rel && rel.toLowerCase() === 'stylesheet' && element.isConnected) {
-			if (element.ownerDocument.defaultView.happyDOM.settings.disableCSSFileLoading) {
+			if (browserSettings.disableCSSFileLoading) {
 				WindowErrorUtility.dispatchError(
 					element,
 					new DOMException(
@@ -49,7 +53,7 @@ export default class HTMLLinkElementUtility {
 
 			if (error) {
 				WindowErrorUtility.dispatchError(element, error);
-				if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+				if (browserSettings.disableErrorCapturing) {
 					throw error;
 				}
 			} else {

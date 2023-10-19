@@ -1,6 +1,5 @@
 import IBrowserSettings from '../browser/IBrowserSettings.js';
 import IWindow from './IWindow.js';
-import Event from '../event/Event.js';
 import BrowserFrame from '../browser/BrowserFrame.js';
 import DetachedBrowserFrame from '../browser/DetachedBrowserFrame.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
@@ -31,6 +30,7 @@ export default class HappyDOMWindowAPI {
 	/**
 	 * Returns settings.
 	 *
+	 * @deprecated Settings should not be read or written from Window. Use the Browser class instead to access settings.
 	 * @returns Settings.
 	 */
 	public get settings(): IReadOnlyBrowserSettings {

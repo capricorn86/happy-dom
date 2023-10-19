@@ -1,7 +1,5 @@
 import Element from '../element/Element.js';
 import HTMLUnknownElement from '../html-unknown-element/HTMLUnknownElement.js';
-import Text from '../text/Text.js';
-import Comment from '../comment/Comment.js';
 import IWindow from '../../window/IWindow.js';
 import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
@@ -12,7 +10,6 @@ import Event from '../../event/Event.js';
 import DOMImplementation from '../../dom-implementation/DOMImplementation.js';
 import ElementTag from '../../config/ElementTag.js';
 import INodeFilter from '../../tree-walker/INodeFilter.js';
-import Attr from '../attr/Attr.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import DocumentType from '../document-type/DocumentType.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
@@ -61,7 +58,6 @@ export default class Document extends Node implements IDocument {
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow;
 	public readonly referrer = '';
-	public readonly ownerDocument: IDocument | null = null;
 	public readonly _windowClass: {} | null = null;
 	public readonly _readyStateManager: DocumentReadyStateManager;
 	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();

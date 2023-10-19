@@ -46,12 +46,14 @@ async function itObservesUnhandledFetchRejections(): Promise<void> {
 }
 
 async function itObservesUnhandledJavaScriptFetchRejections(): Promise<void> {
-	const window = new Window();
+	const window = new Window({
+		settings: {
+			disableErrorCapturing: true
+		}
+	});
 	const document = window.document;
 	const observer = new UncaughtExceptionObserver();
 	let errorEvent: ErrorEvent | null = null;
-
-	window.happyDOM.settings.disableErrorCapturing = true;
 
 	observer.observe(window);
 

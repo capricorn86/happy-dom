@@ -318,6 +318,6 @@ export default class Request implements IRequest {
 	 * @returns Clone.
 	 */
 	public clone(): IRequest {
-		return <IRequest>new Request(this);
+		return <IRequest>new (<typeof Request>this.constructor)(this);
 	}
 }

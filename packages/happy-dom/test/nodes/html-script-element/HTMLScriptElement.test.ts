@@ -345,7 +345,12 @@ describe('HTMLScriptElement', () => {
 			expect(window['testContent']).toBe(undefined);
 		});
 
-		it('Triggers an error event when attempting to perform an asynchrounous request and "window.happyDOM.settings.disableJavaScriptFileLoading" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true }
+			});
+			document = window.document;
+
 			let errorEvent: ErrorEvent | null = null;
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
@@ -355,8 +360,6 @@ describe('HTMLScriptElement', () => {
 				errorEvent = <ErrorEvent>event;
 			});
 
-			window.happyDOM.settings.disableJavaScriptFileLoading = true;
-
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
@@ -364,7 +367,12 @@ describe('HTMLScriptElement', () => {
 			);
 		});
 
-		it('Triggers an error event when attempting to perform a synchrounous request and "window.happyDOM.settings.disableJavaScriptFileLoading" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform a synchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true }
+			});
+			document = window.document;
+
 			let errorEvent: ErrorEvent | null = null;
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
@@ -373,8 +381,6 @@ describe('HTMLScriptElement', () => {
 				errorEvent = <ErrorEvent>event;
 			});
 
-			window.happyDOM.settings.disableJavaScriptFileLoading = true;
-
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
@@ -382,7 +388,12 @@ describe('HTMLScriptElement', () => {
 			);
 		});
 
-		it('Triggers an error event when attempting to perform an asynchrounous request and "window.happyDOM.settings.disableJavaScriptEvaluation" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true }
+			});
+			document = window.document;
+
 			let errorEvent: ErrorEvent | null = null;
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
@@ -392,8 +403,6 @@ describe('HTMLScriptElement', () => {
 				errorEvent = <ErrorEvent>event;
 			});
 
-			window.happyDOM.settings.disableJavaScriptEvaluation = true;
-
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
@@ -401,7 +410,12 @@ describe('HTMLScriptElement', () => {
 			);
 		});
 
-		it('Triggers an error event when attempting to perform a synchrounous request and "window.happyDOM.settings.disableJavaScriptEvaluation" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform a synchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true }
+			});
+			document = window.document;
+
 			let errorEvent: ErrorEvent | null = null;
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
@@ -409,8 +423,6 @@ describe('HTMLScriptElement', () => {
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
 			});
-
-			window.happyDOM.settings.disableJavaScriptEvaluation = true;
 
 			document.body.appendChild(script);
 
@@ -491,10 +503,13 @@ describe('HTMLScriptElement', () => {
 			);
 		});
 
-		it('Throws an exception when appending an element that contains invalid Javascript and Window.happyDOM.settings.disableErrorCapturing is set to true.', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "disableErrorCapturing" is set to true.', () => {
+			window = new Window({
+				settings: { disableErrorCapturing: true }
+			});
+			document = window.document;
 
-			window.happyDOM.settings.disableErrorCapturing = true;
+			const element = <IHTMLScriptElement>document.createElement('script');
 
 			element.text = 'globalThis.test = /;';
 

@@ -32,6 +32,7 @@ import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import ElementNamedNodeMap from './ElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
+import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 
 /**
  * Element.
@@ -925,9 +926,10 @@ export default class Element extends Node implements IElement {
 	 */
 	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
+		const browserSettings = WindowBrowserSettingsReader.getSettings(this.ownerDocument.defaultView);
 
 		if (
-			!this.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation &&
+			!browserSettings.disableJavaScriptEvaluation &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			!event._immediatePropagationStopped
@@ -935,7 +937,7 @@ export default class Element extends Node implements IElement {
 			const attribute = this.getAttribute('on' + event.type);
 
 			if (attribute && !event._immediatePropagationStopped) {
-				if (this.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+				if (browserSettings.disableErrorCapturing) {
 					this.ownerDocument.defaultView.eval(attribute);
 				} else {
 					WindowErrorUtility.captureError(this.ownerDocument.defaultView, () =>

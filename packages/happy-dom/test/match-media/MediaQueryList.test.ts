@@ -61,12 +61,16 @@ describe('MediaQueryList', () => {
 		});
 
 		it('Handles media type with name "print".', () => {
+			window = new Window({
+				width: 1024,
+				height: 768,
+				settings: { device: { mediaType: 'print' } }
+			});
+
 			expect(new MediaQueryList({ ownerWindow: window, media: 'print' }).matches).toBe(false);
 			expect(
 				new MediaQueryList({ ownerWindow: window, media: 'print and (min-width: 1024px)' }).matches
 			).toBe(false);
-
-			window.happyDOM.settings.device.mediaType = 'print';
 
 			expect(new MediaQueryList({ ownerWindow: window, media: 'print' }).matches).toBe(true);
 			expect(
@@ -269,7 +273,11 @@ describe('MediaQueryList', () => {
 				new MediaQueryList({ ownerWindow: window, media: '(prefers-color-scheme: light)' }).matches
 			).toBe(true);
 
-			window.happyDOM.settings.device.prefersColorScheme = 'dark';
+			window = new Window({
+				width: 1024,
+				height: 768,
+				settings: { device: { prefersColorScheme: 'dark' } }
+			});
 
 			expect(
 				new MediaQueryList({ ownerWindow: window, media: '(prefers-color-scheme: dark)' }).matches
@@ -487,7 +495,7 @@ describe('MediaQueryList', () => {
 			).toBe(true);
 		});
 
-		it('Handles disabling computed style rendering with Window.happyDOM.settings.disableComputedStyleRendering.', () => {
+		it('Handles disabling computed style rendering with the Happy DOM setting "disableComputedStyleRendering" set to "true".', () => {
 			window.document.documentElement.style.fontSize = '10px';
 
 			expect(
@@ -497,7 +505,11 @@ describe('MediaQueryList', () => {
 				new MediaQueryList({ ownerWindow: window, media: `(max-width: ${1024 / 10}rem)` }).matches
 			).toBe(true);
 
-			window.happyDOM.settings.disableComputedStyleRendering = true;
+			window = new Window({
+				width: 1024,
+				height: 768,
+				settings: { disableComputedStyleRendering: true }
+			});
 
 			expect(
 				new MediaQueryList({ ownerWindow: window, media: `(max-width: ${1023 / 16}rem)` }).matches

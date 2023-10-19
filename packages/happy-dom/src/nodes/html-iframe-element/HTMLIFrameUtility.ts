@@ -5,6 +5,7 @@ import IWindow from '../../window/IWindow.js';
 import CrossOriginWindow from '../../window/CrossOriginWindow.js';
 import HTMLIFrameElement from './HTMLIFrameElement.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
+import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 
 /**
  * HTML Iframe Utility.
@@ -16,10 +17,10 @@ export default class HTMLIFrameUtility {
 	 * @param element
 	 */
 	public static async loadPage(element: HTMLIFrameElement): Promise<void> {
-		if (
-			element.isConnected &&
-			!element.ownerDocument.defaultView.happyDOM.settings.disableIframePageLoading
-		) {
+		const browserSettings = WindowBrowserSettingsReader.getSettings(
+			element.ownerDocument.defaultView
+		);
+		if (element.isConnected && !browserSettings.disableIframePageLoading) {
 			const src = element.src;
 
 			if (src) {
@@ -27,7 +28,7 @@ export default class HTMLIFrameUtility {
 				const contentWindow = <IWindow>new element.ownerDocument['_windowClass']({
 					url: new URL(src, element.ownerDocument.defaultView.location.href).href,
 					settings: {
-						...element.ownerDocument.defaultView.happyDOM.settings
+						...browserSettings
 					}
 				});
 
@@ -41,8 +42,8 @@ export default class HTMLIFrameUtility {
 
 				if (src.startsWith('javascript:')) {
 					element._contentWindow = contentWindow;
-					if (!element.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation) {
-						if (element.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+					if (!browserSettings.disableJavaScriptEvaluation) {
+						if (browserSettings.disableErrorCapturing) {
 							(<IWindow>element._contentWindow).eval(src.replace('javascript:', ''));
 						} else {
 							WindowErrorUtility.captureError(element, () =>

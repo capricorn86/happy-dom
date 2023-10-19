@@ -7,6 +7,7 @@ import { VirtualConsolePrinter } from '../index.js';
 import BrowserSettingsFactory from './BrowserSettingsFactory.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import Event from '../event/Event.js';
+import IOptionalBrowserSettings from './IOptionalBrowserSettings.js';
 
 /**
  * Browser frame.
@@ -27,7 +28,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @param options.window Window.
 	 * @param [options.settings] Browser settings.
 	 */
-	constructor(options: { window: Window; settings?: IBrowserSettings }) {
+	constructor(options: { window: Window; settings?: IOptionalBrowserSettings }) {
 		this.window = options.window;
 		this.settings = BrowserSettingsFactory.getSettings(options.settings);
 	}

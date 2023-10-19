@@ -7,6 +7,7 @@ import INode from '../../nodes/node/INode.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLScriptElementNamedNodeMap from './HTMLScriptElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
+import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 
 /**
  * HTML Script Element.
@@ -171,6 +172,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	public override _connectToNode(parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
+		const browserSettings = WindowBrowserSettingsReader.getSettings(this.ownerDocument.defaultView);
 
 		super._connectToNode(parentNode);
 
@@ -179,7 +181,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 
 			if (src !== null) {
 				HTMLScriptElementUtility.loadExternalScript(this);
-			} else if (!this.ownerDocument.defaultView.happyDOM.settings.disableJavaScriptEvaluation) {
+			} else if (!browserSettings.disableJavaScriptEvaluation) {
 				const textContent = this.textContent;
 				const type = this.getAttribute('type');
 				if (
@@ -191,7 +193,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 				) {
 					this.ownerDocument['_currentScript'] = this;
 
-					if (this.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
+					if (browserSettings.disableErrorCapturing) {
 						this.ownerDocument.defaultView.eval(textContent);
 					} else {
 						WindowErrorUtility.captureError(this.ownerDocument.defaultView, () =>

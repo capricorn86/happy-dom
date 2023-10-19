@@ -39,18 +39,30 @@ export default class CSSStyleDeclarationElementStyle {
 		documentCacheID: null
 	};
 
+	readonly #browserSettings: { readonly disableComputedStyleRendering: boolean };
 	private element: IElement;
 	private computed: boolean;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param element Element.
-	 * @param [computed] Computed.
+	 * @param options Options.
+	 * @param options.element Element.
+	 * @param [options.browserSettings] Browser settings.
+	 * @param [options.browserSettings.disableComputedStyleRendering] Disable computed style rendering.
+	 * @param [options.computed=false] Computed.
+	 * @param element
 	 */
-	constructor(element: IElement, computed = false) {
+	constructor(
+		element: IElement,
+		options?: {
+			browserSettings?: { readonly disableComputedStyleRendering: boolean };
+			computed?: boolean;
+		}
+	) {
 		this.element = element;
-		this.computed = computed;
+		this.#browserSettings = options?.browserSettings ?? { disableComputedStyleRendering: false };
+		this.computed = options?.computed ?? false;
 	}
 
 	/**
@@ -353,7 +365,7 @@ export default class CSSStyleDeclarationElementStyle {
 		parentFontSize: string | number;
 		parentSize: string | number | null;
 	}): string {
-		if (this.element.ownerDocument.defaultView.happyDOM.settings.disableComputedStyleRendering) {
+		if (this.#browserSettings.disableComputedStyleRendering) {
 			return options.value;
 		}
 

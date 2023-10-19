@@ -25,7 +25,6 @@ describe('Request', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		Request._ownerDocument = document;
 	});
 
 	afterEach(() => {
@@ -34,7 +33,7 @@ describe('Request', () => {
 
 	describe('constructor()', () => {
 		it('Sets default values for properties.', () => {
-			const request = new Request(TEST_URL);
+			const request = new window.Request(TEST_URL);
 			let headersLength = 0;
 
 			for (const _header of request.headers) {
@@ -54,35 +53,35 @@ describe('Request', () => {
 		});
 
 		it('Supports URL as string from Request object.', () => {
-			const request = new Request(new Request(TEST_URL));
+			const request = new window.Request(new window.Request(TEST_URL));
 			expect(request.url).toBe(TEST_URL);
 		});
 
 		it('Supports URL as URL object from Request object.', () => {
-			const request = new Request(new Request(new URL(TEST_URL)));
+			const request = new window.Request(new window.Request(new URL(TEST_URL)));
 			expect(request.url).toBe(TEST_URL);
 		});
 
 		it('Supports URL as string from init object.', () => {
-			const request = new Request(TEST_URL);
+			const request = new window.Request(TEST_URL);
 			expect(request.url).toBe(TEST_URL);
 		});
 
 		it('Supports URL as URL object from init object.', () => {
-			const request = new Request(new URL(TEST_URL));
+			const request = new window.Request(new URL(TEST_URL));
 			expect(request.url).toBe(TEST_URL);
 		});
 
 		it('Supports relative URL.', () => {
 			window.happyDOM.setURL('https://example.com/other/path/');
-			const request = new Request('/path/');
+			const request = new window.Request('/path/');
 			expect(request.url).toBe('https://example.com/path/');
 		});
 
 		it('Throws error for invalid URL.', () => {
 			let error: Error | null = null;
 			try {
-				new Request('/path/');
+				new window.Request('/path/');
 			} catch (e) {
 				error = e;
 			}
@@ -96,23 +95,23 @@ describe('Request', () => {
 		});
 
 		it('Supports URL from Request object.', () => {
-			const request = new Request(new Request(TEST_URL));
+			const request = new window.Request(new window.Request(TEST_URL));
 			expect(request.url).toBe(TEST_URL);
 		});
 
 		it('Supports method from Request object.', () => {
-			const request = new Request(new Request(TEST_URL, { method: 'POST' }));
+			const request = new window.Request(new window.Request(TEST_URL, { method: 'POST' }));
 			expect(request.method).toBe('POST');
 		});
 
 		it('Supports method from init object.', () => {
-			const request = new Request(TEST_URL, { method: 'POST' });
+			const request = new window.Request(TEST_URL, { method: 'POST' });
 			expect(request.method).toBe('POST');
 		});
 
 		it('Supports body from Request object.', async () => {
-			const otherRequest = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
-			const request = new Request(otherRequest);
+			const otherRequest = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const request = new window.Request(otherRequest);
 			const chunks: Buffer[] = [];
 
 			for await (const chunk of <Stream.Readable>request.body) {
@@ -123,7 +122,7 @@ describe('Request', () => {
 		});
 
 		it('Supports body from init object.', async () => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 			const chunks: Buffer[] = [];
 
 			for await (const chunk of <Stream.Readable>request.body) {
@@ -134,12 +133,12 @@ describe('Request', () => {
 		});
 
 		it('Supports credentials from Request object.', () => {
-			const request = new Request(new Request(TEST_URL, { credentials: 'include' }));
+			const request = new window.Request(new window.Request(TEST_URL, { credentials: 'include' }));
 			expect(request.credentials).toBe('include');
 		});
 
 		it('Supports credentials from init object.', () => {
-			const request = new Request(TEST_URL, { credentials: 'include' });
+			const request = new window.Request(TEST_URL, { credentials: 'include' });
 			expect(request.credentials).toBe('include');
 		});
 
@@ -149,8 +148,8 @@ describe('Request', () => {
 			headers.set('X-Test', 'Hello World');
 			headers.set('X-Test-2', 'Hello World 2');
 
-			const otherRequest = new Request(TEST_URL, { headers });
-			const request = new Request(otherRequest);
+			const otherRequest = new window.Request(TEST_URL, { headers });
+			const request = new window.Request(otherRequest);
 			const headerEntries = {};
 
 			for (const [key, value] of request.headers) {
@@ -171,7 +170,7 @@ describe('Request', () => {
 			headers.set('X-Test', 'Hello World');
 			headers.set('X-Test-2', 'Hello World 2');
 
-			const request = new Request(TEST_URL, { headers });
+			const request = new window.Request(TEST_URL, { headers });
 			const headerEntries = {};
 
 			for (const [key, value] of request.headers) {
@@ -212,7 +211,7 @@ describe('Request', () => {
 				'safe-header': 'safe'
 			};
 
-			const request = new Request(TEST_URL, { headers });
+			const request = new window.Request(TEST_URL, { headers });
 			const headerEntries = {};
 
 			for (const [key, value] of request.headers) {
@@ -225,88 +224,98 @@ describe('Request', () => {
 		});
 
 		it('Supports content length from Request object.', () => {
-			const request = new Request(new Request(TEST_URL, { method: 'POST', body: 'Hello World' }));
+			const request = new window.Request(
+				new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' })
+			);
 			expect(request._contentLength).toBe(11);
 		});
 
 		it('Supports content length from init object.', () => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 			expect(request._contentLength).toBe(11);
 		});
 
 		it('Supports content type from Request object.', () => {
-			const request = new Request(new Request(TEST_URL, { method: 'POST', body: 'Hello World' }));
+			const request = new window.Request(
+				new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' })
+			);
 			expect(request._contentType).toBe('text/plain;charset=UTF-8');
 		});
 
 		it('Supports content type from init object.', () => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 			expect(request._contentType).toBe('text/plain;charset=UTF-8');
 		});
 
 		it('Supports content type header from Request object.', () => {
-			const request = new Request(new Request(TEST_URL, { method: 'POST', body: 'Hello World' }));
+			const request = new window.Request(
+				new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' })
+			);
 			expect(request.headers.get('Content-Type')).toBe('text/plain;charset=UTF-8');
 		});
 
 		it('Supports content type header from init object.', () => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 			expect(request.headers.get('Content-Type')).toBe('text/plain;charset=UTF-8');
 		});
 
 		it('Supports redirect from Request object.', () => {
-			const request = new Request(new Request(TEST_URL, { redirect: 'manual' }));
+			const request = new window.Request(new window.Request(TEST_URL, { redirect: 'manual' }));
 			expect(request.redirect).toBe('manual');
 		});
 
 		it('Supports redirect from init object.', () => {
-			const request = new Request(TEST_URL, { redirect: 'manual' });
+			const request = new window.Request(TEST_URL, { redirect: 'manual' });
 			expect(request.redirect).toBe('manual');
 		});
 
 		it('Supports referrer policy from Request object.', () => {
-			const request = new Request(new Request(TEST_URL, { referrerPolicy: 'no-referrer' }));
+			const request = new window.Request(
+				new window.Request(TEST_URL, { referrerPolicy: 'no-referrer' })
+			);
 			expect(request.referrerPolicy).toBe('no-referrer');
 		});
 
 		it('Supports referrer policy from init object.', () => {
-			const request = new Request(TEST_URL, { referrerPolicy: 'no-referrer' });
+			const request = new window.Request(TEST_URL, { referrerPolicy: 'no-referrer' });
 			expect(request.referrerPolicy).toBe('no-referrer');
 		});
 
 		it('Supports signal from Request object.', () => {
 			const signal = new AbortSignal();
-			const request = new Request(new Request(TEST_URL, { signal }));
+			const request = new window.Request(new window.Request(TEST_URL, { signal }));
 			expect(request.signal).toBe(signal);
 		});
 
 		it('Supports signal from init object.', () => {
 			const signal = new AbortSignal();
-			const request = new Request(TEST_URL, { signal });
+			const request = new window.Request(TEST_URL, { signal });
 			expect(request.signal).toBe(signal);
 		});
 
 		it('Supports referrer from Request object.', () => {
-			const request1 = new Request(new Request(TEST_URL));
-			const request2 = new Request(new Request(TEST_URL, { referrer: '' }));
-			const request3 = new Request(new Request(TEST_URL, { referrer: 'no-referrer' }));
-			const request4 = new Request(new Request(TEST_URL, { referrer: 'client' }));
-			const request5 = new Request(
-				new Request(TEST_URL, { referrer: 'https://example.com/path/' })
+			const request1 = new window.Request(new window.Request(TEST_URL));
+			const request2 = new window.Request(new window.Request(TEST_URL, { referrer: '' }));
+			const request3 = new window.Request(
+				new window.Request(TEST_URL, { referrer: 'no-referrer' })
 			);
-			const request6 = new Request(
-				new Request(TEST_URL, { referrer: new URL('https://example.com/path/') })
+			const request4 = new window.Request(new window.Request(TEST_URL, { referrer: 'client' }));
+			const request5 = new window.Request(
+				new window.Request(TEST_URL, { referrer: 'https://example.com/path/' })
+			);
+			const request6 = new window.Request(
+				new window.Request(TEST_URL, { referrer: new URL('https://example.com/path/') })
 			);
 
 			window.happyDOM.setURL('https://example.com/other/path/');
 
-			const request7 = new Request(
-				new Request(TEST_URL, { referrer: 'https://example.com/path/' })
+			const request7 = new window.Request(
+				new window.Request(TEST_URL, { referrer: 'https://example.com/path/' })
 			);
-			const request8 = new Request(
-				new Request(TEST_URL, { referrer: new URL('https://example.com/path/') })
+			const request8 = new window.Request(
+				new window.Request(TEST_URL, { referrer: new URL('https://example.com/path/') })
 			);
-			const request9 = new Request(new Request(TEST_URL, { referrer: '/path/' }));
+			const request9 = new window.Request(new window.Request(TEST_URL, { referrer: '/path/' }));
 
 			expect(request1.referrer).toBe('about:client');
 			expect(request2.referrer).toBe('');
@@ -320,18 +329,22 @@ describe('Request', () => {
 		});
 
 		it('Supports referrer from init object.', () => {
-			const request1 = new Request(TEST_URL);
-			const request2 = new Request(TEST_URL, { referrer: '' });
-			const request3 = new Request(TEST_URL, { referrer: 'no-referrer' });
-			const request4 = new Request(TEST_URL, { referrer: 'client' });
-			const request5 = new Request(TEST_URL, { referrer: 'https://example.com/path/' });
-			const request6 = new Request(TEST_URL, { referrer: new URL('https://example.com/path/') });
+			const request1 = new window.Request(TEST_URL);
+			const request2 = new window.Request(TEST_URL, { referrer: '' });
+			const request3 = new window.Request(TEST_URL, { referrer: 'no-referrer' });
+			const request4 = new window.Request(TEST_URL, { referrer: 'client' });
+			const request5 = new window.Request(TEST_URL, { referrer: 'https://example.com/path/' });
+			const request6 = new window.Request(TEST_URL, {
+				referrer: new URL('https://example.com/path/')
+			});
 
 			window.happyDOM.setURL('https://example.com/other/path/');
 
-			const request7 = new Request(TEST_URL, { referrer: 'https://example.com/path/' });
-			const request8 = new Request(TEST_URL, { referrer: new URL('https://example.com/path/') });
-			const request9 = new Request(TEST_URL, { referrer: '/path/' });
+			const request7 = new window.Request(TEST_URL, { referrer: 'https://example.com/path/' });
+			const request8 = new window.Request(TEST_URL, {
+				referrer: new URL('https://example.com/path/')
+			});
+			const request9 = new window.Request(TEST_URL, { referrer: '/path/' });
 
 			expect(request1.referrer).toBe('about:client');
 			expect(request2.referrer).toBe('');
@@ -347,7 +360,7 @@ describe('Request', () => {
 		it('Throws error when combining body with GET method.', () => {
 			let error: Error | null = null;
 			try {
-				new Request(TEST_URL, { body: 'Hello world' });
+				new window.Request(TEST_URL, { body: 'Hello world' });
 			} catch (e) {
 				error = e;
 			}
@@ -363,7 +376,7 @@ describe('Request', () => {
 		it('Throws error when combining body with HEAD method.', () => {
 			let error: Error | null = null;
 			try {
-				new Request(TEST_URL, { body: 'Hello world', method: 'HEAD' });
+				new window.Request(TEST_URL, { body: 'Hello world', method: 'HEAD' });
 			} catch (e) {
 				error = e;
 			}
@@ -379,7 +392,7 @@ describe('Request', () => {
 		it('Throws error using username in URL.', () => {
 			let error: Error | null = null;
 			try {
-				new Request('https://user@example.com');
+				new window.Request('https://user@example.com');
 			} catch (e) {
 				error = e;
 			}
@@ -395,7 +408,7 @@ describe('Request', () => {
 		it('Throws error using password in URL.', () => {
 			let error: Error | null = null;
 			try {
-				new Request('https://user:pass@example.com');
+				new window.Request('https://user:pass@example.com');
 			} catch (e) {
 				error = e;
 			}
@@ -411,7 +424,7 @@ describe('Request', () => {
 		it('Throws error when invalid referrer policy.', () => {
 			let error: Error | null = null;
 			try {
-				new Request(TEST_URL, { referrerPolicy: <IRequestReferrerPolicy>'invalid' });
+				new window.Request(TEST_URL, { referrerPolicy: <IRequestReferrerPolicy>'invalid' });
 			} catch (e) {
 				error = e;
 			}
@@ -424,7 +437,7 @@ describe('Request', () => {
 		it('Throws error when invalid referrer policy.', () => {
 			let error: Error | null = null;
 			try {
-				new Request(TEST_URL, { referrerPolicy: <IRequestReferrerPolicy>'invalid' });
+				new window.Request(TEST_URL, { referrerPolicy: <IRequestReferrerPolicy>'invalid' });
 			} catch (e) {
 				error = e;
 			}
@@ -437,7 +450,7 @@ describe('Request', () => {
 		it('Throws error when invalid referrer policy.', () => {
 			let error: Error | null = null;
 			try {
-				new Request(TEST_URL, { redirect: <IRequestRedirect>'invalid' });
+				new window.Request(TEST_URL, { redirect: <IRequestRedirect>'invalid' });
 			} catch (e) {
 				error = e;
 			}
@@ -451,27 +464,27 @@ describe('Request', () => {
 	describe('get referrer()', () => {
 		it('Returns referrer.', () => {
 			window.happyDOM.setURL('https://example.com/other/path/');
-			const request = new Request(TEST_URL, { referrer: 'https://example.com/path/' });
+			const request = new window.Request(TEST_URL, { referrer: 'https://example.com/path/' });
 			expect(request.referrer).toBe('https://example.com/path/');
 		});
 	});
 
 	describe('get url()', () => {
 		it('Returns URL.', () => {
-			const request = new Request(TEST_URL);
+			const request = new window.Request(TEST_URL);
 			expect(request.url).toBe(TEST_URL);
 		});
 	});
 
 	describe('get [Symbol.toStringTag]()', () => {
 		it('Returns class name.', () => {
-			expect(String(new Request(TEST_URL))).toBe('[object Request]');
+			expect(String(new window.Request(TEST_URL))).toBe('[object Request]');
 		});
 	});
 
 	describe('arrayBuffer()', () => {
 		it('Returns ArrayBuffer.', async () => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 			const arrayBuffer = await request.arrayBuffer();
 
 			expect(arrayBuffer).toBeInstanceOf(ArrayBuffer);
@@ -480,7 +493,7 @@ describe('Request', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -505,7 +518,7 @@ describe('Request', () => {
 
 	describe('blob()', () => {
 		it('Returns Blob.', async () => {
-			const request = new Request(TEST_URL, {
+			const request = new window.Request(TEST_URL, {
 				method: 'POST',
 				body: 'Hello World',
 				headers: { 'Content-Type': 'text/plain' }
@@ -521,7 +534,7 @@ describe('Request', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -546,7 +559,7 @@ describe('Request', () => {
 
 	describe('buffer()', () => {
 		it('Returns Buffer.', async () => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 			const buffer = await request.buffer();
 
 			expect(buffer).toBeInstanceOf(Buffer);
@@ -555,7 +568,7 @@ describe('Request', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -580,7 +593,7 @@ describe('Request', () => {
 
 	describe('text()', () => {
 		it('Returns text string.', async () => {
-			const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 			const text = await request.text();
 
 			expect(text).toBe('Hello World');
@@ -588,7 +601,7 @@ describe('Request', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const request = new Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -613,7 +626,10 @@ describe('Request', () => {
 
 	describe('json()', () => {
 		it('Returns JSON.', async () => {
-			const request = new Request(TEST_URL, { method: 'POST', body: '{ "key1": "value1" }' });
+			const request = new window.Request(TEST_URL, {
+				method: 'POST',
+				body: '{ "key1": "value1" }'
+			});
 			const json = await request.json();
 
 			expect(json).toEqual({ key1: 'value1' });
@@ -621,7 +637,10 @@ describe('Request', () => {
 
 		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
 			await new Promise((resolve) => {
-				const request = new Request(TEST_URL, { method: 'POST', body: '{ "key1": "value1" }' });
+				const request = new window.Request(TEST_URL, {
+					method: 'POST',
+					body: '{ "key1": "value1" }'
+				});
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -650,7 +669,7 @@ describe('Request', () => {
 		it('Returns FormData', async () => {
 			const formData = new FormData();
 			formData.append('some', 'test');
-			const request = new Request(TEST_URL, { method: 'POST', body: formData });
+			const request = new window.Request(TEST_URL, { method: 'POST', body: formData });
 			const requestFormData = await request.formData();
 
 			expect(requestFormData).toEqual(formData);
@@ -660,7 +679,7 @@ describe('Request', () => {
 			await new Promise((resolve) => {
 				const formData = new FormData();
 				formData.append('some', 'test');
-				const request = new Request(TEST_URL, { method: 'POST', body: formData });
+				const request = new window.Request(TEST_URL, { method: 'POST', body: formData });
 				let isAsyncComplete = false;
 
 				vi.spyOn(MultipartFormDataParser, 'streamToFormData').mockImplementation(
@@ -687,7 +706,7 @@ describe('Request', () => {
 			window.happyDOM.setURL('https://example.com/other/path/');
 
 			const signal = new AbortSignal();
-			const request = new Request(TEST_URL, {
+			const request = new window.Request(TEST_URL, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: 'Hello world',

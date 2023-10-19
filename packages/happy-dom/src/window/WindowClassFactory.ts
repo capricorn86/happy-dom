@@ -107,7 +107,7 @@ export default class WindowClassFactory {
 		// Other Classes
 		Response: typeof ResponseImplementation;
 		Request: typeof RequestImplementation;
-		XMLHttpRequest: new () => XMLHttpRequestImplementation;
+		XMLHttpRequest: typeof XMLHttpRequestImplementation;
 		Image: typeof ImageImplementation;
 		DocumentFragment: typeof DocumentFragmentImplementation;
 		FileReader: typeof FileReaderImplementation;
@@ -115,11 +115,6 @@ export default class WindowClassFactory {
 		Range: typeof RangeImplementation;
 		Audio: typeof AudioImplementation;
 	} {
-		const browserSettings =
-			properties.browserFrame instanceof DetachedBrowserFrame
-				? properties.browserFrame.settings
-				: properties.browserFrame.page.context.browser.settings;
-
 		/* eslint-disable jsdoc/require-jsdoc */
 
 		// Nodes
@@ -157,15 +152,19 @@ export default class WindowClassFactory {
 			public readonly ownerDocument: IDocument = properties.window.document;
 		}
 		class Document extends DocumentImplementation {
+			public readonly ownerDocument: IDocument | null = null;
 			public readonly defaultView: IWindow = properties.window;
 		}
 		class HTMLDocument extends HTMLDocumentImplementation {
+			public readonly ownerDocument: IDocument | null = null;
 			public readonly defaultView: IWindow = properties.window;
 		}
 		class XMLDocument extends XMLDocumentImplementation {
+			public readonly ownerDocument: IDocument | null = null;
 			public readonly defaultView: IWindow = properties.window;
 		}
 		class SVGDocument extends SVGDocumentImplementation {
+			public readonly ownerDocument: IDocument | null = null;
 			public readonly defaultView: IWindow = properties.window;
 		}
 
@@ -246,24 +245,14 @@ export default class WindowClassFactory {
 				properties.browserFrame._asyncTaskManager;
 			protected readonly _ownerDocument: IDocument = properties.window.document;
 		}
-
 		class Response extends ResponseImplementation {
 			protected readonly _asyncTaskManager: AsyncTaskManager =
 				properties.browserFrame._asyncTaskManager;
 		}
-
 		class XMLHttpRequest extends XMLHttpRequestImplementation {
-			constructor() {
-				super(
-					Object.freeze({
-						window: properties.window,
-						asyncTaskManager: properties.browserFrame._asyncTaskManager,
-						browserSettings: Object.freeze({
-							enableFileSystemHttpRequests: browserSettings.enableFileSystemHttpRequests
-						})
-					})
-				);
-			}
+			protected readonly _asyncTaskManager: AsyncTaskManager =
+				properties.browserFrame._asyncTaskManager;
+			protected readonly _ownerDocument: IDocument = properties.window.document;
 		}
 		class FileReader extends FileReaderImplementation {
 			public readonly _ownerDocument: IDocument = properties.window.document;
