@@ -50,6 +50,8 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
  * Document.
  */
 export default class Document extends Node implements IDocument {
+	// Needs to be injected by sub-class.
+	public readonly _defaultView: IWindow;
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
 	public implementation = new DOMImplementation(this);
@@ -57,7 +59,6 @@ export default class Document extends Node implements IDocument {
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IWindow | null = null;
 	public readonly referrer = '';
-	public readonly ownerDocument = null;
 	public readonly _windowClass: {} | null = null;
 	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public _activeElement: IHTMLElement = null;
@@ -187,6 +188,15 @@ export default class Document extends Node implements IDocument {
 	public onbeforematch: (event: Event) => void = null;
 
 	/**
+	 * Returns owner document.
+	 *
+	 * @returns Owner document.
+	 */
+	public get ownerDocument(): IDocument {
+		return null;
+	}
+
+	/**
 	 * Returns document children.
 	 */
 	public get children(): IHTMLCollection<IElement> {
@@ -281,7 +291,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
-		return this._cookie.getCookieString(this.defaultView.location, true);
+		return this._cookie.getCookieString(this._defaultView.location, true);
 	}
 
 	/**
@@ -290,7 +300,7 @@ export default class Document extends Node implements IDocument {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		this._cookie.addCookieString(this.defaultView.location, cookie);
+		this._cookie.addCookieString(this._defaultView.location, cookie);
 	}
 
 	/**
@@ -401,7 +411,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Location.
 	 */
 	public get location(): Location {
-		return this.defaultView.location;
+		return this._defaultView.location;
 	}
 
 	/**
@@ -424,7 +434,7 @@ export default class Document extends Node implements IDocument {
 		if (element) {
 			return element.href;
 		}
-		return this.defaultView.location.href;
+		return this._defaultView.location.href;
 	}
 
 	/**
@@ -433,7 +443,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns the URL of the current document.
 	 * */
 	public get URL(): string {
-		return this.defaultView.location.href;
+		return this._defaultView.location.href;
 	}
 
 	/**
@@ -786,20 +796,17 @@ export default class Document extends Node implements IDocument {
 		const tagName = String(qualifiedName).toUpperCase();
 
 		let customElementClass;
-		if (this.defaultView && options && options.is) {
-			customElementClass = this.defaultView.customElements.get(String(options.is));
-		} else if (this.defaultView) {
-			customElementClass = this.defaultView.customElements.get(tagName);
+		if (options && options.is) {
+			customElementClass = this._defaultView.customElements.get(String(options.is));
+		} else {
+			customElementClass = this._defaultView.customElements.get(tagName);
 		}
 
 		const elementClass: typeof Element =
-			customElementClass || this.defaultView[ElementTag[tagName]] || HTMLUnknownElement;
+			customElementClass || this._defaultView[ElementTag[tagName]] || HTMLUnknownElement;
 
 		const element = new elementClass();
 		element.tagName = tagName;
-
-		// TODO: Should not be necessary as the class should already extend the class created by WindowClassFactory?
-		(<IDocument>element.ownerDocument) = this;
 
 		(<string>element.namespaceURI) = namespaceURI;
 		if (element instanceof Element && options && options.is) {
@@ -818,7 +825,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createTextNode(data?: string): IText {
-		return new this.defaultView.Text(data);
+		return new this._defaultView.Text(data);
 	}
 
 	/**
@@ -828,7 +835,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createComment(data?: string): IComment {
-		return new this.defaultView.Comment(data);
+		return new this._defaultView.Comment(data);
 	}
 
 	/**
@@ -837,7 +844,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document fragment.
 	 */
 	public createDocumentFragment(): IDocumentFragment {
-		return new this.defaultView.DocumentFragment();
+		return new this._defaultView.DocumentFragment();
 	}
 
 	/**
@@ -874,8 +881,8 @@ export default class Document extends Node implements IDocument {
 	 * @returns Event.
 	 */
 	public createEvent(type: string): Event {
-		if (typeof this.defaultView[type] === 'function') {
-			return new this.defaultView[type]('init');
+		if (typeof this._defaultView[type] === 'function') {
+			return new this._defaultView[type]('init');
 		}
 		return new Event('init');
 	}
@@ -898,7 +905,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr {
-		const attribute = new this.defaultView.Attr();
+		const attribute = new this._defaultView.Attr();
 		attribute.namespaceURI = namespaceURI;
 		attribute.name = qualifiedName;
 		return <IAttr>attribute;
@@ -925,7 +932,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Range.
 	 */
 	public createRange(): Range {
-		return new this.defaultView.Range();
+		return new this._defaultView.Range();
 	}
 
 	/**
@@ -983,7 +990,7 @@ export default class Document extends Node implements IDocument {
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
-		const processingInstruction = new this.defaultView.ProcessingInstruction(data);
+		const processingInstruction = new this._defaultView.ProcessingInstruction(data);
 		processingInstruction.target = target;
 		return processingInstruction;
 	}

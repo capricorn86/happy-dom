@@ -27,7 +27,8 @@ import VisibilityStateEnum from './VisibilityStateEnum.js';
  * Document.
  */
 export default interface IDocument extends IParentNode {
-	readonly defaultView: IWindow;
+	readonly defaultView: IWindow | null;
+	readonly _defaultView: IWindow;
 	readonly implementation: DOMImplementation;
 	readonly documentElement: IHTMLElement;
 	readonly doctype: IDocumentType;

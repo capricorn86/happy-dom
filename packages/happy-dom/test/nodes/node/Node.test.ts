@@ -13,57 +13,6 @@ import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
 
-/**
- *
- */
-class CustomCounterElement extends HTMLElement {
-	public static output: string[] = [];
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this.attachShadow({ mode: 'open' });
-	}
-
-	/**
-	 * Connected.
-	 */
-	public connectedCallback(): void {
-		(<IShadowRoot>this.shadowRoot).innerHTML = '<div><span>Test</span></div>';
-		(<typeof CustomCounterElement>this.constructor).output.push('Counter:connected');
-	}
-
-	/**
-	 * Disconnected.
-	 */
-	public disconnectedCallback(): void {
-		(<typeof CustomCounterElement>this.constructor).output.push('Counter:disconnected');
-	}
-}
-
-/**
- *
- */
-class CustomButtonElement extends HTMLElement {
-	public static output: string[] = [];
-
-	/**
-	 * Connected.
-	 */
-	public connectedCallback(): void {
-		(<typeof CustomButtonElement>this.constructor).output.push('Button:connected');
-	}
-
-	/**
-	 * Disconnected.
-	 */
-	public disconnectedCallback(): void {
-		(<typeof CustomButtonElement>this.constructor).output.push('Button:disconnected');
-	}
-}
-
 describe('Node', () => {
 	let window: IWindow;
 	let document: IDocument;
@@ -72,6 +21,58 @@ describe('Node', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
+
+		/**
+		 *
+		 */
+		class CustomCounterElement extends window.HTMLElement {
+			public static output: string[] = [];
+
+			/**
+			 * Constructor.
+			 */
+			constructor() {
+				super();
+				this.attachShadow({ mode: 'open' });
+			}
+
+			/**
+			 * Connected.
+			 */
+			public connectedCallback(): void {
+				(<IShadowRoot>this.shadowRoot).innerHTML = '<div><span>Test</span></div>';
+				(<typeof CustomCounterElement>this.constructor).output.push('Counter:connected');
+			}
+
+			/**
+			 * Disconnected.
+			 */
+			public disconnectedCallback(): void {
+				(<typeof CustomCounterElement>this.constructor).output.push('Counter:disconnected');
+			}
+		}
+
+		/**
+		 *
+		 */
+		class CustomButtonElement extends window.HTMLElement {
+			public static output: string[] = [];
+
+			/**
+			 * Connected.
+			 */
+			public connectedCallback(): void {
+				(<typeof CustomButtonElement>this.constructor).output.push('Button:connected');
+			}
+
+			/**
+			 * Disconnected.
+			 */
+			public disconnectedCallback(): void {
+				(<typeof CustomButtonElement>this.constructor).output.push('Button:disconnected');
+			}
+		}
+
 		customElementOutput = [];
 		CustomCounterElement.output = customElementOutput;
 		CustomButtonElement.output = customElementOutput;

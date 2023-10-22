@@ -5,6 +5,8 @@ import IBrowserFrame from './IBrowserFrame.js';
 import Window from '../window/Window.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import Event from '../event/Event.js';
+import IBrowserSettings from './IBrowserSettings.js';
+import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 
 /**
  * Browser frame.
@@ -30,10 +32,39 @@ export default class BrowserFrame implements IBrowserFrame {
 	}
 
 	/**
-	 * Returns the viewport.
+	 * Returns the content.
+	 *
+	 * @returns Content.
 	 */
 	public get content(): string {
 		return this.window.document.documentElement.outerHTML;
+	}
+
+	/**
+	 * Returns virtual console printer.
+	 *
+	 * @returns Virtual console printer.
+	 */
+	public get virtualConsolePrinter(): VirtualConsolePrinter {
+		return this.page.virtualConsolePrinter;
+	}
+
+	/**
+	 * Returns settings.
+	 *
+	 * @returns Settings.
+	 */
+	public get settings(): IBrowserSettings {
+		return this.page.context.browser.settings;
+	}
+
+	/**
+	 * Returns console.
+	 *
+	 * @returns Console.
+	 */
+	public get console(): Console {
+		return this.page.context.browser.console;
 	}
 
 	/**

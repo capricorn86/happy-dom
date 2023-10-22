@@ -29,7 +29,7 @@ import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
 import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
-import { IHTMLDialogElement } from '../../src/index.js';
+import IHTMLDialogElement from '../../src/nodes/html-dialog-element/IHTMLDialogElement.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -945,7 +945,7 @@ describe('Window', () => {
 					isCallbackCalled = true;
 					resolve(null);
 				});
-				window.happyDOM.cancelAsync();
+				window.happyDOM.abort();
 				setTimeout(() => {
 					expect(isCallbackCalled).toBe(false);
 					resolve(null);

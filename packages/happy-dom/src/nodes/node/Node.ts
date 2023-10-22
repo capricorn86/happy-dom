@@ -15,9 +15,6 @@ import INodeList from './INodeList.js';
  * Node.
  */
 export default class Node extends EventTarget implements INode {
-	// Owner document is set when the Node is created by the Document
-	public static _ownerDocument: IDocument = null;
-
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
 	public static readonly ATTRIBUTE_NODE = NodeTypeEnum.attributeNode;
@@ -51,7 +48,6 @@ export default class Node extends EventTarget implements INode {
 	public readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC =
 		NodeDocumentPositionEnum.implementationSpecific;
 	public readonly DOCUMENT_POSITION_PRECEDING = NodeDocumentPositionEnum.preceding;
-	public readonly ownerDocument: IDocument = null;
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
 	public readonly isConnected: boolean = false;
@@ -65,20 +61,19 @@ export default class Node extends EventTarget implements INode {
 	public readonly _childNodes: INodeList<INode> = new NodeList<INode>();
 
 	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this.ownerDocument = (<typeof Node>this.constructor)._ownerDocument;
-	}
-
-	/**
 	 * Returns `Symbol.toStringTag`.
 	 *
 	 * @returns `Symbol.toStringTag`.
 	 */
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
+	}
+
+	/**
+	 * Returns owner document.
+	 */
+	public get ownerDocument(): IDocument {
+		throw new Error('Property "ownerDocument" needs to be implemented by sub-class.');
 	}
 
 	/**
@@ -286,8 +281,6 @@ export default class Node extends EventTarget implements INode {
 				clone._childNodes.push(childClone);
 			}
 		}
-
-		(<IDocument>clone.ownerDocument) = this.ownerDocument;
 
 		return clone;
 	}

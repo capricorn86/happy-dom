@@ -1,13 +1,14 @@
 import IWindow from '../window/IWindow.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import IBrowserFrame from './IBrowserFrame.js';
-import Window from '../window/Window.js';
 import IBrowserSettings from './IBrowserSettings.js';
-import { VirtualConsolePrinter } from '../index.js';
 import BrowserSettingsFactory from './BrowserSettingsFactory.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import Event from '../event/Event.js';
 import IOptionalBrowserSettings from './IOptionalBrowserSettings.js';
+import VirtualConsole from '../console/VirtualConsole.js';
+import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
+import IBrowserPage from './IBrowserPage.js';
 
 /**
  * Browser frame.
@@ -19,17 +20,24 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public _asyncTaskManager = new AsyncTaskManager();
 	public readonly virtualConsolePrinter = new VirtualConsolePrinter();
 	public readonly settings: IBrowserSettings;
-	public readonly console: Console;
+	public readonly console: Console | null;
+	public readonly page: IBrowserPage | null = null;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param options Options.
 	 * @param options.window Window.
+	 * @param [options.console] Console.
 	 * @param [options.settings] Browser settings.
 	 */
-	constructor(options: { window: Window; settings?: IOptionalBrowserSettings }) {
+	constructor(options: {
+		window: IWindow;
+		console?: Console;
+		settings?: IOptionalBrowserSettings;
+	}) {
 		this.window = options.window;
+		this.console = options.console ?? new VirtualConsole(this.virtualConsolePrinter);
 		this.settings = BrowserSettingsFactory.getSettings(options.settings);
 	}
 
@@ -67,7 +75,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public async destroy(): Promise<void> {
 		await Promise.all(this.childFrames.map((frame) => frame.destroy()));
 		await this._asyncTaskManager.destroy();
-		(<Window | null>this.window) = null;
+		(<IWindow | null>this.window) = null;
 	}
 
 	/**

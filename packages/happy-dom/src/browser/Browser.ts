@@ -3,11 +3,12 @@ import BrowserContext from './BrowserContext.js';
 import IOptionalBrowserSettings from './IOptionalBrowserSettings.js';
 import BrowserSettingsFactory from './BrowserSettingsFactory.js';
 import BrowserPage from './BrowserPage.js';
+import IBrowser from './IBrowser.js';
 
 /**
  * Browser context.
  */
-export default class Browser {
+export default class Browser implements IBrowser {
 	public readonly defaultContext: BrowserContext;
 	public readonly contexts: BrowserContext[];
 	public readonly settings: IBrowserSettings;

@@ -1,10 +1,11 @@
 import Browser from './Browser.js';
 import BrowserPage from './BrowserPage.js';
+import IBrowserContext from './IBrowserContext.js';
 
 /**
  * Browser context.
  */
-export default class BrowserContext {
+export default class BrowserContext implements IBrowserContext {
 	public pages: BrowserPage[] = [];
 	public browser: Browser;
 

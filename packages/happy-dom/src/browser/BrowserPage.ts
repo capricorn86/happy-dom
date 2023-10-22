@@ -3,11 +3,12 @@ import IBrowserPageViewport from './IBrowserPageViewport.js';
 import BrowserFrame from './BrowserFrame.js';
 import BrowserContext from './BrowserContext.js';
 import VirtualConsole from '../console/VirtualConsole.js';
+import IBrowserPage from './IBrowserPage.js';
 
 /**
  * Browser page.
  */
-export default class BrowserPage {
+export default class BrowserPage implements IBrowserPage {
 	public readonly virtualConsolePrinter = new VirtualConsolePrinter();
 	public readonly mainFrame: BrowserFrame;
 	public readonly context: BrowserContext;

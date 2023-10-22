@@ -3,7 +3,6 @@ import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import IAttr from '../attr/IAttr.js';
-import IDocument from '../document/IDocument.js';
 import Element from './Element.js';
 import HTMLCollection from './HTMLCollection.js';
 import IElement from './IElement.js';
@@ -50,7 +49,6 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 
 		item.name = this._getAttributeName(item.name);
 		(<IElement>item.ownerElement) = this._ownerElement;
-		(<IDocument>item.ownerDocument) = this._ownerElement.ownerDocument;
 
 		const replacedItem = super.setNamedItem(item);
 		const oldValue = replacedItem ? replacedItem.value : null;

@@ -20,24 +20,15 @@ export default abstract class AbstractCSSStyleDeclaration {
 	/**
 	 * Constructor.
 	 *
-	 * @param options Options.
 	 * @param [ownerElement] Computed style element.
-	 * @param [options.browserSettings] Browser settings.
-	 * @param [options.browserSettings.disableComputedStyleRendering] Disable computed style rendering.
-	 * @param [options.computed=false] Computed.
+	 * @param [computed] Computed.
 	 */
-	constructor(
-		ownerElement?: IElement,
-		options?: {
-			browserSettings?: { readonly disableComputedStyleRendering: boolean };
-			computed?: boolean;
-		}
-	) {
+	constructor(ownerElement: IElement = null, computed = false) {
 		this._style = !ownerElement ? new CSSStyleDeclarationPropertyManager() : null;
 		this._ownerElement = ownerElement;
-		this._computed = ownerElement ? options.computed ?? false : false;
+		this._computed = ownerElement ? computed : false;
 		this._elementStyle = ownerElement
-			? new CSSStyleDeclarationElementStyle(ownerElement, options)
+			? new CSSStyleDeclarationElementStyle(ownerElement, this._computed)
 			: null;
 	}
 

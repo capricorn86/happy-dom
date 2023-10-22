@@ -1,6 +1,5 @@
 import Node from '../node/Node.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
-import Attr from '../attr/Attr.js';
 import DOMRect from './DOMRect.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
@@ -364,11 +363,11 @@ export default class Element extends Node implements IElement {
 	public cloneNode(deep = false): IElement {
 		const clone = <Element>super.cloneNode(deep);
 
-		Attr._ownerDocument = this.ownerDocument;
-
 		for (let i = 0, max = this.attributes.length; i < max; i++) {
 			const attribute = this.attributes[i];
-			clone.attributes.setNamedItem(Object.assign(new Attr(), attribute));
+			clone.attributes.setNamedItem(
+				Object.assign(new this.ownerDocument.defaultView.Attr(), attribute)
+			);
 		}
 
 		if (deep) {
@@ -692,8 +691,7 @@ export default class Element extends Node implements IElement {
 			throw new DOMException('Shadow root has already been attached.');
 		}
 
-		(<IShadowRoot>this._shadowRoot) = new ShadowRoot();
-		(<IDocument>this._shadowRoot.ownerDocument) = this.ownerDocument;
+		(<IShadowRoot>this._shadowRoot) = new this.ownerDocument._defaultView.ShadowRoot();
 		(<Element>this._shadowRoot.host) = this;
 		(<string>this._shadowRoot.mode) = shadowRootInit.mode;
 		(<ShadowRoot>this._shadowRoot)._connectToNode(this);

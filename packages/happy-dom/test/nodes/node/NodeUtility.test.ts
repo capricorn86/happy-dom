@@ -2,8 +2,6 @@ import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import NodeUtility from '../../../src/nodes/node/NodeUtility.js';
 import NodeTypeEnum from '../../../src/nodes/node/NodeTypeEnum.js';
-import DOMImplementation from '../../../src/dom-implementation/DOMImplementation.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('NodeUtility', () => {
@@ -170,38 +168,30 @@ describe('NodeUtility', () => {
 		});
 
 		describe('w/ document type node', () => {
-			let document: IDocument;
-			let implementation: DOMImplementation;
-
-			beforeEach(() => {
-				document = new Document();
-				implementation = new DOMImplementation(document);
-			});
-
 			it('Returns false if name are different', () => {
-				const doctype1 = implementation.createDocumentType('html1', 'foo', 'bar');
-				const doctype2 = implementation.createDocumentType('html2', 'foo', 'bar');
+				const doctype1 = window.document.implementation.createDocumentType('html1', 'foo', 'bar');
+				const doctype2 = window.document.implementation.createDocumentType('html2', 'foo', 'bar');
 
 				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(false);
 			});
 
 			it('Returns false if public id are different', () => {
-				const doctype1 = implementation.createDocumentType('html', 'foo1', 'bar');
-				const doctype2 = implementation.createDocumentType('html', 'foo2', 'bar');
+				const doctype1 = window.document.implementation.createDocumentType('html', 'foo1', 'bar');
+				const doctype2 = window.document.implementation.createDocumentType('html', 'foo2', 'bar');
 
 				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(false);
 			});
 
 			it('Returns false if system id are different', () => {
-				const doctype1 = implementation.createDocumentType('html', 'foo', 'bar1');
-				const doctype2 = implementation.createDocumentType('html', 'foo', 'bar2');
+				const doctype1 = window.document.implementation.createDocumentType('html', 'foo', 'bar1');
+				const doctype2 = window.document.implementation.createDocumentType('html', 'foo', 'bar2');
 
 				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(false);
 			});
 
 			it('Returns true if doctype are equals', () => {
-				const doctype1 = implementation.createDocumentType('html', 'foo', 'bar');
-				const doctype2 = implementation.createDocumentType('html', 'foo', 'bar');
+				const doctype1 = window.document.implementation.createDocumentType('html', 'foo', 'bar');
+				const doctype2 = window.document.implementation.createDocumentType('html', 'foo', 'bar');
 
 				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(true);
 			});

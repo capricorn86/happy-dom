@@ -1,6 +1,6 @@
 import IWindow from './IWindow.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
-import { IElement } from '../index.js';
+import IElement from '../nodes/element/IElement.js';
 
 /**
  * Error utility.

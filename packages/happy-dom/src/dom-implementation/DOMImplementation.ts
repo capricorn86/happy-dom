@@ -24,8 +24,6 @@ export default class DOMImplementation {
 	public createDocument(): IDocument {
 		const documentClass = this._ownerDocument.constructor;
 		// @ts-ignore
-		documentClass._defaultView = this._ownerDocument.defaultView;
-		// @ts-ignore
 		return new documentClass();
 	}
 
@@ -48,8 +46,7 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		DocumentType._ownerDocument = this._ownerDocument;
-		const documentType = new DocumentType();
+		const documentType = new this._ownerDocument._defaultView.DocumentType();
 		documentType.name = qualifiedName;
 		documentType.publicId = publicId;
 		documentType.systemId = systemId;

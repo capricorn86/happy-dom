@@ -33,7 +33,6 @@ import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 export default class Request implements IRequest {
 	// Needs to be injected by a sub-class.
 	protected readonly _asyncTaskManager: AsyncTaskManager;
-	protected readonly _ownerDocument: IDocument;
 
 	// Public properties
 	public readonly method: string;
@@ -132,6 +131,13 @@ export default class Request implements IRequest {
 		FetchRequestValidationUtility.validateURL(this._url);
 		FetchRequestValidationUtility.validateReferrerPolicy(this.referrerPolicy);
 		FetchRequestValidationUtility.validateRedirect(this.redirect);
+	}
+
+	/**
+	 * Returns owner document.
+	 */
+	protected get _ownerDocument(): IDocument {
+		throw new Error('_ownerDocument needs to be implemented by sub-class.');
 	}
 
 	/**

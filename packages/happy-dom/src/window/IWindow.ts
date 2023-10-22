@@ -4,6 +4,7 @@ import IDocument from '../nodes/document/IDocument.js';
 import HTMLDocument from '../nodes/html-document/HTMLDocument.js';
 import XMLDocument from '../nodes/xml-document/XMLDocument.js';
 import SVGDocument from '../nodes/svg-document/SVGDocument.js';
+import DocumentType from '../nodes/document-type/DocumentType.js';
 import Node from '../nodes/node/Node.js';
 import Text from '../nodes/text/Text.js';
 import Comment from '../nodes/comment/Comment.js';
@@ -153,6 +154,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly HTMLDocument: typeof HTMLDocument;
 	readonly XMLDocument: typeof XMLDocument;
 	readonly SVGDocument: typeof SVGDocument;
+	readonly DocumentType: typeof DocumentType;
 
 	// Element classes
 	readonly HTMLElement: typeof HTMLElement;

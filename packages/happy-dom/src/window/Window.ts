@@ -33,6 +33,7 @@ import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement.js';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement.js';
 import CharacterData from '../nodes/character-data/CharacterData.js';
+import DocumentType from '../nodes/document-type/DocumentType.js';
 import NodeIterator from '../tree-walker/NodeIterator.js';
 import TreeWalker from '../tree-walker/TreeWalker.js';
 import Event from '../event/Event.js';
@@ -119,7 +120,6 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
 import WindowErrorUtility from './WindowErrorUtility.js';
-import VirtualConsole from '../console/VirtualConsole.js';
 import ICrossOriginWindow from './ICrossOriginWindow.js';
 import Permissions from '../permissions/Permissions.js';
 import PermissionStatus from '../permissions/PermissionStatus.js';
@@ -127,8 +127,6 @@ import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
 import HappyDOMWindowAPI from './HappyDOMWindowAPI.js';
-import BrowserFrame from '../browser/BrowserFrame.js';
-import DetachedBrowserFrame from '../browser/DetachedBrowserFrame.js';
 import Headers from '../fetch/Headers.js';
 import WindowClassFactory from './WindowClassFactory.js';
 import Audio from '../nodes/html-audio-element/Audio.js';
@@ -143,6 +141,8 @@ import IOptionalBrowserSettings from '../browser/IOptionalBrowserSettings.js';
 import WindowBrowserSettingsReader from './WindowBrowserSettingsReader.js';
 import DocumentReadyStateManager from '../nodes/document/DocumentReadyStateManager.js';
 import DocumentReadyStateEnum from '../nodes/document/DocumentReadyStateEnum.js';
+import IBrowserFrame from '../browser/IBrowserFrame.js';
+import DetachedBrowserFrame from '../browser/DetachedBrowserFrame.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -172,10 +172,11 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly ProcessingInstruction: typeof ProcessingInstruction;
 	public readonly Element: typeof Element;
 	public readonly CharacterData: typeof CharacterData;
-	public readonly Document = Document;
-	public readonly HTMLDocument = HTMLDocument;
-	public readonly XMLDocument = XMLDocument;
-	public readonly SVGDocument = SVGDocument;
+	public readonly Document: typeof Document;
+	public readonly HTMLDocument: typeof HTMLDocument;
+	public readonly XMLDocument: typeof XMLDocument;
+	public readonly SVGDocument: typeof SVGDocument;
+	public readonly DocumentType: typeof DocumentType;
 
 	// Element classes
 	public readonly HTMLElement: typeof HTMLElement;
@@ -489,7 +490,7 @@ export default class Window extends EventTarget implements IWindow {
 	private _clearInterval: (id: NodeJS.Timeout) => void;
 	private _queueMicrotask: (callback: Function) => void;
 	public readonly _readyStateManager = new DocumentReadyStateManager(this);
-	#browserFrame: BrowserFrame | DetachedBrowserFrame;
+	#browserFrame: IBrowserFrame;
 
 	/**
 	 * Constructor.
@@ -512,7 +513,7 @@ export default class Window extends EventTarget implements IWindow {
 		url?: string;
 		console?: Console;
 		settings?: IOptionalBrowserSettings;
-		browserFrame?: BrowserFrame;
+		browserFrame?: IBrowserFrame;
 	}) {
 		super();
 
@@ -526,23 +527,17 @@ export default class Window extends EventTarget implements IWindow {
 
 		if (options?.browserFrame) {
 			this.#browserFrame = options.browserFrame;
-			this.console =
-				options?.console ?? new VirtualConsole(this.#browserFrame.page.virtualConsolePrinter);
 		} else {
 			this.#browserFrame = new DetachedBrowserFrame({
 				window: this,
+				console: options?.console,
 				settings: options?.settings
 			});
-			this.console =
-				options?.console ?? new VirtualConsole(this.#browserFrame.virtualConsolePrinter);
 		}
 
-		WindowBrowserSettingsReader.setSettings(
-			this,
-			this.#browserFrame instanceof DetachedBrowserFrame
-				? this.#browserFrame.settings
-				: this.#browserFrame.page.context.browser.settings
-		);
+		this.console = this.#browserFrame.console;
+
+		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.settings);
 
 		this.happyDOM = new HappyDOMWindowAPI({
 			window: this,
@@ -591,6 +586,8 @@ export default class Window extends EventTarget implements IWindow {
 			}
 		}
 
+		this._setupVMContext();
+
 		const classes = WindowClassFactory.getClasses({
 			window: this,
 			browserFrame: this.#browserFrame
@@ -619,6 +616,11 @@ export default class Window extends EventTarget implements IWindow {
 		this.ProcessingInstruction = classes.ProcessingInstruction;
 		this.Element = classes.Element;
 		this.CharacterData = classes.CharacterData;
+		this.Document = classes.Document;
+		this.HTMLDocument = classes.HTMLDocument;
+		this.XMLDocument = classes.XMLDocument;
+		this.SVGDocument = classes.SVGDocument;
+		this.DocumentType = classes.DocumentType;
 
 		// HTML Element classes
 		this.HTMLElement = classes.HTMLElement;
@@ -693,11 +695,11 @@ export default class Window extends EventTarget implements IWindow {
 		this.HTMLParamElement = classes.HTMLElement;
 		this.HTMLTrackElement = classes.HTMLElement;
 
-		this._setupVMContext();
-
+		// Document
 		this.document = new this.HTMLDocument();
 		(<IWindow>this.document.defaultView) = this;
 
+		// Default document elements
 		const doctype = this.document.implementation.createDocumentType('html', '', '');
 		const documentElement = this.document.createElement('html');
 		const bodyElement = this.document.createElement('body');
@@ -709,6 +711,7 @@ export default class Window extends EventTarget implements IWindow {
 		documentElement.appendChild(headElement);
 		documentElement.appendChild(bodyElement);
 
+		// Ready state manager
 		this._readyStateManager.whenComplete().then(() => {
 			(<DocumentReadyStateEnum>this.document.readyState) = DocumentReadyStateEnum.complete;
 			this.document.dispatchEvent(new Event('readystatechange'));
@@ -768,18 +771,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns CSS style declaration.
 	 */
 	public getComputedStyle(element: IElement): CSSStyleDeclaration {
-		const browserSettings =
-			this.#browserFrame instanceof DetachedBrowserFrame
-				? this.#browserFrame.settings
-				: this.#browserFrame.page.context.browser.settings;
-		element['_computedStyle'] =
-			element['_computedStyle'] ||
-			new CSSStyleDeclaration(element, {
-				browserSettings: {
-					disableComputedStyleRendering: browserSettings.disableComputedStyleRendering
-				},
-				computed: true
-			});
+		element['_computedStyle'] = element['_computedStyle'] || new CSSStyleDeclaration(element, true);
 		return element['_computedStyle'];
 	}
 
@@ -848,11 +840,7 @@ export default class Window extends EventTarget implements IWindow {
 		_target?: string,
 		_features?: string
 	): IWindow | ICrossOriginWindow | null {
-		const browserSettings =
-			this.#browserFrame instanceof DetachedBrowserFrame
-				? this.#browserFrame.settings
-				: this.#browserFrame.page.context.browser.settings;
-		if (browserSettings.disableWindowOpenPageLoading) {
+		if (this.#browserFrame.settings.disableWindowOpenPageLoading) {
 			return null;
 		}
 		return null;
@@ -862,7 +850,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * Closes the window.
 	 */
 	public close(): void {
-		if (this.#browserFrame instanceof BrowserFrame) {
+		if (this.#browserFrame.page) {
 			if (this.#browserFrame.page.mainFrame === this.#browserFrame) {
 				this.#browserFrame.page.close();
 			}
@@ -890,12 +878,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Timeout ID.
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
-		const browserSettings =
-			this.#browserFrame instanceof DetachedBrowserFrame
-				? this.#browserFrame.settings
-				: this.#browserFrame.page.context.browser.settings;
 		const id = this._setTimeout(() => {
-			if (browserSettings.disableErrorCapturing) {
+			if (this.#browserFrame.settings.disableErrorCapturing) {
 				callback(...args);
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(...args));
@@ -925,12 +909,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Interval ID.
 	 */
 	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
-		const browserSettings =
-			this.#browserFrame instanceof DetachedBrowserFrame
-				? this.#browserFrame.settings
-				: this.#browserFrame.page.context.browser.settings;
 		const id = this._setInterval(() => {
-			if (browserSettings.disableErrorCapturing) {
+			if (this.#browserFrame.settings.disableErrorCapturing) {
 				callback(...args);
 			} else {
 				WindowErrorUtility.captureError(
@@ -961,12 +941,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns ID.
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Immediate {
-		const browserSettings =
-			this.#browserFrame instanceof DetachedBrowserFrame
-				? this.#browserFrame.settings
-				: this.#browserFrame.page.context.browser.settings;
 		const id = global.setImmediate(() => {
-			if (browserSettings.disableErrorCapturing) {
+			if (this.#browserFrame.settings.disableErrorCapturing) {
 				callback(this.performance.now());
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
@@ -995,13 +971,9 @@ export default class Window extends EventTarget implements IWindow {
 	public queueMicrotask(callback: Function): void {
 		let isAborted = false;
 		const taskId = this.#browserFrame._asyncTaskManager.startTask(() => (isAborted = true));
-		const browserSettings =
-			this.#browserFrame instanceof DetachedBrowserFrame
-				? this.#browserFrame.settings
-				: this.#browserFrame.page.context.browser.settings;
 		this._queueMicrotask(() => {
 			if (!isAborted) {
-				if (browserSettings.disableErrorCapturing) {
+				if (this.#browserFrame.settings.disableErrorCapturing) {
 					callback();
 				} else {
 					WindowErrorUtility.captureError(this, <() => unknown>callback);

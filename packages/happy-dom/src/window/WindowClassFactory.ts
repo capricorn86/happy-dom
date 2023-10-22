@@ -43,6 +43,11 @@ import ShadowRootImplementation from '../nodes/shadow-root/ShadowRoot.js';
 import ProcessingInstructionImplementation from '../nodes/processing-instruction/ProcessingInstruction.js';
 import ElementImplementation from '../nodes/element/Element.js';
 import CharacterDataImplementation from '../nodes/character-data/CharacterData.js';
+import DocumentImplementation from '../nodes/document/Document.js';
+import HTMLDocumentImplementation from '../nodes/html-document/HTMLDocument.js';
+import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
+import SVGDocumentImplementation from '../nodes/svg-document/SVGDocument.js';
+import DocumentTypeImplementation from '../nodes/document-type/DocumentType.js';
 
 /**
  * Some classes need to get access to the window object without having a reference to the window in the constructor.
@@ -73,6 +78,11 @@ export default class WindowClassFactory {
 		ProcessingInstruction: typeof ProcessingInstructionImplementation;
 		Element: typeof ElementImplementation;
 		CharacterData: typeof CharacterDataImplementation;
+		Document: typeof DocumentImplementation;
+		HTMLDocument: typeof HTMLDocumentImplementation;
+		XMLDocument: typeof XMLDocumentImplementation;
+		SVGDocument: typeof SVGDocumentImplementation;
+		DocumentType: typeof DocumentTypeImplementation;
 
 		// HTML Elements
 		HTMLElement: typeof HTMLElementImplementation;
@@ -111,115 +121,202 @@ export default class WindowClassFactory {
 
 		// Nodes
 		class Node extends NodeImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class Attr extends AttrImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class SVGSVGElement extends SVGSVGElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class SVGElement extends SVGElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class SVGGraphicsElement extends SVGGraphicsElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class Text extends TextImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class Comment extends CommentImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class ShadowRoot extends ShadowRootImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class ProcessingInstruction extends ProcessingInstructionImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class Element extends ElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class CharacterData extends CharacterDataImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
+		}
+		class Document extends DocumentImplementation {
+			public readonly _defaultView: IWindow = properties.window;
+		}
+		class HTMLDocument extends HTMLDocumentImplementation {
+			public readonly _defaultView: IWindow = properties.window;
+		}
+		class XMLDocument extends XMLDocumentImplementation {
+			public readonly _defaultView: IWindow = properties.window;
+		}
+		class SVGDocument extends SVGDocumentImplementation {
+			public readonly _defaultView: IWindow = properties.window;
+		}
+		class DocumentType extends DocumentTypeImplementation {
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 
 		// HTML Elements
 		class Audio extends AudioImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class Image extends ImageImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class DocumentFragment extends DocumentFragmentImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLElement extends HTMLElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLUnknownElement extends HTMLUnknownElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLTemplateElement extends HTMLTemplateElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLFormElement extends HTMLFormElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLInputElement extends HTMLInputElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLSelectElement extends HTMLSelectElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLTextAreaElement extends HTMLTextAreaElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLImageElement extends HTMLImageElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLScriptElement extends HTMLScriptElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLLinkElement extends HTMLLinkElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLStyleElement extends HTMLStyleElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLLabelElement extends HTMLLabelElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLSlotElement extends HTMLSlotElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLMetaElement extends HTMLMetaElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLMediaElement extends HTMLMediaElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLAudioElement extends HTMLAudioElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLVideoElement extends HTMLVideoElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLBaseElement extends HTMLBaseElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLIFrameElement extends HTMLIFrameElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class HTMLDialogElement extends HTMLDialogElementImplementation {
-			public readonly ownerDocument: IDocument = properties.window.document;
+			public get ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 
 		// Other Classes
 		class Request extends RequestImplementation {
 			protected readonly _asyncTaskManager: AsyncTaskManager =
 				properties.browserFrame._asyncTaskManager;
-			protected readonly _ownerDocument: IDocument = properties.window.document;
+			protected get _ownerDocument(): IDocument {
+				return properties.window.document;
+			}
 		}
 		class Response extends ResponseImplementation {
 			protected readonly _asyncTaskManager: AsyncTaskManager =
@@ -255,6 +352,11 @@ export default class WindowClassFactory {
 			ProcessingInstruction,
 			Element,
 			CharacterData,
+			Document,
+			HTMLDocument,
+			XMLDocument,
+			SVGDocument,
+			DocumentType,
 
 			// HTML Elements
 			HTMLElement,

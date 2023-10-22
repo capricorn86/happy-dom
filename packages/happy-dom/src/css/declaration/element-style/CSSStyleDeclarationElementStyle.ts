@@ -16,6 +16,7 @@ import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSPa
 import QuerySelector from '../../../query-selector/QuerySelector.js';
 import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConverter.js';
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
+import WindowBrowserSettingsReader from '../../../window/WindowBrowserSettingsReader.js';
 
 const CSS_VARIABLE_REGEXP = /var\( *(--[^) ]+)\)/g;
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
@@ -39,30 +40,18 @@ export default class CSSStyleDeclarationElementStyle {
 		documentCacheID: null
 	};
 
-	readonly #browserSettings: { readonly disableComputedStyleRendering: boolean };
 	private element: IElement;
 	private computed: boolean;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param options Options.
-	 * @param options.element Element.
-	 * @param [options.browserSettings] Browser settings.
-	 * @param [options.browserSettings.disableComputedStyleRendering] Disable computed style rendering.
-	 * @param [options.computed=false] Computed.
-	 * @param element
+	 * @param element Element.
+	 * @param [computed] Computed.
 	 */
-	constructor(
-		element: IElement,
-		options?: {
-			browserSettings?: { readonly disableComputedStyleRendering: boolean };
-			computed?: boolean;
-		}
-	) {
+	constructor(element: IElement, computed = false) {
 		this.element = element;
-		this.#browserSettings = options?.browserSettings ?? { disableComputedStyleRendering: false };
-		this.computed = options?.computed ?? false;
+		this.computed = computed;
 	}
 
 	/**
@@ -365,7 +354,10 @@ export default class CSSStyleDeclarationElementStyle {
 		parentFontSize: string | number;
 		parentSize: string | number | null;
 	}): string {
-		if (this.#browserSettings.disableComputedStyleRendering) {
+		if (
+			WindowBrowserSettingsReader.getSettings(this.element.ownerDocument.defaultView)
+				.disableComputedStyleRendering
+		) {
 			return options.value;
 		}
 
