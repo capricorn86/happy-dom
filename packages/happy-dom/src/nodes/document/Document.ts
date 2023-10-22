@@ -32,7 +32,6 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement.js';
 import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
-import DocumentReadyStateManager from './DocumentReadyStateManager.js';
 import Location from '../../location/Location.js';
 import Selection from '../../selection/Selection.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
@@ -53,17 +52,18 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 export default class Document extends Node implements IDocument {
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
-	public implementation: DOMImplementation;
+	public implementation = new DOMImplementation(this);
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
-	public readonly defaultView: IWindow;
+	public readonly defaultView: IWindow | null = null;
 	public readonly referrer = '';
+	public readonly ownerDocument = null;
 	public readonly _windowClass: {} | null = null;
-	public readonly _readyStateManager: DocumentReadyStateManager;
 	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public _activeElement: IHTMLElement = null;
 	public _nextActiveElement: IHTMLElement = null;
 	public _currentScript: IHTMLScriptElement = null;
+	public _rootNode = this;
 
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
 	public _cacheID = 0;
@@ -185,30 +185,6 @@ export default class Document extends Node implements IDocument {
 	public oncut: (event: Event) => void = null;
 	public onpaste: (event: Event) => void = null;
 	public onbeforematch: (event: Event) => void = null;
-
-	/**
-	 * Creates an instance of Document.
-	 *
-	 */
-	constructor() {
-		super();
-
-		this.implementation = new DOMImplementation(this);
-
-		this._readyStateManager = new DocumentReadyStateManager(this.defaultView);
-		this._rootNode = this;
-
-		const doctype = this.implementation.createDocumentType('html', '', '');
-		const documentElement = this.createElement('html');
-		const bodyElement = this.createElement('body');
-		const headElement = this.createElement('head');
-
-		this.appendChild(doctype);
-		this.appendChild(documentElement);
-
-		documentElement.appendChild(headElement);
-		documentElement.appendChild(bodyElement);
-	}
 
 	/**
 	 * Returns document children.
@@ -987,17 +963,6 @@ export default class Document extends Node implements IDocument {
 	 */
 	public hasFocus(): boolean {
 		return !!this.activeElement;
-	}
-
-	/**
-	 * Triggered by window when it is ready.
-	 */
-	public _onWindowReady(): void {
-		this._readyStateManager.whenComplete().then(() => {
-			(<DocumentReadyStateEnum>this.readyState) = DocumentReadyStateEnum.complete;
-			this.dispatchEvent(new Event('readystatechange'));
-			this.dispatchEvent(new Event('load', { bubbles: true }));
-		});
 	}
 
 	/**

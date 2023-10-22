@@ -6,7 +6,6 @@ import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget.js';
 import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum.js';
 import Event from '../event/Event.js';
 import IDocument from '../nodes/document/IDocument.js';
-import IWindow from '../window/IWindow.js';
 import Blob from '../file/Blob.js';
 import XMLHttpRequestUpload from './XMLHttpRequestUpload.js';
 import DOMException from '../exception/DOMException.js';

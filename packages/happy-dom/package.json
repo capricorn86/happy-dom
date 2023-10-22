@@ -69,6 +69,7 @@
 		"change-cjs-file-extension": "node ./bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"build-version-file": "node ./bin/build-version-file.cjs",
 		"watch": "tsc -w --preserveWatchOutput",
+		"test": "vitest run --singleThread",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest --singleThread",
 		"test:debug": "vitest run --inspect-brk --threads=false"

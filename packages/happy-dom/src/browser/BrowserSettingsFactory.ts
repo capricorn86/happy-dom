@@ -20,11 +20,11 @@ export default class BrowserSettingsFactory {
 			...settings,
 			navigator: {
 				...DefaultBrowserSettings.navigator,
-				...settings.navigator
+				...settings?.navigator
 			},
 			device: {
 				...DefaultBrowserSettings.device,
-				...settings.device
+				...settings?.device
 			}
 		};
 	}
@@ -41,11 +41,11 @@ export default class BrowserSettingsFactory {
 			...settings,
 			navigator: Object.freeze({
 				...DefaultBrowserSettings.navigator,
-				...settings.navigator
+				...settings?.navigator
 			}),
 			device: Object.freeze({
 				...DefaultBrowserSettings.device,
-				...settings.device
+				...settings?.device
 			})
 		});
 	}

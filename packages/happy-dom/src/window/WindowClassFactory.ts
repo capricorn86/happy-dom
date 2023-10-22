@@ -43,10 +43,6 @@ import ShadowRootImplementation from '../nodes/shadow-root/ShadowRoot.js';
 import ProcessingInstructionImplementation from '../nodes/processing-instruction/ProcessingInstruction.js';
 import ElementImplementation from '../nodes/element/Element.js';
 import CharacterDataImplementation from '../nodes/character-data/CharacterData.js';
-import DocumentImplementation from '../nodes/document/Document.js';
-import HTMLDocumentImplementation from '../nodes/html-document/HTMLDocument.js';
-import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
-import SVGDocumentImplementation from '../nodes/svg-document/SVGDocument.js';
 
 /**
  * Some classes need to get access to the window object without having a reference to the window in the constructor.
@@ -77,10 +73,6 @@ export default class WindowClassFactory {
 		ProcessingInstruction: typeof ProcessingInstructionImplementation;
 		Element: typeof ElementImplementation;
 		CharacterData: typeof CharacterDataImplementation;
-		Document: typeof DocumentImplementation;
-		HTMLDocument: typeof HTMLDocumentImplementation;
-		XMLDocument: typeof XMLDocumentImplementation;
-		SVGDocument: typeof SVGDocumentImplementation;
 
 		// HTML Elements
 		HTMLElement: typeof HTMLElementImplementation;
@@ -150,22 +142,6 @@ export default class WindowClassFactory {
 		}
 		class CharacterData extends CharacterDataImplementation {
 			public readonly ownerDocument: IDocument = properties.window.document;
-		}
-		class Document extends DocumentImplementation {
-			public readonly ownerDocument: IDocument | null = null;
-			public readonly defaultView: IWindow = properties.window;
-		}
-		class HTMLDocument extends HTMLDocumentImplementation {
-			public readonly ownerDocument: IDocument | null = null;
-			public readonly defaultView: IWindow = properties.window;
-		}
-		class XMLDocument extends XMLDocumentImplementation {
-			public readonly ownerDocument: IDocument | null = null;
-			public readonly defaultView: IWindow = properties.window;
-		}
-		class SVGDocument extends SVGDocumentImplementation {
-			public readonly ownerDocument: IDocument | null = null;
-			public readonly defaultView: IWindow = properties.window;
 		}
 
 		// HTML Elements
@@ -279,10 +255,6 @@ export default class WindowClassFactory {
 			ProcessingInstruction,
 			Element,
 			CharacterData,
-			Document,
-			HTMLDocument,
-			XMLDocument,
-			SVGDocument,
 
 			// HTML Elements
 			HTMLElement,

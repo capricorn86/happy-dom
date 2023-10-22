@@ -141,6 +141,8 @@ import Range from '../range/Range.js';
 import XMLHttpRequest from '../xml-http-request/XMLHttpRequest.js';
 import IOptionalBrowserSettings from '../browser/IOptionalBrowserSettings.js';
 import WindowBrowserSettingsReader from './WindowBrowserSettingsReader.js';
+import DocumentReadyStateManager from '../nodes/document/DocumentReadyStateManager.js';
+import DocumentReadyStateEnum from '../nodes/document/DocumentReadyStateEnum.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -170,10 +172,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly ProcessingInstruction: typeof ProcessingInstruction;
 	public readonly Element: typeof Element;
 	public readonly CharacterData: typeof CharacterData;
-	public readonly Document: typeof Document;
-	public readonly HTMLDocument: typeof HTMLDocument;
-	public readonly XMLDocument: typeof XMLDocument;
-	public readonly SVGDocument: typeof SVGDocument;
+	public readonly Document = Document;
+	public readonly HTMLDocument = HTMLDocument;
+	public readonly XMLDocument = XMLDocument;
+	public readonly SVGDocument = SVGDocument;
 
 	// Element classes
 	public readonly HTMLElement: typeof HTMLElement;
@@ -486,6 +488,7 @@ export default class Window extends EventTarget implements IWindow {
 	private _setInterval: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
 	private _clearInterval: (id: NodeJS.Timeout) => void;
 	private _queueMicrotask: (callback: Function) => void;
+	public readonly _readyStateManager = new DocumentReadyStateManager(this);
 	#browserFrame: BrowserFrame | DetachedBrowserFrame;
 
 	/**
@@ -616,10 +619,6 @@ export default class Window extends EventTarget implements IWindow {
 		this.ProcessingInstruction = classes.ProcessingInstruction;
 		this.Element = classes.Element;
 		this.CharacterData = classes.CharacterData;
-		this.Document = classes.Document;
-		this.HTMLDocument = classes.HTMLDocument;
-		this.XMLDocument = classes.XMLDocument;
-		this.SVGDocument = classes.SVGDocument;
 
 		// HTML Element classes
 		this.HTMLElement = classes.HTMLElement;
@@ -694,11 +693,27 @@ export default class Window extends EventTarget implements IWindow {
 		this.HTMLParamElement = classes.HTMLElement;
 		this.HTMLTrackElement = classes.HTMLElement;
 
-		this.document = new this.HTMLDocument();
-
 		this._setupVMContext();
 
-		this.document._onWindowReady();
+		this.document = new this.HTMLDocument();
+		(<IWindow>this.document.defaultView) = this;
+
+		const doctype = this.document.implementation.createDocumentType('html', '', '');
+		const documentElement = this.document.createElement('html');
+		const bodyElement = this.document.createElement('body');
+		const headElement = this.document.createElement('head');
+
+		this.document.appendChild(doctype);
+		this.document.appendChild(documentElement);
+
+		documentElement.appendChild(headElement);
+		documentElement.appendChild(bodyElement);
+
+		this._readyStateManager.whenComplete().then(() => {
+			(<DocumentReadyStateEnum>this.document.readyState) = DocumentReadyStateEnum.complete;
+			this.document.dispatchEvent(new Event('readystatechange'));
+			this.document.dispatchEvent(new Event('load', { bubbles: true }));
+		});
 	}
 
 	/**

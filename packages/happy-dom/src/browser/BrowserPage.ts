@@ -1,4 +1,3 @@
-import Event from '../event/Event.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import BrowserFrame from './BrowserFrame.js';

@@ -7,6 +7,7 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
+import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
 
 /**
  * Helper class for getting the URL relative to a Location object.
@@ -38,7 +39,9 @@ export default class HTMLLinkElementUtility {
 				return;
 			}
 
-			(<Document>element.ownerDocument)._readyStateManager.startTask();
+			(<{ _readyStateManager: DocumentReadyStateManager }>(
+				(<unknown>element.ownerDocument.defaultView)
+			))._readyStateManager.startTask();
 
 			let code: string | null = null;
 			let error: Error | null = null;
@@ -49,7 +52,9 @@ export default class HTMLLinkElementUtility {
 				error = e;
 			}
 
-			(<Document>element.ownerDocument)._readyStateManager.endTask();
+			(<{ _readyStateManager: DocumentReadyStateManager }>(
+				(<unknown>element.ownerDocument.defaultView)
+			))._readyStateManager.endTask();
 
 			if (error) {
 				WindowErrorUtility.dispatchError(element, error);
