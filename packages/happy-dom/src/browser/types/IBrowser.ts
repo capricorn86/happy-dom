@@ -29,6 +29,13 @@ export default interface IBrowser {
 	abort(): void;
 
 	/**
+	 * Creates a new incognito context.
+	 *
+	 * @returns Context.
+	 */
+	newIncognitoContext(): IBrowserContext;
+
+	/**
 	 * Creates a new page.
 	 *
 	 * @returns Page.

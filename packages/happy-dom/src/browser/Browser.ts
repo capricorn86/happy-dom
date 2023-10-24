@@ -9,7 +9,6 @@ import IBrowser from './types/IBrowser.js';
  * Browser context.
  */
 export default class Browser implements IBrowser {
-	public readonly defaultContext: BrowserContext;
 	public readonly contexts: BrowserContext[];
 	public readonly settings: IBrowserSettings;
 	public readonly console: Console | null;
@@ -24,8 +23,19 @@ export default class Browser implements IBrowser {
 	constructor(options?: { settings?: IOptionalBrowserSettings; console?: Console }) {
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
-		this.defaultContext = new BrowserContext(this);
-		this.contexts = [this.defaultContext];
+		this.contexts = [new BrowserContext(this)];
+	}
+
+	/**
+	 * Returns the default context.
+	 *
+	 * @returns Default context.
+	 */
+	public get defaultContext(): BrowserContext {
+		if (this.contexts.length === 0) {
+			throw new Error('No default context. The browser has been closed.');
+		}
+		return this.contexts[0];
 	}
 
 	/**
@@ -36,7 +46,6 @@ export default class Browser implements IBrowser {
 			context.close();
 		}
 		(<BrowserContext[]>this.contexts) = [];
-		(<BrowserContext | null>this.defaultContext) = null;
 	}
 
 	/**
@@ -58,11 +67,25 @@ export default class Browser implements IBrowser {
 	}
 
 	/**
+	 * Creates a new incognito context.
+	 *
+	 * @returns Context.
+	 */
+	public newIncognitoContext(): BrowserContext {
+		const context = new BrowserContext(this);
+		this.contexts.push(context);
+		return context;
+	}
+
+	/**
 	 * Creates a new page.
 	 *
 	 * @returns Page.
 	 */
 	public newPage(): BrowserPage {
-		return this.defaultContext.newPage();
+		if (this.contexts.length === 0) {
+			throw new Error('No default context. The browser has been closed.');
+		}
+		return this.contexts[0].newPage();
 	}
 }

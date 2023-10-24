@@ -10,7 +10,6 @@ import IWindow from '../../window/IWindow.js';
  * Detached browser.
  */
 export default class DetachedBrowser implements IBrowser {
-	public readonly defaultContext: DetachedBrowserContext;
 	public readonly contexts: DetachedBrowserContext[];
 	public readonly settings: IBrowserSettings;
 	public readonly console: Console | null;
@@ -29,8 +28,19 @@ export default class DetachedBrowser implements IBrowser {
 	) {
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
-		this.defaultContext = new DetachedBrowserContext(window, this);
-		this.contexts = [this.defaultContext];
+		this.contexts = [new DetachedBrowserContext(window, this)];
+	}
+
+	/**
+	 * Returns the default context.
+	 *
+	 * @returns Default context.
+	 */
+	public get defaultContext(): DetachedBrowserContext {
+		if (this.contexts.length === 0) {
+			throw new Error('No default context. The browser has been closed.');
+		}
+		return this.contexts[0];
 	}
 
 	/**
@@ -41,7 +51,6 @@ export default class DetachedBrowser implements IBrowser {
 			context.close();
 		}
 		(<DetachedBrowserContext[]>this.contexts) = [];
-		(<DetachedBrowserContext | null>this.defaultContext) = null;
 	}
 
 	/**
@@ -63,11 +72,23 @@ export default class DetachedBrowser implements IBrowser {
 	}
 
 	/**
+	 * Creates a new incognito context.
+	 *
+	 * @returns Context.
+	 */
+	public newIncognitoContext(): DetachedBrowserContext {
+		throw new Error('Not possible to create a new context on a detached browser.');
+	}
+
+	/**
 	 * Creates a new page.
 	 *
 	 * @returns Page.
 	 */
 	public newPage(): DetachedBrowserPage {
-		return this.defaultContext.newPage();
+		if (this.contexts.length === 0) {
+			throw new Error('No default context. The browser has been closed.');
+		}
+		return this.contexts[0].newPage();
 	}
 }
