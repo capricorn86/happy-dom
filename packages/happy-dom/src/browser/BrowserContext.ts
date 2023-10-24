@@ -1,13 +1,13 @@
 import Browser from './Browser.js';
 import BrowserPage from './BrowserPage.js';
-import IBrowserContext from './IBrowserContext.js';
+import IBrowserContext from './types/IBrowserContext.js';
 
 /**
  * Browser context.
  */
 export default class BrowserContext implements IBrowserContext {
-	public pages: BrowserPage[] = [];
-	public browser: Browser;
+	public readonly pages: BrowserPage[] = [];
+	public readonly browser: Browser;
 
 	/**
 	 * Constructor.
@@ -20,11 +20,11 @@ export default class BrowserContext implements IBrowserContext {
 
 	/**
 	 * Aborts all ongoing operations and destroys the context.
-	 *
-	 * @returns Promise.
 	 */
-	public async close(): Promise<void> {
-		await Promise.all(this.pages.map((page) => page.close()));
+	public close(): void {
+		for (const page of this.pages) {
+			page.close();
+		}
 	}
 
 	/**
@@ -38,11 +38,11 @@ export default class BrowserContext implements IBrowserContext {
 
 	/**
 	 * Aborts all ongoing operations.
-	 *
-	 * @returns Promise.
 	 */
-	public async abort(): Promise<void> {
-		await Promise.all(this.pages.map((page) => page.abort()));
+	public abort(): void {
+		for (const page of this.pages) {
+			page.abort();
+		}
 	}
 
 	/**

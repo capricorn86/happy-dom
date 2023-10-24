@@ -26,8 +26,6 @@ import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Range.
  */
 export default class Range {
-	// Will be populated by a sub-class in Window.
-	public readonly _ownerDocument: IDocument;
 	public static readonly END_TO_END: number = RangeHowEnum.endToEnd;
 	public static readonly END_TO_START: number = RangeHowEnum.endToStart;
 	public static readonly START_TO_END: number = RangeHowEnum.startToEnd;
@@ -45,6 +43,13 @@ export default class Range {
 	constructor() {
 		this._start = { node: this._ownerDocument, offset: 0 };
 		this._end = { node: this._ownerDocument, offset: 0 };
+	}
+
+	/**
+	 * Returns owner document.
+	 */
+	public get _ownerDocument(): IDocument {
+		throw new Error('_ownerDocument needs to be implemented by sub-class.');
 	}
 
 	/**

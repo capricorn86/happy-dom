@@ -15,6 +15,9 @@ import INodeList from './INodeList.js';
  * Node.
  */
 export default class Node extends EventTarget implements INode {
+	// Can be set before the Node is created.
+	public static _ownerDocument: IDocument | null = null;
+
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
 	public static readonly ATTRIBUTE_NODE = NodeTypeEnum.attributeNode;
@@ -59,6 +62,18 @@ export default class Node extends EventTarget implements INode {
 	public _textAreaNode: INode = null;
 	public _observers: MutationListener[] = [];
 	public readonly _childNodes: INodeList<INode> = new NodeList<INode>();
+	#ownerDocument: IDocument | null = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		if ((<typeof Node>this.constructor)._ownerDocument) {
+			this.#ownerDocument = (<typeof Node>this.constructor)._ownerDocument;
+		}
+	}
 
 	/**
 	 * Returns `Symbol.toStringTag`.
@@ -73,7 +88,7 @@ export default class Node extends EventTarget implements INode {
 	 * Returns owner document.
 	 */
 	public get ownerDocument(): IDocument {
-		throw new Error('Property "ownerDocument" needs to be implemented by sub-class.');
+		return <IDocument>this.#ownerDocument;
 	}
 
 	/**
@@ -207,7 +222,7 @@ export default class Node extends EventTarget implements INode {
 		if (base) {
 			return base.href;
 		}
-		return this.ownerDocument.defaultView.location.href;
+		return this.ownerDocument._defaultView.location.href;
 	}
 
 	/**
@@ -265,7 +280,9 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): INode {
+		(<typeof Node>this.constructor)._ownerDocument = this.ownerDocument;
 		const clone = new (<typeof Node>this.constructor)();
+		(<typeof Node>this.constructor)._ownerDocument = null;
 
 		// Document has childNodes directly when it is created
 		if (clone._childNodes.length) {

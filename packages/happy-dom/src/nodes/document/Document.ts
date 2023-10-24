@@ -805,7 +805,9 @@ export default class Document extends Node implements IDocument {
 		const elementClass: typeof Element =
 			customElementClass || this._defaultView[ElementTag[tagName]] || HTMLUnknownElement;
 
+		elementClass._ownerDocument = this;
 		const element = new elementClass();
+		elementClass._ownerDocument = null;
 		element.tagName = tagName;
 
 		(<string>element.namespaceURI) = namespaceURI;
@@ -922,7 +924,8 @@ export default class Document extends Node implements IDocument {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}
 		const clone = node.cloneNode(deep);
-		(<Document>clone.ownerDocument) = this;
+		const document = this;
+		Object.defineProperty(clone, 'ownerDocument', { get: () => document });
 		return clone;
 	}
 
@@ -947,7 +950,8 @@ export default class Document extends Node implements IDocument {
 		}
 
 		const adopted = node.parentNode ? node.parentNode.removeChild(node) : node;
-		(<Document>adopted.ownerDocument) = this;
+		const document = this;
+		Object.defineProperty(adopted, 'ownerDocument', { get: () => document });
 		return adopted;
 	}
 

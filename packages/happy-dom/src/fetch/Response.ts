@@ -161,6 +161,9 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
+		if (!this._asyncTaskManager) {
+			debugger;
+		}
 		const taskID = this._asyncTaskManager.startTask();
 		let buffer: Buffer;
 
@@ -266,7 +269,7 @@ export default class Response implements IResponse {
 			);
 		}
 
-		return new (<typeof Response>this.constructor)(null, {
+		return new (<typeof Response>this)(null, {
 			headers: {
 				location: new URL(url).toString()
 			},
@@ -282,7 +285,7 @@ export default class Response implements IResponse {
 	 * @returns Response.
 	 */
 	public static error(): IResponse {
-		const response = new (<typeof Response>this.constructor)(null, { status: 0, statusText: '' });
+		const response = new (<typeof Response>this)(null, { status: 0, statusText: '' });
 		(<string>response.type) = 'error';
 		return response;
 	}
@@ -307,7 +310,7 @@ export default class Response implements IResponse {
 			headers.set('content-type', 'application/json');
 		}
 
-		return new (<typeof Response>this.constructor)(body, {
+		return new (<typeof Response>this)(body, {
 			status: 200,
 			...init,
 			headers

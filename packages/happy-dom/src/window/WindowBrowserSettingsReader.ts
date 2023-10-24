@@ -1,4 +1,4 @@
-import IBrowserSettings from '../browser/IBrowserSettings.js';
+import IBrowserSettings from '../browser/types/IBrowserSettings.js';
 import IWindow from './IWindow.js';
 
 /**
@@ -35,5 +35,20 @@ export default class WindowBrowserSettingsReader {
 		}
 		window['__happyDOMSettingsID__'] = this.#settings.length;
 		this.#settings.push(settings);
+	}
+
+	/**
+	 * Removes browser settings.
+	 *
+	 * @param window Window.
+	 */
+	public static removeSettings(window: IWindow): void {
+		const id = window['__happyDOMSettingsID__'];
+
+		if (id !== undefined && this.#settings[id]) {
+			delete this.#settings[id];
+		}
+
+		delete window['__happyDOMSettingsID__'];
 	}
 }

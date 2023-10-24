@@ -440,14 +440,14 @@ describe('Response', () => {
 
 	describe('static redirect()', () => {
 		it('Returns a new instance of Response with redirect status set to 302 by default.', async () => {
-			const response = Response.redirect('https://example.com');
+			const response = window.Response.redirect('https://example.com');
 
 			expect(response.status).toBe(302);
 			expect(response.headers.get('Location')).toBe('https://example.com/');
 		});
 
 		it('Returns a new instance of Response with redirect status set to 301.', async () => {
-			const response = Response.redirect('https://example.com', 301);
+			const response = window.Response.redirect('https://example.com', 301);
 
 			expect(response.status).toBe(301);
 			expect(response.headers.get('Location')).toBe('https://example.com/');
@@ -457,7 +457,7 @@ describe('Response', () => {
 			let error: Error | null = null;
 
 			try {
-				Response.redirect('https://example.com', 200);
+				window.Response.redirect('https://example.com', 200);
 			} catch (e) {
 				error = e;
 			}
@@ -473,7 +473,7 @@ describe('Response', () => {
 
 	describe('static error()', () => {
 		it('Returns a new instance of Response with type set to error.', async () => {
-			const response = Response.error();
+			const response = window.Response.error();
 
 			expect(response.status).toBe(0);
 			expect(response.statusText).toBe('');
@@ -484,7 +484,7 @@ describe('Response', () => {
 	describe('static json()', () => {
 		it('Returns a new instance of Response with JSON body.', async () => {
 			const data = { key1: 'value1', key2: 'value2' };
-			const response = Response.json(data);
+			const response = window.Response.json(data);
 
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('');
@@ -494,7 +494,7 @@ describe('Response', () => {
 
 		it('Returns a new instance of Response with JSON body and custom init.', async () => {
 			const data = { key1: 'value1', key2: 'value2' };
-			const response = Response.json(data, {
+			const response = window.Response.json(data, {
 				status: 201,
 				statusText: 'OK',
 				headers: { 'Content-Type': 'test' }

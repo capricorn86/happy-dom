@@ -61,16 +61,16 @@ describe('MediaQueryList', () => {
 		});
 
 		it('Handles media type with name "print".', () => {
+			expect(new MediaQueryList({ ownerWindow: window, media: 'print' }).matches).toBe(false);
+			expect(
+				new MediaQueryList({ ownerWindow: window, media: 'print and (min-width: 1024px)' }).matches
+			).toBe(false);
+
 			window = new Window({
 				width: 1024,
 				height: 768,
 				settings: { device: { mediaType: 'print' } }
 			});
-
-			expect(new MediaQueryList({ ownerWindow: window, media: 'print' }).matches).toBe(false);
-			expect(
-				new MediaQueryList({ ownerWindow: window, media: 'print and (min-width: 1024px)' }).matches
-			).toBe(false);
 
 			expect(new MediaQueryList({ ownerWindow: window, media: 'print' }).matches).toBe(true);
 			expect(

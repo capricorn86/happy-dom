@@ -980,9 +980,10 @@ describe('XMLHttpRequest', () => {
 		it('Throws an exception when doing a synchronous request towards a local file with another method than "GET".', () => {
 			window = new Window({
 				settings: {
-					enableFileSystemHttpRequests: false
+					enableFileSystemHttpRequests: true
 				}
 			});
+			request = new window.XMLHttpRequest();
 
 			request.open('POST', 'file://C:/path/to/file.txt', false);
 
@@ -997,6 +998,7 @@ describe('XMLHttpRequest', () => {
 					enableFileSystemHttpRequests: true
 				}
 			});
+			request = new window.XMLHttpRequest();
 
 			request.open('POST', 'file://C:/path/to/file.txt', true);
 
@@ -1011,6 +1013,7 @@ describe('XMLHttpRequest', () => {
 					enableFileSystemHttpRequests: true
 				}
 			});
+			request = new window.XMLHttpRequest();
 
 			const filepath = 'C:/path/to/file.txt';
 			const fileContent = 'test';
@@ -1037,6 +1040,7 @@ describe('XMLHttpRequest', () => {
 					enableFileSystemHttpRequests: true
 				}
 			});
+			request = new window.XMLHttpRequest();
 
 			await new Promise((resolve) => {
 				const filepath = 'C:/path/to/file.txt';
@@ -1917,7 +1921,7 @@ describe('XMLHttpRequest', () => {
 			request.send();
 			request.abort();
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM.whenComplete();
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
 			expect(isDestroyed).toBe(true);
@@ -1951,7 +1955,7 @@ describe('XMLHttpRequest', () => {
 			request.open('GET', REQUEST_URL, true);
 			request.send();
 
-			window.happyDOM.cancelAsync();
+			window.happyDOM.abort();
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
 			expect(isDestroyed).toBe(true);

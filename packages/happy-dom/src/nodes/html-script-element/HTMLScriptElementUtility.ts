@@ -22,7 +22,7 @@ export default class HTMLScriptElementUtility {
 		const src = element.getAttribute('src');
 		const async = element.getAttribute('async') !== null;
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			element.ownerDocument.defaultView
+			element.ownerDocument._defaultView
 		);
 
 		if (
@@ -41,7 +41,7 @@ export default class HTMLScriptElementUtility {
 
 		if (async) {
 			(<{ _readyStateManager: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument.defaultView)
+				(<unknown>element.ownerDocument._defaultView)
 			))._readyStateManager.startTask();
 
 			let code: string | null = null;
@@ -54,7 +54,7 @@ export default class HTMLScriptElementUtility {
 			}
 
 			(<{ _readyStateManager: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument.defaultView)
+				(<unknown>element.ownerDocument._defaultView)
 			))._readyStateManager.endTask();
 
 			if (error) {
@@ -65,10 +65,10 @@ export default class HTMLScriptElementUtility {
 			} else {
 				element.ownerDocument['_currentScript'] = element;
 				if (browserSettings.disableErrorCapturing) {
-					element.ownerDocument.defaultView.eval(code);
+					element.ownerDocument._defaultView.eval(code);
 				} else {
-					WindowErrorUtility.captureError(element.ownerDocument.defaultView, () =>
-						element.ownerDocument.defaultView.eval(code)
+					WindowErrorUtility.captureError(element.ownerDocument._defaultView, () =>
+						element.ownerDocument._defaultView.eval(code)
 					);
 				}
 				element.ownerDocument['_currentScript'] = null;
@@ -92,10 +92,10 @@ export default class HTMLScriptElementUtility {
 			} else {
 				element.ownerDocument['_currentScript'] = element;
 				if (browserSettings.disableErrorCapturing) {
-					element.ownerDocument.defaultView.eval(code);
+					element.ownerDocument._defaultView.eval(code);
 				} else {
-					WindowErrorUtility.captureError(element.ownerDocument.defaultView, () =>
-						element.ownerDocument.defaultView.eval(code)
+					WindowErrorUtility.captureError(element.ownerDocument._defaultView, () =>
+						element.ownerDocument._defaultView.eval(code)
 					);
 				}
 				element.ownerDocument['_currentScript'] = null;

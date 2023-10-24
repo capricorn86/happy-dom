@@ -2,7 +2,6 @@ import IDocument from '../nodes/document/IDocument.js';
 import XMLParser from '../xml-parser/XMLParser.js';
 import Node from '../nodes/node/Node.js';
 import DOMException from '../exception/DOMException.js';
-import IWindow from '../window/IWindow.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 
 /**
@@ -27,10 +26,7 @@ export default class DOMParser {
 			throw new DOMException('Second parameter "mimeType" is mandatory.');
 		}
 
-		const ownerDocument = this._ownerDocument;
 		const newDocument = <IDocument>this._createDocument(mimeType);
-
-		(<IWindow>newDocument.defaultView) = ownerDocument.defaultView;
 
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
@@ -98,13 +94,13 @@ export default class DOMParser {
 	private _createDocument(mimeType: string): IDocument {
 		switch (mimeType) {
 			case 'text/html':
-				return new this._ownerDocument.defaultView.HTMLDocument();
+				return new this._ownerDocument._defaultView.HTMLDocument();
 			case 'image/svg+xml':
-				return new this._ownerDocument.defaultView.SVGDocument();
+				return new this._ownerDocument._defaultView.SVGDocument();
 			case 'text/xml':
 			case 'application/xml':
 			case 'application/xhtml+xml':
-				return new this._ownerDocument.defaultView.XMLDocument();
+				return new this._ownerDocument._defaultView.XMLDocument();
 			default:
 				throw new DOMException(`Unknown mime type "${mimeType}".`);
 		}

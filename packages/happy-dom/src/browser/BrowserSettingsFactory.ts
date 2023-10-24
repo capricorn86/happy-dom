@@ -1,7 +1,7 @@
-import IBrowserSettings from './IBrowserSettings.js';
-import IOptionalBrowserSettings from './IOptionalBrowserSettings.js';
+import IBrowserSettings from './types/IBrowserSettings.js';
+import IOptionalBrowserSettings from './types/IOptionalBrowserSettings.js';
 import DefaultBrowserSettings from './DefaultBrowserSettings.js';
-import IReadOnlyBrowserSettings from './IReadOnlyBrowserSettings.js';
+import IReadOnlyBrowserSettings from './types/IReadOnlyBrowserSettings.js';
 
 /**
  * Browser settings utility.

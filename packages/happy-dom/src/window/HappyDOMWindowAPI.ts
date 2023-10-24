@@ -1,18 +1,17 @@
-import IBrowserSettings from '../browser/IBrowserSettings.js';
+import IBrowserSettings from '../browser/types/IBrowserSettings.js';
 import IWindow from './IWindow.js';
-import BrowserFrame from '../browser/BrowserFrame.js';
-import DetachedBrowserFrame from '../browser/DetachedBrowserFrame.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import BrowserSettingsFactory from '../browser/BrowserSettingsFactory.js';
-import IReadOnlyBrowserSettings from '../browser/IReadOnlyBrowserSettings.js';
-import IBrowserPageViewport from '../browser/IBrowserPageViewport.js';
+import IReadOnlyBrowserSettings from '../browser/types/IReadOnlyBrowserSettings.js';
+import IBrowserPageViewport from '../browser/types/IBrowserPageViewport.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 
 /**
  * API for detached windows to be able to access features of the owner window.
  */
 export default class HappyDOMWindowAPI {
 	#window: IWindow;
-	#browserFrame?: BrowserFrame | DetachedBrowserFrame;
+	#browserFrame?: IBrowserFrame;
 	#settings: IBrowserSettings | null = null;
 
 	/**
@@ -22,7 +21,7 @@ export default class HappyDOMWindowAPI {
 	 * @param options.window Owner window.
 	 * @param options.browserFrame Browser frame.
 	 */
-	constructor(options: { window: IWindow; browserFrame: BrowserFrame | DetachedBrowserFrame }) {
+	constructor(options: { window: IWindow; browserFrame: IBrowserFrame }) {
 		this.#window = options.window;
 		this.#browserFrame = options.browserFrame;
 	}
@@ -36,9 +35,7 @@ export default class HappyDOMWindowAPI {
 	public get settings(): IReadOnlyBrowserSettings {
 		if (!this.#settings) {
 			this.#settings = BrowserSettingsFactory.getReadOnlySettings(
-				this.#browserFrame instanceof DetachedBrowserFrame
-					? this.#browserFrame.settings
-					: this.#browserFrame.page.context.browser.settings
+				this.#browserFrame.page.context.browser.settings
 			);
 		}
 		return this.#settings;
@@ -50,9 +47,6 @@ export default class HappyDOMWindowAPI {
 	 * @returns Virtual console printer.
 	 */
 	public get virtualConsolePrinter(): VirtualConsolePrinter {
-		if (this.#browserFrame instanceof DetachedBrowserFrame) {
-			return this.#browserFrame.virtualConsolePrinter;
-		}
 		return this.#browserFrame.page.virtualConsolePrinter;
 	}
 
@@ -80,15 +74,15 @@ export default class HappyDOMWindowAPI {
 	 *
 	 * @deprecated Use abort() instead.
 	 */
-	public async cancelAsync(): Promise<void> {
-		await this.abort();
+	public cancelAsync(): void {
+		this.abort();
 	}
 
 	/**
 	 * Aborts all async tasks.
 	 */
-	public async abort(): Promise<void> {
-		await this.#browserFrame.abort();
+	public abort(): void {
+		this.#browserFrame.abort();
 	}
 
 	/**

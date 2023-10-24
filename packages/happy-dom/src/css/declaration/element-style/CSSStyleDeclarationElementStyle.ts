@@ -276,7 +276,7 @@ export default class CSSStyleDeclarationElementStyle {
 			return;
 		}
 
-		const ownerWindow = this.element.ownerDocument.defaultView;
+		const ownerWindow = this.element.ownerDocument._defaultView;
 
 		for (const rule of options.cssRules) {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
@@ -355,7 +355,7 @@ export default class CSSStyleDeclarationElementStyle {
 		parentSize: string | number | null;
 	}): string {
 		if (
-			WindowBrowserSettingsReader.getSettings(this.element.ownerDocument.defaultView)
+			WindowBrowserSettingsReader.getSettings(this.element.ownerDocument._defaultView)
 				.disableComputedStyleRendering
 		) {
 			return options.value;
@@ -368,7 +368,7 @@ export default class CSSStyleDeclarationElementStyle {
 		while ((match = regexp.exec(options.value)) !== null) {
 			if (match[1] !== 'px') {
 				const valueInPixels = CSSMeasurementConverter.toPixels({
-					ownerWindow: this.element.ownerDocument.defaultView,
+					ownerWindow: this.element.ownerDocument._defaultView,
 					value: match[0],
 					rootFontSize: options.rootFontSize,
 					parentFontSize: options.parentFontSize,

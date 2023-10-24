@@ -1,34 +1,36 @@
-import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
-import IBrowserPageViewport from './types/IBrowserPageViewport.js';
-import BrowserFrame from './BrowserFrame.js';
-import BrowserContext from './BrowserContext.js';
-import VirtualConsole from '../console/VirtualConsole.js';
-import IBrowserPage from './types/IBrowserPage.js';
+import VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
+import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
+import DetachedBrowserFrame from './DetachedBrowserFrame.js';
+import DetachedBrowserContext from './DetachedBrowserContext.js';
+import VirtualConsole from '../../console/VirtualConsole.js';
+import IBrowserPage from '../types/IBrowserPage.js';
+import IWindow from '../../window/IWindow.js';
 
 /**
- * Browser page.
+ * Detached browser page.
  */
-export default class BrowserPage implements IBrowserPage {
+export default class DetachedBrowserPage implements IBrowserPage {
 	public readonly virtualConsolePrinter = new VirtualConsolePrinter();
-	public readonly mainFrame: BrowserFrame;
-	public readonly context: BrowserContext;
+	public readonly mainFrame: DetachedBrowserFrame;
+	public readonly context: DetachedBrowserContext;
 	public readonly console: Console;
 
 	/**
 	 * Constructor.
 	 *
+	 * @param window Window.
 	 * @param context Browser context.
 	 */
-	constructor(context: BrowserContext) {
+	constructor(window: IWindow, context: DetachedBrowserContext) {
 		this.context = context;
 		this.console = context.browser.console ?? new VirtualConsole(this.virtualConsolePrinter);
-		this.mainFrame = new BrowserFrame(this);
+		this.mainFrame = new DetachedBrowserFrame(window, this);
 	}
 
 	/**
 	 * Returns frames.
 	 */
-	public get frames(): BrowserFrame[] {
+	public get frames(): DetachedBrowserFrame[] {
 		return this._getFrames(this.mainFrame);
 	}
 
@@ -49,8 +51,8 @@ export default class BrowserPage implements IBrowserPage {
 			this.context.pages.splice(index, 1);
 		}
 		(<VirtualConsolePrinter | null>this.virtualConsolePrinter) = null;
-		(<BrowserFrame | null>this.mainFrame) = null;
-		(<BrowserContext | null>this.context) = null;
+		(<DetachedBrowserFrame | null>this.mainFrame) = null;
+		(<DetachedBrowserContext | null>this.context) = null;
 	}
 
 	/**
@@ -92,7 +94,7 @@ export default class BrowserPage implements IBrowserPage {
 	 *
 	 * @param parent Parent frame.
 	 */
-	private _getFrames(parent: BrowserFrame): BrowserFrame[] {
+	private _getFrames(parent: DetachedBrowserFrame): DetachedBrowserFrame[] {
 		let frames = [parent];
 		for (const frame of parent.childFrames) {
 			frames = frames.concat(this._getFrames(frame));

@@ -30,6 +30,7 @@ import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
 import IHTMLDialogElement from '../../src/nodes/html-dialog-element/IHTMLDialogElement.js';
+import Browser from '../../src/browser/Browser.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -63,18 +64,22 @@ describe('Window', () => {
 			const thirdWindow = new Window({ url: 'https://localhost:8080' });
 
 			for (const className of [
-				'Response',
 				'Request',
-				'Image',
 				'FileReader',
 				'DOMParser',
-				'Range'
+				'Range',
+				'Image',
+				'Audio',
+				'DocumentFragment'
 			]) {
 				const input = className === 'Request' ? 'test' : undefined;
 				const thirdInstance = new thirdWindow[className](input);
 				const firstInstance = new firstWindow[className](input);
 				const secondInstance = new secondWindow[className](input);
-				const property = className === 'Image' ? 'ownerDocument' : '_ownerDocument';
+				const property =
+					className === 'Image' || className === 'Audio' || className === 'DocumentFragment'
+						? 'ownerDocument'
+						: '_ownerDocument';
 
 				expect(firstInstance[property] === firstWindow.document).toBe(true);
 				expect(secondInstance[property] === secondWindow.document).toBe(true);
@@ -130,7 +135,9 @@ describe('Window', () => {
 			expect(windowWithOptions.outerHeight).toBe(1080);
 			expect(windowWithOptions.console).toBe(globalThis.console);
 			expect(windowWithOptions.location.href).toBe('http://localhost:8080/');
-			expect(windowWithOptions.happyDOM.virtualConsolePrinter).toBe(null);
+			expect(windowWithOptions.happyDOM.virtualConsolePrinter).toBeInstanceOf(
+				VirtualConsolePrinter
+			);
 			expect(windowWithOptions.happyDOM.settings.disableJavaScriptEvaluation).toBe(true);
 			expect(windowWithOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
@@ -423,17 +430,22 @@ describe('Window', () => {
 
 	describe('get Response()', () => {
 		it('Returns Response class.', () => {
-			const response = new window.Response();
+			const browser = new Browser();
+			const page = browser.newPage();
+			const response = new page.mainFrame.window.Response();
 			expect(response instanceof Response).toBe(true);
-			expect(response['_ownerDocument']).toBe(document);
+			expect(response['_asyncTaskManager']).toBe(page.mainFrame._asyncTaskManager);
 		});
 	});
 
 	describe('get Request()', () => {
 		it('Returns Request class.', () => {
-			const request = new window.Request('https://localhost:8080/test/page/');
+			const browser = new Browser();
+			const page = browser.newPage();
+			const request = new page.mainFrame.window.Request('https://localhost:8080/test/page/');
 			expect(request instanceof Request).toBe(true);
-			expect(request['_ownerDocument']).toBe(document);
+			expect(request['_asyncTaskManager']).toBe(page.mainFrame._asyncTaskManager);
+			expect(request['_ownerDocument']).toBe(page.mainFrame.window.document);
 		});
 	});
 
@@ -941,6 +953,7 @@ describe('Window', () => {
 		it('Makes it possible to cancel an ongoing microtask.', async () => {
 			await new Promise((resolve) => {
 				let isCallbackCalled = false;
+				process.nextTick(() => {});
 				window.queueMicrotask(() => {
 					isCallbackCalled = true;
 					resolve(null);

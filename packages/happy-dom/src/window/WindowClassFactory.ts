@@ -1,5 +1,3 @@
-import BrowserFrame from '../browser/BrowserFrame.js';
-import DetachedBrowserFrame from '../browser/DetachedBrowserFrame.js';
 import AudioImplementation from '../nodes/html-audio-element/Audio.js';
 import ImageImplementation from '../nodes/html-image-element/Image.js';
 import DocumentFragmentImplementation from '../nodes/document-fragment/DocumentFragment.js';
@@ -48,6 +46,11 @@ import HTMLDocumentImplementation from '../nodes/html-document/HTMLDocument.js';
 import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
 import SVGDocumentImplementation from '../nodes/svg-document/SVGDocument.js';
 import DocumentTypeImplementation from '../nodes/document-type/DocumentType.js';
+import HTMLAnchorElementImplementation from '../nodes/html-anchor-element/HTMLAnchorElement.js';
+import HTMLButtonElementImplementation from '../nodes/html-button-element/HTMLButtonElement.js';
+import HTMLOptGroupElementImplementation from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
+import HTMLOptionElementImplementation from '../nodes/html-option-element/HTMLOptionElement.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 
 /**
  * Some classes need to get access to the window object without having a reference to the window in the constructor.
@@ -62,10 +65,7 @@ export default class WindowClassFactory {
 	 * @param properties.browserFrame Browser frame.
 	 * @returns Classes.
 	 */
-	public static getClasses(properties: {
-		window: IWindow;
-		browserFrame: BrowserFrame | DetachedBrowserFrame;
-	}): {
+	public static getClasses(properties: { window: IWindow; browserFrame: IBrowserFrame }): {
 		// Nodes
 		Node: typeof NodeImplementation;
 		Attr: typeof AttrImplementation;
@@ -85,6 +85,10 @@ export default class WindowClassFactory {
 		DocumentType: typeof DocumentTypeImplementation;
 
 		// HTML Elements
+		HTMLAnchorElement: typeof HTMLAnchorElementImplementation;
+		HTMLButtonElement: typeof HTMLButtonElementImplementation;
+		HTMLOptGroupElement: typeof HTMLOptGroupElementImplementation;
+		HTMLOptionElement: typeof HTMLOptionElementImplementation;
 		HTMLElement: typeof HTMLElementImplementation;
 		HTMLUnknownElement: typeof HTMLUnknownElementImplementation;
 		HTMLTemplateElement: typeof HTMLTemplateElementImplementation;
@@ -117,224 +121,246 @@ export default class WindowClassFactory {
 		Range: typeof RangeImplementation;
 		Audio: typeof AudioImplementation;
 	} {
+		const window = properties.window;
+		const asyncTaskManager = properties.browserFrame._asyncTaskManager;
+
 		/* eslint-disable jsdoc/require-jsdoc */
 
 		// Nodes
 		class Node extends NodeImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class Attr extends AttrImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class SVGSVGElement extends SVGSVGElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class SVGElement extends SVGElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class SVGGraphicsElement extends SVGGraphicsElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class Text extends TextImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class Comment extends CommentImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class ShadowRoot extends ShadowRootImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class ProcessingInstruction extends ProcessingInstructionImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class Element extends ElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class CharacterData extends CharacterDataImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class Document extends DocumentImplementation {
-			public readonly _defaultView: IWindow = properties.window;
+			public readonly _defaultView: IWindow = window;
 		}
 		class HTMLDocument extends HTMLDocumentImplementation {
-			public readonly _defaultView: IWindow = properties.window;
+			public readonly _defaultView: IWindow = window;
 		}
 		class XMLDocument extends XMLDocumentImplementation {
-			public readonly _defaultView: IWindow = properties.window;
+			public readonly _defaultView: IWindow = window;
 		}
 		class SVGDocument extends SVGDocumentImplementation {
-			public readonly _defaultView: IWindow = properties.window;
+			public readonly _defaultView: IWindow = window;
 		}
 		class DocumentType extends DocumentTypeImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 
 		// HTML Elements
+		class HTMLAnchorElement extends HTMLAnchorElementImplementation {
+			public get ownerDocument(): IDocument {
+				return window.document;
+			}
+		}
+		class HTMLButtonElement extends HTMLButtonElementImplementation {
+			public get ownerDocument(): IDocument {
+				return window.document;
+			}
+		}
+		class HTMLOptGroupElement extends HTMLOptGroupElementImplementation {
+			public get ownerDocument(): IDocument {
+				return window.document;
+			}
+		}
+		class HTMLOptionElement extends HTMLOptionElementImplementation {
+			public get ownerDocument(): IDocument {
+				return window.document;
+			}
+		}
 		class Audio extends AudioImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class Image extends ImageImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class DocumentFragment extends DocumentFragmentImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLElement extends HTMLElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLUnknownElement extends HTMLUnknownElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLTemplateElement extends HTMLTemplateElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLFormElement extends HTMLFormElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLInputElement extends HTMLInputElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLSelectElement extends HTMLSelectElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLTextAreaElement extends HTMLTextAreaElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLImageElement extends HTMLImageElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLScriptElement extends HTMLScriptElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLLinkElement extends HTMLLinkElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLStyleElement extends HTMLStyleElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLLabelElement extends HTMLLabelElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLSlotElement extends HTMLSlotElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLMetaElement extends HTMLMetaElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLMediaElement extends HTMLMediaElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLAudioElement extends HTMLAudioElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLVideoElement extends HTMLVideoElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLBaseElement extends HTMLBaseElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLIFrameElement extends HTMLIFrameElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class HTMLDialogElement extends HTMLDialogElementImplementation {
 			public get ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 
 		// Other Classes
 		class Request extends RequestImplementation {
-			protected readonly _asyncTaskManager: AsyncTaskManager =
-				properties.browserFrame._asyncTaskManager;
+			protected readonly _asyncTaskManager: AsyncTaskManager = asyncTaskManager;
 			protected get _ownerDocument(): IDocument {
-				return properties.window.document;
+				return window.document;
 			}
 		}
 		class Response extends ResponseImplementation {
-			protected readonly _asyncTaskManager: AsyncTaskManager =
-				properties.browserFrame._asyncTaskManager;
+			protected readonly _asyncTaskManager: AsyncTaskManager = asyncTaskManager;
 		}
 		class XMLHttpRequest extends XMLHttpRequestImplementation {
-			protected readonly _asyncTaskManager: AsyncTaskManager =
-				properties.browserFrame._asyncTaskManager;
-			protected readonly _ownerDocument: IDocument = properties.window.document;
+			protected readonly _asyncTaskManager: AsyncTaskManager = asyncTaskManager;
+			protected readonly _ownerDocument: IDocument = window.document;
 		}
 		class FileReader extends FileReaderImplementation {
-			public readonly _ownerDocument: IDocument = properties.window.document;
+			public readonly _ownerDocument: IDocument = window.document;
 		}
 		class DOMParser extends DOMParserImplementation {
-			public readonly _ownerDocument: IDocument = properties.window.document;
+			public readonly _ownerDocument: IDocument = window.document;
 		}
 		class Range extends RangeImplementation {
-			public readonly _ownerDocument: IDocument = properties.window.document;
+			public get _ownerDocument(): IDocument {
+				return window.document;
+			}
 		}
 
 		/* eslint-enable jsdoc/require-jsdoc */
@@ -359,6 +385,10 @@ export default class WindowClassFactory {
 			DocumentType,
 
 			// HTML Elements
+			HTMLAnchorElement,
+			HTMLButtonElement,
+			HTMLOptGroupElement,
+			HTMLOptionElement,
 			HTMLElement,
 			HTMLUnknownElement,
 			HTMLTemplateElement,

@@ -172,7 +172,9 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	public override _connectToNode(parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
-		const browserSettings = WindowBrowserSettingsReader.getSettings(this.ownerDocument.defaultView);
+		const browserSettings = WindowBrowserSettingsReader.getSettings(
+			this.ownerDocument._defaultView
+		);
 
 		super._connectToNode(parentNode);
 
@@ -194,10 +196,10 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 					this.ownerDocument['_currentScript'] = this;
 
 					if (browserSettings.disableErrorCapturing) {
-						this.ownerDocument.defaultView.eval(textContent);
+						this.ownerDocument._defaultView.eval(textContent);
 					} else {
-						WindowErrorUtility.captureError(this.ownerDocument.defaultView, () =>
-							this.ownerDocument.defaultView.eval(textContent)
+						WindowErrorUtility.captureError(this.ownerDocument._defaultView, () =>
+							this.ownerDocument._defaultView.eval(textContent)
 						);
 					}
 

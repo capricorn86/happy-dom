@@ -74,7 +74,7 @@ export default class Fetch {
 		this.asyncTaskManager = options.asyncTaskManager;
 		this.request =
 			typeof options.url === 'string' || options.url instanceof URL
-				? new options.ownerDocument.defaultView.Request(options.url, options.init)
+				? new options.ownerDocument._defaultView.Request(options.url, options.init)
 				: <Request>url;
 		if (options.contentType) {
 			(<string>this.request._contentType) = options.contentType;
@@ -109,7 +109,7 @@ export default class Fetch {
 
 			if (this.request._url.protocol === 'data:') {
 				const result = DataURIParser.parse(this.request.url);
-				this.response = new this.ownerDocument.defaultView.Response(result.buffer, {
+				this.response = new this.ownerDocument._defaultView.Response(result.buffer, {
 					headers: { 'Content-Type': result.type }
 				});
 				resolve(this.response);
@@ -199,7 +199,7 @@ export default class Fetch {
 	 */
 	private onError(error: Error): void {
 		this.finalizeRequest();
-		this.ownerDocument.defaultView.console.error(error);
+		this.ownerDocument._defaultView.console.error(error);
 		this.reject(
 			new DOMException(
 				`Fetch to "${this.request.url}" failed. Error: ${error.message}`,
@@ -251,7 +251,7 @@ export default class Fetch {
 			nodeResponse.statusCode === 204 ||
 			nodeResponse.statusCode === 304
 		) {
-			this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
+			this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -273,7 +273,7 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
+			this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -305,7 +305,7 @@ export default class Fetch {
 					});
 				}
 
-				this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
+				this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
 				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
@@ -313,7 +313,7 @@ export default class Fetch {
 			raw.on('end', () => {
 				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
 				if (!this.response) {
-					this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
+					this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
 					(<boolean>this.response.redirected) = this.redirectCount > 0;
 					(<string>this.response.url) = this.request.url;
 					this.resolve(this.response);
@@ -329,7 +329,7 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
+			this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -337,7 +337,7 @@ export default class Fetch {
 		}
 
 		// Otherwise, use response as is
-		this.response = new this.ownerDocument.defaultView.Response(body, responseOptions);
+		this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
 		(<boolean>this.response.redirected) = this.redirectCount > 0;
 		(<string>this.response.url) = this.request.url;
 		this.resolve(this.response);
@@ -553,7 +553,7 @@ export default class Fetch {
 		headers.set('Connection', 'close');
 
 		if (!headers.has('User-Agent')) {
-			headers.set('User-Agent', document.defaultView.navigator.userAgent);
+			headers.set('User-Agent', document._defaultView.navigator.userAgent);
 		}
 
 		if (this.request._referrer instanceof URL) {
@@ -565,8 +565,8 @@ export default class Fetch {
 			(this.request.credentials === 'same-origin' && !isCORS)
 		) {
 			const cookie = (<{ _cookie: CookieJar }>(
-				(<unknown>document.defaultView.document)
-			))._cookie.getCookieString(document.defaultView.location, false);
+				(<unknown>document._defaultView.document)
+			))._cookie.getCookieString(document._defaultView.location, false);
 			if (cookie) {
 				headers.set('Cookie', cookie);
 			}
@@ -624,7 +624,7 @@ export default class Fetch {
 				// "set-cookie" and "set-cookie2" are not allowed in response headers according to spec.
 				if (lowerKey === 'set-cookie' || lowerKey === 'set-cookie2') {
 					(<{ _cookie: CookieJar }>(
-						(<unknown>this.ownerDocument.defaultView.document)
+						(<unknown>this.ownerDocument._defaultView.document)
 					))._cookie.addCookieString(this.request._url, header);
 				} else {
 					headers.append(key, header);

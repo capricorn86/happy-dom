@@ -4,7 +4,7 @@ import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLIFrameElement from '../../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
 import IResponse from '../../../src/fetch/types/IResponse.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
-import IFrameCrossOriginWindow from '../../../src/nodes/html-iframe-element/IFrameCrossOriginWindow.js';
+import CrossOriginWindow from '../../../src/window/CrossOriginWindow.js';
 import MessageEvent from '../../../src/event/events/MessageEvent.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import DOMException from '../../../src/exception/DOMException.js';
@@ -141,7 +141,7 @@ describe('HTMLIFrameElement', () => {
 			});
 		});
 
-		it('Returns instance of IFrameCrossOriginWindow for URL with different origin.', async () => {
+		it('Returns instance of CrossOriginWindow for URL with different origin.', async () => {
 			await new Promise((resolve) => {
 				const iframeOrigin = 'https://other.origin.com';
 				const iframeSrc = iframeOrigin + '/iframe.html';
@@ -163,7 +163,7 @@ describe('HTMLIFrameElement', () => {
 					const message = 'test';
 					let triggeredEvent: MessageEvent | null = null;
 					expect(fetchedURL).toBe(iframeSrc);
-					expect(element.contentWindow instanceof IFrameCrossOriginWindow).toBe(true);
+					expect(element.contentWindow instanceof CrossOriginWindow).toBe(true);
 					expect(() => element.contentWindow?.location.href).toThrowError(
 						new DOMException(
 							`Blocked a frame with origin "${documentOrigin}" from accessing a cross-origin frame.`,
@@ -171,7 +171,7 @@ describe('HTMLIFrameElement', () => {
 						)
 					);
 					const targetWindow = <IWindow>(
-						(<IWindow | IFrameCrossOriginWindow>element.contentWindow)['_targetWindow']
+						(<IWindow | CrossOriginWindow>element.contentWindow)['_targetWindow']
 					);
 					expect(element.contentWindow?.self === element.contentWindow).toBe(true);
 					expect(element.contentWindow?.window === element.contentWindow).toBe(true);
@@ -179,7 +179,7 @@ describe('HTMLIFrameElement', () => {
 					expect(element.contentWindow?.top === window).toBe(true);
 					targetWindow.addEventListener(
 						'message',
-						(event: MessageEvent) => (triggeredEvent = event)
+						(event) => (triggeredEvent = <MessageEvent>event)
 					);
 					element.contentWindow?.postMessage(message, iframeOrigin);
 					expect(triggeredEvent).toBe(null);

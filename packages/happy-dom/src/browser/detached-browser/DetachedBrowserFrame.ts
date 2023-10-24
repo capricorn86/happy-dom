@@ -1,11 +1,10 @@
-import IWindow from '../window/IWindow.js';
-import BrowserPage from './BrowserPage.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
-import IBrowserFrame from './types/IBrowserFrame.js';
-import Window from '../window/Window.js';
-import IBrowserPageViewport from './types/IBrowserPageViewport.js';
-import Event from '../event/Event.js';
-import Location from '../location/Location.js';
+import IWindow from '../../window/IWindow.js';
+import DetachedBrowserPage from './DetachedBrowserPage.js';
+import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
+import IBrowserFrame from '../types/IBrowserFrame.js';
+import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
+import Event from '../../event/Event.js';
+import Location from '../../location/Location.js';
 
 /**
  * Browser frame.
@@ -13,21 +12,19 @@ import Location from '../location/Location.js';
 export default class BrowserFrame implements IBrowserFrame {
 	public readonly childFrames: BrowserFrame[] = [];
 	public detached = false;
-	public readonly page: BrowserPage;
+	public readonly page: DetachedBrowserPage;
 	public readonly window: IWindow;
 	public _asyncTaskManager = new AsyncTaskManager();
 
 	/**
 	 * Constructor.
 	 *
+	 * @param window Window.
 	 * @param page Page.
 	 */
-	constructor(page: BrowserPage) {
+	constructor(window: IWindow, page: DetachedBrowserPage) {
+		this.window = window;
 		this.page = page;
-		this.window = new Window({
-			browserFrame: this,
-			console: page.console
-		});
 	}
 
 	/**
@@ -97,7 +94,7 @@ export default class BrowserFrame implements IBrowserFrame {
 			frame.destroy();
 		}
 		this._asyncTaskManager.destroy();
-		(<BrowserPage>this.page) = null;
+		(<DetachedBrowserPage>this.page) = null;
 		(<IWindow>this.window) = null;
 	}
 

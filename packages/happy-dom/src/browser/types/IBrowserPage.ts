@@ -1,5 +1,5 @@
 import IBrowserPageViewport from './IBrowserPageViewport.js';
-import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
+import VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
 import IBrowserFrame from './IBrowserFrame.js';
 import IBrowserContext from './IBrowserContext.js';
 
@@ -16,10 +16,8 @@ export default interface IBrowserPage {
 
 	/**
 	 * Aborts all ongoing operations and destroys the page.
-	 *
-	 * @returns Promise.
 	 */
-	close(): Promise<void>;
+	close(): void;
 
 	/**
 	 * Returns a promise that is resolved when all async tasks are complete.
@@ -30,10 +28,8 @@ export default interface IBrowserPage {
 
 	/**
 	 * Aborts all ongoing operations.
-	 *
-	 * @returns Promise.
 	 */
-	abort(): Promise<void>;
+	abort(): void;
 
 	/**
 	 * Sets the viewport.

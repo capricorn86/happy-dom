@@ -22,16 +22,14 @@ export default class DOMImplementation {
 	 * TODO: Not fully implemented.
 	 */
 	public createDocument(): IDocument {
-		const documentClass = this._ownerDocument.constructor;
-		// @ts-ignore
-		return new documentClass();
+		return new this._ownerDocument._defaultView.XMLDocument();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
 	public createHTMLDocument(): IDocument {
-		return this.createDocument();
+		return new this._ownerDocument._defaultView.HTMLDocument();
 	}
 
 	/**

@@ -1,30 +1,35 @@
-import IBrowserSettings from './types/IBrowserSettings.js';
-import BrowserContext from './BrowserContext.js';
-import IOptionalBrowserSettings from './types/IOptionalBrowserSettings.js';
-import BrowserSettingsFactory from './BrowserSettingsFactory.js';
-import BrowserPage from './BrowserPage.js';
-import IBrowser from './types/IBrowser.js';
+import IBrowserSettings from '../types/IBrowserSettings.js';
+import DetachedBrowserContext from './DetachedBrowserContext.js';
+import IOptionalBrowserSettings from '../types/IOptionalBrowserSettings.js';
+import BrowserSettingsFactory from '../BrowserSettingsFactory.js';
+import DetachedBrowserPage from './DetachedBrowserPage.js';
+import IBrowser from '../types/IBrowser.js';
+import IWindow from '../../window/IWindow.js';
 
 /**
- * Browser context.
+ * Detached browser.
  */
-export default class Browser implements IBrowser {
-	public readonly defaultContext: BrowserContext;
-	public readonly contexts: BrowserContext[];
+export default class DetachedBrowser implements IBrowser {
+	public readonly defaultContext: DetachedBrowserContext;
+	public readonly contexts: DetachedBrowserContext[];
 	public readonly settings: IBrowserSettings;
 	public readonly console: Console | null;
 
 	/**
 	 * Constructor.
 	 *
+	 * @param window Window.
 	 * @param [options] Options.
 	 * @param [options.settings] Browser settings.
 	 * @param [options.console] Console.
 	 */
-	constructor(options?: { settings?: IOptionalBrowserSettings; console?: Console }) {
+	constructor(
+		window: IWindow,
+		options?: { settings?: IOptionalBrowserSettings; console?: Console }
+	) {
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
-		this.defaultContext = new BrowserContext(this);
+		this.defaultContext = new DetachedBrowserContext(window, this);
 		this.contexts = [this.defaultContext];
 	}
 
@@ -35,8 +40,8 @@ export default class Browser implements IBrowser {
 		for (const context of this.contexts) {
 			context.close();
 		}
-		(<BrowserContext[]>this.contexts) = [];
-		(<BrowserContext | null>this.defaultContext) = null;
+		(<DetachedBrowserContext[]>this.contexts) = [];
+		(<DetachedBrowserContext | null>this.defaultContext) = null;
 	}
 
 	/**
@@ -62,7 +67,7 @@ export default class Browser implements IBrowser {
 	 *
 	 * @returns Page.
 	 */
-	public newPage(): BrowserPage {
+	public newPage(): DetachedBrowserPage {
 		return this.defaultContext.newPage();
 	}
 }

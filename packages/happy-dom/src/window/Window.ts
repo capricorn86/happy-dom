@@ -137,12 +137,16 @@ import FileReader from '../file/FileReader.js';
 import Request from '../fetch/Request.js';
 import Range from '../range/Range.js';
 import XMLHttpRequest from '../xml-http-request/XMLHttpRequest.js';
-import IOptionalBrowserSettings from '../browser/IOptionalBrowserSettings.js';
+import IOptionalBrowserSettings from '../browser/types/IOptionalBrowserSettings.js';
 import WindowBrowserSettingsReader from './WindowBrowserSettingsReader.js';
 import DocumentReadyStateManager from '../nodes/document/DocumentReadyStateManager.js';
 import DocumentReadyStateEnum from '../nodes/document/DocumentReadyStateEnum.js';
-import IBrowserFrame from '../browser/IBrowserFrame.js';
-import DetachedBrowserFrame from '../browser/DetachedBrowserFrame.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import HTMLAnchorElement from '../nodes/html-anchor-element/HTMLAnchorElement.js';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
+import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
+import DetachedBrowser from '../browser/detached-browser/DetachedBrowser.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -179,6 +183,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly DocumentType: typeof DocumentType;
 
 	// Element classes
+	public readonly HTMLAnchorElement: typeof HTMLAnchorElement;
+	public readonly HTMLButtonElement: typeof HTMLButtonElement;
+	public readonly HTMLOptGroupElement: typeof HTMLOptGroupElement;
+	public readonly HTMLOptionElement: typeof HTMLOptionElement;
 	public readonly HTMLElement: typeof HTMLElement;
 	public readonly HTMLUnknownElement: typeof HTMLUnknownElement;
 	public readonly HTMLTemplateElement: typeof HTMLTemplateElement;
@@ -214,10 +222,8 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLMenuElement: typeof HTMLElement;
 	public readonly HTMLDListElement: typeof HTMLElement;
 	public readonly HTMLDivElement: typeof HTMLElement;
-	public readonly HTMLAnchorElement: typeof HTMLElement;
 	public readonly HTMLAreaElement: typeof HTMLElement;
 	public readonly HTMLBRElement: typeof HTMLElement;
-	public readonly HTMLButtonElement: typeof HTMLElement;
 	public readonly HTMLCanvasElement: typeof HTMLElement;
 	public readonly HTMLDataElement: typeof HTMLElement;
 	public readonly HTMLDataListElement: typeof HTMLElement;
@@ -357,10 +363,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Plugin = Plugin;
 	public readonly PluginArray = PluginArray;
 	public readonly FileList = FileList;
-	public readonly DOMRect: typeof DOMRect;
-	public readonly RadioNodeList: typeof RadioNodeList;
-	public readonly ValidityState: typeof ValidityState;
-	public readonly Headers: typeof Headers;
+	public readonly DOMRect = DOMRect;
+	public readonly RadioNodeList = RadioNodeList;
+	public readonly ValidityState = ValidityState;
+	public readonly Headers = Headers;
 	public readonly Request: typeof Request;
 	public readonly Response: typeof Response;
 	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
@@ -393,7 +399,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly location: Location;
 	public readonly history: History;
 	public readonly navigator: Navigator;
-	public readonly console: Console;
 	public readonly opener: IWindow | null = null;
 	public readonly self: IWindow = this;
 	public readonly top: IWindow = this;
@@ -528,16 +533,13 @@ export default class Window extends EventTarget implements IWindow {
 		if (options?.browserFrame) {
 			this.#browserFrame = options.browserFrame;
 		} else {
-			this.#browserFrame = new DetachedBrowserFrame({
-				window: this,
+			this.#browserFrame = new DetachedBrowser(this, {
 				console: options?.console,
 				settings: options?.settings
-			});
+			}).defaultContext.pages[0].mainFrame;
 		}
 
-		this.console = this.#browserFrame.console;
-
-		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.settings);
+		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
 		this.happyDOM = new HappyDOMWindowAPI({
 			window: this,
@@ -623,6 +625,10 @@ export default class Window extends EventTarget implements IWindow {
 		this.DocumentType = classes.DocumentType;
 
 		// HTML Element classes
+		this.HTMLAnchorElement = classes.HTMLAnchorElement;
+		this.HTMLButtonElement = classes.HTMLButtonElement;
+		this.HTMLOptGroupElement = classes.HTMLOptGroupElement;
+		this.HTMLOptionElement = classes.HTMLOptionElement;
 		this.HTMLElement = classes.HTMLElement;
 		this.HTMLUnknownElement = classes.HTMLUnknownElement;
 		this.HTMLTemplateElement = classes.HTMLTemplateElement;
@@ -658,10 +664,8 @@ export default class Window extends EventTarget implements IWindow {
 		this.HTMLMenuElement = classes.HTMLElement;
 		this.HTMLDListElement = classes.HTMLElement;
 		this.HTMLDivElement = classes.HTMLElement;
-		this.HTMLAnchorElement = classes.HTMLElement;
 		this.HTMLAreaElement = classes.HTMLElement;
 		this.HTMLBRElement = classes.HTMLElement;
-		this.HTMLButtonElement = classes.HTMLElement;
 		this.HTMLCanvasElement = classes.HTMLElement;
 		this.HTMLDataElement = classes.HTMLElement;
 		this.HTMLDataListElement = classes.HTMLElement;
@@ -717,6 +721,15 @@ export default class Window extends EventTarget implements IWindow {
 			this.document.dispatchEvent(new Event('readystatechange'));
 			this.document.dispatchEvent(new Event('load', { bubbles: true }));
 		});
+	}
+
+	/**
+	 * Returns console.
+	 *
+	 * @returns Console.
+	 */
+	public get console(): Console {
+		return this.#browserFrame.page.console;
 	}
 
 	/**
@@ -840,7 +853,7 @@ export default class Window extends EventTarget implements IWindow {
 		_target?: string,
 		_features?: string
 	): IWindow | ICrossOriginWindow | null {
-		if (this.#browserFrame.settings.disableWindowOpenPageLoading) {
+		if (this.#browserFrame.page.context.browser.settings.disableWindowOpenPageLoading) {
 			return null;
 		}
 		return null;
@@ -850,6 +863,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * Closes the window.
 	 */
 	public close(): void {
+		WindowBrowserSettingsReader.removeSettings(this);
+
 		if (this.#browserFrame.page) {
 			if (this.#browserFrame.page.mainFrame === this.#browserFrame) {
 				this.#browserFrame.page.close();
@@ -879,7 +894,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this._setTimeout(() => {
-			if (this.#browserFrame.settings.disableErrorCapturing) {
+			if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
 				callback(...args);
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(...args));
@@ -910,7 +925,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this._setInterval(() => {
-			if (this.#browserFrame.settings.disableErrorCapturing) {
+			if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
 				callback(...args);
 			} else {
 				WindowErrorUtility.captureError(
@@ -942,7 +957,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Immediate {
 		const id = global.setImmediate(() => {
-			if (this.#browserFrame.settings.disableErrorCapturing) {
+			if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
 				callback(this.performance.now());
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
@@ -973,7 +988,7 @@ export default class Window extends EventTarget implements IWindow {
 		const taskId = this.#browserFrame._asyncTaskManager.startTask(() => (isAborted = true));
 		this._queueMicrotask(() => {
 			if (!isAborted) {
-				if (this.#browserFrame.settings.disableErrorCapturing) {
+				if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
 					callback();
 				} else {
 					WindowErrorUtility.captureError(this, <() => unknown>callback);

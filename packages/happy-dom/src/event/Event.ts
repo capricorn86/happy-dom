@@ -95,7 +95,7 @@ export default class Event {
 			) {
 				eventTarget = (<IShadowRoot>eventTarget).host;
 			} else if ((<INode>eventTarget).nodeType === NodeTypeEnum.documentNode) {
-				eventTarget = (<IDocument>(<unknown>eventTarget)).defaultView;
+				eventTarget = (<IDocument>(<unknown>eventTarget))._defaultView;
 			} else {
 				break;
 			}

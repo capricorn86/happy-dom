@@ -79,7 +79,7 @@ export default class FileReader extends EventTarget {
 	 * Aborts the file reader.
 	 */
 	public abort(): void {
-		const window = this._ownerDocument.defaultView;
+		const window = this._ownerDocument._defaultView;
 
 		window.clearTimeout(this._loadTimeout);
 		window.clearTimeout(this._parseTimeout);
@@ -110,7 +110,7 @@ export default class FileReader extends EventTarget {
 	 * @param [encoding] Encoding.
 	 */
 	private _readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string = null): void {
-		const window = this._ownerDocument.defaultView;
+		const window = this._ownerDocument._defaultView;
 
 		if (this.readyState === FileReaderReadyStateEnum.loading) {
 			throw new DOMException(

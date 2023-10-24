@@ -1,4 +1,3 @@
-import Document from '../document/Document.js';
 import Event from '../../event/Event.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import HTMLLinkElement from './HTMLLinkElement.js';
@@ -24,7 +23,7 @@ export default class HTMLLinkElementUtility {
 		const href = element.getAttribute('href');
 		const rel = element.getAttribute('rel');
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			element.ownerDocument.defaultView
+			element.ownerDocument._defaultView
 		);
 
 		if (href !== null && rel && rel.toLowerCase() === 'stylesheet' && element.isConnected) {
@@ -40,7 +39,7 @@ export default class HTMLLinkElementUtility {
 			}
 
 			(<{ _readyStateManager: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument.defaultView)
+				(<unknown>element.ownerDocument._defaultView)
 			))._readyStateManager.startTask();
 
 			let code: string | null = null;
@@ -53,7 +52,7 @@ export default class HTMLLinkElementUtility {
 			}
 
 			(<{ _readyStateManager: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument.defaultView)
+				(<unknown>element.ownerDocument._defaultView)
 			))._readyStateManager.endTask();
 
 			if (error) {

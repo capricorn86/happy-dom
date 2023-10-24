@@ -56,11 +56,11 @@ export default class WindowErrorUtility {
 			(<IWindow>elementOrWindow).console.error(error);
 			elementOrWindow.dispatchEvent(new ErrorEvent('error', { message: error.message, error }));
 		} else {
-			(<IElement>elementOrWindow).ownerDocument.defaultView.console.error(error);
+			(<IElement>elementOrWindow).ownerDocument._defaultView.console.error(error);
 			(<IElement>elementOrWindow).dispatchEvent(
 				new ErrorEvent('error', { message: error.message, error })
 			);
-			(<IElement>elementOrWindow).ownerDocument.defaultView.dispatchEvent(
+			(<IElement>elementOrWindow).ownerDocument._defaultView.dispatchEvent(
 				new ErrorEvent('error', { message: error.message, error })
 			);
 		}

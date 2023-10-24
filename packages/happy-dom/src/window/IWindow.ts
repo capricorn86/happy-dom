@@ -130,6 +130,10 @@ import DetachedWindowAPI from './HappyDOMWindowAPI.js';
 import Headers from '../fetch/Headers.js';
 import Request from '../fetch/Request.js';
 import Response from '../fetch/Response.js';
+import HTMLAnchorElement from '../nodes/html-anchor-element/HTMLAnchorElement.js';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
+import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
 
 /**
  * Window without dependencies to server side specific packages.
@@ -157,6 +161,10 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly DocumentType: typeof DocumentType;
 
 	// Element classes
+	readonly HTMLAnchorElement: typeof HTMLAnchorElement;
+	readonly HTMLButtonElement: typeof HTMLButtonElement;
+	readonly HTMLOptGroupElement: typeof HTMLOptGroupElement;
+	readonly HTMLOptionElement: typeof HTMLOptionElement;
 	readonly HTMLElement: typeof HTMLElement;
 	readonly HTMLUnknownElement: typeof HTMLUnknownElement;
 	readonly HTMLTemplateElement: typeof HTMLTemplateElement;
@@ -194,10 +202,8 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly HTMLMenuElement: typeof HTMLElement;
 	readonly HTMLDListElement: typeof HTMLElement;
 	readonly HTMLDivElement: typeof HTMLElement;
-	readonly HTMLAnchorElement: typeof HTMLElement;
 	readonly HTMLAreaElement: typeof HTMLElement;
 	readonly HTMLBRElement: typeof HTMLElement;
-	readonly HTMLButtonElement: typeof HTMLElement;
 	readonly HTMLCanvasElement: typeof HTMLElement;
 	readonly HTMLDataElement: typeof HTMLElement;
 	readonly HTMLDataListElement: typeof HTMLElement;

@@ -18,7 +18,7 @@ export default class HTMLIFrameUtility {
 	 */
 	public static async loadPage(element: HTMLIFrameElement): Promise<void> {
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			element.ownerDocument.defaultView
+			element.ownerDocument._defaultView
 		);
 		if (element.isConnected && !browserSettings.disableIframePageLoading) {
 			const src = element.src;
@@ -26,14 +26,14 @@ export default class HTMLIFrameUtility {
 			if (src) {
 				// To avoid circular dependency, we use a reference to the window class instead of importing it.
 				const contentWindow = <IWindow>new element.ownerDocument['_windowClass']({
-					url: new URL(src, element.ownerDocument.defaultView.location.href).href,
+					url: new URL(src, element.ownerDocument._defaultView.location.href).href,
 					settings: {
 						...browserSettings
 					}
 				});
 
-				(<IWindow>contentWindow.parent) = element.ownerDocument.defaultView;
-				(<IWindow>contentWindow.top) = element.ownerDocument.defaultView;
+				(<IWindow>contentWindow.parent) = element.ownerDocument._defaultView;
+				(<IWindow>contentWindow.top) = element.ownerDocument._defaultView;
 
 				if (src === 'about:blank') {
 					element._contentWindow = contentWindow;
@@ -54,7 +54,7 @@ export default class HTMLIFrameUtility {
 					return;
 				}
 
-				const originURL = element.ownerDocument.defaultView.location;
+				const originURL = element.ownerDocument._defaultView.location;
 				const targetURL = new URL(src, originURL);
 				const isCORS =
 					(originURL.hostname !== targetURL.hostname &&
@@ -66,7 +66,7 @@ export default class HTMLIFrameUtility {
 				element._contentWindow = null;
 
 				try {
-					const response = await element.ownerDocument.defaultView.fetch(src);
+					const response = await element.ownerDocument._defaultView.fetch(src);
 					responseText = await response.text();
 				} catch (error) {
 					element.dispatchEvent(
@@ -75,18 +75,18 @@ export default class HTMLIFrameUtility {
 							error
 						})
 					);
-					element.ownerDocument.defaultView.dispatchEvent(
+					element.ownerDocument._defaultView.dispatchEvent(
 						new ErrorEvent('error', {
 							message: error.message,
 							error
 						})
 					);
-					element.ownerDocument.defaultView.console.error(error);
+					element.ownerDocument._defaultView.console.error(error);
 					return;
 				}
 
 				element._contentWindow = isCORS
-					? new CrossOriginWindow(element.ownerDocument.defaultView, contentWindow)
+					? new CrossOriginWindow(element.ownerDocument._defaultView, contentWindow)
 					: contentWindow;
 				contentWindow.document.write(responseText);
 				element.dispatchEvent(new Event('load'));

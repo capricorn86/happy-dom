@@ -1,5 +1,4 @@
 import { URL } from 'url';
-import Document from '../nodes/document/Document.js';
 import IWindow from './IWindow.js';
 import CrossOriginWindow from './CrossOriginWindow.js';
 import WindowErrorUtility from './WindowErrorUtility.js';
@@ -93,7 +92,7 @@ export default class __BrowserContextLoader {
 				!originURL.hostname.endsWith(targetURL.hostname)) ||
 			originURL.protocol !== targetURL.protocol;
 
-		(<Document>contentWindow.document)._readyStateManager.startTask();
+		(<Window>contentWindow)._readyStateManager.startTask();
 
 		ownerWindow
 			.fetch(url, {
@@ -102,14 +101,14 @@ export default class __BrowserContextLoader {
 			.then((response) => response.text())
 			.then((responseText) => {
 				contentWindow.document.write(responseText);
-				(<Document>contentWindow.document)._readyStateManager.endTask();
+				(<Window>contentWindow)._readyStateManager.endTask();
 			})
 			.catch((error) => {
 				WindowErrorUtility.dispatchError(
 					options?.ownerIframeElement ? options.ownerIframeElement : ownerWindow,
 					error
 				);
-				(<Document>contentWindow.document)._readyStateManager.endTask();
+				(<Window>contentWindow)._readyStateManager.endTask();
 				if (!ownerWindow.happyDOM.settings.disableErrorCapturing) {
 					throw error;
 				}

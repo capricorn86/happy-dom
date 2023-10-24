@@ -389,7 +389,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			);
 		}
 
-		const { location } = this._ownerDocument.defaultView;
+		const { location } = this._ownerDocument._defaultView;
 
 		const url = new URL(this.#internal.settings.url, location);
 
@@ -404,11 +404,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		// Load files off the local filesystem (file://)
 		if (XMLHttpRequestURLUtility.isLocal(url)) {
 			if (
-				!WindowBrowserSettingsReader.getSettings(this._ownerDocument.defaultView)
+				!WindowBrowserSettingsReader.getSettings(this._ownerDocument._defaultView)
 					.enableFileSystemHttpRequests
 			) {
 				throw new DOMException(
-					'File system is disabled by default for security reasons. To enable it, set the "enableFileSystemHttpRequests" HappyDOM setting to true.',
+					'File system is disabled by default for security reasons. To enable it, set the Happy DOM setting "enableFileSystemHttpRequests" option to true.',
 					DOMExceptionNameEnum.securityError
 				);
 			}
@@ -578,7 +578,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @returns Default request headers.
 	 */
 	private _getDefaultRequestHeaders(): { [key: string]: string } {
-		const { location, navigator, document } = this._ownerDocument.defaultView;
+		const { location, navigator, document } = this._ownerDocument._defaultView;
 
 		return {
 			accept: '*/*',
@@ -634,7 +634,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#internal.state.responseXML = null;
 			this.#internal.state.responseURL = new URL(
 				this.#internal.settings.url,
-				this._ownerDocument.defaultView.location
+				this._ownerDocument._defaultView.location
 			).href;
 			// Set Cookies.
 			this._setCookies(this.#internal.state.incommingMessage.headers);
@@ -647,7 +647,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			) {
 				const redirectUrl = new URL(
 					<string>this.#internal.state.incommingMessage.headers['location'],
-					this._ownerDocument.defaultView.location
+					this._ownerDocument._defaultView.location
 				);
 				ssl = redirectUrl.protocol === 'https:';
 				this.#internal.settings.url = redirectUrl.href;
@@ -768,7 +768,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				// Parse the new URL.
 				const redirectUrl = new URL(
 					this.#internal.settings.url,
-					this._ownerDocument.defaultView.location
+					this._ownerDocument._defaultView.location
 				);
 				this.#internal.settings.url = redirectUrl.href;
 				ssl = redirectUrl.protocol === 'https:';
@@ -834,7 +834,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					this.#internal.state.responseText = responseText;
 					this.#internal.state.responseURL = new URL(
 						this.#internal.settings.url,
-						this._ownerDocument.defaultView.location
+						this._ownerDocument._defaultView.location
 					).href;
 					// Discard the 'end' event if the connection has been aborted
 					this._setState(XMLHttpRequestReadyStateEnum.done);
@@ -940,7 +940,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#internal.state.responseText = responseText;
 		this.#internal.state.responseURL = new URL(
 			this.#internal.settings.url,
-			this._ownerDocument.defaultView.location
+			this._ownerDocument._defaultView.location
 		).href;
 
 		this._setState(XMLHttpRequestReadyStateEnum.done);
@@ -971,7 +971,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			case XMLHttpResponseTypeEnum.blob:
 				try {
 					return {
-						response: new this._ownerDocument.defaultView.Blob([new Uint8Array(data)], {
+						response: new this._ownerDocument._defaultView.Blob([new Uint8Array(data)], {
 							type: this.getResponseHeader('content-type') || ''
 						}),
 						responseText: null,
@@ -981,7 +981,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					return { response: null, responseText: null, responseXML: null };
 				}
 			case XMLHttpResponseTypeEnum.document:
-				const window = this._ownerDocument.defaultView;
+				const window = this._ownerDocument._defaultView;
 				const domParser = new window.DOMParser();
 				let response: IDocument;
 
@@ -1024,18 +1024,18 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	): void {
 		const originURL = new URL(
 			this.#internal.settings.url,
-			this._ownerDocument.defaultView.location
+			this._ownerDocument._defaultView.location
 		);
 		for (const header of ['set-cookie', 'set-cookie2']) {
 			if (Array.isArray(headers[header])) {
 				for (const cookie of headers[header]) {
-					(<Document>this._ownerDocument.defaultView.document)._cookie.addCookieString(
+					(<Document>this._ownerDocument._defaultView.document)._cookie.addCookieString(
 						originURL,
 						cookie
 					);
 				}
 			} else if (headers[header]) {
-				(<Document>this._ownerDocument.defaultView.document)._cookie.addCookieString(
+				(<Document>this._ownerDocument._defaultView.document)._cookie.addCookieString(
 					originURL,
 					<string>headers[header]
 				);
@@ -1061,9 +1061,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			error: errorObject
 		});
 
-		this._ownerDocument.defaultView.console.error(errorObject);
+		this._ownerDocument._defaultView.console.error(errorObject);
 		this.dispatchEvent(event);
-		this._ownerDocument.defaultView.dispatchEvent(event);
+		this._ownerDocument._defaultView.dispatchEvent(event);
 	}
 
 	/**

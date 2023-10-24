@@ -261,10 +261,10 @@ export default abstract class EventTarget implements IEventTarget {
 	 */
 	public _getWindow(): IWindow | null {
 		if ((<INode>(<unknown>this)).ownerDocument) {
-			return (<INode>(<unknown>this)).ownerDocument.defaultView;
+			return (<INode>(<unknown>this)).ownerDocument._defaultView;
 		}
-		if ((<IDocument>(<unknown>this)).defaultView) {
-			return (<IDocument>(<unknown>this)).defaultView;
+		if ((<IDocument>(<unknown>this))._defaultView) {
+			return (<IDocument>(<unknown>this))._defaultView;
 		}
 		if ((<IWindow>(<unknown>this)).document) {
 			return <IWindow>(<unknown>this);

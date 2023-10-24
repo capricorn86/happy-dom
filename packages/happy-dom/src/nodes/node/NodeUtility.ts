@@ -239,8 +239,8 @@ export default class NodeUtility {
 	 * @returns "true" if inclusive ancestor.
 	 */
 	public static isInclusiveAncestor(
-		ancestorNode: INode,
-		referenceNode: INode,
+		ancestorNode: INode | null,
+		referenceNode: INode | null,
 		includeShadowRoots = false
 	): boolean {
 		if (ancestorNode === null || referenceNode === null) {

@@ -14,7 +14,6 @@ import IElement from './IElement.js';
 import DOMException from '../../exception/DOMException.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
 import INode from '../node/INode.js';
-import IDocument from '../document/IDocument.js';
 import IHTMLCollection from './IHTMLCollection.js';
 import INodeList from '../node/INodeList.js';
 import { TInsertAdjacentPositions } from './IElement.js';
@@ -366,7 +365,7 @@ export default class Element extends Node implements IElement {
 		for (let i = 0, max = this.attributes.length; i < max; i++) {
 			const attribute = this.attributes[i];
 			clone.attributes.setNamedItem(
-				Object.assign(new this.ownerDocument.defaultView.Attr(), attribute)
+				Object.assign(new this.ownerDocument._defaultView.Attr(), attribute)
 			);
 		}
 
@@ -884,7 +883,7 @@ export default class Element extends Node implements IElement {
 	public scroll(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void {
 		if (typeof x === 'object') {
 			if (x.behavior === 'smooth') {
-				this.ownerDocument.defaultView.setTimeout(() => {
+				this.ownerDocument._defaultView.setTimeout(() => {
 					if (x.top !== undefined) {
 						(<number>this.scrollTop) = x.top;
 					}
@@ -924,7 +923,9 @@ export default class Element extends Node implements IElement {
 	 */
 	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
-		const browserSettings = WindowBrowserSettingsReader.getSettings(this.ownerDocument.defaultView);
+		const browserSettings = WindowBrowserSettingsReader.getSettings(
+			this.ownerDocument._defaultView
+		);
 
 		if (
 			!browserSettings.disableJavaScriptEvaluation &&
@@ -936,10 +937,10 @@ export default class Element extends Node implements IElement {
 
 			if (attribute && !event._immediatePropagationStopped) {
 				if (browserSettings.disableErrorCapturing) {
-					this.ownerDocument.defaultView.eval(attribute);
+					this.ownerDocument._defaultView.eval(attribute);
 				} else {
-					WindowErrorUtility.captureError(this.ownerDocument.defaultView, () =>
-						this.ownerDocument.defaultView.eval(attribute)
+					WindowErrorUtility.captureError(this.ownerDocument._defaultView, () =>
+						this.ownerDocument._defaultView.eval(attribute)
 					);
 				}
 			}

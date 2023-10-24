@@ -8,9 +8,11 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 export default class Location extends URL {
 	/**
 	 * Constructor.
+	 *
+	 * @param [url] URL.
 	 */
-	constructor() {
-		super('about:blank');
+	constructor(url = 'about:blank') {
+		super(url);
 	}
 
 	/**

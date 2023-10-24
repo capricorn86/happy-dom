@@ -14,7 +14,7 @@ export default class ResourceFetch {
 	 * @returns Response.
 	 */
 	public static async fetch(document: IDocument, url: string): Promise<string> {
-		const response = await document.defaultView.fetch(url);
+		const response = await document._defaultView.fetch(url);
 		if (!response.ok) {
 			throw new DOMException(
 				`Failed to perform request to "${url}". Status code: ${response.status}`
@@ -32,9 +32,9 @@ export default class ResourceFetch {
 	 */
 	public static fetchSync(document: IDocument, url: string): string {
 		// We want to only load SyncRequest when it is needed to improve performance and not have direct dependencies to server side packages.
-		const absoluteURL = new URL(url, document.defaultView.location).href;
+		const absoluteURL = new URL(url, document._defaultView.location).href;
 
-		const xhr = new document.defaultView.XMLHttpRequest();
+		const xhr = new document._defaultView.XMLHttpRequest();
 		xhr.open('GET', absoluteURL, false);
 		xhr.send();
 

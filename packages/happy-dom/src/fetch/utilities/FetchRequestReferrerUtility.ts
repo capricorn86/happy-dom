@@ -37,14 +37,14 @@ export default class FetchRequestReferrerUtility {
 		document: IDocument,
 		request: IRequest
 	): '' | 'no-referrer' | 'client' | URL {
-		if (request.referrer === 'about:client' && document.defaultView.location.origin === 'null') {
+		if (request.referrer === 'about:client' && document._defaultView.location.origin === 'null') {
 			return 'no-referrer';
 		}
 
 		const requestURL = new URL(request.url);
 		const referrerURL =
 			request.referrer === 'about:client'
-				? new URL(document.defaultView.location.href)
+				? new URL(document._defaultView.location.href)
 				: new URL(request.referrer);
 
 		if (REQUEST_REFERRER_UNSUPPORTED_PROTOCOL_REGEXP.test(referrerURL.protocol)) {

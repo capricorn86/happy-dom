@@ -1102,7 +1102,8 @@ describe('Document', () => {
 
 			const clone = document.cloneNode(false);
 			const clone2 = document.cloneNode(true);
-			expect(clone.defaultView === window).toBe(true);
+			expect(clone._defaultView === window).toBe(true);
+			expect(clone.defaultView === null).toBe(true);
 			expect(clone.children.length).toBe(0);
 			expect(clone2.children.length).toBe(1);
 			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
