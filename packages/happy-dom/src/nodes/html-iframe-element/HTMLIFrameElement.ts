@@ -4,10 +4,11 @@ import IDocument from '../document/IDocument.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import INode from '../node/INode.js';
 import IHTMLIFrameElement from './IHTMLIFrameElement.js';
-import HTMLIFrameUtility from './HTMLIFrameUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
 import ICrossOriginWindow from '../../window/ICrossOriginWindow.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import HTMLIframePageLoader from './HTMLIframePageLoader.js';
 
 /**
  * HTML Iframe Element.
@@ -16,14 +17,32 @@ import ICrossOriginWindow from '../../window/ICrossOriginWindow.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement.
  */
 export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFrameElement {
-	public override readonly attributes: INamedNodeMap = new HTMLIFrameElementNamedNodeMap(this);
+	public override readonly attributes: INamedNodeMap;
 
 	// Events
 	public onload: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
 
 	// Internal properties
-	public _contentWindow: IWindow | ICrossOriginWindow | null = null;
+	#contentWindowContainer: { window: IWindow | ICrossOriginWindow | null } = {
+		window: null
+	};
+	#pageLoader: HTMLIframePageLoader;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param browserMainFrame Main browser frame.
+	 */
+	constructor(browserMainFrame: IBrowserFrame) {
+		super();
+		this.#pageLoader = new HTMLIframePageLoader({
+			element: this,
+			contentWindowContainer: this.#contentWindowContainer,
+			browserMainFrame
+		});
+		this.attributes = new HTMLIFrameElementNamedNodeMap(this, this.#pageLoader);
+	}
 
 	/**
 	 * Returns source.
@@ -157,7 +176,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 * @returns Content document.
 	 */
 	public get contentDocument(): IDocument | null {
-		return (<IWindow>this._contentWindow)?.document || null;
+		return (<IWindow>this.#contentWindowContainer.window)?.document ?? null;
 	}
 
 	/**
@@ -166,7 +185,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 * @returns Content window.
 	 */
 	public get contentWindow(): IWindow | ICrossOriginWindow | null {
-		return this._contentWindow;
+		return this.#contentWindowContainer.window;
 	}
 
 	/**
@@ -179,7 +198,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 		super._connectToNode(parentNode);
 
 		if (isParentConnected && isConnected !== isParentConnected) {
-			HTMLIFrameUtility.loadPage(this);
+			this.#pageLoader.loadPage();
 		}
 	}
 

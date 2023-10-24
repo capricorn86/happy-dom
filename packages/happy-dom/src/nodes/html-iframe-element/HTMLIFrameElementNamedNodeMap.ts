@@ -1,7 +1,7 @@
 import IAttr from '../attr/IAttr.js';
+import Element from '../element/Element.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
-import HTMLIFrameElement from './HTMLIFrameElement.js';
-import HTMLIFrameUtility from './HTMLIFrameUtility.js';
+import HTMLIframePageLoader from './HTMLIframePageLoader.js';
 
 /**
  * Named Node Map.
@@ -9,7 +9,17 @@ import HTMLIFrameUtility from './HTMLIFrameUtility.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLIFrameElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected _ownerElement: HTMLIFrameElement;
+	#pageLoader: HTMLIframePageLoader;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param ownerElement Owner element.
+	 */
+	constructor(ownerElement: Element, pageLoader: HTMLIframePageLoader) {
+		super(ownerElement);
+		this.#pageLoader = pageLoader;
+	}
 
 	/**
 	 * @override
@@ -18,7 +28,7 @@ export default class HTMLIFrameElementNamedNodeMap extends HTMLElementNamedNodeM
 		const replacedAttribute = super.setNamedItem(item);
 
 		if (item.name === 'src' && item.value && item.value !== replacedAttribute?.value) {
-			HTMLIFrameUtility.loadPage(this._ownerElement);
+			this.#pageLoader.loadPage();
 		}
 
 		return replacedAttribute || null;

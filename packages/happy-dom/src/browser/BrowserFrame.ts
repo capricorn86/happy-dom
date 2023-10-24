@@ -6,13 +6,14 @@ import Window from '../window/Window.js';
 import IBrowserPageViewport from './types/IBrowserPageViewport.js';
 import Event from '../event/Event.js';
 import Location from '../location/Location.js';
+import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
 
 /**
  * Browser frame.
  */
 export default class BrowserFrame implements IBrowserFrame {
 	public readonly childFrames: BrowserFrame[] = [];
-	public detached = false;
+	public readonly parentFrame: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: IWindow;
 	public _asyncTaskManager = new AsyncTaskManager();
@@ -93,10 +94,17 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * Aborts all ongoing operations and destroys the frame.
 	 */
 	public destroy(): void {
+		if (this.parentFrame) {
+			const index = this.parentFrame.childFrames.indexOf(this);
+			if (index !== -1) {
+				this.parentFrame.childFrames.splice(index, 1);
+			}
+		}
 		for (const frame of this.childFrames) {
 			frame.destroy();
 		}
 		this._asyncTaskManager.destroy();
+		WindowBrowserSettingsReader.removeSettings(this.window);
 		(<BrowserPage>this.page) = null;
 		(<IWindow>this.window) = null;
 	}
@@ -126,15 +134,34 @@ export default class BrowserFrame implements IBrowserFrame {
 	}
 
 	/**
+	 * Creates a new frame.
+	 *
+	 * @returns Frame.
+	 */
+	public newFrame(): IBrowserFrame {
+		const frame = new BrowserFrame(this.page);
+		(<BrowserFrame>frame.parentFrame) = this;
+		this.childFrames.push(frame);
+		return frame;
+	}
+
+	/**
 	 * Go to a page.
 	 *
 	 * @param url URL.
 	 */
 	public async goto(url: string): Promise<void> {
-		await Promise.all(this.childFrames.map((frame) => frame.destroy()));
-		this._asyncTaskManager.abortAll();
+		for (const frame of this.childFrames) {
+			frame.destroy();
+		}
 
-		this.window.location.href = url;
+		this._asyncTaskManager.destroy();
+
+		(<IWindow>this.window) = new Window({
+			url,
+			browserFrame: this,
+			console: this.page.console
+		});
 
 		const response = await this.window.fetch(url);
 		const responseText = await response.text();

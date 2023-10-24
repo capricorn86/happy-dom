@@ -327,6 +327,9 @@ export default class WindowClassFactory {
 			}
 		}
 		class HTMLIFrameElement extends HTMLIFrameElementImplementation {
+			constructor() {
+				super(properties.browserFrame);
+			}
 			public get ownerDocument(): IDocument {
 				return window.document;
 			}

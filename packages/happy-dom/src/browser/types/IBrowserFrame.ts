@@ -9,9 +9,9 @@ import IBrowserPage from './IBrowserPage.js';
 export default interface IBrowserFrame {
 	readonly childFrames: IBrowserFrame[];
 	readonly window: IWindow;
-	detached: boolean;
 	content: string;
 	url: string;
+	readonly parentFrame: IBrowserFrame | null;
 	readonly _asyncTaskManager: AsyncTaskManager;
 	readonly page: IBrowserPage | null;
 
@@ -38,6 +38,13 @@ export default interface IBrowserFrame {
 	 * @param viewport Viewport.
 	 */
 	setViewport(viewport: IBrowserPageViewport): void;
+
+	/**
+	 * Creates a new frame.
+	 *
+	 * @returns Frame.
+	 */
+	newFrame(): IBrowserFrame;
 
 	/**
 	 * Go to a page.

@@ -14,8 +14,7 @@ export default class CrossOriginWindow extends EventTarget implements ICrossOrig
 	public readonly parent: IWindow;
 	public readonly top: IWindow;
 	public readonly location: Location;
-
-	private _targetWindow: IWindow;
+	#targetWindow: IWindow;
 
 	/**
 	 * Constructor.
@@ -45,7 +44,7 @@ export default class CrossOriginWindow extends EventTarget implements ICrossOrig
 				}
 			}
 		);
-		this._targetWindow = target;
+		this.#targetWindow = target;
 	}
 
 	/**
@@ -56,6 +55,6 @@ export default class CrossOriginWindow extends EventTarget implements ICrossOrig
 	 * @param transfer Transfer. Not implemented.
 	 */
 	public postMessage(message: unknown, targetOrigin = '*', transfer?: unknown[]): void {
-		this._targetWindow.postMessage(message, targetOrigin, transfer);
+		this.#targetWindow.postMessage(message, targetOrigin, transfer);
 	}
 }
