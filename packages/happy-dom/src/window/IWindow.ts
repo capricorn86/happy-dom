@@ -384,6 +384,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly DOMParser: typeof DOMParser;
 	readonly MutationObserver: typeof MutationObserver;
 	readonly MutationRecord: typeof MutationRecord;
+	readonly CSSStyleDeclaration: typeof CSSStyleDeclaration;
 
 	// Events
 	onload: (event: Event) => void;
