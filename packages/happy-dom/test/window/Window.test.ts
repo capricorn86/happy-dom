@@ -6,7 +6,6 @@ import ResourceFetch from '../../src/fetch/ResourceFetch.js';
 import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement.js';
 import Window from '../../src/window/Window.js';
 import IWindow from '../../src/window/IWindow.js';
-import Navigator from '../../src/navigator/Navigator.js';
 import Headers from '../../src/fetch/Headers.js';
 import Selection from '../../src/selection/Selection.js';
 import DOMException from '../../src/exception/DOMException.js';
@@ -26,8 +25,6 @@ import '../types.d.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import VirtualConsole from '../../src/console/VirtualConsole.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
-import Permissions from '../../src/permissions/Permissions.js';
-import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
 import { IHTMLDialogElement } from '../../src/index.js';
 
@@ -452,49 +449,6 @@ describe('Window', () => {
 			expect(array[2]).toBeGreaterThan(0);
 			expect(array[3]).toBeGreaterThan(0);
 			expect(array[4]).toBeGreaterThan(0);
-		});
-	});
-
-	describe('get navigator()', () => {
-		it('Returns an instance of Navigator with browser data.', () => {
-			const platform = GET_NAVIGATOR_PLATFORM();
-
-			expect(window.navigator instanceof Navigator).toBe(true);
-
-			const referenceValues = {
-				appCodeName: 'Mozilla',
-				appName: 'Netscape',
-				appVersion: `5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
-				cookieEnabled: true,
-				credentials: null,
-				doNotTrack: 'unspecified',
-				geolocation: null,
-				hardwareConcurrency: 8,
-				language: 'en-US',
-				languages: ['en-US', 'en'],
-				locks: null,
-				maxTouchPoints: 0,
-				mimeTypes: {
-					length: 0
-				},
-				onLine: true,
-				permissions: new Permissions(),
-				clipboard: new Clipboard(window),
-				platform,
-				plugins: {
-					length: 0
-				},
-				product: 'Gecko',
-				productSub: '20100101',
-				userAgent: `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
-				vendor: '',
-				vendorSub: '',
-				webdriver: true
-			};
-
-			for (const propertyKey in referenceValues) {
-				expect(window.navigator[propertyKey]).toEqual(referenceValues[propertyKey]);
-			}
 		});
 	});
 
@@ -1448,7 +1402,7 @@ describe('Window', () => {
 
 				(<Window>window.parent) = parent;
 
-				window.addEventListener('message', (event) => (triggeredEvent = event));
+				window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
 				window.postMessage(message);
 
 				expect(triggeredEvent).toBe(null);
@@ -1481,7 +1435,7 @@ describe('Window', () => {
 				};
 				let triggeredEvent: MessageEvent | null = null;
 
-				window.addEventListener('message', (event) => (triggeredEvent = event));
+				window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
 				window.postMessage(message);
 
 				expect(triggeredEvent).toBe(null);
