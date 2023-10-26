@@ -61,7 +61,12 @@ async function itObservesUnhandledJavaScriptFetchRejections(): Promise<void> {
         <script src="https://localhost:3000/404.js" async></script>
     `);
 
-	await new Promise((resolve) => setTimeout(resolve, 10));
+	for (let i = 0; i < 10; i++) {
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		if (errorEvent) {
+			break;
+		}
+	}
 
 	observer.disconnect();
 
