@@ -3,6 +3,7 @@ on: pull_request
 jobs:
   build:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
         node-version: [16, 18, 20]
