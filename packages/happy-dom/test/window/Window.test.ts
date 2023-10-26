@@ -868,7 +868,7 @@ describe('Window', () => {
 				window.setTimeout(async () => {
 					await new Promise((resolve) => setTimeout(resolve, 0));
 					throw new window.Error('Test error');
-				});
+				}, 5);
 				setTimeout(() => {
 					expect((<ErrorEvent>(<unknown>errorEvent)).error).instanceOf(window.Error);
 					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
