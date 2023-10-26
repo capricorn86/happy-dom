@@ -14,8 +14,8 @@ export default class HTMLInputElementDateUtility {
 		date.setUTCDate(date.getUTCDate() - day + 3);
 		const firstThursday = date.getTime();
 		date.setUTCMonth(0, 1);
-		if (date.getDay() !== 4) {
-			date.setUTCMonth(0, 1 + ((4 - date.getDay() + 7) % 7));
+		if (date.getUTCDay() !== 4) {
+			date.setUTCMonth(0, 1 + ((4 - date.getUTCDay() + 7) % 7));
 		}
 		return (
 			date.getUTCFullYear() +
@@ -37,7 +37,7 @@ export default class HTMLInputElementDateUtility {
 		}
 		const date = new Date(`${Y}-01-01T00:00Z`);
 		const jan4th = new Date(`${Y}-01-04T00:00Z`);
-		const jan4thDay = (jan4th.getDay() + 6) % 7;
+		const jan4thDay = (jan4th.getUTCDay() + 6) % 7;
 		const ordinalDate = 1 + (Number(W) - 1) * 7 - jan4thDay + 3;
 		date.setUTCDate(ordinalDate);
 		if (date.getUTCFullYear() > Number(Y)) {

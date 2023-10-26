@@ -390,6 +390,7 @@ describe('HTMLInputElement', () => {
 			{ type: 'time', value: '00:00', want: new Date('1970-01-01T00:00Z') },
 			{ type: 'time', value: '12:00', want: new Date('1970-01-01T12:00Z') },
 			{ type: 'time', value: '18:55', want: new Date('1970-01-01T18:55Z') },
+			{ type: 'week', value: '1981-W01', want: new Date('1980-12-29T00:00Z') },
 			{ type: 'week', value: '2023-W22', want: new Date('2023-05-29T00:00Z') }
 		])(`Should return valid date for type $type with valid value`, ({ type, value, want }) => {
 			element.type = type;
