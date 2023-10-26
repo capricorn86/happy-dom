@@ -134,7 +134,7 @@ import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
 
 /**
- * Window without dependencies to server side specific packages.
+ * Browser window.
  */
 export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	// Happy DOM property.
