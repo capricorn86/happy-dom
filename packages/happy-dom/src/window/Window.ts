@@ -456,6 +456,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly Image;
 	public readonly DocumentFragment;
 	public readonly Audio;
+	public readonly CSSStyleDeclaration = CSSStyleDeclaration;
 
 	// Events
 	public onload: (event: Event) => void = null;
