@@ -379,10 +379,6 @@ export default class Element extends Node implements IElement {
 		}
 
 		(<string>clone.tagName) = this.tagName;
-		clone.scrollLeft = this.scrollLeft;
-		clone.scrollTop = this.scrollTop;
-		clone.scrollWidth = this.scrollWidth;
-		clone.scrollHeight = this.scrollHeight;
 		(<string>clone.namespaceURI) = this.namespaceURI;
 
 		return <IElement>clone;
