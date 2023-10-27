@@ -5,24 +5,28 @@ export default class HTMLInputElementDateUtility {
 	/**
 	 * Returns iso week number from given date
 	 *
+	 * @see https://stackoverflow.com/a/6117889
 	 * @param date Date or number.
 	 * @returns Iso-week string.
 	 */
 	public static dateIsoWeek(date: Date | number): string {
-		date = new Date(date);
-		const day = (date.getUTCDay() + 6) % 7;
-		date.setUTCDate(date.getUTCDate() - day + 3);
-		const firstThursday = date.getTime();
-		date.setUTCMonth(0, 1);
-		if (date.getUTCDay() !== 4) {
-			date.setUTCMonth(0, 1 + ((4 - date.getUTCDay() + 7) % 7));
-		}
-		return (
-			date.getUTCFullYear() +
-			'-W' +
-			String(1 + Math.ceil((firstThursday - date.getTime()) / 604800000)).padStart(2, '0')
+		const parsedDate = typeof date === 'number' ? new Date(date) : date;
+		// Copy date so don't modify original
+		const newDate = new Date(
+			Date.UTC(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate())
 		);
+		// Set to nearest Thursday: current date + 4 - current day number
+		// Make Sunday's day number 7
+		newDate.setUTCDate(newDate.getUTCDate() + 4 - (newDate.getUTCDay() || 7));
+		// Get first day of year
+		const yearStart = new Date(Date.UTC(newDate.getUTCFullYear(), 0, 1));
+		// Calculate full weeks to nearest Thursday
+		const weekNo = Math.ceil(
+			((<number>(<unknown>newDate) - <number>(<unknown>yearStart)) / 86400000 + 1) / 7
+		);
+		return `${newDate.getUTCFullYear()}-W${weekNo < 10 ? '0' : ''}${weekNo}`;
 	}
+
 	/**
 	 * Returns a date object for monday of given iso week string (\d\d\d\d-W\d\d)
 	 *

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import HTMLInputElementDateUtility from '../../../src/nodes/html-input-element/HTMLInputElementDateUtility.js';
 
 describe('HTMLInputElementDateUtility', () => {
-	describe('dateToIsoWeek()', () => {
+	describe('dateIsoWeek()', () => {
 		it('Returns the ISO week number', () => {
 			expect(HTMLInputElementDateUtility.dateIsoWeek(new Date('2021-01-01'))).toBe('2020-W53');
 			expect(HTMLInputElementDateUtility.dateIsoWeek(new Date('2021-01-03'))).toBe('2020-W53');
@@ -35,7 +35,7 @@ describe('HTMLInputElementDateUtility', () => {
 		});
 	});
 
-	describe('IsoWeekToDate()', () => {
+	describe('isoWeekDate()', () => {
 		it('Returns the ISO week number', () => {
 			expect(HTMLInputElementDateUtility.isoWeekDate('2020-W53')).toEqual(
 				new Date('2020-12-28T00:00Z')
