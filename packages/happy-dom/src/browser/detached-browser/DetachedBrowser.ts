@@ -17,18 +17,20 @@ export default class DetachedBrowser implements IBrowser {
 	/**
 	 * Constructor.
 	 *
+	 * @param windowClass Window class.
 	 * @param window Window.
 	 * @param [options] Options.
 	 * @param [options.settings] Browser settings.
 	 * @param [options.console] Console.
 	 */
 	constructor(
+		windowClass: new () => IWindow,
 		window: IWindow,
 		options?: { settings?: IOptionalBrowserSettings; console?: Console }
 	) {
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
-		this.contexts = [new DetachedBrowserContext(window, this)];
+		this.contexts = [new DetachedBrowserContext(windowClass, window, this)];
 	}
 
 	/**
@@ -73,8 +75,6 @@ export default class DetachedBrowser implements IBrowser {
 
 	/**
 	 * Creates a new incognito context.
-	 *
-	 * @returns Context.
 	 */
 	public newIncognitoContext(): DetachedBrowserContext {
 		throw new Error('Not possible to create a new context on a detached browser.');

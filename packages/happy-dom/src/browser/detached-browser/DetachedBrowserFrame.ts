@@ -6,6 +6,7 @@ import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
 import Event from '../../event/Event.js';
 import Location from '../../location/Location.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
+import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
 
 /**
  * Browser frame.
@@ -16,14 +17,17 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public readonly page: DetachedBrowserPage;
 	public readonly window: IWindow;
 	public _asyncTaskManager = new AsyncTaskManager();
+	#windowClass: new () => IWindow;
 
 	/**
 	 * Constructor.
 	 *
+	 * @param windowClass Window class.
 	 * @param window Window.
 	 * @param page Page.
 	 */
-	constructor(window: IWindow, page: DetachedBrowserPage) {
+	constructor(windowClass: new () => IWindow, window: IWindow, page: DetachedBrowserPage) {
+		this.#windowClass = windowClass;
 		this.window = window;
 		this.page = page;
 	}
@@ -77,8 +81,6 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 
 	/**
 	 * Aborts all ongoing operations.
-	 *
-	 * @returns Promise.
 	 */
 	public abort(): void {
 		for (const frame of this.childFrames) {
@@ -136,7 +138,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @returns Frame.
 	 */
 	public newFrame(): IBrowserFrame {
-		const frame = new DetachedBrowserFrame(this.window, this.page);
+		const frame = new DetachedBrowserFrame(this.#windowClass, new this.#windowClass(), this.page);
 		(<DetachedBrowserFrame>frame.parentFrame) = this;
 		this.childFrames.push(frame);
 		return frame;
@@ -152,10 +154,18 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 
 		this._asyncTaskManager.abortAll();
 
+		const readyStateManager = new DocumentReadyStateManager(this.window);
+		(<{ _readyStateManager: DocumentReadyStateManager }>(<unknown>this.window))._readyStateManager =
+			readyStateManager;
+
+		readyStateManager.startTask();
+
 		this.url = url;
 
 		const response = await this.window.fetch(url);
 		const responseText = await response.text();
+
+		readyStateManager.endTask();
 
 		this.content = responseText;
 	}

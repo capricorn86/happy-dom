@@ -1,4 +1,3 @@
-import IWindow from '../window/IWindow.js';
 import BrowserPage from './BrowserPage.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import IBrowserFrame from './types/IBrowserFrame.js';
@@ -7,6 +6,7 @@ import IBrowserPageViewport from './types/IBrowserPageViewport.js';
 import Event from '../event/Event.js';
 import Location from '../location/Location.js';
 import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
+import WindowErrorUtility from '../window/WindowErrorUtility.js';
 
 /**
  * Browser frame.
@@ -15,7 +15,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public readonly childFrames: BrowserFrame[] = [];
 	public readonly parentFrame: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
-	public readonly window: IWindow;
+	public readonly window: Window;
 	public _asyncTaskManager = new AsyncTaskManager();
 
 	/**
@@ -106,7 +106,7 @@ export default class BrowserFrame implements IBrowserFrame {
 		this._asyncTaskManager.destroy();
 		WindowBrowserSettingsReader.removeSettings(this.window);
 		(<BrowserPage>this.page) = null;
-		(<IWindow>this.window) = null;
+		(<Window>this.window) = null;
 	}
 
 	/**
@@ -157,15 +157,27 @@ export default class BrowserFrame implements IBrowserFrame {
 
 		this._asyncTaskManager.destroy();
 
-		(<IWindow>this.window) = new Window({
+		(<Window>this.window) = new Window({
 			url,
 			browserFrame: this,
 			console: this.page.console
 		});
 
-		const response = await this.window.fetch(url);
-		const responseText = await response.text();
+		this.window._readyStateManager.startTask();
+
+		let responseText: string;
+
+		try {
+			const response = await this.window.fetch(url);
+			responseText = await response.text();
+		} catch (error) {
+			responseText = error.toString();
+			this.window._readyStateManager.endTask();
+			WindowErrorUtility.dispatchError(this.window, error);
+			return;
+		}
 
 		this.window.document.write(responseText);
+		this.window._readyStateManager.endTask();
 	}
 }

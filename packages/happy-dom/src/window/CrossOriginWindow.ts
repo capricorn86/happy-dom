@@ -11,21 +11,21 @@ import ICrossOriginWindow from './ICrossOriginWindow.js';
 export default class CrossOriginWindow extends EventTarget implements ICrossOriginWindow {
 	public readonly self = this;
 	public readonly window = this;
-	public readonly parent: IWindow;
-	public readonly top: IWindow;
+	public readonly parent: IWindow | ICrossOriginWindow;
+	public readonly top: IWindow | ICrossOriginWindow;
 	public readonly location: Location;
 	#targetWindow: IWindow;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param parent Parent window.
 	 * @param target Target window.
+	 * @param [parent] Parent window.
 	 */
-	constructor(parent: IWindow, target: IWindow) {
+	constructor(target: IWindow, parent?: IWindow) {
 		super();
 
-		this.parent = parent;
+		this.parent = parent ?? this;
 		this.top = parent;
 		this.location = <Location>new Proxy(
 			{},

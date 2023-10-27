@@ -14,13 +14,14 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	/**
 	 * Constructor.
 	 *
+	 * @param windowClass Window class.
 	 * @param window Window.
 	 * @param browser Browser.
 	 */
-	constructor(window: IWindow, browser: DetachedBrowser) {
+	constructor(windowClass: new () => IWindow, window: IWindow, browser: DetachedBrowser) {
+		this.#windowClass = windowClass;
 		this.browser = browser;
-		this.pages = [new DetachedBrowserPage(window, this)];
-		this.#windowClass = <new () => IWindow>window.constructor;
+		this.pages = [new DetachedBrowserPage(windowClass, window, this)];
 	}
 
 	/**
@@ -56,7 +57,7 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	 * @returns Page.
 	 */
 	public newPage(): DetachedBrowserPage {
-		const page = new DetachedBrowserPage(new this.#windowClass(), this);
+		const page = new DetachedBrowserPage(this.#windowClass, new this.#windowClass(), this);
 		this.pages.push(page);
 		return page;
 	}

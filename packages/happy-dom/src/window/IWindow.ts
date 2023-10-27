@@ -382,9 +382,9 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly navigator: Navigator;
 	readonly console: Console;
 	readonly self: IWindow;
-	readonly top: IWindow;
-	readonly opener: IWindow | null;
-	readonly parent: IWindow;
+	readonly top: IWindow | ICrossOriginWindow;
+	readonly opener: IWindow | ICrossOriginWindow | null;
+	readonly parent: IWindow | ICrossOriginWindow;
 	readonly window: IWindow;
 	readonly globalThis: IWindow;
 	readonly name: string;

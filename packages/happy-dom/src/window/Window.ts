@@ -147,6 +147,7 @@ import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js
 import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
 import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
 import DetachedBrowser from '../browser/detached-browser/DetachedBrowser.js';
+import WindowPageOpener from './WindowPageOpener.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -399,10 +400,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly location: Location;
 	public readonly history: History;
 	public readonly navigator: Navigator;
-	public readonly opener: IWindow | null = null;
+	public readonly opener: IWindow | ICrossOriginWindow | null = null;
 	public readonly self: IWindow = this;
-	public readonly top: IWindow = this;
-	public readonly parent: IWindow = this;
+	public readonly top: IWindow | ICrossOriginWindow = this;
+	public readonly parent: IWindow | ICrossOriginWindow = this;
 	public readonly window: IWindow = this;
 	public readonly globalThis: IWindow = this;
 	public readonly name: string = '';
@@ -496,6 +497,7 @@ export default class Window extends EventTarget implements IWindow {
 	private _queueMicrotask: (callback: Function) => void;
 	public readonly _readyStateManager = new DocumentReadyStateManager(this);
 	#browserFrame: IBrowserFrame;
+	#windowPageOpener: WindowPageOpener;
 
 	/**
 	 * Constructor.
@@ -533,7 +535,7 @@ export default class Window extends EventTarget implements IWindow {
 		if (options?.browserFrame) {
 			this.#browserFrame = options.browserFrame;
 		} else {
-			this.#browserFrame = new DetachedBrowser(this, {
+			this.#browserFrame = new DetachedBrowser(Window, this, {
 				console: options?.console,
 				settings: options?.settings
 			}).defaultContext.pages[0].mainFrame;
@@ -541,6 +543,7 @@ export default class Window extends EventTarget implements IWindow {
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
+		this.#windowPageOpener = new WindowPageOpener(this.#browserFrame);
 		this.happyDOM = new HappyDOMWindowAPI({
 			window: this,
 			browserFrame: this.#browserFrame
@@ -844,19 +847,24 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * Loads a specified resource into a new or existing browsing context (that is, a tab, a window, or an iframe) under a specified name.
 	 *
-	 * @param [_url] URL.
-	 * @param [_target] Target.
-	 * @param [_features] Window features.
+	 * @param [url] URL.
+	 * @param [target] Target.
+	 * @param [features] Window features.
+	 * @returns Window.
 	 */
 	public open(
-		_url?: string,
-		_target?: string,
-		_features?: string
+		url?: string,
+		target?: string,
+		features?: string
 	): IWindow | ICrossOriginWindow | null {
 		if (this.#browserFrame.page.context.browser.settings.disableWindowOpenPageLoading) {
 			return null;
 		}
-		return null;
+		return this.#windowPageOpener.openPage({
+			url,
+			target,
+			features
+		});
 	}
 
 	/**

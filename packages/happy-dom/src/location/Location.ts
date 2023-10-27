@@ -1,18 +1,24 @@
 import URL from '../url/URL.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import DetachedBrowserFrame from '../browser/detached-browser/DetachedBrowserFrame.js';
+import WindowErrorUtility from '../window/WindowErrorUtility.js';
 
 /**
  *
  */
 export default class Location extends URL {
+	#browserFrame: IBrowserFrame | null;
+
 	/**
 	 * Constructor.
 	 *
 	 * @param [url] URL.
 	 */
-	constructor(url = 'about:blank') {
+	constructor(url = 'about:blank', browserFrame?: IBrowserFrame) {
 		super(url);
+		this.#browserFrame = browserFrame ?? null;
 	}
 
 	/**
@@ -20,6 +26,22 @@ export default class Location extends URL {
 	 */
 	// @ts-ignore
 	public set href(value: string) {
+		if (value.startsWith('javascript:')) {
+			if (
+				this.#browserFrame &&
+				!this.#browserFrame.page.context.browser.settings.disableJavaScriptEvaluation
+			) {
+				if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
+					this.#browserFrame.window.eval(value.replace('javascript:', ''));
+				} else {
+					WindowErrorUtility.captureError(this.#browserFrame.window, () =>
+						this.#browserFrame.window.eval(value.replace('javascript:', ''))
+					);
+				}
+			}
+			return;
+		}
+
 		try {
 			super.href = this.hostname ? new URL(value, this).href : value;
 		} catch (e) {
@@ -34,6 +56,11 @@ export default class Location extends URL {
 					DOMExceptionNameEnum.uriMismatchError
 				);
 			}
+		}
+
+		// When using the Window instance directly and not via the Browser API we should not navigate the browser frame.
+		if (!(this.#browserFrame instanceof DetachedBrowserFrame)) {
+			this.#browserFrame?.goto(value);
 		}
 	}
 

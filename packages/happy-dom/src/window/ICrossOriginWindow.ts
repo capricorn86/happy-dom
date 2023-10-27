@@ -8,8 +8,8 @@ import IEventTarget from '../event/IEventTarget.js';
 export default interface ICrossOriginWindow extends IEventTarget {
 	readonly self: ICrossOriginWindow;
 	readonly window: ICrossOriginWindow;
-	readonly parent: IWindow;
-	readonly top: IWindow;
+	readonly parent: IWindow | ICrossOriginWindow;
+	readonly top: IWindow | ICrossOriginWindow;
 	readonly location: Location;
 
 	/**

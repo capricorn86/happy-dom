@@ -6,6 +6,8 @@ import URL from '../../url/URL.js';
 import HTMLAnchorElementUtility from './HTMLAnchorElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLAnchorElementNamedNodeMap from './HTMLAnchorElementNamedNodeMap.js';
+import Event from '../../event/Event.js';
+import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 
 /**
  * HTML Anchor Element.
@@ -414,5 +416,29 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 */
 	public override toString(): string {
 		return this.href;
+	}
+
+	/**
+	 * @override
+	 */
+	public override dispatchEvent(event: Event): boolean {
+		const returnValue = super.dispatchEvent(event);
+
+		if (
+			event.type === 'click' &&
+			(event.eventPhase === EventPhaseEnum.atTarget ||
+				event.eventPhase === EventPhaseEnum.bubbling) &&
+			this._formNode &&
+			this.isConnected &&
+			!event.defaultPrevented
+		) {
+			const href = this.href;
+			if (href) {
+				// TODO: Add support for "target", "download", "rel", "hreflang", "type", "referrerpolicy", "ping", "referrerpolicy", "relList".
+				this.ownerDocument._defaultView.location.href = this.href;
+			}
+		}
+
+		return returnValue;
 	}
 }

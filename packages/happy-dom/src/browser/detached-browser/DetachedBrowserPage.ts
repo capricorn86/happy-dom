@@ -18,13 +18,14 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	/**
 	 * Constructor.
 	 *
+	 * @param windowClass Window class.
 	 * @param window Window.
 	 * @param context Browser context.
 	 */
-	constructor(window: IWindow, context: DetachedBrowserContext) {
+	constructor(windowClass: new () => IWindow, window: IWindow, context: DetachedBrowserContext) {
 		this.context = context;
 		this.console = context.browser.console ?? new VirtualConsole(this.virtualConsolePrinter);
-		this.mainFrame = new DetachedBrowserFrame(window, this);
+		this.mainFrame = new DetachedBrowserFrame(windowClass, window, this);
 	}
 
 	/**
