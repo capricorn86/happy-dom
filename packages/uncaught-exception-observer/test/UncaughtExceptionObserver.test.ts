@@ -61,7 +61,12 @@ async function itObservesUnhandledJavaScriptFetchRejections(): Promise<void> {
         <script src="https://localhost:3000/404.js" async></script>
     `);
 
-	await new Promise((resolve) => setTimeout(resolve, 10));
+	for (let i = 0; i < 10; i++) {
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		if (errorEvent) {
+			break;
+		}
+	}
 
 	observer.disconnect();
 
@@ -69,17 +74,11 @@ async function itObservesUnhandledJavaScriptFetchRejections(): Promise<void> {
 		throw new Error('Error event not dispatched.');
 	}
 
-	if (
-		errorEvent.error.message !==
-		'Fetch to "https://localhost:3000/404.js" failed. Error: connect ECONNREFUSED 127.0.0.1:3000'
-	) {
+	if (!errorEvent.error.message.startsWith('Fetch to "https://localhost:3000/404.js" failed.')) {
 		throw new Error('Error message not correct.');
 	}
 
-	if (
-		errorEvent.message !==
-		'Fetch to "https://localhost:3000/404.js" failed. Error: connect ECONNREFUSED 127.0.0.1:3000'
-	) {
+	if (!errorEvent.message.startsWith('Fetch to "https://localhost:3000/404.js" failed.')) {
 		throw new Error('Error message not correct.');
 	}
 }

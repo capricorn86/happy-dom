@@ -5,24 +5,26 @@ export default class HTMLInputElementDateUtility {
 	/**
 	 * Returns iso week number from given date
 	 *
+	 * @see https://stackoverflow.com/a/6117889
 	 * @param date Date or number.
 	 * @returns Iso-week string.
 	 */
 	public static dateIsoWeek(date: Date | number): string {
-		date = new Date(date);
-		const day = (date.getUTCDay() + 6) % 7;
-		date.setUTCDate(date.getUTCDate() - day + 3);
-		const firstThursday = date.getTime();
-		date.setUTCMonth(0, 1);
-		if (date.getDay() !== 4) {
-			date.setUTCMonth(0, 1 + ((4 - date.getDay() + 7) % 7));
-		}
-		return (
-			date.getUTCFullYear() +
-			'-W' +
-			String(1 + Math.ceil((firstThursday - date.getTime()) / 604800000)).padStart(2, '0')
+		date = typeof date === 'number' ? new Date(date) : date;
+		// Copy date so don't modify original
+		date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+		// Set to nearest Thursday: current date + 4 - current day number
+		// Make Sunday's day number 7
+		date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+		// Get first day of year
+		const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+		// Calculate full weeks to nearest Thursday
+		const weekNo = Math.ceil(
+			((<number>(<unknown>date) - <number>(<unknown>yearStart)) / 86400000 + 1) / 7
 		);
+		return `${date.getUTCFullYear()}-W${weekNo < 10 ? '0' : ''}${weekNo}`;
 	}
+
 	/**
 	 * Returns a date object for monday of given iso week string (\d\d\d\d-W\d\d)
 	 *
@@ -37,7 +39,7 @@ export default class HTMLInputElementDateUtility {
 		}
 		const date = new Date(`${Y}-01-01T00:00Z`);
 		const jan4th = new Date(`${Y}-01-04T00:00Z`);
-		const jan4thDay = (jan4th.getDay() + 6) % 7;
+		const jan4thDay = (jan4th.getUTCDay() + 6) % 7;
 		const ordinalDate = 1 + (Number(W) - 1) * 7 - jan4thDay + 3;
 		date.setUTCDate(ordinalDate);
 		if (date.getUTCFullYear() > Number(Y)) {
