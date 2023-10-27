@@ -10,21 +10,19 @@ export default class HTMLInputElementDateUtility {
 	 * @returns Iso-week string.
 	 */
 	public static dateIsoWeek(date: Date | number): string {
-		const parsedDate = typeof date === 'number' ? new Date(date) : date;
+		date = typeof date === 'number' ? new Date(date) : date;
 		// Copy date so don't modify original
-		const newDate = new Date(
-			Date.UTC(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate())
-		);
+		date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 		// Set to nearest Thursday: current date + 4 - current day number
 		// Make Sunday's day number 7
-		newDate.setUTCDate(newDate.getUTCDate() + 4 - (newDate.getUTCDay() || 7));
+		date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
 		// Get first day of year
-		const yearStart = new Date(Date.UTC(newDate.getUTCFullYear(), 0, 1));
+		const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
 		// Calculate full weeks to nearest Thursday
 		const weekNo = Math.ceil(
-			((<number>(<unknown>newDate) - <number>(<unknown>yearStart)) / 86400000 + 1) / 7
+			((<number>(<unknown>date) - <number>(<unknown>yearStart)) / 86400000 + 1) / 7
 		);
-		return `${newDate.getUTCFullYear()}-W${weekNo < 10 ? '0' : ''}${weekNo}`;
+		return `${date.getUTCFullYear()}-W${weekNo < 10 ? '0' : ''}${weekNo}`;
 	}
 
 	/**
