@@ -147,7 +147,7 @@ import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js
 import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
 import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
 import DetachedBrowser from '../browser/detached-browser/DetachedBrowser.js';
-import WindowPageOpener from './WindowPageOpener.js';
+import WindowPageOpenUtility from './WindowPageOpenUtility.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -400,10 +400,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly location: Location;
 	public readonly history: History;
 	public readonly navigator: Navigator;
-	public readonly opener: IWindow | ICrossOriginWindow | null = null;
+	public readonly opener: IWindow | null = null;
 	public readonly self: IWindow = this;
-	public readonly top: IWindow | ICrossOriginWindow = this;
-	public readonly parent: IWindow | ICrossOriginWindow = this;
+	public readonly top: IWindow = this;
+	public readonly parent: IWindow = this;
 	public readonly window: IWindow = this;
 	public readonly globalThis: IWindow = this;
 	public readonly name: string = '';
@@ -421,6 +421,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly screenX: number = 0;
 	public readonly screenY: number = 0;
 	public readonly crypto = webcrypto;
+	public readonly closed = false;
 
 	// Node.js Globals
 	public Array: typeof Array;
@@ -488,16 +489,15 @@ export default class Window extends EventTarget implements IWindow {
 	// Used for tracking capture event listeners to improve performance when they are not used.
 	// See EventTarget class.
 	public _captureEventListenerCount: { [eventType: string]: number } = {};
+	public readonly _readyStateManager = new DocumentReadyStateManager(this);
 
 	// Private properties
-	private _setTimeout: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
-	private _clearTimeout: (id: NodeJS.Timeout) => void;
-	private _setInterval: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
-	private _clearInterval: (id: NodeJS.Timeout) => void;
-	private _queueMicrotask: (callback: Function) => void;
-	public readonly _readyStateManager = new DocumentReadyStateManager(this);
+	#setTimeout: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
+	#clearTimeout: (id: NodeJS.Timeout) => void;
+	#setInterval: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
+	#clearInterval: (id: NodeJS.Timeout) => void;
+	#queueMicrotask: (callback: Function) => void;
 	#browserFrame: IBrowserFrame;
-	#windowPageOpener: WindowPageOpener;
 
 	/**
 	 * Constructor.
@@ -543,11 +543,7 @@ export default class Window extends EventTarget implements IWindow {
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
-		this.#windowPageOpener = new WindowPageOpener(this.#browserFrame);
-		this.happyDOM = new HappyDOMWindowAPI({
-			window: this,
-			browserFrame: this.#browserFrame
-		});
+		this.happyDOM = new HappyDOMWindowAPI(this.#browserFrame);
 
 		if (options) {
 			if (options.width !== undefined) {
@@ -571,11 +567,11 @@ export default class Window extends EventTarget implements IWindow {
 			}
 		}
 
-		this._setTimeout = ORIGINAL_SET_TIMEOUT;
-		this._clearTimeout = ORIGINAL_CLEAR_TIMEOUT;
-		this._setInterval = ORIGINAL_SET_INTERVAL;
-		this._clearInterval = ORIGINAL_CLEAR_INTERVAL;
-		this._queueMicrotask = ORIGINAL_QUEUE_MICROTASK;
+		this.#setTimeout = ORIGINAL_SET_TIMEOUT;
+		this.#clearTimeout = ORIGINAL_CLEAR_TIMEOUT;
+		this.#setInterval = ORIGINAL_SET_INTERVAL;
+		this.#clearInterval = ORIGINAL_CLEAR_INTERVAL;
+		this.#queueMicrotask = ORIGINAL_QUEUE_MICROTASK;
 
 		// Binds all methods to "this", so that it will use the correct context when called globally.
 		for (const key of Object.getOwnPropertyNames(Window.prototype).concat(
@@ -845,6 +841,20 @@ export default class Window extends EventTarget implements IWindow {
 	}
 
 	/**
+	 * Shifts focus away from the window.
+	 */
+	public blur(): void {
+		// TODO: Implement.
+	}
+
+	/**
+	 * Gives focus to the window.
+	 */
+	public focus(): void {
+		// TODO: Implement.
+	}
+
+	/**
 	 * Loads a specified resource into a new or existing browsing context (that is, a tab, a window, or an iframe) under a specified name.
 	 *
 	 * @param [url] URL.
@@ -860,7 +870,7 @@ export default class Window extends EventTarget implements IWindow {
 		if (this.#browserFrame.page.context.browser.settings.disableWindowOpenPageLoading) {
 			return null;
 		}
-		return this.#windowPageOpener.openPage({
+		return WindowPageOpenUtility.openPage(this.#browserFrame, {
 			url,
 			target,
 			features
@@ -871,12 +881,8 @@ export default class Window extends EventTarget implements IWindow {
 	 * Closes the window.
 	 */
 	public close(): void {
-		WindowBrowserSettingsReader.removeSettings(this);
-
-		if (this.#browserFrame.page) {
-			if (this.#browserFrame.page.mainFrame === this.#browserFrame) {
-				this.#browserFrame.page.close();
-			}
+		if (this.#browserFrame.page.mainFrame === this.#browserFrame) {
+			this.#browserFrame.page.close();
 		} else {
 			this.#browserFrame.destroy();
 		}
@@ -901,7 +907,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Timeout ID.
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
-		const id = this._setTimeout(() => {
+		const id = this.#setTimeout(() => {
 			if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
 				callback(...args);
 			} else {
@@ -919,7 +925,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
-		this._clearTimeout(id);
+		this.#clearTimeout(id);
 		this.#browserFrame._asyncTaskManager.endTimer(id);
 	}
 
@@ -932,7 +938,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @returns Interval ID.
 	 */
 	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
-		const id = this._setInterval(() => {
+		const id = this.#setInterval(() => {
 			if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
 				callback(...args);
 			} else {
@@ -953,7 +959,7 @@ export default class Window extends EventTarget implements IWindow {
 	 * @param id ID of the interval.
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
-		this._clearInterval(id);
+		this.#clearInterval(id);
 		this.#browserFrame._asyncTaskManager.endTimer(id);
 	}
 
@@ -994,7 +1000,7 @@ export default class Window extends EventTarget implements IWindow {
 	public queueMicrotask(callback: Function): void {
 		let isAborted = false;
 		const taskId = this.#browserFrame._asyncTaskManager.startTask(() => (isAborted = true));
-		this._queueMicrotask(() => {
+		this.#queueMicrotask(() => {
 			if (!isAborted) {
 				if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
 					callback();
@@ -1072,12 +1078,16 @@ export default class Window extends EventTarget implements IWindow {
 			);
 		}
 
-		this.window.setTimeout(() =>
+		this.setTimeout(() =>
 			this.dispatchEvent(
 				new MessageEvent('message', {
 					data: message,
-					origin: this.parent.location.origin,
-					source: this.parent,
+					origin: this.#browserFrame.parentFrame
+						? this.#browserFrame.parentFrame.window.location.origin
+						: this.#browserFrame.window.location.origin,
+					source: this.#browserFrame.parentFrame
+						? this.#browserFrame.parentFrame.window
+						: this.#browserFrame.window,
 					lastEventId: ''
 				})
 			)

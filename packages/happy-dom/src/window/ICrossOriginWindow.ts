@@ -11,6 +11,23 @@ export default interface ICrossOriginWindow extends IEventTarget {
 	readonly parent: IWindow | ICrossOriginWindow;
 	readonly top: IWindow | ICrossOriginWindow;
 	readonly location: Location;
+	readonly opener: IWindow | ICrossOriginWindow | null;
+	readonly closed: boolean;
+
+	/**
+	 * Shifts focus away from the window.
+	 */
+	blur(): void;
+
+	/**
+	 * Gives focus to the window.
+	 */
+	focus(): void;
+
+	/**
+	 * Closes the window.
+	 */
+	close(): void;
 
 	/**
 	 * Safely enables cross-origin communication between Window objects; e.g., between a page and a pop-up that it spawned, or between a page and an iframe embedded within it.

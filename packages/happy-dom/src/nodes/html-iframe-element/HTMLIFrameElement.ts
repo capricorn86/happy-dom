@@ -8,7 +8,7 @@ import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
 import ICrossOriginWindow from '../../window/ICrossOriginWindow.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import HTMLIframePageLoader from './HTMLIframePageLoader.js';
+import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
 
 /**
  * HTML Iframe Element.
@@ -27,19 +27,19 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	#contentWindowContainer: { window: IWindow | ICrossOriginWindow | null } = {
 		window: null
 	};
-	#pageLoader: HTMLIframePageLoader;
+	#pageLoader: HTMLIFrameElementPageLoader;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param browserMainFrame Main browser frame.
+	 * @param browserFrame Browser frame.
 	 */
-	constructor(browserMainFrame: IBrowserFrame) {
+	constructor(browserFrame: IBrowserFrame) {
 		super();
-		this.#pageLoader = new HTMLIframePageLoader({
+		this.#pageLoader = new HTMLIFrameElementPageLoader({
 			element: this,
 			contentWindowContainer: this.#contentWindowContainer,
-			browserMainFrame
+			browserParentFrame: browserFrame
 		});
 		this.attributes = new HTMLIFrameElementNamedNodeMap(this, this.#pageLoader);
 	}
@@ -197,8 +197,12 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 
 		super._connectToNode(parentNode);
 
-		if (isParentConnected && isConnected !== isParentConnected) {
-			this.#pageLoader.loadPage();
+		if (isConnected !== isParentConnected) {
+			if (isParentConnected) {
+				this.#pageLoader.loadPage();
+			} else {
+				this.#pageLoader.unloadPage();
+			}
 		}
 	}
 

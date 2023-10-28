@@ -60,9 +60,6 @@ export default class WindowErrorUtility {
 			(<IElement>elementOrWindow).dispatchEvent(
 				new ErrorEvent('error', { message: error.message, error })
 			);
-			(<IElement>elementOrWindow).ownerDocument._defaultView.dispatchEvent(
-				new ErrorEvent('error', { message: error.message, error })
-			);
 		}
 	}
 }

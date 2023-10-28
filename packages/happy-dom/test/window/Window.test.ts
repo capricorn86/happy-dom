@@ -1534,4 +1534,41 @@ describe('Window', () => {
 			);
 		});
 	});
+
+	describe('open()', () => {
+		it('Opens a new window without URL.', () => {
+			const newWindow = window.open();
+			expect(newWindow).toBeInstanceOf(Window);
+			expect(newWindow?.location.href).toBe('about:blank');
+		});
+
+		it('Opens a new window with URL.', () => {
+			window.happyDOM.setURL('https://localhost:8080/test/');
+			const newWindow = window.open('/path/to/file.html');
+			expect(newWindow).toBeInstanceOf(Window);
+			expect(newWindow?.location.href).toBe('https://localhost:8080/path/to/file.html');
+		});
+
+		it('Opens a new window with the Browser API.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+
+			page.mainFrame.url = 'https://localhost:8080/test/';
+
+			const newWindow = page.mainFrame.window.open('/path/to/file.html');
+
+			expect(browser.defaultContext.pages.length).toBe(2);
+			expect(browser.defaultContext.pages[0]).toBe(page);
+			expect(browser.defaultContext.pages[1].mainFrame.window).toBe(newWindow);
+			expect(browser.defaultContext.pages[1].mainFrame.url).toBe(
+				'https://localhost:8080/path/to/file.html'
+			);
+
+			newWindow?.close();
+
+			expect(browser.defaultContext.pages.length).toBe(1);
+			expect(browser.defaultContext.pages[0]).toBe(page);
+			expect(newWindow?.closed).toBe(true);
+		});
+	});
 });

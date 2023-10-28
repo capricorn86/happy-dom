@@ -48,6 +48,45 @@ export default class CrossOriginWindow extends EventTarget implements ICrossOrig
 	}
 
 	/**
+	 * Returns the opener.
+	 *
+	 * @returns Opener.
+	 */
+	public get opener(): IWindow | ICrossOriginWindow | null {
+		return this.#targetWindow.opener;
+	}
+
+	/**
+	 * Returns the closed state.
+	 *
+	 * @returns Closed state.
+	 */
+	public get closed(): boolean {
+		return this.#targetWindow.closed;
+	}
+
+	/**
+	 * Shifts focus away from the window.
+	 */
+	public blur(): void {
+		this.#targetWindow.blur();
+	}
+
+	/**
+	 * Gives focus to the window.
+	 */
+	public focus(): void {
+		this.#targetWindow.focus();
+	}
+
+	/**
+	 * Closes the window.
+	 */
+	public close(): void {
+		this.#targetWindow.close();
+	}
+
+	/**
 	 * Safely enables cross-origin communication between Window objects; e.g., between a page and a pop-up that it spawned, or between a page and an iframe embedded within it.
 	 *
 	 * @param message Message.

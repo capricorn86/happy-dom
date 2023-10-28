@@ -1,7 +1,7 @@
 import IAttr from '../attr/IAttr.js';
 import Element from '../element/Element.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
-import HTMLIframePageLoader from './HTMLIframePageLoader.js';
+import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
 
 /**
  * Named Node Map.
@@ -9,14 +9,14 @@ import HTMLIframePageLoader from './HTMLIframePageLoader.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLIFrameElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	#pageLoader: HTMLIframePageLoader;
+	#pageLoader: HTMLIFrameElementPageLoader;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param ownerElement Owner element.
 	 */
-	constructor(ownerElement: Element, pageLoader: HTMLIframePageLoader) {
+	constructor(ownerElement: Element, pageLoader: HTMLIFrameElementPageLoader) {
 		super(ownerElement);
 		this.#pageLoader = pageLoader;
 	}

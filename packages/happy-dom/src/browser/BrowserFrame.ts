@@ -7,6 +7,7 @@ import Event from '../event/Event.js';
 import Location from '../location/Location.js';
 import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
 import WindowErrorUtility from '../window/WindowErrorUtility.js';
+import IResponse from '../fetch/types/IResponse.js';
 
 /**
  * Browser frame.
@@ -150,7 +151,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 *
 	 * @param url URL.
 	 */
-	public async goto(url: string): Promise<void> {
+	public async goto(url: string): Promise<IResponse | null> {
 		for (const frame of this.childFrames) {
 			frame.destroy();
 		}
@@ -165,19 +166,22 @@ export default class BrowserFrame implements IBrowserFrame {
 
 		this.window._readyStateManager.startTask();
 
+		let response: IResponse;
 		let responseText: string;
 
 		try {
-			const response = await this.window.fetch(url);
+			response = await this.window.fetch(url);
 			responseText = await response.text();
 		} catch (error) {
-			responseText = error.toString();
+			this.content = '';
 			this.window._readyStateManager.endTask();
 			WindowErrorUtility.dispatchError(this.window, error);
-			return;
+			return response || null;
 		}
 
 		this.window.document.write(responseText);
 		this.window._readyStateManager.endTask();
+
+		return response;
 	}
 }

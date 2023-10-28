@@ -2,6 +2,7 @@ import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import IWindow from '../../window/IWindow.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import IBrowserPage from './IBrowserPage.js';
+import IResponse from '../../fetch/types/IResponse.js';
 
 /**
  * Browser frame.
@@ -51,5 +52,5 @@ export default interface IBrowserFrame {
 	 *
 	 * @param url URL.
 	 */
-	goto(url: string): Promise<void>;
+	goto(url: string): Promise<IResponse | null>;
 }

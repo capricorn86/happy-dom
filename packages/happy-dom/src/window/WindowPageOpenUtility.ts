@@ -10,48 +10,41 @@ import ICrossOriginWindow from './ICrossOriginWindow.js';
 /**
  * Window page open handler.
  */
-export default class WindowPageOpener {
-	#browserFrame: IBrowserFrame;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param browserFrame Browser frame.
-	 */
-	constructor(browserFrame: IBrowserFrame) {
-		this.#browserFrame = browserFrame;
-	}
-
+export default class WindowPageOpenUtility {
 	/**
 	 * Opens a page.
 	 *
+	 * @param browserFrame Browser frame.
 	 * @param [options] Options.
 	 * @param [options.url] URL.
 	 * @param [options.target] Target.
 	 * @param [options.features] Window features.
 	 */
-	public openPage(options?: {
-		url?: string;
-		target?: string;
-		features?: string;
-	}): IWindow | ICrossOriginWindow | null {
+	public static openPage(
+		browserFrame: IBrowserFrame,
+		options?: {
+			url?: string;
+			target?: string;
+			features?: string;
+		}
+	): IWindow | ICrossOriginWindow | null {
 		const features = this.getWindowFeatures(options?.features || '');
 		const url = options?.url || 'about:blank';
 		const target = options?.target !== undefined ? String(options.target) : null;
-		const newPage = this.#browserFrame.page.context.newPage();
+		const newPage = browserFrame.page.context.newPage();
 		const newWindow = <Window>newPage.mainFrame.window;
-		const originURL = this.#browserFrame.window.location;
+		const originURL = browserFrame.window.location;
 		const targetURL = new URL(url, originURL);
 		const isCORS = FetchCORSUtility.isCORS(originURL, targetURL);
 
 		newPage.mainFrame.url = url;
 
-		(<string>newWindow.document.referrer) = !features.noreferrer ? this.#browserFrame.url : '';
+		(<string>newWindow.document.referrer) = !features.noreferrer ? browserFrame.url : '';
 
 		if (!features.noopener) {
 			(<IWindow | ICrossOriginWindow>newWindow.opener) = isCORS
-				? new CrossOriginWindow(this.#browserFrame.window)
-				: this.#browserFrame.window;
+				? new CrossOriginWindow(browserFrame.window)
+				: browserFrame.window;
 		}
 
 		if (target) {
@@ -73,8 +66,8 @@ export default class WindowPageOpener {
 		}
 
 		if (url.startsWith('javascript:')) {
-			if (!this.#browserFrame.page.context.browser.settings.disableJavaScriptEvaluation) {
-				if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
+			if (!browserFrame.page.context.browser.settings.disableJavaScriptEvaluation) {
+				if (browserFrame.page.context.browser.settings.disableErrorCapturing) {
 					newWindow.eval(url.replace('javascript:', ''));
 				} else {
 					WindowErrorUtility.captureError(newWindow, () =>
@@ -105,7 +98,7 @@ export default class WindowPageOpener {
 			return null;
 		}
 
-		return isCORS ? new CrossOriginWindow(newWindow, this.#browserFrame.window) : newWindow;
+		return isCORS ? new CrossOriginWindow(newWindow, browserFrame.window) : newWindow;
 	}
 
 	/**
@@ -114,7 +107,7 @@ export default class WindowPageOpener {
 	 * @param features Window features string.
 	 * @returns Window features.
 	 */
-	private getWindowFeatures(features: string): {
+	private static getWindowFeatures(features: string): {
 		popup: boolean;
 		width: number;
 		height: number;

@@ -1,29 +1,25 @@
 import IBrowserSettings from '../browser/types/IBrowserSettings.js';
-import IWindow from './IWindow.js';
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import BrowserSettingsFactory from '../browser/BrowserSettingsFactory.js';
 import IReadOnlyBrowserSettings from '../browser/types/IReadOnlyBrowserSettings.js';
 import IBrowserPageViewport from '../browser/types/IBrowserPageViewport.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import DetachedBrowserFrame from '../browser/detached-browser/DetachedBrowserFrame.js';
 
 /**
  * API for detached windows to be able to access features of the owner window.
  */
 export default class HappyDOMWindowAPI {
-	#window: IWindow;
 	#browserFrame?: IBrowserFrame;
 	#settings: IBrowserSettings | null = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param options Options.
-	 * @param options.window Owner window.
-	 * @param options.browserFrame Browser frame.
+	 * @param browserFrame Browser frame.
 	 */
-	constructor(options: { window: IWindow; browserFrame: IBrowserFrame }) {
-		this.#window = options.window;
-		this.#browserFrame = options.browserFrame;
+	constructor(browserFrame: IBrowserFrame) {
+		this.#browserFrame = browserFrame;
 	}
 
 	/**
@@ -86,12 +82,18 @@ export default class HappyDOMWindowAPI {
 	}
 
 	/**
-	 * Sets the URL.
+	 * Sets the URL on a detached window.
+	 * It will throw an exception if the window is not detached as a script could potentially use this method to bypass CORS.
 	 *
 	 * @param url URL.
 	 */
 	public setURL(url: string): void {
-		this.#window.location.href = url;
+		if (!(this.#browserFrame instanceof DetachedBrowserFrame)) {
+			throw new Error(
+				'Only detached browser frames can use the setURL() method for security reasons. Use the Browser API instead for setting URL.'
+			);
+		}
+		this.#browserFrame.url = url;
 	}
 
 	/**

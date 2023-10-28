@@ -405,6 +405,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly scrollX: number;
 	readonly scrollY: number;
 	readonly crypto: typeof webcrypto;
+	readonly closed: boolean;
 
 	/**
 	 * Returns an object containing the values of all CSS properties of an element.
@@ -438,6 +439,16 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	scrollTo(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void;
 
 	/**
+	 * Shifts focus away from the window.
+	 */
+	blur(): void;
+
+	/**
+	 * Gives focus to the window.
+	 */
+	focus(): void;
+
+	/**
 	 * Loads a specified resource into a new or existing browsing context (that is, a tab, a window, or an iframe) under a specified name.
 	 *
 	 * @param [url] URL.
@@ -445,6 +456,11 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	 * @param [windowFeatures] Window features.
 	 */
 	open(url?: string, target?: string, windowFeatures?: string): IWindow | ICrossOriginWindow | null;
+
+	/**
+	 * Closes the window.
+	 */
+	close(): void;
 
 	/**
 	 * Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.

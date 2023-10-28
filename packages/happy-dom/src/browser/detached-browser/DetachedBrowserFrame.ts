@@ -7,6 +7,8 @@ import Event from '../../event/Event.js';
 import Location from '../../location/Location.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
+import WindowErrorUtility from '../../window/WindowErrorUtility.js';
+import IResponse from '../../fetch/types/IResponse.js';
 
 /**
  * Browser frame.
@@ -102,6 +104,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		for (const frame of this.childFrames) {
 			frame.destroy();
 		}
+		(<boolean>this.window.closed) = true;
 		WindowBrowserSettingsReader.removeSettings(this.window);
 		this._asyncTaskManager.destroy();
 		(<DetachedBrowserPage>this.page) = null;
@@ -149,7 +152,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 *
 	 * @param url URL.
 	 */
-	public async goto(url: string): Promise<void> {
+	public async goto(url: string): Promise<IResponse | null> {
 		await Promise.all(this.childFrames.map((frame) => frame.destroy()));
 
 		this._asyncTaskManager.abortAll();
@@ -162,11 +165,22 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 
 		this.url = url;
 
-		const response = await this.window.fetch(url);
-		const responseText = await response.text();
+		let response: IResponse;
+		let responseText: string;
 
+		try {
+			response = await this.window.fetch(url);
+			responseText = await response.text();
+		} catch (error) {
+			this.content = '';
+			readyStateManager.endTask();
+			WindowErrorUtility.dispatchError(this.window, error);
+			return response || null;
+		}
+
+		this.window.document.write(responseText);
 		readyStateManager.endTask();
 
-		this.content = responseText;
+		return response;
 	}
 }
