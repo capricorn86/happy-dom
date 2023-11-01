@@ -64,6 +64,7 @@ export default class HTMLScriptElementUtility {
 				}
 			} else {
 				element.ownerDocument['_currentScript'] = element;
+				code = '//# sourceURL=' + src + '\n' + code;
 				if (browserSettings.disableErrorCapturing) {
 					element.ownerDocument._defaultView.eval(code);
 				} else {

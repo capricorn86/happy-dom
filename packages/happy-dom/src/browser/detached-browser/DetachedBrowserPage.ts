@@ -4,7 +4,8 @@ import DetachedBrowserFrame from './DetachedBrowserFrame.js';
 import DetachedBrowserContext from './DetachedBrowserContext.js';
 import VirtualConsole from '../../console/VirtualConsole.js';
 import IBrowserPage from '../types/IBrowserPage.js';
-import IWindow from '../../window/IWindow.js';
+import BrowserFrameUtility from '../BrowserFrameUtility.js';
+import Event from '../../event/Event.js';
 
 /**
  * Detached browser page.
@@ -18,14 +19,12 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	/**
 	 * Constructor.
 	 *
-	 * @param windowClass Window class.
-	 * @param window Window.
 	 * @param context Browser context.
 	 */
-	constructor(windowClass: new () => IWindow, window: IWindow, context: DetachedBrowserContext) {
+	constructor(context: DetachedBrowserContext) {
 		this.context = context;
 		this.console = context.browser.console ?? new VirtualConsole(this.virtualConsolePrinter);
-		this.mainFrame = new DetachedBrowserFrame(windowClass, window, this);
+		this.mainFrame = new DetachedBrowserFrame(this);
 	}
 
 	/**
@@ -46,14 +45,26 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	 * Aborts all ongoing operations and destroys the page.
 	 */
 	public close(): void {
-		this.mainFrame.destroy();
+		if (!this.mainFrame) {
+			return;
+		}
+
+		BrowserFrameUtility.closeFrame(this.mainFrame);
+
 		const index = this.context.pages.indexOf(this);
 		if (index !== -1) {
 			this.context.pages.splice(index, 1);
 		}
+
+		const context = this.context;
+
 		(<VirtualConsolePrinter | null>this.virtualConsolePrinter) = null;
 		(<DetachedBrowserFrame | null>this.mainFrame) = null;
 		(<DetachedBrowserContext | null>this.context) = null;
+
+		if (context.pages[0] === this) {
+			context.close();
+		}
 	}
 
 	/**
@@ -78,7 +89,22 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	 * @param viewport Viewport.
 	 */
 	public setViewport(viewport: IBrowserPageViewport): void {
-		this.mainFrame.setViewport(viewport);
+		if (
+			(viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) ||
+			(viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height)
+		) {
+			if (viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) {
+				(<number>this.mainFrame.window.innerWidth) = viewport.width;
+				(<number>this.mainFrame.window.outerWidth) = viewport.width;
+			}
+
+			if (viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height) {
+				(<number>this.mainFrame.window.innerHeight) = viewport.height;
+				(<number>this.mainFrame.window.outerHeight) = viewport.height;
+			}
+
+			this.mainFrame.window.dispatchEvent(new Event('resize'));
+		}
 	}
 
 	/**

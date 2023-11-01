@@ -10,6 +10,7 @@ import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js'
 import IResponse from '../../fetch/types/IResponse.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import BrowserFrameUtility from '../../browser/BrowserFrameUtility.js';
 
 /**
  * HTML Iframe page loader.
@@ -45,7 +46,7 @@ export default class HTMLIFrameElementPageLoader {
 	public loadPage(): void {
 		if (!this.#element.isConnected) {
 			if (this.#browserIFrame) {
-				this.#browserIFrame.destroy();
+				BrowserFrameUtility.closeFrame(this.#browserIFrame);
 				this.#browserIFrame = null;
 			}
 			this.#contentWindowContainer.window = null;
@@ -55,7 +56,7 @@ export default class HTMLIFrameElementPageLoader {
 		let url = this.#element.src || 'about:blank';
 
 		if (url !== 'about:blank' && !url.startsWith('javascript:')) {
-			url = new URL(this.#element.src, this.#browserParentFrame.window.location.href).href;
+			url = new URL(this.#element.src, this.#browserParentFrame.window.location).href;
 		}
 
 		if (this.#browserIFrame && url === this.#browserIFrame.url) {
@@ -63,7 +64,7 @@ export default class HTMLIFrameElementPageLoader {
 		}
 
 		if (this.#browserIFrame) {
-			this.#browserIFrame.destroy();
+			BrowserFrameUtility.closeFrame(this.#browserIFrame);
 			this.#browserIFrame = null;
 		}
 
@@ -81,7 +82,7 @@ export default class HTMLIFrameElementPageLoader {
 		}
 
 		const window = this.#element.ownerDocument._defaultView;
-		this.#browserIFrame = this.#browserParentFrame.newFrame();
+		this.#browserIFrame = BrowserFrameUtility.newFrame(this.#browserParentFrame);
 
 		if (url === 'about:blank' || url.startsWith('javascript:')) {
 			(<IWindow>this.#browserIFrame.window.parent) = window;
@@ -92,11 +93,12 @@ export default class HTMLIFrameElementPageLoader {
 				url !== 'about:blank' &&
 				!this.#browserParentFrame.page.context.browser.settings.disableJavaScriptEvaluation
 			) {
+				const code = '//# sourceURL=about:blank\n' + url.replace('javascript:', '');
 				if (this.#browserParentFrame.page.context.browser.settings.disableErrorCapturing) {
-					this.#browserIFrame.window.eval(url.replace('javascript:', ''));
+					this.#browserIFrame.window.eval(code);
 				} else {
 					WindowErrorUtility.captureError(this.#browserIFrame.window, () =>
-						this.#browserIFrame.window.eval(url.replace('javascript:', ''))
+						this.#browserIFrame.window.eval(code)
 					);
 				}
 			}
@@ -154,7 +156,7 @@ export default class HTMLIFrameElementPageLoader {
 	 */
 	public unloadPage(): void {
 		if (this.#browserIFrame) {
-			this.#browserIFrame.destroy();
+			BrowserFrameUtility.closeFrame(this.#browserIFrame);
 			this.#browserIFrame = null;
 		}
 		this.#contentWindowContainer.window = null;

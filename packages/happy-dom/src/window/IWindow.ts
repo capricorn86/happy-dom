@@ -387,7 +387,6 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly parent: IWindow | ICrossOriginWindow;
 	readonly window: IWindow;
 	readonly globalThis: IWindow;
-	readonly name: string;
 	readonly screen: Screen;
 	readonly innerWidth: number;
 	readonly innerHeight: number;
@@ -406,6 +405,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly scrollY: number;
 	readonly crypto: typeof webcrypto;
 	readonly closed: boolean;
+	name: string;
 
 	/**
 	 * Returns an object containing the values of all CSS properties of an element.

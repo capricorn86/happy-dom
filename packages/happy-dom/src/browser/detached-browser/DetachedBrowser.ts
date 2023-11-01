@@ -5,6 +5,7 @@ import BrowserSettingsFactory from '../BrowserSettingsFactory.js';
 import DetachedBrowserPage from './DetachedBrowserPage.js';
 import IBrowser from '../types/IBrowser.js';
 import IWindow from '../../window/IWindow.js';
+import IBrowserFrame from '../types/IBrowserFrame.js';
 
 /**
  * Detached browser.
@@ -13,6 +14,12 @@ export default class DetachedBrowser implements IBrowser {
 	public readonly contexts: DetachedBrowserContext[];
 	public readonly settings: IBrowserSettings;
 	public readonly console: Console | null;
+	public readonly detachedWindowClass: new (options: {
+		browserFrame: IBrowserFrame;
+		console: Console;
+		url?: string;
+	}) => IWindow;
+	public readonly detachedWindow: IWindow;
 
 	/**
 	 * Constructor.
@@ -28,9 +35,11 @@ export default class DetachedBrowser implements IBrowser {
 		window: IWindow,
 		options?: { settings?: IOptionalBrowserSettings; console?: Console }
 	) {
+		this.detachedWindowClass = windowClass;
+		this.detachedWindow = window;
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
-		this.contexts = [new DetachedBrowserContext(windowClass, window, this)];
+		this.contexts = [new DetachedBrowserContext(this)];
 	}
 
 	/**
@@ -53,6 +62,9 @@ export default class DetachedBrowser implements IBrowser {
 			context.close();
 		}
 		(<DetachedBrowserContext[]>this.contexts) = [];
+		(<Console | null>this.console) = null;
+		(<IWindow | null>this.detachedWindow) = null;
+		(<new () => IWindow | null>this.detachedWindowClass) = null;
 	}
 
 	/**

@@ -1,8 +1,8 @@
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import IWindow from '../../window/IWindow.js';
-import IBrowserPageViewport from './IBrowserPageViewport.js';
 import IBrowserPage from './IBrowserPage.js';
 import IResponse from '../../fetch/types/IResponse.js';
+import IGoToOptions from './IGoToOptions.js';
 
 /**
  * Browser frame.
@@ -29,28 +29,10 @@ export default interface IBrowserFrame {
 	abort(): void;
 
 	/**
-	 * Aborts all ongoing operations and destroys the frame.
-	 */
-	destroy(): void;
-
-	/**
-	 * Sets the viewport.
-	 *
-	 * @param viewport Viewport.
-	 */
-	setViewport(viewport: IBrowserPageViewport): void;
-
-	/**
-	 * Creates a new frame.
-	 *
-	 * @returns Frame.
-	 */
-	newFrame(): IBrowserFrame;
-
-	/**
 	 * Go to a page.
 	 *
 	 * @param url URL.
+	 * @param [options] Options.
 	 */
-	goto(url: string): Promise<IResponse | null>;
+	goto(url: string, options?: IGoToOptions): Promise<IResponse | null>;
 }

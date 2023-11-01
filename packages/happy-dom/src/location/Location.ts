@@ -2,11 +2,12 @@ import URL from '../url/URL.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import DetachedBrowserFrame from '../browser/detached-browser/DetachedBrowserFrame.js';
 import WindowErrorUtility from '../window/WindowErrorUtility.js';
+import DetachedBrowserFrame from '../browser/detached-browser/DetachedBrowserFrame.js';
+import DocumentReadyStateManager from '../nodes/document/DocumentReadyStateManager.js';
 
 /**
- *
+ * Location.
  */
 export default class Location extends URL {
 	#browserFrame: IBrowserFrame | null;
@@ -31,13 +32,25 @@ export default class Location extends URL {
 				this.#browserFrame &&
 				!this.#browserFrame.page.context.browser.settings.disableJavaScriptEvaluation
 			) {
-				if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
-					this.#browserFrame.window.eval(value.replace('javascript:', ''));
-				} else {
-					WindowErrorUtility.captureError(this.#browserFrame.window, () =>
-						this.#browserFrame.window.eval(value.replace('javascript:', ''))
-					);
-				}
+				const readyStateManager = (<{ _readyStateManager: DocumentReadyStateManager }>(
+					(<unknown>this.#browserFrame.window)
+				))._readyStateManager;
+
+				readyStateManager.startTask();
+
+				this.#browserFrame.page.mainFrame.window.setTimeout(() => {
+					const code = '//# sourceURL=' + super.href + '\n' + value.replace('javascript:', '');
+
+					if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
+						this.#browserFrame.window.eval(code);
+					} else {
+						WindowErrorUtility.captureError(this.#browserFrame.window, () =>
+							this.#browserFrame.window.eval(code)
+						);
+					}
+
+					readyStateManager.endTask();
+				});
 			}
 			return;
 		}
@@ -59,9 +72,11 @@ export default class Location extends URL {
 		}
 
 		// When using the Window instance directly and not via the Browser API we should not navigate the browser frame.
-		if (!(this.#browserFrame instanceof DetachedBrowserFrame)) {
-			this.#browserFrame?.goto(value);
+		if (this.#browserFrame instanceof DetachedBrowserFrame) {
+			return;
 		}
+
+		this.#browserFrame?.goto(value);
 	}
 
 	/**

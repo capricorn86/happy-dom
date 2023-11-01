@@ -1,7 +1,6 @@
 import DetachedBrowser from './DetachedBrowser.js';
 import DetachedBrowserPage from './DetachedBrowserPage.js';
 import IBrowserContext from '../types/IBrowserContext.js';
-import IWindow from '../../window/IWindow.js';
 
 /**
  * Detached browser context.
@@ -9,27 +8,32 @@ import IWindow from '../../window/IWindow.js';
 export default class DetachedBrowserContext implements IBrowserContext {
 	public readonly pages: DetachedBrowserPage[];
 	public readonly browser: DetachedBrowser;
-	#windowClass: new () => IWindow;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param windowClass Window class.
-	 * @param window Window.
 	 * @param browser Browser.
 	 */
-	constructor(windowClass: new () => IWindow, window: IWindow, browser: DetachedBrowser) {
-		this.#windowClass = windowClass;
+	constructor(browser: DetachedBrowser) {
 		this.browser = browser;
-		this.pages = [new DetachedBrowserPage(windowClass, window, this)];
+		this.pages = [new DetachedBrowserPage(this)];
 	}
 
 	/**
 	 * Aborts all ongoing operations and destroys the context.
 	 */
 	public close(): void {
+		if (!this.browser) {
+			return;
+		}
 		for (const page of this.pages) {
 			page.close();
+		}
+		const browser = this.browser;
+		(<DetachedBrowserPage[]>this.pages) = [];
+		(<DetachedBrowser | null>this.browser) = null;
+		if (browser.defaultContext === this) {
+			browser.close();
 		}
 	}
 
@@ -57,7 +61,7 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	 * @returns Page.
 	 */
 	public newPage(): DetachedBrowserPage {
-		const page = new DetachedBrowserPage(this.#windowClass, new this.#windowClass(), this);
+		const page = new DetachedBrowserPage(this);
 		this.pages.push(page);
 		return page;
 	}

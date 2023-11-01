@@ -195,11 +195,14 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 				) {
 					this.ownerDocument['_currentScript'] = this;
 
+					const code =
+						`//# sourceURL=${this.ownerDocument._defaultView.location.href}\n` + textContent;
+
 					if (browserSettings.disableErrorCapturing) {
-						this.ownerDocument._defaultView.eval(textContent);
+						this.ownerDocument._defaultView.eval(code);
 					} else {
 						WindowErrorUtility.captureError(this.ownerDocument._defaultView, () =>
-							this.ownerDocument._defaultView.eval(textContent)
+							this.ownerDocument._defaultView.eval(code)
 						);
 					}
 

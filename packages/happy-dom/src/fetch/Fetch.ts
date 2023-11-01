@@ -89,7 +89,7 @@ export default class Fetch {
 	 */
 	public send(): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
-			const taskID = this.asyncTaskManager.startTask(() => this.abort());
+			const taskID = this.asyncTaskManager.startTask(() => this.onAsyncTaskManagerAbort());
 
 			if (this.resolve) {
 				throw new Error('Fetch already sent.');
@@ -206,6 +206,23 @@ export default class Fetch {
 				DOMExceptionNameEnum.networkError
 			)
 		);
+	}
+
+	/**
+	 * Triggered when the async task manager aborts.
+	 */
+	private onAsyncTaskManagerAbort(): void {
+		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+
+		if (this.request.body) {
+			this.request.body.destroy(error);
+		}
+
+		if (!this.response || !this.response.body) {
+			return;
+		}
+
+		this.response.body.emit('error', error);
 	}
 
 	/**

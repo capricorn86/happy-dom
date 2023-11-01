@@ -117,7 +117,7 @@ export default class HappyDOMWindowAPI {
 	 * @param viewport Viewport.
 	 */
 	public setViewport(viewport: IBrowserPageViewport): void {
-		this.#browserFrame.setViewport(viewport);
+		this.#browserFrame.page.setViewport(viewport);
 	}
 
 	/**

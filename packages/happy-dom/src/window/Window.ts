@@ -406,7 +406,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly parent: IWindow = this;
 	public readonly window: IWindow = this;
 	public readonly globalThis: IWindow = this;
-	public readonly name: string = '';
 	public readonly screen: Screen;
 	public readonly devicePixelRatio = 1;
 	public readonly sessionStorage: Storage;
@@ -422,6 +421,8 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly screenY: number = 0;
 	public readonly crypto = webcrypto;
 	public readonly closed = false;
+	public readonly console: Console;
+	public name: string = '';
 
 	// Node.js Globals
 	public Array: typeof Array;
@@ -543,6 +544,7 @@ export default class Window extends EventTarget implements IWindow {
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
+		this.console = this.#browserFrame.page.console;
 		this.happyDOM = new HappyDOMWindowAPI(this.#browserFrame);
 
 		if (options) {
@@ -723,15 +725,6 @@ export default class Window extends EventTarget implements IWindow {
 	}
 
 	/**
-	 * Returns console.
-	 *
-	 * @returns Console.
-	 */
-	public get console(): Console {
-		return this.#browserFrame.page.console;
-	}
-
-	/**
 	 * The number of pixels that the document is currently scrolled horizontally
 	 *
 	 * @returns number
@@ -883,8 +876,6 @@ export default class Window extends EventTarget implements IWindow {
 	public close(): void {
 		if (this.#browserFrame.page.mainFrame === this.#browserFrame) {
 			this.#browserFrame.page.close();
-		} else {
-			this.#browserFrame.destroy();
 		}
 	}
 

@@ -936,11 +936,12 @@ export default class Element extends Node implements IElement {
 			const attribute = this.getAttribute('on' + event.type);
 
 			if (attribute && !event._immediatePropagationStopped) {
+				const code = `//# sourceURL=${this.ownerDocument._defaultView.location.href}\n${attribute}`;
 				if (browserSettings.disableErrorCapturing) {
-					this.ownerDocument._defaultView.eval(attribute);
+					this.ownerDocument._defaultView.eval(code);
 				} else {
 					WindowErrorUtility.captureError(this.ownerDocument._defaultView, () =>
-						this.ownerDocument._defaultView.eval(attribute)
+						this.ownerDocument._defaultView.eval(code)
 					);
 				}
 			}

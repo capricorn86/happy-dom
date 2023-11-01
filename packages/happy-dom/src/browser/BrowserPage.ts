@@ -4,6 +4,8 @@ import BrowserFrame from './BrowserFrame.js';
 import BrowserContext from './BrowserContext.js';
 import VirtualConsole from '../console/VirtualConsole.js';
 import IBrowserPage from './types/IBrowserPage.js';
+import BrowserFrameUtility from './BrowserFrameUtility.js';
+import Event from '../event/Event.js';
 
 /**
  * Browser page.
@@ -43,11 +45,17 @@ export default class BrowserPage implements IBrowserPage {
 	 * Aborts all ongoing operations and destroys the page.
 	 */
 	public close(): void {
-		this.mainFrame.destroy();
+		if (!this.mainFrame) {
+			return;
+		}
+
+		BrowserFrameUtility.closeFrame(this.mainFrame);
+
 		const index = this.context.pages.indexOf(this);
 		if (index !== -1) {
 			this.context.pages.splice(index, 1);
 		}
+
 		(<VirtualConsolePrinter | null>this.virtualConsolePrinter) = null;
 		(<BrowserFrame | null>this.mainFrame) = null;
 		(<BrowserContext | null>this.context) = null;
@@ -75,9 +83,23 @@ export default class BrowserPage implements IBrowserPage {
 	 * @param viewport Viewport.
 	 */
 	public setViewport(viewport: IBrowserPageViewport): void {
-		this.mainFrame.setViewport(viewport);
-	}
+		if (
+			(viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) ||
+			(viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height)
+		) {
+			if (viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) {
+				(<number>this.mainFrame.window.innerWidth) = viewport.width;
+				(<number>this.mainFrame.window.outerWidth) = viewport.width;
+			}
 
+			if (viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height) {
+				(<number>this.mainFrame.window.innerHeight) = viewport.height;
+				(<number>this.mainFrame.window.outerHeight) = viewport.height;
+			}
+
+			this.mainFrame.window.dispatchEvent(new Event('resize'));
+		}
+	}
 	/**
 	 * Go to a page.
 	 *

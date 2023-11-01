@@ -31,6 +31,9 @@ import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
 import IHTMLDialogElement from '../../src/nodes/html-dialog-element/IHTMLDialogElement.js';
 import Browser from '../../src/browser/Browser.js';
+import ICrossOriginWindow from '../../src/window/ICrossOriginWindow.js';
+import CrossOriginWindow from '../../src/window/CrossOriginWindow.js';
+import BrowserFrameUtility from '../../src/browser/BrowserFrameUtility.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -1350,42 +1353,31 @@ describe('Window', () => {
 			});
 		});
 
-		it('Triggers "error" event if there are problems loading resources.', async () => {
+		it('Triggers "error" when an error occurs in the executed code.', async () => {
 			await new Promise((resolve) => {
-				const cssURL = '/path/to/file.css';
-				const jsURL = '/path/to/file.js';
 				const errorEvents: ErrorEvent[] = [];
-
-				vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-					async (_document: IDocument, url: string) => {
-						throw new Error(url);
-					}
-				);
 
 				window.addEventListener('error', (event) => {
 					errorEvents.push(<ErrorEvent>event);
 				});
 
 				const script = <IHTMLScriptElement>document.createElement('script');
-				script.async = true;
-				script.src = jsURL;
-
-				const link = <IHTMLLinkElement>document.createElement('link');
-				link.href = cssURL;
-				link.rel = 'stylesheet';
-
+				script.innerText = 'throw new Error("Script error");';
 				document.body.appendChild(script);
-				document.body.appendChild(link);
+
+				window.setTimeout(() => {
+					throw new Error('Timeout error');
+				});
 
 				setTimeout(() => {
 					expect(errorEvents.length).toBe(2);
 					expect(errorEvents[0].target).toBe(window);
-					expect((<Error>errorEvents[0].error).message).toBe(jsURL);
+					expect((<Error>errorEvents[0].error).message).toBe('Script error');
 					expect(errorEvents[1].target).toBe(window);
-					expect((<Error>errorEvents[1].error).message).toBe(cssURL);
+					expect((<Error>errorEvents[1].error).message).toBe('Timeout error');
 
 					resolve(null);
-				}, 0);
+				}, 10);
 			});
 		});
 	});
@@ -1456,34 +1448,35 @@ describe('Window', () => {
 	describe('postMessage()', () => {
 		it('Posts a message.', async () => {
 			await new Promise((resolve) => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				const frame = BrowserFrameUtility.newFrame(page.mainFrame);
+
 				const message = 'test';
-				const parentOrigin = 'https://localhost:8080';
-				const parent = new Window({
-					url: parentOrigin
-				});
 				let triggeredEvent: MessageEvent | null = null;
 
-				(<Window>window.parent) = parent;
+				page.mainFrame.url = 'https://localhost:8080/test/';
 
-				window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
-				window.postMessage(message);
+				frame.url = 'https://localhost:8080/iframe.html';
+				frame.window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
+				frame.window.postMessage(message);
 
 				expect(triggeredEvent).toBe(null);
 
 				setTimeout(() => {
 					expect((<MessageEvent>triggeredEvent).data).toBe(message);
-					expect((<MessageEvent>triggeredEvent).origin).toBe(parentOrigin);
-					expect((<MessageEvent>triggeredEvent).source).toBe(parent);
+					expect((<MessageEvent>triggeredEvent).origin).toBe('https://localhost:8080');
+					expect((<MessageEvent>triggeredEvent).source).toBe(page.mainFrame.window);
 					expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
 
 					triggeredEvent = null;
-					window.postMessage(message, '*');
+					frame.window.postMessage(message, '*');
 					expect(triggeredEvent).toBe(null);
 
 					setTimeout(() => {
 						expect((<MessageEvent>triggeredEvent).data).toBe(message);
-						expect((<MessageEvent>triggeredEvent).origin).toBe(parentOrigin);
-						expect((<MessageEvent>triggeredEvent).source).toBe(parent);
+						expect((<MessageEvent>triggeredEvent).origin).toBe('https://localhost:8080');
+						expect((<MessageEvent>triggeredEvent).source).toBe(page.mainFrame.window);
 						expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
 						resolve(null);
 					}, 10);
@@ -1537,38 +1530,145 @@ describe('Window', () => {
 
 	describe('open()', () => {
 		it('Opens a new window without URL.', () => {
-			const newWindow = window.open();
+			const newWindow = <IWindow>window.open();
 			expect(newWindow).toBeInstanceOf(Window);
-			expect(newWindow?.location.href).toBe('about:blank');
+			expect(newWindow.location.href).toBe('about:blank');
 		});
 
-		it('Opens a new window with URL.', () => {
+		it('Opens a URL with Javascript.', async () => {
+			const newWindow = <IWindow>window.open(`javascript:document.write('Test');`);
+			expect(newWindow).toBeInstanceOf(Window);
+			expect(newWindow.location.href).toBe('about:blank');
+			await new Promise((resolve) => setTimeout(resolve, 1));
+			expect(newWindow.document.body.innerHTML).toBe('Test');
+		});
+
+		it('Dispatches error event when the Javascript code is invalid.', async () => {
+			const newWindow = <IWindow>window.open(`javascript:document.write(test);`);
+			let errorEvent: ErrorEvent | null = null;
+			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+			expect(newWindow).toBeInstanceOf(Window);
+			expect(newWindow.location.href).toBe('about:blank');
+			await new Promise((resolve) => setTimeout(resolve, 1));
+			expect(String((<ErrorEvent>(<unknown>errorEvent)).error)).toBe(
+				'ReferenceError: test is not defined'
+			);
+		});
+
+		it('Opens a new window with URL.', async () => {
+			const html = '<html><body>Test</body></html>';
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = <IRequest>this.request;
+				return Promise.resolve(<IResponse>{
+					text: () => new Promise((resolve) => setTimeout(() => resolve(html)))
+				});
+			});
+
 			window.happyDOM.setURL('https://localhost:8080/test/');
-			const newWindow = window.open('/path/to/file.html');
+
+			const newWindow = <IWindow>window.open('/path/to/file.html');
 			expect(newWindow).toBeInstanceOf(Window);
-			expect(newWindow?.location.href).toBe('https://localhost:8080/path/to/file.html');
+			expect(newWindow.location.href).toBe('https://localhost:8080/path/to/file.html');
+			expect((<IRequest>(<unknown>request)).url).toBe('https://localhost:8080/path/to/file.html');
+
+			await new Promise((resolve) => {
+				newWindow.addEventListener('load', () => {
+					expect(newWindow.document.body.innerHTML).toBe('Test');
+					resolve(null);
+				});
+			});
 		});
 
-		it('Opens a new window with the Browser API.', () => {
+		it('Sets width, height, top and left when popup is set as a feature.', () => {
+			const newWindow = <IWindow>(
+				window.open('', '', 'popup=yes,width=100,height=200,top=300,left=400')
+			);
+			expect(newWindow).toBeInstanceOf(Window);
+			expect(newWindow.innerWidth).toBe(100);
+			expect(newWindow.innerHeight).toBe(200);
+			expect(newWindow.screenLeft).toBe(400);
+			expect(newWindow.screenX).toBe(400);
+			expect(newWindow.screenTop).toBe(300);
+			expect(newWindow.screenY).toBe(300);
+		});
+
+		it(`Doesn't Sets width, height, top and left when popup is set as a feature.`, () => {
+			const newWindow = <IWindow>window.open('', '', 'width=100,height=200,top=300,left=400');
+			expect(newWindow).toBeInstanceOf(Window);
+			expect(newWindow.innerWidth).toBe(1024);
+			expect(newWindow.innerHeight).toBe(768);
+			expect(newWindow.screenLeft).toBe(0);
+			expect(newWindow.screenX).toBe(0);
+			expect(newWindow.screenTop).toBe(0);
+			expect(newWindow.screenY).toBe(0);
+		});
+
+		it('Sets the target as name on the Window instance.', () => {
+			const newWindow = <IWindow>window.open('', 'test');
+			expect(newWindow).toBeInstanceOf(Window);
+			expect(newWindow.name).toBe('test');
+		});
+
+		it(`Doesn't set opener if "noopener" has been specified as a feature without an URL.`, () => {
 			const browser = new Browser();
 			const page = browser.newPage();
+			const newWindow = <IWindow>page.mainFrame.window.open('', '', 'noopener');
+			expect(newWindow).toBe(null);
+			expect(browser.defaultContext.pages[1].mainFrame.window.opener).toBe(null);
+		});
 
-			page.mainFrame.url = 'https://localhost:8080/test/';
+		it(`Doesn't set opener if "noopener" has been specified as a feature when opening an URL.`, () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://www.github.com/happy-dom/';
+			const newWindow = <IWindow>page.mainFrame.window.open('/test/', '', 'noopener');
+			expect(newWindow).toBe(null);
+			expect(browser.defaultContext.pages[1].mainFrame.window.opener).toBe(null);
+		});
 
-			const newWindow = page.mainFrame.window.open('/path/to/file.html');
+		it('Opens a new window with a CORS URL.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const html = '<html><body>Test</body></html>';
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = <IRequest>this.request;
+				return Promise.resolve(<IResponse>{
+					text: () => new Promise((resolve) => setTimeout(() => resolve(html)))
+				});
+			});
+
+			page.mainFrame.url = 'https://www.github.com/happy-dom/';
+
+			const newWindow = <ICrossOriginWindow>(
+				page.mainFrame.window.open('https://developer.mozilla.org/en-US/docs/Web/API/Window/open')
+			);
 
 			expect(browser.defaultContext.pages.length).toBe(2);
 			expect(browser.defaultContext.pages[0]).toBe(page);
-			expect(browser.defaultContext.pages[1].mainFrame.window).toBe(newWindow);
+			expect(browser.defaultContext.pages[1].mainFrame.window === newWindow).toBe(false);
 			expect(browser.defaultContext.pages[1].mainFrame.url).toBe(
-				'https://localhost:8080/path/to/file.html'
+				'https://developer.mozilla.org/en-US/docs/Web/API/Window/open'
 			);
+			expect(newWindow instanceof CrossOriginWindow).toBe(true);
 
-			newWindow?.close();
+			await new Promise((resolve) => {
+				browser.defaultContext.pages[1].mainFrame.window.addEventListener('load', () => {
+					expect(browser.defaultContext.pages[1].mainFrame.content).toBe(
+						'<html><head></head><body>Test</body></html>'
+					);
 
-			expect(browser.defaultContext.pages.length).toBe(1);
-			expect(browser.defaultContext.pages[0]).toBe(page);
-			expect(newWindow?.closed).toBe(true);
+					newWindow.close();
+
+					expect(browser.defaultContext.pages.length).toBe(1);
+					expect(browser.defaultContext.pages[0]).toBe(page);
+					expect(newWindow.closed).toBe(true);
+					resolve(null);
+				});
+			});
 		});
 	});
 });
