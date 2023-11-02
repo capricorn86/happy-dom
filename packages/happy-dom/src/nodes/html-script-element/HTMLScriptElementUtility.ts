@@ -39,13 +39,13 @@ export default class HTMLScriptElementUtility {
 			return;
 		}
 
+		let code: string | null = null;
+		let error: Error | null = null;
+
 		if (async) {
 			(<{ _readyStateManager: DocumentReadyStateManager }>(
 				(<unknown>element.ownerDocument._defaultView)
 			))._readyStateManager.startTask();
-
-			let code: string | null = null;
-			let error: Error | null = null;
 
 			try {
 				code = await ResourceFetch.fetch(element.ownerDocument, src);
@@ -56,52 +56,31 @@ export default class HTMLScriptElementUtility {
 			(<{ _readyStateManager: DocumentReadyStateManager }>(
 				(<unknown>element.ownerDocument._defaultView)
 			))._readyStateManager.endTask();
-
-			if (error) {
-				WindowErrorUtility.dispatchError(element, error);
-				if (browserSettings.disableErrorCapturing) {
-					throw error;
-				}
-			} else {
-				element.ownerDocument['_currentScript'] = element;
-				code = '//# sourceURL=' + src + '\n' + code;
-				if (browserSettings.disableErrorCapturing) {
-					element.ownerDocument._defaultView.eval(code);
-				} else {
-					WindowErrorUtility.captureError(element.ownerDocument._defaultView, () =>
-						element.ownerDocument._defaultView.eval(code)
-					);
-				}
-				element.ownerDocument['_currentScript'] = null;
-				element.dispatchEvent(new Event('load'));
-			}
 		} else {
-			let code: string | null = null;
-			let error: Error | null = null;
-
 			try {
 				code = ResourceFetch.fetchSync(element.ownerDocument, src);
 			} catch (e) {
 				error = e;
 			}
+		}
 
-			if (error) {
-				WindowErrorUtility.dispatchError(element, error);
-				if (browserSettings.disableErrorCapturing) {
-					throw error;
-				}
-			} else {
-				element.ownerDocument['_currentScript'] = element;
-				if (browserSettings.disableErrorCapturing) {
-					element.ownerDocument._defaultView.eval(code);
-				} else {
-					WindowErrorUtility.captureError(element.ownerDocument._defaultView, () =>
-						element.ownerDocument._defaultView.eval(code)
-					);
-				}
-				element.ownerDocument['_currentScript'] = null;
-				element.dispatchEvent(new Event('load'));
+		if (error) {
+			WindowErrorUtility.dispatchError(element, error);
+			if (browserSettings.disableErrorCapturing) {
+				throw error;
 			}
+		} else {
+			element.ownerDocument['_currentScript'] = element;
+			code = '//# sourceURL=' + src + '\n' + code;
+			if (browserSettings.disableErrorCapturing) {
+				element.ownerDocument._defaultView.eval(code);
+			} else {
+				WindowErrorUtility.captureError(element.ownerDocument._defaultView, () =>
+					element.ownerDocument._defaultView.eval(code)
+				);
+			}
+			element.ownerDocument['_currentScript'] = null;
+			element.dispatchEvent(new Event('load'));
 		}
 	}
 }
