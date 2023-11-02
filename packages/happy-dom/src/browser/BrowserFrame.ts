@@ -46,7 +46,8 @@ export default class BrowserFrame implements IBrowserFrame {
 	 */
 	public set content(content) {
 		this.window.document['_isFirstWrite'] = true;
-		this.window.document['_isFirstWriteAfterOpen'] = true;
+		this.window.document['_isFirstWriteAfterOpen'] = false;
+		this.window.document.open();
 		this.window.document.write(content);
 	}
 

@@ -839,6 +839,14 @@ describe('Document', () => {
 				`.replace(/[\s]/gm, '')
 			);
 		});
+
+		it('Adds elements outside of the <html> tag to the <body> tag.', () => {
+			const html = `<html test="1"><body>Test></body></html>`;
+			document.write(html);
+			expect(document.documentElement.outerHTML).toBe(
+				'<html test="1"><head></head><body>Test></body></html>'
+			);
+		});
 	});
 
 	describe('open()', () => {

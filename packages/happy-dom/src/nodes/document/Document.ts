@@ -694,6 +694,18 @@ export default class Document extends Node implements IDocument {
 					}
 
 					this.appendChild(documentElement);
+
+					const head = <IElement>ParentNodeUtility.getElementByTagName(this, 'head');
+					let body = <IElement>ParentNodeUtility.getElementByTagName(this, 'body');
+
+					if (!body) {
+						body = this.createElement('body');
+						documentElement.appendChild(this.createElement('body'));
+					}
+
+					if (!head) {
+						documentElement.insertBefore(this.createElement('head'), body);
+					}
 				} else {
 					const rootBody = <Element>ParentNodeUtility.getElementByTagName(root, 'body');
 					const body = ParentNodeUtility.getElementByTagName(this, 'body');

@@ -122,7 +122,7 @@ export default class BrowserFrameUtility {
 			return response || null;
 		}
 
-		frame.window.document.write(responseText);
+		frame.content = responseText;
 		readyStateManager.endTask();
 
 		return response;

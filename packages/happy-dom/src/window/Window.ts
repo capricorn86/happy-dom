@@ -526,7 +526,6 @@ export default class Window extends EventTarget implements IWindow {
 		super();
 
 		this.customElements = new CustomElementRegistry();
-		this.location = new Location();
 		this.navigator = new Navigator(this);
 		this.history = new History();
 		this.screen = new Screen();
@@ -545,6 +544,7 @@ export default class Window extends EventTarget implements IWindow {
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
 		this.console = this.#browserFrame.page.console;
+		this.location = new Location('about:blank', this.#browserFrame);
 		this.happyDOM = new HappyDOMWindowAPI(this.#browserFrame);
 
 		if (options) {

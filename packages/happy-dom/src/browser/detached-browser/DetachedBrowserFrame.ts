@@ -23,10 +23,10 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @param page Page.
 	 */
 	constructor(page: DetachedBrowserPage) {
+		this.page = page;
 		this.window = page.mainFrame
 			? new page.context.browser.detachedWindowClass({ browserFrame: this, console: page.console })
 			: page.context.browser.detachedWindow;
-		this.page = page;
 	}
 
 	/**
@@ -45,7 +45,8 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 */
 	public set content(content) {
 		this.window.document['_isFirstWrite'] = true;
-		this.window.document['_isFirstWriteAfterOpen'] = true;
+		this.window.document['_isFirstWriteAfterOpen'] = false;
+		this.window.document.open();
 		this.window.document.write(content);
 	}
 

@@ -58,7 +58,7 @@ export default class WindowPageOpenUtility {
 
 		let url = options.url || 'about:blank';
 
-		if (url.startsWith('about:') || url.startsWith('javascript:')) {
+		if (!url.startsWith('about:') && !url.startsWith('javascript:')) {
 			url = new URL(url, browserFrame.window.location).href;
 		}
 
