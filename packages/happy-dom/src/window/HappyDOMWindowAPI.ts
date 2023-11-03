@@ -83,8 +83,9 @@ export default class HappyDOMWindowAPI {
 
 	/**
 	 * Sets the URL on a detached window.
-	 * It will throw an exception if the window is not detached as a script could potentially use this method to bypass CORS.
+	 * It will throw an exception if the window is not detached, as a script could potentially use this method to bypass CORS.
 	 *
+	 * @deprecated Use the Browser API instead for setting URL runtime.
 	 * @param url URL.
 	 */
 	public setURL(url: string): void {

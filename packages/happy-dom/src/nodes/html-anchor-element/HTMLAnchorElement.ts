@@ -428,14 +428,13 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 			event.type === 'click' &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this._formNode &&
 			this.isConnected &&
-			!event.defaultPrevented
+			!event.defaultPrevented &&
+			this._url
 		) {
-			const href = this.href;
-			if (href) {
-				// TODO: Add support for "target", "download", "rel", "hreflang", "type", "referrerpolicy", "ping", "referrerpolicy", "relList".
-				this.ownerDocument._defaultView.location.href = this.href;
+			this.ownerDocument._defaultView.open(this._url.toString(), this.target || '_self');
+			if (this.ownerDocument._defaultView.closed) {
+				event.stopImmediatePropagation();
 			}
 		}
 

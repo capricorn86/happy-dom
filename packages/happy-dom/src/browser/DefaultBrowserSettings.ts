@@ -1,6 +1,7 @@
 import PackageVersion from '../version.js';
+import IBrowserSettings from './types/IBrowserSettings.js';
 
-export default {
+export default <IBrowserSettings>{
 	disableJavaScriptEvaluation: false,
 	disableJavaScriptFileLoading: false,
 	disableCSSFileLoading: false,
@@ -9,6 +10,7 @@ export default {
 	disableComputedStyleRendering: false,
 	disableErrorCapturing: false,
 	enableFileSystemHttpRequests: false,
+	browserNavigation: ['allow'],
 	navigator: {
 		userAgent: `Mozilla/5.0 (X11; ${
 			process.platform.charAt(0).toUpperCase() + process.platform.slice(1) + ' ' + process.arch

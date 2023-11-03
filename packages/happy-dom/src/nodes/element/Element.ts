@@ -928,6 +928,7 @@ export default class Element extends Node implements IElement {
 		);
 
 		if (
+			browserSettings &&
 			!browserSettings.disableJavaScriptEvaluation &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&

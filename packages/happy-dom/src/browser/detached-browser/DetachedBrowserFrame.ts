@@ -94,14 +94,6 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @param [options] Options.
 	 */
 	public async goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		if (
-			this.page.context === this.page.context.browser.defaultContext &&
-			this.page.context.pages[0] === this.page &&
-			this.page.mainFrame === this
-		) {
-			throw new Error('The main frame cannot be navigated in a detached browser.');
-		}
-
 		return await BrowserFrameUtility.goto(
 			this.page.context.browser.detachedWindowClass,
 			this,

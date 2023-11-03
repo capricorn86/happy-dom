@@ -1,10 +1,6 @@
 import URL from '../url/URL.js';
-import DOMException from '../exception/DOMException.js';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import WindowErrorUtility from '../window/WindowErrorUtility.js';
-import DetachedBrowserFrame from '../browser/detached-browser/DetachedBrowserFrame.js';
-import DocumentReadyStateManager from '../nodes/document/DocumentReadyStateManager.js';
+import BrowserFrameUtility from '../browser/BrowserFrameUtility.js';
 
 /**
  * Location.
@@ -18,7 +14,7 @@ export default class Location extends URL {
 	 * @param [url] URL.
 	 */
 	constructor(url = 'about:blank', browserFrame?: IBrowserFrame) {
-		super(url);
+		super(browserFrame ? BrowserFrameUtility.getRelativeURL(browserFrame, url) : url);
 		this.#browserFrame = browserFrame ?? null;
 	}
 
@@ -27,55 +23,6 @@ export default class Location extends URL {
 	 */
 	// @ts-ignore
 	public set href(value: string) {
-		if (value.startsWith('javascript:')) {
-			if (
-				this.#browserFrame &&
-				!this.#browserFrame.page.context.browser.settings.disableJavaScriptEvaluation
-			) {
-				const readyStateManager = (<{ _readyStateManager: DocumentReadyStateManager }>(
-					(<unknown>this.#browserFrame.window)
-				))._readyStateManager;
-
-				readyStateManager.startTask();
-
-				this.#browserFrame.page.mainFrame.window.setTimeout(() => {
-					const code = '//# sourceURL=' + super.href + '\n' + value.replace('javascript:', '');
-
-					if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
-						this.#browserFrame.window.eval(code);
-					} else {
-						WindowErrorUtility.captureError(this.#browserFrame.window, () =>
-							this.#browserFrame.window.eval(code)
-						);
-					}
-
-					readyStateManager.endTask();
-				});
-			}
-			return;
-		}
-
-		try {
-			super.href = this.hostname ? new URL(value, this).href : value;
-		} catch (e) {
-			if (this.hostname) {
-				throw new DOMException(
-					`Failed to construct URL from string "${value}".`,
-					DOMExceptionNameEnum.uriMismatchError
-				);
-			} else {
-				throw new DOMException(
-					`Failed to construct URL from string "${value}" relative to URL "${super.href}".`,
-					DOMExceptionNameEnum.uriMismatchError
-				);
-			}
-		}
-
-		// When using the Window instance directly and not via the Browser API we should not navigate the browser frame.
-		if (this.#browserFrame instanceof DetachedBrowserFrame) {
-			return;
-		}
-
 		this.#browserFrame?.goto(value);
 	}
 
@@ -109,10 +56,8 @@ export default class Location extends URL {
 
 	/**
 	 * Reloads the resource from the current URL.
-	 *
-	 * Note: Will do nothing as reloading is not supported in server-dom.
 	 */
 	public reload(): void {
-		// Do nothing
+		this.#browserFrame?.goto(this.href);
 	}
 }

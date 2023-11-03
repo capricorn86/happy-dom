@@ -76,6 +76,7 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						}
 
 						if (newElement.isConnected && newElement.connectedCallback) {
+							debugger;
 							newElement.connectedCallback();
 						}
 

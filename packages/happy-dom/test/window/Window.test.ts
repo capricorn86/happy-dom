@@ -34,6 +34,7 @@ import Browser from '../../src/browser/Browser.js';
 import ICrossOriginWindow from '../../src/window/ICrossOriginWindow.js';
 import CrossOriginWindow from '../../src/window/CrossOriginWindow.js';
 import BrowserFrameUtility from '../../src/browser/BrowserFrameUtility.js';
+import IHTMLIFrameElement from '../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -1620,12 +1621,91 @@ describe('Window', () => {
 		});
 
 		it(`Doesn't set opener if "noopener" has been specified as a feature when opening an URL.`, () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.resolve(<IResponse>{
+					text: () => Promise.resolve('<html><body>Test</body></html>')
+				});
+			});
+
 			const browser = new Browser();
 			const page = browser.newPage();
-			page.mainFrame.url = 'https://www.github.com/happy-dom/';
+			page.mainFrame.url = 'https://www.github.com/capricorn86/happy-dom/';
 			const newWindow = <IWindow>page.mainFrame.window.open('/test/', '', 'noopener');
 			expect(newWindow).toBe(null);
 			expect(browser.defaultContext.pages[1].mainFrame.window.opener).toBe(null);
+		});
+
+		it(`Doesn't navigate the browser if the target is the main frame of a detached browser.`, () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				throw new Error('This should not be called.');
+			});
+
+			window.happyDOM.setURL('https://www.github.com/');
+
+			expect(window.open('/capricorn86/happy-dom/', '_self')).toBe(null);
+			expect(window.location.href).toBe('https://www.github.com/capricorn86/happy-dom/');
+
+			expect(window.open('/capricorn86/happy-dom/2/', '_top')).toBe(null);
+			expect(window.location.href).toBe('https://www.github.com/capricorn86/happy-dom/2/');
+
+			expect(window.open('/capricorn86/happy-dom/3/', '_parent')).toBe(null);
+			expect(window.location.href).toBe('https://www.github.com/capricorn86/happy-dom/3/');
+		});
+
+		it(`Navigates the "_top" frame of a detached browser.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.resolve(<IResponse>{
+					text: () => Promise.resolve('<html><body>Test</body></html>')
+				});
+			});
+
+			window.happyDOM.setURL('https://localhost:8080');
+
+			const newWindow = <IWindow>window.open('/test/1/', '_blank');
+
+			expect(newWindow.name).toBe('');
+			newWindow.document.write('<iframe src=""></iframe>');
+
+			const iframe = <IHTMLIFrameElement>newWindow.document.querySelector('iframe');
+			(<IWindow>iframe.contentWindow).happyDOM.setURL('https://localhost:8080');
+			const newWindow2 = <IWindow>(
+				(<IWindow>iframe.contentWindow).open('https://localhost:8080/test/2/', '_top')
+			);
+
+			expect(newWindow2.name).toBe('');
+			expect(newWindow2.location.href).toBe('https://localhost:8080/test/2/');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(newWindow2.document.body.innerHTML).toBe('Test');
+		});
+
+		it(`Navigates the "_parent" frame of a detached browser.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.resolve(<IResponse>{
+					text: () => Promise.resolve('<html><body>Test</body></html>')
+				});
+			});
+
+			window.happyDOM.setURL('https://localhost:8080');
+
+			const newWindow = <IWindow>window.open('/test/1/', '_blank');
+
+			expect(newWindow.name).toBe('');
+			newWindow.document.write('<iframe src=""></iframe>');
+
+			const iframe = <IHTMLIFrameElement>newWindow.document.querySelector('iframe');
+			(<IWindow>iframe.contentWindow).happyDOM.setURL('https://localhost:8080');
+			const newWindow2 = <IWindow>(
+				(<IWindow>iframe.contentWindow).open('https://localhost:8080/test/2/', '_parent')
+			);
+
+			expect(newWindow2.name).toBe('');
+			expect(newWindow2.location.href).toBe('https://localhost:8080/test/2/');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(newWindow2.document.body.innerHTML).toBe('Test');
 		});
 
 		it('Opens a new window with a CORS URL.', async () => {
@@ -1641,19 +1721,22 @@ describe('Window', () => {
 				});
 			});
 
-			page.mainFrame.url = 'https://www.github.com/happy-dom/';
+			page.mainFrame.url = 'https://www.github.com/capricorn86/happy-dom/';
 
 			const newWindow = <ICrossOriginWindow>(
 				page.mainFrame.window.open('https://developer.mozilla.org/en-US/docs/Web/API/Window/open')
 			);
 
+			expect(newWindow instanceof CrossOriginWindow).toBe(true);
 			expect(browser.defaultContext.pages.length).toBe(2);
 			expect(browser.defaultContext.pages[0]).toBe(page);
 			expect(browser.defaultContext.pages[1].mainFrame.window === newWindow).toBe(false);
 			expect(browser.defaultContext.pages[1].mainFrame.url).toBe(
 				'https://developer.mozilla.org/en-US/docs/Web/API/Window/open'
 			);
-			expect(newWindow instanceof CrossOriginWindow).toBe(true);
+			expect((<IRequest>(<unknown>request)).url).toBe(
+				'https://developer.mozilla.org/en-US/docs/Web/API/Window/open'
+			);
 
 			await new Promise((resolve) => {
 				browser.defaultContext.pages[1].mainFrame.window.addEventListener('load', () => {

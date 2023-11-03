@@ -2,7 +2,11 @@ import Window from '../../../src/window/Window.js';
 import IWindow from '../../../src/window/IWindow.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLAnchorElement from '../../../src/nodes/html-anchor-element/IHTMLAnchorElement.js';
-import { beforeEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
+import PointerEvent from '../../../src/event/events/PointerEvent.js';
+import IRequest from '../../../src/fetch/types/IRequest.js';
+import IResponse from '../../../src/fetch/types/IResponse.js';
+import Fetch from '../../../src/fetch/Fetch.js';
 
 const BLOB_URL = 'blob:https://mozilla.org';
 
@@ -398,6 +402,96 @@ describe('HTMLAnchorElement', () => {
 			element.href = BLOB_URL;
 			element.hash = '#fgh';
 			expect(element.hash).toBe('');
+		});
+	});
+
+	describe('dispatchEvent()', () => {
+		it(`Doesn't change the location when a "click" event is dispatched inside the main frame of a detached browser.`, () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				throw new Error('Fetch should not be called.');
+			});
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = 'https://www.example.com';
+			document.body.appendChild(element);
+			element.dispatchEvent(new PointerEvent('click'));
+			expect(window.location.href).toBe('https://www.somesite.com/test.html');
+		});
+
+		it('Changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "url-set-fallback" is set.', () => {
+			const window = new Window({
+				settings: {
+					browserNavigation: ['allow', 'url-set-fallback']
+				}
+			});
+			document = window.document;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				throw new Error('Fetch should not be called.');
+			});
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.href = 'https://www.example.com';
+			document.body.appendChild(element);
+			element.dispatchEvent(new PointerEvent('click'));
+			expect(window.location.href).toBe('https://www.example.com/');
+		});
+
+		it('Opens a window when a "click" event is dispatched on an element with target set to "_blank" inside the main frame of a detached browser.', () => {
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = <IRequest>this.request;
+				return Promise.resolve(<IResponse>{
+					text: () => Promise.resolve('Test')
+				});
+			});
+
+			const element = <IHTMLAnchorElement>document.createElement('a');
+			element.target = '_blank';
+			element.href = 'https://www.example.com';
+			document.body.appendChild(element);
+			element.dispatchEvent(new PointerEvent('click'));
+			expect((<IRequest>(<unknown>request)).url).toBe('https://www.example.com/');
+		});
+
+		it('Navigates the browser when a "click" event is dispatched on an element inside a non-main frame of a detached browser.', () => {
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = <IRequest>this.request;
+				return Promise.resolve(<IResponse>{
+					text: () => Promise.resolve('Test')
+				});
+			});
+
+			const newWindow = <IWindow>window.open();
+
+			const element = <IHTMLAnchorElement>newWindow.document.createElement('a');
+			element.href = 'https://www.example.com';
+			newWindow.document.body.appendChild(element);
+			element.dispatchEvent(new PointerEvent('click'));
+			expect((<IRequest>(<unknown>request)).url).toBe('https://www.example.com/');
+			expect(newWindow.closed).toBe(true);
+		});
+
+		it(`Doesn't navigate the browser when a "click" event is dispatched on an element inside a non-main frame of a detached browser when the Happy DOM setting "deny" is set to "true".`, () => {
+			const window = new Window({
+				settings: {
+					browserNavigation: ['deny', 'url-set-fallback']
+				}
+			});
+			document = window.document;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				throw new Error('Fetch should not be called.');
+			});
+
+			const newWindow = <IWindow>window.open();
+
+			const element = <IHTMLAnchorElement>newWindow.document.createElement('a');
+			element.href = 'https://www.example.com';
+			newWindow.document.body.appendChild(element);
+			element.dispatchEvent(new PointerEvent('click'));
+			expect(newWindow.closed).toBe(false);
+			expect(newWindow.location.href).toBe('https://www.example.com/');
 		});
 	});
 });

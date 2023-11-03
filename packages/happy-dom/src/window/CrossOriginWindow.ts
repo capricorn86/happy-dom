@@ -26,7 +26,7 @@ export default class CrossOriginWindow extends EventTarget implements ICrossOrig
 		super();
 
 		this.parent = parent ?? this;
-		this.top = parent;
+		this.top = parent ?? this;
 		this.location = <Location>new Proxy(
 			{},
 			{

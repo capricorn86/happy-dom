@@ -4,7 +4,7 @@ import CrossOriginWindow from './CrossOriginWindow.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import FetchCORSUtility from '../fetch/utilities/FetchCORSUtility.js';
 import ICrossOriginWindow from './ICrossOriginWindow.js';
-import DetachedBrowserFrame from '../browser/detached-browser/DetachedBrowserFrame.js';
+import BrowserFrameUtility from '../browser/BrowserFrameUtility.js';
 
 /**
  * Window page open handler.
@@ -29,15 +29,8 @@ export default class WindowPageOpenUtility {
 	): IWindow | ICrossOriginWindow | null {
 		const features = this.getWindowFeatures(options?.features || '');
 		const target = options?.target !== undefined ? String(options.target) : null;
+		const originURL = browserFrame.window.location;
 		let targetFrame: IBrowserFrame;
-
-		// When using the Window instance directly and not via the Browser API we should not navigate the browser frame.
-		if (
-			browserFrame instanceof DetachedBrowserFrame &&
-			(target === '_self' || target === '_top' || target === '_parent')
-		) {
-			return null;
-		}
 
 		switch (target) {
 			case '_self':
@@ -56,22 +49,17 @@ export default class WindowPageOpenUtility {
 				break;
 		}
 
-		let url = options.url || 'about:blank';
-
-		if (!url.startsWith('about:') && !url.startsWith('javascript:')) {
-			url = new URL(url, browserFrame.window.location).href;
-		}
-
-		targetFrame.goto(url, {
+		targetFrame.goto(options.url, {
 			referrer: features.noreferrer ? 'no-referrer' : undefined
 		});
 
-		if (url.startsWith('javascript:')) {
-			return targetFrame.window;
+		// When using the Window instance directly and not via the Browser API we should not navigate the browser frame.
+		if (BrowserFrameUtility.isDetachedMainFrame(targetFrame)) {
+			return null;
 		}
 
-		if (targetFrame === browserFrame) {
-			return null;
+		if (options.url.startsWith('javascript:')) {
+			return targetFrame.window;
 		}
 
 		if (features.popup && target !== '_self' && target !== '_top' && target !== '_parent') {
@@ -93,15 +81,24 @@ export default class WindowPageOpenUtility {
 			}
 		}
 
-		if (target) {
+		if (
+			target &&
+			target !== '_self' &&
+			target !== '_top' &&
+			target !== '_parent' &&
+			target !== '_blank'
+		) {
 			(<string>targetFrame.window.name) = target;
 		}
 
-		const originURL = browserFrame.window.location;
-		const targetURL = new URL(targetFrame.url, originURL);
-		const isCORS = FetchCORSUtility.isCORS(originURL, targetURL);
+		const isCORS = FetchCORSUtility.isCORS(originURL, targetFrame.url);
 
-		if (!features.noopener && !features.noreferrer) {
+		if (
+			!features.noopener &&
+			!features.noreferrer &&
+			browserFrame.window &&
+			targetFrame.window !== browserFrame.window
+		) {
 			(<IWindow | ICrossOriginWindow>targetFrame.window.opener) = isCORS
 				? new CrossOriginWindow(browserFrame.window)
 				: browserFrame.window;

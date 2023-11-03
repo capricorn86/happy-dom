@@ -565,7 +565,7 @@ export default class Window extends EventTarget implements IWindow {
 			}
 
 			if (options.url !== undefined) {
-				this.location.href = options.url;
+				this.#browserFrame.url = options.url;
 			}
 		}
 

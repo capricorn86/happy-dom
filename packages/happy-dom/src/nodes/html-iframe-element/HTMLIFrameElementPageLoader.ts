@@ -111,7 +111,7 @@ export default class HTMLIFrameElementPageLoader {
 		const targetURL = new URL(url, originURL);
 
 		// Iframes has a special rule for CORS and doesn't allow access between frames when the origin is different.
-		const isSameOrigin = originURL.origin === targetURL.origin;
+		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
 
 		this.#browserIFrame.url = url;
 		const readyStateManager = (<{ _readyStateManager: DocumentReadyStateManager }>(
