@@ -4,7 +4,6 @@ import IWindow from '../window/IWindow.js';
 import IShadowRoot from '../nodes/shadow-root/IShadowRoot.js';
 import IEventTarget from './IEventTarget.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
-import { performance } from 'perf_hooks';
 import EventPhaseEnum from './EventPhaseEnum.js';
 import IDocument from '../nodes/document/IDocument.js';
 
