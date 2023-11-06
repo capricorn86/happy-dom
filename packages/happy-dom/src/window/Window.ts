@@ -146,6 +146,10 @@ import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
+import HTMLAnchorElement from '../nodes/html-anchor-element/HTMLAnchorElement.js';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
+import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -269,6 +273,10 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLBaseElement = HTMLBaseElement;
 	public readonly HTMLIFrameElement = HTMLIFrameElement;
 	public readonly HTMLDialogElement = HTMLDialogElement;
+	public readonly HTMLOptGroupElement = HTMLOptGroupElement;
+	public readonly HTMLOptionElement = HTMLOptionElement;
+	public readonly HTMLAnchorElement = HTMLAnchorElement;
+	public readonly HTMLButtonElement = HTMLButtonElement;
 
 	// Non-implemented element classes
 	public readonly HTMLHeadElement = HTMLElement;
@@ -284,10 +292,8 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly HTMLMenuElement = HTMLElement;
 	public readonly HTMLDListElement = HTMLElement;
 	public readonly HTMLDivElement = HTMLElement;
-	public readonly HTMLAnchorElement = HTMLElement;
 	public readonly HTMLAreaElement = HTMLElement;
 	public readonly HTMLBRElement = HTMLElement;
-	public readonly HTMLButtonElement = HTMLElement;
 	public readonly HTMLCanvasElement = HTMLElement;
 	public readonly HTMLDataElement = HTMLElement;
 	public readonly HTMLDataListElement = HTMLElement;
