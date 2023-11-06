@@ -1,7 +1,6 @@
 import URL from '../../url/URL.js';
 import IRequest from '../types/IRequest.js';
 import IDocument from '../../nodes/document/IDocument.js';
-import { isIP } from 'net';
 import Headers from '../Headers.js';
 import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy.js';
 
@@ -207,13 +206,32 @@ export default class FetchRequestReferrerUtility {
 
 		// 4. If origin's host component matches one of the CIDR notations 127.0.0.0/8 or ::1/128 [RFC4632], return "Potentially Trustworthy".
 		const hostIp = url.host.replace(/(^\[)|(]$)/g, '');
-		const hostIPVersion = isIP(hostIp);
 
-		if (hostIPVersion === 4 && /^127\./.test(hostIp)) {
+		// IPv4 addr test pattern
+		const v4Seg = '(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])';
+		const v4Str = `(?:${v4Seg}\\.){3}${v4Seg}`;
+		const IPv4Reg = new RegExp(`^${v4Str}$`);
+
+		// IPv6 addr test pattern
+		const v6Seg = '(?:[0-9a-fA-F]{1,4})';
+		const IPv6Reg = new RegExp(
+			'^(?:' +
+				`(?:${v6Seg}:){7}(?:${v6Seg}|:)|` +
+				`(?:${v6Seg}:){6}(?:${v4Str}|:${v6Seg}|:)|` +
+				`(?:${v6Seg}:){5}(?::${v4Str}|(?::${v6Seg}){1,2}|:)|` +
+				`(?:${v6Seg}:){4}(?:(?::${v6Seg}){0,1}:${v4Str}|(?::${v6Seg}){1,3}|:)|` +
+				`(?:${v6Seg}:){3}(?:(?::${v6Seg}){0,2}:${v4Str}|(?::${v6Seg}){1,4}|:)|` +
+				`(?:${v6Seg}:){2}(?:(?::${v6Seg}){0,3}:${v4Str}|(?::${v6Seg}){1,5}|:)|` +
+				`(?:${v6Seg}:){1}(?:(?::${v6Seg}){0,4}:${v4Str}|(?::${v6Seg}){1,6}|:)|` +
+				`(?::(?:(?::${v6Seg}){0,5}:${v4Str}|(?::${v6Seg}){1,7}|:))` +
+				')(?:%[0-9a-zA-Z-.:]{1,})?$'
+		);
+
+		if (IPv4Reg.test(hostIp) && /^127\./.test(hostIp)) {
 			return true;
 		}
 
-		if (hostIPVersion === 6 && /^(((0+:){7})|(::(0+:){0,6}))0*1$/.test(hostIp)) {
+		if (IPv6Reg.test(hostIp) && /^(((0+:){7})|(::(0+:){0,6}))0*1$/.test(hostIp)) {
 			return true;
 		}
 
