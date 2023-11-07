@@ -11,7 +11,6 @@ import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import AbortSignal from './AbortSignal.js';
 import Stream from 'stream';
 import Blob from '../file/Blob.js';
-import { TextDecoder } from 'util';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
 import IRequestReferrerPolicy from './types/IRequestReferrerPolicy.js';
 import IRequestRedirect from './types/IRequestRedirect.js';

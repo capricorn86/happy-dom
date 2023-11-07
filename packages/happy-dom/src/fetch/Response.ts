@@ -13,7 +13,6 @@ import FormData from '../form-data/FormData.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import { TextDecoder } from 'util';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];

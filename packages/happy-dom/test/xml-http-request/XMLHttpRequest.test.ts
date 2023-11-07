@@ -7,7 +7,6 @@ import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/u
 import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate.js';
 import ProgressEvent from '../../src/event/events/ProgressEvent.js';
 import HTTP from 'http';
-import { TextDecoder } from 'util';
 import Blob from '../../src/file/Blob.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
