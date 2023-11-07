@@ -114,7 +114,6 @@ import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
 import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
-import { webcrypto } from 'crypto';
 import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
 import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload.js';
 import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget.js';
@@ -146,6 +145,13 @@ import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
+
+if (
+	!('crypto' in globalThis) ||
+	Object.getPrototypeOf(globalThis.crypto) === Object.getPrototypeOf({})
+) {
+	globalThis['crypto'] = import('crypto').then((c) => c.webcrypto);
+}
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -483,7 +489,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly innerHeight: number = 768;
 	public readonly outerWidth: number = 1024;
 	public readonly outerHeight: number = 768;
-	public readonly crypto = webcrypto;
+	public readonly crypto = globalThis.crypto;
 
 	// Node.js Globals
 	public Array: typeof Array;

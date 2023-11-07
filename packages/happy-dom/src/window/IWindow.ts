@@ -116,7 +116,6 @@ import IHappyDOMSettings from './IHappyDOMSettings.js';
 import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
-import { webcrypto } from 'crypto';
 import FormData from '../form-data/FormData.js';
 import AbortController from '../fetch/AbortController.js';
 import AbortSignal from '../fetch/AbortSignal.js';
@@ -132,6 +131,13 @@ import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
+
+if (
+	!('crypto' in globalThis) ||
+	Object.getPrototypeOf(globalThis.crypto) === Object.getPrototypeOf({})
+) {
+	globalThis['crypto'] = import('crypto').then((c) => c.webcrypto);
+}
 
 /**
  * Browser window.
@@ -414,7 +420,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly pageYOffset: number;
 	readonly scrollX: number;
 	readonly scrollY: number;
-	readonly crypto: typeof webcrypto;
+	readonly crypto: typeof globalThis.crypto;
 
 	/**
 	 * Returns an object containing the values of all CSS properties of an element.
