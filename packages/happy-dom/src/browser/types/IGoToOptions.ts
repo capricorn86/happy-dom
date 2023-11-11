@@ -6,4 +6,8 @@ import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js'
 export default interface IGoToOptions {
 	referrer?: string;
 	referrerPolicy?: IRequestReferrerPolicy;
+	/**
+	 * Timeout in ms. Default is 30000ms.
+	 */
+	timeout?: number;
 }

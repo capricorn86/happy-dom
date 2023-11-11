@@ -10,11 +10,12 @@ export default <IBrowserSettings>{
 	disableComputedStyleRendering: false,
 	disableErrorCapturing: false,
 	enableFileSystemHttpRequests: false,
-	browserNavigation: ['allow'],
+	browserNavigation: ['allow', 'url-set-fallback'],
 	navigator: {
 		userAgent: `Mozilla/5.0 (X11; ${
 			process.platform.charAt(0).toUpperCase() + process.platform.slice(1) + ' ' + process.arch
-		}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`
+		}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
+		maxTouchPoints: 0
 	},
 	device: {
 		prefersColorScheme: 'light',

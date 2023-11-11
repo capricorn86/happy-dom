@@ -22,8 +22,13 @@ export default class BrowserContext implements IBrowserContext {
 	 * Aborts all ongoing operations and destroys the context.
 	 */
 	public close(): void {
-		for (const page of this.pages) {
+		const index = this.browser.contexts.indexOf(this);
+		this.browser.contexts.splice(index, 1);
+		for (const page of this.pages.slice()) {
 			page.close();
+		}
+		if (this.browser.contexts.length === 0) {
+			this.browser.close();
 		}
 	}
 

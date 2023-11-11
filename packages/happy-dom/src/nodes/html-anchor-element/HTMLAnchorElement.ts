@@ -428,7 +428,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 			event.type === 'click' &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this.isConnected &&
 			!event.defaultPrevented &&
 			this._url
 		) {

@@ -8,7 +8,9 @@ import IWindow from '../../window/IWindow.js';
 import IBrowserFrame from '../types/IBrowserFrame.js';
 
 /**
- * Detached browser.
+ * Detached browser used when constructing a Window instance without a browser.
+ *
+ * Much of the interface for the browser has been taken from Puppeteer and Playwright, so that the API is familiar.
  */
 export default class DetachedBrowser implements IBrowser {
 	public readonly contexts: DetachedBrowserContext[];
@@ -39,7 +41,8 @@ export default class DetachedBrowser implements IBrowser {
 		this.detachedWindow = window;
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
-		this.contexts = [new DetachedBrowserContext(this)];
+		this.contexts = [];
+		this.contexts.push(new DetachedBrowserContext(this));
 	}
 
 	/**
@@ -58,7 +61,7 @@ export default class DetachedBrowser implements IBrowser {
 	 * Aborts all ongoing operations and destroys the browser.
 	 */
 	public close(): void {
-		for (const context of this.contexts) {
+		for (const context of this.contexts.slice()) {
 			context.close();
 		}
 		(<DetachedBrowserContext[]>this.contexts) = [];

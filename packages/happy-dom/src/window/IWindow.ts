@@ -33,6 +33,7 @@ import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js
 import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement.js';
 import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement.js';
 import Image from '../nodes/html-image-element/Image.js';
+import Audio from '../nodes/html-audio-element/Audio.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import CharacterData from '../nodes/character-data/CharacterData.js';
 import NodeIterator from '../tree-walker/NodeIterator.js';
@@ -109,6 +110,7 @@ import Attr from '../nodes/attr/Attr.js';
 import NamedNodeMap from '../named-node-map/NamedNodeMap.js';
 import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement.js';
+import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
 import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
@@ -147,6 +149,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly Attr: typeof Attr;
 	readonly SVGSVGElement: typeof SVGSVGElement;
 	readonly SVGElement: typeof SVGElement;
+	readonly SVGGraphicsElement: typeof SVGGraphicsElement;
 	readonly Text: typeof Text;
 	readonly Comment: typeof Comment;
 	readonly ShadowRoot: typeof ShadowRoot;
@@ -303,6 +306,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 
 	// Other classes
 	readonly Image: typeof Image;
+	readonly Audio: typeof Audio;
 	readonly NamedNodeMap: typeof NamedNodeMap;
 	readonly EventTarget: typeof EventTarget;
 	readonly DataTransfer: typeof DataTransfer;
@@ -353,6 +357,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly FileList: typeof FileList;
 	readonly ReadableStream: typeof Stream.Readable;
 	readonly WritableStream: typeof Stream.Writable;
+	readonly TransformStream: typeof Stream.Transform;
 	readonly FormData: typeof FormData;
 	readonly AbortController: typeof AbortController;
 	readonly AbortSignal: typeof AbortSignal;
@@ -388,6 +393,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly window: IWindow;
 	readonly globalThis: IWindow;
 	readonly screen: Screen;
+	readonly devicePixelRatio: number;
 	readonly innerWidth: number;
 	readonly innerHeight: number;
 	readonly outerWidth: number;

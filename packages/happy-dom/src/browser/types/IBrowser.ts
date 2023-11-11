@@ -4,6 +4,8 @@ import IBrowserSettings from './IBrowserSettings.js';
 
 /**
  * Browser.
+ *
+ * Much of the interface for the browser has been taken from Puppeteer and Playwright, so that the API is familiar.
  */
 export default interface IBrowser {
 	readonly defaultContext: IBrowserContext;

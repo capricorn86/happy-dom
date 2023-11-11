@@ -6,7 +6,9 @@ import BrowserPage from './BrowserPage.js';
 import IBrowser from './types/IBrowser.js';
 
 /**
- * Browser context.
+ * Browser.
+ *
+ * Much of the interface for the browser has been taken from Puppeteer and Playwright, so that the API is familiar.
  */
 export default class Browser implements IBrowser {
 	public readonly contexts: BrowserContext[];
@@ -54,6 +56,9 @@ export default class Browser implements IBrowser {
 	 * @returns Promise.
 	 */
 	public async whenComplete(): Promise<void> {
+		if (this.contexts.length === 0) {
+			throw new Error('No default context. The browser has been closed.');
+		}
 		await Promise.all(this.contexts.map((page) => page.whenComplete()));
 	}
 
@@ -61,7 +66,7 @@ export default class Browser implements IBrowser {
 	 * Aborts all ongoing operations.
 	 */
 	public abort(): void {
-		for (const context of this.contexts) {
+		for (const context of this.contexts.slice()) {
 			context.abort();
 		}
 	}
@@ -72,6 +77,9 @@ export default class Browser implements IBrowser {
 	 * @returns Context.
 	 */
 	public newIncognitoContext(): BrowserContext {
+		if (this.contexts.length === 0) {
+			throw new Error('No default context. The browser has been closed.');
+		}
 		const context = new BrowserContext(this);
 		this.contexts.push(context);
 		return context;

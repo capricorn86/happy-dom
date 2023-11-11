@@ -5,7 +5,10 @@ import BrowserContext from './BrowserContext.js';
 import VirtualConsole from '../console/VirtualConsole.js';
 import IBrowserPage from './types/IBrowserPage.js';
 import BrowserFrameUtility from './BrowserFrameUtility.js';
-import Event from '../event/Event.js';
+import { Script } from 'vm';
+import IGoToOptions from './types/IGoToOptions.js';
+import IResponse from '../fetch/types/IResponse.js';
+import BrowserPageUtility from './BrowserPageUtility.js';
 
 /**
  * Browser page.
@@ -31,34 +34,48 @@ export default class BrowserPage implements IBrowserPage {
 	 * Returns frames.
 	 */
 	public get frames(): BrowserFrame[] {
-		return this._getFrames(this.mainFrame);
+		return <BrowserFrame[]>BrowserFrameUtility.getFrames(this.mainFrame);
 	}
 
 	/**
 	 * Returns the viewport.
 	 */
 	public get content(): string {
-		return this.mainFrame.window.document.documentElement.outerHTML;
+		return this.mainFrame.content;
+	}
+
+	/**
+	 * Sets the content.
+	 *
+	 * @param content Content.
+	 */
+	public set content(content) {
+		this.mainFrame.content = content;
+	}
+
+	/**
+	 * Returns the URL.
+	 *
+	 * @returns URL.
+	 */
+	public get url(): string {
+		return this.mainFrame.url;
+	}
+
+	/**
+	 * Sets the content.
+	 *
+	 * @param url URL.
+	 */
+	public set url(url) {
+		this.mainFrame.url = url;
 	}
 
 	/**
 	 * Aborts all ongoing operations and destroys the page.
 	 */
 	public close(): void {
-		if (!this.mainFrame) {
-			return;
-		}
-
-		BrowserFrameUtility.closeFrame(this.mainFrame);
-
-		const index = this.context.pages.indexOf(this);
-		if (index !== -1) {
-			this.context.pages.splice(index, 1);
-		}
-
-		(<VirtualConsolePrinter | null>this.virtualConsolePrinter) = null;
-		(<BrowserFrame | null>this.mainFrame) = null;
-		(<BrowserContext | null>this.context) = null;
+		BrowserPageUtility.closePage(this);
 	}
 
 	/**
@@ -78,47 +95,31 @@ export default class BrowserPage implements IBrowserPage {
 	}
 
 	/**
+	 * Evaluates code or a VM Script in the page's context.
+	 *
+	 * @param script Script.
+	 * @returns Result.
+	 */
+	public evaluate(script: string | Script): any {
+		return this.mainFrame.evaluate(script);
+	}
+
+	/**
 	 * Sets the viewport.
 	 *
 	 * @param viewport Viewport.
 	 */
 	public setViewport(viewport: IBrowserPageViewport): void {
-		if (
-			(viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) ||
-			(viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height)
-		) {
-			if (viewport.width !== undefined && this.mainFrame.window.innerWidth !== viewport.width) {
-				(<number>this.mainFrame.window.innerWidth) = viewport.width;
-				(<number>this.mainFrame.window.outerWidth) = viewport.width;
-			}
-
-			if (viewport.height !== undefined && this.mainFrame.window.innerHeight !== viewport.height) {
-				(<number>this.mainFrame.window.innerHeight) = viewport.height;
-				(<number>this.mainFrame.window.outerHeight) = viewport.height;
-			}
-
-			this.mainFrame.window.dispatchEvent(new Event('resize'));
-		}
+		BrowserPageUtility.setViewport(this, viewport);
 	}
+
 	/**
 	 * Go to a page.
 	 *
 	 * @param url URL.
+	 * @param [options] Options.
 	 */
-	public async goto(url: string): Promise<void> {
-		this.mainFrame.goto(url);
-	}
-
-	/**
-	 * Returns frames.
-	 *
-	 * @param parent Parent frame.
-	 */
-	private _getFrames(parent: BrowserFrame): BrowserFrame[] {
-		let frames = [parent];
-		for (const frame of parent.childFrames) {
-			frames = frames.concat(this._getFrames(frame));
-		}
-		return frames;
+	public async goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
+		return await this.mainFrame.goto(url, options);
 	}
 }

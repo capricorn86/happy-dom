@@ -1293,7 +1293,7 @@ describe('Window', () => {
 				setTimeout(() => {
 					expect((<Event>loadEvent).target).toBe(document);
 					resolve(null);
-				}, 1);
+				}, 10);
 			});
 		});
 
@@ -1550,7 +1550,7 @@ describe('Window', () => {
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 			expect(newWindow).toBeInstanceOf(Window);
 			expect(newWindow.location.href).toBe('about:blank');
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await new Promise((resolve) => setTimeout(resolve, 10));
 			expect(String((<ErrorEvent>(<unknown>errorEvent)).error)).toBe(
 				'ReferenceError: test is not defined'
 			);

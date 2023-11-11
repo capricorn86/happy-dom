@@ -75,7 +75,7 @@ export default class Navigator {
 	 * Maximum number of simultaneous touch contact points are supported by the current device.
 	 */
 	public get maxTouchPoints(): number {
-		return 0;
+		return WindowBrowserSettingsReader.getSettings(this.#ownerWindow).navigator.maxTouchPoints;
 	}
 
 	/**

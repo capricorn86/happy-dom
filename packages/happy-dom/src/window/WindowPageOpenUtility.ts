@@ -30,6 +30,7 @@ export default class WindowPageOpenUtility {
 		const features = this.getWindowFeatures(options?.features || '');
 		const target = options?.target !== undefined ? String(options.target) : null;
 		const originURL = browserFrame.window.location;
+		const url = BrowserFrameUtility.getRelativeURL(browserFrame, options.url);
 		let targetFrame: IBrowserFrame;
 
 		switch (target) {
@@ -49,7 +50,7 @@ export default class WindowPageOpenUtility {
 				break;
 		}
 
-		targetFrame.goto(options.url, {
+		targetFrame.goto(BrowserFrameUtility.getRelativeURL(browserFrame, url), {
 			referrer: features.noreferrer ? 'no-referrer' : undefined
 		});
 
@@ -58,7 +59,7 @@ export default class WindowPageOpenUtility {
 			return null;
 		}
 
-		if (options.url.startsWith('javascript:')) {
+		if (url.startsWith('javascript:')) {
 			return targetFrame.window;
 		}
 

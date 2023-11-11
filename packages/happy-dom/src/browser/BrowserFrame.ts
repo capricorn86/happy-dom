@@ -6,6 +6,7 @@ import Location from '../location/Location.js';
 import IResponse from '../fetch/types/IResponse.js';
 import BrowserFrameUtility from './BrowserFrameUtility.js';
 import IGoToOptions from './types/IGoToOptions.js';
+import { Script } from 'vm';
 
 /**
  * Browser frame.
@@ -66,7 +67,10 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param url URL.
 	 */
 	public set url(url) {
-		(<Location>this.window.location) = new Location(url, this);
+		(<Location>this.window.location) = new Location(
+			this,
+			BrowserFrameUtility.getRelativeURL(this, url)
+		);
 	}
 
 	/**
@@ -75,7 +79,10 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @returns Promise.
 	 */
 	public async whenComplete(): Promise<void> {
-		await this._asyncTaskManager.whenComplete();
+		await Promise.all([
+			this._asyncTaskManager.whenComplete(),
+			...this.childFrames.map((frame) => frame.whenComplete())
+		]);
 	}
 
 	/**
@@ -88,6 +95,16 @@ export default class BrowserFrame implements IBrowserFrame {
 			frame.abort();
 		}
 		this._asyncTaskManager.abortAll();
+	}
+
+	/**
+	 * Evaluates code or a VM Script in the page's context.
+	 *
+	 * @param script Script.
+	 * @returns Result.
+	 */
+	public evaluate(script: string | Script): any {
+		return BrowserFrameUtility.evaluate(this, script);
 	}
 
 	/**

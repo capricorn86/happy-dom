@@ -10,6 +10,9 @@ export default interface IReadOnlyBrowserSettings {
 	readonly disableComputedStyleRendering: boolean;
 	readonly disableErrorCapturing: boolean;
 	readonly enableFileSystemHttpRequests: boolean;
+	readonly browserNavigation: Array<
+		'allow' | 'deny' | 'sameorigin' | 'allow-children' | 'url-set-fallback'
+	>;
 	readonly navigator: {
 		readonly userAgent: string;
 	};

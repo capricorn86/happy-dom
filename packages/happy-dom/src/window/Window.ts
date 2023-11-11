@@ -544,8 +544,8 @@ export default class Window extends EventTarget implements IWindow {
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
 		this.console = this.#browserFrame.page.console;
-		this.location = new Location('about:blank', this.#browserFrame);
 		this.happyDOM = new HappyDOMWindowAPI(this.#browserFrame);
+		this.location = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 
 		if (options) {
 			if (options.width !== undefined) {
@@ -562,10 +562,6 @@ export default class Window extends EventTarget implements IWindow {
 			} else if (options.innerHeight !== undefined) {
 				this.innerHeight = options.innerHeight;
 				this.outerHeight = options.innerHeight;
-			}
-
-			if (options.url !== undefined) {
-				this.#browserFrame.url = options.url;
 			}
 		}
 

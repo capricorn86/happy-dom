@@ -3,7 +3,7 @@ import DetachedBrowserPage from './DetachedBrowserPage.js';
 import IBrowserContext from '../types/IBrowserContext.js';
 
 /**
- * Detached browser context.
+ * Detached browser context used when constructing a Window instance without a browser.
  */
 export default class DetachedBrowserContext implements IBrowserContext {
 	public readonly pages: DetachedBrowserPage[];
@@ -16,7 +16,8 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	 */
 	constructor(browser: DetachedBrowser) {
 		this.browser = browser;
-		this.pages = [new DetachedBrowserPage(this)];
+		this.pages = [];
+		this.pages.push(new DetachedBrowserPage(this));
 	}
 
 	/**
@@ -26,7 +27,7 @@ export default class DetachedBrowserContext implements IBrowserContext {
 		if (!this.browser) {
 			return;
 		}
-		for (const page of this.pages) {
+		for (const page of this.pages.slice()) {
 			page.close();
 		}
 		const browser = this.browser;

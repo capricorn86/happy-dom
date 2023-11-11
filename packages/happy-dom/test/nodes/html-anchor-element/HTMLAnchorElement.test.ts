@@ -7,6 +7,7 @@ import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import IRequest from '../../../src/fetch/types/IRequest.js';
 import IResponse from '../../../src/fetch/types/IResponse.js';
 import Fetch from '../../../src/fetch/Fetch.js';
+import Browser from '../../../src/browser/Browser.js';
 
 const BLOB_URL = 'blob:https://mozilla.org';
 
@@ -406,27 +407,154 @@ describe('HTMLAnchorElement', () => {
 	});
 
 	describe('dispatchEvent()', () => {
-		it(`Doesn't change the location when a "click" event is dispatched inside the main frame of a detached browser.`, () => {
+		it('Navigates the browser when a "click" event is dispatched on an element.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = <IRequest>this.request;
+				return Promise.resolve(<IResponse>{
+					text: () => Promise.resolve('Test')
+				});
+			});
+
+			const element = <IHTMLAnchorElement>window.document.createElement('a');
+			element.href = 'https://www.example.com';
+			window.document.body.appendChild(element);
+			element.dispatchEvent(new PointerEvent('click'));
+
+			const newWindow = page.mainFrame.window;
+
+			expect(newWindow === window).toBe(false);
+			expect(newWindow.location.href).toBe('https://www.example.com/');
+
+			await browser.whenComplete();
+
+			expect(newWindow.document.body.innerHTML).toBe('Test');
+
+			newWindow.close();
+
+			expect(newWindow.closed).toBe(true);
+		});
+
+		it('Navigates the browser when a "click" event is dispatched on an element with target "_blank".', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = <IRequest>this.request;
+				return Promise.resolve(<IResponse>{
+					text: () => Promise.resolve('Test')
+				});
+			});
+
+			const element = <IHTMLAnchorElement>window.document.createElement('a');
+			element.href = 'https://www.example.com';
+			element.target = '_blank';
+			window.document.body.appendChild(element);
+			element.dispatchEvent(new PointerEvent('click'));
+
+			const newWindow = browser.defaultContext.pages[1].mainFrame.window;
+
+			expect(newWindow === window).toBe(false);
+			expect(newWindow.location.href).toBe('https://www.example.com/');
+
+			await browser.whenComplete();
+
+			expect(newWindow.document.body.innerHTML).toBe('Test');
+
+			newWindow.close();
+
+			expect(newWindow.closed).toBe(true);
+		});
+
+		it('Navigates the browser when a "click" event is dispatched on an element, even if the element is not connected to DOM.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = <IRequest>this.request;
+				return Promise.resolve(<IResponse>{
+					text: () => Promise.resolve('Test')
+				});
+			});
+
+			const element = <IHTMLAnchorElement>window.document.createElement('a');
+			element.href = 'https://www.example.com';
+			element.dispatchEvent(new PointerEvent('click'));
+
+			const newWindow = page.mainFrame.window;
+
+			expect(newWindow === window).toBe(false);
+			expect(newWindow.location.href).toBe('https://www.example.com/');
+
+			await browser.whenComplete();
+
+			expect(newWindow.document.body.innerHTML).toBe('Test');
+		});
+
+		it(`Doesn't navigate or change the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "browserNavigation" is set to ["deny"].`, () => {
+			const window = new Window({
+				settings: {
+					browserNavigation: ['deny']
+				}
+			});
+			document = window.document;
+
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				throw new Error('Fetch should not be called.');
 			});
+
 			const element = <IHTMLAnchorElement>document.createElement('a');
 			element.href = 'https://www.example.com';
 			document.body.appendChild(element);
 			element.dispatchEvent(new PointerEvent('click'));
-			expect(window.location.href).toBe('https://www.somesite.com/test.html');
+			expect(window.location.href).toBe('about:blank');
 		});
 
-		it('Changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "url-set-fallback" is set.', () => {
+		it(`Doesn't navigate, but changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "browserNavigation" is set to ["deny", "url-set-fallback"].`, () => {
+			const window = new Window({
+				settings: {
+					browserNavigation: ['deny', 'url-set-fallback']
+				}
+			});
+			document = window.document;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				throw new Error('Fetch should not be called.');
+			});
+
+			const newWindow = <IWindow>window.open();
+
+			const element = <IHTMLAnchorElement>newWindow.document.createElement('a');
+			element.href = 'https://www.example.com';
+			newWindow.document.body.appendChild(element);
+			element.dispatchEvent(new PointerEvent('click'));
+			expect(newWindow.closed).toBe(false);
+			expect(newWindow.location.href).toBe('https://www.example.com/');
+		});
+
+		it('Changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "browserNavigation" is set to ["allow", "url-set-fallback"].', () => {
 			const window = new Window({
 				settings: {
 					browserNavigation: ['allow', 'url-set-fallback']
 				}
 			});
 			document = window.document;
+
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				throw new Error('Fetch should not be called.');
 			});
+
 			const element = <IHTMLAnchorElement>document.createElement('a');
 			element.href = 'https://www.example.com';
 			document.body.appendChild(element);
@@ -470,28 +598,6 @@ describe('HTMLAnchorElement', () => {
 			element.dispatchEvent(new PointerEvent('click'));
 			expect((<IRequest>(<unknown>request)).url).toBe('https://www.example.com/');
 			expect(newWindow.closed).toBe(true);
-		});
-
-		it(`Doesn't navigate the browser when a "click" event is dispatched on an element inside a non-main frame of a detached browser when the Happy DOM setting "deny" is set to "true".`, () => {
-			const window = new Window({
-				settings: {
-					browserNavigation: ['deny', 'url-set-fallback']
-				}
-			});
-			document = window.document;
-
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				throw new Error('Fetch should not be called.');
-			});
-
-			const newWindow = <IWindow>window.open();
-
-			const element = <IHTMLAnchorElement>newWindow.document.createElement('a');
-			element.href = 'https://www.example.com';
-			newWindow.document.body.appendChild(element);
-			element.dispatchEvent(new PointerEvent('click'));
-			expect(newWindow.closed).toBe(false);
-			expect(newWindow.location.href).toBe('https://www.example.com/');
 		});
 	});
 });

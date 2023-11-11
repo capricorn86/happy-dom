@@ -10,9 +10,12 @@ export default interface IOptionalBrowserSettings {
 	disableComputedStyleRendering?: boolean;
 	disableErrorCapturing?: boolean;
 	enableFileSystemHttpRequests?: boolean;
-	browserNavigation?: Array<'allow' | 'deny' | 'sameorigin' | 'child-only' | 'url-set-fallback'>;
+	browserNavigation?: Array<
+		'allow' | 'deny' | 'sameorigin' | 'allow-children' | 'url-set-fallback'
+	>;
 	navigator?: {
 		userAgent?: string;
+		maxTouchPoints?: number;
 	};
 	device?: {
 		prefersColorScheme?: string;

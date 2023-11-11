@@ -12,6 +12,9 @@ import DetachedBrowserFrame from './detached-browser/DetachedBrowserFrame.js';
 import { URL } from 'url';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import Location from '../location/Location.js';
+import AbortController from '../fetch/AbortController.js';
+import { Script } from 'vm';
 
 /**
  * Browser frame utility.
@@ -32,7 +35,7 @@ export default class BrowserFrameUtility {
 			}
 		}
 
-		for (const childFrame of frame.childFrames) {
+		for (const childFrame of frame.childFrames.slice()) {
 			this.closeFrame(childFrame);
 		}
 
@@ -56,6 +59,20 @@ export default class BrowserFrameUtility {
 		(<IBrowserFrame>frame.parentFrame) = parentFrame;
 		parentFrame.childFrames.push(frame);
 		return frame;
+	}
+
+	/**
+	 * Returns frames.
+	 *
+	 * @param parentFrame Parent frame.
+	 * @returns Frames, including the parent.
+	 */
+	public static getFrames(parentFrame: IBrowserFrame): IBrowserFrame[] {
+		let frames = [parentFrame];
+		for (const frame of parentFrame.childFrames) {
+			frames = frames.concat(this.getFrames(frame));
+		}
+		return frames;
 	}
 
 	/**
@@ -107,7 +124,7 @@ export default class BrowserFrameUtility {
 			!this.isBrowserNavigationAllowed(frame, frame.url, url)
 		) {
 			if (frame.page.context.browser.settings.browserNavigation.includes('url-set-fallback')) {
-				frame.url = url;
+				(<Location>frame.window.location) = new Location(frame, url);
 			}
 			return null;
 		}
@@ -123,7 +140,8 @@ export default class BrowserFrameUtility {
 
 		(<IWindow>frame.window) = new windowClass({
 			browserFrame: frame,
-			console: frame.page.console
+			console: frame.page.console,
+			url
 		});
 
 		if (options?.referrer) {
@@ -134,29 +152,37 @@ export default class BrowserFrameUtility {
 			return null;
 		}
 
-		frame.url = url;
-
 		const readyStateManager = (<{ _readyStateManager: DocumentReadyStateManager }>(
 			(<unknown>frame.window)
 		))._readyStateManager;
 
 		readyStateManager.startTask();
 
+		let abortController = new AbortController();
 		let response: IResponse;
 		let responseText: string;
+
+		const timeout = frame.window.setTimeout(
+			() => abortController.abort('Request timed out.'),
+			options?.timeout ?? 30000
+		);
 
 		try {
 			response = await frame.window.fetch(url, {
 				referrer: options?.referrer,
-				referrerPolicy: options?.referrerPolicy
+				referrerPolicy: options?.referrerPolicy,
+				signal: abortController.signal
 			});
 			responseText = await response.text();
 		} catch (error) {
+			// TODO: Throw error as it can't be retrieved otherwise
+			frame.window.clearTimeout(timeout);
 			readyStateManager.endTask();
 			WindowErrorUtility.dispatchError(frame.window, error);
 			return response || null;
 		}
 
+		frame.window.clearTimeout(timeout);
 		frame.content = responseText;
 		readyStateManager.endTask();
 
@@ -187,7 +213,7 @@ export default class BrowserFrameUtility {
 			return false;
 		}
 
-		if (settings.browserNavigation.includes('child-only') && frame.page.mainFrame === frame) {
+		if (settings.browserNavigation.includes('allow-children') && frame.page.mainFrame === frame) {
 			return false;
 		}
 
@@ -238,5 +264,17 @@ export default class BrowserFrameUtility {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Evaluates code or a VM Script in the frame's context.
+	 *
+	 * @param frame Frame.
+	 * @param script Script.
+	 * @returns Result.
+	 */
+	public static evaluate(frame: IBrowserFrame, script: string | Script): any {
+		script = typeof script === 'string' ? new Script(script) : script;
+		return script.runInContext(frame.window);
 	}
 }
