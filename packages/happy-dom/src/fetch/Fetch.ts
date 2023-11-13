@@ -18,6 +18,7 @@ import Request from './Request.js';
 import Response from './Response.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import CookieJar from '../cookie/CookieJar.js';
+import AbortSignal from './AbortSignal.js';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -186,10 +187,12 @@ export default class Fetch {
 
 	/**
 	 * Event listener for signal "abort" event.
+	 *
+	 * @param event Event.
 	 */
-	private onSignalAbort(): void {
+	private onSignalAbort(event: Event): void {
 		this.finalizeRequest();
-		this.abort();
+		this.abort((<AbortSignal>event.target)?.reason);
 	}
 
 	/**
@@ -664,9 +667,14 @@ export default class Fetch {
 
 	/**
 	 * Aborts the request.
+	 *
+	 * @param reason Reason.
 	 */
-	private abort(): void {
-		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+	private abort(reason?: string): void {
+		const error = new DOMException(
+			'The operation was aborted.' + (reason ? ' ' + reason : ''),
+			DOMExceptionNameEnum.abortError
+		);
 
 		if (this.request.body) {
 			this.request.body.destroy(error);

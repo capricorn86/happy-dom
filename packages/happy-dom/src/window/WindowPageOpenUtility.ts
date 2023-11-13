@@ -1,4 +1,3 @@
-import { URL } from 'url';
 import IWindow from './IWindow.js';
 import CrossOriginWindow from './CrossOriginWindow.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
@@ -50,9 +49,11 @@ export default class WindowPageOpenUtility {
 				break;
 		}
 
-		targetFrame.goto(BrowserFrameUtility.getRelativeURL(browserFrame, url), {
-			referrer: features.noreferrer ? 'no-referrer' : undefined
-		});
+		targetFrame
+			.goto(BrowserFrameUtility.getRelativeURL(browserFrame, url), {
+				referrer: features.noreferrer ? 'no-referrer' : undefined
+			})
+			.catch((error) => targetFrame.page.console.error(error));
 
 		// When using the Window instance directly and not via the Browser API we should not navigate the browser frame.
 		if (BrowserFrameUtility.isDetachedMainFrame(targetFrame)) {

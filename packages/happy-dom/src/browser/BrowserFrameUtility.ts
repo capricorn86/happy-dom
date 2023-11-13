@@ -78,6 +78,7 @@ export default class BrowserFrameUtility {
 	/**
 	 * Go to a page.
 	 *
+	 * @throws Error if the request can't be resolved (because of SSL error or similar). It will not throw if the response is not ok.
 	 * @param windowClass Window class.
 	 * @param frame Frame.
 	 * @param url URL.
@@ -175,16 +176,18 @@ export default class BrowserFrameUtility {
 			});
 			responseText = await response.text();
 		} catch (error) {
-			// TODO: Throw error as it can't be retrieved otherwise
 			frame.window.clearTimeout(timeout);
 			readyStateManager.endTask();
-			WindowErrorUtility.dispatchError(frame.window, error);
-			return response || null;
+			throw error;
 		}
 
 		frame.window.clearTimeout(timeout);
 		frame.content = responseText;
 		readyStateManager.endTask();
+
+		if (!response.ok) {
+			frame.page.console.error(`GET ${url} ${response.status} (${response.statusText})`);
+		}
 
 		return response;
 	}

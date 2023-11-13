@@ -35,6 +35,20 @@ describe('Location', () => {
 			expect(calledURL).toBe(HREF);
 			expect(calledOptions).toBeUndefined();
 		});
+
+		it('Handles promise rejections.', async () => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+				return Promise.reject(new Error('Test error'));
+			});
+
+			location.href = HREF;
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(
+				browserFrame.page.virtualConsolePrinter.readAsString().startsWith('Error: Test error\n')
+			).toBe(true);
+		});
 	});
 
 	describe('get href()', () => {
@@ -62,6 +76,20 @@ describe('Location', () => {
 			expect(calledURL).toBe(HREF);
 			expect(calledOptions).toBeUndefined();
 		});
+
+		it('Handles promise rejections.', async () => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+				return Promise.reject(new Error('Test error'));
+			});
+
+			location.replace(HREF);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(
+				browserFrame.page.virtualConsolePrinter.readAsString().startsWith('Error: Test error\n')
+			).toBe(true);
+		});
 	});
 
 	describe('assign()', () => {
@@ -82,6 +110,20 @@ describe('Location', () => {
 			expect(calledURL).toBe(HREF);
 			expect(calledOptions).toBeUndefined();
 		});
+
+		it('Handles promise rejections.', async () => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+				return Promise.reject(new Error('Test error'));
+			});
+
+			location.assign(HREF);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(
+				browserFrame.page.virtualConsolePrinter.readAsString().startsWith('Error: Test error\n')
+			).toBe(true);
+		});
 	});
 
 	describe('reload()', () => {
@@ -101,6 +143,20 @@ describe('Location', () => {
 
 			expect(calledURL).toBe('about:blank');
 			expect(calledOptions).toBeUndefined();
+		});
+
+		it('Handles promise rejections.', async () => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+				return Promise.reject(new Error('Test error'));
+			});
+
+			location.reload();
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(
+				browserFrame.page.virtualConsolePrinter.readAsString().startsWith('Error: Test error\n')
+			).toBe(true);
 		});
 	});
 });

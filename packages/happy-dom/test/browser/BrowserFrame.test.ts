@@ -2,12 +2,13 @@ import { Script } from 'vm';
 import Browser from '../../src/browser/Browser';
 import BrowserFrameUtility from '../../src/browser/BrowserFrameUtility';
 import Event from '../../src/event/Event';
-import ErrorEvent from '../../src/event/events/ErrorEvent';
 import Window from '../../src/window/Window';
 import IRequest from '../../src/fetch/types/IRequest';
 import IResponse from '../../src/fetch/types/IResponse';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import Fetch from '../../src/fetch/Fetch';
+import DOMException from '../../src/exception/DOMException';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 
 describe('BrowserFrame', () => {
 	afterEach(() => {
@@ -224,11 +225,75 @@ describe('BrowserFrame', () => {
 			const browser = new Browser();
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
-			const response = await page.mainFrame.goto('http://localhost:9999', {
-				timeout: 1
+			let error: Error | null = null;
+			try {
+				await page.mainFrame.goto('http://localhost:9999', {
+					timeout: 1
+				});
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
+				new DOMException(
+					'The operation was aborted. Request timed out.',
+					DOMExceptionNameEnum.abortError
+				)
+			);
+
+			expect(page.mainFrame.url).toBe('http://localhost:9999/');
+			expect(page.mainFrame.window).not.toBe(oldWindow);
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('');
+		});
+
+		it('Handles error status code in response.', async () => {
+			let request: IRequest | null = null;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = this.request;
+				return Promise.resolve(<IResponse>{
+					url: request?.url,
+					status: 404,
+					statusText: 'Not Found',
+					text: () =>
+						new Promise((resolve) =>
+							setTimeout(() => resolve('<html><body>404 error</body></html>'), 1)
+						)
+				});
 			});
 
-			expect(response).toBeNull();
+			const browser = new Browser();
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+			const response = await page.mainFrame.goto('http://localhost:3000');
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window).not.toBe(oldWindow);
+			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('404 error');
+
+			expect((<IResponse>(<unknown>response)).status).toBe(404);
+			expect(page.virtualConsolePrinter.readAsString()).toBe(
+				'GET http://localhost:3000/ 404 (Not Found)\n'
+			);
+		});
+
+		it('Handles reject when performing fetch.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.reject(new Error('Error'));
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+			let error: Error | null = null;
+			try {
+				await page.mainFrame.goto('http://localhost:9999');
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(new Error('Error'));
+
 			expect(page.mainFrame.url).toBe('http://localhost:9999/');
 			expect(page.mainFrame.window).not.toBe(oldWindow);
 			expect(page.mainFrame.window.document.body.innerHTML).toBe('');

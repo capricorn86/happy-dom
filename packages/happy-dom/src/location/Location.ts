@@ -23,7 +23,7 @@ export default class Location extends URL {
 	 */
 	// @ts-ignore
 	public set href(url: string) {
-		this.#browserFrame.goto(url);
+		this.#browserFrame.goto(url).catch((error) => this.#browserFrame.page.console.error(error));
 	}
 
 	/**
@@ -39,25 +39,24 @@ export default class Location extends URL {
 	 * @param url URL.
 	 */
 	public replace(url: string): void {
-		this.#browserFrame.goto(url);
+		this.href = url;
 	}
 
 	/**
 	 * Loads the resource at the URL provided in parameter.
 	 *
-	 * Note: Will do the same thing as "replace()" as server-dom does not support loading the URL.
-	 *
-	 * @param url
-	 * @see this.replace()
+	 * @param url URL.
 	 */
 	public assign(url: string): void {
-		this.#browserFrame.goto(url);
+		this.href = url;
 	}
 
 	/**
 	 * Reloads the resource from the current URL.
 	 */
 	public reload(): void {
-		this.#browserFrame.goto(this.href);
+		this.#browserFrame
+			.goto(this.href)
+			.catch((error) => this.#browserFrame.page.console.error(error));
 	}
 }

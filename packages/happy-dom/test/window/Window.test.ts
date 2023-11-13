@@ -1547,10 +1547,10 @@ describe('Window', () => {
 		it('Dispatches error event when the Javascript code is invalid.', async () => {
 			const newWindow = <IWindow>window.open(`javascript:document.write(test);`);
 			let errorEvent: ErrorEvent | null = null;
-			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+			newWindow.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 			expect(newWindow).toBeInstanceOf(Window);
 			expect(newWindow.location.href).toBe('about:blank');
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await new Promise((resolve) => setTimeout(resolve, 20));
 			expect(String((<ErrorEvent>(<unknown>errorEvent)).error)).toBe(
 				'ReferenceError: test is not defined'
 			);
@@ -1752,6 +1752,25 @@ describe('Window', () => {
 					resolve(null);
 				});
 			});
+		});
+
+		it("Outputs error to the console if the request can't be resolved.", async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.reject(new Error('Test error'));
+			});
+
+			<IWindow>page.mainFrame.window.open('https://www.github.com/');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(
+				browser.defaultContext.pages[1].virtualConsolePrinter
+					.readAsString()
+					.startsWith('Error: Test error\n')
+			).toBe(true);
 		});
 	});
 });

@@ -128,6 +128,7 @@ export default class HTMLIFrameElementPageLoader {
 			? this.#browserIFrame.window
 			: new CrossOriginWindow(this.#browserIFrame.window, window);
 
+		// TODO: Use BrowserFrame.goto()
 		this.#browserIFrame.window
 			.fetch(url)
 			.then((response) => {
