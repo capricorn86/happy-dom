@@ -59,9 +59,6 @@ export default class HTMLIFrameElementPageLoader {
 			this.#browserParentFrame,
 			this.#element.src
 		);
-		// Iframes has a special rule for CORS and doesn't allow access between frames when the origin is different.
-		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
-		const parentWindow = isSameOrigin ? window : new CrossOriginWindow(window);
 
 		if (this.#browserIFrame && originURL.href === targetURL.href) {
 			return;
@@ -78,7 +75,18 @@ export default class HTMLIFrameElementPageLoader {
 			return;
 		}
 
+		// Iframes has a special rule for CORS and doesn't allow access between frames when the origin is different.
+		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
+		const parentWindow = isSameOrigin ? window : new CrossOriginWindow(window);
+
 		this.#browserIFrame = BrowserFrameUtility.newFrame(this.#browserParentFrame);
+
+		this.#browserIFrame.goto(targetURL.href).then((response) => {
+			this.#contentWindowContainer.window = isSameOrigin
+				? this.#browserIFrame.window
+				: new CrossOriginWindow(this.#browserIFrame.window, window);
+			this.#element.dispatchEvent(new Event('load'));
+		});
 
 		if (url === 'about:blank' || url.startsWith('javascript:')) {
 			(<IWindow>this.#browserIFrame.window.parent) = window;
