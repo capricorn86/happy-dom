@@ -53,35 +53,31 @@ export default class HTMLIFrameElementPageLoader {
 			return;
 		}
 
-		let url = this.#element.src || 'about:blank';
+		const window = this.#element.ownerDocument._defaultView;
+		const originURL = this.#browserParentFrame.window.location;
+		const targetURL = BrowserFrameUtility.getRelativeURL(
+			this.#browserParentFrame,
+			this.#element.src
+		);
+		// Iframes has a special rule for CORS and doesn't allow access between frames when the origin is different.
+		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
+		const parentWindow = isSameOrigin ? window : new CrossOriginWindow(window);
 
-		if (url !== 'about:blank' && !url.startsWith('javascript:')) {
-			url = new URL(this.#element.src, this.#browserParentFrame.window.location).href;
-		}
-
-		if (this.#browserIFrame && url === this.#browserIFrame.url) {
+		if (this.#browserIFrame && originURL.href === targetURL.href) {
 			return;
 		}
-
-		if (this.#browserIFrame) {
-			BrowserFrameUtility.closeFrame(this.#browserIFrame);
-			this.#browserIFrame = null;
-		}
-
-		this.#contentWindowContainer.window = null;
 
 		if (this.#browserParentFrame.page.context.browser.settings.disableIframePageLoading) {
 			WindowErrorUtility.dispatchError(
 				this.#element,
 				new DOMException(
-					`Failed to load iframe page "${url}". Iframe page loading is disabled.`,
+					`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
 			return;
 		}
 
-		const window = this.#element.ownerDocument._defaultView;
 		this.#browserIFrame = BrowserFrameUtility.newFrame(this.#browserParentFrame);
 
 		if (url === 'about:blank' || url.startsWith('javascript:')) {
@@ -106,23 +102,6 @@ export default class HTMLIFrameElementPageLoader {
 			this.#element.dispatchEvent(new Event('load'));
 			return;
 		}
-
-		const originURL = window.location;
-		const targetURL = new URL(url, originURL);
-
-		// Iframes has a special rule for CORS and doesn't allow access between frames when the origin is different.
-		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
-
-		this.#browserIFrame.url = url;
-		const readyStateManager = (<{ _readyStateManager: DocumentReadyStateManager }>(
-			(<unknown>this.#browserParentFrame.window)
-		))._readyStateManager;
-
-		readyStateManager.startTask();
-
-		const parentWindow = isSameOrigin ? window : new CrossOriginWindow(window);
-		(<IWindow | CrossOriginWindow>this.#browserIFrame.window.parent) = parentWindow;
-		(<IWindow | CrossOriginWindow>this.#browserIFrame.window.top) = parentWindow;
 
 		this.#contentWindowContainer.window = isSameOrigin
 			? this.#browserIFrame.window

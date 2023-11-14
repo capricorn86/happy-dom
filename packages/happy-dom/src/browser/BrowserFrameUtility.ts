@@ -95,9 +95,10 @@ export default class BrowserFrameUtility {
 		url: string,
 		options?: IGoToOptions
 	): Promise<IResponse | null> {
-		url = this.getRelativeURL(frame, url);
+		const originURL = new URL(frame.url);
+		const targetURL = this.getRelativeURL(frame, url);
 
-		if (url.startsWith('javascript:')) {
+		if (targetURL.protocol === 'javascript') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
 				const readyStateManager = (<{ _readyStateManager: DocumentReadyStateManager }>(
 					(<unknown>frame.window)
@@ -106,7 +107,8 @@ export default class BrowserFrameUtility {
 				readyStateManager.startTask();
 
 				frame.page.mainFrame.window.setTimeout(() => {
-					const code = '//# sourceURL=' + frame.url + '\n' + url.replace('javascript:', '');
+					const code =
+						'//# sourceURL=' + frame.url + '\n' + targetURL.href.replace('javascript:', '');
 
 					if (frame.page.context.browser.settings.disableErrorCapturing) {
 						frame.window.eval(code);
@@ -122,10 +124,10 @@ export default class BrowserFrameUtility {
 
 		if (
 			this.isDetachedMainFrame(frame) ||
-			!this.isBrowserNavigationAllowed(frame, frame.url, url)
+			!this.isBrowserNavigationAllowed(frame, originURL, targetURL)
 		) {
 			if (frame.page.context.browser.settings.browserNavigation.includes('url-set-fallback')) {
-				(<Location>frame.window.location) = new Location(frame, url);
+				(<Location>frame.window.location) = new Location(frame, targetURL.href);
 			}
 			return null;
 		}
@@ -142,14 +144,14 @@ export default class BrowserFrameUtility {
 		(<IWindow>frame.window) = new windowClass({
 			browserFrame: frame,
 			console: frame.page.console,
-			url
+			url: targetURL.href
 		});
 
 		if (options?.referrer) {
 			(<string>frame.window.document.referrer) = options.referrer;
 		}
 
-		if (!url || url.startsWith('about:')) {
+		if (targetURL.protocol === 'about') {
 			return null;
 		}
 
@@ -169,11 +171,24 @@ export default class BrowserFrameUtility {
 		);
 
 		try {
-			response = await frame.window.fetch(url, {
+			response = await frame.window.fetch(targetURL.href, {
 				referrer: options?.referrer,
 				referrerPolicy: options?.referrerPolicy,
 				signal: abortController.signal
 			});
+
+			// Handles the "X-Frame-Options" header for child frames.
+			if (frame.parentFrame) {
+				const xFrameOptions = response.headers.get('X-Frame-Options')?.toLowerCase();
+				const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
+
+				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {
+					throw new Error(
+						`Refused to display '${url}' in a frame because it set 'X-Frame-Options' to '${xFrameOptions}'.`
+					);
+				}
+			}
+
 			responseText = await response.text();
 		} catch (error) {
 			frame.window.clearTimeout(timeout);
@@ -186,7 +201,7 @@ export default class BrowserFrameUtility {
 		readyStateManager.endTask();
 
 		if (!response.ok) {
-			frame.page.console.error(`GET ${url} ${response.status} (${response.statusText})`);
+			frame.page.console.error(`GET ${targetURL.href} ${response.status} (${response.statusText})`);
 		}
 
 		return response;
@@ -200,8 +215,8 @@ export default class BrowserFrameUtility {
 	 */
 	public static isBrowserNavigationAllowed(
 		frame: IBrowserFrame,
-		fromURL: string,
-		toURL: string
+		fromURL: URL,
+		toURL: URL
 	): boolean {
 		const settings = frame.page.context.browser.settings;
 
@@ -209,10 +224,7 @@ export default class BrowserFrameUtility {
 			return false;
 		}
 
-		if (
-			settings.browserNavigation.includes('sameorigin') &&
-			new URL(fromURL).origin !== new URL(toURL).origin
-		) {
+		if (settings.browserNavigation.includes('sameorigin') && fromURL.origin !== toURL.origin) {
 			return false;
 		}
 
@@ -245,15 +257,15 @@ export default class BrowserFrameUtility {
 	 * @param url URL.
 	 * @returns Relative URL.
 	 */
-	public static getRelativeURL(frame: IBrowserFrame, url: string): string {
+	public static getRelativeURL(frame: IBrowserFrame, url: string): URL {
 		url = url || 'about:blank';
 
 		if (url.startsWith('about:') || url.startsWith('javascript:')) {
-			return url;
+			return new URL(url);
 		}
 
 		try {
-			return new URL(url, frame.window.location).href;
+			return new URL(url, frame.window.location);
 		} catch (e) {
 			if (frame.window.location.hostname) {
 				throw new DOMException(

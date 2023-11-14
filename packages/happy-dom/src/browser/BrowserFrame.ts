@@ -69,7 +69,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public set url(url) {
 		(<Location>this.window.location) = new Location(
 			this,
-			BrowserFrameUtility.getRelativeURL(this, url)
+			BrowserFrameUtility.getRelativeURL(this, url).href
 		);
 	}
 
