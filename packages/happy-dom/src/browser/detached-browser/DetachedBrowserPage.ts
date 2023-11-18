@@ -123,8 +123,9 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	 *
 	 * @param url URL.
 	 * @param [options] Options.
+	 * @returns Response.
 	 */
-	public async goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return await this.mainFrame.goto(url, options);
+	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
+		return this.mainFrame.goto(url, options);
 	}
 }

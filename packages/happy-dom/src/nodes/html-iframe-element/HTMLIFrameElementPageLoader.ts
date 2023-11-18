@@ -1,4 +1,3 @@
-import URL from '../../url/URL.js';
 import Event from '../../event/Event.js';
 import IWindow from '../../window/IWindow.js';
 import CrossOriginWindow from '../../window/CrossOriginWindow.js';
@@ -6,8 +5,6 @@ import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import ICrossOriginWindow from '../../window/ICrossOriginWindow.js';
 import IHTMLIFrameElement from './IHTMLIFrameElement.js';
-import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
-import IResponse from '../../fetch/types/IResponse.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import BrowserFrameUtility from '../../browser/BrowserFrameUtility.js';
@@ -60,7 +57,7 @@ export default class HTMLIFrameElementPageLoader {
 			this.#element.src
 		);
 
-		if (this.#browserIFrame && originURL.href === targetURL.href) {
+		if (this.#browserIFrame && this.#browserIFrame.window.location.href === targetURL.href) {
 			return;
 		}
 
@@ -79,64 +76,20 @@ export default class HTMLIFrameElementPageLoader {
 		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
 		const parentWindow = isSameOrigin ? window : new CrossOriginWindow(window);
 
-		this.#browserIFrame = BrowserFrameUtility.newFrame(this.#browserParentFrame);
+		this.#browserIFrame =
+			this.#browserIFrame ?? BrowserFrameUtility.newFrame(this.#browserParentFrame);
 
-		this.#browserIFrame.goto(targetURL.href).then((response) => {
-			this.#contentWindowContainer.window = isSameOrigin
-				? this.#browserIFrame.window
-				: new CrossOriginWindow(this.#browserIFrame.window, window);
-			this.#element.dispatchEvent(new Event('load'));
-		});
+		(<IWindow | ICrossOriginWindow>(<unknown>this.#browserIFrame.window.top)) = parentWindow;
+		(<IWindow | ICrossOriginWindow>(<unknown>this.#browserIFrame.window.parent)) = parentWindow;
 
-		if (url === 'about:blank' || url.startsWith('javascript:')) {
-			(<IWindow>this.#browserIFrame.window.parent) = window;
-			(<IWindow>this.#browserIFrame.window.top) = window;
-			this.#contentWindowContainer.window = this.#browserIFrame.window;
-
-			if (
-				url !== 'about:blank' &&
-				!this.#browserParentFrame.page.context.browser.settings.disableJavaScriptEvaluation
-			) {
-				const code = '//# sourceURL=about:blank\n' + url.replace('javascript:', '');
-				if (this.#browserParentFrame.page.context.browser.settings.disableErrorCapturing) {
-					this.#browserIFrame.window.eval(code);
-				} else {
-					WindowErrorUtility.captureError(this.#browserIFrame.window, () =>
-						this.#browserIFrame.window.eval(code)
-					);
-				}
-			}
-
-			this.#element.dispatchEvent(new Event('load'));
-			return;
-		}
+		this.#browserIFrame
+			.goto(targetURL.href)
+			.then(() => this.#element.dispatchEvent(new Event('load')))
+			.catch((error) => WindowErrorUtility.dispatchError(this.#element, error));
 
 		this.#contentWindowContainer.window = isSameOrigin
 			? this.#browserIFrame.window
 			: new CrossOriginWindow(this.#browserIFrame.window, window);
-
-		// TODO: Use BrowserFrame.goto()
-		this.#browserIFrame.window
-			.fetch(url)
-			.then((response) => {
-				const xFrameOptions = response.headers.get('X-Frame-Options')?.toLowerCase();
-				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {
-					throw new Error(
-						`Refused to display '${url}' in a frame because it set 'X-Frame-Options' to '${xFrameOptions}'.`
-					);
-				}
-				return response;
-			})
-			.then((response: IResponse) => response.text())
-			.then((responseText: string) => {
-				this.#browserIFrame.content = responseText;
-				readyStateManager.endTask();
-				this.#element.dispatchEvent(new Event('load'));
-			})
-			.catch((error) => {
-				readyStateManager.endTask();
-				WindowErrorUtility.dispatchError(this.#element, error);
-			});
 	}
 
 	/**

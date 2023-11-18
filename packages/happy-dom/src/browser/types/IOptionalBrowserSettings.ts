@@ -1,3 +1,5 @@
+import BrowserNavigationEnum from './BrowserNavigationEnum.js';
+
 /**
  * Browser settings.
  */
@@ -10,9 +12,7 @@ export default interface IOptionalBrowserSettings {
 	disableComputedStyleRendering?: boolean;
 	disableErrorCapturing?: boolean;
 	enableFileSystemHttpRequests?: boolean;
-	browserNavigation?: Array<
-		'allow' | 'deny' | 'sameorigin' | 'allow-children' | 'url-set-fallback'
-	>;
+	browserNavigation?: BrowserNavigationEnum[];
 	navigator?: {
 		userAgent?: string;
 		maxTouchPoints?: number;

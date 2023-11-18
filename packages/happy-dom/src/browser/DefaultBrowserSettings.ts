@@ -1,4 +1,5 @@
 import PackageVersion from '../version.js';
+import BrowserNavigationEnum from './types/BrowserNavigationEnum.js';
 import IBrowserSettings from './types/IBrowserSettings.js';
 
 export default <IBrowserSettings>{
@@ -10,7 +11,7 @@ export default <IBrowserSettings>{
 	disableComputedStyleRendering: false,
 	disableErrorCapturing: false,
 	enableFileSystemHttpRequests: false,
-	browserNavigation: ['allow', 'url-set-fallback'],
+	browserNavigation: [BrowserNavigationEnum.allow, BrowserNavigationEnum.setURLFallback],
 	navigator: {
 		userAgent: `Mozilla/5.0 (X11; ${
 			process.platform.charAt(0).toUpperCase() + process.platform.slice(1) + ' ' + process.arch

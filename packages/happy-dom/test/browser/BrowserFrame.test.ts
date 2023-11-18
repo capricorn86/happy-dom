@@ -9,6 +9,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import Fetch from '../../src/fetch/Fetch';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
+import BrowserNavigationEnum from '../../src/browser/types/BrowserNavigationEnum';
 
 describe('BrowserFrame', () => {
 	afterEach(() => {
@@ -203,10 +204,6 @@ describe('BrowserFrame', () => {
 			expect(page.mainFrame.url).toBe('about:blank');
 			expect(page.mainFrame.window).toBe(oldWindow);
 
-			expect(page.mainFrame.window.document.body.innerHTML).toBe('');
-
-			await new Promise((resolve) => setTimeout(resolve, 2));
-
 			expect(page.mainFrame.window.document.body.innerHTML).toBe('test');
 		});
 
@@ -297,6 +294,250 @@ describe('BrowserFrame', () => {
 			expect(page.mainFrame.url).toBe('http://localhost:9999/');
 			expect(page.mainFrame.window).not.toBe(oldWindow);
 			expect(page.mainFrame.window.document.body.innerHTML).toBe('');
+		});
+
+		it(`Doesn't navigate if the setting "browserNavigation" is set to "['deny']"`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.reject(new Error('Should not be called.'));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.deny]
+				}
+			});
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+
+			await page.mainFrame.goto('http://localhost:9999');
+
+			expect(page.mainFrame.url).toBe('about:blank');
+			expect(page.mainFrame.window === oldWindow).toBe(true);
+		});
+
+		it(`Navigates if the setting "browserNavigation" is set to "['allow']"`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.resolve(<IResponse>{
+					text: () => Promise.resolve('Test')
+				});
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allow]
+				}
+			});
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+
+			await page.mainFrame.goto('http://localhost:9999');
+
+			expect(page.mainFrame.url).toBe('http://localhost:9999/');
+			expect(page.mainFrame.window === oldWindow).toBe(false);
+		});
+
+		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allow-same-origin']" and the parent is of a different origin.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.reject(new Error('Should not be called.'));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+				}
+			});
+			const page = browser.newPage();
+			const childFrame = BrowserFrameUtility.newFrame(page.mainFrame);
+			const oldWindow = childFrame.window;
+
+			page.mainFrame.url = 'https://github.com';
+
+			const response = await childFrame.goto('http://localhost:9999');
+
+			expect(response).toBeNull();
+			expect(childFrame.url).toBe('about:blank');
+			expect(childFrame.window === oldWindow).toBe(true);
+		});
+
+		it(`Navigates if the setting "browserNavigation" is set to "['allow-same-origin']" and the parent is the same origin.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.resolve(<IResponse>(<unknown>{
+					text: () => Promise.resolve('Test'),
+					headers: new Headers()
+				}));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+				}
+			});
+			const page = browser.newPage();
+			const childFrame = BrowserFrameUtility.newFrame(page.mainFrame);
+			const oldWindow = childFrame.window;
+
+			page.mainFrame.url = 'https://github.com';
+
+			await childFrame.goto('https://github.com/capricorn86/happy-dom');
+
+			expect(childFrame.url).toBe('https://github.com/capricorn86/happy-dom');
+			expect(childFrame.window === oldWindow).toBe(false);
+		});
+
+		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allow-same-origin']" and the opener is of a different origin.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.reject(new Error('Should not be called.'));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+				}
+			});
+			const page = browser.newPage();
+			const childPage = browser.newPage(page.mainFrame);
+			const oldWindow = childPage.mainFrame.window;
+
+			page.mainFrame.url = 'https://github.com';
+
+			const response = await childPage.mainFrame.goto('http://localhost:9999');
+
+			expect(response).toBeNull();
+			expect(childPage.mainFrame.url).toBe('about:blank');
+			expect(childPage.mainFrame.window === oldWindow).toBe(true);
+		});
+
+		it(`Navigate if the setting "browserNavigation" is set to "['allow-same-origin']" and the opener has the same origin.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.resolve(<IResponse>(<unknown>{
+					text: () => Promise.resolve('Test'),
+					headers: new Headers()
+				}));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+				}
+			});
+			const page = browser.newPage();
+			const childPage = browser.newPage(page.mainFrame);
+			const oldWindow = childPage.mainFrame.window;
+
+			page.mainFrame.url = 'https://github.com';
+
+			await childPage.mainFrame.goto('https://github.com/capricorn86/happy-dom');
+
+			expect(childPage.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom');
+			expect(childPage.mainFrame.window === oldWindow).toBe(false);
+		});
+
+		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allow-same-origin']" when navigating from one origin to another.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.reject(new Error('Should not be called.'));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+				}
+			});
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+
+			page.mainFrame.url = 'https://github.com';
+
+			const response = await page.mainFrame.goto('http://localhost:9999');
+
+			expect(response).toBeNull();
+			expect(page.mainFrame.url).toBe('https://github.com/');
+			expect(page.mainFrame.window === oldWindow).toBe(true);
+		});
+
+		it(`Navigates if the setting "browserNavigation" is set to "['allowChildFrames']" inside a child frame.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.resolve(<IResponse>(<unknown>{
+					text: () => Promise.resolve('Test'),
+					headers: new Headers()
+				}));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allowChildFrames]
+				}
+			});
+			const page = browser.newPage();
+			const childFrame = BrowserFrameUtility.newFrame(page.mainFrame);
+			const oldWindow = childFrame.window;
+
+			await childFrame.goto('http://localhost:9999');
+
+			expect(childFrame.url).toBe('http://localhost:9999/');
+			expect(childFrame.window === oldWindow).toBe(false);
+		});
+
+		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allowChildFrames']" inside a main frame.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.reject(new Error('Should not be called.'));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allowChildFrames]
+				}
+			});
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+
+			const response = await page.mainFrame.goto('http://localhost:9999');
+
+			expect(response).toBeNull();
+			expect(page.mainFrame.url).toBe('about:blank');
+			expect(page.mainFrame.window === oldWindow).toBe(true);
+		});
+
+		it(`Navigates if the setting "browserNavigation" is set to "['allowChildPages']" inside a child page.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.resolve(<IResponse>(<unknown>{
+					text: () => Promise.resolve('Test'),
+					headers: new Headers()
+				}));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allowChildPages]
+				}
+			});
+			const page = browser.newPage();
+			const childPage = browser.newPage(page.mainFrame);
+			const oldWindow = childPage.mainFrame.window;
+
+			await childPage.mainFrame.goto('http://localhost:9999');
+
+			expect(childPage.mainFrame.url).toBe('http://localhost:9999/');
+			expect(childPage.mainFrame.window === oldWindow).toBe(false);
+		});
+
+		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allowChildPages']" inside a main page.`, async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return Promise.reject(new Error('Should not be called.'));
+			});
+
+			const browser = new Browser({
+				settings: {
+					browserNavigation: [BrowserNavigationEnum.allowChildPages]
+				}
+			});
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+
+			const response = await page.mainFrame.goto('http://localhost:9999');
+
+			expect(response).toBeNull();
+			expect(page.mainFrame.url).toBe('about:blank');
+			expect(page.mainFrame.window === oldWindow).toBe(true);
 		});
 	});
 });

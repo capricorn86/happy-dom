@@ -44,7 +44,7 @@ export default class WindowPageOpenUtility {
 				break;
 			case '_blank':
 			default:
-				const newPage = browserFrame.page.context.newPage();
+				const newPage = browserFrame.page.context.newPage(browserFrame);
 				targetFrame = newPage.mainFrame;
 				break;
 		}
@@ -60,7 +60,7 @@ export default class WindowPageOpenUtility {
 			return null;
 		}
 
-		if (targetURL.protocol === 'javascript') {
+		if (targetURL.protocol === 'javascript:') {
 			return targetFrame.window;
 		}
 

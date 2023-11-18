@@ -15,6 +15,7 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import Location from '../location/Location.js';
 import AbortController from '../fetch/AbortController.js';
 import { Script } from 'vm';
+import BrowserNavigationEnum from './types/BrowserNavigationEnum.js';
 
 /**
  * Browser frame utility.
@@ -42,8 +43,9 @@ export default class BrowserFrameUtility {
 		(<boolean>frame.window.closed) = true;
 		frame._asyncTaskManager.destroy();
 		WindowBrowserSettingsReader.removeSettings(frame.window);
-		(<BrowserPage>frame.page) = null;
-		(<Window>frame.window) = null;
+		(<BrowserPage | null>frame.page) = null;
+		(<Window | null>frame.window) = null;
+		(<IBrowserFrame | null>frame.opener) = null;
 	}
 
 	/**
@@ -95,10 +97,9 @@ export default class BrowserFrameUtility {
 		url: string,
 		options?: IGoToOptions
 	): Promise<IResponse | null> {
-		const originURL = new URL(frame.url);
 		const targetURL = this.getRelativeURL(frame, url);
 
-		if (targetURL.protocol === 'javascript') {
+		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
 				const readyStateManager = (<{ _readyStateManager: DocumentReadyStateManager }>(
 					(<unknown>frame.window)
@@ -106,29 +107,33 @@ export default class BrowserFrameUtility {
 
 				readyStateManager.startTask();
 
-				frame.page.mainFrame.window.setTimeout(() => {
-					const code =
-						'//# sourceURL=' + frame.url + '\n' + targetURL.href.replace('javascript:', '');
+				// The browser will wait for the next tick before executing the script.
+				await new Promise((resolve) => frame.page.mainFrame.window.setTimeout(resolve));
 
-					if (frame.page.context.browser.settings.disableErrorCapturing) {
-						frame.window.eval(code);
-					} else {
-						WindowErrorUtility.captureError(frame.window, () => frame.window.eval(code));
-					}
+				const code =
+					'//# sourceURL=' + frame.url + '\n' + targetURL.href.replace('javascript:', '');
 
-					readyStateManager.endTask();
-				});
+				if (frame.page.context.browser.settings.disableErrorCapturing) {
+					frame.window.eval(code);
+				} else {
+					WindowErrorUtility.captureError(frame.window, () => frame.window.eval(code));
+				}
+
+				readyStateManager.endTask();
 			}
+
 			return null;
 		}
 
-		if (
-			this.isDetachedMainFrame(frame) ||
-			!this.isBrowserNavigationAllowed(frame, originURL, targetURL)
-		) {
-			if (frame.page.context.browser.settings.browserNavigation.includes('url-set-fallback')) {
+		if (this.isDetachedMainFrame(frame) || !this.isBrowserNavigationAllowed(frame, targetURL)) {
+			if (
+				frame.page.context.browser.settings.browserNavigation.includes(
+					BrowserNavigationEnum.setURLFallback
+				)
+			) {
 				(<Location>frame.window.location) = new Location(frame, targetURL.href);
 			}
+
 			return null;
 		}
 
@@ -151,7 +156,7 @@ export default class BrowserFrameUtility {
 			(<string>frame.window.document.referrer) = options.referrer;
 		}
 
-		if (targetURL.protocol === 'about') {
+		if (targetURL.protocol === 'about:') {
 			return null;
 		}
 
@@ -179,6 +184,7 @@ export default class BrowserFrameUtility {
 
 			// Handles the "X-Frame-Options" header for child frames.
 			if (frame.parentFrame) {
+				const originURL = frame.parentFrame.window.location;
 				const xFrameOptions = response.headers.get('X-Frame-Options')?.toLowerCase();
 				const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
 
@@ -213,26 +219,52 @@ export default class BrowserFrameUtility {
 	 * @param frame Frame.
 	 * @returns True if the frame is a detached main frame.
 	 */
-	public static isBrowserNavigationAllowed(
-		frame: IBrowserFrame,
-		fromURL: URL,
-		toURL: URL
-	): boolean {
+	public static isBrowserNavigationAllowed(frame: IBrowserFrame, toURL: URL): boolean {
 		const settings = frame.page.context.browser.settings;
+		let fromURL = frame.page.mainFrame.window.location;
+		if (frame.opener) {
+			fromURL = frame.opener.window.location;
+		}
+		if (frame.parentFrame) {
+			fromURL = frame.parentFrame.window.location;
+		}
 
-		if (settings.browserNavigation.includes('deny')) {
+		if (settings.browserNavigation.includes(BrowserNavigationEnum.all)) {
+			return true;
+		}
+
+		if (
+			settings.browserNavigation.includes(BrowserNavigationEnum.sameOrigin) &&
+			fromURL.protocol !== 'about:' &&
+			toURL.protocol !== 'about:' &&
+			toURL.protocol !== 'javascript:' &&
+			fromURL.origin !== toURL.origin
+		) {
 			return false;
 		}
 
-		if (settings.browserNavigation.includes('sameorigin') && fromURL.origin !== toURL.origin) {
+		if (
+			settings.browserNavigation.includes(BrowserNavigationEnum.mainFrame) &&
+			frame.page.mainFrame !== frame
+		) {
 			return false;
 		}
 
-		if (settings.browserNavigation.includes('allow-children') && frame.page.mainFrame === frame) {
+		if (
+			settings.browserNavigation.includes(BrowserNavigationEnum.childFrame) &&
+			frame.page.mainFrame === frame
+		) {
 			return false;
 		}
 
-		return true;
+		if (
+			settings.browserNavigation.includes(BrowserNavigationEnum.allowChildPages) &&
+			!!frame.opener
+		) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

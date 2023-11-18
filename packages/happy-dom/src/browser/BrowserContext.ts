@@ -1,4 +1,5 @@
 import Browser from './Browser.js';
+import BrowserFrame from './BrowserFrame.js';
 import BrowserPage from './BrowserPage.js';
 import IBrowserContext from './types/IBrowserContext.js';
 
@@ -53,10 +54,12 @@ export default class BrowserContext implements IBrowserContext {
 	/**
 	 * Creates a new page.
 	 *
+	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	public newPage(): BrowserPage {
+	public newPage(opener?: BrowserFrame): BrowserPage {
 		const page = new BrowserPage(this);
+		(<BrowserFrame | null>(<unknown>page.mainFrame.opener)) = opener || null;
 		this.pages.push(page);
 		return page;
 	}

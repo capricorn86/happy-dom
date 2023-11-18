@@ -163,5 +163,12 @@ describe('Browser', () => {
 			browser.close();
 			expect(() => browser.newPage()).toThrow('No default context. The browser has been closed.');
 		});
+
+		it('Supports opener as parameter.', () => {
+			const browser = new Browser();
+			const page1 = browser.newPage();
+			const page2 = browser.newPage(page1.mainFrame);
+			expect(page2.mainFrame.opener).toBe(page1.mainFrame);
+		});
 	});
 });

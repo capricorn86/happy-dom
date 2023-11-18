@@ -128,7 +128,7 @@ import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
-import DetachedWindowAPI from './HappyDOMWindowAPI.js';
+import DetachedWindowAPI from './DetachedWindowAPI.js';
 import Headers from '../fetch/Headers.js';
 import Request from '../fetch/Request.js';
 import Response from '../fetch/Response.js';
@@ -142,7 +142,7 @@ import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js
  */
 export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	// Detached Window API.
-	readonly happyDOM: DetachedWindowAPI;
+	readonly happyDOM?: DetachedWindowAPI;
 
 	// Nodes
 	readonly Node: typeof Node;

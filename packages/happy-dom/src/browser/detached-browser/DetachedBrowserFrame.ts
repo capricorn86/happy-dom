@@ -14,6 +14,7 @@ import { Script } from 'vm';
 export default class DetachedBrowserFrame implements IBrowserFrame {
 	public readonly childFrames: DetachedBrowserFrame[] = [];
 	public readonly parentFrame: DetachedBrowserFrame | null = null;
+	public readonly opener: DetachedBrowserFrame | null = null;
 	public readonly page: DetachedBrowserPage;
 	public readonly window: IWindow;
 	public _asyncTaskManager = new AsyncTaskManager();
@@ -112,9 +113,10 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 *
 	 * @param url URL.
 	 * @param [options] Options.
+	 * @returns Response.
 	 */
-	public async goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return await BrowserFrameUtility.goto(
+	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
+		return BrowserFrameUtility.goto(
 			this.page.context.browser.detachedWindowClass,
 			this,
 			url,

@@ -1,4 +1,5 @@
 import IBrowserContext from './IBrowserContext.js';
+import IBrowserFrame from './IBrowserFrame.js';
 import IBrowserPage from './IBrowserPage.js';
 import IBrowserSettings from './IBrowserSettings.js';
 
@@ -40,7 +41,8 @@ export default interface IBrowser {
 	/**
 	 * Creates a new page.
 	 *
+	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	newPage(): IBrowserPage;
+	newPage(opener?: IBrowserFrame): IBrowserPage;
 }

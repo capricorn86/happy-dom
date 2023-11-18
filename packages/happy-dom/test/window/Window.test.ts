@@ -35,6 +35,7 @@ import ICrossOriginWindow from '../../src/window/ICrossOriginWindow.js';
 import CrossOriginWindow from '../../src/window/CrossOriginWindow.js';
 import BrowserFrameUtility from '../../src/browser/BrowserFrameUtility.js';
 import IHTMLIFrameElement from '../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
+import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -139,18 +140,18 @@ describe('Window', () => {
 			expect(windowWithOptions.outerHeight).toBe(1080);
 			expect(windowWithOptions.console).toBe(globalThis.console);
 			expect(windowWithOptions.location.href).toBe('http://localhost:8080/');
-			expect(windowWithOptions.happyDOM.virtualConsolePrinter).toBeInstanceOf(
+			expect(windowWithOptions.happyDOM?.virtualConsolePrinter).toBeInstanceOf(
 				VirtualConsolePrinter
 			);
-			expect(windowWithOptions.happyDOM.settings.disableJavaScriptEvaluation).toBe(true);
-			expect(windowWithOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
-			expect(windowWithOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
-			expect(windowWithOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
-			expect(windowWithOptions.happyDOM.settings.disableErrorCapturing).toBe(false);
-			expect(windowWithOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
-			expect(windowWithOptions.happyDOM.settings.navigator.userAgent).toBe('test');
-			expect(windowWithOptions.happyDOM.settings.device.prefersColorScheme).toBe('dark');
-			expect(windowWithOptions.happyDOM.settings.device.mediaType).toBe('screen');
+			expect(windowWithOptions.happyDOM?.settings.disableJavaScriptEvaluation).toBe(true);
+			expect(windowWithOptions.happyDOM?.settings.disableJavaScriptFileLoading).toBe(false);
+			expect(windowWithOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
+			expect(windowWithOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithOptions.happyDOM?.settings.disableErrorCapturing).toBe(false);
+			expect(windowWithOptions.happyDOM?.settings.enableFileSystemHttpRequests).toBe(false);
+			expect(windowWithOptions.happyDOM?.settings.navigator.userAgent).toBe('test');
+			expect(windowWithOptions.happyDOM?.settings.device.prefersColorScheme).toBe('dark');
+			expect(windowWithOptions.happyDOM?.settings.device.mediaType).toBe('screen');
 
 			expect(windowWithoutOptions.innerWidth).toBe(1024);
 			expect(windowWithoutOptions.innerHeight).toBe(768);
@@ -158,22 +159,22 @@ describe('Window', () => {
 			expect(windowWithoutOptions.outerHeight).toBe(768);
 			expect(windowWithoutOptions.console).toBeInstanceOf(VirtualConsole);
 			expect(windowWithoutOptions.location.href).toBe('about:blank');
-			expect(windowWithoutOptions.happyDOM.virtualConsolePrinter).toBeInstanceOf(
+			expect(windowWithoutOptions.happyDOM?.virtualConsolePrinter).toBeInstanceOf(
 				VirtualConsolePrinter
 			);
-			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptEvaluation).toBe(false);
-			expect(windowWithoutOptions.happyDOM.settings.disableJavaScriptFileLoading).toBe(false);
-			expect(windowWithoutOptions.happyDOM.settings.disableCSSFileLoading).toBe(false);
-			expect(windowWithoutOptions.happyDOM.settings.disableIframePageLoading).toBe(false);
-			expect(windowWithoutOptions.happyDOM.settings.disableErrorCapturing).toBe(false);
-			expect(windowWithoutOptions.happyDOM.settings.enableFileSystemHttpRequests).toBe(false);
-			expect(windowWithoutOptions.happyDOM.settings.navigator.userAgent).toBe(
+			expect(windowWithoutOptions.happyDOM?.settings.disableJavaScriptEvaluation).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.disableJavaScriptFileLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.disableErrorCapturing).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.enableFileSystemHttpRequests).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.navigator.userAgent).toBe(
 				`Mozilla/5.0 (${GET_NAVIGATOR_PLATFORM()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
 					PackageVersion.version
 				}`
 			);
-			expect(windowWithoutOptions.happyDOM.settings.device.prefersColorScheme).toBe('light');
-			expect(windowWithoutOptions.happyDOM.settings.device.mediaType).toBe('screen');
+			expect(windowWithoutOptions.happyDOM?.settings.device.prefersColorScheme).toBe('light');
+			expect(windowWithoutOptions.happyDOM?.settings.device.mediaType).toBe('screen');
 		});
 
 		it('Supports deprecated "innerWidth" and "innerHeight".', () => {
@@ -189,195 +190,58 @@ describe('Window', () => {
 		});
 	});
 
-	describe('happyDOM.whenAsyncComplete()', () => {
-		it('Resolves the Promise returned by whenAsyncComplete() when all async tasks has been completed.', async () => {
-			const responseText = '{ "test": "test" }';
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = '';
-								response.headers = {
-									'content-length': '0'
-								};
-								response.rawHeaders = ['content-length', '0'];
-
-								setTimeout(() => callback(response));
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
-
-			window.location.href = 'https://localhost:8080';
-			let isFirstWhenAsyncCompleteCalled = false;
-			window.happyDOM.whenAsyncComplete().then(() => {
-				isFirstWhenAsyncCompleteCalled = true;
-			});
-			let tasksDone = 0;
-			const intervalID = window.setInterval(() => {
-				tasksDone++;
-			});
-			window.clearInterval(intervalID);
-			window.setTimeout(() => {
-				tasksDone++;
-			});
-			window.setTimeout(() => {
-				tasksDone++;
-			});
-			window.requestAnimationFrame(() => {
-				tasksDone++;
-			});
-			window.requestAnimationFrame(() => {
-				tasksDone++;
-			});
-			window.fetch('/url/1/').then((response) => {
-				response.json().then(() => {
-					tasksDone++;
-				});
-			});
-			window.fetch('/url/2/').then((response) => {
-				response.text().then(() => {
-					tasksDone++;
-				});
-			});
-			await window.happyDOM.whenAsyncComplete();
-			expect(tasksDone).toBe(6);
-			expect(isFirstWhenAsyncCompleteCalled).toBe(true);
+	describe('get happyDOM()', () => {
+		it('Returns an instance of DetachedWindowAPI.', () => {
+			expect(window.happyDOM).toBeInstanceOf(DetachedWindowAPI);
 		});
-	});
 
-	describe('happyDOM.cancelAsync()', () => {
-		it('Cancels all ongoing asynchrounous tasks.', async () => {
+		it('Returns "undefined" if the Window is not detached.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			expect(page.mainFrame.window.happyDOM).toBeUndefined();
+		});
+
+		it('Returns "undefined" when navigating an iframe for security reasons. The page loaded can potentially contain malicious code.', async () => {
 			await new Promise((resolve) => {
-				window.location.href = 'https://localhost:8080';
-				let isFirstWhenAsyncCompleteCalled = false;
-				window.happyDOM.whenAsyncComplete().then(() => {
-					isFirstWhenAsyncCompleteCalled = true;
-				});
-				let tasksDone = 0;
-				const intervalID = window.setInterval(() => {
-					tasksDone++;
-				});
-				window.clearInterval(intervalID);
-				window.setTimeout(() => {
-					tasksDone++;
-				});
-				window.setTimeout(() => {
-					tasksDone++;
-				});
-				window.requestAnimationFrame(() => {
-					tasksDone++;
-				});
-				window.requestAnimationFrame(() => {
-					tasksDone++;
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+					return Promise.resolve(<IResponse>(<unknown>{
+						text: () => Promise.resolve('<html><body>Test</body></html>'),
+						headers: new Headers()
+					}));
 				});
 
-				window
-					.fetch('/url/')
-					.then((response) =>
-						response
-							.json()
-							.then(() => {
-								tasksDone++;
-							})
-							.catch(() => {})
-					)
-					.catch(() => {});
+				window.happyDOM?.setURL('https://localhost:8080');
 
-				window
-					.fetch('/url/')
-					.then((response) =>
-						response
-							.json()
-							.then(() => {
-								tasksDone++;
-							})
-							.catch(() => {})
-					)
-					.catch(() => {});
+				const iframe = <IHTMLIFrameElement>document.createElement('iframe');
 
-				let isSecondWhenAsyncCompleteCalled = false;
-				window.happyDOM.whenAsyncComplete().then(() => {
-					isSecondWhenAsyncCompleteCalled = true;
-				});
-
-				window.happyDOM.cancelAsync();
-
-				expect(tasksDone).toBe(0);
-
-				window.setTimeout(() => {
-					expect(isFirstWhenAsyncCompleteCalled).toBe(true);
-					expect(isSecondWhenAsyncCompleteCalled).toBe(true);
+				iframe.src = 'https://localhost:8080/test/page/';
+				iframe.addEventListener('load', () => {
+					expect((<IWindow>iframe.contentWindow).happyDOM).toBeUndefined();
 					resolve(null);
-				}, 1);
+				});
+
+				document.body.appendChild(iframe);
 			});
 		});
-	});
 
-	describe('happyDOM.setURL()', () => {
-		it('Sets URL.', () => {
-			window.happyDOM.setURL('https://localhost:8080');
-			expect(window.location.href).toBe('https://localhost:8080/');
-		});
-	});
+		it('Returns "undefined" when opening a new page. The page loaded can potentially contain malicious code.', async () => {
+			await new Promise((resolve) => {
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+					return Promise.resolve(<IResponse>(<unknown>{
+						text: () => Promise.resolve('<html><body>Test</body></html>'),
+						headers: new Headers()
+					}));
+				});
 
-	describe('happyDOM.virtualConsolePrinter.readAsString()', () => {
-		it('Returns the buffered console output.', () => {
-			window.console.log('Test 1', { key1: 'value1' });
-			window.console.info('Test 2', { key2: 'value2' });
+				window.happyDOM?.setURL('https://localhost:8080');
 
-			expect(window.happyDOM.virtualConsolePrinter?.readAsString()).toBe(
-				`Test 1 {"key1":"value1"}\nTest 2 {"key2":"value2"}\n`
-			);
-		});
-	});
+				const newWindow = <IWindow>window.open('https://localhost:8080/test/page/');
 
-	describe('happyDOM.setWindowSize()', () => {
-		it('Sets window width.', () => {
-			window.happyDOM.setWindowSize({ width: 1920 });
-			expect(window.innerWidth).toBe(1920);
-			expect(window.outerWidth).toBe(1920);
-		});
-
-		it('Sets window height.', () => {
-			window.happyDOM.setWindowSize({ height: 1080 });
-			expect(window.innerHeight).toBe(1080);
-			expect(window.outerHeight).toBe(1080);
-		});
-
-		it('Sets window width and height.', () => {
-			window.happyDOM.setWindowSize({ width: 1920, height: 1080 });
-			expect(window.innerWidth).toBe(1920);
-			expect(window.innerHeight).toBe(1080);
-			expect(window.outerWidth).toBe(1920);
-			expect(window.outerHeight).toBe(1080);
-		});
-	});
-
-	describe('happyDOM.setInnerWidth()', () => {
-		it('Sets window width.', () => {
-			window.happyDOM.setInnerWidth(1920);
-			expect(window.innerWidth).toBe(1920);
-			expect(window.outerWidth).toBe(1920);
-		});
-	});
-
-	describe('happyDOM.setInnerHeight()', () => {
-		it('Sets window height.', () => {
-			window.happyDOM.setInnerHeight(1080);
-			expect(window.innerHeight).toBe(1080);
-			expect(window.outerHeight).toBe(1080);
+				newWindow.addEventListener('load', () => {
+					expect(newWindow.happyDOM).toBeUndefined();
+					resolve(null);
+				});
+			});
 		});
 	});
 
@@ -601,7 +465,7 @@ describe('Window', () => {
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
 
-			window.happyDOM.setWindowSize({ width: 1024 });
+			window.happyDOM?.setViewport({ width: 1024 });
 
 			parentStyle.innerHTML = `
 				div {
@@ -695,7 +559,7 @@ describe('Window', () => {
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
 
-			window.happyDOM.setWindowSize({ width: 1024 });
+			window.happyDOM?.setViewport({ width: 1024 });
 
 			parentStyle.innerHTML = `
                 html {
@@ -735,7 +599,7 @@ describe('Window', () => {
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
 
-			window.happyDOM.setWindowSize({ width: 1024 });
+			window.happyDOM?.setViewport({ width: 1024 });
 
 			parentStyle.innerHTML = `
                 html {
@@ -771,7 +635,7 @@ describe('Window', () => {
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
 
-			window.happyDOM.setWindowSize({ width: 1024 });
+			window.happyDOM?.setViewport({ width: 1024 });
 
 			parentStyle.innerHTML = `
                 html {
@@ -962,7 +826,7 @@ describe('Window', () => {
 					isCallbackCalled = true;
 					resolve(null);
 				});
-				window.happyDOM.abort();
+				window.happyDOM?.abort();
 				setTimeout(() => {
 					expect(isCallbackCalled).toBe(false);
 					resolve(null);
@@ -1172,7 +1036,7 @@ describe('Window', () => {
 
 	describe('matchMedia()', () => {
 		it('Returns a new MediaQueryList object that can then be used to determine if the document matches the media query string.', () => {
-			window.happyDOM.setWindowSize({ width: 1024 });
+			window.happyDOM?.setViewport({ width: 1024 });
 
 			const mediaQueryString = '(max-width: 512px)';
 			const mediaQueryList = window.matchMedia(mediaQueryString);
@@ -1264,7 +1128,7 @@ describe('Window', () => {
 				expect(window.pageYOffset).toBe(0);
 				expect(window.scrollX).toBe(0);
 				expect(window.scrollY).toBe(0);
-				await window.happyDOM.whenAsyncComplete();
+				await window.happyDOM?.whenComplete();
 				expect(window.document.documentElement.scrollLeft).toBe(50);
 				expect(window.document.documentElement.scrollTop).toBe(60);
 				expect(window.pageXOffset).toBe(50);
@@ -1518,7 +1382,7 @@ describe('Window', () => {
 			const targetOrigin = 'https://localhost:8081';
 			const documentOrigin = 'https://localhost:8080';
 
-			window.happyDOM.setURL(documentOrigin);
+			window.happyDOM?.setURL(documentOrigin);
 
 			expect(() => window.postMessage(message, targetOrigin)).toThrowError(
 				new DOMException(
@@ -1567,7 +1431,7 @@ describe('Window', () => {
 				});
 			});
 
-			window.happyDOM.setURL('https://localhost:8080/test/');
+			window.happyDOM?.setURL('https://localhost:8080/test/');
 
 			const newWindow = <IWindow>window.open('/path/to/file.html');
 			expect(newWindow).toBeInstanceOf(Window);
@@ -1640,7 +1504,7 @@ describe('Window', () => {
 				throw new Error('This should not be called.');
 			});
 
-			window.happyDOM.setURL('https://www.github.com/');
+			window.happyDOM?.setURL('https://www.github.com/');
 
 			expect(window.open('/capricorn86/happy-dom/', '_self')).toBe(null);
 			expect(window.location.href).toBe('https://www.github.com/capricorn86/happy-dom/');
@@ -1659,15 +1523,15 @@ describe('Window', () => {
 				});
 			});
 
-			window.happyDOM.setURL('https://localhost:8080');
+			window.happyDOM?.setURL('https://localhost:8080');
 
 			const newWindow = <IWindow>window.open('/test/1/', '_blank');
 
 			expect(newWindow.name).toBe('');
-			newWindow.document.write('<iframe src=""></iframe>');
+			newWindow.document.write('<iframe src="https://localhost:8080"></iframe>');
 
 			const iframe = <IHTMLIFrameElement>newWindow.document.querySelector('iframe');
-			(<IWindow>iframe.contentWindow).happyDOM.setURL('https://localhost:8080');
+			expect((<IWindow>iframe.contentWindow).happyDOM).toBeUndefined();
 			const newWindow2 = <IWindow>(
 				(<IWindow>iframe.contentWindow).open('https://localhost:8080/test/2/', '_top')
 			);
@@ -1687,15 +1551,15 @@ describe('Window', () => {
 				});
 			});
 
-			window.happyDOM.setURL('https://localhost:8080');
+			window.happyDOM?.setURL('https://localhost:8080');
 
 			const newWindow = <IWindow>window.open('/test/1/', '_blank');
 
 			expect(newWindow.name).toBe('');
-			newWindow.document.write('<iframe src=""></iframe>');
+			newWindow.document.write('<iframe src="https://localhost:8080"></iframe>');
 
 			const iframe = <IHTMLIFrameElement>newWindow.document.querySelector('iframe');
-			(<IWindow>iframe.contentWindow).happyDOM.setURL('https://localhost:8080');
+			expect((<IWindow>iframe.contentWindow).happyDOM).toBeUndefined();
 			const newWindow2 = <IWindow>(
 				(<IWindow>iframe.contentWindow).open('https://localhost:8080/test/2/', '_parent')
 			);

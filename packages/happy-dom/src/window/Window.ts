@@ -126,7 +126,7 @@ import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
-import HappyDOMWindowAPI from './HappyDOMWindowAPI.js';
+import DetachedWindowAPI from './DetachedWindowAPI.js';
 import Headers from '../fetch/Headers.js';
 import WindowClassFactory from './WindowClassFactory.js';
 import Audio from '../nodes/html-audio-element/Audio.js';
@@ -163,7 +163,7 @@ const ORIGINAL_QUEUE_MICROTASK = queueMicrotask;
  */
 export default class Window extends EventTarget implements IWindow {
 	// Detached Window API.
-	public readonly happyDOM: HappyDOMWindowAPI;
+	public readonly happyDOM?: DetachedWindowAPI;
 
 	// Nodes
 	public readonly Node: typeof Node;
@@ -421,7 +421,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly screenY: number = 0;
 	public readonly crypto = webcrypto;
 	public readonly closed = false;
-	public readonly console: Console;
 	public name: string = '';
 
 	// Node.js Globals
@@ -539,12 +538,11 @@ export default class Window extends EventTarget implements IWindow {
 				console: options?.console,
 				settings: options?.settings
 			}).defaultContext.pages[0].mainFrame;
+			this.happyDOM = new DetachedWindowAPI(this.#browserFrame);
 		}
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
-		this.console = this.#browserFrame.page.console;
-		this.happyDOM = new HappyDOMWindowAPI(this.#browserFrame);
 		this.location = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 
 		if (options) {
@@ -721,9 +719,18 @@ export default class Window extends EventTarget implements IWindow {
 	}
 
 	/**
-	 * The number of pixels that the document is currently scrolled horizontally
+	 * Returns the console.
 	 *
-	 * @returns number
+	 * @returns Console.
+	 */
+	public get console(): Console {
+		return this.#browserFrame.page.console;
+	}
+
+	/**
+	 * The number of pixels that the document is currently scrolled horizontally.
+	 *
+	 * @returns Scroll X.
 	 */
 	public get scrollX(): number {
 		return this.document?.documentElement?.scrollLeft ?? 0;
@@ -732,16 +739,16 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * The read-only Window property pageXOffset is an alias for scrollX.
 	 *
-	 * @returns number
+	 * @returns Scroll X.
 	 */
 	public get pageXOffset(): number {
 		return this.scrollX;
 	}
 
 	/**
-	 * The number of pixels that the document is currently scrolled vertically
+	 * The number of pixels that the document is currently scrolled vertically.
 	 *
-	 * @returns number
+	 * @returns Scroll Y.
 	 */
 	public get scrollY(): number {
 		return this.document?.documentElement?.scrollTop ?? 0;
@@ -750,7 +757,7 @@ export default class Window extends EventTarget implements IWindow {
 	/**
 	 * The read-only Window property pageYOffset is an alias for scrollY.
 	 *
-	 * @returns number
+	 * @returns Scroll Y.
 	 */
 	public get pageYOffset(): number {
 		return this.scrollY;

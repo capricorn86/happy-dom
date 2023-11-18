@@ -8,6 +8,7 @@ import IRequest from '../../../src/fetch/types/IRequest.js';
 import IResponse from '../../../src/fetch/types/IResponse.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import Browser from '../../../src/browser/Browser.js';
+import BrowserNavigationEnum from '../../../src/browser/types/BrowserNavigationEnum.js';
 
 const BLOB_URL = 'blob:https://mozilla.org';
 
@@ -505,7 +506,7 @@ describe('HTMLAnchorElement', () => {
 		it(`Doesn't navigate or change the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "browserNavigation" is set to ["deny"].`, () => {
 			const window = new Window({
 				settings: {
-					browserNavigation: ['deny']
+					browserNavigation: [BrowserNavigationEnum.deny]
 				}
 			});
 			document = window.document;
@@ -524,7 +525,7 @@ describe('HTMLAnchorElement', () => {
 		it(`Doesn't navigate, but changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "browserNavigation" is set to ["deny", "url-set-fallback"].`, () => {
 			const window = new Window({
 				settings: {
-					browserNavigation: ['deny', 'url-set-fallback']
+					browserNavigation: [BrowserNavigationEnum.deny, BrowserNavigationEnum.setURLFallback]
 				}
 			});
 			document = window.document;
@@ -546,7 +547,7 @@ describe('HTMLAnchorElement', () => {
 		it('Changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "browserNavigation" is set to ["allow", "url-set-fallback"].', () => {
 			const window = new Window({
 				settings: {
-					browserNavigation: ['allow', 'url-set-fallback']
+					browserNavigation: [BrowserNavigationEnum.allow, BrowserNavigationEnum.setURLFallback]
 				}
 			});
 			document = window.document;

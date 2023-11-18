@@ -60,12 +60,18 @@ describe('HTMLIFrameElement', () => {
 			expect(element.contentDocument?.documentElement.innerHTML).toBe('<head></head><body></body>');
 		});
 
-		it('Returns content window for "javascript:scroll(10, 20)".', () => {
-			element.src = 'javascript:scroll(10, 20)';
-			document.body.appendChild(element);
-			expect(element.contentWindow === element.contentDocument?.defaultView).toBe(true);
-			expect(element.contentDocument?.documentElement.scrollLeft).toBe(10);
-			expect(element.contentDocument?.documentElement.scrollTop).toBe(20);
+		it('Returns content window for "javascript:scroll(10, 20)".', async () => {
+			await new Promise((resolve) => {
+				element.src = 'javascript:scroll(10, 20)';
+				document.body.appendChild(element);
+				expect(element.contentWindow === element.contentDocument?.defaultView).toBe(true);
+
+				element.addEventListener('load', () => {
+					expect(element.contentDocument?.documentElement.scrollLeft).toBe(10);
+					expect(element.contentDocument?.documentElement.scrollTop).toBe(20);
+					resolve(null);
+				});
+			});
 		});
 
 		it(`Does'nt load anything if the Happy DOM setting "disableIframePageLoading" is set to true.`, () => {
@@ -88,11 +94,15 @@ describe('HTMLIFrameElement', () => {
 
 				vi.spyOn(Window.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					fetchedURL = <string>url;
-					return Promise.resolve(<IResponse>(<unknown>{
-						text: () => Promise.resolve(responseHTML),
-						ok: true,
-						headers: new Headers({ 'x-frame-options': 'deny' })
-					}));
+					return new Promise((resolve) => {
+						setTimeout(() => {
+							resolve(<IResponse>(<unknown>{
+								text: () => Promise.resolve(responseHTML),
+								ok: true,
+								headers: new Headers({ 'x-frame-options': 'deny' })
+							}));
+						}, 1);
+					});
 				});
 
 				window.happyDOM.setURL('https://localhost:8080');
@@ -115,11 +125,15 @@ describe('HTMLIFrameElement', () => {
 
 				vi.spyOn(Window.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					fetchedURL = <string>url;
-					return Promise.resolve(<IResponse>(<unknown>{
-						text: () => Promise.resolve(responseHTML),
-						ok: true,
-						headers: new Headers({ 'x-frame-options': 'sameorigin' })
-					}));
+					return new Promise((resolve) => {
+						setTimeout(() => {
+							resolve(<IResponse>(<unknown>{
+								text: () => Promise.resolve(responseHTML),
+								ok: true,
+								headers: new Headers({ 'x-frame-options': 'sameorigin' })
+							}));
+						}, 1);
+					});
 				});
 
 				window.happyDOM.setURL('https://localhost:3000');
@@ -142,11 +156,15 @@ describe('HTMLIFrameElement', () => {
 
 				vi.spyOn(Window.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					fetchedURL = <string>url;
-					return Promise.resolve(<IResponse>(<unknown>{
-						text: () => Promise.resolve(responseHTML),
-						ok: true,
-						headers: new Headers({ 'x-frame-options': 'sameorigin' })
-					}));
+					return new Promise((resolve) => {
+						setTimeout(() => {
+							resolve(<IResponse>(<unknown>{
+								text: () => Promise.resolve(responseHTML),
+								ok: true,
+								headers: new Headers({ 'x-frame-options': 'sameorigin' })
+							}));
+						}, 1);
+					});
 				});
 
 				window.happyDOM.setURL('https://localhost:8080');
@@ -160,6 +178,7 @@ describe('HTMLIFrameElement', () => {
 					);
 					resolve(null);
 				});
+
 				document.body.appendChild(element);
 			});
 		});
@@ -265,11 +284,15 @@ describe('HTMLIFrameElement', () => {
 				vi.spyOn(Window.prototype, 'fetch').mockImplementation(
 					(url: IRequestInfo): Promise<IResponse> => {
 						fetchedURL = <string>url;
-						return Promise.resolve(<IResponse>(<unknown>{
-							text: () => Promise.resolve('<html><head></head><body>Test</body></html>'),
-							ok: true,
-							headers: new Headers()
-						}));
+						return new Promise((resolve) => {
+							setTimeout(() => {
+								resolve(<IResponse>(<unknown>{
+									text: () => Promise.resolve('<html><head></head><body>Test</body></html>'),
+									ok: true,
+									headers: new Headers()
+								}));
+							}, 1);
+						});
 					}
 				);
 

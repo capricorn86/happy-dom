@@ -83,5 +83,12 @@ describe('BrowserContext', () => {
 			expect(browser.defaultContext.pages.length).toBe(1);
 			expect(browser.defaultContext.pages[0]).toBe(page);
 		});
+
+		it('Supports opener as parameter.', () => {
+			const browser = new Browser();
+			const page1 = browser.defaultContext.newPage();
+			const page2 = browser.defaultContext.newPage(page1.mainFrame);
+			expect(page2.mainFrame.opener).toBe(page1.mainFrame);
+		});
 	});
 });

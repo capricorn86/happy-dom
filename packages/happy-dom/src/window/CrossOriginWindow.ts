@@ -31,7 +31,6 @@ export default class CrossOriginWindow extends EventTarget implements ICrossOrig
 			{},
 			{
 				get: () => {
-					debugger;
 					throw new DOMException(
 						`Blocked a frame with origin "${this.parent.location.origin}" from accessing a cross-origin frame.`,
 						DOMExceptionNameEnum.securityError

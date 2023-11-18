@@ -14,6 +14,7 @@ import { Script } from 'vm';
 export default class BrowserFrame implements IBrowserFrame {
 	public readonly childFrames: BrowserFrame[] = [];
 	public readonly parentFrame: BrowserFrame | null = null;
+	public readonly opener: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: Window;
 	public _asyncTaskManager = new AsyncTaskManager();
@@ -112,8 +113,9 @@ export default class BrowserFrame implements IBrowserFrame {
 	 *
 	 * @param url URL.
 	 * @param [options] Options.
+	 * @returns Response.
 	 */
-	public async goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return await BrowserFrameUtility.goto(Window, this, url, options);
+	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
+		return BrowserFrameUtility.goto(Window, this, url, options);
 	}
 }

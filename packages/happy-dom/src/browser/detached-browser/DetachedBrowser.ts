@@ -6,6 +6,7 @@ import DetachedBrowserPage from './DetachedBrowserPage.js';
 import IBrowser from '../types/IBrowser.js';
 import IWindow from '../../window/IWindow.js';
 import IBrowserFrame from '../types/IBrowserFrame.js';
+import DetachedBrowserFrame from './DetachedBrowserFrame.js';
 
 /**
  * Detached browser used when constructing a Window instance without a browser.
@@ -98,12 +99,13 @@ export default class DetachedBrowser implements IBrowser {
 	/**
 	 * Creates a new page.
 	 *
+	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	public newPage(): DetachedBrowserPage {
+	public newPage(opener?: DetachedBrowserFrame): DetachedBrowserPage {
 		if (this.contexts.length === 0) {
 			throw new Error('No default context. The browser has been closed.');
 		}
-		return this.contexts[0].newPage();
+		return this.contexts[0].newPage(opener);
 	}
 }
