@@ -117,8 +117,8 @@ describe('Selection', () => {
 
 	for (const property of ['anchorOffset', 'baseOffset', 'focusOffset', 'extentOffset']) {
 		describe(`get ${property}()`, () => {
-			it('Returns null if no Range has been added.', () => {
-				expect(selection[property]).toBe(null);
+			it('Returns 0 if no Range has been added.', () => {
+				expect(selection[property]).toBe(0);
 			});
 
 			it(`Returns start offset of Range if direction is "${SelectionDirectionEnum.forwards}".`, () => {
