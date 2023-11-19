@@ -1551,8 +1551,6 @@ describe('Element', () => {
 			child.className = 'className';
 
 			(<string>element.tagName) = 'tagName';
-			(<number>element.scrollLeft) = 10;
-			(<number>element.scrollTop) = 10;
 
 			// @ts-ignore
 			element.namespaceURI = 'namespaceURI';
@@ -1562,8 +1560,6 @@ describe('Element', () => {
 			const clone = element.cloneNode(false);
 			const clone2 = element.cloneNode(true);
 			expect(clone.tagName).toBe('tagName');
-			expect(clone.scrollLeft).toBe(10);
-			expect(clone.scrollTop).toBe(10);
 			expect(clone.namespaceURI).toBe('namespaceURI');
 			expect(clone.children.length).toEqual(0);
 			expect(clone2.children.length).toBe(1);

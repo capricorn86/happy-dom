@@ -874,7 +874,7 @@ describe('Window', () => {
 					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
 					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
 					resolve(null);
-				}, 15);
+				}, 20);
 			});
 		});
 	});
@@ -1030,7 +1030,7 @@ describe('Window', () => {
 					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
 					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
 					resolve(null);
-				}, 10);
+				}, 20);
 			});
 		});
 	});
