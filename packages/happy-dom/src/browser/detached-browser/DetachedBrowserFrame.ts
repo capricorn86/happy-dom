@@ -29,10 +29,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	constructor(page: DetachedBrowserPage) {
 		this.page = page;
 		this.window = page.context.browser.contexts[0]?.pages[0]?.mainFrame
-			? new page.context.browser.detachedWindowClass({
-					browserFrame: this,
-					console: page.console
-			  })
+			? new page.context.browser.detachedWindowClass({ browserFrame: this })
 			: page.context.browser.detachedWindow;
 	}
 

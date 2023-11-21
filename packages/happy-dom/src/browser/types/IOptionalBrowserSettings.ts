@@ -1,4 +1,4 @@
-import BrowserNavigationCrossOriginPolicyEnum from './BrowserNavigationCrossOriginPolicyEnum.js';
+import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 
 export default interface IOptionalBrowserSettings {
 	/** Disables JavaScript evaluation. */

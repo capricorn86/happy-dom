@@ -19,7 +19,7 @@ export default class DetachedBrowser implements IBrowser {
 	public readonly console: Console | null;
 	public readonly detachedWindowClass: new (options: {
 		browserFrame: IBrowserFrame;
-		console: Console;
+		console?: Console;
 		url?: string;
 	}) => IWindow;
 	public readonly detachedWindow: IWindow;

@@ -1,6 +1,6 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import { URL } from 'url';
-import BrowserNavigationCrossOriginPolicyEnum from '../types/BrowserNavigationCrossOriginPolicyEnum.js';
+import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import DetachedBrowserFrame from '../detached-browser/DetachedBrowserFrame.js';
 
 /**
@@ -38,8 +38,8 @@ export default class BrowserFrameValidator {
 		if (
 			settings.navigation.crossOriginPolicy ===
 				BrowserNavigationCrossOriginPolicyEnum.strictOrigin &&
-			fromURL.protocol === 'http:' &&
-			toURL.protocol === 'https:'
+			fromURL.protocol === 'https:' &&
+			toURL.protocol === 'http:'
 		) {
 			return false;
 		}

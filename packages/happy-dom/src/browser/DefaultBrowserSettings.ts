@@ -1,5 +1,5 @@
 import PackageVersion from '../version.js';
-import BrowserNavigationCrossOriginPolicyEnum from './types/BrowserNavigationCrossOriginPolicyEnum.js';
+import BrowserNavigationCrossOriginPolicyEnum from './enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import IBrowserSettings from './types/IBrowserSettings.js';
 
 export default <IBrowserSettings>{

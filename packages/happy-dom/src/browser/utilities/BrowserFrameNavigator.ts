@@ -37,18 +37,6 @@ export default class BrowserFrameNavigator {
 	): Promise<IResponse | null> {
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
 
-		if (!BrowserFrameValidator.validateCrossOriginPolicy(frame, targetURL)) {
-			return null;
-		}
-
-		if (!BrowserFrameValidator.validateFrameNavigation(frame)) {
-			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
-				(<Location>frame.window.location) = new Location(frame, targetURL.href);
-			}
-
-			return null;
-		}
-
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
 				const readyStateManager = (<{ _readyStateManager: DocumentReadyStateManager }>(
@@ -70,6 +58,18 @@ export default class BrowserFrameNavigator {
 				}
 
 				readyStateManager.endTask();
+			}
+
+			return null;
+		}
+
+		if (!BrowserFrameValidator.validateCrossOriginPolicy(frame, targetURL)) {
+			return null;
+		}
+
+		if (!BrowserFrameValidator.validateFrameNavigation(frame)) {
+			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
+				(<Location>frame.window.location) = new Location(frame, targetURL.href);
 			}
 
 			return null;
