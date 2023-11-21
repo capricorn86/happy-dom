@@ -17,6 +17,10 @@ export default class BrowserSettingsFactory {
 		return {
 			...DefaultBrowserSettings,
 			...settings,
+			navigation: {
+				...DefaultBrowserSettings.navigation,
+				...settings?.navigation
+			},
 			navigator: {
 				...DefaultBrowserSettings.navigator,
 				...settings?.navigator

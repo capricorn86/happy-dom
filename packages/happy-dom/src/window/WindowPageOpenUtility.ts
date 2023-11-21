@@ -3,7 +3,7 @@ import CrossOriginWindow from './CrossOriginWindow.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import FetchCORSUtility from '../fetch/utilities/FetchCORSUtility.js';
 import ICrossOriginWindow from './ICrossOriginWindow.js';
-import BrowserFrameUtility from '../browser/BrowserFrameUtility.js';
+import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 
 /**
  * Window page open handler.
@@ -29,7 +29,8 @@ export default class WindowPageOpenUtility {
 		const features = this.getWindowFeatures(options?.features || '');
 		const target = options?.target !== undefined ? String(options.target) : null;
 		const originURL = browserFrame.window.location;
-		const targetURL = BrowserFrameUtility.getRelativeURL(browserFrame, options.url);
+		const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, options.url);
+		const oldWindow = browserFrame.window;
 		let targetFrame: IBrowserFrame;
 
 		switch (target) {
@@ -55,13 +56,13 @@ export default class WindowPageOpenUtility {
 			})
 			.catch((error) => targetFrame.page.console.error(error));
 
-		// When using the Window instance directly and not via the Browser API we should not navigate the browser frame.
-		if (BrowserFrameUtility.isDetachedMainFrame(targetFrame)) {
-			return null;
-		}
-
 		if (targetURL.protocol === 'javascript:') {
 			return targetFrame.window;
+		}
+
+		// When using a detached Window instance directly and not via the Browser API we will not navigate and the window for the frame will not have changed.
+		if (targetFrame === browserFrame && browserFrame.window === oldWindow) {
+			return null;
 		}
 
 		if (features.popup && target !== '_self' && target !== '_top' && target !== '_parent') {

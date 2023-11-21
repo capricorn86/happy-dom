@@ -1,5 +1,5 @@
 import PackageVersion from '../version.js';
-import BrowserNavigationEnum from './types/BrowserNavigationEnum.js';
+import BrowserNavigationCrossOriginPolicyEnum from './types/BrowserNavigationCrossOriginPolicyEnum.js';
 import IBrowserSettings from './types/IBrowserSettings.js';
 
 export default <IBrowserSettings>{
@@ -7,11 +7,16 @@ export default <IBrowserSettings>{
 	disableJavaScriptFileLoading: false,
 	disableCSSFileLoading: false,
 	disableIframePageLoading: false,
-	disableWindowOpenPageLoading: false,
 	disableComputedStyleRendering: false,
 	disableErrorCapturing: false,
 	enableFileSystemHttpRequests: false,
-	browserNavigation: [BrowserNavigationEnum.allow, BrowserNavigationEnum.setURLFallback],
+	navigation: {
+		disableMainFrameNavigation: false,
+		disableChildFrameNavigation: false,
+		disableChildPageNavigation: false,
+		disableFallbackToSetURL: false,
+		crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.anyOrigin
+	},
 	navigator: {
 		userAgent: `Mozilla/5.0 (X11; ${
 			process.platform.charAt(0).toUpperCase() + process.platform.slice(1) + ' ' + process.arch

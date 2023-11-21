@@ -863,9 +863,6 @@ export default class Window extends EventTarget implements IWindow {
 		target?: string,
 		features?: string
 	): IWindow | ICrossOriginWindow | null {
-		if (this.#browserFrame.page.context.browser.settings.disableWindowOpenPageLoading) {
-			return null;
-		}
 		return WindowPageOpenUtility.openPage(this.#browserFrame, {
 			url,
 			target,

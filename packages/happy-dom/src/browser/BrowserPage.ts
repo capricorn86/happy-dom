@@ -4,11 +4,10 @@ import BrowserFrame from './BrowserFrame.js';
 import BrowserContext from './BrowserContext.js';
 import VirtualConsole from '../console/VirtualConsole.js';
 import IBrowserPage from './types/IBrowserPage.js';
-import BrowserFrameUtility from './BrowserFrameUtility.js';
+import BrowserPageUtility from './utilities/BrowserPageUtility.js';
 import { Script } from 'vm';
 import IGoToOptions from './types/IGoToOptions.js';
 import IResponse from '../fetch/types/IResponse.js';
-import BrowserPageUtility from './BrowserPageUtility.js';
 
 /**
  * Browser page.
@@ -34,7 +33,7 @@ export default class BrowserPage implements IBrowserPage {
 	 * Returns frames.
 	 */
 	public get frames(): BrowserFrame[] {
-		return <BrowserFrame[]>BrowserFrameUtility.getFrames(this.mainFrame);
+		return <BrowserFrame[]>BrowserPageUtility.getFrames(this);
 	}
 
 	/**

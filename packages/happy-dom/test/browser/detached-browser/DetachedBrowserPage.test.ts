@@ -3,10 +3,10 @@ import DetachedBrowserFrame from '../../../src/browser/detached-browser/Detached
 import Window from '../../../src/window/Window';
 import VirtualConsolePrinter from '../../../src/console/VirtualConsolePrinter';
 import VirtualConsole from '../../../src/console/VirtualConsole';
-import BrowserFrameUtility from '../../../src/browser/BrowserFrameUtility';
 import IResponse from '../../../src/fetch/types/IResponse';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import IGoToOptions from '../../../src/browser/types/IGoToOptions';
+import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFactory';
 
 describe('DetachedBrowserPage', () => {
 	afterEach(() => {
@@ -58,8 +58,8 @@ describe('DetachedBrowserPage', () => {
 		it('Returns the frames.', () => {
 			const browser = new DetachedBrowser(Window, new Window());
 			const page = browser.defaultContext.newPage();
-			const frame1 = BrowserFrameUtility.newFrame(page.mainFrame);
-			const frame2 = BrowserFrameUtility.newFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			expect(page.frames).toEqual([page.mainFrame, frame1, frame2]);
 		});
 	});
@@ -106,9 +106,9 @@ describe('DetachedBrowserPage', () => {
 		it('Closes the page.', () => {
 			const browser = new DetachedBrowser(Window, new Window());
 			const page = browser.defaultContext.newPage();
-			const mainFrame = BrowserFrameUtility.newFrame(page.mainFrame);
-			const frame1 = BrowserFrameUtility.newFrame(page.mainFrame);
-			const frame2 = BrowserFrameUtility.newFrame(page.mainFrame);
+			const mainFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 
 			page.close();
 
@@ -128,8 +128,8 @@ describe('DetachedBrowserPage', () => {
 		it('Waits for all pages to complete.', async () => {
 			const browser = new DetachedBrowser(Window, new Window());
 			const page = browser.newPage();
-			const frame1 = BrowserFrameUtility.newFrame(page.mainFrame);
-			const frame2 = BrowserFrameUtility.newFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			await page.whenComplete();
@@ -142,8 +142,8 @@ describe('DetachedBrowserPage', () => {
 		it('Aborts all ongoing operations.', async () => {
 			const browser = new DetachedBrowser(Window, new Window());
 			const page = browser.newPage();
-			const frame1 = BrowserFrameUtility.newFrame(page.mainFrame);
-			const frame2 = BrowserFrameUtility.newFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			page.abort();

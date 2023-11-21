@@ -17,8 +17,6 @@ import Response from '../../src/fetch/Response.js';
 import IRequest from '../../src/fetch/types/IRequest.js';
 import IResponse from '../../src/fetch/types/IResponse.js';
 import Fetch from '../../src/fetch/Fetch.js';
-import HTTP from 'http';
-import Stream from 'stream';
 import MessageEvent from '../../src/event/events/MessageEvent.js';
 import Event from '../../src/event/Event.js';
 import ErrorEvent from '../../src/event/events/ErrorEvent.js';
@@ -33,9 +31,9 @@ import IHTMLDialogElement from '../../src/nodes/html-dialog-element/IHTMLDialogE
 import Browser from '../../src/browser/Browser.js';
 import ICrossOriginWindow from '../../src/window/ICrossOriginWindow.js';
 import CrossOriginWindow from '../../src/window/CrossOriginWindow.js';
-import BrowserFrameUtility from '../../src/browser/BrowserFrameUtility.js';
 import IHTMLIFrameElement from '../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
 import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
+import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -1315,7 +1313,7 @@ describe('Window', () => {
 			await new Promise((resolve) => {
 				const browser = new Browser();
 				const page = browser.newPage();
-				const frame = BrowserFrameUtility.newFrame(page.mainFrame);
+				const frame = BrowserFrameFactory.newChildFrame(page.mainFrame);
 
 				const message = 'test';
 				let triggeredEvent: MessageEvent | null = null;
@@ -1506,13 +1504,13 @@ describe('Window', () => {
 
 			window.happyDOM?.setURL('https://www.github.com/');
 
-			expect(window.open('/capricorn86/happy-dom/', '_self')).toBe(null);
+			expect(window.open('/capricorn86/happy-dom/', '_self') === null).toBe(true);
 			expect(window.location.href).toBe('https://www.github.com/capricorn86/happy-dom/');
 
-			expect(window.open('/capricorn86/happy-dom/2/', '_top')).toBe(null);
+			expect(window.open('/capricorn86/happy-dom/2/', '_top') === null).toBe(true);
 			expect(window.location.href).toBe('https://www.github.com/capricorn86/happy-dom/2/');
 
-			expect(window.open('/capricorn86/happy-dom/3/', '_parent')).toBe(null);
+			expect(window.open('/capricorn86/happy-dom/3/', '_parent') === null).toBe(true);
 			expect(window.location.href).toBe('https://www.github.com/capricorn86/happy-dom/3/');
 		});
 

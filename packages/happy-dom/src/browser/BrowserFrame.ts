@@ -4,9 +4,11 @@ import IBrowserFrame from './types/IBrowserFrame.js';
 import Window from '../window/Window.js';
 import Location from '../location/Location.js';
 import IResponse from '../fetch/types/IResponse.js';
-import BrowserFrameUtility from './BrowserFrameUtility.js';
 import IGoToOptions from './types/IGoToOptions.js';
 import { Script } from 'vm';
+import BrowserFrameURL from './utilities/BrowserFrameURL.js';
+import BrowserFrameScriptEvaluator from './utilities/BrowserFrameScriptEvaluator.js';
+import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
 
 /**
  * Browser frame.
@@ -70,7 +72,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public set url(url) {
 		(<Location>this.window.location) = new Location(
 			this,
-			BrowserFrameUtility.getRelativeURL(this, url).href
+			BrowserFrameURL.getRelativeURL(this, url).href
 		);
 	}
 
@@ -105,7 +107,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @returns Result.
 	 */
 	public evaluate(script: string | Script): any {
-		return BrowserFrameUtility.evaluate(this, script);
+		return BrowserFrameScriptEvaluator.evaluate(this, script);
 	}
 
 	/**
@@ -116,6 +118,6 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return BrowserFrameUtility.goto(Window, this, url, options);
+		return BrowserFrameNavigator.goto(Window, this, url, options);
 	}
 }

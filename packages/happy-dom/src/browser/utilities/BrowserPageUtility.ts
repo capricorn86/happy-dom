@@ -1,15 +1,25 @@
-import IBrowserPage from './types/IBrowserPage.js';
-import IBrowserPageViewport from './types/IBrowserPageViewport.js';
-import Event from '../event/Event.js';
-import BrowserFrameUtility from './BrowserFrameUtility.js';
-import IVirtualConsolePrinter from '../console/types/IVirtualConsolePrinter.js';
-import IBrowserFrame from './types/IBrowserFrame.js';
-import IBrowserContext from './types/IBrowserContext.js';
+import IBrowserFrame from '../types/IBrowserFrame.js';
+import IBrowserPage from '../types/IBrowserPage.js';
+import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
+import Event from '../../event/Event.js';
+import IVirtualConsolePrinter from '../../console/types/IVirtualConsolePrinter.js';
+import IBrowserContext from '../types/IBrowserContext.js';
+import BrowserFrameFactory from './BrowserFrameFactory.js';
 
 /**
  * Browser page utility.
  */
 export default class BrowserPageUtility {
+	/**
+	 * Returns frames for a page.
+	 *
+	 * @param page Page.
+	 * @returns Frames.
+	 */
+	public static getFrames(page: IBrowserPage): IBrowserFrame[] {
+		return this.findFrames(page.mainFrame);
+	}
+
 	/**
 	 * Sets the viewport.
 	 *
@@ -49,7 +59,7 @@ export default class BrowserPageUtility {
 			return;
 		}
 
-		BrowserFrameUtility.closeFrame(page.mainFrame);
+		BrowserFrameFactory.destroyFrame(page.mainFrame);
 
 		const index = page.context.pages.indexOf(page);
 		if (index !== -1) {
@@ -65,5 +75,19 @@ export default class BrowserPageUtility {
 		if (context.pages[0] === page) {
 			context.close();
 		}
+	}
+
+	/**
+	 * Returns all frames.
+	 *
+	 * @param parentFrame Parent frame.
+	 * @returns Frames, including the parent.
+	 */
+	private static findFrames(parentFrame: IBrowserFrame): IBrowserFrame[] {
+		let frames = [parentFrame];
+		for (const frame of parentFrame.childFrames) {
+			frames = frames.concat(this.findFrames(frame));
+		}
+		return frames;
 	}
 }

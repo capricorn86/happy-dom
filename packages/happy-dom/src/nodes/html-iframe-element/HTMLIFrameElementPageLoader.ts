@@ -7,7 +7,8 @@ import ICrossOriginWindow from '../../window/ICrossOriginWindow.js';
 import IHTMLIFrameElement from './IHTMLIFrameElement.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import BrowserFrameUtility from '../../browser/BrowserFrameUtility.js';
+import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
+import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js';
 
 /**
  * HTML Iframe page loader.
@@ -43,7 +44,7 @@ export default class HTMLIFrameElementPageLoader {
 	public loadPage(): void {
 		if (!this.#element.isConnected) {
 			if (this.#browserIFrame) {
-				BrowserFrameUtility.closeFrame(this.#browserIFrame);
+				BrowserFrameFactory.destroyFrame(this.#browserIFrame);
 				this.#browserIFrame = null;
 			}
 			this.#contentWindowContainer.window = null;
@@ -52,10 +53,7 @@ export default class HTMLIFrameElementPageLoader {
 
 		const window = this.#element.ownerDocument._defaultView;
 		const originURL = this.#browserParentFrame.window.location;
-		const targetURL = BrowserFrameUtility.getRelativeURL(
-			this.#browserParentFrame,
-			this.#element.src
-		);
+		const targetURL = BrowserFrameURL.getRelativeURL(this.#browserParentFrame, this.#element.src);
 
 		if (this.#browserIFrame && this.#browserIFrame.window.location.href === targetURL.href) {
 			return;
@@ -77,7 +75,7 @@ export default class HTMLIFrameElementPageLoader {
 		const parentWindow = isSameOrigin ? window : new CrossOriginWindow(window);
 
 		this.#browserIFrame =
-			this.#browserIFrame ?? BrowserFrameUtility.newFrame(this.#browserParentFrame);
+			this.#browserIFrame ?? BrowserFrameFactory.newChildFrame(this.#browserParentFrame);
 
 		(<IWindow | ICrossOriginWindow>(<unknown>this.#browserIFrame.window.top)) = parentWindow;
 		(<IWindow | ICrossOriginWindow>(<unknown>this.#browserIFrame.window.parent)) = parentWindow;
@@ -97,7 +95,7 @@ export default class HTMLIFrameElementPageLoader {
 	 */
 	public unloadPage(): void {
 		if (this.#browserIFrame) {
-			BrowserFrameUtility.closeFrame(this.#browserIFrame);
+			BrowserFrameFactory.destroyFrame(this.#browserIFrame);
 			this.#browserIFrame = null;
 		}
 		this.#contentWindowContainer.window = null;

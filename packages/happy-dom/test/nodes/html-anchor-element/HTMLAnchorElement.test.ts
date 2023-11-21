@@ -8,7 +8,6 @@ import IRequest from '../../../src/fetch/types/IRequest.js';
 import IResponse from '../../../src/fetch/types/IResponse.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import Browser from '../../../src/browser/Browser.js';
-import BrowserNavigationEnum from '../../../src/browser/types/BrowserNavigationEnum.js';
 
 const BLOB_URL = 'blob:https://mozilla.org';
 
@@ -413,10 +412,7 @@ describe('HTMLAnchorElement', () => {
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
 
-			let request: IRequest | null = null;
-
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				request = <IRequest>this.request;
 				return Promise.resolve(<IResponse>{
 					text: () => Promise.resolve('Test')
 				});
@@ -446,10 +442,7 @@ describe('HTMLAnchorElement', () => {
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
 
-			let request: IRequest | null = null;
-
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				request = <IRequest>this.request;
 				return Promise.resolve(<IResponse>{
 					text: () => Promise.resolve('Test')
 				});
@@ -480,10 +473,7 @@ describe('HTMLAnchorElement', () => {
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
 
-			let request: IRequest | null = null;
-
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				request = <IRequest>this.request;
 				return Promise.resolve(<IResponse>{
 					text: () => Promise.resolve('Test')
 				});
@@ -503,10 +493,12 @@ describe('HTMLAnchorElement', () => {
 			expect(newWindow.document.body.innerHTML).toBe('Test');
 		});
 
-		it(`Doesn't navigate or change the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "browserNavigation" is set to ["deny"].`, () => {
+		it(`Doesn't navigate or change the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "true".`, () => {
 			const window = new Window({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.deny]
+					navigation: {
+						disableFallbackToSetURL: true
+					}
 				}
 			});
 			document = window.document;
@@ -522,10 +514,13 @@ describe('HTMLAnchorElement', () => {
 			expect(window.location.href).toBe('about:blank');
 		});
 
-		it(`Doesn't navigate, but changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "browserNavigation" is set to ["deny", "url-set-fallback"].`, () => {
+		it(`Doesn't navigate, but changes the location of a new window when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "false" and "navigation.disableChildPageNavigation" is set to "true".`, () => {
 			const window = new Window({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.deny, BrowserNavigationEnum.setURLFallback]
+					navigation: {
+						disableFallbackToSetURL: false,
+						disableChildPageNavigation: true
+					}
 				}
 			});
 			document = window.document;
@@ -544,10 +539,12 @@ describe('HTMLAnchorElement', () => {
 			expect(newWindow.location.href).toBe('https://www.example.com/');
 		});
 
-		it('Changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "browserNavigation" is set to ["allow", "url-set-fallback"].', () => {
+		it('Changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "false".', () => {
 			const window = new Window({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allow, BrowserNavigationEnum.setURLFallback]
+					navigation: {
+						disableFallbackToSetURL: false
+					}
 				}
 			});
 			document = window.document;

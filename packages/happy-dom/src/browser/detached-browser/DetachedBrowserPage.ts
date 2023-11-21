@@ -4,11 +4,10 @@ import DetachedBrowserFrame from './DetachedBrowserFrame.js';
 import DetachedBrowserContext from './DetachedBrowserContext.js';
 import VirtualConsole from '../../console/VirtualConsole.js';
 import IBrowserPage from '../types/IBrowserPage.js';
-import BrowserFrameUtility from '../BrowserFrameUtility.js';
 import { Script } from 'vm';
 import IGoToOptions from '../types/IGoToOptions.js';
 import IResponse from '../../fetch/types/IResponse.js';
-import BrowserPageUtility from '../BrowserPageUtility.js';
+import BrowserPageUtility from '../utilities/BrowserPageUtility.js';
 
 /**
  * Detached browser page used when constructing a Window instance without a browser.
@@ -34,7 +33,7 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	 * Returns frames.
 	 */
 	public get frames(): DetachedBrowserFrame[] {
-		return <DetachedBrowserFrame[]>BrowserFrameUtility.getFrames(this.mainFrame);
+		return <DetachedBrowserFrame[]>BrowserPageUtility.getFrames(this);
 	}
 
 	/**

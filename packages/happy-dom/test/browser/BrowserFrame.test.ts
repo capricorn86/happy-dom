@@ -1,6 +1,5 @@
 import { Script } from 'vm';
 import Browser from '../../src/browser/Browser';
-import BrowserFrameUtility from '../../src/browser/BrowserFrameUtility';
 import Event from '../../src/event/Event';
 import Window from '../../src/window/Window';
 import IRequest from '../../src/fetch/types/IRequest';
@@ -9,7 +8,8 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import Fetch from '../../src/fetch/Fetch';
 import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
-import BrowserNavigationEnum from '../../src/browser/types/BrowserNavigationEnum';
+import BrowserNavigationCrossOriginPolicyEnum from '../../src/browser/types/BrowserNavigationCrossOriginPolicyEnum';
+import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';
 
 describe('BrowserFrame', () => {
 	afterEach(() => {
@@ -21,8 +21,8 @@ describe('BrowserFrame', () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
 			expect(page.mainFrame.childFrames).toEqual([]);
-			const frame1 = BrowserFrameUtility.newFrame(page.mainFrame);
-			const frame2 = BrowserFrameUtility.newFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			expect(page.mainFrame.childFrames).toEqual([frame1, frame2]);
 		});
 	});
@@ -32,8 +32,8 @@ describe('BrowserFrame', () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
 			expect(page.mainFrame.parentFrame).toBe(null);
-			const frame1 = BrowserFrameUtility.newFrame(page.mainFrame);
-			const frame2 = BrowserFrameUtility.newFrame(frame1);
+			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.newChildFrame(frame1);
 			expect(frame2.parentFrame).toBe(frame1);
 			expect(frame1.parentFrame).toBe(page.mainFrame);
 			expect(page.mainFrame.parentFrame).toBe(null);
@@ -119,8 +119,8 @@ describe('BrowserFrame', () => {
 		it('Waits for all pages to complete.', async () => {
 			const browser = new Browser();
 			const page = browser.newPage();
-			const frame1 = BrowserFrameUtility.newFrame(page.mainFrame);
-			const frame2 = BrowserFrameUtility.newFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			page.mainFrame.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame1.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 3; }, 10);');
@@ -135,8 +135,8 @@ describe('BrowserFrame', () => {
 		it('Aborts all ongoing operations.', async () => {
 			const browser = new Browser();
 			const page = browser.newPage();
-			const frame1 = BrowserFrameUtility.newFrame(page.mainFrame);
-			const frame2 = BrowserFrameUtility.newFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			page.mainFrame.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
@@ -296,14 +296,16 @@ describe('BrowserFrame', () => {
 			expect(page.mainFrame.window.document.body.innerHTML).toBe('');
 		});
 
-		it(`Doesn't navigate if the setting "browserNavigation" is set to "['deny']"`, async () => {
+		it(`Doesn't navigate the main frame if the setting "navigation.disableMainFrameNavigation" is set to "true"`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.deny]
+					navigation: {
+						disableMainFrameNavigation: true
+					}
 				}
 			});
 			const page = browser.newPage();
@@ -315,7 +317,7 @@ describe('BrowserFrame', () => {
 			expect(page.mainFrame.window === oldWindow).toBe(true);
 		});
 
-		it(`Navigates if the setting "browserNavigation" is set to "['allow']"`, async () => {
+		it(`Navigates the main frame if the setting "navigation.disableMainFrameNavigation" is set to "false"`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.resolve(<IResponse>{
 					text: () => Promise.resolve('Test')
@@ -324,7 +326,9 @@ describe('BrowserFrame', () => {
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allow]
+					navigation: {
+						disableMainFrameNavigation: false
+					}
 				}
 			});
 			const page = browser.newPage();
@@ -336,18 +340,20 @@ describe('BrowserFrame', () => {
 			expect(page.mainFrame.window === oldWindow).toBe(false);
 		});
 
-		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allow-same-origin']" and the parent is of a different origin.`, async () => {
+		it(`Doesn't navigate if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}" and the parent is of a different origin.`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+					navigation: {
+						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
+					}
 				}
 			});
 			const page = browser.newPage();
-			const childFrame = BrowserFrameUtility.newFrame(page.mainFrame);
+			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -359,7 +365,7 @@ describe('BrowserFrame', () => {
 			expect(childFrame.window === oldWindow).toBe(true);
 		});
 
-		it(`Navigates if the setting "browserNavigation" is set to "['allow-same-origin']" and the parent is the same origin.`, async () => {
+		it(`Navigates if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}" and the parent is the same origin.`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.resolve(<IResponse>(<unknown>{
 					text: () => Promise.resolve('Test'),
@@ -369,11 +375,13 @@ describe('BrowserFrame', () => {
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+					navigation: {
+						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
+					}
 				}
 			});
 			const page = browser.newPage();
-			const childFrame = BrowserFrameUtility.newFrame(page.mainFrame);
+			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -384,14 +392,16 @@ describe('BrowserFrame', () => {
 			expect(childFrame.window === oldWindow).toBe(false);
 		});
 
-		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allow-same-origin']" and the opener is of a different origin.`, async () => {
+		it(`Doesn't navigate if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}" and the opener is of a different origin.`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+					navigation: {
+						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
+					}
 				}
 			});
 			const page = browser.newPage();
@@ -407,7 +417,7 @@ describe('BrowserFrame', () => {
 			expect(childPage.mainFrame.window === oldWindow).toBe(true);
 		});
 
-		it(`Navigate if the setting "browserNavigation" is set to "['allow-same-origin']" and the opener has the same origin.`, async () => {
+		it(`Navigate if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}" and the opener has the same origin.`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.resolve(<IResponse>(<unknown>{
 					text: () => Promise.resolve('Test'),
@@ -417,7 +427,9 @@ describe('BrowserFrame', () => {
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+					navigation: {
+						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
+					}
 				}
 			});
 			const page = browser.newPage();
@@ -432,14 +444,16 @@ describe('BrowserFrame', () => {
 			expect(childPage.mainFrame.window === oldWindow).toBe(false);
 		});
 
-		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allow-same-origin']" when navigating from one origin to another.`, async () => {
+		it(`Doesn't navigate if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}" when navigating from one origin to another.`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allowSameOrigin]
+					navigation: {
+						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
+					}
 				}
 			});
 			const page = browser.newPage();
@@ -454,7 +468,7 @@ describe('BrowserFrame', () => {
 			expect(page.mainFrame.window === oldWindow).toBe(true);
 		});
 
-		it(`Navigates if the setting "browserNavigation" is set to "['allowChildFrames']" inside a child frame.`, async () => {
+		it(`Navigates if the setting "navigation.disableChildFrameNavigation" is set to "false" inside a child frame.`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.resolve(<IResponse>(<unknown>{
 					text: () => Promise.resolve('Test'),
@@ -464,11 +478,13 @@ describe('BrowserFrame', () => {
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allowChildFrames]
+					navigation: {
+						disableChildFrameNavigation: false
+					}
 				}
 			});
 			const page = browser.newPage();
-			const childFrame = BrowserFrameUtility.newFrame(page.mainFrame);
+			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
 
 			await childFrame.goto('http://localhost:9999');
@@ -477,27 +493,30 @@ describe('BrowserFrame', () => {
 			expect(childFrame.window === oldWindow).toBe(false);
 		});
 
-		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allowChildFrames']" inside a main frame.`, async () => {
+		it(`Doesn't navigate if the setting "navigation.disableChildFrameNavigation" is set to "true" inside a child frame.`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allowChildFrames]
+					navigation: {
+						disableChildFrameNavigation: true
+					}
 				}
 			});
 			const page = browser.newPage();
-			const oldWindow = page.mainFrame.window;
+			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const oldWindow = childFrame.window;
 
-			const response = await page.mainFrame.goto('http://localhost:9999');
+			const response = await childFrame.goto('http://localhost:9999');
 
 			expect(response).toBeNull();
 			expect(page.mainFrame.url).toBe('about:blank');
 			expect(page.mainFrame.window === oldWindow).toBe(true);
 		});
 
-		it(`Navigates if the setting "browserNavigation" is set to "['allowChildPages']" inside a child page.`, async () => {
+		it(`Navigates if the setting "navigation.disableChildPageNavigation" is set to "false" inside a child page.`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.resolve(<IResponse>(<unknown>{
 					text: () => Promise.resolve('Test'),
@@ -507,7 +526,9 @@ describe('BrowserFrame', () => {
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allowChildPages]
+					navigation: {
+						disableChildPageNavigation: false
+					}
 				}
 			});
 			const page = browser.newPage();
@@ -520,14 +541,16 @@ describe('BrowserFrame', () => {
 			expect(childPage.mainFrame.window === oldWindow).toBe(false);
 		});
 
-		it(`Doesn't navigate if the setting "browserNavigation" is set to "['allowChildPages']" inside a main page.`, async () => {
+		it(`Doesn't navigate if the setting "navigation.disableChildPageNavigation" is set to "true" inside a main page.`, async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
 			const browser = new Browser({
 				settings: {
-					browserNavigation: [BrowserNavigationEnum.allowChildPages]
+					navigation: {
+						disableChildPageNavigation: true
+					}
 				}
 			});
 			const page = browser.newPage();
