@@ -51,6 +51,7 @@ import HTMLButtonElementImplementation from '../nodes/html-button-element/HTMLBu
 import HTMLOptGroupElementImplementation from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
 import HTMLOptionElementImplementation from '../nodes/html-option-element/HTMLOptionElement.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
 
 /**
  * Some classes need to get access to the window object without having a reference to the window in the constructor.
@@ -184,15 +185,76 @@ export default class WindowClassFactory {
 		}
 		class Document extends DocumentImplementation {
 			public readonly _defaultView: IWindow = window;
+
+			public get cookie(): string {
+				return CookieStringUtility.cookiesToString(
+					properties.browserFrame.page.context.cookieContainer.getCookies(
+						this._defaultView.location,
+						true
+					)
+				);
+			}
+
+			public set cookie(cookie: string) {
+				properties.browserFrame.page.context.cookieContainer.addCookies([
+					CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
+				]);
+			}
 		}
+
 		class HTMLDocument extends HTMLDocumentImplementation {
 			public readonly _defaultView: IWindow = window;
+
+			public get cookie(): string {
+				return CookieStringUtility.cookiesToString(
+					properties.browserFrame.page.context.cookieContainer.getCookies(
+						this._defaultView.location,
+						true
+					)
+				);
+			}
+
+			public set cookie(cookie: string) {
+				properties.browserFrame.page.context.cookieContainer.addCookies([
+					CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
+				]);
+			}
 		}
 		class XMLDocument extends XMLDocumentImplementation {
 			public readonly _defaultView: IWindow = window;
+
+			public get cookie(): string {
+				return CookieStringUtility.cookiesToString(
+					properties.browserFrame.page.context.cookieContainer.getCookies(
+						this._defaultView.location,
+						true
+					)
+				);
+			}
+
+			public set cookie(cookie: string) {
+				properties.browserFrame.page.context.cookieContainer.addCookies([
+					CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
+				]);
+			}
 		}
 		class SVGDocument extends SVGDocumentImplementation {
 			public readonly _defaultView: IWindow = window;
+
+			public get cookie(): string {
+				return CookieStringUtility.cookiesToString(
+					properties.browserFrame.page.context.cookieContainer.getCookies(
+						this._defaultView.location,
+						true
+					)
+				);
+			}
+
+			public set cookie(cookie: string) {
+				properties.browserFrame.page.context.cookieContainer.addCookies([
+					CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
+				]);
+			}
 		}
 		class DocumentType extends DocumentTypeImplementation {
 			public get ownerDocument(): IDocument {

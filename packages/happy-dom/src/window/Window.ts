@@ -1012,6 +1012,7 @@ export default class Window extends EventTarget implements IWindow {
 	 */
 	public async fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse> {
 		return await new Fetch({
+			browserFrame: this.#browserFrame,
 			ownerDocument: this.document,
 			asyncTaskManager: this.#browserFrame._asyncTaskManager,
 			url,

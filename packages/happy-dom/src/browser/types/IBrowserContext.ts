@@ -1,3 +1,4 @@
+import ICookieContainer from '../../cookie/types/ICookieContainer.js';
 import IBrowser from './IBrowser.js';
 import IBrowserFrame from './IBrowserFrame.js';
 import IBrowserPage from './IBrowserPage.js';
@@ -8,6 +9,7 @@ import IBrowserPage from './IBrowserPage.js';
 export default interface IBrowserContext {
 	readonly pages: IBrowserPage[];
 	readonly browser: IBrowser;
+	readonly cookieContainer: ICookieContainer;
 
 	/**
 	 * Aborts all ongoing operations and destroys the context.

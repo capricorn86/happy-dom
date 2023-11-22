@@ -5,6 +5,7 @@ import BrowserSettingsFactory from './BrowserSettingsFactory.js';
 import BrowserPage from './BrowserPage.js';
 import IBrowser from './types/IBrowser.js';
 import BrowserFrame from './BrowserFrame.js';
+import ICookieContainer from '../cookie/types/ICookieContainer.js';
 
 /**
  * Browser.
@@ -23,10 +24,14 @@ export default class Browser implements IBrowser {
 	 * @param [options.settings] Browser settings.
 	 * @param [options.console] Console.
 	 */
-	constructor(options?: { settings?: IOptionalBrowserSettings; console?: Console }) {
+	constructor(options?: {
+		settings?: IOptionalBrowserSettings;
+		console?: Console;
+		cookieContainer?: ICookieContainer;
+	}) {
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
-		this.contexts = [new BrowserContext(this)];
+		this.contexts = [new BrowserContext(this, { cookieContainer: options?.cookieContainer })];
 	}
 
 	/**

@@ -1,3 +1,5 @@
+import CookieContainer from '../cookie/CookieContainer.js';
+import ICookieContainer from '../cookie/types/ICookieContainer.js';
 import Browser from './Browser.js';
 import BrowserFrame from './BrowserFrame.js';
 import BrowserPage from './BrowserPage.js';
@@ -9,14 +11,16 @@ import IBrowserContext from './types/IBrowserContext.js';
 export default class BrowserContext implements IBrowserContext {
 	public readonly pages: BrowserPage[] = [];
 	public readonly browser: Browser;
+	public readonly cookieContainer: ICookieContainer;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param browser
 	 */
-	constructor(browser: Browser) {
+	constructor(browser: Browser, options?: { cookieContainer?: ICookieContainer }) {
 		this.browser = browser;
+		this.cookieContainer = options?.cookieContainer ?? new CookieContainer();
 	}
 
 	/**

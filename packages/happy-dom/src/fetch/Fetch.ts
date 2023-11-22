@@ -17,8 +17,10 @@ import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import Request from './Request.js';
 import Response from './Response.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
-import CookieJar from '../cookie/CookieJar.js';
+import Event from '../event/Event.js';
 import AbortSignal from './AbortSignal.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -48,20 +50,22 @@ export default class Fetch {
 	private asyncTaskManager: AsyncTaskManager;
 	private request: Request;
 	private redirectCount = 0;
+	#browserFrame: IBrowserFrame;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param options Options.
-	 * @param options.document
+	 * @param options.browserFrame Browser frame.
+	 * @param options.ownerDocument Owner document.
 	 * @param options.asyncTaskManager Async task manager.
 	 * @param options.url URL.
 	 * @param [options.init] Init.
-	 * @param [options.ownerDocument] Owner document.
 	 * @param [options.redirectCount] Redirect count.
 	 * @param [options.contentType] Content Type.
 	 */
 	constructor(options: {
+		browserFrame: IBrowserFrame;
 		ownerDocument: IDocument;
 		asyncTaskManager: AsyncTaskManager;
 		url: IRequestInfo;
@@ -71,6 +75,7 @@ export default class Fetch {
 	}) {
 		const url = options.url;
 
+		this.#browserFrame = options.browserFrame;
 		this.ownerDocument = options.ownerDocument;
 		this.asyncTaskManager = options.asyncTaskManager;
 		this.request =
@@ -494,6 +499,7 @@ export default class Fetch {
 				}
 
 				const fetch = new (<typeof Fetch>this.constructor)({
+					browserFrame: this.#browserFrame,
 					ownerDocument: this.ownerDocument,
 					asyncTaskManager: this.asyncTaskManager,
 					url: locationURL,
@@ -584,11 +590,12 @@ export default class Fetch {
 			this.request.credentials === 'include' ||
 			(this.request.credentials === 'same-origin' && !isCORS)
 		) {
-			const cookie = (<{ _cookie: CookieJar }>(
-				(<unknown>document._defaultView.document)
-			))._cookie.getCookieString(document._defaultView.location, false);
-			if (cookie) {
-				headers.set('Cookie', cookie);
+			const cookies = this.#browserFrame.page.context.cookieContainer.getCookies(
+				document._defaultView.location,
+				false
+			);
+			if (cookies.length > 0) {
+				headers.set('Cookie', CookieStringUtility.cookiesToString(cookies));
 			}
 		}
 
@@ -643,9 +650,9 @@ export default class Fetch {
 				// Handles setting cookie headers to the document.
 				// "set-cookie" and "set-cookie2" are not allowed in response headers according to spec.
 				if (lowerKey === 'set-cookie' || lowerKey === 'set-cookie2') {
-					(<{ _cookie: CookieJar }>(
-						(<unknown>this.ownerDocument._defaultView.document)
-					))._cookie.addCookieString(this.request._url, header);
+					this.#browserFrame.page.context.cookieContainer.addCookies([
+						CookieStringUtility.stringToCookie(this.request._url, header)
+					]);
 				} else {
 					headers.append(key, header);
 				}

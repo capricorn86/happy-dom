@@ -17,7 +17,6 @@ import QuerySelector from '../../query-selector/QuerySelector.js';
 import IDocument from './IDocument.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import DOMException from '../../exception/DOMException.js';
-import CookieJar from '../../cookie/CookieJar.js';
 import IElement from '../element/IElement.js';
 import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
@@ -43,6 +42,9 @@ import ElementUtility from '../element/ElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import ICookieContainer from '../../cookie/types/ICookieContainer.js';
+import CookieContainer from '../../cookie/CookieContainer.js';
+import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -68,13 +70,12 @@ export default class Document extends Node implements IDocument {
 
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
 	public _cacheID = 0;
-	// Public in order to be accessible by the fetch and xhr.
-	public _cookie = new CookieJar();
 
 	protected _isFirstWrite = true;
 	protected _isFirstWriteAfterOpen = false;
 
 	private _selection: Selection = null;
+	#cookieContainer: ICookieContainer;
 
 	// Events
 	public onreadystatechange: (event: Event) => void = null;
@@ -291,7 +292,12 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
-		return this._cookie.getCookieString(this._defaultView.location, true);
+		if (!this.#cookieContainer) {
+			this.#cookieContainer = new CookieContainer();
+		}
+		return CookieStringUtility.cookiesToString(
+			this.#cookieContainer.getCookies(this._defaultView.location, true)
+		);
 	}
 
 	/**
@@ -300,7 +306,12 @@ export default class Document extends Node implements IDocument {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		this._cookie.addCookieString(this._defaultView.location, cookie);
+		if (!this.#cookieContainer) {
+			this.#cookieContainer = new CookieContainer();
+		}
+		this.#cookieContainer.addCookies([
+			CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
+		]);
 	}
 
 	/**
