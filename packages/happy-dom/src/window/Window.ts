@@ -225,7 +225,12 @@ export default class Window extends EventTarget implements IWindow {
 			enableFileSystemHttpRequests: false,
 			navigator: {
 				userAgent: `Mozilla/5.0 (X11; ${
-					process.platform.charAt(0).toUpperCase() + process.platform.slice(1) + ' ' + process.arch
+					process?.platform
+						? process.platform.charAt(0).toUpperCase() +
+						  process.platform.slice(1) +
+						  ' ' +
+						  process.arch
+						: 'Unknown'
 				}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`
 			},
 			device: {
