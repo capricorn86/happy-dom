@@ -212,8 +212,7 @@ export default class DOMTokenList implements IDOMTokenList {
 	private _getTokenList(): string[] {
 		let attr = this._ownerElement.getAttribute(this._attributeName) ?? '';
 		attr = attr.replace(/^[\t\n\f\r ]+|[\t\n\f\r ]+$/g, '');
-		attr = attr.replace(/[\t\n\f\r ]+/g, ' ');
-		return attr === '' ? [] : Array.from(new Set(attr.split(' ')));
+		return attr === '' ? [] : Array.from(new Set(attr.split(/[\t\n\f\r ]+/)));
 	}
 
 	/**
