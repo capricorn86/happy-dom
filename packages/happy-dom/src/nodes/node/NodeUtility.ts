@@ -47,7 +47,7 @@ export default class NodeUtility {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node.nodeType === NodeTypeEnum.documentFragmentNode) {
-			for (const child of (<Node>node)._childNodes.slice()) {
+			for (const child of (<Node>node).__childNodes__.slice()) {
 				ancestorNode.appendChild(child);
 			}
 			return node;
@@ -55,30 +55,30 @@ export default class NodeUtility {
 
 		// Remove the node from its previous parent if it has any.
 		if (node.parentNode) {
-			const index = (<Node>node.parentNode)._childNodes.indexOf(node);
+			const index = (<Node>node.parentNode).__childNodes__.indexOf(node);
 			if (index !== -1) {
-				(<Node>node.parentNode)._childNodes.splice(index, 1);
+				(<Node>node.parentNode).__childNodes__.splice(index, 1);
 			}
 		}
 
 		if (ancestorNode.isConnected) {
-			(ancestorNode.ownerDocument || this)['_cacheID']++;
+			(ancestorNode.ownerDocument || this)['__cacheID__']++;
 		}
 
-		(<Node>ancestorNode)._childNodes.push(node);
+		(<Node>ancestorNode).__childNodes__.push(node);
 
-		(<Node>node)._connectToNode(ancestorNode);
+		(<Node>node).__connectToNode__(ancestorNode);
 
 		// MutationObserver
-		if ((<Node>ancestorNode)._observers.length > 0) {
+		if ((<Node>ancestorNode).__observers__.length > 0) {
 			const record = new MutationRecord();
 			record.target = ancestorNode;
 			record.type = MutationTypeEnum.childList;
 			record.addedNodes = [node];
 
-			for (const observer of (<Node>ancestorNode)._observers) {
+			for (const observer of (<Node>ancestorNode).__observers__) {
 				if (observer.options.subtree) {
-					(<Node>node)._observe(observer);
+					(<Node>node).__observe__(observer);
 				}
 				if (observer.options.childList) {
 					observer.callback([record], observer.observer);
@@ -97,29 +97,29 @@ export default class NodeUtility {
 	 * @returns Removed node.
 	 */
 	public static removeChild(ancestorNode: INode, node: INode): INode {
-		const index = (<Node>ancestorNode)._childNodes.indexOf(node);
+		const index = (<Node>ancestorNode).__childNodes__.indexOf(node);
 
 		if (index === -1) {
 			throw new DOMException('Failed to remove node. Node is not child of parent.');
 		}
 
 		if (ancestorNode.isConnected) {
-			(ancestorNode.ownerDocument || this)['_cacheID']++;
+			(ancestorNode.ownerDocument || this)['__cacheID__']++;
 		}
 
-		(<Node>ancestorNode)._childNodes.splice(index, 1);
+		(<Node>ancestorNode).__childNodes__.splice(index, 1);
 
-		(<Node>node)._connectToNode(null);
+		(<Node>node).__connectToNode__(null);
 
 		// MutationObserver
-		if ((<Node>ancestorNode)._observers.length > 0) {
+		if ((<Node>ancestorNode).__observers__.length > 0) {
 			const record = new MutationRecord();
 			record.target = ancestorNode;
 			record.type = MutationTypeEnum.childList;
 			record.removedNodes = [node];
 
-			for (const observer of (<Node>ancestorNode)._observers) {
-				(<Node>node)._unobserve(observer);
+			for (const observer of (<Node>ancestorNode).__observers__) {
+				(<Node>node).__unobserve__(observer);
 				if (observer.options.childList) {
 					observer.callback([record], observer.observer);
 				}
@@ -158,7 +158,7 @@ export default class NodeUtility {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-			for (const child of (<Node>newNode)._childNodes.slice()) {
+			for (const child of (<Node>newNode).__childNodes__.slice()) {
 				ancestorNode.insertBefore(child, referenceNode);
 			}
 			return newNode;
@@ -171,41 +171,41 @@ export default class NodeUtility {
 			return newNode;
 		}
 
-		if ((<Node>ancestorNode)._childNodes.indexOf(referenceNode) === -1) {
+		if ((<Node>ancestorNode).__childNodes__.indexOf(referenceNode) === -1) {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
 		}
 
 		if (ancestorNode.isConnected) {
-			(ancestorNode.ownerDocument || this)['_cacheID']++;
+			(ancestorNode.ownerDocument || this)['__cacheID__']++;
 		}
 
 		if (newNode.parentNode) {
-			const index = (<Node>newNode.parentNode)._childNodes.indexOf(newNode);
+			const index = (<Node>newNode.parentNode).__childNodes__.indexOf(newNode);
 			if (index !== -1) {
-				(<Node>newNode.parentNode)._childNodes.splice(index, 1);
+				(<Node>newNode.parentNode).__childNodes__.splice(index, 1);
 			}
 		}
 
-		(<Node>ancestorNode)._childNodes.splice(
-			(<Node>ancestorNode)._childNodes.indexOf(referenceNode),
+		(<Node>ancestorNode).__childNodes__.splice(
+			(<Node>ancestorNode).__childNodes__.indexOf(referenceNode),
 			0,
 			newNode
 		);
 
-		(<Node>newNode)._connectToNode(ancestorNode);
+		(<Node>newNode).__connectToNode__(ancestorNode);
 
 		// MutationObserver
-		if ((<Node>ancestorNode)._observers.length > 0) {
+		if ((<Node>ancestorNode).__observers__.length > 0) {
 			const record = new MutationRecord();
 			record.target = ancestorNode;
 			record.type = MutationTypeEnum.childList;
 			record.addedNodes = [newNode];
 
-			for (const observer of (<Node>ancestorNode)._observers) {
+			for (const observer of (<Node>ancestorNode).__observers__) {
 				if (observer.options.subtree) {
-					(<Node>newNode)._observe(observer);
+					(<Node>newNode).__observe__(observer);
 				}
 				if (observer.options.childList) {
 					observer.callback([record], observer.observer);
@@ -251,7 +251,7 @@ export default class NodeUtility {
 			return true;
 		}
 
-		if (!(<Node>ancestorNode)._childNodes.length) {
+		if (!(<Node>ancestorNode).__childNodes__.length) {
 			return false;
 		}
 
@@ -334,7 +334,7 @@ export default class NodeUtility {
 				return (<IText | IComment>node).data.length;
 
 			default:
-				return (<Node>node)._childNodes.length;
+				return (<Node>node).__childNodes__.length;
 		}
 	}
 
@@ -492,13 +492,13 @@ export default class NodeUtility {
 			return false;
 		}
 
-		if ((<Node>nodeA)._childNodes.length !== (<Node>nodeB)._childNodes.length) {
+		if ((<Node>nodeA).__childNodes__.length !== (<Node>nodeB).__childNodes__.length) {
 			return false;
 		}
 
-		for (let i = 0; i < (<Node>nodeA)._childNodes.length; i++) {
-			const childNodeA = (<Node>nodeA)._childNodes[i];
-			const childNodeB = (<Node>nodeB)._childNodes[i];
+		for (let i = 0; i < (<Node>nodeA).__childNodes__.length; i++) {
+			const childNodeA = (<Node>nodeA).__childNodes__[i];
+			const childNodeB = (<Node>nodeB).__childNodes__[i];
 
 			if (!NodeUtility.isEqualNode(childNodeA, childNodeB)) {
 				return false;

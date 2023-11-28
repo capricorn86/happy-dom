@@ -23,7 +23,7 @@ export default class AbortSignal extends EventTarget {
 	 *
 	 * @param [reason] Reason.
 	 */
-	public _abort(reason?: string): void {
+	public __abort__(reason?: string): void {
 		if (this.aborted) {
 			return;
 		}

@@ -19,7 +19,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public readonly opener: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: BrowserWindow;
-	public _asyncTaskManager = new AsyncTaskManager();
+	public __asyncTaskManager__ = new AsyncTaskManager();
 
 	/**
 	 * Constructor.
@@ -46,8 +46,8 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param content Content.
 	 */
 	public set content(content) {
-		this.window.document['_isFirstWrite'] = true;
-		this.window.document['_isFirstWriteAfterOpen'] = false;
+		this.window.document['__isFirstWrite__'] = true;
+		this.window.document['__isFirstWriteAfterOpen__'] = false;
 		this.window.document.open();
 		this.window.document.write(content);
 	}
@@ -80,7 +80,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 */
 	public async whenComplete(): Promise<void> {
 		await Promise.all([
-			this._asyncTaskManager.whenComplete(),
+			this.__asyncTaskManager__.whenComplete(),
 			...this.childFrames.map((frame) => frame.whenComplete())
 		]);
 	}
@@ -94,7 +94,7 @@ export default class BrowserFrame implements IBrowserFrame {
 		for (const frame of this.childFrames) {
 			frame.abort();
 		}
-		this._asyncTaskManager.abort();
+		this.__asyncTaskManager__.abort();
 	}
 
 	/**

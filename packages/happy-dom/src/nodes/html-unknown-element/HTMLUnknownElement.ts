@@ -15,61 +15,69 @@ import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js'
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLUnknownElement.
  */
 export default class HTMLUnknownElement extends HTMLElement implements IHTMLElement {
-	private _customElementDefineCallback: () => void = null;
+	#customElementDefineCallback: () => void = null;
 
 	/**
 	 * Connects this element to another element.
 	 *
 	 * @param parentNode Parent node.
 	 */
-	public _connectToNode(parentNode: INode = null): void {
+	public __connectToNode__(parentNode: INode = null): void {
 		const tagName = this.tagName;
 
 		// This element can potentially be a custom element that has not been defined yet
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
-		if (tagName.includes('-') && this.ownerDocument._defaultView.customElements._callbacks) {
-			const callbacks = this.ownerDocument._defaultView.customElements._callbacks;
+		if (tagName.includes('-') && this.ownerDocument.__defaultView__.customElements.__callbacks__) {
+			const callbacks = this.ownerDocument.__defaultView__.customElements.__callbacks__;
 
-			if (parentNode && !this._customElementDefineCallback) {
+			if (parentNode && !this.#customElementDefineCallback) {
 				const callback = (): void => {
 					if (this.parentNode) {
 						const newElement = <HTMLElement>this.ownerDocument.createElement(tagName);
-						(<INodeList<INode>>newElement._childNodes) = this._childNodes;
-						(<IHTMLCollection<IElement>>newElement._children) = this._children;
+						(<INodeList<INode>>newElement.__childNodes__) = this.__childNodes__;
+						(<IHTMLCollection<IElement>>newElement.__children__) = this.__children__;
 						(<boolean>newElement.isConnected) = this.isConnected;
 
-						newElement._rootNode = this._rootNode;
-						newElement._formNode = this._formNode;
-						newElement._selectNode = this._selectNode;
-						newElement._textAreaNode = this._textAreaNode;
-						newElement._observers = this._observers;
-						newElement._isValue = this._isValue;
+						newElement.__rootNode__ = this.__rootNode__;
+						newElement.__formNode__ = this.__formNode__;
+						newElement.__selectNode__ = this.__selectNode__;
+						newElement.__textAreaNode__ = this.__textAreaNode__;
+						newElement.__observers__ = this.__observers__;
+						newElement.__isValue__ = this.__isValue__;
 
 						for (let i = 0, max = this.attributes.length; i < max; i++) {
 							newElement.attributes.setNamedItem(this.attributes[i]);
 						}
 
-						(<INodeList<INode>>this._childNodes) = new NodeList();
-						(<IHTMLCollection<IElement>>this._children) = new HTMLCollection();
-						this._rootNode = null;
-						this._formNode = null;
-						this._selectNode = null;
-						this._textAreaNode = null;
-						this._observers = [];
-						this._isValue = null;
+						(<INodeList<INode>>this.__childNodes__) = new NodeList();
+						(<IHTMLCollection<IElement>>this.__children__) = new HTMLCollection();
+						this.__rootNode__ = null;
+						this.__formNode__ = null;
+						this.__selectNode__ = null;
+						this.__textAreaNode__ = null;
+						this.__observers__ = [];
+						this.__isValue__ = null;
 						(<HTMLElementNamedNodeMap>this.attributes) = new HTMLElementNamedNodeMap(this);
 
-						for (let i = 0, max = (<HTMLElement>this.parentNode)._childNodes.length; i < max; i++) {
-							if ((<HTMLElement>this.parentNode)._childNodes[i] === this) {
-								(<HTMLElement>this.parentNode)._childNodes[i] = newElement;
+						for (
+							let i = 0, max = (<HTMLElement>this.parentNode).__childNodes__.length;
+							i < max;
+							i++
+						) {
+							if ((<HTMLElement>this.parentNode).__childNodes__[i] === this) {
+								(<HTMLElement>this.parentNode).__childNodes__[i] = newElement;
 								break;
 							}
 						}
 
-						if ((<HTMLElement>this.parentNode)._children) {
-							for (let i = 0, max = (<HTMLElement>this.parentNode)._children.length; i < max; i++) {
-								if ((<HTMLElement>this.parentNode)._children[i] === this) {
-									(<HTMLElement>this.parentNode)._children[i] = newElement;
+						if ((<HTMLElement>this.parentNode).__children__) {
+							for (
+								let i = 0, max = (<HTMLElement>this.parentNode).__children__.length;
+								i < max;
+								i++
+							) {
+								if ((<HTMLElement>this.parentNode).__children__[i] === this) {
+									(<HTMLElement>this.parentNode).__children__[i] = newElement;
 									break;
 								}
 							}
@@ -80,24 +88,24 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 							newElement.connectedCallback();
 						}
 
-						this._connectToNode(null);
+						this.__connectToNode__(null);
 					}
 				};
 				callbacks[tagName] = callbacks[tagName] || [];
 				callbacks[tagName].push(callback);
-				this._customElementDefineCallback = callback;
-			} else if (!parentNode && callbacks[tagName] && this._customElementDefineCallback) {
-				const index = callbacks[tagName].indexOf(this._customElementDefineCallback);
+				this.#customElementDefineCallback = callback;
+			} else if (!parentNode && callbacks[tagName] && this.#customElementDefineCallback) {
+				const index = callbacks[tagName].indexOf(this.#customElementDefineCallback);
 				if (index !== -1) {
 					callbacks[tagName].splice(index, 1);
 				}
 				if (!callbacks[tagName].length) {
 					delete callbacks[tagName];
 				}
-				this._customElementDefineCallback = null;
+				this.#customElementDefineCallback = null;
 			}
 		}
 
-		super._connectToNode(parentNode);
+		super.__connectToNode__(parentNode);
 	}
 }

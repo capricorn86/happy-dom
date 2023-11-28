@@ -82,7 +82,7 @@ export default class MultipartFormDataParser {
 						)}"\r\nContent-Type: ${value.type || 'application/octet-stream'}\r\n\r\n`
 					)
 				);
-				chunks.push(value._buffer);
+				chunks.push(value.__buffer__);
 				chunks.push(Buffer.from('\r\n'));
 			}
 		}

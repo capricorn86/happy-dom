@@ -131,7 +131,7 @@ export default class CSSParser {
 						case CSSRule.FONT_FACE_RULE:
 						case CSSRule.KEYFRAME_RULE:
 						case CSSRule.STYLE_RULE:
-							(<CSSStyleRule>parentRule)._cssText = cssText;
+							(<CSSStyleRule>parentRule).__cssText__ = cssText;
 							break;
 					}
 				}

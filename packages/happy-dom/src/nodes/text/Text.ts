@@ -25,7 +25,7 @@ export default class Text extends CharacterData implements IText {
 	 * @override
 	 */
 	public override get data(): string {
-		return this._data;
+		return this.__data__;
 	}
 
 	/**
@@ -34,8 +34,8 @@ export default class Text extends CharacterData implements IText {
 	public override set data(data: string) {
 		super.data = data;
 
-		if (this._textAreaNode) {
-			(<HTMLTextAreaElement>this._textAreaNode)._resetSelection();
+		if (this.__textAreaNode__) {
+			(<HTMLTextAreaElement>this.__textAreaNode__).__resetSelection__();
 		}
 	}
 
@@ -47,7 +47,7 @@ export default class Text extends CharacterData implements IText {
 	 * @returns New text node.
 	 */
 	public splitText(offset: number): IText {
-		const length = this._data.length;
+		const length = this.__data__.length;
 
 		if (offset < 0 || offset > length) {
 			throw new DOMException(
@@ -92,17 +92,17 @@ export default class Text extends CharacterData implements IText {
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const oldTextAreaNode = <HTMLTextAreaElement>this._textAreaNode;
+	public override __connectToNode__(parentNode: INode = null): void {
+		const oldTextAreaNode = <HTMLTextAreaElement>this.__textAreaNode__;
 
-		super._connectToNode(parentNode);
+		super.__connectToNode__(parentNode);
 
-		if (oldTextAreaNode !== this._textAreaNode) {
+		if (oldTextAreaNode !== this.__textAreaNode__) {
 			if (oldTextAreaNode) {
-				oldTextAreaNode._resetSelection();
+				oldTextAreaNode.__resetSelection__();
 			}
-			if (this._textAreaNode) {
-				(<HTMLTextAreaElement>this._textAreaNode)._resetSelection();
+			if (this.__textAreaNode__) {
+				(<HTMLTextAreaElement>this.__textAreaNode__).__resetSelection__();
 			}
 		}
 	}

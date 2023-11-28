@@ -29,7 +29,7 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
  */
 export default class Response implements IResponse {
 	// Needs to be injected by sub-class.
-	protected static _window: IBrowserWindow;
+	protected static __window__: IBrowserWindow;
 
 	// Public properties
 	public readonly body: Stream.Readable | null = null;
@@ -279,7 +279,7 @@ export default class Response implements IResponse {
 			);
 		}
 
-		return new this._window.Response(null, {
+		return new this.__window__.Response(null, {
 			headers: {
 				location: new URL(url).toString()
 			},
@@ -295,7 +295,7 @@ export default class Response implements IResponse {
 	 * @returns Response.
 	 */
 	public static error(): Response {
-		const response = new this._window.Response(null, { status: 0, statusText: '' });
+		const response = new this.__window__.Response(null, { status: 0, statusText: '' });
 		(<string>response.type) = 'error';
 		return response;
 	}
@@ -315,13 +315,13 @@ export default class Response implements IResponse {
 			throw new TypeError('data is not JSON serializable');
 		}
 
-		const headers = new this._window.Headers(init && init.headers);
+		const headers = new this.__window__.Headers(init && init.headers);
 
 		if (!headers.has('content-type')) {
 			headers.set('content-type', 'application/json');
 		}
 
-		return new this._window.Response(body, {
+		return new this.__window__.Response(body, {
 			status: 200,
 			...init,
 			headers

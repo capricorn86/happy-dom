@@ -22,7 +22,7 @@ export default class HTMLScriptElementUtility {
 		const src = element.getAttribute('src');
 		const async = element.getAttribute('async') !== null;
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			element.ownerDocument._defaultView
+			element.ownerDocument.__defaultView__
 		);
 
 		if (
@@ -43,22 +43,22 @@ export default class HTMLScriptElementUtility {
 		let error: Error | null = null;
 
 		if (async) {
-			(<{ _readyStateManager: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument._defaultView)
-			))._readyStateManager.startTask();
+			(<{ __readyStateManager__: DocumentReadyStateManager }>(
+				(<unknown>element.ownerDocument.__defaultView__)
+			)).__readyStateManager__.startTask();
 
 			try {
-				code = await ResourceFetch.fetch(element.ownerDocument._defaultView, src);
+				code = await ResourceFetch.fetch(element.ownerDocument.__defaultView__, src);
 			} catch (e) {
 				error = e;
 			}
 
-			(<{ _readyStateManager: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument._defaultView)
-			))._readyStateManager.endTask();
+			(<{ __readyStateManager__: DocumentReadyStateManager }>(
+				(<unknown>element.ownerDocument.__defaultView__)
+			)).__readyStateManager__.endTask();
 		} else {
 			try {
-				code = ResourceFetch.fetchSync(element.ownerDocument._defaultView, src);
+				code = ResourceFetch.fetchSync(element.ownerDocument.__defaultView__, src);
 			} catch (e) {
 				error = e;
 			}
@@ -70,16 +70,16 @@ export default class HTMLScriptElementUtility {
 				throw error;
 			}
 		} else {
-			element.ownerDocument['_currentScript'] = element;
+			element.ownerDocument['__currentScript__'] = element;
 			code = '//# sourceURL=' + src + '\n' + code;
 			if (browserSettings.disableErrorCapturing) {
-				element.ownerDocument._defaultView.eval(code);
+				element.ownerDocument.__defaultView__.eval(code);
 			} else {
-				WindowErrorUtility.captureError(element.ownerDocument._defaultView, () =>
-					element.ownerDocument._defaultView.eval(code)
+				WindowErrorUtility.captureError(element.ownerDocument.__defaultView__, () =>
+					element.ownerDocument.__defaultView__.eval(code)
 				);
 			}
-			element.ownerDocument['_currentScript'] = null;
+			element.ownerDocument['__currentScript__'] = null;
 			element.dispatchEvent(new Event('load'));
 		}
 	}

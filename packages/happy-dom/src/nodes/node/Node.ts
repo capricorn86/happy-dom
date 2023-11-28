@@ -16,7 +16,7 @@ import INodeList from './INodeList.js';
  */
 export default class Node extends EventTarget implements INode {
 	// Can be set before the Node is created.
-	public static _ownerDocument: IDocument | null = null;
+	public static __ownerDocument__: IDocument | null = null;
 
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
@@ -56,12 +56,12 @@ export default class Node extends EventTarget implements INode {
 	public readonly isConnected: boolean = false;
 
 	// Custom Properties (not part of HTML standard)
-	public _rootNode: INode = null;
-	public _formNode: INode = null;
-	public _selectNode: INode = null;
-	public _textAreaNode: INode = null;
-	public _observers: MutationListener[] = [];
-	public readonly _childNodes: INodeList<INode> = new NodeList<INode>();
+	public __rootNode__: INode = null;
+	public __formNode__: INode = null;
+	public __selectNode__: INode = null;
+	public __textAreaNode__: INode = null;
+	public __observers__: MutationListener[] = [];
+	public readonly __childNodes__: INodeList<INode> = new NodeList<INode>();
 	#ownerDocument: IDocument | null = null;
 
 	/**
@@ -70,8 +70,8 @@ export default class Node extends EventTarget implements INode {
 	constructor() {
 		super();
 
-		if ((<typeof Node>this.constructor)._ownerDocument) {
-			this.#ownerDocument = (<typeof Node>this.constructor)._ownerDocument;
+		if ((<typeof Node>this.constructor).__ownerDocument__) {
+			this.#ownerDocument = (<typeof Node>this.constructor).__ownerDocument__;
 		}
 	}
 
@@ -97,7 +97,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Child nodes list.
 	 */
 	public get childNodes(): INodeList<INode> {
-		return this._childNodes;
+		return this.__childNodes__;
 	}
 
 	/**
@@ -152,9 +152,9 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get previousSibling(): INode {
 		if (this.parentNode) {
-			const index = (<Node>this.parentNode)._childNodes.indexOf(this);
+			const index = (<Node>this.parentNode).__childNodes__.indexOf(this);
 			if (index > 0) {
-				return (<Node>this.parentNode)._childNodes[index - 1];
+				return (<Node>this.parentNode).__childNodes__[index - 1];
 			}
 		}
 		return null;
@@ -167,9 +167,9 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get nextSibling(): INode {
 		if (this.parentNode) {
-			const index = (<Node>this.parentNode)._childNodes.indexOf(this);
-			if (index > -1 && index + 1 < (<Node>this.parentNode)._childNodes.length) {
-				return (<Node>this.parentNode)._childNodes[index + 1];
+			const index = (<Node>this.parentNode).__childNodes__.indexOf(this);
+			if (index > -1 && index + 1 < (<Node>this.parentNode).__childNodes__.length) {
+				return (<Node>this.parentNode).__childNodes__[index + 1];
 			}
 		}
 		return null;
@@ -181,8 +181,8 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public get firstChild(): INode {
-		if (this._childNodes.length > 0) {
-			return this._childNodes[0];
+		if (this.__childNodes__.length > 0) {
+			return this.__childNodes__[0];
 		}
 		return null;
 	}
@@ -193,8 +193,8 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public get lastChild(): INode {
-		if (this._childNodes.length > 0) {
-			return this._childNodes[this._childNodes.length - 1];
+		if (this.__childNodes__.length > 0) {
+			return this.__childNodes__[this.__childNodes__.length - 1];
 		}
 		return null;
 	}
@@ -222,7 +222,7 @@ export default class Node extends EventTarget implements INode {
 		if (base) {
 			return base.href;
 		}
-		return this.ownerDocument._defaultView.location.href;
+		return this.ownerDocument.__defaultView__.location.href;
 	}
 
 	/**
@@ -241,7 +241,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns "true" if the node has child nodes.
 	 */
 	public hasChildNodes(): boolean {
-		return this._childNodes.length > 0;
+		return this.__childNodes__.length > 0;
 	}
 
 	/**
@@ -266,8 +266,8 @@ export default class Node extends EventTarget implements INode {
 			return this;
 		}
 
-		if (this._rootNode && !options?.composed) {
-			return this._rootNode;
+		if (this.__rootNode__ && !options?.composed) {
+			return this.__rootNode__;
 		}
 
 		return this.ownerDocument;
@@ -280,22 +280,22 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): INode {
-		(<typeof Node>this.constructor)._ownerDocument = this.ownerDocument;
+		(<typeof Node>this.constructor).__ownerDocument__ = this.ownerDocument;
 		const clone = new (<typeof Node>this.constructor)();
-		(<typeof Node>this.constructor)._ownerDocument = null;
+		(<typeof Node>this.constructor).__ownerDocument__ = null;
 
 		// Document has childNodes directly when it is created
-		if (clone._childNodes.length) {
-			for (const node of clone._childNodes.slice()) {
+		if (clone.__childNodes__.length) {
+			for (const node of clone.__childNodes__.slice()) {
 				node.parentNode.removeChild(node);
 			}
 		}
 
 		if (deep) {
-			for (const childNode of this._childNodes) {
+			for (const childNode of this.__childNodes__) {
 				const childClone = childNode.cloneNode(true);
 				(<Node>childClone.parentNode) = clone;
-				clone._childNodes.push(childClone);
+				clone.__childNodes__.push(childClone);
 			}
 		}
 
@@ -367,11 +367,11 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param listener Listener.
 	 */
-	public _observe(listener: MutationListener): void {
-		this._observers.push(listener);
+	public __observe__(listener: MutationListener): void {
+		this.__observers__.push(listener);
 		if (listener.options.subtree) {
-			for (const node of this._childNodes) {
-				(<Node>node)._observe(listener);
+			for (const node of this.__childNodes__) {
+				(<Node>node).__observe__(listener);
 			}
 		}
 	}
@@ -382,14 +382,14 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param listener Listener.
 	 */
-	public _unobserve(listener: MutationListener): void {
-		const index = this._observers.indexOf(listener);
+	public __unobserve__(listener: MutationListener): void {
+		const index = this.__observers__.indexOf(listener);
 		if (index !== -1) {
-			this._observers.splice(index, 1);
+			this.__observers__.splice(index, 1);
 		}
 		if (listener.options.subtree) {
-			for (const node of this._childNodes) {
-				(<Node>node)._unobserve(listener);
+			for (const node of this.__childNodes__) {
+				(<Node>node).__unobserve__(listener);
 			}
 		}
 	}
@@ -399,26 +399,27 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param parentNode Parent node.
 	 */
-	public _connectToNode(parentNode: INode = null): void {
+	public __connectToNode__(parentNode: INode = null): void {
 		const isConnected = !!parentNode && parentNode.isConnected;
-		const formNode = (<Node>this)._formNode;
-		const selectNode = (<Node>this)._selectNode;
-		const textAreaNode = (<Node>this)._textAreaNode;
+		const formNode = (<Node>this).__formNode__;
+		const selectNode = (<Node>this).__selectNode__;
+		const textAreaNode = (<Node>this).__textAreaNode__;
 
 		if (this.nodeType !== NodeTypeEnum.documentFragmentNode) {
 			(<INode>this.parentNode) = parentNode;
-			(<Node>this)._rootNode = isConnected && parentNode ? (<Node>parentNode)._rootNode : null;
+			(<Node>this).__rootNode__ =
+				isConnected && parentNode ? (<Node>parentNode).__rootNode__ : null;
 
 			if (this['tagName'] !== 'FORM') {
-				(<Node>this)._formNode = parentNode ? (<Node>parentNode)._formNode : null;
+				(<Node>this).__formNode__ = parentNode ? (<Node>parentNode).__formNode__ : null;
 			}
 
 			if (this['tagName'] !== 'SELECT') {
-				(<Node>this)._selectNode = parentNode ? (<Node>parentNode)._selectNode : null;
+				(<Node>this).__selectNode__ = parentNode ? (<Node>parentNode).__selectNode__ : null;
 			}
 
 			if (this['tagName'] !== 'TEXTAREA') {
-				(<Node>this)._textAreaNode = parentNode ? (<Node>parentNode)._textAreaNode : null;
+				(<Node>this).__textAreaNode__ = parentNode ? (<Node>parentNode).__textAreaNode__ : null;
 			}
 		}
 
@@ -426,8 +427,8 @@ export default class Node extends EventTarget implements INode {
 			(<boolean>this.isConnected) = isConnected;
 
 			if (!isConnected) {
-				if (this.ownerDocument['_activeElement'] === this) {
-					this.ownerDocument['_activeElement'] = null;
+				if (this.ownerDocument['__activeElement__'] === this) {
+					this.ownerDocument['__activeElement__'] = null;
 				}
 			}
 
@@ -437,22 +438,22 @@ export default class Node extends EventTarget implements INode {
 				this.disconnectedCallback();
 			}
 
-			for (const child of this._childNodes) {
-				(<Node>child)._connectToNode(this);
+			for (const child of this.__childNodes__) {
+				(<Node>child).__connectToNode__(this);
 			}
 
 			// eslint-disable-next-line
-			if ((<any>this)._shadowRoot) {
+			if ((<any>this).__shadowRoot__) {
 				// eslint-disable-next-line
-				(<any>this)._shadowRoot._connectToNode(this);
+				(<any>this).__shadowRoot__.__connectToNode__(this);
 			}
 		} else if (
-			formNode !== this._formNode ||
-			selectNode !== this._selectNode ||
-			textAreaNode !== this._textAreaNode
+			formNode !== this.__formNode__ ||
+			selectNode !== this.__selectNode__ ||
+			textAreaNode !== this.__textAreaNode__
 		) {
-			for (const child of this._childNodes) {
-				(<Node>child)._connectToNode(this);
+			for (const child of this.__childNodes__) {
+				(<Node>child).__connectToNode__(this);
 			}
 		}
 	}
@@ -603,7 +604,7 @@ export default class Node extends EventTarget implements INode {
 
 		const computeNodeIndexes = (nodes: INode[]): void => {
 			for (const childNode of nodes) {
-				computeNodeIndexes((<Node>childNode)._childNodes);
+				computeNodeIndexes((<Node>childNode).__childNodes__);
 
 				if (childNode === node2Node) {
 					node2Index = indexes;
@@ -619,7 +620,7 @@ export default class Node extends EventTarget implements INode {
 			}
 		};
 
-		computeNodeIndexes((<Node>commonAncestor)._childNodes);
+		computeNodeIndexes((<Node>commonAncestor).__childNodes__);
 
 		/**
 		 * 9. If node1 is preceding node2, then return DOCUMENT_POSITION_PRECEDING.

@@ -22,11 +22,11 @@ describe('HTMLUnknownElement', () => {
 
 			parent.appendChild(element);
 
-			expect(window.customElements._callbacks['CUSTOM-ELEMENT'].length).toBe(1);
+			expect(window.customElements.__callbacks__['CUSTOM-ELEMENT'].length).toBe(1);
 
 			parent.removeChild(element);
 
-			expect(Object.keys(window.customElements._callbacks).length).toBe(0);
+			expect(Object.keys(window.customElements.__callbacks__).length).toBe(0);
 
 			parent.appendChild(element);
 
@@ -58,12 +58,12 @@ describe('HTMLUnknownElement', () => {
 
 			const childNodes = element.childNodes;
 			const children = element.children;
-			const rootNode = (element._rootNode = document.createElement('div'));
-			const formNode = (element._formNode = document.createElement('div'));
-			const selectNode = (element._selectNode = document.createElement('div'));
-			const textAreaNode = (element._textAreaNode = document.createElement('div'));
-			const observers = element._observers;
-			const isValue = (element._isValue = 'test');
+			const rootNode = (element.__rootNode__ = document.createElement('div'));
+			const formNode = (element.__formNode__ = document.createElement('div'));
+			const selectNode = (element.__selectNode__ = document.createElement('div'));
+			const textAreaNode = (element.__textAreaNode__ = document.createElement('div'));
+			const observers = element.__observers__;
+			const isValue = (element.__isValue__ = 'test');
 
 			window.customElements.define('custom-element', CustomElement);
 
@@ -77,12 +77,12 @@ describe('HTMLUnknownElement', () => {
 
 			expect(customElement.childNodes === childNodes).toBe(true);
 			expect(customElement.children === children).toBe(true);
-			expect(customElement._rootNode === rootNode).toBe(true);
-			expect(customElement._formNode === formNode).toBe(true);
-			expect(customElement._selectNode === selectNode).toBe(true);
-			expect(customElement._textAreaNode === textAreaNode).toBe(true);
-			expect(customElement._observers === observers).toBe(true);
-			expect(customElement._isValue === isValue).toBe(true);
+			expect(customElement.__rootNode__ === rootNode).toBe(true);
+			expect(customElement.__formNode__ === formNode).toBe(true);
+			expect(customElement.__selectNode__ === selectNode).toBe(true);
+			expect(customElement.__textAreaNode__ === textAreaNode).toBe(true);
+			expect(customElement.__observers__ === observers).toBe(true);
+			expect(customElement.__isValue__ === isValue).toBe(true);
 			expect(customElement.attributes.length).toBe(1);
 			expect(customElement.attributes[0] === attribute1).toBe(true);
 		});

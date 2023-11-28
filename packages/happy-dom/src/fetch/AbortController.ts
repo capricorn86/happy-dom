@@ -21,6 +21,6 @@ export default class AbortController {
 	 * @param [reason] Reason.
 	 */
 	public abort(reason?: string): void {
-		this.signal._abort(reason);
+		this.signal.__abort__(reason);
 	}
 }

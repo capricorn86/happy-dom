@@ -44,7 +44,7 @@ export default class BrowserFrameFactory {
 		}
 
 		(<boolean>frame.window.closed) = true;
-		frame._asyncTaskManager.destroy();
+		frame.__asyncTaskManager__.destroy();
 		WindowBrowserSettingsReader.removeSettings(frame.window);
 		(<BrowserPage | null>frame.page) = null;
 		(<Window | null>frame.window) = null;

@@ -2,6 +2,7 @@ import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
 import INode from '../node/INode.js';
 import HTMLOptionElementNamedNodeMap from './HTMLOptionElementNamedNodeMap.js';
 import IHTMLOptionElement from './IHTMLOptionElement.js';
@@ -14,9 +15,8 @@ import IHTMLOptionElement from './IHTMLOptionElement.js';
  */
 export default class HTMLOptionElement extends HTMLElement implements IHTMLOptionElement {
 	public override readonly attributes: INamedNodeMap = new HTMLOptionElementNamedNodeMap(this);
-	public _index: number;
-	public _selectedness = false;
-	public _dirtyness = false;
+	public __selectedness__ = false;
+	public __dirtyness__ = false;
 
 	/**
 	 * Returns inner text, which is the rendered appearance of text.
@@ -42,7 +42,9 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Index.
 	 */
 	public get index(): number {
-		return this._index;
+		return this.__selectNode__
+			? (<IHTMLSelectElement>this.__selectNode__).options.indexOf(this)
+			: 0;
 	}
 
 	/**
@@ -51,7 +53,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this._formNode;
+		return <IHTMLFormElement>this.__formNode__;
 	}
 
 	/**
@@ -60,7 +62,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Selected.
 	 */
 	public get selected(): boolean {
-		return this._selectedness;
+		return this.__selectedness__;
 	}
 
 	/**
@@ -69,13 +71,13 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @param selected Selected.
 	 */
 	public set selected(selected: boolean) {
-		const selectNode = <HTMLSelectElement>this._selectNode;
+		const selectNode = <HTMLSelectElement>this.__selectNode__;
 
-		this._dirtyness = true;
-		this._selectedness = Boolean(selected);
+		this.__dirtyness__ = true;
+		this.__selectedness__ = Boolean(selected);
 
 		if (selectNode) {
-			selectNode._updateOptionItems(this._selectedness ? this : null);
+			selectNode.__updateOptionItems__(this.__selectedness__ ? this : null);
 		}
 	}
 
@@ -122,17 +124,17 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const oldSelectNode = <HTMLSelectElement>this._selectNode;
+	public override __connectToNode__(parentNode: INode = null): void {
+		const oldSelectNode = <HTMLSelectElement>this.__selectNode__;
 
-		super._connectToNode(parentNode);
+		super.__connectToNode__(parentNode);
 
-		if (oldSelectNode !== this._selectNode) {
+		if (oldSelectNode !== this.__selectNode__) {
 			if (oldSelectNode) {
-				oldSelectNode._updateOptionItems();
+				oldSelectNode.__updateOptionItems__();
 			}
-			if (this._selectNode) {
-				(<HTMLSelectElement>this._selectNode)._updateOptionItems();
+			if (this.__selectNode__) {
+				(<HTMLSelectElement>this.__selectNode__).__updateOptionItems__();
 			}
 		}
 	}

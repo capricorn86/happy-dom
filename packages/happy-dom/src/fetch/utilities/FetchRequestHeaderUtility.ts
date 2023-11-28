@@ -34,13 +34,13 @@ export default class FetchRequestHeaderUtility {
 	 * @param headers Headers.
 	 */
 	public static removeForbiddenHeaders(headers: IHeaders): void {
-		for (const key of Object.keys((<Headers>headers)._entries)) {
+		for (const key of Object.keys((<Headers>headers).__entries__)) {
 			if (
 				FORBIDDEN_HEADER_NAMES.includes(key) ||
 				key.startsWith('proxy-') ||
 				key.startsWith('sec-')
 			) {
-				delete (<Headers>headers)._entries[key];
+				delete (<Headers>headers).__entries__[key];
 			}
 		}
 	}

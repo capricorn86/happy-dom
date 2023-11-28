@@ -7,8 +7,8 @@ import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 export default class CSSKeyframeRule extends CSSRule {
 	public readonly type = CSSRule.KEYFRAME_RULE;
 	public readonly keyText: string;
-	public _cssText = '';
-	private _style: CSSStyleDeclaration = null;
+	public __cssText__ = '';
+	#style: CSSStyleDeclaration = null;
 
 	/**
 	 * Returns style.
@@ -16,12 +16,12 @@ export default class CSSKeyframeRule extends CSSRule {
 	 * @returns Style.
 	 */
 	public get style(): CSSStyleDeclaration {
-		if (!this._style) {
-			this._style = new CSSStyleDeclaration();
-			(<CSSRule>this._style.parentRule) = this;
-			this._style.cssText = this._cssText;
+		if (!this.#style) {
+			this.#style = new CSSStyleDeclaration();
+			(<CSSRule>this.#style.parentRule) = this;
+			this.#style.cssText = this.__cssText__;
 		}
-		return this._style;
+		return this.#style;
 	}
 
 	/**

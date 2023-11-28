@@ -13,7 +13,7 @@ import IElement from './IElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class ElementNamedNodeMap extends NamedNodeMap {
-	protected _ownerElement: Element;
+	protected __ownerElement__: Element;
 
 	/**
 	 * Constructor.
@@ -22,21 +22,21 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	 */
 	constructor(ownerElement: Element) {
 		super();
-		this._ownerElement = ownerElement;
+		this.__ownerElement__ = ownerElement;
 	}
 
 	/**
 	 * @override
 	 */
 	public override getNamedItem(name: string): IAttr | null {
-		return this._namedItems[this._getAttributeName(name)] || null;
+		return this.__namedItems__[this.__getAttributeName__(name)] || null;
 	}
 
 	/**
 	 * @override
 	 */
 	public override getNamedItemNS(namespace: string, localName: string): IAttr | null {
-		return super.getNamedItemNS(namespace, this._getAttributeName(localName));
+		return super.getNamedItemNS(namespace, this.__getAttributeName__(localName));
 	}
 
 	/**
@@ -47,57 +47,57 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 			return null;
 		}
 
-		item.name = this._getAttributeName(item.name);
-		(<IElement>item.ownerElement) = this._ownerElement;
+		item.name = this.__getAttributeName__(item.name);
+		(<IElement>item.ownerElement) = this.__ownerElement__;
 
 		const replacedItem = super.setNamedItem(item);
 		const oldValue = replacedItem ? replacedItem.value : null;
 
-		if (this._ownerElement.isConnected) {
-			this._ownerElement.ownerDocument['_cacheID']++;
+		if (this.__ownerElement__.isConnected) {
+			this.__ownerElement__.ownerDocument['__cacheID__']++;
 		}
 
-		if (item.name === 'class' && this._ownerElement._classList) {
-			this._ownerElement._classList._updateIndices();
+		if (item.name === 'class' && this.__ownerElement__.__classList__) {
+			this.__ownerElement__.__classList__.__updateIndices__();
 		}
 
 		if (item.name === 'id' || item.name === 'name') {
 			if (
-				this._ownerElement.parentNode &&
-				(<Element>this._ownerElement.parentNode)._children &&
+				this.__ownerElement__.parentNode &&
+				(<Element>this.__ownerElement__.parentNode).__children__ &&
 				item.value !== oldValue
 			) {
 				if (oldValue) {
 					(<HTMLCollection<IElement>>(
-						(<Element>this._ownerElement.parentNode)._children
-					))._removeNamedItem(this._ownerElement, oldValue);
+						(<Element>this.__ownerElement__.parentNode).__children__
+					)).__removeNamedItem__(this.__ownerElement__, oldValue);
 				}
 				if (item.value) {
 					(<HTMLCollection<IElement>>(
-						(<Element>this._ownerElement.parentNode)._children
-					))._appendNamedItem(this._ownerElement, item.value);
+						(<Element>this.__ownerElement__.parentNode).__children__
+					)).__appendNamedItem__(this.__ownerElement__, item.value);
 				}
 			}
 		}
 
 		if (
-			this._ownerElement.attributeChangedCallback &&
-			(<typeof Element>this._ownerElement.constructor)._observedAttributes &&
-			(<typeof Element>this._ownerElement.constructor)._observedAttributes.includes(item.name)
+			this.__ownerElement__.attributeChangedCallback &&
+			(<typeof Element>this.__ownerElement__.constructor).__observedAttributes__ &&
+			(<typeof Element>this.__ownerElement__.constructor).__observedAttributes__.includes(item.name)
 		) {
-			this._ownerElement.attributeChangedCallback(item.name, oldValue, item.value);
+			this.__ownerElement__.attributeChangedCallback(item.name, oldValue, item.value);
 		}
 
 		// MutationObserver
-		if (this._ownerElement._observers.length > 0) {
-			for (const observer of this._ownerElement._observers) {
+		if (this.__ownerElement__.__observers__.length > 0) {
+			for (const observer of this.__ownerElement__.__observers__) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
 						observer.options.attributeFilter.includes(item.name))
 				) {
 					const record = new MutationRecord();
-					record.target = this._ownerElement;
+					record.target = this.__ownerElement__;
 					record.type = MutationTypeEnum.attributes;
 					record.attributeName = item.name;
 					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
@@ -112,53 +112,53 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override _removeNamedItem(name: string): IAttr | null {
-		const removedItem = super._removeNamedItem(this._getAttributeName(name));
+	public override __removeNamedItem__(name: string): IAttr | null {
+		const removedItem = super.__removeNamedItem__(this.__getAttributeName__(name));
 
 		if (!removedItem) {
 			return null;
 		}
 
-		if (this._ownerElement.isConnected) {
-			this._ownerElement.ownerDocument['_cacheID']++;
+		if (this.__ownerElement__.isConnected) {
+			this.__ownerElement__.ownerDocument['__cacheID__']++;
 		}
 
-		if (removedItem.name === 'class' && this._ownerElement._classList) {
-			this._ownerElement._classList._updateIndices();
+		if (removedItem.name === 'class' && this.__ownerElement__.__classList__) {
+			this.__ownerElement__.__classList__.__updateIndices__();
 		}
 
 		if (removedItem.name === 'id' || removedItem.name === 'name') {
 			if (
-				this._ownerElement.parentNode &&
-				(<Element>this._ownerElement.parentNode)._children &&
+				this.__ownerElement__.parentNode &&
+				(<Element>this.__ownerElement__.parentNode).__children__ &&
 				removedItem.value
 			) {
 				(<HTMLCollection<IElement>>(
-					(<Element>this._ownerElement.parentNode)._children
-				))._removeNamedItem(this._ownerElement, removedItem.value);
+					(<Element>this.__ownerElement__.parentNode).__children__
+				)).__removeNamedItem__(this.__ownerElement__, removedItem.value);
 			}
 		}
 
 		if (
-			this._ownerElement.attributeChangedCallback &&
-			(<typeof Element>this._ownerElement.constructor)._observedAttributes &&
-			(<typeof Element>this._ownerElement.constructor)._observedAttributes.includes(
+			this.__ownerElement__.attributeChangedCallback &&
+			(<typeof Element>this.__ownerElement__.constructor).__observedAttributes__ &&
+			(<typeof Element>this.__ownerElement__.constructor).__observedAttributes__.includes(
 				removedItem.name
 			)
 		) {
-			this._ownerElement.attributeChangedCallback(removedItem.name, removedItem.value, null);
+			this.__ownerElement__.attributeChangedCallback(removedItem.name, removedItem.value, null);
 		}
 
 		// MutationObserver
-		if (this._ownerElement._observers.length > 0) {
-			for (const observer of this._ownerElement._observers) {
+		if (this.__ownerElement__.__observers__.length > 0) {
+			for (const observer of this.__ownerElement__.__observers__) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
 						observer.options.attributeFilter.includes(removedItem.name))
 				) {
 					const record = new MutationRecord();
-					record.target = this._ownerElement;
+					record.target = this.__ownerElement__;
 					record.type = MutationTypeEnum.attributes;
 					record.attributeName = removedItem.name;
 					record.oldValue = observer.options.attributeOldValue ? removedItem.value : null;
@@ -174,7 +174,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	 * @override
 	 */
 	public override removeNamedItemNS(namespace: string, localName: string): IAttr | null {
-		return super.removeNamedItemNS(namespace, this._getAttributeName(localName));
+		return super.removeNamedItemNS(namespace, this.__getAttributeName__(localName));
 	}
 
 	/**
@@ -183,8 +183,8 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	 * @param name Name.
 	 * @returns Attribute name based on namespace.
 	 */
-	protected _getAttributeName(name): string {
-		if (this._ownerElement.namespaceURI === NamespaceURI.svg) {
+	protected __getAttributeName__(name): string {
+		if (this.__ownerElement__.namespaceURI === NamespaceURI.svg) {
 			return name;
 		}
 		return name.toLowerCase();

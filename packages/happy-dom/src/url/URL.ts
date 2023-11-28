@@ -14,7 +14,7 @@ export default class URL extends NodeJSURL {
 	 */
 	public static override createObjectURL(object: NodeJSBlob | Blob): string {
 		if (object instanceof Blob) {
-			const blob = new NodeJSBlob([object._buffer], { type: object.type });
+			const blob = new NodeJSBlob([object.__buffer__], { type: object.type });
 			return super.createObjectURL(blob);
 		}
 		return super.createObjectURL(object);

@@ -49,7 +49,7 @@ export default class MutationObserver {
 		this.listener.callback = this.callback.bind(this);
 		this.listener.observer = this;
 
-		(<Node>target)._observe(this.listener);
+		(<Node>target).__observe__(this.listener);
 	}
 
 	/**
@@ -57,7 +57,7 @@ export default class MutationObserver {
 	 */
 	public disconnect(): void {
 		if (this.target) {
-			(<Node>this.target)._unobserve(this.listener);
+			(<Node>this.target).__unobserve__(this.listener);
 			this.target = null;
 		}
 	}

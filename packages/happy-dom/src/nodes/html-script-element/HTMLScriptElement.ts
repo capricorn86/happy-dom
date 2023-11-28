@@ -19,7 +19,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	public override readonly attributes: INamedNodeMap = new HTMLScriptElementNamedNodeMap(this);
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
-	public _evaluateScript = true;
+	public __evaluateScript__ = true;
 
 	/**
 	 * Returns type.
@@ -169,16 +169,16 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
+	public override __connectToNode__(parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			this.ownerDocument._defaultView
+			this.ownerDocument.__defaultView__
 		);
 
-		super._connectToNode(parentNode);
+		super.__connectToNode__(parentNode);
 
-		if (isParentConnected && isConnected !== isParentConnected && this._evaluateScript) {
+		if (isParentConnected && isConnected !== isParentConnected && this.__evaluateScript__) {
 			const src = this.getAttribute('src');
 
 			if (src !== null) {
@@ -193,20 +193,20 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 						type === 'application/x-javascript' ||
 						type.startsWith('text/javascript'))
 				) {
-					this.ownerDocument['_currentScript'] = this;
+					this.ownerDocument['__currentScript__'] = this;
 
 					const code =
-						`//# sourceURL=${this.ownerDocument._defaultView.location.href}\n` + textContent;
+						`//# sourceURL=${this.ownerDocument.__defaultView__.location.href}\n` + textContent;
 
 					if (browserSettings.disableErrorCapturing) {
-						this.ownerDocument._defaultView.eval(code);
+						this.ownerDocument.__defaultView__.eval(code);
 					} else {
-						WindowErrorUtility.captureError(this.ownerDocument._defaultView, () =>
-							this.ownerDocument._defaultView.eval(code)
+						WindowErrorUtility.captureError(this.ownerDocument.__defaultView__, () =>
+							this.ownerDocument.__defaultView__.eval(code)
 						);
 					}
 
-					this.ownerDocument['_currentScript'] = null;
+					this.ownerDocument['__currentScript__'] = null;
 				}
 			}
 		}

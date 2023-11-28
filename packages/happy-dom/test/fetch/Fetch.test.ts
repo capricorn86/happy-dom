@@ -2500,7 +2500,7 @@ describe('Fetch', () => {
 
 		await response.text();
 
-		expect(abortSignal._listeners['abort']).toEqual([]);
+		expect(abortSignal.__listeners__['abort']).toEqual([]);
 		expect(() => abortController.abort()).not.toThrow();
 	});
 

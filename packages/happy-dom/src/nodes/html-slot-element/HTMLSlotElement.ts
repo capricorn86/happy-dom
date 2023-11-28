@@ -62,7 +62,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 				return this.assignedElements(options);
 			}
 
-			return (<HTMLElement>host)._childNodes.slice();
+			return (<HTMLElement>host).__childNodes__.slice();
 		}
 
 		return [];
@@ -86,7 +86,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 			if (name) {
 				const assignedElements = [];
 
-				for (const child of (<HTMLElement>host)._children) {
+				for (const child of (<HTMLElement>host).__children__) {
 					if (child.slot === name) {
 						assignedElements.push(child);
 					}
@@ -95,7 +95,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 				return assignedElements;
 			}
 
-			return (<HTMLElement>host)._children.slice();
+			return (<HTMLElement>host).__children__.slice();
 		}
 
 		return [];

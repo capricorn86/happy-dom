@@ -112,7 +112,7 @@ export default class SelectorItem {
 	 */
 	private matchPsuedo(element: IElement): boolean {
 		const parent = <IElement>element.parentNode;
-		const parentChildren = element.parentNode ? (<Element>element.parentNode)._children : [];
+		const parentChildren = element.parentNode ? (<Element>element.parentNode).__children__ : [];
 
 		if (!this.pseudos) {
 			return true;
@@ -185,7 +185,7 @@ export default class SelectorItem {
 				case 'checked':
 					return element.tagName === 'INPUT' && (<IHTMLInputElement>element).checked;
 				case 'empty':
-					return !(<Element>element)._children.length;
+					return !(<Element>element).__children__.length;
 				case 'root':
 					return element.tagName === 'HTML';
 				case 'not':

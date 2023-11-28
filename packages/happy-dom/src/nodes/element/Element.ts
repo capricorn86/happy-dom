@@ -37,8 +37,8 @@ import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReade
  */
 export default class Element extends Node implements IElement {
 	// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
-	// CustomElementRegistry will therefore populate _observedAttributes when CustomElementRegistry.define() is called
-	public static _observedAttributes: string[];
+	// CustomElementRegistry will therefore populate "__observedAttributes__" when CustomElementRegistry.define() is called
+	public static __observedAttributes__: string[];
 	public static observedAttributes: string[];
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
@@ -87,21 +87,21 @@ export default class Element extends Node implements IElement {
 	public ontouchmove: (event: Event) => void | null = null;
 	public ontouchstart: (event: Event) => void | null = null;
 
-	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
+	public readonly __children__: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 
 	// Used for being able to access closed shadow roots
-	public _shadowRoot: IShadowRoot = null;
 	public readonly attributes: INamedNodeMap = new ElementNamedNodeMap(this);
 
-	public _classList: DOMTokenList = null;
-	public _isValue?: string | null = null;
-	public _computedStyle: CSSStyleDeclaration | null = null;
+	public __shadowRoot__: IShadowRoot = null;
+	public __classList__: DOMTokenList = null;
+	public __isValue__: string | null = null;
+	public __computedStyle__: CSSStyleDeclaration | null = null;
 
 	/**
 	 * Returns element children.
 	 */
 	public get children(): IHTMLCollection<IElement> {
-		return this._children;
+		return this.__children__;
 	}
 
 	/**
@@ -110,10 +110,10 @@ export default class Element extends Node implements IElement {
 	 * @returns Class list.
 	 */
 	public get classList(): IDOMTokenList {
-		if (!this._classList) {
-			this._classList = new DOMTokenList(this, 'class');
+		if (!this.__classList__) {
+			this.__classList__ = new DOMTokenList(this, 'class');
 		}
-		return <IDOMTokenList>this._classList;
+		return <IDOMTokenList>this.__classList__;
 	}
 
 	/**
@@ -213,7 +213,7 @@ export default class Element extends Node implements IElement {
 	 */
 	public get textContent(): string {
 		let result = '';
-		for (const childNode of this._childNodes) {
+		for (const childNode of this.__childNodes__) {
 			if (childNode.nodeType === Node.ELEMENT_NODE || childNode.nodeType === Node.TEXT_NODE) {
 				result += childNode.textContent;
 			}
@@ -227,7 +227,7 @@ export default class Element extends Node implements IElement {
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		for (const child of this._childNodes.slice()) {
+		for (const child of this.__childNodes__.slice()) {
 			this.removeChild(child);
 		}
 		if (textContent) {
@@ -250,7 +250,7 @@ export default class Element extends Node implements IElement {
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		for (const child of this._childNodes.slice()) {
+		for (const child of this.__childNodes__.slice()) {
 			this.removeChild(child);
 		}
 
@@ -281,7 +281,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
-		return this._children[0] ?? null;
+		return this.__children__[0] ?? null;
 	}
 
 	/**
@@ -290,7 +290,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
-		return this._children[this._children.length - 1] ?? null;
+		return this.__children__[this.__children__.length - 1] ?? null;
 	}
 
 	/**
@@ -299,7 +299,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this._children.length;
+		return this.__children__.length;
 	}
 
 	/**
@@ -346,7 +346,7 @@ export default class Element extends Node implements IElement {
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of this._childNodes) {
+		for (const node of this.__childNodes__) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
@@ -373,9 +373,9 @@ export default class Element extends Node implements IElement {
 		}
 
 		if (deep) {
-			for (const node of clone._childNodes) {
+			for (const node of clone.__childNodes__) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
-					clone._children.push(<IElement>node);
+					clone.__children__.push(<IElement>node);
 				}
 			}
 		}
@@ -519,7 +519,7 @@ export default class Element extends Node implements IElement {
 	public insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void {
 		for (const node of (<DocumentFragment>(
 			XMLParser.parse(this.ownerDocument, text)
-		))._childNodes.slice()) {
+		)).__childNodes__.slice()) {
 			this.insertAdjacentElement(position, node);
 		}
 	}
@@ -688,20 +688,20 @@ export default class Element extends Node implements IElement {
 	 * @returns Shadow root.
 	 */
 	public attachShadow(shadowRootInit: { mode: string }): IShadowRoot {
-		if (this._shadowRoot) {
+		if (this.__shadowRoot__) {
 			throw new DOMException('Shadow root has already been attached.');
 		}
 
-		(<IShadowRoot>this._shadowRoot) = new this.ownerDocument._defaultView.ShadowRoot();
-		(<Element>this._shadowRoot.host) = this;
-		(<string>this._shadowRoot.mode) = shadowRootInit.mode;
-		(<ShadowRoot>this._shadowRoot)._connectToNode(this);
+		(<IShadowRoot>this.__shadowRoot__) = new this.ownerDocument.__defaultView__.ShadowRoot();
+		(<Element>this.__shadowRoot__.host) = this;
+		(<string>this.__shadowRoot__.mode) = shadowRootInit.mode;
+		(<ShadowRoot>this.__shadowRoot__).__connectToNode__(this);
 
-		if (this._shadowRoot.mode === 'open') {
-			(<IShadowRoot>this.shadowRoot) = this._shadowRoot;
+		if (this.__shadowRoot__.mode === 'open') {
+			(<IShadowRoot>this.shadowRoot) = this.__shadowRoot__;
 		}
 
-		return this._shadowRoot;
+		return this.__shadowRoot__;
 	}
 
 	/**
@@ -885,7 +885,7 @@ export default class Element extends Node implements IElement {
 	public scroll(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void {
 		if (typeof x === 'object') {
 			if (x.behavior === 'smooth') {
-				this.ownerDocument._defaultView.setTimeout(() => {
+				this.ownerDocument.__defaultView__.setTimeout(() => {
 					if (x.top !== undefined) {
 						(<number>this.scrollTop) = x.top;
 					}
@@ -926,7 +926,7 @@ export default class Element extends Node implements IElement {
 	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			this.ownerDocument._defaultView
+			this.ownerDocument.__defaultView__
 		);
 
 		if (
@@ -934,17 +934,17 @@ export default class Element extends Node implements IElement {
 			!browserSettings.disableJavaScriptEvaluation &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			!event._immediatePropagationStopped
+			!event.__immediatePropagationStopped__
 		) {
 			const attribute = this.getAttribute('on' + event.type);
 
-			if (attribute && !event._immediatePropagationStopped) {
-				const code = `//# sourceURL=${this.ownerDocument._defaultView.location.href}\n${attribute}`;
+			if (attribute && !event.__immediatePropagationStopped__) {
+				const code = `//# sourceURL=${this.ownerDocument.__defaultView__.location.href}\n${attribute}`;
 				if (browserSettings.disableErrorCapturing) {
-					this.ownerDocument._defaultView.eval(code);
+					this.ownerDocument.__defaultView__.eval(code);
 				} else {
-					WindowErrorUtility.captureError(this.ownerDocument._defaultView, () =>
-						this.ownerDocument._defaultView.eval(code)
+					WindowErrorUtility.captureError(this.ownerDocument.__defaultView__, () =>
+						this.ownerDocument.__defaultView__.eval(code)
 					);
 				}
 			}
@@ -959,7 +959,7 @@ export default class Element extends Node implements IElement {
 	 * @param name Name.
 	 * @returns Attribute name based on namespace.
 	 */
-	protected _getAttributeName(name): string {
+	protected __getAttributeName__(name): string {
 		if (this.namespaceURI === NamespaceURI.svg) {
 			return name;
 		}

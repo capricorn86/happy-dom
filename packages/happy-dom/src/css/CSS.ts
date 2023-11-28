@@ -24,10 +24,10 @@ export default class CSS {
 	 * TODO: Always returns "true" for now, but it should probably be improved in the future.
 	 *
 	 * @param _condition Property name or condition.
-	 * @param [_value] Value when using property name.
+	 * @param [__value__] Value when using property name.
 	 * @returns "true" if supported.
 	 */
-	public supports(_condition: string, _value?: string): boolean {
+	public supports(_condition: string, __value__?: string): boolean {
 		return true;
 	}
 

@@ -9,7 +9,7 @@ import IHTMLStyleElement from './IHTMLStyleElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLStyleElement.
  */
 export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleElement {
-	private _styleSheet: CSSStyleSheet | null = null;
+	private __styleSheet__: CSSStyleSheet | null = null;
 
 	/**
 	 * Returns CSS style sheet.
@@ -20,11 +20,11 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 		if (!this.isConnected) {
 			return null;
 		}
-		if (!this._styleSheet) {
-			this._styleSheet = new CSSStyleSheet();
+		if (!this.__styleSheet__) {
+			this.__styleSheet__ = new CSSStyleSheet();
 		}
-		this._styleSheet.replaceSync(this.textContent);
-		return this._styleSheet;
+		this.__styleSheet__.replaceSync(this.textContent);
+		return this.__styleSheet__;
 	}
 
 	/**

@@ -47,7 +47,7 @@ export default class Dataset {
 				return true;
 			},
 			deleteProperty(dataset: DatasetRecord, key: string): boolean {
-				(<HTMLElementNamedNodeMap>element.attributes)._removeNamedItem(
+				(<HTMLElementNamedNodeMap>element.attributes).__removeNamedItem__(
 					'data-' + Dataset.camelCaseToKebab(key)
 				);
 				return delete dataset[key];

@@ -78,7 +78,7 @@ export default class Fetch {
 				? new options.browserFrame.window.Request(options.url, options.init)
 				: <Request>url;
 		if (options.contentType) {
-			(<string>this.request._contentType) = options.contentType;
+			(<string>this.request.__contentType__) = options.contentType;
 		}
 		this.redirectCount = options.redirectCount || 0;
 	}
@@ -90,7 +90,7 @@ export default class Fetch {
 	 */
 	public send(): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
-			const taskID = this.#browserFrame._asyncTaskManager.startTask(() =>
+			const taskID = this.#browserFrame.__asyncTaskManager__.startTask(() =>
 				this.onAsyncTaskManagerAbort()
 			);
 
@@ -99,18 +99,18 @@ export default class Fetch {
 			}
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
-				this.#browserFrame._asyncTaskManager.endTask(taskID);
+				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 				resolve(response);
 			};
 			this.reject = (error: Error): void => {
-				this.#browserFrame._asyncTaskManager.endTask(taskID);
+				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 				reject(error);
 			};
 
 			this.prepareRequest();
 			this.validateRequest();
 
-			if (this.request._url.protocol === 'data:') {
+			if (this.request.__url__.protocol === 'data:') {
 				const result = DataURIParser.parse(this.request.url);
 				this.response = new this.#window.Response(result.buffer, {
 					headers: { 'Content-Type': result.type }
@@ -126,9 +126,9 @@ export default class Fetch {
 
 			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
 
-			const send = (this.request._url.protocol === 'https:' ? HTTPS : HTTP).request;
+			const send = (this.request.__url__.protocol === 'https:' ? HTTPS : HTTP).request;
 
-			this.nodeRequest = send(this.request._url.href, {
+			this.nodeRequest = send(this.request.__url__.href, {
 				method: this.request.method,
 				headers: this.getRequestHeaders()
 			});
@@ -429,7 +429,7 @@ export default class Fetch {
 				}
 
 				const headers = new Headers(this.request.headers);
-				let body: Stream.Readable | Buffer | null = this.request._bodyBuffer;
+				let body: Stream.Readable | Buffer | null = this.request.__bodyBuffer__;
 
 				if (!body && this.request.body) {
 					// Piping a used request body is not possible.
@@ -466,7 +466,7 @@ export default class Fetch {
 					headers.delete('cookie2');
 				}
 
-				if (nodeResponse.statusCode !== 303 && this.request.body && !this.request._bodyBuffer) {
+				if (nodeResponse.statusCode !== 303 && this.request.body && !this.request.__bodyBuffer__) {
 					this.finalizeRequest();
 					this.reject(
 						new DOMException(
@@ -501,7 +501,7 @@ export default class Fetch {
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
-					contentType: !shouldBecomeGetRequest ? this.request._contentType : undefined
+					contentType: !shouldBecomeGetRequest ? this.request.__contentType__ : undefined
 				});
 
 				this.finalizeRequest();
@@ -527,12 +527,12 @@ export default class Fetch {
 		}
 
 		if (this.request.referrer && this.request.referrer !== 'no-referrer') {
-			this.request._referrer = FetchRequestReferrerUtility.getSentReferrer(
+			this.request.__referrer__ = FetchRequestReferrerUtility.getSentReferrer(
 				this.#window,
 				this.request
 			);
 		} else {
-			this.request._referrer = 'no-referrer';
+			this.request.__referrer__ = 'no-referrer';
 		}
 	}
 
@@ -542,11 +542,11 @@ export default class Fetch {
 	 * @throws {Error} Throws an error if the request is invalid.
 	 */
 	private validateRequest(): void {
-		if (!SUPPORTED_SCHEMAS.includes(this.request._url.protocol)) {
+		if (!SUPPORTED_SCHEMAS.includes(this.request.__url__.protocol)) {
 			throw new DOMException(
 				`Failed to fetch from "${
 					this.request.url
-				}": URL scheme "${this.request._url.protocol.replace(/:$/, '')}" is not supported.`,
+				}": URL scheme "${this.request.__url__.protocol.replace(/:$/, '')}" is not supported.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
 		}
@@ -559,7 +559,7 @@ export default class Fetch {
 	 */
 	private getRequestHeaders(): { [key: string]: string } {
 		const headers = new Headers(this.request.headers);
-		const isCORS = FetchCORSUtility.isCORS(this.#window.location, this.request._url);
+		const isCORS = FetchCORSUtility.isCORS(this.#window.location, this.request.__url__);
 
 		// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
 		if (
@@ -577,8 +577,8 @@ export default class Fetch {
 			headers.set('User-Agent', this.#window.navigator.userAgent);
 		}
 
-		if (this.request._referrer instanceof URL) {
-			headers.set('Referer', this.request._referrer.href);
+		if (this.request.__referrer__ instanceof URL) {
+			headers.set('Referer', this.request.__referrer__.href);
 		}
 
 		if (
@@ -598,18 +598,18 @@ export default class Fetch {
 			headers.set('Accept', '*/*');
 		}
 
-		if (!headers.has('Content-Length') && this.request._contentLength !== null) {
-			headers.set('Content-Length', String(this.request._contentLength));
+		if (!headers.has('Content-Length') && this.request.__contentLength__ !== null) {
+			headers.set('Content-Length', String(this.request.__contentLength__));
 		}
 
-		if (!headers.has('Content-Type') && this.request._contentType) {
-			headers.set('Content-Type', this.request._contentType);
+		if (!headers.has('Content-Type') && this.request.__contentType__) {
+			headers.set('Content-Type', this.request.__contentType__);
 		}
 
 		// We need to convert the headers to Node request headers.
 		const httpRequestHeaders = {};
 
-		for (const header of Object.values(headers._entries)) {
+		for (const header of Object.values(headers.__entries__)) {
 			httpRequestHeaders[header.name] = header.value;
 		}
 
@@ -646,7 +646,7 @@ export default class Fetch {
 				// "set-cookie" and "set-cookie2" are not allowed in response headers according to spec.
 				if (lowerKey === 'set-cookie' || lowerKey === 'set-cookie2') {
 					this.#browserFrame.page.context.cookieContainer.addCookies([
-						CookieStringUtility.stringToCookie(this.request._url, header)
+						CookieStringUtility.stringToCookie(this.request.__url__, header)
 					]);
 				} else {
 					headers.append(key, header);

@@ -182,7 +182,7 @@ export default class ValidityState {
 					return true;
 				}
 				const root =
-					<IHTMLFormElement>this.element._formNode || <IShadowRoot>this.element.getRootNode();
+					<IHTMLFormElement>this.element.__formNode__ || <IShadowRoot>this.element.getRootNode();
 				return !root || !root.querySelector(`input[name="${this.element.name}"]:checked`);
 			}
 		}

@@ -9,7 +9,7 @@ import HTMLInputElement from './HTMLInputElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLInputElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected _ownerElement: HTMLInputElement;
+	protected __ownerElement__: HTMLInputElement;
 
 	/**
 	 * @override
@@ -17,16 +17,16 @@ export default class HTMLInputElementNamedNodeMap extends HTMLElementNamedNodeMa
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if ((item.name === 'id' || item.name === 'name') && this._ownerElement._formNode) {
+		if ((item.name === 'id' || item.name === 'name') && this.__ownerElement__.__formNode__) {
 			if (replacedItem && replacedItem.value) {
-				(<HTMLFormElement>this._ownerElement._formNode)._removeFormControlItem(
-					this._ownerElement,
+				(<HTMLFormElement>this.__ownerElement__.__formNode__).__removeFormControlItem__(
+					this.__ownerElement__,
 					replacedItem.value
 				);
 			}
 			if (item.value) {
-				(<HTMLFormElement>this._ownerElement._formNode)._appendFormControlItem(
-					this._ownerElement,
+				(<HTMLFormElement>this.__ownerElement__.__formNode__).__appendFormControlItem__(
+					this.__ownerElement__,
 					item.value
 				);
 			}
@@ -38,16 +38,16 @@ export default class HTMLInputElementNamedNodeMap extends HTMLElementNamedNodeMa
 	/**
 	 * @override
 	 */
-	public override _removeNamedItem(name: string): IAttr | null {
-		const removedItem = super._removeNamedItem(name);
+	public override __removeNamedItem__(name: string): IAttr | null {
+		const removedItem = super.__removeNamedItem__(name);
 
 		if (
 			removedItem &&
 			(removedItem.name === 'id' || removedItem.name === 'name') &&
-			this._ownerElement._formNode
+			this.__ownerElement__.__formNode__
 		) {
-			(<HTMLFormElement>this._ownerElement._formNode)._removeFormControlItem(
-				this._ownerElement,
+			(<HTMLFormElement>this.__ownerElement__.__formNode__).__removeFormControlItem__(
+				this.__ownerElement__,
 				removedItem.value
 			);
 		}

@@ -9,7 +9,7 @@ import HTMLLinkElementUtility from './HTMLLinkElementUtility.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected _ownerElement: HTMLLinkElement;
+	protected __ownerElement__: HTMLLinkElement;
 
 	/**
 	 * @override
@@ -17,12 +17,12 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'rel' && this._ownerElement._relList) {
-			this._ownerElement._relList._updateIndices();
+		if (item.name === 'rel' && this.__ownerElement__.__relList__) {
+			this.__ownerElement__.__relList__.__updateIndices__();
 		}
 
 		if (item.name === 'rel' || item.name === 'href') {
-			HTMLLinkElementUtility.loadExternalStylesheet(this._ownerElement);
+			HTMLLinkElementUtility.loadExternalStylesheet(this.__ownerElement__);
 		}
 
 		return replacedItem || null;
@@ -31,11 +31,11 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 	/**
 	 * @override
 	 */
-	public override _removeNamedItem(name: string): IAttr | null {
-		const removedItem = super._removeNamedItem(name);
+	public override __removeNamedItem__(name: string): IAttr | null {
+		const removedItem = super.__removeNamedItem__(name);
 
-		if (removedItem && removedItem.name === 'rel' && this._ownerElement._relList) {
-			this._ownerElement._relList._updateIndices();
+		if (removedItem && removedItem.name === 'rel' && this.__ownerElement__.__relList__) {
+			this.__ownerElement__.__relList__.__updateIndices__();
 		}
 
 		return removedItem;

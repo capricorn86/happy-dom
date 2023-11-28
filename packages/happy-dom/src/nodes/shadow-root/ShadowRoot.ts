@@ -28,7 +28,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of this._childNodes) {
+		for (const node of this.__childNodes__) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
@@ -40,7 +40,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		for (const child of this._childNodes.slice()) {
+		for (const child of this.__childNodes__.slice()) {
 			this.removeChild(child);
 		}
 
@@ -53,7 +53,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 * @returns Active element.
 	 */
 	public get activeElement(): IHTMLElement | null {
-		const activeElement: IHTMLElement = this.ownerDocument['_activeElement'];
+		const activeElement: IHTMLElement = this.ownerDocument['__activeElement__'];
 		if (activeElement && activeElement.isConnected && activeElement.getRootNode() === this) {
 			return activeElement;
 		}

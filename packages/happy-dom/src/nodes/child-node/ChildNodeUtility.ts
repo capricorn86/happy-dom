@@ -38,7 +38,7 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode.ownerDocument, node)
-				))._childNodes.slice();
+				)).__childNodes__.slice();
 				for (const newChildNode of newChildNodes) {
 					parent.insertBefore(newChildNode, childNode);
 				}
@@ -67,7 +67,7 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode.ownerDocument, node)
-				))._childNodes.slice();
+				)).__childNodes__.slice();
 				for (const newChildNode of newChildNodes) {
 					parent.insertBefore(newChildNode, childNode);
 				}
@@ -96,7 +96,7 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode.ownerDocument, node)
-				))._childNodes.slice();
+				)).__childNodes__.slice();
 				for (const newChildNode of newChildNodes) {
 					if (!nextSibling) {
 						parent.appendChild(newChildNode);

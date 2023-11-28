@@ -254,7 +254,7 @@ describe('XMLHttpRequest', () => {
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
-					expect((<Blob>request.response)._buffer.toString()).toBe(expectedResponse);
+					expect((<Blob>request.response).__buffer__.toString()).toBe(expectedResponse);
 					resolve(null);
 				});
 

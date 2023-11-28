@@ -31,11 +31,11 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	public oninput: (event: Event) => void | null = null;
 	public onselectionchange: (event: Event) => void | null = null;
 
-	public _value = null;
-	public _selectionStart = null;
-	public _selectionEnd = null;
-	public _selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
-	public _textAreaNode: HTMLTextAreaElement = this;
+	public __value__ = null;
+	#selectionStart = null;
+	#selectionEnd = null;
+	#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+	public __textAreaNode__: HTMLTextAreaElement = this;
 
 	/**
 	 * Returns the default value.
@@ -301,11 +301,11 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Value.
 	 */
 	public get value(): string {
-		if (this._value === null) {
+		if (this.__value__ === null) {
 			return this.textContent;
 		}
 
-		return this._value;
+		return this.__value__;
 	}
 
 	/**
@@ -314,13 +314,13 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		const oldValue = this._value;
-		this._value = value;
+		const oldValue = this.__value__;
+		this.__value__ = value;
 
-		if (oldValue !== this._value) {
-			this._selectionStart = this._value.length;
-			this._selectionEnd = this._value.length;
-			this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+		if (oldValue !== this.__value__) {
+			this.#selectionStart = this.__value__.length;
+			this.#selectionEnd = this.__value__.length;
+			this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 		}
 	}
 
@@ -330,11 +330,11 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Selection start.
 	 */
 	public get selectionStart(): number {
-		if (this._selectionStart === null) {
+		if (this.#selectionStart === null) {
 			return this.value.length;
 		}
 
-		return this._selectionStart;
+		return this.#selectionStart;
 	}
 
 	/**
@@ -343,7 +343,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param start Start.
 	 */
 	public set selectionStart(start: number) {
-		this.setSelectionRange(start, Math.max(start, this.selectionEnd), this._selectionDirection);
+		this.setSelectionRange(start, Math.max(start, this.selectionEnd), this.#selectionDirection);
 	}
 
 	/**
@@ -352,11 +352,11 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Selection end.
 	 */
 	public get selectionEnd(): number {
-		if (this._selectionEnd === null) {
+		if (this.#selectionEnd === null) {
 			return this.value.length;
 		}
 
-		return this._selectionEnd;
+		return this.#selectionEnd;
 	}
 
 	/**
@@ -365,7 +365,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param end End.
 	 */
 	public set selectionEnd(end: number) {
-		this.setSelectionRange(this.selectionStart, end, this._selectionDirection);
+		this.setSelectionRange(this.selectionStart, end, this.#selectionDirection);
 	}
 
 	/**
@@ -374,7 +374,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Selection direction.
 	 */
 	public get selectionDirection(): string {
-		return this._selectionDirection;
+		return this.#selectionDirection;
 	}
 
 	/**
@@ -392,7 +392,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this._formNode;
+		return <IHTMLFormElement>this.__formNode__;
 	}
 
 	/**
@@ -417,9 +417,9 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * Selects the text.
 	 */
 	public select(): void {
-		this._selectionStart = 0;
-		this._selectionEnd = this.value.length;
-		this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+		this.#selectionStart = 0;
+		this.#selectionEnd = this.value.length;
+		this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 
 		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
 	}
@@ -432,9 +432,9 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param [direction="none"] Direction.
 	 */
 	public setSelectionRange(start: number, end: number, direction = 'none'): void {
-		this._selectionEnd = Math.min(end, this.value.length);
-		this._selectionStart = Math.min(start, this.selectionEnd);
-		this._selectionDirection =
+		this.#selectionEnd = Math.min(end, this.value.length);
+		this.#selectionStart = Math.min(start, this.selectionEnd);
+		this.#selectionDirection =
 			direction === HTMLInputElementSelectionDirectionEnum.forward ||
 			direction === HTMLInputElementSelectionDirectionEnum.backward
 				? direction
@@ -458,10 +458,10 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 		selectionMode = HTMLInputElementSelectionModeEnum.preserve
 	): void {
 		if (start === null) {
-			start = this._selectionStart;
+			start = this.#selectionStart;
 		}
 		if (end === null) {
-			end = this._selectionEnd;
+			end = this.#selectionEnd;
 		}
 
 		if (start > end) {
@@ -475,8 +475,8 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 		end = Math.min(end, this.value.length);
 
 		const val = this.value;
-		let selectionStart = this._selectionStart;
-		let selectionEnd = this._selectionEnd;
+		let selectionStart = this.#selectionStart;
+		let selectionEnd = this.#selectionEnd;
 
 		this.value = val.slice(0, start) + replacement + val.slice(end);
 
@@ -553,10 +553,10 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	public cloneNode(deep = false): IHTMLTextAreaElement {
 		const clone = <HTMLTextAreaElement>super.cloneNode(deep);
 
-		clone._value = this._value;
-		clone._selectionStart = this._selectionStart;
-		clone._selectionEnd = this._selectionEnd;
-		clone._selectionDirection = this._selectionDirection;
+		clone.__value__ = this.__value__;
+		clone.#selectionStart = this.#selectionStart;
+		clone.#selectionEnd = this.#selectionEnd;
+		clone.#selectionDirection = this.#selectionDirection;
 
 		return clone;
 	}
@@ -564,30 +564,30 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Resets selection.
 	 */
-	public _resetSelection(): void {
-		if (this._value === null) {
-			this._selectionStart = null;
-			this._selectionEnd = null;
-			this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+	public __resetSelection__(): void {
+		if (this.__value__ === null) {
+			this.#selectionStart = null;
+			this.#selectionEnd = null;
+			this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 		}
 	}
 
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const oldFormNode = <HTMLFormElement>this._formNode;
+	public override __connectToNode__(parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this.__formNode__;
 
-		super._connectToNode(parentNode);
+		super.__connectToNode__(parentNode);
 
-		if (oldFormNode !== this._formNode) {
+		if (oldFormNode !== this.__formNode__) {
 			if (oldFormNode) {
-				oldFormNode._removeFormControlItem(this, this.name);
-				oldFormNode._removeFormControlItem(this, this.id);
+				oldFormNode.__removeFormControlItem__(this, this.name);
+				oldFormNode.__removeFormControlItem__(this, this.id);
 			}
-			if (this._formNode) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.name);
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.id);
+			if (this.__formNode__) {
+				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.name);
+				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.id);
 			}
 		}
 	}

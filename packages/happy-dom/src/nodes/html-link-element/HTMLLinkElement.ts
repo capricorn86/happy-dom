@@ -21,8 +21,8 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
 	public readonly sheet: CSSStyleSheet = null;
-	public _evaluateCSS = true;
-	public _relList: DOMTokenList = null;
+	public __evaluateCSS__ = true;
+	public __relList__: DOMTokenList = null;
 
 	/**
 	 * Returns rel list.
@@ -30,10 +30,10 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Rel list.
 	 */
 	public get relList(): IDOMTokenList {
-		if (!this._relList) {
-			this._relList = new DOMTokenList(this, 'rel');
+		if (!this.__relList__) {
+			this.__relList__ = new DOMTokenList(this, 'rel');
 		}
-		return <IDOMTokenList>this._relList;
+		return <IDOMTokenList>this.__relList__;
 	}
 
 	/**
@@ -183,13 +183,13 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
+	public override __connectToNode__(parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
 
-		super._connectToNode(parentNode);
+		super.__connectToNode__(parentNode);
 
-		if (isParentConnected && isConnected !== isParentConnected && this._evaluateCSS) {
+		if (isParentConnected && isConnected !== isParentConnected && this.__evaluateCSS__) {
 			HTMLLinkElementUtility.loadExternalStylesheet(this);
 		}
 	}

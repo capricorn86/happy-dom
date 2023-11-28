@@ -20,7 +20,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public readonly page: DetachedBrowserPage;
 	// Needs to be injected from the outside when the browser frame is constructed.
 	public window: IBrowserWindow;
-	public _asyncTaskManager = new AsyncTaskManager();
+	public __asyncTaskManager__ = new AsyncTaskManager();
 
 	/**
 	 * Constructor.
@@ -56,8 +56,8 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		if (!this.window) {
 			throw new Error('The frame has been destroyed, the "window" property is not set.');
 		}
-		this.window.document['_isFirstWrite'] = true;
-		this.window.document['_isFirstWriteAfterOpen'] = false;
+		this.window.document['__isFirstWrite__'] = true;
+		this.window.document['__isFirstWriteAfterOpen__'] = false;
 		this.window.document.open();
 		this.window.document.write(content);
 	}
@@ -96,7 +96,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 */
 	public async whenComplete(): Promise<void> {
 		await Promise.all([
-			this._asyncTaskManager.whenComplete(),
+			this.__asyncTaskManager__.whenComplete(),
 			...this.childFrames.map((frame) => frame.whenComplete())
 		]);
 	}
@@ -108,7 +108,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		for (const frame of this.childFrames) {
 			frame.abort();
 		}
-		this._asyncTaskManager.abort();
+		this.__asyncTaskManager__.abort();
 	}
 
 	/**

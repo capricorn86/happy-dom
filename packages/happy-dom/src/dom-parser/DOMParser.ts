@@ -35,13 +35,13 @@ export default class DOMParser {
 			throw new DOMException('Second parameter "mimeType" is mandatory.');
 		}
 
-		const newDocument = <IDocument>this._createDocument(mimeType);
+		const newDocument = <IDocument>this.#createDocument(mimeType);
 
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;
 
-		for (const node of root._childNodes) {
+		for (const node of root.__childNodes__) {
 			if (node['tagName'] === 'HTML') {
 				documentElement = node;
 			} else if (node.nodeType === Node.DOCUMENT_TYPE_NODE) {
@@ -60,7 +60,7 @@ export default class DOMParser {
 			newDocument.appendChild(documentElement);
 			const body = newDocument.body;
 			if (body) {
-				for (const child of root._childNodes.slice()) {
+				for (const child of root.__childNodes__.slice()) {
 					body.appendChild(child);
 				}
 			}
@@ -68,7 +68,7 @@ export default class DOMParser {
 			switch (mimeType) {
 				case 'image/svg+xml':
 					{
-						for (const node of root._childNodes.slice()) {
+						for (const node of root.__childNodes__.slice()) {
 							newDocument.appendChild(node);
 						}
 					}
@@ -84,7 +84,7 @@ export default class DOMParser {
 						documentElement.appendChild(bodyElement);
 						newDocument.appendChild(documentElement);
 
-						for (const node of root._childNodes.slice()) {
+						for (const node of root.__childNodes__.slice()) {
 							bodyElement.appendChild(node);
 						}
 					}
@@ -100,7 +100,7 @@ export default class DOMParser {
 	 * @param mimeType Mime type.
 	 * @returns IDocument.
 	 */
-	private _createDocument(mimeType: string): IDocument {
+	#createDocument(mimeType: string): IDocument {
 		switch (mimeType) {
 			case 'text/html':
 				return new this.#window.HTMLDocument();

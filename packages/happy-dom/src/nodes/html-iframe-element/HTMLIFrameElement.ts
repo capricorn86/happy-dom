@@ -191,11 +191,11 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
+	public override __connectToNode__(parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
 
-		super._connectToNode(parentNode);
+		super.__connectToNode__(parentNode);
 
 		if (isConnected !== isParentConnected) {
 			if (isParentConnected) {

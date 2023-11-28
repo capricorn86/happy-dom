@@ -13,10 +13,10 @@ import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.j
  * Handles events.
  */
 export default abstract class EventTarget implements IEventTarget {
-	public readonly _listeners: {
+	public readonly __listeners__: {
 		[k: string]: (((event: Event) => void) | IEventListener)[];
 	} = {};
-	public readonly _listenerOptions: {
+	public readonly __listenerOptions__: {
 		[k: string]: (IEventListenerOptions | null)[];
 	} = {};
 
@@ -42,21 +42,21 @@ export default abstract class EventTarget implements IEventTarget {
 	): void {
 		const listenerOptions = typeof options === 'boolean' ? { capture: options } : options || null;
 
-		this._listeners[type] = this._listeners[type] || [];
-		this._listenerOptions[type] = this._listenerOptions[type] || [];
-		if (this._listeners[type].includes(listener)) {
+		this.__listeners__[type] = this.__listeners__[type] || [];
+		this.__listenerOptions__[type] = this.__listenerOptions__[type] || [];
+		if (this.__listeners__[type].includes(listener)) {
 			return;
 		}
-		this._listeners[type].push(listener);
-		this._listenerOptions[type].push(listenerOptions);
+		this.__listeners__[type].push(listener);
+		this.__listenerOptions__[type].push(listenerOptions);
 
 		// Tracks the amount of capture event listeners to improve performance when they are not used.
 		if (listenerOptions && listenerOptions.capture) {
-			const window = this._getWindow();
+			const window = this.#getWindow();
 			if (window) {
-				window['_captureEventListenerCount'][type] =
-					window['_captureEventListenerCount'][type] ?? 0;
-				window['_captureEventListenerCount'][type]++;
+				window['__captureEventListenerCount__'][type] =
+					window['__captureEventListenerCount__'][type] ?? 0;
+				window['__captureEventListenerCount__'][type]++;
 			}
 		}
 	}
@@ -71,19 +71,22 @@ export default abstract class EventTarget implements IEventTarget {
 		type: string,
 		listener: ((event: Event) => void) | IEventListener
 	): void {
-		if (this._listeners[type]) {
-			const index = this._listeners[type].indexOf(listener);
+		if (this.__listeners__[type]) {
+			const index = this.__listeners__[type].indexOf(listener);
 			if (index !== -1) {
 				// Tracks the amount of capture event listeners to improve performance when they are not used.
-				if (this._listenerOptions[type][index] && this._listenerOptions[type][index].capture) {
-					const window = this._getWindow();
-					if (window && window['_captureEventListenerCount'][type]) {
-						window['_captureEventListenerCount'][type]--;
+				if (
+					this.__listenerOptions__[type][index] &&
+					this.__listenerOptions__[type][index].capture
+				) {
+					const window = this.#getWindow();
+					if (window && window['__captureEventListenerCount__'][type]) {
+						window['__captureEventListenerCount__'][type]--;
 					}
 				}
 
-				this._listeners[type].splice(index, 1);
-				this._listenerOptions[type].splice(index, 1);
+				this.__listeners__[type].splice(index, 1);
+				this.__listenerOptions__[type].splice(index, 1);
 			}
 		}
 	}
@@ -97,22 +100,22 @@ export default abstract class EventTarget implements IEventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
-		const window = this._getWindow();
+		const window = this.#getWindow();
 
 		if (event.eventPhase === EventPhaseEnum.none) {
-			event._target = this;
+			event.__target__ = this;
 
 			const composedPath = event.composedPath();
 
 			// Capturing phase
 
 			// We only need to iterate over the composed path if there are capture event listeners.
-			if (window && window['_captureEventListenerCount'][event.type]) {
+			if (window && window['__captureEventListenerCount__'][event.type]) {
 				event.eventPhase = EventPhaseEnum.capturing;
 
 				for (let i = composedPath.length - 1; i >= 0; i--) {
 					composedPath[i].dispatchEvent(event);
-					if (event._propagationStopped || event._immediatePropagationStopped) {
+					if (event.__propagationStopped__ || event.__immediatePropagationStopped__) {
 						break;
 					}
 				}
@@ -124,12 +127,16 @@ export default abstract class EventTarget implements IEventTarget {
 			this.dispatchEvent(event);
 
 			// Bubbling phase
-			if (event.bubbles && !event._propagationStopped && !event._immediatePropagationStopped) {
+			if (
+				event.bubbles &&
+				!event.__propagationStopped__ &&
+				!event.__immediatePropagationStopped__
+			) {
 				event.eventPhase = EventPhaseEnum.bubbling;
 
 				for (let i = 1; i < composedPath.length; i++) {
 					composedPath[i].dispatchEvent(event);
-					if (event._propagationStopped || event._immediatePropagationStopped) {
+					if (event.__propagationStopped__ || event.__immediatePropagationStopped__) {
 						break;
 					}
 				}
@@ -141,7 +148,7 @@ export default abstract class EventTarget implements IEventTarget {
 			return !(event.cancelable && event.defaultPrevented);
 		}
 
-		event._currentTarget = this;
+		event.__currentTarget__ = this;
 
 		if (event.eventPhase !== EventPhaseEnum.capturing) {
 			const onEventName = 'on' + event.type.toLowerCase();
@@ -160,10 +167,10 @@ export default abstract class EventTarget implements IEventTarget {
 			}
 		}
 
-		if (this._listeners[event.type]) {
+		if (this.__listeners__[event.type]) {
 			// We need to clone the arrays because the listeners may remove themselves while we are iterating.
-			const listeners = this._listeners[event.type].slice();
-			const listenerOptions = this._listenerOptions[event.type].slice();
+			const listeners = this.__listeners__[event.type].slice();
+			const listenerOptions = this.__listenerOptions__[event.type].slice();
 
 			for (let i = 0, max = listeners.length; i < max; i++) {
 				const listener = listeners[i];
@@ -177,7 +184,7 @@ export default abstract class EventTarget implements IEventTarget {
 				}
 
 				if (options?.passive) {
-					event._isInPassiveEventListener = true;
+					event.__isInPassiveEventListener__ = true;
 				}
 
 				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
@@ -205,7 +212,7 @@ export default abstract class EventTarget implements IEventTarget {
 					}
 				}
 
-				event._isInPassiveEventListener = false;
+				event.__isInPassiveEventListener__ = false;
 
 				if (options?.once) {
 					// At this time, listeners and listenersOptions are cloned arrays. When the original value is deleted,
@@ -217,7 +224,7 @@ export default abstract class EventTarget implements IEventTarget {
 					max--;
 				}
 
-				if (event._immediatePropagationStopped) {
+				if (event.__immediatePropagationStopped__) {
 					return !(event.cancelable && event.defaultPrevented);
 				}
 			}
@@ -259,12 +266,12 @@ export default abstract class EventTarget implements IEventTarget {
 	 *
 	 * @returns Window.
 	 */
-	public _getWindow(): IBrowserWindow | null {
+	#getWindow(): IBrowserWindow | null {
 		if ((<INode>(<unknown>this)).ownerDocument) {
-			return (<INode>(<unknown>this)).ownerDocument._defaultView;
+			return (<INode>(<unknown>this)).ownerDocument.__defaultView__;
 		}
-		if ((<IDocument>(<unknown>this))._defaultView) {
-			return (<IDocument>(<unknown>this))._defaultView;
+		if ((<IDocument>(<unknown>this)).__defaultView__) {
+			return (<IDocument>(<unknown>this)).__defaultView__;
 		}
 		if ((<IBrowserWindow>(<unknown>this)).document) {
 			return <IBrowserWindow>(<unknown>this);

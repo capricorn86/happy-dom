@@ -125,7 +125,7 @@ export default class WindowClassFactory {
 		Audio: typeof AudioImplementation;
 	} {
 		const window = properties.window;
-		const asyncTaskManager = properties.browserFrame._asyncTaskManager;
+		const asyncTaskManager = properties.browserFrame.__asyncTaskManager__;
 
 		/* eslint-disable jsdoc/require-jsdoc */
 
@@ -359,7 +359,7 @@ export default class WindowClassFactory {
 			}
 		}
 		class Response extends ResponseImplementation {
-			protected static _window = window;
+			protected static __window__ = window;
 			constructor(body?: IResponseBody, init?: IResponseInit) {
 				super({ window, asyncTaskManager }, body, init);
 			}

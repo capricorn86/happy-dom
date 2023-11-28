@@ -485,8 +485,8 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 
 	// Used for tracking capture event listeners to improve performance when they are not used.
 	// See EventTarget class.
-	public _captureEventListenerCount: { [eventType: string]: number } = {};
-	public readonly _readyStateManager = new DocumentReadyStateManager(this);
+	public __captureEventListenerCount__: { [eventType: string]: number } = {};
+	public readonly __readyStateManager__ = new DocumentReadyStateManager(this);
 
 	// Private properties
 	#setTimeout: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
@@ -556,7 +556,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 			}
 		}
 
-		this._setupVMContext();
+		this.__setupVMContext__();
 
 		const classes = WindowClassFactory.getClasses({
 			window: this,
@@ -684,7 +684,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		documentElement.appendChild(bodyElement);
 
 		// Ready state manager
-		this._readyStateManager.whenComplete().then(() => {
+		this.__readyStateManager__.whenComplete().then(() => {
 			(<DocumentReadyStateEnum>this.document.readyState) = DocumentReadyStateEnum.complete;
 			this.document.dispatchEvent(new Event('readystatechange'));
 			this.document.dispatchEvent(new Event('load', { bubbles: true }));
@@ -752,8 +752,9 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * @returns CSS style declaration.
 	 */
 	public getComputedStyle(element: IElement): CSSStyleDeclaration {
-		element['_computedStyle'] = element['_computedStyle'] || new CSSStyleDeclaration(element, true);
-		return element['_computedStyle'];
+		element['__computedStyle__'] =
+			element['__computedStyle__'] || new CSSStyleDeclaration(element, true);
+		return element['__computedStyle__'];
 	}
 
 	/**
@@ -877,9 +878,9 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(...args));
 			}
-			this.#browserFrame._asyncTaskManager.endTimer(id);
+			this.#browserFrame.__asyncTaskManager__.endTimer(id);
 		}, delay);
-		this.#browserFrame._asyncTaskManager.startTimer(id);
+		this.#browserFrame.__asyncTaskManager__.startTimer(id);
 		return id;
 	}
 
@@ -890,7 +891,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
 		this.#clearTimeout(id);
-		this.#browserFrame._asyncTaskManager.endTimer(id);
+		this.#browserFrame.__asyncTaskManager__.endTimer(id);
 	}
 
 	/**
@@ -913,7 +914,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 				);
 			}
 		}, delay);
-		this.#browserFrame._asyncTaskManager.startTimer(id);
+		this.#browserFrame.__asyncTaskManager__.startTimer(id);
 		return id;
 	}
 
@@ -924,7 +925,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
 		this.#clearInterval(id);
-		this.#browserFrame._asyncTaskManager.endTimer(id);
+		this.#browserFrame.__asyncTaskManager__.endTimer(id);
 	}
 
 	/**
@@ -940,9 +941,9 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
 			}
-			this.#browserFrame._asyncTaskManager.endImmediate(id);
+			this.#browserFrame.__asyncTaskManager__.endImmediate(id);
 		});
-		this.#browserFrame._asyncTaskManager.startImmediate(id);
+		this.#browserFrame.__asyncTaskManager__.startImmediate(id);
 		return id;
 	}
 
@@ -953,7 +954,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 */
 	public cancelAnimationFrame(id: NodeJS.Immediate): void {
 		global.clearImmediate(id);
-		this.#browserFrame._asyncTaskManager.endImmediate(id);
+		this.#browserFrame.__asyncTaskManager__.endImmediate(id);
 	}
 
 	/**
@@ -963,7 +964,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 */
 	public queueMicrotask(callback: Function): void {
 		let isAborted = false;
-		const taskId = this.#browserFrame._asyncTaskManager.startTask(() => (isAborted = true));
+		const taskId = this.#browserFrame.__asyncTaskManager__.startTask(() => (isAborted = true));
 		this.#queueMicrotask(() => {
 			if (!isAborted) {
 				if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
@@ -971,7 +972,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 				} else {
 					WindowErrorUtility.captureError(this, <() => unknown>callback);
 				}
-				this.#browserFrame._asyncTaskManager.endTask(taskId);
+				this.#browserFrame.__asyncTaskManager__.endTask(taskId);
 			}
 		});
 	}
@@ -1061,7 +1062,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	/**
 	 * Setup of VM context.
 	 */
-	protected _setupVMContext(): void {
+	protected __setupVMContext__(): void {
 		if (!VM.isContext(this)) {
 			VM.createContext(this);
 

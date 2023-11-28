@@ -293,7 +293,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			password: password || null
 		};
 
-		this._setState(XMLHttpRequestReadyStateEnum.opened);
+		this.#setState(XMLHttpRequestReadyStateEnum.opened);
 	}
 
 	/**
@@ -429,9 +429,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			}
 
 			if (this.#internal.settings.async) {
-				this._sendLocalAsyncRequest(url).catch((error) => this._onError(error));
+				this.#sendLocalAsyncRequest(url).catch((error) => this.#onError(error));
 			} else {
-				this._sendLocalSyncRequest(url);
+				this.#sendLocalSyncRequest(url);
 			}
 			return;
 		}
@@ -488,7 +488,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			port: port,
 			path: uri,
 			method: this.#internal.settings.method,
-			headers: { ...this._getDefaultRequestHeaders(), ...this.#internal.state.requestHeaders },
+			headers: { ...this.#getDefaultRequestHeaders(), ...this.#internal.state.requestHeaders },
 			agent: false,
 			rejectUnauthorized: true
 		};
@@ -503,9 +503,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		// Handle async requests
 		if (this.#internal.settings.async) {
-			this._sendAsyncRequest(options, ssl, data).catch((error) => this._onError(error));
+			this.#sendAsyncRequest(options, ssl, data).catch((error) => this.#onError(error));
 		} else {
-			this._sendSyncRequest(options, ssl, data);
+			this.#sendSyncRequest(options, ssl, data);
 		}
 	}
 
@@ -532,12 +532,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.readyState !== XMLHttpRequestReadyStateEnum.done
 		) {
 			this.#internal.state.send = false;
-			this._setState(XMLHttpRequestReadyStateEnum.done);
+			this.#setState(XMLHttpRequestReadyStateEnum.done);
 		}
 		this.#internal.state.readyState = XMLHttpRequestReadyStateEnum.unsent;
 
 		if (this.#internal.state.asyncTaskID !== null) {
-			this.#browserFrame._asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+			this.#browserFrame.__asyncTaskManager__.endTask(this.#internal.state.asyncTaskID);
 		}
 	}
 
@@ -546,7 +546,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param state
 	 */
-	private _setState(state: XMLHttpRequestReadyStateEnum): void {
+	#setState(state: XMLHttpRequestReadyStateEnum): void {
 		if (
 			this.readyState === state ||
 			(this.readyState === XMLHttpRequestReadyStateEnum.unsent && this.#internal.state.aborted)
@@ -585,7 +585,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @returns Default request headers.
 	 */
-	private _getDefaultRequestHeaders(): { [key: string]: string } {
+	#getDefaultRequestHeaders(): { [key: string]: string } {
 		const headers: { [k: string]: string } = {
 			accept: '*/*',
 			referer: this.#window.location.href,
@@ -609,7 +609,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param ssl
 	 * @param data
 	 */
-	private _sendSyncRequest(options: HTTPS.RequestOptions, ssl: boolean, data?: string): void {
+	#sendSyncRequest(options: HTTPS.RequestOptions, ssl: boolean, data?: string): void {
 		const scriptString = XMLHttpRequestSyncRequestScriptBuilder.getScript(options, ssl, data);
 
 		// Start the other Node Process, executing this string
@@ -626,7 +626,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const { error, data: response } = JSON.parse(content.toString());
 
 		if (error) {
-			this._onError(error);
+			this.#onError(error);
 			return;
 		}
 
@@ -639,9 +639,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#internal.state.statusText = response.statusMessage;
 			// Although it will immediately be set to loading,
 			// According to the spec, the state should be headersRecieved first.
-			this._setState(XMLHttpRequestReadyStateEnum.headersRecieved);
-			this._setState(XMLHttpRequestReadyStateEnum.loading);
-			this.#internal.state.response = this._decodeResponseText(
+			this.#setState(XMLHttpRequestReadyStateEnum.headersRecieved);
+			this.#setState(XMLHttpRequestReadyStateEnum.loading);
+			this.#internal.state.response = this.#decodeResponseText(
 				Buffer.from(response.data, 'base64')
 			);
 			this.#internal.state.responseText = this.#internal.state.response;
@@ -651,7 +651,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				this.#window.location
 			).href;
 			// Set Cookies.
-			this._setCookies(this.#internal.state.incommingMessage.headers);
+			this.#setCookies(this.#internal.state.incommingMessage.headers);
 			// Redirect.
 			if (
 				this.#internal.state.incommingMessage.statusCode === 301 ||
@@ -666,7 +666,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				ssl = redirectUrl.protocol === 'https:';
 				this.#internal.settings.url = redirectUrl.href;
 				// Recursive call.
-				this._sendSyncRequest(
+				this.#sendSyncRequest(
 					Object.assign(options, {
 						host: redirectUrl.host,
 						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
@@ -685,7 +685,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				);
 			}
 
-			this._setState(XMLHttpRequestReadyStateEnum.done);
+			this.#setState(XMLHttpRequestReadyStateEnum.done);
 		}
 	}
 
@@ -696,14 +696,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param ssl
 	 * @param data
 	 */
-	private _sendAsyncRequest(
-		options: HTTPS.RequestOptions,
-		ssl: boolean,
-		data?: string
-	): Promise<void> {
+	#sendAsyncRequest(options: HTTPS.RequestOptions, ssl: boolean, data?: string): Promise<void> {
 		return new Promise((resolve) => {
 			// Starts async task in Happy DOM
-			this.#internal.state.asyncTaskID = this.#browserFrame._asyncTaskManager.startTask(
+			this.#internal.state.asyncTaskID = this.#browserFrame.__asyncTaskManager__.startTask(
 				this.abort.bind(this)
 			);
 
@@ -720,20 +716,20 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#internal.state.asyncRequest = sendRequest(
 				<object>options,
 				async (response: HTTP.IncomingMessage) => {
-					await this._onAsyncResponse(response, options, ssl, data);
+					await this.#onAsyncResponse(response, options, ssl, data);
 
 					resolve();
 
 					// Ends async task in Happy DOM
-					this.#browserFrame._asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+					this.#browserFrame.__asyncTaskManager__.endTask(this.#internal.state.asyncTaskID);
 				}
 			);
 			this.#internal.state.asyncRequest.on('error', (error: Error) => {
-				this._onError(error);
+				this.#onError(error);
 				resolve();
 
 				// Ends async task in Happy DOM
-				this.#browserFrame._asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+				this.#browserFrame.__asyncTaskManager__.endTask(this.#internal.state.asyncTaskID);
 			});
 
 			// Node 0.4 and later won't accept empty data. Make sure it's needed.
@@ -756,7 +752,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param response Response.
 	 * @returns Promise.
 	 */
-	private _onAsyncResponse(
+	#onAsyncResponse(
 		response: HTTP.IncomingMessage,
 		options: HTTPS.RequestOptions,
 		ssl: boolean,
@@ -768,7 +764,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#internal.state.incommingMessage = response;
 
 			// Set Cookies
-			this._setCookies(this.#internal.state.incommingMessage.headers);
+			this.#setCookies(this.#internal.state.incommingMessage.headers);
 
 			// Check for redirect
 			// @TODO Prevent looped redirects
@@ -786,7 +782,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				this.#internal.settings.url = redirectUrl.href;
 				ssl = redirectUrl.protocol === 'https:';
 				// Issue the new request
-				this._sendAsyncRequest(
+				this.#sendAsyncRequest(
 					{
 						...options,
 						host: redirectUrl.hostname,
@@ -807,7 +803,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 			this.#internal.state.status = this.#internal.state.incommingMessage.statusCode;
 			this.#internal.state.statusText = this.#internal.state.incommingMessage.statusMessage;
-			this._setState(XMLHttpRequestReadyStateEnum.headersRecieved);
+			this.#setState(XMLHttpRequestReadyStateEnum.headersRecieved);
 
 			// Initialize response.
 			let tempResponse = Buffer.from(new Uint8Array(0));
@@ -819,7 +815,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				}
 				// Don't emit state changes if the connection has been aborted.
 				if (this.#internal.state.send) {
-					this._setState(XMLHttpRequestReadyStateEnum.loading);
+					this.#setState(XMLHttpRequestReadyStateEnum.loading);
 				}
 
 				const contentLength = Number(
@@ -841,7 +837,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					this.#internal.state.send = false;
 
 					// Set response according to responseType.
-					const { response, responseXML, responseText } = this._parseResponseData(tempResponse);
+					const { response, responseXML, responseText } = this.#parseResponseData(tempResponse);
 					this.#internal.state.response = response;
 					this.#internal.state.responseXML = responseXML;
 					this.#internal.state.responseText = responseText;
@@ -850,14 +846,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 						this.#window.location
 					).href;
 					// Discard the 'end' event if the connection has been aborted
-					this._setState(XMLHttpRequestReadyStateEnum.done);
+					this.#setState(XMLHttpRequestReadyStateEnum.done);
 				}
 
 				resolve();
 			});
 
 			this.#internal.state.incommingMessage.on('error', (error) => {
-				this._onError(error);
+				this.#onError(error);
 				resolve();
 			});
 		});
@@ -869,8 +865,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param url URL.
 	 * @returns Promise.
 	 */
-	private async _sendLocalAsyncRequest(url: UrlObject): Promise<void> {
-		this.#internal.state.asyncTaskID = this.#browserFrame._asyncTaskManager.startTask(
+	async #sendLocalAsyncRequest(url: UrlObject): Promise<void> {
+		this.#internal.state.asyncTaskID = this.#browserFrame.__asyncTaskManager__.startTask(
 			this.abort.bind(this)
 		);
 
@@ -879,16 +875,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		try {
 			data = await FS.promises.readFile(decodeURI(url.pathname.slice(1)));
 		} catch (error) {
-			this._onError(error);
+			this.#onError(error);
 			// Release async task.
-			this.#browserFrame._asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+			this.#browserFrame.__asyncTaskManager__.endTask(this.#internal.state.asyncTaskID);
 			return;
 		}
 
 		const dataLength = data.length;
 
 		// @TODO: set state headersRecieved first.
-		this._setState(XMLHttpRequestReadyStateEnum.loading);
+		this.#setState(XMLHttpRequestReadyStateEnum.loading);
 		this.dispatchEvent(
 			new ProgressEvent('progress', {
 				lengthComputable: true,
@@ -898,11 +894,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		);
 
 		if (data) {
-			this._parseLocalRequestData(url, data);
+			this.#parseLocalRequestData(url, data);
 		}
 
-		this._setState(XMLHttpRequestReadyStateEnum.done);
-		this.#browserFrame._asyncTaskManager.endTask(this.#internal.state.asyncTaskID);
+		this.#setState(XMLHttpRequestReadyStateEnum.done);
+		this.#browserFrame.__asyncTaskManager__.endTask(this.#internal.state.asyncTaskID);
 	}
 
 	/**
@@ -910,23 +906,23 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param url URL.
 	 */
-	private _sendLocalSyncRequest(url: UrlObject): void {
+	#sendLocalSyncRequest(url: UrlObject): void {
 		let data: Buffer;
 		try {
 			data = FS.readFileSync(decodeURI(url.pathname.slice(1)));
 		} catch (error) {
-			this._onError(error);
+			this.#onError(error);
 			return;
 		}
 
 		// @TODO: set state headersRecieved first.
-		this._setState(XMLHttpRequestReadyStateEnum.loading);
+		this.#setState(XMLHttpRequestReadyStateEnum.loading);
 
 		if (data) {
-			this._parseLocalRequestData(url, data);
+			this.#parseLocalRequestData(url, data);
 		}
 
-		this._setState(XMLHttpRequestReadyStateEnum.done);
+		this.#setState(XMLHttpRequestReadyStateEnum.done);
 	}
 
 	/**
@@ -935,7 +931,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param url URL.
 	 * @param data Data.
 	 */
-	private _parseLocalRequestData(url: UrlObject, data: Buffer): void {
+	#parseLocalRequestData(url: UrlObject, data: Buffer): void {
 		// Manually set the response headers.
 		this.#internal.state.incommingMessage = {
 			statusCode: 200,
@@ -949,7 +945,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#internal.state.status = this.#internal.state.incommingMessage.statusCode;
 		this.#internal.state.statusText = 'OK';
 
-		const { response, responseXML, responseText } = this._parseResponseData(data);
+		const { response, responseXML, responseText } = this.#parseResponseData(data);
 		this.#internal.state.response = response;
 		this.#internal.state.responseXML = responseXML;
 		this.#internal.state.responseText = responseText;
@@ -958,7 +954,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#window.location
 		).href;
 
-		this._setState(XMLHttpRequestReadyStateEnum.done);
+		this.#setState(XMLHttpRequestReadyStateEnum.done);
 	}
 
 	/**
@@ -967,7 +963,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param data Data.
 	 * @returns Parsed response.
 	 */
-	private _parseResponseData(data: Buffer): {
+	#parseResponseData(data: Buffer): {
 		response: ArrayBuffer | Blob | IDocument | object | string;
 		responseText: string;
 		responseXML: IDocument;
@@ -1001,7 +997,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				let response: IDocument;
 
 				try {
-					response = domParser.parseFromString(this._decodeResponseText(data), 'text/xml');
+					response = domParser.parseFromString(this.#decodeResponseText(data), 'text/xml');
 				} catch (e) {
 					return { response: null, responseText: null, responseXML: null };
 				}
@@ -1010,7 +1006,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			case XMLHttpResponseTypeEnum.json:
 				try {
 					return {
-						response: JSON.parse(this._decodeResponseText(data)),
+						response: JSON.parse(this.#decodeResponseText(data)),
 						responseText: null,
 						responseXML: null
 					};
@@ -1020,7 +1016,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			case XMLHttpResponseTypeEnum.text:
 			case '':
 			default:
-				const responseText = this._decodeResponseText(data);
+				const responseText = this.#decodeResponseText(data);
 				return {
 					response: responseText,
 					responseText: responseText,
@@ -1034,9 +1030,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param headers Headers.
 	 */
-	private _setCookies(
-		headers: { [name: string]: string | string[] } | HTTP.IncomingHttpHeaders
-	): void {
+	#setCookies(headers: { [name: string]: string | string[] } | HTTP.IncomingHttpHeaders): void {
 		const originURL = new URL(this.#internal.settings.url, this.#window.location);
 		for (const header of ['set-cookie', 'set-cookie2']) {
 			if (Array.isArray(headers[header])) {
@@ -1058,12 +1052,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param error Error.
 	 */
-	private _onError(error: Error | string): void {
+	#onError(error: Error | string): void {
 		this.#internal.state.status = 0;
 		this.#internal.state.statusText = error.toString();
 		this.#internal.state.responseText = error instanceof Error ? error.stack : '';
 		this.#internal.state.error = true;
-		this._setState(XMLHttpRequestReadyStateEnum.done);
+		this.#setState(XMLHttpRequestReadyStateEnum.done);
 
 		const errorObject = error instanceof Error ? error : new Error(error);
 		const event = new ErrorEvent('error', {
@@ -1082,7 +1076,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param data Data.
 	 * @returns Decoded text.
 	 **/
-	private _decodeResponseText(data: Buffer): string {
+	#decodeResponseText(data: Buffer): string {
 		const contextTypeEncodingRegexp = new RegExp(CONTENT_TYPE_ENCODING_REGEXP, 'gi');
 		// Compatibility with file:// protocol or unpredictable http request.
 		const contentType =

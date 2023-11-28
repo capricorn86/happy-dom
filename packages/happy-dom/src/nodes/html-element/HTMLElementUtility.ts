@@ -12,13 +12,13 @@ export default class HTMLElementUtility {
 	 * @param element Element.
 	 */
 	public static blur(element: IHTMLElement | ISVGElement): void {
-		if (element.ownerDocument['_activeElement'] !== element || !element.isConnected) {
+		if (element.ownerDocument['__activeElement__'] !== element || !element.isConnected) {
 			return;
 		}
 
-		const relatedTarget = element.ownerDocument['_nextActiveElement'] ?? null;
+		const relatedTarget = element.ownerDocument['__nextActiveElement__'] ?? null;
 
-		element.ownerDocument['_activeElement'] = null;
+		element.ownerDocument['__activeElement__'] = null;
 
 		element.dispatchEvent(
 			new FocusEvent('blur', {
@@ -42,23 +42,23 @@ export default class HTMLElementUtility {
 	 * @param element Element.
 	 */
 	public static focus(element: IHTMLElement | ISVGElement): void {
-		if (element.ownerDocument['_activeElement'] === element || !element.isConnected) {
+		if (element.ownerDocument['__activeElement__'] === element || !element.isConnected) {
 			return;
 		}
 
 		// Set the next active element so `blur` can use it for `relatedTarget`.
-		element.ownerDocument['_nextActiveElement'] = element;
+		element.ownerDocument['__nextActiveElement__'] = element;
 
-		const relatedTarget = element.ownerDocument['_activeElement'];
+		const relatedTarget = element.ownerDocument['__activeElement__'];
 
-		if (element.ownerDocument['_activeElement'] !== null) {
-			element.ownerDocument['_activeElement'].blur();
+		if (element.ownerDocument['__activeElement__'] !== null) {
+			element.ownerDocument['__activeElement__'].blur();
 		}
 
 		// Clean up after blur, so it does not affect next blur call.
-		element.ownerDocument['_nextActiveElement'] = null;
+		element.ownerDocument['__nextActiveElement__'] = null;
 
-		element.ownerDocument['_activeElement'] = element;
+		element.ownerDocument['__activeElement__'] = element;
 
 		element.dispatchEvent(
 			new FocusEvent('focus', {

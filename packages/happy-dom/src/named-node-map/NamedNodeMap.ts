@@ -11,7 +11,7 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 export default class NamedNodeMap implements INamedNodeMap {
 	[index: number]: IAttr;
 	public length = 0;
-	protected _namedItems: { [k: string]: IAttr } = {};
+	protected __namedItems__: { [k: string]: IAttr } = {};
 
 	/**
 	 * Returns string.
@@ -49,7 +49,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @returns Itme.
 	 */
 	public getNamedItem(name: string): IAttr | null {
-		return this._namedItems[name] || null;
+		return this.__namedItems__[name] || null;
 	}
 
 	/**
@@ -82,7 +82,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public setNamedItem(item: IAttr): IAttr | null {
-		return this._setNamedItemWithoutConsequences(item);
+		return this.__setNamedItemWithoutConsequences__(item);
 	}
 
 	/**
@@ -104,7 +104,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @returns Removed item.
 	 */
 	public removeNamedItem(name: string): IAttr {
-		const item = this._removeNamedItem(name);
+		const item = this.__removeNamedItem__(name);
 		if (!item) {
 			throw new DOMException(
 				`Failed to execute 'removeNamedItem' on 'NamedNodeMap': No item with name '${name}' was found.`,
@@ -135,20 +135,20 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param item Item.
 	 * @returns Replaced item.
 	 */
-	public _setNamedItemWithoutConsequences(item: IAttr): IAttr | null {
+	public __setNamedItemWithoutConsequences__(item: IAttr): IAttr | null {
 		if (item.name) {
-			const replacedItem = this._namedItems[item.name] || null;
+			const replacedItem = this.__namedItems__[item.name] || null;
 
-			this._namedItems[item.name] = item;
+			this.__namedItems__[item.name] = item;
 
 			if (replacedItem) {
-				this._removeNamedItemIndex(replacedItem);
+				this.__removeNamedItemIndex__(replacedItem);
 			}
 
 			this[this.length] = item;
 			this.length++;
 
-			if (this._isValidPropertyName(item.name)) {
+			if (this.__isValidPropertyName__(item.name)) {
 				this[item.name] = item;
 			}
 
@@ -163,8 +163,8 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name of item.
 	 * @returns Removed item, or null if it didn't exist.
 	 */
-	public _removeNamedItem(name: string): IAttr | null {
-		return this._removeNamedItemWithoutConsequences(name);
+	public __removeNamedItem__(name: string): IAttr | null {
+		return this.__removeNamedItemWithoutConsequences__(name);
 	}
 
 	/**
@@ -173,20 +173,20 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name of item.
 	 * @returns Removed item, or null if it didn't exist.
 	 */
-	public _removeNamedItemWithoutConsequences(name: string): IAttr | null {
-		const removedItem = this._namedItems[name] || null;
+	public __removeNamedItemWithoutConsequences__(name: string): IAttr | null {
+		const removedItem = this.__namedItems__[name] || null;
 
 		if (!removedItem) {
 			return null;
 		}
 
-		this._removeNamedItemIndex(removedItem);
+		this.__removeNamedItemIndex__(removedItem);
 
 		if (this[name] === removedItem) {
 			delete this[name];
 		}
 
-		delete this._namedItems[name];
+		delete this.__namedItems__[name];
 
 		return removedItem;
 	}
@@ -196,7 +196,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 *
 	 * @param item Item.
 	 */
-	protected _removeNamedItemIndex(item: IAttr): void {
+	protected __removeNamedItemIndex__(item: IAttr): void {
 		for (let i = 0; i < this.length; i++) {
 			if (this[i] === item) {
 				for (let b = i; b < this.length; b++) {
@@ -218,7 +218,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name.
 	 * @returns True if the property name is valid.
 	 */
-	protected _isValidPropertyName(name: string): boolean {
+	protected __isValidPropertyName__(name: string): boolean {
 		return (
 			!this.constructor.prototype.hasOwnProperty(name) &&
 			(isNaN(Number(name)) || name.includes('.'))

@@ -6,8 +6,8 @@ import Node from '../nodes/node/Node.js';
  * Custom elements registry.
  */
 export default class CustomElementRegistry {
-	public _registry: { [k: string]: { elementClass: typeof HTMLElement; extends: string } } = {};
-	public _callbacks: { [k: string]: (() => void)[] } = {};
+	public __registry__: { [k: string]: { elementClass: typeof HTMLElement; extends: string } } = {};
+	public __callbacks__: { [k: string]: (() => void)[] } = {};
 
 	/**
 	 * Defines a custom element class.
@@ -32,19 +32,19 @@ export default class CustomElementRegistry {
 			);
 		}
 
-		this._registry[upperTagName] = {
+		this.__registry__[upperTagName] = {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
 
 		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
 		if (elementClass.prototype.attributeChangedCallback) {
-			elementClass._observedAttributes = elementClass.observedAttributes;
+			elementClass.__observedAttributes__ = elementClass.observedAttributes;
 		}
 
-		if (this._callbacks[upperTagName]) {
-			const callbacks = this._callbacks[upperTagName];
-			delete this._callbacks[upperTagName];
+		if (this.__callbacks__[upperTagName]) {
+			const callbacks = this.__callbacks__[upperTagName];
+			delete this.__callbacks__[upperTagName];
 			for (const callback of callbacks) {
 				callback();
 			}
@@ -59,7 +59,9 @@ export default class CustomElementRegistry {
 	 */
 	public get(tagName: string): typeof HTMLElement {
 		const upperTagName = tagName.toUpperCase();
-		return this._registry[upperTagName] ? this._registry[upperTagName].elementClass : undefined;
+		return this.__registry__[upperTagName]
+			? this.__registry__[upperTagName].elementClass
+			: undefined;
 	}
 
 	/**
@@ -85,8 +87,8 @@ export default class CustomElementRegistry {
 			return Promise.resolve();
 		}
 		return new Promise((resolve) => {
-			this._callbacks[upperTagName] = this._callbacks[upperTagName] || [];
-			this._callbacks[upperTagName].push(resolve);
+			this.__callbacks__[upperTagName] = this.__callbacks__[upperTagName] || [];
+			this.__callbacks__[upperTagName].push(resolve);
 		});
 	}
 }

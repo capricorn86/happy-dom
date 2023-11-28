@@ -89,7 +89,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @returns Type
 	 */
 	public get type(): string {
-		return this._sanitizeType(this.getAttribute('type'));
+		return this.#sanitizeType(this.getAttribute('type'));
 	}
 
 	/**
@@ -98,7 +98,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @param v Type
 	 */
 	public set type(v: string) {
-		this.setAttribute('type', this._sanitizeType(v));
+		this.setAttribute('type', this.#sanitizeType(v));
 	}
 
 	/**
@@ -129,7 +129,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this._formNode;
+		return <IHTMLFormElement>this.__formNode__;
 	}
 
 	/**
@@ -174,24 +174,6 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	}
 
 	/**
-	 * Sanitizes type.
-	 *
-	 * TODO: We can improve performance a bit if we make the types as a constant.
-	 *
-	 * @param type Type.
-	 * @returns Type sanitized.
-	 */
-	protected _sanitizeType(type: string): string {
-		type = (type && type.toLowerCase()) || 'submit';
-
-		if (!BUTTON_TYPES.includes(type)) {
-			type = 'submit';
-		}
-
-		return type;
-	}
-
-	/**
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
@@ -205,10 +187,10 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 			event.type === 'click' &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this._formNode &&
+			this.__formNode__ &&
 			this.isConnected
 		) {
-			const form = <IHTMLFormElement>this._formNode;
+			const form = <IHTMLFormElement>this.__formNode__;
 			switch (this.type) {
 				case 'submit':
 					form.requestSubmit();
@@ -225,20 +207,38 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const oldFormNode = <HTMLFormElement>this._formNode;
+	public override __connectToNode__(parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this.__formNode__;
 
-		super._connectToNode(parentNode);
+		super.__connectToNode__(parentNode);
 
-		if (oldFormNode !== this._formNode) {
+		if (oldFormNode !== this.__formNode__) {
 			if (oldFormNode) {
-				oldFormNode._removeFormControlItem(this, this.name);
-				oldFormNode._removeFormControlItem(this, this.id);
+				oldFormNode.__removeFormControlItem__(this, this.name);
+				oldFormNode.__removeFormControlItem__(this, this.id);
 			}
-			if (this._formNode) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.name);
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.id);
+			if (this.__formNode__) {
+				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.name);
+				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.id);
 			}
 		}
+	}
+
+	/**
+	 * Sanitizes type.
+	 *
+	 * TODO: We can improve performance a bit if we make the types as a constant.
+	 *
+	 * @param type Type.
+	 * @returns Type sanitized.
+	 */
+	#sanitizeType(type: string): string {
+		type = (type && type.toLowerCase()) || 'submit';
+
+		if (!BUTTON_TYPES.includes(type)) {
+			type = 'submit';
+		}
+
+		return type;
 	}
 }

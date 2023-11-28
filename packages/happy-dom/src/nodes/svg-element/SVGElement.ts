@@ -26,8 +26,8 @@ export default class SVGElement extends Element implements ISVGElement {
 	public onunload: (event: Event) => void | null = null;
 
 	// Private properties
-	public _style: CSSStyleDeclaration = null;
-	private _dataset: Dataset = null;
+	public __style__: CSSStyleDeclaration = null;
+	#dataset: Dataset = null;
 
 	/**
 	 * Returns viewport.
@@ -61,7 +61,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
-		return (this._dataset ??= new Dataset(this)).proxy;
+		return (this.#dataset ??= new Dataset(this)).proxy;
 	}
 
 	/**
@@ -70,10 +70,10 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Style.
 	 */
 	public get style(): CSSStyleDeclaration {
-		if (!this._style) {
-			this._style = new CSSStyleDeclaration(this);
+		if (!this.__style__) {
+			this.__style__ = new CSSStyleDeclaration(this);
 		}
-		return this._style;
+		return this.__style__;
 	}
 
 	/**

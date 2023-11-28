@@ -45,7 +45,7 @@ export default class ParentNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<IDocument>parentNode.ownerDocument, node)
-				))._childNodes.slice();
+				)).__childNodes__.slice();
 				for (const newChildNode of newChildNodes) {
 					parentNode.insertBefore(newChildNode, firstChild);
 				}
@@ -65,7 +65,7 @@ export default class ParentNodeUtility {
 		parentNode: IElement | IDocument | IDocumentFragment,
 		...nodes: (string | INode)[]
 	): void {
-		for (const node of (<DocumentFragment>parentNode)._childNodes.slice()) {
+		for (const node of (<DocumentFragment>parentNode).__childNodes__.slice()) {
 			parentNode.removeChild(node);
 		}
 
@@ -84,7 +84,7 @@ export default class ParentNodeUtility {
 	): IHTMLCollection<IElement> {
 		let matches = new HTMLCollection<IElement>();
 
-		for (const child of (<DocumentFragment>parentNode)._children) {
+		for (const child of (<DocumentFragment>parentNode).__children__) {
 			if (child.className.split(' ').includes(className)) {
 				matches.push(child);
 			}
@@ -111,7 +111,7 @@ export default class ParentNodeUtility {
 		const includeAll = tagName === '*';
 		let matches = new HTMLCollection<IElement>();
 
-		for (const child of (<DocumentFragment>parentNode)._children) {
+		for (const child of (<DocumentFragment>parentNode).__children__) {
 			if (includeAll || child.tagName === upperTagName) {
 				matches.push(child);
 			}
@@ -140,7 +140,7 @@ export default class ParentNodeUtility {
 		const includeAll = tagName === '*';
 		let matches = new HTMLCollection<IElement>();
 
-		for (const child of (<DocumentFragment>parentNode)._children) {
+		for (const child of (<DocumentFragment>parentNode).__children__) {
 			if ((includeAll || child.tagName === upperTagName) && child.namespaceURI === namespaceURI) {
 				matches.push(child);
 			}
@@ -166,7 +166,7 @@ export default class ParentNodeUtility {
 	): IElement {
 		const upperTagName = tagName.toUpperCase();
 
-		for (const child of (<DocumentFragment>parentNode)._children) {
+		for (const child of (<DocumentFragment>parentNode).__children__) {
 			if (child.tagName === upperTagName) {
 				return <IElement>child;
 			}
@@ -191,7 +191,7 @@ export default class ParentNodeUtility {
 		id: string
 	): IElement {
 		id = String(id);
-		for (const child of (<DocumentFragment>parentNode)._children) {
+		for (const child of (<DocumentFragment>parentNode).__children__) {
 			if (child.id === id) {
 				return <IElement>child;
 			}

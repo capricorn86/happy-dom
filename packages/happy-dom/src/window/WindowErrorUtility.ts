@@ -56,7 +56,7 @@ export default class WindowErrorUtility {
 			(<IBrowserWindow>elementOrWindow).console.error(error);
 			elementOrWindow.dispatchEvent(new ErrorEvent('error', { message: error.message, error }));
 		} else {
-			(<IElement>elementOrWindow).ownerDocument._defaultView.console.error(error);
+			(<IElement>elementOrWindow).ownerDocument.__defaultView__.console.error(error);
 			(<IElement>elementOrWindow).dispatchEvent(
 				new ErrorEvent('error', { message: error.message, error })
 			);

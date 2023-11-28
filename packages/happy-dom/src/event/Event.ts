@@ -17,17 +17,18 @@ export default class Event {
 	public cancelable: boolean;
 	public defaultPrevented = false;
 	public eventPhase: EventPhaseEnum = EventPhaseEnum.none;
-	public _immediatePropagationStopped = false;
-	public _propagationStopped = false;
-	public _target: IEventTarget = null;
-	public _currentTarget: IEventTarget = null;
 	public timeStamp: number = performance.now();
 	public type: string;
-	public _isInPassiveEventListener = false;
 	public NONE = EventPhaseEnum.none;
 	public CAPTURING_PHASE = EventPhaseEnum.capturing;
 	public AT_TARGET = EventPhaseEnum.atTarget;
 	public BUBBLING_PHASE = EventPhaseEnum.bubbling;
+
+	public __immediatePropagationStopped__ = false;
+	public __propagationStopped__ = false;
+	public __target__: IEventTarget = null;
+	public __currentTarget__: IEventTarget = null;
+	public __isInPassiveEventListener__ = false;
 
 	/**
 	 * Constructor.
@@ -49,7 +50,7 @@ export default class Event {
 	 * @returns Target.
 	 */
 	public get target(): IEventTarget {
-		return this._target;
+		return this.__target__;
 	}
 
 	/**
@@ -58,7 +59,7 @@ export default class Event {
 	 * @returns Target.
 	 */
 	public get currentTarget(): IEventTarget {
-		return this._currentTarget;
+		return this.__currentTarget__;
 	}
 
 	/**
@@ -67,7 +68,7 @@ export default class Event {
 	 * @returns "true" if propagation has been stopped.
 	 */
 	public get cancelBubble(): boolean {
-		return this._propagationStopped;
+		return this.__propagationStopped__;
 	}
 
 	/**
@@ -76,13 +77,13 @@ export default class Event {
 	 * @returns Composed path.
 	 */
 	public composedPath(): IEventTarget[] {
-		if (!this._target) {
+		if (!this.__target__) {
 			return [];
 		}
 
 		const composedPath = [];
 		let eventTarget: INode | IShadowRoot | IBrowserWindow = <INode | IShadowRoot>(
-			(<unknown>this._target)
+			(<unknown>this.__target__)
 		);
 
 		while (eventTarget) {
@@ -97,7 +98,7 @@ export default class Event {
 			) {
 				eventTarget = (<IShadowRoot>eventTarget).host;
 			} else if ((<INode>eventTarget).nodeType === NodeTypeEnum.documentNode) {
-				eventTarget = (<IDocument>(<unknown>eventTarget))._defaultView;
+				eventTarget = (<IDocument>(<unknown>eventTarget)).__defaultView__;
 			} else {
 				break;
 			}
@@ -124,7 +125,7 @@ export default class Event {
 	 * Prevents default.
 	 */
 	public preventDefault(): void {
-		if (!this._isInPassiveEventListener) {
+		if (!this.__isInPassiveEventListener__) {
 			this.defaultPrevented = true;
 		}
 	}
@@ -133,13 +134,13 @@ export default class Event {
 	 * Stops immediate propagation.
 	 */
 	public stopImmediatePropagation(): void {
-		this._immediatePropagationStopped = true;
+		this.__immediatePropagationStopped__ = true;
 	}
 
 	/**
 	 * Stops propagation.
 	 */
 	public stopPropagation(): void {
-		this._propagationStopped = true;
+		this.__propagationStopped__ = true;
 	}
 }

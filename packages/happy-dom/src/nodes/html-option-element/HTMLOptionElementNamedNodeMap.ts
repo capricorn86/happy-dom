@@ -9,7 +9,7 @@ import HTMLOptionElement from './HTMLOptionElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected _ownerElement: HTMLOptionElement;
+	protected __ownerElement__: HTMLOptionElement;
 
 	/**
 	 * @override
@@ -18,16 +18,16 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 		const replacedItem = super.setNamedItem(item);
 
 		if (
-			!this._ownerElement._dirtyness &&
+			!this.__ownerElement__.__dirtyness__ &&
 			item.name === 'selected' &&
 			replacedItem?.value !== item.value
 		) {
-			const selectNode = <HTMLSelectElement>this._ownerElement._selectNode;
+			const selectNode = <HTMLSelectElement>this.__ownerElement__.__selectNode__;
 
-			this._ownerElement._selectedness = true;
+			this.__ownerElement__.__selectedness__ = true;
 
 			if (selectNode) {
-				selectNode._updateOptionItems(this._ownerElement);
+				selectNode.__updateOptionItems__(this.__ownerElement__);
 			}
 		}
 
@@ -37,16 +37,16 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override _removeNamedItem(name: string): IAttr | null {
-		const removedItem = super._removeNamedItem(name);
+	public override __removeNamedItem__(name: string): IAttr | null {
+		const removedItem = super.__removeNamedItem__(name);
 
-		if (removedItem && !this._ownerElement._dirtyness && removedItem.name === 'selected') {
-			const selectNode = <HTMLSelectElement>this._ownerElement._selectNode;
+		if (removedItem && !this.__ownerElement__.__dirtyness__ && removedItem.name === 'selected') {
+			const selectNode = <HTMLSelectElement>this.__ownerElement__.__selectNode__;
 
-			this._ownerElement._selectedness = false;
+			this.__ownerElement__.__selectedness__ = false;
 
 			if (selectNode) {
-				selectNode._updateOptionItems();
+				selectNode.__updateOptionItems__();
 			}
 		}
 

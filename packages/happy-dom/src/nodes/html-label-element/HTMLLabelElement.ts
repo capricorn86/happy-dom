@@ -57,7 +57,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this._formNode;
+		return <IHTMLFormElement>this.__formNode__;
 	}
 
 	/**

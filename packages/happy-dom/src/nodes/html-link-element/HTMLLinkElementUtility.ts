@@ -23,7 +23,7 @@ export default class HTMLLinkElementUtility {
 		const href = element.getAttribute('href');
 		const rel = element.getAttribute('rel');
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			element.ownerDocument._defaultView
+			element.ownerDocument.__defaultView__
 		);
 
 		if (href !== null && rel && rel.toLowerCase() === 'stylesheet' && element.isConnected) {
@@ -38,22 +38,22 @@ export default class HTMLLinkElementUtility {
 				return;
 			}
 
-			(<{ _readyStateManager: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument._defaultView)
-			))._readyStateManager.startTask();
+			(<{ __readyStateManager__: DocumentReadyStateManager }>(
+				(<unknown>element.ownerDocument.__defaultView__)
+			)).__readyStateManager__.startTask();
 
 			let code: string | null = null;
 			let error: Error | null = null;
 
 			try {
-				code = await ResourceFetch.fetch(element.ownerDocument._defaultView, href);
+				code = await ResourceFetch.fetch(element.ownerDocument.__defaultView__, href);
 			} catch (e) {
 				error = e;
 			}
 
-			(<{ _readyStateManager: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument._defaultView)
-			))._readyStateManager.endTask();
+			(<{ __readyStateManager__: DocumentReadyStateManager }>(
+				(<unknown>element.ownerDocument.__defaultView__)
+			)).__readyStateManager__.endTask();
 
 			if (error) {
 				WindowErrorUtility.dispatchError(element, error);

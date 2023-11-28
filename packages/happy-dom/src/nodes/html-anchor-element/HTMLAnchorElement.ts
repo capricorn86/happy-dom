@@ -17,8 +17,8 @@ import EventPhaseEnum from '../../event/EventPhaseEnum.js';
  */
 export default class HTMLAnchorElement extends HTMLElement implements IHTMLAnchorElement {
 	public override readonly attributes: INamedNodeMap = new HTMLAnchorElementNamedNodeMap(this);
-	public _relList: DOMTokenList = null;
-	public _url: URL | null = null;
+	public __relList__: DOMTokenList = null;
+	public __url__: URL | null = null;
 
 	/**
 	 * Returns download.
@@ -44,7 +44,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Hash.
 	 */
 	public get hash(): string {
-		return this._url?.hash ?? '';
+		return this.__url__?.hash ?? '';
 	}
 
 	/**
@@ -53,9 +53,9 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param hash Hash.
 	 */
 	public set hash(hash: string) {
-		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
-			this._url.hash = hash;
-			this.setAttribute('href', this._url.toString());
+		if (this.__url__ && !HTMLAnchorElementUtility.isBlobURL(this.__url__)) {
+			this.__url__.hash = hash;
+			this.setAttribute('href', this.__url__.toString());
 		}
 	}
 
@@ -65,8 +65,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Href.
 	 */
 	public get href(): string | null {
-		if (this._url) {
-			return this._url.toString();
+		if (this.__url__) {
+			return this.__url__.toString();
 		}
 
 		return this.getAttribute('href') || '';
@@ -105,7 +105,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Origin.
 	 */
 	public get origin(): string {
-		return this._url?.origin ?? '';
+		return this.__url__?.origin ?? '';
 	}
 
 	/**
@@ -132,7 +132,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Protocol.
 	 */
 	public get protocol(): string {
-		return this._url?.protocol ?? '';
+		return this.__url__?.protocol ?? '';
 	}
 
 	/**
@@ -141,9 +141,9 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param protocol Protocol.
 	 */
 	public set protocol(protocol: string) {
-		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
-			this._url.protocol = protocol;
-			this.setAttribute('href', this._url.toString());
+		if (this.__url__ && !HTMLAnchorElementUtility.isBlobURL(this.__url__)) {
+			this.__url__.protocol = protocol;
+			this.setAttribute('href', this.__url__.toString());
 		}
 	}
 
@@ -153,7 +153,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Username.
 	 */
 	public get username(): string {
-		return this._url?.username ?? '';
+		return this.__url__?.username ?? '';
 	}
 
 	/**
@@ -163,13 +163,13 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 */
 	public set username(username: string) {
 		if (
-			this._url &&
-			!HTMLAnchorElementUtility.isBlobURL(this._url) &&
-			this._url.host &&
-			this._url.protocol != 'file'
+			this.__url__ &&
+			!HTMLAnchorElementUtility.isBlobURL(this.__url__) &&
+			this.__url__.host &&
+			this.__url__.protocol != 'file'
 		) {
-			this._url.username = username;
-			this.setAttribute('href', this._url.toString());
+			this.__url__.username = username;
+			this.setAttribute('href', this.__url__.toString());
 		}
 	}
 
@@ -179,7 +179,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Password.
 	 */
 	public get password(): string {
-		return this._url?.password ?? '';
+		return this.__url__?.password ?? '';
 	}
 
 	/**
@@ -189,13 +189,13 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 */
 	public set password(password: string) {
 		if (
-			this._url &&
-			!HTMLAnchorElementUtility.isBlobURL(this._url) &&
-			this._url.host &&
-			this._url.protocol != 'file'
+			this.__url__ &&
+			!HTMLAnchorElementUtility.isBlobURL(this.__url__) &&
+			this.__url__.host &&
+			this.__url__.protocol != 'file'
 		) {
-			this._url.password = password;
-			this.setAttribute('href', this._url.toString());
+			this.__url__.password = password;
+			this.setAttribute('href', this.__url__.toString());
 		}
 	}
 
@@ -205,7 +205,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Pathname.
 	 */
 	public get pathname(): string {
-		return this._url?.pathname ?? '';
+		return this.__url__?.pathname ?? '';
 	}
 
 	/**
@@ -214,9 +214,9 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param pathname Pathname.
 	 */
 	public set pathname(pathname: string) {
-		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
-			this._url.pathname = pathname;
-			this.setAttribute('href', this._url.toString());
+		if (this.__url__ && !HTMLAnchorElementUtility.isBlobURL(this.__url__)) {
+			this.__url__.pathname = pathname;
+			this.setAttribute('href', this.__url__.toString());
 		}
 	}
 
@@ -226,7 +226,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Port.
 	 */
 	public get port(): string {
-		return this._url?.port ?? '';
+		return this.__url__?.port ?? '';
 	}
 
 	/**
@@ -236,13 +236,13 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 */
 	public set port(port: string) {
 		if (
-			this._url &&
-			!HTMLAnchorElementUtility.isBlobURL(this._url) &&
-			this._url.host &&
-			this._url.protocol != 'file'
+			this.__url__ &&
+			!HTMLAnchorElementUtility.isBlobURL(this.__url__) &&
+			this.__url__.host &&
+			this.__url__.protocol != 'file'
 		) {
-			this._url.port = port;
-			this.setAttribute('href', this._url.toString());
+			this.__url__.port = port;
+			this.setAttribute('href', this.__url__.toString());
 		}
 	}
 
@@ -252,7 +252,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Host.
 	 */
 	public get host(): string {
-		return this._url?.host ?? '';
+		return this.__url__?.host ?? '';
 	}
 
 	/**
@@ -261,9 +261,9 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param host Host.
 	 */
 	public set host(host: string) {
-		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
-			this._url.host = host;
-			this.setAttribute('href', this._url.toString());
+		if (this.__url__ && !HTMLAnchorElementUtility.isBlobURL(this.__url__)) {
+			this.__url__.host = host;
+			this.setAttribute('href', this.__url__.toString());
 		}
 	}
 
@@ -273,7 +273,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Hostname.
 	 */
 	public get hostname(): string {
-		return this._url?.hostname ?? '';
+		return this.__url__?.hostname ?? '';
 	}
 
 	/**
@@ -282,9 +282,9 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param hostname Hostname.
 	 */
 	public set hostname(hostname: string) {
-		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
-			this._url.hostname = hostname;
-			this.setAttribute('href', this._url.toString());
+		if (this.__url__ && !HTMLAnchorElementUtility.isBlobURL(this.__url__)) {
+			this.__url__.hostname = hostname;
+			this.setAttribute('href', this.__url__.toString());
 		}
 	}
 
@@ -330,10 +330,10 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Rel list.
 	 */
 	public get relList(): IDOMTokenList {
-		if (!this._relList) {
-			this._relList = new DOMTokenList(this, 'rel');
+		if (!this.__relList__) {
+			this.__relList__ = new DOMTokenList(this, 'rel');
 		}
-		return <IDOMTokenList>this._relList;
+		return <IDOMTokenList>this.__relList__;
 	}
 
 	/**
@@ -342,7 +342,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @returns Search.
 	 */
 	public get search(): string {
-		return this._url?.search ?? '';
+		return this.__url__?.search ?? '';
 	}
 
 	/**
@@ -351,9 +351,9 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 * @param search Search.
 	 */
 	public set search(search: string) {
-		if (this._url && !HTMLAnchorElementUtility.isBlobURL(this._url)) {
-			this._url.search = search;
-			this.setAttribute('href', this._url.toString());
+		if (this.__url__ && !HTMLAnchorElementUtility.isBlobURL(this.__url__)) {
+			this.__url__.search = search;
+			this.setAttribute('href', this.__url__.toString());
 		}
 	}
 
@@ -429,10 +429,10 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			!event.defaultPrevented &&
-			this._url
+			this.__url__
 		) {
-			this.ownerDocument._defaultView.open(this._url.toString(), this.target || '_self');
-			if (this.ownerDocument._defaultView.closed) {
+			this.ownerDocument.__defaultView__.open(this.__url__.toString(), this.target || '_self');
+			if (this.ownerDocument.__defaultView__.closed) {
 				event.stopImmediatePropagation();
 			}
 		}

@@ -19,7 +19,7 @@ describe('Blob', () => {
 	describe('slice()', () => {
 		it('Returns a slice of the data when bits is an Array of strings.', () => {
 			const blob = new Blob(['TEST']);
-			expect(blob.slice(1, 2)._buffer.toString()).toBe('E');
+			expect(blob.slice(1, 2).__buffer__.toString()).toBe('E');
 		});
 	});
 

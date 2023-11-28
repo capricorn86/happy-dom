@@ -4,7 +4,7 @@ import IHTMLCollection from './IHTMLCollection.js';
  * HTML collection.
  */
 export default class HTMLCollection<T> extends Array implements IHTMLCollection<T> {
-	protected _namedItems: { [k: string]: T[] } = {};
+	protected __namedItems__: { [k: string]: T[] } = {};
 
 	/**
 	 * Returns item by index.
@@ -22,8 +22,8 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 * @returns Node.
 	 */
 	public namedItem(name: string): T | null {
-		return this._namedItems[name] && this._namedItems[name].length
-			? this._namedItems[name][0]
+		return this.__namedItems__[name] && this.__namedItems__[name].length
+			? this.__namedItems__[name][0]
 			: null;
 	}
 
@@ -33,16 +33,16 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 * @param node Node.
 	 * @param name Name.
 	 */
-	public _appendNamedItem(node: T, name: string): void {
+	public __appendNamedItem__(node: T, name: string): void {
 		if (name) {
-			this._namedItems[name] = this._namedItems[name] || [];
+			this.__namedItems__[name] = this.__namedItems__[name] || [];
 
-			if (!this._namedItems[name].includes(node)) {
-				this._namedItems[name].push(node);
+			if (!this.__namedItems__[name].includes(node)) {
+				this.__namedItems__[name].push(node);
 			}
 
-			if (!this.hasOwnProperty(name) && this._isValidPropertyName(name)) {
-				this[name] = this._namedItems[name][0];
+			if (!this.hasOwnProperty(name) && this.__isValidPropertyName__(name)) {
+				this[name] = this.__namedItems__[name][0];
 			}
 		}
 	}
@@ -53,20 +53,20 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 * @param node Node.
 	 * @param name Name.
 	 */
-	public _removeNamedItem(node: T, name: string): void {
-		if (name && this._namedItems[name]) {
-			const index = this._namedItems[name].indexOf(node);
+	public __removeNamedItem__(node: T, name: string): void {
+		if (name && this.__namedItems__[name]) {
+			const index = this.__namedItems__[name].indexOf(node);
 
 			if (index > -1) {
-				this._namedItems[name].splice(index, 1);
+				this.__namedItems__[name].splice(index, 1);
 
-				if (this._namedItems[name].length === 0) {
-					delete this._namedItems[name];
-					if (this.hasOwnProperty(name) && this._isValidPropertyName(name)) {
+				if (this.__namedItems__[name].length === 0) {
+					delete this.__namedItems__[name];
+					if (this.hasOwnProperty(name) && this.__isValidPropertyName__(name)) {
 						delete this[name];
 					}
-				} else if (this._isValidPropertyName(name)) {
-					this[name] = this._namedItems[name][0];
+				} else if (this.__isValidPropertyName__(name)) {
+					this[name] = this.__namedItems__[name][0];
 				}
 			}
 		}
@@ -78,7 +78,7 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 * @param name Name.
 	 * @returns True if the property name is valid.
 	 */
-	protected _isValidPropertyName(name: string): boolean {
+	protected __isValidPropertyName__(name: string): boolean {
 		return (
 			!this.constructor.prototype.hasOwnProperty(name) &&
 			!Array.prototype.hasOwnProperty(name) &&

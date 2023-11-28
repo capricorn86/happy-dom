@@ -26,7 +26,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 * @override
 	 */
 	public set innerHTML(html: string) {
-		for (const child of (<DocumentFragment>this.content)._childNodes.slice()) {
+		for (const child of (<DocumentFragment>this.content).__childNodes__.slice()) {
 			this.content.removeChild(child);
 		}
 
@@ -56,7 +56,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of (<DocumentFragment>this.content)._childNodes) {
+		for (const node of (<DocumentFragment>this.content).__childNodes__) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;

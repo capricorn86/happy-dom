@@ -39,7 +39,7 @@ export default class FetchBodyUtility {
 				contentLength: buffer.length
 			};
 		} else if (body instanceof Blob) {
-			const buffer = (<Blob>body)._buffer;
+			const buffer = (<Blob>body).__buffer__;
 			return {
 				buffer,
 				stream: Stream.Readable.from(buffer),
@@ -151,7 +151,7 @@ export default class FetchBodyUtility {
 
 		if (
 			(<Stream.Readable>body).readableEnded === false ||
-			(<Stream.Readable>body)['_readableState']?.ended === false
+			(<Stream.Readable>body)['__readableState__']?.ended === false
 		) {
 			throw new DOMException(
 				`Premature close of server response.`,

@@ -2,7 +2,7 @@
  *
  */
 export default class Storage {
-	private _store: { [k: string]: string } = {};
+	private #store: { [k: string]: string } = {};
 
 	/**
 	 * Returns length.
@@ -10,7 +10,7 @@ export default class Storage {
 	 * @returns Length.
 	 */
 	public get length(): number {
-		return Object.keys(this._store).length;
+		return Object.keys(this.#store).length;
 	}
 
 	/**
@@ -20,7 +20,7 @@ export default class Storage {
 	 * @returns Name.
 	 */
 	public key(index: number): string {
-		const name = Object.keys(this._store)[index];
+		const name = Object.keys(this.#store)[index];
 		return name === undefined ? null : name;
 	}
 
@@ -31,7 +31,7 @@ export default class Storage {
 	 * @param item Item.
 	 */
 	public setItem(name: string, item: string): void {
-		this._store[name] = item;
+		this.#store[name] = item;
 	}
 
 	/**
@@ -41,7 +41,7 @@ export default class Storage {
 	 * @returns Item.
 	 */
 	public getItem(name: string): string {
-		return this._store[name] === undefined ? null : this._store[name];
+		return this.#store[name] === undefined ? null : this.#store[name];
 	}
 
 	/**
@@ -50,13 +50,13 @@ export default class Storage {
 	 * @param name Name.
 	 */
 	public removeItem(name: string): void {
-		delete this._store[name];
+		delete this.#store[name];
 	}
 
 	/**
 	 * Clears storage.
 	 */
 	public clear(): void {
-		this._store = {};
+		this.#store = {};
 	}
 }

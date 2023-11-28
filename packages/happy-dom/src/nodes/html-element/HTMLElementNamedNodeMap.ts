@@ -8,7 +8,7 @@ import HTMLElement from './HTMLElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLElementNamedNodeMap extends ElementNamedNodeMap {
-	protected _ownerElement: HTMLElement;
+	protected __ownerElement__: HTMLElement;
 
 	/**
 	 * @override
@@ -16,8 +16,8 @@ export default class HTMLElementNamedNodeMap extends ElementNamedNodeMap {
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'style' && this._ownerElement._style) {
-			this._ownerElement._style.cssText = item.value;
+		if (item.name === 'style' && this.__ownerElement__.__style__) {
+			this.__ownerElement__.__style__.cssText = item.value;
 		}
 
 		return replacedItem || null;
@@ -26,11 +26,11 @@ export default class HTMLElementNamedNodeMap extends ElementNamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override _removeNamedItem(name: string): IAttr | null {
-		const removedItem = super._removeNamedItem(name);
+	public override __removeNamedItem__(name: string): IAttr | null {
+		const removedItem = super.__removeNamedItem__(name);
 
-		if (removedItem && removedItem.name === 'style' && this._ownerElement._style) {
-			this._ownerElement._style.cssText = '';
+		if (removedItem && removedItem.name === 'style' && this.__ownerElement__.__style__) {
+			this.__ownerElement__.__style__.cssText = '';
 		}
 
 		return removedItem;

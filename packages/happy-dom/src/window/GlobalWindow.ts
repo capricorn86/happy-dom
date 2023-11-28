@@ -73,7 +73,7 @@ export default class GlobalWindow extends Window implements IWindow {
 	/**
 	 * Setup of VM context.
 	 */
-	protected override _setupVMContext(): void {
+	protected override __setupVMContext__(): void {
 		// Do nothing
 	}
 }

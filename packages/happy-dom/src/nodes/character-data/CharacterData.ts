@@ -14,7 +14,7 @@ import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/CharacterData.
  */
 export default abstract class CharacterData extends Node implements ICharacterData {
-	protected _data = '';
+	public __data__ = '';
 
 	/**
 	 * Constructor.
@@ -25,7 +25,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 		super();
 
 		if (data) {
-			this._data = data;
+			this.__data__ = data;
 		}
 	}
 
@@ -35,7 +35,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Text content.
 	 */
 	public get length(): number {
-		return this._data.length;
+		return this.__data__.length;
 	}
 
 	/**
@@ -44,7 +44,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Text content.
 	 */
 	public get data(): string {
-		return this._data;
+		return this.__data__;
 	}
 
 	/**
@@ -53,16 +53,16 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @param textContent Text content.
 	 */
 	public set data(data: string) {
-		const oldValue = this._data;
-		this._data = String(data);
+		const oldValue = this.__data__;
+		this.__data__ = String(data);
 
 		if (this.isConnected) {
-			this.ownerDocument['_cacheID']++;
+			this.ownerDocument['__cacheID__']++;
 		}
 
 		// MutationObserver
-		if (this._observers.length > 0) {
-			for (const observer of this._observers) {
+		if (this.__observers__.length > 0) {
+			for (const observer of this.__observers__) {
 				if (observer.options.characterData) {
 					const record = new MutationRecord();
 					record.target = this;
@@ -80,7 +80,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Text content.
 	 */
 	public get textContent(): string {
-		return this._data;
+		return this.__data__;
 	}
 
 	/**
@@ -98,7 +98,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Node value.
 	 */
 	public get nodeValue(): string {
-		return this._data;
+		return this.__data__;
 	}
 
 	/**
@@ -221,7 +221,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 */
 	public cloneNode(deep = false): ICharacterData {
 		const clone = <CharacterData>super.cloneNode(deep);
-		clone._data = this._data;
+		clone.__data__ = this.__data__;
 		return clone;
 	}
 }

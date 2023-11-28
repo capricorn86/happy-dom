@@ -43,11 +43,11 @@ export default class Request implements IRequest {
 	public readonly credentials: IRequestCredentials;
 
 	// Internal properties
-	public readonly _contentLength: number | null = null;
-	public readonly _contentType: string | null = null;
-	public _referrer: '' | 'no-referrer' | 'client' | URL = 'client';
-	public readonly _url: URL;
-	public readonly _bodyBuffer: Buffer | null;
+	public readonly __contentLength__: number | null = null;
+	public readonly __contentType__: string | null = null;
+	public __referrer__: '' | 'no-referrer' | 'client' | URL = 'client';
+	public readonly __url__: URL;
+	public readonly __bodyBuffer__: Buffer | null;
 	readonly #window: IBrowserWindow;
 	readonly #asyncTaskManager: AsyncTaskManager;
 
@@ -73,12 +73,12 @@ export default class Request implements IRequest {
 		this.method = (init?.method || (<Request>input).method || 'GET').toUpperCase();
 
 		const { stream, buffer, contentType, contentLength } = FetchBodyUtility.getBodyStream(
-			input instanceof Request && (input._bodyBuffer || input.body)
-				? input._bodyBuffer || FetchBodyUtility.cloneRequestBodyStream(input)
+			input instanceof Request && (input.__bodyBuffer__ || input.body)
+				? input.__bodyBuffer__ || FetchBodyUtility.cloneRequestBodyStream(input)
 				: init?.body
 		);
 
-		this._bodyBuffer = buffer;
+		this.__bodyBuffer__ = buffer;
 		this.body = stream;
 		this.credentials = init?.credentials || (<Request>input).credentials || 'same-origin';
 		this.headers = new Headers(init?.headers || (<Request>input).headers || {});
@@ -86,18 +86,18 @@ export default class Request implements IRequest {
 		FetchRequestHeaderUtility.removeForbiddenHeaders(this.headers);
 
 		if (contentLength) {
-			this._contentLength = contentLength;
+			this.__contentLength__ = contentLength;
 		} else if (!this.body && (this.method === 'POST' || this.method === 'PUT')) {
-			this._contentLength = 0;
+			this.__contentLength__ = 0;
 		}
 
 		if (contentType) {
 			if (!this.headers.has('Content-Type')) {
 				this.headers.set('Content-Type', contentType);
 			}
-			this._contentType = contentType;
-		} else if (input instanceof Request && input._contentType) {
-			this._contentType = input._contentType;
+			this.__contentType__ = contentType;
+		} else if (input instanceof Request && input.__contentType__) {
+			this.__contentType__ = input.__contentType__;
 		}
 
 		this.redirect = init?.redirect || (<Request>input).redirect || 'follow';
@@ -105,7 +105,7 @@ export default class Request implements IRequest {
 			(init?.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
 		);
 		this.signal = init?.signal || (<Request>input).signal || new AbortSignal();
-		this._referrer = FetchRequestReferrerUtility.getInitialReferrer(
+		this.__referrer__ = FetchRequestReferrerUtility.getInitialReferrer(
 			injected.window,
 			init?.referrer !== null && init?.referrer !== undefined
 				? init?.referrer
@@ -113,13 +113,13 @@ export default class Request implements IRequest {
 		);
 
 		if (input instanceof URL) {
-			this._url = input;
+			this.__url__ = input;
 		} else {
 			try {
 				if (input instanceof Request && input.url) {
-					this._url = new URL(input.url, injected.window.location);
+					this.__url__ = new URL(input.url, injected.window.location);
 				} else {
-					this._url = new URL(<string>input, injected.window.location);
+					this.__url__ = new URL(<string>input, injected.window.location);
 				}
 			} catch (error) {
 				throw new DOMException(
@@ -136,7 +136,7 @@ export default class Request implements IRequest {
 		}
 
 		FetchRequestValidationUtility.validateBody(this);
-		FetchRequestValidationUtility.validateURL(this._url);
+		FetchRequestValidationUtility.validateURL(this.__url__);
 		FetchRequestValidationUtility.validateReferrerPolicy(this.referrerPolicy);
 		FetchRequestValidationUtility.validateRedirect(this.redirect);
 	}
@@ -144,8 +144,8 @@ export default class Request implements IRequest {
 	/**
 	 * Returns owner document.
 	 */
-	protected get _ownerDocument(): IDocument {
-		throw new Error('_ownerDocument needs to be implemented by sub-class.');
+	protected get __ownerDocument__(): IDocument {
+		throw new Error('__ownerDocument__ needs to be implemented by sub-class.');
 	}
 
 	/**
@@ -154,15 +154,15 @@ export default class Request implements IRequest {
 	 * @returns Referrer.
 	 */
 	public get referrer(): string {
-		if (!this._referrer || this._referrer === 'no-referrer') {
+		if (!this.__referrer__ || this.__referrer__ === 'no-referrer') {
 			return '';
 		}
 
-		if (this._referrer === 'client') {
+		if (this.__referrer__ === 'client') {
 			return 'about:client';
 		}
 
-		return this._referrer.toString();
+		return this.__referrer__.toString();
 	}
 
 	/**
@@ -171,7 +171,7 @@ export default class Request implements IRequest {
 	 * @returns URL.
 	 */
 	public get url(): string {
-		return this._url.href;
+		return this.__url__.href;
 	}
 
 	/**
@@ -198,7 +198,7 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal.__abort__());
 		let buffer: Buffer;
 
 		try {
@@ -240,7 +240,7 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal.__abort__());
 		let buffer: Buffer;
 
 		try {
@@ -270,7 +270,7 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal.__abort__());
 		let buffer: Buffer;
 
 		try {
@@ -310,11 +310,11 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal.__abort__());
 		let formData: FormData;
 
 		try {
-			const type = this._contentType;
+			const type = this.__contentType__;
 			formData = await MultipartFormDataParser.streamToFormData(this.body, type);
 		} catch (error) {
 			this.#asyncTaskManager.endTask(taskID);

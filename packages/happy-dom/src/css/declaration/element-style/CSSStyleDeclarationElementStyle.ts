@@ -99,12 +99,12 @@ export default class CSSStyleDeclarationElementStyle {
 
 		if (
 			this.cache.propertyManager &&
-			this.cache.documentCacheID === this.element.ownerDocument['_cacheID']
+			this.cache.documentCacheID === this.element.ownerDocument['__cacheID__']
 		) {
 			return this.cache.propertyManager;
 		}
 
-		this.cache.documentCacheID = this.element.ownerDocument['_cacheID'];
+		this.cache.documentCacheID = this.element.ownerDocument['__cacheID__'];
 
 		// Walks through all parent elements and stores them in an array with element and matching CSS text.
 		while (styleAndElement.element) {
@@ -276,7 +276,7 @@ export default class CSSStyleDeclarationElementStyle {
 			return;
 		}
 
-		const ownerWindow = this.element.ownerDocument._defaultView;
+		const ownerWindow = this.element.ownerDocument.__defaultView__;
 
 		for (const rule of options.cssRules) {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
@@ -285,7 +285,7 @@ export default class CSSStyleDeclarationElementStyle {
 					if (selectorText.startsWith(':host')) {
 						if (options.hostElement) {
 							options.hostElement.cssTexts.push({
-								cssText: (<CSSStyleRule>rule)._cssText,
+								cssText: (<CSSStyleRule>rule).__cssText__,
 								priorityWeight: 0
 							});
 						}
@@ -294,7 +294,7 @@ export default class CSSStyleDeclarationElementStyle {
 							const matchResult = QuerySelector.match(<IElement>element.element, selectorText);
 							if (matchResult) {
 								element.cssTexts.push({
-									cssText: (<CSSStyleRule>rule)._cssText,
+									cssText: (<CSSStyleRule>rule).__cssText__,
 									priorityWeight: matchResult.priorityWeight
 								});
 							}
@@ -355,7 +355,7 @@ export default class CSSStyleDeclarationElementStyle {
 		parentSize: string | number | null;
 	}): string {
 		if (
-			WindowBrowserSettingsReader.getSettings(this.element.ownerDocument._defaultView)
+			WindowBrowserSettingsReader.getSettings(this.element.ownerDocument.__defaultView__)
 				.disableComputedStyleRendering
 		) {
 			return options.value;
@@ -368,7 +368,7 @@ export default class CSSStyleDeclarationElementStyle {
 		while ((match = regexp.exec(options.value)) !== null) {
 			if (match[1] !== 'px') {
 				const valueInPixels = CSSMeasurementConverter.toPixels({
-					ownerWindow: this.element.ownerDocument._defaultView,
+					ownerWindow: this.element.ownerDocument.__defaultView__,
 					value: match[0],
 					rootFontSize: options.rootFontSize,
 					parentFontSize: options.parentFontSize,

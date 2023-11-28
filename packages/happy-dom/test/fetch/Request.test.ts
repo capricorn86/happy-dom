@@ -227,24 +227,24 @@ describe('Request', () => {
 			const request = new window.Request(
 				new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' })
 			);
-			expect(request._contentLength).toBe(11);
+			expect(request.__contentLength__).toBe(11);
 		});
 
 		it('Supports content length from init object.', () => {
 			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
-			expect(request._contentLength).toBe(11);
+			expect(request.__contentLength__).toBe(11);
 		});
 
 		it('Supports content type from Request object.', () => {
 			const request = new window.Request(
 				new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' })
 			);
-			expect(request._contentType).toBe('text/plain;charset=UTF-8');
+			expect(request.__contentType__).toBe('text/plain;charset=UTF-8');
 		});
 
 		it('Supports content type from init object.', () => {
 			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
-			expect(request._contentType).toBe('text/plain;charset=UTF-8');
+			expect(request.__contentType__).toBe('text/plain;charset=UTF-8');
 		});
 
 		it('Supports content type header from Request object.', () => {

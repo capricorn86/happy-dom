@@ -48,7 +48,7 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 */
 	public readAsArrayBuffer(blob: Blob): void {
-		this._readFile(blob, FileReaderFormatEnum.buffer);
+		this.#readFile(blob, FileReaderFormatEnum.buffer);
 	}
 
 	/**
@@ -57,7 +57,7 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 */
 	public readAsBinaryString(blob: Blob): void {
-		this._readFile(blob, FileReaderFormatEnum.binaryString);
+		this.#readFile(blob, FileReaderFormatEnum.binaryString);
 	}
 
 	/**
@@ -66,7 +66,7 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 */
 	public readAsDataURL(blob: Blob): void {
-		this._readFile(blob, FileReaderFormatEnum.dataURL);
+		this.#readFile(blob, FileReaderFormatEnum.dataURL);
 	}
 
 	/**
@@ -76,7 +76,7 @@ export default class FileReader extends EventTarget {
 	 * @param [encoding] Encoding.
 	 */
 	public readAsText(blob: Blob, encoding: string = null): void {
-		this._readFile(
+		this.#readFile(
 			blob,
 			FileReaderFormatEnum.text,
 			WhatwgEncoding.labelToName(encoding) || 'UTF-8'
@@ -115,7 +115,7 @@ export default class FileReader extends EventTarget {
 	 * @param format Format.
 	 * @param [encoding] Encoding.
 	 */
-	private _readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string = null): void {
+	#readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string = null): void {
 		if (this.readyState === FileReaderReadyStateEnum.loading) {
 			throw new DOMException(
 				'The object is in an invalid state.',
@@ -133,7 +133,7 @@ export default class FileReader extends EventTarget {
 
 			this.dispatchEvent(new ProgressEvent(FileReaderEventTypeEnum.loadstart));
 
-			let data = blob._buffer;
+			let data = blob.__buffer__;
 			if (!data) {
 				data = Buffer.alloc(0);
 			}

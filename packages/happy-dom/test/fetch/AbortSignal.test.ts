@@ -3,7 +3,7 @@ import Event from '../../src/event/Event.js';
 import { describe, it, expect } from 'vitest';
 
 describe('AbortSignal', () => {
-	describe('_abort()', () => {
+	describe('__abort__()', () => {
 		it('Aborts the signal.', () => {
 			const signal = new AbortSignal();
 			const reason = 'abort reason';
@@ -11,7 +11,7 @@ describe('AbortSignal', () => {
 
 			signal.addEventListener('abort', (event: Event) => (triggeredEvent = event));
 
-			signal._abort(reason);
+			signal.__abort__(reason);
 
 			expect(signal.aborted).toBe(true);
 			expect(signal.reason).toBe(reason);

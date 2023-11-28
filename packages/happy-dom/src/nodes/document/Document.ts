@@ -57,22 +57,21 @@ export default class Document extends Node implements IDocument {
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
 	public readonly defaultView: IBrowserWindow | null = null;
-	public readonly _defaultView: IBrowserWindow;
+	public readonly __defaultView__: IBrowserWindow;
 	public readonly referrer = '';
-	public readonly _windowClass: {} | null = null;
-	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
-	public _activeElement: IHTMLElement = null;
-	public _nextActiveElement: IHTMLElement = null;
-	public _currentScript: IHTMLScriptElement = null;
-	public _rootNode = this;
+	public readonly __children__: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
+	public __activeElement__: IHTMLElement = null;
+	public __nextActiveElement__: IHTMLElement = null;
+	public __currentScript__: IHTMLScriptElement = null;
+	public __rootNode__ = this;
 
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
-	public _cacheID = 0;
+	public __cacheID__ = 0;
 
-	protected _isFirstWrite = true;
-	protected _isFirstWriteAfterOpen = false;
+	public __isFirstWrite__ = true;
+	public __isFirstWriteAfterOpen__ = false;
 
-	private _selection: Selection = null;
+	private __selection__: Selection = null;
 	#browserFrame: IBrowserFrame;
 
 	// Events
@@ -197,7 +196,7 @@ export default class Document extends Node implements IDocument {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this.implementation = new DOMImplementation(injected.window);
-		this._defaultView = injected.window;
+		this.__defaultView__ = injected.window;
 	}
 
 	/**
@@ -213,7 +212,7 @@ export default class Document extends Node implements IDocument {
 	 * Returns document children.
 	 */
 	public get children(): IHTMLCollection<IElement> {
-		return this._children;
+		return this.__children__;
 	}
 
 	/**
@@ -277,7 +276,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this._children.length;
+		return this.__children__.length;
 	}
 
 	/**
@@ -286,7 +285,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
-		return this._children[0] ?? null;
+		return this.__children__[0] ?? null;
 	}
 
 	/**
@@ -295,7 +294,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
-		return this._children[this._children.length - 1] ?? null;
+		return this.__children__[this.__children__.length - 1] ?? null;
 	}
 
 	/**
@@ -305,7 +304,10 @@ export default class Document extends Node implements IDocument {
 	 */
 	public get cookie(): string {
 		return CookieStringUtility.cookiesToString(
-			this.#browserFrame.page.context.cookieContainer.getCookies(this._defaultView.location, true)
+			this.#browserFrame.page.context.cookieContainer.getCookies(
+				this.__defaultView__.location,
+				true
+			)
 		);
 	}
 
@@ -316,7 +318,7 @@ export default class Document extends Node implements IDocument {
 	 */
 	public set cookie(cookie: string) {
 		this.#browserFrame.page.context.cookieContainer.addCookies([
-			CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
+			CookieStringUtility.stringToCookie(this.__defaultView__.location, cookie)
 		]);
 	}
 
@@ -344,7 +346,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document type.
 	 */
 	public get doctype(): IDocumentType {
-		for (const node of this._childNodes) {
+		for (const node of this.__childNodes__) {
 			if (node instanceof DocumentType) {
 				return node;
 			}
@@ -395,22 +397,22 @@ export default class Document extends Node implements IDocument {
 	 * @returns Active element.
 	 */
 	public get activeElement(): IHTMLElement {
-		if (this._activeElement && !this._activeElement.isConnected) {
-			this._activeElement = null;
+		if (this.__activeElement__ && !this.__activeElement__.isConnected) {
+			this.__activeElement__ = null;
 		}
 
-		if (this._activeElement && this._activeElement instanceof Element) {
+		if (this.__activeElement__ && this.__activeElement__ instanceof Element) {
 			let rootNode: IShadowRoot | IDocument = <IShadowRoot | IDocument>(
-				this._activeElement.getRootNode()
+				this.__activeElement__.getRootNode()
 			);
-			let activeElement: IHTMLElement = this._activeElement;
+			let activeElement: IHTMLElement = this.__activeElement__;
 			while (rootNode !== this) {
 				activeElement = <IHTMLElement>(<IShadowRoot>rootNode).host;
 				rootNode = activeElement ? <IShadowRoot | IDocument>activeElement.getRootNode() : this;
 			}
 			return activeElement;
 		}
-		return this._activeElement || this.body || this.documentElement || null;
+		return this.__activeElement__ || this.body || this.documentElement || null;
 	}
 
 	/**
@@ -428,7 +430,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Location.
 	 */
 	public get location(): Location {
-		return this._defaultView.location;
+		return this.__defaultView__.location;
 	}
 
 	/**
@@ -451,7 +453,7 @@ export default class Document extends Node implements IDocument {
 		if (element) {
 			return element.href;
 		}
-		return this._defaultView.location.href;
+		return this.__defaultView__.location.href;
 	}
 
 	/**
@@ -460,7 +462,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns the URL of the current document.
 	 * */
 	public get URL(): string {
-		return this._defaultView.location.href;
+		return this.__defaultView__.location.href;
 	}
 
 	/**
@@ -504,7 +506,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns the currently executing script element.
 	 */
 	public get currentScript(): IHTMLScriptElement {
-		return this._currentScript;
+		return this.__currentScript__;
 	}
 
 	/**
@@ -607,7 +609,7 @@ export default class Document extends Node implements IDocument {
 			name: string
 		): INodeList<IElement> => {
 			const matches = new NodeList<IElement>();
-			for (const child of (<Element | Document>parentNode)._children) {
+			for (const child of (<Element | Document>parentNode).__children__) {
 				if (child.getAttributeNS(null, 'name') === name) {
 					matches.push(child);
 				}
@@ -631,9 +633,9 @@ export default class Document extends Node implements IDocument {
 		const clone = <Document>super.cloneNode(deep);
 
 		if (deep) {
-			for (const node of clone._childNodes) {
+			for (const node of clone.__childNodes__) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
-					clone._children.push(<IElement>node);
+					clone.__children__.push(<IElement>node);
 				}
 			}
 		}
@@ -679,20 +681,20 @@ export default class Document extends Node implements IDocument {
 	public write(html: string): void {
 		const root = <DocumentFragment>XMLParser.parse(this, html, { evaluateScripts: true });
 
-		if (this._isFirstWrite || this._isFirstWriteAfterOpen) {
-			if (this._isFirstWrite) {
-				if (!this._isFirstWriteAfterOpen) {
+		if (this.__isFirstWrite__ || this.__isFirstWriteAfterOpen__) {
+			if (this.__isFirstWrite__) {
+				if (!this.__isFirstWriteAfterOpen__) {
 					this.open();
 				}
 
-				this._isFirstWrite = false;
+				this.__isFirstWrite__ = false;
 			}
 
-			this._isFirstWriteAfterOpen = false;
+			this.__isFirstWriteAfterOpen__ = false;
 			let documentElement = null;
 			let documentTypeNode = null;
 
-			for (const node of root._childNodes) {
+			for (const node of root.__childNodes__) {
 				if (node['tagName'] === 'HTML') {
 					documentElement = node;
 				} else if (node.nodeType === NodeTypeEnum.documentTypeNode) {
@@ -727,7 +729,7 @@ export default class Document extends Node implements IDocument {
 					const rootBody = <Element>ParentNodeUtility.getElementByTagName(root, 'body');
 					const body = ParentNodeUtility.getElementByTagName(this, 'body');
 					if (rootBody && body) {
-						for (const child of rootBody._childNodes.slice()) {
+						for (const child of rootBody.__childNodes__.slice()) {
 							body.appendChild(child);
 						}
 					}
@@ -736,7 +738,7 @@ export default class Document extends Node implements IDocument {
 				// Remaining nodes outside the <html> element are added to the <body> element.
 				const body = ParentNodeUtility.getElementByTagName(this, 'body');
 				if (body) {
-					for (const child of root._childNodes.slice()) {
+					for (const child of root.__childNodes__.slice()) {
 						if (child['tagName'] !== 'HTML' && child.nodeType !== NodeTypeEnum.documentTypeNode) {
 							body.appendChild(child);
 						}
@@ -747,7 +749,7 @@ export default class Document extends Node implements IDocument {
 				const bodyElement = this.createElement('body');
 				const headElement = this.createElement('head');
 
-				for (const child of root._childNodes.slice()) {
+				for (const child of root.__childNodes__.slice()) {
 					bodyElement.appendChild(child);
 				}
 
@@ -759,7 +761,7 @@ export default class Document extends Node implements IDocument {
 		} else {
 			const bodyNode = ParentNodeUtility.getElementByTagName(root, 'body');
 			const body = ParentNodeUtility.getElementByTagName(this, 'body');
-			for (const child of (<Element>(bodyNode || root))._childNodes.slice()) {
+			for (const child of (<Element>(bodyNode || root)).__childNodes__.slice()) {
 				body.appendChild(child);
 			}
 		}
@@ -771,10 +773,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document.
 	 */
 	public open(): IDocument {
-		this._isFirstWriteAfterOpen = true;
+		this.__isFirstWriteAfterOpen__ = true;
 
-		for (const eventType of Object.keys(this._listeners)) {
-			const listeners = this._listeners[eventType];
+		for (const eventType of Object.keys(this.__listeners__)) {
+			const listeners = this.__listeners__[eventType];
 			if (listeners) {
 				for (const listener of listeners) {
 					this.removeEventListener(eventType, listener);
@@ -782,7 +784,7 @@ export default class Document extends Node implements IDocument {
 			}
 		}
 
-		for (const child of this._childNodes.slice()) {
+		for (const child of this.__childNodes__.slice()) {
 			this.removeChild(child);
 		}
 
@@ -826,22 +828,22 @@ export default class Document extends Node implements IDocument {
 
 		let customElementClass;
 		if (options && options.is) {
-			customElementClass = this._defaultView.customElements.get(String(options.is));
+			customElementClass = this.__defaultView__.customElements.get(String(options.is));
 		} else {
-			customElementClass = this._defaultView.customElements.get(tagName);
+			customElementClass = this.__defaultView__.customElements.get(tagName);
 		}
 
 		const elementClass: typeof Element =
-			customElementClass || this._defaultView[ElementTag[tagName]] || HTMLUnknownElement;
+			customElementClass || this.__defaultView__[ElementTag[tagName]] || HTMLUnknownElement;
 
-		elementClass._ownerDocument = this;
+		elementClass.__ownerDocument__ = this;
 		const element = new elementClass();
-		elementClass._ownerDocument = null;
+		elementClass.__ownerDocument__ = null;
 		element.tagName = tagName;
 
 		(<string>element.namespaceURI) = namespaceURI;
 		if (element instanceof Element && options && options.is) {
-			element._isValue = String(options.is);
+			element.__isValue__ = String(options.is);
 		}
 
 		return element;
@@ -856,7 +858,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createTextNode(data?: string): IText {
-		return new this._defaultView.Text(data);
+		return new this.__defaultView__.Text(data);
 	}
 
 	/**
@@ -866,7 +868,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createComment(data?: string): IComment {
-		return new this._defaultView.Comment(data);
+		return new this.__defaultView__.Comment(data);
 	}
 
 	/**
@@ -875,7 +877,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document fragment.
 	 */
 	public createDocumentFragment(): IDocumentFragment {
-		return new this._defaultView.DocumentFragment();
+		return new this.__defaultView__.DocumentFragment();
 	}
 
 	/**
@@ -912,8 +914,8 @@ export default class Document extends Node implements IDocument {
 	 * @returns Event.
 	 */
 	public createEvent(type: string): Event {
-		if (typeof this._defaultView[type] === 'function') {
-			return new this._defaultView[type]('init');
+		if (typeof this.__defaultView__[type] === 'function') {
+			return new this.__defaultView__[type]('init');
 		}
 		return new Event('init');
 	}
@@ -936,7 +938,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr {
-		const attribute = new this._defaultView.Attr();
+		const attribute = new this.__defaultView__.Attr();
 		attribute.namespaceURI = namespaceURI;
 		attribute.name = qualifiedName;
 		return <IAttr>attribute;
@@ -964,7 +966,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Range.
 	 */
 	public createRange(): Range {
-		return new this._defaultView.Range();
+		return new this.__defaultView__.Range();
 	}
 
 	/**
@@ -990,10 +992,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Selection.
 	 */
 	public getSelection(): Selection {
-		if (!this._selection) {
-			this._selection = new Selection(this);
+		if (!this.__selection__) {
+			this.__selection__ = new Selection(this);
 		}
-		return this._selection;
+		return this.__selection__;
 	}
 
 	/**
@@ -1023,7 +1025,7 @@ export default class Document extends Node implements IDocument {
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
-		const processingInstruction = new this._defaultView.ProcessingInstruction(data);
+		const processingInstruction = new this.__defaultView__.ProcessingInstruction(data);
 		processingInstruction.target = target;
 		return processingInstruction;
 	}

@@ -50,7 +50,7 @@ export default class RangeUtility {
 				child = child.parentNode;
 			}
 
-			if ((<Node>child.parentNode)._childNodes.indexOf(child) < pointA.offset) {
+			if ((<Node>child.parentNode).__childNodes__.indexOf(child) < pointA.offset) {
 				return 1;
 			}
 		}

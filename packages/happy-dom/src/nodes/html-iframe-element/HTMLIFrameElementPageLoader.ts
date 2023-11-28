@@ -51,7 +51,7 @@ export default class HTMLIFrameElementPageLoader {
 			return;
 		}
 
-		const window = this.#element.ownerDocument._defaultView;
+		const window = this.#element.ownerDocument.__defaultView__;
 		const originURL = this.#browserParentFrame.window.location;
 		const targetURL = BrowserFrameURL.getRelativeURL(this.#browserParentFrame, this.#element.src);
 

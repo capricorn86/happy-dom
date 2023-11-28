@@ -9,7 +9,7 @@ import HTMLAnchorElementUtility from './HTMLAnchorElementUtility.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLAnchorElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected _ownerElement: HTMLAnchorElement;
+	protected __ownerElement__: HTMLAnchorElement;
 
 	/**
 	 * @override
@@ -17,11 +17,11 @@ export default class HTMLAnchorElementNamedNodeMap extends HTMLElementNamedNodeM
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'rel' && this._ownerElement._relList) {
-			this._ownerElement._relList._updateIndices();
+		if (item.name === 'rel' && this.__ownerElement__.__relList__) {
+			this.__ownerElement__.__relList__.__updateIndices__();
 		} else if (item.name === 'href') {
-			this._ownerElement._url = HTMLAnchorElementUtility.getUrl(
-				this._ownerElement.ownerDocument,
+			this.__ownerElement__.__url__ = HTMLAnchorElementUtility.getUrl(
+				this.__ownerElement__.ownerDocument,
 				item.value
 			);
 		}
@@ -32,14 +32,14 @@ export default class HTMLAnchorElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override _removeNamedItem(name: string): IAttr | null {
-		const removedItem = super._removeNamedItem(name);
+	public override __removeNamedItem__(name: string): IAttr | null {
+		const removedItem = super.__removeNamedItem__(name);
 
 		if (removedItem) {
-			if (removedItem.name === 'rel' && this._ownerElement._relList) {
-				this._ownerElement._relList._updateIndices();
+			if (removedItem.name === 'rel' && this.__ownerElement__.__relList__) {
+				this.__ownerElement__.__relList__.__updateIndices__();
 			} else if (removedItem.name === 'href') {
-				this._ownerElement._url = null;
+				this.__ownerElement__.__url__ = null;
 			}
 		}
 

@@ -27,7 +27,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	public onsubmit: (event: Event) => void | null = null;
 
 	// Private properties
-	public _formNode: INode = this;
+	public __formNode__: INode = this;
 
 	/**
 	 * Returns name.
@@ -222,10 +222,10 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	public reset(): void {
 		for (const element of this.elements) {
 			if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-				element['_value'] = null;
-				element['_checked'] = null;
+				element['__value__'] = null;
+				element['__checked__'] = null;
 			} else if (element.tagName === 'TEXTAREA') {
-				element['_value'] = null;
+				element['__value__'] = null;
 			} else if (element.tagName === 'SELECT') {
 				let hasSelectedAttribute = false;
 				for (const option of (<IHTMLSelectElement>element).options) {
@@ -295,7 +295,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param node Node.
 	 * @param name Name
 	 */
-	public _appendFormControlItem(
+	public __appendFormControlItem__(
 		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
 		name: string
 	): void {
@@ -305,7 +305,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 			(<number>this.length) = this.elements.length;
 		}
 
-		(<HTMLFormControlsCollection>this.elements)._appendNamedItem(node, name);
+		(<HTMLFormControlsCollection>this.elements).__appendNamedItem__(node, name);
 		this[name] = this.elements[name];
 	}
 
@@ -315,7 +315,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param node Node.
 	 * @param name Name.
 	 */
-	public _removeFormControlItem(
+	public __removeFormControlItem__(
 		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
 		name: string
 	): void {
@@ -330,7 +330,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 			(<number>this.length)--;
 		}
 
-		(<HTMLFormControlsCollection>this.elements)._removeNamedItem(node, name);
+		(<HTMLFormControlsCollection>this.elements).__removeNamedItem__(node, name);
 
 		if (this.elements[name]) {
 			this[name] = this.elements[name];

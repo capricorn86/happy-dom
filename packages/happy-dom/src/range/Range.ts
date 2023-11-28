@@ -35,10 +35,10 @@ export default class Range {
 	public readonly END_TO_START: number = RangeHowEnum.endToStart;
 	public readonly START_TO_END: number = RangeHowEnum.startToEnd;
 	public readonly START_TO_START: number = RangeHowEnum.startToStart;
-	public _start: IRangeBoundaryPoint | null = null;
-	public _end: IRangeBoundaryPoint | null = null;
+	public __start__: IRangeBoundaryPoint | null = null;
+	public __end__: IRangeBoundaryPoint | null = null;
 	#window: IBrowserWindow;
-	public readonly _ownerDocument: IDocument;
+	public readonly __ownerDocument__: IDocument;
 
 	/**
 	 * Constructor.
@@ -47,9 +47,9 @@ export default class Range {
 	 */
 	constructor(window: IBrowserWindow) {
 		this.#window = window;
-		this._ownerDocument = window.document;
-		this._start = { node: window.document, offset: 0 };
-		this._end = { node: window.document, offset: 0 };
+		this.__ownerDocument__ = window.document;
+		this.__start__ = { node: window.document, offset: 0 };
+		this.__end__ = { node: window.document, offset: 0 };
 	}
 
 	/**
@@ -59,7 +59,7 @@ export default class Range {
 	 * @returns Start container.
 	 */
 	public get startContainer(): INode {
-		return this._start.node;
+		return this.__start__.node;
 	}
 
 	/**
@@ -69,7 +69,7 @@ export default class Range {
 	 * @returns End container.
 	 */
 	public get endContainer(): INode {
-		return this._end.node;
+		return this.__end__.node;
 	}
 
 	/**
@@ -79,14 +79,14 @@ export default class Range {
 	 * @returns Start offset.
 	 */
 	public get startOffset(): number {
-		if (this._start.offset > 0) {
-			const length = NodeUtility.getNodeLength(this._start.node);
-			if (this._start.offset > length) {
-				this._start.offset = length;
+		if (this.__start__.offset > 0) {
+			const length = NodeUtility.getNodeLength(this.__start__.node);
+			if (this.__start__.offset > length) {
+				this.__start__.offset = length;
 			}
 		}
 
-		return this._start.offset;
+		return this.__start__.offset;
 	}
 
 	/**
@@ -96,14 +96,14 @@ export default class Range {
 	 * @returns End offset.
 	 */
 	public get endOffset(): number {
-		if (this._end.offset > 0) {
-			const length = NodeUtility.getNodeLength(this._end.node);
-			if (this._end.offset > length) {
-				this._end.offset = length;
+		if (this.__end__.offset > 0) {
+			const length = NodeUtility.getNodeLength(this.__end__.node);
+			if (this.__end__.offset > length) {
+				this.__end__.offset = length;
 			}
 		}
 
-		return this._end.offset;
+		return this.__end__.offset;
 	}
 
 	/**
@@ -113,7 +113,7 @@ export default class Range {
 	 * @returns Collapsed.
 	 */
 	public get collapsed(): boolean {
-		return this._start.node === this._end.node && this.startOffset === this.endOffset;
+		return this.__start__.node === this.__end__.node && this.startOffset === this.endOffset;
 	}
 
 	/**
@@ -123,10 +123,10 @@ export default class Range {
 	 * @returns Node.
 	 */
 	public get commonAncestorContainer(): INode {
-		let container = this._start.node;
+		let container = this.__start__.node;
 
 		while (container) {
-			if (NodeUtility.isInclusiveAncestor(container, this._end.node)) {
+			if (NodeUtility.isInclusiveAncestor(container, this.__end__.node)) {
 				return container;
 			}
 			container = container.parentNode;
@@ -143,9 +143,9 @@ export default class Range {
 	 */
 	public collapse(toStart = false): void {
 		if (toStart) {
-			this._end = Object.assign({}, this._start);
+			this.__end__ = Object.assign({}, this.__start__);
 		} else {
-			this._start = Object.assign({}, this._end);
+			this.__start__ = Object.assign({}, this.__end__);
 		}
 	}
 
@@ -170,7 +170,7 @@ export default class Range {
 			);
 		}
 
-		if (this._ownerDocument !== sourceRange._ownerDocument) {
+		if (this.__ownerDocument__ !== sourceRange.__ownerDocument__) {
 			throw new DOMException(
 				`The two Ranges are not in the same tree.`,
 				DOMExceptionNameEnum.wrongDocumentError
@@ -188,27 +188,27 @@ export default class Range {
 
 		switch (how) {
 			case RangeHowEnum.startToStart:
-				thisPoint.node = this._start.node;
+				thisPoint.node = this.__start__.node;
 				thisPoint.offset = this.startOffset;
-				sourcePoint.node = sourceRange._start.node;
+				sourcePoint.node = sourceRange.__start__.node;
 				sourcePoint.offset = sourceRange.startOffset;
 				break;
 			case RangeHowEnum.startToEnd:
-				thisPoint.node = this._end.node;
+				thisPoint.node = this.__end__.node;
 				thisPoint.offset = this.endOffset;
-				sourcePoint.node = sourceRange._start.node;
+				sourcePoint.node = sourceRange.__start__.node;
 				sourcePoint.offset = sourceRange.startOffset;
 				break;
 			case RangeHowEnum.endToEnd:
-				thisPoint.node = this._end.node;
+				thisPoint.node = this.__end__.node;
 				thisPoint.offset = this.endOffset;
-				sourcePoint.node = sourceRange._end.node;
+				sourcePoint.node = sourceRange.__end__.node;
 				sourcePoint.offset = sourceRange.endOffset;
 				break;
 			case RangeHowEnum.endToStart:
-				thisPoint.node = this._start.node;
+				thisPoint.node = this.__start__.node;
 				thisPoint.offset = this.startOffset;
-				sourcePoint.node = sourceRange._end.node;
+				sourcePoint.node = sourceRange.__end__.node;
 				sourcePoint.offset = sourceRange.endOffset;
 				break;
 		}
@@ -225,7 +225,7 @@ export default class Range {
 	 * @returns -1,0, or 1.
 	 */
 	public comparePoint(node: INode, offset): number {
-		if (node.ownerDocument !== this._ownerDocument) {
+		if (node.ownerDocument !== this.__ownerDocument__) {
 			throw new DOMException(
 				`The two Ranges are not in the same tree.`,
 				DOMExceptionNameEnum.wrongDocumentError
@@ -238,14 +238,14 @@ export default class Range {
 
 		if (
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this._start.node,
+				node: this.__start__.node,
 				offset: this.startOffset
 			}) === -1
 		) {
 			return -1;
 		} else if (
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this._end.node,
+				node: this.__end__.node,
 				offset: this.endOffset
 			}) === 1
 		) {
@@ -262,7 +262,7 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public cloneContents(): IDocumentFragment {
-		const fragment = this._ownerDocument.createDocumentFragment();
+		const fragment = this.__ownerDocument__.createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
 
@@ -271,24 +271,24 @@ export default class Range {
 		}
 
 		if (
-			this._start.node === this._end.node &&
-			(this._start.node.nodeType === NodeTypeEnum.textNode ||
-				this._start.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-				this._start.node.nodeType === NodeTypeEnum.commentNode)
+			this.__start__.node === this.__end__.node &&
+			(this.__start__.node.nodeType === NodeTypeEnum.textNode ||
+				this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
+				this.__start__.node.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = (<IText | IComment>this._start.node).cloneNode(false);
-			clone['_data'] = clone.substringData(startOffset, endOffset - startOffset);
+			const clone = (<IText | IComment>this.__start__.node).cloneNode(false);
+			clone['__data__'] = clone.substringData(startOffset, endOffset - startOffset);
 			fragment.appendChild(clone);
 			return fragment;
 		}
 
-		let commonAncestor = this._start.node;
-		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this._end.node)) {
+		let commonAncestor = this.__start__.node;
+		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this.__end__.node)) {
 			commonAncestor = commonAncestor.parentNode;
 		}
 
 		let firstPartialContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this._start.node, this._end.node)) {
+		if (!NodeUtility.isInclusiveAncestor(this.__start__.node, this.__end__.node)) {
 			let candidate = commonAncestor.firstChild;
 			while (!firstPartialContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -300,7 +300,7 @@ export default class Range {
 		}
 
 		let lastPartiallyContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this._end.node, this._start.node)) {
+		if (!NodeUtility.isInclusiveAncestor(this.__end__.node, this.__start__.node)) {
 			let candidate = commonAncestor.lastChild;
 			while (!lastPartiallyContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -313,7 +313,7 @@ export default class Range {
 
 		const containedChildren = [];
 
-		for (const node of (<Node>commonAncestor)._childNodes) {
+		for (const node of (<Node>commonAncestor).__childNodes__) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
 					throw new DOMException(
@@ -331,10 +331,10 @@ export default class Range {
 				firstPartialContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
 				firstPartialContainedChild.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = (<IText | IComment>this._start.node).cloneNode(false);
-			clone['_data'] = clone.substringData(
+			const clone = (<IText | IComment>this.__start__.node).cloneNode(false);
+			clone['__data__'] = clone.substringData(
 				startOffset,
-				NodeUtility.getNodeLength(this._start.node) - startOffset
+				NodeUtility.getNodeLength(this.__start__.node) - startOffset
 			);
 
 			fragment.appendChild(clone);
@@ -343,10 +343,10 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new this.#window.Range();
-			subRange._start.node = this._start.node;
-			subRange._start.offset = startOffset;
-			subRange._end.node = firstPartialContainedChild;
-			subRange._end.offset = NodeUtility.getNodeLength(firstPartialContainedChild);
+			subRange.__start__.node = this.__start__.node;
+			subRange.__start__.offset = startOffset;
+			subRange.__end__.node = firstPartialContainedChild;
+			subRange.__end__.offset = NodeUtility.getNodeLength(firstPartialContainedChild);
 
 			const subDocumentFragment = subRange.cloneContents();
 			clone.appendChild(subDocumentFragment);
@@ -363,8 +363,8 @@ export default class Range {
 				lastPartiallyContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
 				lastPartiallyContainedChild.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = (<IText | IComment>this._end.node).cloneNode(false);
-			clone['_data'] = clone.substringData(0, endOffset);
+			const clone = (<IText | IComment>this.__end__.node).cloneNode(false);
+			clone['__data__'] = clone.substringData(0, endOffset);
 
 			fragment.appendChild(clone);
 		} else if (lastPartiallyContainedChild !== null) {
@@ -372,10 +372,10 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new this.#window.Range();
-			subRange._start.node = lastPartiallyContainedChild;
-			subRange._start.offset = 0;
-			subRange._end.node = this._end.node;
-			subRange._end.offset = endOffset;
+			subRange.__start__.node = lastPartiallyContainedChild;
+			subRange.__start__.offset = 0;
+			subRange.__end__.node = this.__end__.node;
+			subRange.__end__.offset = endOffset;
 
 			const subFragment = subRange.cloneContents();
 			clone.appendChild(subFragment);
@@ -393,10 +393,10 @@ export default class Range {
 	public cloneRange(): Range {
 		const clone = new this.#window.Range();
 
-		clone._start.node = this._start.node;
-		clone._start.offset = this._start.offset;
-		clone._end.node = this._end.node;
-		clone._end.offset = this._end.offset;
+		clone.__start__.node = this.__start__.node;
+		clone.__start__.offset = this.__start__.offset;
+		clone.__end__.node = this.__end__.node;
+		clone.__end__.offset = this.__end__.offset;
 
 		return clone;
 	}
@@ -410,7 +410,7 @@ export default class Range {
 	 */
 	public createContextualFragment(tagString: string): IDocumentFragment {
 		// TODO: We only have support for HTML in the parser currently, so it is not necessary to check which context it is
-		return <IDocumentFragment>XMLParser.parse(this._ownerDocument, tagString);
+		return <IDocumentFragment>XMLParser.parse(this.__ownerDocument__, tagString);
 	}
 
 	/**
@@ -427,18 +427,18 @@ export default class Range {
 		}
 
 		if (
-			this._start.node === this._end.node &&
-			(this._start.node.nodeType === NodeTypeEnum.textNode ||
-				this._start.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-				this._start.node.nodeType === NodeTypeEnum.commentNode)
+			this.__start__.node === this.__end__.node &&
+			(this.__start__.node.nodeType === NodeTypeEnum.textNode ||
+				this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
+				this.__start__.node.nodeType === NodeTypeEnum.commentNode)
 		) {
-			(<IText | IComment>this._start.node).replaceData(startOffset, endOffset - startOffset, '');
+			(<IText | IComment>this.__start__.node).replaceData(startOffset, endOffset - startOffset, '');
 			return;
 		}
 
 		const nodesToRemove = [];
-		let currentNode = this._start.node;
-		const endNode = NodeUtility.nextDescendantNode(this._end.node);
+		let currentNode = this.__start__.node;
+		const endNode = NodeUtility.nextDescendantNode(this.__end__.node);
 		while (currentNode && currentNode !== endNode) {
 			if (
 				RangeUtility.isContained(currentNode, this) &&
@@ -452,31 +452,31 @@ export default class Range {
 
 		let newNode;
 		let newOffset;
-		if (NodeUtility.isInclusiveAncestor(this._start.node, this._end.node)) {
-			newNode = this._start.node;
+		if (NodeUtility.isInclusiveAncestor(this.__start__.node, this.__end__.node)) {
+			newNode = this.__start__.node;
 			newOffset = startOffset;
 		} else {
-			let referenceNode = this._start.node;
+			let referenceNode = this.__start__.node;
 
 			while (
 				referenceNode &&
-				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this._end.node)
+				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this.__end__.node)
 			) {
 				referenceNode = referenceNode.parentNode;
 			}
 
 			newNode = referenceNode.parentNode;
-			newOffset = (<Node>referenceNode.parentNode)._childNodes.indexOf(referenceNode) + 1;
+			newOffset = (<Node>referenceNode.parentNode).__childNodes__.indexOf(referenceNode) + 1;
 		}
 
 		if (
-			this._start.node.nodeType === NodeTypeEnum.textNode ||
-			this._start.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-			this._start.node.nodeType === NodeTypeEnum.commentNode
+			this.__start__.node.nodeType === NodeTypeEnum.textNode ||
+			this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
+			this.__start__.node.nodeType === NodeTypeEnum.commentNode
 		) {
-			(<IText | IComment>this._start.node).replaceData(
+			(<IText | IComment>this.__start__.node).replaceData(
 				this.startOffset,
-				NodeUtility.getNodeLength(this._start.node) - this.startOffset,
+				NodeUtility.getNodeLength(this.__start__.node) - this.startOffset,
 				''
 			);
 		}
@@ -487,17 +487,17 @@ export default class Range {
 		}
 
 		if (
-			this._end.node.nodeType === NodeTypeEnum.textNode ||
-			this._end.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-			this._end.node.nodeType === NodeTypeEnum.commentNode
+			this.__end__.node.nodeType === NodeTypeEnum.textNode ||
+			this.__end__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
+			this.__end__.node.nodeType === NodeTypeEnum.commentNode
 		) {
-			(<IText | IComment>this._end.node).replaceData(0, endOffset, '');
+			(<IText | IComment>this.__end__.node).replaceData(0, endOffset, '');
 		}
 
-		this._start.node = newNode;
-		this._start.offset = newOffset;
-		this._end.node = newNode;
-		this._end.offset = newOffset;
+		this.__start__.node = newNode;
+		this.__start__.offset = newOffset;
+		this.__end__.node = newNode;
+		this.__end__.offset = newOffset;
 	}
 
 	/**
@@ -516,7 +516,7 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public extractContents(): IDocumentFragment {
-		const fragment = this._ownerDocument.createDocumentFragment();
+		const fragment = this.__ownerDocument__.createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
 
@@ -525,28 +525,28 @@ export default class Range {
 		}
 
 		if (
-			this._start.node === this._end.node &&
-			(this._start.node.nodeType === NodeTypeEnum.textNode ||
-				this._start.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-				this._start.node.nodeType === NodeTypeEnum.commentNode)
+			this.__start__.node === this.__end__.node &&
+			(this.__start__.node.nodeType === NodeTypeEnum.textNode ||
+				this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
+				this.__start__.node.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = <IText | IComment>this._start.node.cloneNode(false);
-			clone['_data'] = clone.substringData(startOffset, endOffset - startOffset);
+			const clone = <IText | IComment>this.__start__.node.cloneNode(false);
+			clone['__data__'] = clone.substringData(startOffset, endOffset - startOffset);
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this._start.node).replaceData(startOffset, endOffset - startOffset, '');
+			(<IText | IComment>this.__start__.node).replaceData(startOffset, endOffset - startOffset, '');
 
 			return fragment;
 		}
 
-		let commonAncestor = this._start.node;
-		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this._end.node)) {
+		let commonAncestor = this.__start__.node;
+		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this.__end__.node)) {
 			commonAncestor = commonAncestor.parentNode;
 		}
 
 		let firstPartialContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this._start.node, this._end.node)) {
+		if (!NodeUtility.isInclusiveAncestor(this.__start__.node, this.__end__.node)) {
 			let candidate = commonAncestor.firstChild;
 			while (!firstPartialContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -558,7 +558,7 @@ export default class Range {
 		}
 
 		let lastPartiallyContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this._end.node, this._start.node)) {
+		if (!NodeUtility.isInclusiveAncestor(this.__end__.node, this.__start__.node)) {
 			let candidate = commonAncestor.lastChild;
 			while (!lastPartiallyContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -571,7 +571,7 @@ export default class Range {
 
 		const containedChildren = [];
 
-		for (const node of (<Node>commonAncestor)._childNodes) {
+		for (const node of (<Node>commonAncestor).__childNodes__) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
 					throw new DOMException(
@@ -585,21 +585,21 @@ export default class Range {
 
 		let newNode;
 		let newOffset;
-		if (NodeUtility.isInclusiveAncestor(this._start.node, this._end.node)) {
-			newNode = this._start.node;
+		if (NodeUtility.isInclusiveAncestor(this.__start__.node, this.__end__.node)) {
+			newNode = this.__start__.node;
 			newOffset = startOffset;
 		} else {
-			let referenceNode = this._start.node;
+			let referenceNode = this.__start__.node;
 
 			while (
 				referenceNode &&
-				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this._end.node)
+				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this.__end__.node)
 			) {
 				referenceNode = referenceNode.parentNode;
 			}
 
 			newNode = referenceNode.parentNode;
-			newOffset = (<Node>referenceNode.parentNode)._childNodes.indexOf(referenceNode) + 1;
+			newOffset = (<Node>referenceNode.parentNode).__childNodes__.indexOf(referenceNode) + 1;
 		}
 
 		if (
@@ -608,17 +608,17 @@ export default class Range {
 				firstPartialContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
 				firstPartialContainedChild.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = <IText | IComment>this._start.node.cloneNode(false);
-			clone['_data'] = clone.substringData(
+			const clone = <IText | IComment>this.__start__.node.cloneNode(false);
+			clone['__data__'] = clone.substringData(
 				startOffset,
-				NodeUtility.getNodeLength(this._start.node) - startOffset
+				NodeUtility.getNodeLength(this.__start__.node) - startOffset
 			);
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this._start.node).replaceData(
+			(<IText | IComment>this.__start__.node).replaceData(
 				startOffset,
-				NodeUtility.getNodeLength(this._start.node) - startOffset,
+				NodeUtility.getNodeLength(this.__start__.node) - startOffset,
 				''
 			);
 		} else if (firstPartialContainedChild !== null) {
@@ -626,10 +626,10 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new this.#window.Range();
-			subRange._start.node = this._start.node;
-			subRange._start.offset = startOffset;
-			subRange._end.node = firstPartialContainedChild;
-			subRange._end.offset = NodeUtility.getNodeLength(firstPartialContainedChild);
+			subRange.__start__.node = this.__start__.node;
+			subRange.__start__.offset = startOffset;
+			subRange.__end__.node = firstPartialContainedChild;
+			subRange.__end__.offset = NodeUtility.getNodeLength(firstPartialContainedChild);
 
 			const subFragment = subRange.extractContents();
 			clone.appendChild(subFragment);
@@ -645,30 +645,30 @@ export default class Range {
 				lastPartiallyContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
 				lastPartiallyContainedChild.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = <IText | IComment>this._end.node.cloneNode(false);
-			clone['_data'] = clone.substringData(0, endOffset);
+			const clone = <IText | IComment>this.__end__.node.cloneNode(false);
+			clone['__data__'] = clone.substringData(0, endOffset);
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this._end.node).replaceData(0, endOffset, '');
+			(<IText | IComment>this.__end__.node).replaceData(0, endOffset, '');
 		} else if (lastPartiallyContainedChild !== null) {
 			const clone = lastPartiallyContainedChild.cloneNode(false);
 			fragment.appendChild(clone);
 
 			const subRange = new this.#window.Range();
-			subRange._start.node = lastPartiallyContainedChild;
-			subRange._start.offset = 0;
-			subRange._end.node = this._end.node;
-			subRange._end.offset = endOffset;
+			subRange.__start__.node = lastPartiallyContainedChild;
+			subRange.__start__.offset = 0;
+			subRange.__end__.node = this.__end__.node;
+			subRange.__end__.offset = endOffset;
 
 			const subFragment = subRange.extractContents();
 			clone.appendChild(subFragment);
 		}
 
-		this._start.node = newNode;
-		this._start.offset = newOffset;
-		this._end.node = newNode;
-		this._end.offset = newOffset;
+		this.__start__.node = newNode;
+		this.__start__.offset = newOffset;
+		this.__end__.node = newNode;
+		this.__end__.offset = newOffset;
 
 		return fragment;
 	}
@@ -702,7 +702,7 @@ export default class Range {
 	 * @returns "true" if in range.
 	 */
 	public isPointInRange(node: INode, offset = 0): boolean {
-		if (node.ownerDocument !== this._ownerDocument) {
+		if (node.ownerDocument !== this.__ownerDocument__) {
 			return false;
 		}
 
@@ -712,11 +712,11 @@ export default class Range {
 
 		if (
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this._start.node,
+				node: this.__start__.node,
 				offset: this.startOffset
 			}) === -1 ||
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this._end.node,
+				node: this.__end__.node,
 				offset: this.endOffset
 			}) === 1
 		) {
@@ -734,22 +734,22 @@ export default class Range {
 	 */
 	public insertNode(newNode: INode): void {
 		if (
-			this._start.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-			this._start.node.nodeType === NodeTypeEnum.commentNode ||
-			(this._start.node.nodeType === NodeTypeEnum.textNode && !this._start.node.parentNode) ||
-			newNode === this._start.node
+			this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
+			this.__start__.node.nodeType === NodeTypeEnum.commentNode ||
+			(this.__start__.node.nodeType === NodeTypeEnum.textNode && !this.__start__.node.parentNode) ||
+			newNode === this.__start__.node
 		) {
 			throw new DOMException('Invalid start node.', DOMExceptionNameEnum.hierarchyRequestError);
 		}
 
 		let referenceNode =
-			this._start.node.nodeType === NodeTypeEnum.textNode
-				? this._start.node
-				: (<Node>this._start.node)._childNodes[this.startOffset] || null;
-		const parent = !referenceNode ? this._start.node : referenceNode.parentNode;
+			this.__start__.node.nodeType === NodeTypeEnum.textNode
+				? this.__start__.node
+				: (<Node>this.__start__.node).__childNodes__[this.startOffset] || null;
+		const parent = !referenceNode ? this.__start__.node : referenceNode.parentNode;
 
-		if (this._start.node.nodeType === NodeTypeEnum.textNode) {
-			referenceNode = (<IText>this._start.node).splitText(this.startOffset);
+		if (this.__start__.node.nodeType === NodeTypeEnum.textNode) {
+			referenceNode = (<IText>this.__start__.node).splitText(this.startOffset);
 		}
 
 		if (newNode === referenceNode) {
@@ -763,7 +763,7 @@ export default class Range {
 
 		let newOffset = !referenceNode
 			? NodeUtility.getNodeLength(parent)
-			: (<Node>referenceNode.parentNode)._childNodes.indexOf(referenceNode);
+			: (<Node>referenceNode.parentNode).__childNodes__.indexOf(referenceNode);
 		newOffset +=
 			newNode.nodeType === NodeTypeEnum.documentFragmentNode
 				? NodeUtility.getNodeLength(newNode)
@@ -772,8 +772,8 @@ export default class Range {
 		parent.insertBefore(newNode, referenceNode);
 
 		if (this.collapsed) {
-			this._end.node = parent;
-			this._end.offset = newOffset;
+			this.__end__.node = parent;
+			this.__end__.offset = newOffset;
 		}
 	}
 
@@ -785,7 +785,7 @@ export default class Range {
 	 * @returns "true" if it intersects.
 	 */
 	public intersectsNode(node: INode): boolean {
-		if (node.ownerDocument !== this._ownerDocument) {
+		if (node.ownerDocument !== this.__ownerDocument__) {
 			return false;
 		}
 
@@ -795,16 +795,16 @@ export default class Range {
 			return true;
 		}
 
-		const offset = (<Node>parent)._childNodes.indexOf(node);
+		const offset = (<Node>parent).__childNodes__.indexOf(node);
 
 		return (
 			RangeUtility.compareBoundaryPointsPosition(
 				{ node: parent, offset },
-				{ node: this._end.node, offset: this.endOffset }
+				{ node: this.__end__.node, offset: this.endOffset }
 			) === -1 &&
 			RangeUtility.compareBoundaryPointsPosition(
 				{ node: parent, offset: offset + 1 },
-				{ node: this._start.node, offset: this.startOffset }
+				{ node: this.__start__.node, offset: this.startOffset }
 			) === 1
 		);
 	}
@@ -823,12 +823,12 @@ export default class Range {
 			);
 		}
 
-		const index = (<Node>node.parentNode)._childNodes.indexOf(node);
+		const index = (<Node>node.parentNode).__childNodes__.indexOf(node);
 
-		this._start.node = node.parentNode;
-		this._start.offset = index;
-		this._end.node = node.parentNode;
-		this._end.offset = index + 1;
+		this.__start__.node = node.parentNode;
+		this.__start__.offset = index;
+		this.__end__.node = node.parentNode;
+		this.__end__.offset = index + 1;
 	}
 
 	/**
@@ -845,10 +845,10 @@ export default class Range {
 			);
 		}
 
-		this._start.node = node;
-		this._start.offset = 0;
-		this._end.node = node;
-		this._end.offset = NodeUtility.getNodeLength(node);
+		this.__start__.node = node;
+		this.__start__.offset = 0;
+		this.__end__.node = node;
+		this.__end__.offset = NodeUtility.getNodeLength(node);
 	}
 
 	/**
@@ -864,18 +864,18 @@ export default class Range {
 		const boundaryPoint = { node, offset };
 
 		if (
-			node.ownerDocument !== this._ownerDocument ||
+			node.ownerDocument !== this.__ownerDocument__ ||
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this._start.node,
+				node: this.__start__.node,
 				offset: this.startOffset
 			}) === -1
 		) {
-			this._start.node = node;
-			this._start.offset = offset;
+			this.__start__.node = node;
+			this.__start__.offset = offset;
 		}
 
-		this._end.node = node;
-		this._end.offset = offset;
+		this.__end__.node = node;
+		this.__end__.offset = offset;
 	}
 
 	/**
@@ -891,18 +891,18 @@ export default class Range {
 		const boundaryPoint = { node, offset };
 
 		if (
-			node.ownerDocument !== this._ownerDocument ||
+			node.ownerDocument !== this.__ownerDocument__ ||
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this._end.node,
+				node: this.__end__.node,
 				offset: this.endOffset
 			}) === 1
 		) {
-			this._end.node = node;
-			this._end.offset = offset;
+			this.__end__.node = node;
+			this.__end__.offset = offset;
 		}
 
-		this._start.node = node;
-		this._start.offset = offset;
+		this.__start__.node = node;
+		this.__start__.offset = offset;
 	}
 
 	/**
@@ -918,7 +918,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setEnd(node.parentNode, (<Node>node.parentNode)._childNodes.indexOf(node) + 1);
+		this.setEnd(node.parentNode, (<Node>node.parentNode).__childNodes__.indexOf(node) + 1);
 	}
 
 	/**
@@ -934,7 +934,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setEnd(node.parentNode, (<Node>node.parentNode)._childNodes.indexOf(node));
+		this.setEnd(node.parentNode, (<Node>node.parentNode).__childNodes__.indexOf(node));
 	}
 
 	/**
@@ -950,7 +950,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(node.parentNode, (<Node>node.parentNode)._childNodes.indexOf(node) + 1);
+		this.setStart(node.parentNode, (<Node>node.parentNode).__childNodes__.indexOf(node) + 1);
 	}
 
 	/**
@@ -966,7 +966,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(node.parentNode, (<Node>node.parentNode)._childNodes.indexOf(node));
+		this.setStart(node.parentNode, (<Node>node.parentNode).__childNodes__.indexOf(node));
 	}
 
 	/**
@@ -1024,18 +1024,18 @@ export default class Range {
 		let string = '';
 
 		if (
-			this._start.node === this._end.node &&
-			this._start.node.nodeType === NodeTypeEnum.textNode
+			this.__start__.node === this.__end__.node &&
+			this.__start__.node.nodeType === NodeTypeEnum.textNode
 		) {
-			return (<IText>this._start.node).data.slice(startOffset, endOffset);
+			return (<IText>this.__start__.node).data.slice(startOffset, endOffset);
 		}
 
-		if (this._start.node.nodeType === NodeTypeEnum.textNode) {
-			string += (<IText>this._start.node).data.slice(startOffset);
+		if (this.__start__.node.nodeType === NodeTypeEnum.textNode) {
+			string += (<IText>this.__start__.node).data.slice(startOffset);
 		}
 
-		const endNode = NodeUtility.nextDescendantNode(this._end.node);
-		let currentNode = this._start.node;
+		const endNode = NodeUtility.nextDescendantNode(this.__end__.node);
+		let currentNode = this.__start__.node;
 
 		while (currentNode && currentNode !== endNode) {
 			if (
@@ -1048,8 +1048,8 @@ export default class Range {
 			currentNode = NodeUtility.following(currentNode);
 		}
 
-		if (this._end.node.nodeType === NodeTypeEnum.textNode) {
-			string += (<IText>this._end.node).data.slice(0, endOffset);
+		if (this.__end__.node.nodeType === NodeTypeEnum.textNode) {
+			string += (<IText>this.__end__.node).data.slice(0, endOffset);
 		}
 
 		return string;

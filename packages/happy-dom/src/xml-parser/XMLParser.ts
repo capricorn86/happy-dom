@@ -286,10 +286,10 @@ export default class XMLParser {
 							// However, they are allowed to be executed when document.write() is used.
 							// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
 							if (plainTextTagName === 'SCRIPT') {
-								(<HTMLScriptElement>currentNode)._evaluateScript = evaluateScripts;
+								(<HTMLScriptElement>currentNode).__evaluateScript__ = evaluateScripts;
 							} else if (plainTextTagName === 'LINK') {
 								// An assumption that the same rule should be applied for the HTMLLinkElement is made here.
-								(<HTMLLinkElement>currentNode)._evaluateCSS = evaluateScripts;
+								(<HTMLLinkElement>currentNode).__evaluateCSS__ = evaluateScripts;
 							}
 
 							// Plain text elements such as <script> and <style> should only contain text.

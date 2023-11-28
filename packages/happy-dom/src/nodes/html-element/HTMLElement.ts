@@ -31,8 +31,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly clientLeft = 0;
 	public readonly clientTop = 0;
 
-	public _style: CSSStyleDeclaration = null;
-	private _dataset: Dataset = null;
+	public __style__: CSSStyleDeclaration = null;
+	#dataset: Dataset = null;
 
 	// Events
 	public oncopy: (event: Event) => void | null = null;
@@ -97,10 +97,10 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		let result = '';
 
-		for (const childNode of this._childNodes) {
+		for (const childNode of this.__childNodes__) {
 			if (childNode.nodeType === NodeTypeEnum.elementNode) {
 				const childElement = <IHTMLElement>childNode;
-				const computedStyle = this.ownerDocument._defaultView.getComputedStyle(childElement);
+				const computedStyle = this.ownerDocument.__defaultView__.getComputedStyle(childElement);
 
 				if (childElement.tagName !== 'SCRIPT' && childElement.tagName !== 'STYLE') {
 					const display = computedStyle.display;
@@ -143,7 +143,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param innerText Inner text.
 	 */
 	public set innerText(text: string) {
-		for (const child of this._childNodes.slice()) {
+		for (const child of this.__childNodes__.slice()) {
 			this.removeChild(child);
 		}
 
@@ -198,10 +198,10 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Style.
 	 */
 	public get style(): CSSStyleDeclaration {
-		if (!this._style) {
-			this._style = new CSSStyleDeclaration(this);
+		if (!this.__style__) {
+			this.__style__ = new CSSStyleDeclaration(this);
 		}
-		return this._style;
+		return this.__style__;
 	}
 
 	/**
@@ -220,7 +220,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
-		return (this._dataset ??= new Dataset(this)).proxy;
+		return (this.#dataset ??= new Dataset(this)).proxy;
 	}
 
 	/**
@@ -307,8 +307,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 			bubbles: true,
 			composed: true
 		});
-		event._target = this;
-		event._currentTarget = this;
+		event.__target__ = this;
+		event.__currentTarget__ = this;
 		this.dispatchEvent(event);
 	}
 
@@ -337,8 +337,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		(<string>clone.contentEditable) = this.contentEditable;
 		(<boolean>clone.isContentEditable) = this.isContentEditable;
 
-		if (this._style) {
-			clone.style.cssText = this._style.cssText;
+		if (this.__style__) {
+			clone.style.cssText = this.__style__.cssText;
 		}
 
 		return clone;
