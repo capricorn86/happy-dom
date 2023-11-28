@@ -1,6 +1,8 @@
 import GlobalWindow from './window/GlobalWindow.js';
 import IWindow from './window/IWindow.js';
 import Window from './window/Window.js';
+import IBrowserWindow from './window/IBrowserWindow.js';
+import BrowserWindow from './window/BrowserWindow.js';
 import DataTransfer from './event/DataTransfer.js';
 import DataTransferItem from './event/DataTransferItem.js';
 import DataTransferItemList from './event/DataTransferItemList.js';
@@ -163,6 +165,8 @@ export {
 	GlobalWindow,
 	Window,
 	IWindow,
+	BrowserWindow,
+	IBrowserWindow,
 	DataTransfer,
 	DataTransferItem,
 	DataTransferItemList,

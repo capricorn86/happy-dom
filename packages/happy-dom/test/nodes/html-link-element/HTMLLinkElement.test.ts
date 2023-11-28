@@ -101,7 +101,7 @@ describe('HTMLLinkElement', () => {
 			element.rel = 'stylesheet';
 			element.href = 'test';
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect(loadedDocument).toBe(document);
 			expect(loadedURL).toBe('test');
@@ -128,7 +128,7 @@ describe('HTMLLinkElement', () => {
 			element.rel = 'stylesheet';
 			element.href = 'test';
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error).toEqual(thrownError);
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toEqual('error');
@@ -180,7 +180,7 @@ describe('HTMLLinkElement', () => {
 
 			document.body.appendChild(element);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect(loadedDocument).toBe(document);
 			expect(loadedURL).toBe('test');
@@ -206,7 +206,7 @@ describe('HTMLLinkElement', () => {
 
 			document.body.appendChild(element);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error).toEqual(thrownError);
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toEqual('error');

@@ -1,3 +1,4 @@
+import { IBrowserWindow } from '../index.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import IDocument from '../nodes/document/IDocument.js';
 
@@ -5,15 +6,15 @@ import IDocument from '../nodes/document/IDocument.js';
  * The DOMImplementation interface represents an object providing methods which are not dependent on any particular document. Such an object is returned by the.
  */
 export default class DOMImplementation {
-	protected _ownerDocument: IDocument = null;
+	#window: IBrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param ownerDocument
+	 * @param window Window.
 	 */
-	constructor(ownerDocument: IDocument) {
-		this._ownerDocument = ownerDocument;
+	constructor(window: IBrowserWindow) {
+		this.#window = window;
 	}
 
 	/**
@@ -22,14 +23,14 @@ export default class DOMImplementation {
 	 * TODO: Not fully implemented.
 	 */
 	public createDocument(): IDocument {
-		return new this._ownerDocument._defaultView.XMLDocument();
+		return new this.#window.XMLDocument();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
 	public createHTMLDocument(): IDocument {
-		return new this._ownerDocument._defaultView.HTMLDocument();
+		return new this.#window.HTMLDocument();
 	}
 
 	/**
@@ -44,7 +45,7 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		const documentType = new this._ownerDocument._defaultView.DocumentType();
+		const documentType = new this.#window.DocumentType();
 		documentType.name = qualifiedName;
 		documentType.publicId = publicId;
 		documentType.systemId = systemId;

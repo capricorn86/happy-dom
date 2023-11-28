@@ -1,17 +1,17 @@
-import IWindow from './IWindow.js';
+import IBrowserWindow from './IBrowserWindow.js';
 import Location from '../location/Location.js';
 import IEventTarget from '../event/IEventTarget.js';
 
 /**
  * Browser window with limited access due to CORS restrictions in iframes.
  */
-export default interface ICrossOriginWindow extends IEventTarget {
-	readonly self: ICrossOriginWindow;
-	readonly window: ICrossOriginWindow;
-	readonly parent: IWindow | ICrossOriginWindow;
-	readonly top: IWindow | ICrossOriginWindow;
+export default interface ICrossOriginBrowserWindow extends IEventTarget {
+	readonly self: ICrossOriginBrowserWindow;
+	readonly window: ICrossOriginBrowserWindow;
+	readonly parent: IBrowserWindow | ICrossOriginBrowserWindow;
+	readonly top: IBrowserWindow | ICrossOriginBrowserWindow;
 	readonly location: Location;
-	readonly opener: IWindow | ICrossOriginWindow | null;
+	readonly opener: IBrowserWindow | ICrossOriginBrowserWindow | null;
 	readonly closed: boolean;
 
 	/**

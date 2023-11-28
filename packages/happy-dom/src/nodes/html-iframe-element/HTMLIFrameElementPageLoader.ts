@@ -1,9 +1,9 @@
 import Event from '../../event/Event.js';
-import IWindow from '../../window/IWindow.js';
-import CrossOriginWindow from '../../window/CrossOriginWindow.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
+import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import ICrossOriginWindow from '../../window/ICrossOriginWindow.js';
+import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
 import IHTMLIFrameElement from './IHTMLIFrameElement.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
@@ -15,7 +15,7 @@ import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js'
  */
 export default class HTMLIFrameElementPageLoader {
 	#element: IHTMLIFrameElement;
-	#contentWindowContainer: { window: IWindow | ICrossOriginWindow | null };
+	#contentWindowContainer: { window: IBrowserWindow | ICrossOriginBrowserWindow | null };
 	#browserParentFrame: IBrowserFrame;
 	#browserIFrame: IBrowserFrame;
 
@@ -31,7 +31,7 @@ export default class HTMLIFrameElementPageLoader {
 	constructor(options: {
 		element: IHTMLIFrameElement;
 		browserParentFrame: IBrowserFrame;
-		contentWindowContainer: { window: IWindow | ICrossOriginWindow | null };
+		contentWindowContainer: { window: IBrowserWindow | ICrossOriginBrowserWindow | null };
 	}) {
 		this.#element = options.element;
 		this.#contentWindowContainer = options.contentWindowContainer;
@@ -72,13 +72,15 @@ export default class HTMLIFrameElementPageLoader {
 
 		// Iframes has a special rule for CORS and doesn't allow access between frames when the origin is different.
 		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
-		const parentWindow = isSameOrigin ? window : new CrossOriginWindow(window);
+		const parentWindow = isSameOrigin ? window : new CrossOriginBrowserWindow(window);
 
 		this.#browserIFrame =
 			this.#browserIFrame ?? BrowserFrameFactory.newChildFrame(this.#browserParentFrame);
 
-		(<IWindow | ICrossOriginWindow>(<unknown>this.#browserIFrame.window.top)) = parentWindow;
-		(<IWindow | ICrossOriginWindow>(<unknown>this.#browserIFrame.window.parent)) = parentWindow;
+		(<IBrowserWindow | ICrossOriginBrowserWindow>(<unknown>this.#browserIFrame.window.top)) =
+			parentWindow;
+		(<IBrowserWindow | ICrossOriginBrowserWindow>(<unknown>this.#browserIFrame.window.parent)) =
+			parentWindow;
 
 		this.#browserIFrame
 			.goto(targetURL.href)
@@ -87,7 +89,7 @@ export default class HTMLIFrameElementPageLoader {
 
 		this.#contentWindowContainer.window = isSameOrigin
 			? this.#browserIFrame.window
-			: new CrossOriginWindow(this.#browserIFrame.window, window);
+			: new CrossOriginBrowserWindow(this.#browserIFrame.window, window);
 	}
 
 	/**

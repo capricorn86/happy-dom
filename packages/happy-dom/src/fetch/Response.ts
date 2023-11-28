@@ -15,6 +15,7 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import { TextDecoder } from 'util';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 
@@ -27,8 +28,8 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
  */
 export default class Response implements IResponse {
-	// Needs to be injected by a sub-class.
-	protected readonly _asyncTaskManager: AsyncTaskManager;
+	// Needs to be injected by sub-class.
+	protected static _window: IBrowserWindow;
 
 	// Public properties
 	public readonly body: Stream.Readable | null = null;
@@ -41,15 +42,24 @@ export default class Response implements IResponse {
 	public readonly statusText: string;
 	public readonly ok: boolean;
 	public readonly headers: IHeaders;
+	readonly #window: IBrowserWindow;
+	readonly #asyncTaskManager: AsyncTaskManager;
 
 	/**
 	 * Constructor.
 	 *
+	 * @param injected Injected properties.
 	 * @param input Input.
 	 * @param body
 	 * @param [init] Init.
 	 */
-	constructor(body?: IResponseBody, init?: IResponseInit) {
+	constructor(
+		injected: { window: IBrowserWindow; asyncTaskManager: AsyncTaskManager },
+		body?: IResponseBody,
+		init?: IResponseInit
+	) {
+		this.#window = injected.window;
+		this.#asyncTaskManager = injected.asyncTaskManager;
 		this.status = init?.status !== undefined ? init.status : 200;
 		this.statusText = init?.statusText || '';
 		this.ok = this.status >= 200 && this.status < 300;
@@ -89,17 +99,17 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this._asyncTaskManager.startTask();
+		const taskID = this.#asyncTaskManager.startTask();
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			this._asyncTaskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this._asyncTaskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
@@ -131,17 +141,17 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this._asyncTaskManager.startTask();
+		const taskID = this.#asyncTaskManager.startTask();
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			this._asyncTaskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this._asyncTaskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return buffer;
 	}
@@ -161,20 +171,20 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		if (!this._asyncTaskManager) {
+		if (!this.#asyncTaskManager) {
 			debugger;
 		}
-		const taskID = this._asyncTaskManager.startTask();
+		const taskID = this.#asyncTaskManager.startTask();
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			this._asyncTaskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this._asyncTaskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return new TextDecoder().decode(buffer);
 	}
@@ -196,7 +206,7 @@ export default class Response implements IResponse {
 	 */
 	public async formData(): Promise<FormData> {
 		const contentType = this.headers.get('content-type');
-		const taskID = this._asyncTaskManager.startTask();
+		const taskID = this.#asyncTaskManager.startTask();
 
 		if (contentType.startsWith('application/x-www-form-urlencoded')) {
 			const formData = new FormData();
@@ -205,7 +215,7 @@ export default class Response implements IResponse {
 			try {
 				text = await this.text();
 			} catch (error) {
-				this._asyncTaskManager.endTask(taskID);
+				this.#asyncTaskManager.endTask(taskID);
 				throw error;
 			}
 
@@ -215,7 +225,7 @@ export default class Response implements IResponse {
 				formData.append(name, value);
 			}
 
-			this._asyncTaskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 
 			return formData;
 		}
@@ -225,11 +235,11 @@ export default class Response implements IResponse {
 		try {
 			formData = await MultipartFormDataParser.streamToFormData(this.body, contentType);
 		} catch (error) {
-			this._asyncTaskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this._asyncTaskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return formData;
 	}
@@ -239,8 +249,8 @@ export default class Response implements IResponse {
 	 *
 	 * @returns Clone.
 	 */
-	public clone(): IResponse {
-		const response = new (<typeof Response>this.constructor)();
+	public clone(): Response {
+		const response = new this.#window.Response();
 
 		(<number>response.status) = this.status;
 		(<string>response.statusText) = this.statusText;
@@ -252,7 +262,7 @@ export default class Response implements IResponse {
 		(<string>response.type) = this.type;
 		(<string>response.url) = this.url;
 
-		return <IResponse>response;
+		return response;
 	}
 	/**
 	 * Returns a redirect response.
@@ -261,7 +271,7 @@ export default class Response implements IResponse {
 	 * @param status Status code.
 	 * @returns Response.
 	 */
-	public static redirect(url: string, status = 302): IResponse {
+	public static redirect(url: string, status = 302): Response {
 		if (!REDIRECT_STATUS_CODES.includes(status)) {
 			throw new DOMException(
 				'Failed to create redirect response: Invalid redirect status code.',
@@ -269,7 +279,7 @@ export default class Response implements IResponse {
 			);
 		}
 
-		return new (<typeof Response>this)(null, {
+		return new this._window.Response(null, {
 			headers: {
 				location: new URL(url).toString()
 			},
@@ -284,8 +294,8 @@ export default class Response implements IResponse {
 	 * @param status Status code.
 	 * @returns Response.
 	 */
-	public static error(): IResponse {
-		const response = new (<typeof Response>this)(null, { status: 0, statusText: '' });
+	public static error(): Response {
+		const response = new this._window.Response(null, { status: 0, statusText: '' });
 		(<string>response.type) = 'error';
 		return response;
 	}
@@ -293,24 +303,25 @@ export default class Response implements IResponse {
 	/**
 	 * Returns an JSON response.
 	 *
+	 * @param injected Injected properties.
 	 * @param data Data.
 	 * @param [init] Init.
 	 * @returns Response.
 	 */
-	public static json(data: object, init?: IResponseInit): IResponse {
+	public static json(data: object, init?: IResponseInit): Response {
 		const body = JSON.stringify(data);
 
 		if (body === undefined) {
 			throw new TypeError('data is not JSON serializable');
 		}
 
-		const headers = new Headers(init && init.headers);
+		const headers = new this._window.Headers(init && init.headers);
 
 		if (!headers.has('content-type')) {
 			headers.set('content-type', 'application/json');
 		}
 
-		return new (<typeof Response>this)(body, {
+		return new this._window.Response(body, {
 			status: 200,
 			...init,
 			headers

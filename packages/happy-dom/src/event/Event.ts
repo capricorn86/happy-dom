@@ -1,6 +1,6 @@
 import IEventInit from './IEventInit.js';
 import INode from '../nodes/node/INode.js';
-import IWindow from '../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import IShadowRoot from '../nodes/shadow-root/IShadowRoot.js';
 import IEventTarget from './IEventTarget.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
@@ -81,7 +81,9 @@ export default class Event {
 		}
 
 		const composedPath = [];
-		let eventTarget: INode | IShadowRoot | IWindow = <INode | IShadowRoot>(<unknown>this._target);
+		let eventTarget: INode | IShadowRoot | IBrowserWindow = <INode | IShadowRoot>(
+			(<unknown>this._target)
+		);
 
 		while (eventTarget) {
 			composedPath.push(eventTarget);

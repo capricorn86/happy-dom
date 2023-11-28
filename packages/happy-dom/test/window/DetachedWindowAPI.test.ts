@@ -121,7 +121,7 @@ describe('DetachedWindowAPI', () => {
 				isCalled = true;
 				return Promise.resolve();
 			});
-			await window.happyDOM?.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 			expect(isCalled).toBe(true);
 		});
 	});
@@ -131,7 +131,7 @@ describe('DetachedWindowAPI', () => {
 			await new Promise((resolve) => {
 				window.location.href = 'https://localhost:8080';
 				let isFirstWhenAsyncCompleteCalled = false;
-				window.happyDOM?.whenAsyncComplete().then(() => {
+				window.happyDOM?.whenComplete().then(() => {
 					isFirstWhenAsyncCompleteCalled = true;
 				});
 				let tasksDone = 0;
@@ -200,7 +200,7 @@ describe('DetachedWindowAPI', () => {
 			vi.spyOn(<DetachedWindowAPI>window.happyDOM, 'abort').mockImplementation(() => {
 				isCalled = true;
 			});
-			window.happyDOM?.cancelAsync();
+			window.happyDOM?.abort();
 			expect(isCalled).toBe(true);
 		});
 	});

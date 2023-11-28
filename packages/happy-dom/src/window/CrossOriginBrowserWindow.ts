@@ -1,20 +1,23 @@
 import EventTarget from '../event/EventTarget.js';
-import IWindow from './IWindow.js';
+import IBrowserWindow from './IBrowserWindow.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import Location from '../location/Location.js';
-import ICrossOriginWindow from './ICrossOriginWindow.js';
+import ICrossOriginBrowserWindow from './ICrossOriginBrowserWindow.js';
 
 /**
  * Browser window with limited access due to CORS restrictions in iframes.
  */
-export default class CrossOriginWindow extends EventTarget implements ICrossOriginWindow {
+export default class CrossOriginBrowserWindow
+	extends EventTarget
+	implements ICrossOriginBrowserWindow
+{
 	public readonly self = this;
 	public readonly window = this;
-	public readonly parent: IWindow | ICrossOriginWindow;
-	public readonly top: IWindow | ICrossOriginWindow;
+	public readonly parent: IBrowserWindow | ICrossOriginBrowserWindow;
+	public readonly top: IBrowserWindow | ICrossOriginBrowserWindow;
 	public readonly location: Location;
-	#targetWindow: IWindow;
+	#targetWindow: IBrowserWindow;
 
 	/**
 	 * Constructor.
@@ -22,7 +25,7 @@ export default class CrossOriginWindow extends EventTarget implements ICrossOrig
 	 * @param target Target window.
 	 * @param [parent] Parent window.
 	 */
-	constructor(target: IWindow, parent?: IWindow) {
+	constructor(target: IBrowserWindow, parent?: IBrowserWindow) {
 		super();
 
 		this.parent = parent ?? this;
@@ -52,7 +55,7 @@ export default class CrossOriginWindow extends EventTarget implements ICrossOrig
 	 *
 	 * @returns Opener.
 	 */
-	public get opener(): IWindow | ICrossOriginWindow | null {
+	public get opener(): IBrowserWindow | ICrossOriginBrowserWindow | null {
 		return this.#targetWindow.opener;
 	}
 

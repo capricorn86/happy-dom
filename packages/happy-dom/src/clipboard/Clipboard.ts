@@ -1,5 +1,5 @@
 import DOMException from '../exception/DOMException.js';
-import IWindow from '../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import ClipboardItem from './ClipboardItem.js';
 import Blob from '../file/Blob.js';
 
@@ -10,7 +10,7 @@ import Blob from '../file/Blob.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Clipboard.
  */
 export default class Clipboard {
-	#ownerWindow: IWindow;
+	#ownerWindow: IBrowserWindow;
 	#data: ClipboardItem[] = [];
 
 	/**
@@ -18,7 +18,7 @@ export default class Clipboard {
 	 *
 	 * @param ownerWindow Owner window.
 	 */
-	constructor(ownerWindow: IWindow) {
+	constructor(ownerWindow: IBrowserWindow) {
 		this.#ownerWindow = ownerWindow;
 	}
 

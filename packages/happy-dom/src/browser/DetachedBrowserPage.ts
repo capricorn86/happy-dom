@@ -1,13 +1,15 @@
-import VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
-import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
+import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
+import IBrowserPageViewport from './types/IBrowserPageViewport.js';
 import DetachedBrowserFrame from './DetachedBrowserFrame.js';
-import DetachedBrowserContext from './DetachedBrowserContext.js';
-import VirtualConsole from '../../console/VirtualConsole.js';
-import IBrowserPage from '../types/IBrowserPage.js';
+import IBrowserContext from './types/IBrowserContext.js';
+import VirtualConsole from '../console/VirtualConsole.js';
+import IBrowserPage from './types/IBrowserPage.js';
 import { Script } from 'vm';
-import IGoToOptions from '../types/IGoToOptions.js';
-import IResponse from '../../fetch/types/IResponse.js';
-import BrowserPageUtility from '../utilities/BrowserPageUtility.js';
+import IGoToOptions from './types/IGoToOptions.js';
+import IResponse from '../fetch/types/IResponse.js';
+import BrowserPageUtility from './utilities/BrowserPageUtility.js';
+import IBrowserFrame from './types/IBrowserFrame.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 
 /**
  * Detached browser page used when constructing a Window instance without a browser.
@@ -15,7 +17,7 @@ import BrowserPageUtility from '../utilities/BrowserPageUtility.js';
 export default class DetachedBrowserPage implements IBrowserPage {
 	public readonly virtualConsolePrinter = new VirtualConsolePrinter();
 	public readonly mainFrame: DetachedBrowserFrame;
-	public readonly context: DetachedBrowserContext;
+	public readonly context: IBrowserContext;
 	public readonly console: Console;
 
 	/**
@@ -23,10 +25,13 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	 *
 	 * @param context Browser context.
 	 */
-	constructor(context: DetachedBrowserContext) {
+	constructor(
+		context: IBrowserContext,
+		windowClass: new (browserFrame: IBrowserFrame) => IBrowserWindow
+	) {
 		this.context = context;
 		this.console = context.browser.console ?? new VirtualConsole(this.virtualConsolePrinter);
-		this.mainFrame = new DetachedBrowserFrame(this);
+		this.mainFrame = new DetachedBrowserFrame(this, windowClass);
 	}
 
 	/**

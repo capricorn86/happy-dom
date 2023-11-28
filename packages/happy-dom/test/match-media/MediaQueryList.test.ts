@@ -251,8 +251,8 @@ describe('MediaQueryList', () => {
 				new MediaQueryList({ ownerWindow: window, media: '(orientation: landscape)' }).matches
 			).toBe(true);
 
-			window.happyDOM.setInnerWidth(500);
-			window.happyDOM.setInnerHeight(1000);
+			window.happyDOM?.setInnerWidth(500);
+			window.happyDOM?.setInnerHeight(1000);
 
 			expect(
 				new MediaQueryList({ ownerWindow: window, media: '(orientation: portrait)' }).matches
@@ -532,7 +532,7 @@ describe('MediaQueryList', () => {
 
 			expect(mediaQueryList.matches).toBe(false);
 
-			window.happyDOM.setInnerWidth(1025);
+			window.happyDOM?.setInnerWidth(1025);
 
 			expect((<MediaQueryListEvent>(<unknown>triggeredEvent)).matches).toBe(true);
 			expect((<MediaQueryListEvent>(<unknown>triggeredEvent)).media).toBe(media);
@@ -553,7 +553,7 @@ describe('MediaQueryList', () => {
 			mediaQueryList.addEventListener('change', listener);
 			mediaQueryList.removeEventListener('change', listener);
 
-			window.happyDOM.setInnerWidth(1025);
+			window.happyDOM?.setInnerWidth(1025);
 
 			expect(triggeredEvent).toBe(null);
 		});

@@ -365,7 +365,10 @@ export default class Element extends Node implements IElement {
 		for (let i = 0, max = this.attributes.length; i < max; i++) {
 			const attribute = this.attributes[i];
 			clone.attributes.setNamedItem(
-				Object.assign(new this.ownerDocument._defaultView.Attr(), attribute)
+				Object.assign(
+					this.ownerDocument.createAttributeNS(attribute.namespaceURI, attribute.name),
+					attribute
+				)
 			);
 		}
 
@@ -680,9 +683,8 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Attaches a shadow root.
 	 *
-	 * @param _shadowRootInit Shadow root init.
-	 * @param shadowRootInit
-	 * @param shadowRootInit.mode
+	 * @param shadowRootInit Shadow root init.
+	 * @param shadowRootInit.mode Shadow root mode.
 	 * @returns Shadow root.
 	 */
 	public attachShadow(shadowRootInit: { mode: string }): IShadowRoot {

@@ -1,8 +1,8 @@
-import IWindow from './IWindow.js';
-import CrossOriginWindow from './CrossOriginWindow.js';
+import IBrowserWindow from './IBrowserWindow.js';
+import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import FetchCORSUtility from '../fetch/utilities/FetchCORSUtility.js';
-import ICrossOriginWindow from './ICrossOriginWindow.js';
+import ICrossOriginBrowserWindow from './ICrossOriginBrowserWindow.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 
 /**
@@ -25,7 +25,7 @@ export default class WindowPageOpenUtility {
 			target?: string;
 			features?: string;
 		}
-	): IWindow | ICrossOriginWindow | null {
+	): IBrowserWindow | ICrossOriginBrowserWindow | null {
 		const features = this.getWindowFeatures(options?.features || '');
 		const target = options?.target !== undefined ? String(options.target) : null;
 		const originURL = browserFrame.window.location;
@@ -102,8 +102,8 @@ export default class WindowPageOpenUtility {
 			browserFrame.window &&
 			targetFrame.window !== browserFrame.window
 		) {
-			(<IWindow | ICrossOriginWindow>targetFrame.window.opener) = isCORS
-				? new CrossOriginWindow(browserFrame.window)
+			(<IBrowserWindow | ICrossOriginBrowserWindow>targetFrame.window.opener) = isCORS
+				? new CrossOriginBrowserWindow(browserFrame.window)
 				: browserFrame.window;
 		}
 
@@ -112,7 +112,7 @@ export default class WindowPageOpenUtility {
 		}
 
 		if (isCORS) {
-			return new CrossOriginWindow(targetFrame.window, browserFrame.window);
+			return new CrossOriginBrowserWindow(targetFrame.window, browserFrame.window);
 		}
 
 		return targetFrame.window;

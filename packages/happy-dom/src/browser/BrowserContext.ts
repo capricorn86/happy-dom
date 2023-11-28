@@ -1,15 +1,15 @@
 import CookieContainer from '../cookie/CookieContainer.js';
 import ICookieContainer from '../cookie/types/ICookieContainer.js';
 import Browser from './Browser.js';
-import BrowserFrame from './BrowserFrame.js';
-import BrowserPage from './BrowserPage.js';
+import IBrowserFrame from './types/IBrowserFrame.js';
+import IBrowserPage from './types/IBrowserPage.js';
 import IBrowserContext from './types/IBrowserContext.js';
 
 /**
  * Browser context.
  */
 export default class BrowserContext implements IBrowserContext {
-	public readonly pages: BrowserPage[] = [];
+	public readonly pages: IBrowserPage[] = [];
 	public readonly browser: Browser;
 	public readonly cookieContainer: ICookieContainer;
 
@@ -61,7 +61,7 @@ export default class BrowserContext implements IBrowserContext {
 	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	public newPage(opener?: BrowserFrame): BrowserPage {
+	public newPage(opener?: IBrowserFrame): IBrowserPage {
 		const page = new BrowserPage(this);
 		(<BrowserFrame | null>(<unknown>page.mainFrame.opener)) = opener || null;
 		this.pages.push(page);

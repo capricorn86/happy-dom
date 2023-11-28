@@ -1128,7 +1128,7 @@ describe('XMLHttpRequest', () => {
 				}
 			});
 
-			window.happyDOM.setURL(windowURL);
+			window.happyDOM?.setURL(windowURL);
 
 			request.open('GET', REQUEST_URL, false);
 
@@ -1841,7 +1841,7 @@ describe('XMLHttpRequest', () => {
 			request.open('GET', REQUEST_URL, true);
 			request.send();
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect(request.responseText).toBe(responseText);
 		});
@@ -1921,7 +1921,7 @@ describe('XMLHttpRequest', () => {
 			request.send();
 			request.abort();
 
-			await window.happyDOM.whenComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
 			expect(isDestroyed).toBe(true);
@@ -1955,7 +1955,7 @@ describe('XMLHttpRequest', () => {
 			request.open('GET', REQUEST_URL, true);
 			request.send();
 
-			window.happyDOM.abort();
+			window.happyDOM?.abort();
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
 			expect(isDestroyed).toBe(true);

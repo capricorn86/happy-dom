@@ -116,7 +116,7 @@ async function itObservesUncaughtExceptions(): Promise<void> {
 
 	observer.disconnect();
 
-	const consoleOutput = window.happyDOM.virtualConsolePrinter.readAsString();
+	const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString();
 
 	if (consoleOutput.startsWith('Error: Test error\nat Timeout.eval')) {
 		throw new Error(`Console output not correct.`);

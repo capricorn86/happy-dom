@@ -4,7 +4,7 @@ import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLIFrameElement from '../../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
 import IResponse from '../../../src/fetch/types/IResponse.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
-import CrossOriginWindow from '../../../src/window/CrossOriginWindow.js';
+import CrossOriginBrowserWindow from '../../../src/window/CrossOriginBrowserWindow.js';
 import MessageEvent from '../../../src/event/events/MessageEvent.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import DOMException from '../../../src/exception/DOMException.js';
@@ -105,7 +105,7 @@ describe('HTMLIFrameElement', () => {
 					});
 				});
 
-				window.happyDOM.setURL('https://localhost:8080');
+				window.happyDOM?.setURL('https://localhost:8080');
 				element.src = 'https://localhost:8080/iframe.html';
 				element.addEventListener('error', (event) => {
 					expect((<ErrorEvent>event).message).toBe(
@@ -136,7 +136,7 @@ describe('HTMLIFrameElement', () => {
 					});
 				});
 
-				window.happyDOM.setURL('https://localhost:3000');
+				window.happyDOM?.setURL('https://localhost:3000');
 				element.src = 'https://localhost:8080/iframe.html';
 				element.addEventListener('error', (event) => {
 					expect((<ErrorEvent>event).message).toBe(
@@ -167,7 +167,7 @@ describe('HTMLIFrameElement', () => {
 					});
 				});
 
-				window.happyDOM.setURL('https://localhost:8080');
+				window.happyDOM?.setURL('https://localhost:8080');
 				element.src = 'https://localhost:8080/iframe.html';
 				element.addEventListener('load', () => {
 					expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
@@ -197,7 +197,7 @@ describe('HTMLIFrameElement', () => {
 					}));
 				});
 
-				window.happyDOM.setURL('https://localhost:8080');
+				window.happyDOM?.setURL('https://localhost:8080');
 				element.src = 'https://localhost:8080/iframe.html';
 				element.addEventListener('load', () => {
 					expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
@@ -226,7 +226,7 @@ describe('HTMLIFrameElement', () => {
 					}));
 				});
 
-				window.happyDOM.setURL('https://localhost:8080');
+				window.happyDOM?.setURL('https://localhost:8080');
 				element.src = '/iframe.html';
 				element.addEventListener('load', () => {
 					expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
@@ -267,7 +267,7 @@ describe('HTMLIFrameElement', () => {
 			});
 		});
 
-		it('Returns instance of CrossOriginWindow for URL with different origin.', async () => {
+		it('Returns instance of CrossOriginBrowserWindow for URL with different origin.', async () => {
 			await new Promise((resolve) => {
 				const browser = new Browser();
 				const page = browser.newPage();
@@ -302,7 +302,7 @@ describe('HTMLIFrameElement', () => {
 					const message = 'test';
 					let triggeredEvent: MessageEvent | null = null;
 					expect(fetchedURL).toBe(iframeSrc);
-					expect(element.contentWindow instanceof CrossOriginWindow).toBe(true);
+					expect(element.contentWindow instanceof CrossOriginBrowserWindow).toBe(true);
 					expect(() => element.contentWindow?.location.href).toThrowError(
 						new DOMException(
 							`Blocked a frame with origin "${documentOrigin}" from accessing a cross-origin frame.`,

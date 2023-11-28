@@ -1,6 +1,6 @@
 import IElement from '../element/IElement.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
-import IWindow from '../../window/IWindow.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
 import Event from '../../event/Event.js';
@@ -27,8 +27,8 @@ import VisibilityStateEnum from './VisibilityStateEnum.js';
  * Document.
  */
 export default interface IDocument extends IParentNode {
-	readonly defaultView: IWindow | null;
-	readonly _defaultView: IWindow;
+	readonly defaultView: IBrowserWindow | null;
+	readonly _defaultView: IBrowserWindow;
 	readonly implementation: DOMImplementation;
 	readonly documentElement: IHTMLElement;
 	readonly doctype: IDocumentType;

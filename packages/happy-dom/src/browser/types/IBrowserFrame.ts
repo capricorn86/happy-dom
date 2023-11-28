@@ -1,5 +1,5 @@
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
-import IWindow from '../../window/IWindow.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import IBrowserPage from './IBrowserPage.js';
 import IResponse from '../../fetch/types/IResponse.js';
 import IGoToOptions from './IGoToOptions.js';
@@ -10,7 +10,7 @@ import { Script } from 'vm';
  */
 export default interface IBrowserFrame {
 	readonly childFrames: IBrowserFrame[];
-	readonly window: IWindow;
+	readonly window: IBrowserWindow;
 	content: string;
 	url: string;
 	readonly parentFrame: IBrowserFrame | null;

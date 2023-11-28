@@ -1,12 +1,12 @@
 import Event from '../../event/Event.js';
-import IWindow from '../../window/IWindow.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import IDocument from '../document/IDocument.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import INode from '../node/INode.js';
 import IHTMLIFrameElement from './IHTMLIFrameElement.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
-import ICrossOriginWindow from '../../window/ICrossOriginWindow.js';
+import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
 
@@ -24,7 +24,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	public onerror: (event: Event) => void | null = null;
 
 	// Internal properties
-	#contentWindowContainer: { window: IWindow | ICrossOriginWindow | null } = {
+	#contentWindowContainer: { window: IBrowserWindow | ICrossOriginBrowserWindow | null } = {
 		window: null
 	};
 	#pageLoader: HTMLIFrameElementPageLoader;
@@ -176,7 +176,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 * @returns Content document.
 	 */
 	public get contentDocument(): IDocument | null {
-		return (<IWindow>this.#contentWindowContainer.window)?.document ?? null;
+		return (<IBrowserWindow>this.#contentWindowContainer.window)?.document ?? null;
 	}
 
 	/**
@@ -184,7 +184,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 *
 	 * @returns Content window.
 	 */
-	public get contentWindow(): IWindow | ICrossOriginWindow | null {
+	public get contentWindow(): IBrowserWindow | ICrossOriginBrowserWindow | null {
 		return this.#contentWindowContainer.window;
 	}
 

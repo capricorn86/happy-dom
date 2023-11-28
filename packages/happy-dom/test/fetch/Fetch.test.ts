@@ -302,7 +302,7 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			window.happyDOM.setURL(baseUrl);
+			window.happyDOM?.setURL(baseUrl);
 
 			mockModule('https', {
 				request: (url, options) => {
@@ -995,7 +995,7 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			window.happyDOM.setURL('https://localhost:8080');
+			window.happyDOM?.setURL('https://localhost:8080');
 			window.document.cookie = 'test=cookie';
 
 			mockModule('https', {
@@ -1052,7 +1052,7 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			window.happyDOM.setURL(originURL);
+			window.happyDOM?.setURL(originURL);
 			window.document.cookie = 'test=cookie';
 
 			mockModule('https', {
@@ -1109,7 +1109,7 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			window.happyDOM.setURL(originURL);
+			window.happyDOM?.setURL(originURL);
 			window.document.cookie = 'test=cookie';
 
 			mockModule('http', {
@@ -1166,7 +1166,7 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			window.happyDOM.setURL(originURL);
+			window.happyDOM?.setURL(originURL);
 
 			for (const cookie of cookies.split(';')) {
 				window.document.cookie = cookie.trim();
@@ -1230,7 +1230,7 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			window.happyDOM.setURL(originURL);
+			window.happyDOM?.setURL(originURL);
 
 			for (const cookie of cookies.split(';')) {
 				window.document.cookie = cookie.trim();
@@ -1286,7 +1286,7 @@ describe('Fetch', () => {
 		});
 
 		it('Sets document cookie string if the response contains a "Set-Cookie" header if request cridentials are set to "include".', async () => {
-			window.happyDOM.setURL('https://localhost:8080');
+			window.happyDOM?.setURL('https://localhost:8080');
 
 			mockModule('https', {
 				request: () => {
@@ -3358,7 +3358,7 @@ describe('Fetch', () => {
 		expect(response.status).toBe(200);
 	});
 
-	it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+	it('Supports window.happyDOM?.whenComplete().', async () => {
 		await new Promise((resolve) => {
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 			async function* generate(): AsyncGenerator<Buffer> {
@@ -3413,7 +3413,7 @@ describe('Fetch', () => {
 				}
 			});
 
-			window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+			window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 
 			window.fetch('https://localhost:8080/test/', {
 				method: 'POST',

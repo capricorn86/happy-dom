@@ -1,7 +1,7 @@
 import BrowserPage from './BrowserPage.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import IBrowserFrame from './types/IBrowserFrame.js';
-import Window from '../window/Window.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import Location from '../location/Location.js';
 import IResponse from '../fetch/types/IResponse.js';
 import IGoToOptions from './types/IGoToOptions.js';
@@ -18,7 +18,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public readonly parentFrame: BrowserFrame | null = null;
 	public readonly opener: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
-	public readonly window: Window;
+	public readonly window: BrowserWindow;
 	public _asyncTaskManager = new AsyncTaskManager();
 
 	/**
@@ -28,10 +28,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 */
 	constructor(page: BrowserPage) {
 		this.page = page;
-		this.window = new Window({
-			browserFrame: this,
-			console: page.console
-		});
+		this.window = new BrowserWindow(this);
 	}
 
 	/**
@@ -118,6 +115,6 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(Window, this, url, options);
+		return BrowserFrameNavigator.goto(BrowserWindow, this, url, options);
 	}
 }

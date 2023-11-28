@@ -7,9 +7,8 @@ import RequestImplementation from '../fetch/Request.js';
 import ResponseImplementation from '../fetch/Response.js';
 import RangeImplementation from '../range/Range.js';
 import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
-import IWindow from './IWindow.js';
+import IBrowserWindow from './IBrowserWindow.js';
 import IDocument from '../nodes/document/IDocument.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import HTMLElementImplementation from '../nodes/html-element/HTMLElement.js';
 import HTMLUnknownElementImplementation from '../nodes/html-unknown-element/HTMLUnknownElement.js';
 import HTMLTemplateElementImplementation from '../nodes/html-template-element/HTMLTemplateElement.js';
@@ -51,7 +50,10 @@ import HTMLButtonElementImplementation from '../nodes/html-button-element/HTMLBu
 import HTMLOptGroupElementImplementation from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
 import HTMLOptionElementImplementation from '../nodes/html-option-element/HTMLOptionElement.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
+import IRequestInfo from '../fetch/types/IRequestInfo.js';
+import IRequestInit from '../fetch/types/IRequestInit.js';
+import IResponseInit from '../fetch/types/IResponseInit.js';
+import IResponseBody from '../fetch/types/IResponseBody.js';
 
 /**
  * Some classes need to get access to the window object without having a reference to the window in the constructor.
@@ -66,7 +68,7 @@ export default class WindowClassFactory {
 	 * @param properties.browserFrame Browser frame.
 	 * @returns Classes.
 	 */
-	public static getClasses(properties: { window: IWindow; browserFrame: IBrowserFrame }): {
+	public static getClasses(properties: { window: IBrowserWindow; browserFrame: IBrowserFrame }): {
 		// Nodes
 		Node: typeof NodeImplementation;
 		Attr: typeof AttrImplementation;
@@ -79,10 +81,10 @@ export default class WindowClassFactory {
 		ProcessingInstruction: typeof ProcessingInstructionImplementation;
 		Element: typeof ElementImplementation;
 		CharacterData: typeof CharacterDataImplementation;
-		Document: typeof DocumentImplementation;
-		HTMLDocument: typeof HTMLDocumentImplementation;
-		XMLDocument: typeof XMLDocumentImplementation;
-		SVGDocument: typeof SVGDocumentImplementation;
+		Document: new () => DocumentImplementation;
+		HTMLDocument: new () => HTMLDocumentImplementation;
+		XMLDocument: new () => XMLDocumentImplementation;
+		SVGDocument: new () => SVGDocumentImplementation;
 		DocumentType: typeof DocumentTypeImplementation;
 
 		// HTML Elements
@@ -112,14 +114,14 @@ export default class WindowClassFactory {
 		HTMLDialogElement: typeof HTMLDialogElementImplementation;
 
 		// Other Classes
-		Response: typeof ResponseImplementation;
-		Request: typeof RequestImplementation;
-		XMLHttpRequest: typeof XMLHttpRequestImplementation;
+		Request: new (input: IRequestInfo, init?: IRequestInit) => RequestImplementation;
+		Response: new (body?: IResponseBody, init?: IResponseInit) => ResponseImplementation;
+		XMLHttpRequest: new () => XMLHttpRequestImplementation;
 		Image: typeof ImageImplementation;
 		DocumentFragment: typeof DocumentFragmentImplementation;
-		FileReader: typeof FileReaderImplementation;
-		DOMParser: typeof DOMParserImplementation;
-		Range: typeof RangeImplementation;
+		FileReader: new () => FileReaderImplementation;
+		DOMParser: new () => DOMParserImplementation;
+		Range: new () => RangeImplementation;
 		Audio: typeof AudioImplementation;
 	} {
 		const window = properties.window;
@@ -184,76 +186,24 @@ export default class WindowClassFactory {
 			}
 		}
 		class Document extends DocumentImplementation {
-			public readonly _defaultView: IWindow = window;
-
-			public get cookie(): string {
-				return CookieStringUtility.cookiesToString(
-					properties.browserFrame.page.context.cookieContainer.getCookies(
-						this._defaultView.location,
-						true
-					)
-				);
-			}
-
-			public set cookie(cookie: string) {
-				properties.browserFrame.page.context.cookieContainer.addCookies([
-					CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
-				]);
+			constructor() {
+				super(properties);
 			}
 		}
 
 		class HTMLDocument extends HTMLDocumentImplementation {
-			public readonly _defaultView: IWindow = window;
-
-			public get cookie(): string {
-				return CookieStringUtility.cookiesToString(
-					properties.browserFrame.page.context.cookieContainer.getCookies(
-						this._defaultView.location,
-						true
-					)
-				);
-			}
-
-			public set cookie(cookie: string) {
-				properties.browserFrame.page.context.cookieContainer.addCookies([
-					CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
-				]);
+			constructor() {
+				super(properties);
 			}
 		}
 		class XMLDocument extends XMLDocumentImplementation {
-			public readonly _defaultView: IWindow = window;
-
-			public get cookie(): string {
-				return CookieStringUtility.cookiesToString(
-					properties.browserFrame.page.context.cookieContainer.getCookies(
-						this._defaultView.location,
-						true
-					)
-				);
-			}
-
-			public set cookie(cookie: string) {
-				properties.browserFrame.page.context.cookieContainer.addCookies([
-					CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
-				]);
+			constructor() {
+				super(properties);
 			}
 		}
 		class SVGDocument extends SVGDocumentImplementation {
-			public readonly _defaultView: IWindow = window;
-
-			public get cookie(): string {
-				return CookieStringUtility.cookiesToString(
-					properties.browserFrame.page.context.cookieContainer.getCookies(
-						this._defaultView.location,
-						true
-					)
-				);
-			}
-
-			public set cookie(cookie: string) {
-				properties.browserFrame.page.context.cookieContainer.addCookies([
-					CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
-				]);
+			constructor() {
+				super(properties);
 			}
 		}
 		class DocumentType extends DocumentTypeImplementation {
@@ -404,27 +354,34 @@ export default class WindowClassFactory {
 
 		// Other Classes
 		class Request extends RequestImplementation {
-			protected readonly _asyncTaskManager: AsyncTaskManager = asyncTaskManager;
-			protected get _ownerDocument(): IDocument {
-				return window.document;
+			constructor(input: IRequestInfo, init?: IRequestInit) {
+				super({ window, asyncTaskManager }, input, init);
 			}
 		}
 		class Response extends ResponseImplementation {
-			protected readonly _asyncTaskManager: AsyncTaskManager = asyncTaskManager;
+			protected static _window = window;
+			constructor(body?: IResponseBody, init?: IResponseInit) {
+				super({ window, asyncTaskManager }, body, init);
+			}
 		}
 		class XMLHttpRequest extends XMLHttpRequestImplementation {
-			protected readonly _asyncTaskManager: AsyncTaskManager = asyncTaskManager;
-			protected readonly _ownerDocument: IDocument = window.document;
+			constructor() {
+				super(properties);
+			}
 		}
 		class FileReader extends FileReaderImplementation {
-			public readonly _ownerDocument: IDocument = window.document;
+			constructor() {
+				super(properties.window);
+			}
 		}
 		class DOMParser extends DOMParserImplementation {
-			public readonly _ownerDocument: IDocument = window.document;
+			constructor() {
+				super(properties.window);
+			}
 		}
 		class Range extends RangeImplementation {
-			public get _ownerDocument(): IDocument {
-				return window.document;
+			constructor() {
+				super(properties.window);
 			}
 		}
 

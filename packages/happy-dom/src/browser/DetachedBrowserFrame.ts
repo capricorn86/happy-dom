@@ -1,14 +1,15 @@
-import IWindow from '../../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import DetachedBrowserPage from './DetachedBrowserPage.js';
-import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
-import IBrowserFrame from '../types/IBrowserFrame.js';
-import Location from '../../location/Location.js';
-import IResponse from '../../fetch/types/IResponse.js';
-import IGoToOptions from '../types/IGoToOptions.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import IBrowserFrame from './types/IBrowserFrame.js';
+import Location from '../location/Location.js';
+import IResponse from '../fetch/types/IResponse.js';
+import IGoToOptions from './types/IGoToOptions.js';
 import { Script } from 'vm';
-import BrowserFrameURL from '../utilities/BrowserFrameURL.js';
-import BrowserFrameScriptEvaluator from '../utilities/BrowserFrameScriptEvaluator.js';
-import BrowserFrameNavigator from '../utilities/BrowserFrameNavigator.js';
+import BrowserFrameURL from './utilities/BrowserFrameURL.js';
+import BrowserFrameScriptEvaluator from './utilities/BrowserFrameScriptEvaluator.js';
+import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
+import IWindow from '../window/IWindow.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -18,19 +19,22 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public readonly parentFrame: DetachedBrowserFrame | null = null;
 	public readonly opener: DetachedBrowserFrame | null = null;
 	public readonly page: DetachedBrowserPage;
-	public readonly window: IWindow;
 	public _asyncTaskManager = new AsyncTaskManager();
+	// Needs to be injected when constructing the browser frame in Window.ts.
+	public window: IWindow;
+	readonly #windowClass: new (browserFrame: IBrowserFrame) => IBrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param page Page.
 	 */
-	constructor(page: DetachedBrowserPage) {
+	constructor(
+		page: DetachedBrowserPage,
+		windowClass: new (browserFrame: IBrowserFrame) => IBrowserWindow
+	) {
 		this.page = page;
-		this.window = page.context.browser.contexts[0]?.pages[0]?.mainFrame
-			? new page.context.browser.detachedWindowClass({ browserFrame: this })
-			: page.context.browser.detachedWindow;
+		this.#windowClass = windowClass;
 	}
 
 	/**
@@ -115,11 +119,6 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(
-			this.page.context.browser.detachedWindowClass,
-			this,
-			url,
-			options
-		);
+		return BrowserFrameNavigator.goto(this.#windowClass, this, url, options);
 	}
 }

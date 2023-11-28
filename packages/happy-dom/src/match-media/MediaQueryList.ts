@@ -1,6 +1,6 @@
 import EventTarget from '../event/EventTarget.js';
 import Event from '../event/Event.js';
-import IWindow from '../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import IEventListener from '../event/IEventListener.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
 import IMediaQueryItem from './MediaQueryItem.js';
@@ -14,7 +14,7 @@ import MediaQueryParser from './MediaQueryParser.js';
  */
 export default class MediaQueryList extends EventTarget {
 	public onchange: (event: Event) => void = null;
-	private _ownerWindow: IWindow;
+	private _ownerWindow: IBrowserWindow;
 	private _items: IMediaQueryItem[] | null = null;
 	private _media: string;
 	private _rootFontSize: string | number | null = null;
@@ -27,7 +27,11 @@ export default class MediaQueryList extends EventTarget {
 	 * @param options.media Media.
 	 * @param [options.rootFontSize] Root font size.
 	 */
-	constructor(options: { ownerWindow: IWindow; media: string; rootFontSize?: string | number }) {
+	constructor(options: {
+		ownerWindow: IBrowserWindow;
+		media: string;
+		rootFontSize?: string | number;
+	}) {
 		super();
 		this._ownerWindow = options.ownerWindow;
 		this._media = options.media;

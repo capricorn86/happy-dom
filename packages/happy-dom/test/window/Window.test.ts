@@ -29,8 +29,8 @@ import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
 import IHTMLDialogElement from '../../src/nodes/html-dialog-element/IHTMLDialogElement.js';
 import Browser from '../../src/browser/Browser.js';
-import ICrossOriginWindow from '../../src/window/ICrossOriginWindow.js';
-import CrossOriginWindow from '../../src/window/CrossOriginWindow.js';
+import ICrossOriginBrowserWindow from '../../src/window/ICrossOriginBrowserWindow.js';
+import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow.js';
 import IHTMLIFrameElement from '../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
 import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory.js';
@@ -1585,11 +1585,11 @@ describe('Window', () => {
 
 			page.mainFrame.url = 'https://www.github.com/capricorn86/happy-dom/';
 
-			const newWindow = <ICrossOriginWindow>(
+			const newWindow = <ICrossOriginBrowserWindow>(
 				page.mainFrame.window.open('https://developer.mozilla.org/en-US/docs/Web/API/Window/open')
 			);
 
-			expect(newWindow instanceof CrossOriginWindow).toBe(true);
+			expect(newWindow instanceof CrossOriginBrowserWindow).toBe(true);
 			expect(browser.defaultContext.pages.length).toBe(2);
 			expect(browser.defaultContext.pages[0]).toBe(page);
 			expect(browser.defaultContext.pages[1].mainFrame.window === newWindow).toBe(false);

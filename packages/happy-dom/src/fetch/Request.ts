@@ -21,6 +21,7 @@ import IRequestCredentials from './types/IRequestCredentials.js';
 import FormData from '../form-data/FormData.js';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 
 /**
  * Fetch request.
@@ -31,9 +32,6 @@ import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
  * @see https://fetch.spec.whatwg.org/#request-class
  */
 export default class Request implements IRequest {
-	// Needs to be injected by a sub-class.
-	protected readonly _asyncTaskManager: AsyncTaskManager;
-
 	// Public properties
 	public readonly method: string;
 	public readonly body: Stream.Readable | null;
@@ -50,14 +48,24 @@ export default class Request implements IRequest {
 	public _referrer: '' | 'no-referrer' | 'client' | URL = 'client';
 	public readonly _url: URL;
 	public readonly _bodyBuffer: Buffer | null;
+	readonly #window: IBrowserWindow;
+	readonly #asyncTaskManager: AsyncTaskManager;
 
 	/**
 	 * Constructor.
 	 *
+	 * @param injected Injected properties.
 	 * @param input Input.
 	 * @param [init] Init.
 	 */
-	constructor(input: IRequestInfo, init?: IRequestInit) {
+	constructor(
+		injected: { window: IBrowserWindow; asyncTaskManager: AsyncTaskManager },
+		input: IRequestInfo,
+		init?: IRequestInit
+	) {
+		this.#window = injected.window;
+		this.#asyncTaskManager = injected.asyncTaskManager;
+
 		if (!input) {
 			throw new TypeError(`Failed to contruct 'Request': 1 argument required, only 0 present.`);
 		}
@@ -98,7 +106,7 @@ export default class Request implements IRequest {
 		);
 		this.signal = init?.signal || (<Request>input).signal || new AbortSignal();
 		this._referrer = FetchRequestReferrerUtility.getInitialReferrer(
-			this._ownerDocument,
+			injected.window,
 			init?.referrer !== null && init?.referrer !== undefined
 				? init?.referrer
 				: (<Request>input).referrer
@@ -109,16 +117,16 @@ export default class Request implements IRequest {
 		} else {
 			try {
 				if (input instanceof Request && input.url) {
-					this._url = new URL(input.url, this._ownerDocument.location);
+					this._url = new URL(input.url, injected.window.location);
 				} else {
-					this._url = new URL(<string>input, this._ownerDocument.location);
+					this._url = new URL(<string>input, injected.window.location);
 				}
 			} catch (error) {
 				throw new DOMException(
 					`Failed to construct 'Request. Invalid URL "${input}" on document location '${
-						this._ownerDocument.location
+						injected.window.location
 					}'.${
-						this._ownerDocument.location.origin === 'null'
+						injected.window.location.origin === 'null'
 							? ' Relative URLs are not permitted on current document location.'
 							: ''
 					}`,
@@ -190,17 +198,17 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this._asyncTaskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal._abort());
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			this._asyncTaskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this._asyncTaskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
@@ -232,17 +240,17 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this._asyncTaskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal._abort());
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			this._asyncTaskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this._asyncTaskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return buffer;
 	}
@@ -262,17 +270,17 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this._asyncTaskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal._abort());
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			this._asyncTaskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this._asyncTaskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return new TextDecoder().decode(buffer);
 	}
@@ -302,18 +310,18 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this._asyncTaskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal._abort());
 		let formData: FormData;
 
 		try {
 			const type = this._contentType;
 			formData = await MultipartFormDataParser.streamToFormData(this.body, type);
 		} catch (error) {
-			this._asyncTaskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this._asyncTaskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return formData;
 	}
@@ -323,7 +331,7 @@ export default class Request implements IRequest {
 	 *
 	 * @returns Clone.
 	 */
-	public clone(): IRequest {
-		return <IRequest>new (<typeof Request>this.constructor)(this);
+	public clone(): Request {
+		return new this.#window.Request(this);
 	}
 }

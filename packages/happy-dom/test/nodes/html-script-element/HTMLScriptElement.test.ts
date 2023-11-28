@@ -8,6 +8,7 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Event from '../../../src/event/Event.js';
 import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
+import IWindow from '../../../src/window/IWindow.js';
 
 describe('HTMLScriptElement', () => {
 	let window: Window;
@@ -96,7 +97,7 @@ describe('HTMLScriptElement', () => {
 			element.async = true;
 			element.src = 'test';
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect(window['test']).toBe('test');
 		});
@@ -115,7 +116,7 @@ describe('HTMLScriptElement', () => {
 			element.async = true;
 			element.src = 'test';
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect(window['test']).toBe(undefined);
 		});
@@ -186,7 +187,7 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect((<Event>(<unknown>loadEvent)).target).toBe(script);
 			expect(fetchedURL).toBe('path/to/script/');
@@ -214,7 +215,7 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
 				'Failed to perform request to "path/to/script/". Status code: 404'
@@ -228,13 +229,11 @@ describe('HTMLScriptElement', () => {
 
 			window.location.href = 'https://localhost:8080/base/';
 
-			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation(
-				(document: IDocument, url: string) => {
-					fetchedDocument = document;
-					fetchedURL = url;
-					return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
-				}
-			);
+			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation((window: IWindow, url: string) => {
+				fetchedDocument = document;
+				fetchedURL = url;
+				return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
+			});
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script/';
@@ -449,13 +448,13 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.whenComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
 				'Invalid regular expression: missing /'
 			);
 
-			const consoleOutput = window.happyDOM.virtualConsolePrinter?.readAsString() || '';
+			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
 				true
 			);
@@ -477,7 +476,7 @@ describe('HTMLScriptElement', () => {
 				'Invalid regular expression: missing /'
 			);
 
-			const consoleOutput = window.happyDOM.virtualConsolePrinter?.readAsString() || '';
+			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
 				true
 			);
@@ -497,7 +496,7 @@ describe('HTMLScriptElement', () => {
 				'Invalid regular expression: missing /'
 			);
 
-			const consoleOutput = window.happyDOM.virtualConsolePrinter?.readAsString() || '';
+			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
 				true
 			);

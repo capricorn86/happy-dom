@@ -1,5 +1,4 @@
 import IRequestInit from './types/IRequestInit.js';
-import IDocument from '../nodes/document/IDocument.js';
 import IResponse from './types/IResponse.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import Headers from './Headers.js';
@@ -16,11 +15,11 @@ import DataURIParser from './data-uri/DataURIParser.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import Request from './Request.js';
 import Response from './Response.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import Event from '../event/Event.js';
 import AbortSignal from './AbortSignal.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -46,19 +45,17 @@ export default class Fetch {
 	private previousChunk: Buffer | null = null;
 	private nodeRequest: HTTP.ClientRequest | null = null;
 	private response: Response | null = null;
-	private ownerDocument: IDocument;
-	private asyncTaskManager: AsyncTaskManager;
 	private request: Request;
 	private redirectCount = 0;
 	#browserFrame: IBrowserFrame;
+	#window: IBrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param options Options.
 	 * @param options.browserFrame Browser frame.
-	 * @param options.ownerDocument Owner document.
-	 * @param options.asyncTaskManager Async task manager.
+	 * @param options.window Window.
 	 * @param options.url URL.
 	 * @param [options.init] Init.
 	 * @param [options.redirectCount] Redirect count.
@@ -66,8 +63,7 @@ export default class Fetch {
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
-		ownerDocument: IDocument;
-		asyncTaskManager: AsyncTaskManager;
+		window: IBrowserWindow;
 		url: IRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
@@ -76,11 +72,10 @@ export default class Fetch {
 		const url = options.url;
 
 		this.#browserFrame = options.browserFrame;
-		this.ownerDocument = options.ownerDocument;
-		this.asyncTaskManager = options.asyncTaskManager;
+		this.#window = options.window;
 		this.request =
 			typeof options.url === 'string' || options.url instanceof URL
-				? new options.ownerDocument._defaultView.Request(options.url, options.init)
+				? new options.browserFrame.window.Request(options.url, options.init)
 				: <Request>url;
 		if (options.contentType) {
 			(<string>this.request._contentType) = options.contentType;
@@ -95,18 +90,20 @@ export default class Fetch {
 	 */
 	public send(): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
-			const taskID = this.asyncTaskManager.startTask(() => this.onAsyncTaskManagerAbort());
+			const taskID = this.#browserFrame._asyncTaskManager.startTask(() =>
+				this.onAsyncTaskManagerAbort()
+			);
 
 			if (this.resolve) {
 				throw new Error('Fetch already sent.');
 			}
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
-				this.asyncTaskManager.endTask(taskID);
+				this.#browserFrame._asyncTaskManager.endTask(taskID);
 				resolve(response);
 			};
 			this.reject = (error: Error): void => {
-				this.asyncTaskManager.endTask(taskID);
+				this.#browserFrame._asyncTaskManager.endTask(taskID);
 				reject(error);
 			};
 
@@ -115,7 +112,7 @@ export default class Fetch {
 
 			if (this.request._url.protocol === 'data:') {
 				const result = DataURIParser.parse(this.request.url);
-				this.response = new this.ownerDocument._defaultView.Response(result.buffer, {
+				this.response = new this.#window.Response(result.buffer, {
 					headers: { 'Content-Type': result.type }
 				});
 				resolve(this.response);
@@ -207,7 +204,7 @@ export default class Fetch {
 	 */
 	private onError(error: Error): void {
 		this.finalizeRequest();
-		this.ownerDocument._defaultView.console.error(error);
+		this.#window.console.error(error);
 		this.reject(
 			new DOMException(
 				`Fetch to "${this.request.url}" failed. Error: ${error.message}`,
@@ -276,7 +273,7 @@ export default class Fetch {
 			nodeResponse.statusCode === 204 ||
 			nodeResponse.statusCode === 304
 		) {
-			this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
+			this.response = new this.#window.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -298,7 +295,7 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
+			this.response = new this.#window.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -330,7 +327,7 @@ export default class Fetch {
 					});
 				}
 
-				this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
+				this.response = new this.#window.Response(body, responseOptions);
 				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
@@ -338,7 +335,7 @@ export default class Fetch {
 			raw.on('end', () => {
 				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
 				if (!this.response) {
-					this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
+					this.response = new this.#window.Response(body, responseOptions);
 					(<boolean>this.response.redirected) = this.redirectCount > 0;
 					(<string>this.response.url) = this.request.url;
 					this.resolve(this.response);
@@ -354,7 +351,7 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
+			this.response = new this.#window.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -362,7 +359,7 @@ export default class Fetch {
 		}
 
 		// Otherwise, use response as is
-		this.response = new this.ownerDocument._defaultView.Response(body, responseOptions);
+		this.response = new this.#window.Response(body, responseOptions);
 		(<boolean>this.response.redirected) = this.redirectCount > 0;
 		(<string>this.response.url) = this.request.url;
 		this.resolve(this.response);
@@ -461,7 +458,7 @@ export default class Fetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.ownerDocument.location, locationURL))
+						FetchCORSUtility.isCORS(this.#window.location, locationURL))
 				) {
 					headers.delete('authorization');
 					headers.delete('www-authenticate');
@@ -500,8 +497,7 @@ export default class Fetch {
 
 				const fetch = new (<typeof Fetch>this.constructor)({
 					browserFrame: this.#browserFrame,
-					ownerDocument: this.ownerDocument,
-					asyncTaskManager: this.asyncTaskManager,
+					window: this.#window,
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
@@ -532,7 +528,7 @@ export default class Fetch {
 
 		if (this.request.referrer && this.request.referrer !== 'no-referrer') {
 			this.request._referrer = FetchRequestReferrerUtility.getSentReferrer(
-				this.ownerDocument,
+				this.#window,
 				this.request
 			);
 		} else {
@@ -563,8 +559,7 @@ export default class Fetch {
 	 */
 	private getRequestHeaders(): { [key: string]: string } {
 		const headers = new Headers(this.request.headers);
-		const document = this.ownerDocument;
-		const isCORS = FetchCORSUtility.isCORS(document.location, this.request._url);
+		const isCORS = FetchCORSUtility.isCORS(this.#window.location, this.request._url);
 
 		// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
 		if (
@@ -579,7 +574,7 @@ export default class Fetch {
 		headers.set('Connection', 'close');
 
 		if (!headers.has('User-Agent')) {
-			headers.set('User-Agent', document._defaultView.navigator.userAgent);
+			headers.set('User-Agent', this.#window.navigator.userAgent);
 		}
 
 		if (this.request._referrer instanceof URL) {
@@ -591,7 +586,7 @@ export default class Fetch {
 			(this.request.credentials === 'same-origin' && !isCORS)
 		) {
 			const cookies = this.#browserFrame.page.context.cookieContainer.getCookies(
-				document._defaultView.location,
+				this.#window.location,
 				false
 			);
 			if (cookies.length > 0) {

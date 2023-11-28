@@ -114,7 +114,7 @@ describe('Response', () => {
 			expect(Buffer.from(arrayBuffer).toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const response = new window.Response('Hello World');
 				let isAsyncComplete = false;
@@ -124,7 +124,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				response.arrayBuffer();
 
 				setTimeout(() => {
@@ -153,7 +153,7 @@ describe('Response', () => {
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const response = new window.Response('Hello World', {
 					headers: { 'Content-Type': 'text/plain' }
@@ -165,7 +165,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				response.blob();
 
 				setTimeout(() => {
@@ -189,7 +189,7 @@ describe('Response', () => {
 			expect(buffer.toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const response = new window.Response('Hello World');
 				let isAsyncComplete = false;
@@ -199,7 +199,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 5))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => {
+				window.happyDOM?.whenComplete().then(() => {
 					isAsyncComplete = true;
 				});
 				response.buffer();
@@ -224,7 +224,7 @@ describe('Response', () => {
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const response = new window.Response('Hello World');
 				let isAsyncComplete = false;
@@ -234,7 +234,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				response.text();
 
 				setTimeout(() => {
@@ -257,7 +257,7 @@ describe('Response', () => {
 			expect(json).toEqual({ key1: 'value1' });
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const response = new window.Response('{ "key1": "value1" }');
 				let isAsyncComplete = false;
@@ -269,7 +269,7 @@ describe('Response', () => {
 						)
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				response.json();
 
 				setTimeout(() => {
@@ -368,7 +368,7 @@ describe('Response', () => {
 			expect(await file2.arrayBuffer()).toEqual(imageBuffer.buffer);
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete() for "application/x-www-form-urlencoded" content.', async () => {
+		it('Supports window.happyDOM?.whenComplete() for "application/x-www-form-urlencoded" content.', async () => {
 			await new Promise((resolve) => {
 				const response = new window.Response(new URLSearchParams());
 				let isAsyncComplete = false;
@@ -378,7 +378,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				response.formData();
 
 				setTimeout(() => {
@@ -392,7 +392,7 @@ describe('Response', () => {
 			});
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete() for multipart content.', async () => {
+		it('Supports window.happyDOM?.whenComplete() for multipart content.', async () => {
 			await new Promise((resolve) => {
 				const response = new window.Response(new FormData());
 				let isAsyncComplete = false;
@@ -402,7 +402,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(new FormData()), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				response.formData();
 
 				setTimeout(() => {

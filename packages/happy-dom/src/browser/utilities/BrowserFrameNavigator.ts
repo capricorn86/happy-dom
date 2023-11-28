@@ -3,7 +3,7 @@ import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReade
 import IGoToOptions from '../types/IGoToOptions.js';
 import IResponse from '../../fetch/types/IResponse.js';
 import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
-import IWindow from '../../window/IWindow.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import Location from '../../location/Location.js';
 import AbortController from '../../fetch/AbortController.js';
@@ -26,11 +26,7 @@ export default class BrowserFrameNavigator {
 	 * @returns Response.
 	 */
 	public static async goto(
-		windowClass: new (options: {
-			browserFrame: IBrowserFrame;
-			console: Console;
-			url?: string;
-		}) => IWindow,
+		windowClass: new (browserFrame: IBrowserFrame) => IBrowserWindow,
 		frame: IBrowserFrame,
 		url: string,
 		options?: IGoToOptions
@@ -84,11 +80,7 @@ export default class BrowserFrameNavigator {
 		frame._asyncTaskManager.destroy();
 		WindowBrowserSettingsReader.removeSettings(frame.window);
 
-		(<IWindow>frame.window) = new windowClass({
-			browserFrame: frame,
-			console: frame.page.console,
-			url: targetURL.href
-		});
+		(<IBrowserWindow>frame.window) = new windowClass(frame);
 
 		if (options?.referrer) {
 			(<string>frame.window.document.referrer) = options.referrer;

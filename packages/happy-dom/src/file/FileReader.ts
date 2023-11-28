@@ -1,6 +1,6 @@
 import WhatwgMIMEType from 'whatwg-mimetype';
 import WhatwgEncoding from 'whatwg-encoding';
-import IDocument from '../nodes/document/IDocument.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
@@ -18,9 +18,6 @@ import FileReaderEventTypeEnum from './FileReaderEventTypeEnum.js';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/FileReader-impl.js (MIT licensed).
  */
 export default class FileReader extends EventTarget {
-	// Will be populated by a sub-class in Window.
-	public readonly _ownerDocument: IDocument;
-
 	public readonly error: Error = null;
 	public readonly result: Buffer | ArrayBuffer | string = null;
 	public readonly readyState: number = FileReaderReadyStateEnum.empty;
@@ -30,9 +27,20 @@ export default class FileReader extends EventTarget {
 	public readonly onloadstart: (event: ProgressEvent) => void = null;
 	public readonly onloadend: (event: ProgressEvent) => void = null;
 	public readonly onprogress: (event: ProgressEvent) => void = null;
-	private _isTerminated = false;
-	private _loadTimeout: NodeJS.Timeout = null;
-	private _parseTimeout: NodeJS.Timeout = null;
+	#isTerminated = false;
+	#loadTimeout: NodeJS.Timeout | null = null;
+	#parseTimeout: NodeJS.Timeout | null = null;
+	readonly #window: IBrowserWindow;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param window Window.
+	 */
+	constructor(window: IBrowserWindow) {
+		super();
+		this.#window = window;
+	}
 
 	/**
 	 * Reads as ArrayBuffer.
@@ -79,10 +87,8 @@ export default class FileReader extends EventTarget {
 	 * Aborts the file reader.
 	 */
 	public abort(): void {
-		const window = this._ownerDocument._defaultView;
-
-		window.clearTimeout(this._loadTimeout);
-		window.clearTimeout(this._parseTimeout);
+		this.#window.clearTimeout(this.#loadTimeout);
+		this.#window.clearTimeout(this.#parseTimeout);
 
 		if (
 			this.readyState === FileReaderReadyStateEnum.empty ||
@@ -97,7 +103,7 @@ export default class FileReader extends EventTarget {
 			(<Buffer | ArrayBuffer | string>this.result) = null;
 		}
 
-		this._isTerminated = true;
+		this.#isTerminated = true;
 		this.dispatchEvent(new ProgressEvent(FileReaderEventTypeEnum.abort));
 		this.dispatchEvent(new ProgressEvent(FileReaderEventTypeEnum.loadend));
 	}
@@ -110,8 +116,6 @@ export default class FileReader extends EventTarget {
 	 * @param [encoding] Encoding.
 	 */
 	private _readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string = null): void {
-		const window = this._ownerDocument._defaultView;
-
 		if (this.readyState === FileReaderReadyStateEnum.loading) {
 			throw new DOMException(
 				'The object is in an invalid state.',
@@ -121,9 +125,9 @@ export default class FileReader extends EventTarget {
 
 		(<number>this.readyState) = FileReaderReadyStateEnum.loading;
 
-		this._loadTimeout = window.setTimeout(() => {
-			if (this._isTerminated) {
-				this._isTerminated = false;
+		this.#loadTimeout = this.#window.setTimeout(() => {
+			if (this.#isTerminated) {
+				this.#isTerminated = false;
 				return;
 			}
 
@@ -142,9 +146,9 @@ export default class FileReader extends EventTarget {
 				})
 			);
 
-			this._parseTimeout = window.setTimeout(() => {
-				if (this._isTerminated) {
-					this._isTerminated = false;
+			this.#parseTimeout = this.#window.setTimeout(() => {
+				if (this.#isTerminated) {
+					this.#isTerminated = false;
 					return;
 				}
 

@@ -5,7 +5,7 @@ import IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
 import INode from '../nodes/node/INode.js';
 import IDocument from '../nodes/document/IDocument.js';
-import IWindow from '../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import WindowErrorUtility from '../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
 
@@ -259,15 +259,15 @@ export default abstract class EventTarget implements IEventTarget {
 	 *
 	 * @returns Window.
 	 */
-	public _getWindow(): IWindow | null {
+	public _getWindow(): IBrowserWindow | null {
 		if ((<INode>(<unknown>this)).ownerDocument) {
 			return (<INode>(<unknown>this)).ownerDocument._defaultView;
 		}
 		if ((<IDocument>(<unknown>this))._defaultView) {
 			return (<IDocument>(<unknown>this))._defaultView;
 		}
-		if ((<IWindow>(<unknown>this)).document) {
-			return <IWindow>(<unknown>this);
+		if ((<IBrowserWindow>(<unknown>this)).document) {
+			return <IBrowserWindow>(<unknown>this);
 		}
 		return null;
 	}

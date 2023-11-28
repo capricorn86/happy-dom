@@ -1173,7 +1173,7 @@ describe('Document', () => {
 				let readyChangeEvent: Event | null = null;
 
 				vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-					async (document: IDocument, url: string) => {
+					async (window: IWindow, url: string) => {
 						if (url.endsWith('.css')) {
 							resourceFetchCSSDocument = document;
 							resourceFetchCSSURL = url;

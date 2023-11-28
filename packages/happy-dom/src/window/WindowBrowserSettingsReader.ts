@@ -1,5 +1,5 @@
 import IBrowserSettings from '../browser/types/IBrowserSettings.js';
-import IWindow from './IWindow.js';
+import IBrowserWindow from './IBrowserWindow.js';
 
 /**
  * Browser settings reader that will allow to read settings more securely as it is not possible to override a settings object to make DOM functionality act on it.
@@ -13,7 +13,7 @@ export default class WindowBrowserSettingsReader {
 	 * @param window Window.
 	 * @returns Settings.
 	 */
-	public static getSettings(window: IWindow): IBrowserSettings | null {
+	public static getSettings(window: IBrowserWindow): IBrowserSettings | null {
 		const id = window['__happyDOMSettingsID__'];
 
 		if (id === undefined || !this.#settings[id]) {
@@ -29,7 +29,7 @@ export default class WindowBrowserSettingsReader {
 	 * @param window Window.
 	 * @param settings Settings.
 	 */
-	public static setSettings(window: IWindow, settings: IBrowserSettings): void {
+	public static setSettings(window: IBrowserWindow, settings: IBrowserSettings): void {
 		if (window['__happyDOMSettingsID__'] !== undefined) {
 			return;
 		}
@@ -42,7 +42,7 @@ export default class WindowBrowserSettingsReader {
 	 *
 	 * @param window Window.
 	 */
-	public static removeSettings(window: IWindow): void {
+	public static removeSettings(window: IBrowserWindow): void {
 		const id = window['__happyDOMSettingsID__'];
 
 		if (id !== undefined && this.#settings[id]) {

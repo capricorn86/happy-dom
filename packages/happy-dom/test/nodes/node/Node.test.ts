@@ -867,7 +867,7 @@ describe('Node', () => {
 			node.addEventListener('click', listener);
 			node.dispatchEvent(new Event('click'));
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test');
-			expect(window.happyDOM.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
+			expect(window.happyDOM?.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
 				true
 			);
 		});
@@ -887,7 +887,7 @@ describe('Node', () => {
 			node.dispatchEvent(new Event('click'));
 			await new Promise((resolve) => setTimeout(resolve, 2));
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test');
-			expect(window.happyDOM.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
+			expect(window.happyDOM?.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
 				true
 			);
 		});

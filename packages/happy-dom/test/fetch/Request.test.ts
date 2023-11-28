@@ -73,7 +73,7 @@ describe('Request', () => {
 		});
 
 		it('Supports relative URL.', () => {
-			window.happyDOM.setURL('https://example.com/other/path/');
+			window.happyDOM?.setURL('https://example.com/other/path/');
 			const request = new window.Request('/path/');
 			expect(request.url).toBe('https://example.com/path/');
 		});
@@ -307,7 +307,7 @@ describe('Request', () => {
 				new window.Request(TEST_URL, { referrer: new URL('https://example.com/path/') })
 			);
 
-			window.happyDOM.setURL('https://example.com/other/path/');
+			window.happyDOM?.setURL('https://example.com/other/path/');
 
 			const request7 = new window.Request(
 				new window.Request(TEST_URL, { referrer: 'https://example.com/path/' })
@@ -338,7 +338,7 @@ describe('Request', () => {
 				referrer: new URL('https://example.com/path/')
 			});
 
-			window.happyDOM.setURL('https://example.com/other/path/');
+			window.happyDOM?.setURL('https://example.com/other/path/');
 
 			const request7 = new window.Request(TEST_URL, { referrer: 'https://example.com/path/' });
 			const request8 = new window.Request(TEST_URL, {
@@ -463,7 +463,7 @@ describe('Request', () => {
 
 	describe('get referrer()', () => {
 		it('Returns referrer.', () => {
-			window.happyDOM.setURL('https://example.com/other/path/');
+			window.happyDOM?.setURL('https://example.com/other/path/');
 			const request = new window.Request(TEST_URL, { referrer: 'https://example.com/path/' });
 			expect(request.referrer).toBe('https://example.com/path/');
 		});
@@ -491,7 +491,7 @@ describe('Request', () => {
 			expect(Buffer.from(arrayBuffer).toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
@@ -501,7 +501,7 @@ describe('Request', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				request.arrayBuffer();
 
 				setTimeout(() => {
@@ -532,7 +532,7 @@ describe('Request', () => {
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
@@ -542,7 +542,7 @@ describe('Request', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				request.blob();
 
 				setTimeout(() => {
@@ -566,7 +566,7 @@ describe('Request', () => {
 			expect(buffer.toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
@@ -576,7 +576,7 @@ describe('Request', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				request.buffer();
 
 				setTimeout(() => {
@@ -599,7 +599,7 @@ describe('Request', () => {
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
@@ -609,7 +609,7 @@ describe('Request', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				request.text();
 
 				setTimeout(() => {
@@ -635,7 +635,7 @@ describe('Request', () => {
 			expect(json).toEqual({ key1: 'value1' });
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, {
 					method: 'POST',
@@ -650,7 +650,7 @@ describe('Request', () => {
 						)
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				request.json();
 
 				setTimeout(() => {
@@ -675,7 +675,7 @@ describe('Request', () => {
 			expect(requestFormData).toEqual(formData);
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
 				const formData = new FormData();
 				formData.append('some', 'test');
@@ -686,7 +686,7 @@ describe('Request', () => {
 					(): Promise<FormData> => new Promise((resolve) => setTimeout(() => resolve(formData), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
 				request.formData();
 
 				setTimeout(() => {
@@ -703,7 +703,7 @@ describe('Request', () => {
 
 	describe('clone()', () => {
 		it('Returns a clone.', async () => {
-			window.happyDOM.setURL('https://example.com/other/path/');
+			window.happyDOM?.setURL('https://example.com/other/path/');
 
 			const signal = new AbortSignal();
 			const request = new window.Request(TEST_URL, {

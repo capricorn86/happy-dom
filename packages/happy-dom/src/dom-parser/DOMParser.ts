@@ -3,6 +3,7 @@ import XMLParser from '../xml-parser/XMLParser.js';
 import Node from '../nodes/node/Node.js';
 import DOMException from '../exception/DOMException.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 
 /**
  * DOM parser.
@@ -11,8 +12,16 @@ import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser.
  */
 export default class DOMParser {
-	// Will be populated by a sub-class in Window.
-	public readonly _ownerDocument: IDocument;
+	readonly #window: IBrowserWindow;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param window Window.
+	 */
+	constructor(window: IBrowserWindow) {
+		this.#window = window;
+	}
 
 	/**
 	 * Parses HTML and returns a root element.
@@ -94,13 +103,13 @@ export default class DOMParser {
 	private _createDocument(mimeType: string): IDocument {
 		switch (mimeType) {
 			case 'text/html':
-				return new this._ownerDocument._defaultView.HTMLDocument();
+				return new this.#window.HTMLDocument();
 			case 'image/svg+xml':
-				return new this._ownerDocument._defaultView.SVGDocument();
+				return new this.#window.SVGDocument();
 			case 'text/xml':
 			case 'application/xml':
 			case 'application/xhtml+xml':
-				return new this._ownerDocument._defaultView.XMLDocument();
+				return new this.#window.XMLDocument();
 			default:
 				throw new DOMException(`Unknown mime type "${mimeType}".`);
 		}

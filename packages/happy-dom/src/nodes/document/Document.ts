@@ -1,6 +1,6 @@
 import Element from '../element/Element.js';
 import HTMLUnknownElement from '../html-unknown-element/HTMLUnknownElement.js';
-import IWindow from '../../window/IWindow.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
@@ -42,9 +42,8 @@ import ElementUtility from '../element/ElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import ICookieContainer from '../../cookie/types/ICookieContainer.js';
-import CookieContainer from '../../cookie/CookieContainer.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -52,14 +51,13 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
  * Document.
  */
 export default class Document extends Node implements IDocument {
-	// Needs to be injected by sub-class.
-	public readonly _defaultView: IWindow;
 	public nodeType = Node.DOCUMENT_NODE;
 	public adoptedStyleSheets: CSSStyleSheet[] = [];
-	public implementation = new DOMImplementation(this);
+	public readonly implementation: DOMImplementation;
 	public readonly readyState = DocumentReadyStateEnum.interactive;
 	public readonly isConnected: boolean = true;
-	public readonly defaultView: IWindow | null = null;
+	public readonly defaultView: IBrowserWindow | null = null;
+	public readonly _defaultView: IBrowserWindow;
 	public readonly referrer = '';
 	public readonly _windowClass: {} | null = null;
 	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
@@ -75,7 +73,7 @@ export default class Document extends Node implements IDocument {
 	protected _isFirstWriteAfterOpen = false;
 
 	private _selection: Selection = null;
-	#cookieContainer: ICookieContainer;
+	#browserFrame: IBrowserFrame;
 
 	// Events
 	public onreadystatechange: (event: Event) => void = null;
@@ -189,6 +187,20 @@ export default class Document extends Node implements IDocument {
 	public onbeforematch: (event: Event) => void = null;
 
 	/**
+	 * Constructor.
+	 *
+	 * @param injected Injected properties.
+	 * @param injected.browserFrame Browser frame.
+	 * @param injected.window Window.
+	 */
+	constructor(injected: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
+		super();
+		this.#browserFrame = injected.browserFrame;
+		this.implementation = new DOMImplementation(injected.window);
+		this._defaultView = injected.window;
+	}
+
+	/**
 	 * Returns owner document.
 	 *
 	 * @returns Owner document.
@@ -292,11 +304,8 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
-		if (!this.#cookieContainer) {
-			this.#cookieContainer = new CookieContainer();
-		}
 		return CookieStringUtility.cookiesToString(
-			this.#cookieContainer.getCookies(this._defaultView.location, true)
+			this.#browserFrame.page.context.cookieContainer.getCookies(this._defaultView.location, true)
 		);
 	}
 
@@ -306,10 +315,7 @@ export default class Document extends Node implements IDocument {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		if (!this.#cookieContainer) {
-			this.#cookieContainer = new CookieContainer();
-		}
-		this.#cookieContainer.addCookies([
+		this.#browserFrame.page.context.cookieContainer.addCookies([
 			CookieStringUtility.stringToCookie(this._defaultView.location, cookie)
 		]);
 	}

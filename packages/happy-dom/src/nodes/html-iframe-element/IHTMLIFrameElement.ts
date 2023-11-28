@@ -1,8 +1,8 @@
 import Event from '../../event/Event.js';
-import IWindow from '../../window/IWindow.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import IDocument from '../document/IDocument.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
-import ICrossOriginWindow from '../../window/ICrossOriginWindow.js';
+import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
 
 /**
  * HTML Iframe Element.
@@ -19,7 +19,7 @@ export default interface IHTMLIFrameElement extends IHTMLElement {
 	sandbox: string | null;
 	srcdoc: string | null;
 	readonly contentDocument: IDocument | null;
-	readonly contentWindow: IWindow | ICrossOriginWindow | null;
+	readonly contentWindow: IBrowserWindow | ICrossOriginBrowserWindow | null;
 
 	// Events
 	onload: (event: Event) => void | null;

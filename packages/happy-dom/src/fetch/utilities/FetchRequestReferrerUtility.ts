@@ -1,6 +1,6 @@
 import URL from '../../url/URL.js';
 import IRequest from '../types/IRequest.js';
-import IDocument from '../../nodes/document/IDocument.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import { isIP } from 'net';
 import Headers from '../Headers.js';
 import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy.js';
@@ -29,22 +29,22 @@ export default class FetchRequestReferrerUtility {
 	 * https://github.com/node-fetch/node-fetch/blob/main/src/utils/referrer.js (MIT)
 	 *
 	 * @see https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
-	 * @param document Document.
+	 * @param window Window.
 	 * @param request Request.
 	 * @returns Request referrer.
 	 */
 	public static getSentReferrer(
-		document: IDocument,
+		window: IBrowserWindow,
 		request: IRequest
 	): '' | 'no-referrer' | 'client' | URL {
-		if (request.referrer === 'about:client' && document._defaultView.location.origin === 'null') {
+		if (request.referrer === 'about:client' && window.location.origin === 'null') {
 			return 'no-referrer';
 		}
 
 		const requestURL = new URL(request.url);
 		const referrerURL =
 			request.referrer === 'about:client'
-				? new URL(document._defaultView.location.href)
+				? new URL(window.location.href)
 				: new URL(request.referrer);
 
 		if (REQUEST_REFERRER_UNSUPPORTED_PROTOCOL_REGEXP.test(referrerURL.protocol)) {
@@ -113,19 +113,19 @@ export default class FetchRequestReferrerUtility {
 	/**
 	 * Returns initial referrer.
 	 *
-	 * @param document Document.
+	 * @param window Window.
 	 * @param referrer Referrer.
 	 * @returns Initial referrer.
 	 */
 	public static getInitialReferrer(
-		document: IDocument,
+		window: IBrowserWindow,
 		referrer: '' | 'no-referrer' | 'client' | string | URL
 	): '' | 'no-referrer' | 'client' | URL {
 		if (referrer === '' || referrer === 'no-referrer' || referrer === 'client') {
 			return referrer;
 		} else if (referrer) {
-			const referrerURL = referrer instanceof URL ? referrer : new URL(referrer, document.location);
-			return referrerURL.origin === document.location.origin ? referrerURL : 'client';
+			const referrerURL = referrer instanceof URL ? referrer : new URL(referrer, window.location);
+			return referrerURL.origin === window.location.origin ? referrerURL : 'client';
 		}
 
 		return 'client';
