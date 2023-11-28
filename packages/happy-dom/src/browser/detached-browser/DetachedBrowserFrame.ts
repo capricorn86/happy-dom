@@ -1,15 +1,14 @@
-import IBrowserWindow from '../window/IBrowserWindow.js';
 import DetachedBrowserPage from './DetachedBrowserPage.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
-import IBrowserFrame from './types/IBrowserFrame.js';
-import Location from '../location/Location.js';
-import IResponse from '../fetch/types/IResponse.js';
-import IGoToOptions from './types/IGoToOptions.js';
+import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
+import IBrowserFrame from '../types/IBrowserFrame.js';
+import Location from '../../location/Location.js';
+import IResponse from '../../fetch/types/IResponse.js';
+import IGoToOptions from '../types/IGoToOptions.js';
 import { Script } from 'vm';
-import BrowserFrameURL from './utilities/BrowserFrameURL.js';
-import BrowserFrameScriptEvaluator from './utilities/BrowserFrameScriptEvaluator.js';
-import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
-import IWindow from '../window/IWindow.js';
+import BrowserFrameURL from '../utilities/BrowserFrameURL.js';
+import BrowserFrameScriptEvaluator from '../utilities/BrowserFrameScriptEvaluator.js';
+import BrowserFrameNavigator from '../utilities/BrowserFrameNavigator.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -19,22 +18,21 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public readonly parentFrame: DetachedBrowserFrame | null = null;
 	public readonly opener: DetachedBrowserFrame | null = null;
 	public readonly page: DetachedBrowserPage;
+	// Needs to be injected from the outside when the browser frame is constructed.
+	public window: IBrowserWindow;
 	public _asyncTaskManager = new AsyncTaskManager();
-	// Needs to be injected when constructing the browser frame in Window.ts.
-	public window: IWindow;
-	readonly #windowClass: new (browserFrame: IBrowserFrame) => IBrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param page Page.
+	 * @param [window] Window.
 	 */
-	constructor(
-		page: DetachedBrowserPage,
-		windowClass: new (browserFrame: IBrowserFrame) => IBrowserWindow
-	) {
+	constructor(page: DetachedBrowserPage) {
 		this.page = page;
-		this.#windowClass = windowClass;
+		if (page.context.browser.contexts[0]?.pages[0]?.mainFrame) {
+			this.window = new this.page.context.browser.windowClass(this);
+		}
 	}
 
 	/**
@@ -43,6 +41,9 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @returns Content.
 	 */
 	public get content(): string {
+		if (!this.window) {
+			throw new Error('The frame has been destroyed, the "window" property is not set.');
+		}
 		return this.window.document.documentElement.outerHTML;
 	}
 
@@ -52,6 +53,9 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @param content Content.
 	 */
 	public set content(content) {
+		if (!this.window) {
+			throw new Error('The frame has been destroyed, the "window" property is not set.');
+		}
 		this.window.document['_isFirstWrite'] = true;
 		this.window.document['_isFirstWriteAfterOpen'] = false;
 		this.window.document.open();
@@ -64,6 +68,9 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @returns URL.
 	 */
 	public get url(): string {
+		if (!this.window) {
+			throw new Error('The frame has been destroyed, the "window" property is not set.');
+		}
 		return this.window.location.href;
 	}
 
@@ -73,6 +80,9 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @param url URL.
 	 */
 	public set url(url) {
+		if (!this.window) {
+			throw new Error('The frame has been destroyed, the "window" property is not set.');
+		}
 		(<Location>this.window.location) = new Location(
 			this,
 			BrowserFrameURL.getRelativeURL(this, url).href
@@ -98,7 +108,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		for (const frame of this.childFrames) {
 			frame.abort();
 		}
-		this._asyncTaskManager.abortAll();
+		this._asyncTaskManager.abort();
 	}
 
 	/**
@@ -119,6 +129,6 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(this.#windowClass, this, url, options);
+		return BrowserFrameNavigator.goto(this.page.context.browser.windowClass, this, url, options);
 	}
 }

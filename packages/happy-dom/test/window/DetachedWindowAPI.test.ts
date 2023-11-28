@@ -234,7 +234,7 @@ describe('DetachedWindowAPI', () => {
 		});
 
 		it('Sets the viewport device scale factor.', () => {
-			window.happyDOM?.setViewport({ deviceScaleFactor: 2 });
+			window.happyDOM?.setViewport({ devicePixelRatio: 2 });
 			expect(window.devicePixelRatio).toBe(2);
 		});
 	});

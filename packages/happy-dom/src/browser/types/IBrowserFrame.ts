@@ -15,7 +15,7 @@ export default interface IBrowserFrame {
 	url: string;
 	readonly parentFrame: IBrowserFrame | null;
 	readonly opener: IBrowserFrame | null;
-	readonly _asyncTaskManager: AsyncTaskManager;
+	_asyncTaskManager: AsyncTaskManager;
 	readonly page: IBrowserPage;
 
 	/**

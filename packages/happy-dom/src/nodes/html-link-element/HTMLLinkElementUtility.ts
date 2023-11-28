@@ -46,7 +46,7 @@ export default class HTMLLinkElementUtility {
 			let error: Error | null = null;
 
 			try {
-				code = await ResourceFetch.fetch(element.ownerDocument, href);
+				code = await ResourceFetch.fetch(element.ownerDocument._defaultView, href);
 			} catch (e) {
 				error = e;
 			}

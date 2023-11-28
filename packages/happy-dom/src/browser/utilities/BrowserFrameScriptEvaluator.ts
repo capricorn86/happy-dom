@@ -13,6 +13,9 @@ export default class BrowserFrameScriptEvaluator {
 	 * @returns Result.
 	 */
 	public static evaluate(frame: IBrowserFrame, script: string | Script): any {
+		if (!frame.window) {
+			throw new Error('The frame has been destroyed, the "window" property is not set.');
+		}
 		script = typeof script === 'string' ? new Script(script) : script;
 		return script.runInContext(frame.window);
 	}

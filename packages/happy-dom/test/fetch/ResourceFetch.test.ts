@@ -1,6 +1,5 @@
 import Window from '../../src/window/Window.js';
 import IWindow from '../../src/window/IWindow.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
 import ResourceFetch from '../../src/fetch/ResourceFetch.js';
 import IResponse from '../../src/fetch/types/IResponse.js';
 import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder.js';
@@ -13,11 +12,9 @@ const URL = 'https://localhost:8080/base/';
 
 describe('ResourceFetch', () => {
 	let window: IWindow;
-	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window({ url: URL });
-		document = window.document;
 	});
 
 	afterEach(() => {
@@ -37,7 +34,7 @@ describe('ResourceFetch', () => {
 				});
 			});
 
-			const test = await ResourceFetch.fetch(document, 'path/to/script/');
+			const test = await ResourceFetch.fetch(window, 'path/to/script/');
 
 			expect(fetchedURL).toBe('path/to/script/');
 			expect(test).toBe('test');
@@ -67,7 +64,6 @@ describe('ResourceFetch', () => {
 									accept: '*/*',
 									referer: 'https://localhost:8080/base/',
 									'user-agent': window.navigator.userAgent,
-									cookie: '',
 									host: 'localhost:8080'
 								},
 								agent: false,
@@ -95,7 +91,7 @@ describe('ResourceFetch', () => {
 				}
 			});
 
-			const response = ResourceFetch.fetchSync(document, 'path/to/script/');
+			const response = ResourceFetch.fetchSync(window, 'path/to/script/');
 
 			expect(response).toBe(expectedResponse);
 		});
@@ -116,7 +112,7 @@ describe('ResourceFetch', () => {
 				}
 			});
 			expect(() => {
-				ResourceFetch.fetchSync(document, 'path/to/script/');
+				ResourceFetch.fetchSync(window, 'path/to/script/');
 			}).toThrowError(`Failed to perform request to "${URL}path/to/script/". Status code: 404`);
 		});
 	});

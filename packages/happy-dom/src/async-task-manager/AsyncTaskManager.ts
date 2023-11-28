@@ -24,44 +24,16 @@ export default class AsyncTaskManager {
 
 	/**
 	 * Aborts all tasks.
-	 *
-	 * @param destroy Destroy.
 	 */
-	public abortAll(destroy = false): void {
-		const runningTimers = this.runningTimers;
-		const runningImmediates = this.runningImmediates;
-		const runningTasks = this.runningTasks;
-
-		this.runningTasks = {};
-		this.runningTaskCount = 0;
-		this.runningImmediates = [];
-		this.runningTimers = [];
-
-		if (this.whenCompleteImmediate) {
-			global.clearImmediate(this.whenCompleteImmediate);
-			this.whenCompleteImmediate = null;
-		}
-
-		for (const immediate of runningImmediates) {
-			global.clearImmediate(immediate);
-		}
-
-		for (const timer of runningTimers) {
-			global.clearTimeout(timer);
-		}
-
-		for (const key of Object.keys(runningTasks)) {
-			runningTasks[key](destroy);
-		}
-
-		this.resolveWhenComplete();
+	public abort(): void {
+		this.abortAll(false);
 	}
 
 	/**
 	 * Destroys the manager.
 	 */
 	public destroy(): void {
-		this.abortAll();
+		this.abortAll(true);
 	}
 
 	/**
@@ -180,5 +152,40 @@ export default class AsyncTaskManager {
 		for (const resolver of resolvers) {
 			resolver();
 		}
+	}
+
+	/**
+	 * Aborts all tasks.
+	 *
+	 * @param destroy Destroy.
+	 */
+	private abortAll(destroy: boolean): void {
+		const runningTimers = this.runningTimers;
+		const runningImmediates = this.runningImmediates;
+		const runningTasks = this.runningTasks;
+
+		this.runningTasks = {};
+		this.runningTaskCount = 0;
+		this.runningImmediates = [];
+		this.runningTimers = [];
+
+		if (this.whenCompleteImmediate) {
+			global.clearImmediate(this.whenCompleteImmediate);
+			this.whenCompleteImmediate = null;
+		}
+
+		for (const immediate of runningImmediates) {
+			global.clearImmediate(immediate);
+		}
+
+		for (const timer of runningTimers) {
+			global.clearTimeout(timer);
+		}
+
+		for (const key of Object.keys(runningTasks)) {
+			runningTasks[key](destroy);
+		}
+
+		this.resolveWhenComplete();
 	}
 }

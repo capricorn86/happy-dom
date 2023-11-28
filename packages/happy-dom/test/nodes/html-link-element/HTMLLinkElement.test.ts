@@ -1,5 +1,6 @@
 import Window from '../../../src/window/Window.js';
 import IWindow from '../../../src/window/IWindow.js';
+import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
@@ -80,13 +81,13 @@ describe('HTMLLinkElement', () => {
 		it('Loads and evaluates an external CSS file when the attribute "href" and "rel" is set and the element is connected to DOM.', async () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
-			let loadedDocument: IDocument | null = null;
+			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 			let loadEvent: Event | null = null;
 
 			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (document: IDocument, url: string) => {
-					loadedDocument = document;
+				async (window: IBrowserWindow, url: string) => {
+					loadedWindow = window;
 					loadedURL = url;
 					return css;
 				}
@@ -103,7 +104,7 @@ describe('HTMLLinkElement', () => {
 
 			await window.happyDOM?.whenComplete();
 
-			expect(loadedDocument).toBe(document);
+			expect(loadedWindow).toBe(window);
 			expect(loadedURL).toBe('test');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
@@ -137,12 +138,12 @@ describe('HTMLLinkElement', () => {
 		it('Does not load and evaluate external CSS files if the element is not connected to DOM.', () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
-			let loadedDocument: IDocument | null = null;
+			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
 			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (document: IDocument, url: string) => {
-					loadedDocument = document;
+				async (window: IBrowserWindow, url: string) => {
+					loadedWindow = window;
 					loadedURL = url;
 					return css;
 				}
@@ -151,7 +152,7 @@ describe('HTMLLinkElement', () => {
 			element.rel = 'stylesheet';
 			element.href = 'test';
 
-			expect(loadedDocument).toBe(null);
+			expect(loadedWindow).toBe(null);
 			expect(loadedURL).toBe(null);
 		});
 	});
@@ -161,12 +162,12 @@ describe('HTMLLinkElement', () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadEvent: Event | null = null;
-			let loadedDocument: IDocument | null = null;
+			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
 			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (document: IDocument, url: string) => {
-					loadedDocument = document;
+				async (window: IBrowserWindow, url: string) => {
+					loadedWindow = window;
 					loadedURL = url;
 					return css;
 				}
@@ -182,7 +183,7 @@ describe('HTMLLinkElement', () => {
 
 			await window.happyDOM?.whenComplete();
 
-			expect(loadedDocument).toBe(document);
+			expect(loadedWindow).toBe(window);
 			expect(loadedURL).toBe('test');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
@@ -215,12 +216,12 @@ describe('HTMLLinkElement', () => {
 		it('Does not load external CSS file when "href" attribute has been set if the element is not connected to DOM.', () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
-			let loadedDocument: IDocument | null = null;
+			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
 			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (document: IDocument, url: string) => {
-					loadedDocument = document;
+				async (window: IBrowserWindow, url: string) => {
+					loadedWindow = window;
 					loadedURL = url;
 					return css;
 				}
@@ -229,7 +230,7 @@ describe('HTMLLinkElement', () => {
 			element.rel = 'stylesheet';
 			element.href = 'test';
 
-			expect(loadedDocument).toBe(null);
+			expect(loadedWindow).toBe(null);
 			expect(loadedURL).toBe(null);
 			expect(element.sheet).toBe(null);
 		});

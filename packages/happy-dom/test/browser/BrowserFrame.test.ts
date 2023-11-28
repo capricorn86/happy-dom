@@ -1,7 +1,7 @@
 import { Script } from 'vm';
 import Browser from '../../src/browser/Browser';
 import Event from '../../src/event/Event';
-import Window from '../../src/window/Window';
+import BrowserWindow from '../../src/window/BrowserWindow';
 import IRequest from '../../src/fetch/types/IRequest';
 import IResponse from '../../src/fetch/types/IResponse';
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -52,7 +52,7 @@ describe('BrowserFrame', () => {
 		it('Returns the window.', () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
-			expect(page.mainFrame.window).toBeInstanceOf(Window);
+			expect(page.mainFrame.window).toBeInstanceOf(BrowserWindow);
 			expect(page.mainFrame.window.console).toBe(page.console);
 		});
 	});

@@ -666,7 +666,7 @@ describe('XMLHttpRequest', () => {
 									accept: '*/*',
 									referer: WINDOW_URL + '/',
 									'user-agent': window.navigator.userAgent,
-									cookie: '',
+
 									'test-header': 'test',
 									host: window.location.host
 								},
@@ -711,7 +711,7 @@ describe('XMLHttpRequest', () => {
 					) => {
 						expect(options.headers).toEqual({
 							accept: '*/*',
-							cookie: '',
+
 							host: window.location.host,
 							referer: WINDOW_URL + '/',
 							'user-agent': window.navigator.userAgent,
@@ -1101,7 +1101,7 @@ describe('XMLHttpRequest', () => {
 									accept: '*/*',
 									referer: windowURL + '/',
 									'user-agent': window.navigator.userAgent,
-									cookie: '',
+
 									host: window.location.host
 								},
 								agent: false,
@@ -1159,7 +1159,7 @@ describe('XMLHttpRequest', () => {
 									accept: '*/*',
 									referer: WINDOW_URL + '/',
 									'user-agent': window.navigator.userAgent,
-									cookie: '',
+
 									host: window.location.host
 								},
 								agent: false,
@@ -1215,7 +1215,7 @@ describe('XMLHttpRequest', () => {
 								accept: '*/*',
 								referer: windowURL + '/',
 								'user-agent': window.navigator.userAgent,
-								cookie: '',
+
 								host: window.location.host
 							},
 							agent: false,
@@ -1290,7 +1290,7 @@ describe('XMLHttpRequest', () => {
 								accept: '*/*',
 								referer: WINDOW_URL + '/',
 								'user-agent': window.navigator.userAgent,
-								cookie: '',
+
 								host: window.location.host
 							},
 							agent: false,
@@ -1408,7 +1408,7 @@ describe('XMLHttpRequest', () => {
 								accept: '*/*',
 								referer: WINDOW_URL + '/',
 								'user-agent': window.navigator.userAgent,
-								cookie: '',
+
 								host: window.location.host
 							},
 							agent: false,
@@ -1484,7 +1484,7 @@ describe('XMLHttpRequest', () => {
 								accept: '*/*',
 								referer: WINDOW_URL + '/',
 								'user-agent': window.navigator.userAgent,
-								cookie: '',
+
 								host: window.location.host,
 								authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
 							},
@@ -1560,7 +1560,7 @@ describe('XMLHttpRequest', () => {
 								accept: '*/*',
 								referer: WINDOW_URL + '/',
 								'user-agent': window.navigator.userAgent,
-								cookie: '',
+
 								host: window.location.host,
 								authorization: `Basic ${Buffer.from(`${username}:`).toString('base64')}`
 							},
@@ -1627,7 +1627,7 @@ describe('XMLHttpRequest', () => {
 								'content-type': 'text/plain;charset=UTF-8',
 								referer: WINDOW_URL + '/',
 								'user-agent': window.navigator.userAgent,
-								cookie: '',
+
 								host: window.location.host
 							},
 							agent: false,

@@ -48,7 +48,7 @@ export default class HTMLScriptElementUtility {
 			))._readyStateManager.startTask();
 
 			try {
-				code = await ResourceFetch.fetch(element.ownerDocument, src);
+				code = await ResourceFetch.fetch(element.ownerDocument._defaultView, src);
 			} catch (e) {
 				error = e;
 			}
@@ -58,7 +58,7 @@ export default class HTMLScriptElementUtility {
 			))._readyStateManager.endTask();
 		} else {
 			try {
-				code = ResourceFetch.fetchSync(element.ownerDocument, src);
+				code = ResourceFetch.fetchSync(element.ownerDocument._defaultView, src);
 			} catch (e) {
 				error = e;
 			}

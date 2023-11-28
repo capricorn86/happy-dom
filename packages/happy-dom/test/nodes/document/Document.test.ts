@@ -37,6 +37,7 @@ import DOMException from '../../../src/exception/DOMException.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import IRequestInit from '../../../src/fetch/types/IRequestInit.js';
 import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
+import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -1166,21 +1167,21 @@ describe('Document', () => {
 				const jsURL = '/path/to/file.js';
 				const cssResponse = 'body { background-color: red; }';
 				const jsResponse = 'globalThis.test = "test";';
-				let resourceFetchCSSDocument: IDocument | null = null;
+				let resourceFetchCSSWindow: IBrowserWindow | null = null;
 				let resourceFetchCSSURL: string | null = null;
-				let resourceFetchJSDocument: IDocument | null = null;
+				let resourceFetchJSWindow: IBrowserWindow | null = null;
 				let resourceFetchJSURL: string | null = null;
 				let readyChangeEvent: Event | null = null;
 
 				vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-					async (window: IWindow, url: string) => {
+					async (window: IBrowserWindow, url: string) => {
 						if (url.endsWith('.css')) {
-							resourceFetchCSSDocument = document;
+							resourceFetchCSSWindow = window;
 							resourceFetchCSSURL = url;
 							return cssResponse;
 						}
 
-						resourceFetchJSDocument = document;
+						resourceFetchJSWindow = window;
 						resourceFetchJSURL = url;
 						return jsResponse;
 					}
@@ -1204,9 +1205,9 @@ describe('Document', () => {
 				expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
 
 				setTimeout(() => {
-					expect(resourceFetchCSSDocument).toBe(document);
+					expect(resourceFetchCSSWindow).toBe(window);
 					expect(resourceFetchCSSURL).toBe(cssURL);
-					expect(resourceFetchJSDocument).toBe(document);
+					expect(resourceFetchJSWindow).toBe(window);
 					expect(resourceFetchJSURL).toBe(jsURL);
 					expect((<Event>readyChangeEvent).target).toBe(document);
 					expect(document.readyState).toBe(DocumentReadyStateEnum.complete);

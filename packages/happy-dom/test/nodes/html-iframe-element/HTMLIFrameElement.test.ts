@@ -1,4 +1,5 @@
 import Window from '../../../src/window/Window.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import IWindow from '../../../src/window/IWindow.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLIFrameElement from '../../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
@@ -90,10 +91,8 @@ describe('HTMLIFrameElement', () => {
 		it(`Dispatches an error event if the response of the iframe page has an "x-frame-options" header set to "deny".`, async () => {
 			await new Promise((resolve) => {
 				const responseHTML = '<html><head></head><body>Test</body></html>';
-				let fetchedURL: string | null = null;
 
-				vi.spyOn(Window.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					fetchedURL = <string>url;
+				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					return new Promise((resolve) => {
 						setTimeout(() => {
 							resolve(<IResponse>(<unknown>{
@@ -121,10 +120,8 @@ describe('HTMLIFrameElement', () => {
 		it(`Dispatches an error event if the response of the iframe page has an "x-frame-options" header set to "sameorigin" when the origin is different.`, async () => {
 			await new Promise((resolve) => {
 				const responseHTML = '<html><head></head><body>Test</body></html>';
-				let fetchedURL: string | null = null;
 
-				vi.spyOn(Window.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					fetchedURL = <string>url;
+				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					return new Promise((resolve) => {
 						setTimeout(() => {
 							resolve(<IResponse>(<unknown>{
@@ -154,7 +151,7 @@ describe('HTMLIFrameElement', () => {
 				const responseHTML = '<html><head></head><body>Test</body></html>';
 				let fetchedURL: string | null = null;
 
-				vi.spyOn(Window.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					fetchedURL = <string>url;
 					return new Promise((resolve) => {
 						setTimeout(() => {
@@ -188,7 +185,7 @@ describe('HTMLIFrameElement', () => {
 				const responseHTML = '<html><head></head><body>Test</body></html>';
 				let fetchedURL: string | null = null;
 
-				vi.spyOn(Window.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					fetchedURL = <string>url;
 					return Promise.resolve(<IResponse>(<unknown>{
 						text: () => Promise.resolve(responseHTML),
@@ -215,10 +212,8 @@ describe('HTMLIFrameElement', () => {
 		it('Returns content window for relative URL.', async () => {
 			await new Promise((resolve) => {
 				const responseHTML = '<html><head></head><body>Test</body></html>';
-				let fetchedURL: string | null = null;
 
-				vi.spyOn(Window.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					fetchedURL = <string>url;
+				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					return Promise.resolve(<IResponse>(<unknown>{
 						text: () => Promise.resolve(responseHTML),
 						ok: true,
@@ -236,7 +231,7 @@ describe('HTMLIFrameElement', () => {
 			});
 		});
 
-		it('Returns content window for without protocol.', async () => {
+		it('Returns content window for URL without protocol.', async () => {
 			await new Promise((resolve) => {
 				const browser = new Browser();
 				const page = browser.newPage();
@@ -244,12 +239,10 @@ describe('HTMLIFrameElement', () => {
 				const document = window.document;
 				const element = <IHTMLIFrameElement>document.createElement('iframe');
 				const responseHTML = '<html><head></head><body>Test</body></html>';
-				let fetchedURL: string | null = null;
 
 				page.mainFrame.url = 'https://localhost:8080';
 
-				vi.spyOn(Window.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					fetchedURL = <string>url;
+				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					return Promise.resolve(<IResponse>(<unknown>{
 						text: () => Promise.resolve(responseHTML),
 						ok: true,
@@ -281,7 +274,7 @@ describe('HTMLIFrameElement', () => {
 
 				page.mainFrame.url = documentOrigin;
 
-				vi.spyOn(Window.prototype, 'fetch').mockImplementation(
+				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation(
 					(url: IRequestInfo): Promise<IResponse> => {
 						fetchedURL = <string>url;
 						return new Promise((resolve) => {
@@ -336,7 +329,7 @@ describe('HTMLIFrameElement', () => {
 			await new Promise((resolve) => {
 				const error = new Error('Error');
 
-				vi.spyOn(Window.prototype, 'fetch').mockImplementation(() => {
+				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation(() => {
 					return Promise.resolve(<IResponse>(<unknown>{
 						text: () => Promise.reject(error),
 						ok: true,

@@ -1,6 +1,7 @@
 import DetachedBrowser from '../../../src/browser/detached-browser/DetachedBrowser';
 import DetachedBrowserPage from '../../../src/browser/detached-browser/DetachedBrowserPage';
 import Window from '../../../src/window/Window';
+import BrowserWindow from '../../../src/window/BrowserWindow';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 
 describe('DetachedBrowserContext', () => {
@@ -11,7 +12,8 @@ describe('DetachedBrowserContext', () => {
 	describe('get pages()', () => {
 		it('Returns the pages.', () => {
 			const window = new Window();
-			const browser = new DetachedBrowser(Window, window);
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = window;
 			expect(browser.defaultContext.pages.length).toBe(1);
 			expect(browser.defaultContext.pages[0].mainFrame.window).toBe(window);
 			const page = browser.defaultContext.newPage();
@@ -23,14 +25,15 @@ describe('DetachedBrowserContext', () => {
 
 	describe('get browser()', () => {
 		it('Returns the browser.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			expect(browser.defaultContext.browser).toBe(browser);
 		});
 	});
 
 	describe('close()', () => {
 		it('Closes the context.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const context = browser.defaultContext;
 			const page1 = context.newPage();
 			const page2 = context.newPage();
@@ -54,7 +57,7 @@ describe('DetachedBrowserContext', () => {
 
 	describe('whenComplete()', () => {
 		it('Waits for all pages to complete.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			const page1 = browser.newPage();
 			const page2 = browser.newPage();
 			page1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
@@ -67,7 +70,7 @@ describe('DetachedBrowserContext', () => {
 
 	describe('abort()', () => {
 		it('Aborts all ongoing operations.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			const page1 = browser.newPage();
 			const page2 = browser.newPage();
 			page1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
@@ -82,7 +85,8 @@ describe('DetachedBrowserContext', () => {
 	describe('newPage()', () => {
 		it('Creates a new page.', () => {
 			const window = new Window();
-			const browser = new DetachedBrowser(Window, window);
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = window;
 			const page = browser.defaultContext.newPage();
 			expect(page instanceof DetachedBrowserPage).toBe(true);
 			expect(browser.defaultContext.pages.length).toBe(2);
@@ -92,7 +96,8 @@ describe('DetachedBrowserContext', () => {
 
 		it('Supports opener as parameter.', () => {
 			const window = new Window();
-			const browser = new DetachedBrowser(Window, window);
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = window;
 			const page1 = browser.defaultContext.newPage();
 			const page2 = browser.defaultContext.newPage(page1.mainFrame);
 			expect(page2.mainFrame.opener).toBe(page1.mainFrame);

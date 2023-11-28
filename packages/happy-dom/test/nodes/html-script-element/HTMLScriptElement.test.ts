@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IResponse from '../../../src/fetch/types/IResponse.js';
@@ -9,10 +8,11 @@ import Event from '../../../src/event/Event.js';
 import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import IWindow from '../../../src/window/IWindow.js';
+import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 
 describe('HTMLScriptElement', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window();
@@ -223,17 +223,19 @@ describe('HTMLScriptElement', () => {
 		});
 
 		it('Loads external script synchronously with relative URL.', async () => {
-			let fetchedDocument: IDocument | null = null;
+			let fetchedWindow: IBrowserWindow | null = null;
 			let fetchedURL: string | null = null;
 			let loadEvent: Event | null = null;
 
 			window.location.href = 'https://localhost:8080/base/';
 
-			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation((window: IWindow, url: string) => {
-				fetchedDocument = document;
-				fetchedURL = url;
-				return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
-			});
+			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation(
+				(window: IBrowserWindow, url: string) => {
+					fetchedWindow = window;
+					fetchedURL = url;
+					return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
+				}
+			);
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script/';
@@ -244,7 +246,7 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(script);
 
 			expect((<Event>(<unknown>loadEvent)).target).toBe(script);
-			expect(fetchedDocument).toBe(document);
+			expect(fetchedWindow).toBe(window);
 			expect(fetchedURL).toBe('path/to/script/');
 			expect(window['test']).toBe('test');
 			expect(window['currentScript']).toBe(script);

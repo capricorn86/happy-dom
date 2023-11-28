@@ -20,7 +20,7 @@ export default class CookieStringUtility {
 		const cookie: ICookie = {
 			// Required
 			key: key.trim(),
-			value: value || null,
+			value: value ?? null,
 			originURL,
 
 			// Optional

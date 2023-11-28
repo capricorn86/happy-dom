@@ -2,11 +2,10 @@ import IBrowserSettings from './types/IBrowserSettings.js';
 import BrowserContext from './BrowserContext.js';
 import IOptionalBrowserSettings from './types/IOptionalBrowserSettings.js';
 import BrowserSettingsFactory from './BrowserSettingsFactory.js';
-import IBrowserPage from './types/IBrowserPage.js';
+import BrowserPage from './BrowserPage.js';
 import IBrowser from './types/IBrowser.js';
-import IBrowserFrame from './types/IBrowserFrame.js';
+import BrowserFrame from './BrowserFrame.js';
 import ICookieContainer from '../cookie/types/ICookieContainer.js';
-import IBrowserContext from './types/IBrowserContext.js';
 
 /**
  * Browser.
@@ -14,7 +13,7 @@ import IBrowserContext from './types/IBrowserContext.js';
  * Much of the interface for the browser has been taken from Puppeteer and Playwright, so that the API is familiar.
  */
 export default class Browser implements IBrowser {
-	public readonly contexts: IBrowserContext[];
+	public readonly contexts: BrowserContext[];
 	public readonly settings: IBrowserSettings;
 	public readonly console: Console | null;
 
@@ -40,7 +39,7 @@ export default class Browser implements IBrowser {
 	 *
 	 * @returns Default context.
 	 */
-	public get defaultContext(): IBrowserContext {
+	public get defaultContext(): BrowserContext {
 		if (this.contexts.length === 0) {
 			throw new Error('No default context. The browser has been closed.');
 		}
@@ -98,7 +97,7 @@ export default class Browser implements IBrowser {
 	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	public newPage(opener?: IBrowserFrame): IBrowserPage {
+	public newPage(opener?: BrowserFrame): BrowserPage {
 		if (this.contexts.length === 0) {
 			throw new Error('No default context. The browser has been closed.');
 		}

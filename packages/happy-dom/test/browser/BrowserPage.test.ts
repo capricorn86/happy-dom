@@ -1,6 +1,6 @@
 import Browser from '../../src/browser/Browser';
 import BrowserFrame from '../../src/browser/BrowserFrame';
-import Window from '../../src/window/Window';
+import BrowserWindow from '../../src/window/BrowserWindow';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter';
 import VirtualConsole from '../../src/console/VirtualConsole';
 import IResponse from '../../src/fetch/types/IResponse';
@@ -26,7 +26,7 @@ describe('BrowserPage', () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
 			expect(page.mainFrame).toBeInstanceOf(BrowserFrame);
-			expect(page.mainFrame.window).toBeInstanceOf(Window);
+			expect(page.mainFrame.window).toBeInstanceOf(BrowserWindow);
 		});
 	});
 
@@ -196,7 +196,7 @@ describe('BrowserPage', () => {
 		it('Sets the viewport device scale factor.', () => {
 			const browser = new Browser();
 			const page = browser.newPage();
-			page.setViewport({ deviceScaleFactor: 2 });
+			page.setViewport({ devicePixelRatio: 2 });
 			expect(page.mainFrame.window.devicePixelRatio).toBe(2);
 		});
 	});

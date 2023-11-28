@@ -44,8 +44,8 @@ export default class BrowserPageUtility {
 			page.mainFrame.window.dispatchEvent(new Event('resize'));
 		}
 
-		if (viewport.deviceScaleFactor !== undefined) {
-			(<number>page.mainFrame.window.devicePixelRatio) = viewport.deviceScaleFactor;
+		if (viewport.devicePixelRatio !== undefined) {
+			(<number>page.mainFrame.window.devicePixelRatio) = viewport.devicePixelRatio;
 		}
 	}
 

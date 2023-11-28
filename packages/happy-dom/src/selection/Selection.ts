@@ -19,9 +19,9 @@ import SelectionDirectionEnum from './SelectionDirectionEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Selection.
  */
 export default class Selection {
-	private readonly _ownerDocument: IDocument = null;
-	private _range: Range = null;
-	private _direction: SelectionDirectionEnum = SelectionDirectionEnum.directionless;
+	readonly #ownerDocument: IDocument = null;
+	public _range: Range = null;
+	public _direction: SelectionDirectionEnum = SelectionDirectionEnum.directionless;
 
 	/**
 	 * Constructor.
@@ -29,7 +29,7 @@ export default class Selection {
 	 * @param ownerDocument Owner document.
 	 */
 	constructor(ownerDocument: IDocument) {
-		this._ownerDocument = ownerDocument;
+		this.#ownerDocument = ownerDocument;
 	}
 
 	/**
@@ -172,7 +172,7 @@ export default class Selection {
 		if (!newRange) {
 			throw new Error('Failed to execute addRange on Selection. Parameter 1 is not of type Range.');
 		}
-		if (!this._range && newRange._ownerDocument === this._ownerDocument) {
+		if (!this._range && newRange._ownerDocument === this.#ownerDocument) {
 			this._associateRange(newRange);
 		}
 	}
@@ -245,11 +245,11 @@ export default class Selection {
 			throw new DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError);
 		}
 
-		if (node.ownerDocument !== this._ownerDocument) {
+		if (node.ownerDocument !== this.#ownerDocument) {
 			return;
 		}
 
-		const newRange = new this._ownerDocument._defaultView.Range();
+		const newRange = new this.#ownerDocument._defaultView.Range();
 
 		newRange._start.node = node;
 		newRange._start.offset = offset;
@@ -285,7 +285,7 @@ export default class Selection {
 		}
 
 		const { node, offset } = this._range._end;
-		const newRange = new this._ownerDocument._defaultView.Range();
+		const newRange = new this.#ownerDocument._defaultView.Range();
 
 		newRange._start.node = node;
 		newRange._start.offset = offset;
@@ -309,7 +309,7 @@ export default class Selection {
 		}
 
 		const { node, offset } = this._range._start;
-		const newRange = new this._ownerDocument._defaultView.Range();
+		const newRange = new this.#ownerDocument._defaultView.Range();
 
 		newRange._start.node = node;
 		newRange._start.offset = offset;
@@ -328,7 +328,7 @@ export default class Selection {
 	 * @returns Always returns "true" for now.
 	 */
 	public containsNode(node: INode, allowPartialContainment = false): boolean {
-		if (!this._range || node.ownerDocument !== this._ownerDocument) {
+		if (!this._range || node.ownerDocument !== this.#ownerDocument) {
 			return false;
 		}
 
@@ -366,7 +366,7 @@ export default class Selection {
 	 * @param offset Offset.
 	 */
 	public extend(node: INode, offset: number): void {
-		if (node.ownerDocument !== this._ownerDocument) {
+		if (node.ownerDocument !== this.#ownerDocument) {
 			return;
 		}
 
@@ -379,7 +379,7 @@ export default class Selection {
 
 		const anchorNode = this.anchorNode;
 		const anchorOffset = this.anchorOffset;
-		const newRange = new this._ownerDocument._defaultView.Range();
+		const newRange = new this.#ownerDocument._defaultView.Range();
 		newRange._start.node = node;
 		newRange._start.offset = 0;
 		newRange._end.node = node;
@@ -430,12 +430,12 @@ export default class Selection {
 			);
 		}
 
-		if (node.ownerDocument !== this._ownerDocument) {
+		if (node.ownerDocument !== this.#ownerDocument) {
 			return;
 		}
 
 		const length = node.childNodes.length;
-		const newRange = new this._ownerDocument._defaultView.Range();
+		const newRange = new this.#ownerDocument._defaultView.Range();
 
 		newRange._start.node = node;
 		newRange._start.offset = 0;
@@ -471,15 +471,15 @@ export default class Selection {
 		}
 
 		if (
-			anchorNode.ownerDocument !== this._ownerDocument ||
-			focusNode.ownerDocument !== this._ownerDocument
+			anchorNode.ownerDocument !== this.#ownerDocument ||
+			focusNode.ownerDocument !== this.#ownerDocument
 		) {
 			return;
 		}
 
 		const anchor = { node: anchorNode, offset: anchorOffset };
 		const focus = { node: focusNode, offset: focusOffset };
-		const newRange = new this._ownerDocument._defaultView.Range();
+		const newRange = new this.#ownerDocument._defaultView.Range();
 
 		if (RangeUtility.compareBoundaryPointsPosition(anchor, focus) === -1) {
 			newRange._start = anchor;
@@ -518,7 +518,7 @@ export default class Selection {
 
 		if (oldRange !== this._range) {
 			// https://w3c.github.io/selection-api/#selectionchange-event
-			this._ownerDocument.dispatchEvent(new Event('selectionchange'));
+			this.#ownerDocument.dispatchEvent(new Event('selectionchange'));
 		}
 	}
 }

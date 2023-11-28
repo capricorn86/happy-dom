@@ -94,7 +94,7 @@ export default class BrowserFrame implements IBrowserFrame {
 		for (const frame of this.childFrames) {
 			frame.abort();
 		}
-		this._asyncTaskManager.abortAll();
+		this._asyncTaskManager.abort();
 	}
 
 	/**

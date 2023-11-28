@@ -2,8 +2,8 @@ import IWindow from './IWindow.js';
 import DetachedWindowAPI from './DetachedWindowAPI.js';
 import IOptionalBrowserSettings from '../browser/types/IOptionalBrowserSettings.js';
 import BrowserWindow from './BrowserWindow.js';
-import DetachedBrowserPage from '../browser/DetachedBrowserPage.js';
-import Browser from '../browser/Browser.js';
+import DetachedBrowser from '../browser/detached-browser/DetachedBrowser.js';
+import Location from '../location/Location.js';
 
 /**
  * Window.
@@ -30,38 +30,28 @@ export default class Window extends BrowserWindow implements IWindow {
 	constructor(options?: {
 		width?: number;
 		height?: number;
+		/** @deprecated Replaced by the "width" property. */
 		innerWidth?: number;
+		/** @deprecated Replaced by the "height" property. */
 		innerHeight?: number;
 		url?: string;
 		console?: Console;
 		settings?: IOptionalBrowserSettings;
 	}) {
-		const browser = new Browser();
-		const browserPage = new DetachedBrowserPage(browser.defaultContext, BrowserWindow);
-		const browserFrame = browserPage.mainFrame;
+		const browser = new DetachedBrowser(BrowserWindow, {
+			console: options?.console,
+			settings: options?.settings
+		});
+		const browserFrame = browser.defaultContext.pages[0].mainFrame;
 
-		super(browserFrame);
+		super(browserFrame, {
+			url: options?.url,
+			width: options?.width ?? options?.innerWidth,
+			height: options?.height ?? options?.innerHeight
+		});
 
 		browserFrame.window = this;
 
 		this.happyDOM = new DetachedWindowAPI(browserFrame);
-
-		if (options) {
-			if (
-				options.width !== undefined ||
-				options.innerWidth !== undefined ||
-				options.height !== undefined ||
-				options.innerHeight !== undefined
-			) {
-				browserFrame.page.setViewport({
-					width: options.width ?? options.innerWidth ?? 1024,
-					height: options.height ?? options.innerHeight ?? 768
-				});
-			}
-
-			if (options.url !== undefined) {
-				browserFrame.url = options.url;
-			}
-		}
 	}
 }

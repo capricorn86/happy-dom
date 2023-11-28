@@ -31,16 +31,18 @@ export default class CookieContainer implements ICookieContainer {
 		}
 
 		for (const cookie of cookies) {
-			// Remove existing cookie with same name, domain and path.
-			const index = indexMap[getKey(cookie)];
+			if (cookie?.key) {
+				// Remove existing cookie with same name, domain and path.
+				const index = indexMap[getKey(cookie)];
 
-			if (index !== undefined) {
-				this.#cookies.splice(index, 1);
-			}
+				if (index !== undefined) {
+					this.#cookies.splice(index, 1);
+				}
 
-			if (!CookieExpireUtility.hasExpired(cookie)) {
-				indexMap[getKey(cookie)] = this.#cookies.length;
-				this.#cookies.push(cookie);
+				if (!CookieExpireUtility.hasExpired(cookie)) {
+					indexMap[getKey(cookie)] = this.#cookies.length;
+					this.#cookies.push(cookie);
+				}
 			}
 		}
 	}

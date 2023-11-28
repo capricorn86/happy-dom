@@ -500,8 +500,15 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * Constructor.
 	 *
 	 * @param browserFrame Browser frame.
+	 * @param [options] Options.
+	 * @param [options.url] URL.
+	 * @param [options.width] Window width. Defaults to "1024".
+	 * @param [options.height] Window height. Defaults to "768".
 	 */
-	constructor(browserFrame: IBrowserFrame) {
+	constructor(
+		browserFrame: IBrowserFrame,
+		options?: { url?: string; width?: number; height?: number }
+	) {
 		super();
 
 		this.#browserFrame = browserFrame;
@@ -517,10 +524,23 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		this.screen = new Screen();
 		this.sessionStorage = new Storage();
 		this.localStorage = new Storage();
+		this.location = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
-		this.location = new Location(this.#browserFrame, 'about:blank');
+		if (options) {
+			if (options.width !== undefined) {
+				if (options.width !== undefined && this.innerWidth !== options.width) {
+					(<number>this.innerWidth) = options.width;
+					(<number>this.outerWidth) = options.width;
+				}
+			}
+
+			if (options.height !== undefined && this.innerHeight !== options.height) {
+				(<number>this.innerHeight) = options.height;
+				(<number>this.outerHeight) = options.height;
+			}
+		}
 
 		// Binds all methods to "this", so that it will use the correct context when called globally.
 		for (const key of Object.getOwnPropertyNames(BrowserWindow.prototype).concat(

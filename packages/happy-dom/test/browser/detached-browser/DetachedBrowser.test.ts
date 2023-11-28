@@ -2,6 +2,7 @@ import DetachedBrowser from '../../../src/browser/detached-browser/DetachedBrows
 import DetachedBrowserContext from '../../../src/browser/detached-browser/DetachedBrowserContext';
 import DetachedBrowserPage from '../../../src/browser/detached-browser/DetachedBrowserPage';
 import DefaultBrowserSettings from '../../../src/browser/DefaultBrowserSettings';
+import BrowserWindow from '../../../src/window/BrowserWindow';
 import Window from '../../../src/window/Window';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 
@@ -12,7 +13,8 @@ describe('DetachedBrowser', () => {
 
 	describe('get contexts()', () => {
 		it('Returns the contexts.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+
 			expect(browser.contexts.length).toBe(1);
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
 
@@ -27,7 +29,7 @@ describe('DetachedBrowser', () => {
 
 	describe('get settings()', () => {
 		it('Returns the settings.', () => {
-			expect(new DetachedBrowser(Window, new Window()).settings).toEqual(DefaultBrowserSettings);
+			expect(new DetachedBrowser(BrowserWindow).settings).toEqual(DefaultBrowserSettings);
 		});
 
 		it('Returns the settings with custom settings.', () => {
@@ -37,7 +39,7 @@ describe('DetachedBrowser', () => {
 					userAgent: 'test'
 				}
 			};
-			expect(new DetachedBrowser(Window, new Window(), { settings }).settings).toEqual({
+			expect(new DetachedBrowser(BrowserWindow, { settings }).settings).toEqual({
 				...DefaultBrowserSettings,
 				...settings,
 				navigator: {
@@ -50,23 +52,23 @@ describe('DetachedBrowser', () => {
 
 	describe('get console()', () => {
 		it('Returns "null" if no console is provided.', () => {
-			expect(new DetachedBrowser(Window, new Window()).console).toBe(null);
+			expect(new DetachedBrowser(BrowserWindow).console).toBe(null);
 		});
 
 		it('Returns console sent into the constructor.', () => {
-			expect(new DetachedBrowser(Window, new Window(), { console }).console).toBe(console);
+			expect(new DetachedBrowser(BrowserWindow, { console }).console).toBe(console);
 		});
 	});
 
 	describe('get defaultContext()', () => {
 		it('Returns the default context.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			expect(browser.defaultContext instanceof DetachedBrowserContext).toBe(true);
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
 		});
 
 		it('Throws an error if the browser has been closed.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			browser.close();
 			expect(() => browser.defaultContext).toThrow(
 				'No default context. The browser has been closed.'
@@ -76,9 +78,11 @@ describe('DetachedBrowser', () => {
 
 	describe('close()', () => {
 		it('Closes the browser.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			const originalClose = browser.defaultContext.close;
 			let isContextClosed = false;
+
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 
 			vi.spyOn(browser.defaultContext, 'close').mockImplementation(() => {
 				isContextClosed = true;
@@ -93,7 +97,7 @@ describe('DetachedBrowser', () => {
 
 	describe('whenComplete()', () => {
 		it('Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			const page1 = browser.newPage();
 			const page2 = browser.newPage();
 			page1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
@@ -106,7 +110,7 @@ describe('DetachedBrowser', () => {
 
 	describe('abort()', () => {
 		it('Aborts all ongoing operations.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			const page1 = browser.newPage();
 			const page2 = browser.newPage();
 			page1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
@@ -120,7 +124,8 @@ describe('DetachedBrowser', () => {
 
 	describe('newIncognitoContext()', () => {
 		it('Throws an error as it is not possible to create a new incognito context inside a detached browser.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			browser.close();
 			expect(() => browser.newIncognitoContext()).toThrow(
 				'Not possible to create a new context on a detached browser.'
@@ -131,7 +136,8 @@ describe('DetachedBrowser', () => {
 	describe('newPage()', () => {
 		it('Creates a new page.', () => {
 			const window = new Window();
-			const browser = new DetachedBrowser(Window, window);
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = window;
 			const page = browser.newPage();
 			expect(page instanceof DetachedBrowserPage).toBe(true);
 			expect(browser.contexts.length).toBe(1);
@@ -141,14 +147,16 @@ describe('DetachedBrowser', () => {
 		});
 
 		it('Throws an error if the browser has been closed.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			browser.close();
 			expect(() => browser.newPage()).toThrow('No default context. The browser has been closed.');
 		});
 
 		it('Supports opener as parameter.', () => {
 			const window = new Window();
-			const browser = new DetachedBrowser(Window, window);
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = window;
 			const page1 = browser.newPage();
 			const page2 = browser.newPage(page1.mainFrame);
 			expect(page2.mainFrame.opener).toBe(page1.mainFrame);

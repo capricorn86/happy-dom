@@ -2,6 +2,7 @@ import { Script } from 'vm';
 import DetachedBrowser from '../../../src/browser/detached-browser/DetachedBrowser';
 import Event from '../../../src/event/Event';
 import Window from '../../../src/window/Window';
+import BrowserWindow from '../../../src/window/BrowserWindow';
 import IRequest from '../../../src/fetch/types/IRequest';
 import IResponse from '../../../src/fetch/types/IResponse';
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -18,7 +19,8 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('get childFrames()', () => {
 		it('Returns child frames.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			expect(page.mainFrame.childFrames).toEqual([]);
 			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
@@ -29,7 +31,8 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('get parentFrame()', () => {
 		it('Returns the parent frame.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			expect(page.mainFrame.parentFrame).toBe(null);
 			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
@@ -42,7 +45,7 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('get page()', () => {
 		it('Returns the page.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			const page = browser.defaultContext.pages[0];
 			expect(page.mainFrame.page).toBe(page);
 		});
@@ -50,16 +53,18 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('get window()', () => {
 		it('Returns the window.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
-			expect(page.mainFrame.window).toBeInstanceOf(Window);
+			expect(page.mainFrame.window).toBeInstanceOf(BrowserWindow);
 			expect(page.mainFrame.window.console).toBe(page.console);
 		});
 	});
 
 	describe('get content()', () => {
 		it('Returns the document HTML content.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			page.mainFrame.window.document.write('<div>test</div>');
 			expect(page.content).toBe('<html><head></head><body><div>test</div></body></html>');
@@ -68,7 +73,8 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('set content()', () => {
 		it('Sets the document HTML content.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			page.mainFrame.content = '<div>test</div>';
 			expect(page.mainFrame.window.document.documentElement.outerHTML).toBe(
@@ -77,9 +83,10 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it('Removes listeners and child nodes before setting the document HTML content.', () => {
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: { disableErrorCapturing: true }
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			page.mainFrame.content = '<div>test</div>';
 			page.mainFrame.window.document.addEventListener('load', () => {
@@ -99,7 +106,8 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('get url()', () => {
 		it('Returns the document URL.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			page.mainFrame.url = 'http://localhost:3000';
 			expect(page.mainFrame.url).toBe('http://localhost:3000/');
@@ -108,7 +116,8 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('set url()', () => {
 		it('Sets the document URL.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const location = page.mainFrame.window.location;
 			page.mainFrame.url = 'http://localhost:3000';
@@ -119,7 +128,8 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('whenComplete()', () => {
 		it('Waits for all pages to complete.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
@@ -135,7 +145,8 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('abort()', () => {
 		it('Aborts all ongoing operations.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
 			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
@@ -152,14 +163,16 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('evaluate()', () => {
 		it("Evaluates a code string in the frame's context.", () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			expect(page.mainFrame.evaluate('globalThis.test = 1')).toBe(1);
 			expect(page.mainFrame.window['test']).toBe(1);
 		});
 
 		it("Evaluates a VM script in the frame's context.", () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			expect(page.mainFrame.evaluate(new Script('globalThis.test = 1'))).toBe(1);
 			expect(page.mainFrame.window['test']).toBe(1);
@@ -178,7 +191,8 @@ describe('DetachedBrowserFrame', () => {
 				});
 			});
 
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
 			const oldWindow = page.mainFrame.window;
 			const response = await page.mainFrame.goto('http://localhost:3000', {
@@ -197,7 +211,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it('Navigates to a URL with "javascript:" as protocol.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const oldWindow = page.mainFrame.window;
 			const response = await page.mainFrame.goto('javascript:document.write("test");');
@@ -210,7 +225,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it('Navigates to a URL with "about:" as protocol.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 			const response = await page.mainFrame.goto('about:blank');
@@ -221,7 +237,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it('Aborts request if it times out.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 			let error: Error | null = null;
@@ -260,7 +277,8 @@ describe('DetachedBrowserFrame', () => {
 				});
 			});
 
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 			const response = await page.mainFrame.goto('http://localhost:3000');
@@ -281,7 +299,8 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Error'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 			let error: Error | null = null;
@@ -303,13 +322,14 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
@@ -331,13 +351,14 @@ describe('DetachedBrowserFrame', () => {
 				}));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
@@ -355,13 +376,14 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage(page.mainFrame);
 			const oldWindow = childPage.mainFrame.window;
@@ -383,13 +405,14 @@ describe('DetachedBrowserFrame', () => {
 				}));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage(page.mainFrame);
 			const oldWindow = childPage.mainFrame.window;
@@ -407,13 +430,14 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.sameOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 
@@ -434,13 +458,14 @@ describe('DetachedBrowserFrame', () => {
 				}));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.strictOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage(page.mainFrame);
 			const oldWindow = childPage.mainFrame.window;
@@ -461,13 +486,14 @@ describe('DetachedBrowserFrame', () => {
 				}));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.strictOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage(page.mainFrame);
 			const oldWindow = childPage.mainFrame.window;
@@ -488,13 +514,14 @@ describe('DetachedBrowserFrame', () => {
 				}));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.strictOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage(page.mainFrame);
 			const oldWindow = childPage.mainFrame.window;
@@ -513,13 +540,14 @@ describe('DetachedBrowserFrame', () => {
 				}));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.strictOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage(page.mainFrame);
 			const oldWindow = childPage.mainFrame.window;
@@ -537,13 +565,14 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.strictOrigin
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 
@@ -564,7 +593,7 @@ describe('DetachedBrowserFrame', () => {
 				}));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						disableChildFrameNavigation: false,
@@ -572,6 +601,7 @@ describe('DetachedBrowserFrame', () => {
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
@@ -587,7 +617,7 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						disableChildFrameNavigation: true,
@@ -595,6 +625,7 @@ describe('DetachedBrowserFrame', () => {
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
@@ -614,7 +645,7 @@ describe('DetachedBrowserFrame', () => {
 				}));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						disableChildPageNavigation: false,
@@ -622,6 +653,7 @@ describe('DetachedBrowserFrame', () => {
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage(page.mainFrame);
 			const oldWindow = childPage.mainFrame.window;
@@ -637,7 +669,7 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						disableChildPageNavigation: true,
@@ -645,6 +677,7 @@ describe('DetachedBrowserFrame', () => {
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage(page.mainFrame);
 			const oldWindow = childPage.mainFrame.window;
@@ -661,7 +694,7 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						disableMainFrameNavigation: true,
@@ -669,6 +702,7 @@ describe('DetachedBrowserFrame', () => {
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 
@@ -685,7 +719,7 @@ describe('DetachedBrowserFrame', () => {
 				});
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						disableMainFrameNavigation: false,
@@ -693,6 +727,7 @@ describe('DetachedBrowserFrame', () => {
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 
@@ -707,13 +742,14 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						disableFallbackToSetURL: true
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const oldWindow = page.mainFrame.window;
 
@@ -728,13 +764,14 @@ describe('DetachedBrowserFrame', () => {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
-			const browser = new DetachedBrowser(Window, new Window(), {
+			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					navigation: {
 						disableFallbackToSetURL: false
 					}
 				}
 			});
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
 			const oldWindow = page.mainFrame.window;
 

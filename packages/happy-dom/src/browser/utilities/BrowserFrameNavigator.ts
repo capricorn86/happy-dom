@@ -10,6 +10,7 @@ import AbortController from '../../fetch/AbortController.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
 import BrowserFrameURL from './BrowserFrameURL.js';
 import BrowserFrameValidator from './BrowserFrameValidator.js';
+import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 
 /**
  * Browser frame navigation utility.
@@ -26,12 +27,19 @@ export default class BrowserFrameNavigator {
 	 * @returns Response.
 	 */
 	public static async goto(
-		windowClass: new (browserFrame: IBrowserFrame) => IBrowserWindow,
+		windowClass: new (
+			browserFrame: IBrowserFrame,
+			options?: { url?: string; width?: number; height?: number }
+		) => IBrowserWindow,
 		frame: IBrowserFrame,
 		url: string,
 		options?: IGoToOptions
 	): Promise<IResponse | null> {
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
+
+		if (!frame.window) {
+			throw new Error('The frame has been destroyed, the "window" property is not set.');
+		}
 
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
@@ -71,6 +79,10 @@ export default class BrowserFrameNavigator {
 			return null;
 		}
 
+		const width = frame.window.innerWidth;
+		const height = frame.window.innerHeight;
+		const devicePixelRatio = frame.window.devicePixelRatio;
+
 		for (const childFrame of frame.childFrames) {
 			BrowserFrameFactory.destroyFrame(childFrame);
 		}
@@ -78,9 +90,11 @@ export default class BrowserFrameNavigator {
 		(<IBrowserFrame[]>frame.childFrames) = [];
 		(<boolean>frame.window.closed) = true;
 		frame._asyncTaskManager.destroy();
+		frame._asyncTaskManager = new AsyncTaskManager();
 		WindowBrowserSettingsReader.removeSettings(frame.window);
 
-		(<IBrowserWindow>frame.window) = new windowClass(frame);
+		(<IBrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
+		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
 		if (options?.referrer) {
 			(<string>frame.window.document.referrer) = options.referrer;

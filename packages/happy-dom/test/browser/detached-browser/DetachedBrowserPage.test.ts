@@ -1,6 +1,7 @@
 import DetachedBrowser from '../../../src/browser/detached-browser/DetachedBrowser';
 import DetachedBrowserFrame from '../../../src/browser/detached-browser/DetachedBrowserFrame';
 import Window from '../../../src/window/Window';
+import BrowserWindow from '../../../src/window/BrowserWindow';
 import VirtualConsolePrinter from '../../../src/console/VirtualConsolePrinter';
 import VirtualConsole from '../../../src/console/VirtualConsole';
 import IResponse from '../../../src/fetch/types/IResponse';
@@ -15,7 +16,7 @@ describe('DetachedBrowserPage', () => {
 
 	describe('get virtualConsolePrinter()', () => {
 		it('Returns the virtual console printer.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			const page = browser.defaultContext.newPage();
 			expect(page.virtualConsolePrinter).toBeInstanceOf(VirtualConsolePrinter);
 		});
@@ -23,16 +24,17 @@ describe('DetachedBrowserPage', () => {
 
 	describe('get mainFrame()', () => {
 		it('Returns the mainFrame.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
 			expect(page.mainFrame).toBeInstanceOf(DetachedBrowserFrame);
-			expect(page.mainFrame.window).toBeInstanceOf(Window);
+			expect(page.mainFrame.window).toBeInstanceOf(BrowserWindow);
 		});
 	});
 
 	describe('get context()', () => {
 		it('Returns the context.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			const page = browser.defaultContext.newPage();
 			expect(page.context).toBe(browser.defaultContext);
 		});
@@ -40,7 +42,7 @@ describe('DetachedBrowserPage', () => {
 
 	describe('get console()', () => {
 		it('Returns a virtual console by default.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
 			const page = browser.defaultContext.newPage();
 			expect(page.console).toBeInstanceOf(VirtualConsole);
 			page.console.log('test');
@@ -48,7 +50,7 @@ describe('DetachedBrowserPage', () => {
 		});
 
 		it('Returns the browser console if set.', () => {
-			const browser = new DetachedBrowser(Window, new Window(), { console });
+			const browser = new DetachedBrowser(BrowserWindow, { console });
 			const page = browser.defaultContext.newPage();
 			expect(page.console).toBe(console);
 		});
@@ -56,7 +58,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('get frames()', () => {
 		it('Returns the frames.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
 			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
@@ -66,7 +69,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('get content()', () => {
 		it('Returns the document HTML content.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
 			page.mainFrame.window.document.write('<div>test</div>');
 			expect(page.content).toBe('<html><head></head><body><div>test</div></body></html>');
@@ -75,7 +79,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('set content()', () => {
 		it('Sets the document HTML content.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
 			page.content = '<div>test</div>';
 			expect(page.mainFrame.window.document.documentElement.outerHTML).toBe(
@@ -86,7 +91,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('get url()', () => {
 		it('Returns the document URL.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
 			page.mainFrame.url = 'http://localhost:3000';
 			expect(page.url).toBe('http://localhost:3000/');
@@ -95,7 +101,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('set url()', () => {
 		it('Sets the document URL.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
 			page.url = 'http://localhost:3000';
 			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
@@ -104,7 +111,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('close()', () => {
 		it('Closes the page.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
 			const mainFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
@@ -126,7 +134,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('whenComplete()', () => {
 		it('Waits for all pages to complete.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
@@ -140,7 +149,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('abort()', () => {
 		it('Aborts all ongoing operations.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
@@ -155,7 +165,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('evaluate()', () => {
 		it("Evaluates code in the page's context.", () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			let evaluatedCode: string | null = null;
 			vi.spyOn(page.mainFrame, 'evaluate').mockImplementation((code) => {
@@ -169,7 +180,8 @@ describe('DetachedBrowserPage', () => {
 
 	describe('setViewport()', () => {
 		it('Sets the viewport width.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			page.setViewport({ width: 100 });
 			expect(page.mainFrame.window.innerWidth).toBe(100);
@@ -177,7 +189,8 @@ describe('DetachedBrowserPage', () => {
 		});
 
 		it('Sets the viewport height.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			page.setViewport({ height: 100 });
 			expect(page.mainFrame.window.innerHeight).toBe(100);
@@ -185,7 +198,8 @@ describe('DetachedBrowserPage', () => {
 		});
 
 		it('Sets the viewport width and height.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			page.setViewport({ width: 100, height: 100 });
 			expect(page.mainFrame.window.innerWidth).toBe(100);
@@ -195,16 +209,18 @@ describe('DetachedBrowserPage', () => {
 		});
 
 		it('Sets the viewport device scale factor.', () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
-			page.setViewport({ deviceScaleFactor: 2 });
+			page.setViewport({ devicePixelRatio: 2 });
 			expect(page.mainFrame.window.devicePixelRatio).toBe(2);
 		});
 	});
 
 	describe('goto()', () => {
 		it('Goes to a page.', async () => {
-			const browser = new DetachedBrowser(Window, new Window());
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
 			let usedURL: string | null = null;
 			let usedOptions: IGoToOptions | null = null;
