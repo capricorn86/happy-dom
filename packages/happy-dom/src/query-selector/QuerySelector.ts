@@ -42,6 +42,11 @@ export default class QuerySelector {
 			return new NodeList<IElement>();
 		}
 
+		if (/^[.#\[]?\d/.test(selector)) {
+			throw new Error(
+				"Failed to execute 'querySelectorAll' on 'Element': '" + selector +"' is not a valid selector.");
+		}
+
 		const groups = SelectorParser.getSelectorGroups(selector);
 		let matches: IDocumentPositionAndElement[] = [];
 
@@ -87,6 +92,11 @@ export default class QuerySelector {
 
 		if (selector === null || selector === undefined) {
 			return null;
+		}
+
+		if (/^[.#\[]?\d/.test(selector)) {
+			throw new Error(
+				"Failed to execute 'querySelector' on 'Element': '" + selector +"' is not a valid selector.");
 		}
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
