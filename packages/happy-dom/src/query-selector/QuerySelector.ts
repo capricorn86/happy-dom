@@ -44,7 +44,10 @@ export default class QuerySelector {
 
 		if (/^[.#\[]?\d/.test(selector)) {
 			throw new Error(
-				"Failed to execute 'querySelectorAll' on 'Element': '" + selector +"' is not a valid selector.");
+				"Failed to execute 'querySelectorAll' on 'Element': '" +
+					selector +
+					"' is not a valid selector."
+			);
 		}
 
 		const groups = SelectorParser.getSelectorGroups(selector);
@@ -96,7 +99,10 @@ export default class QuerySelector {
 
 		if (/^[.#\[]?\d/.test(selector)) {
 			throw new Error(
-				"Failed to execute 'querySelector' on 'Element': '" + selector +"' is not a valid selector.");
+				"Failed to execute 'querySelector' on 'Element': '" +
+					selector +
+					"' is not a valid selector."
+			);
 		}
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {

@@ -1130,32 +1130,32 @@ describe('QuerySelector', () => {
 		it('querySelector Trhow an error when provide selector is a invalid value', () => {
 			const div = document.createElement('div');
 			expect(() => div.querySelector('1')).toThrowError(
-				'Failed to execute \'querySelector\' on \'Element\': \'1\' is not a valid selector.'
+				"Failed to execute 'querySelector' on 'Element': '1' is not a valid selector."
 			);
 			expect(() => div.querySelector('[1')).toThrowError(
-				'Failed to execute \'querySelector\' on \'Element\': \'[1\' is not a valid selector.'
+				"Failed to execute 'querySelector' on 'Element': '[1' is not a valid selector."
 			);
 			expect(() => div.querySelector('.1')).toThrowError(
-				'Failed to execute \'querySelector\' on \'Element\': \'.1\' is not a valid selector.'
+				"Failed to execute 'querySelector' on 'Element': '.1' is not a valid selector."
 			);
 			expect(() => div.querySelector('#1')).toThrowError(
-				'Failed to execute \'querySelector\' on \'Element\': \'#1\' is not a valid selector.'
+				"Failed to execute 'querySelector' on 'Element': '#1' is not a valid selector."
 			);
 		});
 
 		it('querySelectorAll Trhow an error when provide selector is a invalid value', () => {
 			const div = document.createElement('div');
 			expect(() => div.querySelectorAll('1')).toThrowError(
-				'Failed to execute \'querySelectorAll\' on \'Element\': \'1\' is not a valid selector.'
+				"Failed to execute 'querySelectorAll' on 'Element': '1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('[1')).toThrowError(
-				'Failed to execute \'querySelectorAll\' on \'Element\': \'[1\' is not a valid selector.'
+				"Failed to execute 'querySelectorAll' on 'Element': '[1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('.1')).toThrowError(
-				'Failed to execute \'querySelectorAll\' on \'Element\': \'.1\' is not a valid selector.'
+				"Failed to execute 'querySelectorAll' on 'Element': '.1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('#1')).toThrowError(
-				'Failed to execute \'querySelectorAll\' on \'Element\': \'#1\' is not a valid selector.'
+				"Failed to execute 'querySelectorAll' on 'Element': '#1' is not a valid selector."
 			);
 		});
 	});
