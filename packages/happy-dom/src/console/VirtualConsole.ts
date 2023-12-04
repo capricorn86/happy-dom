@@ -2,7 +2,6 @@ import IVirtualConsolePrinter from './types/IVirtualConsolePrinter.js';
 import VirtualConsoleLogLevelEnum from './enums/VirtualConsoleLogLevelEnum.js';
 import VirtualConsoleLogTypeEnum from './enums/VirtualConsoleLogTypeEnum.js';
 import IVirtualConsoleLogGroup from './types/IVirtualConsoleLogGroup.js';
-import * as PerfHooks from 'perf_hooks';
 import { ConsoleConstructor } from 'console';
 
 /**
@@ -276,7 +275,7 @@ export default class VirtualConsole implements Console {
 	 * @param [label=default] Label.
 	 */
 	public time(label = 'default'): void {
-		this._time[label] = PerfHooks.performance.now();
+		this._time[label] = performance.now();
 	}
 
 	/**
@@ -288,7 +287,7 @@ export default class VirtualConsole implements Console {
 	public timeEnd(label = 'default'): void {
 		const time = this._time[label];
 		if (time) {
-			const duration = PerfHooks.performance.now() - time;
+			const duration = performance.now() - time;
 			this._printer.print({
 				type: VirtualConsoleLogTypeEnum.timeEnd,
 				level: VirtualConsoleLogLevelEnum.info,
@@ -308,7 +307,7 @@ export default class VirtualConsole implements Console {
 	public timeLog(label = 'default', ...args: Array<object | string>): void {
 		const time = this._time[label];
 		if (time) {
-			const duration = PerfHooks.performance.now() - time;
+			const duration = performance.now() - time;
 			this._printer.print({
 				type: VirtualConsoleLogTypeEnum.timeLog,
 				level: VirtualConsoleLogLevelEnum.info,

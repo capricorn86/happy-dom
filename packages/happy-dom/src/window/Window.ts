@@ -111,7 +111,6 @@ import Fetch from '../fetch/Fetch.js';
 import RangeImplementation from '../range/Range.js';
 import DOMRect from '../nodes/element/DOMRect.js';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
-import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
 import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
@@ -489,7 +488,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly devicePixelRatio = 1;
 	public readonly sessionStorage: Storage;
 	public readonly localStorage: Storage;
-	public readonly performance = PerfHooks.performance;
+	public readonly performance = performance;
 	public readonly innerWidth: number = 1024;
 	public readonly innerHeight: number = 768;
 	public readonly outerWidth: number = 1024;
