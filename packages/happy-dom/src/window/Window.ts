@@ -145,12 +145,16 @@ import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
 
-if (
-	!('crypto' in globalThis) ||
-	Object.getPrototypeOf(globalThis.crypto) === Object.getPrototypeOf({})
-) {
-	globalThis['crypto'] = import('crypto').then((c) => c.webcrypto);
+async function webcryptoImportFallback(): Promise<void> {
+	if (
+		!('crypto' in globalThis) ||
+		Object.getPrototypeOf(globalThis.crypto) === Object.getPrototypeOf({})
+	) {
+		// Import required only on node < 19
+		globalThis['crypto'] = (await import('crypto')).webcrypto;
+	}
 }
+webcryptoImportFallback();
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
