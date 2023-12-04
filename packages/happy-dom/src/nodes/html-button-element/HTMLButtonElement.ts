@@ -211,7 +211,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 			const form = <IHTMLFormElement>this._formNode;
 			switch (this.type) {
 				case 'submit':
-					form.requestSubmit();
+					form.requestSubmit(this);
 					break;
 				case 'reset':
 					form.reset();

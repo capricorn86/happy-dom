@@ -1205,7 +1205,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				} else if (inputType === 'submit') {
 					const form = <IHTMLFormElement>this._formNode;
 					if (form) {
-						form.requestSubmit();
+						form.requestSubmit(this);
 					}
 				} else if (inputType === 'reset' && this.isConnected) {
 					const form = <IHTMLFormElement>this._formNode;
