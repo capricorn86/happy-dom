@@ -9,6 +9,7 @@ import { Script } from 'vm';
 import BrowserFrameURL from './utilities/BrowserFrameURL.js';
 import BrowserFrameScriptEvaluator from './utilities/BrowserFrameScriptEvaluator.js';
 import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
+import IReloadOptions from './types/IReloadOptions.js';
 
 /**
  * Browser frame.
@@ -116,5 +117,15 @@ export default class BrowserFrame implements IBrowserFrame {
 	 */
 	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
 		return BrowserFrameNavigator.goto(BrowserWindow, this, url, options);
+	}
+
+	/**
+	 * Reloads the current frame.
+	 *
+	 * @param [options] Options.
+	 * @returns Response.
+	 */
+	public reload(options: IReloadOptions): Promise<IResponse | null> {
+		return BrowserFrameNavigator.goto(BrowserWindow, this, this.url, options);
 	}
 }

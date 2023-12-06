@@ -1,13 +1,17 @@
 import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
+import IReloadOptions from './IReloadOptions.js';
 
 /**
  * Go to options.
  */
-export default interface IGoToOptions {
-	referrer?: string;
-	referrerPolicy?: IRequestReferrerPolicy;
+export default interface IGoToOptions extends IReloadOptions {
 	/**
-	 * Timeout in ms. Default is 30000ms.
+	 * Referrer.
 	 */
-	timeout?: number;
+	referrer?: string;
+
+	/**
+	 * Referrer policy.
+	 */
+	referrerPolicy?: IRequestReferrerPolicy;
 }

@@ -250,13 +250,15 @@ export default class Response implements IResponse {
 	 * @returns Clone.
 	 */
 	public clone(): Response {
-		const response = new this.#window.Response();
+		const response = new this.#window.Response(this.body, {
+			status: this.status,
+			statusText: this.statusText,
+			headers: this.headers
+		});
 
 		(<number>response.status) = this.status;
 		(<string>response.statusText) = this.statusText;
 		(<boolean>response.ok) = this.ok;
-		(<Headers>response.headers) = new Headers(this.headers);
-		(<Stream.Readable>response.body) = this.body;
 		(<boolean>response.bodyUsed) = this.bodyUsed;
 		(<boolean>response.redirected) = this.redirected;
 		(<string>response.type) = this.type;

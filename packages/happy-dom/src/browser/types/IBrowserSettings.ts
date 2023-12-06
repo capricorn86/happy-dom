@@ -56,6 +56,29 @@ export default interface IBrowserSettings {
 	};
 
 	/**
+	 * Settings for the browser's cache.
+	 */
+	cache: {
+		/** Cache for fetch responses. */
+		response: {
+			/** Disables the cache. */
+			disable: boolean;
+
+			/** Total in memory cache size in bytes. */
+			maxMemorySize: number;
+
+			/** Max in memory cache size for a response in bytes. */
+			maxMemoryResponseSize: number;
+
+			/** Max disk cache size for a response in bytes. */
+			maxDiskResponseSize: number;
+
+			/** Disk cache path. Setting this property will enable the disk cache. */
+			diskPath: string;
+		};
+	};
+
+	/**
 	 * Settings for the browser's device.
 	 */
 	device: {

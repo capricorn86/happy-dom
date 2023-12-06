@@ -4,6 +4,7 @@ import IBrowserPage from './IBrowserPage.js';
 import IResponse from '../../fetch/types/IResponse.js';
 import IGoToOptions from './IGoToOptions.js';
 import { Script } from 'vm';
+import IReloadOptions from './IReloadOptions.js';
 
 /**
  * Browser frame.
@@ -45,4 +46,12 @@ export default interface IBrowserFrame {
 	 * @param [options] Options.
 	 */
 	goto(url: string, options?: IGoToOptions): Promise<IResponse | null>;
+
+	/**
+	 * Reloads the current frame.
+	 *
+	 * @param [options] Options.
+	 * @returns Response.
+	 */
+	reload(options: IReloadOptions): Promise<IResponse | null>;
 }

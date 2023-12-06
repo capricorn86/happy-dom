@@ -20,6 +20,7 @@ import AbortSignal from './AbortSignal.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
+import CachedResponseStateEnum from './enums/CachedResponseStateEnum.js';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -47,6 +48,7 @@ export default class Fetch {
 	private response: Response | null = null;
 	private request: Request;
 	private redirectCount = 0;
+	private disableCache: boolean;
 	#browserFrame: IBrowserFrame;
 	#window: IBrowserWindow;
 
@@ -60,6 +62,7 @@ export default class Fetch {
 	 * @param [options.init] Init.
 	 * @param [options.redirectCount] Redirect count.
 	 * @param [options.contentType] Content Type.
+	 * @param [options.disableCache] Disables the use of cached responses. It will still store the response in the cache.
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
@@ -68,6 +71,7 @@ export default class Fetch {
 		init?: IRequestInit;
 		redirectCount?: number;
 		contentType?: string;
+		disableCache?: boolean;
 	}) {
 		const url = options.url;
 
@@ -81,6 +85,7 @@ export default class Fetch {
 			(<string>this.request.__contentType__) = options.contentType;
 		}
 		this.redirectCount = options.redirectCount || 0;
+		this.disableCache = options.disableCache;
 	}
 
 	/**
@@ -88,7 +93,54 @@ export default class Fetch {
 	 *
 	 * @returns Response.
 	 */
-	public send(): Promise<IResponse> {
+	public async send(): Promise<IResponse> {
+		if (this.disableCache) {
+			return this.sendWithoutCache();
+		}
+
+		const cachedResponse = this.#browserFrame.page.context.responseCache.get(this.request);
+
+		if (cachedResponse) {
+			if (cachedResponse.etag || cachedResponse.state === CachedResponseStateEnum.stale) {
+				const headers = cachedResponse.etag
+					? { 'If-None-Match': cachedResponse.etag }
+					: { 'If-Modified-Since': new Date(cachedResponse.lastModified).toUTCString() };
+				const fetch = new (<typeof Fetch>this.constructor)({
+					browserFrame: this.#browserFrame,
+					window: this.#window,
+					url: this.request.url,
+					init: { headers },
+					disableCache: true
+				});
+
+				if (!cachedResponse.etag && cachedResponse.staleWhileRevalidate) {
+					fetch.send().then((response) => {
+						this.#browserFrame.page.context.responseCache.add(this.request, response);
+					});
+				} else {
+					const response = await fetch.send();
+					this.#browserFrame.page.context.responseCache.add(this.request, response);
+				}
+			}
+
+			const response = new this.#window.Response(cachedResponse.response.body, {
+				status: cachedResponse.response.status,
+				statusText: cachedResponse.response.statusText,
+				headers: cachedResponse.response.headers
+			});
+
+			return response;
+		}
+
+		return this.sendWithoutCache();
+	}
+
+	/**
+	 * Sends request.
+	 *
+	 * @returns Response.
+	 */
+	private sendWithoutCache(): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
 			const taskID = this.#browserFrame.__asyncTaskManager__.startTask(() =>
 				this.onAsyncTaskManagerAbort()
@@ -99,6 +151,9 @@ export default class Fetch {
 			}
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
+				if (response instanceof Response) {
+					this.#browserFrame.page.context.responseCache.add(this.request, response);
+				}
 				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 				resolve(response);
 			};
@@ -115,6 +170,7 @@ export default class Fetch {
 				this.response = new this.#window.Response(result.buffer, {
 					headers: { 'Content-Type': result.type }
 				});
+				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 				resolve(this.response);
 				return;
 			}

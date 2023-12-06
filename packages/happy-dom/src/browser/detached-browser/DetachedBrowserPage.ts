@@ -8,6 +8,7 @@ import { Script } from 'vm';
 import IGoToOptions from '../types/IGoToOptions.js';
 import IResponse from '../../fetch/types/IResponse.js';
 import BrowserPageUtility from '../utilities/BrowserPageUtility.js';
+import IReloadOptions from '../types/IReloadOptions.js';
 
 /**
  * Detached browser page used when constructing a Window instance without a browser.
@@ -126,5 +127,15 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	 */
 	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
 		return this.mainFrame.goto(url, options);
+	}
+
+	/**
+	 * Reloads the current page.
+	 *
+	 * @param [options] Options.
+	 * @returns Response.
+	 */
+	public reload(options: IReloadOptions): Promise<IResponse | null> {
+		return this.mainFrame.reload(options);
 	}
 }

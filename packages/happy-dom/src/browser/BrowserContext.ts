@@ -1,5 +1,7 @@
 import CookieContainer from '../cookie/CookieContainer.js';
 import ICookieContainer from '../cookie/types/ICookieContainer.js';
+import FetchCache from '../fetch/cache/FetchCache.js';
+import IFetchCache from '../fetch/types/IFetchCache.js';
 import Browser from './Browser.js';
 import BrowserFrame from './BrowserFrame.js';
 import BrowserPage from './BrowserPage.js';
@@ -12,15 +14,20 @@ export default class BrowserContext implements IBrowserContext {
 	public readonly pages: BrowserPage[] = [];
 	public readonly browser: Browser;
 	public readonly cookieContainer: ICookieContainer;
+	public readonly responseCache: IFetchCache;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param browser
 	 */
-	constructor(browser: Browser, options?: { cookieContainer?: ICookieContainer }) {
+	constructor(
+		browser: Browser,
+		options?: { cookieContainer?: ICookieContainer; responseCache?: IFetchCache }
+	) {
 		this.browser = browser;
 		this.cookieContainer = options?.cookieContainer ?? new CookieContainer();
+		this.responseCache = options?.responseCache ?? new FetchCache();
 	}
 
 	/**

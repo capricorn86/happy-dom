@@ -123,7 +123,8 @@ export default class BrowserFrameNavigator {
 			response = await frame.window.fetch(targetURL.href, {
 				referrer: options?.referrer,
 				referrerPolicy: options?.referrerPolicy,
-				signal: abortController.signal
+				signal: abortController.signal,
+				headers: options?.hard ? { 'Cache-Control': 'no-cache' } : undefined
 			});
 
 			// Handles the "X-Frame-Options" header for child frames.
