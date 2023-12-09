@@ -10,6 +10,37 @@ export default class CustomElementRegistry {
 	public _callbacks: { [k: string]: (() => void)[] } = {};
 
 	/**
+	 * Validates the correctness of custom element tag names.
+	 *
+	 * @param tagName custom element tag name.
+	 * @returns boolean True, if tag name is standard compliant.
+	 */
+	private isValidCustomElementName(tagName: string): boolean {
+		// Validation criteria based on:
+		// https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name
+		const PCENChar =
+			'[-_.]|[0-9]|[a-z]|\u{B7}|[\u{C0}-\u{D6}]|[\u{D8}-\u{F6}]' +
+			'|[\u{F8}-\u{37D}]|[\u{37F}-\u{1FFF}]' +
+			'|[\u{200C}-\u{200D}]|[\u{203F}-\u{2040}]|[\u{2070}-\u{218F}]' +
+			'|[\u{2C00}-\u{2FEF}]|[\u{3001}-\u{D7FF}]' +
+			'|[\u{F900}-\u{FDCF}]|[\u{FDF0}-\u{FFFD}]|[\u{10000}-\u{EFFFF}]';
+
+		const PCEN = new RegExp(`^[a-z](${PCENChar})*-(${PCENChar})*$`, 'u');
+
+		const forbiddenNames = [
+			'annotation-xml',
+			'color-profile',
+			'font-face',
+			'font-face-src',
+			'font-face-uri',
+			'font-face-format',
+			'font-face-name',
+			'missing-glyph'
+		];
+		return PCEN.test(tagName) && !forbiddenNames.includes(tagName);
+	}
+
+	/**
 	 * Defines a custom element class.
 	 *
 	 * @param tagName Tag name of element.

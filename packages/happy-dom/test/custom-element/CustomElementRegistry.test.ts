@@ -10,6 +10,20 @@ describe('CustomElementRegistry', () => {
 		CustomElement.observedAttributesCallCount = 0;
 	});
 
+	describe('isValidCustomElementName()', () => {
+		it('Validate custom elements tag name.', () => {
+			expect(customElements.isValidCustomElementName('a-b')).toBe(true);
+			expect(customElements.isValidCustomElementName('2a-b')).toBe(false);
+			expect(customElements.isValidCustomElementName('a2-b')).toBe(true);
+			expect(customElements.isValidCustomElementName('A-B')).toBe(false);
+			expect(customElements.isValidCustomElementName('aB-c')).toBe(false);
+			expect(customElements.isValidCustomElementName('ab')).toBe(false);
+			expect(customElements.isValidCustomElementName('a-\u00d9')).toBe(true);
+			expect(customElements.isValidCustomElementName('a_b.c-d')).toBe(true);
+			expect(customElements.isValidCustomElementName('font-face')).toBe(false);
+		});
+	});
+
 	describe('define()', () => {
 		it('Defines an HTML element and returns it with get().', () => {
 			customElements.define('custom-element', CustomElement);
@@ -43,7 +57,7 @@ describe('CustomElementRegistry', () => {
 	});
 
 	describe('get()', () => {
-		it('Returns element class if the tag name has been defined..', () => {
+		it('Returns element class if the tag name has been defined.', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(customElements.get('custom-element')).toBe(CustomElement);
 		});
