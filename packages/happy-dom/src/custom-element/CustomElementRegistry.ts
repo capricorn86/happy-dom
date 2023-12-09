@@ -89,4 +89,17 @@ export default class CustomElementRegistry {
 			this._callbacks[upperTagName].push(resolve);
 		});
 	}
+
+	/**
+	 * Reverse lookup searching for tagName by given element class.
+	 *
+	 * @param elementClass Class constructor.
+	 * @returns First found Tag name or `null`.
+	 */
+	public getName(elementClass: typeof HTMLElement): string | null {
+		const tagName = Object.keys(this._registry).find(
+			(k) => this._registry[k].elementClass === elementClass
+		);
+		return !!tagName ? tagName : null;
+	}
 }

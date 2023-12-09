@@ -68,4 +68,15 @@ describe('CustomElementRegistry', () => {
 			});
 		});
 	});
+
+	describe('getName()', () => {
+		it('Returns null if no tagName is found in the registry for element class', () => {
+			expect(customElements.getName(CustomElement)).toBe(null);
+		});
+
+		it('Returns Tag name if element class is found in registry', () => {
+			customElements.define('custom-element', CustomElement);
+			expect(customElements.getName(CustomElement)).toMatch(/custom-element/i);
+		});
+	});
 });
