@@ -366,7 +366,12 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly ValidityState = ValidityState;
 	public readonly Headers = Headers;
 	public readonly Request: new (input: IRequestInfo, init?: IRequestInit) => Request;
-	public readonly Response: new (body?: IResponseBody, init?: IResponseInit) => Response;
+	public readonly Response: {
+		new (body?: IResponseBody, init?: IResponseInit): Response;
+		redirect: (url: string, status?: number) => Response;
+		error: () => Response;
+		json: (data: object, init?: IResponseInit) => Response;
+	};
 	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
 	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
 	public readonly ReadableStream = Stream.Readable;

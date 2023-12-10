@@ -22,6 +22,8 @@ import ErrorEvent from '../event/events/ErrorEvent.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
+import Headers from '../fetch/Headers.js';
+import FetchCORSUtility from '../fetch/utilities/FetchCORSUtility.js';
 
 // These headers are not user setable.
 // The following are allowed but banned in the spec:
@@ -70,23 +72,23 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 	// Public properties
 	public upload: XMLHttpRequestUpload = new XMLHttpRequestUpload();
+	public withCredentials: boolean = false;
 
 	// Private properties
 	readonly #internal: {
 		state: {
-			incommingMessage:
-				| HTTP.IncomingMessage
-				| { headers: { [name: string]: string | string[] }; statusCode: number };
+			incomingMessage: HTTP.IncomingMessage | null;
 			response: ArrayBuffer | Blob | IDocument | object | string;
 			responseType: XMLHttpResponseTypeEnum | '';
 			responseText: string;
 			responseXML: IDocument;
 			responseURL: string;
+			responseHeaders: Headers;
 			readyState: XMLHttpRequestReadyStateEnum;
 			asyncRequest: HTTP.ClientRequest;
 			asyncTaskID: number;
-			requestHeaders: object;
-			status: number;
+			requestHeaders: Headers;
+			statusCode: number;
 			statusText: string;
 			send: boolean;
 			error: boolean;
@@ -94,24 +96,25 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		};
 		settings: {
 			method: string;
-			url: string;
+			url: URL;
 			async: boolean;
 			user: string;
 			password: string;
 		};
 	} = {
 		state: {
-			incommingMessage: null,
+			incomingMessage: null,
 			response: null,
 			responseType: '',
 			responseText: '',
 			responseXML: null,
 			responseURL: '',
+			responseHeaders: new Headers(),
 			readyState: XMLHttpRequestReadyStateEnum.unsent,
 			asyncRequest: null,
 			asyncTaskID: null,
-			requestHeaders: {},
-			status: null,
+			requestHeaders: new Headers(),
+			statusCode: null,
 			statusText: null,
 			send: false,
 			error: false,
@@ -147,7 +150,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @returns Status.
 	 */
 	public get status(): number {
-		return this.#internal.state.status;
+		return this.#internal.state.statusCode;
 	}
 
 	/**
@@ -287,7 +290,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#internal.settings = {
 			method: upperMethod,
-			url: url,
+			url: new URL(url, this.#window.location),
 			async: async,
 			user: user || null,
 			password: password || null
@@ -311,9 +314,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			);
 		}
 
-		const lowerHeader = header.toLowerCase();
-
-		if (FORBIDDEN_REQUEST_HEADERS.includes(lowerHeader)) {
+		// TODO: Use FetchRequestHeaderUtility.removeForbiddenHeaders() instead.
+		if (FORBIDDEN_REQUEST_HEADERS.includes(header.toLowerCase())) {
 			return false;
 		}
 
@@ -324,7 +326,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			);
 		}
 
-		this.#internal.state.requestHeaders[lowerHeader] = value;
+		this.#internal.state.requestHeaders.set(header, value);
 
 		return true;
 	}
@@ -335,24 +337,19 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param header header Name of header to get.
 	 * @returns string Text of the header or null if it doesn't exist.
 	 */
-	public getResponseHeader(header: string): string {
+	public getResponseHeader(header: string): string | null {
 		const lowerHeader = header.toLowerCase();
 
-		// Cookie headers are excluded for security reasons as per spec.
 		if (
-			typeof header === 'string' &&
-			header !== 'set-cookie' &&
-			header !== 'set-cookie2' &&
-			this.readyState > XMLHttpRequestReadyStateEnum.opened &&
-			this.#internal.state.incommingMessage.headers[lowerHeader] &&
-			!this.#internal.state.error
+			lowerHeader === 'set-cookie' ||
+			lowerHeader === 'set-cookie2' ||
+			this.readyState <= XMLHttpRequestReadyStateEnum.opened ||
+			!!this.#internal.state.error
 		) {
-			return Array.isArray(this.#internal.state.incommingMessage.headers[lowerHeader])
-				? (<string[]>this.#internal.state.incommingMessage.headers[lowerHeader]).join(', ')
-				: <string>this.#internal.state.incommingMessage.headers[lowerHeader];
+			return null;
 		}
 
-		return null;
+		return this.#internal.state.responseHeaders.get(header);
 	}
 
 	/**
@@ -370,10 +367,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		const result = [];
 
-		for (const name of Object.keys(this.#internal.state.incommingMessage.headers)) {
-			// Cookie headers are excluded for security reasons as per spec.
-			if (name !== 'set-cookie' && name !== 'set-cookie2') {
-				result.push(`${name}: ${this.#internal.state.incommingMessage.headers[name]}`);
+		for (const [name, value] of this.#internal.state.responseHeaders) {
+			const lowerName = name.toLowerCase();
+			if (lowerName !== 'set-cookie' && lowerName !== 'set-cookie2') {
+				result.push(`${name}: ${value}`);
 			}
 		}
 
@@ -402,7 +399,43 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		const { location } = this.#window;
 
-		const url = new URL(this.#internal.settings.url, location);
+		const url = this.#internal.settings.url;
+
+		const cachedResponse = this.#browserFrame.page.context.responseCache.get({
+			url: url.href,
+			method: this.#internal.settings.method,
+			headers: this.#internal.state.requestHeaders
+		});
+
+		if (cachedResponse) {
+			this.#internal.state.statusCode = cachedResponse.response.status;
+			this.#internal.state.statusText = cachedResponse.response.statusText;
+			this.#internal.state.responseURL = cachedResponse.url;
+			this.#internal.state.responseHeaders = new Headers(cachedResponse.response.headers);
+
+			// Although it will immediately be set to loading,
+			// According to the spec, the state should be headersRecieved first.
+			this.#setState(XMLHttpRequestReadyStateEnum.headersRecieved);
+			this.#setState(XMLHttpRequestReadyStateEnum.loading);
+
+			// Parse response
+			if (cachedResponse.response.body) {
+				const { response, responseXML, responseText } = this.#parseResponseData(
+					cachedResponse.response.body
+				);
+
+				this.#internal.state.response = response;
+				this.#internal.state.responseText = responseText;
+				this.#internal.state.responseXML = responseXML;
+			}
+
+			// Set Cookies.
+			this.#setCookies(this.#internal.state.responseHeaders);
+
+			this.#setState(XMLHttpRequestReadyStateEnum.done);
+
+			return;
+		}
 
 		// Security check.
 		if (url.protocol === 'http:' && location.protocol === 'https:') {
@@ -448,10 +481,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const uri = url.pathname + (url.search ? url.search : '');
 
 		// Set the Host header or the server may reject the request
-		this.#internal.state.requestHeaders['host'] = host;
-		if (!((ssl && port === 443) || port === 80)) {
-			this.#internal.state.requestHeaders['host'] += ':' + url.port;
-		}
+		this.#internal.state.requestHeaders.set(
+			'Host',
+			(ssl && port === 443) || port === 80 ? host : `${host}:${port}`
+		);
 
 		// Set Basic Auth if necessary
 		if (this.#internal.settings.user) {
@@ -459,8 +492,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			const authBuffer = Buffer.from(
 				this.#internal.settings.user + ':' + this.#internal.settings.password
 			);
-			this.#internal.state.requestHeaders['authorization'] =
-				'Basic ' + authBuffer.toString('base64');
+			this.#internal.state.requestHeaders.set(
+				'Authorization',
+				'Basic ' + authBuffer.toString('base64')
+			);
 		}
 		// Set the Content-Length header if method is POST
 		switch (this.#internal.settings.method) {
@@ -469,13 +504,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				data = null;
 				break;
 			case 'POST':
-				this.#internal.state.requestHeaders['content-type'] ??= 'text/plain;charset=UTF-8';
+				if (!this.#internal.state.requestHeaders.has('Content-Type')) {
+					this.#internal.state.requestHeaders.set('Content-Type', 'text/plain;charset=UTF-8');
+				}
 				if (data) {
-					this.#internal.state.requestHeaders['content-length'] = Buffer.isBuffer(data)
-						? data.length
-						: Buffer.byteLength(data);
+					this.#internal.state.requestHeaders.set(
+						'Content-Length',
+						Buffer.isBuffer(data) ? String(data.length) : String(Buffer.byteLength(data))
+					);
 				} else {
-					this.#internal.state.requestHeaders['content-length'] = 0;
+					this.#internal.state.requestHeaders.set('Content-Length', '0');
 				}
 				break;
 
@@ -488,7 +526,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			port: port,
 			path: uri,
 			method: this.#internal.settings.method,
-			headers: { ...this.#getDefaultRequestHeaders(), ...this.#internal.state.requestHeaders },
+			headers: this.#getRequestHeaders(),
 			agent: false,
 			rejectUnauthorized: true
 		};
@@ -518,9 +556,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#internal.state.asyncRequest = null;
 		}
 
-		this.#internal.state.status = null;
+		this.#internal.state.statusCode = null;
 		this.#internal.state.statusText = null;
-		this.#internal.state.requestHeaders = {};
+		this.#internal.state.requestHeaders = new Headers();
 		this.#internal.state.responseText = '';
 		this.#internal.state.responseXML = null;
 		this.#internal.state.aborted = true;
@@ -581,22 +619,61 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Stores the response in the cache.
+	 *
+	 * @param body Body.
+	 */
+	#storeResponseInCache(body: Buffer | null): void {
+		this.#browserFrame.page.context.responseCache.add(
+			{
+				url: this.#internal.settings.url.href,
+				method: this.#internal.settings.method,
+				headers: this.#internal.state.requestHeaders
+			},
+			{
+				status: this.#internal.state.statusCode,
+				statusText: this.#internal.state.statusText,
+				url: this.#internal.state.responseURL,
+				headers: this.#internal.state.responseHeaders,
+				body,
+				waitingForBody: false
+			}
+		);
+	}
+
+	/**
 	 * Default request headers.
 	 *
 	 * @returns Default request headers.
 	 */
-	#getDefaultRequestHeaders(): { [key: string]: string } {
-		const headers: { [k: string]: string } = {
-			accept: '*/*',
-			referer: this.#window.location.href,
-			'user-agent': this.#window.navigator.userAgent
-		};
-		const cookie = CookieStringUtility.cookiesToString(
-			this.#browserFrame.page.context.cookieContainer.getCookies(this.#window.location, false)
-		);
+	#getRequestHeaders(): { [key: string]: string } {
+		const isCORS = FetchCORSUtility.isCORS(this.#window.location, this.#internal.settings.url);
 
-		if (cookie) {
-			headers.cookie = cookie;
+		const headers: { [k: string]: string } = {
+			Accept: '*/*',
+			Referer: this.#window.location.href,
+			'User-Agent': this.#window.navigator.userAgent,
+			'Accept-Encoding': 'gzip, deflate, br',
+			Connection: 'close'
+		};
+
+		if (!isCORS || this.withCredentials) {
+			const cookie = CookieStringUtility.cookiesToString(
+				this.#browserFrame.page.context.cookieContainer.getCookies(this.#window.location, false)
+			);
+
+			if (cookie) {
+				headers.cookie = cookie;
+			}
+		}
+
+		if (isCORS && !this.withCredentials) {
+			this.#internal.state.requestHeaders.delete('authorization');
+			this.#internal.state.requestHeaders.delete('www-authenticate');
+		}
+
+		for (const [key, value] of this.#internal.state.requestHeaders) {
+			headers[key] = value;
 		}
 
 		return headers;
@@ -631,60 +708,68 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		if (response) {
-			this.#internal.state.incommingMessage = {
-				statusCode: response.statusCode,
-				headers: response.headers
-			};
-			this.#internal.state.status = response.statusCode;
-			this.#internal.state.statusText = response.statusMessage;
-			// Although it will immediately be set to loading,
-			// According to the spec, the state should be headersRecieved first.
-			this.#setState(XMLHttpRequestReadyStateEnum.headersRecieved);
-			this.#setState(XMLHttpRequestReadyStateEnum.loading);
-			this.#internal.state.response = this.#decodeResponseText(
-				Buffer.from(response.data, 'base64')
-			);
-			this.#internal.state.responseText = this.#internal.state.response;
-			this.#internal.state.responseXML = null;
-			this.#internal.state.responseURL = new URL(
-				this.#internal.settings.url,
-				this.#window.location
-			).href;
-			// Set Cookies.
-			this.#setCookies(this.#internal.state.incommingMessage.headers);
-			// Redirect.
-			if (
-				this.#internal.state.incommingMessage.statusCode === 301 ||
-				this.#internal.state.incommingMessage.statusCode === 302 ||
-				this.#internal.state.incommingMessage.statusCode === 303 ||
-				this.#internal.state.incommingMessage.statusCode === 307
-			) {
-				const redirectUrl = new URL(
-					<string>this.#internal.state.incommingMessage.headers['location'],
-					this.#window.location
+			const statusCode = response.statusCode;
+			const responseHeaders = new Headers();
+
+			for (const key of Object.keys(response.headers)) {
+				responseHeaders.set(
+					key,
+					Array.isArray(response.headers[key])
+						? (<string[]>response.headers[key]).join(', ')
+						: <string>response.headers[key]
 				);
+			}
+
+			// Set Cookies.
+			this.#setCookies(responseHeaders);
+
+			// Redirect.
+			if (statusCode === 301 || statusCode === 302 || statusCode === 303 || statusCode === 307) {
+				const redirectUrl = new URL(responseHeaders.get('Location'), this.#window.location);
 				ssl = redirectUrl.protocol === 'https:';
-				this.#internal.settings.url = redirectUrl.href;
+				this.#internal.settings.url = new URL(redirectUrl.href, this.#window.location);
 				// Recursive call.
 				this.#sendSyncRequest(
 					Object.assign(options, {
 						host: redirectUrl.host,
 						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
 						port: redirectUrl.port || (ssl ? 443 : 80),
-						method:
-							this.#internal.state.incommingMessage.statusCode === 303
-								? 'GET'
-								: this.#internal.settings.method,
+						method: statusCode === 303 ? 'GET' : this.#internal.settings.method,
 						headers: Object.assign(options.headers, {
-							referer: redirectUrl.origin,
-							host: redirectUrl.host
+							Referer: redirectUrl.origin,
+							Host: redirectUrl.host
 						})
 					}),
 					ssl,
 					data
 				);
+				return;
 			}
 
+			this.#internal.state.statusCode = statusCode;
+			this.#internal.state.statusText = response.statusMessage;
+			this.#internal.state.responseHeaders = responseHeaders;
+
+			// Although it will immediately be set to loading,
+			// According to the spec, the state should be headersRecieved first.
+			this.#setState(XMLHttpRequestReadyStateEnum.headersRecieved);
+			this.#setState(XMLHttpRequestReadyStateEnum.loading);
+
+			// Response
+			this.#internal.state.response = this.#decodeResponseText(
+				Buffer.from(response.data, 'base64')
+			);
+			this.#internal.state.responseText = this.#internal.state.response;
+			this.#internal.state.responseXML = null;
+			this.#internal.state.responseURL = new URL(
+				this.#internal.settings.url.href,
+				this.#window.location
+			).href;
+
+			// Store response in cache.
+			this.#storeResponseInCache(response);
+
+			// Done.
 			this.#setState(XMLHttpRequestReadyStateEnum.done);
 		}
 	}
@@ -761,38 +846,46 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		return new Promise((resolve) => {
 			// Set response var to the response we got back
 			// This is so it remains accessable outside this scope
-			this.#internal.state.incommingMessage = response;
+			this.#internal.state.incomingMessage = response;
+
+			const statusCode = response.statusCode;
+			const responseHeaders = new Headers();
+			for (const key of Object.keys(response.headers)) {
+				responseHeaders.set(
+					key,
+					Array.isArray(response.headers[key])
+						? (<string[]>response.headers[key]).join(', ')
+						: <string>response.headers[key]
+				);
+			}
 
 			// Set Cookies
-			this.#setCookies(this.#internal.state.incommingMessage.headers);
+			this.#setCookies(responseHeaders);
 
 			// Check for redirect
 			// @TODO Prevent looped redirects
-			if (
-				this.#internal.state.incommingMessage.statusCode === 301 ||
-				this.#internal.state.incommingMessage.statusCode === 302 ||
-				this.#internal.state.incommingMessage.statusCode === 303 ||
-				this.#internal.state.incommingMessage.statusCode === 307
-			) {
+			if (statusCode === 301 || statusCode === 302 || statusCode === 303 || statusCode === 307) {
 				// TODO: redirect url protocol change.
 				// Change URL to the redirect location
-				this.#internal.settings.url = this.#internal.state.incommingMessage.headers.location;
-				// Parse the new URL.
-				const redirectUrl = new URL(this.#internal.settings.url, this.#window.location);
-				this.#internal.settings.url = redirectUrl.href;
-				ssl = redirectUrl.protocol === 'https:';
+				this.#internal.settings.url = new URL(
+					responseHeaders.get('Location'),
+					this.#window.location
+				);
+
+				ssl = this.#internal.settings.url.protocol === 'https:';
 				// Issue the new request
 				this.#sendAsyncRequest(
 					{
 						...options,
-						host: redirectUrl.hostname,
-						port: redirectUrl.port,
-						path: redirectUrl.pathname + (redirectUrl.search ?? ''),
-						method:
-							this.#internal.state.incommingMessage.statusCode === 303
-								? 'GET'
-								: this.#internal.settings.method,
-						headers: { ...options.headers, referer: redirectUrl.origin, host: redirectUrl.host }
+						host: this.#internal.settings.url.hostname,
+						port: this.#internal.settings.url.port,
+						path: this.#internal.settings.url.pathname + (this.#internal.settings.url.search ?? ''),
+						method: statusCode === 303 ? 'GET' : this.#internal.settings.method,
+						headers: {
+							...options.headers,
+							Referer: this.#internal.settings.url.origin,
+							Host: this.#internal.settings.url.host
+						}
 					},
 					ssl,
 					data
@@ -801,14 +894,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				return;
 			}
 
-			this.#internal.state.status = this.#internal.state.incommingMessage.statusCode;
-			this.#internal.state.statusText = this.#internal.state.incommingMessage.statusMessage;
+			this.#internal.state.statusCode = statusCode;
+			this.#internal.state.statusText = this.#internal.state.incomingMessage.statusMessage;
+			this.#internal.state.responseHeaders = responseHeaders;
 			this.#setState(XMLHttpRequestReadyStateEnum.headersRecieved);
 
 			// Initialize response.
 			let tempResponse = Buffer.from(new Uint8Array(0));
 
-			this.#internal.state.incommingMessage.on('data', (chunk: Uint8Array) => {
+			this.#internal.state.incomingMessage.on('data', (chunk: Uint8Array) => {
 				// Make sure there's some data
 				if (chunk) {
 					tempResponse = Buffer.concat([tempResponse, Buffer.from(chunk)]);
@@ -818,19 +912,19 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					this.#setState(XMLHttpRequestReadyStateEnum.loading);
 				}
 
-				const contentLength = Number(
-					this.#internal.state.incommingMessage.headers['content-length']
-				);
+				const contentLength = this.#internal.state.responseHeaders.get('Content-Length');
+				const contentLengthNumber =
+					contentLength !== null && !isNaN(Number(contentLength)) ? Number(contentLength) : null;
 				this.dispatchEvent(
 					new ProgressEvent('progress', {
-						lengthComputable: !isNaN(contentLength),
+						lengthComputable: contentLengthNumber !== null,
 						loaded: tempResponse.length,
-						total: isNaN(contentLength) ? 0 : contentLength
+						total: contentLengthNumber !== null ? contentLengthNumber : 0
 					})
 				);
 			});
 
-			this.#internal.state.incommingMessage.on('end', () => {
+			this.#internal.state.incomingMessage.on('end', () => {
 				if (this.#internal.state.send) {
 					// The sendFlag needs to be set before setState is called.  Otherwise, if we are chaining callbacks
 					// There can be a timing issue (the callback is called and a new call is made before the flag is reset).
@@ -841,10 +935,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					this.#internal.state.response = response;
 					this.#internal.state.responseXML = responseXML;
 					this.#internal.state.responseText = responseText;
-					this.#internal.state.responseURL = new URL(
-						this.#internal.settings.url,
-						this.#window.location
-					).href;
+					this.#internal.state.responseURL = this.#internal.settings.url.href;
+
+					// Store response in cache.
+					this.#storeResponseInCache(tempResponse);
+
 					// Discard the 'end' event if the connection has been aborted
 					this.#setState(XMLHttpRequestReadyStateEnum.done);
 				}
@@ -852,7 +947,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				resolve();
 			});
 
-			this.#internal.state.incommingMessage.on('error', (error) => {
+			this.#internal.state.incomingMessage.on('error', (error) => {
 				this.#onError(error);
 				resolve();
 			});
@@ -932,28 +1027,21 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param data Data.
 	 */
 	#parseLocalRequestData(url: UrlObject, data: Buffer): void {
-		// Manually set the response headers.
-		this.#internal.state.incommingMessage = {
-			statusCode: 200,
-			headers: {
-				'content-length': String(data.length),
-				'content-type': XMLHttpRequestURLUtility.getMimeTypeFromExt(url)
-				// @TODO: 'last-modified':
-			}
-		};
-
-		this.#internal.state.status = this.#internal.state.incommingMessage.statusCode;
+		this.#internal.state.statusCode = 200;
 		this.#internal.state.statusText = 'OK';
 
 		const { response, responseXML, responseText } = this.#parseResponseData(data);
 		this.#internal.state.response = response;
 		this.#internal.state.responseXML = responseXML;
 		this.#internal.state.responseText = responseText;
-		this.#internal.state.responseURL = new URL(
-			this.#internal.settings.url,
-			this.#window.location
-		).href;
+		this.#internal.state.responseURL = this.#internal.settings.url.href;
+		this.#internal.state.responseHeaders.set('Content-Length', String(data.length));
+		this.#internal.state.responseHeaders.set(
+			'Content-Type',
+			XMLHttpRequestURLUtility.getMimeTypeFromExt(url)
+		);
 
+		this.#storeResponseInCache(data);
 		this.#setState(XMLHttpRequestReadyStateEnum.done);
 	}
 
@@ -1030,20 +1118,24 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param headers Headers.
 	 */
-	#setCookies(headers: { [name: string]: string | string[] } | HTTP.IncomingHttpHeaders): void {
-		const originURL = new URL(this.#internal.settings.url, this.#window.location);
-		for (const header of ['set-cookie', 'set-cookie2']) {
-			if (Array.isArray(headers[header])) {
-				for (const cookie of headers[header]) {
-					this.#browserFrame.page.context.cookieContainer.addCookies([
-						CookieStringUtility.stringToCookie(originURL, cookie)
-					]);
-				}
-			} else if (headers[header]) {
-				this.#browserFrame.page.context.cookieContainer.addCookies([
-					CookieStringUtility.stringToCookie(originURL, <string>headers[header])
-				]);
-			}
+	#setCookies(headers: Headers): void {
+		const isCORS = FetchCORSUtility.isCORS(this.#window.location, this.#internal.settings.url);
+		if (isCORS && !this.withCredentials) {
+			return;
+		}
+		const originURL = this.#internal.settings.url;
+		const values = (headers.get('Set-Cookie') ?? '')
+			.split(',')
+			.concat(headers.get('Set-Cookie2') ?? '');
+
+		if (values.length === 0) {
+			return;
+		}
+
+		for (const cookieString of values) {
+			this.#browserFrame.page.context.cookieContainer.addCookies([
+				CookieStringUtility.stringToCookie(originURL, cookieString.trim())
+			]);
 		}
 	}
 
@@ -1053,7 +1145,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param error Error.
 	 */
 	#onError(error: Error | string): void {
-		this.#internal.state.status = 0;
+		this.#internal.state.statusCode = 0;
 		this.#internal.state.statusText = error.toString();
 		this.#internal.state.responseText = error instanceof Error ? error.stack : '';
 		this.#internal.state.error = true;
@@ -1080,7 +1172,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const contextTypeEncodingRegexp = new RegExp(CONTENT_TYPE_ENCODING_REGEXP, 'gi');
 		// Compatibility with file:// protocol or unpredictable http request.
 		const contentType =
-			this.getResponseHeader('content-type') ?? this.#internal.state.requestHeaders['content-type'];
+			this.#internal.state.responseHeaders.get('Content-Type') ??
+			this.#internal.state.requestHeaders.get('Content-Type');
 		const charset = contextTypeEncodingRegexp.exec(contentType);
 		// Default encoding: utf-8.
 		return IconvLite.decode(data, charset ? charset[1] : 'utf-8');

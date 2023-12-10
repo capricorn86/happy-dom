@@ -14,8 +14,9 @@ import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import { TextDecoder } from 'util';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import ICachedResponse from '../cache/response/ICachedResponse.js';
 
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 
@@ -42,8 +43,10 @@ export default class Response implements IResponse {
 	public readonly statusText: string;
 	public readonly ok: boolean;
 	public readonly headers: IHeaders;
+	public __cachedResponse__: ICachedResponse | null = null;
+	public readonly __buffer__: Buffer | null = null;
 	readonly #window: IBrowserWindow;
-	readonly #asyncTaskManager: AsyncTaskManager;
+	readonly #browserFrame: IBrowserFrame;
 
 	/**
 	 * Constructor.
@@ -54,20 +57,28 @@ export default class Response implements IResponse {
 	 * @param [init] Init.
 	 */
 	constructor(
-		injected: { window: IBrowserWindow; asyncTaskManager: AsyncTaskManager },
+		injected: { window: IBrowserWindow; browserFrame: IBrowserFrame },
 		body?: IResponseBody,
 		init?: IResponseInit
 	) {
 		this.#window = injected.window;
-		this.#asyncTaskManager = injected.asyncTaskManager;
+		this.#browserFrame = injected.browserFrame;
 		this.status = init?.status !== undefined ? init.status : 200;
 		this.statusText = init?.statusText || '';
 		this.ok = this.status >= 200 && this.status < 300;
 		this.headers = new Headers(init?.headers);
 
+		// "Set-Cookie" and "Set-Cookie2" are not allowed in response headers according to spec.
+		this.headers.delete('Set-Cookie');
+		this.headers.delete('Set-Cookie2');
+
 		if (body) {
-			const { stream, contentType } = FetchBodyUtility.getBodyStream(body);
+			const { stream, buffer, contentType } = FetchBodyUtility.getBodyStream(body);
 			this.body = stream;
+
+			if (buffer) {
+				this.__buffer__ = buffer;
+			}
 
 			if (contentType && !this.headers.has('Content-Type')) {
 				this.headers.set('Content-Type', contentType);
@@ -99,17 +110,22 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask();
-		let buffer: Buffer;
+		let buffer: Buffer | null = this.__buffer__;
 
-		try {
-			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
-		} catch (error) {
-			this.#asyncTaskManager.endTask(taskID);
-			throw error;
+		if (!buffer) {
+			const taskID = this.#browserFrame.__asyncTaskManager__.startTask();
+
+			try {
+				buffer = await FetchBodyUtility.consumeBodyStream(this.body);
+			} catch (error) {
+				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				throw error;
+			}
+
+			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 		}
 
-		this.#asyncTaskManager.endTask(taskID);
+		this.#storeBodyInCache(buffer);
 
 		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
@@ -120,7 +136,7 @@ export default class Response implements IResponse {
 	 * @returns Blob.
 	 */
 	public async blob(): Promise<IBlob> {
-		const type = this.headers.get('content-type') || '';
+		const type = this.headers.get('Content-Type') || '';
 		const buffer = await this.arrayBuffer();
 
 		return new Blob([buffer], { type });
@@ -141,17 +157,20 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask();
-		let buffer: Buffer;
+		let buffer: Buffer | null = this.__buffer__;
 
-		try {
-			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
-		} catch (error) {
-			this.#asyncTaskManager.endTask(taskID);
-			throw error;
+		if (!buffer) {
+			const taskID = this.#browserFrame.__asyncTaskManager__.startTask();
+			try {
+				buffer = await FetchBodyUtility.consumeBodyStream(this.body);
+			} catch (error) {
+				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				throw error;
+			}
+			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 		}
 
-		this.#asyncTaskManager.endTask(taskID);
+		this.#storeBodyInCache(buffer);
 
 		return buffer;
 	}
@@ -171,20 +190,20 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		if (!this.#asyncTaskManager) {
-			debugger;
-		}
-		const taskID = this.#asyncTaskManager.startTask();
-		let buffer: Buffer;
+		let buffer: Buffer | null = this.__buffer__;
 
-		try {
-			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
-		} catch (error) {
-			this.#asyncTaskManager.endTask(taskID);
-			throw error;
+		if (!buffer) {
+			const taskID = this.#browserFrame.__asyncTaskManager__.startTask();
+			try {
+				buffer = await FetchBodyUtility.consumeBodyStream(this.body);
+			} catch (error) {
+				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				throw error;
+			}
+			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 		}
 
-		this.#asyncTaskManager.endTask(taskID);
+		this.#storeBodyInCache(buffer);
 
 		return new TextDecoder().decode(buffer);
 	}
@@ -205,41 +224,36 @@ export default class Response implements IResponse {
 	 * @returns Form data.
 	 */
 	public async formData(): Promise<FormData> {
-		const contentType = this.headers.get('content-type');
-		const taskID = this.#asyncTaskManager.startTask();
+		const contentType = this.headers.get('Content-Type');
 
-		if (contentType.startsWith('application/x-www-form-urlencoded')) {
+		if (contentType?.startsWith('application/x-www-form-urlencoded')) {
 			const formData = new FormData();
-			let text: string;
-
-			try {
-				text = await this.text();
-			} catch (error) {
-				this.#asyncTaskManager.endTask(taskID);
-				throw error;
-			}
-
+			const text = await this.text();
 			const parameters = new URLSearchParams(text);
 
 			for (const [name, value] of parameters) {
 				formData.append(name, value);
 			}
 
-			this.#asyncTaskManager.endTask(taskID);
-
 			return formData;
 		}
 
+		const taskID = this.#browserFrame.__asyncTaskManager__.startTask();
 		let formData: FormData;
+		let buffer: Buffer;
 
 		try {
-			formData = await MultipartFormDataParser.streamToFormData(this.body, contentType);
+			const result = await MultipartFormDataParser.streamToFormData(this.body, contentType);
+			formData = result.formData;
+			buffer = result.buffer;
 		} catch (error) {
-			this.#asyncTaskManager.endTask(taskID);
+			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 			throw error;
 		}
 
-		this.#asyncTaskManager.endTask(taskID);
+		this.#storeBodyInCache(buffer);
+
+		this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 
 		return formData;
 	}
@@ -266,6 +280,19 @@ export default class Response implements IResponse {
 
 		return response;
 	}
+
+	/**
+	 * Stores body in cache.
+	 *
+	 * @param buffer Buffer.
+	 */
+	#storeBodyInCache(buffer: Buffer): void {
+		if (this.__cachedResponse__?.response?.waitingForBody) {
+			this.__cachedResponse__.response.body = buffer;
+			this.__cachedResponse__.response.waitingForBody = false;
+		}
+	}
+
 	/**
 	 * Returns a redirect response.
 	 *
@@ -319,8 +346,8 @@ export default class Response implements IResponse {
 
 		const headers = new this.__window__.Headers(init && init.headers);
 
-		if (!headers.has('content-type')) {
-			headers.set('content-type', 'application/json');
+		if (!headers.has('Content-Type')) {
+			headers.set('Content-Type', 'application/json');
 		}
 
 		return new this.__window__.Response(body, {

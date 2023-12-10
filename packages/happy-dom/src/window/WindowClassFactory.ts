@@ -115,7 +115,12 @@ export default class WindowClassFactory {
 
 		// Other Classes
 		Request: new (input: IRequestInfo, init?: IRequestInit) => RequestImplementation;
-		Response: new (body?: IResponseBody, init?: IResponseInit) => ResponseImplementation;
+		Response: {
+			new (body?: IResponseBody, init?: IResponseInit): ResponseImplementation;
+			redirect: (url: string, status?: number) => ResponseImplementation;
+			error: () => ResponseImplementation;
+			json: (data: object, init?: IResponseInit) => ResponseImplementation;
+		};
 		XMLHttpRequest: new () => XMLHttpRequestImplementation;
 		Image: typeof ImageImplementation;
 		DocumentFragment: typeof DocumentFragmentImplementation;
@@ -125,6 +130,7 @@ export default class WindowClassFactory {
 		Audio: typeof AudioImplementation;
 	} {
 		const window = properties.window;
+		const browserFrame = properties.browserFrame;
 		const asyncTaskManager = properties.browserFrame.__asyncTaskManager__;
 
 		/* eslint-disable jsdoc/require-jsdoc */
@@ -361,7 +367,7 @@ export default class WindowClassFactory {
 		class Response extends ResponseImplementation {
 			protected static __window__ = window;
 			constructor(body?: IResponseBody, init?: IResponseInit) {
-				super({ window, asyncTaskManager }, body, init);
+				super({ window, browserFrame }, body, init);
 			}
 		}
 		class XMLHttpRequest extends XMLHttpRequestImplementation {

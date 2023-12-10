@@ -8,6 +8,7 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestBody from '../types/IRequestBody.js';
 import IResponseBody from '../types/IResponseBody.js';
 import Request from '../Request.js';
+import Response from '../Response.js';
 
 /**
  * Fetch body utility.
@@ -90,13 +91,19 @@ export default class FetchBodyUtility {
 	}
 
 	/**
-	 * Clones a request body stream.
+	 * Clones a request or body body stream.
 	 *
-	 * @param request Request.
-	 * @returns Stream.
+	 * It is actually not cloning the stream.
+	 * It creates a pass through stream and pipes the original stream to it.
+	 *
+	 * @param requestOrResponse Request or Response.
+	 * @returns New stream.
 	 */
-	public static cloneRequestBodyStream(request: Request): Stream.Readable {
-		if (request.bodyUsed) {
+	public static cloneBodyStream(requestOrResponse: {
+		body: Stream.Readable;
+		bodyUsed: boolean;
+	}): Stream.Readable {
+		if (requestOrResponse.bodyUsed) {
 			throw new DOMException(
 				`Failed to clone body stream of request: Request body is already used.`,
 				DOMExceptionNameEnum.invalidStateError
@@ -106,11 +113,11 @@ export default class FetchBodyUtility {
 		const p1 = new Stream.PassThrough();
 		const p2 = new Stream.PassThrough();
 
-		request.body.pipe(p1);
-		request.body.pipe(p2);
+		requestOrResponse.body.pipe(p1);
+		requestOrResponse.body.pipe(p2);
 
-		// Sets the body of the cloned request to the first pass through stream.
-		(<Stream.Readable>request.body) = p1;
+		// Sets the body of the cloned request/response to the first pass through stream.
+		(<Stream.Readable>requestOrResponse.body) = p1;
 
 		// Returns the clone.
 		return p2;
@@ -151,7 +158,7 @@ export default class FetchBodyUtility {
 
 		if (
 			(<Stream.Readable>body).readableEnded === false ||
-			(<Stream.Readable>body)['__readableState__']?.ended === false
+			(<Stream.Readable>body)['_readableState']?.ended === false
 		) {
 			throw new DOMException(
 				`Premature close of server response.`,

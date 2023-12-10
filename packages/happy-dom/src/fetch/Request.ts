@@ -74,7 +74,7 @@ export default class Request implements IRequest {
 
 		const { stream, buffer, contentType, contentLength } = FetchBodyUtility.getBodyStream(
 			input instanceof Request && (input.__bodyBuffer__ || input.body)
-				? input.__bodyBuffer__ || FetchBodyUtility.cloneRequestBodyStream(input)
+				? input.__bodyBuffer__ || FetchBodyUtility.cloneBodyStream(input)
 				: init?.body
 		);
 
@@ -219,7 +219,7 @@ export default class Request implements IRequest {
 	 * @returns Blob.
 	 */
 	public async blob(): Promise<IBlob> {
-		const type = this.headers.get('content-type') || '';
+		const type = this.headers.get('Content-Type') || '';
 		const buffer = await this.arrayBuffer();
 
 		return new Blob([buffer], { type });
@@ -315,7 +315,7 @@ export default class Request implements IRequest {
 
 		try {
 			const type = this.__contentType__;
-			formData = await MultipartFormDataParser.streamToFormData(this.body, type);
+			formData = (await MultipartFormDataParser.streamToFormData(this.body, type)).formData;
 		} catch (error) {
 			this.#asyncTaskManager.endTask(taskID);
 			throw error;

@@ -61,10 +61,12 @@ describe('ResourceFetch', () => {
 								path: '/base/path/to/script/',
 								method: 'GET',
 								headers: {
-									accept: '*/*',
-									referer: 'https://localhost:8080/base/',
-									'user-agent': window.navigator.userAgent,
-									host: 'localhost:8080'
+									Accept: '*/*',
+									Referer: 'https://localhost:8080/base/',
+									'User-Agent': window.navigator.userAgent,
+									'Accept-Encoding': 'gzip, deflate, br',
+									Connection: 'close',
+									Host: 'localhost:8080'
 								},
 								agent: false,
 								rejectUnauthorized: true,

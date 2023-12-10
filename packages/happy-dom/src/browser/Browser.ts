@@ -6,7 +6,7 @@ import BrowserPage from './BrowserPage.js';
 import IBrowser from './types/IBrowser.js';
 import BrowserFrame from './BrowserFrame.js';
 import ICookieContainer from '../cookie/types/ICookieContainer.js';
-import IFetchCache from '../fetch/types/IFetchCache.js';
+import IResponseCache from '../cache/response/IResponseCache.js';
 
 /**
  * Browser.
@@ -29,7 +29,7 @@ export default class Browser implements IBrowser {
 		settings?: IOptionalBrowserSettings;
 		console?: Console;
 		cookieContainer?: ICookieContainer;
-		responseCache?: IFetchCache;
+		responseCache?: IResponseCache;
 	}) {
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.getSettings(options?.settings);

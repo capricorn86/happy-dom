@@ -20,7 +20,7 @@ import AbortSignal from './AbortSignal.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
-import CachedResponseStateEnum from './enums/CachedResponseStateEnum.js';
+import CachedResponseStateEnum from '../cache/response/CachedResponseStateEnum.js';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -46,6 +46,7 @@ export default class Fetch {
 	private previousChunk: Buffer | null = null;
 	private nodeRequest: HTTP.ClientRequest | null = null;
 	private response: Response | null = null;
+	private responseHeaders: Headers | null = null;
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
@@ -98,7 +99,7 @@ export default class Fetch {
 			return this.sendWithoutCache();
 		}
 
-		const cachedResponse = this.#browserFrame.page.context.responseCache.get(this.request);
+		let cachedResponse = this.#browserFrame.page.context.responseCache.get(this.request);
 
 		if (cachedResponse) {
 			if (cachedResponse.etag || cachedResponse.state === CachedResponseStateEnum.stale) {
@@ -115,21 +116,35 @@ export default class Fetch {
 
 				if (!cachedResponse.etag && cachedResponse.staleWhileRevalidate) {
 					fetch.send().then((response) => {
-						this.#browserFrame.page.context.responseCache.add(this.request, response);
+						response.buffer().then((body: Buffer) => {
+							this.#browserFrame.page.context.responseCache.add(this.request, {
+								...response,
+								body,
+								waitingForBody: false
+							});
+						});
 					});
 				} else {
-					const response = await fetch.send();
-					this.#browserFrame.page.context.responseCache.add(this.request, response);
+					const response = <Response>await fetch.send();
+					const body = response.status !== 304 ? await response.buffer() : null;
+					cachedResponse = this.#browserFrame.page.context.responseCache.add(this.request, {
+						...response,
+						body: body,
+						waitingForBody: false
+					});
 				}
 			}
 
-			const response = new this.#window.Response(cachedResponse.response.body, {
-				status: cachedResponse.response.status,
-				statusText: cachedResponse.response.statusText,
-				headers: cachedResponse.response.headers
-			});
+			if (cachedResponse && !cachedResponse.response?.waitingForBody) {
+				const response = new this.#window.Response(cachedResponse.response.body, {
+					status: cachedResponse.response.status,
+					statusText: cachedResponse.response.statusText,
+					headers: cachedResponse.response.headers
+				});
+				response.__cachedResponse__ = cachedResponse;
 
-			return response;
+				return response;
+			}
 		}
 
 		return this.sendWithoutCache();
@@ -152,7 +167,15 @@ export default class Fetch {
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
 				if (response instanceof Response) {
-					this.#browserFrame.page.context.responseCache.add(this.request, response);
+					response.__cachedResponse__ = this.#browserFrame.page.context.responseCache.add(
+						this.request,
+						{
+							...response,
+							headers: this.responseHeaders,
+							body: response.__buffer__,
+							waitingForBody: !response.__buffer__ && !!response.body
+						}
+					);
 				}
 				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 				resolve(response);
@@ -183,6 +206,21 @@ export default class Fetch {
 			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
 
 			const send = (this.request.__url__.protocol === 'https:' ? HTTPS : HTTP).request;
+
+			// Security check for "https" to "http" requests.
+			if (
+				this.request.__url__.protocol === 'http:' &&
+				this.#window.location.protocol === 'https:'
+			) {
+				throw new DOMException(
+					`Mixed Content: The page at '${
+						this.#window.location.href
+					}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
+						this.request.url
+					}'. This request has been blocked; the content must be served over HTTPS.`,
+					DOMExceptionNameEnum.securityError
+				);
+			}
 
 			this.nodeRequest = send(this.request.__url__.href, {
 				method: this.request.method,
@@ -298,10 +336,9 @@ export default class Fetch {
 			!nodeResponse.headers['content-length'];
 
 		this.nodeRequest.setTimeout(0);
+		this.responseHeaders = this.getResponseHeaders(nodeResponse);
 
-		const headers = this.getResponseHeaders(nodeResponse);
-
-		if (this.handleRedirectResponse(nodeResponse, headers)) {
+		if (this.handleRedirectResponse(nodeResponse, this.responseHeaders)) {
 			return;
 		}
 
@@ -318,10 +355,10 @@ export default class Fetch {
 		const responseOptions = {
 			status: nodeResponse.statusCode,
 			statusText: nodeResponse.statusMessage,
-			headers
+			headers: this.responseHeaders
 		};
 
-		const contentEncodingHeader = headers.get('Content-Encoding');
+		const contentEncodingHeader = this.responseHeaders.get('Content-Encoding');
 
 		if (
 			this.request.method === 'HEAD' ||
@@ -696,18 +733,14 @@ export default class Fetch {
 			if (!key) {
 				key = header;
 			} else {
-				const lowerKey = key.toLowerCase();
-
+				const lowerName = key.toLowerCase();
 				// Handles setting cookie headers to the document.
-				// "set-cookie" and "set-cookie2" are not allowed in response headers according to spec.
-				if (lowerKey === 'set-cookie' || lowerKey === 'set-cookie2') {
+				if (lowerName === 'set-cookie' || lowerName === 'set-cookie2') {
 					this.#browserFrame.page.context.cookieContainer.addCookies([
 						CookieStringUtility.stringToCookie(this.request.__url__, header)
 					]);
-				} else {
-					headers.append(key, header);
 				}
-
+				headers.append(key, header);
 				key = null;
 			}
 		}

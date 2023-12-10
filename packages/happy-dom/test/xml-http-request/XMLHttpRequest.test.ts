@@ -663,12 +663,13 @@ describe('XMLHttpRequest', () => {
 								path: REQUEST_URL,
 								method: 'GET',
 								headers: {
-									accept: '*/*',
-									referer: WINDOW_URL + '/',
-									'user-agent': window.navigator.userAgent,
-
+									Accept: '*/*',
+									Referer: WINDOW_URL + '/',
+									'User-Agent': window.navigator.userAgent,
+									'Accept-Encoding': 'gzip, deflate, br',
+									Connection: 'close',
 									'test-header': 'test',
-									host: window.location.host
+									Host: window.location.host
 								},
 								agent: false,
 								rejectUnauthorized: true,
@@ -710,11 +711,12 @@ describe('XMLHttpRequest', () => {
 						callback: (response: HTTP.IncomingMessage) => void
 					) => {
 						expect(options.headers).toEqual({
-							accept: '*/*',
-
-							host: window.location.host,
-							referer: WINDOW_URL + '/',
-							'user-agent': window.navigator.userAgent,
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							Host: window.location.host,
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
 							'test-header': 'test'
 						});
 						return {
@@ -723,7 +725,7 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'content-length': responseText.length
+										'Content-Length': responseText.length
 									},
 									on: (event, callback) => {
 										if (event === 'data') {
@@ -772,8 +774,8 @@ describe('XMLHttpRequest', () => {
 							headers: {
 								key1: 'value1',
 								key2: 'value2',
-								'set-cookie': 'key1=value1',
-								'set-cookie2': 'key1=value1'
+								'Set-Cookie': 'key1=value1',
+								'Set-Cookie2': 'key1=value1'
 							},
 							text: '',
 							data: Buffer.from('').toString('base64')
@@ -806,11 +808,11 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'content-length': responseText.length,
+										'Content-Length': responseText.length,
 										key1: 'value1',
 										key2: 'value2',
-										'set-cookie': 'key1=value1',
-										'set-cookie2': 'key1=value1'
+										'Set-Cookie': 'key1=value1',
+										'Set-Cookie2': 'key1=value1'
 									},
 									on: (event, callback) => {
 										if (event === 'data') {
@@ -861,8 +863,8 @@ describe('XMLHttpRequest', () => {
 							headers: {
 								key1: 'value1',
 								key2: 'value2',
-								'set-cookie': 'key1=value1',
-								'set-cookie2': 'key1=value1'
+								'Set-Cookie': 'key1=value1',
+								'Set-Cookie2': 'key1=value1'
 							},
 							text: '',
 							data: Buffer.from('').toString('base64')
@@ -889,11 +891,11 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'content-length': responseText.length,
+										'Content-Length': responseText.length,
 										key1: 'value1',
 										key2: 'value2',
-										'set-cookie': 'key1=value1',
-										'set-cookie2': 'key1=value1'
+										'Set-Cookie': 'key1=value1',
+										'Set-Cookie2': 'key1=value1'
 									},
 									on: (event, callback) => {
 										if (event === 'data') {
@@ -913,7 +915,7 @@ describe('XMLHttpRequest', () => {
 
 				request.addEventListener('load', () => {
 					expect(request.getAllResponseHeaders()).toBe(
-						'content-length: 4\r\nkey1: value1\r\nkey2: value2'
+						'Content-Length: 4\r\nkey1: value1\r\nkey2: value2'
 					);
 					resolve(null);
 				});
@@ -1031,7 +1033,7 @@ describe('XMLHttpRequest', () => {
 
 			expect(request.responseText).toBe(fileContent);
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
-			expect(request.getAllResponseHeaders()).toBe('content-length: 4\r\ncontent-type: text/plain');
+			expect(request.getAllResponseHeaders()).toBe('Content-Length: 4\r\nContent-Type: text/plain');
 		});
 
 		it('Performs an asynchronous request towards a local file.', async () => {
@@ -1098,11 +1100,12 @@ describe('XMLHttpRequest', () => {
 								path: REQUEST_URL,
 								method: 'GET',
 								headers: {
-									accept: '*/*',
-									referer: windowURL + '/',
-									'user-agent': window.navigator.userAgent,
-
-									host: window.location.host
+									Accept: '*/*',
+									Referer: windowURL + '/',
+									'User-Agent': window.navigator.userAgent,
+									'Accept-Encoding': 'gzip, deflate, br',
+									Connection: 'close',
+									Host: window.location.host
 								},
 								agent: false,
 								rejectUnauthorized: true
@@ -1156,11 +1159,12 @@ describe('XMLHttpRequest', () => {
 								path: REQUEST_URL,
 								method: 'GET',
 								headers: {
-									accept: '*/*',
-									referer: WINDOW_URL + '/',
-									'user-agent': window.navigator.userAgent,
-
-									host: window.location.host
+									Accept: '*/*',
+									Referer: WINDOW_URL + '/',
+									'User-Agent': window.navigator.userAgent,
+									'Accept-Encoding': 'gzip, deflate, br',
+									Connection: 'close',
+									Host: window.location.host
 								},
 								agent: false,
 								rejectUnauthorized: true,
@@ -1212,11 +1216,12 @@ describe('XMLHttpRequest', () => {
 							path: REQUEST_URL,
 							method: 'GET',
 							headers: {
-								accept: '*/*',
-								referer: windowURL + '/',
-								'user-agent': window.navigator.userAgent,
-
-								host: window.location.host
+								Accept: '*/*',
+								Referer: windowURL + '/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br',
+								Connection: 'close',
+								Host: window.location.host
 							},
 							agent: false,
 							rejectUnauthorized: true
@@ -1227,7 +1232,7 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'content-length': responseText.length
+										'Content-Length': responseText.length
 									},
 									on: (event, callback) => {
 										if (event === 'data') {
@@ -1287,11 +1292,12 @@ describe('XMLHttpRequest', () => {
 							path: REQUEST_URL + queryString,
 							method: 'GET',
 							headers: {
-								accept: '*/*',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-
-								host: window.location.host
+								Accept: '*/*',
+								Referer: WINDOW_URL + '/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br',
+								Connection: 'close',
+								Host: window.location.host
 							},
 							agent: false,
 							rejectUnauthorized: true,
@@ -1304,7 +1310,7 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'content-length': responseText.length
+										'Content-Length': responseText.length
 									},
 									on: (event, callback) => {
 										if (event === 'data') {
@@ -1405,11 +1411,12 @@ describe('XMLHttpRequest', () => {
 							path: REQUEST_URL,
 							method: 'GET',
 							headers: {
-								accept: '*/*',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-
-								host: window.location.host
+								Accept: '*/*',
+								Referer: WINDOW_URL + '/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br',
+								Connection: 'close',
+								Host: window.location.host
 							},
 							agent: false,
 							rejectUnauthorized: true,
@@ -1422,7 +1429,7 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'content-length': responseText.length
+										'Content-Length': responseText.length
 									},
 									on: (event, callback) => {
 										if (event === 'data') {
@@ -1481,12 +1488,13 @@ describe('XMLHttpRequest', () => {
 							path: REQUEST_URL,
 							method: 'GET',
 							headers: {
-								accept: '*/*',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-
-								host: window.location.host,
-								authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
+								Accept: '*/*',
+								Referer: WINDOW_URL + '/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br',
+								Connection: 'close',
+								Host: window.location.host,
+								Authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
 							},
 							agent: false,
 							rejectUnauthorized: true,
@@ -1499,7 +1507,7 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'content-length': responseText.length
+										'Content-Length': responseText.length
 									},
 									on: (event, callback) => {
 										if (event === 'data') {
@@ -1557,12 +1565,13 @@ describe('XMLHttpRequest', () => {
 							path: REQUEST_URL,
 							method: 'GET',
 							headers: {
-								accept: '*/*',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-
-								host: window.location.host,
-								authorization: `Basic ${Buffer.from(`${username}:`).toString('base64')}`
+								Accept: '*/*',
+								Referer: WINDOW_URL + '/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br',
+								Connection: 'close',
+								Host: window.location.host,
+								Authorization: `Basic ${Buffer.from(`${username}:`).toString('base64')}`
 							},
 							agent: false,
 							rejectUnauthorized: true,
@@ -1575,7 +1584,7 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'content-length': responseText.length
+										'Content-Length': responseText.length
 									},
 									on: (event, callback) => {
 										if (event === 'data') {
@@ -1622,13 +1631,14 @@ describe('XMLHttpRequest', () => {
 							path: REQUEST_URL,
 							method: 'POST',
 							headers: {
-								accept: '*/*',
-								'content-length': postData.length,
-								'content-type': 'text/plain;charset=UTF-8',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-
-								host: window.location.host
+								Accept: '*/*',
+								'Content-Length': String(postData.length),
+								'Content-Type': 'text/plain;charset=UTF-8',
+								Referer: WINDOW_URL + '/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br',
+								Connection: 'close',
+								Host: window.location.host
 							},
 							agent: false,
 							rejectUnauthorized: true,
@@ -1641,7 +1651,7 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'content-length': responseText.length
+										'Content-Length': responseText.length
 									},
 									on: (event, callback) => {
 										if (event === 'data') {
@@ -1682,7 +1692,7 @@ describe('XMLHttpRequest', () => {
 			});
 		});
 
-		it('Writes cookies to document.cookie for synchrounous requests when the header "set-cookie" is returned in the response.', () => {
+		it('Writes cookies to document.cookie for synchrounous requests when the header "Set-Cookie" is returned in the response.', () => {
 			mockModule('child_process', {
 				execFileSync: () => {
 					return JSON.stringify({
@@ -1691,7 +1701,7 @@ describe('XMLHttpRequest', () => {
 							statusCode: 200,
 							statusMessage: '',
 							headers: {
-								'set-cookie': ['key1=value1', 'key2=value2']
+								'Set-Cookie': ['key1=value1', 'key2=value2']
 							},
 							text: '',
 							data: Buffer.from('').toString('base64')
@@ -1716,7 +1726,7 @@ describe('XMLHttpRequest', () => {
 									statusCode: 200,
 									statusMessage: '',
 									headers: {
-										'set-cookie': ['key1=value1', 'key2=value2']
+										'Set-Cookie': ['key1=value1', 'key2=value2']
 									},
 									on: (event, callback) => {
 										if (event === 'data') {

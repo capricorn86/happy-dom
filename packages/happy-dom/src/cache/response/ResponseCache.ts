@@ -1,12 +1,13 @@
-import IFetchCache from '../types/IFetchCache.js';
-import ICachedResponse from '../types/ICachedResponse.js';
-import CachedResponseStateEnum from '../enums/CachedResponseStateEnum.js';
-import IRequest from '../types/IRequest.js';
-import IResponse from '../types/IResponse.js';
-import FetchBodyUtility from '../utilities/FetchBodyUtility.js';
+import IResponseCache from './IResponseCache.js';
+import ICachedResponse from './ICachedResponse.js';
+import CachedResponseStateEnum from './CachedResponseStateEnum.js';
+import ICachableRequest from './ICachableRequest.js';
+import ICachableResponse from './ICachableResponse.js';
 
 const DEFAULT_CACHED_RESPONSE: ICachedResponse = {
 	response: null,
+	method: null,
+	url: null,
 	vary: {},
 	expires: null,
 	etag: null,
@@ -20,7 +21,7 @@ const DEFAULT_CACHED_RESPONSE: ICachedResponse = {
 /**
  * Fetch response cache.
  */
-export default class FetchCache implements IFetchCache {
+export default class ResponseCache implements IResponseCache {
 	#entries: { [url: string]: ICachedResponse[] } = {};
 
 	/**
@@ -29,7 +30,7 @@ export default class FetchCache implements IFetchCache {
 	 * @param request Request.
 	 * @returns Cached response.
 	 */
-	public get(request: IRequest): ICachedResponse | null {
+	public get(request: ICachableRequest): ICachedResponse | null {
 		if (request.headers.get('Cache-Control')?.includes('no-cache')) {
 			return null;
 		}
@@ -38,11 +39,13 @@ export default class FetchCache implements IFetchCache {
 		if (this.#entries[url]) {
 			for (let i = 0, max = this.#entries[url].length; i < max; i++) {
 				const entry = this.#entries[url][i];
-				let isMatch = true;
-				for (const header of Object.keys(entry.vary)) {
-					if (entry.vary[header] !== request.headers.get(header)) {
-						isMatch = false;
-						break;
+				let isMatch = entry.method === request.method;
+				if (isMatch) {
+					for (const header of Object.keys(entry.vary)) {
+						if (entry.vary[header] !== request.headers.get(header)) {
+							isMatch = false;
+							break;
+						}
 					}
 				}
 				if (isMatch) {
@@ -53,6 +56,10 @@ export default class FetchCache implements IFetchCache {
 							this.#entries[url].splice(i, 1);
 							return null;
 						}
+					}
+					// We need to wait for the body to be consumed and then populated before it can be used.
+					if (entry.response?.waitingForBody) {
+						return null;
 					}
 					return entry;
 				}
@@ -67,7 +74,7 @@ export default class FetchCache implements IFetchCache {
 	 * @param request Request.
 	 * @param response Response.
 	 */
-	public add(request: IRequest, response: IResponse): void {
+	public add(request: ICachableRequest, response: ICachableResponse): ICachedResponse {
 		const url = request.url;
 		let cachedResponse: ICachedResponse | null = null;
 
@@ -75,11 +82,13 @@ export default class FetchCache implements IFetchCache {
 		if (this.#entries[url]) {
 			for (let i = 0, max = this.#entries[url].length; i < max; i++) {
 				const entry = this.#entries[url][i];
-				let isMatch = true;
-				for (const header of Object.keys(entry.vary)) {
-					if (entry.vary[header] !== request.headers.get(header)) {
-						isMatch = false;
-						break;
+				let isMatch = entry.method === request.method;
+				if (isMatch) {
+					for (const header of Object.keys(entry.vary)) {
+						if (entry.vary[header] !== request.headers.get(header)) {
+							isMatch = false;
+							break;
+						}
 					}
 				}
 				if (isMatch) {
@@ -104,6 +113,8 @@ export default class FetchCache implements IFetchCache {
 		const vary = response.headers.get('Vary');
 		const lastModified = response.headers.get('Last-Modified');
 
+		cachedResponse.url = response.url;
+		cachedResponse.method = request.method;
 		cachedResponse.cacheUpdateTime = Date.now();
 
 		if (cacheControl) {
@@ -151,11 +162,7 @@ export default class FetchCache implements IFetchCache {
 			cachedResponse.etag = etag;
 		}
 
-		if (
-			response.status !== 304 &&
-			((cachedResponse.etag && !cachedResponse.expires) ||
-				(cachedResponse.expires && cachedResponse.expires < Date.now()))
-		) {
+		if (response.status !== 304) {
 			const headers: { [name: string]: string } = {};
 			for (const header of response.headers) {
 				headers[header[0]] = header[1];
@@ -164,9 +171,25 @@ export default class FetchCache implements IFetchCache {
 				status: response.status,
 				statusText: response.statusText,
 				headers,
-				body: FetchBodyUtility.getBodyStream(response.body).stream
+				// We need to wait for the body to be consumed and then populated (e.g. by using Response.text()).
+				waitingForBody: response.body === undefined,
+				body: response.body ?? null
 			};
 		}
+
+		if (
+			!cachedResponse.etag ||
+			!cachedResponse.expires ||
+			(cachedResponse.expires && cachedResponse.expires >= Date.now())
+		) {
+			const index = this.#entries[url].indexOf(cachedResponse);
+			if (index !== -1) {
+				this.#entries[url].splice(index, 1);
+			}
+			return null;
+		}
+
+		return cachedResponse;
 	}
 
 	/**

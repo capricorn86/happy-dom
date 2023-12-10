@@ -1,7 +1,6 @@
 import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
-import Response from '../../src/fetch/Response.js';
 import Headers from '../../src/fetch/Headers.js';
 import Blob from '../../src/file/Blob.js';
 import FormData from '../../src/form-data/FormData.js';
@@ -116,7 +115,11 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new window.Response('Hello World');
+				async function* generate(): AsyncGenerator<string> {
+					yield 'Hello World';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()));
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -155,7 +158,11 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new window.Response('Hello World', {
+				async function* generate(): AsyncGenerator<string> {
+					yield 'Hello World';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()), {
 					headers: { 'Content-Type': 'text/plain' }
 				});
 				let isAsyncComplete = false;
@@ -191,7 +198,11 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new window.Response('Hello World');
+				async function* generate(): AsyncGenerator<string> {
+					yield 'Hello World';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()));
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -226,7 +237,11 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new window.Response('Hello World');
+				async function* generate(): AsyncGenerator<string> {
+					yield 'Hello World';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()));
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -259,7 +274,11 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new window.Response('{ "key1": "value1" }');
+				async function* generate(): AsyncGenerator<string> {
+					yield '{ "key1": "value1" }';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()));
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -370,7 +389,15 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.whenComplete() for "application/x-www-form-urlencoded" content.', async () => {
 			await new Promise((resolve) => {
-				const response = new window.Response(new URLSearchParams());
+				async function* generate(): AsyncGenerator<string> {
+					yield 'key=value';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()), {
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					}
+				});
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -398,8 +425,10 @@ describe('Response', () => {
 				let isAsyncComplete = false;
 
 				vi.spyOn(MultipartFormDataParser, 'streamToFormData').mockImplementation(
-					(): Promise<FormData> =>
-						new Promise((resolve) => setTimeout(() => resolve(new FormData()), 10))
+					(): Promise<{ formData: FormData; buffer: Buffer }> =>
+						new Promise((resolve) =>
+							setTimeout(() => resolve({ formData: new FormData(), buffer: Buffer.from([]) }), 10)
+						)
 				);
 
 				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));

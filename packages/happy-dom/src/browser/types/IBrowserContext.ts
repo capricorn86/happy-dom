@@ -1,5 +1,5 @@
 import ICookieContainer from '../../cookie/types/ICookieContainer.js';
-import IFetchCache from '../../fetch/types/IFetchCache.js';
+import IResponseCache from '../../cache/response/IResponseCache.js';
 import IBrowser from './IBrowser.js';
 import IBrowserFrame from './IBrowserFrame.js';
 import IBrowserPage from './IBrowserPage.js';
@@ -11,7 +11,7 @@ export default interface IBrowserContext {
 	readonly pages: IBrowserPage[];
 	readonly browser: IBrowser;
 	readonly cookieContainer: ICookieContainer;
-	readonly responseCache: IFetchCache;
+	readonly responseCache: IResponseCache;
 
 	/**
 	 * Aborts all ongoing operations and destroys the context.

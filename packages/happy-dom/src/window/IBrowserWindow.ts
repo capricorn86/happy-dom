@@ -346,7 +346,12 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly PluginArray: typeof PluginArray;
 	readonly Headers: typeof Headers;
 	readonly Request: new (input: RequestInfo, init?: IRequestInit) => Request;
-	readonly Response: new (body?: IResponseBody, init?: IResponseInit) => Response;
+	readonly Response: {
+		new (body?: IResponseBody, init?: IResponseInit): Response;
+		redirect: (url: string, status?: number) => Response;
+		error: () => Response;
+		json: (data: object, init?: IResponseInit) => Response;
+	};
 	readonly Range: new () => Range;
 	readonly DOMRect: typeof DOMRect;
 	readonly XMLHttpRequest: new () => XMLHttpRequest;

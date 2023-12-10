@@ -1,18 +1,18 @@
 import ICachedResponse from './ICachedResponse.js';
-import IRequest from './IRequest.js';
-import IResponse from './IResponse.js';
+import ICachableRequest from './ICachableRequest.js';
+import ICachableResponse from './ICachableResponse.js';
 
 /**
  * Fetch response cache.
  */
-export default interface IFetchCache {
+export default interface IResponseCache {
 	/**
 	 * Returns cached response.
 	 *
 	 * @param request Request.
 	 * @returns Cached response.
 	 */
-	get(request: IRequest): ICachedResponse | null;
+	get(request: ICachableRequest): ICachedResponse | null;
 
 	/**
 	 * Adds a cache entity.
@@ -20,7 +20,7 @@ export default interface IFetchCache {
 	 * @param request Request.
 	 * @param response Response.
 	 */
-	add(request: IRequest, response: IResponse): void;
+	add(request: ICachableRequest, response: ICachableResponse): ICachedResponse;
 
 	/**
 	 * Removes expired responses to clear up space.

@@ -5,7 +5,7 @@ import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import AbortController from '../../src/fetch/AbortController.js';
-import HTTP from 'http';
+import HTTP, { ClientRequest } from 'http';
 import Net from 'net';
 import Stream from 'stream';
 import Zlib from 'zlib';
@@ -518,7 +518,7 @@ describe('Fetch', () => {
 								}
 							};
 							(<unknown>request.setTimeout) = () => {};
-							request.destroy = () => destroyCount++;
+							request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 							return request;
 						}
@@ -646,7 +646,7 @@ describe('Fetch', () => {
 						}
 					};
 					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => destroyCount++;
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 					return request;
 				}
@@ -1101,60 +1101,25 @@ describe('Fetch', () => {
 			});
 		});
 
-		it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes do a different protocol than the document.', async () => {
-			const originURL = 'https://localhost:8080';
+		it("Does'nt allow requests to HTTP from HTTPS (mixed content).", async () => {
+			const originURL = 'https://localhost:8080/';
 			const url = 'http://localhost:8080/some/path';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
+			let error: Error | null = null;
 
 			window.happyDOM?.setURL(originURL);
-			window.document.cookie = 'test=cookie';
 
-			mockModule('http', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			try {
+				await window.fetch(url);
+			} catch (e) {
+				error = e;
+			}
 
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
-
-			await window.fetch(url, {
-				headers: {
-					authorization: 'authorization',
-					'www-authenticate': 'www-authenticate'
-				},
-				credentials: 'same-origin'
-			});
-
-			expect(requestArgs).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
-					}
-				}
-			});
+			expect(error).toEqual(
+				new DOMException(
+					`Mixed Content: The page at '${originURL}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${url}'. This request has been blocked; the content must be served over HTTPS.`,
+					DOMExceptionNameEnum.securityError
+				)
+			);
 		});
 
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes to the same origin as the document.', async () => {
@@ -2444,7 +2409,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => {};
+				request.destroy = () => <ClientRequest>{};
 
 				return request;
 			}
@@ -2543,7 +2508,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -2613,7 +2578,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -2683,7 +2648,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -2751,7 +2716,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -2819,7 +2784,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -2887,7 +2852,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -2955,7 +2920,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -3023,7 +2988,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -3112,7 +3077,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -3186,7 +3151,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => {};
+				request.destroy = () => <ClientRequest>{};
 
 				return request;
 			}
@@ -3254,7 +3219,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -3328,7 +3293,7 @@ describe('Fetch', () => {
 					}
 				};
 				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => destroyCount++;
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
 				return request;
 			}
@@ -3407,7 +3372,7 @@ describe('Fetch', () => {
 						}
 					};
 					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => {};
+					request.destroy = () => <ClientRequest>{};
 
 					return request;
 				}

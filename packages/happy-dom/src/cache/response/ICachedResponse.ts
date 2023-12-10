@@ -1,5 +1,4 @@
-import Stream from 'stream';
-import CachedResponseStateEnum from '../enums/CachedResponseStateEnum.js';
+import CachedResponseStateEnum from './CachedResponseStateEnum.js';
 
 export default interface ICachedResponse {
 	response: {
@@ -8,8 +7,12 @@ export default interface ICachedResponse {
 		headers: {
 			[name: string]: string;
 		};
-		body: Stream.Readable;
-	};
+		// We need to wait for the body to be populated if set to "true".
+		waitingForBody: boolean;
+		body: Buffer | null;
+	} | null;
+	method: string | null;
+	url: string | null;
 	cacheUpdateTime: number | null;
 	lastModified: number | null;
 	vary: { [header: string]: string };

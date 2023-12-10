@@ -4,8 +4,8 @@ import IBrowserContext from '../types/IBrowserContext.js';
 import DetachedBrowserFrame from './DetachedBrowserFrame.js';
 import ICookieContainer from '../../cookie/types/ICookieContainer.js';
 import CookieContainer from '../../cookie/CookieContainer.js';
-import FetchCache from '../../fetch/cache/FetchCache.js';
-import IFetchCache from '../../fetch/types/IFetchCache.js';
+import ResponseCache from '../../cache/response/ResponseCache.js';
+import IResponseCache from '../../cache/response/IResponseCache.js';
 
 /**
  * Detached browser context used when constructing a Window instance without a browser.
@@ -14,7 +14,7 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	public readonly pages: DetachedBrowserPage[];
 	public readonly browser: DetachedBrowser;
 	public readonly cookieContainer: ICookieContainer = new CookieContainer();
-	public readonly responseCache: IFetchCache = new FetchCache();
+	public readonly responseCache: IResponseCache = new ResponseCache();
 
 	/**
 	 * Constructor.

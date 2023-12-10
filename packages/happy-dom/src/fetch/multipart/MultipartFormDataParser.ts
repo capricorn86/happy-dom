@@ -21,7 +21,7 @@ export default class MultipartFormDataParser {
 	public static async streamToFormData(
 		body: Stream.Readable,
 		contentType: string
-	): Promise<FormData> {
+	): Promise<{ formData: FormData; buffer: Buffer }> {
 		if (!/multipart/i.test(contentType)) {
 			throw new DOMException(
 				`Failed to build FormData object: The "content-type" header isn't of type "multipart/form-data".`,
@@ -39,12 +39,50 @@ export default class MultipartFormDataParser {
 		}
 
 		const reader = new MultipartReader(match[1] || match[2]);
+		const chunks = [];
+		let buffer: Buffer;
+		let bytes = 0;
 
-		for await (const chunk of body) {
-			reader.write(chunk);
+		try {
+			for await (const chunk of body) {
+				reader.write(chunk);
+				bytes += chunk.length;
+				chunks.push(chunk);
+			}
+		} catch (error) {
+			if (error instanceof DOMException) {
+				throw error;
+			}
+			throw new DOMException(
+				`Failed to read response body. Error: ${error.message}.`,
+				DOMExceptionNameEnum.encodingError
+			);
 		}
 
-		return reader.end();
+		if (
+			(<Stream.Readable>body).readableEnded === false ||
+			(<Stream.Readable>body)['_readableState']?.ended === false
+		) {
+			throw new DOMException(
+				`Premature close of server response.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		try {
+			buffer =
+				typeof chunks[0] === 'string' ? Buffer.from(chunks.join('')) : Buffer.concat(chunks, bytes);
+		} catch (error) {
+			throw new DOMException(
+				`Could not create Buffer from response body. Error: ${error.message}.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		return {
+			formData: reader.end(),
+			buffer
+		};
 	}
 
 	/**
