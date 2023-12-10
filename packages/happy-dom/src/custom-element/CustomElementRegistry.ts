@@ -12,10 +12,10 @@ export default class CustomElementRegistry {
 	/**
 	 * Validates the correctness of custom element tag names.
 	 *
-	 * @param tagName custom element tag name.
+	 * @param localName custom element tag name.
 	 * @returns boolean True, if tag name is standard compliant.
 	 */
-	private isValidCustomElementName(tagName: string): boolean {
+	private isValidCustomElementName(localName: string): boolean {
 		// Validation criteria based on:
 		// https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name
 		const PCENChar =
@@ -27,7 +27,7 @@ export default class CustomElementRegistry {
 
 		const PCEN = new RegExp(`^[a-z](${PCENChar})*-(${PCENChar})*$`, 'u');
 
-		const forbiddenNames = [
+		const reservedNames = [
 			'annotation-xml',
 			'color-profile',
 			'font-face',
@@ -37,33 +37,31 @@ export default class CustomElementRegistry {
 			'font-face-name',
 			'missing-glyph'
 		];
-		return PCEN.test(tagName) && !forbiddenNames.includes(tagName);
+		return PCEN.test(localName) && !reservedNames.includes(localName);
 	}
 
 	/**
 	 * Defines a custom element class.
 	 *
-	 * @param tagName Tag name of element.
+	 * @param localName Tag name of element.
 	 * @param elementClass Element class.
 	 * @param [options] Options.
 	 * @param options.extends
 	 */
 	public define(
-		tagName: string,
+		localName: string,
 		elementClass: typeof HTMLElement,
 		options?: { extends: string }
 	): void {
-		const upperTagName = tagName.toUpperCase();
-
-		if (!upperTagName.includes('-')) {
+		if (!this.isValidCustomElementName(localName)) {
 			throw new DOMException(
 				"Failed to execute 'define' on 'CustomElementRegistry': \"" +
-					tagName +
+					localName +
 					'" is not a valid custom element name.'
 			);
 		}
 
-		this._registry[upperTagName] = {
+		this._registry[localName] = {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
@@ -73,9 +71,9 @@ export default class CustomElementRegistry {
 			elementClass._observedAttributes = elementClass.observedAttributes;
 		}
 
-		if (this._callbacks[upperTagName]) {
-			const callbacks = this._callbacks[upperTagName];
-			delete this._callbacks[upperTagName];
+		if (this._callbacks[localName]) {
+			const callbacks = this._callbacks[localName];
+			delete this._callbacks[localName];
 			for (const callback of callbacks) {
 				callback();
 			}
@@ -85,12 +83,11 @@ export default class CustomElementRegistry {
 	/**
 	 * Returns a defined element class.
 	 *
-	 * @param tagName Tag name of element.
+	 * @param localName Tag name of element.
 	 * @param HTMLElement Class defined.
 	 */
-	public get(tagName: string): typeof HTMLElement {
-		const upperTagName = tagName.toUpperCase();
-		return this._registry[upperTagName] ? this._registry[upperTagName].elementClass : undefined;
+	public get(localName: string): typeof HTMLElement {
+		return this._registry[localName] ? this._registry[localName].elementClass : undefined;
 	}
 
 	/**
@@ -107,17 +104,19 @@ export default class CustomElementRegistry {
 	/**
 	 * When defined.
 	 *
-	 * @param tagName Tag name of element.
+	 * @param localName Tag name of element.
 	 * @returns Promise.
 	 */
-	public whenDefined(tagName: string): Promise<void> {
-		const upperTagName = tagName.toUpperCase();
-		if (this.get(upperTagName)) {
+	public whenDefined(localName: string): Promise<void> {
+		if (!this.isValidCustomElementName(localName)) {
+			return Promise.reject(new DOMException(`Invalid custom element name: "${localName}"`));
+		}
+		if (this.get(localName)) {
 			return Promise.resolve();
 		}
 		return new Promise((resolve) => {
-			this._callbacks[upperTagName] = this._callbacks[upperTagName] || [];
-			this._callbacks[upperTagName].push(resolve);
+			this._callbacks[localName] = this._callbacks[localName] || [];
+			this._callbacks[localName].push(resolve);
 		});
 	}
 
@@ -128,9 +127,9 @@ export default class CustomElementRegistry {
 	 * @returns First found Tag name or `null`.
 	 */
 	public getName(elementClass: typeof HTMLElement): string | null {
-		const tagName = Object.keys(this._registry).find(
+		const localName = Object.keys(this._registry).find(
 			(k) => this._registry[k].elementClass === elementClass
 		);
-		return !!tagName ? tagName : null;
+		return !!localName ? localName : null;
 	}
 }

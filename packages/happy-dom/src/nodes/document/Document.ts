@@ -823,7 +823,7 @@ export default class Document extends Node implements IDocument {
 		if (this.defaultView && options && options.is) {
 			customElementClass = this.defaultView.customElements.get(String(options.is));
 		} else if (this.defaultView) {
-			customElementClass = this.defaultView.customElements.get(tagName);
+			customElementClass = this.defaultView.customElements.get(String(qualifiedName));
 		}
 
 		const elementClass: typeof Element =

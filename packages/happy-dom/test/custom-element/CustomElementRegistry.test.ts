@@ -1,11 +1,19 @@
 import CustomElement from '../CustomElement.js';
 import CustomElementRegistry from '../../src/custom-element/CustomElementRegistry.js';
+import IWindow from '../../src/window/IWindow.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import Window from '../../src/window/Window.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import { rejects } from 'assert';
 
 describe('CustomElementRegistry', () => {
 	let customElements;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
+		window = new Window();
+		document = window.document;
 		customElements = new CustomElementRegistry();
 		CustomElement.observedAttributesCallCount = 0;
 	});
@@ -21,6 +29,7 @@ describe('CustomElementRegistry', () => {
 			expect(customElements.isValidCustomElementName('a-\u00d9')).toBe(true);
 			expect(customElements.isValidCustomElementName('a_b.c-d')).toBe(true);
 			expect(customElements.isValidCustomElementName('font-face')).toBe(false);
+			expect(customElements.isValidCustomElementName('a-Öa')).toBe(true);
 		});
 	});
 
@@ -35,7 +44,7 @@ describe('CustomElementRegistry', () => {
 				extends: 'ul'
 			});
 			expect(customElements.get('custom-element')).toBe(CustomElement);
-			expect(customElements._registry['CUSTOM-ELEMENT'].extends).toBe('ul');
+			expect(customElements._registry['custom-element'].extends).toBe('ul');
 		});
 
 		it('Throws an error if tag name does not contain "-".', () => {
@@ -54,6 +63,11 @@ describe('CustomElementRegistry', () => {
 			expect(CustomElement.observedAttributesCallCount).toBe(1);
 			expect(CustomElement._observedAttributes).toEqual(['key1', 'key2']);
 		});
+
+		it('Non-ASCII capital letter in localName.', () => {
+			customElements.define('a-Öa', CustomElement);
+			expect(customElements.get('a-Öa')).toBe(CustomElement);
+		});
 	});
 
 	describe('get()', () => {
@@ -65,9 +79,19 @@ describe('CustomElementRegistry', () => {
 		it('Returns undefined if the tag name has not been defined.', () => {
 			expect(customElements.get('custom-element')).toBe(undefined);
 		});
+
+		it('Case sensitivity of get().', () => {
+			customElements.define('custom-element', CustomElement);
+			expect(customElements.get('CUSTOM-ELEMENT')).toBe(undefined);
+		});
 	});
 
 	describe('whenDefined()', () => {
+		it('Throws an error if tag name looks invalide', async () => {
+			const tagName = 'element';
+			expect(async() => await customElements.whenDefined(tagName)).rejects.toThrow();
+		});
+
 		it('Returns a promise which is fulfilled when an element is defined.', async () => {
 			await new Promise((resolve) => {
 				customElements.whenDefined('custom-element').then(resolve);
@@ -90,7 +114,19 @@ describe('CustomElementRegistry', () => {
 
 		it('Returns Tag name if element class is found in registry', () => {
 			customElements.define('custom-element', CustomElement);
-			expect(customElements.getName(CustomElement)).toMatch(/custom-element/i);
+			expect(customElements.getName(CustomElement)).toMatch('custom-element');
+		});
+	});
+
+	describe('createElement()', () => {
+		it('Case insensitive access via document.createElement()', () => {
+			customElements.define('custom-element', CustomElement);
+			expect(document.createElement('CUSTOM-ELEMENT').localName).toBe('custom-element');
+		});
+
+		it('Non-ASCII capital letters in document.createElement()', () => {
+			customElements.define('a-Öa', CustomElement);
+			expect(document.createElement('a-Öa').localName).toMatch(/a-Öa/i);
 		});
 	});
 });

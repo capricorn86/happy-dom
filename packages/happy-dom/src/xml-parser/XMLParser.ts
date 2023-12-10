@@ -107,6 +107,7 @@ export default class XMLParser {
 							// Start tag.
 
 							const tagName = match[1].toUpperCase();
+							const localName = match[1];
 
 							// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 							// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
@@ -130,7 +131,7 @@ export default class XMLParser {
 								tagName === 'SVG'
 									? NamespaceURI.svg
 									: (<IElement>currentNode).namespaceURI || NamespaceURI.html;
-							const newElement = document.createElementNS(namespaceURI, tagName);
+							const newElement = document.createElementNS(namespaceURI, localName);
 
 							currentNode.appendChild(newElement);
 							currentNode = newElement;

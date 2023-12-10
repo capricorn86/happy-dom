@@ -23,17 +23,17 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 	 * @param parentNode Parent node.
 	 */
 	public _connectToNode(parentNode: INode = null): void {
-		const tagName = this.tagName;
+		const localName = this.localName;
 
 		// This element can potentially be a custom element that has not been defined yet
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
-		if (tagName.includes('-') && this.ownerDocument.defaultView.customElements._callbacks) {
+		if (localName.includes('-') && this.ownerDocument.defaultView.customElements._callbacks) {
 			const callbacks = this.ownerDocument.defaultView.customElements._callbacks;
 
 			if (parentNode && !this._customElementDefineCallback) {
 				const callback = (): void => {
 					if (this.parentNode) {
-						const newElement = <HTMLElement>this.ownerDocument.createElement(tagName);
+						const newElement = <HTMLElement>this.ownerDocument.createElement(localName);
 						(<INodeList<INode>>newElement._childNodes) = this._childNodes;
 						(<IHTMLCollection<IElement>>newElement._children) = this._children;
 						(<boolean>newElement.isConnected) = this.isConnected;
@@ -82,16 +82,16 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						this._connectToNode(null);
 					}
 				};
-				callbacks[tagName] = callbacks[tagName] || [];
-				callbacks[tagName].push(callback);
+				callbacks[localName] = callbacks[localName] || [];
+				callbacks[localName].push(callback);
 				this._customElementDefineCallback = callback;
-			} else if (!parentNode && callbacks[tagName] && this._customElementDefineCallback) {
-				const index = callbacks[tagName].indexOf(this._customElementDefineCallback);
+			} else if (!parentNode && callbacks[localName] && this._customElementDefineCallback) {
+				const index = callbacks[localName].indexOf(this._customElementDefineCallback);
 				if (index !== -1) {
-					callbacks[tagName].splice(index, 1);
+					callbacks[localName].splice(index, 1);
 				}
-				if (!callbacks[tagName].length) {
-					delete callbacks[tagName];
+				if (!callbacks[localName].length) {
+					delete callbacks[localName];
 				}
 				this._customElementDefineCallback = null;
 			}

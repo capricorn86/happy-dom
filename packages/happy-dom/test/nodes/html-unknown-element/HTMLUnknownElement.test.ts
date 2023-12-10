@@ -22,7 +22,7 @@ describe('HTMLUnknownElement', () => {
 
 			parent.appendChild(element);
 
-			expect(window.customElements._callbacks['CUSTOM-ELEMENT'].length).toBe(1);
+			expect(window.customElements._callbacks['custom-element'].length).toBe(1);
 
 			parent.removeChild(element);
 
