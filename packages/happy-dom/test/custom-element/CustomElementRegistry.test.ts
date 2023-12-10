@@ -58,6 +58,11 @@ describe('CustomElementRegistry', () => {
 			);
 		});
 
+		it('Throws an error if already defined.', () => {
+			customElements.define('custom-element', CustomElement);
+			expect(() => customElements.define('custom-element', CustomElement)).toThrow();
+		});
+
 		it('Calls observed attributes and set _observedAttributes as a property on the element class.', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(CustomElement.observedAttributesCallCount).toBe(1);
@@ -87,9 +92,9 @@ describe('CustomElementRegistry', () => {
 	});
 
 	describe('whenDefined()', () => {
-		it('Throws an error if tag name looks invalide', async () => {
+		it('Throws an error if tag name looks invalid.', async () => {
 			const tagName = 'element';
-			expect(async() => await customElements.whenDefined(tagName)).rejects.toThrow();
+			expect(async () => await customElements.whenDefined(tagName)).rejects.toThrow();
 		});
 
 		it('Returns a promise which is fulfilled when an element is defined.', async () => {
@@ -119,12 +124,12 @@ describe('CustomElementRegistry', () => {
 	});
 
 	describe('createElement()', () => {
-		it('Case insensitive access via document.createElement()', () => {
+		it('Case insensitive access via document.createElement().', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(document.createElement('CUSTOM-ELEMENT').localName).toBe('custom-element');
 		});
 
-		it('Non-ASCII capital letters in document.createElement()', () => {
+		it('Non-ASCII capital letters in document.createElement().', () => {
 			customElements.define('a-Öa', CustomElement);
 			expect(document.createElement('a-Öa').localName).toMatch(/a-Öa/i);
 		});

@@ -61,6 +61,10 @@ export default class CustomElementRegistry {
 			);
 		}
 
+		if (this._registry[localName]) {
+			throw new DOMException(`Custom Element: "${localName}" already defined.`);
+		}
+
 		this._registry[localName] = {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
@@ -124,7 +128,7 @@ export default class CustomElementRegistry {
 	 * Reverse lookup searching for tagName by given element class.
 	 *
 	 * @param elementClass Class constructor.
-	 * @returns First found Tag name or `null`.
+	 * @returns Found Tag name or `null`.
 	 */
 	public getName(elementClass: typeof HTMLElement): string | null {
 		const localName = Object.keys(this._registry).find(
