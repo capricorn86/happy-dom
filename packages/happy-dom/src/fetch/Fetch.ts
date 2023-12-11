@@ -102,10 +102,17 @@ export default class Fetch {
 		let cachedResponse = this.#browserFrame.page.context.responseCache.get(this.request);
 
 		if (cachedResponse) {
-			if (cachedResponse.etag || cachedResponse.state === CachedResponseStateEnum.stale) {
+			if (
+				cachedResponse.etag ||
+				(cachedResponse.state === CachedResponseStateEnum.stale && cachedResponse.lastModified)
+			) {
 				const headers = cachedResponse.etag
-					? { 'If-None-Match': cachedResponse.etag }
-					: { 'If-Modified-Since': new Date(cachedResponse.lastModified).toUTCString() };
+					? { ...cachedResponse.requestHeaders, 'If-None-Match': cachedResponse.etag }
+					: {
+							...cachedResponse.requestHeaders,
+							'If-Modified-Since': new Date(cachedResponse.lastModified).toUTCString()
+					  };
+
 				const fetch = new (<typeof Fetch>this.constructor)({
 					browserFrame: this.#browserFrame,
 					window: this.#window,
@@ -129,7 +136,7 @@ export default class Fetch {
 					const body = response.status !== 304 ? await response.buffer() : null;
 					cachedResponse = this.#browserFrame.page.context.responseCache.add(this.request, {
 						...response,
-						body: body,
+						body,
 						waitingForBody: false
 					});
 				}
@@ -141,6 +148,7 @@ export default class Fetch {
 					statusText: cachedResponse.response.statusText,
 					headers: cachedResponse.response.headers
 				});
+				(<string>response.url) = cachedResponse.response.url;
 				response.__cachedResponse__ = cachedResponse;
 
 				return response;
@@ -166,7 +174,7 @@ export default class Fetch {
 			}
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
-				if (response instanceof Response) {
+				if (!this.disableCache && response instanceof Response) {
 					response.__cachedResponse__ = this.#browserFrame.page.context.responseCache.add(
 						this.request,
 						{

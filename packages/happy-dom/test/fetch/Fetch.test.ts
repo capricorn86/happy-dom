@@ -2167,12 +2167,92 @@ describe('Fetch', () => {
 				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
 			);
 		});
-	});
+		it('Supports aborting multiple ongoing requests using AbortController.', async () => {
+			await new Promise((resolve) => {
+				const url = 'https://localhost:8080/test/';
+				const responseText = 'some response text';
 
-	it('Supports aborting multiple ongoing requests using AbortController.', async () => {
-		await new Promise((resolve) => {
+				mockModule('https', {
+					request: () => {
+						return {
+							end: () => {},
+							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+								if (event === 'response') {
+									setTimeout(() => {
+										async function* generate(): AsyncGenerator<Buffer> {
+											yield Buffer.from(responseText);
+										}
+										const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+										response.statusCode = 200;
+										response.headers = {};
+										response.rawHeaders = [];
+
+										callback(response);
+									}, 20);
+								}
+							},
+							setTimeout: () => {},
+							destroy: () => {}
+						};
+					}
+				});
+
+				const abortController = new AbortController();
+				const abortSignal = abortController.signal;
+				let error1: Error | null = null;
+				let error2: Error | null = null;
+
+				setTimeout(() => {
+					abortController.abort();
+				}, 10);
+
+				const onFetchCatch = (): void => {
+					if (error1 && error2) {
+						expect(error1).toEqual(
+							new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+						);
+						expect(error2).toEqual(
+							new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+						);
+						resolve(null);
+					}
+				};
+
+				window.fetch(url, { method: 'GET', signal: abortSignal }).catch((e) => {
+					error1 = e;
+					onFetchCatch();
+				});
+
+				window.fetch(url, { method: 'GET', signal: abortSignal }).catch((e) => {
+					error2 = e;
+					onFetchCatch();
+				});
+			});
+		});
+
+		it('Rejects immediately if signal has already been aborted.', async () => {
 			const url = 'https://localhost:8080/test/';
-			const responseText = 'some response text';
+
+			const abortController = new AbortController();
+			const abortSignal = abortController.signal;
+
+			abortController.abort();
+
+			let error: Error | null = null;
+			try {
+				await window.fetch(url, { method: 'GET', signal: abortSignal });
+			} catch (e) {
+				error = e;
+			}
+			expect(error).toEqual(
+				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+			);
+		});
+
+		it('Supports aborting the read of the response body using AbortController and AbortSignal when aborted before the reading has started.', async () => {
+			const url = 'https://localhost:8080/test/';
+			const chunks = ['chunk1', 'chunk2'];
 
 			mockModule('https', {
 				request: () => {
@@ -2180,18 +2260,17 @@ describe('Fetch', () => {
 						end: () => {},
 						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
 							if (event === 'response') {
-								setTimeout(() => {
-									async function* generate(): AsyncGenerator<Buffer> {
-										yield Buffer.from(responseText);
-									}
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+								async function* generate(): AsyncGenerator<Buffer> {
+									yield Buffer.from(chunks[0]);
+									yield Buffer.from(chunks[1]);
+								}
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-									response.statusCode = 200;
-									response.headers = {};
-									response.rawHeaders = [];
+								response.statusCode = 200;
+								response.headers = {};
+								response.rawHeaders = [];
 
-									callback(response);
-								}, 20);
+								callback(response);
 							}
 						},
 						setTimeout: () => {},
@@ -2202,1129 +2281,86 @@ describe('Fetch', () => {
 
 			const abortController = new AbortController();
 			const abortSignal = abortController.signal;
-			let error1: Error | null = null;
-			let error2: Error | null = null;
+			const response = await window.fetch(url, { method: 'GET', signal: abortSignal });
+			let error: Error | null = null;
+
+			abortController.abort();
+
+			try {
+				await response.text();
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
+				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+			);
+		});
+
+		it('Supports aborting the read of the response body using AbortController and AbortSignal.', async () => {
+			const url = 'https://localhost:8080/test/';
+			const chunks = ['chunk1', 'chunk2', 'chunk3'];
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<Buffer> {
+									yield await new Promise((resolve) => {
+										setTimeout(() => {
+											resolve(Buffer.from(chunks[0]));
+										}, 10);
+									});
+									yield await new Promise((resolve) => {
+										setTimeout(() => {
+											resolve(Buffer.from(chunks[1]));
+										}, 10);
+									});
+									yield await new Promise((resolve) => {
+										setTimeout(() => {
+											resolve(Buffer.from(chunks[2]));
+										}, 10);
+									});
+								}
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.headers = {};
+								response.rawHeaders = [];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {},
+						destroy: () => {}
+					};
+				}
+			});
+
+			const abortController = new AbortController();
+			const abortSignal = abortController.signal;
+			const response = await window.fetch(url, { method: 'GET', signal: abortSignal });
+			let error: Error | null = null;
 
 			setTimeout(() => {
 				abortController.abort();
-			}, 10);
+			}, 20);
 
-			const onFetchCatch = (): void => {
-				if (error1 && error2) {
-					expect(error1).toEqual(
-						new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
-					);
-					expect(error2).toEqual(
-						new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
-					);
-					resolve(null);
-				}
-			};
-
-			window.fetch(url, { method: 'GET', signal: abortSignal }).catch((e) => {
-				error1 = e;
-				onFetchCatch();
-			});
-
-			window.fetch(url, { method: 'GET', signal: abortSignal }).catch((e) => {
-				error2 = e;
-				onFetchCatch();
-			});
-		});
-	});
-
-	it('Rejects immediately if signal has already been aborted.', async () => {
-		const url = 'https://localhost:8080/test/';
-
-		const abortController = new AbortController();
-		const abortSignal = abortController.signal;
-
-		abortController.abort();
-
-		let error: Error | null = null;
-		try {
-			await window.fetch(url, { method: 'GET', signal: abortSignal });
-		} catch (e) {
-			error = e;
-		}
-		expect(error).toEqual(
-			new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
-		);
-	});
-
-	it('Supports aborting the read of the response body using AbortController and AbortSignal when aborted before the reading has started.', async () => {
-		const url = 'https://localhost:8080/test/';
-		const chunks = ['chunk1', 'chunk2'];
-
-		mockModule('https', {
-			request: () => {
-				return {
-					end: () => {},
-					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-						if (event === 'response') {
-							async function* generate(): AsyncGenerator<Buffer> {
-								yield Buffer.from(chunks[0]);
-								yield Buffer.from(chunks[1]);
-							}
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.statusCode = 200;
-							response.headers = {};
-							response.rawHeaders = [];
-
-							callback(response);
-						}
-					},
-					setTimeout: () => {},
-					destroy: () => {}
-				};
+			try {
+				await response.text();
+			} catch (e) {
+				error = e;
 			}
+
+			expect(error).toEqual(
+				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+			);
 		});
 
-		const abortController = new AbortController();
-		const abortSignal = abortController.signal;
-		const response = await window.fetch(url, { method: 'GET', signal: abortSignal });
-		let error: Error | null = null;
-
-		abortController.abort();
-
-		try {
-			await response.text();
-		} catch (e) {
-			error = e;
-		}
-
-		expect(error).toEqual(
-			new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
-		);
-	});
-
-	it('Supports aborting the read of the response body using AbortController and AbortSignal.', async () => {
-		const url = 'https://localhost:8080/test/';
-		const chunks = ['chunk1', 'chunk2', 'chunk3'];
-
-		mockModule('https', {
-			request: () => {
-				return {
-					end: () => {},
-					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-						if (event === 'response') {
-							async function* generate(): AsyncGenerator<Buffer> {
-								yield await new Promise((resolve) => {
-									setTimeout(() => {
-										resolve(Buffer.from(chunks[0]));
-									}, 10);
-								});
-								yield await new Promise((resolve) => {
-									setTimeout(() => {
-										resolve(Buffer.from(chunks[1]));
-									}, 10);
-								});
-								yield await new Promise((resolve) => {
-									setTimeout(() => {
-										resolve(Buffer.from(chunks[2]));
-									}, 10);
-								});
-							}
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.statusCode = 200;
-							response.headers = {};
-							response.rawHeaders = [];
-
-							callback(response);
-						}
-					},
-					setTimeout: () => {},
-					destroy: () => {}
-				};
-			}
-		});
-
-		const abortController = new AbortController();
-		const abortSignal = abortController.signal;
-		const response = await window.fetch(url, { method: 'GET', signal: abortSignal });
-		let error: Error | null = null;
-
-		setTimeout(() => {
-			abortController.abort();
-		}, 20);
-
-		try {
-			await response.text();
-		} catch (e) {
-			error = e;
-		}
-
-		expect(error).toEqual(
-			new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
-		);
-	});
-
-	it('Supports aborting the read of the request body using AbortController and AbortSignal.', async () => {
-		const url = 'https://localhost:8080/test/';
-		const chunks = ['chunk1', 'chunk2', 'chunk3'];
-		async function* generate(): AsyncGenerator<Buffer> {
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[0]));
-				}, 10);
-			});
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[1]));
-				}, 10);
-			});
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[2]));
-				}, 10);
-			});
-		}
-		const body = Stream.Readable.from(generate());
-
-		mockModule('https', {
-			request: () => {
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (_chunk, _encoding, callback) => {
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						}, 40);
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>{};
-
-				return request;
-			}
-		});
-
-		const abortController = new AbortController();
-		const abortSignal = abortController.signal;
-		let error: Error | null = null;
-
-		setTimeout(() => {
-			abortController.abort();
-		}, 20);
-
-		try {
-			await window.fetch(url, { method: 'POST', body, signal: abortSignal });
-		} catch (e) {
-			error = e;
-		}
-
-		expect(error).toEqual(
-			new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
-		);
-	});
-
-	it('Removes internal abort listener when a request has completed.', async () => {
-		const url = 'https://localhost:8080/test/';
-
-		mockModule('https', {
-			request: () => {
-				return {
-					end: () => {},
-					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-						if (event === 'response') {
-							async function* generate(): AsyncGenerator<Buffer> {}
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.statusCode = 200;
-							response.headers = {};
-							response.rawHeaders = [];
-
-							callback(response);
-						}
-					},
-					setTimeout: () => {},
-					destroy: () => {}
-				};
-			}
-		});
-
-		const abortController = new AbortController();
-		const abortSignal = abortController.signal;
-		const response = await window.fetch(url, { method: 'GET', signal: abortSignal });
-
-		await response.text();
-
-		expect(abortSignal.__listeners__['abort']).toEqual([]);
-		expect(() => abortController.abort()).not.toThrow();
-	});
-
-	it('Supports POST request with body as string.', async () => {
-		const body = 'Hello, world!\n';
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						});
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					'Content-Type': 'text/plain;charset=UTF-8',
-					'Content-Length': '14'
-				}
-			}
-		});
-
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe(body);
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports POST request with body as object (by stringifying to [object Object]).', async () => {
-		const body = { key: 'value' };
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						});
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: <string>(<unknown>body)
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					'Content-Type': 'text/plain;charset=UTF-8',
-					'Content-Length': '15'
-				}
-			}
-		});
-
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe('[object Object]');
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports POST request with body as ArrayBuffer.', async () => {
-		const body = 'Hello, world!\n';
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						});
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: new TextEncoder().encode(body).buffer
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					'Content-Length': '14'
-				}
-			}
-		});
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe(body);
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports POST request with body as ArrayBufferView (Uint8Array).', async () => {
-		const body = 'Hello, world!\n';
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						});
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: new TextEncoder().encode(body)
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					'Content-Length': '14'
-				}
-			}
-		});
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe(body);
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports POST request with body as ArrayBufferView (DataView).', async () => {
-		const body = 'Hello, world!\n';
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						});
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: new DataView(new TextEncoder().encode(body).buffer)
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					'Content-Length': '14'
-				}
-			}
-		});
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe(body);
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports POST request with body as ArrayBufferView (Uint8Array, offset, length).', async () => {
-		const body = 'Hello, world!\n';
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						});
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: new TextEncoder().encode(body).subarray(7, 13)
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					'Content-Length': '6'
-				}
-			}
-		});
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe('world!');
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports POST request with body as Blob without type.', async () => {
-		const body = 'key1=value1&key2=value2';
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						});
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: new Blob([body])
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					'Content-Length': '23'
-				}
-			}
-		});
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe('key1=value1&key2=value2');
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports POST request with body as Blob with type.', async () => {
-		const body = 'key1=value1&key2=value2';
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						});
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: new Blob([body], {
-				type: 'text/plain;charset=UTF-8'
-			})
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					// Blob converts type to lowercase according to spec
-					'Content-Type': 'text/plain;charset=utf-8',
-					'Content-Length': '23'
-				}
-			}
-		});
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe('key1=value1&key2=value2');
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports POST request with body as Stream.Readable.', async () => {
-		const chunks = ['chunk1', 'chunk2', 'chunk3'];
-		async function* generate(): AsyncGenerator<Buffer> {
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[0]));
-				}, 10);
-			});
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[1]));
-				}, 10);
-			});
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[2]));
-				}, 10);
-			});
-		}
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						}, 100);
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: Stream.Readable.from(generate())
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br'
-				}
-			}
-		});
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe(chunks.join(''));
-		expect(response.status).toBe(200);
-	});
-
-	it('Should reject if Stream.Readable throws an error.', async () => {
-		const chunks = ['chunk1', 'chunk2', 'chunk3'];
-		async function* generate(): AsyncGenerator<Buffer> {
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[0]));
-				}, 10);
-			});
-			yield await new Promise((_resolve, reject) => {
-				setTimeout(() => {
-					reject(new Error('test'));
-				}, 10);
-			});
-			yield await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(Buffer.from(chunks[2]));
-				}, 10);
-			});
-		}
-
-		mockModule('https', {
-			request: () => {
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (_chunk, _encoding, callback) => {
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						}, 40);
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>{};
-
-				return request;
-			}
-		});
-
-		let error: Error | null = null;
-		try {
-			await window.fetch('https://localhost:8080/test/', {
-				method: 'POST',
-				body: Stream.Readable.from(generate())
-			});
-		} catch (e) {
-			error = e;
-		}
-
-		expect(error).toEqual(
-			new DOMException(
-				`Fetch to "https://localhost:8080/test/" failed. Error: test`,
-				DOMExceptionNameEnum.networkError
-			)
-		);
-	});
-
-	it('Supports POST request with body as FormData.', async () => {
-		const formData = new FormData();
-
-		vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
-
-		formData.set('key1', 'value1');
-		formData.set('key2', 'value2');
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						}, 10);
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: formData
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					'Content-Type': 'multipart/form-data; boundary=----HappyDOMFormDataBoundary0.ssssssssst',
-					'Content-Length': '198'
-				}
-			}
-		});
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe(
-			'------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n'
-		);
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports POST request with body as URLSearchParams.', async () => {
-		const urlSearchParams = new URLSearchParams();
-
-		urlSearchParams.set('key1', 'value1');
-		urlSearchParams.set('key2', 'value2');
-
-		let destroyCount = 0;
-		let writtenBodyData = '';
-		let requestArgs: {
-			url: string;
-			options: { method: string; headers: { [k: string]: string } };
-		} | null = null;
-
-		mockModule('https', {
-			request: (url, options) => {
-				requestArgs = { url, options };
-
-				const request = <HTTP.ClientRequest>new Stream.Writable();
-
-				request._write = (chunk, _encoding, callback) => {
-					writtenBodyData += chunk.toString();
-					callback();
-				};
-				(<unknown>request.on) = (
-					event: string,
-					callback: (response: HTTP.IncomingMessage) => void
-				) => {
-					if (event === 'response') {
-						setTimeout(() => {
-							async function* generate(): AsyncGenerator<string> {}
-
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-							response.headers = {};
-							response.rawHeaders = [];
-							response.statusCode = 200;
-
-							callback(response);
-						});
-					}
-				};
-				(<unknown>request.setTimeout) = () => {};
-				request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-				return request;
-			}
-		});
-
-		const response = await window.fetch('https://localhost:8080/test/', {
-			method: 'POST',
-			body: urlSearchParams
-		});
-
-		expect(requestArgs).toEqual({
-			url: 'https://localhost:8080/test/',
-			options: {
-				method: 'POST',
-				headers: {
-					Accept: '*/*',
-					Connection: 'close',
-					'User-Agent': window.navigator.userAgent,
-					'Accept-Encoding': 'gzip, deflate, br',
-					'Content-Length': '23',
-					'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-				}
-			}
-		});
-		expect(destroyCount).toBe(1);
-		expect(writtenBodyData).toBe('key1=value1&key2=value2');
-		expect(response.status).toBe(200);
-	});
-
-	it('Supports window.happyDOM?.whenComplete().', async () => {
-		await new Promise((resolve) => {
+		it('Supports aborting the read of the request body using AbortController and AbortSignal.', async () => {
+			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 			async function* generate(): AsyncGenerator<Buffer> {
 				yield await new Promise((resolve) => {
@@ -3343,8 +2379,7 @@ describe('Fetch', () => {
 					}, 10);
 				});
 			}
-
-			let isAsyncComplete = false;
+			const body = Stream.Readable.from(generate());
 
 			mockModule('https', {
 				request: () => {
@@ -3368,7 +2403,7 @@ describe('Fetch', () => {
 								response.statusCode = 200;
 
 								callback(response);
-							}, 100);
+							}, 40);
 						}
 					};
 					(<unknown>request.setTimeout) = () => {};
@@ -3378,21 +2413,1200 @@ describe('Fetch', () => {
 				}
 			});
 
-			window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
+			const abortController = new AbortController();
+			const abortSignal = abortController.signal;
+			let error: Error | null = null;
 
-			window.fetch('https://localhost:8080/test/', {
+			setTimeout(() => {
+				abortController.abort();
+			}, 20);
+
+			try {
+				await window.fetch(url, { method: 'POST', body, signal: abortSignal });
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
+				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+			);
+		});
+
+		it('Removes internal abort listener when a request has completed.', async () => {
+			const url = 'https://localhost:8080/test/';
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<Buffer> {}
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.headers = {};
+								response.rawHeaders = [];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {},
+						destroy: () => {}
+					};
+				}
+			});
+
+			const abortController = new AbortController();
+			const abortSignal = abortController.signal;
+			const response = await window.fetch(url, { method: 'GET', signal: abortSignal });
+
+			await response.text();
+
+			expect(abortSignal.__listeners__['abort']).toEqual([]);
+			expect(() => abortController.abort()).not.toThrow();
+		});
+
+		it('Supports POST request with body as string.', async () => {
+			const body = 'Hello, world!\n';
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							});
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Content-Type': 'text/plain;charset=UTF-8',
+						'Content-Length': '14'
+					}
+				}
+			});
+
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe(body);
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports POST request with body as object (by stringifying to [object Object]).', async () => {
+			const body = { key: 'value' };
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							});
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: <string>(<unknown>body)
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Content-Type': 'text/plain;charset=UTF-8',
+						'Content-Length': '15'
+					}
+				}
+			});
+
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe('[object Object]');
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports POST request with body as ArrayBuffer.', async () => {
+			const body = 'Hello, world!\n';
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							});
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: new TextEncoder().encode(body).buffer
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Content-Length': '14'
+					}
+				}
+			});
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe(body);
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports POST request with body as ArrayBufferView (Uint8Array).', async () => {
+			const body = 'Hello, world!\n';
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							});
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: new TextEncoder().encode(body)
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Content-Length': '14'
+					}
+				}
+			});
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe(body);
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports POST request with body as ArrayBufferView (DataView).', async () => {
+			const body = 'Hello, world!\n';
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							});
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: new DataView(new TextEncoder().encode(body).buffer)
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Content-Length': '14'
+					}
+				}
+			});
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe(body);
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports POST request with body as ArrayBufferView (Uint8Array, offset, length).', async () => {
+			const body = 'Hello, world!\n';
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							});
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: new TextEncoder().encode(body).subarray(7, 13)
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Content-Length': '6'
+					}
+				}
+			});
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe('world!');
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports POST request with body as Blob without type.', async () => {
+			const body = 'key1=value1&key2=value2';
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							});
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: new Blob([body])
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Content-Length': '23'
+					}
+				}
+			});
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe('key1=value1&key2=value2');
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports POST request with body as Blob with type.', async () => {
+			const body = 'key1=value1&key2=value2';
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							});
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: new Blob([body], {
+					type: 'text/plain;charset=UTF-8'
+				})
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						// Blob converts type to lowercase according to spec
+						'Content-Type': 'text/plain;charset=utf-8',
+						'Content-Length': '23'
+					}
+				}
+			});
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe('key1=value1&key2=value2');
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports POST request with body as Stream.Readable.', async () => {
+			const chunks = ['chunk1', 'chunk2', 'chunk3'];
+			async function* generate(): AsyncGenerator<Buffer> {
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[0]));
+					}, 10);
+				});
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[1]));
+					}, 10);
+				});
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[2]));
+					}, 10);
+				});
+			}
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							}, 100);
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
 				body: Stream.Readable.from(generate())
 			});
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(false);
-			}, 10);
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br'
+					}
+				}
+			});
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe(chunks.join(''));
+			expect(response.status).toBe(200);
+		});
 
-			setTimeout(() => {
-				expect(isAsyncComplete).toBe(true);
-				resolve(null);
-			}, 120);
+		it('Should reject if Stream.Readable throws an error.', async () => {
+			const chunks = ['chunk1', 'chunk2', 'chunk3'];
+			async function* generate(): AsyncGenerator<Buffer> {
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[0]));
+					}, 10);
+				});
+				yield await new Promise((_resolve, reject) => {
+					setTimeout(() => {
+						reject(new Error('test'));
+					}, 10);
+				});
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[2]));
+					}, 10);
+				});
+			}
+
+			mockModule('https', {
+				request: () => {
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (_chunk, _encoding, callback) => {
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							}, 40);
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>{};
+
+					return request;
+				}
+			});
+
+			let error: Error | null = null;
+			try {
+				await window.fetch('https://localhost:8080/test/', {
+					method: 'POST',
+					body: Stream.Readable.from(generate())
+				});
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
+				new DOMException(
+					`Fetch to "https://localhost:8080/test/" failed. Error: test`,
+					DOMExceptionNameEnum.networkError
+				)
+			);
+		});
+
+		it('Supports POST request with body as FormData.', async () => {
+			const formData = new FormData();
+
+			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
+
+			formData.set('key1', 'value1');
+			formData.set('key2', 'value2');
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							}, 10);
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: formData
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Content-Type':
+							'multipart/form-data; boundary=----HappyDOMFormDataBoundary0.ssssssssst',
+						'Content-Length': '198'
+					}
+				}
+			});
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe(
+				'------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n'
+			);
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports POST request with body as URLSearchParams.', async () => {
+			const urlSearchParams = new URLSearchParams();
+
+			urlSearchParams.set('key1', 'value1');
+			urlSearchParams.set('key2', 'value2');
+
+			let destroyCount = 0;
+			let writtenBodyData = '';
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					const request = <HTTP.ClientRequest>new Stream.Writable();
+
+					request._write = (chunk, _encoding, callback) => {
+						writtenBodyData += chunk.toString();
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
+
+								callback(response);
+							});
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+
+					return request;
+				}
+			});
+
+			const response = await window.fetch('https://localhost:8080/test/', {
+				method: 'POST',
+				body: urlSearchParams
+			});
+
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/test/',
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Content-Length': '23',
+						'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+					}
+				}
+			});
+			expect(destroyCount).toBe(1);
+			expect(writtenBodyData).toBe('key1=value1&key2=value2');
+			expect(response.status).toBe(200);
+		});
+
+		it('Supports window.happyDOM?.whenComplete().', async () => {
+			await new Promise((resolve) => {
+				const chunks = ['chunk1', 'chunk2', 'chunk3'];
+				async function* generate(): AsyncGenerator<Buffer> {
+					yield await new Promise((resolve) => {
+						setTimeout(() => {
+							resolve(Buffer.from(chunks[0]));
+						}, 10);
+					});
+					yield await new Promise((resolve) => {
+						setTimeout(() => {
+							resolve(Buffer.from(chunks[1]));
+						}, 10);
+					});
+					yield await new Promise((resolve) => {
+						setTimeout(() => {
+							resolve(Buffer.from(chunks[2]));
+						}, 10);
+					});
+				}
+
+				let isAsyncComplete = false;
+
+				mockModule('https', {
+					request: () => {
+						const request = <HTTP.ClientRequest>new Stream.Writable();
+
+						request._write = (_chunk, _encoding, callback) => {
+							callback();
+						};
+						(<unknown>request.on) = (
+							event: string,
+							callback: (response: HTTP.IncomingMessage) => void
+						) => {
+							if (event === 'response') {
+								setTimeout(() => {
+									async function* generate(): AsyncGenerator<string> {}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.headers = {};
+									response.rawHeaders = [];
+									response.statusCode = 200;
+
+									callback(response);
+								}, 100);
+							}
+						};
+						(<unknown>request.setTimeout) = () => {};
+						request.destroy = () => <ClientRequest>{};
+
+						return request;
+					}
+				});
+
+				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
+
+				window.fetch('https://localhost:8080/test/', {
+					method: 'POST',
+					body: Stream.Readable.from(generate())
+				});
+
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(false);
+				}, 10);
+
+				setTimeout(() => {
+					expect(isAsyncComplete).toBe(true);
+					resolve(null);
+				}, 120);
+			});
+		});
+
+		it(`Supports cache for GET request with "Cache-Control" set to "max-age=${
+			1000 * 60 * 60
+		}".`, async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'some text';
+			let requestCount = 0;
+
+			mockModule('https', {
+				request: () => {
+					requestCount++;
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length),
+									'cache-control',
+									`max-age=${1000 * 60 * 60}`
+								];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response1 = await window.fetch(url);
+			const text1 = await response1.text();
+
+			const response2 = await window.fetch(url);
+			const text2 = await response2.text();
+
+			const headers1 = {};
+			for (const [key, value] of response1.headers) {
+				headers1[key] = value;
+			}
+
+			const headers2 = {};
+			for (const [key, value] of response2.headers) {
+				headers2[key] = value;
+			}
+
+			expect(response1.url).toBe(url);
+			expect(response1.ok).toBe(true);
+			expect(response1.redirected).toBe(false);
+			expect(response1.status).toBe(200);
+			expect(response1.statusText).toBe('OK');
+			expect(text1).toBe(responseText);
+			expect(headers1).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText.length),
+				'cache-control': `max-age=${1000 * 60 * 60}`
+			});
+
+			expect(response2.url).toBe(response1.url);
+			expect(response2.ok).toBe(response1.ok);
+			expect(response2.redirected).toBe(response1.redirected);
+			expect(response2.status).toBe(response1.status);
+			expect(response2.statusText).toBe(response1.statusText);
+			expect(text2).toBe(text1);
+			expect(headers2).toEqual(headers1);
+
+			expect(requestCount).toBe(1);
+		});
+
+		it(`Supports cache for GET request with "Cache-Control" set to "must-revalidate, max-age=0.002".`, async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'some text';
+			const requestArgs: Array<{
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			}> = [];
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs.push({ url, options });
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								if (requestArgs[requestArgs.length - 1].options.headers['If-Modified-Since']) {
+									const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
+
+									response.statusCode = 304;
+									response.statusMessage = 'Not Modified';
+									response.headers = {};
+									response.rawHeaders = ['last-modified', 'Mon, 11 Dec 2023 02:00:00 GMT'];
+
+									callback(response);
+								} else {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = 'OK';
+									response.headers = {};
+									response.rawHeaders = [
+										'content-type',
+										'text/html',
+										'content-length',
+										String(responseText.length),
+										'cache-control',
+										'must-revalidate, max-age=0.002',
+										'last-modified',
+										'Mon, 11 Dec 2023 01:00:00 GMT'
+									];
+
+									callback(response);
+								}
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response1 = await window.fetch(url, {
+				headers: {
+					key1: 'value1'
+				}
+			});
+			const text1 = await response1.text();
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			const response2 = await window.fetch(url);
+			const text2 = await response2.text();
+
+			const headers1 = {};
+			for (const [key, value] of response1.headers) {
+				headers1[key] = value;
+			}
+
+			const headers2 = {};
+			for (const [key, value] of response2.headers) {
+				headers2[key] = value;
+			}
+
+			expect(response1.url).toBe(url);
+			expect(response1.ok).toBe(true);
+			expect(response1.redirected).toBe(false);
+			expect(response1.status).toBe(200);
+			expect(response1.statusText).toBe('OK');
+			expect(text1).toBe(responseText);
+			expect(headers1).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText.length),
+				'cache-control': `must-revalidate, max-age=0.002`,
+				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
+			});
+
+			expect(response2.url).toBe(response1.url);
+			expect(response2.ok).toBe(response1.ok);
+			expect(response2.redirected).toBe(response1.redirected);
+			expect(response2.status).toBe(response1.status);
+			expect(response2.statusText).toBe(response1.statusText);
+			expect(text2).toBe(text1);
+			expect(headers2).toEqual({
+				...headers1,
+				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
+			});
+
+			expect(requestArgs).toEqual([
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						method: 'GET'
+					},
+					url: 'https://localhost:8080/some/path'
+				},
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						method: 'GET'
+					},
+					url: 'https://localhost:8080/some/path'
+				}
+			]);
 		});
 	});
 });

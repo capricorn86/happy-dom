@@ -21,7 +21,6 @@ export default interface IResponseCache {
 	 * @param response Response.
 	 */
 	add(request: ICachableRequest, response: ICachableResponse): ICachedResponse;
-
 	/**
 	 * Removes expired responses to clear up space.
 	 *
