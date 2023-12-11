@@ -63,6 +63,11 @@ describe('CustomElementRegistry', () => {
 			expect(() => customElements.define('custom-element', CustomElement)).toThrow();
 		});
 
+		it('Throws an error if already registered under a different tag name.', () => {
+			customElements.define('custom-element', CustomElement);
+			expect(() => customElements.define('custom-element2', CustomElement)).toThrow();
+		});
+
 		it('Calls observed attributes and set _observedAttributes as a property on the element class.', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(CustomElement.observedAttributesCallCount).toBe(1);

@@ -65,6 +65,11 @@ export default class CustomElementRegistry {
 			throw new DOMException(`Custom Element: "${localName}" already defined.`);
 		}
 
+		const otherName = this.getName(elementClass);
+		if (otherName) {
+			throw new DOMException(`Custom Element already defined as "${otherName}".`);
+		}
+
 		this._registry[localName] = {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
