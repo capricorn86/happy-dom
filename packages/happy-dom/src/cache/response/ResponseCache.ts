@@ -3,24 +3,14 @@ import ICachedResponse from './ICachedResponse.js';
 import CachedResponseStateEnum from './CachedResponseStateEnum.js';
 import ICachableRequest from './ICachableRequest.js';
 import ICachableResponse from './ICachableResponse.js';
-import Headers from '../../fetch/Headers.js';
 
-const DEFAULT_CACHED_RESPONSE: ICachedResponse = {
-	response: null,
-	requestMethod: null,
-	requestHeaders: {},
-	vary: {},
-	expires: null,
-	etag: null,
-	cacheUpdateTime: null,
-	lastModified: null,
-	mustRevalidate: false,
-	staleWhileRevalidate: false,
-	state: CachedResponseStateEnum.fresh
-};
+const UPDATE_RESPONSE_HEADERS = ['Cache-Control', 'Last-Modified', 'Vary', 'ETag'];
 
 /**
  * Fetch response cache.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching
+ * @see https://www.mnot.net/cache_docs/
  */
 export default class ResponseCache implements IResponseCache {
 	#entries: { [url: string]: ICachedResponse[] } = {};
@@ -40,7 +30,7 @@ export default class ResponseCache implements IResponseCache {
 		if (this.#entries[url]) {
 			for (let i = 0, max = this.#entries[url].length; i < max; i++) {
 				const entry = this.#entries[url][i];
-				let isMatch = entry.requestMethod === request.method;
+				let isMatch = entry.request.method === request.method;
 				if (isMatch) {
 					for (const header of Object.keys(entry.vary)) {
 						if (entry.vary[header] !== request.headers.get(header)) {
@@ -50,17 +40,13 @@ export default class ResponseCache implements IResponseCache {
 					}
 				}
 				if (isMatch) {
-					if (entry.expires && entry.expires < Date.now()) {
+					if (!entry.etag && entry.expires && entry.expires < Date.now()) {
 						if (entry.lastModified) {
 							entry.state = CachedResponseStateEnum.stale;
 						} else {
 							this.#entries[url].splice(i, 1);
 							return null;
 						}
-					}
-					// We need to wait for the body to be consumed and then populated before it can be used.
-					if (entry.response?.waitingForBody) {
-						return null;
 					}
 					return entry;
 				}
@@ -76,65 +62,83 @@ export default class ResponseCache implements IResponseCache {
 	 * @param response Response.
 	 */
 	public add(request: ICachableRequest, response: ICachableResponse): ICachedResponse {
-		const url = request.url;
-		let cachedResponse: ICachedResponse | null = null;
-
-		// Remove existing entry with the same vary headers.
-		if (this.#entries[url]) {
-			for (let i = 0, max = this.#entries[url].length; i < max; i++) {
-				const entry = this.#entries[url][i];
-				let isMatch = entry.requestMethod === request.method;
-				if (isMatch) {
-					for (const header of Object.keys(entry.vary)) {
-						if (entry.vary[header] !== request.headers.get(header)) {
-							isMatch = false;
-							break;
-						}
-					}
-				}
-				if (isMatch) {
-					cachedResponse = entry;
-					if (response.status !== 304) {
-						Object.assign(entry, DEFAULT_CACHED_RESPONSE, {
-							requestHeaders: {},
-							vary: {}
-						});
-					}
-					break;
-				}
-			}
+		// We should only cache GET and HEAD requests.
+		if (
+			(request.method !== 'GET' && request.method !== 'HEAD') ||
+			request.headers.get('Cache-Control')?.includes('no-cache')
+		) {
+			return null;
 		}
 
-		if (!cachedResponse) {
-			cachedResponse = { ...DEFAULT_CACHED_RESPONSE, requestHeaders: {}, vary: {} };
+		const url = request.url;
+		let cachedResponse = this.get(request);
+
+		if (response.status === 304) {
+			if (!cachedResponse) {
+				throw new Error('ResponseCache: Cached response not found.');
+			}
+
+			for (const name of UPDATE_RESPONSE_HEADERS) {
+				if (response.headers.has(name)) {
+					cachedResponse.response.headers.set(name, response.headers.get(name));
+				}
+			}
+
+			cachedResponse.cacheUpdateTime = Date.now();
+			cachedResponse.state = CachedResponseStateEnum.fresh;
+		} else {
+			if (cachedResponse) {
+				const index = this.#entries[url].indexOf(cachedResponse);
+				if (index !== -1) {
+					this.#entries[url].splice(index, 1);
+				}
+			}
+
+			cachedResponse = {
+				response: {
+					status: response.status,
+					statusText: response.statusText,
+					url: response.url,
+					headers: response.headers,
+					// We need to wait for the body to be consumed and then populated if set to true (e.g. by using Response.text()).
+					waitingForBody: response.waitingForBody,
+					body: response.body ?? null
+				},
+				request: {
+					headers: request.headers,
+					method: request.method
+				},
+				vary: {},
+				expires: null,
+				etag: null,
+				cacheUpdateTime: Date.now(),
+				lastModified: null,
+				mustRevalidate: false,
+				staleWhileRevalidate: false,
+				state: CachedResponseStateEnum.fresh
+			};
+
 			this.#entries[url] = this.#entries[url] || [];
 			this.#entries[url].push(cachedResponse);
 		}
 
-		const cacheControl = response.headers.get('Cache-Control');
-		const age = response.headers.get('Age');
-		const etag = response.headers.get('ETag');
-		const vary = response.headers.get('Vary');
-		const lastModified = response.headers.get('Last-Modified');
+		if (response.headers.has('Cache-Control')) {
+			const age = response.headers.get('Age');
 
-		cachedResponse.requestMethod = request.method;
-		cachedResponse.cacheUpdateTime = Date.now();
-
-		for (const [name, value] of request.headers) {
-			cachedResponse.requestHeaders[name] = value;
-		}
-
-		if (cacheControl) {
-			for (const part of cacheControl.split(',')) {
+			for (const part of response.headers.get('Cache-Control').split(',')) {
 				const [key, value] = part.trim().split('=');
 				switch (key) {
 					case 'max-age':
 						cachedResponse.expires =
-							Date.now() + parseInt(value) / 1000 - (age ? parseInt(age) / 1000 : 0);
+							Date.now() + parseInt(value) * 1000 - (age ? parseInt(age) * 1000 : 0);
 						break;
 					case 'no-cache':
 					case 'no-store':
-						return;
+						const index = this.#entries[url].indexOf(cachedResponse);
+						if (index !== -1) {
+							this.#entries[url].splice(index, 1);
+						}
+						return null;
 					case 'must-revalidate':
 						cachedResponse.mustRevalidate = true;
 						break;
@@ -145,18 +149,22 @@ export default class ResponseCache implements IResponseCache {
 			}
 		}
 
-		if (lastModified) {
-			cachedResponse.lastModified = Date.parse(lastModified);
+		if (response.headers.has('Last-Modified')) {
+			cachedResponse.lastModified = Date.parse(response.headers.get('Last-Modified'));
 		}
 
-		if (vary) {
-			for (const header of vary.split(',')) {
+		if (response.headers.has('Vary')) {
+			for (const header of response.headers.get('Vary').split(',')) {
 				const name = header.trim();
 				const value = request.headers.get(name);
 				if (value) {
 					cachedResponse.vary[name] = value;
 				}
 			}
+		}
+
+		if (response.headers.has('ETag')) {
+			cachedResponse.etag = response.headers.get('ETag');
 		}
 
 		if (!cachedResponse.expires) {
@@ -166,48 +174,7 @@ export default class ResponseCache implements IResponseCache {
 			}
 		}
 
-		if (etag) {
-			cachedResponse.etag = etag;
-		}
-
-		if (response.status === 304) {
-			const updatedHeaders = new Headers(cachedResponse.response?.headers || {});
-			if (cacheControl) {
-				updatedHeaders.set('Cache-Control', cacheControl);
-			}
-			if (lastModified) {
-				updatedHeaders.set('Last-Modified', lastModified);
-			}
-			if (vary) {
-				updatedHeaders.set('Vary', vary);
-			}
-			if (etag) {
-				updatedHeaders.set('ETag', etag);
-			}
-			const headers: { [name: string]: string } = {};
-			for (const [name, value] of updatedHeaders) {
-				headers[name] = value;
-			}
-			cachedResponse.response = {
-				...cachedResponse.response,
-				headers
-			};
-		} else {
-			const headers: { [name: string]: string } = {};
-			for (const [name, value] of response.headers) {
-				headers[name] = value;
-			}
-			cachedResponse.response = {
-				status: response.status,
-				statusText: response.statusText,
-				url: response.url,
-				headers,
-				// We need to wait for the body to be consumed and then populated (e.g. by using Response.text()).
-				waitingForBody: response.waitingForBody,
-				body: response.body ?? null
-			};
-		}
-
+		// Cache is invalid if it has expired and doesn't have an ETag.
 		if (!cachedResponse.etag && (!cachedResponse.expires || cachedResponse.expires < Date.now())) {
 			const index = this.#entries[url].indexOf(cachedResponse);
 			if (index !== -1) {
@@ -215,8 +182,6 @@ export default class ResponseCache implements IResponseCache {
 			}
 			return null;
 		}
-
-		cachedResponse.state = CachedResponseStateEnum.fresh;
 
 		return cachedResponse;
 	}
@@ -233,6 +198,7 @@ export default class ResponseCache implements IResponseCache {
 			for (let i = 0, max = this.#entries[key].length; i < max; i++) {
 				const cachedResponse = this.#entries[key][i];
 				if (
+					!cachedResponse.etag &&
 					!cachedResponse.lastModified &&
 					cachedResponse.expires &&
 					cachedResponse.expires < Date.now()

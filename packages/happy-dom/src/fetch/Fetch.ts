@@ -85,8 +85,8 @@ export default class Fetch {
 		if (options.contentType) {
 			(<string>this.request.__contentType__) = options.contentType;
 		}
-		this.redirectCount = options.redirectCount || 0;
-		this.disableCache = options.disableCache;
+		this.redirectCount = options.redirectCount ?? 0;
+		this.disableCache = options.disableCache ?? false;
 	}
 
 	/**
@@ -96,66 +96,82 @@ export default class Fetch {
 	 */
 	public async send(): Promise<IResponse> {
 		if (this.disableCache) {
-			return this.sendWithoutCache();
+			return await this.sendWithoutCache();
 		}
 
 		let cachedResponse = this.#browserFrame.page.context.responseCache.get(this.request);
 
-		if (cachedResponse) {
-			if (
-				cachedResponse.etag ||
-				(cachedResponse.state === CachedResponseStateEnum.stale && cachedResponse.lastModified)
-			) {
-				const headers = cachedResponse.etag
-					? { ...cachedResponse.requestHeaders, 'If-None-Match': cachedResponse.etag }
-					: {
-							...cachedResponse.requestHeaders,
-							'If-Modified-Since': new Date(cachedResponse.lastModified).toUTCString()
-					  };
+		if (!cachedResponse || cachedResponse.response.waitingForBody) {
+			return await this.sendWithoutCache();
+		}
 
-				const fetch = new (<typeof Fetch>this.constructor)({
-					browserFrame: this.#browserFrame,
-					window: this.#window,
-					url: this.request.url,
-					init: { headers },
-					disableCache: true
-				});
+		if (
+			cachedResponse.etag ||
+			(cachedResponse.state === CachedResponseStateEnum.stale && cachedResponse.lastModified)
+		) {
+			const headers = new Headers(cachedResponse.request.headers);
 
-				if (!cachedResponse.etag && cachedResponse.staleWhileRevalidate) {
-					fetch.send().then((response) => {
-						response.buffer().then((body: Buffer) => {
-							this.#browserFrame.page.context.responseCache.add(this.request, {
-								...response,
-								body,
-								waitingForBody: false
-							});
-						});
-					});
-				} else {
-					const response = <Response>await fetch.send();
-					const body = response.status !== 304 ? await response.buffer() : null;
-					cachedResponse = this.#browserFrame.page.context.responseCache.add(this.request, {
-						...response,
-						body,
-						waitingForBody: false
-					});
-				}
+			if (cachedResponse.etag) {
+				headers.set('If-None-Match', cachedResponse.etag);
+			} else {
+				headers.set('If-Modified-Since', new Date(cachedResponse.lastModified).toUTCString());
 			}
 
-			if (cachedResponse && !cachedResponse.response?.waitingForBody) {
-				const response = new this.#window.Response(cachedResponse.response.body, {
-					status: cachedResponse.response.status,
-					statusText: cachedResponse.response.statusText,
-					headers: cachedResponse.response.headers
-				});
-				(<string>response.url) = cachedResponse.response.url;
-				response.__cachedResponse__ = cachedResponse;
+			const fetch = new (<typeof Fetch>this.constructor)({
+				browserFrame: this.#browserFrame,
+				window: this.#window,
+				url: this.request.url,
+				init: { headers, method: cachedResponse.request.method },
+				disableCache: true
+			});
 
-				return response;
+			if (cachedResponse.etag || !cachedResponse.staleWhileRevalidate) {
+				const validateResponse = <Response>await fetch.send();
+				const body = validateResponse.status !== 304 ? await validateResponse.buffer() : null;
+
+				cachedResponse = this.#browserFrame.page.context.responseCache.add(this.request, {
+					...validateResponse,
+					body,
+					waitingForBody: false
+				});
+
+				if (validateResponse.status !== 304) {
+					const response = new this.#window.Response(body, {
+						status: validateResponse.status,
+						statusText: validateResponse.statusText,
+						headers: validateResponse.headers
+					});
+					(<string>response.url) = validateResponse.url;
+					response.__cachedResponse__ = cachedResponse;
+
+					return response;
+				}
+			} else {
+				fetch.send().then((response) => {
+					response.buffer().then((body: Buffer) => {
+						this.#browserFrame.page.context.responseCache.add(this.request, {
+							...response,
+							body,
+							waitingForBody: false
+						});
+					});
+				});
 			}
 		}
 
-		return this.sendWithoutCache();
+		if (!cachedResponse || cachedResponse.response.waitingForBody) {
+			return await this.sendWithoutCache();
+		}
+
+		const response = new this.#window.Response(cachedResponse.response.body, {
+			status: cachedResponse.response.status,
+			statusText: cachedResponse.response.statusText,
+			headers: cachedResponse.response.headers
+		});
+		(<string>response.url) = cachedResponse.response.url;
+		response.__cachedResponse__ = cachedResponse;
+
+		return response;
 	}
 
 	/**

@@ -1,26 +1,24 @@
 import CachedResponseStateEnum from './CachedResponseStateEnum.js';
+import IHeaders from '../../fetch/types/IHeaders.js';
 
 export default interface ICachedResponse {
 	/** Response. */
 	response: {
 		status: number;
 		statusText: string;
-		url: string | null;
-		headers: {
-			[name: string]: string;
-		};
+		url: string;
+		headers: IHeaders;
 		// We need to wait for the body to be populated if set to "true".
 		waitingForBody: boolean;
 		body: Buffer | null;
-	} | null;
-	/** Request headers */
-	requestHeaders: {
-		[name: string]: string;
 	};
-	/** Request method */
-	requestMethod: string | null;
+	/** Request. */
+	request: {
+		headers: IHeaders;
+		method: string;
+	};
 	/** Cache update time in milliseconds. */
-	cacheUpdateTime: number | null;
+	cacheUpdateTime: number;
 	/** Last modified time in milliseconds. */
 	lastModified: number | null;
 	/** Vary headers. */
@@ -29,7 +27,7 @@ export default interface ICachedResponse {
 	expires: number | null;
 	/** ETag */
 	etag: string | null;
-	/** Must revalidate using "If-Modified-Since" request when expired */
+	/** Must revalidate using "If-Modified-Since" request when expired. Not supported yet. */
 	mustRevalidate: boolean;
 	/** Stale while revalidate using "If-Modified-Since" request when expired */
 	staleWhileRevalidate: boolean;

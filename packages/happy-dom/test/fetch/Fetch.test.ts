@@ -3395,9 +3395,7 @@ describe('Fetch', () => {
 			});
 		});
 
-		it(`Supports cache for GET request with "Cache-Control" set to "max-age=${
-			1000 * 60 * 60
-		}".`, async () => {
+		it('Supports cache for GET response with "Cache-Control" set to "max-age=60".', async () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
 			let requestCount = 0;
@@ -3425,7 +3423,7 @@ describe('Fetch', () => {
 									'content-length',
 									String(responseText.length),
 									'cache-control',
-									`max-age=${1000 * 60 * 60}`
+									`max-age=60`
 								];
 
 								callback(response);
@@ -3461,7 +3459,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=${1000 * 60 * 60}`
+				'cache-control': `max-age=60`
 			});
 
 			expect(response2.url).toBe(response1.url);
@@ -3475,7 +3473,7 @@ describe('Fetch', () => {
 			expect(requestCount).toBe(1);
 		});
 
-		it(`Supports cache for GET request with "Cache-Control" set to "must-revalidate, max-age=0.002".`, async () => {
+		it('Revalidates cache with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0.001".', async () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
 			const requestArgs: Array<{
@@ -3497,7 +3495,12 @@ describe('Fetch', () => {
 									response.statusCode = 304;
 									response.statusMessage = 'Not Modified';
 									response.headers = {};
-									response.rawHeaders = ['last-modified', 'Mon, 11 Dec 2023 02:00:00 GMT'];
+									response.rawHeaders = [
+										'last-modified',
+										'Mon, 11 Dec 2023 02:00:00 GMT',
+										'cache-control',
+										'max-age=0.001'
+									];
 
 									callback(response);
 								} else {
@@ -3516,7 +3519,7 @@ describe('Fetch', () => {
 										'content-length',
 										String(responseText.length),
 										'cache-control',
-										'must-revalidate, max-age=0.002',
+										'max-age=0.001',
 										'last-modified',
 										'Mon, 11 Dec 2023 01:00:00 GMT'
 									];
@@ -3537,7 +3540,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await new Promise((resolve) => setTimeout(resolve, 20));
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -3561,7 +3564,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `must-revalidate, max-age=0.002`,
+				'cache-control': `max-age=0.001`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -3572,8 +3575,10 @@ describe('Fetch', () => {
 			expect(response2.statusText).toBe(response1.statusText);
 			expect(text2).toBe(text1);
 			expect(headers2).toEqual({
-				...headers1,
-				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
+				'content-type': 'text/html',
+				'content-length': String(responseText.length),
+				'Cache-Control': 'max-age=0.001',
+				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
 			});
 
 			expect(requestArgs).toEqual([
@@ -3601,6 +3606,681 @@ describe('Fetch', () => {
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
+						},
+						method: 'GET'
+					},
+					url: 'https://localhost:8080/some/path'
+				}
+			]);
+		});
+
+		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0.001".', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText1 = 'some text';
+			const responseText2 = 'some new text';
+			const requestArgs: Array<{
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			}> = [];
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs.push({ url, options });
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								if (requestArgs[requestArgs.length - 1].options.headers['If-Modified-Since']) {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText2;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = 'OK';
+									response.headers = {};
+									response.rawHeaders = [
+										'content-type',
+										'text/html',
+										'content-length',
+										String(responseText2.length),
+										'cache-control',
+										'max-age=0.001',
+										'last-modified',
+										'Mon, 11 Dec 2023 02:00:00 GMT'
+									];
+
+									callback(response);
+								} else {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText1;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = 'OK';
+									response.headers = {};
+									response.rawHeaders = [
+										'content-type',
+										'text/html',
+										'content-length',
+										String(responseText1.length),
+										'cache-control',
+										'max-age=0.001',
+										'last-modified',
+										'Mon, 11 Dec 2023 01:00:00 GMT'
+									];
+
+									callback(response);
+								}
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response1 = await window.fetch(url, {
+				headers: {
+					key1: 'value1'
+				}
+			});
+			const text1 = await response1.text();
+
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			const response2 = await window.fetch(url);
+			const text2 = await response2.text();
+
+			const response3 = await window.fetch(url);
+			const text3 = await response3.text();
+
+			const headers1 = {};
+			for (const [key, value] of response1.headers) {
+				headers1[key] = value;
+			}
+
+			const headers2 = {};
+			for (const [key, value] of response2.headers) {
+				headers2[key] = value;
+			}
+
+			const headers3 = {};
+			for (const [key, value] of response3.headers) {
+				headers3[key] = value;
+			}
+
+			expect(response1.url).toBe(url);
+			expect(response1.ok).toBe(true);
+			expect(response1.redirected).toBe(false);
+			expect(response1.status).toBe(200);
+			expect(response1.statusText).toBe('OK');
+			expect(text1).toBe(responseText1);
+			expect(headers1).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText1.length),
+				'cache-control': `max-age=0.001`,
+				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
+			});
+
+			expect(response2.url).toBe(url);
+			expect(response2.ok).toBe(true);
+			expect(response2.redirected).toBe(false);
+			expect(response2.status).toBe(200);
+			expect(response2.statusText).toBe('OK');
+			expect(text2).toBe(responseText2);
+			expect(headers2).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText2.length),
+				'cache-control': 'max-age=0.001',
+				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
+			});
+
+			expect(response3.url).toBe(response2.url);
+			expect(response3.ok).toBe(response2.ok);
+			expect(response3.redirected).toBe(response2.redirected);
+			expect(response3.status).toBe(response2.status);
+			expect(response3.statusText).toBe(response2.statusText);
+			expect(text3).toBe(text2);
+			expect(headers3).toEqual(headers2);
+
+			expect(requestArgs).toEqual([
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						method: 'GET'
+					},
+					url: 'https://localhost:8080/some/path'
+				},
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						method: 'GET'
+					},
+					url: 'https://localhost:8080/some/path'
+				}
+			]);
+		});
+
+		it('Revalidates cache with a "If-None-Match" request for a HEAD response with an "Etag" header.', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const etag1 = '"etag1"';
+			const etag2 = '"etag2"';
+			const responseText = 'some text';
+			const requestArgs: Array<{
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			}> = [];
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs.push({ url, options });
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								if (requestArgs[requestArgs.length - 1].options.headers['If-None-Match']) {
+									const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
+
+									response.statusCode = 304;
+									response.statusMessage = 'Not Modified';
+									response.headers = {};
+									response.rawHeaders = [
+										'etag',
+										etag2,
+										'last-modified',
+										'Mon, 11 Dec 2023 02:00:00 GMT'
+									];
+
+									callback(response);
+								} else {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = 'OK';
+									response.headers = {};
+									response.rawHeaders = [
+										'content-type',
+										'text/html',
+										'content-length',
+										String(responseText.length),
+										'cache-control',
+										'max-age=0.001',
+										'last-modified',
+										'Mon, 11 Dec 2023 01:00:00 GMT',
+										'etag',
+										etag1
+									];
+
+									callback(response);
+								}
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response1 = await window.fetch(url, {
+				method: 'HEAD',
+				headers: {
+					key1: 'value1'
+				}
+			});
+			const text1 = await response1.text();
+
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			const response2 = await window.fetch(url, {
+				method: 'HEAD'
+			});
+			const text2 = await response2.text();
+
+			const headers1 = {};
+			for (const [key, value] of response1.headers) {
+				headers1[key] = value;
+			}
+
+			const headers2 = {};
+			for (const [key, value] of response2.headers) {
+				headers2[key] = value;
+			}
+
+			expect(response1.url).toBe(url);
+			expect(response1.ok).toBe(true);
+			expect(response1.redirected).toBe(false);
+			expect(response1.status).toBe(200);
+			expect(response1.statusText).toBe('OK');
+			expect(text1).toBe(responseText);
+			expect(headers1).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText.length),
+				'cache-control': `max-age=0.001`,
+				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
+				etag: etag1
+			});
+
+			expect(response2.url).toBe(response1.url);
+			expect(response2.ok).toBe(response1.ok);
+			expect(response2.redirected).toBe(response1.redirected);
+			expect(response2.status).toBe(response1.status);
+			expect(response2.statusText).toBe(response1.statusText);
+			expect(text2).toBe(text1);
+			expect(headers2).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText.length),
+				'cache-control': `max-age=0.001`,
+				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
+				ETag: etag2
+			});
+
+			expect(requestArgs).toEqual([
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						method: 'HEAD'
+					},
+					url: 'https://localhost:8080/some/path'
+				},
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'If-None-Match': etag1,
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						method: 'HEAD'
+					},
+					url: 'https://localhost:8080/some/path'
+				}
+			]);
+		});
+
+		it('Updates cache after a failed revalidation with a "If-None-Match" request for a GET response with an "Etag" header.', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const etag1 = '"etag1"';
+			const etag2 = '"etag2"';
+			const responseText1 = 'some text';
+			const responseText2 = 'some new text';
+			const requestArgs: Array<{
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			}> = [];
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs.push({ url, options });
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								if (requestArgs[requestArgs.length - 1].options.headers['If-None-Match']) {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText2;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = 'OK';
+									response.headers = {};
+									response.rawHeaders = [
+										'content-type',
+										'text/html',
+										'content-length',
+										String(responseText2.length),
+										'cache-control',
+										'max-age=0.001',
+										'last-modified',
+										'Mon, 11 Dec 2023 02:00:00 GMT',
+										'etag',
+										etag2
+									];
+
+									callback(response);
+								} else {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText1;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = 'OK';
+									response.headers = {};
+									response.rawHeaders = [
+										'content-type',
+										'text/html',
+										'content-length',
+										String(responseText1.length),
+										'cache-control',
+										'max-age=0.001',
+										'last-modified',
+										'Mon, 11 Dec 2023 01:00:00 GMT',
+										'etag',
+										etag1
+									];
+
+									callback(response);
+								}
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response1 = await window.fetch(url, {
+				headers: {
+					key1: 'value1'
+				}
+			});
+			const text1 = await response1.text();
+
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			const response2 = await window.fetch(url);
+			const text2 = await response2.text();
+
+			const headers1 = {};
+			for (const [key, value] of response1.headers) {
+				headers1[key] = value;
+			}
+
+			const headers2 = {};
+			for (const [key, value] of response2.headers) {
+				headers2[key] = value;
+			}
+
+			expect(response1.url).toBe(url);
+			expect(response1.ok).toBe(true);
+			expect(response1.redirected).toBe(false);
+			expect(response1.status).toBe(200);
+			expect(response1.statusText).toBe('OK');
+			expect(text1).toBe(responseText1);
+			expect(headers1).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText1.length),
+				'cache-control': `max-age=0.001`,
+				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
+				etag: etag1
+			});
+
+			expect(response2.url).toBe(url);
+			expect(response2.ok).toBe(true);
+			expect(response2.redirected).toBe(false);
+			expect(response2.status).toBe(200);
+			expect(response2.statusText).toBe('OK');
+			expect(text2).toBe(responseText2);
+			expect(headers2).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText2.length),
+				'cache-control': `max-age=0.001`,
+				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
+				etag: etag2
+			});
+
+			expect(requestArgs).toEqual([
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						method: 'GET'
+					},
+					url: 'https://localhost:8080/some/path'
+				},
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'If-None-Match': etag1,
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						method: 'GET'
+					},
+					url: 'https://localhost:8080/some/path'
+				}
+			]);
+		});
+
+		it('Supports cache for GET response with "Cache-Control" set to "max-age=60" and "Vary" set to "vary-header".', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText1 = 'vary 1';
+			const responseText2 = 'vary 2';
+			const requestArgs: Array<{
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			}> = [];
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs.push({ url, options });
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								if (
+									requestArgs[requestArgs.length - 1].options.headers['vary-header'] === 'vary1'
+								) {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText1;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = 'OK';
+									response.headers = {};
+									response.rawHeaders = [
+										'content-type',
+										'text/html',
+										'content-length',
+										String(responseText1.length),
+										'cache-control',
+										'max-age=60',
+										'last-modified',
+										'Mon, 11 Dec 2023 01:00:00 GMT',
+										'vary',
+										'vary-header'
+									];
+
+									callback(response);
+								} else if (
+									requestArgs[requestArgs.length - 1].options.headers['vary-header'] === 'vary2'
+								) {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText2;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = 'OK';
+									response.headers = {};
+									response.rawHeaders = [
+										'content-type',
+										'text/html',
+										'content-length',
+										String(responseText2.length),
+										'cache-control',
+										'max-age=60',
+										'last-modified',
+										'Mon, 11 Dec 2023 02:00:00 GMT',
+										'vary',
+										'vary-header'
+									];
+
+									callback(response);
+								}
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response1 = await window.fetch(url, {
+				headers: {
+					'vary-header': 'vary1'
+				}
+			});
+			const text1 = await response1.text();
+
+			const response2 = await window.fetch(url, {
+				headers: {
+					'vary-header': 'vary2'
+				}
+			});
+			const text2 = await response2.text();
+
+			const cachedResponse1 = await window.fetch(url, {
+				headers: {
+					'vary-header': 'vary1'
+				}
+			});
+			const cachedText1 = await cachedResponse1.text();
+
+			const cachedResponse2 = await window.fetch(url, {
+				headers: {
+					'vary-header': 'vary2'
+				}
+			});
+			const cachedText2 = await cachedResponse2.text();
+
+			const headers1 = {};
+			for (const [key, value] of response1.headers) {
+				headers1[key] = value;
+			}
+
+			const headers2 = {};
+			for (const [key, value] of response2.headers) {
+				headers2[key] = value;
+			}
+
+			const cachedHeaders1 = {};
+			for (const [key, value] of cachedResponse1.headers) {
+				cachedHeaders1[key] = value;
+			}
+
+			const cachedHeaders2 = {};
+			for (const [key, value] of cachedResponse2.headers) {
+				cachedHeaders2[key] = value;
+			}
+
+			expect(response1.url).toBe(url);
+			expect(response1.ok).toBe(true);
+			expect(response1.redirected).toBe(false);
+			expect(response1.status).toBe(200);
+			expect(response1.statusText).toBe('OK');
+			expect(text1).toBe(responseText1);
+			expect(headers1).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText1.length),
+				'cache-control': `max-age=60`,
+				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
+				vary: 'vary-header'
+			});
+
+			expect(response2.url).toBe(url);
+			expect(response2.ok).toBe(true);
+			expect(response2.redirected).toBe(false);
+			expect(response2.status).toBe(200);
+			expect(response2.statusText).toBe('OK');
+			expect(text2).toBe(responseText2);
+			expect(headers2).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText2.length),
+				'cache-control': `max-age=60`,
+				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
+				vary: 'vary-header'
+			});
+
+			expect(cachedResponse1.url).toBe(response1.url);
+			expect(cachedResponse1.ok).toBe(response1.ok);
+			expect(cachedResponse1.redirected).toBe(response1.redirected);
+			expect(cachedResponse1.status).toBe(response1.status);
+			expect(cachedResponse1.statusText).toBe(response1.statusText);
+			expect(cachedText1).toBe(text1);
+			expect(cachedHeaders1).toEqual(headers1);
+
+			expect(cachedResponse2.url).toBe(response2.url);
+			expect(cachedResponse2.ok).toBe(response2.ok);
+			expect(cachedResponse2.redirected).toBe(response2.redirected);
+			expect(cachedResponse2.status).toBe(response2.status);
+			expect(cachedResponse2.statusText).toBe(response2.statusText);
+			expect(cachedText2).toBe(text2);
+			expect(cachedHeaders2).toEqual(headers2);
+
+			expect(requestArgs).toEqual([
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'vary-header': 'vary1'
+						},
+						method: 'GET'
+					},
+					url: 'https://localhost:8080/some/path'
+				},
+				{
+					options: {
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'vary-header': 'vary2'
 						},
 						method: 'GET'
 					},

@@ -23,7 +23,10 @@ import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import Headers from '../fetch/Headers.js';
+import IHeaders from '../fetch/types/IHeaders.js';
 import FetchCORSUtility from '../fetch/utilities/FetchCORSUtility.js';
+import CachedResponseStateEnum from '../cache/response/CachedResponseStateEnum.js';
+import ICachedResponse from '../cache/response/ICachedResponse.js';
 
 // These headers are not user setable.
 // The following are allowed but banned in the spec:
@@ -74,6 +77,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public upload: XMLHttpRequestUpload = new XMLHttpRequestUpload();
 	public withCredentials: boolean = false;
 
+	// Non-standard properties
+	public __responseBuffer__: Buffer | null = null;
+
 	// Private properties
 	readonly #internal: {
 		state: {
@@ -83,7 +89,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			responseText: string;
 			responseXML: IDocument;
 			responseURL: string;
-			responseHeaders: Headers;
+			responseHeaders: IHeaders;
 			readyState: XMLHttpRequestReadyStateEnum;
 			asyncRequest: HTTP.ClientRequest;
 			asyncTaskID: number;
@@ -130,6 +136,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	};
 	#browserFrame: IBrowserFrame;
 	#window: IBrowserWindow;
+	#disableCache: boolean;
 
 	/**
 	 * Constructor.
@@ -137,11 +144,17 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param injected Injected properties.
 	 * @param injected.browserFrame Browser frame.
 	 * @param injected.window Window.
+	 * @param [injected.disableCache] Disables the cache.
 	 */
-	constructor(injected: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
+	constructor(injected: {
+		browserFrame: IBrowserFrame;
+		window: IBrowserWindow;
+		disableCache?: boolean;
+	}) {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this.#window = injected.window;
+		this.#disableCache = injected.disableCache ?? false;
 	}
 
 	/**
@@ -169,24 +182,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public get response(): ArrayBuffer | Blob | IDocument | object | string {
 		return this.#internal.state.response;
-	}
-
-	/**
-	 * Returns the response URL.
-	 *
-	 * @returns Response URL.
-	 */
-	public get responseURL(): string {
-		return this.#internal.state.responseURL;
-	}
-
-	/**
-	 * Returns the ready state.
-	 *
-	 * @returns Ready state.
-	 */
-	public get readyState(): XMLHttpRequestReadyStateEnum {
-		return this.#internal.state.readyState;
 	}
 
 	/**
@@ -219,6 +214,24 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			`Failed to read the 'responseXML' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'document' (was '${this.responseType}').`,
 			DOMExceptionNameEnum.invalidStateError
 		);
+	}
+
+	/**
+	 * Returns the response URL.
+	 *
+	 * @returns Response URL.
+	 */
+	public get responseURL(): string {
+		return this.#internal.state.responseURL;
+	}
+
+	/**
+	 * Returns the ready state.
+	 *
+	 * @returns Ready state.
+	 */
+	public get readyState(): XMLHttpRequestReadyStateEnum {
+		return this.#internal.state.readyState;
 	}
 
 	/**
@@ -401,39 +414,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		const url = this.#internal.settings.url;
 
-		const cachedResponse = this.#browserFrame.page.context.responseCache.get({
-			url: url.href,
-			method: this.#internal.settings.method,
-			headers: this.#internal.state.requestHeaders
-		});
-
-		if (cachedResponse) {
-			this.#internal.state.statusCode = cachedResponse.response.status;
-			this.#internal.state.statusText = cachedResponse.response.statusText;
-			this.#internal.state.responseURL = cachedResponse.url;
-			this.#internal.state.responseHeaders = new Headers(cachedResponse.response.headers);
-
-			// Although it will immediately be set to loading,
-			// According to the spec, the state should be headersRecieved first.
-			this.#setState(XMLHttpRequestReadyStateEnum.headersRecieved);
-			this.#setState(XMLHttpRequestReadyStateEnum.loading);
-
-			// Parse response
-			if (cachedResponse.response.body) {
-				const { response, responseXML, responseText } = this.#parseResponseData(
-					cachedResponse.response.body
-				);
-
-				this.#internal.state.response = response;
-				this.#internal.state.responseText = responseText;
-				this.#internal.state.responseXML = responseXML;
-			}
-
-			// Set Cookies.
-			this.#setCookies(this.#internal.state.responseHeaders);
-
-			this.#setState(XMLHttpRequestReadyStateEnum.done);
-
+		if (this.#handleCachedResponse()) {
 			return;
 		}
 
@@ -619,11 +600,114 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Handle cached response.
+	 *
+	 * @return True if the response was handled.
+	 */
+	#handleCachedResponse(): boolean {
+		if (this.#disableCache) {
+			return false;
+		}
+
+		const url = this.#internal.settings.url;
+		const cachedResponse = this.#browserFrame.page.context.responseCache.get({
+			url: url.href,
+			method: this.#internal.settings.method,
+			headers: this.#internal.state.requestHeaders
+		});
+
+		if (!cachedResponse || cachedResponse.response.waitingForBody) {
+			return false;
+		}
+
+		if (
+			cachedResponse.etag ||
+			(cachedResponse.state === CachedResponseStateEnum.stale && cachedResponse.lastModified)
+		) {
+			const xmlHttpRequest = new XMLHttpRequest({
+				browserFrame: this.#browserFrame,
+				window: this.#window,
+				disableCache: true
+			});
+
+			xmlHttpRequest.open(this.#internal.settings.method, url.href, this.#internal.settings.async);
+
+			for (const [key, value] of cachedResponse.request.headers) {
+				xmlHttpRequest.setRequestHeader(key, value);
+			}
+
+			if (cachedResponse.etag) {
+				xmlHttpRequest.setRequestHeader('If-None-Match', cachedResponse.etag);
+			} else {
+				xmlHttpRequest.setRequestHeader(
+					'If-Modified-Since',
+					new Date(cachedResponse.lastModified).toUTCString()
+				);
+			}
+
+			xmlHttpRequest.addEventListener('load', () => {
+				const responseHeaders = new Headers();
+				for (const [key, value] of xmlHttpRequest.getAllResponseHeaders().split('\r\n')) {
+					responseHeaders.append(key, value);
+				}
+
+				const newCachedResponse = this.#browserFrame.page.context.responseCache.add(
+					{
+						url: url.href,
+						method: this.#internal.settings.method,
+						headers: this.#internal.state.requestHeaders
+					},
+					{
+						status: xmlHttpRequest.status,
+						statusText: xmlHttpRequest.statusText,
+						url: xmlHttpRequest.responseURL,
+						headers: responseHeaders,
+						body: xmlHttpRequest.__responseBuffer__,
+						waitingForBody: false
+					}
+				);
+
+				if (cachedResponse.etag || !cachedResponse.staleWhileRevalidate) {
+					if (newCachedResponse) {
+						this.#loadCachedResponse(newCachedResponse);
+					} else {
+						this.#disableCache = true;
+						this.send();
+					}
+				}
+			});
+
+			xmlHttpRequest.addEventListener('error', (event: ErrorEvent) => {
+				this.#onError(
+					new DOMException(
+						'Failed to revalidate cached response. Error: ' + event.error?.message,
+						DOMExceptionNameEnum.networkError
+					)
+				);
+			});
+
+			xmlHttpRequest.send();
+
+			if (cachedResponse.etag || !cachedResponse.staleWhileRevalidate) {
+				return true;
+			}
+		}
+
+		this.#loadCachedResponse(cachedResponse);
+
+		return true;
+	}
+
+	/**
 	 * Stores the response in the cache.
 	 *
 	 * @param body Body.
 	 */
 	#storeResponseInCache(body: Buffer | null): void {
+		if (this.#disableCache) {
+			return;
+		}
+
 		this.#browserFrame.page.context.responseCache.add(
 			{
 				url: this.#internal.settings.url.href,
@@ -639,6 +723,40 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				waitingForBody: false
 			}
 		);
+	}
+
+	/**
+	 * Parses a cached response.
+	 *
+	 * @param cachedResponse Cached response.
+	 */
+	#loadCachedResponse(cachedResponse: ICachedResponse): void {
+		this.#internal.state.statusCode = cachedResponse.response.status;
+		this.#internal.state.statusText = cachedResponse.response.statusText;
+		this.#internal.state.responseURL = cachedResponse.response.url;
+		this.#internal.state.responseHeaders = cachedResponse.response.headers;
+
+		// Although it will immediately be set to loading,
+		// According to the spec, the state should be headersRecieved first.
+		this.#setState(XMLHttpRequestReadyStateEnum.headersRecieved);
+		this.#setState(XMLHttpRequestReadyStateEnum.loading);
+
+		// Parse response
+		if (cachedResponse.response.body) {
+			const { response, responseXML, responseText } = this.#parseResponseData(
+				cachedResponse.response.body
+			);
+
+			this.__responseBuffer__ = cachedResponse.response.body;
+			this.#internal.state.response = response;
+			this.#internal.state.responseText = responseText;
+			this.#internal.state.responseXML = responseXML;
+		}
+
+		// Set Cookies.
+		this.#setCookies(this.#internal.state.responseHeaders);
+
+		this.#setState(XMLHttpRequestReadyStateEnum.done);
 	}
 
 	/**
@@ -932,6 +1050,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 					// Set response according to responseType.
 					const { response, responseXML, responseText } = this.#parseResponseData(tempResponse);
+					this.__responseBuffer__ = tempResponse;
 					this.#internal.state.response = response;
 					this.#internal.state.responseXML = responseXML;
 					this.#internal.state.responseText = responseText;
@@ -1031,6 +1150,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#internal.state.statusText = 'OK';
 
 		const { response, responseXML, responseText } = this.#parseResponseData(data);
+		this.__responseBuffer__ = data;
 		this.#internal.state.response = response;
 		this.#internal.state.responseXML = responseXML;
 		this.#internal.state.responseText = responseText;
@@ -1118,7 +1238,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param headers Headers.
 	 */
-	#setCookies(headers: Headers): void {
+	#setCookies(headers: IHeaders): void {
 		const isCORS = FetchCORSUtility.isCORS(this.#window.location, this.#internal.settings.url);
 		if (isCORS && !this.withCredentials) {
 			return;
