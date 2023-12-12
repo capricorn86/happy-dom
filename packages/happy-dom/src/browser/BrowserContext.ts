@@ -13,21 +13,16 @@ import IBrowserContext from './types/IBrowserContext.js';
 export default class BrowserContext implements IBrowserContext {
 	public readonly pages: BrowserPage[] = [];
 	public readonly browser: Browser;
-	public readonly cookieContainer: ICookieContainer;
-	public readonly responseCache: IResponseCache;
+	public readonly cookieContainer: ICookieContainer = new CookieContainer();
+	public readonly responseCache: IResponseCache = new ResponseCache();
 
 	/**
 	 * Constructor.
 	 *
 	 * @param browser
 	 */
-	constructor(
-		browser: Browser,
-		options?: { cookieContainer?: ICookieContainer; responseCache?: IResponseCache }
-	) {
+	constructor(browser: Browser) {
 		this.browser = browser;
-		this.cookieContainer = options?.cookieContainer ?? new CookieContainer();
-		this.responseCache = options?.responseCache ?? new ResponseCache();
 	}
 
 	/**
