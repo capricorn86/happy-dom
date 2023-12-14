@@ -620,10 +620,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			return false;
 		}
 
-		if (
-			cachedResponse.etag ||
-			(cachedResponse.state === CachedResponseStateEnum.stale && cachedResponse.lastModified)
-		) {
+		if (cachedResponse.etag || cachedResponse.state === CachedResponseStateEnum.stale) {
 			const xmlHttpRequest = new XMLHttpRequest({
 				browserFrame: this.#browserFrame,
 				window: this.#window,
@@ -647,8 +644,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 			xmlHttpRequest.addEventListener('load', () => {
 				const responseHeaders = new Headers();
-				for (const [key, value] of xmlHttpRequest.getAllResponseHeaders().split('\r\n')) {
-					responseHeaders.append(key, value);
+
+				for (const row of xmlHttpRequest.getAllResponseHeaders().split('\r\n')) {
+					const [name, value] = row.split(': ');
+					responseHeaders.set(name, value);
 				}
 
 				const newCachedResponse = this.#browserFrame.page.context.responseCache.add(
@@ -712,13 +711,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			{
 				url: this.#internal.settings.url.href,
 				method: this.#internal.settings.method,
-				headers: this.#internal.state.requestHeaders
+				headers: new Headers(this.#internal.state.requestHeaders)
 			},
 			{
 				status: this.#internal.state.statusCode,
 				statusText: this.#internal.state.statusText,
 				url: this.#internal.state.responseURL,
-				headers: this.#internal.state.responseHeaders,
+				headers: new Headers(this.#internal.state.responseHeaders),
 				body,
 				waitingForBody: false
 			}
@@ -729,17 +728,26 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * Parses a cached response.
 	 *
 	 * @param cachedResponse Cached response.
+	 * @returns Parsed response.
 	 */
-	#loadCachedResponse(cachedResponse: ICachedResponse): void {
+	async #loadCachedResponse(cachedResponse: ICachedResponse): Promise<void> {
 		this.#internal.state.statusCode = cachedResponse.response.status;
 		this.#internal.state.statusText = cachedResponse.response.statusText;
 		this.#internal.state.responseURL = cachedResponse.response.url;
 		this.#internal.state.responseHeaders = cachedResponse.response.headers;
 
+		// Set Cookies.
+		this.#setCookies(this.#internal.state.responseHeaders);
+
 		// Although it will immediately be set to loading,
 		// According to the spec, the state should be headersRecieved first.
 		this.#setState(XMLHttpRequestReadyStateEnum.headersRecieved);
 		this.#setState(XMLHttpRequestReadyStateEnum.loading);
+
+		// We need to simulate a delay if async.
+		if (this.#internal.settings.async) {
+			await new Promise((resolve) => this.#window.requestAnimationFrame(resolve));
+		}
 
 		// Parse response
 		if (cachedResponse.response.body) {
@@ -752,9 +760,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#internal.state.responseText = responseText;
 			this.#internal.state.responseXML = responseXML;
 		}
-
-		// Set Cookies.
-		this.#setCookies(this.#internal.state.responseHeaders);
 
 		this.#setState(XMLHttpRequestReadyStateEnum.done);
 	}
@@ -874,9 +879,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#setState(XMLHttpRequestReadyStateEnum.loading);
 
 			// Response
-			this.#internal.state.response = this.#decodeResponseText(
-				Buffer.from(response.data, 'base64')
-			);
+			const buffer = Buffer.from(response.data, 'base64');
+			this.#internal.state.response = this.#decodeResponseText(buffer);
 			this.#internal.state.responseText = this.#internal.state.response;
 			this.#internal.state.responseXML = null;
 			this.#internal.state.responseURL = new URL(
@@ -885,7 +889,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			).href;
 
 			// Store response in cache.
-			this.#storeResponseInCache(response);
+			this.#storeResponseInCache(buffer);
 
 			// Done.
 			this.#setState(XMLHttpRequestReadyStateEnum.done);

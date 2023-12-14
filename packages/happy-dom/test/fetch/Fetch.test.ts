@@ -3489,7 +3489,7 @@ describe('Fetch', () => {
 						end: () => {},
 						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
 							if (event === 'response') {
-								if (requestArgs[requestArgs.length - 1].options.headers['If-Modified-Since']) {
+								if (options.headers['If-Modified-Since']) {
 									const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
 
 									response.statusCode = 304;
@@ -3631,7 +3631,7 @@ describe('Fetch', () => {
 						end: () => {},
 						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
 							if (event === 'response') {
-								if (requestArgs[requestArgs.length - 1].options.headers['If-Modified-Since']) {
+								if (options.headers['If-Modified-Since']) {
 									async function* generate(): AsyncGenerator<string> {
 										yield responseText2;
 									}
@@ -3798,7 +3798,7 @@ describe('Fetch', () => {
 						end: () => {},
 						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
 							if (event === 'response') {
-								if (requestArgs[requestArgs.length - 1].options.headers['If-None-Match']) {
+								if (options.headers['If-None-Match']) {
 									const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
 
 									response.statusCode = 304;
@@ -3949,7 +3949,7 @@ describe('Fetch', () => {
 						end: () => {},
 						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
 							if (event === 'response') {
-								if (requestArgs[requestArgs.length - 1].options.headers['If-None-Match']) {
+								if (options.headers['If-None-Match']) {
 									async function* generate(): AsyncGenerator<string> {
 										yield responseText2;
 									}
@@ -4105,9 +4105,7 @@ describe('Fetch', () => {
 						end: () => {},
 						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
 							if (event === 'response') {
-								if (
-									requestArgs[requestArgs.length - 1].options.headers['vary-header'] === 'vary1'
-								) {
+								if (options.headers['vary-header'] === 'vary1') {
 									async function* generate(): AsyncGenerator<string> {
 										yield responseText1;
 									}
@@ -4131,9 +4129,7 @@ describe('Fetch', () => {
 									];
 
 									callback(response);
-								} else if (
-									requestArgs[requestArgs.length - 1].options.headers['vary-header'] === 'vary2'
-								) {
+								} else if (options.headers['vary-header'] === 'vary2') {
 									async function* generate(): AsyncGenerator<string> {
 										yield responseText2;
 									}

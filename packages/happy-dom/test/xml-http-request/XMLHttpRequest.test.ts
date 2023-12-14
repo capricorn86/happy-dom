@@ -12,6 +12,8 @@ import Blob from '../../src/file/Blob.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import '../types.d.js';
+import { Stream } from 'stream';
+import HTTPS from 'https';
 
 const WINDOW_URL = 'https://localhost:8080';
 const REQUEST_URL = '/path/to/resource/';
@@ -765,7 +767,7 @@ describe('XMLHttpRequest', () => {
 	describe('getResponseHeader()', () => {
 		it('Returns response header for a synchrounous request.', () => {
 			mockModule('child_process', {
-				execFileSync: () => {
+				execFileSync: (_command: string, args: string[]) => {
 					return JSON.stringify({
 						error: null,
 						data: {
@@ -1854,6 +1856,999 @@ describe('XMLHttpRequest', () => {
 			await window.happyDOM?.whenComplete();
 
 			expect(request.responseText).toBe(responseText);
+		});
+
+		it('Supports cache for asynchrounous GET response with "Cache-Control" set to "max-age=60".', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'some text';
+			let requestCount = 0;
+
+			mockModule('https', {
+				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
+					requestCount++;
+
+					return {
+						end: () => {
+							setTimeout(() => {
+								callback(<HTTP.IncomingMessage>(<unknown>{
+									statusCode: 200,
+									statusMessage: 'OK',
+									headers: {
+										'content-type': 'text/html',
+										'content-length': String(responseText.length),
+										'cache-control': `max-age=60`
+									},
+									on: (event, callback) => {
+										if (event === 'data') {
+											callback(Buffer.from(responseText));
+										} else if (event === 'end') {
+											callback();
+										}
+									}
+								}));
+							});
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('GET', url, true);
+			request1.send();
+
+			await new Promise((resolve) => request1.addEventListener('load', resolve));
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('GET', url, true);
+			request2.send();
+
+			await new Promise((resolve) => request2.addEventListener('load', resolve));
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=60`);
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=60`);
+
+			expect(requestCount).toBe(1);
+		});
+
+		it('Supports cache for synchrounous GET response with "Cache-Control" set to "max-age=60".', () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'some text';
+			let requestCount = 0;
+
+			mockModule('child_process', {
+				execFileSync: () => {
+					requestCount++;
+
+					return JSON.stringify({
+						error: null,
+						data: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							headers: {
+								'content-type': 'text/html',
+								'content-length': String(responseText.length),
+								'cache-control': `max-age=60`
+							},
+							text: responseText,
+							data: Buffer.from(responseText).toString('base64')
+						}
+					});
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('GET', url, false);
+			request1.send();
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('GET', url, false);
+			request2.send();
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=60`);
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=60`);
+
+			expect(requestCount).toBe(1);
+		});
+
+		it('Revalidates cache with a "If-Modified-Since" request for an asynchrounous GET response with "Cache-Control" set to "max-age=0.01".', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'some text';
+			const requestOptions: Array<HTTPS.RequestOptions> = [];
+
+			mockModule('https', {
+				request: (options: HTTPS.RequestOptions, callback) => {
+					requestOptions.push(options);
+
+					return {
+						end: () => {
+							setTimeout(() => {
+								if (options.headers?.['If-Modified-Since']) {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 304,
+										statusMessage: 'Not Modified',
+										headers: {
+											'content-type': 'text/html',
+											'content-length': String(responseText.length),
+											'cache-control': `max-age=0.01`
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from([]));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								} else {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 200,
+										statusMessage: 'OK',
+										headers: {
+											'content-type': 'text/html',
+											'content-length': String(responseText.length),
+											'cache-control': `max-age=0.01`,
+											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from(responseText));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								}
+							});
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('GET', url, true);
+			request1.setRequestHeader('key1', 'value1');
+			request1.send();
+
+			await new Promise((resolve) => request1.addEventListener('load', resolve));
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('GET', url, true);
+			request2.send();
+
+			await new Promise((resolve) => request2.addEventListener('load', resolve));
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+
+			expect(requestOptions).toEqual([
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'GET',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						key1: 'value1'
+					}
+				},
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'GET',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						key1: 'value1'
+					}
+				}
+			]);
+		});
+
+		it('Revalidates cache with a "If-Modified-Since" request for an synchrounous GET response with "Cache-Control" set to "max-age=0.01".', () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'some text';
+			const args: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					args.push(args[1]);
+
+					if (args[1].includes('If-Modified-Since')) {
+						return JSON.stringify({
+							error: null,
+							data: {
+								statusCode: 304,
+								statusMessage: 'Not Modified',
+								headers: {
+									'content-type': 'text/html',
+									'content-length': String(responseText.length),
+									'cache-control': `max-age=0.01`
+								},
+								text: '',
+								data: Buffer.from('').toString('base64')
+							}
+						});
+					}
+
+					return JSON.stringify({
+						error: null,
+						data: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							headers: {
+								'content-type': 'text/html',
+								'content-length': String(responseText.length),
+								'cache-control': `max-age=0.01`,
+								'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
+							},
+							text: responseText,
+							data: Buffer.from(responseText).toString('base64')
+						}
+					});
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('GET', url);
+			request1.setRequestHeader('key1', 'value1');
+			request1.send();
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('GET', url);
+			request2.send();
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+
+			expect(args).toEqual([
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							Host: window.location.host,
+							Referer: WINDOW_URL + '/',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				),
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							Host: window.location.host,
+							Referer: WINDOW_URL + '/',
+							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
+							'User-Agent':
+								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							key1: 'value1'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				)
+			]);
+		});
+
+		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for an asynchrounous GET response with "Cache-Control" set to "max-age=0.01".', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText1 = 'some text';
+			const responseText2 = 'some new text';
+			const requestOptions: Array<HTTPS.RequestOptions> = [];
+
+			mockModule('https', {
+				request: (options: HTTPS.RequestOptions, callback) => {
+					requestOptions.push(options);
+
+					return {
+						end: () => {
+							setTimeout(() => {
+								if (options.headers?.['If-Modified-Since']) {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 200,
+										statusMessage: 'OK',
+										headers: {
+											'content-type': 'text/html',
+											'content-length': String(responseText2.length),
+											'cache-control': `max-age=0.01`,
+											'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from(responseText2));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								} else {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 200,
+										statusMessage: 'OK',
+										headers: {
+											'content-type': 'text/html',
+											'content-length': String(responseText1.length),
+											'cache-control': `max-age=0.01`,
+											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from(responseText1));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								}
+							});
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('GET', url, true);
+			request1.setRequestHeader('key1', 'value1');
+			request1.send();
+
+			await new Promise((resolve) => request1.addEventListener('load', resolve));
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('GET', url, true);
+			request2.setRequestHeader('key1', 'value1');
+			request2.send();
+
+			await new Promise((resolve) => request2.addEventListener('load', resolve));
+
+			const request3 = new window.XMLHttpRequest();
+
+			request3.open('GET', url, true);
+			request3.setRequestHeader('key1', 'value1');
+			request3.send();
+
+			await new Promise((resolve) => request3.addEventListener('load', resolve));
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText1);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText2);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+
+			expect(request3.responseURL).toBe(url);
+			expect(request3.status).toBe(200);
+			expect(request3.statusText).toBe('OK');
+			expect(request3.responseText).toBe(responseText2);
+			expect(request3.getResponseHeader('content-type')).toBe('text/html');
+			expect(request3.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(request3.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request3.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+
+			expect(requestOptions).toEqual([
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'GET',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						key1: 'value1'
+					}
+				},
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'GET',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						key1: 'value1'
+					}
+				}
+			]);
+		});
+
+		it('Revalidates cache with a "If-None-Match" request for an asynchrounous HEAD response with an "Etag" header.', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const etag1 = '"etag1"';
+			const etag2 = '"etag2"';
+			const responseText = 'some text';
+			const requestOptions: Array<HTTPS.RequestOptions> = [];
+
+			mockModule('https', {
+				request: (options: HTTPS.RequestOptions, callback) => {
+					requestOptions.push(options);
+
+					return {
+						end: () => {
+							setTimeout(() => {
+								if (options.headers?.['If-None-Match']) {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 304,
+										statusMessage: 'Not Modified',
+										headers: {
+											etag: etag2,
+											'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from([]));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								} else {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 200,
+										statusMessage: 'OK',
+										headers: {
+											'content-type': 'text/html',
+											'content-length': String(responseText.length),
+											'cache-control': `max-age=0.01`,
+											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
+											etag: etag1
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from(responseText));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								}
+							});
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('HEAD', url, true);
+			request1.setRequestHeader('key1', 'value1');
+			request1.send();
+
+			await new Promise((resolve) => request1.addEventListener('load', resolve));
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('HEAD', url, true);
+			request2.send();
+
+			await new Promise((resolve) => request2.addEventListener('load', resolve));
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+			expect(request1.getResponseHeader('etag')).toBe(etag1);
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+			expect(request2.getResponseHeader('etag')).toBe(etag2);
+
+			expect(requestOptions).toEqual([
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'HEAD',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						key1: 'value1'
+					}
+				},
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'HEAD',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'If-None-Match': etag1,
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						key1: 'value1'
+					}
+				}
+			]);
+		});
+
+		it('Updates cache after a failed revalidation with a "If-None-Match" request for an asynchrounous GET response with an "Etag" header.', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const etag1 = '"etag1"';
+			const etag2 = '"etag2"';
+			const responseText1 = 'some text';
+			const responseText2 = 'some new text';
+			const requestOptions: Array<HTTPS.RequestOptions> = [];
+
+			mockModule('https', {
+				request: (options: HTTPS.RequestOptions, callback) => {
+					requestOptions.push(options);
+
+					return {
+						end: () => {
+							setTimeout(() => {
+								if (options.headers?.['If-None-Match']) {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 200,
+										statusMessage: 'OK',
+										headers: {
+											'content-type': 'text/html',
+											'content-length': String(responseText2.length),
+											'cache-control': `max-age=0.01`,
+											'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
+											etag: etag2
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from(responseText2));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								} else {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 200,
+										statusMessage: 'OK',
+										headers: {
+											'content-type': 'text/html',
+											'content-length': String(responseText1.length),
+											'cache-control': `max-age=0.01`,
+											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
+											etag: etag1
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from(responseText1));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								}
+							});
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('GET', url, true);
+			request1.setRequestHeader('key1', 'value1');
+			request1.send();
+
+			await new Promise((resolve) => request1.addEventListener('load', resolve));
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('GET', url, true);
+			request2.send();
+
+			await new Promise((resolve) => request2.addEventListener('load', resolve));
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText1);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+			expect(request1.getResponseHeader('etag')).toBe(etag1);
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText2);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+			expect(request2.getResponseHeader('etag')).toBe(etag2);
+
+			expect(requestOptions).toEqual([
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'GET',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						key1: 'value1'
+					}
+				},
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'GET',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'If-None-Match': etag1,
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						key1: 'value1'
+					}
+				}
+			]);
+		});
+
+		it('Supports cache for an asynchrounous GET response with "Cache-Control" set to "max-age=60" and "Vary" set to "vary-header".', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText1 = 'vary 1';
+			const responseText2 = 'vary 2';
+			const requestOptions: Array<HTTPS.RequestOptions> = [];
+
+			mockModule('https', {
+				request: (options: HTTPS.RequestOptions, callback) => {
+					requestOptions.push(options);
+
+					return {
+						end: () => {
+							setTimeout(() => {
+								if (options.headers?.['vary-header'] === 'vary1') {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 200,
+										statusMessage: 'OK',
+										headers: {
+											'content-type': 'text/html',
+											'content-length': String(responseText1.length),
+											'cache-control': `max-age=60`,
+											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
+											vary: 'vary-header'
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from(responseText1));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								} else if (options.headers?.['vary-header'] === 'vary2') {
+									callback(<HTTP.IncomingMessage>(<unknown>{
+										statusCode: 200,
+										statusMessage: 'OK',
+										headers: {
+											'content-type': 'text/html',
+											'content-length': String(responseText2.length),
+											'cache-control': `max-age=60`,
+											'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
+											vary: 'vary-header'
+										},
+										on: (event, callback) => {
+											if (event === 'data') {
+												callback(Buffer.from(responseText2));
+											} else if (event === 'end') {
+												callback();
+											}
+										}
+									}));
+								}
+							});
+						},
+						on: () => {}
+					};
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('GET', url, true);
+			request1.setRequestHeader('vary-header', 'vary1');
+			request1.send();
+
+			await new Promise((resolve) => request1.addEventListener('load', resolve));
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('GET', url, true);
+			request2.setRequestHeader('vary-header', 'vary2');
+			request2.send();
+
+			await new Promise((resolve) => request2.addEventListener('load', resolve));
+
+			const cachedRequest1 = new window.XMLHttpRequest();
+
+			cachedRequest1.open('GET', url, true);
+			cachedRequest1.setRequestHeader('vary-header', 'vary1');
+			cachedRequest1.send();
+
+			await new Promise((resolve) => cachedRequest1.addEventListener('load', resolve));
+
+			const cachedRequest2 = new window.XMLHttpRequest();
+
+			cachedRequest2.open('GET', url, true);
+			cachedRequest2.setRequestHeader('vary-header', 'vary2');
+			cachedRequest2.send();
+
+			await new Promise((resolve) => cachedRequest2.addEventListener('load', resolve));
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText1);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=60`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+			expect(request1.getResponseHeader('vary')).toBe('vary-header');
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText2);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=60`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+			expect(request2.getResponseHeader('vary')).toBe('vary-header');
+
+			expect(cachedRequest1.responseURL).toBe(url);
+			expect(cachedRequest1.status).toBe(200);
+			expect(cachedRequest1.statusText).toBe('OK');
+			expect(cachedRequest1.responseText).toBe(responseText1);
+			expect(cachedRequest1.getResponseHeader('content-type')).toBe('text/html');
+			expect(cachedRequest1.getResponseHeader('content-length')).toBe(String(responseText1.length));
+			expect(cachedRequest1.getResponseHeader('cache-control')).toBe(`max-age=60`);
+			expect(cachedRequest1.getResponseHeader('last-modified')).toBe(
+				'Mon, 11 Dec 2023 01:00:00 GMT'
+			);
+			expect(cachedRequest1.getResponseHeader('vary')).toBe('vary-header');
+
+			expect(cachedRequest2.responseURL).toBe(url);
+			expect(cachedRequest2.status).toBe(200);
+			expect(cachedRequest2.statusText).toBe('OK');
+			expect(cachedRequest2.responseText).toBe(responseText2);
+			expect(cachedRequest2.getResponseHeader('content-type')).toBe('text/html');
+			expect(cachedRequest2.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(cachedRequest2.getResponseHeader('cache-control')).toBe(`max-age=60`);
+			expect(cachedRequest2.getResponseHeader('last-modified')).toBe(
+				'Mon, 11 Dec 2023 02:00:00 GMT'
+			);
+			expect(cachedRequest2.getResponseHeader('vary')).toBe('vary-header');
+
+			expect(requestOptions).toEqual([
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'GET',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'vary-header': 'vary1'
+					}
+				},
+				{
+					host: 'localhost',
+					port: 8080,
+					path: '/some/path',
+					method: 'GET',
+					agent: false,
+					rejectUnauthorized: true,
+					key: XMLHttpRequestCertificate.key,
+					cert: XMLHttpRequestCertificate.cert,
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						Connection: 'close',
+						Host: window.location.host,
+						Referer: WINDOW_URL + '/',
+						'User-Agent':
+							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'vary-header': 'vary2'
+					}
+				}
+			]);
 		});
 	});
 
