@@ -154,7 +154,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this.#window = injected.window;
-		this.#disableCache = injected.disableCache ?? false;
+		this.#disableCache = injected.disableCache || false;
 	}
 
 	/**
@@ -728,9 +728,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * Parses a cached response.
 	 *
 	 * @param cachedResponse Cached response.
-	 * @returns Parsed response.
 	 */
-	async #loadCachedResponse(cachedResponse: ICachedResponse): Promise<void> {
+	#loadCachedResponse(cachedResponse: ICachedResponse): void {
 		this.#internal.state.statusCode = cachedResponse.response.status;
 		this.#internal.state.statusText = cachedResponse.response.statusText;
 		this.#internal.state.responseURL = cachedResponse.response.url;
@@ -745,23 +744,29 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#setState(XMLHttpRequestReadyStateEnum.loading);
 
 		// We need to simulate a delay if async.
+
+		const endCachedResponse = () => {
+			// Parse response
+			if (cachedResponse.response.body) {
+				const { response, responseXML, responseText } = this.#parseResponseData(
+					cachedResponse.response.body
+				);
+
+				this.__responseBuffer__ = cachedResponse.response.body;
+				this.#internal.state.response = response;
+				this.#internal.state.responseText = responseText;
+				this.#internal.state.responseXML = responseXML;
+			}
+
+			this.#setState(XMLHttpRequestReadyStateEnum.done);
+		};
+
+		// We need to simulate a delay if async.
 		if (this.#internal.settings.async) {
-			await new Promise((resolve) => this.#window.requestAnimationFrame(resolve));
+			this.#window.setTimeout(endCachedResponse);
+		} else {
+			endCachedResponse();
 		}
-
-		// Parse response
-		if (cachedResponse.response.body) {
-			const { response, responseXML, responseText } = this.#parseResponseData(
-				cachedResponse.response.body
-			);
-
-			this.__responseBuffer__ = cachedResponse.response.body;
-			this.#internal.state.response = response;
-			this.#internal.state.responseText = responseText;
-			this.#internal.state.responseXML = responseXML;
-		}
-
-		this.#setState(XMLHttpRequestReadyStateEnum.done);
 	}
 
 	/**
@@ -879,8 +884,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#setState(XMLHttpRequestReadyStateEnum.loading);
 
 			// Response
-			const buffer = Buffer.from(response.data, 'base64');
-			this.#internal.state.response = this.#decodeResponseText(buffer);
+			this.__responseBuffer__ = Buffer.from(response.data, 'base64');
+			this.#internal.state.response = this.#decodeResponseText(this.__responseBuffer__);
 			this.#internal.state.responseText = this.#internal.state.response;
 			this.#internal.state.responseXML = null;
 			this.#internal.state.responseURL = new URL(
@@ -889,7 +894,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			).href;
 
 			// Store response in cache.
-			this.#storeResponseInCache(buffer);
+			this.#storeResponseInCache(this.__responseBuffer__);
 
 			// Done.
 			this.#setState(XMLHttpRequestReadyStateEnum.done);

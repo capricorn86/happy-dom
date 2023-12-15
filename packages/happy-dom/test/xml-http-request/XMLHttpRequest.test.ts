@@ -2082,13 +2082,12 @@ describe('XMLHttpRequest', () => {
 					cert: XMLHttpRequestCertificate.cert,
 					headers: {
 						Accept: '*/*',
+						Referer: WINDOW_URL + '/',
+						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
-						key1: 'value1'
+						key1: 'value1',
+						Host: window.location.host
 					}
 				},
 				{
@@ -2102,27 +2101,26 @@ describe('XMLHttpRequest', () => {
 					cert: XMLHttpRequestCertificate.cert,
 					headers: {
 						Accept: '*/*',
+						Referer: WINDOW_URL + '/',
+						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
+						key1: 'value1',
 						'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
-						key1: 'value1'
+						Host: window.location.host
 					}
 				}
 			]);
 		});
 
-		it('Revalidates cache with a "If-Modified-Since" request for an synchrounous GET response with "Cache-Control" set to "max-age=0.01".', () => {
+		it('Revalidates cache with a "If-Modified-Since" request for a synchrounous GET response with "Cache-Control" set to "max-age=0.01".', async () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
-			const args: string[] = [];
+			const childProcessArguments: string[] = [];
 
 			mockModule('child_process', {
 				execFileSync: (_command: string, args: string[]) => {
-					args.push(args[1]);
+					childProcessArguments.push(args[1]);
 
 					if (args[1].includes('If-Modified-Since')) {
 						return JSON.stringify({
@@ -2161,13 +2159,15 @@ describe('XMLHttpRequest', () => {
 
 			const request1 = new window.XMLHttpRequest();
 
-			request1.open('GET', url);
+			request1.open('GET', url, false);
 			request1.setRequestHeader('key1', 'value1');
 			request1.send();
 
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
 			const request2 = new window.XMLHttpRequest();
 
-			request2.open('GET', url);
+			request2.open('GET', url, false);
 			request2.send();
 
 			expect(request1.responseURL).toBe(url);
@@ -2188,7 +2188,7 @@ describe('XMLHttpRequest', () => {
 			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
 			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
 
-			expect(args).toEqual([
+			expect(childProcessArguments).toEqual([
 				XMLHttpRequestSyncRequestScriptBuilder.getScript(
 					{
 						host: 'localhost',
@@ -2197,13 +2197,12 @@ describe('XMLHttpRequest', () => {
 						method: 'GET',
 						headers: {
 							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
-							Host: window.location.host,
-							Referer: WINDOW_URL + '/',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
-							key1: 'value1'
+							key1: 'value1',
+							Host: window.location.host
 						},
 						agent: false,
 						rejectUnauthorized: true,
@@ -2220,14 +2219,13 @@ describe('XMLHttpRequest', () => {
 						method: 'GET',
 						headers: {
 							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
-							Host: window.location.host,
-							Referer: WINDOW_URL + '/',
+							key1: 'value1',
 							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
-							key1: 'value1'
+							Host: window.location.host
 						},
 						agent: false,
 						rejectUnauthorized: true,
@@ -2259,7 +2257,7 @@ describe('XMLHttpRequest', () => {
 										headers: {
 											'content-type': 'text/html',
 											'content-length': String(responseText2.length),
-											'cache-control': `max-age=0.01`,
+											'cache-control': `max-age=1`,
 											'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
 										},
 										on: (event, callback) => {
@@ -2303,7 +2301,7 @@ describe('XMLHttpRequest', () => {
 			request1.send();
 
 			await new Promise((resolve) => request1.addEventListener('load', resolve));
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 15));
 
 			const request2 = new window.XMLHttpRequest();
 
@@ -2336,7 +2334,7 @@ describe('XMLHttpRequest', () => {
 			expect(request2.responseText).toBe(responseText2);
 			expect(request2.getResponseHeader('content-type')).toBe('text/html');
 			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=1`);
 			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
 
 			expect(request3.responseURL).toBe(url);
@@ -2345,7 +2343,7 @@ describe('XMLHttpRequest', () => {
 			expect(request3.responseText).toBe(responseText2);
 			expect(request3.getResponseHeader('content-type')).toBe('text/html');
 			expect(request3.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request3.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request3.getResponseHeader('cache-control')).toBe(`max-age=1`);
 			expect(request3.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
 
 			expect(requestOptions).toEqual([
@@ -2364,8 +2362,7 @@ describe('XMLHttpRequest', () => {
 						Connection: 'close',
 						Host: window.location.host,
 						Referer: WINDOW_URL + '/',
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'User-Agent': window.navigator.userAgent,
 						key1: 'value1'
 					}
 				},
@@ -2385,11 +2382,152 @@ describe('XMLHttpRequest', () => {
 						Host: window.location.host,
 						Referer: WINDOW_URL + '/',
 						'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'User-Agent': window.navigator.userAgent,
 						key1: 'value1'
 					}
 				}
+			]);
+		});
+
+		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a synchrounous GET response with "Cache-Control" set to "max-age=0.01".', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText1 = 'some text';
+			const responseText2 = 'some new text';
+			const childProcessArguments: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					childProcessArguments.push(args[1]);
+
+					if (args[1].includes('If-Modified-Since')) {
+						return JSON.stringify({
+							error: null,
+							data: {
+								statusCode: 200,
+								statusMessage: 'OK',
+								headers: {
+									'content-type': 'text/html',
+									'content-length': String(responseText2.length),
+									'cache-control': `max-age=0.01`,
+									'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
+								},
+								text: responseText2,
+								data: Buffer.from(responseText2).toString('base64')
+							}
+						});
+					}
+
+					return JSON.stringify({
+						error: null,
+						data: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							headers: {
+								'content-type': 'text/html',
+								'content-length': String(responseText1.length),
+								'cache-control': `max-age=0.01`,
+								'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
+							},
+							text: responseText1,
+							data: Buffer.from(responseText1).toString('base64')
+						}
+					});
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('GET', url, false);
+			request1.setRequestHeader('key1', 'value1');
+			request1.send();
+
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('GET', url, false);
+			request2.setRequestHeader('key1', 'value1');
+			request2.send();
+
+			const request3 = new window.XMLHttpRequest();
+
+			request3.open('GET', url, false);
+			request3.setRequestHeader('key1', 'value1');
+			request3.send();
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText1);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText2);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+
+			expect(request3.responseURL).toBe(url);
+			expect(request3.status).toBe(200);
+			expect(request3.statusText).toBe('OK');
+			expect(request3.responseText).toBe(responseText2);
+			expect(request3.getResponseHeader('content-type')).toBe('text/html');
+			expect(request3.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(request3.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request3.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+
+			expect(childProcessArguments).toEqual([
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							key1: 'value1',
+							Host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				),
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							key1: 'value1',
+							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
+							Host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				)
 			]);
 		});
 
@@ -2502,8 +2640,7 @@ describe('XMLHttpRequest', () => {
 						Connection: 'close',
 						Host: window.location.host,
 						Referer: WINDOW_URL + '/',
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'User-Agent': window.navigator.userAgent,
 						key1: 'value1'
 					}
 				},
@@ -2523,8 +2660,7 @@ describe('XMLHttpRequest', () => {
 						Host: window.location.host,
 						Referer: WINDOW_URL + '/',
 						'If-None-Match': etag1,
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'User-Agent': window.navigator.userAgent,
 						key1: 'value1'
 					}
 				}
@@ -2643,8 +2779,7 @@ describe('XMLHttpRequest', () => {
 						Connection: 'close',
 						Host: window.location.host,
 						Referer: WINDOW_URL + '/',
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'User-Agent': window.navigator.userAgent,
 						key1: 'value1'
 					}
 				},
@@ -2664,8 +2799,7 @@ describe('XMLHttpRequest', () => {
 						Host: window.location.host,
 						Referer: WINDOW_URL + '/',
 						'If-None-Match': etag1,
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'User-Agent': window.navigator.userAgent,
 						key1: 'value1'
 					}
 				}
@@ -2823,8 +2957,7 @@ describe('XMLHttpRequest', () => {
 						Connection: 'close',
 						Host: window.location.host,
 						Referer: WINDOW_URL + '/',
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'User-Agent': window.navigator.userAgent,
 						'vary-header': 'vary1'
 					}
 				},
@@ -2843,8 +2976,7 @@ describe('XMLHttpRequest', () => {
 						Connection: 'close',
 						Host: window.location.host,
 						Referer: WINDOW_URL + '/',
-						'User-Agent':
-							'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+						'User-Agent': window.navigator.userAgent,
 						'vary-header': 'vary2'
 					}
 				}
