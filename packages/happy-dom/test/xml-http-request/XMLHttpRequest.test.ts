@@ -2667,6 +2667,132 @@ describe('XMLHttpRequest', () => {
 			]);
 		});
 
+		it('Revalidates cache with a "If-None-Match" request for a synchrounous HEAD response with an "Etag" header.', () => {
+			const url = 'https://localhost:8080/some/path';
+			const etag1 = '"etag1"';
+			const etag2 = '"etag2"';
+			const responseText = 'some text';
+			const childProcessArguments: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					childProcessArguments.push(args[1]);
+
+					if (args[1].includes('If-None-Match')) {
+						return JSON.stringify({
+							error: null,
+							data: {
+								statusCode: 304,
+								statusMessage: 'Not Modified',
+								headers: {
+									etag: etag2,
+									'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
+								},
+								text: '',
+								data: Buffer.from('').toString('base64')
+							}
+						});
+					}
+
+					return JSON.stringify({
+						error: null,
+						data: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							headers: {
+								'content-type': 'text/html',
+								'content-length': String(responseText.length),
+								'cache-control': `max-age=0.01`,
+								'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
+								etag: etag1
+							},
+							text: responseText,
+							data: Buffer.from(responseText).toString('base64')
+						}
+					});
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+
+			request1.open('HEAD', url, false);
+			request1.setRequestHeader('key1', 'value1');
+			request1.send();
+
+			const request2 = new window.XMLHttpRequest();
+
+			request2.open('HEAD', url, false);
+			request2.send();
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+			expect(request1.getResponseHeader('etag')).toBe(etag1);
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+			expect(request2.getResponseHeader('etag')).toBe(etag2);
+
+			expect(childProcessArguments).toEqual([
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'HEAD',
+						headers: {
+							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							key1: 'value1',
+							Host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				),
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'HEAD',
+						headers: {
+							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							key1: 'value1',
+							'If-None-Match': etag1,
+							Host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				)
+			]);
+		});
+
 		it('Updates cache after a failed revalidation with a "If-None-Match" request for an asynchrounous GET response with an "Etag" header.', async () => {
 			const url = 'https://localhost:8080/some/path';
 			const etag1 = '"etag1"';
@@ -2803,6 +2929,134 @@ describe('XMLHttpRequest', () => {
 						key1: 'value1'
 					}
 				}
+			]);
+		});
+
+		it('Updates cache after a failed revalidation with a "If-None-Match" request for a synchrounous GET response with an "Etag" header.', () => {
+			const url = 'https://localhost:8080/some/path';
+			const etag1 = '"etag1"';
+			const etag2 = '"etag2"';
+			const responseText1 = 'some text';
+			const responseText2 = 'some new text';
+			const childProcessArguments: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					childProcessArguments.push(args[1]);
+
+					if (args[1].includes('If-None-Match')) {
+						return JSON.stringify({
+							error: null,
+							data: {
+								statusCode: 200,
+								statusMessage: 'OK',
+								headers: {
+									'content-type': 'text/html',
+									'content-length': String(responseText2.length),
+									'cache-control': `max-age=0.01`,
+									'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
+									etag: etag2
+								},
+								text: responseText2,
+								data: Buffer.from(responseText2).toString('base64')
+							}
+						});
+					}
+
+					return JSON.stringify({
+						error: null,
+						data: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							headers: {
+								'content-type': 'text/html',
+								'content-length': String(responseText1.length),
+								'cache-control': `max-age=0.01`,
+								'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
+								etag: etag1
+							},
+							text: responseText1,
+							data: Buffer.from(responseText1).toString('base64')
+						}
+					});
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+			request1.open('GET', url, false);
+			request1.setRequestHeader('key1', 'value1');
+			request1.send();
+
+			const request2 = new window.XMLHttpRequest();
+			request2.open('GET', url, false);
+			request2.send();
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText1);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+			expect(request1.getResponseHeader('etag')).toBe(etag1);
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText2);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+			expect(request2.getResponseHeader('etag')).toBe(etag2);
+
+			expect(childProcessArguments).toEqual([
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							key1: 'value1',
+							Host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				),
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							key1: 'value1',
+							'If-None-Match': etag1,
+							Host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				)
 			]);
 		});
 
@@ -2980,6 +3234,166 @@ describe('XMLHttpRequest', () => {
 						'vary-header': 'vary2'
 					}
 				}
+			]);
+		});
+
+		it('Supports cache for a synchrounous GET response with "Cache-Control" set to "max-age=60" and "Vary" set to "vary-header".', async () => {
+			const url = 'https://localhost:8080/some/path';
+			const responseText1 = 'vary 1';
+			const responseText2 = 'vary 2';
+			const childProcessArguments: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					childProcessArguments.push(args[1]);
+
+					if (args[1].includes('vary1')) {
+						return JSON.stringify({
+							error: null,
+							data: {
+								statusCode: 200,
+								statusMessage: 'OK',
+								headers: {
+									'content-type': 'text/html',
+									'content-length': String(responseText1.length),
+									'cache-control': `max-age=60`,
+									'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
+									vary: 'vary-header'
+								},
+								text: responseText1,
+								data: Buffer.from(responseText1).toString('base64')
+							}
+						});
+					} else if (args[1].includes('vary2')) {
+						return JSON.stringify({
+							error: null,
+							data: {
+								statusCode: 200,
+								statusMessage: 'OK',
+								headers: {
+									'content-type': 'text/html',
+									'content-length': String(responseText2.length),
+									'cache-control': `max-age=60`,
+									'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
+									vary: 'vary-header'
+								},
+								text: responseText2,
+								data: Buffer.from(responseText2).toString('base64')
+							}
+						});
+					}
+				}
+			});
+
+			const request1 = new window.XMLHttpRequest();
+			request1.open('GET', url, false);
+			request1.setRequestHeader('vary-header', 'vary1');
+			request1.send();
+
+			const request2 = new window.XMLHttpRequest();
+			request2.open('GET', url, false);
+			request2.setRequestHeader('vary-header', 'vary2');
+			request2.send();
+
+			const cachedRequest1 = new window.XMLHttpRequest();
+			cachedRequest1.open('GET', url, false);
+			cachedRequest1.setRequestHeader('vary-header', 'vary1');
+			cachedRequest1.send();
+
+			const cachedRequest2 = new window.XMLHttpRequest();
+			cachedRequest2.open('GET', url, false);
+			cachedRequest2.setRequestHeader('vary-header', 'vary2');
+			cachedRequest2.send();
+
+			expect(request1.responseURL).toBe(url);
+			expect(request1.status).toBe(200);
+			expect(request1.statusText).toBe('OK');
+			expect(request1.responseText).toBe(responseText1);
+			expect(request1.getResponseHeader('content-type')).toBe('text/html');
+			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
+			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=60`);
+			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
+			expect(request1.getResponseHeader('vary')).toBe('vary-header');
+
+			expect(request2.responseURL).toBe(url);
+			expect(request2.status).toBe(200);
+			expect(request2.statusText).toBe('OK');
+			expect(request2.responseText).toBe(responseText2);
+			expect(request2.getResponseHeader('content-type')).toBe('text/html');
+			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=60`);
+			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+			expect(request2.getResponseHeader('vary')).toBe('vary-header');
+
+			expect(cachedRequest1.responseURL).toBe(url);
+			expect(cachedRequest1.status).toBe(200);
+			expect(cachedRequest1.statusText).toBe('OK');
+			expect(cachedRequest1.responseText).toBe(responseText1);
+			expect(cachedRequest1.getResponseHeader('content-type')).toBe('text/html');
+			expect(cachedRequest1.getResponseHeader('content-length')).toBe(String(responseText1.length));
+			expect(cachedRequest1.getResponseHeader('cache-control')).toBe(`max-age=60`);
+			expect(cachedRequest1.getResponseHeader('last-modified')).toBe(
+				'Mon, 11 Dec 2023 01:00:00 GMT'
+			);
+			expect(cachedRequest1.getResponseHeader('vary')).toBe('vary-header');
+
+			expect(cachedRequest2.responseURL).toBe(url);
+			expect(cachedRequest2.status).toBe(200);
+			expect(cachedRequest2.statusText).toBe('OK');
+			expect(cachedRequest2.responseText).toBe(responseText2);
+			expect(cachedRequest2.getResponseHeader('content-type')).toBe('text/html');
+			expect(cachedRequest2.getResponseHeader('content-length')).toBe(String(responseText2.length));
+			expect(cachedRequest2.getResponseHeader('cache-control')).toBe(`max-age=60`);
+			expect(cachedRequest2.getResponseHeader('last-modified')).toBe(
+				'Mon, 11 Dec 2023 02:00:00 GMT'
+			);
+			expect(cachedRequest2.getResponseHeader('vary')).toBe('vary-header');
+
+			expect(childProcessArguments).toEqual([
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'vary-header': 'vary1',
+							Host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				),
+				XMLHttpRequestSyncRequestScriptBuilder.getScript(
+					{
+						host: 'localhost',
+						port: 8080,
+						path: '/some/path',
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Referer: WINDOW_URL + '/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Connection: 'close',
+							'vary-header': 'vary2',
+							Host: window.location.host
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: XMLHttpRequestCertificate.key,
+						cert: XMLHttpRequestCertificate.cert
+					},
+					true
+				)
 			]);
 		});
 	});

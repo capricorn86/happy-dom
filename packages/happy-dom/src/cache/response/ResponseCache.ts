@@ -187,31 +187,6 @@ export default class ResponseCache implements IResponseCache {
 	}
 
 	/**
-	 * Removes expired responses to clear up space.
-	 *
-	 * This method will not remove stale cache entities that can be revalidated.
-	 *
-	 * @param [url] URL.
-	 */
-	public clearExpired(url?: string): void {
-		for (const key of url ? [url] : Object.keys(this.#entries)) {
-			for (let i = 0, max = this.#entries[key].length; i < max; i++) {
-				const cachedResponse = this.#entries[key][i];
-				if (
-					!cachedResponse.etag &&
-					!cachedResponse.lastModified &&
-					cachedResponse.expires &&
-					cachedResponse.expires < Date.now()
-				) {
-					this.#entries[key].splice(i, 1);
-					i--;
-					max--;
-				}
-			}
-		}
-	}
-
-	/**
 	 * Clears the cache.
 	 *
 	 * @param [options] Options.
@@ -222,11 +197,13 @@ export default class ResponseCache implements IResponseCache {
 		if (options) {
 			if (options.toTime) {
 				for (const key of options.url ? [options.url] : Object.keys(this.#entries)) {
-					for (let i = 0, max = this.#entries[key].length; i < max; i++) {
-						if (this.#entries[key][i].cacheUpdateTime < options.toTime) {
-							this.#entries[key].splice(i, 1);
-							i--;
-							max--;
+					if (this.#entries[key]) {
+						for (let i = 0, max = this.#entries[key].length; i < max; i++) {
+							if (this.#entries[key][i].cacheUpdateTime < options.toTime) {
+								this.#entries[key].splice(i, 1);
+								i--;
+								max--;
+							}
 						}
 					}
 				}
