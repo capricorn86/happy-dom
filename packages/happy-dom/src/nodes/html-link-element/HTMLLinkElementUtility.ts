@@ -1,5 +1,5 @@
 import Event from '../../event/Event.js';
-import ResourceFetch from '../../fetch/ResourceFetch.js';
+import ResourceFetch from '../../resource-fetch/ResourceFetch.js';
 import HTMLLinkElement from './HTMLLinkElement.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import DOMException from '../../exception/DOMException.js';
@@ -38,9 +38,11 @@ export default class HTMLLinkElementUtility {
 				return;
 			}
 
-			(<{ __readyStateManager__: DocumentReadyStateManager }>(
+			const readyStateManager = (<{ __readyStateManager__: DocumentReadyStateManager }>(
 				(<unknown>element.ownerDocument.__defaultView__)
-			)).__readyStateManager__.startTask();
+			)).__readyStateManager__;
+
+			readyStateManager.startTask();
 
 			let code: string | null = null;
 			let error: Error | null = null;
@@ -51,9 +53,7 @@ export default class HTMLLinkElementUtility {
 				error = e;
 			}
 
-			(<{ __readyStateManager__: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument.__defaultView__)
-			)).__readyStateManager__.endTask();
+			readyStateManager.endTask();
 
 			if (error) {
 				WindowErrorUtility.dispatchError(element, error);

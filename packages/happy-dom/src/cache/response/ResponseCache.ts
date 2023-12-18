@@ -60,6 +60,7 @@ export default class ResponseCache implements IResponseCache {
 	 *
 	 * @param request Request.
 	 * @param response Response.
+	 * @returns Cached response.
 	 */
 	public add(request: ICachableRequest, response: ICachableResponse): ICachedResponse {
 		// We should only cache GET and HEAD requests.

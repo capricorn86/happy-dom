@@ -137,6 +137,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	#browserFrame: IBrowserFrame;
 	#window: IBrowserWindow;
 	#disableCache: boolean;
+	#disableCrossOriginPolicy: boolean;
 
 	/**
 	 * Constructor.
@@ -145,16 +146,19 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param injected.browserFrame Browser frame.
 	 * @param injected.window Window.
 	 * @param [injected.disableCache] Disables the cache.
+	 * @param [injected.disableCrossOriginPolicy] Disables the cross origin policy.
 	 */
 	constructor(injected: {
 		browserFrame: IBrowserFrame;
 		window: IBrowserWindow;
 		disableCache?: boolean;
+		disableCrossOriginPolicy?: boolean;
 	}) {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this.#window = injected.window;
 		this.#disableCache = injected.disableCache || false;
+		this.#disableCrossOriginPolicy = injected.disableCrossOriginPolicy || false;
 	}
 
 	/**

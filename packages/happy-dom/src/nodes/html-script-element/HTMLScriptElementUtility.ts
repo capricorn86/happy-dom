@@ -1,7 +1,7 @@
 import Event from '../../event/Event.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import ResourceFetch from '../../fetch/ResourceFetch.js';
+import ResourceFetch from '../../resource-fetch/ResourceFetch.js';
 import HTMLScriptElement from './HTMLScriptElement.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
@@ -43,9 +43,11 @@ export default class HTMLScriptElementUtility {
 		let error: Error | null = null;
 
 		if (async) {
-			(<{ __readyStateManager__: DocumentReadyStateManager }>(
+			const readyStateManager = (<{ __readyStateManager__: DocumentReadyStateManager }>(
 				(<unknown>element.ownerDocument.__defaultView__)
-			)).__readyStateManager__.startTask();
+			)).__readyStateManager__;
+
+			readyStateManager.startTask();
 
 			try {
 				code = await ResourceFetch.fetch(element.ownerDocument.__defaultView__, src);
@@ -53,9 +55,7 @@ export default class HTMLScriptElementUtility {
 				error = e;
 			}
 
-			(<{ __readyStateManager__: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument.__defaultView__)
-			)).__readyStateManager__.endTask();
+			readyStateManager.endTask();
 		} else {
 			try {
 				code = ResourceFetch.fetchSync(element.ownerDocument.__defaultView__, src);

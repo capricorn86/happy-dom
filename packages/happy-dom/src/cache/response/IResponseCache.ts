@@ -15,12 +15,13 @@ export default interface IResponseCache {
 	get(request: ICachableRequest): ICachedResponse | null;
 
 	/**
-	 * Adds a cache entity.
+	 * Adds a cached response.
 	 *
 	 * @param request Request.
 	 * @param response Response.
+	 * @returns Cached response.
 	 */
-	add(request: ICachableRequest, response: ICachableResponse): ICachedResponse;
+	add(request: ICachableRequest, response: ICachableResponse): ICachedResponse | null;
 
 	/**
 	 * Clears the cache.

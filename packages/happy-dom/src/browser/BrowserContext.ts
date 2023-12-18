@@ -6,6 +6,8 @@ import Browser from './Browser.js';
 import BrowserFrame from './BrowserFrame.js';
 import BrowserPage from './BrowserPage.js';
 import IBrowserContext from './types/IBrowserContext.js';
+import IPreflightResponseCache from '../cache/preflight/IPreflightResponseCache.js';
+import PreflightResponseCache from '../cache/preflight/PreflightResponseCache.js';
 
 /**
  * Browser context.
@@ -15,6 +17,7 @@ export default class BrowserContext implements IBrowserContext {
 	public readonly browser: Browser;
 	public readonly cookieContainer: ICookieContainer = new CookieContainer();
 	public readonly responseCache: IResponseCache = new ResponseCache();
+	public readonly preflightResponseCache: IPreflightResponseCache = new PreflightResponseCache();
 
 	/**
 	 * Constructor.

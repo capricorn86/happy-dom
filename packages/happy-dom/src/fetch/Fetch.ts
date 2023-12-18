@@ -50,6 +50,7 @@ export default class Fetch {
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
+	private disableCrossOriginPolicy: boolean;
 	#browserFrame: IBrowserFrame;
 	#window: IBrowserWindow;
 
@@ -73,6 +74,7 @@ export default class Fetch {
 		redirectCount?: number;
 		contentType?: string;
 		disableCache?: boolean;
+		disableCrossOriginPolicy?: boolean;
 	}) {
 		const url = options.url;
 
@@ -87,6 +89,7 @@ export default class Fetch {
 		}
 		this.redirectCount = options.redirectCount ?? 0;
 		this.disableCache = options.disableCache ?? false;
+		this.disableCrossOriginPolicy = options.disableCrossOriginPolicy ?? false;
 	}
 
 	/**
@@ -95,83 +98,25 @@ export default class Fetch {
 	 * @returns Response.
 	 */
 	public async send(): Promise<IResponse> {
-		if (this.disableCache) {
-			return await this.sendWithoutCache();
+		const cachedResponse = await this.getCachedResponse();
+
+		if (cachedResponse) {
+			return cachedResponse;
 		}
 
-		let cachedResponse = this.#browserFrame.page.context.responseCache.get(this.request);
+		const compliesWithCrossOriginPolicy = await this.compliesWithCrossOriginPolicy();
 
-		if (!cachedResponse || cachedResponse.response.waitingForBody) {
-			return await this.sendWithoutCache();
+		if (!compliesWithCrossOriginPolicy) {
+			this.#window.console.warn(
+				`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`
+			);
+			throw new DOMException(
+				`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`,
+				DOMExceptionNameEnum.networkError
+			);
 		}
 
-		if (
-			cachedResponse.etag ||
-			(cachedResponse.state === CachedResponseStateEnum.stale && cachedResponse.lastModified)
-		) {
-			const headers = new Headers(cachedResponse.request.headers);
-
-			if (cachedResponse.etag) {
-				headers.set('If-None-Match', cachedResponse.etag);
-			} else {
-				headers.set('If-Modified-Since', new Date(cachedResponse.lastModified).toUTCString());
-			}
-
-			const fetch = new (<typeof Fetch>this.constructor)({
-				browserFrame: this.#browserFrame,
-				window: this.#window,
-				url: this.request.url,
-				init: { headers, method: cachedResponse.request.method },
-				disableCache: true
-			});
-
-			if (cachedResponse.etag || !cachedResponse.staleWhileRevalidate) {
-				const validateResponse = <Response>await fetch.send();
-				const body = validateResponse.status !== 304 ? await validateResponse.buffer() : null;
-
-				cachedResponse = this.#browserFrame.page.context.responseCache.add(this.request, {
-					...validateResponse,
-					body,
-					waitingForBody: false
-				});
-
-				if (validateResponse.status !== 304) {
-					const response = new this.#window.Response(body, {
-						status: validateResponse.status,
-						statusText: validateResponse.statusText,
-						headers: validateResponse.headers
-					});
-					(<string>response.url) = validateResponse.url;
-					response.__cachedResponse__ = cachedResponse;
-
-					return response;
-				}
-			} else {
-				fetch.send().then((response) => {
-					response.buffer().then((body: Buffer) => {
-						this.#browserFrame.page.context.responseCache.add(this.request, {
-							...response,
-							body,
-							waitingForBody: false
-						});
-					});
-				});
-			}
-		}
-
-		if (!cachedResponse || cachedResponse.response.waitingForBody) {
-			return await this.sendWithoutCache();
-		}
-
-		const response = new this.#window.Response(cachedResponse.response.body, {
-			status: cachedResponse.response.status,
-			statusText: cachedResponse.response.statusText,
-			headers: cachedResponse.response.headers
-		});
-		(<string>response.url) = cachedResponse.response.url;
-		response.__cachedResponse__ = cachedResponse;
-
-		return response;
+		return await this.sendRequest();
 	}
 
 	/**
@@ -179,7 +124,7 @@ export default class Fetch {
 	 *
 	 * @returns Response.
 	 */
-	private sendWithoutCache(): Promise<IResponse> {
+	private sendRequest(): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
 			const taskID = this.#browserFrame.__asyncTaskManager__.startTask(() =>
 				this.onAsyncTaskManagerAbort()
@@ -265,6 +210,183 @@ export default class Fetch {
 				});
 			}
 		});
+	}
+
+	/**
+	 * Returns cached response.
+	 *
+	 * @returns Response.
+	 */
+	public async getCachedResponse(): Promise<IResponse | null> {
+		if (this.disableCache) {
+			return null;
+		}
+
+		let cachedResponse = this.#browserFrame.page.context.responseCache.get(this.request);
+
+		if (!cachedResponse || cachedResponse.response.waitingForBody) {
+			return null;
+		}
+
+		if (
+			cachedResponse.etag ||
+			(cachedResponse.state === CachedResponseStateEnum.stale && cachedResponse.lastModified)
+		) {
+			const headers = new Headers(cachedResponse.request.headers);
+
+			if (cachedResponse.etag) {
+				headers.set('If-None-Match', cachedResponse.etag);
+			} else {
+				headers.set('If-Modified-Since', new Date(cachedResponse.lastModified).toUTCString());
+			}
+
+			const fetch = new (<typeof Fetch>this.constructor)({
+				browserFrame: this.#browserFrame,
+				window: this.#window,
+				url: this.request.url,
+				init: { headers, method: cachedResponse.request.method },
+				disableCache: true
+			});
+
+			if (cachedResponse.etag || !cachedResponse.staleWhileRevalidate) {
+				const validateResponse = <Response>await fetch.send();
+				const body = validateResponse.status !== 304 ? await validateResponse.buffer() : null;
+
+				cachedResponse = this.#browserFrame.page.context.responseCache.add(this.request, {
+					...validateResponse,
+					body,
+					waitingForBody: false
+				});
+
+				if (validateResponse.status !== 304) {
+					const response = new this.#window.Response(body, {
+						status: validateResponse.status,
+						statusText: validateResponse.statusText,
+						headers: validateResponse.headers
+					});
+					(<string>response.url) = validateResponse.url;
+					response.__cachedResponse__ = cachedResponse;
+
+					return response;
+				}
+			} else {
+				fetch.send().then((response) => {
+					response.buffer().then((body: Buffer) => {
+						this.#browserFrame.page.context.responseCache.add(this.request, {
+							...response,
+							body,
+							waitingForBody: false
+						});
+					});
+				});
+			}
+		}
+
+		if (!cachedResponse || cachedResponse.response.waitingForBody) {
+			return null;
+		}
+
+		const response = new this.#window.Response(cachedResponse.response.body, {
+			status: cachedResponse.response.status,
+			statusText: cachedResponse.response.statusText,
+			headers: cachedResponse.response.headers
+		});
+		(<string>response.url) = cachedResponse.response.url;
+		response.__cachedResponse__ = cachedResponse;
+
+		return response;
+	}
+
+	/**
+	 * Checks if the request complies with the Cross-Origin policy.
+	 *
+	 * @returns True if it complies with the policy.
+	 */
+	public async compliesWithCrossOriginPolicy(): Promise<boolean> {
+		if (
+			this.disableCrossOriginPolicy ||
+			!FetchCORSUtility.isCORS(this.#window.location, this.request.__url__)
+		) {
+			return true;
+		}
+
+		const cachedPreflightResponse = this.#browserFrame.page.context.preflightResponseCache.get(
+			this.request
+		);
+
+		if (cachedPreflightResponse) {
+			if (
+				cachedPreflightResponse.allowOrigin !== '*' &&
+				cachedPreflightResponse.allowOrigin !== this.#window.location.origin
+			) {
+				return false;
+			}
+
+			if (
+				cachedPreflightResponse.allowMethods.length !== 0 &&
+				!cachedPreflightResponse.allowMethods.includes(this.request.method)
+			) {
+				return false;
+			}
+
+			return true;
+		}
+
+		const requestHeaders = [];
+
+		for (const [header] of this.request.headers) {
+			requestHeaders.push(header);
+		}
+
+		const fetch = new (<typeof Fetch>this.constructor)({
+			browserFrame: this.#browserFrame,
+			window: this.#window,
+			url: this.request.url,
+			init: {
+				method: 'OPTIONS',
+				headers: new Headers({
+					'Access-Control-Request-Method': this.request.method,
+					'Access-Control-Request-Headers': requestHeaders.join(', ')
+				})
+			},
+			disableCache: true,
+			disableCrossOriginPolicy: true
+		});
+
+		const response = <Response>await fetch.send();
+
+		if (!response.ok) {
+			return false;
+		}
+
+		const allowOrigin = response.headers.get('Access-Control-Allow-Origin');
+
+		if (!allowOrigin) {
+			return false;
+		}
+
+		if (allowOrigin !== '*' && allowOrigin !== this.#window.location.origin) {
+			return false;
+		}
+
+		const allowMethods: string[] = [];
+
+		if (response.headers.has('Access-Control-Allow-Methods')) {
+			const allowMethodsHeader = response.headers.get('Access-Control-Allow-Methods');
+			if (allowMethodsHeader !== '*') {
+				for (const method of allowMethodsHeader.split(',')) {
+					allowMethods.push(method.trim().toUpperCase());
+				}
+			}
+		}
+
+		if (allowMethods.length !== 0 && !allowMethods.includes(this.request.method)) {
+			return false;
+		}
+
+		// TODO: Add support for more Access-Control-Allow-* headers.
+
+		return true;
 	}
 
 	/**

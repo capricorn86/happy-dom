@@ -3,6 +3,7 @@ import IResponseCache from '../../cache/response/IResponseCache.js';
 import IBrowser from './IBrowser.js';
 import IBrowserFrame from './IBrowserFrame.js';
 import IBrowserPage from './IBrowserPage.js';
+import IPreflightResponseCache from '../../cache/preflight/IPreflightResponseCache.js';
 
 /**
  * Browser context.
@@ -12,6 +13,7 @@ export default interface IBrowserContext {
 	readonly browser: IBrowser;
 	readonly cookieContainer: ICookieContainer;
 	readonly responseCache: IResponseCache;
+	readonly preflightResponseCache: IPreflightResponseCache;
 
 	/**
 	 * Aborts all ongoing operations and destroys the context.
