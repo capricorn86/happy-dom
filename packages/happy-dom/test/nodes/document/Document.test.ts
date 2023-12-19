@@ -25,7 +25,7 @@ import INodeList from '../../../src/nodes/node/INodeList.js';
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement.js';
 import IResponse from '../../../src/fetch/types/IResponse.js';
-import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
+import ResourceFetch from '../../../src/resource-fetch/ResourceFetch.js';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement.js';
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum.js';
 import ISVGElement from '../../../src/nodes/svg-element/ISVGElement.js';
@@ -38,6 +38,7 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import IRequestInit from '../../../src/fetch/types/IRequestInit.js';
 import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
 import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
+import Fetch from '../../../src/fetch/Fetch.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -322,14 +323,12 @@ describe('Document', () => {
 				const style = document.createElement('style');
 				const link = <IHTMLLinkElement>document.createElement('link');
 				let fetchedUrl: string | null = null;
-				let fetchedInit: IRequestInit | null = null;
 
 				link.rel = 'stylesheet';
-				link.href = '/path/to/file.css';
+				link.href = 'https://localhost:8080/path/to/file.css';
 
-				vi.spyOn(window, 'fetch').mockImplementation((url, init) => {
-					fetchedUrl = <string>url;
-					fetchedInit = <IRequestInit>init;
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function () {
+					fetchedUrl = this.request.url;
 					return <Promise<IResponse>>Promise.resolve({
 						text: () => Promise.resolve('button { background-color: red }'),
 						ok: true
@@ -342,8 +341,7 @@ describe('Document', () => {
 				document.appendChild(link);
 
 				setTimeout(() => {
-					expect(fetchedUrl).toBe('/path/to/file.css');
-					expect(fetchedInit).toBe(undefined);
+					expect(fetchedUrl).toBe('https://localhost:8080/path/to/file.css');
 
 					const styleSheets = document.styleSheets;
 
@@ -1163,8 +1161,8 @@ describe('Document', () => {
 
 		it('Triggers "readystatechange" event when all resources have been loaded.', async () => {
 			await new Promise((resolve) => {
-				const cssURL = '/path/to/file.css';
-				const jsURL = '/path/to/file.js';
+				const cssURL = 'https://localhost:8080/path/to/file.css';
+				const jsURL = 'https://localhost:8080/path/to/file.js';
 				const cssResponse = 'body { background-color: red; }';
 				const jsResponse = 'globalThis.test = "test";';
 				let resourceFetchCSSWindow: IBrowserWindow | null = null;
@@ -1173,19 +1171,17 @@ describe('Document', () => {
 				let resourceFetchJSURL: string | null = null;
 				let readyChangeEvent: Event | null = null;
 
-				vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-					async (window: IBrowserWindow, url: string) => {
-						if (url.endsWith('.css')) {
-							resourceFetchCSSWindow = window;
-							resourceFetchCSSURL = url;
-							return cssResponse;
-						}
-
-						resourceFetchJSWindow = window;
-						resourceFetchJSURL = url;
-						return jsResponse;
+				vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+					if (url.endsWith('.css')) {
+						resourceFetchCSSWindow = this.window;
+						resourceFetchCSSURL = url;
+						return cssResponse;
 					}
-				);
+
+					resourceFetchJSWindow = this.window;
+					resourceFetchJSURL = url;
+					return jsResponse;
+				});
 
 				document.addEventListener('readystatechange', (event) => {
 					readyChangeEvent = event;

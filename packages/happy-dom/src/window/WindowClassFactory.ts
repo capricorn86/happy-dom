@@ -295,11 +295,17 @@ export default class WindowClassFactory {
 			}
 		}
 		class HTMLScriptElement extends HTMLScriptElementImplementation {
+			constructor() {
+				super(properties.browserFrame);
+			}
 			public get ownerDocument(): IDocument {
 				return window.document;
 			}
 		}
 		class HTMLLinkElement extends HTMLLinkElementImplementation {
+			constructor() {
+				super(properties.browserFrame);
+			}
 			public get ownerDocument(): IDocument {
 				return window.document;
 			}

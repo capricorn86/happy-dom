@@ -9,8 +9,8 @@ import XMLHttpRequest from '../xml-http-request/XMLHttpRequest.js';
  * Helper class for performing fetch of resources.
  */
 export default class ResourceFetch {
+	private window: IBrowserWindow;
 	#browserFrame: IBrowserFrame;
-	#window: IBrowserWindow;
 
 	/**
 	 * Constructor.
@@ -21,7 +21,7 @@ export default class ResourceFetch {
 	 */
 	constructor(options: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
 		this.#browserFrame = options.browserFrame;
-		this.#window = options.window;
+		this.window = options.window;
 	}
 
 	/**
@@ -33,7 +33,7 @@ export default class ResourceFetch {
 	public async fetch(url: string): Promise<string> {
 		const fetch = new Fetch({
 			browserFrame: this.#browserFrame,
-			window: this.#window,
+			window: this.window,
 			url,
 			disableCrossOriginPolicy: true
 		});
@@ -42,7 +42,7 @@ export default class ResourceFetch {
 		if (!response.ok) {
 			throw new DOMException(
 				`Failed to perform request to "${
-					new URL(url, this.#window.location.href).href
+					new URL(url, this.window.location.href).href
 				}". Status code: ${response.status}.`
 			);
 		}
@@ -59,7 +59,7 @@ export default class ResourceFetch {
 	public fetchSync(url: string): string {
 		const xmlHttpRequest = new XMLHttpRequest({
 			browserFrame: this.#browserFrame,
-			window: this.#window,
+			window: this.window,
 			disableCrossOriginPolicy: true
 		});
 
@@ -69,7 +69,7 @@ export default class ResourceFetch {
 		if (xmlHttpRequest.status < 200 || xmlHttpRequest.status >= 300) {
 			throw new DOMException(
 				`Failed to perform request to "${
-					new URL(url, this.#window.location.href).href
+					new URL(url, this.window.location.href).href
 				}". Status code: ${xmlHttpRequest.status}.`
 			);
 		}

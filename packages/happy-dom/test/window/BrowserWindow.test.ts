@@ -2,7 +2,7 @@ import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration.j
 import IDocument from '../../src/nodes/document/IDocument.js';
 import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement.js';
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
-import ResourceFetch from '../../src/fetch/ResourceFetch.js';
+import ResourceFetch from '../../src/resource-fetch/ResourceFetch.js';
 import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement.js';
 import IWindow from '../../src/window/IWindow.js';
 import IBrowserWindow from '../../src/window/IBrowserWindow.js';
@@ -974,8 +974,8 @@ describe('BrowserWindow', () => {
 
 		it('Triggers "load" event when all resources have been loaded.', async () => {
 			await new Promise((resolve) => {
-				const cssURL = '/path/to/file.css';
-				const jsURL = '/path/to/file.js';
+				const cssURL = 'https://localhost:8080/path/to/file.css';
+				const jsURL = 'https://localhost:8080/path/to/file.js';
 				const cssResponse = 'body { background-color: red; }';
 				const jsResponse = 'globalThis.test = "test";';
 				let resourceFetchCSSWindow: IBrowserWindow | null = null;
@@ -984,19 +984,17 @@ describe('BrowserWindow', () => {
 				let resourceFetchJSURL: string | null = null;
 				let loadEvent: Event | null = null;
 
-				vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-					async (window: IBrowserWindow, url: string) => {
-						if (url.endsWith('.css')) {
-							resourceFetchCSSWindow = window;
-							resourceFetchCSSURL = url;
-							return cssResponse;
-						}
-
-						resourceFetchJSWindow = window;
-						resourceFetchJSURL = url;
-						return jsResponse;
+				vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+					if (url.endsWith('.css')) {
+						resourceFetchCSSWindow = this.window;
+						resourceFetchCSSURL = url;
+						return cssResponse;
 					}
-				);
+
+					resourceFetchJSWindow = this.window;
+					resourceFetchJSURL = url;
+					return jsResponse;
+				});
 
 				window.addEventListener('load', (event) => {
 					loadEvent = event;

@@ -1,7 +1,7 @@
 import IAttr from '../attr/IAttr.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLLinkElement from './HTMLLinkElement.js';
-import HTMLLinkElementUtility from './HTMLLinkElementUtility.js';
+import HTMLLinkElementStyleSheetLoader from './HTMLLinkElementStyleSheetLoader.js';
 
 /**
  * Named Node Map.
@@ -10,6 +10,18 @@ import HTMLLinkElementUtility from './HTMLLinkElementUtility.js';
  */
 export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap {
 	protected __ownerElement__: HTMLLinkElement;
+	#styleSheetLoader: HTMLLinkElementStyleSheetLoader;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param ownerElement Owner element.
+	 * @param stylesheetLoader Stylesheet loader.
+	 */
+	constructor(ownerElement: HTMLLinkElement, styleSheetLoader: HTMLLinkElementStyleSheetLoader) {
+		super(ownerElement);
+		this.#styleSheetLoader = styleSheetLoader;
+	}
 
 	/**
 	 * @override
@@ -21,8 +33,10 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 			this.__ownerElement__.__relList__.__updateIndices__();
 		}
 
-		if (item.name === 'rel' || item.name === 'href') {
-			HTMLLinkElementUtility.loadExternalStylesheet(this.__ownerElement__);
+		if (item.name === 'rel') {
+			this.#styleSheetLoader.loadStyleSheet(this.__ownerElement__.getAttribute('href'), item.value);
+		} else if (item.name === 'href') {
+			this.#styleSheetLoader.loadStyleSheet(item.value, this.__ownerElement__.getAttribute('rel'));
 		}
 
 		return replacedItem || null;

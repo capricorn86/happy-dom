@@ -14,17 +14,11 @@ import Blob from '../../src/file/Blob.js';
 import FormData from '../../src/form-data/FormData.js';
 import { URLSearchParams } from 'url';
 import '../types.d.js';
-import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
 describe('Fetch', () => {
-	let window: IWindow;
-
-	beforeEach(() => {
-		window = new Window();
-	});
-
 	afterEach(() => {
 		resetMockedModules();
 		vi.restoreAllMocks();
@@ -32,6 +26,7 @@ describe('Fetch', () => {
 
 	describe('send()', () => {
 		it('Rejects with error if url is protocol relative.', async () => {
+			const window = new Window();
 			const url = '//example.com/';
 			let error: Error | null = null;
 
@@ -50,6 +45,7 @@ describe('Fetch', () => {
 		});
 
 		it('Rejects with error if url is relative path and no location is set on the document.', async () => {
+			const window = new Window();
 			const url = '/some/path';
 			let error: Error | null = null;
 
@@ -68,6 +64,7 @@ describe('Fetch', () => {
 		});
 
 		it('Rejects with error if protocol is unsupported.', async () => {
+			const window = new Window();
 			const url = 'ftp://example.com/';
 			let error: Error | null = null;
 
@@ -86,6 +83,7 @@ describe('Fetch', () => {
 		});
 
 		it('Performs a basic plain text HTTPS GET request.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
 			let requestArgs: {
@@ -134,6 +132,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
 					}
@@ -168,6 +167,7 @@ describe('Fetch', () => {
 		});
 
 		it('Performs a basic JSON HTTP GET request.', async () => {
+			const window = new Window({ url: 'http://localhost:8080/' });
 			const url = 'http://localhost:8080/some/path';
 			const responseText = '{ "test": "test" }';
 			let requestArgs: {
@@ -216,6 +216,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'http://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
 					}
@@ -249,6 +250,7 @@ describe('Fetch', () => {
 		});
 
 		it('Performs a chunked HTTP GET request.', async () => {
+			const window = new Window({ url: 'http://localhost:8080/' });
 			const url = 'http://localhost:8080/some/path';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
@@ -294,6 +296,7 @@ describe('Fetch', () => {
 		});
 
 		it('Performs a request with a relative URL and adds the "Referer" header set to the window location.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const path = 'some/path';
 			const responseText = 'test';
 			const baseUrl = 'https://localhost:8080/base/';
@@ -347,6 +350,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should send custom key/value object request headers.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
 			let requestArgs: {
@@ -395,6 +399,7 @@ describe('Fetch', () => {
 						KeY2: 'Value2',
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
 					}
@@ -403,6 +408,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should send custom "Headers" instance request headers.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
 			let requestArgs: {
@@ -455,6 +461,7 @@ describe('Fetch', () => {
 						key3: 'value3, value4',
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
 					}
@@ -465,6 +472,7 @@ describe('Fetch', () => {
 		for (const httpCode of [301, 302, 303, 307, 308]) {
 			for (const method of ['GET', 'POST', 'PATCH']) {
 				it(`Should follow ${method} request redirect code ${httpCode}.`, async () => {
+					const window = new Window({ url: 'https://localhost:8080/' });
 					const redirectURL = 'https://localhost:8080/redirect';
 					const redirectURL2 = 'https://localhost:8080/redirect2';
 					const targetPath = '/some/path';
@@ -548,6 +556,7 @@ describe('Fetch', () => {
 									'Content-Length': body ? String(body.length) : undefined,
 									'Content-Type': body ? 'text/plain;charset=UTF-8' : undefined,
 									Connection: 'close',
+									Referer: 'https://localhost:8080/',
 									'User-Agent': window.navigator.userAgent,
 									'Accept-Encoding': 'gzip, deflate, br'
 								}
@@ -566,6 +575,7 @@ describe('Fetch', () => {
 									'Content-Type':
 										body && !shouldBecomeGetRequest ? 'text/plain;charset=UTF-8' : undefined,
 									Connection: 'close',
+									Referer: 'https://localhost:8080/',
 									'User-Agent': window.navigator.userAgent,
 									'Accept-Encoding': 'gzip, deflate, br'
 								}
@@ -584,6 +594,7 @@ describe('Fetch', () => {
 									'Content-Type':
 										body && !shouldBecomeGetRequest ? 'text/plain;charset=UTF-8' : undefined,
 									Connection: 'close',
+									Referer: 'https://localhost:8080/',
 									'User-Agent': window.navigator.userAgent,
 									'Accept-Encoding': 'gzip, deflate, br'
 								}
@@ -610,6 +621,7 @@ describe('Fetch', () => {
 		}
 
 		it('Should not follow non-GET redirect if body is a readable stream.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const responseText = 'test';
 			const body = 'test';
 			let error: Error | null = null;
@@ -672,6 +684,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should cancel a redirect loop after 20 tries.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url1 = 'https://localhost:8080/test/';
 			const url2 = 'https://localhost:8080/test2/';
 			let error: Error | null = null;
@@ -714,6 +727,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should support "manual" redirect mode.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://localhost:8080/redirect/';
 
@@ -745,6 +759,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should support "manual" redirect mode with broken location header.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = '<>';
 
@@ -776,6 +791,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should support "manual" redirect mode to other host.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://example.com/redirect/';
 
@@ -807,6 +823,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should treat missing location header as a normal response (manual).', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
 			mockModule('https', {
@@ -836,6 +853,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should support "error" redirect.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://localhost:8080/redirect/';
 			let error: Error | null = null;
@@ -876,6 +894,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should throw an error on invalid redirect URLs.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = '//super:invalid:url%/';
 			let error: Error | null = null;
@@ -916,6 +935,7 @@ describe('Fetch', () => {
 		});
 
 		it("Does'nt forward unsafe headers.", async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			let requestArgs: {
 				url: string;
@@ -980,6 +1000,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'safe-header': 'safe'
@@ -989,13 +1010,13 @@ describe('Fetch', () => {
 		});
 
 		it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "omit".', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			let requestArgs: {
 				url: string;
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			window.happyDOM?.setURL('https://localhost:8080');
 			window.document.cookie = 'test=cookie';
 
 			mockModule('https', {
@@ -1046,13 +1067,13 @@ describe('Fetch', () => {
 
 		it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes do a different origin than the document.', async () => {
 			const originURL = 'https://localhost:8080';
+			const window = new Window({ url: originURL });
 			const url = 'https://other.origin.com/some/path';
 			let requestArgs: {
 				url: string;
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			window.happyDOM?.setURL(originURL);
 			window.document.cookie = 'test=cookie';
 
 			mockModule('https', {
@@ -1068,7 +1089,8 @@ describe('Fetch', () => {
 								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
 								response.headers = {};
-								response.rawHeaders = [];
+								response.rawHeaders =
+									options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
 
 								callback(response);
 							}
@@ -1103,10 +1125,9 @@ describe('Fetch', () => {
 
 		it("Does'nt allow requests to HTTP from HTTPS (mixed content).", async () => {
 			const originURL = 'https://localhost:8080/';
+			const window = new Window({ url: originURL });
 			const url = 'http://localhost:8080/some/path';
 			let error: Error | null = null;
-
-			window.happyDOM?.setURL(originURL);
 
 			try {
 				await window.fetch(url);
@@ -1124,6 +1145,7 @@ describe('Fetch', () => {
 
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes to the same origin as the document.', async () => {
 			const originURL = 'https://localhost:8080';
+			const window = new Window({ url: originURL });
 			const url = 'https://localhost:8080/some/path';
 			const cookies = 'key1=value1; key2=value2';
 			let requestArgs: {
@@ -1188,14 +1210,13 @@ describe('Fetch', () => {
 
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "include".', async () => {
 			const originURL = 'https://localhost:8080';
+			const window = new Window({ url: originURL });
 			const url = 'https://other.origin.com/some/path';
 			const cookies = 'key1=value1; key2=value2';
 			let requestArgs: {
 				url: string;
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
-
-			window.happyDOM?.setURL(originURL);
 
 			for (const cookie of cookies.split(';')) {
 				window.document.cookie = cookie.trim();
@@ -1214,7 +1235,9 @@ describe('Fetch', () => {
 								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
 								response.headers = {};
-								response.rawHeaders = [];
+								response.statusCode = 200;
+								response.rawHeaders =
+									options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
 
 								callback(response);
 							}
@@ -1251,8 +1274,7 @@ describe('Fetch', () => {
 		});
 
 		it('Sets document cookie string if the response contains a "Set-Cookie" header if request cridentials are set to "include".', async () => {
-			window.happyDOM?.setURL('https://localhost:8080');
-
+			const window = new Window({ url: 'https://localhost:8080' });
 			mockModule('https', {
 				request: () => {
 					return {
@@ -1282,6 +1304,7 @@ describe('Fetch', () => {
 		});
 
 		it('Allows setting the headers "User-Agent" and "Accept".', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			let requestArgs: {
 				url: string;
@@ -1328,7 +1351,8 @@ describe('Fetch', () => {
 						'Accept-Encoding': 'gzip, deflate, br',
 						'User-Agent': 'user-agent',
 						Accept: 'accept',
-						Connection: 'close'
+						Connection: 'close',
+						Referer: 'https://localhost:8080/'
 					}
 				}
 			});
@@ -1336,6 +1360,7 @@ describe('Fetch', () => {
 
 		for (const errorCode of [400, 401, 403, 404, 500]) {
 			it(`Handles error response with status ${errorCode}.`, async () => {
+				const window = new Window({ url: 'https://localhost:8080/' });
 				const responseText = 'some response text';
 
 				mockModule('https', {
@@ -1373,6 +1398,7 @@ describe('Fetch', () => {
 		}
 
 		it(`Handles network error response.`, async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			let error: Error | null = null;
 
@@ -1406,6 +1432,7 @@ describe('Fetch', () => {
 		});
 
 		it('Doesn`t break in socket logic if response is not chunked.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const responseText = 'some response text';
 			const removedListeners: string[] = [];
 
@@ -1468,6 +1495,7 @@ describe('Fetch', () => {
 		});
 
 		it('Throws an error on premature close of chunked transfers when closing socket.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
 			mockModule('https', {
@@ -1551,6 +1579,7 @@ describe('Fetch', () => {
 		});
 
 		it('Throws an error on premature close when reading chunks.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
@@ -1610,6 +1639,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should follow redirect after empty chunked transfer-encoding.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url1 = 'https://localhost:8080/test/';
 			const url2 = 'https://localhost:8080/test2/';
 			const chunks = ['chunk1'];
@@ -1686,6 +1716,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should handle no content response with "gzip" encoding.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
 			mockModule('https', {
@@ -1716,6 +1747,7 @@ describe('Fetch', () => {
 		});
 
 		it('Handles unzipping content with "gzip" encoding.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
@@ -1757,6 +1789,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should unzip content with slightly invalid "gzip" encoding.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
@@ -1795,6 +1828,7 @@ describe('Fetch', () => {
 		});
 
 		it('Handles 204 no content response with "gzip" encoding.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
 			mockModule('https', {
@@ -1824,6 +1858,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should decompress content with "deflate" encoding.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
@@ -1859,6 +1894,7 @@ describe('Fetch', () => {
 		});
 
 		it('Handles 204 no content response with "deflate" encoding.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
 			mockModule('https', {
@@ -1888,6 +1924,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should decompress content with raw "deflate" encoding from old apache server.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
@@ -1923,6 +1960,7 @@ describe('Fetch', () => {
 		});
 
 		it('Handles unzipping content with "br" (brotli) encoding.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
@@ -1960,6 +1998,7 @@ describe('Fetch', () => {
 		});
 
 		it('Handles 204 no content response with "br" (brotli) encoding.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
 			mockModule('https', {
@@ -1989,6 +2028,7 @@ describe('Fetch', () => {
 		});
 
 		it('Skips decompression for unsupported encodings.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
@@ -2022,6 +2062,7 @@ describe('Fetch', () => {
 		});
 
 		it('Rejects with an error if decompression for "gzip" encoding is invalid.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
 			mockModule('https', {
@@ -2066,6 +2107,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports aborting a request using AbortController and AbortSignal.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
@@ -2115,6 +2157,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports aborting a redirect request using AbortController and AbortSignal.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url1 = 'https://localhost:8080/redirect/';
 			const url2 = 'https://localhost:8080/redirect2/';
 			const url3 = 'https://localhost:8080/target/';
@@ -2169,6 +2212,7 @@ describe('Fetch', () => {
 		});
 		it('Supports aborting multiple ongoing requests using AbortController.', async () => {
 			await new Promise((resolve) => {
+				const window = new Window({ url: 'https://localhost:8080/' });
 				const url = 'https://localhost:8080/test/';
 				const responseText = 'some response text';
 
@@ -2232,6 +2276,7 @@ describe('Fetch', () => {
 		});
 
 		it('Rejects immediately if signal has already been aborted.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
 			const abortController = new AbortController();
@@ -2251,6 +2296,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports aborting the read of the response body using AbortController and AbortSignal when aborted before the reading has started.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2'];
 
@@ -2298,6 +2344,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports aborting the read of the response body using AbortController and AbortSignal.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
@@ -2360,6 +2407,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports aborting the read of the request body using AbortController and AbortSignal.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 			async function* generate(): AsyncGenerator<Buffer> {
@@ -2433,6 +2481,7 @@ describe('Fetch', () => {
 		});
 
 		it('Removes internal abort listener when a request has completed.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
 			mockModule('https', {
@@ -2468,6 +2517,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as string.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const body = 'Hello, world!\n';
 
 			let destroyCount = 0;
@@ -2524,6 +2574,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Type': 'text/plain;charset=UTF-8',
@@ -2538,6 +2589,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as object (by stringifying to [object Object]).', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const body = { key: 'value' };
 
 			let destroyCount = 0;
@@ -2594,6 +2646,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Type': 'text/plain;charset=UTF-8',
@@ -2608,6 +2661,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as ArrayBuffer.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const body = 'Hello, world!\n';
 
 			let destroyCount = 0;
@@ -2664,6 +2718,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '14'
@@ -2676,6 +2731,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as ArrayBufferView (Uint8Array).', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const body = 'Hello, world!\n';
 
 			let destroyCount = 0;
@@ -2732,6 +2788,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '14'
@@ -2744,6 +2801,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as ArrayBufferView (DataView).', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const body = 'Hello, world!\n';
 
 			let destroyCount = 0;
@@ -2800,6 +2858,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '14'
@@ -2812,6 +2871,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as ArrayBufferView (Uint8Array, offset, length).', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const body = 'Hello, world!\n';
 
 			let destroyCount = 0;
@@ -2868,6 +2928,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '6'
@@ -2880,6 +2941,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as Blob without type.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const body = 'key1=value1&key2=value2';
 
 			let destroyCount = 0;
@@ -2936,6 +2998,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '23'
@@ -2948,6 +3011,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as Blob with type.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const body = 'key1=value1&key2=value2';
 
 			let destroyCount = 0;
@@ -3006,6 +3070,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						// Blob converts type to lowercase according to spec
@@ -3020,6 +3085,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as Stream.Readable.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 			async function* generate(): AsyncGenerator<Buffer> {
 				yield await new Promise((resolve) => {
@@ -3093,6 +3159,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
 					}
@@ -3104,6 +3171,7 @@ describe('Fetch', () => {
 		});
 
 		it('Should reject if Stream.Readable throws an error.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 			async function* generate(): AsyncGenerator<Buffer> {
 				yield await new Promise((resolve) => {
@@ -3174,6 +3242,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as FormData.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const formData = new FormData();
 
 			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
@@ -3235,6 +3304,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Type':
@@ -3251,6 +3321,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports POST request with body as URLSearchParams.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const urlSearchParams = new URLSearchParams();
 
 			urlSearchParams.set('key1', 'value1');
@@ -3310,6 +3381,7 @@ describe('Fetch', () => {
 					headers: {
 						Accept: '*/*',
 						Connection: 'close',
+						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '23',
@@ -3324,6 +3396,7 @@ describe('Fetch', () => {
 
 		it('Supports window.happyDOM?.whenComplete().', async () => {
 			await new Promise((resolve) => {
+				const window = new Window({ url: 'https://localhost:8080/' });
 				const chunks = ['chunk1', 'chunk2', 'chunk3'];
 				async function* generate(): AsyncGenerator<Buffer> {
 					yield await new Promise((resolve) => {
@@ -3396,6 +3469,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports cache for GET response with "Cache-Control" set to "max-age=60".', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
 			let requestCount = 0;
@@ -3474,6 +3548,7 @@ describe('Fetch', () => {
 		});
 
 		it('Revalidates cache with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0.001".', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
 			const requestArgs: Array<{
@@ -3588,6 +3663,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
@@ -3602,6 +3678,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
@@ -3615,7 +3692,8 @@ describe('Fetch', () => {
 		});
 
 		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0.001".', async () => {
-			const url = 'https://localhost:8080/some/path';
+			const window = new Window({ url: 'https://localhost:8080/' });
+			const url = '/some/path';
 			const responseText1 = 'some text';
 			const responseText2 = 'some new text';
 			const requestArgs: Array<{
@@ -3690,7 +3768,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -3713,7 +3791,7 @@ describe('Fetch', () => {
 				headers3[key] = value;
 			}
 
-			expect(response1.url).toBe(url);
+			expect(response1.url).toBe('https://localhost:8080/some/path');
 			expect(response1.ok).toBe(true);
 			expect(response1.redirected).toBe(false);
 			expect(response1.status).toBe(200);
@@ -3726,7 +3804,7 @@ describe('Fetch', () => {
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
-			expect(response2.url).toBe(url);
+			expect(response2.url).toBe('https://localhost:8080/some/path');
 			expect(response2.ok).toBe(true);
 			expect(response2.redirected).toBe(false);
 			expect(response2.status).toBe(200);
@@ -3754,6 +3832,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
@@ -3768,6 +3847,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
@@ -3781,6 +3861,7 @@ describe('Fetch', () => {
 		});
 
 		it('Revalidates cache with a "If-None-Match" request for a HEAD response with an "Etag" header.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const etag1 = '"etag1"';
 			const etag2 = '"etag2"';
@@ -3904,6 +3985,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
@@ -3918,6 +4000,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'If-None-Match': etag1,
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
@@ -3931,6 +4014,7 @@ describe('Fetch', () => {
 		});
 
 		it('Updates cache after a failed revalidation with a "If-None-Match" request for a GET response with an "Etag" header.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const etag1 = '"etag1"';
 			const etag2 = '"etag2"';
@@ -4062,6 +4146,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
@@ -4076,6 +4161,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'If-None-Match': etag1,
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
@@ -4089,6 +4175,7 @@ describe('Fetch', () => {
 		});
 
 		it('Supports cache for GET response with "Cache-Control" set to "max-age=60" and "Vary" set to "vary-header".', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const responseText1 = 'vary 1';
 			const responseText2 = 'vary 2';
@@ -4260,6 +4347,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							'vary-header': 'vary1'
@@ -4274,6 +4362,7 @@ describe('Fetch', () => {
 							Accept: '*/*',
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
+							Referer: 'https://localhost:8080/',
 							'User-Agent':
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							'vary-header': 'vary2'

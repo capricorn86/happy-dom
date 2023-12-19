@@ -3,7 +3,7 @@ import IWindow from '../../../src/window/IWindow.js';
 import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement.js';
-import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
+import ResourceFetch from '../../../src/resource-fetch/ResourceFetch.js';
 import Event from '../../../src/event/Event.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
@@ -85,13 +85,11 @@ describe('HTMLLinkElement', () => {
 			let loadedURL: string | null = null;
 			let loadEvent: Event | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (window: IBrowserWindow, url: string) => {
-					loadedWindow = window;
-					loadedURL = url;
-					return css;
-				}
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+				loadedWindow = this.window;
+				loadedURL = url;
+				return css;
+			});
 
 			document.body.appendChild(element);
 
@@ -100,12 +98,12 @@ describe('HTMLLinkElement', () => {
 			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 
 			await window.happyDOM?.whenComplete();
 
 			expect(loadedWindow).toBe(window);
-			expect(loadedURL).toBe('test');
+			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
 			expect((<Event>(<unknown>loadEvent)).target).toBe(element);
@@ -116,7 +114,7 @@ describe('HTMLLinkElement', () => {
 			const thrownError = new Error('error');
 			let errorEvent: ErrorEvent | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(async () => {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function () {
 				throw thrownError;
 			});
 
@@ -127,7 +125,7 @@ describe('HTMLLinkElement', () => {
 			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 
 			await window.happyDOM?.whenComplete();
 
@@ -141,16 +139,14 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (window: IBrowserWindow, url: string) => {
-					loadedWindow = window;
-					loadedURL = url;
-					return css;
-				}
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+				loadedWindow = this.window;
+				loadedURL = url;
+				return css;
+			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 
 			expect(loadedWindow).toBe(null);
 			expect(loadedURL).toBe(null);
@@ -165,16 +161,14 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (window: IBrowserWindow, url: string) => {
-					loadedWindow = window;
-					loadedURL = url;
-					return css;
-				}
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+				loadedWindow = this.window;
+				loadedURL = url;
+				return css;
+			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 			element.addEventListener('load', (event) => {
 				loadEvent = event;
 			});
@@ -184,7 +178,7 @@ describe('HTMLLinkElement', () => {
 			await window.happyDOM?.whenComplete();
 
 			expect(loadedWindow).toBe(window);
-			expect(loadedURL).toBe('test');
+			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
 			expect((<Event>(<unknown>loadEvent)).target).toBe(element);
@@ -195,12 +189,12 @@ describe('HTMLLinkElement', () => {
 			const thrownError = new Error('error');
 			let errorEvent: ErrorEvent | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(async () => {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function () {
 				throw thrownError;
 			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 			element.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
 			});
@@ -219,16 +213,14 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (window: IBrowserWindow, url: string) => {
-					loadedWindow = window;
-					loadedURL = url;
-					return css;
-				}
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+				loadedWindow = this.window;
+				loadedURL = url;
+				return css;
+			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 
 			expect(loadedWindow).toBe(null);
 			expect(loadedURL).toBe(null);
@@ -245,14 +237,14 @@ describe('HTMLLinkElement', () => {
 			let errorEvent: ErrorEvent | null = null;
 
 			element.rel = 'stylesheet';
-			element.href = '/test/path/file.css';
+			element.href = 'https://localhost:8080/test/path/file.css';
 			element.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
 			document.body.appendChild(element);
 
 			expect(element.sheet).toBe(null);
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external stylesheet "/test/path/file.css". CSS file loading is disabled.'
+				'Failed to load external stylesheet "https://localhost:8080/test/path/file.css". CSS file loading is disabled.'
 			);
 		});
 	});

@@ -1,6 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLScriptElement from './IHTMLScriptElement.js';
-import HTMLScriptElementUtility from './HTMLScriptElementUtility.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import INode from '../../nodes/node/INode.js';
@@ -8,6 +7,8 @@ import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLScriptElementNamedNodeMap from './HTMLScriptElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
+import HTMLScriptElementScriptLoader from './HTMLScriptElementScriptLoader.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 
 /**
  * HTML Script Element.
@@ -16,10 +17,27 @@ import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReade
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement.
  */
 export default class HTMLScriptElement extends HTMLElement implements IHTMLScriptElement {
-	public override readonly attributes: INamedNodeMap = new HTMLScriptElementNamedNodeMap(this);
+	public override readonly attributes: INamedNodeMap;
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
 	public __evaluateScript__ = true;
+	#scriptLoader: HTMLScriptElementScriptLoader;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param browserFrame Browser frame.
+	 */
+	constructor(browserFrame: IBrowserFrame) {
+		super();
+
+		this.#scriptLoader = new HTMLScriptElementScriptLoader({
+			element: this,
+			browserFrame
+		});
+
+		this.attributes = new HTMLScriptElementNamedNodeMap(this, this.#scriptLoader);
+	}
 
 	/**
 	 * Returns type.
@@ -182,7 +200,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 			const src = this.getAttribute('src');
 
 			if (src !== null) {
-				HTMLScriptElementUtility.loadExternalScript(this);
+				this.#scriptLoader.loadScript(src);
 			} else if (!browserSettings.disableJavaScriptEvaluation) {
 				const textContent = this.textContent;
 				const type = this.getAttribute('type');

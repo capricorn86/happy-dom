@@ -1,7 +1,7 @@
 import IAttr from '../attr/IAttr.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLScriptElement from './HTMLScriptElement.js';
-import HTMLScriptElementUtility from './HTMLScriptElementUtility.js';
+import HTMLScriptElementScriptLoader from './HTMLScriptElementScriptLoader.js';
 
 /**
  * Named Node Map.
@@ -10,6 +10,18 @@ import HTMLScriptElementUtility from './HTMLScriptElementUtility.js';
  */
 export default class HTMLScriptElementNamedNodeMap extends HTMLElementNamedNodeMap {
 	protected __ownerElement__: HTMLScriptElement;
+	#scriptLoader: HTMLScriptElementScriptLoader;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param ownerElement Owner element.
+	 * @param scriptLoader Script loader.
+	 */
+	constructor(ownerElement: HTMLScriptElement, scriptLoader: HTMLScriptElementScriptLoader) {
+		super(ownerElement);
+		this.#scriptLoader = scriptLoader;
+	}
 
 	/**
 	 * @override
@@ -18,7 +30,7 @@ export default class HTMLScriptElementNamedNodeMap extends HTMLElementNamedNodeM
 		const replacedItem = super.setNamedItem(item);
 
 		if (item.name === 'src' && item.value !== null && this.__ownerElement__.isConnected) {
-			HTMLScriptElementUtility.loadExternalScript(this.__ownerElement__);
+			this.#scriptLoader.loadScript(item.value);
 		}
 
 		return replacedItem || null;

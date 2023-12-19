@@ -2,28 +2,57 @@ import Event from '../../event/Event.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../resource-fetch/ResourceFetch.js';
-import HTMLScriptElement from './HTMLScriptElement.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
-import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
+import IHTMLScriptElement from './IHTMLScriptElement.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 
 /**
  * Helper class for getting the URL relative to a Location object.
  */
-export default class HTMLScriptElementUtility {
+export default class HTMLScriptElementScriptLoader {
+	#element: IHTMLScriptElement;
+	#browserFrame: IBrowserFrame;
+	#loadedScriptURL: string | null = null;
+
 	/**
-	 * Returns a URL relative to the given Location object.
+	 * Constructor.
 	 *
 	 * @param options Options.
 	 * @param options.element Element.
-	 * @param element
+	 * @param options.browserFrame Browser frame.
 	 */
-	public static async loadExternalScript(element: HTMLScriptElement): Promise<void> {
-		const src = element.getAttribute('src');
+	constructor(options: { element: IHTMLScriptElement; browserFrame: IBrowserFrame }) {
+		this.#element = options.element;
+		this.#browserFrame = options.browserFrame;
+	}
+
+	/**
+	 * Returns a URL relative to the given Location object.
+	 *
+	 * @param url URL.
+	 */
+	public async loadScript(url: string): Promise<void> {
+		const browserSettings = this.#browserFrame.page.context.browser.settings;
+		const element = this.#element;
 		const async = element.getAttribute('async') !== null;
-		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			element.ownerDocument.__defaultView__
-		);
+
+		if (!url || !element.isConnected) {
+			return;
+		}
+
+		let absoluteURL: string;
+		try {
+			absoluteURL = new URL(url, element.ownerDocument.__defaultView__.location).href;
+		} catch (error) {
+			this.#loadedScriptURL = null;
+			element.dispatchEvent(new Event('error'));
+			return;
+		}
+
+		if (this.#loadedScriptURL === absoluteURL) {
+			return;
+		}
 
 		if (
 			browserSettings.disableJavaScriptFileLoading ||
@@ -32,15 +61,21 @@ export default class HTMLScriptElementUtility {
 			WindowErrorUtility.dispatchError(
 				element,
 				new DOMException(
-					`Failed to load external script "${src}". JavaScript file loading is disabled.`,
+					`Failed to load external script "${absoluteURL}". JavaScript file loading is disabled.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
 			return;
 		}
 
+		const resourceFetch = new ResourceFetch({
+			browserFrame: this.#browserFrame,
+			window: element.ownerDocument.__defaultView__
+		});
 		let code: string | null = null;
 		let error: Error | null = null;
+
+		this.#loadedScriptURL = absoluteURL;
 
 		if (async) {
 			const readyStateManager = (<{ __readyStateManager__: DocumentReadyStateManager }>(
@@ -50,7 +85,7 @@ export default class HTMLScriptElementUtility {
 			readyStateManager.startTask();
 
 			try {
-				code = await ResourceFetch.fetch(element.ownerDocument.__defaultView__, src);
+				code = await resourceFetch.fetch(absoluteURL);
 			} catch (e) {
 				error = e;
 			}
@@ -58,7 +93,7 @@ export default class HTMLScriptElementUtility {
 			readyStateManager.endTask();
 		} else {
 			try {
-				code = ResourceFetch.fetchSync(element.ownerDocument.__defaultView__, src);
+				code = resourceFetch.fetchSync(absoluteURL);
 			} catch (e) {
 				error = e;
 			}
@@ -71,7 +106,7 @@ export default class HTMLScriptElementUtility {
 			}
 		} else {
 			element.ownerDocument['__currentScript__'] = element;
-			code = '//# sourceURL=' + src + '\n' + code;
+			code = '//# sourceURL=' + absoluteURL + '\n' + code;
 			if (browserSettings.disableErrorCapturing) {
 				element.ownerDocument.__defaultView__.eval(code);
 			} else {
