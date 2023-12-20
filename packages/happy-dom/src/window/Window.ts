@@ -3,7 +3,6 @@ import DetachedWindowAPI from './DetachedWindowAPI.js';
 import IOptionalBrowserSettings from '../browser/types/IOptionalBrowserSettings.js';
 import BrowserWindow from './BrowserWindow.js';
 import DetachedBrowser from '../browser/detached-browser/DetachedBrowser.js';
-import Location from '../location/Location.js';
 
 /**
  * Window.

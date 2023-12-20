@@ -76,14 +76,12 @@ export default class Fetch {
 		disableCache?: boolean;
 		disableCrossOriginPolicy?: boolean;
 	}) {
-		const url = options.url;
-
 		this.#browserFrame = options.browserFrame;
 		this.#window = options.window;
 		this.request =
 			typeof options.url === 'string' || options.url instanceof URL
 				? new options.browserFrame.window.Request(options.url, options.init)
-				: <Request>url;
+				: <Request>options.url;
 		if (options.contentType) {
 			(<string>this.request.__contentType__) = options.contentType;
 		}
