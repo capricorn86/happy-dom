@@ -1,4 +1,4 @@
-import IHeaders from '../fetch/types/IHeaders.js';
+import IHeaders from './IHeaders.js';
 
 /**
  * Fetch response.
@@ -8,6 +8,7 @@ import IHeaders from '../fetch/types/IHeaders.js';
 export default interface ISyncResponse {
 	status: number;
 	statusText: string;
+	ok: boolean;
 	url: string;
 	redirected: boolean;
 	headers: IHeaders;

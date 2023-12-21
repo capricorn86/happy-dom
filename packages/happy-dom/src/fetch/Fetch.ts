@@ -18,14 +18,14 @@ import Response from './Response.js';
 import Event from '../event/Event.js';
 import AbortSignal from './AbortSignal.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import CachedResponseStateEnum from '../cache/response/CachedResponseStateEnum.js';
+import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js';
+import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
+import FetchResponseRedirectUtility from './utilities/FetchResponseRedirectUtility.js';
+import FetchResponseHeaderUtility from './utilities/FetchResponseHeaderUtility.js';
 
-const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
-const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
-const MAX_REDIRECT_COUNT = 20;
 
 /**
  * Handles fetch requests.
@@ -65,6 +65,7 @@ export default class Fetch {
 	 * @param [options.redirectCount] Redirect count.
 	 * @param [options.contentType] Content Type.
 	 * @param [options.disableCache] Disables the use of cached responses. It will still store the response in the cache.
+	 * @param [options.disableCrossOriginPolicy] Disables the Cross-Origin policy.
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
@@ -96,6 +97,17 @@ export default class Fetch {
 	 * @returns Response.
 	 */
 	public async send(): Promise<IResponse> {
+		FetchRequestReferrerUtility.prepareRequest(this.#window.location, this.request);
+		FetchRequestValidationUtility.validateSchema(this.request);
+
+		if (this.request.__url__.protocol === 'data:') {
+			const result = DataURIParser.parse(this.request.url);
+			this.response = new this.#window.Response(result.buffer, {
+				headers: { 'Content-Type': result.type }
+			});
+			return this.response;
+		}
+
 		const cachedResponse = await this.getCachedResponse();
 
 		if (cachedResponse) {
@@ -118,104 +130,11 @@ export default class Fetch {
 	}
 
 	/**
-	 * Sends request.
-	 *
-	 * @returns Response.
-	 */
-	private sendRequest(): Promise<IResponse> {
-		return new Promise((resolve, reject) => {
-			const taskID = this.#browserFrame.__asyncTaskManager__.startTask(() =>
-				this.onAsyncTaskManagerAbort()
-			);
-
-			if (this.resolve) {
-				throw new Error('Fetch already sent.');
-			}
-
-			this.resolve = (response: IResponse | Promise<IResponse>): void => {
-				if (!this.disableCache && response instanceof Response) {
-					response.__cachedResponse__ = this.#browserFrame.page.context.responseCache.add(
-						this.request,
-						{
-							...response,
-							headers: this.responseHeaders,
-							body: response.__buffer__,
-							waitingForBody: !response.__buffer__ && !!response.body
-						}
-					);
-				}
-				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
-				resolve(response);
-			};
-			this.reject = (error: Error): void => {
-				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
-				reject(error);
-			};
-
-			this.prepareRequest();
-			this.validateRequest();
-
-			if (this.request.__url__.protocol === 'data:') {
-				const result = DataURIParser.parse(this.request.url);
-				this.response = new this.#window.Response(result.buffer, {
-					headers: { 'Content-Type': result.type }
-				});
-				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
-				resolve(this.response);
-				return;
-			}
-
-			if (this.request.signal.aborted) {
-				this.abort();
-				return;
-			}
-
-			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
-
-			const send = (this.request.__url__.protocol === 'https:' ? HTTPS : HTTP).request;
-
-			// Security check for "https" to "http" requests.
-			if (
-				this.request.__url__.protocol === 'http:' &&
-				this.#window.location.protocol === 'https:'
-			) {
-				throw new DOMException(
-					`Mixed Content: The page at '${
-						this.#window.location.href
-					}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
-						this.request.url
-					}'. This request has been blocked; the content must be served over HTTPS.`,
-					DOMExceptionNameEnum.securityError
-				);
-			}
-
-			this.nodeRequest = send(this.request.__url__.href, {
-				method: this.request.method,
-				headers: this.getRequestHeaders()
-			});
-
-			this.nodeRequest.on('error', this.onError.bind(this));
-			this.nodeRequest.on('socket', this.onSocket.bind(this));
-			this.nodeRequest.on('response', this.onResponse.bind(this));
-
-			if (this.request.body === null) {
-				this.nodeRequest.end();
-			} else {
-				Stream.pipeline(this.request.body, this.nodeRequest, (error) => {
-					if (error) {
-						this.onError(error);
-					}
-				});
-			}
-		});
-	}
-
-	/**
 	 * Returns cached response.
 	 *
 	 * @returns Response.
 	 */
-	public async getCachedResponse(): Promise<IResponse | null> {
+	private async getCachedResponse(): Promise<IResponse | null> {
 		if (this.disableCache) {
 			return null;
 		}
@@ -238,7 +157,7 @@ export default class Fetch {
 				headers.set('If-Modified-Since', new Date(cachedResponse.lastModified).toUTCString());
 			}
 
-			const fetch = new (<typeof Fetch>this.constructor)({
+			const fetch = new Fetch({
 				browserFrame: this.#browserFrame,
 				window: this.#window,
 				url: this.request.url,
@@ -300,7 +219,7 @@ export default class Fetch {
 	 *
 	 * @returns True if it complies with the policy.
 	 */
-	public async compliesWithCrossOriginPolicy(): Promise<boolean> {
+	private async compliesWithCrossOriginPolicy(): Promise<boolean> {
 		if (
 			this.disableCrossOriginPolicy ||
 			!FetchCORSUtility.isCORS(this.#window.location, this.request.__url__)
@@ -336,7 +255,7 @@ export default class Fetch {
 			requestHeaders.push(header);
 		}
 
-		const fetch = new (<typeof Fetch>this.constructor)({
+		const fetch = new Fetch({
 			browserFrame: this.#browserFrame,
 			window: this.#window,
 			url: this.request.url,
@@ -385,6 +304,90 @@ export default class Fetch {
 		// TODO: Add support for more Access-Control-Allow-* headers.
 
 		return true;
+	}
+
+	/**
+	 * Sends request.
+	 *
+	 * @returns Response.
+	 */
+	private sendRequest(): Promise<IResponse> {
+		return new Promise((resolve, reject) => {
+			const taskID = this.#browserFrame.__asyncTaskManager__.startTask(() =>
+				this.onAsyncTaskManagerAbort()
+			);
+
+			if (this.resolve) {
+				throw new Error('Fetch already sent.');
+			}
+
+			this.resolve = (response: IResponse | Promise<IResponse>): void => {
+				if (!this.disableCache && response instanceof Response) {
+					response.__cachedResponse__ = this.#browserFrame.page.context.responseCache.add(
+						this.request,
+						{
+							...response,
+							headers: this.responseHeaders,
+							body: response.__buffer__,
+							waitingForBody: !response.__buffer__ && !!response.body
+						}
+					);
+				}
+				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				resolve(response);
+			};
+			this.reject = (error: Error): void => {
+				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				reject(error);
+			};
+
+			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
+
+			if (this.request.signal.aborted) {
+				this.abort();
+				return;
+			}
+
+			const send = (this.request.__url__.protocol === 'https:' ? HTTPS : HTTP).request;
+
+			// Security check for "https" to "http" requests.
+			if (
+				this.request.__url__.protocol === 'http:' &&
+				this.#window.location.protocol === 'https:'
+			) {
+				throw new DOMException(
+					`Mixed Content: The page at '${
+						this.#window.location.href
+					}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
+						this.request.url
+					}'. This request has been blocked; the content must be served over HTTPS.`,
+					DOMExceptionNameEnum.securityError
+				);
+			}
+
+			this.nodeRequest = send(this.request.__url__.href, {
+				method: this.request.method,
+				headers: FetchRequestHeaderUtility.getRequestHeaders({
+					browserFrame: this.#browserFrame,
+					window: this.#window,
+					request: this.request
+				})
+			});
+
+			this.nodeRequest.on('error', this.onError.bind(this));
+			this.nodeRequest.on('socket', this.onSocket.bind(this));
+			this.nodeRequest.on('response', this.onResponse.bind(this));
+
+			if (this.request.body === null) {
+				this.nodeRequest.end();
+			} else {
+				Stream.pipeline(this.request.body, this.nodeRequest, (error) => {
+					if (error) {
+						this.onError(error);
+					}
+				});
+			}
+		});
 	}
 
 	/**
@@ -480,7 +483,11 @@ export default class Fetch {
 			!nodeResponse.headers['content-length'];
 
 		this.nodeRequest.setTimeout(0);
-		this.responseHeaders = this.getResponseHeaders(nodeResponse);
+		this.responseHeaders = FetchResponseHeaderUtility.parseResponseHeaders({
+			browserFrame: this.#browserFrame,
+			requestURL: this.request.__url__,
+			rawHeaders: nodeResponse.rawHeaders
+		});
 
 		if (this.handleRedirectResponse(nodeResponse, this.responseHeaders)) {
 			return;
@@ -517,16 +524,16 @@ export default class Fetch {
 			return;
 		}
 
-		// Be less strict when decoding compressed responses.
-		// Sometimes servers send slightly invalid responses that are still accepted by common browsers.
-		// "cURL" always uses Z_SYNC_FLUSH.
-		const zlibOptions = {
-			flush: Zlib.constants.Z_SYNC_FLUSH,
-			finishFlush: Zlib.constants.Z_SYNC_FLUSH
-		};
-
 		// For GZip
 		if (contentEncodingHeader === 'gzip' || contentEncodingHeader === 'x-gzip') {
+			// Be less strict when decoding compressed responses.
+			// Sometimes servers send slightly invalid responses that are still accepted by common browsers.
+			// "cURL" always uses Z_SYNC_FLUSH.
+			const zlibOptions = {
+				flush: Zlib.constants.Z_SYNC_FLUSH,
+				finishFlush: Zlib.constants.Z_SYNC_FLUSH
+			};
+
 			body = Stream.pipeline(body, Zlib.createGunzip(zlibOptions), (error: Error) => {
 				if (error) {
 					// Ignore error as it is forwarded to the response body.
@@ -610,7 +617,7 @@ export default class Fetch {
 	 * @returns True if redirect response was handled, false otherwise.
 	 */
 	private handleRedirectResponse(nodeResponse: IncomingMessage, responseHeaders: Headers): boolean {
-		if (!this.isRedirect(nodeResponse.statusCode)) {
+		if (!FetchResponseRedirectUtility.isRedirect(nodeResponse.statusCode)) {
 			return false;
 		}
 
@@ -654,7 +661,7 @@ export default class Fetch {
 					return false;
 				}
 
-				if (this.redirectCount >= MAX_REDIRECT_COUNT) {
+				if (FetchResponseRedirectUtility.isMaxRedirectsReached(this.redirectCount)) {
 					this.finalizeRequest();
 					this.reject(
 						new DOMException(
@@ -666,21 +673,6 @@ export default class Fetch {
 				}
 
 				const headers = new Headers(this.request.headers);
-				let body: Stream.Readable | Buffer | null = this.request.__bodyBuffer__;
-
-				if (!body && this.request.body) {
-					// Piping a used request body is not possible.
-					if (this.request.bodyUsed) {
-						throw new DOMException(
-							'It is not possible to pipe a body after it is used.',
-							DOMExceptionNameEnum.networkError
-						);
-					}
-
-					body = new Stream.PassThrough();
-					this.request.body.pipe(<Stream.PassThrough>body);
-				}
-
 				const requestInit: IRequestInit = {
 					method: this.request.method,
 					signal: this.request.signal,
@@ -688,10 +680,9 @@ export default class Fetch {
 					referrerPolicy: this.request.referrerPolicy,
 					credentials: this.request.credentials,
 					headers,
-					body
+					body: this.request.__bodyBuffer__
 				};
 
-				// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
@@ -701,17 +692,6 @@ export default class Fetch {
 					headers.delete('www-authenticate');
 					headers.delete('cookie');
 					headers.delete('cookie2');
-				}
-
-				if (nodeResponse.statusCode !== 303 && this.request.body && !this.request.__bodyBuffer__) {
-					this.finalizeRequest();
-					this.reject(
-						new DOMException(
-							'Cannot follow redirect with body being a readable stream.',
-							DOMExceptionNameEnum.networkError
-						)
-					);
-					return true;
 				}
 
 				if (this.request.signal.aborted) {
@@ -732,7 +712,7 @@ export default class Fetch {
 					requestInit.referrerPolicy = responseReferrerPolicy;
 				}
 
-				const fetch = new (<typeof Fetch>this.constructor)({
+				const fetch = new Fetch({
 					browserFrame: this.#browserFrame,
 					window: this.#window,
 					url: locationURL,
@@ -753,143 +733,6 @@ export default class Fetch {
 				);
 				return true;
 		}
-	}
-
-	/**
-	 * Prepares the request before being sent.
-	 */
-	private prepareRequest(): void {
-		if (!this.request.referrerPolicy) {
-			(<string>this.request.referrerPolicy) = 'strict-origin-when-cross-origin';
-		}
-
-		if (this.request.referrer && this.request.referrer !== 'no-referrer') {
-			this.request.__referrer__ = FetchRequestReferrerUtility.getSentReferrer(
-				this.#window,
-				this.request
-			);
-		} else {
-			this.request.__referrer__ = 'no-referrer';
-		}
-	}
-
-	/**
-	 * Validates the request.
-	 *
-	 * @throws {Error} Throws an error if the request is invalid.
-	 */
-	private validateRequest(): void {
-		if (!SUPPORTED_SCHEMAS.includes(this.request.__url__.protocol)) {
-			throw new DOMException(
-				`Failed to fetch from "${
-					this.request.url
-				}": URL scheme "${this.request.__url__.protocol.replace(/:$/, '')}" is not supported.`,
-				DOMExceptionNameEnum.notSupportedError
-			);
-		}
-	}
-
-	/**
-	 * Returns request headers.
-	 *
-	 * @returns Headers.
-	 */
-	private getRequestHeaders(): { [key: string]: string } {
-		const headers = new Headers(this.request.headers);
-		const isCORS = FetchCORSUtility.isCORS(this.#window.location, this.request.__url__);
-
-		// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
-		if (
-			this.request.credentials === 'omit' ||
-			(this.request.credentials === 'same-origin' && isCORS)
-		) {
-			headers.delete('authorization');
-			headers.delete('www-authenticate');
-		}
-
-		headers.set('Accept-Encoding', 'gzip, deflate, br');
-		headers.set('Connection', 'close');
-
-		if (!headers.has('User-Agent')) {
-			headers.set('User-Agent', this.#window.navigator.userAgent);
-		}
-
-		if (this.request.__referrer__ instanceof URL) {
-			headers.set('Referer', this.request.__referrer__.href);
-		}
-
-		if (
-			this.request.credentials === 'include' ||
-			(this.request.credentials === 'same-origin' && !isCORS)
-		) {
-			const cookies = this.#browserFrame.page.context.cookieContainer.getCookies(
-				this.#window.location,
-				false
-			);
-			if (cookies.length > 0) {
-				headers.set('Cookie', CookieStringUtility.cookiesToString(cookies));
-			}
-		}
-
-		if (!headers.has('Accept')) {
-			headers.set('Accept', '*/*');
-		}
-
-		if (!headers.has('Content-Length') && this.request.__contentLength__ !== null) {
-			headers.set('Content-Length', String(this.request.__contentLength__));
-		}
-
-		if (!headers.has('Content-Type') && this.request.__contentType__) {
-			headers.set('Content-Type', this.request.__contentType__);
-		}
-
-		// We need to convert the headers to Node request headers.
-		const httpRequestHeaders = {};
-
-		for (const header of Object.values(headers.__entries__)) {
-			httpRequestHeaders[header.name] = header.value;
-		}
-
-		return httpRequestHeaders;
-	}
-
-	/**
-	 * Returns "true" if redirect.
-	 *
-	 * @param statusCode Status code.
-	 * @returns "true" if redirect.
-	 */
-	private isRedirect(statusCode: number): boolean {
-		return REDIRECT_STATUS_CODES.includes(statusCode);
-	}
-
-	/**
-	 * Appends headers to response.
-	 *
-	 * @param nodeResponse HTTP request.
-	 * @returns Headers.
-	 */
-	private getResponseHeaders(nodeResponse: IncomingMessage): Headers {
-		const headers = new Headers();
-		let key = null;
-
-		for (const header of nodeResponse.rawHeaders) {
-			if (!key) {
-				key = header;
-			} else {
-				const lowerName = key.toLowerCase();
-				// Handles setting cookie headers to the document.
-				if (lowerName === 'set-cookie' || lowerName === 'set-cookie2') {
-					this.#browserFrame.page.context.cookieContainer.addCookies([
-						CookieStringUtility.stringToCookie(this.request.__url__, header)
-					]);
-				}
-				headers.append(key, header);
-				key = null;
-			}
-		}
-
-		return headers;
 	}
 
 	/**
