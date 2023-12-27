@@ -74,6 +74,7 @@ import CSSStyleRule from '../css/rules/CSSStyleRule.js';
 import CSSSupportsRule from '../css/rules/CSSSupportsRule.js';
 import MouseEvent from '../event/events/MouseEvent.js';
 import PointerEvent from '../event/events/PointerEvent.js';
+import TouchEvent from '../event/events/TouchEvent.js';
 import FocusEvent from '../event/events/FocusEvent.js';
 import WheelEvent from '../event/events/WheelEvent.js';
 import DataTransfer from '../event/DataTransfer.js';
@@ -330,6 +331,7 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly MessageEvent = MessageEvent;
 	public readonly MouseEvent = MouseEvent;
 	public readonly PointerEvent = PointerEvent;
+	public readonly TouchEvent = TouchEvent;
 	public readonly FocusEvent = FocusEvent;
 	public readonly WheelEvent = WheelEvent;
 	public readonly InputEvent = InputEvent;
@@ -375,7 +377,6 @@ export default class Window extends EventTarget implements IWindow {
 	public readonly SVGEvent = Event;
 	public readonly SVGZoomEvent = Event;
 	public readonly TimeEvent = Event;
-	public readonly TouchEvent = Event;
 	public readonly TrackEvent = Event;
 	public readonly TransitionEvent = Event;
 	public readonly UserProximityEvent = Event;

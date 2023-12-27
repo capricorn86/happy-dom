@@ -68,6 +68,7 @@ import CSSMediaRule from '../css/rules/CSSMediaRule.js';
 import CSSStyleRule from '../css/rules/CSSStyleRule.js';
 import CSSSupportsRule from '../css/rules/CSSSupportsRule.js';
 import PointerEvent from '../event/events/PointerEvent.js';
+import TouchEvent from '../event/events/TouchEvent.js';
 import MouseEvent from '../event/events/MouseEvent.js';
 import FocusEvent from '../event/events/FocusEvent.js';
 import WheelEvent from '../event/events/WheelEvent.js';
@@ -257,6 +258,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly AnimationEvent: typeof AnimationEvent;
 	readonly KeyboardEvent: typeof KeyboardEvent;
 	readonly PointerEvent: typeof PointerEvent;
+	readonly TouchEvent: typeof TouchEvent;
 	readonly MouseEvent: typeof MouseEvent;
 	readonly FocusEvent: typeof FocusEvent;
 	readonly WheelEvent: typeof WheelEvent;
@@ -307,7 +309,6 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly SVGEvent: typeof Event;
 	readonly SVGZoomEvent: typeof Event;
 	readonly TimeEvent: typeof Event;
-	readonly TouchEvent: typeof Event;
 	readonly TrackEvent: typeof Event;
 	readonly TransitionEvent: typeof Event;
 	readonly UserProximityEvent: typeof Event;
