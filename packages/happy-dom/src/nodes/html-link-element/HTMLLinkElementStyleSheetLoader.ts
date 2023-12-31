@@ -1,5 +1,5 @@
 import Event from '../../event/Event.js';
-import ResourceFetch from '../../resource-fetch/ResourceFetch.js';
+import ResourceFetch from '../../fetch/ResourceFetch.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';

@@ -1,9 +1,9 @@
 import ICookieContainer from '../../cookie/types/ICookieContainer.js';
-import IResponseCache from '../../cache/response/IResponseCache.js';
+import IResponseCache from '../../fetch/cache/response/IResponseCache.js';
 import IBrowser from './IBrowser.js';
 import IBrowserFrame from './IBrowserFrame.js';
 import IBrowserPage from './IBrowserPage.js';
-import IPreflightResponseCache from '../../cache/preflight/IPreflightResponseCache.js';
+import IPreflightResponseCache from '../../fetch/cache/preflight/IPreflightResponseCache.js';
 
 /**
  * Browser context.

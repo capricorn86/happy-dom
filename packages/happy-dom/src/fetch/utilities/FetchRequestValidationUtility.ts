@@ -21,10 +21,35 @@ const VALID_REDIRECTS = ['error', 'manual', 'follow'];
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 
+const FORBIDDEN_REQUEST_METHODS = ['TRACE', 'TRACK', 'CONNECT'];
+const REQUEST_METHOD_REGEXP = /^[A-Z]+$/;
+
 /**
  * Fetch request validation utility.
  */
 export default class FetchRequestValidationUtility {
+	/**
+	 * Validates request method.
+	 *
+	 * @throws DOMException
+	 * @param request Request.
+	 */
+	public static validateMethod(request: Request): void {
+		if (!request.method || FORBIDDEN_REQUEST_METHODS.includes(request.method)) {
+			throw new DOMException(
+				`'${request.method || ''}' is not a valid HTTP method.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		if (!REQUEST_METHOD_REGEXP.test(request.method)) {
+			throw new DOMException(
+				`'${request.method}' HTTP method is unsupported.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+	}
+
 	/**
 	 * Validates request body.
 	 *

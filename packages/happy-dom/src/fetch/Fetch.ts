@@ -19,11 +19,12 @@ import Event from '../event/Event.js';
 import AbortSignal from './AbortSignal.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
-import CachedResponseStateEnum from '../cache/response/CachedResponseStateEnum.js';
+import CachedResponseStateEnum from './cache/response/CachedResponseStateEnum.js';
 import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
 import FetchResponseRedirectUtility from './utilities/FetchResponseRedirectUtility.js';
 import FetchResponseHeaderUtility from './utilities/FetchResponseHeaderUtility.js';
+import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -348,8 +349,6 @@ export default class Fetch {
 				return;
 			}
 
-			const send = (this.request.__url__.protocol === 'https:' ? HTTPS : HTTP).request;
-
 			// Security check for "https" to "http" requests.
 			if (
 				this.request.__url__.protocol === 'http:' &&
@@ -365,13 +364,19 @@ export default class Fetch {
 				);
 			}
 
+			const send = (this.request.__url__.protocol === 'https:' ? HTTPS : HTTP).request;
+
 			this.nodeRequest = send(this.request.__url__.href, {
 				method: this.request.method,
 				headers: FetchRequestHeaderUtility.getRequestHeaders({
 					browserFrame: this.#browserFrame,
 					window: this.#window,
 					request: this.request
-				})
+				}),
+				agent: false,
+				rejectUnauthorized: true,
+				key: this.request.__url__.protocol === 'https:' ? FetchHTTPSCertificate.key : undefined,
+				cert: this.request.__url__.protocol === 'https:' ? FetchHTTPSCertificate.cert : undefined
 			});
 
 			this.nodeRequest.on('error', this.onError.bind(this));

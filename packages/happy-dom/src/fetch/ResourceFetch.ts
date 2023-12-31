@@ -2,8 +2,8 @@ import DOMException from '../exception/DOMException.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import URL from '../url/URL.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import Fetch from '../fetch/Fetch.js';
-import XMLHttpRequest from '../xml-http-request/XMLHttpRequest.js';
+import Fetch from './Fetch.js';
+import SyncFetch from './SyncFetch.js';
 
 /**
  * Helper class for performing fetch of resources.
@@ -57,23 +57,23 @@ export default class ResourceFetch {
 	 * @returns Response.
 	 */
 	public fetchSync(url: string): string {
-		const xmlHttpRequest = new XMLHttpRequest({
+		const fetch = new SyncFetch({
 			browserFrame: this.#browserFrame,
 			window: this.window,
+			url,
 			disableCrossOriginPolicy: true
 		});
 
-		xmlHttpRequest.open('GET', url, false);
-		xmlHttpRequest.send();
+		const response = fetch.send();
 
-		if (xmlHttpRequest.status < 200 || xmlHttpRequest.status >= 300) {
+		if (!response.ok) {
 			throw new DOMException(
 				`Failed to perform request to "${
 					new URL(url, this.window.location.href).href
-				}". Status code: ${xmlHttpRequest.status}.`
+				}". Status code: ${response.status}.`
 			);
 		}
 
-		return xmlHttpRequest.responseText;
+		return response.body.toString();
 	}
 }

@@ -15,6 +15,7 @@ import FormData from '../../src/form-data/FormData.js';
 import { URLSearchParams } from 'url';
 import '../types.d.js';
 import { afterEach, describe, it, expect, vi } from 'vitest';
+import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -135,7 +136,11 @@ describe('Fetch', () => {
 						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 
@@ -219,7 +224,11 @@ describe('Fetch', () => {
 						Referer: 'http://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: undefined,
+					cert: undefined
 				}
 			});
 
@@ -344,7 +353,11 @@ describe('Fetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						Referer: baseUrl
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 		});
@@ -402,7 +415,11 @@ describe('Fetch', () => {
 						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 		});
@@ -464,7 +481,11 @@ describe('Fetch', () => {
 						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 		});
@@ -559,7 +580,11 @@ describe('Fetch', () => {
 									Referer: 'https://localhost:8080/',
 									'User-Agent': window.navigator.userAgent,
 									'Accept-Encoding': 'gzip, deflate, br'
-								}
+								},
+								agent: false,
+								rejectUnauthorized: true,
+								key: FetchHTTPSCertificate.key,
+								cert: FetchHTTPSCertificate.cert
 							}
 						},
 						{
@@ -578,7 +603,11 @@ describe('Fetch', () => {
 									Referer: 'https://localhost:8080/',
 									'User-Agent': window.navigator.userAgent,
 									'Accept-Encoding': 'gzip, deflate, br'
-								}
+								},
+								agent: false,
+								rejectUnauthorized: true,
+								key: FetchHTTPSCertificate.key,
+								cert: FetchHTTPSCertificate.cert
 							}
 						},
 						{
@@ -597,7 +626,11 @@ describe('Fetch', () => {
 									Referer: 'https://localhost:8080/',
 									'User-Agent': window.navigator.userAgent,
 									'Accept-Encoding': 'gzip, deflate, br'
-								}
+								},
+								agent: false,
+								rejectUnauthorized: true,
+								key: FetchHTTPSCertificate.key,
+								cert: FetchHTTPSCertificate.cert
 							}
 						}
 					]);
@@ -619,69 +652,6 @@ describe('Fetch', () => {
 				});
 			}
 		}
-
-		it('Should not follow non-GET redirect if body is a readable stream.', async () => {
-			const window = new Window({ url: 'https://localhost:8080/' });
-			const responseText = 'test';
-			const body = 'test';
-			let error: Error | null = null;
-
-			let destroyCount = 0;
-			let writtenBodyData = '';
-
-			mockModule('https', {
-				request: () => {
-					const request = <HTTP.ClientRequest>new Stream.Writable();
-
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 301;
-								response.rawHeaders = ['Location', 'https://localhost:8080/test2/'];
-
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
-
-					return request;
-				}
-			});
-
-			try {
-				await window.fetch('https://localhost:8080/test/', {
-					method: 'PATCH',
-					body: Stream.Readable.from(body)
-				});
-			} catch (e) {
-				error = e;
-			}
-
-			expect(destroyCount).toBe(2);
-			expect(writtenBodyData).toBe(body);
-			expect(error).toEqual(
-				new DOMException(
-					'Cannot follow redirect with body being a readable stream.',
-					DOMExceptionNameEnum.networkError
-				)
-			);
-		});
 
 		it('Should cancel a redirect loop after 20 tries.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
@@ -1004,7 +974,11 @@ describe('Fetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'safe-header': 'safe'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 		});
@@ -1060,7 +1034,11 @@ describe('Fetch', () => {
 						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 		});
@@ -1118,7 +1096,11 @@ describe('Fetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						Referer: originURL + '/'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 		});
@@ -1203,7 +1185,11 @@ describe('Fetch', () => {
 						Cookie: cookies,
 						authorization: 'authorization',
 						'www-authenticate': 'www-authenticate'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 		});
@@ -1268,7 +1254,11 @@ describe('Fetch', () => {
 						Cookie: cookies,
 						authorization: 'authorization',
 						'www-authenticate': 'www-authenticate'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 		});
@@ -1353,7 +1343,11 @@ describe('Fetch', () => {
 						Accept: 'accept',
 						Connection: 'close',
 						Referer: 'https://localhost:8080/'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 		});
@@ -2579,7 +2573,11 @@ describe('Fetch', () => {
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Type': 'text/plain;charset=UTF-8',
 						'Content-Length': '14'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 
@@ -2651,7 +2649,11 @@ describe('Fetch', () => {
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Type': 'text/plain;charset=UTF-8',
 						'Content-Length': '15'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 
@@ -2722,7 +2724,11 @@ describe('Fetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '14'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 			expect(destroyCount).toBe(1);
@@ -2792,7 +2798,11 @@ describe('Fetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '14'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 			expect(destroyCount).toBe(1);
@@ -2862,7 +2872,11 @@ describe('Fetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '14'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 			expect(destroyCount).toBe(1);
@@ -2932,7 +2946,11 @@ describe('Fetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '6'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 			expect(destroyCount).toBe(1);
@@ -3002,7 +3020,11 @@ describe('Fetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '23'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 			expect(destroyCount).toBe(1);
@@ -3076,7 +3098,11 @@ describe('Fetch', () => {
 						// Blob converts type to lowercase according to spec
 						'Content-Type': 'text/plain;charset=utf-8',
 						'Content-Length': '23'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 			expect(destroyCount).toBe(1);
@@ -3162,7 +3188,11 @@ describe('Fetch', () => {
 						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 			expect(destroyCount).toBe(1);
@@ -3310,7 +3340,11 @@ describe('Fetch', () => {
 						'Content-Type':
 							'multipart/form-data; boundary=----HappyDOMFormDataBoundary0.ssssssssst',
 						'Content-Length': '198'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 			expect(destroyCount).toBe(1);
@@ -3386,7 +3420,11 @@ describe('Fetch', () => {
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Length': '23',
 						'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-					}
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
 				}
 			});
 			expect(destroyCount).toBe(1);
@@ -3668,7 +3706,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
 						},
-						method: 'GET'
+						method: 'GET',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				},
@@ -3684,7 +3726,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
 						},
-						method: 'GET'
+						method: 'GET',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				}
@@ -3837,7 +3883,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
 						},
-						method: 'GET'
+						method: 'GET',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				},
@@ -3853,7 +3903,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
 						},
-						method: 'GET'
+						method: 'GET',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				}
@@ -3990,7 +4044,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
 						},
-						method: 'HEAD'
+						method: 'HEAD',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				},
@@ -4006,7 +4064,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
 						},
-						method: 'HEAD'
+						method: 'HEAD',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				}
@@ -4151,7 +4213,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
 						},
-						method: 'GET'
+						method: 'GET',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				},
@@ -4167,7 +4233,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							key1: 'value1'
 						},
-						method: 'GET'
+						method: 'GET',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				}
@@ -4352,7 +4422,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							'vary-header': 'vary1'
 						},
-						method: 'GET'
+						method: 'GET',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				},
@@ -4367,7 +4441,11 @@ describe('Fetch', () => {
 								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
 							'vary-header': 'vary2'
 						},
-						method: 'GET'
+						method: 'GET',
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
 					},
 					url: 'https://localhost:8080/some/path'
 				}

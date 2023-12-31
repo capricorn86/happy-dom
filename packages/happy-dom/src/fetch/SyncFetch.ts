@@ -9,7 +9,7 @@ import IBrowserWindow from '../window/IBrowserWindow.js';
 import ChildProcess from 'child_process';
 import ISyncResponse from './types/ISyncResponse.js';
 import Headers from './Headers.js';
-import CachedResponseStateEnum from '../cache/response/CachedResponseStateEnum.js';
+import CachedResponseStateEnum from './cache/response/CachedResponseStateEnum.js';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
 import DataURIParser from './data-uri/DataURIParser.js';

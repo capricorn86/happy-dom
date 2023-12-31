@@ -1,6 +1,6 @@
-import CachedResponseStateEnum from '../../../src/cache/response/CachedResponseStateEnum';
-import ResponseCache from '../../../src/cache/response/ResponseCache';
-import Headers from '../../../src/fetch/Headers';
+import CachedResponseStateEnum from '../../../../src/fetch/cache/response/CachedResponseStateEnum';
+import ResponseCache from '../../../../src/fetch/cache/response/ResponseCache';
+import Headers from '../../../../src/fetch/Headers';
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 
 // Rounds it to seconds, so that UTC parsing will match.

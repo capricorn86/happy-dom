@@ -135,6 +135,7 @@ export default class Request implements IRequest {
 			}
 		}
 
+		FetchRequestValidationUtility.validateMethod(this);
 		FetchRequestValidationUtility.validateBody(this);
 		FetchRequestValidationUtility.validateURL(this.__url__);
 		FetchRequestValidationUtility.validateReferrerPolicy(this.referrerPolicy);

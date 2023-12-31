@@ -19,7 +19,9 @@ export default interface IBrowserSettings {
 	/** Disables error capturing. */
 	disableErrorCapturing: boolean;
 
-	/** Enables file system HTTP requests. */
+	/**
+	 * @deprecated Not something that browsers support anymore as it is not secure.
+	 */
 	enableFileSystemHttpRequests: boolean;
 
 	/**

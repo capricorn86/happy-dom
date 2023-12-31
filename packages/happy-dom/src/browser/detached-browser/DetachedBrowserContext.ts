@@ -4,10 +4,10 @@ import IBrowserContext from '../types/IBrowserContext.js';
 import DetachedBrowserFrame from './DetachedBrowserFrame.js';
 import ICookieContainer from '../../cookie/types/ICookieContainer.js';
 import CookieContainer from '../../cookie/CookieContainer.js';
-import ResponseCache from '../../cache/response/ResponseCache.js';
-import IResponseCache from '../../cache/response/IResponseCache.js';
-import IPreflightResponseCache from '../../cache/preflight/IPreflightResponseCache.js';
-import PreflightResponseCache from '../../cache/preflight/PreflightResponseCache.js';
+import ResponseCache from '../../fetch/cache/response/ResponseCache.js';
+import IResponseCache from '../../fetch/cache/response/IResponseCache.js';
+import IPreflightResponseCache from '../../fetch/cache/preflight/IPreflightResponseCache.js';
+import PreflightResponseCache from '../../fetch/cache/preflight/PreflightResponseCache.js';
 
 /**
  * Detached browser context used when constructing a Window instance without a browser.

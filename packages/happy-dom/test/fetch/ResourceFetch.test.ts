@@ -1,5 +1,5 @@
 import IBrowserWindow from '../../src/window/IBrowserWindow.js';
-import ResourceFetch from '../../src/resource-fetch/ResourceFetch.js';
+import ResourceFetch from '../../src/fetch/ResourceFetch.js';
 import IResponse from '../../src/fetch/types/IResponse.js';
 import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder.js';
 import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate.js';

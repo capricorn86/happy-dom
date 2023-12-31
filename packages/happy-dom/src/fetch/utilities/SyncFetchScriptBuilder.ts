@@ -1,3 +1,5 @@
+import FetchHTTPSCertificate from '../certificate/FetchHTTPSCertificate.js';
+
 /**
  * Synchronous fetch script builder.
  */
@@ -18,12 +20,16 @@ export default class SyncFetchScriptBuilder {
 		// Note: console.log === stdout
 		// The async request the other Node process executes
 		return `
-                const HTTP = require('http');
-                const HTTPS = require('https');
-                const sendRequest = HTTP${request.url.protocol === 'https:' ? 'S' : ''}.request;
+                const sendRequest = require('http${
+									request.url.protocol === 'https:' ? 's' : ''
+								}').request;
                 const options = ${JSON.stringify({
 									method: request.method,
-									headers: request.headers
+									headers: request.headers,
+									agent: false,
+									rejectUnauthorized: true,
+									key: request.url.protocol === 'https:' ? FetchHTTPSCertificate.key : undefined,
+									cert: request.url.protocol === 'https:' ? FetchHTTPSCertificate.cert : undefined
 								})};
                 const request = sendRequest(${request.url.href}, options, (incomingMessage) => {
                     let data = Buffer.alloc(0);
