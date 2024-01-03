@@ -921,7 +921,6 @@ describe('Fetch', () => {
 						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
 							if (event === 'response') {
 								async function* generate(): AsyncGenerator<string> {}
-
 								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
 								response.headers = {};

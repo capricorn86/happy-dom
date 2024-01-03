@@ -87,6 +87,10 @@ export default class SyncFetch {
 		FetchRequestReferrerUtility.prepareRequest(this.#window.location, this.request);
 		FetchRequestValidationUtility.validateSchema(this.request);
 
+		if (this.request.signal.aborted) {
+			throw new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+		}
+
 		if (this.request.__url__.protocol === 'data:') {
 			const result = DataURIParser.parse(this.request.url);
 			return {

@@ -3,23 +3,20 @@ import Window from '../../src/window/Window.js';
 import IWindow from '../../src/window/IWindow.js';
 import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequestReadyStateEnum.js';
 import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum.js';
-import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder.js';
-import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate.js';
 import ProgressEvent from '../../src/event/events/ProgressEvent.js';
-import HTTP, { ClientRequest } from 'http';
 import { TextDecoder } from 'util';
 import Blob from '../../src/file/Blob.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import '../types.d.js';
-import HTTPS from 'https';
 import { Stream } from 'stream';
-import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
 import IResponse from '../../src/fetch/types/IResponse.js';
 import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
 import Fetch from '../../src/fetch/Fetch.js';
+import Headers from '../../src/fetch/Headers.js';
 import IHeaders from '../../src/fetch/types/IHeaders.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 
 const WINDOW_URL = 'https://localhost:8080';
 const REQUEST_URL = '/path/to/resource/';
@@ -59,7 +56,6 @@ describe('XMLHttpRequest', () => {
 	});
 
 	afterEach(() => {
-		resetMockedModules();
 		vi.restoreAllMocks();
 	});
 
@@ -68,6 +64,7 @@ describe('XMLHttpRequest', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() =>
 					<ISyncResponse>{
+						headers: <IHeaders>new Headers(),
 						status: 201
 					}
 			);
@@ -83,10 +80,7 @@ describe('XMLHttpRequest', () => {
 		it('Returns status for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-					async () =>
-						<IResponse>{
-							status: 201
-						}
+					async () => <IResponse>{ headers: <IHeaders>new Headers(), status: 201 }
 				);
 
 				expect(request.status).toBe(0);
@@ -110,10 +104,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.statusText).toBe(null);
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() =>
-					<ISyncResponse>{
-						statusText
-					}
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), statusText }
 			);
 
 			request.open('GET', REQUEST_URL, false);
@@ -127,10 +118,7 @@ describe('XMLHttpRequest', () => {
 				const statusText = 'Test';
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-					async () =>
-						<IResponse>{
-							statusText
-						}
+					async () => <IResponse>{ headers: <IHeaders>new Headers(), statusText }
 				);
 
 				expect(request.statusText).toBe(null);
@@ -158,9 +146,7 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							body: Stream.Readable.from(generate())
-						}
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
 				);
 
 				request.responseType = XMLHttpResponseTypeEnum.arraybuffer;
@@ -185,9 +171,7 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							body: Stream.Readable.from(generate())
-						}
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
 				);
 
 				request.responseType = XMLHttpResponseTypeEnum.blob;
@@ -212,9 +196,7 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							body: Stream.Readable.from(generate())
-						}
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
 				);
 
 				request.responseType = XMLHttpResponseTypeEnum.document;
@@ -241,9 +223,7 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							body: Stream.Readable.from(generate())
-						}
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
 				);
 
 				request.responseType = XMLHttpResponseTypeEnum.json;
@@ -268,9 +248,7 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							body: Stream.Readable.from(generate())
-						}
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
 				);
 
 				request.open('GET', REQUEST_URL, true);
@@ -288,10 +266,7 @@ describe('XMLHttpRequest', () => {
 	describe('get responseURL()', () => {
 		it('Returns response URL for synchrounous requests.', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() =>
-					<ISyncResponse>{
-						url: WINDOW_URL + REQUEST_URL
-					}
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), url: WINDOW_URL + REQUEST_URL }
 			);
 
 			expect(request.responseURL).toBe('');
@@ -305,10 +280,7 @@ describe('XMLHttpRequest', () => {
 		it('Returns response URL for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-					async () =>
-						<IResponse>{
-							url: WINDOW_URL + REQUEST_URL
-						}
+					async () => <IResponse>{ headers: <IHeaders>new Headers(), url: WINDOW_URL + REQUEST_URL }
 				);
 
 				expect(request.responseURL).toBe('');
@@ -327,7 +299,9 @@ describe('XMLHttpRequest', () => {
 
 	describe('get readyState()', () => {
 		it('Returns ready state for synchrounous requests.', () => {
-			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(() => <ISyncResponse>{});
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers() }
+			);
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
 
@@ -339,7 +313,16 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns ready state for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async () => <IResponse>{});
+				const responseText = 'test';
+
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+				);
 
 				let isProgressTriggered = false;
 
@@ -349,7 +332,7 @@ describe('XMLHttpRequest', () => {
 
 				request.addEventListener('progress', () => {
 					isProgressTriggered = true;
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
@@ -368,10 +351,7 @@ describe('XMLHttpRequest', () => {
 			const responseText = 'test';
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() =>
-					<ISyncResponse>{
-						body: Buffer.from(responseText)
-					}
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), body: Buffer.from(responseText) }
 			);
 
 			request.open('GET', REQUEST_URL, false);
@@ -382,11 +362,15 @@ describe('XMLHttpRequest', () => {
 		it('Returns response text for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'test';
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
 						<IResponse>{
-							body: Stream.Readable.from([responseText])
+							headers: <IHeaders>new Headers(),
+							body: Stream.Readable.from(generate())
 						}
 				);
 
@@ -415,7 +399,9 @@ describe('XMLHttpRequest', () => {
 
 		it(`Throws an exception if readyState is "loading".`, async () => {
 			await new Promise((resolve) => {
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async () => <IResponse>{});
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () => <IResponse>{ headers: <IHeaders>new Headers() }
+				);
 
 				request.open('GET', REQUEST_URL, true);
 				request.addEventListener('progress', () => {
@@ -464,7 +450,7 @@ describe('XMLHttpRequest', () => {
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(function () {
 				expect(this.request.headers.get('test-header')).toBe('test');
-				return <ISyncResponse>{};
+				return <ISyncResponse>{ headers: <IHeaders>new Headers() };
 			});
 
 			request.open('GET', REQUEST_URL, false);
@@ -477,7 +463,7 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 					expect(this.request.headers.get('test-header')).toBe('test');
-					return <IResponse>{};
+					return <IResponse>{ headers: <IHeaders>new Headers() };
 				});
 
 				request.open('GET', REQUEST_URL, true);
@@ -611,7 +597,9 @@ describe('XMLHttpRequest', () => {
 		});
 
 		it('Throws an exception if the request has already been sent.', () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async () => <IResponse>{});
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () => <IResponse>{ headers: <IHeaders>new Headers() }
+			);
 
 			request.open('GET', REQUEST_URL, true);
 			request.send();
@@ -630,114 +618,17 @@ describe('XMLHttpRequest', () => {
 			);
 		});
 
-		it('Throws an exception when doing a synchronous request towards a local file if the Happy DOM setting "enableFileSystemHttpRequests" has not been enabled.', () => {
-			request.open('GET', 'file://C:/path/to/file.txt', false);
-
-			expect(() => request.send()).toThrowError(
-				'File system is disabled by default for security reasons. To enable it, set the Happy DOM setting "enableFileSystemHttpRequests" option to true.'
-			);
-		});
-
-		it('Throws an exception when doing an asynchronous request towards a local file if the Happy DOM setting "enableFileSystemHttpRequests" has not been enabled.', () => {
-			request.open('GET', 'file://C:/path/to/file.txt', true);
-
-			expect(() => request.send()).toThrowError(
-				'File system is disabled by default for security reasons. To enable it, set the Happy DOM setting "enableFileSystemHttpRequests" option to true.'
-			);
-		});
-
-		it('Throws an exception when doing a synchronous request towards a local file with another method than "GET".', () => {
-			window = new Window({
-				settings: {
-					enableFileSystemHttpRequests: true
-				}
-			});
-			request = new window.XMLHttpRequest();
-
-			request.open('POST', 'file://C:/path/to/file.txt', false);
-
-			expect(() => request.send()).toThrowError(
-				'Failed to send local file system request. Only "GET" method is supported for local file system requests.'
-			);
-		});
-
-		it('Throws an exception when doing a asynchronous request towards a local file with another method than "GET".', () => {
-			window = new Window({
-				settings: {
-					enableFileSystemHttpRequests: true
-				}
-			});
-			request = new window.XMLHttpRequest();
-
-			request.open('POST', 'file://C:/path/to/file.txt', true);
-
-			expect(() => request.send()).toThrowError(
-				'Failed to send local file system request. Only "GET" method is supported for local file system requests.'
-			);
-		});
-
 		it('Performs a synchronous GET request with the HTTP protocol.', () => {
 			const windowURL = 'http://localhost:8080';
+			const window = new Window({
+				url: windowURL
+			});
+			const request = new window.XMLHttpRequest();
 			const responseText = 'test';
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() =>
-					<ISyncResponse>{
-						headers: <IHeaders>new Headers({
-							key1: 'value1',
-							key2: 'value2'
-						})
-					}
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), body: Buffer.from(responseText) }
 			);
-
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						XMLHttpRequestSyncRequestScriptBuilder.getScript(
-							{
-								host: 'localhost',
-								port: 8080,
-								path: REQUEST_URL,
-								method: 'GET',
-								headers: {
-									Accept: '*/*',
-									Referer: windowURL + '/',
-									'User-Agent': window.navigator.userAgent,
-									'Accept-Encoding': 'gzip, deflate, br',
-									Connection: 'close',
-									Host: window.location.host
-								},
-								agent: false,
-								rejectUnauthorized: true
-							},
-							false
-						)
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {},
-							text: responseText,
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
-
-			window.happyDOM?.setURL(windowURL);
 
 			request.open('GET', REQUEST_URL, false);
 
@@ -748,55 +639,17 @@ describe('XMLHttpRequest', () => {
 
 		it('Performs a synchronous GET request with the HTTPS protocol.', () => {
 			const responseText = 'test';
+			async function* generate(): AsyncGenerator<string> {
+				yield responseText;
+			}
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						XMLHttpRequestSyncRequestScriptBuilder.getScript(
-							{
-								host: 'localhost',
-								port: 8080,
-								path: REQUEST_URL,
-								method: 'GET',
-								headers: {
-									Accept: '*/*',
-									Referer: WINDOW_URL + '/',
-									'User-Agent': window.navigator.userAgent,
-									'Accept-Encoding': 'gzip, deflate, br',
-									Connection: 'close',
-									Host: window.location.host
-								},
-								agent: false,
-								rejectUnauthorized: true,
-								key: XMLHttpRequestCertificate.key,
-								cert: XMLHttpRequestCertificate.cert
-							},
-							true
-						)
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {},
-							text: responseText,
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () =>
+					<IResponse>{
+						headers: <IHeaders>new Headers(),
+						body: Stream.Readable.from(generate())
+					}
+			);
 
 			request.open('GET', REQUEST_URL, false);
 
@@ -809,57 +662,28 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'test';
 				const windowURL = 'http://localhost:8080';
-				const body = 'Hello, world!\n';
-
-				let writtenBodyData = '';
-				let requestArgs: {
-					url: string;
-					options: { method: string; headers: { [k: string]: string } };
-				} | null = null;
-
-				mockModule('http', {
-					request: (url, options) => {
-						requestArgs = { url, options };
-
-						const request = <HTTP.ClientRequest>new Stream.Writable();
-
-						request._write = (chunk, _encoding, callback) => {
-							writtenBodyData += chunk.toString();
-							callback();
-						};
-						(<unknown>request.on) = (
-							event: string,
-							callback: (response: HTTP.IncomingMessage) => void
-						) => {
-							if (event === 'response') {
-								setTimeout(() => {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText.length)
-									];
-									response.statusCode = 200;
-
-									callback(response);
-								});
-							}
-						};
-						(<unknown>request.setTimeout) = () => {};
-						request.destroy = () => <ClientRequest>{};
-
-						return request;
-					}
+				const window = new Window({
+					url: windowURL
 				});
+				const request = new window.XMLHttpRequest();
+				let requestArgs: { method: string; url: string };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				window.location.href = windowURL;
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
+				});
 
 				request.open('GET', REQUEST_URL, true);
 
@@ -870,34 +694,21 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
+				});
+
+				request.addEventListener('error', (error) => {
+					console.log(error);
 				});
 
 				request.addEventListener('loadend', () => {
-					expect(writtenBodyData).toBe(body);
+					expect(requestArgs).toEqual({
+						method: 'GET',
+						url: windowURL + REQUEST_URL
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
-
-					expect(requestArgs).toEqual({
-						url: REQUEST_URL,
-						options: {
-							method: 'POST',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br',
-								'Content-Type': 'text/plain;charset=UTF-8',
-								'Content-Length': body.length
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: undefined,
-							cert: undefined
-						}
-					});
 
 					resolve(null);
 				});
@@ -910,54 +721,23 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'http.request.body';
 				const queryString = '?query=string';
-				const body = 'Hello, world!\n';
+				let requestArgs: { method: string; url: string };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				let writtenBodyData = '';
-				let requestArgs: {
-					url: string;
-					options: { method: string; headers: { [k: string]: string } };
-				} | null = null;
-
-				mockModule('https', {
-					request: (url, options) => {
-						requestArgs = { url, options };
-
-						const request = <HTTP.ClientRequest>new Stream.Writable();
-
-						request._write = (chunk, _encoding, callback) => {
-							writtenBodyData += chunk.toString();
-							callback();
-						};
-						(<unknown>request.on) = (
-							event: string,
-							callback: (response: HTTP.IncomingMessage) => void
-						) => {
-							if (event === 'response') {
-								setTimeout(() => {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText.length)
-									];
-									response.statusCode = 200;
-
-									callback(response);
-								});
-							}
-						};
-						(<unknown>request.setTimeout) = () => {};
-						request.destroy = () => <ClientRequest>{};
-
-						return request;
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('GET', REQUEST_URL + queryString, true);
@@ -969,34 +749,17 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
-					expect(writtenBodyData).toBe(body);
+					expect(requestArgs).toEqual({
+						method: 'GET',
+						url: WINDOW_URL + REQUEST_URL + queryString
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
-
-					expect(requestArgs).toEqual({
-						url: REQUEST_URL + queryString,
-						options: {
-							method: 'POST',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br',
-								'Content-Type': 'text/plain;charset=UTF-8',
-								'Content-Length': body.length
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: FetchHTTPSCertificate.key,
-							cert: FetchHTTPSCertificate.cert
-						}
-					});
 
 					resolve(null);
 				});
@@ -1008,31 +771,17 @@ describe('XMLHttpRequest', () => {
 		it('Handles responses without content length.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'http.request.body';
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				mockModule('https', {
-					request: () => {
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [];
-
-									callback(response);
-								}
-							},
-							setTimeout: () => {}
-						};
-					}
-				});
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{
+							headers: <IHeaders>new Headers(),
+							body: Stream.Readable.from(generate())
+						}
+				);
 
 				request.open('GET', REQUEST_URL, true);
 
@@ -1050,41 +799,23 @@ describe('XMLHttpRequest', () => {
 		it('Performs an asynchronous GET request with the HTTPS protocol.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'http.request.body';
-				let requestArgs: {
-					url: string;
-					options: { method: string; headers: { [k: string]: string } };
-				} | null = null;
+				let requestArgs: { method: string; url: string };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				mockModule('https', {
-					request: (url, options) => {
-						requestArgs = { url, options };
-
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText.length)
-									];
-
-									callback(response);
-								}
-							},
-							setTimeout: () => {}
-						};
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('GET', REQUEST_URL, true);
@@ -1096,31 +827,17 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
+					expect(requestArgs).toEqual({
+						method: 'GET',
+						url: WINDOW_URL + REQUEST_URL
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
-
-					expect(requestArgs).toEqual({
-						url: REQUEST_URL,
-						options: {
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br'
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: FetchHTTPSCertificate.key,
-							cert: FetchHTTPSCertificate.cert
-						}
-					});
 
 					resolve(null);
 				});
@@ -1134,41 +851,27 @@ describe('XMLHttpRequest', () => {
 				const username = 'username';
 				const password = 'password';
 				const responseText = 'http.request.body';
-				let requestArgs: {
-					url: string;
-					options: { method: string; headers: { [k: string]: string } };
-				} | null = null;
+				let requestArgs: { method: string; url: string; headers: { [name: string]: string } };
 
-				mockModule('https', {
-					request: (url, options) => {
-						requestArgs = { url, options };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText.length)
-									];
-
-									callback(response);
-								}
-							},
-							setTimeout: () => {}
-						};
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url,
+						headers: {
+							Authorization: this.request.headers.get('Authorization')
+						}
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('GET', REQUEST_URL, true, username, password);
@@ -1180,32 +883,20 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
+					expect(requestArgs).toEqual({
+						method: 'GET',
+						url: WINDOW_URL + REQUEST_URL,
+						headers: {
+							Authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
+						}
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
-
-					expect(requestArgs).toEqual({
-						url: REQUEST_URL,
-						options: {
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br',
-								Authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: FetchHTTPSCertificate.key,
-							cert: FetchHTTPSCertificate.cert
-						}
-					});
 
 					resolve(null);
 				});
@@ -1218,67 +909,40 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const username = 'username';
 				const responseText = 'http.request.body';
-				let requestArgs: {
-					url: string;
-					options: { method: string; headers: { [k: string]: string } };
-				} | null = null;
+				let requestArgs: { method: string; url: string; headers: { [name: string]: string } };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				mockModule('https', {
-					request: (url, options) => {
-						requestArgs = { url, options };
-
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText.length)
-									];
-
-									callback(response);
-								}
-							},
-							setTimeout: () => {}
-						};
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url,
+						headers: {
+							Authorization: this.request.headers.get('Authorization')
+						}
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('GET', REQUEST_URL, true, username);
 
 				request.addEventListener('load', () => {
-					expect(request.responseText).toBe(responseText);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
-
 					expect(requestArgs).toEqual({
-						url: REQUEST_URL,
-						options: {
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br',
-								Authorization: `Basic ${Buffer.from(`${username}:`).toString('base64')}`
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: FetchHTTPSCertificate.key,
-							cert: FetchHTTPSCertificate.cert
+						method: 'GET',
+						url: WINDOW_URL + REQUEST_URL,
+						headers: {
+							Authorization: `Basic ${Buffer.from(`${username}:`).toString('base64')}`
 						}
 					});
+					expect(request.responseText).toBe(responseText);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 
 					resolve(null);
 				});
@@ -1291,53 +955,24 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'http.request.body';
 				const body = 'Hello, world!\n';
+				let requestArgs: { method: string; url: string; body: string };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				let writtenBodyData = '';
-				let requestArgs: {
-					url: string;
-					options: { method: string; headers: { [k: string]: string } };
-				} | null = null;
-
-				mockModule('https', {
-					request: (url, options) => {
-						requestArgs = { url, options };
-
-						const request = <HTTP.ClientRequest>new Stream.Writable();
-
-						request._write = (chunk, _encoding, callback) => {
-							writtenBodyData += chunk.toString();
-							callback();
-						};
-						(<unknown>request.on) = (
-							event: string,
-							callback: (response: HTTP.IncomingMessage) => void
-						) => {
-							if (event === 'response') {
-								setTimeout(() => {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText.length)
-									];
-									response.statusCode = 200;
-
-									callback(response);
-								});
-							}
-						};
-						(<unknown>request.setTimeout) = () => {};
-						request.destroy = () => <ClientRequest>{};
-
-						return request;
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url,
+						body: this.request.__buffer__.toString()
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('POST', REQUEST_URL, true);
@@ -1349,34 +984,18 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
-					expect(writtenBodyData).toBe(body);
+					expect(requestArgs).toEqual({
+						method: 'POST',
+						url: WINDOW_URL + REQUEST_URL,
+						body
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
-
-					expect(requestArgs).toEqual({
-						url: REQUEST_URL,
-						options: {
-							method: 'POST',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br',
-								'Content-Type': 'text/plain;charset=UTF-8',
-								'Content-Length': body.length
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: FetchHTTPSCertificate.key,
-							cert: FetchHTTPSCertificate.cert
-						}
-					});
 
 					resolve(null);
 				});
@@ -1385,88 +1004,10 @@ describe('XMLHttpRequest', () => {
 			});
 		});
 
-		it('Writes cookies to document.cookie for synchrounous requests when the header "Set-Cookie" is returned in the response.', () => {
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {
-								'Set-Cookie': ['key1=value1', 'key2=value2']
-							},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
-			});
-
-			request.open('GET', REQUEST_URL, false);
-			request.send();
-
-			expect(window.document.cookie).toBe('key1=value1; key2=value2');
-		});
-
-		it('Returns response cookie header for an asynchrounous request.', async () => {
-			await new Promise((resolve) => {
-				mockModule('https', {
-					request: () => {
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = ['Set-Cookie', 'key1=value1, key2=value2'];
-
-									callback(response);
-								}
-							},
-							setTimeout: () => {}
-						};
-					}
-				});
-
-				request.open('GET', REQUEST_URL, true);
-
-				request.addEventListener('load', () => {
-					expect(window.document.cookie).toBe('key1=value1; key2=value2');
-					resolve(null);
-				});
-
-				request.send();
-			});
-		});
-
 		it('Handles error in request when performing an asynchronous request.', async () => {
 			await new Promise((resolve) => {
-				mockModule('https', {
-					request: (
-						_options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'error') {
-											setTimeout(() => callback(new Error('error')));
-										}
-									}
-								}));
-							},
-							write: () => {},
-							on: () => {}
-						};
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					throw new Error('error');
 				});
 
 				request.open('GET', REQUEST_URL, true);
@@ -1477,10 +1018,8 @@ describe('XMLHttpRequest', () => {
 
 				request.addEventListener('error', () => {
 					expect(request.status).toBe(0);
-					expect(request.statusText).toBe('Error: error');
-					expect(
-						request.responseText.startsWith('Error: error') && request.responseText.includes(' at ')
-					).toBe(true);
+					expect(request.statusText).toBe('');
+					expect(request.responseText).toBe('');
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					resolve(null);
 				});
@@ -1491,20 +1030,15 @@ describe('XMLHttpRequest', () => {
 
 		it('Handles error in response when performing a synchronous request.', async () => {
 			await new Promise((resolve) => {
-				mockModule('child_process', {
-					execFileSync: () => {
-						return JSON.stringify({
-							error: 'Error',
-							data: {}
-						});
-					}
+				vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(function () {
+					throw new Error('error');
 				});
 
 				request.open('GET', REQUEST_URL, false);
 
 				request.addEventListener('error', () => {
 					expect(request.status).toBe(0);
-					expect(request.statusText).toBe('Error');
+					expect(request.statusText).toBe('');
 					expect(request.responseText).toBe('');
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					resolve(null);
@@ -1516,26 +1050,16 @@ describe('XMLHttpRequest', () => {
 
 		it('Handles Happy DOM asynchrounous tasks.', async () => {
 			const responseText = 'responseText';
-			mockModule('https', {
-				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-					return {
-						end: () => {
-							callback(<HTTP.IncomingMessage>(<unknown>{
-								statusCode: 200,
-								statusMessage: '',
-								headers: {},
-								on: (event, callback) => {
-									if (event === 'data') {
-										callback(Buffer.from(responseText));
-									} else if (event === 'end') {
-										callback();
-									}
-								}
-							}));
-						},
-						on: () => {}
-					};
-				}
+			async function* generate(): AsyncGenerator<string> {
+				yield responseText;
+			}
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				await new Promise((resolve) => setTimeout(resolve, 2));
+				return <IResponse>{
+					headers: <IHeaders>new Headers(),
+					body: Stream.Readable.from(generate())
+				};
 			});
 
 			request.open('GET', REQUEST_URL, true);
@@ -1545,1659 +1069,124 @@ describe('XMLHttpRequest', () => {
 
 			expect(request.responseText).toBe(responseText);
 		});
-
-		it('Supports cache for asynchrounous GET response with "Cache-Control" set to "max-age=60".', async () => {
-			const url = 'https://localhost:8080/some/path';
-			const responseText = 'some text';
-			let requestCount = 0;
-
-			mockModule('https', {
-				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-					requestCount++;
-
-					return {
-						end: () => {
-							setTimeout(() => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: 'OK',
-									headers: {
-										'content-type': 'text/html',
-										'content-length': String(responseText.length),
-										'cache-control': `max-age=60`
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							});
-						},
-						on: () => {}
-					};
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('GET', url, true);
-			request1.send();
-
-			await new Promise((resolve) => request1.addEventListener('load', resolve));
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('GET', url, true);
-			request2.send();
-
-			await new Promise((resolve) => request2.addEventListener('load', resolve));
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=60`);
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=60`);
-
-			expect(requestCount).toBe(1);
-		});
-
-		it('Supports cache for synchrounous GET response with "Cache-Control" set to "max-age=60".', () => {
-			const url = 'https://localhost:8080/some/path';
-			const responseText = 'some text';
-			let requestCount = 0;
-
-			mockModule('child_process', {
-				execFileSync: () => {
-					requestCount++;
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							headers: {
-								'content-type': 'text/html',
-								'content-length': String(responseText.length),
-								'cache-control': `max-age=60`
-							},
-							text: responseText,
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('GET', url, false);
-			request1.send();
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('GET', url, false);
-			request2.send();
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=60`);
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=60`);
-
-			expect(requestCount).toBe(1);
-		});
-
-		it('Revalidates cache with a "If-Modified-Since" request for an asynchrounous GET response with "Cache-Control" set to "max-age=0.01".', async () => {
-			const url = 'https://localhost:8080/some/path';
-			const responseText = 'some text';
-			const requestOptions: Array<HTTPS.RequestOptions> = [];
-
-			mockModule('https', {
-				request: (options: HTTPS.RequestOptions, callback) => {
-					requestOptions.push(options);
-
-					return {
-						end: () => {
-							setTimeout(() => {
-								if (options.headers?.['If-Modified-Since']) {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 304,
-										statusMessage: 'Not Modified',
-										headers: {
-											'content-type': 'text/html',
-											'content-length': String(responseText.length),
-											'cache-control': `max-age=0.01`
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from([]));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								} else {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 200,
-										statusMessage: 'OK',
-										headers: {
-											'content-type': 'text/html',
-											'content-length': String(responseText.length),
-											'cache-control': `max-age=0.01`,
-											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from(responseText));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								}
-							});
-						},
-						on: () => {}
-					};
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('GET', url, true);
-			request1.setRequestHeader('key1', 'value1');
-			request1.send();
-
-			await new Promise((resolve) => request1.addEventListener('load', resolve));
-			await new Promise((resolve) => setTimeout(resolve, 20));
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('GET', url, true);
-			request2.send();
-
-			await new Promise((resolve) => request2.addEventListener('load', resolve));
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-
-			expect(requestOptions).toEqual([
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'GET',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						Referer: WINDOW_URL + '/',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						key1: 'value1',
-						Host: window.location.host
-					}
-				},
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'GET',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						Referer: WINDOW_URL + '/',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						key1: 'value1',
-						'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
-						Host: window.location.host
-					}
-				}
-			]);
-		});
-
-		it('Revalidates cache with a "If-Modified-Since" request for a synchrounous GET response with "Cache-Control" set to "max-age=0.01".', async () => {
-			const url = 'https://localhost:8080/some/path';
-			const responseText = 'some text';
-			const childProcessArguments: string[] = [];
-
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					childProcessArguments.push(args[1]);
-
-					if (args[1].includes('If-Modified-Since')) {
-						return JSON.stringify({
-							error: null,
-							data: {
-								statusCode: 304,
-								statusMessage: 'Not Modified',
-								headers: {
-									'content-type': 'text/html',
-									'content-length': String(responseText.length),
-									'cache-control': `max-age=0.01`
-								},
-								text: '',
-								data: Buffer.from('').toString('base64')
-							}
-						});
-					}
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							headers: {
-								'content-type': 'text/html',
-								'content-length': String(responseText.length),
-								'cache-control': `max-age=0.01`,
-								'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
-							},
-							text: responseText,
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('GET', url, false);
-			request1.setRequestHeader('key1', 'value1');
-			request1.send();
-
-			await new Promise((resolve) => setTimeout(resolve, 50));
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('GET', url, false);
-			request2.send();
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-
-			expect(childProcessArguments).toEqual([
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'GET',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							key1: 'value1',
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				),
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'GET',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							key1: 'value1',
-							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				)
-			]);
-		});
-
-		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for an asynchrounous GET response with "Cache-Control" set to "max-age=0.01".', async () => {
-			const url = 'https://localhost:8080/some/path';
-			const responseText1 = 'some text';
-			const responseText2 = 'some new text';
-			const requestOptions: Array<HTTPS.RequestOptions> = [];
-
-			mockModule('https', {
-				request: (options: HTTPS.RequestOptions, callback) => {
-					requestOptions.push(options);
-
-					return {
-						end: () => {
-							setTimeout(() => {
-								if (options.headers?.['If-Modified-Since']) {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 200,
-										statusMessage: 'OK',
-										headers: {
-											'content-type': 'text/html',
-											'content-length': String(responseText2.length),
-											'cache-control': `max-age=1`,
-											'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from(responseText2));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								} else {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 200,
-										statusMessage: 'OK',
-										headers: {
-											'content-type': 'text/html',
-											'content-length': String(responseText1.length),
-											'cache-control': `max-age=0.01`,
-											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from(responseText1));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								}
-							});
-						},
-						on: () => {}
-					};
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('GET', url, true);
-			request1.setRequestHeader('key1', 'value1');
-			request1.send();
-
-			await new Promise((resolve) => request1.addEventListener('load', resolve));
-			await new Promise((resolve) => setTimeout(resolve, 15));
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('GET', url, true);
-			request2.setRequestHeader('key1', 'value1');
-			request2.send();
-
-			await new Promise((resolve) => request2.addEventListener('load', resolve));
-
-			const request3 = new window.XMLHttpRequest();
-
-			request3.open('GET', url, true);
-			request3.setRequestHeader('key1', 'value1');
-			request3.send();
-
-			await new Promise((resolve) => request3.addEventListener('load', resolve));
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText1);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText2);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=1`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-
-			expect(request3.responseURL).toBe(url);
-			expect(request3.status).toBe(200);
-			expect(request3.statusText).toBe('OK');
-			expect(request3.responseText).toBe(responseText2);
-			expect(request3.getResponseHeader('content-type')).toBe('text/html');
-			expect(request3.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request3.getResponseHeader('cache-control')).toBe(`max-age=1`);
-			expect(request3.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-
-			expect(requestOptions).toEqual([
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'GET',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
-						'User-Agent': window.navigator.userAgent,
-						key1: 'value1'
-					}
-				},
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'GET',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
-						'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
-						'User-Agent': window.navigator.userAgent,
-						key1: 'value1'
-					}
-				}
-			]);
-		});
-
-		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a synchrounous GET response with "Cache-Control" set to "max-age=0.01".', async () => {
-			const url = 'https://localhost:8080/some/path';
-			const responseText1 = 'some text';
-			const responseText2 = 'some new text';
-			const childProcessArguments: string[] = [];
-
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					childProcessArguments.push(args[1]);
-
-					if (args[1].includes('If-Modified-Since')) {
-						return JSON.stringify({
-							error: null,
-							data: {
-								statusCode: 200,
-								statusMessage: 'OK',
-								headers: {
-									'content-type': 'text/html',
-									'content-length': String(responseText2.length),
-									'cache-control': `max-age=0.01`,
-									'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
-								},
-								text: responseText2,
-								data: Buffer.from(responseText2).toString('base64')
-							}
-						});
-					}
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							headers: {
-								'content-type': 'text/html',
-								'content-length': String(responseText1.length),
-								'cache-control': `max-age=0.01`,
-								'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
-							},
-							text: responseText1,
-							data: Buffer.from(responseText1).toString('base64')
-						}
-					});
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('GET', url, false);
-			request1.setRequestHeader('key1', 'value1');
-			request1.send();
-
-			await new Promise((resolve) => setTimeout(resolve, 50));
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('GET', url, false);
-			request2.setRequestHeader('key1', 'value1');
-			request2.send();
-
-			const request3 = new window.XMLHttpRequest();
-
-			request3.open('GET', url, false);
-			request3.setRequestHeader('key1', 'value1');
-			request3.send();
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText1);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText2);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-
-			expect(request3.responseURL).toBe(url);
-			expect(request3.status).toBe(200);
-			expect(request3.statusText).toBe('OK');
-			expect(request3.responseText).toBe(responseText2);
-			expect(request3.getResponseHeader('content-type')).toBe('text/html');
-			expect(request3.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request3.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request3.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-
-			expect(childProcessArguments).toEqual([
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'GET',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							key1: 'value1',
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				),
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'GET',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							key1: 'value1',
-							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				)
-			]);
-		});
-
-		it('Revalidates cache with a "If-None-Match" request for an asynchrounous HEAD response with an "Etag" header.', async () => {
-			const url = 'https://localhost:8080/some/path';
-			const etag1 = '"etag1"';
-			const etag2 = '"etag2"';
-			const responseText = 'some text';
-			const requestOptions: Array<HTTPS.RequestOptions> = [];
-
-			mockModule('https', {
-				request: (options: HTTPS.RequestOptions, callback) => {
-					requestOptions.push(options);
-
-					return {
-						end: () => {
-							setTimeout(() => {
-								if (options.headers?.['If-None-Match']) {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 304,
-										statusMessage: 'Not Modified',
-										headers: {
-											etag: etag2,
-											'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from([]));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								} else {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 200,
-										statusMessage: 'OK',
-										headers: {
-											'content-type': 'text/html',
-											'content-length': String(responseText.length),
-											'cache-control': `max-age=0.01`,
-											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
-											etag: etag1
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from(responseText));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								}
-							});
-						},
-						on: () => {}
-					};
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('HEAD', url, true);
-			request1.setRequestHeader('key1', 'value1');
-			request1.send();
-
-			await new Promise((resolve) => request1.addEventListener('load', resolve));
-			await new Promise((resolve) => setTimeout(resolve, 20));
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('HEAD', url, true);
-			request2.send();
-
-			await new Promise((resolve) => request2.addEventListener('load', resolve));
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-			expect(request1.getResponseHeader('etag')).toBe(etag1);
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-			expect(request2.getResponseHeader('etag')).toBe(etag2);
-
-			expect(requestOptions).toEqual([
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'HEAD',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
-						'User-Agent': window.navigator.userAgent,
-						key1: 'value1'
-					}
-				},
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'HEAD',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
-						'If-None-Match': etag1,
-						'User-Agent': window.navigator.userAgent,
-						key1: 'value1'
-					}
-				}
-			]);
-		});
-
-		it('Revalidates cache with a "If-None-Match" request for a synchrounous HEAD response with an "Etag" header.', () => {
-			const url = 'https://localhost:8080/some/path';
-			const etag1 = '"etag1"';
-			const etag2 = '"etag2"';
-			const responseText = 'some text';
-			const childProcessArguments: string[] = [];
-
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					childProcessArguments.push(args[1]);
-
-					if (args[1].includes('If-None-Match')) {
-						return JSON.stringify({
-							error: null,
-							data: {
-								statusCode: 304,
-								statusMessage: 'Not Modified',
-								headers: {
-									etag: etag2,
-									'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
-								},
-								text: '',
-								data: Buffer.from('').toString('base64')
-							}
-						});
-					}
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							headers: {
-								'content-type': 'text/html',
-								'content-length': String(responseText.length),
-								'cache-control': `max-age=0.01`,
-								'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
-								etag: etag1
-							},
-							text: responseText,
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('HEAD', url, false);
-			request1.setRequestHeader('key1', 'value1');
-			request1.send();
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('HEAD', url, false);
-			request2.send();
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-			expect(request1.getResponseHeader('etag')).toBe(etag1);
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-			expect(request2.getResponseHeader('etag')).toBe(etag2);
-
-			expect(childProcessArguments).toEqual([
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'HEAD',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							key1: 'value1',
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				),
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'HEAD',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							key1: 'value1',
-							'If-None-Match': etag1,
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				)
-			]);
-		});
-
-		it('Updates cache after a failed revalidation with a "If-None-Match" request for an asynchrounous GET response with an "Etag" header.', async () => {
-			const url = 'https://localhost:8080/some/path';
-			const etag1 = '"etag1"';
-			const etag2 = '"etag2"';
-			const responseText1 = 'some text';
-			const responseText2 = 'some new text';
-			const requestOptions: Array<HTTPS.RequestOptions> = [];
-
-			mockModule('https', {
-				request: (options: HTTPS.RequestOptions, callback) => {
-					requestOptions.push(options);
-
-					return {
-						end: () => {
-							setTimeout(() => {
-								if (options.headers?.['If-None-Match']) {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 200,
-										statusMessage: 'OK',
-										headers: {
-											'content-type': 'text/html',
-											'content-length': String(responseText2.length),
-											'cache-control': `max-age=0.01`,
-											'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
-											etag: etag2
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from(responseText2));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								} else {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 200,
-										statusMessage: 'OK',
-										headers: {
-											'content-type': 'text/html',
-											'content-length': String(responseText1.length),
-											'cache-control': `max-age=0.01`,
-											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
-											etag: etag1
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from(responseText1));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								}
-							});
-						},
-						on: () => {}
-					};
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('GET', url, true);
-			request1.setRequestHeader('key1', 'value1');
-			request1.send();
-
-			await new Promise((resolve) => request1.addEventListener('load', resolve));
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('GET', url, true);
-			request2.send();
-
-			await new Promise((resolve) => request2.addEventListener('load', resolve));
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText1);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-			expect(request1.getResponseHeader('etag')).toBe(etag1);
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText2);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-			expect(request2.getResponseHeader('etag')).toBe(etag2);
-
-			expect(requestOptions).toEqual([
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'GET',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
-						'User-Agent': window.navigator.userAgent,
-						key1: 'value1'
-					}
-				},
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'GET',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
-						'If-None-Match': etag1,
-						'User-Agent': window.navigator.userAgent,
-						key1: 'value1'
-					}
-				}
-			]);
-		});
-
-		it('Updates cache after a failed revalidation with a "If-None-Match" request for a synchrounous GET response with an "Etag" header.', () => {
-			const url = 'https://localhost:8080/some/path';
-			const etag1 = '"etag1"';
-			const etag2 = '"etag2"';
-			const responseText1 = 'some text';
-			const responseText2 = 'some new text';
-			const childProcessArguments: string[] = [];
-
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					childProcessArguments.push(args[1]);
-
-					if (args[1].includes('If-None-Match')) {
-						return JSON.stringify({
-							error: null,
-							data: {
-								statusCode: 200,
-								statusMessage: 'OK',
-								headers: {
-									'content-type': 'text/html',
-									'content-length': String(responseText2.length),
-									'cache-control': `max-age=0.01`,
-									'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
-									etag: etag2
-								},
-								text: responseText2,
-								data: Buffer.from(responseText2).toString('base64')
-							}
-						});
-					}
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							headers: {
-								'content-type': 'text/html',
-								'content-length': String(responseText1.length),
-								'cache-control': `max-age=0.01`,
-								'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
-								etag: etag1
-							},
-							text: responseText1,
-							data: Buffer.from(responseText1).toString('base64')
-						}
-					});
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-			request1.open('GET', url, false);
-			request1.setRequestHeader('key1', 'value1');
-			request1.send();
-
-			const request2 = new window.XMLHttpRequest();
-			request2.open('GET', url, false);
-			request2.send();
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText1);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-			expect(request1.getResponseHeader('etag')).toBe(etag1);
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText2);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=0.01`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-			expect(request2.getResponseHeader('etag')).toBe(etag2);
-
-			expect(childProcessArguments).toEqual([
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'GET',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							key1: 'value1',
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				),
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'GET',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							key1: 'value1',
-							'If-None-Match': etag1,
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				)
-			]);
-		});
-
-		it('Supports cache for an asynchrounous GET response with "Cache-Control" set to "max-age=60" and "Vary" set to "vary-header".', async () => {
-			const url = 'https://localhost:8080/some/path';
-			const responseText1 = 'vary 1';
-			const responseText2 = 'vary 2';
-			const requestOptions: Array<HTTPS.RequestOptions> = [];
-
-			mockModule('https', {
-				request: (options: HTTPS.RequestOptions, callback) => {
-					requestOptions.push(options);
-
-					return {
-						end: () => {
-							setTimeout(() => {
-								if (options.headers?.['vary-header'] === 'vary1') {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 200,
-										statusMessage: 'OK',
-										headers: {
-											'content-type': 'text/html',
-											'content-length': String(responseText1.length),
-											'cache-control': `max-age=60`,
-											'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
-											vary: 'vary-header'
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from(responseText1));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								} else if (options.headers?.['vary-header'] === 'vary2') {
-									callback(<HTTP.IncomingMessage>(<unknown>{
-										statusCode: 200,
-										statusMessage: 'OK',
-										headers: {
-											'content-type': 'text/html',
-											'content-length': String(responseText2.length),
-											'cache-control': `max-age=60`,
-											'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
-											vary: 'vary-header'
-										},
-										on: (event, callback) => {
-											if (event === 'data') {
-												callback(Buffer.from(responseText2));
-											} else if (event === 'end') {
-												callback();
-											}
-										}
-									}));
-								}
-							});
-						},
-						on: () => {}
-					};
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-
-			request1.open('GET', url, true);
-			request1.setRequestHeader('vary-header', 'vary1');
-			request1.send();
-
-			await new Promise((resolve) => request1.addEventListener('load', resolve));
-
-			const request2 = new window.XMLHttpRequest();
-
-			request2.open('GET', url, true);
-			request2.setRequestHeader('vary-header', 'vary2');
-			request2.send();
-
-			await new Promise((resolve) => request2.addEventListener('load', resolve));
-
-			const cachedRequest1 = new window.XMLHttpRequest();
-
-			cachedRequest1.open('GET', url, true);
-			cachedRequest1.setRequestHeader('vary-header', 'vary1');
-			cachedRequest1.send();
-
-			await new Promise((resolve) => cachedRequest1.addEventListener('load', resolve));
-
-			const cachedRequest2 = new window.XMLHttpRequest();
-
-			cachedRequest2.open('GET', url, true);
-			cachedRequest2.setRequestHeader('vary-header', 'vary2');
-			cachedRequest2.send();
-
-			await new Promise((resolve) => cachedRequest2.addEventListener('load', resolve));
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText1);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=60`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-			expect(request1.getResponseHeader('vary')).toBe('vary-header');
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText2);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=60`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-			expect(request2.getResponseHeader('vary')).toBe('vary-header');
-
-			expect(cachedRequest1.responseURL).toBe(url);
-			expect(cachedRequest1.status).toBe(200);
-			expect(cachedRequest1.statusText).toBe('OK');
-			expect(cachedRequest1.responseText).toBe(responseText1);
-			expect(cachedRequest1.getResponseHeader('content-type')).toBe('text/html');
-			expect(cachedRequest1.getResponseHeader('content-length')).toBe(String(responseText1.length));
-			expect(cachedRequest1.getResponseHeader('cache-control')).toBe(`max-age=60`);
-			expect(cachedRequest1.getResponseHeader('last-modified')).toBe(
-				'Mon, 11 Dec 2023 01:00:00 GMT'
-			);
-			expect(cachedRequest1.getResponseHeader('vary')).toBe('vary-header');
-
-			expect(cachedRequest2.responseURL).toBe(url);
-			expect(cachedRequest2.status).toBe(200);
-			expect(cachedRequest2.statusText).toBe('OK');
-			expect(cachedRequest2.responseText).toBe(responseText2);
-			expect(cachedRequest2.getResponseHeader('content-type')).toBe('text/html');
-			expect(cachedRequest2.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(cachedRequest2.getResponseHeader('cache-control')).toBe(`max-age=60`);
-			expect(cachedRequest2.getResponseHeader('last-modified')).toBe(
-				'Mon, 11 Dec 2023 02:00:00 GMT'
-			);
-			expect(cachedRequest2.getResponseHeader('vary')).toBe('vary-header');
-
-			expect(requestOptions).toEqual([
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'GET',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
-						'User-Agent': window.navigator.userAgent,
-						'vary-header': 'vary1'
-					}
-				},
-				{
-					host: 'localhost',
-					port: 8080,
-					path: '/some/path',
-					method: 'GET',
-					agent: false,
-					rejectUnauthorized: true,
-					key: XMLHttpRequestCertificate.key,
-					cert: XMLHttpRequestCertificate.cert,
-					headers: {
-						Accept: '*/*',
-						'Accept-Encoding': 'gzip, deflate, br',
-						Connection: 'close',
-						Host: window.location.host,
-						Referer: WINDOW_URL + '/',
-						'User-Agent': window.navigator.userAgent,
-						'vary-header': 'vary2'
-					}
-				}
-			]);
-		});
-
-		it('Supports cache for a synchrounous GET response with "Cache-Control" set to "max-age=60" and "Vary" set to "vary-header".', async () => {
-			const url = 'https://localhost:8080/some/path';
-			const responseText1 = 'vary 1';
-			const responseText2 = 'vary 2';
-			const childProcessArguments: string[] = [];
-
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					childProcessArguments.push(args[1]);
-
-					if (args[1].includes('vary1')) {
-						return JSON.stringify({
-							error: null,
-							data: {
-								statusCode: 200,
-								statusMessage: 'OK',
-								headers: {
-									'content-type': 'text/html',
-									'content-length': String(responseText1.length),
-									'cache-control': `max-age=60`,
-									'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
-									vary: 'vary-header'
-								},
-								text: responseText1,
-								data: Buffer.from(responseText1).toString('base64')
-							}
-						});
-					} else if (args[1].includes('vary2')) {
-						return JSON.stringify({
-							error: null,
-							data: {
-								statusCode: 200,
-								statusMessage: 'OK',
-								headers: {
-									'content-type': 'text/html',
-									'content-length': String(responseText2.length),
-									'cache-control': `max-age=60`,
-									'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
-									vary: 'vary-header'
-								},
-								text: responseText2,
-								data: Buffer.from(responseText2).toString('base64')
-							}
-						});
-					}
-				}
-			});
-
-			const request1 = new window.XMLHttpRequest();
-			request1.open('GET', url, false);
-			request1.setRequestHeader('vary-header', 'vary1');
-			request1.send();
-
-			const request2 = new window.XMLHttpRequest();
-			request2.open('GET', url, false);
-			request2.setRequestHeader('vary-header', 'vary2');
-			request2.send();
-
-			const cachedRequest1 = new window.XMLHttpRequest();
-			cachedRequest1.open('GET', url, false);
-			cachedRequest1.setRequestHeader('vary-header', 'vary1');
-			cachedRequest1.send();
-
-			const cachedRequest2 = new window.XMLHttpRequest();
-			cachedRequest2.open('GET', url, false);
-			cachedRequest2.setRequestHeader('vary-header', 'vary2');
-			cachedRequest2.send();
-
-			expect(request1.responseURL).toBe(url);
-			expect(request1.status).toBe(200);
-			expect(request1.statusText).toBe('OK');
-			expect(request1.responseText).toBe(responseText1);
-			expect(request1.getResponseHeader('content-type')).toBe('text/html');
-			expect(request1.getResponseHeader('content-length')).toBe(String(responseText1.length));
-			expect(request1.getResponseHeader('cache-control')).toBe(`max-age=60`);
-			expect(request1.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 01:00:00 GMT');
-			expect(request1.getResponseHeader('vary')).toBe('vary-header');
-
-			expect(request2.responseURL).toBe(url);
-			expect(request2.status).toBe(200);
-			expect(request2.statusText).toBe('OK');
-			expect(request2.responseText).toBe(responseText2);
-			expect(request2.getResponseHeader('content-type')).toBe('text/html');
-			expect(request2.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(request2.getResponseHeader('cache-control')).toBe(`max-age=60`);
-			expect(request2.getResponseHeader('last-modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
-			expect(request2.getResponseHeader('vary')).toBe('vary-header');
-
-			expect(cachedRequest1.responseURL).toBe(url);
-			expect(cachedRequest1.status).toBe(200);
-			expect(cachedRequest1.statusText).toBe('OK');
-			expect(cachedRequest1.responseText).toBe(responseText1);
-			expect(cachedRequest1.getResponseHeader('content-type')).toBe('text/html');
-			expect(cachedRequest1.getResponseHeader('content-length')).toBe(String(responseText1.length));
-			expect(cachedRequest1.getResponseHeader('cache-control')).toBe(`max-age=60`);
-			expect(cachedRequest1.getResponseHeader('last-modified')).toBe(
-				'Mon, 11 Dec 2023 01:00:00 GMT'
-			);
-			expect(cachedRequest1.getResponseHeader('vary')).toBe('vary-header');
-
-			expect(cachedRequest2.responseURL).toBe(url);
-			expect(cachedRequest2.status).toBe(200);
-			expect(cachedRequest2.statusText).toBe('OK');
-			expect(cachedRequest2.responseText).toBe(responseText2);
-			expect(cachedRequest2.getResponseHeader('content-type')).toBe('text/html');
-			expect(cachedRequest2.getResponseHeader('content-length')).toBe(String(responseText2.length));
-			expect(cachedRequest2.getResponseHeader('cache-control')).toBe(`max-age=60`);
-			expect(cachedRequest2.getResponseHeader('last-modified')).toBe(
-				'Mon, 11 Dec 2023 02:00:00 GMT'
-			);
-			expect(cachedRequest2.getResponseHeader('vary')).toBe('vary-header');
-
-			expect(childProcessArguments).toEqual([
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'GET',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							'vary-header': 'vary1',
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				),
-				XMLHttpRequestSyncRequestScriptBuilder.getScript(
-					{
-						host: 'localhost',
-						port: 8080,
-						path: '/some/path',
-						method: 'GET',
-						headers: {
-							Accept: '*/*',
-							Referer: WINDOW_URL + '/',
-							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'close',
-							'vary-header': 'vary2',
-							Host: window.location.host
-						},
-						agent: false,
-						rejectUnauthorized: true,
-						key: XMLHttpRequestCertificate.key,
-						cert: XMLHttpRequestCertificate.cert
-					},
-					true
-				)
-			]);
-		});
 	});
 
 	describe('abort()', () => {
-		it('Aborts an asynchrounous request.', () => {
-			let isDestroyed = false;
-			mockModule('https', {
-				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-					return {
-						end: () => {
-							setTimeout(() => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(''));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							});
-						},
-						on: () => {},
-						destroy: () => (isDestroyed = true)
-					};
-				}
-			});
+		it('Aborts an asynchrounous request.', async () => {
+			return await new Promise((resolve) => {
+				let isAborted = false;
 
-			let isAbortTriggered = false;
-			let isLoadEndTriggered = false;
-			request.open('GET', REQUEST_URL, true);
-			request.send();
-			request.addEventListener('abort', () => {
-				isAbortTriggered = true;
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+					return new Promise((resolve, reject) => {
+						const timeout = setTimeout(() => {
+							resolve(<IResponse>{ headers: <IHeaders>new Headers() });
+						}, 50);
+						this.request.signal.addEventListener('abort', () => {
+							isAborted = true;
+							clearTimeout(timeout);
+							reject(
+								new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+							);
+						});
+					});
+				});
+
+				let isAbortTriggered = false;
+				let isErrorTriggered = false;
+				let isLoadEndTriggered = false;
+				request.open('GET', REQUEST_URL, true);
+				request.send();
+				request.addEventListener('abort', () => {
+					isAbortTriggered = true;
+				});
+				request.addEventListener('error', () => {
+					isErrorTriggered = true;
+				});
+				request.addEventListener('loadend', () => {
+					isLoadEndTriggered = true;
+				});
+				setTimeout(() => {
+					request.abort();
+					setTimeout(() => {
+						expect(isAbortTriggered).toBe(true);
+						expect(isErrorTriggered).toBe(false);
+						expect(isLoadEndTriggered).toBe(true);
+						expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
+						expect(isAborted).toBe(true);
+						resolve(null);
+					});
+				});
 			});
-			request.addEventListener('loadend', () => {
-				isLoadEndTriggered = true;
-			});
-			request.abort();
-			expect(isAbortTriggered).toBe(true);
-			expect(isLoadEndTriggered).toBe(true);
-			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
-			expect(isDestroyed).toBe(true);
 		});
 
-		it('Ends an ongoing Happy DOM asynchrounous task.', async () => {
-			let isDestroyed = false;
-			mockModule('https', {
-				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-					return {
-						end: () => {
-							callback(<HTTP.IncomingMessage>(<unknown>{
-								statusCode: 200,
-								statusMessage: '',
-								headers: {},
-								on: (event, callback) => {
-									if (event === 'data') {
-										callback(Buffer.from(''));
-									} else if (event === 'end') {
-										callback();
-									}
-								}
-							}));
-						},
-						on: () => {},
-						destroy: () => (isDestroyed = true)
-					};
-				}
+		it('Waits for ongoing Happy DOM asynchrounous task.', async () => {
+			const responseText = 'responseText';
+			async function* generate(): AsyncGenerator<string> {
+				yield responseText;
+			}
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				await new Promise((resolve) => setTimeout(resolve, 2));
+				return <IResponse>{
+					headers: <IHeaders>new Headers(),
+					body: Stream.Readable.from(generate())
+				};
 			});
 
 			request.open('GET', REQUEST_URL, true);
 			request.send();
-			request.abort();
 
 			await window.happyDOM?.whenComplete();
 
-			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
-			expect(isDestroyed).toBe(true);
+			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+			expect(request.responseText).toBe(responseText);
 		});
 
 		it('Aborts an ongoing request when cancelling all Happy DOM asynchrounous tasks.', async () => {
-			let isDestroyed = false;
-			mockModule('https', {
-				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-					return {
-						end: () => {
-							callback(<HTTP.IncomingMessage>(<unknown>{
-								statusCode: 200,
-								statusMessage: '',
-								headers: {},
-								on: (event, callback) => {
-									if (event === 'data') {
-										callback(Buffer.from(''));
-									} else if (event === 'end') {
-										callback();
-									}
-								}
-							}));
-						},
-						on: () => {},
-						destroy: () => (isDestroyed = true)
-					};
-				}
+			let isAborted = false;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return new Promise((resolve, reject) => {
+					const timeout = setTimeout(() => {
+						resolve(<IResponse>{ headers: <IHeaders>new Headers() });
+					}, 50);
+					this.request.signal.addEventListener('abort', () => {
+						isAborted = true;
+						clearTimeout(timeout);
+						reject(new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError));
+					});
+				});
 			});
+
+			let isAbortTriggered = false;
+			let isErrorTriggered = false;
+			let isLoadEndTriggered = false;
 
 			request.open('GET', REQUEST_URL, true);
 			request.send();
 
+			request.addEventListener('abort', () => {
+				isAbortTriggered = true;
+			});
+
+			request.addEventListener('error', () => {
+				isErrorTriggered = true;
+			});
+
+			request.addEventListener('loadend', () => {
+				isLoadEndTriggered = true;
+			});
+
 			window.happyDOM?.abort();
 
+			// TODO: Why do we need to wait for a tick here?
+			await new Promise((resolve) => setTimeout(resolve));
+
+			expect(isAbortTriggered).toBe(true);
+			expect(isErrorTriggered).toBe(false);
+			expect(isLoadEndTriggered).toBe(true);
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
-			expect(isDestroyed).toBe(true);
+			expect(isAborted).toBe(true);
 		});
 	});
 });

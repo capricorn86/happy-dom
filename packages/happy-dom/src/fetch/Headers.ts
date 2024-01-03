@@ -104,8 +104,8 @@ export default class Headers implements IHeaders {
 	 * @param callback Callback.
 	 */
 	public forEach(callback: (name: string, value: string, thisArg: IHeaders) => void): void {
-		for (const key of Object.keys(this.__entries__)) {
-			callback(this.__entries__[key].value, this.__entries__[key].name, this);
+		for (const header of Object.values(this.__entries__)) {
+			callback(header.value, header.name, this);
 		}
 	}
 

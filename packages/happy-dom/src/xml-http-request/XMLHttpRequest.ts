@@ -133,7 +133,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
-		return <string>this.#responseBody;
+		return <string>this.#responseBody ?? '';
 	}
 
 	/**
@@ -149,7 +149,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
-		return <IDocument>this.#responseBody;
+		return this.responseType === '' ? null : <IDocument>this.#responseBody;
 	}
 
 	/**
@@ -231,12 +231,6 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		this.#abortController = new AbortController();
-		this.#abortController.signal.addEventListener('abort', () => {
-			this.#readyState = XMLHttpRequestReadyStateEnum.done;
-			this.dispatchEvent(new Event('readystatechange'));
-			this.dispatchEvent(new Event('abort'));
-			this.dispatchEvent(new Event('loadend'));
-		});
 
 		this.#request = new this.#window.Request(url, {
 			method,
@@ -334,7 +328,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			);
 		}
 
-		// When body is a Document, serialize it.
+		// When body is a Document, serialize it to a string.
 		if (
 			typeof body === 'object' &&
 			body !== null &&
@@ -344,18 +338,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		if (this.#async) {
-			const taskID = this.#browserFrame.__asyncTaskManager__.startTask(() => this.abort());
-			this.#sendAsync(<IRequestBody>body)
-				.then(() => {
-					this.#browserFrame.__asyncTaskManager__.endTask(taskID);
-				})
-				.catch((error) => {
-					this.#readyState = XMLHttpRequestReadyStateEnum.done;
-					this.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
-					this.dispatchEvent(new Event('loadend'));
-					this.dispatchEvent(new Event('readystatechange'));
-					this.#browserFrame.__asyncTaskManager__.endTask(taskID);
-				});
+			this.#sendAsync(<IRequestBody>body).catch((error) => {
+				throw error;
+			});
 		} else {
 			this.#sendSync(<IRequestBody>body);
 		}
@@ -374,6 +359,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param body Optional data to send as request body.
 	 */
 	async #sendAsync(body?: IRequestBody): Promise<void> {
+		const taskID = this.#browserFrame.__asyncTaskManager__.startTask(() => this.abort());
+
 		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
 
 		this.dispatchEvent(new Event('readystatechange'));
@@ -389,7 +376,26 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			});
 		}
 
-		this.#response = await (<Fetch>this.#fetch).send();
+		const onError = (error: Error) => {
+			if (error instanceof DOMException && error.name === DOMExceptionNameEnum.abortError) {
+				this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
+				this.dispatchEvent(new Event('abort'));
+			} else {
+				this.#readyState = XMLHttpRequestReadyStateEnum.done;
+				this.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
+			}
+			this.dispatchEvent(new Event('loadend'));
+			this.dispatchEvent(new Event('readystatechange'));
+			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+		};
+
+		try {
+			this.#response = await (<Fetch>this.#fetch).send();
+		} catch (error) {
+			onError(error);
+			return;
+		}
+
 		this.#readyState = XMLHttpRequestReadyStateEnum.headersRecieved;
 
 		this.dispatchEvent(new Event('readystatechange'));
@@ -401,16 +407,31 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		let data = Buffer.from([]);
 
 		if (this.#response.body) {
-			for await (const chunk of this.#response.body) {
-				data = Buffer.concat([data, chunk]);
-				loaded += chunk.length;
-				this.dispatchEvent(
-					new ProgressEvent('progress', {
-						lengthComputable: contentLengthNumber !== null,
-						loaded,
-						total: contentLengthNumber !== null ? contentLengthNumber : 0
-					})
-				);
+			let eventError: Error;
+			try {
+				for await (const chunk of this.#response.body) {
+					data = Buffer.concat([data, typeof chunk === 'string' ? Buffer.from(chunk) : chunk]);
+					loaded += chunk.length;
+					// We need to re-throw the error as we don't want it to be caught by the try/catch.
+					try {
+						this.dispatchEvent(
+							new ProgressEvent('progress', {
+								lengthComputable: contentLengthNumber !== null,
+								loaded,
+								total: contentLengthNumber !== null ? contentLengthNumber : 0
+							})
+						);
+					} catch (error) {
+						eventError = error;
+						throw error;
+					}
+				}
+			} catch (error) {
+				if (error === eventError) {
+					throw error;
+				}
+				onError(error);
+				return;
 			}
 		}
 
@@ -426,6 +447,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.dispatchEvent(new Event('readystatechange'));
 		this.dispatchEvent(new Event('load'));
 		this.dispatchEvent(new Event('loadend'));
+
+		this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 	}
 
 	/**
@@ -449,8 +472,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		try {
 			this.#response = (<SyncFetch>this.#fetch).send();
 		} catch (error) {
-			this.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
 			this.#readyState = XMLHttpRequestReadyStateEnum.done;
+			this.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
 			this.dispatchEvent(new Event('loadend'));
 			this.dispatchEvent(new Event('readystatechange'));
 			return;

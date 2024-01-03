@@ -7,8 +7,6 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestBody from '../types/IRequestBody.js';
 import IResponseBody from '../types/IResponseBody.js';
-import Request from '../Request.js';
-import Response from '../Response.js';
 
 /**
  * Fetch body utility.

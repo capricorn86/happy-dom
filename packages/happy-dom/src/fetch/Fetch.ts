@@ -101,6 +101,10 @@ export default class Fetch {
 		FetchRequestReferrerUtility.prepareRequest(this.#window.location, this.request);
 		FetchRequestValidationUtility.validateSchema(this.request);
 
+		if (this.request.signal.aborted) {
+			throw new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+		}
+
 		if (this.request.__url__.protocol === 'data:') {
 			const result = DataURIParser.parse(this.request.url);
 			this.response = new this.#window.Response(result.buffer, {
@@ -343,11 +347,6 @@ export default class Fetch {
 			};
 
 			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
-
-			if (this.request.signal.aborted) {
-				this.abort();
-				return;
-			}
 
 			// Security check for "https" to "http" requests.
 			if (
@@ -727,7 +726,10 @@ export default class Fetch {
 				});
 
 				this.finalizeRequest();
-				this.resolve(fetch.send());
+				fetch
+					.send()
+					.then((response) => this.resolve(response))
+					.catch((error) => this.reject(error));
 				return true;
 			default:
 				this.finalizeRequest();
