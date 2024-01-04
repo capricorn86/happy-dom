@@ -1,12 +1,11 @@
 import IBrowserWindow from '../../src/window/IBrowserWindow.js';
 import ResourceFetch from '../../src/fetch/ResourceFetch.js';
 import IResponse from '../../src/fetch/types/IResponse.js';
-import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder.js';
-import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Browser from '../../src/browser/Browser.js';
 import Fetch from '../../src/fetch/Fetch.js';
-import '../types.d.js';
+import SyncFetch from '../../src/fetch/SyncFetch.js';
+import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
 
 const URL = 'https://localhost:8080/base/';
 
@@ -26,107 +25,91 @@ describe('ResourceFetch', () => {
 	});
 
 	afterEach(() => {
-		resetMockedModules();
 		vi.restoreAllMocks();
 	});
 
 	describe('fetch()', () => {
 		it('Returns resource data asynchrounously.', async () => {
-			let fetchedURL: string | null = null;
-			let fetchedMethod: string | null = null;
+			let requestArgs: { url: string; method: string } | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function () {
-				fetchedURL = <string>this.request.url;
-				fetchedMethod = <string>this.request.method;
-				return Promise.resolve(<IResponse>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				requestArgs = {
+					url: this.request.url,
+					method: this.request.method
+				};
+				return <IResponse>{
 					text: () => Promise.resolve('test'),
 					ok: true
-				});
+				};
 			});
 
 			const test = await resourceFetch.fetch('path/to/script/');
 
-			expect(fetchedURL).toBe('https://localhost:8080/base/path/to/script/');
-			expect(fetchedMethod).toBe('GET');
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/base/path/to/script/',
+				method: 'GET'
+			});
 			expect(test).toBe('test');
+		});
+
+		it('Handles error when resource is fetched asynchrounously.', () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				return <IResponse>{
+					ok: false,
+					status: 404,
+					statusText: 'Not Found'
+				};
+			});
+
+			expect(resourceFetch.fetch('path/to/script/')).rejects.toEqual(
+				new DOMException(
+					`Failed to perform request to "${URL}path/to/script/". Status 404 Not Found.`
+				)
+			);
 		});
 	});
 
 	describe('fetchSync()', () => {
 		it('Returns resource data synchrounously.', () => {
 			const expectedResponse = 'test';
+			let requestArgs: { url: string; method: string } | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						XMLHttpRequestSyncRequestScriptBuilder.getScript(
-							{
-								host: 'localhost',
-								port: 8080,
-								path: '/base/path/to/script/',
-								method: 'GET',
-								headers: {
-									Accept: '*/*',
-									Referer: 'https://localhost:8080/base/',
-									'User-Agent': window.navigator.userAgent,
-									'Accept-Encoding': 'gzip, deflate, br',
-									Connection: 'close',
-									Host: 'localhost:8080'
-								},
-								agent: false,
-								rejectUnauthorized: true,
-								key: XMLHttpRequestCertificate.key,
-								cert: XMLHttpRequestCertificate.cert
-							},
-							true
-						)
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {},
-							text: expectedResponse,
-							data: Buffer.from(expectedResponse).toString('base64')
-						}
-					});
-				}
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(function () {
+				requestArgs = {
+					url: this.request.url,
+					method: this.request.method
+				};
+				return <ISyncResponse>{
+					body: Buffer.from(expectedResponse),
+					ok: true
+				};
 			});
 
 			const response = resourceFetch.fetchSync('path/to/script/');
 
+			expect(requestArgs).toEqual({
+				url: 'https://localhost:8080/base/path/to/script/',
+				method: 'GET'
+			});
 			expect(response).toBe(expectedResponse);
 		});
 
 		it('Handles error when resource is fetched synchrounously.', () => {
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 404,
-							statusMessage: 'Not found',
-							headers: {},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(function () {
+				return <ISyncResponse>{
+					ok: false,
+					status: 404,
+					statusText: 'Not Found'
+				};
 			});
+
 			expect(() => {
 				resourceFetch.fetchSync('path/to/script/');
-			}).toThrowError(`Failed to perform request to "${URL}path/to/script/". Status code: 404`);
+			}).toThrowError(
+				new DOMException(
+					`Failed to perform request to "${URL}path/to/script/". Status 404 Not Found.`
+				)
+			);
 		});
 	});
 });

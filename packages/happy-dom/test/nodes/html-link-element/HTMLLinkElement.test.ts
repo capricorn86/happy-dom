@@ -3,7 +3,7 @@ import IWindow from '../../../src/window/IWindow.js';
 import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement.js';
-import ResourceFetch from '../../../src/resource-fetch/ResourceFetch.js';
+import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import Event from '../../../src/event/Event.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';

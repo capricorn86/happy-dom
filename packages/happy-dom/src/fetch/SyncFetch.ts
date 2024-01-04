@@ -74,6 +74,7 @@ export default class SyncFetch {
 		if (options.contentType) {
 			(<string>this.request.__contentType__) = options.contentType;
 		}
+		this.redirectCount = options.redirectCount ?? 0;
 		this.disableCache = options.disableCache ?? false;
 		this.disableCrossOriginPolicy = options.disableCrossOriginPolicy ?? false;
 	}
@@ -102,6 +103,18 @@ export default class SyncFetch {
 				headers: new Headers({ 'Content-Type': result.type }),
 				body: result.buffer
 			};
+		}
+
+		// Security check for "https" to "http" requests.
+		if (this.request.__url__.protocol === 'http:' && this.#window.location.protocol === 'https:') {
+			throw new DOMException(
+				`Mixed Content: The page at '${
+					this.#window.location.href
+				}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
+					this.request.url
+				}'. This request has been blocked; the content must be served over HTTPS.`,
+				DOMExceptionNameEnum.securityError
+			);
 		}
 
 		const cachedResponse = this.getCachedResponse();
@@ -306,6 +319,13 @@ export default class SyncFetch {
 	 * @returns Response.
 	 */
 	public sendRequest(): ISyncResponse {
+		if (!this.request.__bodyBuffer__ && this.request.body) {
+			throw new DOMException(
+				`Streams are not supported as request body for synchrounous requests.`,
+				DOMExceptionNameEnum.notSupportedError
+			);
+		}
+
 		const script = SyncFetchScriptBuilder.getScript({
 			url: this.request.__url__,
 			method: this.request.method,
@@ -325,14 +345,17 @@ export default class SyncFetch {
 
 		// If content length is 0, then there was an error
 		if (!content.length) {
-			throw new DOMException('Synchronous request failed', DOMExceptionNameEnum.networkError);
+			throw new DOMException(
+				`Synchronous fetch to "${this.request.url}" failed.`,
+				DOMExceptionNameEnum.networkError
+			);
 		}
 
 		const { error, incomingMessage } = <ISyncHTTPResponse>JSON.parse(content.toString());
 
 		if (error) {
 			throw new DOMException(
-				'Synchronous request failed. Error: ' + error,
+				`Synchronous fetch to "${this.request.url}" failed. Error: ${error}`,
 				DOMExceptionNameEnum.networkError
 			);
 		}
@@ -394,25 +417,32 @@ export default class SyncFetch {
 			return options.body;
 		}
 
-		// For GZip
-		if (contentEncodingHeader === 'gzip' || contentEncodingHeader === 'x-gzip') {
-			// Be less strict when decoding compressed responses by using Z_SYNC_FLUSH.
-			// Sometimes servers send slightly invalid responses that are still accepted by common browsers.
-			// "cURL" always uses Z_SYNC_FLUSH.
-			return Zlib.gunzipSync(options.body, {
-				flush: Zlib.constants.Z_SYNC_FLUSH,
-				finishFlush: Zlib.constants.Z_SYNC_FLUSH
-			});
-		}
+		try {
+			// For GZip
+			if (contentEncodingHeader === 'gzip' || contentEncodingHeader === 'x-gzip') {
+				// Be less strict when decoding compressed responses by using Z_SYNC_FLUSH.
+				// Sometimes servers send slightly invalid responses that are still accepted by common browsers.
+				// "cURL" always uses Z_SYNC_FLUSH.
+				return Zlib.gunzipSync(options.body, {
+					flush: Zlib.constants.Z_SYNC_FLUSH,
+					finishFlush: Zlib.constants.Z_SYNC_FLUSH
+				});
+			}
 
-		// For Deflate
-		if (contentEncodingHeader === 'deflate' || contentEncodingHeader === 'x-deflate') {
-			return Zlib.inflateSync(options.body);
-		}
+			// For Deflate
+			if (contentEncodingHeader === 'deflate' || contentEncodingHeader === 'x-deflate') {
+				return Zlib.inflateSync(options.body);
+			}
 
-		// For BR
-		if (contentEncodingHeader === 'br') {
-			return Zlib.brotliDecompressSync(options.body);
+			// For BR
+			if (contentEncodingHeader === 'br') {
+				return Zlib.brotliDecompressSync(options.body);
+			}
+		} catch (error) {
+			throw new DOMException(
+				`Failed to read response body. Error: ${error.message}.`,
+				DOMExceptionNameEnum.encodingError
+			);
 		}
 
 		return options.body;

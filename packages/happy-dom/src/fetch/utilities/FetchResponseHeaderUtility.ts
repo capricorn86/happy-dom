@@ -26,12 +26,14 @@ export default class FetchResponseHeaderUtility {
 			} else {
 				const lowerName = key.toLowerCase();
 				// Handles setting cookie headers to the document.
+				// "Set-Cookie" and "Set-Cookie2" are not allowed in response headers according to spec.
 				if (lowerName === 'set-cookie' || lowerName === 'set-cookie2') {
 					options.browserFrame.page.context.cookieContainer.addCookies([
 						CookieStringUtility.stringToCookie(options.requestURL, header)
 					]);
+				} else {
+					headers.append(key, header);
 				}
-				headers.append(key, header);
 				key = null;
 			}
 		}

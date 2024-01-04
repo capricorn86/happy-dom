@@ -16,22 +16,29 @@ export default class SyncFetchScriptBuilder {
 		headers: { [name: string]: string };
 		body?: Buffer | null;
 	}): string {
-		// Synchronous
-		// Note: console.log === stdout
-		// The async request the other Node process executes
+		const sortedHeaders = {};
+		const headerNames = Object.keys(request.headers).sort();
+		for (const name of headerNames) {
+			sortedHeaders[name] = request.headers[name];
+		}
+
 		return `
                 const sendRequest = require('http${
 									request.url.protocol === 'https:' ? 's' : ''
 								}').request;
-                const options = ${JSON.stringify({
-									method: request.method,
-									headers: request.headers,
-									agent: false,
-									rejectUnauthorized: true,
-									key: request.url.protocol === 'https:' ? FetchHTTPSCertificate.key : undefined,
-									cert: request.url.protocol === 'https:' ? FetchHTTPSCertificate.cert : undefined
-								})};
-                const request = sendRequest(${request.url.href}, options, (incomingMessage) => {
+                const options = ${JSON.stringify(
+									{
+										method: request.method,
+										headers: sortedHeaders,
+										agent: false,
+										rejectUnauthorized: true,
+										key: request.url.protocol === 'https:' ? FetchHTTPSCertificate.key : undefined,
+										cert: request.url.protocol === 'https:' ? FetchHTTPSCertificate.cert : undefined
+									},
+									null,
+									4
+								)};
+                const request = sendRequest('${request.url.href}', options, (incomingMessage) => {
                     let data = Buffer.alloc(0);
                     incomingMessage.on('data', (chunk) => {
                         data = Buffer.concat([data, Buffer.from(chunk)]);

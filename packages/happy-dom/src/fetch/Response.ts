@@ -16,7 +16,7 @@ import { TextDecoder } from 'util';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import ICachedResponse from '../cache/response/ICachedResponse.js';
+import ICachedResponse from './cache/response/ICachedResponse.js';
 
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 

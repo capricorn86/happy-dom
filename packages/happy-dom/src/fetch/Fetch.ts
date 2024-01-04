@@ -113,6 +113,18 @@ export default class Fetch {
 			return this.response;
 		}
 
+		// Security check for "https" to "http" requests.
+		if (this.request.__url__.protocol === 'http:' && this.#window.location.protocol === 'https:') {
+			throw new DOMException(
+				`Mixed Content: The page at '${
+					this.#window.location.href
+				}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
+					this.request.url
+				}'. This request has been blocked; the content must be served over HTTPS.`,
+				DOMExceptionNameEnum.securityError
+			);
+		}
+
 		const cachedResponse = await this.getCachedResponse();
 
 		if (cachedResponse) {
@@ -347,21 +359,6 @@ export default class Fetch {
 			};
 
 			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
-
-			// Security check for "https" to "http" requests.
-			if (
-				this.request.__url__.protocol === 'http:' &&
-				this.#window.location.protocol === 'https:'
-			) {
-				throw new DOMException(
-					`Mixed Content: The page at '${
-						this.#window.location.href
-					}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
-						this.request.url
-					}'. This request has been blocked; the content must be served over HTTPS.`,
-					DOMExceptionNameEnum.securityError
-				);
-			}
 
 			const send = (this.request.__url__.protocol === 'https:' ? HTTPS : HTTP).request;
 

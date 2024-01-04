@@ -41,9 +41,9 @@ export default class ResourceFetch {
 
 		if (!response.ok) {
 			throw new DOMException(
-				`Failed to perform request to "${
-					new URL(url, this.window.location.href).href
-				}". Status code: ${response.status}.`
+				`Failed to perform request to "${new URL(url, this.window.location.href).href}". Status ${
+					response.status
+				} ${response.statusText}.`
 			);
 		}
 
@@ -68,9 +68,9 @@ export default class ResourceFetch {
 
 		if (!response.ok) {
 			throw new DOMException(
-				`Failed to perform request to "${
-					new URL(url, this.window.location.href).href
-				}". Status code: ${response.status}.`
+				`Failed to perform request to "${new URL(url, this.window.location.href).href}". Status ${
+					response.status
+				} ${response.statusText}.`
 			);
 		}
 

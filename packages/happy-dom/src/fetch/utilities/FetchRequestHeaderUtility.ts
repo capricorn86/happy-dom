@@ -13,6 +13,7 @@ const FORBIDDEN_HEADER_NAMES = [
 	'access-control-request-method',
 	'connection',
 	'content-length',
+	'content-transfer-encoding',
 	'cookie',
 	'cookie2',
 	'date',
@@ -48,6 +49,16 @@ export default class FetchRequestHeaderUtility {
 				delete (<Headers>headers).__entries__[key];
 			}
 		}
+	}
+
+	/**
+	 * Returns "true" if the header is forbidden.
+	 *
+	 * @param name Header name.
+	 * @returns "true" if the header is forbidden.
+	 */
+	public static isHeaderForbidden(name: string): boolean {
+		return FORBIDDEN_HEADER_NAMES.includes(name.toLowerCase());
 	}
 
 	/**

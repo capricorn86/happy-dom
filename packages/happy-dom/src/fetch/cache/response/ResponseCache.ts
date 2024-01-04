@@ -3,6 +3,7 @@ import ICachedResponse from './ICachedResponse.js';
 import CachedResponseStateEnum from './CachedResponseStateEnum.js';
 import ICachableRequest from './ICachableRequest.js';
 import ICachableResponse from './ICachableResponse.js';
+import Headers from '../../Headers.js';
 
 const UPDATE_RESPONSE_HEADERS = ['Cache-Control', 'Last-Modified', 'Vary', 'ETag'];
 
@@ -100,7 +101,7 @@ export default class ResponseCache implements IResponseCache {
 					status: response.status,
 					statusText: response.statusText,
 					url: response.url,
-					headers: response.headers,
+					headers: new Headers(response.headers),
 					// We need to wait for the body to be consumed and then populated if set to true (e.g. by using Response.text()).
 					waitingForBody: response.waitingForBody,
 					body: response.body ?? null

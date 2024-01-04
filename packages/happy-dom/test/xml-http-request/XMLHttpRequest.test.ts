@@ -32,6 +32,7 @@ const FORBIDDEN_REQUEST_HEADERS = [
 	'cookie',
 	'cookie2',
 	'date',
+	'dnt',
 	'expect',
 	'host',
 	'keep-alive',
@@ -101,7 +102,7 @@ describe('XMLHttpRequest', () => {
 		it('Returns status text for synchrounous requests.', () => {
 			const statusText = 'Test';
 
-			expect(request.statusText).toBe(null);
+			expect(request.statusText).toBe('');
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), statusText }
@@ -121,7 +122,7 @@ describe('XMLHttpRequest', () => {
 					async () => <IResponse>{ headers: <IHeaders>new Headers(), statusText }
 				);
 
-				expect(request.statusText).toBe(null);
+				expect(request.statusText).toBe('');
 
 				request.open('GET', REQUEST_URL, true);
 
@@ -431,7 +432,7 @@ describe('XMLHttpRequest', () => {
 		it('Throws an exception for forbidden request methods.', () => {
 			for (const forbiddenMethod of FORBIDDEN_REQUEST_METHODS) {
 				expect(() => request.open(forbiddenMethod, REQUEST_URL, true)).toThrowError(
-					'Request method not allowed'
+					`'${forbiddenMethod}' is not a valid HTTP method.`
 				);
 			}
 		});
@@ -446,29 +447,48 @@ describe('XMLHttpRequest', () => {
 
 	describe('setRequestHeader()', () => {
 		it('Sets a request header on a synchronous request.', () => {
-			let isExecuted = false;
+			let requestArgs: { headers: { [name: string]: string } } | null = null;
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(function () {
-				expect(this.request.headers.get('test-header')).toBe('test');
+				requestArgs = {
+					headers: {
+						'test-header': this.request.headers.get('test-header')
+					}
+				};
 				return <ISyncResponse>{ headers: <IHeaders>new Headers() };
 			});
 
 			request.open('GET', REQUEST_URL, false);
 			expect(request.setRequestHeader('test-header', 'test')).toBe(true);
 			request.send();
-			expect(isExecuted).toBe(true);
+			expect(requestArgs).toEqual({
+				headers: {
+					'test-header': 'test'
+				}
+			});
 		});
 
 		it('Sets a request header on an asynchrounous request.', async () => {
 			await new Promise((resolve) => {
+				let requestArgs: { headers: { [name: string]: string } } | null = null;
+
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
-					expect(this.request.headers.get('test-header')).toBe('test');
+					requestArgs = {
+						headers: {
+							'test-header': this.request.headers.get('test-header')
+						}
+					};
 					return <IResponse>{ headers: <IHeaders>new Headers() };
 				});
 
 				request.open('GET', REQUEST_URL, true);
 				expect(request.setRequestHeader('test-header', 'test')).toBe(true);
 				request.addEventListener('load', () => {
+					expect(requestArgs).toEqual({
+						headers: {
+							'test-header': 'test'
+						}
+					});
 					resolve(null);
 				});
 				request.send();
@@ -596,28 +616,6 @@ describe('XMLHttpRequest', () => {
 			);
 		});
 
-		it('Throws an exception if the request has already been sent.', () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-				async () => <IResponse>{ headers: <IHeaders>new Headers() }
-			);
-
-			request.open('GET', REQUEST_URL, true);
-			request.send();
-
-			expect(() => request.send()).toThrowError(
-				`Failed to execute 'send' on 'XMLHttpRequest': Send has already been called.`
-			);
-		});
-
-		it('Throws an exception when the page is HTTPS and the request is HTTP.', () => {
-			const unsecureURL = 'http://unsecure.happydom';
-			request.open('GET', unsecureURL, false);
-
-			expect(() => request.send()).toThrowError(
-				`Mixed Content: The page at '${window.location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${unsecureURL}/'. This request has been blocked; the content must be served over HTTPS.`
-			);
-		});
-
 		it('Performs a synchronous GET request with the HTTP protocol.', () => {
 			const windowURL = 'http://localhost:8080';
 			const window = new Window({
@@ -639,16 +637,9 @@ describe('XMLHttpRequest', () => {
 
 		it('Performs a synchronous GET request with the HTTPS protocol.', () => {
 			const responseText = 'test';
-			async function* generate(): AsyncGenerator<string> {
-				yield responseText;
-			}
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-				async () =>
-					<IResponse>{
-						headers: <IHeaders>new Headers(),
-						body: Stream.Readable.from(generate())
-					}
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), body: Buffer.from(responseText) }
 			);
 
 			request.open('GET', REQUEST_URL, false);
@@ -956,15 +947,17 @@ describe('XMLHttpRequest', () => {
 				const responseText = 'http.request.body';
 				const body = 'Hello, world!\n';
 				let requestArgs: { method: string; url: string; body: string };
+
 				async function* generate(): AsyncGenerator<string> {
 					yield responseText;
 				}
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					const requestBody = await this.request.text();
 					requestArgs = {
 						method: this.request.method,
 						url: this.request.url,
-						body: this.request.__buffer__.toString()
+						body: requestBody
 					};
 					return <IResponse>{
 						headers: <IHeaders>new Headers({
@@ -1107,14 +1100,14 @@ describe('XMLHttpRequest', () => {
 				});
 				setTimeout(() => {
 					request.abort();
-					setTimeout(() => {
-						expect(isAbortTriggered).toBe(true);
-						expect(isErrorTriggered).toBe(false);
-						expect(isLoadEndTriggered).toBe(true);
-						expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
-						expect(isAborted).toBe(true);
-						resolve(null);
-					});
+
+					expect(isAbortTriggered).toBe(true);
+					expect(isErrorTriggered).toBe(false);
+					expect(isLoadEndTriggered).toBe(true);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
+					expect(isAborted).toBe(true);
+
+					resolve(null);
 				});
 			});
 		});
@@ -1178,9 +1171,6 @@ describe('XMLHttpRequest', () => {
 			});
 
 			window.happyDOM?.abort();
-
-			// TODO: Why do we need to wait for a tick here?
-			await new Promise((resolve) => setTimeout(resolve));
 
 			expect(isAbortTriggered).toBe(true);
 			expect(isErrorTriggered).toBe(false);

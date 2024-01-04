@@ -2,7 +2,7 @@ import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration.j
 import IDocument from '../../src/nodes/document/IDocument.js';
 import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement.js';
 import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
-import ResourceFetch from '../../src/resource-fetch/ResourceFetch.js';
+import ResourceFetch from '../../src/fetch/ResourceFetch.js';
 import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement.js';
 import IWindow from '../../src/window/IWindow.js';
 import IBrowserWindow from '../../src/window/IBrowserWindow.js';

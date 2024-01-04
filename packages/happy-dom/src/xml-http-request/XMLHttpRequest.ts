@@ -21,30 +21,7 @@ import ProgressEvent from '../event/events/ProgressEvent.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import IRequestBody from '../fetch/types/IRequestBody.js';
 import XMLHttpRequestResponseDataParser from './utilities/XMLHttpRequestResponseDataParser.js';
-
-// These headers are not user settable according to spec.
-const FORBIDDEN_REQUEST_HEADERS = [
-	'accept-charset',
-	'accept-encoding',
-	'access-control-request-headers',
-	'access-control-request-method',
-	'connection',
-	'content-length',
-	'content-transfer-encoding',
-	'cookie',
-	'cookie2',
-	'date',
-	'expect',
-	'host',
-	'keep-alive',
-	'origin',
-	'referer',
-	'te',
-	'trailer',
-	'transfer-encoding',
-	'upgrade',
-	'via'
-];
+import FetchRequestHeaderUtility from '../fetch/utilities/FetchRequestHeaderUtility.js';
 
 /**
  * XMLHttpRequest.
@@ -67,9 +44,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	// Private properties
 	#browserFrame: IBrowserFrame;
 	#window: IBrowserWindow;
-	#fetch: Fetch | SyncFetch | null = null;
 	#async: boolean = true;
 	#abortController: AbortController | null = null;
+	#aborted = false;
 	#request: Request | null = null;
 	#response: IResponse | ISyncResponse | null = null;
 	#responseType: XMLHttpResponseTypeEnum | '' = '';
@@ -230,8 +207,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			headers.set('Authorization', 'Basic ' + authBuffer.toString('base64'));
 		}
 
+		this.#async = async;
+		this.#aborted = false;
+		this.#response = null;
+		this.#responseBody = null;
 		this.#abortController = new AbortController();
-
 		this.#request = new this.#window.Request(url, {
 			method,
 			headers,
@@ -239,33 +219,17 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			credentials: this.withCredentials ? 'include' : 'omit'
 		});
 
-		if (async) {
-			this.#fetch = new Fetch({
-				browserFrame: this.#browserFrame,
-				window: this.#window,
-				url,
-				init: this.#request
-			});
-		} else {
-			this.#fetch = new SyncFetch({
-				browserFrame: this.#browserFrame,
-				window: this.#window,
-				url,
-				init: this.#request
-			});
-		}
-
 		this.#readyState = XMLHttpRequestReadyStateEnum.opened;
 	}
 
 	/**
 	 * Sets a header for the request.
 	 *
-	 * @param header Header name
-	 * @param value Header value
+	 * @param name Header name.
+	 * @param value Header value.
 	 * @returns Header added.
 	 */
-	public setRequestHeader(header: string, value: string): boolean {
+	public setRequestHeader(name: string, value: string): boolean {
 		if (this.readyState !== XMLHttpRequestReadyStateEnum.opened) {
 			throw new DOMException(
 				`Failed to execute 'setRequestHeader' on 'XMLHttpRequest': The object's state must be OPENED.`,
@@ -274,11 +238,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		// TODO: Use FetchRequestHeaderUtility.removeForbiddenHeaders() instead.
-		if (FORBIDDEN_REQUEST_HEADERS.includes(header.toLowerCase())) {
+		if (FetchRequestHeaderUtility.isHeaderForbidden(name)) {
 			return false;
 		}
 
-		this.#request.headers.set(header, value);
+		this.#request.headers.set(name, value);
 
 		return true;
 	}
@@ -350,6 +314,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * Aborts a request.
 	 */
 	public abort(): void {
+		if (this.#aborted) {
+			return;
+		}
+		this.#aborted = true;
 		this.#abortController.abort();
 	}
 
@@ -376,8 +344,20 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			});
 		}
 
+		this.#abortController.signal.addEventListener('abort', () => {
+			this.#aborted = true;
+			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
+			this.dispatchEvent(new Event('abort'));
+			this.dispatchEvent(new Event('loadend'));
+			this.dispatchEvent(new Event('readystatechange'));
+			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+		});
+
 		const onError = (error: Error) => {
 			if (error instanceof DOMException && error.name === DOMExceptionNameEnum.abortError) {
+				if (this.#aborted) {
+					return;
+				}
 				this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
 				this.dispatchEvent(new Event('abort'));
 			} else {
@@ -389,8 +369,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
 		};
 
+		const fetch = new Fetch({
+			browserFrame: this.#browserFrame,
+			window: this.#window,
+			url: this.#request.url,
+			init: this.#request
+		});
+
 		try {
-			this.#response = await (<Fetch>this.#fetch).send();
+			this.#response = await fetch.send();
 		} catch (error) {
 			onError(error);
 			return;
@@ -469,8 +456,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
 
+		const fetch = new SyncFetch({
+			browserFrame: this.#browserFrame,
+			window: this.#window,
+			url: this.#request.url,
+			init: this.#request
+		});
+
 		try {
-			this.#response = (<SyncFetch>this.#fetch).send();
+			this.#response = fetch.send();
 		} catch (error) {
 			this.#readyState = XMLHttpRequestReadyStateEnum.done;
 			this.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));

@@ -2,10 +2,9 @@ import Window from '../../../src/window/Window.js';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IResponse from '../../../src/fetch/types/IResponse.js';
-import ResourceFetch from '../../../src/resource-fetch/ResourceFetch.js';
+import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Event from '../../../src/event/Event.js';
-import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import IWindow from '../../../src/window/IWindow.js';
 import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
@@ -205,7 +204,8 @@ describe('HTMLScriptElement', () => {
 				async () => <IResponse>(<unknown>{
 						text: () => null,
 						ok: false,
-						status: 404
+						status: 404,
+						statusText: 'Not Found'
 					})
 			);
 
@@ -221,7 +221,7 @@ describe('HTMLScriptElement', () => {
 			await window.happyDOM?.whenComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to perform request to "https://localhost:8080/path/to/script.js". Status code: 404.'
+				'Failed to perform request to "https://localhost:8080/path/to/script.js". Status 404 Not Found.'
 			);
 		});
 

@@ -1,8 +1,10 @@
 /**
+ * Storage.
  *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Storage
  */
 export default class Storage {
-	private #store: { [k: string]: string } = {};
+	#store: { [k: string]: string } = {};
 
 	/**
 	 * Returns length.
