@@ -10,6 +10,7 @@ import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import BrowserNavigationCrossOriginPolicyEnum from '../../src/browser/enums/BrowserNavigationCrossOriginPolicyEnum';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';
+import BrowserErrorCapturingEnum from '../../src/browser/enums/BrowserErrorCapturingEnum';
 
 describe('BrowserFrame', () => {
 	afterEach(() => {
@@ -77,7 +78,9 @@ describe('BrowserFrame', () => {
 		});
 
 		it('Removes listeners and child nodes before setting the document HTML content.', () => {
-			const browser = new Browser({ settings: { disableErrorCapturing: true } });
+			const browser = new Browser({
+				settings: { errorCapturing: BrowserErrorCapturingEnum.disabled }
+			});
 			const page = browser.defaultContext.newPage();
 			page.mainFrame.content = '<div>test</div>';
 			page.mainFrame.window.document.addEventListener('load', () => {

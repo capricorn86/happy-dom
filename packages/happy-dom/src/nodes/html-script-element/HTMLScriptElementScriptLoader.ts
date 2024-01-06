@@ -6,6 +6,7 @@ import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
 import IHTMLScriptElement from './IHTMLScriptElement.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import BrowserErrorCapturingEnum from '../../browser/enums/BrowserErrorCapturingEnum.js';
 
 /**
  * Helper class for getting the URL relative to a Location object.
@@ -101,13 +102,14 @@ export default class HTMLScriptElementScriptLoader {
 
 		if (error) {
 			WindowErrorUtility.dispatchError(element, error);
-			if (browserSettings.disableErrorCapturing) {
-				throw error;
-			}
 		} else {
 			element.ownerDocument['__currentScript__'] = element;
 			code = '//# sourceURL=' + absoluteURL + '\n' + code;
-			if (browserSettings.disableErrorCapturing) {
+
+			if (
+				browserSettings.disableErrorCapturing ||
+				browserSettings.errorCapturing !== BrowserErrorCapturingEnum.tryAndCatch
+			) {
 				element.ownerDocument.__defaultView__.eval(code);
 			} else {
 				WindowErrorUtility.captureError(element.ownerDocument.__defaultView__, () =>

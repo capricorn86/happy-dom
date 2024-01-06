@@ -31,6 +31,7 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import ElementNamedNodeMap from './ElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
+import BrowserErrorCapturingEnum from '../../browser/enums/BrowserErrorCapturingEnum.js';
 
 /**
  * Element.
@@ -940,7 +941,11 @@ export default class Element extends Node implements IElement {
 
 			if (attribute && !event.__immediatePropagationStopped__) {
 				const code = `//# sourceURL=${this.ownerDocument.__defaultView__.location.href}\n${attribute}`;
-				if (browserSettings.disableErrorCapturing) {
+
+				if (
+					browserSettings.disableErrorCapturing ||
+					browserSettings.errorCapturing !== BrowserErrorCapturingEnum.tryAndCatch
+				) {
 					this.ownerDocument.__defaultView__.eval(code);
 				} else {
 					WindowErrorUtility.captureError(this.ownerDocument.__defaultView__, () =>

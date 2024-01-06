@@ -5,6 +5,7 @@ import IResponse from '../../fetch/types/IResponse.js';
 import IGoToOptions from './IGoToOptions.js';
 import { Script } from 'vm';
 import IReloadOptions from './IReloadOptions.js';
+import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
 
 /**
  * Browser frame.
@@ -17,6 +18,7 @@ export default interface IBrowserFrame {
 	readonly parentFrame: IBrowserFrame | null;
 	readonly opener: IBrowserFrame | null;
 	__asyncTaskManager__: AsyncTaskManager;
+	__exceptionObserver__: BrowserFrameExceptionObserver | null;
 	readonly page: IBrowserPage;
 
 	/**

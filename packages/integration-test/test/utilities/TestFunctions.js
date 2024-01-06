@@ -1,3 +1,5 @@
+import Chalk from 'chalk';
+
 /* eslint-disable no-console*/
 
 const tests = [];
@@ -22,35 +24,56 @@ export function run(description, callback) {
 	});
 	clearTimeout(timeout);
 	timeout = setTimeout(async () => {
+		let hasError = false;
 		for (const test of tests) {
-			console.log(test.description);
-			const result = test.callback();
+			console.log(Chalk.blue(test.description));
+			let result = null;
+			try {
+				result = test.callback();
+			} catch (error) {
+				console.error(Chalk.red(error));
+				hasError = true;
+			}
 			if (result instanceof Promise) {
-				const testTimeout = setTimeout(() => {
-					console.error('Test timed out.');
-					process.exit(1);
-				}, 2000);
-				try {
-					await result;
-					clearTimeout(testTimeout);
-				} catch (error) {
-					console.error(error);
-					process.exit(1);
-				}
+				await new Promise((resolve) => {
+					let hasTimedout = false;
+					const testTimeout = setTimeout(() => {
+						console.error(Chalk.red('Test timed out.'));
+						hasError = true;
+						hasTimedout = true;
+						resolve();
+					}, 2000);
+					result
+						.then(() => {
+							if (!hasTimedout) {
+								clearTimeout(testTimeout);
+								resolve();
+							}
+						})
+						.catch((error) => {
+							console.error(Chalk.red(error));
+							hasError = true;
+						});
+				});
 			}
 		}
 
+		if (hasError) {
+			console.log('');
+			console.error(Chalk.red('❌ Some tests failed.'));
+			console.log('');
+			process.exit(1);
+		}
+
 		console.log('');
-		console.log('All tests passed.');
+		console.log(Chalk.green('All tests passed.'));
+		console.log('');
 	}, 100);
 }
 
 export function expect(value) {
 	return {
 		toBe: (expected) => {
-			if (typeof value !== typeof expected) {
-				throw new Error(`Expected type "${typeof value}" to be "${typeof expected}".`);
-			}
 			if (value !== expected) {
 				throw new Error(`Expected value "${value}" to be "${expected}".`);
 			}

@@ -11,6 +11,7 @@ import BrowserFrameFactory from './BrowserFrameFactory.js';
 import BrowserFrameURL from './BrowserFrameURL.js';
 import BrowserFrameValidator from './BrowserFrameValidator.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
+import BrowserErrorCapturingEnum from '../enums/BrowserErrorCapturingEnum.js';
 
 /**
  * Browser frame navigation utility.
@@ -55,7 +56,11 @@ export default class BrowserFrameNavigator {
 				const code =
 					'//# sourceURL=' + frame.url + '\n' + targetURL.href.replace('javascript:', '');
 
-				if (frame.page.context.browser.settings.disableErrorCapturing) {
+				if (
+					frame.page.context.browser.settings.disableErrorCapturing ||
+					frame.page.context.browser.settings.errorCapturing !==
+						BrowserErrorCapturingEnum.tryAndCatch
+				) {
 					frame.window.eval(code);
 				} else {
 					WindowErrorUtility.captureError(frame.window, () => frame.window.eval(code));

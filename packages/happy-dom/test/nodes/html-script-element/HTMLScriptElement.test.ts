@@ -9,6 +9,7 @@ import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import IWindow from '../../../src/window/IWindow.js';
 import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
+import BrowserErrorCapturingEnum from '../../../src/browser/enums/BrowserErrorCapturingEnum.js';
 
 describe('HTMLScriptElement', () => {
 	let window: IWindow;
@@ -509,6 +510,21 @@ describe('HTMLScriptElement', () => {
 		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "disableErrorCapturing" is set to true.', () => {
 			window = new Window({
 				settings: { disableErrorCapturing: true }
+			});
+			document = window.document;
+
+			const element = <IHTMLScriptElement>document.createElement('script');
+
+			element.text = 'globalThis.test = /;';
+
+			expect(() => {
+				document.body.appendChild(element);
+			}).toThrow(new TypeError('Invalid regular expression: missing /'));
+		});
+
+		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "errorCapturing" is set to "disabled".', () => {
+			window = new Window({
+				settings: { errorCapturing: BrowserErrorCapturingEnum.disabled }
 			});
 			document = window.document;
 

@@ -1,3 +1,4 @@
+import BrowserErrorCapturingEnum from '../enums/BrowserErrorCapturingEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 
 /**
@@ -16,8 +17,17 @@ export default interface IBrowserSettings {
 	/** Disables computed style rendering. */
 	disableComputedStyleRendering: boolean;
 
-	/** Disables error capturing. */
+	/**
+	 * Disables error capturing.
+	 *
+	 * @deprecated Use errorCapturing instead.
+	 */
 	disableErrorCapturing: boolean;
+
+	/**
+	 * Error capturing policy.
+	 */
+	errorCapturing: BrowserErrorCapturingEnum;
 
 	/**
 	 * @deprecated Not something that browsers support anymore as it is not secure.

@@ -11,6 +11,7 @@ import DOMException from '../../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum';
 import BrowserNavigationCrossOriginPolicyEnum from '../../../src/browser/enums/BrowserNavigationCrossOriginPolicyEnum';
 import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFactory';
+import BrowserErrorCapturingEnum from '../../../src/browser/enums/BrowserErrorCapturingEnum';
 
 describe('DetachedBrowserFrame', () => {
 	afterEach(() => {
@@ -84,7 +85,7 @@ describe('DetachedBrowserFrame', () => {
 
 		it('Removes listeners and child nodes before setting the document HTML content.', () => {
 			const browser = new DetachedBrowser(BrowserWindow, {
-				settings: { disableErrorCapturing: true }
+				settings: { errorCapturing: BrowserErrorCapturingEnum.disabled }
 			});
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];

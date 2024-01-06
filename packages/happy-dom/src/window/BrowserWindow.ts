@@ -148,6 +148,7 @@ import IResponseBody from '../fetch/types/IResponseBody.js';
 import IResponseInit from '../fetch/types/IResponseInit.js';
 import IRequestInfo from '../fetch/types/IRequestInfo.js';
 import IBrowserWindow from './IBrowserWindow.js';
+import BrowserErrorCapturingEnum from '../browser/enums/BrowserErrorCapturingEnum.js';
 
 const ORIGINAL_SET_TIMEOUT = setTimeout;
 const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
@@ -878,7 +879,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this.#setTimeout(() => {
-			if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
+			if (
+				this.#browserFrame.page.context.browser.settings.disableErrorCapturing ||
+				this.#browserFrame.page.context.browser.settings.errorCapturing !==
+					BrowserErrorCapturingEnum.tryAndCatch
+			) {
 				callback(...args);
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(...args));
@@ -909,7 +914,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 */
 	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		const id = this.#setInterval(() => {
-			if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
+			if (
+				this.#browserFrame.page.context.browser.settings.disableErrorCapturing ||
+				this.#browserFrame.page.context.browser.settings.errorCapturing !==
+					BrowserErrorCapturingEnum.tryAndCatch
+			) {
 				callback(...args);
 			} else {
 				WindowErrorUtility.captureError(
@@ -941,7 +950,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Immediate {
 		const id = global.setImmediate(() => {
-			if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
+			if (
+				this.#browserFrame.page.context.browser.settings.disableErrorCapturing ||
+				this.#browserFrame.page.context.browser.settings.errorCapturing !==
+					BrowserErrorCapturingEnum.tryAndCatch
+			) {
 				callback(this.performance.now());
 			} else {
 				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
@@ -972,7 +985,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		const taskId = this.#browserFrame.__asyncTaskManager__.startTask(() => (isAborted = true));
 		this.#queueMicrotask(() => {
 			if (!isAborted) {
-				if (this.#browserFrame.page.context.browser.settings.disableErrorCapturing) {
+				if (
+					this.#browserFrame.page.context.browser.settings.disableErrorCapturing ||
+					this.#browserFrame.page.context.browser.settings.errorCapturing !==
+						BrowserErrorCapturingEnum.tryAndCatch
+				) {
 					callback();
 				} else {
 					WindowErrorUtility.captureError(this, <() => unknown>callback);

@@ -10,6 +10,8 @@ import BrowserFrameScriptEvaluator from '../utilities/BrowserFrameScriptEvaluato
 import BrowserFrameNavigator from '../utilities/BrowserFrameNavigator.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import IReloadOptions from '../types/IReloadOptions.js';
+import BrowserErrorCapturingEnum from '../enums/BrowserErrorCapturingEnum.js';
+import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -22,6 +24,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	// Needs to be injected from the outside when the browser frame is constructed.
 	public window: IBrowserWindow;
 	public __asyncTaskManager__ = new AsyncTaskManager();
+	public __exceptionObserver__: BrowserFrameExceptionObserver | null = null;
 
 	/**
 	 * Constructor.
@@ -33,6 +36,12 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		this.page = page;
 		if (page.context.browser.contexts[0]?.pages[0]?.mainFrame) {
 			this.window = new this.page.context.browser.windowClass(this);
+		}
+
+		// Attach process level error capturing.
+		if (page.context.browser.settings.errorCapturing === BrowserErrorCapturingEnum.processLevel) {
+			this.__exceptionObserver__ = new BrowserFrameExceptionObserver();
+			this.__exceptionObserver__.observe(this);
 		}
 	}
 

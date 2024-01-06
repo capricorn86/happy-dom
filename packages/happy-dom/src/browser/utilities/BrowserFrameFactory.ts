@@ -1,6 +1,5 @@
-import BrowserPage from '../BrowserPage.js';
 import IBrowserFrame from '../types/IBrowserFrame.js';
-import Window from '../../window/Window.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import IBrowserPage from '../types/IBrowserPage.js';
 /**
@@ -45,9 +44,11 @@ export default class BrowserFrameFactory {
 
 		(<boolean>frame.window.closed) = true;
 		frame.__asyncTaskManager__.destroy();
+		frame.__exceptionObserver__?.disconnect();
 		WindowBrowserSettingsReader.removeSettings(frame.window);
-		(<BrowserPage | null>frame.page) = null;
-		(<Window | null>frame.window) = null;
+		// TODO: Setting page to null causes error when window tries to access the console
+		// (<BrowserPage | null>frame.page) = null;
+		(<IBrowserWindow | null>frame.window) = null;
 		(<IBrowserFrame | null>frame.opener) = null;
 	}
 }

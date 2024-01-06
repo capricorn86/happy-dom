@@ -10,6 +10,8 @@ import BrowserFrameURL from './utilities/BrowserFrameURL.js';
 import BrowserFrameScriptEvaluator from './utilities/BrowserFrameScriptEvaluator.js';
 import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
 import IReloadOptions from './types/IReloadOptions.js';
+import BrowserFrameExceptionObserver from './utilities/BrowserFrameExceptionObserver.js';
+import BrowserErrorCapturingEnum from './enums/BrowserErrorCapturingEnum.js';
 
 /**
  * Browser frame.
@@ -21,6 +23,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public readonly page: BrowserPage;
 	public readonly window: BrowserWindow;
 	public __asyncTaskManager__ = new AsyncTaskManager();
+	public __exceptionObserver__: BrowserFrameExceptionObserver | null = null;
 
 	/**
 	 * Constructor.
@@ -30,6 +33,12 @@ export default class BrowserFrame implements IBrowserFrame {
 	constructor(page: BrowserPage) {
 		this.page = page;
 		this.window = new BrowserWindow(this);
+
+		// Attach process level error capturing.
+		if (page.context.browser.settings.errorCapturing === BrowserErrorCapturingEnum.processLevel) {
+			this.__exceptionObserver__ = new BrowserFrameExceptionObserver();
+			this.__exceptionObserver__.observe(this);
+		}
 	}
 
 	/**

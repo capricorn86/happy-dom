@@ -9,6 +9,7 @@ import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import HTMLScriptElementScriptLoader from './HTMLScriptElementScriptLoader.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import BrowserErrorCapturingEnum from '../../browser/enums/BrowserErrorCapturingEnum.js';
 
 /**
  * HTML Script Element.
@@ -216,7 +217,10 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 					const code =
 						`//# sourceURL=${this.ownerDocument.__defaultView__.location.href}\n` + textContent;
 
-					if (browserSettings.disableErrorCapturing) {
+					if (
+						browserSettings.disableErrorCapturing ||
+						browserSettings.errorCapturing !== BrowserErrorCapturingEnum.tryAndCatch
+					) {
 						this.ownerDocument.__defaultView__.eval(code);
 					} else {
 						WindowErrorUtility.captureError(this.ownerDocument.__defaultView__, () =>

@@ -1,3 +1,5 @@
+:warning: **This package is deprecated. Happy DOM now supports built in by setting "errorCapturing" to "processLevel".** :warning:
+
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
 # About

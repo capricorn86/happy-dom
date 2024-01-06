@@ -91,9 +91,6 @@ export default class HTMLLinkElementStyleSheetLoader {
 
 		if (error) {
 			WindowErrorUtility.dispatchError(element, error);
-			if (browserSettings.disableErrorCapturing) {
-				throw error;
-			}
 		} else {
 			const styleSheet = new CSSStyleSheet();
 			styleSheet.replaceSync(code);

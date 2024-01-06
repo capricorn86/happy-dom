@@ -12,6 +12,7 @@ import PackageVersion from '../../src/version.js';
 import IHTMLIFrameElement from '../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
 import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
 import '../types.d.js';
+import BrowserErrorCapturingEnum from '../../src/browser/enums/BrowserErrorCapturingEnum.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -180,6 +181,9 @@ describe('Window', () => {
 			expect(windowWithOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableErrorCapturing).toBe(false);
+			expect(windowWithOptions.happyDOM?.settings.errorCapturing).toBe(
+				BrowserErrorCapturingEnum.tryAndCatch
+			);
 			expect(windowWithOptions.happyDOM?.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.navigator.userAgent).toBe('test');
 			expect(windowWithOptions.happyDOM?.settings.device.prefersColorScheme).toBe('dark');
@@ -199,6 +203,9 @@ describe('Window', () => {
 			expect(windowWithoutOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableErrorCapturing).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.errorCapturing).toBe(
+				BrowserErrorCapturingEnum.tryAndCatch
+			);
 			expect(windowWithoutOptions.happyDOM?.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.navigator.userAgent).toBe(
 				`Mozilla/5.0 (${GET_NAVIGATOR_PLATFORM()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
