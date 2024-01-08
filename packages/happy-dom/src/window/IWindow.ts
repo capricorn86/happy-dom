@@ -116,6 +116,7 @@ import IHappyDOMSettings from './IHappyDOMSettings.js';
 import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import { webcrypto } from 'crypto';
 import FormData from '../form-data/FormData.js';
 import AbortController from '../fetch/AbortController.js';
@@ -366,7 +367,7 @@ export default interface IWindow extends IEventTarget, INodeJSGlobal {
 	readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
 	readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
 	readonly FileList: typeof FileList;
-	readonly ReadableStream: typeof Stream.Readable;
+	readonly ReadableStream: typeof ReadableStream;
 	readonly WritableStream: typeof Stream.Writable;
 	readonly FormData: typeof FormData;
 	readonly AbortController: typeof AbortController;

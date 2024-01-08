@@ -17,6 +17,7 @@ import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import CookieJar from '../cookie/CookieJar.js';
+import { ReadableStream } from 'stream/web';
 
 const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
@@ -153,7 +154,8 @@ export default class Fetch {
 				const error = new DOMException('Premature close.', DOMExceptionNameEnum.networkError);
 
 				if (this.response && this.response.body) {
-					this.response.body.destroy(error);
+					const reader = this.response.body.getReader();
+					reader.cancel(error);
 				}
 			}
 		};
@@ -403,7 +405,7 @@ export default class Fetch {
 				}
 
 				const headers = new Headers(this.request.headers);
-				let body: Stream.Readable | Buffer | null = this.request._bodyBuffer;
+				let body: ReadableStream | Buffer | null = this.request._bodyBuffer;
 
 				if (!body && this.request.body) {
 					// Piping a used request body is not possible.
@@ -414,8 +416,19 @@ export default class Fetch {
 						);
 					}
 
-					body = new Stream.PassThrough();
-					this.request.body.pipe(<Stream.PassThrough>body);
+					body = new ReadableStream({
+						async start(controller) {
+							const bodyReader = this.request.body.getReader();
+							let readResult = await bodyReader.read();
+
+							while (!readResult.done) {
+								controller.enqueue(readResult.value);
+								readResult = await bodyReader.read();
+							}
+
+							controller.close();
+						}
+					});
 				}
 
 				const requestInit: IRequestInit = {
@@ -646,17 +659,14 @@ export default class Fetch {
 		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
 
 		if (this.request.body) {
-			this.request.body.destroy(error);
+			const reader = this.request.body.getReader();
+			reader.cancel(error);
 		}
 
-		if (!this.response || !this.response.body) {
-			if (this.reject) {
-				this.reject(error);
-			}
-			return;
+		if (this.response && this.response.body instanceof ReadableStream) {
+			const reader = this.response.body.getReader();
+			reader.cancel(error);
 		}
-
-		this.response.body.emit('error', error);
 
 		if (this.reject) {
 			this.reject(error);

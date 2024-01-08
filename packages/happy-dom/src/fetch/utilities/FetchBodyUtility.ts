@@ -1,5 +1,6 @@
 import MultipartFormDataParser from '../multipart/MultipartFormDataParser.js';
 import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
 import FormData from '../../form-data/FormData.js';
 import Blob from '../../file/Blob.js';
@@ -25,7 +26,7 @@ export default class FetchBodyUtility {
 	public static getBodyStream(body: IRequestBody | IResponseBody): {
 		contentType: string;
 		contentLength: number | null;
-		stream: Stream.Readable;
+		stream: ReadableStream | null;
 		buffer: Buffer | null;
 	} {
 		if (body === null || body === undefined) {
@@ -34,7 +35,12 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body.toString());
 			return {
 				buffer,
-				stream: Stream.Readable.from(Buffer.from(buffer)),
+				stream: new ReadableStream({
+					start(controller) {
+						controller.enqueue(buffer);
+						controller.close();
+					}
+				}),
 				contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
 				contentLength: buffer.length
 			};
@@ -42,14 +48,24 @@ export default class FetchBodyUtility {
 			const buffer = (<Blob>body)._buffer;
 			return {
 				buffer,
-				stream: Stream.Readable.from(buffer),
-				contentType: (<Blob>body).type,
+				stream: new ReadableStream({
+					start(controller) {
+						controller.enqueue(buffer);
+						controller.close();
+					}
+				}),
+				contentType: body.type,
 				contentLength: body.size
 			};
 		} else if (Buffer.isBuffer(body)) {
 			return {
 				buffer: body,
-				stream: Stream.Readable.from(body),
+				stream: new ReadableStream({
+					start(controller) {
+						controller.enqueue(body);
+						controller.close();
+					}
+				}),
 				contentType: null,
 				contentLength: body.length
 			};
@@ -57,7 +73,12 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body);
 			return {
 				buffer,
-				stream: Stream.Readable.from(buffer),
+				stream: new ReadableStream({
+					start(controller) {
+						controller.enqueue(body);
+						controller.close();
+					}
+				}),
 				contentType: null,
 				contentLength: body.byteLength
 			};
@@ -65,25 +86,36 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
 			return {
 				buffer,
-				stream: Stream.Readable.from(buffer),
+				stream: new ReadableStream({
+					start(controller) {
+						controller.enqueue(buffer);
+						controller.close();
+					}
+				}),
 				contentType: null,
 				contentLength: body.byteLength
 			};
-		} else if (body instanceof Stream.Stream) {
+		} /* TODO: check if this part is required and how to migrate it to ReadableStream
+		else if (body instanceof Stream.Stream) {
 			return {
 				buffer: null,
 				stream: <Stream.Readable>body,
 				contentType: null,
 				contentLength: null
 			};
-		} else if (body instanceof FormData) {
+		} */ else if (body instanceof FormData) {
 			return MultipartFormDataParser.formDataToStream(body);
 		}
 
 		const buffer = Buffer.from(String(body));
 		return {
 			buffer,
-			stream: Stream.Readable.from(buffer),
+			stream: new ReadableStream({
+				start(controller) {
+					controller.enqueue(buffer);
+					controller.close();
+				}
+			}),
 			contentType: 'text/plain;charset=UTF-8',
 			contentLength: buffer.length
 		};
@@ -95,7 +127,7 @@ export default class FetchBodyUtility {
 	 * @param request Request.
 	 * @returns Stream.
 	 */
-	public static cloneRequestBodyStream(request: Request): Stream.Readable {
+	public static cloneRequestBodyStream(request: Request): ReadableStream {
 		if (request.bodyUsed) {
 			throw new DOMException(
 				`Failed to clone body stream of request: Request body is already used.`,
@@ -103,17 +135,15 @@ export default class FetchBodyUtility {
 			);
 		}
 
-		const p1 = new Stream.PassThrough();
-		const p2 = new Stream.PassThrough();
-
-		request.body.pipe(p1);
-		request.body.pipe(p2);
+		// Uses the tee() method to clone the ReadableStream
+		const [stream1, stream2] = request.body.tee();
 
 		// Sets the body of the cloned request to the first pass through stream.
-		(<Stream.Readable>request.body) = p1;
+		// TODO: check id this is required as request should be read only object
+		<ReadableStream>request.body == stream1;
 
-		// Returns the clone.
-		return p2;
+		// Returns the other stream as the clone
+		return stream2;
 	}
 
 	/**
@@ -126,18 +156,22 @@ export default class FetchBodyUtility {
 	 * @param body Body stream.
 	 * @returns Promise.
 	 */
-	public static async consumeBodyStream(body: Stream.Readable | null): Promise<Buffer> {
+	public static async consumeBodyStream(body: ReadableStream | null): Promise<Buffer> {
 		if (body === null || !(body instanceof Stream.Stream)) {
 			return Buffer.alloc(0);
 		}
 
+		const reader = body.getReader();
 		const chunks = [];
 		let bytes = 0;
 
 		try {
-			for await (const chunk of body) {
+			let readResult = await reader.read();
+			while (!readResult.done) {
+				const chunk = readResult.value;
 				bytes += chunk.length;
 				chunks.push(chunk);
+				readResult = await reader.read();
 			}
 		} catch (error) {
 			if (error instanceof DOMException) {
@@ -146,16 +180,6 @@ export default class FetchBodyUtility {
 			throw new DOMException(
 				`Failed to read response body. Error: ${error.message}.`,
 				DOMExceptionNameEnum.encodingError
-			);
-		}
-
-		if (
-			(<Stream.Readable>body).readableEnded === false ||
-			(<Stream.Readable>body)['_readableState']?.ended === false
-		) {
-			throw new DOMException(
-				`Premature close of server response.`,
-				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 

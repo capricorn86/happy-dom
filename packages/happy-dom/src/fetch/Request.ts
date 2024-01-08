@@ -9,7 +9,7 @@ import IRequest from './types/IRequest.js';
 import Headers from './Headers.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import AbortSignal from './AbortSignal.js';
-import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import Blob from '../file/Blob.js';
 import { TextDecoder } from 'util';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
@@ -36,7 +36,7 @@ export default class Request implements IRequest {
 
 	// Public properties
 	public readonly method: string;
-	public readonly body: Stream.Readable | null;
+	public readonly body: ReadableStream | null;
 	public readonly headers: Headers;
 	public readonly redirect: IRequestRedirect;
 	public readonly referrerPolicy: IRequestReferrerPolicy;

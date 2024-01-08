@@ -1,5 +1,5 @@
 import FormData from '../../form-data/FormData.js';
-import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import MultipartReader from './MultipartReader.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
@@ -19,7 +19,7 @@ export default class MultipartFormDataParser {
 	 * @returns Form data.
 	 */
 	public static async streamToFormData(
-		body: Stream.Readable,
+		body: ReadableStream,
 		contentType: string
 	): Promise<FormData> {
 		if (!/multipart/i.test(contentType)) {
@@ -38,10 +38,14 @@ export default class MultipartFormDataParser {
 			);
 		}
 
+		const bodyReader = body.getReader();
 		const reader = new MultipartReader(match[1] || match[2]);
 
-		for await (const chunk of body) {
-			reader.write(chunk);
+		let readResult = await bodyReader.read();
+
+		while (!readResult.done) {
+			reader.write(readResult.value);
+			readResult = await bodyReader.read();
 		}
 
 		return reader.end();
@@ -57,7 +61,7 @@ export default class MultipartFormDataParser {
 		contentType: string;
 		contentLength: number;
 		buffer: Buffer;
-		stream: Stream.Readable;
+		stream: ReadableStream;
 	} {
 		const boundary = '----HappyDOMFormDataBoundary' + Math.random().toString(36);
 		const chunks: Buffer[] = [];
@@ -93,7 +97,12 @@ export default class MultipartFormDataParser {
 			contentType: `multipart/form-data; boundary=${boundary}`,
 			contentLength: buffer.length,
 			buffer,
-			stream: Stream.Readable.from(buffer)
+			stream: new ReadableStream({
+				start(controller) {
+					controller.enqueue(buffer);
+					controller.close();
+				}
+			})
 		};
 	}
 
