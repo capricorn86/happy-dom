@@ -572,41 +572,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		// For classes that need to be bound to the correct context.
 
 		/* eslint-disable jsdoc/require-jsdoc */
-		class Document extends DocumentImplementation {
-			constructor() {
-				super({ window, browserFrame });
-			}
-		}
-		class HTMLDocument extends HTMLDocumentImplementation {
-			constructor() {
-				super({ window, browserFrame });
-			}
-		}
-		class XMLDocument extends XMLDocumentImplementation {
-			constructor() {
-				super({ window, browserFrame });
-			}
-		}
-		class SVGDocument extends SVGDocumentImplementation {
-			constructor() {
-				super({ window, browserFrame });
-			}
-		}
 
-		this.document = new HTMLDocument();
-		(<IBrowserWindow>this.document.defaultView) = this;
-
-		class Audio extends AudioImplementation {
-			public static __ownerDocument__ = window.document;
-		}
-		class Image extends ImageImplementation {
-			public static __ownerDocument__ = window.document;
-		}
-		class DocumentFragment extends DocumentFragmentImplementation {
-			public static __ownerDocument__ = window.document;
-		}
-
-		// Other Classes
 		class Request extends RequestImplementation {
 			constructor(input: IRequestInfo, init?: IRequestInit) {
 				super({ window, asyncTaskManager }, input, init);
@@ -653,6 +619,30 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 				super(browserFrame);
 			}
 		}
+		class Document extends DocumentImplementation {
+			constructor() {
+				super({ window, browserFrame });
+			}
+		}
+		class HTMLDocument extends HTMLDocumentImplementation {
+			constructor() {
+				super({ window, browserFrame });
+			}
+		}
+		class XMLDocument extends XMLDocumentImplementation {
+			constructor() {
+				super({ window, browserFrame });
+			}
+		}
+		class SVGDocument extends SVGDocumentImplementation {
+			constructor() {
+				super({ window, browserFrame });
+			}
+		}
+
+		class Audio extends AudioImplementation {}
+		class Image extends ImageImplementation {}
+		class DocumentFragment extends DocumentFragmentImplementation {}
 
 		/* eslint-enable jsdoc/require-jsdoc */
 
@@ -672,6 +662,15 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		this.HTMLDocument = HTMLDocument;
 		this.XMLDocument = XMLDocument;
 		this.SVGDocument = SVGDocument;
+
+		// Document
+		this.document = new HTMLDocument();
+		(<IBrowserWindow>this.document.defaultView) = this;
+
+		// Override owner document
+		this.Audio.__ownerDocument__ = this.document;
+		this.Image.__ownerDocument__ = this.document;
+		this.DocumentFragment.__ownerDocument__ = this.document;
 
 		// Ready state manager
 		this.__readyStateManager__.whenComplete().then(() => {

@@ -37,6 +37,9 @@ export default class DOMParser {
 
 		const newDocument = <IDocument>this.#createDocument(mimeType);
 
+		newDocument['__childNodes__'].length = 0;
+		newDocument['__children__'].length = 0;
+
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;

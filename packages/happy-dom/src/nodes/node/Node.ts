@@ -62,7 +62,7 @@ export default class Node extends EventTarget implements INode {
 	public __textAreaNode__: INode = null;
 	public __observers__: MutationListener[] = [];
 	public readonly __childNodes__: INodeList<INode> = new NodeList<INode>();
-	public readonly ownerDocument: IDocument | null = null;
+	public readonly ownerDocument: IDocument = null;
 
 	/**
 	 * Constructor.

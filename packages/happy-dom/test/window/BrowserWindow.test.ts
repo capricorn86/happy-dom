@@ -62,6 +62,7 @@ describe('BrowserWindow', () => {
 		resetMockedModules();
 		vi.restoreAllMocks();
 	});
+
 	describe('get happyDOM()', () => {
 		it('Returns "undefined" for an attached browser.', () => {
 			expect(browserFrame.window['happyDOM']).toBeUndefined();

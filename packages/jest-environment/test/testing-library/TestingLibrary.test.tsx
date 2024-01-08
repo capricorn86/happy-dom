@@ -10,6 +10,7 @@ describe('TestingLibrary', () => {
 		render(<input onChange={(event) => onChange(event.target.value)} />);
 
 		await user.type(screen.getByRole('textbox'), 'hello');
+        
 		expect(onChange).toHaveBeenCalledWith('hello');
 	});
 
@@ -29,6 +30,7 @@ describe('TestingLibrary', () => {
 		);
 
 		await user.click(screen.getByRole('button'));
+
 		expect(handleSubmit).toHaveBeenCalledTimes(1);
 		expect(clickHandler).toHaveBeenCalledTimes(1);
 	});
@@ -40,6 +42,7 @@ describe('TestingLibrary', () => {
 		render(<input type="checkbox" onChange={changeHandler} />);
 
         const checkbox = screen.getByRole('checkbox');
+
 		await user.click(checkbox);
 
 		expect(changeHandler).toHaveBeenCalledTimes(1);

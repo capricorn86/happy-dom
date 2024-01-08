@@ -874,10 +874,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document fragment.
 	 */
 	public createDocumentFragment(): IDocumentFragment {
-		this.__defaultView__.DocumentFragment.__ownerDocument__ = this;
-		const node = new this.__defaultView__.DocumentFragment();
-		this.__defaultView__.DocumentFragment.__ownerDocument__ = null;
-		return node;
+		return new this.__defaultView__.DocumentFragment();
 	}
 
 	/**
@@ -957,8 +954,7 @@ export default class Document extends Node implements IDocument {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}
 		const clone = node.cloneNode(deep);
-		const document = this;
-		Object.defineProperty(clone, 'ownerDocument', { get: () => document });
+		this.#importNode(clone);
 		return clone;
 	}
 
@@ -1032,5 +1028,18 @@ export default class Document extends Node implements IDocument {
 		this.__defaultView__.ProcessingInstruction.__ownerDocument__ = null;
 		processingInstruction.target = target;
 		return processingInstruction;
+	}
+
+	/**
+	 * Imports a node.
+	 *
+	 * @param node Node.
+	 */
+	#importNode(node: INode): void {
+		(<IDocument>node.ownerDocument) = this;
+
+		for (const child of node['__childNodes__']) {
+			this.#importNode(child);
+		}
 	}
 }

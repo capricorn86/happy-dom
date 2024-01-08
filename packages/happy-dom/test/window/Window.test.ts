@@ -75,18 +75,13 @@ describe('Window', () => {
 			const domParser2 = new window2.DOMParser();
 			const domParser3 = new window3.DOMParser();
 
-			expect(
-				domParser1.parseFromString('<html></html>', 'text/html').childNodes[0].ownerDocument ===
-					window1.document
-			).toBe(true);
-			expect(
-				domParser2.parseFromString('<html></html>', 'text/html').childNodes[0].ownerDocument ===
-					window2.document
-			).toBe(true);
-			expect(
-				domParser3.parseFromString('<html></html>', 'text/html').childNodes[0].ownerDocument ===
-					window3.document
-			).toBe(true);
+			const document1 = domParser1.parseFromString('<html></html>', 'text/html');
+			const document2 = domParser2.parseFromString('<html></html>', 'text/html');
+			const document3 = domParser3.parseFromString('<html></html>', 'text/html');
+
+			expect(document1.childNodes[0].ownerDocument === document1).toBe(true);
+			expect(document2.childNodes[0].ownerDocument === document2).toBe(true);
+			expect(document3.childNodes[0].ownerDocument === document3).toBe(true);
 
 			// Range
 			const range1 = window1.document.createRange();

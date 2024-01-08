@@ -14,7 +14,7 @@ describe('DOMImplementation', () => {
 	describe('createDocument()', () => {
 		it('Returns a new XMLDocument.', () => {
 			const document = window.document.implementation.createDocument();
-			expect(document instanceof XMLDocument).toBe(true);
+			expect(document instanceof HTMLDocument).toBe(true);
 			expect(document.defaultView).toBe(null);
 		});
 	});
