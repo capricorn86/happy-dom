@@ -152,25 +152,26 @@ export default class SyncFetch {
 			return null;
 		}
 
-		if (
-			cachedResponse.etag ||
-			(cachedResponse.state === CachedResponseStateEnum.stale && cachedResponse.lastModified)
-		) {
-			if (cachedResponse.etag || !cachedResponse.staleWhileRevalidate) {
-				const headers = new Headers(cachedResponse.request.headers);
+		if (cachedResponse.state === CachedResponseStateEnum.stale) {
+			const headers = new Headers(cachedResponse.request.headers);
 
-				if (cachedResponse.etag) {
-					headers.set('If-None-Match', cachedResponse.etag);
-				} else {
-					headers.set('If-Modified-Since', new Date(cachedResponse.lastModified).toUTCString());
+			if (cachedResponse.etag) {
+				headers.set('If-None-Match', cachedResponse.etag);
+			} else {
+				if (!cachedResponse.lastModified) {
+					return null;
 				}
+				headers.set('If-Modified-Since', new Date(cachedResponse.lastModified).toUTCString());
+			}
 
+			if (cachedResponse.etag || !cachedResponse.staleWhileRevalidate) {
 				const fetch = new SyncFetch({
 					browserFrame: this.#browserFrame,
 					window: this.#window,
 					url: this.request.url,
 					init: { headers, method: cachedResponse.request.method },
-					disableCache: true
+					disableCache: true,
+					disableCrossOriginPolicy: true
 				});
 
 				const validateResponse = <ISyncResponse>fetch.send();
@@ -190,8 +191,9 @@ export default class SyncFetch {
 					browserFrame: this.#browserFrame,
 					window: this.#window,
 					url: this.request.url,
-					init: { method: cachedResponse.request.method },
-					disableCache: true
+					init: { headers, method: cachedResponse.request.method },
+					disableCache: true,
+					disableCrossOriginPolicy: true
 				});
 				fetch.send().then((response) => {
 					response.buffer().then((body: Buffer) => {

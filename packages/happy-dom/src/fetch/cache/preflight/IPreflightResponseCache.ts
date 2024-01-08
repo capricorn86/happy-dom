@@ -25,4 +25,9 @@ export default interface IPreflightResponseCache {
 		request: ICachablePreflightRequest,
 		response: ICachablePreflightResponse
 	): ICachedPreflightResponse | null;
+
+	/**
+	 * Clears the cache.
+	 */
+	clear(): void;
 }

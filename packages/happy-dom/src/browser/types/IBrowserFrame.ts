@@ -1,5 +1,6 @@
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
+import IDocument from '../../nodes/document/IDocument.js';
 import IBrowserPage from './IBrowserPage.js';
 import IResponse from '../../fetch/types/IResponse.js';
 import IGoToOptions from './IGoToOptions.js';
@@ -13,6 +14,7 @@ import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObs
 export default interface IBrowserFrame {
 	readonly childFrames: IBrowserFrame[];
 	readonly window: IBrowserWindow;
+	readonly document: IDocument;
 	content: string;
 	url: string;
 	readonly parentFrame: IBrowserFrame | null;
@@ -31,7 +33,7 @@ export default interface IBrowserFrame {
 	/**
 	 * Aborts all ongoing operations.
 	 */
-	abort(): void;
+	abort(): Promise<void>;
 
 	/**
 	 * Evaluates code or a VM Script in the page's context.

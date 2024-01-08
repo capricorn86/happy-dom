@@ -31,7 +31,7 @@
 		"vitest": "^0.32.4",
 		"prettier": "^2.6.0",
 		"semver": "^7.3.5",
-		"turbo": "^1.7.3",
+		"turbo": "^1.11.3",
 		"typescript": "^5.0.4"
 	},
 	"engines": {

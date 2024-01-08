@@ -14,6 +14,8 @@ describe('JavaScript', () => {
 	});
 
 	it('Can perform a real fetch()', async () => {
+		location.href = 'http://localhost:3000/';
+
 		const express = Express();
 
 		express.get('/get/json', (_req, res) => {
@@ -22,7 +24,6 @@ describe('JavaScript', () => {
 		});
 
 		const server = express.listen(3000);
-
 		const response = await fetch('http://localhost:3000/get/json');
 
 		server.close();
@@ -40,6 +41,8 @@ describe('JavaScript', () => {
 	});
 
 	it('Can perform a real FormData post request using fetch()', async () => {
+		location.href = 'http://localhost:3000/';
+
 		const express = Express();
 
 		express.post('/post/formdata', (req, res) => {
@@ -54,7 +57,6 @@ describe('JavaScript', () => {
 		});
 
 		const server = express.listen(3000);
-
 		const requestFormData = new FormData();
 
 		requestFormData.append('key1', 'value1');
@@ -87,6 +89,8 @@ describe('JavaScript', () => {
 	});
 
 	it('Can perform a real asynchronous XMLHttpRequest request', (done) => {
+		location.href = 'http://localhost:3000/';
+
 		const express = Express();
 
 		express.get('/get/json', (_req, res) => {
@@ -95,7 +99,6 @@ describe('JavaScript', () => {
 		});
 
 		const server = express.listen(3000);
-
 		const request = new XMLHttpRequest();
 
 		request.open('GET', 'http://localhost:3000/get/json', true);
@@ -116,6 +119,8 @@ describe('JavaScript', () => {
 	});
 
 	it('Can perform a real synchronous XMLHttpRequest request to Github.com', () => {
+		location.href = 'https://raw.githubusercontent.com/';
+
 		const request = new XMLHttpRequest();
 
 		request.open(

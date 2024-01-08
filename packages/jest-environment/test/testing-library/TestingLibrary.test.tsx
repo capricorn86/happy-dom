@@ -39,7 +39,8 @@ describe('TestingLibrary', () => {
 
 		render(<input type="checkbox" onChange={changeHandler} />);
 
-		await user.click(screen.getByRole('checkbox'));
+        const checkbox = screen.getByRole('checkbox');
+		await user.click(checkbox);
 
 		expect(changeHandler).toHaveBeenCalledTimes(1);
 	});

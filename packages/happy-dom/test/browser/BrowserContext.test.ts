@@ -25,7 +25,7 @@ describe('BrowserContext', () => {
 	});
 
 	describe('close()', () => {
-		it('Closes the context.', () => {
+		it('Closes the context.', async () => {
 			const browser = new Browser();
 			const context = browser.defaultContext;
 			const page1 = context.newPage();
@@ -35,14 +35,14 @@ describe('BrowserContext', () => {
 			let pagesClosed = 0;
 			vi.spyOn(page1, 'close').mockImplementation(() => {
 				pagesClosed++;
-				originalClose1.call(page1);
+				return originalClose1.call(page1);
 			});
 			vi.spyOn(page2, 'close').mockImplementation(() => {
 				pagesClosed++;
-				originalClose2.call(page2);
+				return originalClose2.call(page2);
 			});
 			expect(browser.contexts.length).toBe(1);
-			context.close();
+			await context.close();
 			expect(browser.contexts.length).toBe(0);
 			expect(pagesClosed).toBe(2);
 		});

@@ -84,4 +84,11 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 
 		return cachedResponse;
 	}
+
+	/**
+	 * Clears the cache.
+	 */
+	public clear(): void {
+		this.#entries = {};
+	}
 }

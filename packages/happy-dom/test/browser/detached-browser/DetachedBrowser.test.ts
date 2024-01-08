@@ -12,7 +12,7 @@ describe('DetachedBrowser', () => {
 	});
 
 	describe('get contexts()', () => {
-		it('Returns the contexts.', () => {
+		it('Returns the contexts.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 
 			expect(browser.contexts.length).toBe(1);
@@ -21,7 +21,7 @@ describe('DetachedBrowser', () => {
 			expect(browser.contexts.length).toBe(1);
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
 
-			browser.defaultContext.close();
+			await browser.defaultContext.close();
 
 			expect(browser.contexts.length).toBe(0);
 		});
@@ -67,9 +67,9 @@ describe('DetachedBrowser', () => {
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
 		});
 
-		it('Throws an error if the browser has been closed.', () => {
+		it('Throws an error if the browser has been closed.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
-			browser.close();
+			await browser.close();
 			expect(() => browser.defaultContext).toThrow(
 				'No default context. The browser has been closed.'
 			);
@@ -77,7 +77,7 @@ describe('DetachedBrowser', () => {
 	});
 
 	describe('close()', () => {
-		it('Closes the browser.', () => {
+		it('Closes the browser.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			const originalClose = browser.defaultContext.close;
 			let isContextClosed = false;
@@ -86,10 +86,10 @@ describe('DetachedBrowser', () => {
 
 			vi.spyOn(browser.defaultContext, 'close').mockImplementation(() => {
 				isContextClosed = true;
-				originalClose.call(browser.defaultContext);
+				return originalClose.call(browser.defaultContext);
 			});
 
-			browser.close();
+			await browser.close();
 			expect(browser.contexts.length).toBe(0);
 			expect(isContextClosed).toBe(true);
 		});
@@ -123,10 +123,10 @@ describe('DetachedBrowser', () => {
 	});
 
 	describe('newIncognitoContext()', () => {
-		it('Throws an error as it is not possible to create a new incognito context inside a detached browser.', () => {
+		it('Throws an error as it is not possible to create a new incognito context inside a detached browser.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
-			browser.close();
+			await browser.close();
 			expect(() => browser.newIncognitoContext()).toThrow(
 				'Not possible to create a new context on a detached browser.'
 			);
@@ -146,10 +146,10 @@ describe('DetachedBrowser', () => {
 			expect(browser.contexts[0].pages[1]).toBe(page);
 		});
 
-		it('Throws an error if the browser has been closed.', () => {
+		it('Throws an error if the browser has been closed.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
-			browser.close();
+			await browser.close();
 			expect(() => browser.newPage()).toThrow('No default context. The browser has been closed.');
 		});
 

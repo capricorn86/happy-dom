@@ -54,27 +54,28 @@ export default class BrowserPageUtility {
 	 *
 	 * @param page Page.
 	 */
-	public static closePage(page: IBrowserPage): void {
-		if (!page.mainFrame) {
-			return;
-		}
+	public static closePage(page: IBrowserPage): Promise<void> {
+		// Using Promise instead of async/await to prevent microtask
+		return new Promise((resolve, reject) => {
+			if (!page.mainFrame) {
+				resolve();
+				return;
+			}
 
-		BrowserFrameFactory.destroyFrame(page.mainFrame);
+			const index = page.context.pages.indexOf(page);
+			if (index !== -1) {
+				page.context.pages.splice(index, 1);
+			}
 
-		const index = page.context.pages.indexOf(page);
-		if (index !== -1) {
-			page.context.pages.splice(index, 1);
-		}
-
-		const context = page.context;
-
-		(<IVirtualConsolePrinter | null>page.virtualConsolePrinter) = null;
-		(<IBrowserFrame | null>page.mainFrame) = null;
-		(<IBrowserContext | null>page.context) = null;
-
-		if (context.pages[0] === page) {
-			context.close();
-		}
+			BrowserFrameFactory.destroyFrame(page.mainFrame)
+				.then(() => {
+					(<IVirtualConsolePrinter | null>page.virtualConsolePrinter) = null;
+					(<IBrowserFrame | null>page.mainFrame) = null;
+					(<IBrowserContext | null>page.context) = null;
+					resolve();
+				})
+				.catch((error) => reject(error));
+		});
 	}
 
 	/**

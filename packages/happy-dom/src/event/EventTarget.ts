@@ -151,6 +151,8 @@ export default abstract class EventTarget implements IEventTarget {
 
 		event.__currentTarget__ = this;
 
+		const browserSettings = window ? WindowBrowserSettingsReader.getSettings(window) : null;
+
 		if (event.eventPhase !== EventPhaseEnum.capturing) {
 			const onEventName = 'on' + event.type.toLowerCase();
 
@@ -159,9 +161,8 @@ export default abstract class EventTarget implements IEventTarget {
 				if (
 					window &&
 					(this !== <IEventTarget>window || event.type !== 'error') &&
-					(!WindowBrowserSettingsReader.getSettings(window).disableErrorCapturing ||
-						WindowBrowserSettingsReader.getSettings(window).errorCapturing ===
-							BrowserErrorCapturingEnum.tryAndCatch)
+					!browserSettings?.disableErrorCapturing &&
+					browserSettings?.errorCapturing === BrowserErrorCapturingEnum.tryAndCatch
 				) {
 					WindowErrorUtility.captureError(window, this[onEventName].bind(this, event));
 				} else {
@@ -194,9 +195,8 @@ export default abstract class EventTarget implements IEventTarget {
 				if (
 					window &&
 					(this !== <IEventTarget>window || event.type !== 'error') &&
-					(!WindowBrowserSettingsReader.getSettings(window).disableErrorCapturing ||
-						WindowBrowserSettingsReader.getSettings(window).errorCapturing ===
-							BrowserErrorCapturingEnum.tryAndCatch)
+					!browserSettings?.disableErrorCapturing &&
+					browserSettings?.errorCapturing === BrowserErrorCapturingEnum.tryAndCatch
 				) {
 					if ((<IEventListener>listener).handleEvent) {
 						WindowErrorUtility.captureError(

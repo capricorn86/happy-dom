@@ -6,6 +6,7 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
 import DefaultBrowserSettings from '../../src/browser/DefaultBrowserSettings.js';
+import '../types.d.js';
 
 describe('DetachedWindowAPI', () => {
 	let window: IWindow;
@@ -185,11 +186,11 @@ describe('DetachedWindowAPI', () => {
 
 				expect(tasksDone).toBe(0);
 
-				window.setTimeout(() => {
+				setTimeout(() => {
 					expect(isFirstWhenAsyncCompleteCalled).toBe(true);
 					expect(isSecondWhenAsyncCompleteCalled).toBe(true);
 					resolve(null);
-				}, 1);
+				}, 10);
 			});
 		});
 	});
@@ -199,6 +200,7 @@ describe('DetachedWindowAPI', () => {
 			let isCalled = false;
 			vi.spyOn(<DetachedWindowAPI>window.happyDOM, 'abort').mockImplementation(() => {
 				isCalled = true;
+				return Promise.resolve();
 			});
 			window.happyDOM?.abort();
 			expect(isCalled).toBe(true);

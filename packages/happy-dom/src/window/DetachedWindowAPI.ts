@@ -21,7 +21,6 @@ export default class DetachedWindowAPI {
 	/**
 	 * Returns settings.
 	 *
-	 * @deprecated Depreacted for security reasons and will be removed in the future. Use Browser API instead to access settings (e.g. new Browser()).
 	 * @returns Settings.
 	 */
 	public get settings(): IBrowserSettings {
@@ -59,8 +58,8 @@ export default class DetachedWindowAPI {
 	/**
 	 * Aborts all async tasks.
 	 */
-	public abort(): void {
-		this.#browserFrame.abort();
+	public abort(): Promise<void> {
+		return this.#browserFrame.abort();
 	}
 
 	/**
@@ -68,14 +67,13 @@ export default class DetachedWindowAPI {
 	 *
 	 * @deprecated Use abort() instead.
 	 */
-	public cancelAsync(): void {
-		this.abort();
+	public cancelAsync(): Promise<void> {
+		return this.abort();
 	}
 
 	/**
 	 * Sets the URL without navigating the browser.
 	 *
-	 * @deprecated Depreacted for security reasons and will be removed in the future. Use Browser API instead to change URL (e.g. new Browser()).
 	 * @param url URL.
 	 */
 	public setURL(url: string): void {

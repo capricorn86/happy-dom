@@ -693,7 +693,9 @@ export default class Element extends Node implements IElement {
 			throw new DOMException('Shadow root has already been attached.');
 		}
 
+		this.ownerDocument.__defaultView__.ShadowRoot.__ownerDocument__ = this.ownerDocument;
 		(<IShadowRoot>this.__shadowRoot__) = new this.ownerDocument.__defaultView__.ShadowRoot();
+		this.ownerDocument.__defaultView__.ShadowRoot.__ownerDocument__ = null;
 		(<Element>this.__shadowRoot__.host) = this;
 		(<string>this.__shadowRoot__.mode) = shadowRootInit.mode;
 		(<ShadowRoot>this.__shadowRoot__).__connectToNode__(this);

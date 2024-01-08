@@ -10,7 +10,7 @@ describe('Browser', () => {
 	});
 
 	describe('get contexts()', () => {
-		it('Returns the contexts.', () => {
+		it('Returns the contexts.', async () => {
 			const browser = new Browser();
 			expect(browser.contexts.length).toBe(1);
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
@@ -20,12 +20,12 @@ describe('Browser', () => {
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
 			expect(browser.contexts[1]).toBe(incognitoContext);
 
-			incognitoContext.close();
+			await incognitoContext.close();
 
 			expect(browser.contexts.length).toBe(1);
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
 
-			browser.defaultContext.close();
+			await browser.defaultContext.close();
 
 			expect(browser.contexts.length).toBe(0);
 		});
@@ -71,9 +71,9 @@ describe('Browser', () => {
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
 		});
 
-		it('Throws an error if the browser has been closed.', () => {
+		it('Throws an error if the browser has been closed.', async () => {
 			const browser = new Browser();
-			browser.close();
+			await browser.close();
 			expect(() => browser.defaultContext).toThrow(
 				'No default context. The browser has been closed.'
 			);
@@ -81,17 +81,17 @@ describe('Browser', () => {
 	});
 
 	describe('close()', () => {
-		it('Closes the browser.', () => {
+		it('Closes the browser.', async () => {
 			const browser = new Browser();
 			const originalClose = browser.defaultContext.close;
 			let isContextClosed = false;
 
 			vi.spyOn(browser.defaultContext, 'close').mockImplementation(() => {
 				isContextClosed = true;
-				originalClose.call(browser.defaultContext);
+				return originalClose.call(browser.defaultContext);
 			});
 
-			browser.close();
+			await browser.close();
 			expect(browser.contexts.length).toBe(0);
 			expect(isContextClosed).toBe(true);
 		});
@@ -139,9 +139,9 @@ describe('Browser', () => {
 			expect(browser.contexts[1]).toBe(context);
 		});
 
-		it('Throws an error if the browser has been closed.', () => {
+		it('Throws an error if the browser has been closed.', async () => {
 			const browser = new Browser();
-			browser.close();
+			await browser.close();
 			expect(() => browser.newIncognitoContext()).toThrow(
 				'No default context. The browser has been closed.'
 			);
@@ -158,9 +158,9 @@ describe('Browser', () => {
 			expect(browser.contexts[0].pages[0]).toBe(page);
 		});
 
-		it('Throws an error if the browser has been closed.', () => {
+		it('Throws an error if the browser has been closed.', async () => {
 			const browser = new Browser();
-			browser.close();
+			await browser.close();
 			expect(() => browser.newPage()).toThrow('No default context. The browser has been closed.');
 		});
 

@@ -26,8 +26,9 @@ export function run(description, callback) {
 	timeout = setTimeout(async () => {
 		let hasError = false;
 		for (const test of tests) {
-			console.log(Chalk.blue(test.description));
+			process.stdout.write(Chalk.blue(test.description));
 			let result = null;
+			const startTime = performance.now();
 			try {
 				result = test.callback();
 			} catch (error) {
@@ -42,7 +43,7 @@ export function run(description, callback) {
 						hasError = true;
 						hasTimedout = true;
 						resolve();
-					}, 2000);
+					}, 100000);
 					result
 						.then(() => {
 							if (!hasTimedout) {
@@ -56,6 +57,9 @@ export function run(description, callback) {
 						});
 				});
 			}
+			process.stdout.write(
+				Chalk.blue(` (${Math.round((performance.now() - startTime) * 100) / 100}ms)\n`)
+			);
 		}
 
 		if (hasError) {

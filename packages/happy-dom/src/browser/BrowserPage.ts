@@ -74,8 +74,8 @@ export default class BrowserPage implements IBrowserPage {
 	/**
 	 * Aborts all ongoing operations and destroys the page.
 	 */
-	public close(): void {
-		BrowserPageUtility.closePage(this);
+	public close(): Promise<void> {
+		return BrowserPageUtility.closePage(this);
 	}
 
 	/**
@@ -90,8 +90,8 @@ export default class BrowserPage implements IBrowserPage {
 	/**
 	 * Aborts all ongoing operations.
 	 */
-	public abort(): void {
-		this.mainFrame.abort();
+	public abort(): Promise<void> {
+		return this.mainFrame.abort();
 	}
 
 	/**

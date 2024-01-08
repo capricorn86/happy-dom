@@ -18,7 +18,7 @@ export default interface IBrowserContext {
 	/**
 	 * Aborts all ongoing operations and destroys the context.
 	 */
-	close(): void;
+	close(): Promise<void>;
 
 	/**
 	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all tasks such as timers are complete.
@@ -30,7 +30,7 @@ export default interface IBrowserContext {
 	/**
 	 * Aborts all ongoing operations.
 	 */
-	abort(): void;
+	abort(): Promise<void>;
 
 	/**
 	 * Creates a new page.

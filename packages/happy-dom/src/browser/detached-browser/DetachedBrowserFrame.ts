@@ -12,6 +12,7 @@ import IBrowserWindow from '../../window/IBrowserWindow.js';
 import IReloadOptions from '../types/IReloadOptions.js';
 import BrowserErrorCapturingEnum from '../enums/BrowserErrorCapturingEnum.js';
 import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
+import IDocument from '../../nodes/document/IDocument.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -100,6 +101,15 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	}
 
 	/**
+	 * Returns document.
+	 *
+	 * @returns Document.
+	 */
+	public get document(): IDocument {
+		return this.window?.document ?? null;
+	}
+
+	/**
 	 * Returns a promise that is resolved when all async tasks are complete.
 	 *
 	 * @returns Promise.
@@ -114,11 +124,18 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	/**
 	 * Aborts all ongoing operations.
 	 */
-	public abort(): void {
-		for (const frame of this.childFrames) {
-			frame.abort();
+	public abort(): Promise<void> {
+		if (!this.childFrames.length) {
+			return this.__asyncTaskManager__.abort();
 		}
-		this.__asyncTaskManager__.abort();
+		return new Promise((resolve, reject) => {
+			// Using Promise instead of async/await to prevent microtask
+			Promise.all(
+				this.childFrames.map((frame) => frame.abort()).concat([this.__asyncTaskManager__.abort()])
+			)
+				.then(() => resolve())
+				.catch(reject);
+		});
 	}
 
 	/**

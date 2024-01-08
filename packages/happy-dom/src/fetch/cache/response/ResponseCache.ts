@@ -28,23 +28,25 @@ export default class ResponseCache implements IResponseCache {
 		}
 
 		const url = request.url;
+
 		if (this.#entries[url]) {
 			for (let i = 0, max = this.#entries[url].length; i < max; i++) {
 				const entry = this.#entries[url][i];
 				let isMatch = entry.request.method === request.method;
 				if (isMatch) {
 					for (const header of Object.keys(entry.vary)) {
-						if (entry.vary[header] !== request.headers.get(header)) {
+						const requestHeader = request.headers.get(header);
+						if (requestHeader !== null && entry.vary[header] !== requestHeader) {
 							isMatch = false;
 							break;
 						}
 					}
 				}
 				if (isMatch) {
-					if (!entry.etag && entry.expires && entry.expires < Date.now()) {
+					if (entry.expires && entry.expires < Date.now()) {
 						if (entry.lastModified) {
 							entry.state = CachedResponseStateEnum.stale;
-						} else {
+						} else if (!entry.etag) {
 							this.#entries[url].splice(i, 1);
 							return null;
 						}

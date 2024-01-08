@@ -62,16 +62,15 @@ export default class Node extends EventTarget implements INode {
 	public __textAreaNode__: INode = null;
 	public __observers__: MutationListener[] = [];
 	public readonly __childNodes__: INodeList<INode> = new NodeList<INode>();
-	#ownerDocument: IDocument | null = null;
+	public readonly ownerDocument: IDocument | null = null;
 
 	/**
 	 * Constructor.
 	 */
 	constructor() {
 		super();
-
 		if ((<typeof Node>this.constructor).__ownerDocument__) {
-			this.#ownerDocument = (<typeof Node>this.constructor).__ownerDocument__;
+			this.ownerDocument = (<typeof Node>this.constructor).__ownerDocument__;
 		}
 	}
 
@@ -82,13 +81,6 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
-	}
-
-	/**
-	 * Returns owner document.
-	 */
-	public get ownerDocument(): IDocument {
-		return <IDocument>this.#ownerDocument;
 	}
 
 	/**
@@ -427,6 +419,9 @@ export default class Node extends EventTarget implements INode {
 			(<boolean>this.isConnected) = isConnected;
 
 			if (!isConnected) {
+				if (!this.ownerDocument) {
+					debugger;
+				}
 				if (this.ownerDocument['__activeElement__'] === this) {
 					this.ownerDocument['__activeElement__'] = null;
 				}

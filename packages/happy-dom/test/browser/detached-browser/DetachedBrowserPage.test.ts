@@ -110,7 +110,7 @@ describe('DetachedBrowserPage', () => {
 	});
 
 	describe('close()', () => {
-		it('Closes the page.', () => {
+		it('Closes the page.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
@@ -118,7 +118,7 @@ describe('DetachedBrowserPage', () => {
 			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 
-			page.close();
+			await page.close();
 
 			// There is always one page in a detached browser context.
 			expect(browser.defaultContext.pages.length).toBe(1);

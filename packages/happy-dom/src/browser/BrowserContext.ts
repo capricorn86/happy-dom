@@ -31,14 +31,25 @@ export default class BrowserContext implements IBrowserContext {
 	/**
 	 * Aborts all ongoing operations and destroys the context.
 	 */
-	public close(): void {
-		const index = this.browser.contexts.indexOf(this);
-		this.browser.contexts.splice(index, 1);
-		for (const page of this.pages.slice()) {
-			page.close();
+	public async close(): Promise<void> {
+		if (!this.browser) {
+			return;
 		}
-		if (this.browser.contexts.length === 0) {
-			this.browser.close();
+		await Promise.all(this.pages.slice().map((page) => page.close()));
+		const browser = this.browser;
+		const index = browser.contexts.indexOf(this);
+		if (index !== -1) {
+			browser.contexts.splice(index, 1);
+		}
+		(<BrowserPage[]>this.pages) = [];
+		(<Browser | null>this.browser) = null;
+		(<ICookieContainer | null>this.cookieContainer) = null;
+		this.responseCache.clear();
+		this.preflightResponseCache.clear();
+		(<ResponseCache | null>this.responseCache) = null;
+		(<PreflightResponseCache | null>this.preflightResponseCache) = null;
+		if (browser.contexts.length === 0) {
+			browser.close();
 		}
 	}
 
@@ -54,10 +65,16 @@ export default class BrowserContext implements IBrowserContext {
 	/**
 	 * Aborts all ongoing operations.
 	 */
-	public abort(): void {
-		for (const page of this.pages) {
-			page.abort();
-		}
+	public abort(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			if (!this.pages.length) {
+				resolve();
+				return;
+			}
+			Promise.all(this.pages.slice().map((page) => page.abort()))
+				.then(() => resolve())
+				.catch((error) => reject(error));
+		});
 	}
 
 	/**

@@ -26,29 +26,49 @@ export default class BrowserFrameFactory {
 	 *
 	 * @param frame Frame.
 	 */
-	public static destroyFrame(frame: IBrowserFrame): void {
-		if (!frame.window) {
-			return;
-		}
-
-		if (frame.parentFrame) {
-			const index = frame.parentFrame.childFrames.indexOf(frame);
-			if (index !== -1) {
-				frame.parentFrame.childFrames.splice(index, 1);
+	public static destroyFrame(frame: IBrowserFrame): Promise<void> {
+		// Using Promise instead of async/await to prevent microtask
+		return new Promise((resolve, reject) => {
+			if (!frame.window) {
+				resolve();
+				return;
 			}
-		}
 
-		for (const childFrame of frame.childFrames.slice()) {
-			this.destroyFrame(childFrame);
-		}
+			if (frame.parentFrame) {
+				const index = frame.parentFrame.childFrames.indexOf(frame);
+				if (index !== -1) {
+					frame.parentFrame.childFrames.splice(index, 1);
+				}
+			}
 
-		(<boolean>frame.window.closed) = true;
-		frame.__asyncTaskManager__.destroy();
-		frame.__exceptionObserver__?.disconnect();
-		WindowBrowserSettingsReader.removeSettings(frame.window);
-		// TODO: Setting page to null causes error when window tries to access the console
-		// (<BrowserPage | null>frame.page) = null;
-		(<IBrowserWindow | null>frame.window) = null;
-		(<IBrowserFrame | null>frame.opener) = null;
+			(<boolean>frame.window.closed) = true;
+
+			if (!frame.childFrames.length) {
+				const window = <IBrowserWindow>frame.window;
+				WindowBrowserSettingsReader.removeSettings(frame.window);
+				(<IBrowserPage | null>frame.page) = null;
+				(<IBrowserWindow | null>frame.window) = null;
+				(<IBrowserFrame | null>frame.opener) = null;
+				window.close();
+				frame.__exceptionObserver__?.disconnect();
+				resolve();
+				return;
+			}
+
+			Promise.all(frame.childFrames.slice().map((childFrame) => this.destroyFrame(childFrame)))
+				.then(() => {
+					return frame.__asyncTaskManager__.destroy().then(() => {
+						const window = <IBrowserWindow>frame.window;
+						WindowBrowserSettingsReader.removeSettings(frame.window);
+						(<IBrowserPage | null>frame.page) = null;
+						(<IBrowserWindow | null>frame.window) = null;
+						(<IBrowserFrame | null>frame.opener) = null;
+						window.close();
+						frame.__exceptionObserver__?.disconnect();
+						resolve();
+					});
+				})
+				.catch((error) => reject(error));
+		});
 	}
 }

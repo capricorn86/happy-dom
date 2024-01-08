@@ -22,7 +22,7 @@ export default interface IBrowserPage {
 	/**
 	 * Aborts all ongoing operations and destroys the page.
 	 */
-	close(): void;
+	close(): Promise<void>;
 
 	/**
 	 * Returns a promise that is resolved when all async tasks are complete.
@@ -34,7 +34,7 @@ export default interface IBrowserPage {
 	/**
 	 * Aborts all ongoing operations.
 	 */
-	abort(): void;
+	abort(): Promise<void>;
 
 	/**
 	 * Evaluates code or a VM Script in the page's context.

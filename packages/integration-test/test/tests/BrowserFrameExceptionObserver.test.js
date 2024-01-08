@@ -37,7 +37,7 @@ describe('BrowserFrameExceptionObserver', () => {
 			expect(errorEvent.error.message).toBe('Test error');
 			expect(errorEvent.message).toBe('Test error');
 
-			browser.close();
+			await browser.close();
 		});
 
 		it('Observes uncaught exceptions.', async () => {
@@ -75,7 +75,7 @@ describe('BrowserFrameExceptionObserver', () => {
 			expect(errorEvent.error.message).toBe('Test error');
 			expect(errorEvent.message).toBe('Test error');
 
-			browser.close();
+			await browser.close();
 		});
 	});
 

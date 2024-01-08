@@ -74,13 +74,20 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	/**
 	 * Aborts all ongoing operations and destroys the page.
 	 */
-	public close(): void {
-		const context = this.context;
-		BrowserPageUtility.closePage(this);
-		// As we are in a detached page, a context or browser should not exist without a page as there are no references to them.
-		if (context.pages[0] === this) {
-			context.close();
-		}
+	public close(): Promise<void> {
+		// Using Promise instead of async/await to prevent microtask
+		return new Promise((resolve, reject) => {
+			const context = this.context;
+			BrowserPageUtility.closePage(this)
+				.then(() => {
+					// As we are in a detached page, a context or browser should not exist without a page as there are no references to them.
+					if (context.pages[0] === this) {
+						context.close();
+					}
+					resolve();
+				})
+				.catch((error) => reject(error));
+		});
 	}
 
 	/**
@@ -95,8 +102,8 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	/**
 	 * Aborts all ongoing operations.
 	 */
-	public abort(): void {
-		this.mainFrame.abort();
+	public abort(): Promise<void> {
+		return this.mainFrame.abort();
 	}
 
 	/**

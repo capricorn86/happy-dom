@@ -13,14 +13,14 @@ import IElement from './IElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class ElementNamedNodeMap extends NamedNodeMap {
-	protected __ownerElement__: Element;
+	protected __ownerElement__: IElement;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param ownerElement Owner element.
 	 */
-	constructor(ownerElement: Element) {
+	constructor(ownerElement: IElement) {
 		super();
 		this.__ownerElement__ = ownerElement;
 	}
@@ -57,8 +57,8 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 			this.__ownerElement__.ownerDocument['__cacheID__']++;
 		}
 
-		if (item.name === 'class' && this.__ownerElement__.__classList__) {
-			this.__ownerElement__.__classList__.__updateIndices__();
+		if (item.name === 'class' && this.__ownerElement__['__classList__']) {
+			this.__ownerElement__['__classList__'].__updateIndices__();
 		}
 
 		if (item.name === 'id' || item.name === 'name') {
@@ -89,8 +89,8 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 		}
 
 		// MutationObserver
-		if (this.__ownerElement__.__observers__.length > 0) {
-			for (const observer of this.__ownerElement__.__observers__) {
+		if (this.__ownerElement__['__observers__'].length > 0) {
+			for (const observer of this.__ownerElement__['__observers__']) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
@@ -123,8 +123,8 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 			this.__ownerElement__.ownerDocument['__cacheID__']++;
 		}
 
-		if (removedItem.name === 'class' && this.__ownerElement__.__classList__) {
-			this.__ownerElement__.__classList__.__updateIndices__();
+		if (removedItem.name === 'class' && this.__ownerElement__['__classList__']) {
+			this.__ownerElement__['__classList__'].__updateIndices__();
 		}
 
 		if (removedItem.name === 'id' || removedItem.name === 'name') {
@@ -150,8 +150,8 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 		}
 
 		// MutationObserver
-		if (this.__ownerElement__.__observers__.length > 0) {
-			for (const observer of this.__ownerElement__.__observers__) {
+		if (this.__ownerElement__['__observers__'].length > 0) {
+			for (const observer of this.__ownerElement__['__observers__']) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||

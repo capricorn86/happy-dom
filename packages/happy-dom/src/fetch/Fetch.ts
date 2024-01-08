@@ -125,22 +125,26 @@ export default class Fetch {
 			);
 		}
 
-		const cachedResponse = await this.getCachedResponse();
+		if (!this.disableCache) {
+			const cachedResponse = await this.getCachedResponse();
 
-		if (cachedResponse) {
-			return cachedResponse;
+			if (cachedResponse) {
+				return cachedResponse;
+			}
 		}
 
-		const compliesWithCrossOriginPolicy = await this.compliesWithCrossOriginPolicy();
+		if (!this.disableCrossOriginPolicy) {
+			const compliesWithCrossOriginPolicy = await this.compliesWithCrossOriginPolicy();
 
-		if (!compliesWithCrossOriginPolicy) {
-			this.#window.console.warn(
-				`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`
-			);
-			throw new DOMException(
-				`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`,
-				DOMExceptionNameEnum.networkError
-			);
+			if (!compliesWithCrossOriginPolicy) {
+				this.#window.console.warn(
+					`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`
+				);
+				throw new DOMException(
+					`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`,
+					DOMExceptionNameEnum.networkError
+				);
+			}
 		}
 
 		return await this.sendRequest();
@@ -162,15 +166,15 @@ export default class Fetch {
 			return null;
 		}
 
-		if (
-			cachedResponse.etag ||
-			(cachedResponse.state === CachedResponseStateEnum.stale && cachedResponse.lastModified)
-		) {
+		if (cachedResponse.state === CachedResponseStateEnum.stale) {
 			const headers = new Headers(cachedResponse.request.headers);
 
 			if (cachedResponse.etag) {
 				headers.set('If-None-Match', cachedResponse.etag);
 			} else {
+				if (!cachedResponse.lastModified) {
+					return null;
+				}
 				headers.set('If-Modified-Since', new Date(cachedResponse.lastModified).toUTCString());
 			}
 
@@ -179,7 +183,8 @@ export default class Fetch {
 				window: this.#window,
 				url: this.request.url,
 				init: { headers, method: cachedResponse.request.method },
-				disableCache: true
+				disableCache: true,
+				disableCrossOriginPolicy: true
 			});
 
 			if (cachedResponse.etag || !cachedResponse.staleWhileRevalidate) {
@@ -339,7 +344,9 @@ export default class Fetch {
 			}
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
-				if (!this.disableCache && response instanceof Response) {
+				// We can end up here when closing down the browser frame and there is an ongoing request.
+				// Therefore we need to check if browserFrame.page.context is still available.
+				if (!this.disableCache && response instanceof Response && this.#browserFrame.page.context) {
 					response.__cachedResponse__ = this.#browserFrame.page.context.responseCache.add(
 						this.request,
 						{

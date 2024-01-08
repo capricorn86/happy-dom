@@ -25,15 +25,15 @@ export default class AsyncTaskManager {
 	/**
 	 * Aborts all tasks.
 	 */
-	public abort(): void {
-		this.abortAll(false);
+	public abort(): Promise<void> {
+		return this.abortAll(false);
 	}
 
 	/**
 	 * Destroys the manager.
 	 */
-	public destroy(): void {
-		this.abortAll(true);
+	public destroy(): Promise<void> {
+		return this.abortAll(true);
 	}
 
 	/**
@@ -159,7 +159,7 @@ export default class AsyncTaskManager {
 	 *
 	 * @param destroy Destroy.
 	 */
-	private abortAll(destroy: boolean): void {
+	private abortAll(destroy: boolean): Promise<void> {
 		const runningTimers = this.runningTimers;
 		const runningImmediates = this.runningImmediates;
 		const runningTasks = this.runningTasks;
@@ -186,6 +186,7 @@ export default class AsyncTaskManager {
 			runningTasks[key](destroy);
 		}
 
-		this.resolveWhenComplete();
+		// We need to wait for microtasks to complete before resolving.
+		return this.whenComplete();
 	}
 }

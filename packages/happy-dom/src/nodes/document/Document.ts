@@ -195,17 +195,8 @@ export default class Document extends Node implements IDocument {
 	constructor(injected: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
 		super();
 		this.#browserFrame = injected.browserFrame;
-		this.implementation = new DOMImplementation(injected.window);
 		this.__defaultView__ = injected.window;
-	}
-
-	/**
-	 * Returns owner document.
-	 *
-	 * @returns Owner document.
-	 */
-	public get ownerDocument(): IDocument {
-		return null;
+		this.implementation = new DOMImplementation(this);
 	}
 
 	/**
@@ -858,7 +849,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createTextNode(data?: string): IText {
-		return new this.__defaultView__.Text(data);
+		this.__defaultView__.Text.__ownerDocument__ = this;
+		const node = new this.__defaultView__.Text(data);
+		this.__defaultView__.Text.__ownerDocument__ = null;
+		return node;
 	}
 
 	/**
@@ -868,7 +862,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createComment(data?: string): IComment {
-		return new this.__defaultView__.Comment(data);
+		this.__defaultView__.Comment.__ownerDocument__ = this;
+		const node = new this.__defaultView__.Comment(data);
+		this.__defaultView__.Comment.__ownerDocument__ = null;
+		return node;
 	}
 
 	/**
@@ -877,7 +874,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document fragment.
 	 */
 	public createDocumentFragment(): IDocumentFragment {
-		return new this.__defaultView__.DocumentFragment();
+		this.__defaultView__.DocumentFragment.__ownerDocument__ = this;
+		const node = new this.__defaultView__.DocumentFragment();
+		this.__defaultView__.DocumentFragment.__ownerDocument__ = null;
+		return node;
 	}
 
 	/**
@@ -938,7 +938,9 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr {
+		this.__defaultView__.Attr.__ownerDocument__ = this;
 		const attribute = new this.__defaultView__.Attr();
+		this.__defaultView__.Attr.__ownerDocument__ = null;
 		attribute.namespaceURI = namespaceURI;
 		attribute.name = qualifiedName;
 		return <IAttr>attribute;
@@ -982,7 +984,7 @@ export default class Document extends Node implements IDocument {
 
 		const adopted = node.parentNode ? node.parentNode.removeChild(node) : node;
 		const document = this;
-		Object.defineProperty(adopted, 'ownerDocument', { get: () => document });
+		Object.defineProperty(adopted, 'ownerDocument', { value: document });
 		return adopted;
 	}
 
@@ -1025,7 +1027,9 @@ export default class Document extends Node implements IDocument {
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
+		this.__defaultView__.ProcessingInstruction.__ownerDocument__ = this;
 		const processingInstruction = new this.__defaultView__.ProcessingInstruction(data);
+		this.__defaultView__.ProcessingInstruction.__ownerDocument__ = null;
 		processingInstruction.target = target;
 		return processingInstruction;
 	}

@@ -44,10 +44,8 @@ export default class Browser implements IBrowser {
 	/**
 	 * Aborts all ongoing operations and destroys the browser.
 	 */
-	public close(): void {
-		for (const context of this.contexts) {
-			context.close();
-		}
+	public async close(): Promise<void> {
+		await Promise.all(this.contexts.slice().map((context) => context.close()));
 		(<BrowserContext[]>this.contexts) = [];
 	}
 
@@ -66,10 +64,17 @@ export default class Browser implements IBrowser {
 	/**
 	 * Aborts all ongoing operations.
 	 */
-	public abort(): void {
-		for (const context of this.contexts.slice()) {
-			context.abort();
-		}
+	public abort(): Promise<void> {
+		// Using Promise instead of async/await to prevent microtask
+		return new Promise((resolve, reject) => {
+			if (!this.contexts.length) {
+				resolve();
+				return;
+			}
+			Promise.all(this.contexts.slice().map((context) => context.abort()))
+				.then(() => resolve())
+				.catch((error) => reject(error));
+		});
 	}
 
 	/**

@@ -1170,7 +1170,7 @@ describe('XMLHttpRequest', () => {
 				isLoadEndTriggered = true;
 			});
 
-			window.happyDOM?.abort();
+			await window.happyDOM?.abort();
 
 			expect(isAbortTriggered).toBe(true);
 			expect(isErrorTriggered).toBe(false);
