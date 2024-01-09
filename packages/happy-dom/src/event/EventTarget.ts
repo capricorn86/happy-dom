@@ -1,4 +1,5 @@
 import IEventListener from './IEventListener.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import Event from './Event.js';
 import IEventTarget from './IEventTarget.js';
 import IEventListenerOptions from './IEventListenerOptions.js';
@@ -14,10 +15,10 @@ import BrowserErrorCapturingEnum from '../browser/enums/BrowserErrorCapturingEnu
  * Handles events.
  */
 export default abstract class EventTarget implements IEventTarget {
-	public readonly __listeners__: {
+	public readonly [PropertySymbol.listeners]: {
 		[k: string]: (((event: Event) => void) | IEventListener)[];
 	} = {};
-	public readonly __listenerOptions__: {
+	public readonly [PropertySymbol.listenerOptions]: {
 		[k: string]: (IEventListenerOptions | null)[];
 	} = {};
 
@@ -43,21 +44,21 @@ export default abstract class EventTarget implements IEventTarget {
 	): void {
 		const listenerOptions = typeof options === 'boolean' ? { capture: options } : options || null;
 
-		this.__listeners__[type] = this.__listeners__[type] || [];
-		this.__listenerOptions__[type] = this.__listenerOptions__[type] || [];
-		if (this.__listeners__[type].includes(listener)) {
+		this[PropertySymbol.listeners][type] = this[PropertySymbol.listeners][type] || [];
+		this[PropertySymbol.listenerOptions][type] = this[PropertySymbol.listenerOptions][type] || [];
+		if (this[PropertySymbol.listeners][type].includes(listener)) {
 			return;
 		}
-		this.__listeners__[type].push(listener);
-		this.__listenerOptions__[type].push(listenerOptions);
+		this[PropertySymbol.listeners][type].push(listener);
+		this[PropertySymbol.listenerOptions][type].push(listenerOptions);
 
 		// Tracks the amount of capture event listeners to improve performance when they are not used.
 		if (listenerOptions && listenerOptions.capture) {
 			const window = this.#getWindow();
 			if (window) {
-				window['__captureEventListenerCount__'][type] =
-					window['__captureEventListenerCount__'][type] ?? 0;
-				window['__captureEventListenerCount__'][type]++;
+				window[PropertySymbol.captureEventListenerCount][type] =
+					window[PropertySymbol.captureEventListenerCount][type] ?? 0;
+				window[PropertySymbol.captureEventListenerCount][type]++;
 			}
 		}
 	}
@@ -72,22 +73,22 @@ export default abstract class EventTarget implements IEventTarget {
 		type: string,
 		listener: ((event: Event) => void) | IEventListener
 	): void {
-		if (this.__listeners__[type]) {
-			const index = this.__listeners__[type].indexOf(listener);
+		if (this[PropertySymbol.listeners][type]) {
+			const index = this[PropertySymbol.listeners][type].indexOf(listener);
 			if (index !== -1) {
 				// Tracks the amount of capture event listeners to improve performance when they are not used.
 				if (
-					this.__listenerOptions__[type][index] &&
-					this.__listenerOptions__[type][index].capture
+					this[PropertySymbol.listenerOptions][type][index] &&
+					this[PropertySymbol.listenerOptions][type][index].capture
 				) {
 					const window = this.#getWindow();
-					if (window && window['__captureEventListenerCount__'][type]) {
-						window['__captureEventListenerCount__'][type]--;
+					if (window && window[PropertySymbol.captureEventListenerCount][type]) {
+						window[PropertySymbol.captureEventListenerCount][type]--;
 					}
 				}
 
-				this.__listeners__[type].splice(index, 1);
-				this.__listenerOptions__[type].splice(index, 1);
+				this[PropertySymbol.listeners][type].splice(index, 1);
+				this[PropertySymbol.listenerOptions][type].splice(index, 1);
 			}
 		}
 	}
@@ -104,19 +105,19 @@ export default abstract class EventTarget implements IEventTarget {
 		const window = this.#getWindow();
 
 		if (event.eventPhase === EventPhaseEnum.none) {
-			event.__target__ = this;
+			event[PropertySymbol.target] = this;
 
 			const composedPath = event.composedPath();
 
 			// Capturing phase
 
 			// We only need to iterate over the composed path if there are capture event listeners.
-			if (window && window['__captureEventListenerCount__'][event.type]) {
+			if (window && window[PropertySymbol.captureEventListenerCount][event.type]) {
 				event.eventPhase = EventPhaseEnum.capturing;
 
 				for (let i = composedPath.length - 1; i >= 0; i--) {
 					composedPath[i].dispatchEvent(event);
-					if (event.__propagationStopped__ || event.__immediatePropagationStopped__) {
+					if (event[PropertySymbol.propagationStopped] || event[PropertySymbol.immediatePropagationStopped]) {
 						break;
 					}
 				}
@@ -130,14 +131,14 @@ export default abstract class EventTarget implements IEventTarget {
 			// Bubbling phase
 			if (
 				event.bubbles &&
-				!event.__propagationStopped__ &&
-				!event.__immediatePropagationStopped__
+				!event[PropertySymbol.propagationStopped] &&
+				!event[PropertySymbol.immediatePropagationStopped]
 			) {
 				event.eventPhase = EventPhaseEnum.bubbling;
 
 				for (let i = 1; i < composedPath.length; i++) {
 					composedPath[i].dispatchEvent(event);
-					if (event.__propagationStopped__ || event.__immediatePropagationStopped__) {
+					if (event[PropertySymbol.propagationStopped] || event[PropertySymbol.immediatePropagationStopped]) {
 						break;
 					}
 				}
@@ -149,7 +150,7 @@ export default abstract class EventTarget implements IEventTarget {
 			return !(event.cancelable && event.defaultPrevented);
 		}
 
-		event.__currentTarget__ = this;
+		event[PropertySymbol.currentTarget] = this;
 
 		const browserSettings = window ? WindowBrowserSettingsReader.getSettings(window) : null;
 
@@ -171,10 +172,10 @@ export default abstract class EventTarget implements IEventTarget {
 			}
 		}
 
-		if (this.__listeners__[event.type]) {
+		if (this[PropertySymbol.listeners][event.type]) {
 			// We need to clone the arrays because the listeners may remove themselves while we are iterating.
-			const listeners = this.__listeners__[event.type].slice();
-			const listenerOptions = this.__listenerOptions__[event.type].slice();
+			const listeners = this[PropertySymbol.listeners][event.type].slice();
+			const listenerOptions = this[PropertySymbol.listenerOptions][event.type].slice();
 
 			for (let i = 0, max = listeners.length; i < max; i++) {
 				const listener = listeners[i];
@@ -188,7 +189,7 @@ export default abstract class EventTarget implements IEventTarget {
 				}
 
 				if (options?.passive) {
-					event.__isInPassiveEventListener__ = true;
+					event[PropertySymbol.isInPassiveEventListener] = true;
 				}
 
 				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
@@ -217,7 +218,7 @@ export default abstract class EventTarget implements IEventTarget {
 					}
 				}
 
-				event.__isInPassiveEventListener__ = false;
+				event[PropertySymbol.isInPassiveEventListener] = false;
 
 				if (options?.once) {
 					// At this time, listeners and listenersOptions are cloned arrays. When the original value is deleted,
@@ -229,7 +230,7 @@ export default abstract class EventTarget implements IEventTarget {
 					max--;
 				}
 
-				if (event.__immediatePropagationStopped__) {
+				if (event[PropertySymbol.immediatePropagationStopped]) {
 					return !(event.cancelable && event.defaultPrevented);
 				}
 			}
@@ -273,10 +274,10 @@ export default abstract class EventTarget implements IEventTarget {
 	 */
 	#getWindow(): IBrowserWindow | null {
 		if ((<INode>(<unknown>this)).ownerDocument) {
-			return (<INode>(<unknown>this)).ownerDocument.__defaultView__;
+			return (<INode>(<unknown>this)).ownerDocument[PropertySymbol.defaultView];
 		}
-		if ((<IDocument>(<unknown>this)).__defaultView__) {
-			return (<IDocument>(<unknown>this)).__defaultView__;
+		if ((<IDocument>(<unknown>this))[PropertySymbol.defaultView]) {
+			return (<IDocument>(<unknown>this))[PropertySymbol.defaultView];
 		}
 		if ((<IBrowserWindow>(<unknown>this)).document) {
 			return <IBrowserWindow>(<unknown>this);

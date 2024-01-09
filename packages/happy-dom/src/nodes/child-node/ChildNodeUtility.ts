@@ -1,4 +1,5 @@
 import DOMException from '../../exception/DOMException.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Document from '../document/Document.js';
@@ -38,7 +39,7 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode.ownerDocument, node)
-				)).__childNodes__.slice();
+				))[PropertySymbol.childNodes].slice();
 				for (const newChildNode of newChildNodes) {
 					parent.insertBefore(newChildNode, childNode);
 				}
@@ -67,7 +68,7 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode.ownerDocument, node)
-				)).__childNodes__.slice();
+				))[PropertySymbol.childNodes].slice();
 				for (const newChildNode of newChildNodes) {
 					parent.insertBefore(newChildNode, childNode);
 				}
@@ -96,7 +97,7 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode.ownerDocument, node)
-				)).__childNodes__.slice();
+				))[PropertySymbol.childNodes].slice();
 				for (const newChildNode of newChildNodes) {
 					if (!nextSibling) {
 						parent.appendChild(newChildNode);

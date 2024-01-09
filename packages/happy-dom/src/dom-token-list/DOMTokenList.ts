@@ -1,4 +1,5 @@
 import Element from '../nodes/element/Element.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IDOMTokenList from './IDOMTokenList.js';
 
 /**
@@ -21,7 +22,7 @@ export default class DOMTokenList implements IDOMTokenList {
 	constructor(ownerElement: Element, attributeName) {
 		this.#ownerElement = ownerElement;
 		this.#attributeName = attributeName;
-		this.__updateIndices__();
+		this[PropertySymbol.updateIndices]();
 	}
 
 	/**
@@ -197,7 +198,7 @@ export default class DOMTokenList implements IDOMTokenList {
 	/**
 	 * Updates indices.
 	 */
-	public __updateIndices__(): void {
+	public [PropertySymbol.updateIndices](): void {
 		const attr = this.#ownerElement.getAttribute(this.#attributeName);
 		const list = attr ? Array.from(new Set(attr.split(' '))) : [];
 

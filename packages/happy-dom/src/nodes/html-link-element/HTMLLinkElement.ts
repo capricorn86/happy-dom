@@ -1,4 +1,5 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLLinkElement from './IHTMLLinkElement.js';
 import Event from '../../event/Event.js';
@@ -22,8 +23,8 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
 	public readonly sheet: CSSStyleSheet = null;
-	public __evaluateCSS__ = true;
-	public __relList__: DOMTokenList = null;
+	public [PropertySymbol.evaluateCSS] = true;
+	public [PropertySymbol.relList]: DOMTokenList = null;
 	#styleSheetLoader: HTMLLinkElementStyleSheetLoader;
 
 	/**
@@ -48,10 +49,10 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Rel list.
 	 */
 	public get relList(): IDOMTokenList {
-		if (!this.__relList__) {
-			this.__relList__ = new DOMTokenList(this, 'rel');
+		if (!this[PropertySymbol.relList]) {
+			this[PropertySymbol.relList] = new DOMTokenList(this, 'rel');
 		}
-		return <IDOMTokenList>this.__relList__;
+		return <IDOMTokenList>this[PropertySymbol.relList];
 	}
 
 	/**
@@ -201,13 +202,13 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * @override
 	 */
-	public override __connectToNode__(parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
 
-		super.__connectToNode__(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (isParentConnected && isConnected !== isParentConnected && this.__evaluateCSS__) {
+		if (isParentConnected && isConnected !== isParentConnected && this[PropertySymbol.evaluateCSS]) {
 			this.#styleSheetLoader.loadStyleSheet(this.getAttribute('href'), this.getAttribute('rel'));
 		}
 	}

@@ -1,4 +1,5 @@
 import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum.js';
 import Event from '../event/Event.js';
 import IDocument from '../nodes/document/IDocument.js';
@@ -327,7 +328,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param body Optional data to send as request body.
 	 */
 	async #sendAsync(body?: IRequestBody): Promise<void> {
-		const taskID = this.#browserFrame.__asyncTaskManager__.startTask(() => this.abort());
+		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(() => this.abort());
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
 
@@ -350,7 +351,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.dispatchEvent(new Event('abort'));
 			this.dispatchEvent(new Event('loadend'));
 			this.dispatchEvent(new Event('readystatechange'));
-			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 		});
 
 		const onError = (error: Error) => {
@@ -366,7 +367,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			}
 			this.dispatchEvent(new Event('loadend'));
 			this.dispatchEvent(new Event('readystatechange'));
-			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 		};
 
 		const fetch = new Fetch({
@@ -435,7 +436,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.dispatchEvent(new Event('load'));
 		this.dispatchEvent(new Event('loadend'));
 
-		this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 	}
 
 	/**

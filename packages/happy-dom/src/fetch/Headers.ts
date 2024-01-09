@@ -1,4 +1,5 @@
 import DOMException from '../exception/DOMException.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IHeaders from './types/IHeaders.js';
 import IHeadersInit from './types/IHeadersInit.js';
@@ -9,7 +10,7 @@ import IHeadersInit from './types/IHeadersInit.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Headers
  */
 export default class Headers implements IHeaders {
-	public __entries__: { [k: string]: { name: string; value: string } } = {};
+	public [PropertySymbol.entries]: { [k: string]: { name: string; value: string } } = {};
 
 	/**
 	 * Constructor.
@@ -19,7 +20,7 @@ export default class Headers implements IHeaders {
 	constructor(init?: IHeadersInit) {
 		if (init) {
 			if (init instanceof Headers) {
-				this.__entries__ = JSON.parse(JSON.stringify(init.__entries__));
+				this[PropertySymbol.entries] = JSON.parse(JSON.stringify(init[PropertySymbol.entries]));
 			} else if (Array.isArray(init)) {
 				for (const entry of init) {
 					if (entry.length !== 2) {
@@ -46,10 +47,10 @@ export default class Headers implements IHeaders {
 	 */
 	public append(name: string, value: string): void {
 		const lowerName = name.toLowerCase();
-		if (this.__entries__[lowerName]) {
-			this.__entries__[lowerName].value += `, ${value}`;
+		if (this[PropertySymbol.entries][lowerName]) {
+			this[PropertySymbol.entries][lowerName].value += `, ${value}`;
 		} else {
-			this.__entries__[lowerName] = {
+			this[PropertySymbol.entries][lowerName] = {
 				name,
 				value
 			};
@@ -62,7 +63,7 @@ export default class Headers implements IHeaders {
 	 * @param name Name.
 	 */
 	public delete(name: string): void {
-		delete this.__entries__[name.toLowerCase()];
+		delete this[PropertySymbol.entries][name.toLowerCase()];
 	}
 
 	/**
@@ -72,7 +73,7 @@ export default class Headers implements IHeaders {
 	 * @returns Value.
 	 */
 	public get(name: string): string | null {
-		return this.__entries__[name.toLowerCase()]?.value || null;
+		return this[PropertySymbol.entries][name.toLowerCase()]?.value || null;
 	}
 
 	/**
@@ -82,7 +83,7 @@ export default class Headers implements IHeaders {
 	 * @param value Value.
 	 */
 	public set(name: string, value: string): void {
-		this.__entries__[name.toLowerCase()] = {
+		this[PropertySymbol.entries][name.toLowerCase()] = {
 			name,
 			value
 		};
@@ -95,7 +96,7 @@ export default class Headers implements IHeaders {
 	 * @returns "true" if the Headers object contains the key.
 	 */
 	public has(name: string): boolean {
-		return !!this.__entries__[name.toLowerCase()];
+		return !!this[PropertySymbol.entries][name.toLowerCase()];
 	}
 
 	/**
@@ -104,7 +105,7 @@ export default class Headers implements IHeaders {
 	 * @param callback Callback.
 	 */
 	public forEach(callback: (name: string, value: string, thisArg: IHeaders) => void): void {
-		for (const header of Object.values(this.__entries__)) {
+		for (const header of Object.values(this[PropertySymbol.entries])) {
 			callback(header.value, header.name, this);
 		}
 	}
@@ -115,7 +116,7 @@ export default class Headers implements IHeaders {
 	 * @returns Iterator.
 	 */
 	public *keys(): IterableIterator<string> {
-		for (const header of Object.values(this.__entries__)) {
+		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield header.name;
 		}
 	}
@@ -126,7 +127,7 @@ export default class Headers implements IHeaders {
 	 * @returns Iterator.
 	 */
 	public *values(): IterableIterator<string> {
-		for (const header of Object.values(this.__entries__)) {
+		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield header.value;
 		}
 	}
@@ -137,7 +138,7 @@ export default class Headers implements IHeaders {
 	 * @returns Iterator.
 	 */
 	public *entries(): IterableIterator<[string, string]> {
-		for (const header of Object.values(this.__entries__)) {
+		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield [header.name, header.value];
 		}
 	}
@@ -148,7 +149,7 @@ export default class Headers implements IHeaders {
 	 * @returns Iterator.
 	 */
 	public *[Symbol.iterator](): IterableIterator<[string, string]> {
-		for (const header of Object.values(this.__entries__)) {
+		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield [header.name, header.value];
 		}
 	}

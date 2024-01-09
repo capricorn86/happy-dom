@@ -1,4 +1,5 @@
 import URL from '../../url/URL.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import { isIP } from 'net';
 import Headers from '../Headers.js';
@@ -34,9 +35,9 @@ export default class FetchRequestReferrerUtility {
 		}
 
 		if (request.referrer && request.referrer !== 'no-referrer') {
-			request.__referrer__ = this.getSentReferrer(originURL, request);
+			request[PropertySymbol.referrer] = this.getSentReferrer(originURL, request);
 		} else {
-			request.__referrer__ = 'no-referrer';
+			request[PropertySymbol.referrer] = 'no-referrer';
 		}
 	}
 

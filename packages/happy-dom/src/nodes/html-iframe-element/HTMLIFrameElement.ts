@@ -1,4 +1,5 @@
 import Event from '../../event/Event.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import IDocument from '../document/IDocument.js';
 import HTMLElement from '../html-element/HTMLElement.js';
@@ -191,11 +192,11 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	/**
 	 * @override
 	 */
-	public override __connectToNode__(parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
 
-		super.__connectToNode__(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
 		if (isConnected !== isParentConnected) {
 			if (isParentConnected) {

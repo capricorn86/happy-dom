@@ -1,4 +1,5 @@
 import Node from '../node/Node.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterData from '../character-data/CharacterData.js';
 import IText from './IText.js';
 import DOMException from '../../exception/DOMException.js';
@@ -25,7 +26,7 @@ export default class Text extends CharacterData implements IText {
 	 * @override
 	 */
 	public override get data(): string {
-		return this.__data__;
+		return this[PropertySymbol.data];
 	}
 
 	/**
@@ -34,8 +35,8 @@ export default class Text extends CharacterData implements IText {
 	public override set data(data: string) {
 		super.data = data;
 
-		if (this.__textAreaNode__) {
-			(<HTMLTextAreaElement>this.__textAreaNode__).__resetSelection__();
+		if (this[PropertySymbol.textAreaNode]) {
+			(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
 		}
 	}
 
@@ -47,7 +48,7 @@ export default class Text extends CharacterData implements IText {
 	 * @returns New text node.
 	 */
 	public splitText(offset: number): IText {
-		const length = this.__data__.length;
+		const length = this[PropertySymbol.data].length;
 
 		if (offset < 0 || offset > length) {
 			throw new DOMException(
@@ -92,17 +93,17 @@ export default class Text extends CharacterData implements IText {
 	/**
 	 * @override
 	 */
-	public override __connectToNode__(parentNode: INode = null): void {
-		const oldTextAreaNode = <HTMLTextAreaElement>this.__textAreaNode__;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const oldTextAreaNode = <HTMLTextAreaElement>this[PropertySymbol.textAreaNode];
 
-		super.__connectToNode__(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldTextAreaNode !== this.__textAreaNode__) {
+		if (oldTextAreaNode !== this[PropertySymbol.textAreaNode]) {
 			if (oldTextAreaNode) {
-				oldTextAreaNode.__resetSelection__();
+				oldTextAreaNode[PropertySymbol.resetSelection]();
 			}
-			if (this.__textAreaNode__) {
-				(<HTMLTextAreaElement>this.__textAreaNode__).__resetSelection__();
+			if (this[PropertySymbol.textAreaNode]) {
+				(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
 			}
 		}
 	}

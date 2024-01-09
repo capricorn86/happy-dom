@@ -1,4 +1,5 @@
 import DOMException from '../exception/DOMException.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import INode from '../nodes/node/INode.js';
 import Node from '../nodes/node/Node.js';
 import IMutationObserverInit from './IMutationObserverInit.js';
@@ -49,7 +50,7 @@ export default class MutationObserver {
 		this.listener.callback = this.callback.bind(this);
 		this.listener.observer = this;
 
-		(<Node>target).__observe__(this.listener);
+		(<Node>target)[PropertySymbol.observe](this.listener);
 	}
 
 	/**
@@ -57,7 +58,7 @@ export default class MutationObserver {
 	 */
 	public disconnect(): void {
 		if (this.target) {
-			(<Node>this.target).__unobserve__(this.listener);
+			(<Node>this.target)[PropertySymbol.unobserve](this.listener);
 			this.target = null;
 		}
 	}

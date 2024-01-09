@@ -1,4 +1,5 @@
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import IElement from '../element/IElement.js';
@@ -28,7 +29,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of this.__childNodes__) {
+		for (const node of this[PropertySymbol.childNodes]) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
@@ -40,7 +41,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		for (const child of this.__childNodes__.slice()) {
+		for (const child of this[PropertySymbol.childNodes].slice()) {
 			this.removeChild(child);
 		}
 
@@ -53,7 +54,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 * @returns Active element.
 	 */
 	public get activeElement(): IHTMLElement | null {
-		const activeElement: IHTMLElement = this.ownerDocument['__activeElement__'];
+		const activeElement: IHTMLElement = this.ownerDocument[PropertySymbol.activeElement];
 		if (activeElement && activeElement.isConnected && activeElement.getRootNode() === this) {
 			return activeElement;
 		}

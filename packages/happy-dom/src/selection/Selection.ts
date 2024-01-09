@@ -1,4 +1,5 @@
 import Event from '../event/Event.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IDocument from '../nodes/document/IDocument.js';
@@ -172,7 +173,7 @@ export default class Selection {
 		if (!newRange) {
 			throw new Error('Failed to execute addRange on Selection. Parameter 1 is not of type Range.');
 		}
-		if (!this.#range && newRange.__ownerDocument__ === this.#ownerDocument) {
+		if (!this.#range && newRange[PropertySymbol.ownerDocument] === this.#ownerDocument) {
 			this.#associateRange(newRange);
 		}
 	}
@@ -249,12 +250,12 @@ export default class Selection {
 			return;
 		}
 
-		const newRange = new this.#ownerDocument.__defaultView__.Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
-		newRange.__start__.node = node;
-		newRange.__start__.offset = offset;
-		newRange.__end__.node = node;
-		newRange.__end__.offset = offset;
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = offset;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = offset;
 
 		this.#associateRange(newRange);
 	}
@@ -284,13 +285,13 @@ export default class Selection {
 			);
 		}
 
-		const { node, offset } = this.#range.__end__;
-		const newRange = new this.#ownerDocument.__defaultView__.Range();
+		const { node, offset } = this.#range[PropertySymbol.end];
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
-		newRange.__start__.node = node;
-		newRange.__start__.offset = offset;
-		newRange.__end__.node = node;
-		newRange.__end__.offset = offset;
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = offset;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = offset;
 
 		this.#associateRange(newRange);
 	}
@@ -308,13 +309,13 @@ export default class Selection {
 			);
 		}
 
-		const { node, offset } = this.#range.__start__;
-		const newRange = new this.#ownerDocument.__defaultView__.Range();
+		const { node, offset } = this.#range[PropertySymbol.start];
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
-		newRange.__start__.node = node;
-		newRange.__start__.offset = offset;
-		newRange.__end__.node = node;
-		newRange.__end__.offset = offset;
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = offset;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = offset;
 
 		this.#associateRange(newRange);
 	}
@@ -333,9 +334,9 @@ export default class Selection {
 		}
 
 		const startIsBeforeNode =
-			RangeUtility.compareBoundaryPointsPosition(this.#range.__start__, { node, offset: 0 }) === -1;
+			RangeUtility.compareBoundaryPointsPosition(this.#range[PropertySymbol.start], { node, offset: 0 }) === -1;
 		const endIsAfterNode =
-			RangeUtility.compareBoundaryPointsPosition(this.#range.__end__, {
+			RangeUtility.compareBoundaryPointsPosition(this.#range[PropertySymbol.end], {
 				node,
 				offset: NodeUtility.getNodeLength(node)
 			}) === 1;
@@ -377,30 +378,30 @@ export default class Selection {
 
 		const anchorNode = this.anchorNode;
 		const anchorOffset = this.anchorOffset;
-		const newRange = new this.#ownerDocument.__defaultView__.Range();
-		newRange.__start__.node = node;
-		newRange.__start__.offset = 0;
-		newRange.__end__.node = node;
-		newRange.__end__.offset = 0;
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = 0;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = 0;
 
-		if (node.ownerDocument !== this.#range.__ownerDocument__) {
-			newRange.__start__.offset = offset;
-			newRange.__end__.offset = offset;
+		if (node.ownerDocument !== this.#range[PropertySymbol.ownerDocument]) {
+			newRange[PropertySymbol.start].offset = offset;
+			newRange[PropertySymbol.end].offset = offset;
 		} else if (
 			RangeUtility.compareBoundaryPointsPosition(
 				{ node: anchorNode, offset: anchorOffset },
 				{ node, offset }
 			) <= 0
 		) {
-			newRange.__start__.node = anchorNode;
-			newRange.__start__.offset = anchorOffset;
-			newRange.__end__.node = node;
-			newRange.__end__.offset = offset;
+			newRange[PropertySymbol.start].node = anchorNode;
+			newRange[PropertySymbol.start].offset = anchorOffset;
+			newRange[PropertySymbol.end].node = node;
+			newRange[PropertySymbol.end].offset = offset;
 		} else {
-			newRange.__start__.node = node;
-			newRange.__start__.offset = offset;
-			newRange.__end__.node = anchorNode;
-			newRange.__end__.offset = anchorOffset;
+			newRange[PropertySymbol.start].node = node;
+			newRange[PropertySymbol.start].offset = offset;
+			newRange[PropertySymbol.end].node = anchorNode;
+			newRange[PropertySymbol.end].offset = anchorOffset;
 		}
 
 		this.#associateRange(newRange);
@@ -432,12 +433,12 @@ export default class Selection {
 		}
 
 		const length = node.childNodes.length;
-		const newRange = new this.#ownerDocument.__defaultView__.Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
-		newRange.__start__.node = node;
-		newRange.__start__.offset = 0;
-		newRange.__end__.node = node;
-		newRange.__end__.offset = length;
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = 0;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = length;
 
 		this.#associateRange(newRange);
 	}
@@ -476,14 +477,14 @@ export default class Selection {
 
 		const anchor = { node: anchorNode, offset: anchorOffset };
 		const focus = { node: focusNode, offset: focusOffset };
-		const newRange = new this.#ownerDocument.__defaultView__.Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
 		if (RangeUtility.compareBoundaryPointsPosition(anchor, focus) === -1) {
-			newRange.__start__ = anchor;
-			newRange.__end__ = focus;
+			newRange[PropertySymbol.start] = anchor;
+			newRange[PropertySymbol.end] = focus;
 		} else {
-			newRange.__start__ = focus;
-			newRange.__end__ = anchor;
+			newRange[PropertySymbol.start] = focus;
+			newRange[PropertySymbol.end] = anchor;
 		}
 
 		this.#associateRange(newRange);

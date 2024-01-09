@@ -1,4 +1,5 @@
 import IAttr from '../attr/IAttr.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import ElementNamedNodeMap from '../element/ElementNamedNodeMap.js';
 import SVGElement from './SVGElement.js';
 
@@ -8,7 +9,7 @@ import SVGElement from './SVGElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class SVGElementNamedNodeMap extends ElementNamedNodeMap {
-	protected __ownerElement__: SVGElement;
+	protected [PropertySymbol.ownerElement]: SVGElement;
 
 	/**
 	 * @override
@@ -16,8 +17,8 @@ export default class SVGElementNamedNodeMap extends ElementNamedNodeMap {
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'style' && this.__ownerElement__.__style__) {
-			this.__ownerElement__.__style__.cssText = item.value;
+		if (item.name === 'style' && this[PropertySymbol.ownerElement][PropertySymbol.style]) {
+			this[PropertySymbol.ownerElement][PropertySymbol.style].cssText = item.value;
 		}
 
 		return replacedItem || null;
@@ -26,11 +27,11 @@ export default class SVGElementNamedNodeMap extends ElementNamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override __removeNamedItem__(name: string): IAttr | null {
-		const removedItem = super.__removeNamedItem__(name);
+	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
-		if (removedItem && removedItem.name === 'style' && this.__ownerElement__.__style__) {
-			this.__ownerElement__.__style__.cssText = '';
+		if (removedItem && removedItem.name === 'style' && this[PropertySymbol.ownerElement][PropertySymbol.style]) {
+			this[PropertySymbol.ownerElement][PropertySymbol.style].cssText = '';
 		}
 
 		return removedItem;

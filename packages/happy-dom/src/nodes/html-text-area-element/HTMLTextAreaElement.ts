@@ -1,4 +1,5 @@
 import Event from '../../event/Event.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
@@ -31,11 +32,11 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	public oninput: (event: Event) => void | null = null;
 	public onselectionchange: (event: Event) => void | null = null;
 
-	public __value__ = null;
+	public [PropertySymbol.value] = null;
 	#selectionStart = null;
 	#selectionEnd = null;
 	#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
-	public __textAreaNode__: HTMLTextAreaElement = this;
+	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement = this;
 
 	/**
 	 * Returns the default value.
@@ -301,11 +302,11 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Value.
 	 */
 	public get value(): string {
-		if (this.__value__ === null) {
+		if (this[PropertySymbol.value] === null) {
 			return this.textContent;
 		}
 
-		return this.__value__;
+		return this[PropertySymbol.value];
 	}
 
 	/**
@@ -314,12 +315,12 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		const oldValue = this.__value__;
-		this.__value__ = value;
+		const oldValue = this[PropertySymbol.value];
+		this[PropertySymbol.value] = value;
 
-		if (oldValue !== this.__value__) {
-			this.#selectionStart = this.__value__.length;
-			this.#selectionEnd = this.__value__.length;
+		if (oldValue !== this[PropertySymbol.value]) {
+			this.#selectionStart = this[PropertySymbol.value].length;
+			this.#selectionEnd = this[PropertySymbol.value].length;
 			this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 		}
 	}
@@ -392,7 +393,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this.__formNode__;
+		return <IHTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -553,7 +554,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	public cloneNode(deep = false): IHTMLTextAreaElement {
 		const clone = <HTMLTextAreaElement>super.cloneNode(deep);
 
-		clone.__value__ = this.__value__;
+		clone[PropertySymbol.value] = this[PropertySymbol.value];
 		clone.#selectionStart = this.#selectionStart;
 		clone.#selectionEnd = this.#selectionEnd;
 		clone.#selectionDirection = this.#selectionDirection;
@@ -564,8 +565,8 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * Resets selection.
 	 */
-	public __resetSelection__(): void {
-		if (this.__value__ === null) {
+	public [PropertySymbol.resetSelection](): void {
+		if (this[PropertySymbol.value] === null) {
 			this.#selectionStart = null;
 			this.#selectionEnd = null;
 			this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
@@ -575,19 +576,19 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * @override
 	 */
-	public override __connectToNode__(parentNode: INode = null): void {
-		const oldFormNode = <HTMLFormElement>this.__formNode__;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
-		super.__connectToNode__(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldFormNode !== this.__formNode__) {
+		if (oldFormNode !== this[PropertySymbol.formNode]) {
 			if (oldFormNode) {
-				oldFormNode.__removeFormControlItem__(this, this.name);
-				oldFormNode.__removeFormControlItem__(this, this.id);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
-			if (this.__formNode__) {
-				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.name);
-				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.id);
+			if (this[PropertySymbol.formNode]) {
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.name);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.id);
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLFormElement from './IHTMLFormElement.js';
 import Event from '../../event/Event.js';
 import SubmitEvent from '../../event/events/SubmitEvent.js';
@@ -27,7 +28,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	public onsubmit: (event: Event) => void | null = null;
 
 	// Private properties
-	public __formNode__: INode = this;
+	public [PropertySymbol.formNode]: INode = this;
 
 	/**
 	 * Returns name.
@@ -222,10 +223,10 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	public reset(): void {
 		for (const element of this.elements) {
 			if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-				element['__value__'] = null;
-				element['__checked__'] = null;
+				element[PropertySymbol.value] = null;
+				element[PropertySymbol.checked] = null;
 			} else if (element.tagName === 'TEXTAREA') {
-				element['__value__'] = null;
+				element[PropertySymbol.value] = null;
 			} else if (element.tagName === 'SELECT') {
 				let hasSelectedAttribute = false;
 				for (const option of (<IHTMLSelectElement>element).options) {
@@ -295,7 +296,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param node Node.
 	 * @param name Name
 	 */
-	public __appendFormControlItem__(
+	public [PropertySymbol.appendFormControlItem](
 		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
 		name: string
 	): void {
@@ -305,7 +306,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 			(<number>this.length) = this.elements.length;
 		}
 
-		(<HTMLFormControlsCollection>this.elements).__appendNamedItem__(node, name);
+		(<HTMLFormControlsCollection>this.elements)[PropertySymbol.appendNamedItem](node, name);
 		this[name] = this.elements[name];
 	}
 
@@ -315,7 +316,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param node Node.
 	 * @param name Name.
 	 */
-	public __removeFormControlItem__(
+	public [PropertySymbol.removeFormControlItem](
 		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
 		name: string
 	): void {
@@ -330,7 +331,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 			(<number>this.length)--;
 		}
 
-		(<HTMLFormControlsCollection>this.elements).__removeNamedItem__(node, name);
+		(<HTMLFormControlsCollection>this.elements)[PropertySymbol.removeNamedItem](node, name);
 
 		if (this.elements[name]) {
 			this[name] = this.elements[name];

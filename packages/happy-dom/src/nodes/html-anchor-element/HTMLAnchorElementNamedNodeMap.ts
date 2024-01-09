@@ -1,4 +1,5 @@
 import IAttr from '../attr/IAttr.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLAnchorElement from './HTMLAnchorElement.js';
 import HTMLAnchorElementUtility from './HTMLAnchorElementUtility.js';
@@ -9,7 +10,7 @@ import HTMLAnchorElementUtility from './HTMLAnchorElementUtility.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLAnchorElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected __ownerElement__: HTMLAnchorElement;
+	protected [PropertySymbol.ownerElement]: HTMLAnchorElement;
 
 	/**
 	 * @override
@@ -17,11 +18,11 @@ export default class HTMLAnchorElementNamedNodeMap extends HTMLElementNamedNodeM
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'rel' && this.__ownerElement__.__relList__) {
-			this.__ownerElement__.__relList__.__updateIndices__();
+		if (item.name === 'rel' && this[PropertySymbol.ownerElement][PropertySymbol.relList]) {
+			this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();
 		} else if (item.name === 'href') {
-			this.__ownerElement__.__url__ = HTMLAnchorElementUtility.getUrl(
-				this.__ownerElement__.ownerDocument,
+			this[PropertySymbol.ownerElement][PropertySymbol.url] = HTMLAnchorElementUtility.getUrl(
+				this[PropertySymbol.ownerElement].ownerDocument,
 				item.value
 			);
 		}
@@ -32,14 +33,14 @@ export default class HTMLAnchorElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override __removeNamedItem__(name: string): IAttr | null {
-		const removedItem = super.__removeNamedItem__(name);
+	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
 		if (removedItem) {
-			if (removedItem.name === 'rel' && this.__ownerElement__.__relList__) {
-				this.__ownerElement__.__relList__.__updateIndices__();
+			if (removedItem.name === 'rel' && this[PropertySymbol.ownerElement][PropertySymbol.relList]) {
+				this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();
 			} else if (removedItem.name === 'href') {
-				this.__ownerElement__.__url__ = null;
+				this[PropertySymbol.ownerElement][PropertySymbol.url] = null;
 			}
 		}
 

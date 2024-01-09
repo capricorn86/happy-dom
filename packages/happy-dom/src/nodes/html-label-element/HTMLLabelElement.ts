@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import IHTMLLabelElement from './IHTMLLabelElement.js';
@@ -57,7 +58,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this.__formNode__;
+		return <IHTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**

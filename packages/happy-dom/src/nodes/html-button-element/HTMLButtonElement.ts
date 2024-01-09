@@ -1,4 +1,5 @@
 import Event from '../../event/Event.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import ValidityState from '../../validity-state/ValidityState.js';
@@ -129,7 +130,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this.__formNode__;
+		return <IHTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -187,10 +188,10 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 			event.type === 'click' &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this.__formNode__ &&
+			this[PropertySymbol.formNode] &&
 			this.isConnected
 		) {
-			const form = <IHTMLFormElement>this.__formNode__;
+			const form = <IHTMLFormElement>this[PropertySymbol.formNode];
 			switch (this.type) {
 				case 'submit':
 					form.requestSubmit();
@@ -207,19 +208,19 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	/**
 	 * @override
 	 */
-	public override __connectToNode__(parentNode: INode = null): void {
-		const oldFormNode = <HTMLFormElement>this.__formNode__;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
-		super.__connectToNode__(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldFormNode !== this.__formNode__) {
+		if (oldFormNode !== this[PropertySymbol.formNode]) {
 			if (oldFormNode) {
-				oldFormNode.__removeFormControlItem__(this, this.name);
-				oldFormNode.__removeFormControlItem__(this, this.id);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
-			if (this.__formNode__) {
-				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.name);
-				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.id);
+			if (this[PropertySymbol.formNode]) {
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.name);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.id);
 			}
 		}
 	}

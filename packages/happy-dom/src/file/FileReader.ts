@@ -1,4 +1,5 @@
 import WhatwgMIMEType from 'whatwg-mimetype';
+import * as PropertySymbol from '../PropertySymbol.js';
 import WhatwgEncoding from 'whatwg-encoding';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
@@ -133,7 +134,7 @@ export default class FileReader extends EventTarget {
 
 			this.dispatchEvent(new ProgressEvent(FileReaderEventTypeEnum.loadstart));
 
-			let data = blob.__buffer__;
+			let data = blob[PropertySymbol.buffer];
 			if (!data) {
 				data = Buffer.alloc(0);
 			}

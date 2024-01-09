@@ -1,4 +1,5 @@
 import BrowserPage from './BrowserPage.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import IBrowserFrame from './types/IBrowserFrame.js';
 import BrowserWindow from '../window/BrowserWindow.js';
@@ -23,8 +24,8 @@ export default class BrowserFrame implements IBrowserFrame {
 	public readonly opener: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: BrowserWindow;
-	public __asyncTaskManager__ = new AsyncTaskManager();
-	public __exceptionObserver__: BrowserFrameExceptionObserver | null = null;
+	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
+	public [PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null = null;
 
 	/**
 	 * Constructor.
@@ -37,8 +38,8 @@ export default class BrowserFrame implements IBrowserFrame {
 
 		// Attach process level error capturing.
 		if (page.context.browser.settings.errorCapturing === BrowserErrorCapturingEnum.processLevel) {
-			this.__exceptionObserver__ = new BrowserFrameExceptionObserver();
-			this.__exceptionObserver__.observe(this);
+			this[PropertySymbol.exceptionObserver] = new BrowserFrameExceptionObserver();
+			this[PropertySymbol.exceptionObserver].observe(this);
 		}
 	}
 
@@ -57,8 +58,8 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param content Content.
 	 */
 	public set content(content) {
-		this.window.document['__isFirstWrite__'] = true;
-		this.window.document['__isFirstWriteAfterOpen__'] = false;
+		this.window.document[PropertySymbol.isFirstWrite] = true;
+		this.window.document[PropertySymbol.isFirstWriteAfterOpen] = false;
 		this.window.document.open();
 		this.window.document.write(content);
 	}
@@ -100,7 +101,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 */
 	public async whenComplete(): Promise<void> {
 		await Promise.all([
-			this.__asyncTaskManager__.whenComplete(),
+			this[PropertySymbol.asyncTaskManager].whenComplete(),
 			...this.childFrames.map((frame) => frame.whenComplete())
 		]);
 	}
@@ -110,12 +111,12 @@ export default class BrowserFrame implements IBrowserFrame {
 	 */
 	public abort(): Promise<void> {
 		if (!this.childFrames.length) {
-			return this.__asyncTaskManager__.abort();
+			return this[PropertySymbol.asyncTaskManager].abort();
 		}
 		return new Promise((resolve, reject) => {
 			// Using Promise instead of async/await to prevent microtask
 			Promise.all(
-				this.childFrames.map((frame) => frame.abort()).concat([this.__asyncTaskManager__.abort()])
+				this.childFrames.map((frame) => frame.abort()).concat([this[PropertySymbol.asyncTaskManager].abort()])
 			)
 				.then(() => resolve())
 				.catch(reject);

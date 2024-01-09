@@ -1,4 +1,5 @@
 import IDocument from '../nodes/document/IDocument.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import XMLParser from '../xml-parser/XMLParser.js';
 import Node from '../nodes/node/Node.js';
 import DOMException from '../exception/DOMException.js';
@@ -37,14 +38,14 @@ export default class DOMParser {
 
 		const newDocument = <IDocument>this.#createDocument(mimeType);
 
-		newDocument['__childNodes__'].length = 0;
-		newDocument['__children__'].length = 0;
+		newDocument[PropertySymbol.childNodes].length = 0;
+		newDocument[PropertySymbol.children].length = 0;
 
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;
 
-		for (const node of root.__childNodes__) {
+		for (const node of root[PropertySymbol.childNodes]) {
 			if (node['tagName'] === 'HTML') {
 				documentElement = node;
 			} else if (node.nodeType === Node.DOCUMENT_TYPE_NODE) {
@@ -63,7 +64,7 @@ export default class DOMParser {
 			newDocument.appendChild(documentElement);
 			const body = newDocument.body;
 			if (body) {
-				for (const child of root.__childNodes__.slice()) {
+				for (const child of root[PropertySymbol.childNodes].slice()) {
 					body.appendChild(child);
 				}
 			}
@@ -71,7 +72,7 @@ export default class DOMParser {
 			switch (mimeType) {
 				case 'image/svg+xml':
 					{
-						for (const node of root.__childNodes__.slice()) {
+						for (const node of root[PropertySymbol.childNodes].slice()) {
 							newDocument.appendChild(node);
 						}
 					}
@@ -87,7 +88,7 @@ export default class DOMParser {
 						documentElement.appendChild(bodyElement);
 						newDocument.appendChild(documentElement);
 
-						for (const node of root.__childNodes__.slice()) {
+						for (const node of root[PropertySymbol.childNodes].slice()) {
 							bodyElement.appendChild(node);
 						}
 					}

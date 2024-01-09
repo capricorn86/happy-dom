@@ -1,4 +1,5 @@
 import DocumentType from '../nodes/document-type/DocumentType.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IDocument from '../nodes/document/IDocument.js';
 
 /**
@@ -22,14 +23,14 @@ export default class DOMImplementation {
 	 * TODO: Not fully implemented.
 	 */
 	public createDocument(): IDocument {
-		return new this.#document.__defaultView__.HTMLDocument();
+		return new this.#document[PropertySymbol.defaultView].HTMLDocument();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
 	public createHTMLDocument(): IDocument {
-		return new this.#document.__defaultView__.HTMLDocument();
+		return new this.#document[PropertySymbol.defaultView].HTMLDocument();
 	}
 
 	/**
@@ -44,9 +45,9 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		this.#document.__defaultView__.DocumentType.__ownerDocument__ = this.#document;
-		const documentType = new this.#document.__defaultView__.DocumentType();
-		this.#document.__defaultView__.DocumentType.__ownerDocument__ = null;
+		this.#document[PropertySymbol.defaultView].DocumentType[PropertySymbol.ownerDocument] = this.#document;
+		const documentType = new this.#document[PropertySymbol.defaultView].DocumentType();
+		this.#document[PropertySymbol.defaultView].DocumentType[PropertySymbol.ownerDocument] = null;
 		documentType.name = qualifiedName;
 		documentType.publicId = publicId;
 		documentType.systemId = systemId;

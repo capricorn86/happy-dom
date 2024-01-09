@@ -1,4 +1,5 @@
 import IRequestInit from './types/IRequestInit.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
@@ -72,7 +73,7 @@ export default class SyncFetch {
 				? new options.browserFrame.window.Request(options.url, options.init)
 				: <Request>options.url;
 		if (options.contentType) {
-			(<string>this.request.__contentType__) = options.contentType;
+			(<string>this.request[PropertySymbol.contentType]) = options.contentType;
 		}
 		this.redirectCount = options.redirectCount ?? 0;
 		this.disableCache = options.disableCache ?? false;
@@ -92,7 +93,7 @@ export default class SyncFetch {
 			throw new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
 		}
 
-		if (this.request.__url__.protocol === 'data:') {
+		if (this.request[PropertySymbol.url].protocol === 'data:') {
 			const result = DataURIParser.parse(this.request.url);
 			return {
 				status: 200,
@@ -106,7 +107,7 @@ export default class SyncFetch {
 		}
 
 		// Security check for "https" to "http" requests.
-		if (this.request.__url__.protocol === 'http:' && this.#window.location.protocol === 'https:') {
+		if (this.request[PropertySymbol.url].protocol === 'http:' && this.#window.location.protocol === 'https:') {
 			throw new DOMException(
 				`Mixed Content: The page at '${
 					this.#window.location.href
@@ -231,7 +232,7 @@ export default class SyncFetch {
 	private compliesWithCrossOriginPolicy(): boolean {
 		if (
 			this.disableCrossOriginPolicy ||
-			!FetchCORSUtility.isCORS(this.#window.location, this.request.__url__)
+			!FetchCORSUtility.isCORS(this.#window.location, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -321,7 +322,7 @@ export default class SyncFetch {
 	 * @returns Response.
 	 */
 	public sendRequest(): ISyncResponse {
-		if (!this.request.__bodyBuffer__ && this.request.body) {
+		if (!this.request[PropertySymbol.bodyBuffer] && this.request.body) {
 			throw new DOMException(
 				`Streams are not supported as request body for synchrounous requests.`,
 				DOMExceptionNameEnum.notSupportedError
@@ -329,14 +330,14 @@ export default class SyncFetch {
 		}
 
 		const script = SyncFetchScriptBuilder.getScript({
-			url: this.request.__url__,
+			url: this.request[PropertySymbol.url],
 			method: this.request.method,
 			headers: FetchRequestHeaderUtility.getRequestHeaders({
 				browserFrame: this.#browserFrame,
 				window: this.#window,
 				request: this.request
 			}),
-			body: this.request.__bodyBuffer__
+			body: this.request[PropertySymbol.bodyBuffer]
 		});
 
 		// Start the other Node Process, executing this string
@@ -364,7 +365,7 @@ export default class SyncFetch {
 
 		const headers = FetchResponseHeaderUtility.parseResponseHeaders({
 			browserFrame: this.#browserFrame,
-			requestURL: this.request.__url__,
+			requestURL: this.request[PropertySymbol.url],
 			rawHeaders: incomingMessage.rawHeaders
 		});
 
@@ -506,7 +507,7 @@ export default class SyncFetch {
 					referrerPolicy: this.request.referrerPolicy,
 					credentials: this.request.credentials,
 					headers,
-					body: this.request.__bodyBuffer__
+					body: this.request[PropertySymbol.bodyBuffer]
 				};
 
 				if (
@@ -539,7 +540,7 @@ export default class SyncFetch {
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
-					contentType: !shouldBecomeGetRequest ? this.request.__contentType__ : undefined
+					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : undefined
 				});
 
 				return fetch.send();

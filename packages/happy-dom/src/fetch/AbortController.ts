@@ -1,4 +1,5 @@
 import AbortSignal from './AbortSignal.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * AbortController.
@@ -21,6 +22,6 @@ export default class AbortController {
 	 * @param [reason] Reason.
 	 */
 	public abort(reason?: string): void {
-		this.signal.__abort__(reason);
+		this.signal[PropertySymbol.abort](reason);
 	}
 }

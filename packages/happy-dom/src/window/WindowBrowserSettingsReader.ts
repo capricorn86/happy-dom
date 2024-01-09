@@ -1,4 +1,5 @@
 import IBrowserSettings from '../browser/types/IBrowserSettings.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IBrowserWindow from './IBrowserWindow.js';
 
 /**
@@ -14,7 +15,7 @@ export default class WindowBrowserSettingsReader {
 	 * @returns Settings.
 	 */
 	public static getSettings(window: IBrowserWindow): IBrowserSettings | null {
-		const id = window['__happyDOMSettingsID__'];
+		const id = window[PropertySymbol.happyDOMSettingsID];
 
 		if (id === undefined || !this.#settings[id]) {
 			return null;
@@ -30,10 +31,10 @@ export default class WindowBrowserSettingsReader {
 	 * @param settings Settings.
 	 */
 	public static setSettings(window: IBrowserWindow, settings: IBrowserSettings): void {
-		if (window['__happyDOMSettingsID__'] !== undefined) {
+		if (window[PropertySymbol.happyDOMSettingsID] !== undefined) {
 			return;
 		}
-		window['__happyDOMSettingsID__'] = this.#settings.length;
+		window[PropertySymbol.happyDOMSettingsID] = this.#settings.length;
 		this.#settings.push(settings);
 	}
 
@@ -43,12 +44,12 @@ export default class WindowBrowserSettingsReader {
 	 * @param window Window.
 	 */
 	public static removeSettings(window: IBrowserWindow): void {
-		const id = window['__happyDOMSettingsID__'];
+		const id = window[PropertySymbol.happyDOMSettingsID];
 
 		if (id !== undefined && this.#settings[id]) {
 			delete this.#settings[id];
 		}
 
-		delete window['__happyDOMSettingsID__'];
+		delete window[PropertySymbol.happyDOMSettingsID];
 	}
 }

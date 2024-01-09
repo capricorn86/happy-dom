@@ -1,4 +1,5 @@
 import IEventInit from './IEventInit.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import INode from '../nodes/node/INode.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import IShadowRoot from '../nodes/shadow-root/IShadowRoot.js';
@@ -24,11 +25,11 @@ export default class Event {
 	public AT_TARGET = EventPhaseEnum.atTarget;
 	public BUBBLING_PHASE = EventPhaseEnum.bubbling;
 
-	public __immediatePropagationStopped__ = false;
-	public __propagationStopped__ = false;
-	public __target__: IEventTarget = null;
-	public __currentTarget__: IEventTarget = null;
-	public __isInPassiveEventListener__ = false;
+	public [PropertySymbol.immediatePropagationStopped] = false;
+	public [PropertySymbol.propagationStopped] = false;
+	public [PropertySymbol.target]: IEventTarget = null;
+	public [PropertySymbol.currentTarget]: IEventTarget = null;
+	public [PropertySymbol.isInPassiveEventListener] = false;
 
 	/**
 	 * Constructor.
@@ -50,7 +51,7 @@ export default class Event {
 	 * @returns Target.
 	 */
 	public get target(): IEventTarget {
-		return this.__target__;
+		return this[PropertySymbol.target];
 	}
 
 	/**
@@ -59,7 +60,7 @@ export default class Event {
 	 * @returns Target.
 	 */
 	public get currentTarget(): IEventTarget {
-		return this.__currentTarget__;
+		return this[PropertySymbol.currentTarget];
 	}
 
 	/**
@@ -68,7 +69,7 @@ export default class Event {
 	 * @returns "true" if propagation has been stopped.
 	 */
 	public get cancelBubble(): boolean {
-		return this.__propagationStopped__;
+		return this[PropertySymbol.propagationStopped];
 	}
 
 	/**
@@ -77,13 +78,13 @@ export default class Event {
 	 * @returns Composed path.
 	 */
 	public composedPath(): IEventTarget[] {
-		if (!this.__target__) {
+		if (!this[PropertySymbol.target]) {
 			return [];
 		}
 
 		const composedPath = [];
 		let eventTarget: INode | IShadowRoot | IBrowserWindow = <INode | IShadowRoot>(
-			(<unknown>this.__target__)
+			(<unknown>this[PropertySymbol.target])
 		);
 
 		while (eventTarget) {
@@ -98,7 +99,7 @@ export default class Event {
 			) {
 				eventTarget = (<IShadowRoot>eventTarget).host;
 			} else if ((<INode>eventTarget).nodeType === NodeTypeEnum.documentNode) {
-				eventTarget = (<IDocument>(<unknown>eventTarget)).__defaultView__;
+				eventTarget = (<IDocument>(<unknown>eventTarget))[PropertySymbol.defaultView];
 			} else {
 				break;
 			}
@@ -125,7 +126,7 @@ export default class Event {
 	 * Prevents default.
 	 */
 	public preventDefault(): void {
-		if (!this.__isInPassiveEventListener__) {
+		if (!this[PropertySymbol.isInPassiveEventListener]) {
 			this.defaultPrevented = true;
 		}
 	}
@@ -134,13 +135,13 @@ export default class Event {
 	 * Stops immediate propagation.
 	 */
 	public stopImmediatePropagation(): void {
-		this.__immediatePropagationStopped__ = true;
+		this[PropertySymbol.immediatePropagationStopped] = true;
 	}
 
 	/**
 	 * Stops propagation.
 	 */
 	public stopPropagation(): void {
-		this.__propagationStopped__ = true;
+		this[PropertySymbol.propagationStopped] = true;
 	}
 }

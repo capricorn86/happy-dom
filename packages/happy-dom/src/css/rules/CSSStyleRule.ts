@@ -1,4 +1,5 @@
 import CSSRule from '../CSSRule.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 
 /**
@@ -8,7 +9,7 @@ export default class CSSStyleRule extends CSSRule {
 	public readonly type = CSSRule.STYLE_RULE;
 	public readonly selectorText = '';
 	public readonly styleMap = new Map();
-	public __cssText__ = '';
+	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration = null;
 
 	/**
@@ -20,7 +21,7 @@ export default class CSSStyleRule extends CSSRule {
 		if (!this.#style) {
 			this.#style = new CSSStyleDeclaration();
 			(<CSSRule>this.#style.parentRule) = this;
-			this.#style.cssText = this.__cssText__;
+			this.#style.cssText = this[PropertySymbol.cssText];
 		}
 		return this.#style;
 	}

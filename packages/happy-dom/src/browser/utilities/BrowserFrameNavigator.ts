@@ -1,4 +1,5 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import IGoToOptions from '../types/IGoToOptions.js';
 import IResponse from '../../fetch/types/IResponse.js';
@@ -44,9 +45,9 @@ export default class BrowserFrameNavigator {
 
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
-				const readyStateManager = (<{ __readyStateManager__: DocumentReadyStateManager }>(
+				const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
 					(<unknown>frame.window)
-				)).__readyStateManager__;
+				))[PropertySymbol.readyStateManager];
 
 				readyStateManager.startTask();
 
@@ -94,8 +95,8 @@ export default class BrowserFrameNavigator {
 
 		(<IBrowserFrame[]>frame.childFrames) = [];
 		(<boolean>frame.window.closed) = true;
-		frame.__asyncTaskManager__.destroy();
-		frame.__asyncTaskManager__ = new AsyncTaskManager();
+		frame[PropertySymbol.asyncTaskManager].destroy();
+		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 		WindowBrowserSettingsReader.removeSettings(frame.window);
 
 		(<IBrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
@@ -109,9 +110,9 @@ export default class BrowserFrameNavigator {
 			return null;
 		}
 
-		const readyStateManager = (<{ __readyStateManager__: DocumentReadyStateManager }>(
+		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
 			(<unknown>frame.window)
-		)).__readyStateManager__;
+		))[PropertySymbol.readyStateManager];
 
 		readyStateManager.startTask();
 

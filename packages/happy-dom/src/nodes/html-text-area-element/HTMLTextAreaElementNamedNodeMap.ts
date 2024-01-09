@@ -1,4 +1,5 @@
 import IAttr from '../attr/IAttr.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLTextAreaElement from './HTMLTextAreaElement.js';
@@ -9,7 +10,7 @@ import HTMLTextAreaElement from './HTMLTextAreaElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLTextAreaElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected __ownerElement__: HTMLTextAreaElement;
+	protected [PropertySymbol.ownerElement]: HTMLTextAreaElement;
 
 	/**
 	 * @override
@@ -17,16 +18,16 @@ export default class HTMLTextAreaElementNamedNodeMap extends HTMLElementNamedNod
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if ((item.name === 'id' || item.name === 'name') && this.__ownerElement__.__formNode__) {
+		if ((item.name === 'id' || item.name === 'name') && this[PropertySymbol.ownerElement][PropertySymbol.formNode]) {
 			if (replacedItem && replacedItem.value) {
-				(<HTMLFormElement>this.__ownerElement__.__formNode__).__removeFormControlItem__(
-					this.__ownerElement__,
+				(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[PropertySymbol.removeFormControlItem](
+					this[PropertySymbol.ownerElement],
 					replacedItem.value
 				);
 			}
 			if (item.value) {
-				(<HTMLFormElement>this.__ownerElement__.__formNode__).__appendFormControlItem__(
-					this.__ownerElement__,
+				(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this[PropertySymbol.ownerElement],
 					item.value
 				);
 			}
@@ -38,16 +39,16 @@ export default class HTMLTextAreaElementNamedNodeMap extends HTMLElementNamedNod
 	/**
 	 * @override
 	 */
-	public override __removeNamedItem__(name: string): IAttr | null {
-		const removedItem = super.__removeNamedItem__(name);
+	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
 		if (
 			removedItem &&
 			(removedItem.name === 'id' || removedItem.name === 'name') &&
-			this.__ownerElement__.__formNode__
+			this[PropertySymbol.ownerElement][PropertySymbol.formNode]
 		) {
-			(<HTMLFormElement>this.__ownerElement__.__formNode__).__removeFormControlItem__(
-				this.__ownerElement__,
+			(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[PropertySymbol.removeFormControlItem](
+				this[PropertySymbol.ownerElement],
 				removedItem.value
 			);
 		}

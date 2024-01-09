@@ -1,4 +1,5 @@
 import Event from '../../event/Event.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
@@ -51,7 +52,7 @@ export default class HTMLIFrameElementPageLoader {
 			return;
 		}
 
-		const window = this.#element.ownerDocument.__defaultView__;
+		const window = this.#element.ownerDocument[PropertySymbol.defaultView];
 		const originURL = this.#browserParentFrame.window.location;
 		const targetURL = BrowserFrameURL.getRelativeURL(this.#browserParentFrame, this.#element.src);
 

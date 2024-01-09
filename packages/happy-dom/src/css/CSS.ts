@@ -1,4 +1,5 @@
 import CSSUnitValue from './CSSUnitValue.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import CSSUnits from './CSSUnits.js';
 import CSSEscape from 'css.escape';
 
@@ -24,10 +25,10 @@ export default class CSS {
 	 * TODO: Always returns "true" for now, but it should probably be improved in the future.
 	 *
 	 * @param _condition Property name or condition.
-	 * @param [__value__] Value when using property name.
+	 * @param [[PropertySymbol.value]] Value when using property name.
 	 * @returns "true" if supported.
 	 */
-	public supports(_condition: string, __value__?: string): boolean {
+	public supports(_condition: string, [PropertySymbol.value]?: string): boolean {
 		return true;
 	}
 

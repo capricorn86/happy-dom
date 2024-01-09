@@ -1,4 +1,5 @@
 import IBrowserWindow from './IBrowserWindow.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
 import IElement from '../nodes/element/IElement.js';
 
@@ -56,7 +57,7 @@ export default class WindowErrorUtility {
 			(<IBrowserWindow>elementOrWindow).console.error(error);
 			elementOrWindow.dispatchEvent(new ErrorEvent('error', { message: error.message, error }));
 		} else {
-			(<IElement>elementOrWindow).ownerDocument.__defaultView__.console.error(error);
+			(<IElement>elementOrWindow).ownerDocument[PropertySymbol.defaultView].console.error(error);
 			(<IElement>elementOrWindow).dispatchEvent(
 				new ErrorEvent('error', { message: error.message, error })
 			);

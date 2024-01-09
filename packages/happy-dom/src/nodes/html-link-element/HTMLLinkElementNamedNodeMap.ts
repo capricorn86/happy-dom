@@ -1,4 +1,5 @@
 import IAttr from '../attr/IAttr.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLLinkElement from './HTMLLinkElement.js';
 import HTMLLinkElementStyleSheetLoader from './HTMLLinkElementStyleSheetLoader.js';
@@ -9,7 +10,7 @@ import HTMLLinkElementStyleSheetLoader from './HTMLLinkElementStyleSheetLoader.j
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected __ownerElement__: HTMLLinkElement;
+	protected [PropertySymbol.ownerElement]: HTMLLinkElement;
 	#styleSheetLoader: HTMLLinkElementStyleSheetLoader;
 
 	/**
@@ -29,14 +30,14 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'rel' && this.__ownerElement__.__relList__) {
-			this.__ownerElement__.__relList__.__updateIndices__();
+		if (item.name === 'rel' && this[PropertySymbol.ownerElement][PropertySymbol.relList]) {
+			this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 
 		if (item.name === 'rel') {
-			this.#styleSheetLoader.loadStyleSheet(this.__ownerElement__.getAttribute('href'), item.value);
+			this.#styleSheetLoader.loadStyleSheet(this[PropertySymbol.ownerElement].getAttribute('href'), item.value);
 		} else if (item.name === 'href') {
-			this.#styleSheetLoader.loadStyleSheet(item.value, this.__ownerElement__.getAttribute('rel'));
+			this.#styleSheetLoader.loadStyleSheet(item.value, this[PropertySymbol.ownerElement].getAttribute('rel'));
 		}
 
 		return replacedItem || null;
@@ -45,11 +46,11 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 	/**
 	 * @override
 	 */
-	public override __removeNamedItem__(name: string): IAttr | null {
-		const removedItem = super.__removeNamedItem__(name);
+	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
-		if (removedItem && removedItem.name === 'rel' && this.__ownerElement__.__relList__) {
-			this.__ownerElement__.__relList__.__updateIndices__();
+		if (removedItem && removedItem.name === 'rel' && this[PropertySymbol.ownerElement][PropertySymbol.relList]) {
+			this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 
 		return removedItem;

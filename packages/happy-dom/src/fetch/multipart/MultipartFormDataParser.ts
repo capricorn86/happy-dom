@@ -1,4 +1,5 @@
 import FormData from '../../form-data/FormData.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import Stream from 'stream';
 import MultipartReader from './MultipartReader.js';
 import DOMException from '../../exception/DOMException.js';
@@ -120,7 +121,7 @@ export default class MultipartFormDataParser {
 						)}"\r\nContent-Type: ${value.type || 'application/octet-stream'}\r\n\r\n`
 					)
 				);
-				chunks.push(value.__buffer__);
+				chunks.push(value[PropertySymbol.buffer]);
 				chunks.push(Buffer.from('\r\n'));
 			}
 		}

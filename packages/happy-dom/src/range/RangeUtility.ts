@@ -1,4 +1,5 @@
 import DOMException from '../exception/DOMException.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import INode from '../nodes/node/INode.js';
@@ -50,7 +51,7 @@ export default class RangeUtility {
 				child = child.parentNode;
 			}
 
-			if ((<Node>child.parentNode).__childNodes__.indexOf(child) < pointA.offset) {
+			if ((<Node>child.parentNode)[PropertySymbol.childNodes].indexOf(child) < pointA.offset) {
 				return 1;
 			}
 		}

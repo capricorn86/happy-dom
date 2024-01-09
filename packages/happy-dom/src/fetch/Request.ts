@@ -1,4 +1,5 @@
 import IBlob from '../file/IBlob.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IDocument from '../nodes/document/IDocument.js';
 import IRequestInit from './types/IRequestInit.js';
 import URL from '../url/URL.js';
@@ -43,11 +44,11 @@ export default class Request implements IRequest {
 	public readonly credentials: IRequestCredentials;
 
 	// Internal properties
-	public readonly __contentLength__: number | null = null;
-	public readonly __contentType__: string | null = null;
-	public __referrer__: '' | 'no-referrer' | 'client' | URL = 'client';
-	public readonly __url__: URL;
-	public readonly __bodyBuffer__: Buffer | null;
+	public readonly [PropertySymbol.contentLength]: number | null = null;
+	public readonly [PropertySymbol.contentType]: string | null = null;
+	public [PropertySymbol.referrer]: '' | 'no-referrer' | 'client' | URL = 'client';
+	public readonly [PropertySymbol.url]: URL;
+	public readonly [PropertySymbol.bodyBuffer]: Buffer | null;
 	readonly #window: IBrowserWindow;
 	readonly #asyncTaskManager: AsyncTaskManager;
 
@@ -73,12 +74,12 @@ export default class Request implements IRequest {
 		this.method = (init?.method || (<Request>input).method || 'GET').toUpperCase();
 
 		const { stream, buffer, contentType, contentLength } = FetchBodyUtility.getBodyStream(
-			input instanceof Request && (input.__bodyBuffer__ || input.body)
-				? input.__bodyBuffer__ || FetchBodyUtility.cloneBodyStream(input)
+			input instanceof Request && (input[PropertySymbol.bodyBuffer] || input.body)
+				? input[PropertySymbol.bodyBuffer] || FetchBodyUtility.cloneBodyStream(input)
 				: init?.body
 		);
 
-		this.__bodyBuffer__ = buffer;
+		this[PropertySymbol.bodyBuffer] = buffer;
 		this.body = stream;
 		this.credentials = init?.credentials || (<Request>input).credentials || 'same-origin';
 		this.headers = new Headers(init?.headers || (<Request>input).headers || {});
@@ -86,18 +87,18 @@ export default class Request implements IRequest {
 		FetchRequestHeaderUtility.removeForbiddenHeaders(this.headers);
 
 		if (contentLength) {
-			this.__contentLength__ = contentLength;
+			this[PropertySymbol.contentLength] = contentLength;
 		} else if (!this.body && (this.method === 'POST' || this.method === 'PUT')) {
-			this.__contentLength__ = 0;
+			this[PropertySymbol.contentLength] = 0;
 		}
 
 		if (contentType) {
 			if (!this.headers.has('Content-Type')) {
 				this.headers.set('Content-Type', contentType);
 			}
-			this.__contentType__ = contentType;
-		} else if (input instanceof Request && input.__contentType__) {
-			this.__contentType__ = input.__contentType__;
+			this[PropertySymbol.contentType] = contentType;
+		} else if (input instanceof Request && input[PropertySymbol.contentType]) {
+			this[PropertySymbol.contentType] = input[PropertySymbol.contentType];
 		}
 
 		this.redirect = init?.redirect || (<Request>input).redirect || 'follow';
@@ -105,7 +106,7 @@ export default class Request implements IRequest {
 			(init?.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
 		);
 		this.signal = init?.signal || (<Request>input).signal || new AbortSignal();
-		this.__referrer__ = FetchRequestReferrerUtility.getInitialReferrer(
+		this[PropertySymbol.referrer] = FetchRequestReferrerUtility.getInitialReferrer(
 			injected.window,
 			init?.referrer !== null && init?.referrer !== undefined
 				? init?.referrer
@@ -113,13 +114,13 @@ export default class Request implements IRequest {
 		);
 
 		if (input instanceof URL) {
-			this.__url__ = input;
+			this[PropertySymbol.url] = input;
 		} else {
 			try {
 				if (input instanceof Request && input.url) {
-					this.__url__ = new URL(input.url, injected.window.location);
+					this[PropertySymbol.url] = new URL(input.url, injected.window.location);
 				} else {
-					this.__url__ = new URL(<string>input, injected.window.location);
+					this[PropertySymbol.url] = new URL(<string>input, injected.window.location);
 				}
 			} catch (error) {
 				throw new DOMException(
@@ -137,7 +138,7 @@ export default class Request implements IRequest {
 
 		FetchRequestValidationUtility.validateMethod(this);
 		FetchRequestValidationUtility.validateBody(this);
-		FetchRequestValidationUtility.validateURL(this.__url__);
+		FetchRequestValidationUtility.validateURL(this[PropertySymbol.url]);
 		FetchRequestValidationUtility.validateReferrerPolicy(this.referrerPolicy);
 		FetchRequestValidationUtility.validateRedirect(this.redirect);
 	}
@@ -145,8 +146,8 @@ export default class Request implements IRequest {
 	/**
 	 * Returns owner document.
 	 */
-	protected get __ownerDocument__(): IDocument {
-		throw new Error('__ownerDocument__ needs to be implemented by sub-class.');
+	protected get [PropertySymbol.ownerDocument](): IDocument {
+		throw new Error('[PropertySymbol.ownerDocument] needs to be implemented by sub-class.');
 	}
 
 	/**
@@ -155,15 +156,15 @@ export default class Request implements IRequest {
 	 * @returns Referrer.
 	 */
 	public get referrer(): string {
-		if (!this.__referrer__ || this.__referrer__ === 'no-referrer') {
+		if (!this[PropertySymbol.referrer] || this[PropertySymbol.referrer] === 'no-referrer') {
 			return '';
 		}
 
-		if (this.__referrer__ === 'client') {
+		if (this[PropertySymbol.referrer] === 'client') {
 			return 'about:client';
 		}
 
-		return this.__referrer__.toString();
+		return this[PropertySymbol.referrer].toString();
 	}
 
 	/**
@@ -172,7 +173,7 @@ export default class Request implements IRequest {
 	 * @returns URL.
 	 */
 	public get url(): string {
-		return this.__url__.href;
+		return this[PropertySymbol.url].href;
 	}
 
 	/**
@@ -199,7 +200,7 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal.__abort__());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
 		let buffer: Buffer;
 
 		try {
@@ -241,7 +242,7 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal.__abort__());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
 		let buffer: Buffer;
 
 		try {
@@ -271,7 +272,7 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal.__abort__());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
 		let buffer: Buffer;
 
 		try {
@@ -311,11 +312,11 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal.__abort__());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
 		let formData: FormData;
 
 		try {
-			const type = this.__contentType__;
+			const type = this[PropertySymbol.contentType];
 			formData = (await MultipartFormDataParser.streamToFormData(this.body, type)).formData;
 		} catch (error) {
 			this.#asyncTaskManager.endTask(taskID);

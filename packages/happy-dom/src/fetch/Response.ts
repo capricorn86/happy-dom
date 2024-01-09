@@ -1,4 +1,5 @@
 import IResponse from './types/IResponse.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IBlob from '../file/IBlob.js';
 import IResponseInit from './types/IResponseInit.js';
 import IResponseBody from './types/IResponseBody.js';
@@ -30,7 +31,7 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
  */
 export default class Response implements IResponse {
 	// Needs to be injected by sub-class.
-	protected static __window__: IBrowserWindow;
+	protected static [PropertySymbol.window]: IBrowserWindow;
 
 	// Public properties
 	public readonly body: Stream.Readable | null = null;
@@ -43,8 +44,8 @@ export default class Response implements IResponse {
 	public readonly statusText: string;
 	public readonly ok: boolean;
 	public readonly headers: IHeaders;
-	public __cachedResponse__: ICachedResponse | null = null;
-	public readonly __buffer__: Buffer | null = null;
+	public [PropertySymbol.cachedResponse]: ICachedResponse | null = null;
+	public readonly [PropertySymbol.buffer]: Buffer | null = null;
 	readonly #window: IBrowserWindow;
 	readonly #browserFrame: IBrowserFrame;
 
@@ -77,7 +78,7 @@ export default class Response implements IResponse {
 			this.body = stream;
 
 			if (buffer) {
-				this.__buffer__ = buffer;
+				this[PropertySymbol.buffer] = buffer;
 			}
 
 			if (contentType && !this.headers.has('Content-Type')) {
@@ -110,19 +111,19 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		let buffer: Buffer | null = this.__buffer__;
+		let buffer: Buffer | null = this[PropertySymbol.buffer];
 
 		if (!buffer) {
-			const taskID = this.#browserFrame.__asyncTaskManager__.startTask();
+			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
 
 			try {
 				buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 			} catch (error) {
-				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				throw error;
 			}
 
-			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 		}
 
 		this.#storeBodyInCache(buffer);
@@ -157,17 +158,17 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		let buffer: Buffer | null = this.__buffer__;
+		let buffer: Buffer | null = this[PropertySymbol.buffer];
 
 		if (!buffer) {
-			const taskID = this.#browserFrame.__asyncTaskManager__.startTask();
+			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
 			try {
 				buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 			} catch (error) {
-				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				throw error;
 			}
-			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 		}
 
 		this.#storeBodyInCache(buffer);
@@ -190,17 +191,17 @@ export default class Response implements IResponse {
 
 		(<boolean>this.bodyUsed) = true;
 
-		let buffer: Buffer | null = this.__buffer__;
+		let buffer: Buffer | null = this[PropertySymbol.buffer];
 
 		if (!buffer) {
-			const taskID = this.#browserFrame.__asyncTaskManager__.startTask();
+			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
 			try {
 				buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 			} catch (error) {
-				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				throw error;
 			}
-			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 		}
 
 		this.#storeBodyInCache(buffer);
@@ -238,7 +239,7 @@ export default class Response implements IResponse {
 			return formData;
 		}
 
-		const taskID = this.#browserFrame.__asyncTaskManager__.startTask();
+		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
 		let formData: FormData;
 		let buffer: Buffer;
 
@@ -247,13 +248,13 @@ export default class Response implements IResponse {
 			formData = result.formData;
 			buffer = result.buffer;
 		} catch (error) {
-			this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 			throw error;
 		}
 
 		this.#storeBodyInCache(buffer);
 
-		this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 
 		return formData;
 	}
@@ -287,9 +288,9 @@ export default class Response implements IResponse {
 	 * @param buffer Buffer.
 	 */
 	#storeBodyInCache(buffer: Buffer): void {
-		if (this.__cachedResponse__?.response?.waitingForBody) {
-			this.__cachedResponse__.response.body = buffer;
-			this.__cachedResponse__.response.waitingForBody = false;
+		if (this[PropertySymbol.cachedResponse]?.response?.waitingForBody) {
+			this[PropertySymbol.cachedResponse].response.body = buffer;
+			this[PropertySymbol.cachedResponse].response.waitingForBody = false;
 		}
 	}
 
@@ -308,7 +309,7 @@ export default class Response implements IResponse {
 			);
 		}
 
-		return new this.__window__.Response(null, {
+		return new this[PropertySymbol.window].Response(null, {
 			headers: {
 				location: new URL(url).toString()
 			},
@@ -324,7 +325,7 @@ export default class Response implements IResponse {
 	 * @returns Response.
 	 */
 	public static error(): Response {
-		const response = new this.__window__.Response(null, { status: 0, statusText: '' });
+		const response = new this[PropertySymbol.window].Response(null, { status: 0, statusText: '' });
 		(<string>response.type) = 'error';
 		return response;
 	}
@@ -344,13 +345,13 @@ export default class Response implements IResponse {
 			throw new TypeError('data is not JSON serializable');
 		}
 
-		const headers = new this.__window__.Headers(init && init.headers);
+		const headers = new this[PropertySymbol.window].Headers(init && init.headers);
 
 		if (!headers.has('Content-Type')) {
 			headers.set('Content-Type', 'application/json');
 		}
 
-		return new this.__window__.Response(body, {
+		return new this[PropertySymbol.window].Response(body, {
 			status: 200,
 			...init,
 			headers

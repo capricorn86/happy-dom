@@ -1,4 +1,5 @@
 import IElement from '../element/IElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
@@ -28,7 +29,7 @@ import VisibilityStateEnum from './VisibilityStateEnum.js';
  */
 export default interface IDocument extends IParentNode {
 	readonly defaultView: IBrowserWindow | null;
-	readonly __defaultView__: IBrowserWindow;
+	readonly [PropertySymbol.defaultView]: IBrowserWindow;
 	readonly implementation: DOMImplementation;
 	readonly documentElement: IHTMLElement;
 	readonly doctype: IDocumentType;

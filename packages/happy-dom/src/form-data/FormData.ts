@@ -1,4 +1,5 @@
 import Blob from '../file/Blob.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import File from '../file/File.js';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
 import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement.js';
@@ -27,8 +28,8 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 */
 	constructor(form?: IHTMLFormElement) {
 		if (form) {
-			for (const name of Object.keys((<HTMLFormControlsCollection>form.elements).__namedItems__)) {
-				let radioNodeList = (<HTMLFormControlsCollection>form.elements).__namedItems__[name];
+			for (const name of Object.keys((<HTMLFormControlsCollection>form.elements)[PropertySymbol.namedItems])) {
+				let radioNodeList = (<HTMLFormControlsCollection>form.elements)[PropertySymbol.namedItems][name];
 
 				if (
 					radioNodeList[0].tagName === 'INPUT' &&
@@ -220,14 +221,14 @@ export default class FormData implements Iterable<[string, string | File]> {
 	#parseValue(value: string | Blob | File, filename?: string): string | File {
 		if (value instanceof Blob && !(value instanceof File)) {
 			const file = new File([], 'blob', { type: value.type });
-			file.__buffer__ = value.__buffer__;
+			file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
 			return file;
 		}
 
 		if (value instanceof File) {
 			if (filename) {
 				const file = new File([], filename, { type: value.type, lastModified: value.lastModified });
-				file.__buffer__ = value.__buffer__;
+				file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
 				return file;
 			}
 			return value;

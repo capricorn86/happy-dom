@@ -1,4 +1,5 @@
 import INode from '../nodes/node/INode.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
 import IDocument from '../nodes/document/IDocument.js';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
@@ -35,10 +36,10 @@ export default class Range {
 	public readonly END_TO_START: number = RangeHowEnum.endToStart;
 	public readonly START_TO_END: number = RangeHowEnum.startToEnd;
 	public readonly START_TO_START: number = RangeHowEnum.startToStart;
-	public __start__: IRangeBoundaryPoint | null = null;
-	public __end__: IRangeBoundaryPoint | null = null;
+	public [PropertySymbol.start]: IRangeBoundaryPoint | null = null;
+	public [PropertySymbol.end]: IRangeBoundaryPoint | null = null;
 	#window: IBrowserWindow;
-	public readonly __ownerDocument__: IDocument;
+	public readonly [PropertySymbol.ownerDocument]: IDocument;
 
 	/**
 	 * Constructor.
@@ -47,9 +48,9 @@ export default class Range {
 	 */
 	constructor(window: IBrowserWindow) {
 		this.#window = window;
-		this.__ownerDocument__ = window.document;
-		this.__start__ = { node: window.document, offset: 0 };
-		this.__end__ = { node: window.document, offset: 0 };
+		this[PropertySymbol.ownerDocument] = window.document;
+		this[PropertySymbol.start] = { node: window.document, offset: 0 };
+		this[PropertySymbol.end] = { node: window.document, offset: 0 };
 	}
 
 	/**
@@ -59,7 +60,7 @@ export default class Range {
 	 * @returns Start container.
 	 */
 	public get startContainer(): INode {
-		return this.__start__.node;
+		return this[PropertySymbol.start].node;
 	}
 
 	/**
@@ -69,7 +70,7 @@ export default class Range {
 	 * @returns End container.
 	 */
 	public get endContainer(): INode {
-		return this.__end__.node;
+		return this[PropertySymbol.end].node;
 	}
 
 	/**
@@ -79,14 +80,14 @@ export default class Range {
 	 * @returns Start offset.
 	 */
 	public get startOffset(): number {
-		if (this.__start__.offset > 0) {
-			const length = NodeUtility.getNodeLength(this.__start__.node);
-			if (this.__start__.offset > length) {
-				this.__start__.offset = length;
+		if (this[PropertySymbol.start].offset > 0) {
+			const length = NodeUtility.getNodeLength(this[PropertySymbol.start].node);
+			if (this[PropertySymbol.start].offset > length) {
+				this[PropertySymbol.start].offset = length;
 			}
 		}
 
-		return this.__start__.offset;
+		return this[PropertySymbol.start].offset;
 	}
 
 	/**
@@ -96,14 +97,14 @@ export default class Range {
 	 * @returns End offset.
 	 */
 	public get endOffset(): number {
-		if (this.__end__.offset > 0) {
-			const length = NodeUtility.getNodeLength(this.__end__.node);
-			if (this.__end__.offset > length) {
-				this.__end__.offset = length;
+		if (this[PropertySymbol.end].offset > 0) {
+			const length = NodeUtility.getNodeLength(this[PropertySymbol.end].node);
+			if (this[PropertySymbol.end].offset > length) {
+				this[PropertySymbol.end].offset = length;
 			}
 		}
 
-		return this.__end__.offset;
+		return this[PropertySymbol.end].offset;
 	}
 
 	/**
@@ -113,7 +114,7 @@ export default class Range {
 	 * @returns Collapsed.
 	 */
 	public get collapsed(): boolean {
-		return this.__start__.node === this.__end__.node && this.startOffset === this.endOffset;
+		return this[PropertySymbol.start].node === this[PropertySymbol.end].node && this.startOffset === this.endOffset;
 	}
 
 	/**
@@ -123,10 +124,10 @@ export default class Range {
 	 * @returns Node.
 	 */
 	public get commonAncestorContainer(): INode {
-		let container = this.__start__.node;
+		let container = this[PropertySymbol.start].node;
 
 		while (container) {
-			if (NodeUtility.isInclusiveAncestor(container, this.__end__.node)) {
+			if (NodeUtility.isInclusiveAncestor(container, this[PropertySymbol.end].node)) {
 				return container;
 			}
 			container = container.parentNode;
@@ -143,9 +144,9 @@ export default class Range {
 	 */
 	public collapse(toStart = false): void {
 		if (toStart) {
-			this.__end__ = Object.assign({}, this.__start__);
+			this[PropertySymbol.end] = Object.assign({}, this[PropertySymbol.start]);
 		} else {
-			this.__start__ = Object.assign({}, this.__end__);
+			this[PropertySymbol.start] = Object.assign({}, this[PropertySymbol.end]);
 		}
 	}
 
@@ -170,7 +171,7 @@ export default class Range {
 			);
 		}
 
-		if (this.__ownerDocument__ !== sourceRange.__ownerDocument__) {
+		if (this[PropertySymbol.ownerDocument] !== sourceRange[PropertySymbol.ownerDocument]) {
 			throw new DOMException(
 				`The two Ranges are not in the same tree.`,
 				DOMExceptionNameEnum.wrongDocumentError
@@ -188,27 +189,27 @@ export default class Range {
 
 		switch (how) {
 			case RangeHowEnum.startToStart:
-				thisPoint.node = this.__start__.node;
+				thisPoint.node = this[PropertySymbol.start].node;
 				thisPoint.offset = this.startOffset;
-				sourcePoint.node = sourceRange.__start__.node;
+				sourcePoint.node = sourceRange[PropertySymbol.start].node;
 				sourcePoint.offset = sourceRange.startOffset;
 				break;
 			case RangeHowEnum.startToEnd:
-				thisPoint.node = this.__end__.node;
+				thisPoint.node = this[PropertySymbol.end].node;
 				thisPoint.offset = this.endOffset;
-				sourcePoint.node = sourceRange.__start__.node;
+				sourcePoint.node = sourceRange[PropertySymbol.start].node;
 				sourcePoint.offset = sourceRange.startOffset;
 				break;
 			case RangeHowEnum.endToEnd:
-				thisPoint.node = this.__end__.node;
+				thisPoint.node = this[PropertySymbol.end].node;
 				thisPoint.offset = this.endOffset;
-				sourcePoint.node = sourceRange.__end__.node;
+				sourcePoint.node = sourceRange[PropertySymbol.end].node;
 				sourcePoint.offset = sourceRange.endOffset;
 				break;
 			case RangeHowEnum.endToStart:
-				thisPoint.node = this.__start__.node;
+				thisPoint.node = this[PropertySymbol.start].node;
 				thisPoint.offset = this.startOffset;
-				sourcePoint.node = sourceRange.__end__.node;
+				sourcePoint.node = sourceRange[PropertySymbol.end].node;
 				sourcePoint.offset = sourceRange.endOffset;
 				break;
 		}
@@ -225,7 +226,7 @@ export default class Range {
 	 * @returns -1,0, or 1.
 	 */
 	public comparePoint(node: INode, offset): number {
-		if (node.ownerDocument !== this.__ownerDocument__) {
+		if (node.ownerDocument !== this[PropertySymbol.ownerDocument]) {
 			throw new DOMException(
 				`The two Ranges are not in the same tree.`,
 				DOMExceptionNameEnum.wrongDocumentError
@@ -238,14 +239,14 @@ export default class Range {
 
 		if (
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this.__start__.node,
+				node: this[PropertySymbol.start].node,
 				offset: this.startOffset
 			}) === -1
 		) {
 			return -1;
 		} else if (
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this.__end__.node,
+				node: this[PropertySymbol.end].node,
 				offset: this.endOffset
 			}) === 1
 		) {
@@ -262,7 +263,7 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public cloneContents(): IDocumentFragment {
-		const fragment = this.__ownerDocument__.createDocumentFragment();
+		const fragment = this[PropertySymbol.ownerDocument].createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
 
@@ -271,24 +272,24 @@ export default class Range {
 		}
 
 		if (
-			this.__start__.node === this.__end__.node &&
-			(this.__start__.node.nodeType === NodeTypeEnum.textNode ||
-				this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-				this.__start__.node.nodeType === NodeTypeEnum.commentNode)
+			this[PropertySymbol.start].node === this[PropertySymbol.end].node &&
+			(this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode ||
+				this[PropertySymbol.start].node.nodeType === NodeTypeEnum.processingInstructionNode ||
+				this[PropertySymbol.start].node.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = (<IText | IComment>this.__start__.node).cloneNode(false);
-			clone['__data__'] = clone.substringData(startOffset, endOffset - startOffset);
+			const clone = (<IText | IComment>this[PropertySymbol.start].node).cloneNode(false);
+			clone[PropertySymbol.data] = clone.substringData(startOffset, endOffset - startOffset);
 			fragment.appendChild(clone);
 			return fragment;
 		}
 
-		let commonAncestor = this.__start__.node;
-		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this.__end__.node)) {
+		let commonAncestor = this[PropertySymbol.start].node;
+		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this[PropertySymbol.end].node)) {
 			commonAncestor = commonAncestor.parentNode;
 		}
 
 		let firstPartialContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this.__start__.node, this.__end__.node)) {
+		if (!NodeUtility.isInclusiveAncestor(this[PropertySymbol.start].node, this[PropertySymbol.end].node)) {
 			let candidate = commonAncestor.firstChild;
 			while (!firstPartialContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -300,7 +301,7 @@ export default class Range {
 		}
 
 		let lastPartiallyContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this.__end__.node, this.__start__.node)) {
+		if (!NodeUtility.isInclusiveAncestor(this[PropertySymbol.end].node, this[PropertySymbol.start].node)) {
 			let candidate = commonAncestor.lastChild;
 			while (!lastPartiallyContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -313,7 +314,7 @@ export default class Range {
 
 		const containedChildren = [];
 
-		for (const node of (<Node>commonAncestor).__childNodes__) {
+		for (const node of (<Node>commonAncestor)[PropertySymbol.childNodes]) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
 					throw new DOMException(
@@ -331,10 +332,10 @@ export default class Range {
 				firstPartialContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
 				firstPartialContainedChild.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = (<IText | IComment>this.__start__.node).cloneNode(false);
-			clone['__data__'] = clone.substringData(
+			const clone = (<IText | IComment>this[PropertySymbol.start].node).cloneNode(false);
+			clone[PropertySymbol.data] = clone.substringData(
 				startOffset,
-				NodeUtility.getNodeLength(this.__start__.node) - startOffset
+				NodeUtility.getNodeLength(this[PropertySymbol.start].node) - startOffset
 			);
 
 			fragment.appendChild(clone);
@@ -343,10 +344,10 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new this.#window.Range();
-			subRange.__start__.node = this.__start__.node;
-			subRange.__start__.offset = startOffset;
-			subRange.__end__.node = firstPartialContainedChild;
-			subRange.__end__.offset = NodeUtility.getNodeLength(firstPartialContainedChild);
+			subRange[PropertySymbol.start].node = this[PropertySymbol.start].node;
+			subRange[PropertySymbol.start].offset = startOffset;
+			subRange[PropertySymbol.end].node = firstPartialContainedChild;
+			subRange[PropertySymbol.end].offset = NodeUtility.getNodeLength(firstPartialContainedChild);
 
 			const subDocumentFragment = subRange.cloneContents();
 			clone.appendChild(subDocumentFragment);
@@ -363,8 +364,8 @@ export default class Range {
 				lastPartiallyContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
 				lastPartiallyContainedChild.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = (<IText | IComment>this.__end__.node).cloneNode(false);
-			clone['__data__'] = clone.substringData(0, endOffset);
+			const clone = (<IText | IComment>this[PropertySymbol.end].node).cloneNode(false);
+			clone[PropertySymbol.data] = clone.substringData(0, endOffset);
 
 			fragment.appendChild(clone);
 		} else if (lastPartiallyContainedChild !== null) {
@@ -372,10 +373,10 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new this.#window.Range();
-			subRange.__start__.node = lastPartiallyContainedChild;
-			subRange.__start__.offset = 0;
-			subRange.__end__.node = this.__end__.node;
-			subRange.__end__.offset = endOffset;
+			subRange[PropertySymbol.start].node = lastPartiallyContainedChild;
+			subRange[PropertySymbol.start].offset = 0;
+			subRange[PropertySymbol.end].node = this[PropertySymbol.end].node;
+			subRange[PropertySymbol.end].offset = endOffset;
 
 			const subFragment = subRange.cloneContents();
 			clone.appendChild(subFragment);
@@ -393,10 +394,10 @@ export default class Range {
 	public cloneRange(): Range {
 		const clone = new this.#window.Range();
 
-		clone.__start__.node = this.__start__.node;
-		clone.__start__.offset = this.__start__.offset;
-		clone.__end__.node = this.__end__.node;
-		clone.__end__.offset = this.__end__.offset;
+		clone[PropertySymbol.start].node = this[PropertySymbol.start].node;
+		clone[PropertySymbol.start].offset = this[PropertySymbol.start].offset;
+		clone[PropertySymbol.end].node = this[PropertySymbol.end].node;
+		clone[PropertySymbol.end].offset = this[PropertySymbol.end].offset;
 
 		return clone;
 	}
@@ -410,7 +411,7 @@ export default class Range {
 	 */
 	public createContextualFragment(tagString: string): IDocumentFragment {
 		// TODO: We only have support for HTML in the parser currently, so it is not necessary to check which context it is
-		return <IDocumentFragment>XMLParser.parse(this.__ownerDocument__, tagString);
+		return <IDocumentFragment>XMLParser.parse(this[PropertySymbol.ownerDocument], tagString);
 	}
 
 	/**
@@ -427,18 +428,18 @@ export default class Range {
 		}
 
 		if (
-			this.__start__.node === this.__end__.node &&
-			(this.__start__.node.nodeType === NodeTypeEnum.textNode ||
-				this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-				this.__start__.node.nodeType === NodeTypeEnum.commentNode)
+			this[PropertySymbol.start].node === this[PropertySymbol.end].node &&
+			(this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode ||
+				this[PropertySymbol.start].node.nodeType === NodeTypeEnum.processingInstructionNode ||
+				this[PropertySymbol.start].node.nodeType === NodeTypeEnum.commentNode)
 		) {
-			(<IText | IComment>this.__start__.node).replaceData(startOffset, endOffset - startOffset, '');
+			(<IText | IComment>this[PropertySymbol.start].node).replaceData(startOffset, endOffset - startOffset, '');
 			return;
 		}
 
 		const nodesToRemove = [];
-		let currentNode = this.__start__.node;
-		const endNode = NodeUtility.nextDescendantNode(this.__end__.node);
+		let currentNode = this[PropertySymbol.start].node;
+		const endNode = NodeUtility.nextDescendantNode(this[PropertySymbol.end].node);
 		while (currentNode && currentNode !== endNode) {
 			if (
 				RangeUtility.isContained(currentNode, this) &&
@@ -452,31 +453,31 @@ export default class Range {
 
 		let newNode;
 		let newOffset;
-		if (NodeUtility.isInclusiveAncestor(this.__start__.node, this.__end__.node)) {
-			newNode = this.__start__.node;
+		if (NodeUtility.isInclusiveAncestor(this[PropertySymbol.start].node, this[PropertySymbol.end].node)) {
+			newNode = this[PropertySymbol.start].node;
 			newOffset = startOffset;
 		} else {
-			let referenceNode = this.__start__.node;
+			let referenceNode = this[PropertySymbol.start].node;
 
 			while (
 				referenceNode &&
-				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this.__end__.node)
+				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this[PropertySymbol.end].node)
 			) {
 				referenceNode = referenceNode.parentNode;
 			}
 
 			newNode = referenceNode.parentNode;
-			newOffset = (<Node>referenceNode.parentNode).__childNodes__.indexOf(referenceNode) + 1;
+			newOffset = (<Node>referenceNode.parentNode)[PropertySymbol.childNodes].indexOf(referenceNode) + 1;
 		}
 
 		if (
-			this.__start__.node.nodeType === NodeTypeEnum.textNode ||
-			this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-			this.__start__.node.nodeType === NodeTypeEnum.commentNode
+			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode ||
+			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.processingInstructionNode ||
+			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.commentNode
 		) {
-			(<IText | IComment>this.__start__.node).replaceData(
+			(<IText | IComment>this[PropertySymbol.start].node).replaceData(
 				this.startOffset,
-				NodeUtility.getNodeLength(this.__start__.node) - this.startOffset,
+				NodeUtility.getNodeLength(this[PropertySymbol.start].node) - this.startOffset,
 				''
 			);
 		}
@@ -487,17 +488,17 @@ export default class Range {
 		}
 
 		if (
-			this.__end__.node.nodeType === NodeTypeEnum.textNode ||
-			this.__end__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-			this.__end__.node.nodeType === NodeTypeEnum.commentNode
+			this[PropertySymbol.end].node.nodeType === NodeTypeEnum.textNode ||
+			this[PropertySymbol.end].node.nodeType === NodeTypeEnum.processingInstructionNode ||
+			this[PropertySymbol.end].node.nodeType === NodeTypeEnum.commentNode
 		) {
-			(<IText | IComment>this.__end__.node).replaceData(0, endOffset, '');
+			(<IText | IComment>this[PropertySymbol.end].node).replaceData(0, endOffset, '');
 		}
 
-		this.__start__.node = newNode;
-		this.__start__.offset = newOffset;
-		this.__end__.node = newNode;
-		this.__end__.offset = newOffset;
+		this[PropertySymbol.start].node = newNode;
+		this[PropertySymbol.start].offset = newOffset;
+		this[PropertySymbol.end].node = newNode;
+		this[PropertySymbol.end].offset = newOffset;
 	}
 
 	/**
@@ -516,7 +517,7 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public extractContents(): IDocumentFragment {
-		const fragment = this.__ownerDocument__.createDocumentFragment();
+		const fragment = this[PropertySymbol.ownerDocument].createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
 
@@ -525,28 +526,28 @@ export default class Range {
 		}
 
 		if (
-			this.__start__.node === this.__end__.node &&
-			(this.__start__.node.nodeType === NodeTypeEnum.textNode ||
-				this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-				this.__start__.node.nodeType === NodeTypeEnum.commentNode)
+			this[PropertySymbol.start].node === this[PropertySymbol.end].node &&
+			(this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode ||
+				this[PropertySymbol.start].node.nodeType === NodeTypeEnum.processingInstructionNode ||
+				this[PropertySymbol.start].node.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = <IText | IComment>this.__start__.node.cloneNode(false);
-			clone['__data__'] = clone.substringData(startOffset, endOffset - startOffset);
+			const clone = <IText | IComment>this[PropertySymbol.start].node.cloneNode(false);
+			clone[PropertySymbol.data] = clone.substringData(startOffset, endOffset - startOffset);
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this.__start__.node).replaceData(startOffset, endOffset - startOffset, '');
+			(<IText | IComment>this[PropertySymbol.start].node).replaceData(startOffset, endOffset - startOffset, '');
 
 			return fragment;
 		}
 
-		let commonAncestor = this.__start__.node;
-		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this.__end__.node)) {
+		let commonAncestor = this[PropertySymbol.start].node;
+		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this[PropertySymbol.end].node)) {
 			commonAncestor = commonAncestor.parentNode;
 		}
 
 		let firstPartialContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this.__start__.node, this.__end__.node)) {
+		if (!NodeUtility.isInclusiveAncestor(this[PropertySymbol.start].node, this[PropertySymbol.end].node)) {
 			let candidate = commonAncestor.firstChild;
 			while (!firstPartialContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -558,7 +559,7 @@ export default class Range {
 		}
 
 		let lastPartiallyContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this.__end__.node, this.__start__.node)) {
+		if (!NodeUtility.isInclusiveAncestor(this[PropertySymbol.end].node, this[PropertySymbol.start].node)) {
 			let candidate = commonAncestor.lastChild;
 			while (!lastPartiallyContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -571,7 +572,7 @@ export default class Range {
 
 		const containedChildren = [];
 
-		for (const node of (<Node>commonAncestor).__childNodes__) {
+		for (const node of (<Node>commonAncestor)[PropertySymbol.childNodes]) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node.nodeType === NodeTypeEnum.documentTypeNode) {
 					throw new DOMException(
@@ -585,21 +586,21 @@ export default class Range {
 
 		let newNode;
 		let newOffset;
-		if (NodeUtility.isInclusiveAncestor(this.__start__.node, this.__end__.node)) {
-			newNode = this.__start__.node;
+		if (NodeUtility.isInclusiveAncestor(this[PropertySymbol.start].node, this[PropertySymbol.end].node)) {
+			newNode = this[PropertySymbol.start].node;
 			newOffset = startOffset;
 		} else {
-			let referenceNode = this.__start__.node;
+			let referenceNode = this[PropertySymbol.start].node;
 
 			while (
 				referenceNode &&
-				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this.__end__.node)
+				!NodeUtility.isInclusiveAncestor(referenceNode.parentNode, this[PropertySymbol.end].node)
 			) {
 				referenceNode = referenceNode.parentNode;
 			}
 
 			newNode = referenceNode.parentNode;
-			newOffset = (<Node>referenceNode.parentNode).__childNodes__.indexOf(referenceNode) + 1;
+			newOffset = (<Node>referenceNode.parentNode)[PropertySymbol.childNodes].indexOf(referenceNode) + 1;
 		}
 
 		if (
@@ -608,17 +609,17 @@ export default class Range {
 				firstPartialContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
 				firstPartialContainedChild.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = <IText | IComment>this.__start__.node.cloneNode(false);
-			clone['__data__'] = clone.substringData(
+			const clone = <IText | IComment>this[PropertySymbol.start].node.cloneNode(false);
+			clone[PropertySymbol.data] = clone.substringData(
 				startOffset,
-				NodeUtility.getNodeLength(this.__start__.node) - startOffset
+				NodeUtility.getNodeLength(this[PropertySymbol.start].node) - startOffset
 			);
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this.__start__.node).replaceData(
+			(<IText | IComment>this[PropertySymbol.start].node).replaceData(
 				startOffset,
-				NodeUtility.getNodeLength(this.__start__.node) - startOffset,
+				NodeUtility.getNodeLength(this[PropertySymbol.start].node) - startOffset,
 				''
 			);
 		} else if (firstPartialContainedChild !== null) {
@@ -626,10 +627,10 @@ export default class Range {
 			fragment.appendChild(clone);
 
 			const subRange = new this.#window.Range();
-			subRange.__start__.node = this.__start__.node;
-			subRange.__start__.offset = startOffset;
-			subRange.__end__.node = firstPartialContainedChild;
-			subRange.__end__.offset = NodeUtility.getNodeLength(firstPartialContainedChild);
+			subRange[PropertySymbol.start].node = this[PropertySymbol.start].node;
+			subRange[PropertySymbol.start].offset = startOffset;
+			subRange[PropertySymbol.end].node = firstPartialContainedChild;
+			subRange[PropertySymbol.end].offset = NodeUtility.getNodeLength(firstPartialContainedChild);
 
 			const subFragment = subRange.extractContents();
 			clone.appendChild(subFragment);
@@ -645,30 +646,30 @@ export default class Range {
 				lastPartiallyContainedChild.nodeType === NodeTypeEnum.processingInstructionNode ||
 				lastPartiallyContainedChild.nodeType === NodeTypeEnum.commentNode)
 		) {
-			const clone = <IText | IComment>this.__end__.node.cloneNode(false);
-			clone['__data__'] = clone.substringData(0, endOffset);
+			const clone = <IText | IComment>this[PropertySymbol.end].node.cloneNode(false);
+			clone[PropertySymbol.data] = clone.substringData(0, endOffset);
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this.__end__.node).replaceData(0, endOffset, '');
+			(<IText | IComment>this[PropertySymbol.end].node).replaceData(0, endOffset, '');
 		} else if (lastPartiallyContainedChild !== null) {
 			const clone = lastPartiallyContainedChild.cloneNode(false);
 			fragment.appendChild(clone);
 
 			const subRange = new this.#window.Range();
-			subRange.__start__.node = lastPartiallyContainedChild;
-			subRange.__start__.offset = 0;
-			subRange.__end__.node = this.__end__.node;
-			subRange.__end__.offset = endOffset;
+			subRange[PropertySymbol.start].node = lastPartiallyContainedChild;
+			subRange[PropertySymbol.start].offset = 0;
+			subRange[PropertySymbol.end].node = this[PropertySymbol.end].node;
+			subRange[PropertySymbol.end].offset = endOffset;
 
 			const subFragment = subRange.extractContents();
 			clone.appendChild(subFragment);
 		}
 
-		this.__start__.node = newNode;
-		this.__start__.offset = newOffset;
-		this.__end__.node = newNode;
-		this.__end__.offset = newOffset;
+		this[PropertySymbol.start].node = newNode;
+		this[PropertySymbol.start].offset = newOffset;
+		this[PropertySymbol.end].node = newNode;
+		this[PropertySymbol.end].offset = newOffset;
 
 		return fragment;
 	}
@@ -702,7 +703,7 @@ export default class Range {
 	 * @returns "true" if in range.
 	 */
 	public isPointInRange(node: INode, offset = 0): boolean {
-		if (node.ownerDocument !== this.__ownerDocument__) {
+		if (node.ownerDocument !== this[PropertySymbol.ownerDocument]) {
 			return false;
 		}
 
@@ -712,11 +713,11 @@ export default class Range {
 
 		if (
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this.__start__.node,
+				node: this[PropertySymbol.start].node,
 				offset: this.startOffset
 			}) === -1 ||
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this.__end__.node,
+				node: this[PropertySymbol.end].node,
 				offset: this.endOffset
 			}) === 1
 		) {
@@ -734,22 +735,22 @@ export default class Range {
 	 */
 	public insertNode(newNode: INode): void {
 		if (
-			this.__start__.node.nodeType === NodeTypeEnum.processingInstructionNode ||
-			this.__start__.node.nodeType === NodeTypeEnum.commentNode ||
-			(this.__start__.node.nodeType === NodeTypeEnum.textNode && !this.__start__.node.parentNode) ||
-			newNode === this.__start__.node
+			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.processingInstructionNode ||
+			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.commentNode ||
+			(this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode && !this[PropertySymbol.start].node.parentNode) ||
+			newNode === this[PropertySymbol.start].node
 		) {
 			throw new DOMException('Invalid start node.', DOMExceptionNameEnum.hierarchyRequestError);
 		}
 
 		let referenceNode =
-			this.__start__.node.nodeType === NodeTypeEnum.textNode
-				? this.__start__.node
-				: (<Node>this.__start__.node).__childNodes__[this.startOffset] || null;
-		const parent = !referenceNode ? this.__start__.node : referenceNode.parentNode;
+			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode
+				? this[PropertySymbol.start].node
+				: (<Node>this[PropertySymbol.start].node)[PropertySymbol.childNodes][this.startOffset] || null;
+		const parent = !referenceNode ? this[PropertySymbol.start].node : referenceNode.parentNode;
 
-		if (this.__start__.node.nodeType === NodeTypeEnum.textNode) {
-			referenceNode = (<IText>this.__start__.node).splitText(this.startOffset);
+		if (this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode) {
+			referenceNode = (<IText>this[PropertySymbol.start].node).splitText(this.startOffset);
 		}
 
 		if (newNode === referenceNode) {
@@ -763,7 +764,7 @@ export default class Range {
 
 		let newOffset = !referenceNode
 			? NodeUtility.getNodeLength(parent)
-			: (<Node>referenceNode.parentNode).__childNodes__.indexOf(referenceNode);
+			: (<Node>referenceNode.parentNode)[PropertySymbol.childNodes].indexOf(referenceNode);
 		newOffset +=
 			newNode.nodeType === NodeTypeEnum.documentFragmentNode
 				? NodeUtility.getNodeLength(newNode)
@@ -772,8 +773,8 @@ export default class Range {
 		parent.insertBefore(newNode, referenceNode);
 
 		if (this.collapsed) {
-			this.__end__.node = parent;
-			this.__end__.offset = newOffset;
+			this[PropertySymbol.end].node = parent;
+			this[PropertySymbol.end].offset = newOffset;
 		}
 	}
 
@@ -785,7 +786,7 @@ export default class Range {
 	 * @returns "true" if it intersects.
 	 */
 	public intersectsNode(node: INode): boolean {
-		if (node.ownerDocument !== this.__ownerDocument__) {
+		if (node.ownerDocument !== this[PropertySymbol.ownerDocument]) {
 			return false;
 		}
 
@@ -795,16 +796,16 @@ export default class Range {
 			return true;
 		}
 
-		const offset = (<Node>parent).__childNodes__.indexOf(node);
+		const offset = (<Node>parent)[PropertySymbol.childNodes].indexOf(node);
 
 		return (
 			RangeUtility.compareBoundaryPointsPosition(
 				{ node: parent, offset },
-				{ node: this.__end__.node, offset: this.endOffset }
+				{ node: this[PropertySymbol.end].node, offset: this.endOffset }
 			) === -1 &&
 			RangeUtility.compareBoundaryPointsPosition(
 				{ node: parent, offset: offset + 1 },
-				{ node: this.__start__.node, offset: this.startOffset }
+				{ node: this[PropertySymbol.start].node, offset: this.startOffset }
 			) === 1
 		);
 	}
@@ -823,12 +824,12 @@ export default class Range {
 			);
 		}
 
-		const index = (<Node>node.parentNode).__childNodes__.indexOf(node);
+		const index = (<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node);
 
-		this.__start__.node = node.parentNode;
-		this.__start__.offset = index;
-		this.__end__.node = node.parentNode;
-		this.__end__.offset = index + 1;
+		this[PropertySymbol.start].node = node.parentNode;
+		this[PropertySymbol.start].offset = index;
+		this[PropertySymbol.end].node = node.parentNode;
+		this[PropertySymbol.end].offset = index + 1;
 	}
 
 	/**
@@ -845,10 +846,10 @@ export default class Range {
 			);
 		}
 
-		this.__start__.node = node;
-		this.__start__.offset = 0;
-		this.__end__.node = node;
-		this.__end__.offset = NodeUtility.getNodeLength(node);
+		this[PropertySymbol.start].node = node;
+		this[PropertySymbol.start].offset = 0;
+		this[PropertySymbol.end].node = node;
+		this[PropertySymbol.end].offset = NodeUtility.getNodeLength(node);
 	}
 
 	/**
@@ -864,18 +865,18 @@ export default class Range {
 		const boundaryPoint = { node, offset };
 
 		if (
-			node.ownerDocument !== this.__ownerDocument__ ||
+			node.ownerDocument !== this[PropertySymbol.ownerDocument] ||
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this.__start__.node,
+				node: this[PropertySymbol.start].node,
 				offset: this.startOffset
 			}) === -1
 		) {
-			this.__start__.node = node;
-			this.__start__.offset = offset;
+			this[PropertySymbol.start].node = node;
+			this[PropertySymbol.start].offset = offset;
 		}
 
-		this.__end__.node = node;
-		this.__end__.offset = offset;
+		this[PropertySymbol.end].node = node;
+		this[PropertySymbol.end].offset = offset;
 	}
 
 	/**
@@ -891,18 +892,18 @@ export default class Range {
 		const boundaryPoint = { node, offset };
 
 		if (
-			node.ownerDocument !== this.__ownerDocument__ ||
+			node.ownerDocument !== this[PropertySymbol.ownerDocument] ||
 			RangeUtility.compareBoundaryPointsPosition(boundaryPoint, {
-				node: this.__end__.node,
+				node: this[PropertySymbol.end].node,
 				offset: this.endOffset
 			}) === 1
 		) {
-			this.__end__.node = node;
-			this.__end__.offset = offset;
+			this[PropertySymbol.end].node = node;
+			this[PropertySymbol.end].offset = offset;
 		}
 
-		this.__start__.node = node;
-		this.__start__.offset = offset;
+		this[PropertySymbol.start].node = node;
+		this[PropertySymbol.start].offset = offset;
 	}
 
 	/**
@@ -918,7 +919,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setEnd(node.parentNode, (<Node>node.parentNode).__childNodes__.indexOf(node) + 1);
+		this.setEnd(node.parentNode, (<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node) + 1);
 	}
 
 	/**
@@ -934,7 +935,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setEnd(node.parentNode, (<Node>node.parentNode).__childNodes__.indexOf(node));
+		this.setEnd(node.parentNode, (<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node));
 	}
 
 	/**
@@ -950,7 +951,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(node.parentNode, (<Node>node.parentNode).__childNodes__.indexOf(node) + 1);
+		this.setStart(node.parentNode, (<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node) + 1);
 	}
 
 	/**
@@ -966,7 +967,7 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(node.parentNode, (<Node>node.parentNode).__childNodes__.indexOf(node));
+		this.setStart(node.parentNode, (<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node));
 	}
 
 	/**
@@ -1024,18 +1025,18 @@ export default class Range {
 		let string = '';
 
 		if (
-			this.__start__.node === this.__end__.node &&
-			this.__start__.node.nodeType === NodeTypeEnum.textNode
+			this[PropertySymbol.start].node === this[PropertySymbol.end].node &&
+			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode
 		) {
-			return (<IText>this.__start__.node).data.slice(startOffset, endOffset);
+			return (<IText>this[PropertySymbol.start].node).data.slice(startOffset, endOffset);
 		}
 
-		if (this.__start__.node.nodeType === NodeTypeEnum.textNode) {
-			string += (<IText>this.__start__.node).data.slice(startOffset);
+		if (this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode) {
+			string += (<IText>this[PropertySymbol.start].node).data.slice(startOffset);
 		}
 
-		const endNode = NodeUtility.nextDescendantNode(this.__end__.node);
-		let currentNode = this.__start__.node;
+		const endNode = NodeUtility.nextDescendantNode(this[PropertySymbol.end].node);
+		let currentNode = this[PropertySymbol.start].node;
 
 		while (currentNode && currentNode !== endNode) {
 			if (
@@ -1048,8 +1049,8 @@ export default class Range {
 			currentNode = NodeUtility.following(currentNode);
 		}
 
-		if (this.__end__.node.nodeType === NodeTypeEnum.textNode) {
-			string += (<IText>this.__end__.node).data.slice(0, endOffset);
+		if (this[PropertySymbol.end].node.nodeType === NodeTypeEnum.textNode) {
+			string += (<IText>this[PropertySymbol.end].node).data.slice(0, endOffset);
 		}
 
 		return string;

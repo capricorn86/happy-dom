@@ -1,4 +1,5 @@
 import NamespaceURI from '../../config/NamespaceURI.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
@@ -13,7 +14,7 @@ import IElement from './IElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class ElementNamedNodeMap extends NamedNodeMap {
-	protected __ownerElement__: IElement;
+	protected [PropertySymbol.ownerElement]: IElement;
 
 	/**
 	 * Constructor.
@@ -22,21 +23,21 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	 */
 	constructor(ownerElement: IElement) {
 		super();
-		this.__ownerElement__ = ownerElement;
+		this[PropertySymbol.ownerElement] = ownerElement;
 	}
 
 	/**
 	 * @override
 	 */
 	public override getNamedItem(name: string): IAttr | null {
-		return this.__namedItems__[this.__getAttributeName__(name)] || null;
+		return this[PropertySymbol.namedItems][this[PropertySymbol.getAttributeName](name)] || null;
 	}
 
 	/**
 	 * @override
 	 */
 	public override getNamedItemNS(namespace: string, localName: string): IAttr | null {
-		return super.getNamedItemNS(namespace, this.__getAttributeName__(localName));
+		return super.getNamedItemNS(namespace, this[PropertySymbol.getAttributeName](localName));
 	}
 
 	/**
@@ -47,57 +48,57 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 			return null;
 		}
 
-		item.name = this.__getAttributeName__(item.name);
-		(<IElement>item.ownerElement) = this.__ownerElement__;
+		item.name = this[PropertySymbol.getAttributeName](item.name);
+		(<IElement>item.ownerElement) = this[PropertySymbol.ownerElement];
 
 		const replacedItem = super.setNamedItem(item);
 		const oldValue = replacedItem ? replacedItem.value : null;
 
-		if (this.__ownerElement__.isConnected) {
-			this.__ownerElement__.ownerDocument['__cacheID__']++;
+		if (this[PropertySymbol.ownerElement].isConnected) {
+			this[PropertySymbol.ownerElement].ownerDocument[PropertySymbol.cacheID]++;
 		}
 
-		if (item.name === 'class' && this.__ownerElement__['__classList__']) {
-			this.__ownerElement__['__classList__'].__updateIndices__();
+		if (item.name === 'class' && this[PropertySymbol.ownerElement][PropertySymbol.classList]) {
+			this[PropertySymbol.ownerElement][PropertySymbol.classList][PropertySymbol.updateIndices]();
 		}
 
 		if (item.name === 'id' || item.name === 'name') {
 			if (
-				this.__ownerElement__.parentNode &&
-				(<Element>this.__ownerElement__.parentNode).__children__ &&
+				this[PropertySymbol.ownerElement].parentNode &&
+				(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children] &&
 				item.value !== oldValue
 			) {
 				if (oldValue) {
 					(<HTMLCollection<IElement>>(
-						(<Element>this.__ownerElement__.parentNode).__children__
-					)).__removeNamedItem__(this.__ownerElement__, oldValue);
+						(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children]
+					))[PropertySymbol.removeNamedItem](this[PropertySymbol.ownerElement], oldValue);
 				}
 				if (item.value) {
 					(<HTMLCollection<IElement>>(
-						(<Element>this.__ownerElement__.parentNode).__children__
-					)).__appendNamedItem__(this.__ownerElement__, item.value);
+						(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children]
+					))[PropertySymbol.appendNamedItem](this[PropertySymbol.ownerElement], item.value);
 				}
 			}
 		}
 
 		if (
-			this.__ownerElement__.attributeChangedCallback &&
-			(<typeof Element>this.__ownerElement__.constructor).__observedAttributes__ &&
-			(<typeof Element>this.__ownerElement__.constructor).__observedAttributes__.includes(item.name)
+			this[PropertySymbol.ownerElement].attributeChangedCallback &&
+			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[PropertySymbol.observedAttributes] &&
+			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[PropertySymbol.observedAttributes].includes(item.name)
 		) {
-			this.__ownerElement__.attributeChangedCallback(item.name, oldValue, item.value);
+			this[PropertySymbol.ownerElement].attributeChangedCallback(item.name, oldValue, item.value);
 		}
 
 		// MutationObserver
-		if (this.__ownerElement__['__observers__'].length > 0) {
-			for (const observer of this.__ownerElement__['__observers__']) {
+		if (this[PropertySymbol.ownerElement][PropertySymbol.observers].length > 0) {
+			for (const observer of this[PropertySymbol.ownerElement][PropertySymbol.observers]) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
 						observer.options.attributeFilter.includes(item.name))
 				) {
 					const record = new MutationRecord();
-					record.target = this.__ownerElement__;
+					record.target = this[PropertySymbol.ownerElement];
 					record.type = MutationTypeEnum.attributes;
 					record.attributeName = item.name;
 					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
@@ -112,53 +113,53 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override __removeNamedItem__(name: string): IAttr | null {
-		const removedItem = super.__removeNamedItem__(this.__getAttributeName__(name));
+	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+		const removedItem = super[PropertySymbol.removeNamedItem](this[PropertySymbol.getAttributeName](name));
 
 		if (!removedItem) {
 			return null;
 		}
 
-		if (this.__ownerElement__.isConnected) {
-			this.__ownerElement__.ownerDocument['__cacheID__']++;
+		if (this[PropertySymbol.ownerElement].isConnected) {
+			this[PropertySymbol.ownerElement].ownerDocument[PropertySymbol.cacheID]++;
 		}
 
-		if (removedItem.name === 'class' && this.__ownerElement__['__classList__']) {
-			this.__ownerElement__['__classList__'].__updateIndices__();
+		if (removedItem.name === 'class' && this[PropertySymbol.ownerElement][PropertySymbol.classList]) {
+			this[PropertySymbol.ownerElement][PropertySymbol.classList][PropertySymbol.updateIndices]();
 		}
 
 		if (removedItem.name === 'id' || removedItem.name === 'name') {
 			if (
-				this.__ownerElement__.parentNode &&
-				(<Element>this.__ownerElement__.parentNode).__children__ &&
+				this[PropertySymbol.ownerElement].parentNode &&
+				(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children] &&
 				removedItem.value
 			) {
 				(<HTMLCollection<IElement>>(
-					(<Element>this.__ownerElement__.parentNode).__children__
-				)).__removeNamedItem__(this.__ownerElement__, removedItem.value);
+					(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children]
+				))[PropertySymbol.removeNamedItem](this[PropertySymbol.ownerElement], removedItem.value);
 			}
 		}
 
 		if (
-			this.__ownerElement__.attributeChangedCallback &&
-			(<typeof Element>this.__ownerElement__.constructor).__observedAttributes__ &&
-			(<typeof Element>this.__ownerElement__.constructor).__observedAttributes__.includes(
+			this[PropertySymbol.ownerElement].attributeChangedCallback &&
+			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[PropertySymbol.observedAttributes] &&
+			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[PropertySymbol.observedAttributes].includes(
 				removedItem.name
 			)
 		) {
-			this.__ownerElement__.attributeChangedCallback(removedItem.name, removedItem.value, null);
+			this[PropertySymbol.ownerElement].attributeChangedCallback(removedItem.name, removedItem.value, null);
 		}
 
 		// MutationObserver
-		if (this.__ownerElement__['__observers__'].length > 0) {
-			for (const observer of this.__ownerElement__['__observers__']) {
+		if (this[PropertySymbol.ownerElement][PropertySymbol.observers].length > 0) {
+			for (const observer of this[PropertySymbol.ownerElement][PropertySymbol.observers]) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
 						observer.options.attributeFilter.includes(removedItem.name))
 				) {
 					const record = new MutationRecord();
-					record.target = this.__ownerElement__;
+					record.target = this[PropertySymbol.ownerElement];
 					record.type = MutationTypeEnum.attributes;
 					record.attributeName = removedItem.name;
 					record.oldValue = observer.options.attributeOldValue ? removedItem.value : null;
@@ -174,7 +175,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	 * @override
 	 */
 	public override removeNamedItemNS(namespace: string, localName: string): IAttr | null {
-		return super.removeNamedItemNS(namespace, this.__getAttributeName__(localName));
+		return super.removeNamedItemNS(namespace, this[PropertySymbol.getAttributeName](localName));
 	}
 
 	/**
@@ -183,8 +184,8 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	 * @param name Name.
 	 * @returns Attribute name based on namespace.
 	 */
-	protected __getAttributeName__(name): string {
-		if (this.__ownerElement__.namespaceURI === NamespaceURI.svg) {
+	protected [PropertySymbol.getAttributeName](name): string {
+		if (this[PropertySymbol.ownerElement].namespaceURI === NamespaceURI.svg) {
 			return name;
 		}
 		return name.toLowerCase();

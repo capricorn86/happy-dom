@@ -1,4 +1,5 @@
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import IDocument from '../../nodes/document/IDocument.js';
 import IBrowserPage from './IBrowserPage.js';
@@ -19,8 +20,8 @@ export default interface IBrowserFrame {
 	url: string;
 	readonly parentFrame: IBrowserFrame | null;
 	readonly opener: IBrowserFrame | null;
-	__asyncTaskManager__: AsyncTaskManager;
-	__exceptionObserver__: BrowserFrameExceptionObserver | null;
+	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
+	[PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null;
 	readonly page: IBrowserPage;
 
 	/**

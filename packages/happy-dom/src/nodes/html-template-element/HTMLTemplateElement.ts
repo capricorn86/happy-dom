@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
 import INode from '../node/INode.js';
 import IHTMLTemplateElement from './IHTMLTemplateElement.js';
@@ -26,7 +27,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 * @override
 	 */
 	public set innerHTML(html: string) {
-		for (const child of (<DocumentFragment>this.content).__childNodes__.slice()) {
+		for (const child of (<DocumentFragment>this.content)[PropertySymbol.childNodes].slice()) {
 			this.content.removeChild(child);
 		}
 
@@ -56,7 +57,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of (<DocumentFragment>this.content).__childNodes__) {
+		for (const node of (<DocumentFragment>this.content)[PropertySymbol.childNodes]) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;

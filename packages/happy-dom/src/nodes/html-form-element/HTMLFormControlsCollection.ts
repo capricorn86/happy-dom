@@ -1,4 +1,5 @@
 import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLInputElement from '../html-input-element/IHTMLInputElement.js';
 import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement.js';
 import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
@@ -14,7 +15,7 @@ export default class HTMLFormControlsCollection
 	extends Array<IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement>
 	implements IHTMLFormControlsCollection
 {
-	public __namedItems__: { [k: string]: RadioNodeList } = {};
+	public [PropertySymbol.namedItems]: { [k: string]: RadioNodeList } = {};
 
 	/**
 	 * Returns item by index.
@@ -42,11 +43,11 @@ export default class HTMLFormControlsCollection
 		| IHTMLButtonElement
 		| RadioNodeList
 		| null {
-		if (this.__namedItems__[name] && this.__namedItems__[name].length) {
-			if (this.__namedItems__[name].length === 1) {
-				return this.__namedItems__[name][0];
+		if (this[PropertySymbol.namedItems][name] && this[PropertySymbol.namedItems][name].length) {
+			if (this[PropertySymbol.namedItems][name].length === 1) {
+				return this[PropertySymbol.namedItems][name][0];
 			}
-			return this.__namedItems__[name];
+			return this[PropertySymbol.namedItems][name];
 		}
 		return null;
 	}
@@ -57,22 +58,22 @@ export default class HTMLFormControlsCollection
 	 * @param node Node.
 	 * @param name Name.
 	 */
-	public __appendNamedItem__(
+	public [PropertySymbol.appendNamedItem](
 		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
 		name: string
 	): void {
 		if (name) {
-			this.__namedItems__[name] = this.__namedItems__[name] || new RadioNodeList();
+			this[PropertySymbol.namedItems][name] = this[PropertySymbol.namedItems][name] || new RadioNodeList();
 
-			if (!this.__namedItems__[name].includes(node)) {
-				this.__namedItems__[name].push(node);
+			if (!this[PropertySymbol.namedItems][name].includes(node)) {
+				this[PropertySymbol.namedItems][name].push(node);
 			}
 
-			if (this.__isValidPropertyName__(name)) {
+			if (this[PropertySymbol.isValidPropertyName](name)) {
 				this[name] =
-					this.__namedItems__[name].length > 1
-						? this.__namedItems__[name]
-						: this.__namedItems__[name][0];
+					this[PropertySymbol.namedItems][name].length > 1
+						? this[PropertySymbol.namedItems][name]
+						: this[PropertySymbol.namedItems][name][0];
 			}
 		}
 	}
@@ -83,26 +84,26 @@ export default class HTMLFormControlsCollection
 	 * @param node Node.
 	 * @param name Name.
 	 */
-	public __removeNamedItem__(
+	public [PropertySymbol.removeNamedItem](
 		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
 		name: string
 	): void {
-		if (name && this.__namedItems__[name]) {
-			const index = this.__namedItems__[name].indexOf(node);
+		if (name && this[PropertySymbol.namedItems][name]) {
+			const index = this[PropertySymbol.namedItems][name].indexOf(node);
 
 			if (index > -1) {
-				this.__namedItems__[name].splice(index, 1);
+				this[PropertySymbol.namedItems][name].splice(index, 1);
 
-				if (this.__namedItems__[name].length === 0) {
-					delete this.__namedItems__[name];
-					if (this.hasOwnProperty(name) && this.__isValidPropertyName__(name)) {
+				if (this[PropertySymbol.namedItems][name].length === 0) {
+					delete this[PropertySymbol.namedItems][name];
+					if (this.hasOwnProperty(name) && this[PropertySymbol.isValidPropertyName](name)) {
 						delete this[name];
 					}
-				} else if (this.__isValidPropertyName__(name)) {
+				} else if (this[PropertySymbol.isValidPropertyName](name)) {
 					this[name] =
-						this.__namedItems__[name].length > 1
-							? this.__namedItems__[name]
-							: this.__namedItems__[name][0];
+						this[PropertySymbol.namedItems][name].length > 1
+							? this[PropertySymbol.namedItems][name]
+							: this[PropertySymbol.namedItems][name][0];
 				}
 			}
 		}
@@ -114,7 +115,7 @@ export default class HTMLFormControlsCollection
 	 * @param name Name.
 	 * @returns True if the property name is valid.
 	 */
-	protected __isValidPropertyName__(name: string): boolean {
+	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
 		return (
 			!this.constructor.prototype.hasOwnProperty(name) &&
 			!Array.prototype.hasOwnProperty(name) &&

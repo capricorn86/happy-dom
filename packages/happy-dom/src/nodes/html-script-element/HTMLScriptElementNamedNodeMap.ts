@@ -1,4 +1,5 @@
 import IAttr from '../attr/IAttr.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLScriptElement from './HTMLScriptElement.js';
 import HTMLScriptElementScriptLoader from './HTMLScriptElementScriptLoader.js';
@@ -9,7 +10,7 @@ import HTMLScriptElementScriptLoader from './HTMLScriptElementScriptLoader.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLScriptElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected __ownerElement__: HTMLScriptElement;
+	protected [PropertySymbol.ownerElement]: HTMLScriptElement;
 	#scriptLoader: HTMLScriptElementScriptLoader;
 
 	/**
@@ -29,7 +30,7 @@ export default class HTMLScriptElementNamedNodeMap extends HTMLElementNamedNodeM
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'src' && item.value !== null && this.__ownerElement__.isConnected) {
+		if (item.name === 'src' && item.value !== null && this[PropertySymbol.ownerElement].isConnected) {
 			this.#scriptLoader.loadScript(item.value);
 		}
 

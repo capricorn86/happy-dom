@@ -1,4 +1,5 @@
 import EventTarget from '../../event/EventTarget.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import MutationListener from '../../mutation-observer/MutationListener.js';
 import INode from './INode.js';
 import IDocument from '../document/IDocument.js';
@@ -16,7 +17,7 @@ import INodeList from './INodeList.js';
  */
 export default class Node extends EventTarget implements INode {
 	// Can be set before the Node is created.
-	public static __ownerDocument__: IDocument | null = null;
+	public static [PropertySymbol.ownerDocument]: IDocument | null = null;
 
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
@@ -56,12 +57,12 @@ export default class Node extends EventTarget implements INode {
 	public readonly isConnected: boolean = false;
 
 	// Custom Properties (not part of HTML standard)
-	public __rootNode__: INode = null;
-	public __formNode__: INode = null;
-	public __selectNode__: INode = null;
-	public __textAreaNode__: INode = null;
-	public __observers__: MutationListener[] = [];
-	public readonly __childNodes__: INodeList<INode> = new NodeList<INode>();
+	public [PropertySymbol.rootNode]: INode = null;
+	public [PropertySymbol.formNode]: INode = null;
+	public [PropertySymbol.selectNode]: INode = null;
+	public [PropertySymbol.textAreaNode]: INode = null;
+	public [PropertySymbol.observers]: MutationListener[] = [];
+	public readonly [PropertySymbol.childNodes]: INodeList<INode> = new NodeList<INode>();
 	public readonly ownerDocument: IDocument = null;
 
 	/**
@@ -69,8 +70,8 @@ export default class Node extends EventTarget implements INode {
 	 */
 	constructor() {
 		super();
-		if ((<typeof Node>this.constructor).__ownerDocument__) {
-			this.ownerDocument = (<typeof Node>this.constructor).__ownerDocument__;
+		if ((<typeof Node>this.constructor)[PropertySymbol.ownerDocument]) {
+			this.ownerDocument = (<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
 		}
 	}
 
@@ -89,7 +90,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Child nodes list.
 	 */
 	public get childNodes(): INodeList<INode> {
-		return this.__childNodes__;
+		return this[PropertySymbol.childNodes];
 	}
 
 	/**
@@ -144,9 +145,9 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get previousSibling(): INode {
 		if (this.parentNode) {
-			const index = (<Node>this.parentNode).__childNodes__.indexOf(this);
+			const index = (<Node>this.parentNode)[PropertySymbol.childNodes].indexOf(this);
 			if (index > 0) {
-				return (<Node>this.parentNode).__childNodes__[index - 1];
+				return (<Node>this.parentNode)[PropertySymbol.childNodes][index - 1];
 			}
 		}
 		return null;
@@ -159,9 +160,9 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get nextSibling(): INode {
 		if (this.parentNode) {
-			const index = (<Node>this.parentNode).__childNodes__.indexOf(this);
-			if (index > -1 && index + 1 < (<Node>this.parentNode).__childNodes__.length) {
-				return (<Node>this.parentNode).__childNodes__[index + 1];
+			const index = (<Node>this.parentNode)[PropertySymbol.childNodes].indexOf(this);
+			if (index > -1 && index + 1 < (<Node>this.parentNode)[PropertySymbol.childNodes].length) {
+				return (<Node>this.parentNode)[PropertySymbol.childNodes][index + 1];
 			}
 		}
 		return null;
@@ -173,8 +174,8 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public get firstChild(): INode {
-		if (this.__childNodes__.length > 0) {
-			return this.__childNodes__[0];
+		if (this[PropertySymbol.childNodes].length > 0) {
+			return this[PropertySymbol.childNodes][0];
 		}
 		return null;
 	}
@@ -185,8 +186,8 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public get lastChild(): INode {
-		if (this.__childNodes__.length > 0) {
-			return this.__childNodes__[this.__childNodes__.length - 1];
+		if (this[PropertySymbol.childNodes].length > 0) {
+			return this[PropertySymbol.childNodes][this[PropertySymbol.childNodes].length - 1];
 		}
 		return null;
 	}
@@ -214,7 +215,7 @@ export default class Node extends EventTarget implements INode {
 		if (base) {
 			return base.href;
 		}
-		return this.ownerDocument.__defaultView__.location.href;
+		return this.ownerDocument[PropertySymbol.defaultView].location.href;
 	}
 
 	/**
@@ -233,7 +234,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns "true" if the node has child nodes.
 	 */
 	public hasChildNodes(): boolean {
-		return this.__childNodes__.length > 0;
+		return this[PropertySymbol.childNodes].length > 0;
 	}
 
 	/**
@@ -258,8 +259,8 @@ export default class Node extends EventTarget implements INode {
 			return this;
 		}
 
-		if (this.__rootNode__ && !options?.composed) {
-			return this.__rootNode__;
+		if (this[PropertySymbol.rootNode] && !options?.composed) {
+			return this[PropertySymbol.rootNode];
 		}
 
 		return this.ownerDocument;
@@ -272,22 +273,22 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): INode {
-		(<typeof Node>this.constructor).__ownerDocument__ = this.ownerDocument;
+		(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] = this.ownerDocument;
 		const clone = new (<typeof Node>this.constructor)();
-		(<typeof Node>this.constructor).__ownerDocument__ = null;
+		(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] = null;
 
 		// Document has childNodes directly when it is created
-		if (clone.__childNodes__.length) {
-			for (const node of clone.__childNodes__.slice()) {
+		if (clone[PropertySymbol.childNodes].length) {
+			for (const node of clone[PropertySymbol.childNodes].slice()) {
 				node.parentNode.removeChild(node);
 			}
 		}
 
 		if (deep) {
-			for (const childNode of this.__childNodes__) {
+			for (const childNode of this[PropertySymbol.childNodes]) {
 				const childClone = childNode.cloneNode(true);
 				(<Node>childClone.parentNode) = clone;
-				clone.__childNodes__.push(childClone);
+				clone[PropertySymbol.childNodes].push(childClone);
 			}
 		}
 
@@ -359,11 +360,11 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param listener Listener.
 	 */
-	public __observe__(listener: MutationListener): void {
-		this.__observers__.push(listener);
+	public [PropertySymbol.observe](listener: MutationListener): void {
+		this[PropertySymbol.observers].push(listener);
 		if (listener.options.subtree) {
-			for (const node of this.__childNodes__) {
-				(<Node>node).__observe__(listener);
+			for (const node of this[PropertySymbol.childNodes]) {
+				(<Node>node)[PropertySymbol.observe](listener);
 			}
 		}
 	}
@@ -374,14 +375,14 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param listener Listener.
 	 */
-	public __unobserve__(listener: MutationListener): void {
-		const index = this.__observers__.indexOf(listener);
+	public [PropertySymbol.unobserve](listener: MutationListener): void {
+		const index = this[PropertySymbol.observers].indexOf(listener);
 		if (index !== -1) {
-			this.__observers__.splice(index, 1);
+			this[PropertySymbol.observers].splice(index, 1);
 		}
 		if (listener.options.subtree) {
-			for (const node of this.__childNodes__) {
-				(<Node>node).__unobserve__(listener);
+			for (const node of this[PropertySymbol.childNodes]) {
+				(<Node>node)[PropertySymbol.unobserve](listener);
 			}
 		}
 	}
@@ -391,27 +392,27 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param parentNode Parent node.
 	 */
-	public __connectToNode__(parentNode: INode = null): void {
+	public [PropertySymbol.connectToNode](parentNode: INode = null): void {
 		const isConnected = !!parentNode && parentNode.isConnected;
-		const formNode = (<Node>this).__formNode__;
-		const selectNode = (<Node>this).__selectNode__;
-		const textAreaNode = (<Node>this).__textAreaNode__;
+		const formNode = (<Node>this)[PropertySymbol.formNode];
+		const selectNode = (<Node>this)[PropertySymbol.selectNode];
+		const textAreaNode = (<Node>this)[PropertySymbol.textAreaNode];
 
 		if (this.nodeType !== NodeTypeEnum.documentFragmentNode) {
 			(<INode>this.parentNode) = parentNode;
-			(<Node>this).__rootNode__ =
-				isConnected && parentNode ? (<Node>parentNode).__rootNode__ : null;
+			(<Node>this)[PropertySymbol.rootNode] =
+				isConnected && parentNode ? (<Node>parentNode)[PropertySymbol.rootNode] : null;
 
 			if (this['tagName'] !== 'FORM') {
-				(<Node>this).__formNode__ = parentNode ? (<Node>parentNode).__formNode__ : null;
+				(<Node>this)[PropertySymbol.formNode] = parentNode ? (<Node>parentNode)[PropertySymbol.formNode] : null;
 			}
 
 			if (this['tagName'] !== 'SELECT') {
-				(<Node>this).__selectNode__ = parentNode ? (<Node>parentNode).__selectNode__ : null;
+				(<Node>this)[PropertySymbol.selectNode] = parentNode ? (<Node>parentNode)[PropertySymbol.selectNode] : null;
 			}
 
 			if (this['tagName'] !== 'TEXTAREA') {
-				(<Node>this).__textAreaNode__ = parentNode ? (<Node>parentNode).__textAreaNode__ : null;
+				(<Node>this)[PropertySymbol.textAreaNode] = parentNode ? (<Node>parentNode)[PropertySymbol.textAreaNode] : null;
 			}
 		}
 
@@ -422,8 +423,8 @@ export default class Node extends EventTarget implements INode {
 				if (!this.ownerDocument) {
 					debugger;
 				}
-				if (this.ownerDocument['__activeElement__'] === this) {
-					this.ownerDocument['__activeElement__'] = null;
+				if (this.ownerDocument[PropertySymbol.activeElement] === this) {
+					this.ownerDocument[PropertySymbol.activeElement] = null;
 				}
 			}
 
@@ -433,22 +434,22 @@ export default class Node extends EventTarget implements INode {
 				this.disconnectedCallback();
 			}
 
-			for (const child of this.__childNodes__) {
-				(<Node>child).__connectToNode__(this);
+			for (const child of this[PropertySymbol.childNodes]) {
+				(<Node>child)[PropertySymbol.connectToNode](this);
 			}
 
 			// eslint-disable-next-line
-			if ((<any>this).__shadowRoot__) {
+			if ((<any>this)[PropertySymbol.shadowRoot]) {
 				// eslint-disable-next-line
-				(<any>this).__shadowRoot__.__connectToNode__(this);
+				(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectToNode](this);
 			}
 		} else if (
-			formNode !== this.__formNode__ ||
-			selectNode !== this.__selectNode__ ||
-			textAreaNode !== this.__textAreaNode__
+			formNode !== this[PropertySymbol.formNode] ||
+			selectNode !== this[PropertySymbol.selectNode] ||
+			textAreaNode !== this[PropertySymbol.textAreaNode]
 		) {
-			for (const child of this.__childNodes__) {
-				(<Node>child).__connectToNode__(this);
+			for (const child of this[PropertySymbol.childNodes]) {
+				(<Node>child)[PropertySymbol.connectToNode](this);
 			}
 		}
 	}
@@ -599,7 +600,7 @@ export default class Node extends EventTarget implements INode {
 
 		const computeNodeIndexes = (nodes: INode[]): void => {
 			for (const childNode of nodes) {
-				computeNodeIndexes((<Node>childNode).__childNodes__);
+				computeNodeIndexes((<Node>childNode)[PropertySymbol.childNodes]);
 
 				if (childNode === node2Node) {
 					node2Index = indexes;
@@ -615,7 +616,7 @@ export default class Node extends EventTarget implements INode {
 			}
 		};
 
-		computeNodeIndexes((<Node>commonAncestor).__childNodes__);
+		computeNodeIndexes((<Node>commonAncestor)[PropertySymbol.childNodes]);
 
 		/**
 		 * 9. If node1 is preceding node2, then return DOCUMENT_POSITION_PRECEDING.

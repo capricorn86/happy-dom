@@ -1,4 +1,5 @@
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 import Headers from '../Headers.js';
@@ -40,13 +41,13 @@ export default class FetchRequestHeaderUtility {
 	 * @param headers Headers.
 	 */
 	public static removeForbiddenHeaders(headers: IHeaders): void {
-		for (const key of Object.keys((<Headers>headers).__entries__)) {
+		for (const key of Object.keys((<Headers>headers)[PropertySymbol.entries])) {
 			if (
 				FORBIDDEN_HEADER_NAMES.includes(key) ||
 				key.startsWith('proxy-') ||
 				key.startsWith('sec-')
 			) {
-				delete (<Headers>headers).__entries__[key];
+				delete (<Headers>headers)[PropertySymbol.entries][key];
 			}
 		}
 	}
@@ -76,7 +77,7 @@ export default class FetchRequestHeaderUtility {
 		request: Request;
 	}): { [key: string]: string } {
 		const headers = new Headers(options.request.headers);
-		const isCORS = FetchCORSUtility.isCORS(options.window.location, options.request.__url__);
+		const isCORS = FetchCORSUtility.isCORS(options.window.location, options.request[PropertySymbol.url]);
 
 		// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
 		if (
@@ -94,8 +95,8 @@ export default class FetchRequestHeaderUtility {
 			headers.set('User-Agent', options.window.navigator.userAgent);
 		}
 
-		if (options.request.__referrer__ instanceof URL) {
-			headers.set('Referer', options.request.__referrer__.href);
+		if (options.request[PropertySymbol.referrer] instanceof URL) {
+			headers.set('Referer', options.request[PropertySymbol.referrer].href);
 		}
 
 		if (
@@ -115,18 +116,18 @@ export default class FetchRequestHeaderUtility {
 			headers.set('Accept', '*/*');
 		}
 
-		if (!headers.has('Content-Length') && options.request.__contentLength__ !== null) {
-			headers.set('Content-Length', String(options.request.__contentLength__));
+		if (!headers.has('Content-Length') && options.request[PropertySymbol.contentLength] !== null) {
+			headers.set('Content-Length', String(options.request[PropertySymbol.contentLength]));
 		}
 
-		if (!headers.has('Content-Type') && options.request.__contentType__) {
-			headers.set('Content-Type', options.request.__contentType__);
+		if (!headers.has('Content-Type') && options.request[PropertySymbol.contentType]) {
+			headers.set('Content-Type', options.request[PropertySymbol.contentType]);
 		}
 
 		// We need to convert the headers to Node request headers.
 		const httpRequestHeaders = {};
 
-		for (const header of Object.values(headers.__entries__)) {
+		for (const header of Object.values(headers[PropertySymbol.entries])) {
 			httpRequestHeaders[header.name] = header.value;
 		}
 

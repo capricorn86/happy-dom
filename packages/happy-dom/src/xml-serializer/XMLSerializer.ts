@@ -1,4 +1,5 @@
 import Element from '../nodes/element/Element.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
 import VoidElements from '../config/VoidElements.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
@@ -57,8 +58,8 @@ export default class XMLSerializer {
 
 				const childNodes =
 					tagName === 'template'
-						? (<DocumentFragment>(<IHTMLTemplateElement>root).content).__childNodes__
-						: (<DocumentFragment>root).__childNodes__;
+						? (<DocumentFragment>(<IHTMLTemplateElement>root).content)[PropertySymbol.childNodes]
+						: (<DocumentFragment>root)[PropertySymbol.childNodes];
 				let innerHTML = '';
 
 				for (const node of childNodes) {
@@ -68,7 +69,7 @@ export default class XMLSerializer {
 				if (this.#options.includeShadowRoots && element.shadowRoot) {
 					innerHTML += `<template shadowrootmode="${element.shadowRoot.mode}">`;
 
-					for (const node of (<ShadowRoot>element.shadowRoot).__childNodes__) {
+					for (const node of (<ShadowRoot>element.shadowRoot)[PropertySymbol.childNodes]) {
 						innerHTML += this.serializeToString(node);
 					}
 
@@ -79,7 +80,7 @@ export default class XMLSerializer {
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
 				let html = '';
-				for (const node of (<Node>root).__childNodes__) {
+				for (const node of (<Node>root)[PropertySymbol.childNodes]) {
 					html += this.serializeToString(node);
 				}
 				return html;
@@ -112,8 +113,8 @@ export default class XMLSerializer {
 	#getAttributes(element: IElement): string {
 		let attributeString = '';
 
-		if (!(<Element>element).attributes.getNamedItem('is') && (<Element>element).__isValue__) {
-			attributeString += ' is="' + (<Element>element).__isValue__ + '"';
+		if (!(<Element>element).attributes.getNamedItem('is') && (<Element>element)[PropertySymbol.isValue]) {
+			attributeString += ' is="' + (<Element>element)[PropertySymbol.isValue] + '"';
 		}
 
 		for (let i = 0, max = (<Element>element).attributes.length; i < max; i++) {

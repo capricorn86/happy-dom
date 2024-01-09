@@ -1,4 +1,5 @@
 import MultipartFormDataParser from '../multipart/MultipartFormDataParser.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import Stream from 'stream';
 import { URLSearchParams } from 'url';
 import FormData from '../../form-data/FormData.js';
@@ -38,7 +39,7 @@ export default class FetchBodyUtility {
 				contentLength: buffer.length
 			};
 		} else if (body instanceof Blob) {
-			const buffer = (<Blob>body).__buffer__;
+			const buffer = (<Blob>body)[PropertySymbol.buffer];
 			return {
 				buffer,
 				stream: Stream.Readable.from(buffer),

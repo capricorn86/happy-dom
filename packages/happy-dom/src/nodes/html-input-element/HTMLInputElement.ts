@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
@@ -40,13 +41,13 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	public formMethod = '';
 
 	// Any type of input
-	public __value__ = null;
-	public __height__ = 0;
-	public __width__ = 0;
+	public [PropertySymbol.value] = null;
+	public [PropertySymbol.height] = 0;
+	public [PropertySymbol.width] = 0;
 
 	// Type specific: checkbox/radio
 	public defaultChecked = false;
-	public __checked__: boolean | null = null;
+	public [PropertySymbol.checked]: boolean | null = null;
 
 	// Type specific: file
 	public files: IFileList<File> = new FileList();
@@ -72,7 +73,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Height.
 	 */
 	public get height(): number {
-		return this.__height__;
+		return this[PropertySymbol.height];
 	}
 
 	/**
@@ -81,7 +82,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param height Height.
 	 */
 	public set height(height: number) {
-		this.__height__ = height;
+		this[PropertySymbol.height] = height;
 		this.setAttribute('height', String(height));
 	}
 
@@ -91,7 +92,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Width.
 	 */
 	public get width(): number {
-		return this.__width__;
+		return this[PropertySymbol.width];
 	}
 
 	/**
@@ -100,7 +101,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param width Width.
 	 */
 	public set width(width: number) {
-		this.__width__ = width;
+		this[PropertySymbol.width] = width;
 		this.setAttribute('width', String(width));
 	}
 
@@ -560,8 +561,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Checked.
 	 */
 	public get checked(): boolean {
-		if (this.__checked__ !== null) {
-			return this.__checked__;
+		if (this[PropertySymbol.checked] !== null) {
+			return this[PropertySymbol.checked];
 		}
 		return this.getAttribute('checked') !== null;
 	}
@@ -596,11 +597,11 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				return this.files.length > 0 ? '/fake/path/' + this.files[0].name : '';
 		}
 
-		if (this.__value__ === null) {
+		if (this[PropertySymbol.value] === null) {
 			return this.getAttribute('value') || '';
 		}
 
-		return this.__value__;
+		return this[PropertySymbol.value];
 	}
 
 	/**
@@ -630,12 +631,12 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				}
 				break;
 			default:
-				const oldValue = this.__value__;
-				this.__value__ = HTMLInputElementValueSanitizer.sanitize(this, value);
+				const oldValue = this[PropertySymbol.value];
+				this[PropertySymbol.value] = HTMLInputElementValueSanitizer.sanitize(this, value);
 
-				if (oldValue !== this.__value__) {
-					this.#selectionStart = this.__value__.length;
-					this.#selectionEnd = this.__value__.length;
+				if (oldValue !== this[PropertySymbol.value]) {
+					this.#selectionStart = this[PropertySymbol.value].length;
+					this.#selectionEnd = this[PropertySymbol.value].length;
 					this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 				}
 
@@ -766,7 +767,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this.__formNode__;
+		return <IHTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -1152,9 +1153,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		const clone = <HTMLInputElement>super.cloneNode(deep);
 		clone.formAction = this.formAction;
 		clone.formMethod = this.formMethod;
-		clone.__value__ = this.__value__;
-		clone.__height__ = this.__height__;
-		clone.__width__ = this.__width__;
+		clone[PropertySymbol.value] = this[PropertySymbol.value];
+		clone[PropertySymbol.height] = this[PropertySymbol.height];
+		clone[PropertySymbol.width] = this[PropertySymbol.width];
 		clone.defaultChecked = this.defaultChecked;
 		clone.files = <FileList>this.files.slice();
 		clone.#selectionStart = this.#selectionStart;
@@ -1203,12 +1204,12 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 					this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
 					this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 				} else if (inputType === 'submit') {
-					const form = <IHTMLFormElement>this.__formNode__;
+					const form = <IHTMLFormElement>this[PropertySymbol.formNode];
 					if (form) {
 						form.requestSubmit();
 					}
 				} else if (inputType === 'reset' && this.isConnected) {
-					const form = <IHTMLFormElement>this.__formNode__;
+					const form = <IHTMLFormElement>this[PropertySymbol.formNode];
 					if (form) {
 						form.reset();
 					}
@@ -1236,19 +1237,19 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * @override
 	 */
-	public override __connectToNode__(parentNode: INode = null): void {
-		const oldFormNode = <HTMLFormElement>this.__formNode__;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
-		super.__connectToNode__(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldFormNode !== this.__formNode__) {
+		if (oldFormNode !== this[PropertySymbol.formNode]) {
 			if (oldFormNode) {
-				oldFormNode.__removeFormControlItem__(this, this.name);
-				oldFormNode.__removeFormControlItem__(this, this.id);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
-			if (this.__formNode__) {
-				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.name);
-				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.id);
+			if (this[PropertySymbol.formNode]) {
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.name);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.id);
 			}
 		}
 	}
@@ -1275,15 +1276,15 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param checked Checked.
 	 */
 	#setChecked(checked: boolean): void {
-		this.__checked__ = checked;
+		this[PropertySymbol.checked] = checked;
 
 		if (checked && this.type === 'radio' && this.name) {
-			const root = <IHTMLElement>(<IHTMLFormElement>this.__formNode__ || this.getRootNode());
+			const root = <IHTMLElement>(<IHTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode());
 			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
 
 			for (const radioButton of radioButtons) {
 				if (radioButton !== this) {
-					radioButton['__checked__'] = false;
+					radioButton[PropertySymbol.checked] = false;
 				}
 			}
 		}

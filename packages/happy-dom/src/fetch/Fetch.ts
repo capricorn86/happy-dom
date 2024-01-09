@@ -1,4 +1,5 @@
 import IRequestInit from './types/IRequestInit.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IResponse from './types/IResponse.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import Headers from './Headers.js';
@@ -85,7 +86,7 @@ export default class Fetch {
 				? new options.browserFrame.window.Request(options.url, options.init)
 				: <Request>options.url;
 		if (options.contentType) {
-			(<string>this.request.__contentType__) = options.contentType;
+			(<string>this.request[PropertySymbol.contentType]) = options.contentType;
 		}
 		this.redirectCount = options.redirectCount ?? 0;
 		this.disableCache = options.disableCache ?? false;
@@ -105,7 +106,7 @@ export default class Fetch {
 			throw new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
 		}
 
-		if (this.request.__url__.protocol === 'data:') {
+		if (this.request[PropertySymbol.url].protocol === 'data:') {
 			const result = DataURIParser.parse(this.request.url);
 			this.response = new this.#window.Response(result.buffer, {
 				headers: { 'Content-Type': result.type }
@@ -114,7 +115,7 @@ export default class Fetch {
 		}
 
 		// Security check for "https" to "http" requests.
-		if (this.request.__url__.protocol === 'http:' && this.#window.location.protocol === 'https:') {
+		if (this.request[PropertySymbol.url].protocol === 'http:' && this.#window.location.protocol === 'https:') {
 			throw new DOMException(
 				`Mixed Content: The page at '${
 					this.#window.location.href
@@ -204,7 +205,7 @@ export default class Fetch {
 						headers: validateResponse.headers
 					});
 					(<string>response.url) = validateResponse.url;
-					response.__cachedResponse__ = cachedResponse;
+					response[PropertySymbol.cachedResponse] = cachedResponse;
 
 					return response;
 				}
@@ -231,7 +232,7 @@ export default class Fetch {
 			headers: cachedResponse.response.headers
 		});
 		(<string>response.url) = cachedResponse.response.url;
-		response.__cachedResponse__ = cachedResponse;
+		response[PropertySymbol.cachedResponse] = cachedResponse;
 
 		return response;
 	}
@@ -244,7 +245,7 @@ export default class Fetch {
 	private async compliesWithCrossOriginPolicy(): Promise<boolean> {
 		if (
 			this.disableCrossOriginPolicy ||
-			!FetchCORSUtility.isCORS(this.#window.location, this.request.__url__)
+			!FetchCORSUtility.isCORS(this.#window.location, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -335,7 +336,7 @@ export default class Fetch {
 	 */
 	private sendRequest(): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
-			const taskID = this.#browserFrame.__asyncTaskManager__.startTask(() =>
+			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(() =>
 				this.onAsyncTaskManagerAbort()
 			);
 
@@ -347,29 +348,29 @@ export default class Fetch {
 				// We can end up here when closing down the browser frame and there is an ongoing request.
 				// Therefore we need to check if browserFrame.page.context is still available.
 				if (!this.disableCache && response instanceof Response && this.#browserFrame.page.context) {
-					response.__cachedResponse__ = this.#browserFrame.page.context.responseCache.add(
+					response[PropertySymbol.cachedResponse] = this.#browserFrame.page.context.responseCache.add(
 						this.request,
 						{
 							...response,
 							headers: this.responseHeaders,
-							body: response.__buffer__,
-							waitingForBody: !response.__buffer__ && !!response.body
+							body: response[PropertySymbol.buffer],
+							waitingForBody: !response[PropertySymbol.buffer] && !!response.body
 						}
 					);
 				}
-				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				resolve(response);
 			};
 			this.reject = (error: Error): void => {
-				this.#browserFrame.__asyncTaskManager__.endTask(taskID);
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				reject(error);
 			};
 
 			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
 
-			const send = (this.request.__url__.protocol === 'https:' ? HTTPS : HTTP).request;
+			const send = (this.request[PropertySymbol.url].protocol === 'https:' ? HTTPS : HTTP).request;
 
-			this.nodeRequest = send(this.request.__url__.href, {
+			this.nodeRequest = send(this.request[PropertySymbol.url].href, {
 				method: this.request.method,
 				headers: FetchRequestHeaderUtility.getRequestHeaders({
 					browserFrame: this.#browserFrame,
@@ -378,8 +379,8 @@ export default class Fetch {
 				}),
 				agent: false,
 				rejectUnauthorized: true,
-				key: this.request.__url__.protocol === 'https:' ? FetchHTTPSCertificate.key : undefined,
-				cert: this.request.__url__.protocol === 'https:' ? FetchHTTPSCertificate.cert : undefined
+				key: this.request[PropertySymbol.url].protocol === 'https:' ? FetchHTTPSCertificate.key : undefined,
+				cert: this.request[PropertySymbol.url].protocol === 'https:' ? FetchHTTPSCertificate.cert : undefined
 			});
 
 			this.nodeRequest.on('error', this.onError.bind(this));
@@ -493,7 +494,7 @@ export default class Fetch {
 		this.nodeRequest.setTimeout(0);
 		this.responseHeaders = FetchResponseHeaderUtility.parseResponseHeaders({
 			browserFrame: this.#browserFrame,
-			requestURL: this.request.__url__,
+			requestURL: this.request[PropertySymbol.url],
 			rawHeaders: nodeResponse.rawHeaders
 		});
 
@@ -688,7 +689,7 @@ export default class Fetch {
 					referrerPolicy: this.request.referrerPolicy,
 					credentials: this.request.credentials,
 					headers,
-					body: this.request.__bodyBuffer__
+					body: this.request[PropertySymbol.bodyBuffer]
 				};
 
 				if (
@@ -726,7 +727,7 @@ export default class Fetch {
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
-					contentType: !shouldBecomeGetRequest ? this.request.__contentType__ : undefined
+					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : undefined
 				});
 
 				this.finalizeRequest();

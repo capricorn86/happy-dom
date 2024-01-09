@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLScriptElement from './IHTMLScriptElement.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
@@ -21,7 +22,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	public override readonly attributes: INamedNodeMap;
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
-	public __evaluateScript__ = true;
+	public [PropertySymbol.evaluateScript] = true;
 	#scriptLoader: HTMLScriptElementScriptLoader;
 
 	/**
@@ -188,16 +189,16 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	/**
 	 * @override
 	 */
-	public override __connectToNode__(parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
 		const isConnected = this.isConnected;
 		const isParentConnected = parentNode ? parentNode.isConnected : false;
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			this.ownerDocument.__defaultView__
+			this.ownerDocument[PropertySymbol.defaultView]
 		);
 
-		super.__connectToNode__(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (isParentConnected && isConnected !== isParentConnected && this.__evaluateScript__) {
+		if (isParentConnected && isConnected !== isParentConnected && this[PropertySymbol.evaluateScript]) {
 			const src = this.getAttribute('src');
 
 			if (src !== null) {
@@ -212,23 +213,23 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 						type === 'application/x-javascript' ||
 						type.startsWith('text/javascript'))
 				) {
-					this.ownerDocument['__currentScript__'] = this;
+					this.ownerDocument[PropertySymbol.currentScript] = this;
 
 					const code =
-						`//# sourceURL=${this.ownerDocument.__defaultView__.location.href}\n` + textContent;
+						`//# sourceURL=${this.ownerDocument[PropertySymbol.defaultView].location.href}\n` + textContent;
 
 					if (
 						browserSettings.disableErrorCapturing ||
 						browserSettings.errorCapturing !== BrowserErrorCapturingEnum.tryAndCatch
 					) {
-						this.ownerDocument.__defaultView__.eval(code);
+						this.ownerDocument[PropertySymbol.defaultView].eval(code);
 					} else {
-						WindowErrorUtility.captureError(this.ownerDocument.__defaultView__, () =>
-							this.ownerDocument.__defaultView__.eval(code)
+						WindowErrorUtility.captureError(this.ownerDocument[PropertySymbol.defaultView], () =>
+							this.ownerDocument[PropertySymbol.defaultView].eval(code)
 						);
 					}
 
-					this.ownerDocument['__currentScript__'] = null;
+					this.ownerDocument[PropertySymbol.currentScript] = null;
 				}
 			}
 		}

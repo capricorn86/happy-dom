@@ -1,4 +1,5 @@
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import Element from '../element/Element.js';
 import ISVGElement from './ISVGElement.js';
 import ISVGSVGElement from './ISVGSVGElement.js';
@@ -26,7 +27,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	public onunload: (event: Event) => void | null = null;
 
 	// Private properties
-	public __style__: CSSStyleDeclaration = null;
+	public [PropertySymbol.style]: CSSStyleDeclaration = null;
 	#dataset: Dataset = null;
 
 	/**
@@ -70,10 +71,10 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Style.
 	 */
 	public get style(): CSSStyleDeclaration {
-		if (!this.__style__) {
-			this.__style__ = new CSSStyleDeclaration(this);
+		if (!this[PropertySymbol.style]) {
+			this[PropertySymbol.style] = new CSSStyleDeclaration(this);
 		}
-		return this.__style__;
+		return this[PropertySymbol.style];
 	}
 
 	/**

@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import ValidityState from '../../validity-state/ValidityState.js';
@@ -34,7 +35,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	public readonly validity = new ValidityState(this);
 
 	// Private properties
-	public __selectNode__: INode = this;
+	public [PropertySymbol.selectNode]: INode = this;
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
@@ -163,7 +164,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	public get value(): string {
 		for (let i = 0, max = this.options.length; i < max; i++) {
 			const option = <HTMLOptionElement>this.options[i];
-			if (option.__selectedness__) {
+			if (option[PropertySymbol.selectedness]) {
 				return option.value;
 			}
 		}
@@ -180,10 +181,10 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 		for (let i = 0, max = this.options.length; i < max; i++) {
 			const option = <HTMLOptionElement>this.options[i];
 			if (option.value === value) {
-				option.__selectedness__ = true;
-				option.__dirtyness__ = true;
+				option[PropertySymbol.selectedness] = true;
+				option[PropertySymbol.dirtyness] = true;
 			} else {
-				option.__selectedness__ = false;
+				option[PropertySymbol.selectedness] = false;
 			}
 		}
 	}
@@ -195,7 +196,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 */
 	public get selectedIndex(): number {
 		for (let i = 0, max = this.options.length; i < max; i++) {
-			if ((<HTMLOptionElement>this.options[i]).__selectedness__) {
+			if ((<HTMLOptionElement>this.options[i])[PropertySymbol.selectedness]) {
 				return i;
 			}
 		}
@@ -210,13 +211,13 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	public set selectedIndex(selectedIndex: number) {
 		if (typeof selectedIndex === 'number' && !isNaN(selectedIndex)) {
 			for (let i = 0, max = this.options.length; i < max; i++) {
-				(<HTMLOptionElement>this.options[i]).__selectedness__ = false;
+				(<HTMLOptionElement>this.options[i])[PropertySymbol.selectedness] = false;
 			}
 
 			const selectedOption = <HTMLOptionElement>this.options[selectedIndex];
 			if (selectedOption) {
-				selectedOption.__selectedness__ = true;
-				selectedOption.__dirtyness__ = true;
+				selectedOption[PropertySymbol.selectedness] = true;
+				selectedOption[PropertySymbol.dirtyness] = true;
 			}
 		}
 	}
@@ -236,7 +237,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this.__formNode__;
+		return <IHTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -326,7 +327,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @see https://html.spec.whatwg.org/multipage/form-elements.html#selectedness-setting-algorithm
 	 * @param [selectedOption] Selected option.
 	 */
-	public __updateOptionItems__(selectedOption?: IHTMLOptionElement): void {
+	public [PropertySymbol.updateOptionItems](selectedOption?: IHTMLOptionElement): void {
 		const optionElements = <IHTMLCollection<IHTMLOptionElement>>this.getElementsByTagName('option');
 
 		if (optionElements.length < this.options.length) {
@@ -346,11 +347,11 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 
 			if (!isMultiple) {
 				if (selectedOption) {
-					(<HTMLOptionElement>optionElements[i]).__selectedness__ =
+					(<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness] =
 						optionElements[i] === selectedOption;
 				}
 
-				if ((<HTMLOptionElement>optionElements[i]).__selectedness__) {
+				if ((<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness]) {
 					selected.push(<HTMLOptionElement>optionElements[i]);
 				}
 			}
@@ -376,13 +377,13 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 				}
 
 				if (!disabled) {
-					option.__selectedness__ = true;
+					option[PropertySymbol.selectedness] = true;
 					break;
 				}
 			}
 		} else if (selected.length >= 2) {
 			for (let i = 0, max = optionElements.length; i < max; i++) {
-				(<HTMLOptionElement>optionElements[i]).__selectedness__ = i === selected.length - 1;
+				(<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness] = i === selected.length - 1;
 			}
 		}
 	}
@@ -390,19 +391,19 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	/**
 	 * @override
 	 */
-	public override __connectToNode__(parentNode: INode = null): void {
-		const oldFormNode = <HTMLFormElement>this.__formNode__;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
-		super.__connectToNode__(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldFormNode !== this.__formNode__) {
+		if (oldFormNode !== this[PropertySymbol.formNode]) {
 			if (oldFormNode) {
-				oldFormNode.__removeFormControlItem__(this, this.name);
-				oldFormNode.__removeFormControlItem__(this, this.id);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
-			if (this.__formNode__) {
-				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.name);
-				(<HTMLFormElement>this.__formNode__).__appendFormControlItem__(this, this.id);
+			if (this[PropertySymbol.formNode]) {
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.name);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.id);
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 import Element from '../element/Element.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 
 /**
@@ -47,7 +48,7 @@ export default class Dataset {
 				return true;
 			},
 			deleteProperty(dataset: DatasetRecord, key: string): boolean {
-				(<HTMLElementNamedNodeMap>element.attributes).__removeNamedItem__(
+				(<HTMLElementNamedNodeMap>element.attributes)[PropertySymbol.removeNamedItem](
 					'data-' + Dataset.camelCaseToKebab(key)
 				);
 				return delete dataset[key];

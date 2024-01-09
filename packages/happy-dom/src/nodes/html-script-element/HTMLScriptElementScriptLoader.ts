@@ -1,4 +1,5 @@
 import Event from '../../event/Event.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
@@ -44,7 +45,7 @@ export default class HTMLScriptElementScriptLoader {
 
 		let absoluteURL: string;
 		try {
-			absoluteURL = new URL(url, element.ownerDocument.__defaultView__.location).href;
+			absoluteURL = new URL(url, element.ownerDocument[PropertySymbol.defaultView].location).href;
 		} catch (error) {
 			this.#loadedScriptURL = null;
 			element.dispatchEvent(new Event('error'));
@@ -71,7 +72,7 @@ export default class HTMLScriptElementScriptLoader {
 
 		const resourceFetch = new ResourceFetch({
 			browserFrame: this.#browserFrame,
-			window: element.ownerDocument.__defaultView__
+			window: element.ownerDocument[PropertySymbol.defaultView]
 		});
 		let code: string | null = null;
 		let error: Error | null = null;
@@ -79,9 +80,9 @@ export default class HTMLScriptElementScriptLoader {
 		this.#loadedScriptURL = absoluteURL;
 
 		if (async) {
-			const readyStateManager = (<{ __readyStateManager__: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument.__defaultView__)
-			)).__readyStateManager__;
+			const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
+				(<unknown>element.ownerDocument[PropertySymbol.defaultView])
+			))[PropertySymbol.readyStateManager];
 
 			readyStateManager.startTask();
 
@@ -103,20 +104,20 @@ export default class HTMLScriptElementScriptLoader {
 		if (error) {
 			WindowErrorUtility.dispatchError(element, error);
 		} else {
-			element.ownerDocument['__currentScript__'] = element;
+			element.ownerDocument[PropertySymbol.currentScript] = element;
 			code = '//# sourceURL=' + absoluteURL + '\n' + code;
 
 			if (
 				browserSettings.disableErrorCapturing ||
 				browserSettings.errorCapturing !== BrowserErrorCapturingEnum.tryAndCatch
 			) {
-				element.ownerDocument.__defaultView__.eval(code);
+				element.ownerDocument[PropertySymbol.defaultView].eval(code);
 			} else {
-				WindowErrorUtility.captureError(element.ownerDocument.__defaultView__, () =>
-					element.ownerDocument.__defaultView__.eval(code)
+				WindowErrorUtility.captureError(element.ownerDocument[PropertySymbol.defaultView], () =>
+					element.ownerDocument[PropertySymbol.defaultView].eval(code)
 				);
 			}
-			element.ownerDocument['__currentScript__'] = null;
+			element.ownerDocument[PropertySymbol.currentScript] = null;
 			element.dispatchEvent(new Event('load'));
 		}
 	}

@@ -1,4 +1,5 @@
 import CSSRule from '../CSSRule.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 
 /**
@@ -7,7 +8,7 @@ import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 export default class CSSKeyframeRule extends CSSRule {
 	public readonly type = CSSRule.KEYFRAME_RULE;
 	public readonly keyText: string;
-	public __cssText__ = '';
+	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration = null;
 
 	/**
@@ -19,7 +20,7 @@ export default class CSSKeyframeRule extends CSSRule {
 		if (!this.#style) {
 			this.#style = new CSSStyleDeclaration();
 			(<CSSRule>this.#style.parentRule) = this;
-			this.#style.cssText = this.__cssText__;
+			this.#style.cssText = this[PropertySymbol.cssText];
 		}
 		return this.#style;
 	}

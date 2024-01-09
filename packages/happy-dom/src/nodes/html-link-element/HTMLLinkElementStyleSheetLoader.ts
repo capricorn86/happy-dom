@@ -1,4 +1,5 @@
 import Event from '../../event/Event.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import DOMException from '../../exception/DOMException.js';
@@ -44,7 +45,7 @@ export default class HTMLLinkElementStyleSheetLoader {
 
 		let absoluteURL: string;
 		try {
-			absoluteURL = new URL(url, element.ownerDocument.__defaultView__.location).href;
+			absoluteURL = new URL(url, element.ownerDocument[PropertySymbol.defaultView].location).href;
 		} catch (error) {
 			this.#loadedStyleSheetURL = null;
 			element.dispatchEvent(new Event('error'));
@@ -68,11 +69,11 @@ export default class HTMLLinkElementStyleSheetLoader {
 
 		const resourceFetch = new ResourceFetch({
 			browserFrame: this.#browserFrame,
-			window: element.ownerDocument.__defaultView__
+			window: element.ownerDocument[PropertySymbol.defaultView]
 		});
-		const readyStateManager = (<{ __readyStateManager__: DocumentReadyStateManager }>(
-			(<unknown>element.ownerDocument.__defaultView__)
-		)).__readyStateManager__;
+		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
+			(<unknown>element.ownerDocument[PropertySymbol.defaultView])
+		))[PropertySymbol.readyStateManager];
 
 		this.#loadedStyleSheetURL = absoluteURL;
 

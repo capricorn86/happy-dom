@@ -1,4 +1,5 @@
 import DOMException from '../../exception/DOMException.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy.js';
 import IRequestRedirect from '../types/IRequestRedirect.js';
@@ -114,9 +115,9 @@ export default class FetchRequestValidationUtility {
 	 * @param redirect Redirect.
 	 */
 	public static validateSchema(request: Request): void {
-		if (!SUPPORTED_SCHEMAS.includes(request.__url__.protocol)) {
+		if (!SUPPORTED_SCHEMAS.includes(request[PropertySymbol.url].protocol)) {
 			throw new DOMException(
-				`Failed to fetch from "${request.url}": URL scheme "${request.__url__.protocol.replace(
+				`Failed to fetch from "${request.url}": URL scheme "${request[PropertySymbol.url].protocol.replace(
 					/:$/,
 					''
 				)}" is not supported.`,

@@ -1,4 +1,5 @@
 import EventTarget from '../event/EventTarget.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import Event from '../event/Event.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import IEventListener from '../event/IEventListener.js';
@@ -112,7 +113,7 @@ export default class MediaQueryList extends EventTarget {
 					this.dispatchEvent(new MediaQueryListEvent('change', { matches, media: this.media }));
 				}
 			};
-			listener['__windowResizeListener__'] = resizeListener;
+			listener[PropertySymbol.windowResizeListener] = resizeListener;
 			this.#ownerWindow.addEventListener('resize', resizeListener);
 		}
 	}
@@ -125,8 +126,8 @@ export default class MediaQueryList extends EventTarget {
 		listener: IEventListener | ((event: Event) => void)
 	): void {
 		super.removeEventListener(type, listener);
-		if (type === 'change' && listener['__windowResizeListener__']) {
-			this.#ownerWindow.removeEventListener('resize', listener['__windowResizeListener__']);
+		if (type === 'change' && listener[PropertySymbol.windowResizeListener]) {
+			this.#ownerWindow.removeEventListener('resize', listener[PropertySymbol.windowResizeListener]);
 		}
 	}
 }

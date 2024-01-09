@@ -1,4 +1,5 @@
 import Element from '../element/Element.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLElement from './IHTMLElement.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
@@ -31,7 +32,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly clientLeft = 0;
 	public readonly clientTop = 0;
 
-	public __style__: CSSStyleDeclaration = null;
+	public [PropertySymbol.style]: CSSStyleDeclaration = null;
 	#dataset: Dataset = null;
 
 	// Events
@@ -97,10 +98,10 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		let result = '';
 
-		for (const childNode of this.__childNodes__) {
+		for (const childNode of this[PropertySymbol.childNodes]) {
 			if (childNode.nodeType === NodeTypeEnum.elementNode) {
 				const childElement = <IHTMLElement>childNode;
-				const computedStyle = this.ownerDocument.__defaultView__.getComputedStyle(childElement);
+				const computedStyle = this.ownerDocument[PropertySymbol.defaultView].getComputedStyle(childElement);
 
 				if (childElement.tagName !== 'SCRIPT' && childElement.tagName !== 'STYLE') {
 					const display = computedStyle.display;
@@ -143,7 +144,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param innerText Inner text.
 	 */
 	public set innerText(text: string) {
-		for (const child of this.__childNodes__.slice()) {
+		for (const child of this[PropertySymbol.childNodes].slice()) {
 			this.removeChild(child);
 		}
 
@@ -198,10 +199,10 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Style.
 	 */
 	public get style(): CSSStyleDeclaration {
-		if (!this.__style__) {
-			this.__style__ = new CSSStyleDeclaration(this);
+		if (!this[PropertySymbol.style]) {
+			this[PropertySymbol.style] = new CSSStyleDeclaration(this);
 		}
-		return this.__style__;
+		return this[PropertySymbol.style];
 	}
 
 	/**
@@ -307,8 +308,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 			bubbles: true,
 			composed: true
 		});
-		event.__target__ = this;
-		event.__currentTarget__ = this;
+		event[PropertySymbol.target] = this;
+		event[PropertySymbol.currentTarget] = this;
 		this.dispatchEvent(event);
 	}
 
@@ -337,8 +338,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		(<string>clone.contentEditable) = this.contentEditable;
 		(<boolean>clone.isContentEditable) = this.isContentEditable;
 
-		if (this.__style__) {
-			clone.style.cssText = this.__style__.cssText;
+		if (this[PropertySymbol.style]) {
+			clone.style.cssText = this[PropertySymbol.style].cssText;
 		}
 
 		return clone;

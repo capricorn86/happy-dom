@@ -1,4 +1,5 @@
 import CSSRule from './CSSRule.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import CSSStyleSheet from './CSSStyleSheet.js';
 import CSSStyleRule from './rules/CSSStyleRule.js';
 import CSSKeyframeRule from './rules/CSSKeyframeRule.js';
@@ -131,7 +132,7 @@ export default class CSSParser {
 						case CSSRule.FONT_FACE_RULE:
 						case CSSRule.KEYFRAME_RULE:
 						case CSSRule.STYLE_RULE:
-							(<CSSStyleRule>parentRule).__cssText__ = cssText;
+							(<CSSStyleRule>parentRule)[PropertySymbol.cssText] = cssText;
 							break;
 					}
 				}

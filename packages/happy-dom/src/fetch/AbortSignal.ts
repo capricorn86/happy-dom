@@ -1,4 +1,5 @@
 import EventTarget from '../event/EventTarget.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import Event from '../event/Event.js';
 
 /**
@@ -23,7 +24,7 @@ export default class AbortSignal extends EventTarget {
 	 *
 	 * @param [reason] Reason.
 	 */
-	public __abort__(reason?: string): void {
+	public [PropertySymbol.abort](reason?: string): void {
 		if (this.aborted) {
 			return;
 		}

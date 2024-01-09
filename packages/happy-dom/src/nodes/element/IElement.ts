@@ -1,4 +1,5 @@
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IAttr from '../attr/IAttr.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import DOMRect from './DOMRect.js';
@@ -182,10 +183,10 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	/**
 	 * Attaches a shadow root.
 	 *
-	 * @param __shadowRoot__Init Shadow root init.
+	 * @param [PropertySymbol.shadowRoot]Init Shadow root init.
 	 * @returns Shadow root.
 	 */
-	attachShadow(__shadowRoot__Init: { mode: string }): IShadowRoot;
+	attachShadow([PropertySymbol.shadowRoot]Init: { mode: string }): IShadowRoot;
 
 	/**
 	 * Scrolls to a particular set of coordinates.

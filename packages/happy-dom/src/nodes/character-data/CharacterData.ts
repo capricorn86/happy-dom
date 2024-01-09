@@ -1,4 +1,5 @@
 import Node from '../node/Node.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterDataUtility from './CharacterDataUtility.js';
 import ICharacterData from './ICharacterData.js';
 import IElement from '../element/IElement.js';
@@ -14,7 +15,7 @@ import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/CharacterData.
  */
 export default abstract class CharacterData extends Node implements ICharacterData {
-	public __data__ = '';
+	public [PropertySymbol.data] = '';
 
 	/**
 	 * Constructor.
@@ -25,7 +26,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 		super();
 
 		if (data) {
-			this.__data__ = data;
+			this[PropertySymbol.data] = data;
 		}
 	}
 
@@ -35,7 +36,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Text content.
 	 */
 	public get length(): number {
-		return this.__data__.length;
+		return this[PropertySymbol.data].length;
 	}
 
 	/**
@@ -44,7 +45,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Text content.
 	 */
 	public get data(): string {
-		return this.__data__;
+		return this[PropertySymbol.data];
 	}
 
 	/**
@@ -53,16 +54,16 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @param textContent Text content.
 	 */
 	public set data(data: string) {
-		const oldValue = this.__data__;
-		this.__data__ = String(data);
+		const oldValue = this[PropertySymbol.data];
+		this[PropertySymbol.data] = String(data);
 
 		if (this.isConnected) {
-			this.ownerDocument['__cacheID__']++;
+			this.ownerDocument[PropertySymbol.cacheID]++;
 		}
 
 		// MutationObserver
-		if (this.__observers__.length > 0) {
-			for (const observer of this.__observers__) {
+		if (this[PropertySymbol.observers].length > 0) {
+			for (const observer of this[PropertySymbol.observers]) {
 				if (observer.options.characterData) {
 					const record = new MutationRecord();
 					record.target = this;
@@ -80,7 +81,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Text content.
 	 */
 	public get textContent(): string {
-		return this.__data__;
+		return this[PropertySymbol.data];
 	}
 
 	/**
@@ -98,7 +99,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Node value.
 	 */
 	public get nodeValue(): string {
-		return this.__data__;
+		return this[PropertySymbol.data];
 	}
 
 	/**
@@ -221,7 +222,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 */
 	public cloneNode(deep = false): ICharacterData {
 		const clone = <CharacterData>super.cloneNode(deep);
-		clone.__data__ = this.__data__;
+		clone[PropertySymbol.data] = this[PropertySymbol.data];
 		return clone;
 	}
 }

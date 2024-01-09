@@ -1,4 +1,5 @@
 import IText from '../text/IText.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IComment from '../comment/IComment.js';
 import INode from './INode.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
@@ -47,7 +48,7 @@ export default class NodeUtility {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node.nodeType === NodeTypeEnum.documentFragmentNode) {
-			for (const child of (<Node>node).__childNodes__.slice()) {
+			for (const child of (<Node>node)[PropertySymbol.childNodes].slice()) {
 				ancestorNode.appendChild(child);
 			}
 			return node;
@@ -55,30 +56,30 @@ export default class NodeUtility {
 
 		// Remove the node from its previous parent if it has any.
 		if (node.parentNode) {
-			const index = (<Node>node.parentNode).__childNodes__.indexOf(node);
+			const index = (<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node);
 			if (index !== -1) {
-				(<Node>node.parentNode).__childNodes__.splice(index, 1);
+				(<Node>node.parentNode)[PropertySymbol.childNodes].splice(index, 1);
 			}
 		}
 
 		if (ancestorNode.isConnected) {
-			(ancestorNode.ownerDocument || this)['__cacheID__']++;
+			(ancestorNode.ownerDocument || this)[PropertySymbol.cacheID]++;
 		}
 
-		(<Node>ancestorNode).__childNodes__.push(node);
+		(<Node>ancestorNode)[PropertySymbol.childNodes].push(node);
 
-		(<Node>node).__connectToNode__(ancestorNode);
+		(<Node>node)[PropertySymbol.connectToNode](ancestorNode);
 
 		// MutationObserver
-		if ((<Node>ancestorNode).__observers__.length > 0) {
+		if ((<Node>ancestorNode)[PropertySymbol.observers].length > 0) {
 			const record = new MutationRecord();
 			record.target = ancestorNode;
 			record.type = MutationTypeEnum.childList;
 			record.addedNodes = [node];
 
-			for (const observer of (<Node>ancestorNode).__observers__) {
+			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
 				if (observer.options.subtree) {
-					(<Node>node).__observe__(observer);
+					(<Node>node)[PropertySymbol.observe](observer);
 				}
 				if (observer.options.childList) {
 					observer.callback([record], observer.observer);
@@ -97,29 +98,29 @@ export default class NodeUtility {
 	 * @returns Removed node.
 	 */
 	public static removeChild(ancestorNode: INode, node: INode): INode {
-		const index = (<Node>ancestorNode).__childNodes__.indexOf(node);
+		const index = (<Node>ancestorNode)[PropertySymbol.childNodes].indexOf(node);
 
 		if (index === -1) {
 			throw new DOMException('Failed to remove node. Node is not child of parent.');
 		}
 
 		if (ancestorNode.isConnected) {
-			(ancestorNode.ownerDocument || this)['__cacheID__']++;
+			(ancestorNode.ownerDocument || this)[PropertySymbol.cacheID]++;
 		}
 
-		(<Node>ancestorNode).__childNodes__.splice(index, 1);
+		(<Node>ancestorNode)[PropertySymbol.childNodes].splice(index, 1);
 
-		(<Node>node).__connectToNode__(null);
+		(<Node>node)[PropertySymbol.connectToNode](null);
 
 		// MutationObserver
-		if ((<Node>ancestorNode).__observers__.length > 0) {
+		if ((<Node>ancestorNode)[PropertySymbol.observers].length > 0) {
 			const record = new MutationRecord();
 			record.target = ancestorNode;
 			record.type = MutationTypeEnum.childList;
 			record.removedNodes = [node];
 
-			for (const observer of (<Node>ancestorNode).__observers__) {
-				(<Node>node).__unobserve__(observer);
+			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
+				(<Node>node)[PropertySymbol.unobserve](observer);
 				if (observer.options.childList) {
 					observer.callback([record], observer.observer);
 				}
@@ -158,7 +159,7 @@ export default class NodeUtility {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-			for (const child of (<Node>newNode).__childNodes__.slice()) {
+			for (const child of (<Node>newNode)[PropertySymbol.childNodes].slice()) {
 				ancestorNode.insertBefore(child, referenceNode);
 			}
 			return newNode;
@@ -171,41 +172,41 @@ export default class NodeUtility {
 			return newNode;
 		}
 
-		if ((<Node>ancestorNode).__childNodes__.indexOf(referenceNode) === -1) {
+		if ((<Node>ancestorNode)[PropertySymbol.childNodes].indexOf(referenceNode) === -1) {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
 		}
 
 		if (ancestorNode.isConnected) {
-			(ancestorNode.ownerDocument || this)['__cacheID__']++;
+			(ancestorNode.ownerDocument || this)[PropertySymbol.cacheID]++;
 		}
 
 		if (newNode.parentNode) {
-			const index = (<Node>newNode.parentNode).__childNodes__.indexOf(newNode);
+			const index = (<Node>newNode.parentNode)[PropertySymbol.childNodes].indexOf(newNode);
 			if (index !== -1) {
-				(<Node>newNode.parentNode).__childNodes__.splice(index, 1);
+				(<Node>newNode.parentNode)[PropertySymbol.childNodes].splice(index, 1);
 			}
 		}
 
-		(<Node>ancestorNode).__childNodes__.splice(
-			(<Node>ancestorNode).__childNodes__.indexOf(referenceNode),
+		(<Node>ancestorNode)[PropertySymbol.childNodes].splice(
+			(<Node>ancestorNode)[PropertySymbol.childNodes].indexOf(referenceNode),
 			0,
 			newNode
 		);
 
-		(<Node>newNode).__connectToNode__(ancestorNode);
+		(<Node>newNode)[PropertySymbol.connectToNode](ancestorNode);
 
 		// MutationObserver
-		if ((<Node>ancestorNode).__observers__.length > 0) {
+		if ((<Node>ancestorNode)[PropertySymbol.observers].length > 0) {
 			const record = new MutationRecord();
 			record.target = ancestorNode;
 			record.type = MutationTypeEnum.childList;
 			record.addedNodes = [newNode];
 
-			for (const observer of (<Node>ancestorNode).__observers__) {
+			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
 				if (observer.options.subtree) {
-					(<Node>newNode).__observe__(observer);
+					(<Node>newNode)[PropertySymbol.observe](observer);
 				}
 				if (observer.options.childList) {
 					observer.callback([record], observer.observer);
@@ -251,7 +252,7 @@ export default class NodeUtility {
 			return true;
 		}
 
-		if (!(<Node>ancestorNode).__childNodes__.length) {
+		if (!(<Node>ancestorNode)[PropertySymbol.childNodes].length) {
 			return false;
 		}
 
@@ -334,7 +335,7 @@ export default class NodeUtility {
 				return (<IText | IComment>node).data.length;
 
 			default:
-				return (<Node>node).__childNodes__.length;
+				return (<Node>node)[PropertySymbol.childNodes].length;
 		}
 	}
 
@@ -492,13 +493,13 @@ export default class NodeUtility {
 			return false;
 		}
 
-		if ((<Node>nodeA).__childNodes__.length !== (<Node>nodeB).__childNodes__.length) {
+		if ((<Node>nodeA)[PropertySymbol.childNodes].length !== (<Node>nodeB)[PropertySymbol.childNodes].length) {
 			return false;
 		}
 
-		for (let i = 0; i < (<Node>nodeA).__childNodes__.length; i++) {
-			const childNodeA = (<Node>nodeA).__childNodes__[i];
-			const childNodeB = (<Node>nodeB).__childNodes__[i];
+		for (let i = 0; i < (<Node>nodeA)[PropertySymbol.childNodes].length; i++) {
+			const childNodeA = (<Node>nodeA)[PropertySymbol.childNodes][i];
+			const childNodeB = (<Node>nodeB)[PropertySymbol.childNodes][i];
 
 			if (!NodeUtility.isEqualNode(childNodeA, childNodeB)) {
 				return false;
