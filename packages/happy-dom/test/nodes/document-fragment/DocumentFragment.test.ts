@@ -10,6 +10,7 @@ import Text from '../../../src/nodes/text/Text.js';
 import INodeList from '../../../src/nodes/node/INodeList.js';
 import IElement from '../../../src/nodes/element/IElement.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 describe('DocumentFragment', () => {
 	let window: Window;
@@ -302,7 +303,7 @@ describe('DocumentFragment', () => {
 			const clone = documentFragment.cloneNode(false);
 
 			expect(clone.nodeType).toBe(Node.DOCUMENT_FRAGMENT_NODE);
-			expect((<DocumentFragment>clone).__rootNode__).toBe(clone);
+			expect((<DocumentFragment>clone)[PropertySymbol.rootNode]).toBe(clone);
 			expect(clone.childNodes.length).toBe(0);
 			expect(clone.children.length).toBe(0);
 		});
@@ -319,7 +320,7 @@ describe('DocumentFragment', () => {
 			const clone = documentFragment.cloneNode(true);
 
 			expect(clone.nodeType).toBe(Node.DOCUMENT_FRAGMENT_NODE);
-			expect((<DocumentFragment>clone).__rootNode__).toBe(clone);
+			expect((<DocumentFragment>clone)[PropertySymbol.rootNode]).toBe(clone);
 			expect(clone.childNodes.length).toBe(3);
 			expect(Array.from(clone.children)).toEqual(
 				Array.from(clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE))

@@ -47,33 +47,14 @@ async function readDirectory(directory) {
 	return allFiles;
 }
 
-async function renameFiles(directory, files) {
+async function renameFiles(files) {
 	const writePromises = [];
-
-	const symbols = {};
 
 	for (const file of files) {
 		writePromises.push(
 			FS.promises.readFile(file).then((content) => {
 				const oldContent = content.toString();
-				const regexp = /\__([a-zA-Z]+)__/gm;
-				let match;
-				let hasSymbols = false;
-				while ((match = regexp.exec(oldContent)) !== null) {
-					symbols[match[1]] = true;
-					hasSymbols = true;
-				}
-				if (!hasSymbols) {
-					return;
-				}
 				const newContent = oldContent
-					.replace(
-						/(import.+;)/,
-						`$1\nimport * as PropertySymbol from '${Path.join(
-							Path.relative(Path.dirname(file), directory),
-							'PropertySymbol.js'
-						)}';`
-					)
 					.replace(/\.__([a-zA-Z]+)__/gm, `[PropertySymbol.$1]`)
 					.replace(/\['__([a-zA-Z]+)__'\]/gm, `[PropertySymbol.$1]`)
 					.replace(/\__([a-zA-Z]+)__/gm, `[PropertySymbol.$1]`);
@@ -83,15 +64,6 @@ async function renameFiles(directory, files) {
 	}
 
 	await Promise.all(writePromises);
-
-	const keys = Object.keys(symbols);
-
-	keys.sort();
-
-	const content = keys.map((key) => `export const ${key} = Symbol('${key}');`).join('\n');
-	const path = Path.join(directory, 'PropertySymbol.ts');
-
-	await FS.promises.writeFile(path, content);
 }
 
 async function main() {
@@ -101,5 +73,5 @@ async function main() {
 	}
 	const directory = Path.resolve(args.dir);
 	const files = await readDirectory(directory);
-	await renameFiles(directory, files);
+	await renameFiles(files);
 }

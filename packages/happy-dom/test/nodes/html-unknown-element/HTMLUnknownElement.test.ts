@@ -5,6 +5,7 @@ import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnkn
 import CustomElement from '../../CustomElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 describe('HTMLUnknownElement', () => {
 	let window: IWindow;
@@ -22,11 +23,11 @@ describe('HTMLUnknownElement', () => {
 
 			parent.appendChild(element);
 
-			expect(window.customElements.__callbacks__['CUSTOM-ELEMENT'].length).toBe(1);
+			expect(window.customElements[PropertySymbol.callbacks]['CUSTOM-ELEMENT'].length).toBe(1);
 
 			parent.removeChild(element);
 
-			expect(Object.keys(window.customElements.__callbacks__).length).toBe(0);
+			expect(Object.keys(window.customElements[PropertySymbol.callbacks]).length).toBe(0);
 
 			parent.appendChild(element);
 
@@ -58,12 +59,12 @@ describe('HTMLUnknownElement', () => {
 
 			const childNodes = element.childNodes;
 			const children = element.children;
-			const rootNode = (element.__rootNode__ = document.createElement('div'));
-			const formNode = (element.__formNode__ = document.createElement('div'));
-			const selectNode = (element.__selectNode__ = document.createElement('div'));
-			const textAreaNode = (element.__textAreaNode__ = document.createElement('div'));
-			const observers = element.__observers__;
-			const isValue = (element.__isValue__ = 'test');
+			const rootNode = (element[PropertySymbol.rootNode] = document.createElement('div'));
+			const formNode = (element[PropertySymbol.formNode] = document.createElement('div'));
+			const selectNode = (element[PropertySymbol.selectNode] = document.createElement('div'));
+			const textAreaNode = (element[PropertySymbol.textAreaNode] = document.createElement('div'));
+			const observers = element[PropertySymbol.observers];
+			const isValue = (element[PropertySymbol.isValue] = 'test');
 
 			window.customElements.define('custom-element', CustomElement);
 
@@ -77,12 +78,12 @@ describe('HTMLUnknownElement', () => {
 
 			expect(customElement.childNodes === childNodes).toBe(true);
 			expect(customElement.children === children).toBe(true);
-			expect(customElement.__rootNode__ === rootNode).toBe(true);
-			expect(customElement.__formNode__ === formNode).toBe(true);
-			expect(customElement.__selectNode__ === selectNode).toBe(true);
-			expect(customElement.__textAreaNode__ === textAreaNode).toBe(true);
-			expect(customElement.__observers__ === observers).toBe(true);
-			expect(customElement.__isValue__ === isValue).toBe(true);
+			expect(customElement[PropertySymbol.rootNode] === rootNode).toBe(true);
+			expect(customElement[PropertySymbol.formNode] === formNode).toBe(true);
+			expect(customElement[PropertySymbol.selectNode] === selectNode).toBe(true);
+			expect(customElement[PropertySymbol.textAreaNode] === textAreaNode).toBe(true);
+			expect(customElement[PropertySymbol.observers] === observers).toBe(true);
+			expect(customElement[PropertySymbol.isValue] === isValue).toBe(true);
 			expect(customElement.attributes.length).toBe(1);
 			expect(customElement.attributes[0] === attribute1).toBe(true);
 		});

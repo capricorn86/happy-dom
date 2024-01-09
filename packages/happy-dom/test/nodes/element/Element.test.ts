@@ -22,6 +22,7 @@ import IAttr from '../../../src/nodes/attr/IAttr.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import INode from '../../../src/nodes/node/INode.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -1452,7 +1453,7 @@ describe('Element', () => {
 	describe('attachShadow()', () => {
 		it('Creates a new open ShadowRoot node and sets it to the "shadowRoot" property.', () => {
 			element.attachShadow({ mode: 'open' });
-			expect(element['__shadowRoot__'] instanceof ShadowRoot).toBe(true);
+			expect(element[PropertySymbol.shadowRoot] instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot.ownerDocument === document).toBe(true);
 			expect(element.shadowRoot.isConnected).toBe(false);
@@ -1460,14 +1461,14 @@ describe('Element', () => {
 			expect(element.shadowRoot.isConnected).toBe(true);
 		});
 
-		it('Creates a new closed ShadowRoot node and sets it to the internal "__shadowRoot__" property.', () => {
+		it('Creates a new closed ShadowRoot node and sets it to the internal "[PropertySymbol.shadowRoot]" property.', () => {
 			element.attachShadow({ mode: 'closed' });
 			expect(element.shadowRoot).toBe(null);
-			expect(element['__shadowRoot__'] instanceof ShadowRoot).toBe(true);
-			expect(element['__shadowRoot__'].ownerDocument === document).toBe(true);
-			expect(element['__shadowRoot__'].isConnected).toBe(false);
+			expect(element[PropertySymbol.shadowRoot] instanceof ShadowRoot).toBe(true);
+			expect(element[PropertySymbol.shadowRoot].ownerDocument === document).toBe(true);
+			expect(element[PropertySymbol.shadowRoot].isConnected).toBe(false);
 			document.appendChild(element);
-			expect(element['__shadowRoot__'].isConnected).toBe(true);
+			expect(element[PropertySymbol.shadowRoot].isConnected).toBe(true);
 		});
 	});
 

@@ -38,6 +38,7 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
 import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -1108,7 +1109,7 @@ describe('Document', () => {
 
 			const clone = document.cloneNode(false);
 			const clone2 = document.cloneNode(true);
-			expect(clone.__defaultView__ === window).toBe(true);
+			expect(clone[PropertySymbol.defaultView] === window).toBe(true);
 			expect(clone.defaultView === null).toBe(true);
 			expect(clone.children.length).toBe(0);
 			expect(clone2.children.length).toBe(1);

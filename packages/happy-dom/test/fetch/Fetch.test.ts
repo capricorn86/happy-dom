@@ -16,6 +16,7 @@ import { URLSearchParams } from 'url';
 import '../types.d.js';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -2505,7 +2506,7 @@ describe('Fetch', () => {
 
 			await response.text();
 
-			expect(abortSignal.__listeners__['abort']).toEqual([]);
+			expect(abortSignal[PropertySymbol.listeners]['abort']).toEqual([]);
 			expect(() => abortController.abort()).not.toThrow();
 		});
 

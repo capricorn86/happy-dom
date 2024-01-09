@@ -13,6 +13,7 @@ import IHTMLIFrameElement from '../../src/nodes/html-iframe-element/IHTMLIFrameE
 import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
 import '../types.d.js';
 import BrowserErrorCapturingEnum from '../../src/browser/enums/BrowserErrorCapturingEnum.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
 	return (
@@ -88,9 +89,9 @@ describe('Window', () => {
 			const range2 = window2.document.createRange();
 			const range3 = window3.document.createRange();
 
-			expect(range1.__ownerDocument__ === window1.document).toBe(true);
-			expect(range2.__ownerDocument__ === window2.document).toBe(true);
-			expect(range3.__ownerDocument__ === window3.document).toBe(true);
+			expect(range1[PropertySymbol.ownerDocument] === window1.document).toBe(true);
+			expect(range2[PropertySymbol.ownerDocument] === window2.document).toBe(true);
+			expect(range3[PropertySymbol.ownerDocument] === window3.document).toBe(true);
 
 			// Image
 			const image1 = new window1.Image();

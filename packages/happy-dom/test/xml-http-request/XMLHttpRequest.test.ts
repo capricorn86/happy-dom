@@ -17,6 +17,7 @@ import Headers from '../../src/fetch/Headers.js';
 import IHeaders from '../../src/fetch/types/IHeaders.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const WINDOW_URL = 'https://localhost:8080';
 const REQUEST_URL = '/path/to/resource/';
@@ -179,7 +180,7 @@ describe('XMLHttpRequest', () => {
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
-					expect(responseText).toBe((<Blob>request.response).__buffer__.toString());
+					expect(responseText).toBe((<Blob>request.response)[PropertySymbol.buffer].toString());
 					resolve(null);
 				});
 
