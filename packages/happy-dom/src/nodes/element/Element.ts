@@ -89,7 +89,8 @@ export default class Element extends Node implements IElement {
 	public ontouchmove: (event: Event) => void | null = null;
 	public ontouchstart: (event: Event) => void | null = null;
 
-	public readonly [PropertySymbol.children]: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
+	public readonly [PropertySymbol.children]: IHTMLCollection<IElement> =
+		new HTMLCollection<IElement>();
 
 	// Used for being able to access closed shadow roots
 	public readonly attributes: INamedNodeMap = new ElementNamedNodeMap(this);
@@ -519,9 +520,9 @@ export default class Element extends Node implements IElement {
 	 * @param text HTML string to insert.
 	 */
 	public insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void {
-		for (const node of (<DocumentFragment>(
-			XMLParser.parse(this.ownerDocument, text)
-		))[PropertySymbol.childNodes].slice()) {
+		for (const node of (<DocumentFragment>XMLParser.parse(this.ownerDocument, text))[
+			PropertySymbol.childNodes
+		].slice()) {
 			this.insertAdjacentElement(position, node);
 		}
 	}
@@ -685,20 +686,23 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Attaches a shadow root.
 	 *
-	 * @param shadowRootInit Shadow root init.
-	 * @param shadowRootInit.mode Shadow root mode.
+	 * @param init Shadow root init.
+	 * @param init.mode Shadow root mode.
 	 * @returns Shadow root.
 	 */
-	public attachShadow(shadowRootInit: { mode: string }): IShadowRoot {
+	public attachShadow(init: { mode: string }): IShadowRoot {
 		if (this[PropertySymbol.shadowRoot]) {
 			throw new DOMException('Shadow root has already been attached.');
 		}
 
-		this.ownerDocument[PropertySymbol.defaultView].ShadowRoot[PropertySymbol.ownerDocument] = this.ownerDocument;
-		(<IShadowRoot>this[PropertySymbol.shadowRoot]) = new this.ownerDocument[PropertySymbol.defaultView].ShadowRoot();
+		this.ownerDocument[PropertySymbol.defaultView].ShadowRoot[PropertySymbol.ownerDocument] =
+			this.ownerDocument;
+		(<IShadowRoot>this[PropertySymbol.shadowRoot]) = new this.ownerDocument[
+			PropertySymbol.defaultView
+		].ShadowRoot();
 		this.ownerDocument[PropertySymbol.defaultView].ShadowRoot[PropertySymbol.ownerDocument] = null;
 		(<Element>this[PropertySymbol.shadowRoot].host) = this;
-		(<string>this[PropertySymbol.shadowRoot].mode) = shadowRootInit.mode;
+		(<string>this[PropertySymbol.shadowRoot].mode) = init.mode;
 		(<ShadowRoot>this[PropertySymbol.shadowRoot])[PropertySymbol.connectToNode](this);
 
 		if (this[PropertySymbol.shadowRoot].mode === 'open') {
@@ -943,7 +947,9 @@ export default class Element extends Node implements IElement {
 			const attribute = this.getAttribute('on' + event.type);
 
 			if (attribute && !event[PropertySymbol.immediatePropagationStopped]) {
-				const code = `//# sourceURL=${this.ownerDocument[PropertySymbol.defaultView].location.href}\n${attribute}`;
+				const code = `//# sourceURL=${
+					this.ownerDocument[PropertySymbol.defaultView].location.href
+				}\n${attribute}`;
 
 				if (
 					browserSettings.disableErrorCapturing ||
