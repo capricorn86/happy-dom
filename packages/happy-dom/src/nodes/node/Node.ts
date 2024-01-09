@@ -55,15 +55,15 @@ export default class Node extends EventTarget implements INode {
 	public readonly parentNode: INode = null;
 	public readonly nodeType: number;
 	public readonly isConnected: boolean = false;
+	public readonly ownerDocument: IDocument = null;
 
-	// Custom Properties (not part of HTML standard)
+	// Internal properties
 	public [PropertySymbol.rootNode]: INode = null;
 	public [PropertySymbol.formNode]: INode = null;
 	public [PropertySymbol.selectNode]: INode = null;
 	public [PropertySymbol.textAreaNode]: INode = null;
 	public [PropertySymbol.observers]: MutationListener[] = [];
-	public readonly [PropertySymbol.childNodes]: INodeList<INode> = new NodeList<INode>();
-	public readonly ownerDocument: IDocument = null;
+	public [PropertySymbol.childNodes]: INodeList<INode> = new NodeList<INode>();
 
 	/**
 	 * Constructor.
@@ -404,15 +404,21 @@ export default class Node extends EventTarget implements INode {
 				isConnected && parentNode ? (<Node>parentNode)[PropertySymbol.rootNode] : null;
 
 			if (this['tagName'] !== 'FORM') {
-				(<Node>this)[PropertySymbol.formNode] = parentNode ? (<Node>parentNode)[PropertySymbol.formNode] : null;
+				(<Node>this)[PropertySymbol.formNode] = parentNode
+					? (<Node>parentNode)[PropertySymbol.formNode]
+					: null;
 			}
 
 			if (this['tagName'] !== 'SELECT') {
-				(<Node>this)[PropertySymbol.selectNode] = parentNode ? (<Node>parentNode)[PropertySymbol.selectNode] : null;
+				(<Node>this)[PropertySymbol.selectNode] = parentNode
+					? (<Node>parentNode)[PropertySymbol.selectNode]
+					: null;
 			}
 
 			if (this['tagName'] !== 'TEXTAREA') {
-				(<Node>this)[PropertySymbol.textAreaNode] = parentNode ? (<Node>parentNode)[PropertySymbol.textAreaNode] : null;
+				(<Node>this)[PropertySymbol.textAreaNode] = parentNode
+					? (<Node>parentNode)[PropertySymbol.textAreaNode]
+					: null;
 			}
 		}
 

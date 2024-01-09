@@ -5,7 +5,6 @@ import DOMRect from './DOMRect.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import NamespaceURI from '../../config/NamespaceURI.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
@@ -52,6 +51,7 @@ export default class Element extends Node implements IElement {
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public readonly namespaceURI: string = null;
+	public readonly attributes: INamedNodeMap = new ElementNamedNodeMap(this);
 
 	// Events
 	public oncancel: (event: Event) => void | null = null;
@@ -89,12 +89,8 @@ export default class Element extends Node implements IElement {
 	public ontouchmove: (event: Event) => void | null = null;
 	public ontouchstart: (event: Event) => void | null = null;
 
-	public readonly [PropertySymbol.children]: IHTMLCollection<IElement> =
-		new HTMLCollection<IElement>();
-
-	// Used for being able to access closed shadow roots
-	public readonly attributes: INamedNodeMap = new ElementNamedNodeMap(this);
-
+	// Internal properties
+	public [PropertySymbol.children]: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
 	public [PropertySymbol.shadowRoot]: IShadowRoot = null;
 	public [PropertySymbol.classList]: DOMTokenList = null;
 	public [PropertySymbol.isValue]: string | null = null;
@@ -965,18 +961,5 @@ export default class Element extends Node implements IElement {
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * Returns attribute name.
-	 *
-	 * @param name Name.
-	 * @returns Attribute name based on namespace.
-	 */
-	protected [PropertySymbol.getAttributeName](name): string {
-		if (this.namespaceURI === NamespaceURI.svg) {
-			return name;
-		}
-		return name.toLowerCase();
 	}
 }
