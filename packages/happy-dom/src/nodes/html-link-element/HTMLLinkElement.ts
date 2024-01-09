@@ -208,7 +208,11 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 
 		super[PropertySymbol.connectToNode](parentNode);
 
-		if (isParentConnected && isConnected !== isParentConnected && this[PropertySymbol.evaluateCSS]) {
+		if (
+			isParentConnected &&
+			isConnected !== isParentConnected &&
+			this[PropertySymbol.evaluateCSS]
+		) {
 			this.#styleSheetLoader.loadStyleSheet(this.getAttribute('href'), this.getAttribute('rel'));
 		}
 	}

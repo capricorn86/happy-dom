@@ -77,7 +77,10 @@ export default class FetchRequestHeaderUtility {
 		request: Request;
 	}): { [key: string]: string } {
 		const headers = new Headers(options.request.headers);
-		const isCORS = FetchCORSUtility.isCORS(options.window.location, options.request[PropertySymbol.url]);
+		const isCORS = FetchCORSUtility.isCORS(
+			options.window.location,
+			options.request[PropertySymbol.url]
+		);
 
 		// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
 		if (

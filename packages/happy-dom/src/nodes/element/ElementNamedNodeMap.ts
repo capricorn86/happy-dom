@@ -83,8 +83,12 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 
 		if (
 			this[PropertySymbol.ownerElement].attributeChangedCallback &&
-			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[PropertySymbol.observedAttributes] &&
-			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[PropertySymbol.observedAttributes].includes(item.name)
+			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[
+				PropertySymbol.observedAttributes
+			] &&
+			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[
+				PropertySymbol.observedAttributes
+			].includes(item.name)
 		) {
 			this[PropertySymbol.ownerElement].attributeChangedCallback(item.name, oldValue, item.value);
 		}
@@ -114,7 +118,9 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	 * @override
 	 */
 	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
-		const removedItem = super[PropertySymbol.removeNamedItem](this[PropertySymbol.getAttributeName](name));
+		const removedItem = super[PropertySymbol.removeNamedItem](
+			this[PropertySymbol.getAttributeName](name)
+		);
 
 		if (!removedItem) {
 			return null;
@@ -124,7 +130,10 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 			this[PropertySymbol.ownerElement].ownerDocument[PropertySymbol.cacheID]++;
 		}
 
-		if (removedItem.name === 'class' && this[PropertySymbol.ownerElement][PropertySymbol.classList]) {
+		if (
+			removedItem.name === 'class' &&
+			this[PropertySymbol.ownerElement][PropertySymbol.classList]
+		) {
 			this[PropertySymbol.ownerElement][PropertySymbol.classList][PropertySymbol.updateIndices]();
 		}
 
@@ -142,12 +151,18 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 
 		if (
 			this[PropertySymbol.ownerElement].attributeChangedCallback &&
-			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[PropertySymbol.observedAttributes] &&
-			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[PropertySymbol.observedAttributes].includes(
-				removedItem.name
-			)
+			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[
+				PropertySymbol.observedAttributes
+			] &&
+			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[
+				PropertySymbol.observedAttributes
+			].includes(removedItem.name)
 		) {
-			this[PropertySymbol.ownerElement].attributeChangedCallback(removedItem.name, removedItem.value, null);
+			this[PropertySymbol.ownerElement].attributeChangedCallback(
+				removedItem.name,
+				removedItem.value,
+				null
+			);
 		}
 
 		// MutationObserver

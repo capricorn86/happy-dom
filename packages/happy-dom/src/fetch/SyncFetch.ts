@@ -37,7 +37,7 @@ interface ISyncHTTPResponse {
  */
 export default class SyncFetch {
 	private request: Request;
-	private redirectCount: number = 0;
+	private redirectCount = 0;
 	private disableCache: boolean;
 	private disableCrossOriginPolicy: boolean;
 	#browserFrame: IBrowserFrame;
@@ -107,7 +107,10 @@ export default class SyncFetch {
 		}
 
 		// Security check for "https" to "http" requests.
-		if (this.request[PropertySymbol.url].protocol === 'http:' && this.#window.location.protocol === 'https:') {
+		if (
+			this.request[PropertySymbol.url].protocol === 'http:' &&
+			this.#window.location.protocol === 'https:'
+		) {
 			throw new DOMException(
 				`Mixed Content: The page at '${
 					this.#window.location.href
@@ -540,7 +543,9 @@ export default class SyncFetch {
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
-					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : undefined
+					contentType: !shouldBecomeGetRequest
+						? this.request[PropertySymbol.contentType]
+						: undefined
 				});
 
 				return fetch.send();

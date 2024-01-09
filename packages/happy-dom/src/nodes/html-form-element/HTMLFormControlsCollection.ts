@@ -63,7 +63,8 @@ export default class HTMLFormControlsCollection
 		name: string
 	): void {
 		if (name) {
-			this[PropertySymbol.namedItems][name] = this[PropertySymbol.namedItems][name] || new RadioNodeList();
+			this[PropertySymbol.namedItems][name] =
+				this[PropertySymbol.namedItems][name] || new RadioNodeList();
 
 			if (!this[PropertySymbol.namedItems][name].includes(node)) {
 				this[PropertySymbol.namedItems][name].push(node);

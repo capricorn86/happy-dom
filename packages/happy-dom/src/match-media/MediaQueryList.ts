@@ -127,7 +127,10 @@ export default class MediaQueryList extends EventTarget {
 	): void {
 		super.removeEventListener(type, listener);
 		if (type === 'change' && listener[PropertySymbol.windowResizeListener]) {
-			this.#ownerWindow.removeEventListener('resize', listener[PropertySymbol.windowResizeListener]);
+			this.#ownerWindow.removeEventListener(
+				'resize',
+				listener[PropertySymbol.windowResizeListener]
+			);
 		}
 	}
 }

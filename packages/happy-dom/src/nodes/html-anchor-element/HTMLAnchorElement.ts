@@ -432,7 +432,10 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 			!event.defaultPrevented &&
 			this[PropertySymbol.url]
 		) {
-			this.ownerDocument[PropertySymbol.defaultView].open(this[PropertySymbol.url].toString(), this.target || '_self');
+			this.ownerDocument[PropertySymbol.defaultView].open(
+				this[PropertySymbol.url].toString(),
+				this.target || '_self'
+			);
 			if (this.ownerDocument[PropertySymbol.defaultView].closed) {
 				event.stopImmediatePropagation();
 			}

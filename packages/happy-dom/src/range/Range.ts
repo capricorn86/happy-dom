@@ -114,7 +114,10 @@ export default class Range {
 	 * @returns Collapsed.
 	 */
 	public get collapsed(): boolean {
-		return this[PropertySymbol.start].node === this[PropertySymbol.end].node && this.startOffset === this.endOffset;
+		return (
+			this[PropertySymbol.start].node === this[PropertySymbol.end].node &&
+			this.startOffset === this.endOffset
+		);
 	}
 
 	/**
@@ -289,7 +292,12 @@ export default class Range {
 		}
 
 		let firstPartialContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this[PropertySymbol.start].node, this[PropertySymbol.end].node)) {
+		if (
+			!NodeUtility.isInclusiveAncestor(
+				this[PropertySymbol.start].node,
+				this[PropertySymbol.end].node
+			)
+		) {
 			let candidate = commonAncestor.firstChild;
 			while (!firstPartialContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -301,7 +309,12 @@ export default class Range {
 		}
 
 		let lastPartiallyContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this[PropertySymbol.end].node, this[PropertySymbol.start].node)) {
+		if (
+			!NodeUtility.isInclusiveAncestor(
+				this[PropertySymbol.end].node,
+				this[PropertySymbol.start].node
+			)
+		) {
 			let candidate = commonAncestor.lastChild;
 			while (!lastPartiallyContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -433,7 +446,11 @@ export default class Range {
 				this[PropertySymbol.start].node.nodeType === NodeTypeEnum.processingInstructionNode ||
 				this[PropertySymbol.start].node.nodeType === NodeTypeEnum.commentNode)
 		) {
-			(<IText | IComment>this[PropertySymbol.start].node).replaceData(startOffset, endOffset - startOffset, '');
+			(<IText | IComment>this[PropertySymbol.start].node).replaceData(
+				startOffset,
+				endOffset - startOffset,
+				''
+			);
 			return;
 		}
 
@@ -453,7 +470,12 @@ export default class Range {
 
 		let newNode;
 		let newOffset;
-		if (NodeUtility.isInclusiveAncestor(this[PropertySymbol.start].node, this[PropertySymbol.end].node)) {
+		if (
+			NodeUtility.isInclusiveAncestor(
+				this[PropertySymbol.start].node,
+				this[PropertySymbol.end].node
+			)
+		) {
 			newNode = this[PropertySymbol.start].node;
 			newOffset = startOffset;
 		} else {
@@ -467,7 +489,8 @@ export default class Range {
 			}
 
 			newNode = referenceNode.parentNode;
-			newOffset = (<Node>referenceNode.parentNode)[PropertySymbol.childNodes].indexOf(referenceNode) + 1;
+			newOffset =
+				(<Node>referenceNode.parentNode)[PropertySymbol.childNodes].indexOf(referenceNode) + 1;
 		}
 
 		if (
@@ -536,7 +559,11 @@ export default class Range {
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this[PropertySymbol.start].node).replaceData(startOffset, endOffset - startOffset, '');
+			(<IText | IComment>this[PropertySymbol.start].node).replaceData(
+				startOffset,
+				endOffset - startOffset,
+				''
+			);
 
 			return fragment;
 		}
@@ -547,7 +574,12 @@ export default class Range {
 		}
 
 		let firstPartialContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this[PropertySymbol.start].node, this[PropertySymbol.end].node)) {
+		if (
+			!NodeUtility.isInclusiveAncestor(
+				this[PropertySymbol.start].node,
+				this[PropertySymbol.end].node
+			)
+		) {
 			let candidate = commonAncestor.firstChild;
 			while (!firstPartialContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -559,7 +591,12 @@ export default class Range {
 		}
 
 		let lastPartiallyContainedChild = null;
-		if (!NodeUtility.isInclusiveAncestor(this[PropertySymbol.end].node, this[PropertySymbol.start].node)) {
+		if (
+			!NodeUtility.isInclusiveAncestor(
+				this[PropertySymbol.end].node,
+				this[PropertySymbol.start].node
+			)
+		) {
 			let candidate = commonAncestor.lastChild;
 			while (!lastPartiallyContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
@@ -586,7 +623,12 @@ export default class Range {
 
 		let newNode;
 		let newOffset;
-		if (NodeUtility.isInclusiveAncestor(this[PropertySymbol.start].node, this[PropertySymbol.end].node)) {
+		if (
+			NodeUtility.isInclusiveAncestor(
+				this[PropertySymbol.start].node,
+				this[PropertySymbol.end].node
+			)
+		) {
 			newNode = this[PropertySymbol.start].node;
 			newOffset = startOffset;
 		} else {
@@ -600,7 +642,8 @@ export default class Range {
 			}
 
 			newNode = referenceNode.parentNode;
-			newOffset = (<Node>referenceNode.parentNode)[PropertySymbol.childNodes].indexOf(referenceNode) + 1;
+			newOffset =
+				(<Node>referenceNode.parentNode)[PropertySymbol.childNodes].indexOf(referenceNode) + 1;
 		}
 
 		if (
@@ -737,7 +780,8 @@ export default class Range {
 		if (
 			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.processingInstructionNode ||
 			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.commentNode ||
-			(this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode && !this[PropertySymbol.start].node.parentNode) ||
+			(this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode &&
+				!this[PropertySymbol.start].node.parentNode) ||
 			newNode === this[PropertySymbol.start].node
 		) {
 			throw new DOMException('Invalid start node.', DOMExceptionNameEnum.hierarchyRequestError);
@@ -746,7 +790,8 @@ export default class Range {
 		let referenceNode =
 			this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode
 				? this[PropertySymbol.start].node
-				: (<Node>this[PropertySymbol.start].node)[PropertySymbol.childNodes][this.startOffset] || null;
+				: (<Node>this[PropertySymbol.start].node)[PropertySymbol.childNodes][this.startOffset] ||
+				  null;
 		const parent = !referenceNode ? this[PropertySymbol.start].node : referenceNode.parentNode;
 
 		if (this[PropertySymbol.start].node.nodeType === NodeTypeEnum.textNode) {
@@ -919,7 +964,10 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setEnd(node.parentNode, (<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node) + 1);
+		this.setEnd(
+			node.parentNode,
+			(<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node) + 1
+		);
 	}
 
 	/**
@@ -951,7 +999,10 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(node.parentNode, (<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node) + 1);
+		this.setStart(
+			node.parentNode,
+			(<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node) + 1
+		);
 	}
 
 	/**
@@ -967,7 +1018,10 @@ export default class Range {
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
-		this.setStart(node.parentNode, (<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node));
+		this.setStart(
+			node.parentNode,
+			(<Node>node.parentNode)[PropertySymbol.childNodes].indexOf(node)
+		);
 	}
 
 	/**

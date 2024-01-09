@@ -117,7 +117,10 @@ export default abstract class EventTarget implements IEventTarget {
 
 				for (let i = composedPath.length - 1; i >= 0; i--) {
 					composedPath[i].dispatchEvent(event);
-					if (event[PropertySymbol.propagationStopped] || event[PropertySymbol.immediatePropagationStopped]) {
+					if (
+						event[PropertySymbol.propagationStopped] ||
+						event[PropertySymbol.immediatePropagationStopped]
+					) {
 						break;
 					}
 				}
@@ -138,7 +141,10 @@ export default abstract class EventTarget implements IEventTarget {
 
 				for (let i = 1; i < composedPath.length; i++) {
 					composedPath[i].dispatchEvent(event);
-					if (event[PropertySymbol.propagationStopped] || event[PropertySymbol.immediatePropagationStopped]) {
+					if (
+						event[PropertySymbol.propagationStopped] ||
+						event[PropertySymbol.immediatePropagationStopped]
+					) {
 						break;
 					}
 				}

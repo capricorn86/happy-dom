@@ -8,6 +8,10 @@ export default class SyncFetchScriptBuilder {
 	 * Sends a synchronous request.
 	 *
 	 * @param request Request.
+	 * @param request.url
+	 * @param request.method
+	 * @param request.headers
+	 * @param request.body
 	 * @returns Script.
 	 */
 	public static getScript(request: {

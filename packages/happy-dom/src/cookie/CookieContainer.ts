@@ -20,7 +20,7 @@ export default class CookieContainer implements ICookieContainer {
 	 */
 	public addCookies(cookies: ICookie[]): void {
 		const indexMap: { [k: string]: number } = {};
-		const getKey = (cookie: ICookie) =>
+		const getKey = (cookie: ICookie): string =>
 			`${cookie.key}-${cookie.originURL.hostname}-${
 				cookie.originURL.pathname
 			}-${typeof cookie.value}`;

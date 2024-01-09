@@ -15,6 +15,7 @@ export default class HTMLIFrameElementNamedNodeMap extends HTMLElementNamedNodeM
 	 * Constructor.
 	 *
 	 * @param ownerElement Owner element.
+	 * @param pageLoader
 	 */
 	constructor(ownerElement: Element, pageLoader: HTMLIFrameElementPageLoader) {
 		super(ownerElement);

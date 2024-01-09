@@ -368,10 +368,10 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly Headers = Headers;
 	public readonly Request: new (input: IRequestInfo, init?: IRequestInit) => RequestImplementation;
 	public readonly Response: {
-		new (body?: IResponseBody, init?: IResponseInit): ResponseImplementation;
 		redirect: (url: string, status?: number) => ResponseImplementation;
 		error: () => ResponseImplementation;
 		json: (data: object, init?: IResponseInit) => ResponseImplementation;
+		new (body?: IResponseBody, init?: IResponseInit): ResponseImplementation;
 	};
 	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
 	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
@@ -425,7 +425,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly screenY: number = 0;
 	public readonly crypto = webcrypto;
 	public readonly closed = false;
-	public name: string = '';
+	public name = '';
 
 	// Node.js Globals
 	public Array: typeof Array;
@@ -963,7 +963,9 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 */
 	public queueMicrotask(callback: Function): void {
 		let isAborted = false;
-		const taskId = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(() => (isAborted = true));
+		const taskId = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(
+			() => (isAborted = true)
+		);
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||

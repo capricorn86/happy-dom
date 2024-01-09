@@ -101,7 +101,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		for (const childNode of this[PropertySymbol.childNodes]) {
 			if (childNode.nodeType === NodeTypeEnum.elementNode) {
 				const childElement = <IHTMLElement>childNode;
-				const computedStyle = this.ownerDocument[PropertySymbol.defaultView].getComputedStyle(childElement);
+				const computedStyle =
+					this.ownerDocument[PropertySymbol.defaultView].getComputedStyle(childElement);
 
 				if (childElement.tagName !== 'SCRIPT' && childElement.tagName !== 'STYLE') {
 					const display = computedStyle.display;

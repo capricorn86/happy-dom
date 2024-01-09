@@ -28,15 +28,21 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 
 		// This element can potentially be a custom element that has not been defined yet
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
-		if (tagName.includes('-') && this.ownerDocument[PropertySymbol.defaultView].customElements[PropertySymbol.callbacks]) {
-			const callbacks = this.ownerDocument[PropertySymbol.defaultView].customElements[PropertySymbol.callbacks];
+		if (
+			tagName.includes('-') &&
+			this.ownerDocument[PropertySymbol.defaultView].customElements[PropertySymbol.callbacks]
+		) {
+			const callbacks =
+				this.ownerDocument[PropertySymbol.defaultView].customElements[PropertySymbol.callbacks];
 
 			if (parentNode && !this.#customElementDefineCallback) {
 				const callback = (): void => {
 					if (this.parentNode) {
 						const newElement = <HTMLElement>this.ownerDocument.createElement(tagName);
-						(<INodeList<INode>>newElement[PropertySymbol.childNodes]) = this[PropertySymbol.childNodes];
-						(<IHTMLCollection<IElement>>newElement[PropertySymbol.children]) = this[PropertySymbol.children];
+						(<INodeList<INode>>newElement[PropertySymbol.childNodes]) =
+							this[PropertySymbol.childNodes];
+						(<IHTMLCollection<IElement>>newElement[PropertySymbol.children]) =
+							this[PropertySymbol.children];
 						(<boolean>newElement.isConnected) = this.isConnected;
 
 						newElement[PropertySymbol.rootNode] = this[PropertySymbol.rootNode];

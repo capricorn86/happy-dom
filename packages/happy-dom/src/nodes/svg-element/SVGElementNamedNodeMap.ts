@@ -30,7 +30,11 @@ export default class SVGElementNamedNodeMap extends ElementNamedNodeMap {
 	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
 		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
-		if (removedItem && removedItem.name === 'style' && this[PropertySymbol.ownerElement][PropertySymbol.style]) {
+		if (
+			removedItem &&
+			removedItem.name === 'style' &&
+			this[PropertySymbol.ownerElement][PropertySymbol.style]
+		) {
 			this[PropertySymbol.ownerElement][PropertySymbol.style].cssText = '';
 		}
 

@@ -84,9 +84,9 @@ export default abstract class AbstractCSSStyleDeclaration {
 			if (!styleAttribute) {
 				styleAttribute = this.#ownerElement.ownerDocument.createAttribute('style');
 				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement.attributes)[PropertySymbol.setNamedItemWithoutConsequences](
-					styleAttribute
-				);
+				(<NamedNodeMap>this.#ownerElement.attributes)[
+					PropertySymbol.setNamedItemWithoutConsequences
+				](styleAttribute);
 			}
 
 			if (this.#ownerElement.isConnected) {
@@ -142,9 +142,9 @@ export default abstract class AbstractCSSStyleDeclaration {
 				styleAttribute = this.#ownerElement.ownerDocument.createAttribute('style');
 
 				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement.attributes)[PropertySymbol.setNamedItemWithoutConsequences](
-					styleAttribute
-				);
+				(<NamedNodeMap>this.#ownerElement.attributes)[
+					PropertySymbol.setNamedItemWithoutConsequences
+				](styleAttribute);
 			}
 
 			if (this.#ownerElement.isConnected) {
@@ -188,9 +188,9 @@ export default abstract class AbstractCSSStyleDeclaration {
 				(<IAttr>this.#ownerElement.attributes['style']).value = newCSSText;
 			} else {
 				// We use "[PropertySymbol.removeNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement.attributes)[PropertySymbol.removeNamedItemWithoutConsequences](
-					'style'
-				);
+				(<NamedNodeMap>this.#ownerElement.attributes)[
+					PropertySymbol.removeNamedItemWithoutConsequences
+				]('style');
 			}
 		} else {
 			this.#style.remove(name);

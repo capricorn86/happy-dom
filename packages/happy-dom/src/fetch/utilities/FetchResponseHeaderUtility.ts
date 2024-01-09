@@ -10,6 +10,10 @@ export default class FetchResponseHeaderUtility {
 	 * Appends headers to response.
 	 *
 	 * @param nodeResponse HTTP request.
+	 * @param options
+	 * @param options.browserFrame
+	 * @param options.requestURL
+	 * @param options.rawHeaders
 	 * @returns Headers.
 	 */
 	public static parseResponseHeaders(options: {

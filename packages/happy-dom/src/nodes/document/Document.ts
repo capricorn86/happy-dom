@@ -60,7 +60,8 @@ export default class Document extends Node implements IDocument {
 	public readonly defaultView: IBrowserWindow | null = null;
 	public readonly [PropertySymbol.defaultView]: IBrowserWindow;
 	public readonly referrer = '';
-	public readonly [PropertySymbol.children]: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
+	public readonly [PropertySymbol.children]: IHTMLCollection<IElement> =
+		new HTMLCollection<IElement>();
 	public [PropertySymbol.activeElement]: IHTMLElement = null;
 	public [PropertySymbol.nextActiveElement]: IHTMLElement = null;
 	public [PropertySymbol.currentScript]: IHTMLScriptElement = null;
@@ -393,7 +394,10 @@ export default class Document extends Node implements IDocument {
 			this[PropertySymbol.activeElement] = null;
 		}
 
-		if (this[PropertySymbol.activeElement] && this[PropertySymbol.activeElement] instanceof Element) {
+		if (
+			this[PropertySymbol.activeElement] &&
+			this[PropertySymbol.activeElement] instanceof Element
+		) {
 			let rootNode: IShadowRoot | IDocument = <IShadowRoot | IDocument>(
 				this[PropertySymbol.activeElement].getRootNode()
 			);
@@ -826,7 +830,9 @@ export default class Document extends Node implements IDocument {
 		}
 
 		const elementClass: typeof Element =
-			customElementClass || this[PropertySymbol.defaultView][ElementTag[tagName]] || HTMLUnknownElement;
+			customElementClass ||
+			this[PropertySymbol.defaultView][ElementTag[tagName]] ||
+			HTMLUnknownElement;
 
 		elementClass[PropertySymbol.ownerDocument] = this;
 		const element = new elementClass();

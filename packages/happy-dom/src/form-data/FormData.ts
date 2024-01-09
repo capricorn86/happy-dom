@@ -28,8 +28,12 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 */
 	constructor(form?: IHTMLFormElement) {
 		if (form) {
-			for (const name of Object.keys((<HTMLFormControlsCollection>form.elements)[PropertySymbol.namedItems])) {
-				let radioNodeList = (<HTMLFormControlsCollection>form.elements)[PropertySymbol.namedItems][name];
+			for (const name of Object.keys(
+				(<HTMLFormControlsCollection>form.elements)[PropertySymbol.namedItems]
+			)) {
+				let radioNodeList = (<HTMLFormControlsCollection>form.elements)[PropertySymbol.namedItems][
+					name
+				];
 
 				if (
 					radioNodeList[0].tagName === 'INPUT' &&

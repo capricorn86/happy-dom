@@ -40,12 +40,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 	// Public properties
 	public upload: XMLHttpRequestUpload = new XMLHttpRequestUpload();
-	public withCredentials: boolean = false;
+	public withCredentials = false;
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
 	#window: IBrowserWindow;
-	#async: boolean = true;
+	#async = true;
 	#abortController: AbortController | null = null;
 	#aborted = false;
 	#request: Request | null = null;
@@ -328,7 +328,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param body Optional data to send as request body.
 	 */
 	async #sendAsync(body?: IRequestBody): Promise<void> {
-		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(() => this.abort());
+		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(() =>
+			this.abort()
+		);
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
 
@@ -354,7 +356,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 		});
 
-		const onError = (error: Error) => {
+		const onError = (error: Error): void => {
 			if (error instanceof DOMException && error.name === DOMExceptionNameEnum.abortError) {
 				if (this.#aborted) {
 					return;

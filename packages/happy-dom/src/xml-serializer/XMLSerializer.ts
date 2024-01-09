@@ -113,7 +113,10 @@ export default class XMLSerializer {
 	#getAttributes(element: IElement): string {
 		let attributeString = '';
 
-		if (!(<Element>element).attributes.getNamedItem('is') && (<Element>element)[PropertySymbol.isValue]) {
+		if (
+			!(<Element>element).attributes.getNamedItem('is') &&
+			(<Element>element)[PropertySymbol.isValue]
+		) {
 			attributeString += ' is="' + (<Element>element)[PropertySymbol.isValue] + '"';
 		}
 

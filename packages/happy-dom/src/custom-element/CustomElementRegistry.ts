@@ -7,7 +7,9 @@ import Node from '../nodes/node/Node.js';
  * Custom elements registry.
  */
 export default class CustomElementRegistry {
-	public [PropertySymbol.registry]: { [k: string]: { elementClass: typeof HTMLElement; extends: string } } = {};
+	public [PropertySymbol.registry]: {
+		[k: string]: { elementClass: typeof HTMLElement; extends: string };
+	} = {};
 	public [PropertySymbol.callbacks]: { [k: string]: (() => void)[] } = {};
 
 	/**
@@ -88,7 +90,8 @@ export default class CustomElementRegistry {
 			return Promise.resolve();
 		}
 		return new Promise((resolve) => {
-			this[PropertySymbol.callbacks][upperTagName] = this[PropertySymbol.callbacks][upperTagName] || [];
+			this[PropertySymbol.callbacks][upperTagName] =
+				this[PropertySymbol.callbacks][upperTagName] || [];
 			this[PropertySymbol.callbacks][upperTagName].push(resolve);
 		});
 	}

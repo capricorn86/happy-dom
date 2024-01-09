@@ -116,7 +116,9 @@ export default class BrowserFrame implements IBrowserFrame {
 		return new Promise((resolve, reject) => {
 			// Using Promise instead of async/await to prevent microtask
 			Promise.all(
-				this.childFrames.map((frame) => frame.abort()).concat([this[PropertySymbol.asyncTaskManager].abort()])
+				this.childFrames
+					.map((frame) => frame.abort())
+					.concat([this[PropertySymbol.asyncTaskManager].abort()])
 			)
 				.then(() => resolve())
 				.catch(reject);

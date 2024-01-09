@@ -493,7 +493,10 @@ export default class NodeUtility {
 			return false;
 		}
 
-		if ((<Node>nodeA)[PropertySymbol.childNodes].length !== (<Node>nodeB)[PropertySymbol.childNodes].length) {
+		if (
+			(<Node>nodeA)[PropertySymbol.childNodes].length !==
+			(<Node>nodeB)[PropertySymbol.childNodes].length
+		) {
 			return false;
 		}
 

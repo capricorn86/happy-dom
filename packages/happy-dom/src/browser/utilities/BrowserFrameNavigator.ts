@@ -45,9 +45,9 @@ export default class BrowserFrameNavigator {
 
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
-				const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
-					(<unknown>frame.window)
-				))[PropertySymbol.readyStateManager];
+				const readyStateManager = (<
+					{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }
+				>(<unknown>frame.window))[PropertySymbol.readyStateManager];
 
 				readyStateManager.startTask();
 
@@ -116,7 +116,7 @@ export default class BrowserFrameNavigator {
 
 		readyStateManager.startTask();
 
-		let abortController = new AbortController();
+		const abortController = new AbortController();
 		let response: IResponse;
 		let responseText: string;
 

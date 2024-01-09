@@ -426,9 +426,6 @@ export default class Node extends EventTarget implements INode {
 			(<boolean>this.isConnected) = isConnected;
 
 			if (!isConnected) {
-				if (!this.ownerDocument) {
-					debugger;
-				}
 				if (this.ownerDocument[PropertySymbol.activeElement] === this) {
 					this.ownerDocument[PropertySymbol.activeElement] = null;
 				}

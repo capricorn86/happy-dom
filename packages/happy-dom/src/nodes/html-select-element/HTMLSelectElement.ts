@@ -383,7 +383,8 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 			}
 		} else if (selected.length >= 2) {
 			for (let i = 0, max = optionElements.length; i < max; i++) {
-				(<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness] = i === selected.length - 1;
+				(<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness] =
+					i === selected.length - 1;
 			}
 		}
 	}
@@ -402,8 +403,14 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
 			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.name);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.id);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.name
+				);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.id
+				);
 			}
 		}
 	}

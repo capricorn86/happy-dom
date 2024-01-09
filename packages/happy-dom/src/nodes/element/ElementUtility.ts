@@ -52,7 +52,10 @@ export default class ElementUtility {
 						for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 							const attribute = (<Element>node).attributes.getNamedItem(attributeName);
 							if (attribute) {
-								parentNodeChildren[PropertySymbol.removeNamedItem](<IHTMLElement>node, attribute.value);
+								parentNodeChildren[PropertySymbol.removeNamedItem](
+									<IHTMLElement>node,
+									attribute.value
+								);
 							}
 						}
 
@@ -101,7 +104,10 @@ export default class ElementUtility {
 				for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 					const attribute = (<Element>node).attributes.getNamedItem(attributeName);
 					if (attribute) {
-						ancestorNodeChildren[PropertySymbol.removeNamedItem](<IHTMLElement>node, attribute.value);
+						ancestorNodeChildren[PropertySymbol.removeNamedItem](
+							<IHTMLElement>node,
+							attribute.value
+						);
 					}
 				}
 				ancestorNodeChildren.splice(index, 1);
@@ -152,7 +158,10 @@ export default class ElementUtility {
 						for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 							const attribute = (<Element>newNode).attributes.getNamedItem(attributeName);
 							if (attribute) {
-								parentNodeChildren[PropertySymbol.removeNamedItem](<IHTMLElement>newNode, attribute.value);
+								parentNodeChildren[PropertySymbol.removeNamedItem](
+									<IHTMLElement>newNode,
+									attribute.value
+								);
 							}
 						}
 
@@ -186,7 +195,10 @@ export default class ElementUtility {
 			for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 				const attribute = (<Element>newNode).attributes.getNamedItem(attributeName);
 				if (attribute) {
-					ancestorNodeChildren[PropertySymbol.appendNamedItem](<IHTMLElement>newNode, attribute.value);
+					ancestorNodeChildren[PropertySymbol.appendNamedItem](
+						<IHTMLElement>newNode,
+						attribute.value
+					);
 				}
 			}
 

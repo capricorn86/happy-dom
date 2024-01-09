@@ -50,7 +50,7 @@ describe('BrowserFrameExceptionObserver', () => {
 			let errorEvent = null;
 
 			window.addEventListener('error', (event) => (errorEvent = event));
-			window['customSetTimeout'] = setTimeout.bind(globalThis);
+			window['customSetTimeout'] = setTimeout.bind(global);
 
 			document.write(`
                 <script>

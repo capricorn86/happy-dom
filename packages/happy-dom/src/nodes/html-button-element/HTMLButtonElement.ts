@@ -219,8 +219,14 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
 			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.name);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.id);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.name
+				);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.id
+				);
 			}
 		}
 	}

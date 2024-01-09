@@ -356,8 +356,9 @@ export default class CSSStyleDeclarationElementStyle {
 		parentSize: string | number | null;
 	}): string {
 		if (
-			WindowBrowserSettingsReader.getSettings(this.element.ownerDocument[PropertySymbol.defaultView])
-				.disableComputedStyleRendering
+			WindowBrowserSettingsReader.getSettings(
+				this.element.ownerDocument[PropertySymbol.defaultView]
+			).disableComputedStyleRendering
 		) {
 			return options.value;
 		}

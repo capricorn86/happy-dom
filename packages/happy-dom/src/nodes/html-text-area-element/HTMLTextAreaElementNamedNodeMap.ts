@@ -18,18 +18,19 @@ export default class HTMLTextAreaElementNamedNodeMap extends HTMLElementNamedNod
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if ((item.name === 'id' || item.name === 'name') && this[PropertySymbol.ownerElement][PropertySymbol.formNode]) {
+		if (
+			(item.name === 'id' || item.name === 'name') &&
+			this[PropertySymbol.ownerElement][PropertySymbol.formNode]
+		) {
 			if (replacedItem && replacedItem.value) {
-				(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[PropertySymbol.removeFormControlItem](
-					this[PropertySymbol.ownerElement],
-					replacedItem.value
-				);
+				(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[
+					PropertySymbol.removeFormControlItem
+				](this[PropertySymbol.ownerElement], replacedItem.value);
 			}
 			if (item.value) {
-				(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this[PropertySymbol.ownerElement],
-					item.value
-				);
+				(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[
+					PropertySymbol.appendFormControlItem
+				](this[PropertySymbol.ownerElement], item.value);
 			}
 		}
 
@@ -47,10 +48,9 @@ export default class HTMLTextAreaElementNamedNodeMap extends HTMLElementNamedNod
 			(removedItem.name === 'id' || removedItem.name === 'name') &&
 			this[PropertySymbol.ownerElement][PropertySymbol.formNode]
 		) {
-			(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[PropertySymbol.removeFormControlItem](
-				this[PropertySymbol.ownerElement],
-				removedItem.value
-			);
+			(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[
+				PropertySymbol.removeFormControlItem
+			](this[PropertySymbol.ownerElement], removedItem.value);
 		}
 
 		return removedItem;

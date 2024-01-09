@@ -23,7 +23,9 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 			item.name === 'selected' &&
 			replacedItem?.value !== item.value
 		) {
-			const selectNode = <HTMLSelectElement>this[PropertySymbol.ownerElement][PropertySymbol.selectNode];
+			const selectNode = <HTMLSelectElement>(
+				this[PropertySymbol.ownerElement][PropertySymbol.selectNode]
+			);
 
 			this[PropertySymbol.ownerElement][PropertySymbol.selectedness] = true;
 
@@ -41,8 +43,14 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
 		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
-		if (removedItem && !this[PropertySymbol.ownerElement][PropertySymbol.dirtyness] && removedItem.name === 'selected') {
-			const selectNode = <HTMLSelectElement>this[PropertySymbol.ownerElement][PropertySymbol.selectNode];
+		if (
+			removedItem &&
+			!this[PropertySymbol.ownerElement][PropertySymbol.dirtyness] &&
+			removedItem.name === 'selected'
+		) {
+			const selectNode = <HTMLSelectElement>(
+				this[PropertySymbol.ownerElement][PropertySymbol.selectNode]
+			);
 
 			this[PropertySymbol.ownerElement][PropertySymbol.selectedness] = false;
 

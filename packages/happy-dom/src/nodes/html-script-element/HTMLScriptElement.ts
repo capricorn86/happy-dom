@@ -198,7 +198,11 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 
 		super[PropertySymbol.connectToNode](parentNode);
 
-		if (isParentConnected && isConnected !== isParentConnected && this[PropertySymbol.evaluateScript]) {
+		if (
+			isParentConnected &&
+			isConnected !== isParentConnected &&
+			this[PropertySymbol.evaluateScript]
+		) {
 			const src = this.getAttribute('src');
 
 			if (src !== null) {
@@ -216,7 +220,8 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 					this.ownerDocument[PropertySymbol.currentScript] = this;
 
 					const code =
-						`//# sourceURL=${this.ownerDocument[PropertySymbol.defaultView].location.href}\n` + textContent;
+						`//# sourceURL=${this.ownerDocument[PropertySymbol.defaultView].location.href}\n` +
+						textContent;
 
 					if (
 						browserSettings.disableErrorCapturing ||

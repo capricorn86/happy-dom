@@ -4,6 +4,9 @@ import IBrowserWindow from '../../window/IBrowserWindow.js';
 import Blob from '../../file/Blob.js';
 import IDocument from '../../nodes/document/IDocument.js';
 
+/**
+ *
+ */
 export default class XMLHttpRequestResponseDataParser {
 	/**
 	 * Parses response.

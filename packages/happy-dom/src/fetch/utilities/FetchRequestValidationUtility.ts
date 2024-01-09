@@ -112,15 +112,15 @@ export default class FetchRequestValidationUtility {
 	 * Validates request redirect.
 	 *
 	 * @throws DOMException
+	 * @param request
 	 * @param redirect Redirect.
 	 */
 	public static validateSchema(request: Request): void {
 		if (!SUPPORTED_SCHEMAS.includes(request[PropertySymbol.url].protocol)) {
 			throw new DOMException(
-				`Failed to fetch from "${request.url}": URL scheme "${request[PropertySymbol.url].protocol.replace(
-					/:$/,
-					''
-				)}" is not supported.`,
+				`Failed to fetch from "${request.url}": URL scheme "${request[
+					PropertySymbol.url
+				].protocol.replace(/:$/, '')}" is not supported.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
 		}

@@ -56,7 +56,9 @@ export default class Request implements IRequest {
 	 * Constructor.
 	 *
 	 * @param injected Injected properties.
+	 * @param injected.window
 	 * @param input Input.
+	 * @param injected.asyncTaskManager
 	 * @param [init] Init.
 	 */
 	constructor(

@@ -54,7 +54,9 @@ export default class Response implements IResponse {
 	 *
 	 * @param injected Injected properties.
 	 * @param input Input.
+	 * @param injected.window
 	 * @param body
+	 * @param injected.browserFrame
 	 * @param [init] Init.
 	 */
 	constructor(

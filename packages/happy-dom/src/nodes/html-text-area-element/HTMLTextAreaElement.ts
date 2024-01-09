@@ -587,8 +587,14 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
 			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.name);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.id);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.name
+				);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.id
+				);
 			}
 		}
 	}

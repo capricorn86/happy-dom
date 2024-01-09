@@ -96,6 +96,8 @@ export default class FetchBodyUtility {
 	 * It creates a pass through stream and pipes the original stream to it.
 	 *
 	 * @param requestOrResponse Request or Response.
+	 * @param requestOrResponse.body
+	 * @param requestOrResponse.bodyUsed
 	 * @returns New stream.
 	 */
 	public static cloneBodyStream(requestOrResponse: {

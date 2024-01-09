@@ -267,7 +267,12 @@ export default class QuerySelector {
 				(<Element>child)[PropertySymbol.children].length
 			) {
 				matched = matched.concat(
-					this.findAll(rootElement, (<Element>child)[PropertySymbol.children], selectorItems, position)
+					this.findAll(
+						rootElement,
+						(<Element>child)[PropertySymbol.children],
+						selectorItems,
+						position
+					)
 				);
 			}
 		}
@@ -330,7 +335,11 @@ export default class QuerySelector {
 				selectorItem.combinator === SelectorCombinatorEnum.descendant &&
 				(<Element>child)[PropertySymbol.children].length
 			) {
-				const match = this.findFirst(rootElement, (<Element>child)[PropertySymbol.children], selectorItems);
+				const match = this.findFirst(
+					rootElement,
+					(<Element>child)[PropertySymbol.children],
+					selectorItems
+				);
 
 				if (match) {
 					return match;

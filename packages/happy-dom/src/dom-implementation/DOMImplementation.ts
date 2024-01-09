@@ -45,7 +45,8 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		this.#document[PropertySymbol.defaultView].DocumentType[PropertySymbol.ownerDocument] = this.#document;
+		this.#document[PropertySymbol.defaultView].DocumentType[PropertySymbol.ownerDocument] =
+			this.#document;
 		const documentType = new this.#document[PropertySymbol.defaultView].DocumentType();
 		this.#document[PropertySymbol.defaultView].DocumentType[PropertySymbol.ownerDocument] = null;
 		documentType.name = qualifiedName;

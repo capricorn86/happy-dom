@@ -689,10 +689,6 @@ describe('XMLHttpRequest', () => {
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
-				request.addEventListener('error', (error) => {
-					console.log(error);
-				});
-
 				request.addEventListener('loadend', () => {
 					expect(requestArgs).toEqual({
 						method: 'GET',

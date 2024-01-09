@@ -80,9 +80,11 @@ export default class HTMLScriptElementScriptLoader {
 		this.#loadedScriptURL = absoluteURL;
 
 		if (async) {
-			const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
-				(<unknown>element.ownerDocument[PropertySymbol.defaultView])
-			))[PropertySymbol.readyStateManager];
+			const readyStateManager = (<
+				{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }
+			>(<unknown>element.ownerDocument[PropertySymbol.defaultView]))[
+				PropertySymbol.readyStateManager
+			];
 
 			readyStateManager.startTask();
 

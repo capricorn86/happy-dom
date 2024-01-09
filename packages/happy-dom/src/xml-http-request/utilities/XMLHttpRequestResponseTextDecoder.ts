@@ -2,6 +2,9 @@ import IconvLite from 'iconv-lite';
 
 const CONTENT_TYPE_ENCODING_REGEXP = /charset=([^;]*)/i;
 
+/**
+ *
+ */
 export default class XMLHttpRequestResponseTextDecoder {
 	/**
 	 * Decodes response text.

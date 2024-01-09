@@ -30,7 +30,11 @@ export default class HTMLScriptElementNamedNodeMap extends HTMLElementNamedNodeM
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'src' && item.value !== null && this[PropertySymbol.ownerElement].isConnected) {
+		if (
+			item.name === 'src' &&
+			item.value !== null &&
+			this[PropertySymbol.ownerElement].isConnected
+		) {
 			this.#scriptLoader.loadScript(item.value);
 		}
 

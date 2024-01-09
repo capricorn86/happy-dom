@@ -1,71 +1,84 @@
-const ChildProcess = require('child_process');
+const ChildProcess = require("child_process");
+const SemVer = require("semver");
 
 const COMMIT_MESSAGE_REGEXP = /(#[0-9]+)@([^:]+): (.+)/ms;
-const VERSION_TYPES = ['trivial', 'patch', 'minor', 'major'];
+const VERSION_TYPES = ["trivial", "patch", "minor", "major"];
 
 /**
  * Git Utility.
  */
 class GitUtility {
-
 	/**
 	 * Returns commit messages.
-	 * 
+	 *
 	 * @param {string} from From branch.
 	 * @param {string} to To branch.
 	 * @returns {string[]} Commit messages.
 	 */
 	static async getCommitMessages(from, to) {
 		const commits = await this.__getDiffCommits(from, to);
-		return await Promise.all(commits.map(commit => {
-			return new Promise((resolve, reject) => {
-				ChildProcess.exec(`git show -s --format=%B ${commit}`, (error, stdout) => {
-					if(error) {
-						reject(error);
-					} else {
-						resolve(stdout.replace(/[\n\r]/gm, '').trim());
-					}
+		return await Promise.all(
+			commits.map((commit) => {
+				return new Promise((resolve, reject) => {
+					ChildProcess.exec(
+						`git show -s --format=%B ${commit}`,
+						(error, stdout) => {
+							if (error) {
+								reject(error);
+							} else {
+								resolve(stdout.replace(/[\n\r]/gm, "").trim());
+							}
+						}
+					);
 				});
-			});
-		}));
+			})
+		);
 	}
 
 	/**
 	 * Parses a commit message.
-	 * 
+	 *
 	 * @param {string} commitMessage Commit message.
 	 * @returns {{ errors: string[]; commit: { taskId: string; versionType: string; description: string; } }} Parsed commit information.
 	 */
 	static parseCommitMessage(commitMessage) {
-        if(commitMessage.startsWith('Merge')) {
-            return {
-                errors: [],
-                commit: null
-            };
-        }
+		if (commitMessage.startsWith("Merge")) {
+			return {
+				errors: [],
+				commit: null,
+			};
+		}
 
 		const match = commitMessage.match(COMMIT_MESSAGE_REGEXP);
 		const errors = [];
 
-		if(!match) {
+		if (!match) {
 			return {
-				errors: ['Invalid format. Expected format to be: "#{taskId}@{trivial|patch|minor|major}: {description}."'],
-				commit: null
+				errors: [
+					'Invalid format. Expected format to be: "#{taskId}@{trivial|patch|minor|major}: {description}."',
+				],
+				commit: null,
 			};
 		}
 
 		const description = match[3].trim();
 
-		if(!VERSION_TYPES.includes(match[2])) {
-			errors.push(`Invalid version type. Valid version types: ${VERSION_TYPES.join(', ')}`);
+		if (!VERSION_TYPES.includes(match[2])) {
+			errors.push(
+				`Invalid version type. Valid version types: ${VERSION_TYPES.join(", ")}`
+			);
 		}
 
-		if(description[0] !== description[0].toUpperCase()) {
-			errors.push(`Invalid description. Expected description to start with a capital letter`);
+		if (description[0] !== description[0].toUpperCase()) {
+			errors.push(
+				`Invalid description. Expected description to start with a capital letter`
+			);
 		}
 
-		if(!description.endsWith('.')) {
-			errors.push(`Invalid description. Expected description to end with a period (".")`);
+		if (!description.endsWith(".")) {
+			errors.push(
+				`Invalid description. Expected description to end with a period (".")`
+			);
 		}
 
 		return {
@@ -73,36 +86,36 @@ class GitUtility {
 			commit: {
 				taskId: match[1],
 				versionType: match[2],
-				description
-			}
+				description,
+			},
 		};
 	}
 
 	/**
 	 * Returns the next version.
-	 * 
+	 *
 	 * @returns {string} Next version (e.g. "v1.2.3").
 	 */
 	static async getNextVersion() {
 		const latest = await this.getLatestVersion();
-		const versionType = await this.__getVersionType('v' + latest, 'HEAD');
-		return require('semver').inc(latest, versionType);
+		const versionType = await this.__getVersionType("v" + latest, "HEAD");
+		return SemVer.inc(latest, versionType);
 	}
 
 	/**
 	 * Returns the latest version.
-	 * 
+	 *
 	 * @returns {string} Latest version (e.g. "v1.2.3").
 	 */
 	static getLatestVersion() {
 		return new Promise((resolve, reject) => {
 			ChildProcess.exec(`git tag -l --sort=v:refname`, (error, stdout) => {
-				if(error) {
+				if (error) {
 					reject(error);
 				} else {
-					const gitTags = stdout.trim().split('\n');
-					gitTags.sort(require('semver').compare);
-					resolve(gitTags[gitTags.length - 1].replace('v', ''));
+					const gitTags = stdout.trim().split("\n");
+					gitTags.sort(SemVer.compare);
+					resolve(gitTags[gitTags.length - 1].replace("v", ""));
 				}
 			});
 		});
@@ -116,21 +129,21 @@ class GitUtility {
 	static async __getVersionType(from, to) {
 		const commitMessages = await this.getCommitMessages(from, to);
 		let isMinor = false;
-		
+
 		for (const commitMessage of commitMessages) {
 			const parsed = this.parseCommitMessage(commitMessage);
-		
+
 			if (parsed.commit && parsed.commit.versionType) {
-				if(parsed.commit.versionType === 'major') {
-					return 'major';
+				if (parsed.commit.versionType === "major") {
+					return "major";
 				}
-				if(parsed.commit.versionType === 'minor') {
+				if (parsed.commit.versionType === "minor") {
 					isMinor = true;
 				}
 			}
 		}
 
-		return isMinor ? 'minor' : 'patch';
+		return isMinor ? "minor" : "patch";
 	}
 
 	/**
@@ -142,16 +155,21 @@ class GitUtility {
 	 */
 	static __getDiffCommits(from, to) {
 		return new Promise((resolve, reject) => {
-			ChildProcess.exec(`git log ${from}..${to} --pretty=format:"%h"`, (error, stdout) => {
-				if(error) {
-					reject(error);
-				} else {
-					resolve(stdout
-						.trim()
-						.split('\n')
-						.filter(str => str !== ''));
+			ChildProcess.exec(
+				`git log ${from}..${to} --pretty=format:"%h"`,
+				(error, stdout) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve(
+							stdout
+								.trim()
+								.split("\n")
+								.filter((str) => str !== "")
+						);
+					}
 				}
-			});
+			);
 		});
 	}
 }

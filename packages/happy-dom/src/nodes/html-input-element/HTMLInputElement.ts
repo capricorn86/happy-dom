@@ -1248,8 +1248,14 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
 			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.name);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](this, this.id);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.name
+				);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.id
+				);
 			}
 		}
 	}
@@ -1279,7 +1285,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		this[PropertySymbol.checked] = checked;
 
 		if (checked && this.type === 'radio' && this.name) {
-			const root = <IHTMLElement>(<IHTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode());
+			const root = <IHTMLElement>(
+				(<IHTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
+			);
 			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
 
 			for (const radioButton of radioButtons) {

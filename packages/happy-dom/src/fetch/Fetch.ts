@@ -115,7 +115,10 @@ export default class Fetch {
 		}
 
 		// Security check for "https" to "http" requests.
-		if (this.request[PropertySymbol.url].protocol === 'http:' && this.#window.location.protocol === 'https:') {
+		if (
+			this.request[PropertySymbol.url].protocol === 'http:' &&
+			this.#window.location.protocol === 'https:'
+		) {
 			throw new DOMException(
 				`Mixed Content: The page at '${
 					this.#window.location.href
@@ -348,15 +351,13 @@ export default class Fetch {
 				// We can end up here when closing down the browser frame and there is an ongoing request.
 				// Therefore we need to check if browserFrame.page.context is still available.
 				if (!this.disableCache && response instanceof Response && this.#browserFrame.page.context) {
-					response[PropertySymbol.cachedResponse] = this.#browserFrame.page.context.responseCache.add(
-						this.request,
-						{
+					response[PropertySymbol.cachedResponse] =
+						this.#browserFrame.page.context.responseCache.add(this.request, {
 							...response,
 							headers: this.responseHeaders,
 							body: response[PropertySymbol.buffer],
 							waitingForBody: !response[PropertySymbol.buffer] && !!response.body
-						}
-					);
+						});
 				}
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				resolve(response);
@@ -379,8 +380,14 @@ export default class Fetch {
 				}),
 				agent: false,
 				rejectUnauthorized: true,
-				key: this.request[PropertySymbol.url].protocol === 'https:' ? FetchHTTPSCertificate.key : undefined,
-				cert: this.request[PropertySymbol.url].protocol === 'https:' ? FetchHTTPSCertificate.cert : undefined
+				key:
+					this.request[PropertySymbol.url].protocol === 'https:'
+						? FetchHTTPSCertificate.key
+						: undefined,
+				cert:
+					this.request[PropertySymbol.url].protocol === 'https:'
+						? FetchHTTPSCertificate.cert
+						: undefined
 			});
 
 			this.nodeRequest.on('error', this.onError.bind(this));
@@ -727,7 +734,9 @@ export default class Fetch {
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
-					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : undefined
+					contentType: !shouldBecomeGetRequest
+						? this.request[PropertySymbol.contentType]
+						: undefined
 				});
 
 				this.finalizeRequest();

@@ -334,7 +334,10 @@ export default class Selection {
 		}
 
 		const startIsBeforeNode =
-			RangeUtility.compareBoundaryPointsPosition(this.#range[PropertySymbol.start], { node, offset: 0 }) === -1;
+			RangeUtility.compareBoundaryPointsPosition(this.#range[PropertySymbol.start], {
+				node,
+				offset: 0
+			}) === -1;
 		const endIsAfterNode =
 			RangeUtility.compareBoundaryPointsPosition(this.#range[PropertySymbol.end], {
 				node,

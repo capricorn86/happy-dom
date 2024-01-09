@@ -113,7 +113,9 @@ export default class SelectorItem {
 	 */
 	private matchPsuedo(element: IElement): boolean {
 		const parent = <IElement>element.parentNode;
-		const parentChildren = element.parentNode ? (<Element>element.parentNode)[PropertySymbol.children] : [];
+		const parentChildren = element.parentNode
+			? (<Element>element.parentNode)[PropertySymbol.children]
+			: [];
 
 		if (!this.pseudos) {
 			return true;
