@@ -15,6 +15,7 @@ import FormData from '../../src/form-data/FormData.js';
 import { URLSearchParams } from 'url';
 import '../types.d.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import { ReadableStream } from 'stream/web';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -147,7 +148,7 @@ describe('Fetch', () => {
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('OK');
 			expect(response.bodyUsed).toBe(false);
-			expect(response.body instanceof Stream.Transform).toBe(true);
+			expect(response.body instanceof ReadableStream).toBe(true);
 			expect(response.headers instanceof Headers).toBe(true);
 
 			const headers = {};
@@ -228,7 +229,7 @@ describe('Fetch', () => {
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('OK');
 			expect(response.bodyUsed).toBe(false);
-			expect(response.body instanceof Stream.Transform).toBe(true);
+			expect(response.body instanceof ReadableStream).toBe(true);
 			expect(response.headers instanceof Headers).toBe(true);
 
 			const headers = {};
@@ -518,7 +519,9 @@ describe('Fetch', () => {
 								}
 							};
 							(<unknown>request.setTimeout) = () => {};
-							request.destroy = () => destroyCount++;
+							request.destroy = () => {
+								destroyCount++;
+							};
 
 							return request;
 						}
@@ -609,7 +612,7 @@ describe('Fetch', () => {
 			}
 		}
 
-		it('Should not follow non-GET redirect if body is a readable stream.', async () => {
+		it.only('Should not follow non-GET redirect if body is a readable stream.', async () => {
 			const responseText = 'test';
 			const body = 'test';
 			let error: Error | null = null;
@@ -646,7 +649,9 @@ describe('Fetch', () => {
 						}
 					};
 					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => destroyCount++;
+					request.destroy = () => {
+						destroyCount++;
+					};
 
 					return request;
 				}

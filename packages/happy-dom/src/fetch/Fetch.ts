@@ -25,6 +25,33 @@ const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 const MAX_REDIRECT_COUNT = 20;
 
 /**
+ * Wraps a Node.js stream into a browser-compatible ReadableStream.
+ *
+ * Enables the use of Node.js streams where browser ReadableStreams are required.
+ * Handles 'data', 'end', and 'error' events from the Node.js stream.
+ *
+ * @param nodeStream The Node.js stream to be converted.
+ * @returns ReadableStream
+ */
+function nodeToWebStream(nodeStream): ReadableStream {
+	return new ReadableStream({
+		start(controller) {
+			nodeStream.on('data', (chunk) => {
+				controller.enqueue(chunk);
+			});
+
+			nodeStream.on('end', () => {
+				controller.close();
+			});
+
+			nodeStream.on('error', (err) => {
+				controller.error(err);
+			});
+		}
+	});
+}
+
+/**
  * Handles fetch requests.
  *
  * Based on:
@@ -229,11 +256,7 @@ export default class Fetch {
 			this.request.signal.removeEventListener('abort', this.listeners.onSignalAbort)
 		);
 
-		let body = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error: Error) => {
-			if (error) {
-				// Ignore error as it is forwarded to the response body.
-			}
-		});
+		let body = nodeToWebStream(nodeResponse);
 
 		const responseOptions = {
 			status: nodeResponse.statusCode,
@@ -266,11 +289,10 @@ export default class Fetch {
 
 		// For GZip
 		if (contentEncodingHeader === 'gzip' || contentEncodingHeader === 'x-gzip') {
-			body = Stream.pipeline(body, Zlib.createGunzip(zlibOptions), (error: Error) => {
-				if (error) {
-					// Ignore error as it is forwarded to the response body.
-				}
-			});
+			const gzipStream = Zlib.createGunzip(zlibOptions);
+			nodeResponse.pipe(gzipStream);
+			body = nodeToWebStream(gzipStream);
+
 			this.response = new Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
@@ -280,53 +302,40 @@ export default class Fetch {
 
 		// For Deflate
 		if (contentEncodingHeader === 'deflate' || contentEncodingHeader === 'x-deflate') {
-			// Handle the infamous raw deflate response from old servers
-			// A hack for old IIS and Apache servers
-			const raw = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error) => {
-				if (error) {
-					// Ignore error as it is forwarded to the response body.
-				}
-			});
-			raw.on('data', (chunk) => {
-				// See http://stackoverflow.com/questions/37519828
+			const passthrough = new Stream.PassThrough();
+			nodeResponse.pipe(passthrough);
+
+			passthrough.once('data', (chunk) => {
+				let deflateStream;
+				// Determina qué transformación aplicar basado en el primer chunk
 				if ((chunk[0] & 0x0f) === 0x08) {
-					body = Stream.pipeline(body, Zlib.createInflate(), (error) => {
-						if (error) {
-							// Ignore error as the fetch() promise has already been resolved.
-						}
-					});
+					deflateStream = Zlib.createInflate();
 				} else {
-					body = Stream.pipeline(body, Zlib.createInflateRaw(), (error) => {
-						if (error) {
-							// Ignore error as it is forwarded to the response body.
-						}
-					});
+					deflateStream = Zlib.createInflateRaw();
 				}
+
+				// Retrocede el primer chunk al stream original
+				passthrough.unshift(chunk);
+
+				// Pipe el passthrough a través de la transformación elegida
+				passthrough.pipe(deflateStream);
+
+				// Convierte el stream de transformación a un ReadableStream
+				body = nodeToWebStream(deflateStream);
 
 				this.response = new Response(body, responseOptions);
 				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
 			});
-			raw.on('end', () => {
-				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
-				if (!this.response) {
-					this.response = new Response(body, responseOptions);
-					(<boolean>this.response.redirected) = this.redirectCount > 0;
-					(<string>this.response.url) = this.request.url;
-					this.resolve(this.response);
-				}
-			});
-			return;
 		}
 
 		// For BR
 		if (contentEncodingHeader === 'br') {
-			body = Stream.pipeline(body, Zlib.createBrotliDecompress(), (error) => {
-				if (error) {
-					// Ignore error as it is forwarded to the response body.
-				}
-			});
+			const brotliStream = Zlib.createBrotliDecompress();
+			nodeResponse.pipe(brotliStream);
+			body = nodeToWebStream(brotliStream);
+
 			this.response = new Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;

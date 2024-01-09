@@ -1,5 +1,4 @@
 import MultipartFormDataParser from '../multipart/MultipartFormDataParser.js';
-import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
 import FormData from '../../form-data/FormData.js';
@@ -14,6 +13,24 @@ import Request from '../Request.js';
  * Fetch body utility.
  */
 export default class FetchBodyUtility {
+	/**
+	 * Wraps a given value in a browser ReadableStream.
+	 *
+	 * This method creates a ReadableStream and immediately enqueues and closes it
+	 * with the provided value, useful for stream API compatibility.
+	 *
+	 * @param value The value to be wrapped in a ReadableStream.
+	 * @returns ReadableStream
+	 */
+	public static toReadableStream(value): ReadableStream {
+		return new ReadableStream({
+			start(controller) {
+				controller.enqueue(value);
+				controller.close();
+			}
+		});
+	}
+
 	/**
 	 * Parses body and returns stream and type.
 	 *
@@ -35,12 +52,7 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body.toString());
 			return {
 				buffer,
-				stream: new ReadableStream({
-					start(controller) {
-						controller.enqueue(buffer);
-						controller.close();
-					}
-				}),
+				stream: this.toReadableStream(buffer),
 				contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
 				contentLength: buffer.length
 			};
@@ -48,24 +60,14 @@ export default class FetchBodyUtility {
 			const buffer = (<Blob>body)._buffer;
 			return {
 				buffer,
-				stream: new ReadableStream({
-					start(controller) {
-						controller.enqueue(buffer);
-						controller.close();
-					}
-				}),
+				stream: this.toReadableStream(buffer),
 				contentType: body.type,
 				contentLength: body.size
 			};
 		} else if (Buffer.isBuffer(body)) {
 			return {
 				buffer: body,
-				stream: new ReadableStream({
-					start(controller) {
-						controller.enqueue(body);
-						controller.close();
-					}
-				}),
+				stream: this.toReadableStream(body),
 				contentType: null,
 				contentLength: body.length
 			};
@@ -73,12 +75,7 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body);
 			return {
 				buffer,
-				stream: new ReadableStream({
-					start(controller) {
-						controller.enqueue(body);
-						controller.close();
-					}
-				}),
+				stream: this.toReadableStream(buffer),
 				contentType: null,
 				contentLength: body.byteLength
 			};
@@ -86,36 +83,25 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
 			return {
 				buffer,
-				stream: new ReadableStream({
-					start(controller) {
-						controller.enqueue(buffer);
-						controller.close();
-					}
-				}),
+				stream: this.toReadableStream(buffer),
 				contentType: null,
 				contentLength: body.byteLength
 			};
-		} /* TODO: check if this part is required and how to migrate it to ReadableStream
-		else if (body instanceof Stream.Stream) {
+		} else if (body instanceof ReadableStream) {
 			return {
 				buffer: null,
-				stream: <Stream.Readable>body,
+				stream: body,
 				contentType: null,
 				contentLength: null
 			};
-		} */ else if (body instanceof FormData) {
+		} else if (body instanceof FormData) {
 			return MultipartFormDataParser.formDataToStream(body);
 		}
 
 		const buffer = Buffer.from(String(body));
 		return {
 			buffer,
-			stream: new ReadableStream({
-				start(controller) {
-					controller.enqueue(buffer);
-					controller.close();
-				}
-			}),
+			stream: this.toReadableStream(buffer),
 			contentType: 'text/plain;charset=UTF-8',
 			contentLength: buffer.length
 		};
@@ -157,7 +143,7 @@ export default class FetchBodyUtility {
 	 * @returns Promise.
 	 */
 	public static async consumeBodyStream(body: ReadableStream | null): Promise<Buffer> {
-		if (body === null || !(body instanceof Stream.Stream)) {
+		if (body === null || !(body instanceof ReadableStream)) {
 			return Buffer.alloc(0);
 		}
 
