@@ -6,6 +6,7 @@ import Browser from '../../src/browser/Browser.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
 import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
+import DOMException from '../../src/exception/DOMException.js';
 
 const URL = 'https://localhost:8080/base/';
 
@@ -52,7 +53,7 @@ describe('ResourceFetch', () => {
 			expect(test).toBe('test');
 		});
 
-		it('Handles error when resource is fetched asynchrounously.', () => {
+		it('Handles error when resource is fetched asynchrounously.', async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 				return <IResponse>{
 					ok: false,
@@ -61,7 +62,14 @@ describe('ResourceFetch', () => {
 				};
 			});
 
-			expect(resourceFetch.fetch('path/to/script/')).rejects.toEqual(
+			let error: Error | null = null;
+			try {
+				await resourceFetch.fetch('path/to/script/');
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
 				new DOMException(
 					`Failed to perform request to "${URL}path/to/script/". Status 404 Not Found.`
 				)
@@ -103,9 +111,15 @@ describe('ResourceFetch', () => {
 				};
 			});
 
-			expect(() => {
+			let error: Error | null = null;
+
+			try {
 				resourceFetch.fetchSync('path/to/script/');
-			}).toThrowError(
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
 				new DOMException(
 					`Failed to perform request to "${URL}path/to/script/". Status 404 Not Found.`
 				)

@@ -315,7 +315,7 @@ describe('Window', () => {
 			expect(newWindow2.name).toBe('');
 			expect(newWindow2.location.href).toBe('https://localhost:8080/test/2/');
 
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await new Promise((resolve) => setTimeout(resolve, 2));
 
 			expect(newWindow2.document.body.innerHTML).toBe('Test');
 		});
@@ -343,7 +343,7 @@ describe('Window', () => {
 			expect(newWindow2.name).toBe('');
 			expect(newWindow2.location.href).toBe('https://localhost:8080/test/2/');
 
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await new Promise((resolve) => setTimeout(resolve, 2));
 
 			expect(newWindow2.document.body.innerHTML).toBe('Test');
 		});
