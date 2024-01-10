@@ -137,6 +137,23 @@ describe('BrowserPage', () => {
 		});
 	});
 
+	describe('waitForNavigation()', () => {
+		it('Waits page to have been navigated.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			let isCalled = false;
+
+			vi.spyOn(page.mainFrame, 'waitForNavigation').mockImplementation((): Promise<void> => {
+				isCalled = true;
+				return Promise.resolve();
+			});
+
+			await page.waitForNavigation();
+
+			expect(isCalled).toBe(true);
+		});
+	});
+
 	describe('abort()', () => {
 		it('Aborts all ongoing operations.', async () => {
 			const browser = new Browser();

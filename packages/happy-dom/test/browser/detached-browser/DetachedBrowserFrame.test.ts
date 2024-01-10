@@ -13,6 +13,7 @@ import BrowserNavigationCrossOriginPolicyEnum from '../../../src/browser/enums/B
 import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFactory';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../../src/fetch/Headers';
+import IHTMLAnchorElement from '../../../src/nodes/html-anchor-element/IHTMLAnchorElement';
 
 describe('DetachedBrowserFrame', () => {
 	afterEach(() => {
@@ -142,6 +143,41 @@ describe('DetachedBrowserFrame', () => {
 			expect(page.mainFrame.window['test']).toBe(1);
 			expect(frame1.window['test']).toBe(2);
 			expect(frame2.window['test']).toBe(3);
+		});
+	});
+
+	describe('waitForNavigation()', () => {
+		it('Waits page to have been navigated.', async () => {
+			let count = 0;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				count++;
+				return Promise.resolve(<IResponse>{
+					text: () =>
+						new Promise((resolve) =>
+							setTimeout(
+								() =>
+									resolve(
+										count === 1 ? '<a href="http://localhost:3000/navigated/">' : '<b>Navigated</b>'
+									),
+								1
+							)
+						)
+				});
+			});
+
+			const browser = new DetachedBrowser(BrowserWindow);
+			const page = browser.newPage();
+
+			await page.mainFrame.goto('http://localhost:3000', {
+				referrer: 'http://localhost:3000/referrer',
+				referrerPolicy: 'no-referrer-when-downgrade'
+			});
+
+			(<IHTMLAnchorElement>page.mainFrame.document.querySelector('a')).click();
+
+			await page.mainFrame.waitForNavigation();
+
+			expect(page.mainFrame.document.querySelector('b')?.textContent).toBe('Navigated');
 		});
 	});
 
