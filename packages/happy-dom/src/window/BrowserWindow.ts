@@ -324,6 +324,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly TreeWalker = TreeWalker;
 	public readonly MutationObserver = MutationObserver;
 	public readonly MutationRecord = MutationRecord;
+	public readonly CSSStyleDeclaration = CSSStyleDeclaration;
 	public readonly EventTarget = EventTarget;
 	public readonly MessagePort = MessagePort;
 	public readonly DataTransfer = DataTransfer;

@@ -47,7 +47,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * Returns named item.
 	 *
 	 * @param name Name.
-	 * @returns Itme.
+	 * @returns Item.
 	 */
 	public getNamedItem(name: string): IAttr | null {
 		return this[PropertySymbol.namedItems][name] || null;

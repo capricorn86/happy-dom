@@ -4,6 +4,8 @@ import IBrowserWindow from '../window/IBrowserWindow.js';
 import Permissions from '../permissions/Permissions.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
+import Blob from '../file/Blob.js';
+import FormData from '../form-data/FormData.js';
 
 /**
  * Browser Navigator API.
@@ -210,6 +212,24 @@ export default class Navigator {
 	 */
 	public get plugins(): PluginArray {
 		return new PluginArray([]);
+	}
+
+	/**
+	 * Sends an HTTP POST request containing a small amount of data to a web server.
+	 *
+	 * @param url URL.
+	 * @param data Data.
+	 * @returns "true" if the user agent successfully queued the data for transfer. Otherwise, it returns "false".
+	 */
+	public sendBeacon(
+		url: string,
+		data: string | Blob | ArrayBuffer | ArrayBufferView | FormData
+	): boolean {
+		this.#ownerWindow.fetch(url, {
+			method: 'POST',
+			body: data
+		});
+		return true;
 	}
 
 	/**

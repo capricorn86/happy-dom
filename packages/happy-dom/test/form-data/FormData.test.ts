@@ -92,7 +92,7 @@ describe('FormData', () => {
 			formData.set('key2', 'value2');
 			const values: Array<{ key: string; value: string | File }> = [];
 
-			formData.forEach((key, value) => values.push({ key, value }));
+			formData.forEach((value, key) => values.push({ key, value }));
 
 			expect(values).toEqual([
 				{ key: 'key1', value: 'value1' },

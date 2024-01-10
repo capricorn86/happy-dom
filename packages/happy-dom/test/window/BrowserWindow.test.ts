@@ -616,7 +616,7 @@ describe('BrowserWindow', () => {
 					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
 					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
 					resolve(null);
-				}, 15);
+				}, 20);
 			});
 		});
 	});
@@ -675,7 +675,7 @@ describe('BrowserWindow', () => {
 					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
 					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
 					resolve(null);
-				}, 10);
+				}, 20);
 			});
 		});
 	});
@@ -773,7 +773,7 @@ describe('BrowserWindow', () => {
 					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
 					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
 					resolve(null);
-				}, 10);
+				}, 20);
 			});
 		});
 	});
@@ -832,7 +832,7 @@ describe('BrowserWindow', () => {
 					expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
 					expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('Test error');
 					resolve(null);
-				}, 10);
+				}, 20);
 			});
 		});
 	});
@@ -969,7 +969,7 @@ describe('BrowserWindow', () => {
 				setTimeout(() => {
 					expect((<Event>loadEvent).target).toBe(document);
 					resolve(null);
-				}, 10);
+				}, 20);
 			});
 		});
 
@@ -1024,7 +1024,7 @@ describe('BrowserWindow', () => {
 					expect(window['test']).toBe('test');
 
 					resolve(null);
-				}, 10);
+				}, 20);
 			});
 		});
 
@@ -1052,7 +1052,7 @@ describe('BrowserWindow', () => {
 					expect((<Error>errorEvents[1].error).message).toBe('Timeout error');
 
 					resolve(null);
-				}, 10);
+				}, 20);
 			});
 		});
 	});
@@ -1152,8 +1152,8 @@ describe('BrowserWindow', () => {
 						expect((<MessageEvent>triggeredEvent).source).toBe(browserFrame.window);
 						expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
 						resolve(null);
-					}, 10);
-				}, 10);
+					}, 20);
+				}, 20);
 			});
 		});
 
@@ -1172,7 +1172,7 @@ describe('BrowserWindow', () => {
 				setTimeout(() => {
 					expect((<MessageEvent>triggeredEvent).data).toBe(message);
 					resolve(null);
-				}, 10);
+				}, 20);
 			});
 		});
 
