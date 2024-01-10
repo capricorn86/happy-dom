@@ -81,9 +81,6 @@ const page = browser.newPage();
 // Navigates page
 await page.goto('https://github.com/capricorn86');
 
-// Waits for all operations on the page to complete (fetch, timers etc.)
-await page.waitUntilComplete();
-
 // Clicks on link
 page.mainFrame.document.querySelector('a[href*="capricorn86/happy-dom"]').click();
 

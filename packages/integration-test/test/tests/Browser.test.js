@@ -11,7 +11,7 @@ describe('Browser', () => {
 		await page.goto('https://github.com/capricorn86');
 
 		page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]').click();
-		await page.waitForNavigation();
+		await page.waitUntilComplete();
 
 		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom');
 		expect(
