@@ -1,4 +1,5 @@
 import Event from '../event/Event.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IDocument from '../nodes/document/IDocument.js';
@@ -19,9 +20,9 @@ import SelectionDirectionEnum from './SelectionDirectionEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Selection.
  */
 export default class Selection {
-	private readonly _ownerDocument: IDocument = null;
-	private _range: Range = null;
-	private _direction: SelectionDirectionEnum = SelectionDirectionEnum.directionless;
+	readonly #ownerDocument: IDocument = null;
+	#range: Range = null;
+	#direction: SelectionDirectionEnum = SelectionDirectionEnum.directionless;
 
 	/**
 	 * Constructor.
@@ -29,7 +30,7 @@ export default class Selection {
 	 * @param ownerDocument Owner document.
 	 */
 	constructor(ownerDocument: IDocument) {
-		this._ownerDocument = ownerDocument;
+		this.#ownerDocument = ownerDocument;
 	}
 
 	/**
@@ -39,7 +40,7 @@ export default class Selection {
 	 * @returns Range count.
 	 */
 	public get rangeCount(): number {
-		return this._range ? 1 : 0;
+		return this.#range ? 1 : 0;
 	}
 
 	/**
@@ -49,7 +50,7 @@ export default class Selection {
 	 * @returns "true" if collapsed.
 	 */
 	public get isCollapsed(): boolean {
-		return this._range === null || this._range.collapsed;
+		return this.#range === null || this.#range.collapsed;
 	}
 
 	/**
@@ -59,9 +60,9 @@ export default class Selection {
 	 * @returns Type.
 	 */
 	public get type(): string {
-		if (!this._range) {
+		if (!this.#range) {
 			return 'None';
-		} else if (this._range.collapsed) {
+		} else if (this.#range.collapsed) {
 			return 'Caret';
 		}
 
@@ -75,12 +76,12 @@ export default class Selection {
 	 * @returns Node.
 	 */
 	public get anchorNode(): INode {
-		if (!this._range) {
+		if (!this.#range) {
 			return null;
 		}
-		return this._direction === SelectionDirectionEnum.forwards
-			? this._range.startContainer
-			: this._range.endContainer;
+		return this.#direction === SelectionDirectionEnum.forwards
+			? this.#range.startContainer
+			: this.#range.endContainer;
 	}
 
 	/**
@@ -90,12 +91,12 @@ export default class Selection {
 	 * @returns Node.
 	 */
 	public get anchorOffset(): number {
-		if (!this._range) {
+		if (!this.#range) {
 			return null;
 		}
-		return this._direction === SelectionDirectionEnum.forwards
-			? this._range.startOffset
-			: this._range.endOffset;
+		return this.#direction === SelectionDirectionEnum.forwards
+			? this.#range.startOffset
+			: this.#range.endOffset;
 	}
 
 	/**
@@ -172,8 +173,8 @@ export default class Selection {
 		if (!newRange) {
 			throw new Error('Failed to execute addRange on Selection. Parameter 1 is not of type Range.');
 		}
-		if (!this._range && newRange._ownerDocument === this._ownerDocument) {
-			this._associateRange(newRange);
+		if (!this.#range && newRange[PropertySymbol.ownerDocument] === this.#ownerDocument) {
+			this.#associateRange(newRange);
 		}
 	}
 
@@ -185,11 +186,11 @@ export default class Selection {
 	 * @returns Range.
 	 */
 	public getRangeAt(index: number): Range {
-		if (!this._range || index !== 0) {
+		if (!this.#range || index !== 0) {
 			throw new DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError);
 		}
 
-		return this._range;
+		return this.#range;
 	}
 
 	/**
@@ -199,17 +200,17 @@ export default class Selection {
 	 * @param range Range.
 	 */
 	public removeRange(range: Range): void {
-		if (this._range !== range) {
+		if (this.#range !== range) {
 			throw new DOMException('Invalid range.', DOMExceptionNameEnum.notFoundError);
 		}
-		this._associateRange(null);
+		this.#associateRange(null);
 	}
 
 	/**
 	 * Removes all ranges.
 	 */
 	public removeAllRanges(): void {
-		this._associateRange(null);
+		this.#associateRange(null);
 	}
 
 	/**
@@ -245,18 +246,18 @@ export default class Selection {
 			throw new DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError);
 		}
 
-		if (node.ownerDocument !== this._ownerDocument) {
+		if (node.ownerDocument !== this.#ownerDocument) {
 			return;
 		}
 
-		const newRange = new Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
-		newRange._start.node = node;
-		newRange._start.offset = offset;
-		newRange._end.node = node;
-		newRange._end.offset = offset;
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = offset;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = offset;
 
-		this._associateRange(newRange);
+		this.#associateRange(newRange);
 	}
 
 	/**
@@ -277,22 +278,22 @@ export default class Selection {
 	 * @see https://w3c.github.io/selection-api/#dom-selection-collapsetoend
 	 */
 	public collapseToEnd(): void {
-		if (this._range === null) {
+		if (this.#range === null) {
 			throw new DOMException(
 				'There is no selection to collapse.',
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
-		const { node, offset } = this._range._end;
-		const newRange = new Range();
+		const { node, offset } = this.#range[PropertySymbol.end];
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
-		newRange._start.node = node;
-		newRange._start.offset = offset;
-		newRange._end.node = node;
-		newRange._end.offset = offset;
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = offset;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = offset;
 
-		this._associateRange(newRange);
+		this.#associateRange(newRange);
 	}
 
 	/**
@@ -301,22 +302,22 @@ export default class Selection {
 	 * @see https://w3c.github.io/selection-api/#dom-selection-collapsetostart
 	 */
 	public collapseToStart(): void {
-		if (!this._range) {
+		if (!this.#range) {
 			throw new DOMException(
 				'There is no selection to collapse.',
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
-		const { node, offset } = this._range._start;
-		const newRange = new Range();
+		const { node, offset } = this.#range[PropertySymbol.start];
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
-		newRange._start.node = node;
-		newRange._start.offset = offset;
-		newRange._end.node = node;
-		newRange._end.offset = offset;
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = offset;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = offset;
 
-		this._associateRange(newRange);
+		this.#associateRange(newRange);
 	}
 
 	/**
@@ -328,16 +329,17 @@ export default class Selection {
 	 * @returns Always returns "true" for now.
 	 */
 	public containsNode(node: INode, allowPartialContainment = false): boolean {
-		if (!this._range || node.ownerDocument !== this._ownerDocument) {
+		if (!this.#range || node.ownerDocument !== this.#ownerDocument) {
 			return false;
 		}
 
-		const { _start, _end } = this._range;
-
 		const startIsBeforeNode =
-			RangeUtility.compareBoundaryPointsPosition(_start, { node, offset: 0 }) === -1;
+			RangeUtility.compareBoundaryPointsPosition(this.#range[PropertySymbol.start], {
+				node,
+				offset: 0
+			}) === -1;
 		const endIsAfterNode =
-			RangeUtility.compareBoundaryPointsPosition(_end, {
+			RangeUtility.compareBoundaryPointsPosition(this.#range[PropertySymbol.end], {
 				node,
 				offset: NodeUtility.getNodeLength(node)
 			}) === 1;
@@ -353,8 +355,8 @@ export default class Selection {
 	 * @see https://w3c.github.io/selection-api/#dom-selection-deletefromdocument
 	 */
 	public deleteFromDocument(): void {
-		if (this._range) {
-			this._range.deleteContents();
+		if (this.#range) {
+			this.#range.deleteContents();
 		}
 	}
 
@@ -366,11 +368,11 @@ export default class Selection {
 	 * @param offset Offset.
 	 */
 	public extend(node: INode, offset: number): void {
-		if (node.ownerDocument !== this._ownerDocument) {
+		if (node.ownerDocument !== this.#ownerDocument) {
 			return;
 		}
 
-		if (!this._range) {
+		if (!this.#range) {
 			throw new DOMException(
 				'There is no selection to extend.',
 				DOMExceptionNameEnum.invalidStateError
@@ -379,34 +381,34 @@ export default class Selection {
 
 		const anchorNode = this.anchorNode;
 		const anchorOffset = this.anchorOffset;
-		const newRange = new Range();
-		newRange._start.node = node;
-		newRange._start.offset = 0;
-		newRange._end.node = node;
-		newRange._end.offset = 0;
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = 0;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = 0;
 
-		if (node.ownerDocument !== this._range._ownerDocument) {
-			newRange._start.offset = offset;
-			newRange._end.offset = offset;
+		if (node.ownerDocument !== this.#range[PropertySymbol.ownerDocument]) {
+			newRange[PropertySymbol.start].offset = offset;
+			newRange[PropertySymbol.end].offset = offset;
 		} else if (
 			RangeUtility.compareBoundaryPointsPosition(
 				{ node: anchorNode, offset: anchorOffset },
 				{ node, offset }
 			) <= 0
 		) {
-			newRange._start.node = anchorNode;
-			newRange._start.offset = anchorOffset;
-			newRange._end.node = node;
-			newRange._end.offset = offset;
+			newRange[PropertySymbol.start].node = anchorNode;
+			newRange[PropertySymbol.start].offset = anchorOffset;
+			newRange[PropertySymbol.end].node = node;
+			newRange[PropertySymbol.end].offset = offset;
 		} else {
-			newRange._start.node = node;
-			newRange._start.offset = offset;
-			newRange._end.node = anchorNode;
-			newRange._end.offset = anchorOffset;
+			newRange[PropertySymbol.start].node = node;
+			newRange[PropertySymbol.start].offset = offset;
+			newRange[PropertySymbol.end].node = anchorNode;
+			newRange[PropertySymbol.end].offset = anchorOffset;
 		}
 
-		this._associateRange(newRange);
-		this._direction =
+		this.#associateRange(newRange);
+		this.#direction =
 			RangeUtility.compareBoundaryPointsPosition(
 				{ node, offset },
 				{ node: anchorNode, offset: anchorOffset }
@@ -419,8 +421,7 @@ export default class Selection {
 	 * Selects all children.
 	 *
 	 * @see https://w3c.github.io/selection-api/#dom-selection-selectallchildren
-	 * @param node
-	 * @param _parentNode Parent node.
+	 * @param node Node.
 	 */
 	public selectAllChildren(node: INode): void {
 		if (node.nodeType === NodeTypeEnum.documentTypeNode) {
@@ -430,19 +431,19 @@ export default class Selection {
 			);
 		}
 
-		if (node.ownerDocument !== this._ownerDocument) {
+		if (node.ownerDocument !== this.#ownerDocument) {
 			return;
 		}
 
 		const length = node.childNodes.length;
-		const newRange = new Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
-		newRange._start.node = node;
-		newRange._start.offset = 0;
-		newRange._end.node = node;
-		newRange._end.offset = length;
+		newRange[PropertySymbol.start].node = node;
+		newRange[PropertySymbol.start].offset = 0;
+		newRange[PropertySymbol.end].node = node;
+		newRange[PropertySymbol.end].offset = length;
 
-		this._associateRange(newRange);
+		this.#associateRange(newRange);
 	}
 
 	/**
@@ -471,26 +472,26 @@ export default class Selection {
 		}
 
 		if (
-			anchorNode.ownerDocument !== this._ownerDocument ||
-			focusNode.ownerDocument !== this._ownerDocument
+			anchorNode.ownerDocument !== this.#ownerDocument ||
+			focusNode.ownerDocument !== this.#ownerDocument
 		) {
 			return;
 		}
 
 		const anchor = { node: anchorNode, offset: anchorOffset };
 		const focus = { node: focusNode, offset: focusOffset };
-		const newRange = new Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
 
 		if (RangeUtility.compareBoundaryPointsPosition(anchor, focus) === -1) {
-			newRange._start = anchor;
-			newRange._end = focus;
+			newRange[PropertySymbol.start] = anchor;
+			newRange[PropertySymbol.end] = focus;
 		} else {
-			newRange._start = focus;
-			newRange._end = anchor;
+			newRange[PropertySymbol.start] = focus;
+			newRange[PropertySymbol.end] = anchor;
 		}
 
-		this._associateRange(newRange);
-		this._direction =
+		this.#associateRange(newRange);
+		this.#direction =
 			RangeUtility.compareBoundaryPointsPosition(focus, anchor) === -1
 				? SelectionDirectionEnum.backwards
 				: SelectionDirectionEnum.forwards;
@@ -502,7 +503,7 @@ export default class Selection {
 	 * @returns Selection as string.
 	 */
 	public toString(): string {
-		return this._range ? this._range.toString() : '';
+		return this.#range ? this.#range.toString() : '';
 	}
 
 	/**
@@ -510,15 +511,15 @@ export default class Selection {
 	 *
 	 * @param range Range.
 	 */
-	protected _associateRange(range: Range): void {
-		const oldRange = this._range;
-		this._range = range;
-		this._direction =
+	#associateRange(range: Range): void {
+		const oldRange = this.#range;
+		this.#range = range;
+		this.#direction =
 			range === null ? SelectionDirectionEnum.directionless : SelectionDirectionEnum.forwards;
 
-		if (oldRange !== this._range) {
+		if (oldRange !== this.#range) {
 			// https://w3c.github.io/selection-api/#selectionchange-event
-			this._ownerDocument.dispatchEvent(new Event('selectionchange'));
+			this.#ownerDocument.dispatchEvent(new Event('selectionchange'));
 		}
 	}
 }

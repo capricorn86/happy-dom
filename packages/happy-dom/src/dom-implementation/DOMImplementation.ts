@@ -1,19 +1,21 @@
 import DocumentType from '../nodes/document-type/DocumentType.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IDocument from '../nodes/document/IDocument.js';
+import NodeCreationOwnerDocument from '../nodes/document/NodeCreationOwnerDocument.js';
 
 /**
  * The DOMImplementation interface represents an object providing methods which are not dependent on any particular document. Such an object is returned by the.
  */
 export default class DOMImplementation {
-	protected _ownerDocument: IDocument = null;
+	#document: IDocument;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param ownerDocument
+	 * @param window Window.
 	 */
-	constructor(ownerDocument: IDocument) {
-		this._ownerDocument = ownerDocument;
+	constructor(window: IDocument) {
+		this.#document = window;
 	}
 
 	/**
@@ -22,18 +24,14 @@ export default class DOMImplementation {
 	 * TODO: Not fully implemented.
 	 */
 	public createDocument(): IDocument {
-		const documentClass = this._ownerDocument.constructor;
-		// @ts-ignore
-		documentClass._defaultView = this._ownerDocument.defaultView;
-		// @ts-ignore
-		return new documentClass();
+		return new this.#document[PropertySymbol.defaultView].HTMLDocument();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
 	public createHTMLDocument(): IDocument {
-		return this.createDocument();
+		return new this.#document[PropertySymbol.defaultView].HTMLDocument();
 	}
 
 	/**
@@ -48,8 +46,9 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		DocumentType._ownerDocument = this._ownerDocument;
-		const documentType = new DocumentType();
+		NodeCreationOwnerDocument.ownerDocument = this.#document;
+		const documentType = new this.#document[PropertySymbol.defaultView].DocumentType();
+		NodeCreationOwnerDocument.ownerDocument = null;
 		documentType.name = qualifiedName;
 		documentType.publicId = publicId;
 		documentType.systemId = systemId;

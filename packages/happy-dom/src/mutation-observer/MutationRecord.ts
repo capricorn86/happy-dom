@@ -15,4 +15,13 @@ export default class MutationRecord {
 	public attributeName: string = null;
 	public attributeNamespace: string = null;
 	public oldValue: string = null;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param init Options to initialize the mutation record.
+	 */
+	constructor(init?: Partial<MutationRecord>) {
+		Object.assign(this, init);
+	}
 }

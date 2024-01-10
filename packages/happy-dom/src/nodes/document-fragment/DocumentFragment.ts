@@ -1,4 +1,5 @@
 import Node from '../node/Node.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IElement from '../element/IElement.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
@@ -14,14 +15,14 @@ import INodeList from '../node/INodeList.js';
  */
 export default class DocumentFragment extends Node implements IDocumentFragment {
 	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
-	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection();
-	public _rootNode: INode = this;
+	public readonly [PropertySymbol.children]: IHTMLCollection<IElement> = new HTMLCollection();
+	public [PropertySymbol.rootNode]: INode = this;
 
 	/**
 	 * Returns the document fragment children.
 	 */
 	public get children(): IHTMLCollection<IElement> {
-		return this._children;
+		return this[PropertySymbol.children];
 	}
 
 	/**
@@ -30,7 +31,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this._children.length;
+		return this[PropertySymbol.children].length;
 	}
 
 	/**
@@ -39,7 +40,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
-		return this._children[0] ?? null;
+		return this[PropertySymbol.children][0] ?? null;
 	}
 
 	/**
@@ -48,7 +49,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
-		return this._children[this._children.length - 1] ?? null;
+		return this[PropertySymbol.children][this[PropertySymbol.children].length - 1] ?? null;
 	}
 
 	/**
@@ -58,7 +59,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 */
 	public get textContent(): string {
 		let result = '';
-		for (const childNode of this._childNodes) {
+		for (const childNode of this[PropertySymbol.childNodes]) {
 			if (childNode.nodeType === Node.ELEMENT_NODE || childNode.nodeType === Node.TEXT_NODE) {
 				result += childNode.textContent;
 			}
@@ -72,7 +73,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		for (const child of this._childNodes.slice()) {
+		for (const child of this[PropertySymbol.childNodes].slice()) {
 			this.removeChild(child);
 		}
 		if (textContent) {
@@ -148,9 +149,9 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 		const clone = <DocumentFragment>super.cloneNode(deep);
 
 		if (deep) {
-			for (const node of clone._childNodes) {
+			for (const node of clone[PropertySymbol.childNodes]) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
-					clone._children.push(<IElement>node);
+					clone[PropertySymbol.children].push(<IElement>node);
 				}
 			}
 		}

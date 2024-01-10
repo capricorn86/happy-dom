@@ -1,4 +1,5 @@
 import Element from '../element/Element.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLElement from './IHTMLElement.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
@@ -31,8 +32,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public readonly clientLeft = 0;
 	public readonly clientTop = 0;
 
-	public _style: CSSStyleDeclaration = null;
-	private _dataset: Dataset = null;
+	public [PropertySymbol.style]: CSSStyleDeclaration = null;
+	#dataset: Dataset = null;
 
 	// Events
 	public oncopy: (event: Event) => void | null = null;
@@ -97,10 +98,11 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		let result = '';
 
-		for (const childNode of this._childNodes) {
+		for (const childNode of this[PropertySymbol.childNodes]) {
 			if (childNode.nodeType === NodeTypeEnum.elementNode) {
 				const childElement = <IHTMLElement>childNode;
-				const computedStyle = this.ownerDocument.defaultView.getComputedStyle(childElement);
+				const computedStyle =
+					this.ownerDocument[PropertySymbol.defaultView].getComputedStyle(childElement);
 
 				if (childElement.tagName !== 'SCRIPT' && childElement.tagName !== 'STYLE') {
 					const display = computedStyle.display;
@@ -143,7 +145,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param innerText Inner text.
 	 */
 	public set innerText(text: string) {
-		for (const child of this._childNodes.slice()) {
+		for (const child of this[PropertySymbol.childNodes].slice()) {
 			this.removeChild(child);
 		}
 
@@ -198,10 +200,10 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Style.
 	 */
 	public get style(): CSSStyleDeclaration {
-		if (!this._style) {
-			this._style = new CSSStyleDeclaration(this);
+		if (!this[PropertySymbol.style]) {
+			this[PropertySymbol.style] = new CSSStyleDeclaration(this);
 		}
-		return this._style;
+		return this[PropertySymbol.style];
 	}
 
 	/**
@@ -220,7 +222,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
-		return (this._dataset ??= new Dataset(this)).proxy;
+		return (this.#dataset ??= new Dataset(this)).proxy;
 	}
 
 	/**
@@ -307,8 +309,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 			bubbles: true,
 			composed: true
 		});
-		event._target = this;
-		event._currentTarget = this;
+		event[PropertySymbol.target] = this;
+		event[PropertySymbol.currentTarget] = this;
 		this.dispatchEvent(event);
 	}
 
@@ -337,8 +339,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		(<string>clone.contentEditable) = this.contentEditable;
 		(<boolean>clone.isContentEditable) = this.isContentEditable;
 
-		if (this._style) {
-			clone.style.cssText = this._style.cssText;
+		if (this[PropertySymbol.style]) {
+			clone.style.cssText = this[PropertySymbol.style].cssText;
 		}
 
 		return clone;

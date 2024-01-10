@@ -4,6 +4,8 @@
 const FS = require("fs");
 const Path = require("path");
 
+/* eslint-disable no-console*/
+
 process.on("unhandledRejection", (error) => {
 	console.error(error);
 	process.exit(1);

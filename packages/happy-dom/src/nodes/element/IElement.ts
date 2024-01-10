@@ -182,10 +182,10 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	/**
 	 * Attaches a shadow root.
 	 *
-	 * @param _shadowRootInit Shadow root init.
+	 * @param init Shadow root init.
 	 * @returns Shadow root.
 	 */
-	attachShadow(_shadowRootInit: { mode: string }): IShadowRoot;
+	attachShadow(init: { mode: string }): IShadowRoot;
 
 	/**
 	 * Scrolls to a particular set of coordinates.

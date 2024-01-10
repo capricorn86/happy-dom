@@ -1,4 +1,5 @@
 import Event from '../../event/Event.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import ValidityState from '../../validity-state/ValidityState.js';
@@ -89,7 +90,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @returns Type
 	 */
 	public get type(): string {
-		return this._sanitizeType(this.getAttribute('type'));
+		return this.#sanitizeType(this.getAttribute('type'));
 	}
 
 	/**
@@ -98,7 +99,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @param v Type
 	 */
 	public set type(v: string) {
-		this.setAttribute('type', this._sanitizeType(v));
+		this.setAttribute('type', this.#sanitizeType(v));
 	}
 
 	/**
@@ -129,7 +130,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this._formNode;
+		return <IHTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -174,24 +175,6 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	}
 
 	/**
-	 * Sanitizes type.
-	 *
-	 * TODO: We can improve performance a bit if we make the types as a constant.
-	 *
-	 * @param type Type.
-	 * @returns Type sanitized.
-	 */
-	protected _sanitizeType(type: string): string {
-		type = (type && type.toLowerCase()) || 'submit';
-
-		if (!BUTTON_TYPES.includes(type)) {
-			type = 'submit';
-		}
-
-		return type;
-	}
-
-	/**
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
@@ -205,10 +188,10 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 			event.type === 'click' &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this._formNode &&
+			this[PropertySymbol.formNode] &&
 			this.isConnected
 		) {
-			const form = <IHTMLFormElement>this._formNode;
+			const form = <IHTMLFormElement>this[PropertySymbol.formNode];
 			switch (this.type) {
 				case 'submit':
 					form.requestSubmit();
@@ -225,20 +208,44 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const oldFormNode = <HTMLFormElement>this._formNode;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
-		super._connectToNode(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldFormNode !== this._formNode) {
+		if (oldFormNode !== this[PropertySymbol.formNode]) {
 			if (oldFormNode) {
-				oldFormNode._removeFormControlItem(this, this.name);
-				oldFormNode._removeFormControlItem(this, this.id);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
-			if (this._formNode) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.name);
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.id);
+			if (this[PropertySymbol.formNode]) {
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.name
+				);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.id
+				);
 			}
 		}
+	}
+
+	/**
+	 * Sanitizes type.
+	 *
+	 * TODO: We can improve performance a bit if we make the types as a constant.
+	 *
+	 * @param type Type.
+	 * @returns Type sanitized.
+	 */
+	#sanitizeType(type: string): string {
+		type = (type && type.toLowerCase()) || 'submit';
+
+		if (!BUTTON_TYPES.includes(type)) {
+			type = 'submit';
+		}
+
+		return type;
 	}
 }

@@ -1,4 +1,5 @@
 import DOMException from '../exception/DOMException.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import Node from '../nodes/node/Node.js';
 
@@ -6,8 +7,10 @@ import Node from '../nodes/node/Node.js';
  * Custom elements registry.
  */
 export default class CustomElementRegistry {
-	public _registry: { [k: string]: { elementClass: typeof HTMLElement; extends: string } } = {};
-	public _callbacks: { [k: string]: (() => void)[] } = {};
+	public [PropertySymbol.registry]: {
+		[k: string]: { elementClass: typeof HTMLElement; extends: string };
+	} = {};
+	public [PropertySymbol.callbacks]: { [k: string]: (() => void)[] } = {};
 
 	/**
 	 * Defines a custom element class.
@@ -32,19 +35,19 @@ export default class CustomElementRegistry {
 			);
 		}
 
-		this._registry[upperTagName] = {
+		this[PropertySymbol.registry][upperTagName] = {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
 
 		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
 		if (elementClass.prototype.attributeChangedCallback) {
-			elementClass._observedAttributes = elementClass.observedAttributes;
+			elementClass[PropertySymbol.observedAttributes] = elementClass.observedAttributes;
 		}
 
-		if (this._callbacks[upperTagName]) {
-			const callbacks = this._callbacks[upperTagName];
-			delete this._callbacks[upperTagName];
+		if (this[PropertySymbol.callbacks][upperTagName]) {
+			const callbacks = this[PropertySymbol.callbacks][upperTagName];
+			delete this[PropertySymbol.callbacks][upperTagName];
 			for (const callback of callbacks) {
 				callback();
 			}
@@ -59,7 +62,9 @@ export default class CustomElementRegistry {
 	 */
 	public get(tagName: string): typeof HTMLElement {
 		const upperTagName = tagName.toUpperCase();
-		return this._registry[upperTagName] ? this._registry[upperTagName].elementClass : undefined;
+		return this[PropertySymbol.registry][upperTagName]
+			? this[PropertySymbol.registry][upperTagName].elementClass
+			: undefined;
 	}
 
 	/**
@@ -85,8 +90,9 @@ export default class CustomElementRegistry {
 			return Promise.resolve();
 		}
 		return new Promise((resolve) => {
-			this._callbacks[upperTagName] = this._callbacks[upperTagName] || [];
-			this._callbacks[upperTagName].push(resolve);
+			this[PropertySymbol.callbacks][upperTagName] =
+				this[PropertySymbol.callbacks][upperTagName] || [];
+			this[PropertySymbol.callbacks][upperTagName].push(resolve);
 		});
 	}
 }

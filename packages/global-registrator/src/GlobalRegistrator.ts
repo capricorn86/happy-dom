@@ -25,11 +25,10 @@ export default class GlobalRegistrator {
 			if (global[key] !== window[key] && !IGNORE_LIST.includes(key)) {
 				this.registered[key] =
 					global[key] !== window[key] && global[key] !== undefined ? global[key] : null;
-
-				// Only bind functions that aren't used as classes, since bound functions can't be extended.
-				const bind = typeof window[key] === 'function' && !isClassLikeName(key);
-
-				global[key] = bind ? window[key].bind(global) : window[key];
+				global[key] =
+					typeof window[key] === 'function' && !window[key].toString().startsWith('class ')
+						? window[key].bind(global)
+						: window[key];
 			}
 		}
 
@@ -59,8 +58,4 @@ export default class GlobalRegistrator {
 
 		this.registered = null;
 	}
-}
-
-function isClassLikeName(name: string): boolean {
-	return name[0] === name[0].toUpperCase();
 }

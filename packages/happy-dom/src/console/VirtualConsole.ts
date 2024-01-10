@@ -15,11 +15,11 @@ export default class VirtualConsole implements Console {
 	// This is not part of the browser specs.
 	public Console: ConsoleConstructor;
 
-	private _printer: IVirtualConsolePrinter;
-	private _count: { [label: string]: number } = {};
-	private _time: { [label: string]: number } = {};
-	private _groupID = 0;
-	private _groups: IVirtualConsoleLogGroup[] = [];
+	#printer: IVirtualConsolePrinter;
+	#count: { [label: string]: number } = {};
+	#time: { [label: string]: number } = {};
+	#groupID = 0;
+	#groups: IVirtualConsoleLogGroup[] = [];
 
 	/**
 	 * Constructor.
@@ -27,7 +27,7 @@ export default class VirtualConsole implements Console {
 	 * @param printer Console printer.
 	 */
 	constructor(printer: IVirtualConsolePrinter) {
-		this._printer = printer;
+		this.#printer = printer;
 	}
 
 	/**
@@ -38,11 +38,11 @@ export default class VirtualConsole implements Console {
 	 */
 	public assert(assertion: boolean, ...args: Array<object | string>): void {
 		if (!assertion) {
-			this._printer.print({
+			this.#printer.print({
 				type: VirtualConsoleLogTypeEnum.assert,
 				level: VirtualConsoleLogLevelEnum.error,
 				message: ['Assertion failed:', ...args],
-				group: this._groups[this._groups.length - 1] || null
+				group: this.#groups[this.#groups.length - 1] || null
 			});
 		}
 	}
@@ -51,7 +51,7 @@ export default class VirtualConsole implements Console {
 	 * Clears the console.
 	 */
 	public clear(): void {
-		this._printer.clear();
+		this.#printer.clear();
 	}
 
 	/**
@@ -60,17 +60,17 @@ export default class VirtualConsole implements Console {
 	 * @param [label='default'] Label.
 	 */
 	public count(label = 'default'): void {
-		if (!this._count[label]) {
-			this._count[label] = 0;
+		if (!this.#count[label]) {
+			this.#count[label] = 0;
 		}
 
-		this._count[label]++;
+		this.#count[label]++;
 
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.count,
 			level: VirtualConsoleLogLevelEnum.info,
-			message: [`${label}: ${this._count[label]}`],
-			group: this._groups[this._groups.length - 1] || null
+			message: [`${label}: ${this.#count[label]}`],
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -80,13 +80,13 @@ export default class VirtualConsole implements Console {
 	 * @param [label='default'] Label.
 	 */
 	public countReset(label = 'default'): void {
-		delete this._count[label];
+		delete this.#count[label];
 
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.countReset,
 			level: VirtualConsoleLogLevelEnum.warn,
 			message: [`${label}: 0`],
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -96,11 +96,11 @@ export default class VirtualConsole implements Console {
 	 * @param args Arguments.
 	 */
 	public debug(...args: Array<object | string>): void {
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.debug,
 			level: VirtualConsoleLogLevelEnum.log,
 			message: args,
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -110,11 +110,11 @@ export default class VirtualConsole implements Console {
 	 * @param data Data.
 	 */
 	public dir(data: object): void {
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.dir,
 			level: VirtualConsoleLogLevelEnum.log,
 			message: [data],
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -124,11 +124,11 @@ export default class VirtualConsole implements Console {
 	 * @param data Data.
 	 */
 	public dirxml(data: object): void {
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.dirxml,
 			level: VirtualConsoleLogLevelEnum.log,
 			message: [data],
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -138,11 +138,11 @@ export default class VirtualConsole implements Console {
 	 * @param args Arguments.
 	 */
 	public error(...args: Array<object | string>): void {
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.error,
 			level: VirtualConsoleLogLevelEnum.error,
 			message: args,
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -163,15 +163,15 @@ export default class VirtualConsole implements Console {
 	 * @param [label] Label.
 	 */
 	public group(label?: string): void {
-		this._groupID++;
+		this.#groupID++;
 		const group = {
-			id: this._groupID,
+			id: this.#groupID,
 			label: label || 'default',
 			collapsed: false,
-			parent: this._groups[this._groups.length - 1] || null
+			parent: this.#groups[this.#groups.length - 1] || null
 		};
-		this._groups.push(group);
-		this._printer.print({
+		this.#groups.push(group);
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.group,
 			level: VirtualConsoleLogLevelEnum.log,
 			message: [label || 'default'],
@@ -185,15 +185,15 @@ export default class VirtualConsole implements Console {
 	 * @param [label] Label.
 	 */
 	public groupCollapsed(label?: string): void {
-		this._groupID++;
+		this.#groupID++;
 		const group = {
-			id: this._groupID,
+			id: this.#groupID,
 			label: label || 'default',
 			collapsed: true,
-			parent: this._groups[this._groups.length - 1] || null
+			parent: this.#groups[this.#groups.length - 1] || null
 		};
-		this._groups.push(group);
-		this._printer.print({
+		this.#groups.push(group);
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.groupCollapsed,
 			level: VirtualConsoleLogLevelEnum.log,
 			message: [label || 'default'],
@@ -205,10 +205,10 @@ export default class VirtualConsole implements Console {
 	 * Exits the current inline group in the console.
 	 */
 	public groupEnd(): void {
-		if (this._groups.length === 0) {
+		if (this.#groups.length === 0) {
 			return;
 		}
-		this._groups.pop();
+		this.#groups.pop();
 	}
 
 	/**
@@ -216,11 +216,11 @@ export default class VirtualConsole implements Console {
 	 * @param args
 	 */
 	public info(...args: Array<object | string>): void {
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.info,
 			level: VirtualConsoleLogLevelEnum.info,
 			message: args,
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -230,11 +230,11 @@ export default class VirtualConsole implements Console {
 	 * @param args Arguments.
 	 */
 	public log(...args: Array<object | string>): void {
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.log,
 			level: VirtualConsoleLogLevelEnum.log,
 			message: args,
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -262,11 +262,11 @@ export default class VirtualConsole implements Console {
 	 * @param data Data.
 	 */
 	public table(data: { [key: string]: number | string | boolean } | string[]): void {
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.table,
 			level: VirtualConsoleLogLevelEnum.log,
 			message: [data],
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -276,7 +276,7 @@ export default class VirtualConsole implements Console {
 	 * @param [label=default] Label.
 	 */
 	public time(label = 'default'): void {
-		this._time[label] = PerfHooks.performance.now();
+		this.#time[label] = PerfHooks.performance.now();
 	}
 
 	/**
@@ -286,14 +286,14 @@ export default class VirtualConsole implements Console {
 	 * @param [label=default] Label.
 	 */
 	public timeEnd(label = 'default'): void {
-		const time = this._time[label];
+		const time = this.#time[label];
 		if (time) {
 			const duration = PerfHooks.performance.now() - time;
-			this._printer.print({
+			this.#printer.print({
 				type: VirtualConsoleLogTypeEnum.timeEnd,
 				level: VirtualConsoleLogLevelEnum.info,
 				message: [`${label}: ${duration}ms - timer ended`],
-				group: this._groups[this._groups.length - 1] || null
+				group: this.#groups[this.#groups.length - 1] || null
 			});
 		}
 	}
@@ -306,14 +306,14 @@ export default class VirtualConsole implements Console {
 	 * @param [args] Arguments.
 	 */
 	public timeLog(label = 'default', ...args: Array<object | string>): void {
-		const time = this._time[label];
+		const time = this.#time[label];
 		if (time) {
 			const duration = PerfHooks.performance.now() - time;
-			this._printer.print({
+			this.#printer.print({
 				type: VirtualConsoleLogTypeEnum.timeLog,
 				level: VirtualConsoleLogLevelEnum.info,
 				message: [`${label}: ${duration}ms`, ...args],
-				group: this._groups[this._groups.length - 1] || null
+				group: this.#groups[this.#groups.length - 1] || null
 			});
 		}
 	}
@@ -333,11 +333,11 @@ export default class VirtualConsole implements Console {
 	 * @param args Arguments.
 	 */
 	public trace(...args: Array<object | string>): void {
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.trace,
 			level: VirtualConsoleLogLevelEnum.log,
 			message: [...args, new Error('stack').stack.replace('Error: stack', '')],
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 
@@ -347,11 +347,11 @@ export default class VirtualConsole implements Console {
 	 * @param args Arguments.
 	 */
 	public warn(...args: Array<object | string>): void {
-		this._printer.print({
+		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.warn,
 			level: VirtualConsoleLogLevelEnum.warn,
 			message: args,
-			group: this._groups[this._groups.length - 1] || null
+			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
 }

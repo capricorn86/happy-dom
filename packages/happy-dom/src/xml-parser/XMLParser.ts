@@ -1,4 +1,5 @@
 import IDocument from '../nodes/document/IDocument.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import VoidElements from '../config/VoidElements.js';
 import UnnestableElements from '../config/UnnestableElements.js';
 import NamespaceURI from '../config/NamespaceURI.js';
@@ -286,10 +287,10 @@ export default class XMLParser {
 							// However, they are allowed to be executed when document.write() is used.
 							// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
 							if (plainTextTagName === 'SCRIPT') {
-								(<HTMLScriptElement>currentNode)._evaluateScript = evaluateScripts;
+								(<HTMLScriptElement>currentNode)[PropertySymbol.evaluateScript] = evaluateScripts;
 							} else if (plainTextTagName === 'LINK') {
 								// An assumption that the same rule should be applied for the HTMLLinkElement is made here.
-								(<HTMLLinkElement>currentNode)._evaluateCSS = evaluateScripts;
+								(<HTMLLinkElement>currentNode)[PropertySymbol.evaluateCSS] = evaluateScripts;
 							}
 
 							// Plain text elements such as <script> and <style> should only contain text.

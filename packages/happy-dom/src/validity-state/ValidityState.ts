@@ -1,4 +1,5 @@
 import IHTMLButtonElement from '../nodes/html-button-element/IHTMLButtonElement.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
@@ -182,7 +183,8 @@ export default class ValidityState {
 					return true;
 				}
 				const root =
-					<IHTMLFormElement>this.element._formNode || <IShadowRoot>this.element.getRootNode();
+					<IHTMLFormElement>this.element[PropertySymbol.formNode] ||
+					<IShadowRoot>this.element.getRootNode();
 				return !root || !root.querySelector(`input[name="${this.element.name}"]:checked`);
 			}
 		}

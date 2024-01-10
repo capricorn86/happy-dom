@@ -1,27 +1,35 @@
-import Document from '../../src/nodes/document/Document.js';
-import DOMImplementation from '../../src/dom-implementation/DOMImplementation.js';
+import HTMLDocument from '../../src/nodes/html-document/HTMLDocument';
+import XMLDocument from '../../src/nodes/xml-document/XMLDocument';
+import IWindow from '../../src/window/IWindow';
+import Window from '../../src/window/Window';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('DOMImplementation', () => {
-	let ownerDocument: Document;
-	let domImplementation: DOMImplementation;
+	let window: IWindow;
 
 	beforeEach(() => {
-		ownerDocument = new Document();
-		domImplementation = new DOMImplementation(ownerDocument);
+		window = new Window();
+	});
+
+	describe('createDocument()', () => {
+		it('Returns a new XMLDocument.', () => {
+			const document = window.document.implementation.createDocument();
+			expect(document instanceof HTMLDocument).toBe(true);
+			expect(document.defaultView).toBe(null);
+		});
 	});
 
 	describe('createHTMLDocument()', () => {
 		it('Returns a new Document.', () => {
-			const document = domImplementation.createHTMLDocument();
-			expect(document instanceof Document).toBe(true);
+			const document = window.document.implementation.createHTMLDocument();
+			expect(document instanceof HTMLDocument).toBe(true);
 			expect(document.defaultView).toBe(null);
 		});
 	});
 
 	describe('createDocumentType()', () => {
 		it('Returns a new Document Type.', () => {
-			const documentType = domImplementation.createDocumentType(
+			const documentType = window.document.implementation.createDocumentType(
 				'qualifiedName',
 				'publicId',
 				'systemId'
@@ -29,7 +37,7 @@ describe('DOMImplementation', () => {
 			expect(documentType.name).toBe('qualifiedName');
 			expect(documentType.publicId).toBe('publicId');
 			expect(documentType.systemId).toBe('systemId');
-			expect(documentType.ownerDocument).toBe(ownerDocument);
+			expect(documentType.ownerDocument).toBe(window.document);
 		});
 	});
 });

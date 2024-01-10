@@ -1,9 +1,11 @@
 #!/bin/env node
-'use strict';
+"use strict";
 
-const GitUtility = require('../build/GitUtility');
+const GitUtility = require("../build/GitUtility");
 
-process.on('unhandledRejection', error => {
+/* eslint-disable no-console*/
+
+process.on("unhandledRejection", (error) => {
 	console.error(error);
 	process.exit(1);
 });

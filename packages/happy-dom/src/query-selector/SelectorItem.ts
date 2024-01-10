@@ -1,4 +1,5 @@
 import DOMException from '../exception/DOMException.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IElement from '../nodes/element/IElement.js';
 import Element from '../nodes/element/Element.js';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
@@ -112,7 +113,9 @@ export default class SelectorItem {
 	 */
 	private matchPsuedo(element: IElement): boolean {
 		const parent = <IElement>element.parentNode;
-		const parentChildren = element.parentNode ? (<Element>element.parentNode)._children : [];
+		const parentChildren = element.parentNode
+			? (<Element>element.parentNode)[PropertySymbol.children]
+			: [];
 
 		if (!this.pseudos) {
 			return true;
@@ -185,7 +188,7 @@ export default class SelectorItem {
 				case 'checked':
 					return element.tagName === 'INPUT' && (<IHTMLInputElement>element).checked;
 				case 'empty':
-					return !(<Element>element)._children.length;
+					return !(<Element>element)[PropertySymbol.children].length;
 				case 'root':
 					return element.tagName === 'HTML';
 				case 'not':

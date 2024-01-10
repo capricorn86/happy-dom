@@ -1,4 +1,5 @@
 import INamedNodeMap from './INamedNodeMap.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IAttr from '../nodes/attr/IAttr.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
@@ -11,7 +12,7 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 export default class NamedNodeMap implements INamedNodeMap {
 	[index: number]: IAttr;
 	public length = 0;
-	protected _namedItems: { [k: string]: IAttr } = {};
+	protected [PropertySymbol.namedItems]: { [k: string]: IAttr } = {};
 
 	/**
 	 * Returns string.
@@ -49,7 +50,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @returns Item.
 	 */
 	public getNamedItem(name: string): IAttr | null {
-		return this._namedItems[name] || null;
+		return this[PropertySymbol.namedItems][name] || null;
 	}
 
 	/**
@@ -82,7 +83,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public setNamedItem(item: IAttr): IAttr | null {
-		return this._setNamedItemWithoutConsequences(item);
+		return this[PropertySymbol.setNamedItemWithoutConsequences](item);
 	}
 
 	/**
@@ -104,7 +105,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @returns Removed item.
 	 */
 	public removeNamedItem(name: string): IAttr {
-		const item = this._removeNamedItem(name);
+		const item = this[PropertySymbol.removeNamedItem](name);
 		if (!item) {
 			throw new DOMException(
 				`Failed to execute 'removeNamedItem' on 'NamedNodeMap': No item with name '${name}' was found.`,
@@ -135,20 +136,20 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param item Item.
 	 * @returns Replaced item.
 	 */
-	public _setNamedItemWithoutConsequences(item: IAttr): IAttr | null {
+	public [PropertySymbol.setNamedItemWithoutConsequences](item: IAttr): IAttr | null {
 		if (item.name) {
-			const replacedItem = this._namedItems[item.name] || null;
+			const replacedItem = this[PropertySymbol.namedItems][item.name] || null;
 
-			this._namedItems[item.name] = item;
+			this[PropertySymbol.namedItems][item.name] = item;
 
 			if (replacedItem) {
-				this._removeNamedItemIndex(replacedItem);
+				this[PropertySymbol.removeNamedItemIndex](replacedItem);
 			}
 
 			this[this.length] = item;
 			this.length++;
 
-			if (this._isValidPropertyName(item.name)) {
+			if (this[PropertySymbol.isValidPropertyName](item.name)) {
 				this[item.name] = item;
 			}
 
@@ -163,8 +164,8 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name of item.
 	 * @returns Removed item, or null if it didn't exist.
 	 */
-	public _removeNamedItem(name: string): IAttr | null {
-		return this._removeNamedItemWithoutConsequences(name);
+	public [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+		return this[PropertySymbol.removeNamedItemWithoutConsequences](name);
 	}
 
 	/**
@@ -173,20 +174,20 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name of item.
 	 * @returns Removed item, or null if it didn't exist.
 	 */
-	public _removeNamedItemWithoutConsequences(name: string): IAttr | null {
-		const removedItem = this._namedItems[name] || null;
+	public [PropertySymbol.removeNamedItemWithoutConsequences](name: string): IAttr | null {
+		const removedItem = this[PropertySymbol.namedItems][name] || null;
 
 		if (!removedItem) {
 			return null;
 		}
 
-		this._removeNamedItemIndex(removedItem);
+		this[PropertySymbol.removeNamedItemIndex](removedItem);
 
 		if (this[name] === removedItem) {
 			delete this[name];
 		}
 
-		delete this._namedItems[name];
+		delete this[PropertySymbol.namedItems][name];
 
 		return removedItem;
 	}
@@ -196,7 +197,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 *
 	 * @param item Item.
 	 */
-	protected _removeNamedItemIndex(item: IAttr): void {
+	protected [PropertySymbol.removeNamedItemIndex](item: IAttr): void {
 		for (let i = 0; i < this.length; i++) {
 			if (this[i] === item) {
 				for (let b = i; b < this.length; b++) {
@@ -218,7 +219,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name.
 	 * @returns True if the property name is valid.
 	 */
-	protected _isValidPropertyName(name: string): boolean {
+	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
 		return (
 			!this.constructor.prototype.hasOwnProperty(name) &&
 			(isNaN(Number(name)) || name.includes('.'))

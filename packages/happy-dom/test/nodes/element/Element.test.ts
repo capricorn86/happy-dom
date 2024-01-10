@@ -22,6 +22,7 @@ import IAttr from '../../../src/nodes/attr/IAttr.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import INode from '../../../src/nodes/node/INode.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -396,19 +397,16 @@ describe('Element', () => {
 		});
 
 		it('Returns HTML of children and shadow roots of custom elements as a concatenated string.', () => {
+			window.customElements.define('custom-element', CustomElement);
 			const div = document.createElement('div');
+			const customElement = <CustomElement>document.createElement('custom-element');
 
-			element.appendChild(div);
+			div.appendChild(customElement);
+			document.body.appendChild(div);
 
-			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation(function (
-				rootElement
-			) {
-				expect(rootElement === div).toBe(true);
-				expect(this._options.includeShadowRoots).toBe(true);
-				return 'EXPECTED_HTML';
-			});
-
-			expect(element.getInnerHTML({ includeShadowRoots: true })).toBe('EXPECTED_HTML');
+			expect(
+				document.body.getInnerHTML({ includeShadowRoots: true }).includes('<span class="propKey">')
+			).toBe(true);
 		});
 	});
 
@@ -1455,7 +1453,7 @@ describe('Element', () => {
 	describe('attachShadow()', () => {
 		it('Creates a new open ShadowRoot node and sets it to the "shadowRoot" property.', () => {
 			element.attachShadow({ mode: 'open' });
-			expect(element['_shadowRoot'] instanceof ShadowRoot).toBe(true);
+			expect(element[PropertySymbol.shadowRoot] instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot.ownerDocument === document).toBe(true);
 			expect(element.shadowRoot.isConnected).toBe(false);
@@ -1463,14 +1461,14 @@ describe('Element', () => {
 			expect(element.shadowRoot.isConnected).toBe(true);
 		});
 
-		it('Creates a new closed ShadowRoot node and sets it to the internal "_shadowRoot" property.', () => {
+		it('Creates a new closed ShadowRoot node and sets it to the internal "[PropertySymbol.shadowRoot]" property.', () => {
 			element.attachShadow({ mode: 'closed' });
 			expect(element.shadowRoot).toBe(null);
-			expect(element['_shadowRoot'] instanceof ShadowRoot).toBe(true);
-			expect(element['_shadowRoot'].ownerDocument === document).toBe(true);
-			expect(element['_shadowRoot'].isConnected).toBe(false);
+			expect(element[PropertySymbol.shadowRoot] instanceof ShadowRoot).toBe(true);
+			expect(element[PropertySymbol.shadowRoot].ownerDocument === document).toBe(true);
+			expect(element[PropertySymbol.shadowRoot].isConnected).toBe(false);
 			document.appendChild(element);
-			expect(element['_shadowRoot'].isConnected).toBe(true);
+			expect(element[PropertySymbol.shadowRoot].isConnected).toBe(true);
 		});
 	});
 
@@ -1512,7 +1510,7 @@ describe('Element', () => {
 				element[functionName]({ left: 50, top: 60, behavior: 'smooth' });
 				expect(element.scrollLeft).toBe(0);
 				expect(element.scrollTop).toBe(0);
-				await window.happyDOM.whenAsyncComplete();
+				await window.happyDOM?.waitUntilComplete();
 				expect(element.scrollLeft).toBe(50);
 				expect(element.scrollTop).toBe(60);
 			});

@@ -1,4 +1,5 @@
 import IElement from '../../nodes/element/IElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IAttr from '../../nodes/attr/IAttr.js';
 import CSSRule from '../CSSRule.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
@@ -12,10 +13,10 @@ import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
  */
 export default abstract class AbstractCSSStyleDeclaration {
 	public readonly parentRule: CSSRule = null;
-	protected _style: CSSStyleDeclarationPropertyManager = null;
-	protected _ownerElement: IElement;
-	protected _computed: boolean;
-	protected _elementStyle: CSSStyleDeclarationElementStyle = null;
+	#style: CSSStyleDeclarationPropertyManager = null;
+	#ownerElement: IElement;
+	#computed: boolean;
+	#elementStyle: CSSStyleDeclarationElementStyle = null;
 
 	/**
 	 * Constructor.
@@ -24,11 +25,11 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @param [computed] Computed.
 	 */
 	constructor(ownerElement: IElement = null, computed = false) {
-		this._style = !ownerElement ? new CSSStyleDeclarationPropertyManager() : null;
-		this._ownerElement = ownerElement;
-		this._computed = ownerElement ? computed : false;
-		this._elementStyle = ownerElement
-			? new CSSStyleDeclarationElementStyle(ownerElement, this._computed)
+		this.#style = !ownerElement ? new CSSStyleDeclarationPropertyManager() : null;
+		this.#ownerElement = ownerElement;
+		this.#computed = ownerElement ? computed : false;
+		this.#elementStyle = ownerElement
+			? new CSSStyleDeclarationElementStyle(ownerElement, this.#computed)
 			: null;
 	}
 
@@ -38,12 +39,12 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @returns Length.
 	 */
 	public get length(): number {
-		if (this._ownerElement) {
-			const style = this._elementStyle.getElementStyle();
+		if (this.#ownerElement) {
+			const style = this.#elementStyle.getElementStyle();
 			return style.size();
 		}
 
-		return this._style.size();
+		return this.#style.size();
 	}
 
 	/**
@@ -52,15 +53,15 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @returns CSS text.
 	 */
 	public get cssText(): string {
-		if (this._ownerElement) {
-			if (this._computed) {
+		if (this.#ownerElement) {
+			if (this.#computed) {
 				return '';
 			}
 
-			return this._elementStyle.getElementStyle().toString();
+			return this.#elementStyle.getElementStyle().toString();
 		}
 
-		return this._style.toString();
+		return this.#style.toString();
 	}
 
 	/**
@@ -69,32 +70,32 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @param cssText CSS text.
 	 */
 	public set cssText(cssText: string) {
-		if (this._computed) {
+		if (this.#computed) {
 			throw new DOMException(
 				`Failed to execute 'cssText' on 'CSSStyleDeclaration': These styles are computed, and the properties are therefore read-only.`,
 				DOMExceptionNameEnum.domException
 			);
 		}
 
-		if (this._ownerElement) {
+		if (this.#ownerElement) {
 			const style = new CSSStyleDeclarationPropertyManager({ cssText });
-			let styleAttribute = <IAttr>this._ownerElement.attributes['style'];
+			let styleAttribute = <IAttr>this.#ownerElement.attributes['style'];
 
 			if (!styleAttribute) {
-				styleAttribute = this._ownerElement.ownerDocument.createAttribute('style');
-				// We use "_setNamedItemWithoutConsequences" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this._ownerElement.attributes)._setNamedItemWithoutConsequences(
-					styleAttribute
-				);
+				styleAttribute = this.#ownerElement.ownerDocument.createAttribute('style');
+				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
+				(<NamedNodeMap>this.#ownerElement.attributes)[
+					PropertySymbol.setNamedItemWithoutConsequences
+				](styleAttribute);
 			}
 
-			if (this._ownerElement.isConnected) {
-				this._ownerElement.ownerDocument['_cacheID']++;
+			if (this.#ownerElement.isConnected) {
+				this.#ownerElement.ownerDocument[PropertySymbol.cacheID]++;
 			}
 
 			styleAttribute.value = style.toString();
 		} else {
-			this._style = new CSSStyleDeclarationPropertyManager({ cssText });
+			this.#style = new CSSStyleDeclarationPropertyManager({ cssText });
 		}
 	}
 
@@ -105,10 +106,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @returns Item.
 	 */
 	public item(index: number): string {
-		if (this._ownerElement) {
-			return this._elementStyle.getElementStyle().item(index);
+		if (this.#ownerElement) {
+			return this.#elementStyle.getElementStyle().item(index);
 		}
-		return this._style.item(index);
+		return this.#style.item(index);
 	}
 
 	/**
@@ -119,7 +120,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @param [priority] Can be "important", or an empty string.
 	 */
 	public setProperty(name: string, value: string, priority?: 'important' | '' | undefined): void {
-		if (this._computed) {
+		if (this.#computed) {
 			throw new DOMException(
 				`Failed to execute 'setProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name}' property is read-only.`,
 				DOMExceptionNameEnum.domException
@@ -134,28 +135,28 @@ export default abstract class AbstractCSSStyleDeclaration {
 
 		if (!stringValue) {
 			this.removeProperty(name);
-		} else if (this._ownerElement) {
-			let styleAttribute = <IAttr>this._ownerElement.attributes['style'];
+		} else if (this.#ownerElement) {
+			let styleAttribute = <IAttr>this.#ownerElement.attributes['style'];
 
 			if (!styleAttribute) {
-				styleAttribute = this._ownerElement.ownerDocument.createAttribute('style');
+				styleAttribute = this.#ownerElement.ownerDocument.createAttribute('style');
 
-				// We use "_setNamedItemWithoutConsequences" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this._ownerElement.attributes)._setNamedItemWithoutConsequences(
-					styleAttribute
-				);
+				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
+				(<NamedNodeMap>this.#ownerElement.attributes)[
+					PropertySymbol.setNamedItemWithoutConsequences
+				](styleAttribute);
 			}
 
-			if (this._ownerElement.isConnected) {
-				this._ownerElement.ownerDocument['_cacheID']++;
+			if (this.#ownerElement.isConnected) {
+				this.#ownerElement.ownerDocument[PropertySymbol.cacheID]++;
 			}
 
-			const style = this._elementStyle.getElementStyle();
+			const style = this.#elementStyle.getElementStyle();
 			style.set(name, stringValue, !!priority);
 
 			styleAttribute.value = style.toString();
 		} else {
-			this._style.set(name, stringValue, !!priority);
+			this.#style.set(name, stringValue, !!priority);
 		}
 	}
 
@@ -167,30 +168,32 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @param [priority] Can be "important", or an empty string.
 	 */
 	public removeProperty(name: string): void {
-		if (this._computed) {
+		if (this.#computed) {
 			throw new DOMException(
 				`Failed to execute 'removeProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name}' property is read-only.`,
 				DOMExceptionNameEnum.domException
 			);
 		}
 
-		if (this._ownerElement) {
-			const style = this._elementStyle.getElementStyle();
+		if (this.#ownerElement) {
+			const style = this.#elementStyle.getElementStyle();
 			style.remove(name);
 			const newCSSText = style.toString();
 
-			if (this._ownerElement.isConnected) {
-				this._ownerElement.ownerDocument['_cacheID']++;
+			if (this.#ownerElement.isConnected) {
+				this.#ownerElement.ownerDocument[PropertySymbol.cacheID]++;
 			}
 
 			if (newCSSText) {
-				(<IAttr>this._ownerElement.attributes['style']).value = newCSSText;
+				(<IAttr>this.#ownerElement.attributes['style']).value = newCSSText;
 			} else {
-				// We use "_removeNamedItemWithoutConsequences" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this._ownerElement.attributes)._removeNamedItemWithoutConsequences('style');
+				// We use "[PropertySymbol.removeNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
+				(<NamedNodeMap>this.#ownerElement.attributes)[
+					PropertySymbol.removeNamedItemWithoutConsequences
+				]('style');
 			}
 		} else {
-			this._style.remove(name);
+			this.#style.remove(name);
 		}
 	}
 
@@ -201,11 +204,11 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @returns Property value.
 	 */
 	public getPropertyValue(name: string): string {
-		if (this._ownerElement) {
-			const style = this._elementStyle.getElementStyle();
+		if (this.#ownerElement) {
+			const style = this.#elementStyle.getElementStyle();
 			return style.get(name)?.value || '';
 		}
-		return this._style.get(name)?.value || '';
+		return this.#style.get(name)?.value || '';
 	}
 
 	/**
@@ -215,10 +218,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @returns "important" if set to be important.
 	 */
 	public getPropertyPriority(name: string): string {
-		if (this._ownerElement) {
-			const style = this._elementStyle.getElementStyle();
+		if (this.#ownerElement) {
+			const style = this.#elementStyle.getElementStyle();
 			return style.get(name)?.important ? 'important' : '';
 		}
-		return this._style.get(name)?.important ? 'important' : '';
+		return this.#style.get(name)?.important ? 'important' : '';
 	}
 }

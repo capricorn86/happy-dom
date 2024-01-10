@@ -1,4 +1,5 @@
 import IAttr from '../attr/IAttr.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLOptionElement from './HTMLOptionElement.js';
@@ -9,7 +10,7 @@ import HTMLOptionElement from './HTMLOptionElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected _ownerElement: HTMLOptionElement;
+	protected [PropertySymbol.ownerElement]: HTMLOptionElement;
 
 	/**
 	 * @override
@@ -18,16 +19,18 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 		const replacedItem = super.setNamedItem(item);
 
 		if (
-			!this._ownerElement._dirtyness &&
+			!this[PropertySymbol.ownerElement][PropertySymbol.dirtyness] &&
 			item.name === 'selected' &&
 			replacedItem?.value !== item.value
 		) {
-			const selectNode = <HTMLSelectElement>this._ownerElement._selectNode;
+			const selectNode = <HTMLSelectElement>(
+				this[PropertySymbol.ownerElement][PropertySymbol.selectNode]
+			);
 
-			this._ownerElement._selectedness = true;
+			this[PropertySymbol.ownerElement][PropertySymbol.selectedness] = true;
 
 			if (selectNode) {
-				selectNode._updateOptionItems(this._ownerElement);
+				selectNode[PropertySymbol.updateOptionItems](this[PropertySymbol.ownerElement]);
 			}
 		}
 
@@ -37,16 +40,22 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override _removeNamedItem(name: string): IAttr | null {
-		const removedItem = super._removeNamedItem(name);
+	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
-		if (removedItem && !this._ownerElement._dirtyness && removedItem.name === 'selected') {
-			const selectNode = <HTMLSelectElement>this._ownerElement._selectNode;
+		if (
+			removedItem &&
+			!this[PropertySymbol.ownerElement][PropertySymbol.dirtyness] &&
+			removedItem.name === 'selected'
+		) {
+			const selectNode = <HTMLSelectElement>(
+				this[PropertySymbol.ownerElement][PropertySymbol.selectNode]
+			);
 
-			this._ownerElement._selectedness = false;
+			this[PropertySymbol.ownerElement][PropertySymbol.selectedness] = false;
 
 			if (selectNode) {
-				selectNode._updateOptionItems();
+				selectNode[PropertySymbol.updateOptionItems]();
 			}
 		}
 

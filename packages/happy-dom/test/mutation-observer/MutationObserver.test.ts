@@ -14,7 +14,7 @@ describe('MutationObserver', () => {
 	});
 
 	describe('observe()', () => {
-		it('Observes attributes.', () => {
+		it('Observes attributes.', async () => {
 			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver((mutationRecords) => {
@@ -22,6 +22,9 @@ describe('MutationObserver', () => {
 			});
 			observer.observe(div, { attributes: true });
 			div.setAttribute('attr', 'value');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			expect(records).toEqual([
 				{
 					addedNodes: [],
@@ -37,7 +40,7 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		it('Observes attributes and old attribute values.', () => {
+		it('Observes attributes and old attribute values.', async () => {
 			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver((mutationRecords) => {
@@ -46,6 +49,9 @@ describe('MutationObserver', () => {
 			div.setAttribute('attr', 'old');
 			observer.observe(div, { attributeOldValue: true, attributes: true });
 			div.setAttribute('attr', 'new');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			expect(records).toEqual([
 				{
 					addedNodes: [],
@@ -61,7 +67,7 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		it('Only observes a list of filtered attributes if defined.', () => {
+		it('Only observes a list of filtered attributes if defined.', async () => {
 			const records: MutationRecord[][] = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver((mutationRecords) => {
@@ -76,6 +82,9 @@ describe('MutationObserver', () => {
 			});
 			div.setAttribute('attr1', 'new');
 			div.setAttribute('attr2', 'new');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			expect(records).toEqual([
 				[
 					{
@@ -93,7 +102,7 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		it('Observers character data changes on text node.', () => {
+		it('Observers character data changes on text node.', async () => {
 			const records: MutationRecord[][] = [];
 			const text = document.createTextNode('old');
 			const observer = new MutationObserver((mutationRecords) => {
@@ -101,6 +110,9 @@ describe('MutationObserver', () => {
 			});
 			observer.observe(text, { characterData: true, characterDataOldValue: true });
 			text.textContent = 'new';
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			expect(records).toEqual([
 				[
 					{
@@ -118,7 +130,7 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		it('Observers character data changes to child text nodes.', () => {
+		it('Observers character data changes to child text nodes.', async () => {
 			const records: MutationRecord[][] = [];
 			const div = document.createElement('div');
 			const text = document.createTextNode('old');
@@ -128,6 +140,9 @@ describe('MutationObserver', () => {
 			div.appendChild(text);
 			observer.observe(div, { characterData: true, subtree: true, characterDataOldValue: true });
 			text.textContent = 'new';
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			expect(records).toEqual([
 				[
 					{
@@ -145,7 +160,7 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		it('Observers added and removed nodes.', () => {
+		it('Observers added and removed nodes.', async () => {
 			const records: MutationRecord[][] = [];
 			const div = document.createElement('div');
 			const span = document.createElement('span');
@@ -160,6 +175,8 @@ describe('MutationObserver', () => {
 			span.appendChild(article);
 			span.removeChild(article);
 
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			expect(records).toEqual([
 				[
 					{
@@ -172,9 +189,7 @@ describe('MutationObserver', () => {
 						removedNodes: [],
 						target: div,
 						type: 'childList'
-					}
-				],
-				[
+					},
 					{
 						addedNodes: [span],
 						attributeName: null,
@@ -185,9 +200,7 @@ describe('MutationObserver', () => {
 						removedNodes: [],
 						target: div,
 						type: 'childList'
-					}
-				],
-				[
+					},
 					{
 						addedNodes: [article],
 						attributeName: null,
@@ -198,9 +211,7 @@ describe('MutationObserver', () => {
 						removedNodes: [],
 						target: span,
 						type: 'childList'
-					}
-				],
-				[
+					},
 					{
 						addedNodes: [],
 						attributeName: null,
@@ -216,32 +227,105 @@ describe('MutationObserver', () => {
 			]);
 		});
 
-		it('Calls callback with the observer as second parameter.', () => {
+		it('Can observe document node.', async () => {
+			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver((mutationRecords, observer) => {
-				expect(observer).toBeInstanceOf(MutationObserver);
+			const observer = new MutationObserver((mutationRecords) => {
+				records = mutationRecords;
 			});
-			observer.observe(div, { attributes: true });
+			document.appendChild(div);
+			observer.observe(document, { attributes: true, subtree: true });
 			div.setAttribute('attr', 'value');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(records).toEqual([
+				{
+					addedNodes: [],
+					attributeName: 'attr',
+					attributeNamespace: null,
+					nextSibling: null,
+					oldValue: null,
+					previousSibling: null,
+					removedNodes: [],
+					target: div,
+					type: 'attributes'
+				}
+			]);
 		});
 	});
 
 	describe('disconnect()', () => {
-		it('Disconnects the observer.', () => {
+		it('Disconnects the observer.', async () => {
+			let records: MutationRecord[] = [];
+			const div = document.createElement('div');
+			const observer = new MutationObserver((mutationRecords) => {
+				records = mutationRecords;
+			});
+
+			observer.observe(div, { attributes: true });
+
+			observer.disconnect();
+
+			div.setAttribute('attr', 'value');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(records).toEqual([]);
+		});
+
+		it('Disconnects the observer when closing window.', async () => {
 			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
 			const observer = new MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
 			observer.observe(div, { attributes: true });
-			observer.disconnect();
+
+			window.close();
+
 			div.setAttribute('attr', 'value');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			expect(records).toEqual([]);
 		});
 
 		it('Ignores if triggered when it is not observing.', () => {
 			const observer = new MutationObserver(() => {});
 			expect(() => observer.disconnect()).not.toThrow();
+		});
+	});
+
+	describe('takeRecords()', () => {
+		it('Returns all records and empties the record queue.', async () => {
+			let records: MutationRecord[] = [];
+			const div = document.createElement('div');
+			const observer = new MutationObserver((mutationRecords) => {
+				records = mutationRecords;
+			});
+
+			observer.observe(div, { attributes: true });
+
+			div.setAttribute('attr', 'value');
+
+			expect(observer.takeRecords()).toEqual([
+				{
+					addedNodes: [],
+					attributeName: 'attr',
+					attributeNamespace: null,
+					nextSibling: null,
+					oldValue: null,
+					previousSibling: null,
+					removedNodes: [],
+					target: div,
+					type: 'attributes'
+				}
+			]);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(records).toEqual([]);
 		});
 	});
 });

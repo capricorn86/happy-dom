@@ -1,4 +1,5 @@
 import Node from '../node/Node.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterDataUtility from './CharacterDataUtility.js';
 import ICharacterData from './ICharacterData.js';
 import IElement from '../element/IElement.js';
@@ -14,7 +15,7 @@ import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/CharacterData.
  */
 export default abstract class CharacterData extends Node implements ICharacterData {
-	protected _data = '';
+	public [PropertySymbol.data] = '';
 
 	/**
 	 * Constructor.
@@ -25,7 +26,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 		super();
 
 		if (data) {
-			this._data = data;
+			this[PropertySymbol.data] = data;
 		}
 	}
 
@@ -35,7 +36,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Text content.
 	 */
 	public get length(): number {
-		return this._data.length;
+		return this[PropertySymbol.data].length;
 	}
 
 	/**
@@ -44,7 +45,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Text content.
 	 */
 	public get data(): string {
-		return this._data;
+		return this[PropertySymbol.data];
 	}
 
 	/**
@@ -53,22 +54,24 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @param textContent Text content.
 	 */
 	public set data(data: string) {
-		const oldValue = this._data;
-		this._data = String(data);
+		const oldValue = this[PropertySymbol.data];
+		this[PropertySymbol.data] = String(data);
 
 		if (this.isConnected) {
-			this.ownerDocument['_cacheID']++;
+			this.ownerDocument[PropertySymbol.cacheID]++;
 		}
 
 		// MutationObserver
-		if (this._observers.length > 0) {
-			for (const observer of this._observers) {
+		if (this[PropertySymbol.observers].length > 0) {
+			for (const observer of this[PropertySymbol.observers]) {
 				if (observer.options.characterData) {
-					const record = new MutationRecord();
-					record.target = this;
-					record.type = MutationTypeEnum.characterData;
-					record.oldValue = observer.options.characterDataOldValue ? oldValue : null;
-					observer.callback([record], observer.observer);
+					observer.report(
+						new MutationRecord({
+							target: this,
+							type: MutationTypeEnum.characterData,
+							oldValue: observer.options.characterDataOldValue ? oldValue : null
+						})
+					);
 				}
 			}
 		}
@@ -80,7 +83,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Text content.
 	 */
 	public get textContent(): string {
-		return this._data;
+		return this[PropertySymbol.data];
 	}
 
 	/**
@@ -98,7 +101,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @returns Node value.
 	 */
 	public get nodeValue(): string {
-		return this._data;
+		return this[PropertySymbol.data];
 	}
 
 	/**
@@ -221,7 +224,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 */
 	public cloneNode(deep = false): ICharacterData {
 		const clone = <CharacterData>super.cloneNode(deep);
-		clone._data = this._data;
+		clone[PropertySymbol.data] = this[PropertySymbol.data];
 		return clone;
 	}
 }

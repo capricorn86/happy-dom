@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
@@ -40,13 +41,13 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	public formMethod = '';
 
 	// Any type of input
-	public _value = null;
-	public _height = 0;
-	public _width = 0;
+	public [PropertySymbol.value] = null;
+	public [PropertySymbol.height] = 0;
+	public [PropertySymbol.width] = 0;
 
 	// Type specific: checkbox/radio
 	public defaultChecked = false;
-	public _checked: boolean | null = null;
+	public [PropertySymbol.checked]: boolean | null = null;
 
 	// Type specific: file
 	public files: IFileList<File> = new FileList();
@@ -61,9 +62,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	public onselectionchange: (event: Event) => void | null = null;
 
 	// Type specific: text/password/search/tel/url/week/month
-	private _selectionStart: number = null;
-	private _selectionEnd: number = null;
-	private _selectionDirection: HTMLInputElementSelectionDirectionEnum =
+	#selectionStart: number = null;
+	#selectionEnd: number = null;
+	#selectionDirection: HTMLInputElementSelectionDirectionEnum =
 		HTMLInputElementSelectionDirectionEnum.none;
 
 	/**
@@ -72,7 +73,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Height.
 	 */
 	public get height(): number {
-		return this._height;
+		return this[PropertySymbol.height];
 	}
 
 	/**
@@ -81,7 +82,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param height Height.
 	 */
 	public set height(height: number) {
-		this._height = height;
+		this[PropertySymbol.height] = height;
 		this.setAttribute('height', String(height));
 	}
 
@@ -91,7 +92,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Width.
 	 */
 	public get width(): number {
-		return this._width;
+		return this[PropertySymbol.width];
 	}
 
 	/**
@@ -100,7 +101,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param width Width.
 	 */
 	public set width(width: number) {
-		this._width = width;
+		this[PropertySymbol.width] = width;
 		this.setAttribute('width', String(width));
 	}
 
@@ -560,8 +561,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Checked.
 	 */
 	public get checked(): boolean {
-		if (this._checked !== null) {
-			return this._checked;
+		if (this[PropertySymbol.checked] !== null) {
+			return this[PropertySymbol.checked];
 		}
 		return this.getAttribute('checked') !== null;
 	}
@@ -572,7 +573,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param checked Checked.
 	 */
 	public set checked(checked: boolean) {
-		this._setChecked(checked);
+		this.#setChecked(checked);
 	}
 
 	/**
@@ -596,11 +597,11 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				return this.files.length > 0 ? '/fake/path/' + this.files[0].name : '';
 		}
 
-		if (this._value === null) {
+		if (this[PropertySymbol.value] === null) {
 			return this.getAttribute('value') || '';
 		}
 
-		return this._value;
+		return this[PropertySymbol.value];
 	}
 
 	/**
@@ -630,13 +631,13 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				}
 				break;
 			default:
-				const oldValue = this._value;
-				this._value = HTMLInputElementValueSanitizer.sanitize(this, value);
+				const oldValue = this[PropertySymbol.value];
+				this[PropertySymbol.value] = HTMLInputElementValueSanitizer.sanitize(this, value);
 
-				if (oldValue !== this._value) {
-					this._selectionStart = this._value.length;
-					this._selectionEnd = this._value.length;
-					this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+				if (oldValue !== this[PropertySymbol.value]) {
+					this.#selectionStart = this[PropertySymbol.value].length;
+					this.#selectionEnd = this[PropertySymbol.value].length;
+					this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 				}
 
 				break;
@@ -649,15 +650,15 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Selection start.
 	 */
 	public get selectionStart(): number {
-		if (!this._isSelectionSupported()) {
+		if (!this.#isSelectionSupported()) {
 			return null;
 		}
 
-		if (this._selectionStart === null) {
+		if (this.#selectionStart === null) {
 			return this.value.length;
 		}
 
-		return this._selectionStart;
+		return this.#selectionStart;
 	}
 
 	/**
@@ -666,14 +667,14 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param start Start.
 	 */
 	public set selectionStart(start: number) {
-		if (!this._isSelectionSupported()) {
+		if (!this.#isSelectionSupported()) {
 			throw new DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
-		this.setSelectionRange(start, Math.max(start, this.selectionEnd), this._selectionDirection);
+		this.setSelectionRange(start, Math.max(start, this.selectionEnd), this.#selectionDirection);
 	}
 
 	/**
@@ -682,15 +683,15 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Selection end.
 	 */
 	public get selectionEnd(): number {
-		if (!this._isSelectionSupported()) {
+		if (!this.#isSelectionSupported()) {
 			return null;
 		}
 
-		if (this._selectionEnd === null) {
+		if (this.#selectionEnd === null) {
 			return this.value.length;
 		}
 
-		return this._selectionEnd;
+		return this.#selectionEnd;
 	}
 
 	/**
@@ -699,14 +700,14 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param end End.
 	 */
 	public set selectionEnd(end: number) {
-		if (!this._isSelectionSupported()) {
+		if (!this.#isSelectionSupported()) {
 			throw new DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
-		this.setSelectionRange(this.selectionStart, end, this._selectionDirection);
+		this.setSelectionRange(this.selectionStart, end, this.#selectionDirection);
 	}
 
 	/**
@@ -715,11 +716,11 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Selection direction.
 	 */
 	public get selectionDirection(): string {
-		if (!this._isSelectionSupported()) {
+		if (!this.#isSelectionSupported()) {
 			return null;
 		}
 
-		return this._selectionDirection;
+		return this.#selectionDirection;
 	}
 
 	/**
@@ -728,14 +729,14 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param direction Direction.
 	 */
 	public set selectionDirection(direction: string) {
-		if (!this._isSelectionSupported()) {
+		if (!this.#isSelectionSupported()) {
 			throw new DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
-		this.setSelectionRange(this._selectionStart, this._selectionEnd, direction);
+		this.setSelectionRange(this.#selectionStart, this.#selectionEnd, direction);
 	}
 
 	/**
@@ -766,7 +767,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this._formNode;
+		return <IHTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -976,13 +977,13 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * Selects the text.
 	 */
 	public select(): void {
-		if (!this._isSelectionSupported()) {
+		if (!this.#isSelectionSupported()) {
 			return null;
 		}
 
-		this._selectionStart = 0;
-		this._selectionEnd = this.value.length;
-		this._selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+		this.#selectionStart = 0;
+		this.#selectionEnd = this.value.length;
+		this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 
 		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
 	}
@@ -995,16 +996,16 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param [direction="none"] Direction.
 	 */
 	public setSelectionRange(start: number, end: number, direction = 'none'): void {
-		if (!this._isSelectionSupported()) {
+		if (!this.#isSelectionSupported()) {
 			throw new DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
-		this._selectionEnd = Math.min(end, this.value.length);
-		this._selectionStart = Math.min(start, this._selectionEnd);
-		this._selectionDirection =
+		this.#selectionEnd = Math.min(end, this.value.length);
+		this.#selectionStart = Math.min(start, this.#selectionEnd);
+		this.#selectionDirection =
 			direction === HTMLInputElementSelectionDirectionEnum.forward ||
 			direction === HTMLInputElementSelectionDirectionEnum.backward
 				? direction
@@ -1027,7 +1028,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		end: number = null,
 		selectionMode = HTMLInputElementSelectionModeEnum.preserve
 	): void {
-		if (!this._isSelectionSupported()) {
+		if (!this.#isSelectionSupported()) {
 			throw new DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
@@ -1035,10 +1036,10 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		}
 
 		if (start === null) {
-			start = this._selectionStart;
+			start = this.#selectionStart;
 		}
 		if (end === null) {
-			end = this._selectionEnd;
+			end = this.#selectionEnd;
 		}
 
 		if (start > end) {
@@ -1052,8 +1053,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		end = Math.min(end, this.value.length);
 
 		const val = this.value;
-		let selectionStart = this._selectionStart;
-		let selectionEnd = this._selectionEnd;
+		let selectionStart = this.#selectionStart;
+		let selectionEnd = this.#selectionEnd;
 
 		this.value = val.slice(0, start) + replacement + val.slice(end);
 
@@ -1152,14 +1153,14 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		const clone = <HTMLInputElement>super.cloneNode(deep);
 		clone.formAction = this.formAction;
 		clone.formMethod = this.formMethod;
-		clone._value = this._value;
-		clone._height = this._height;
-		clone._width = this._width;
+		clone[PropertySymbol.value] = this[PropertySymbol.value];
+		clone[PropertySymbol.height] = this[PropertySymbol.height];
+		clone[PropertySymbol.width] = this[PropertySymbol.width];
 		clone.defaultChecked = this.defaultChecked;
 		clone.files = <FileList>this.files.slice();
-		clone._selectionStart = this._selectionStart;
-		clone._selectionEnd = this._selectionEnd;
-		clone._selectionDirection = this._selectionDirection;
+		clone.#selectionStart = this.#selectionStart;
+		clone.#selectionEnd = this.#selectionEnd;
+		clone.#selectionDirection = this.#selectionDirection;
 		return clone;
 	}
 
@@ -1184,7 +1185,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			const inputType = this.type;
 			if (inputType === 'checkbox' || inputType === 'radio') {
 				previousCheckedValue = this.checked;
-				this._setChecked(inputType === 'checkbox' ? !previousCheckedValue : true);
+				this.#setChecked(inputType === 'checkbox' ? !previousCheckedValue : true);
 			}
 		}
 
@@ -1203,12 +1204,12 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 					this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
 					this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 				} else if (inputType === 'submit') {
-					const form = <IHTMLFormElement>this._formNode;
+					const form = <IHTMLFormElement>this[PropertySymbol.formNode];
 					if (form) {
 						form.requestSubmit();
 					}
 				} else if (inputType === 'reset' && this.isConnected) {
-					const form = <IHTMLFormElement>this._formNode;
+					const form = <IHTMLFormElement>this[PropertySymbol.formNode];
 					if (form) {
 						form.reset();
 					}
@@ -1226,7 +1227,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		) {
 			const inputType = this.type;
 			if (inputType === 'checkbox' || inputType === 'radio') {
-				this._setChecked(previousCheckedValue);
+				this.#setChecked(previousCheckedValue);
 			}
 		}
 
@@ -1236,19 +1237,25 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const oldFormNode = <HTMLFormElement>this._formNode;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
-		super._connectToNode(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldFormNode !== this._formNode) {
+		if (oldFormNode !== this[PropertySymbol.formNode]) {
 			if (oldFormNode) {
-				oldFormNode._removeFormControlItem(this, this.name);
-				oldFormNode._removeFormControlItem(this, this.id);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
+				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
 			}
-			if (this._formNode) {
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.name);
-				(<HTMLFormElement>this._formNode)._appendFormControlItem(this, this.id);
+			if (this[PropertySymbol.formNode]) {
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.name
+				);
+				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
+					this,
+					this.id
+				);
 			}
 		}
 	}
@@ -1258,7 +1265,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 *
 	 * @returns "true" if selection is supported.
 	 */
-	private _isSelectionSupported(): boolean {
+	#isSelectionSupported(): boolean {
 		const inputType = this.type;
 		return (
 			inputType === 'text' ||
@@ -1274,16 +1281,18 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 *
 	 * @param checked Checked.
 	 */
-	private _setChecked(checked: boolean): void {
-		this._checked = checked;
+	#setChecked(checked: boolean): void {
+		this[PropertySymbol.checked] = checked;
 
 		if (checked && this.type === 'radio' && this.name) {
-			const root = <IHTMLElement>(<IHTMLFormElement>this._formNode || this.getRootNode());
+			const root = <IHTMLElement>(
+				(<IHTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
+			);
 			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
 
 			for (const radioButton of radioButtons) {
 				if (radioButton !== this) {
-					radioButton['_checked'] = false;
+					radioButton[PropertySymbol.checked] = false;
 				}
 			}
 		}

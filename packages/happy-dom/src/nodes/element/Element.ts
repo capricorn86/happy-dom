@@ -1,11 +1,10 @@
 import Node from '../node/Node.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
-import Attr from '../attr/Attr.js';
 import DOMRect from './DOMRect.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import NamespaceURI from '../../config/NamespaceURI.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
@@ -15,7 +14,6 @@ import IElement from './IElement.js';
 import DOMException from '../../exception/DOMException.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
 import INode from '../node/INode.js';
-import IDocument from '../document/IDocument.js';
 import IHTMLCollection from './IHTMLCollection.js';
 import INodeList from '../node/INodeList.js';
 import { TInsertAdjacentPositions } from './IElement.js';
@@ -32,14 +30,17 @@ import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import ElementNamedNodeMap from './ElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
+import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
+import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
+import NodeCreationOwnerDocument from '../document/NodeCreationOwnerDocument.js';
 
 /**
  * Element.
  */
 export default class Element extends Node implements IElement {
 	// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
-	// CustomElementRegistry will therefore populate _observedAttributes when CustomElementRegistry.define() is called
-	public static _observedAttributes: string[];
+	// CustomElementRegistry will therefore populate "[PropertySymbol.observedAttributes]" when CustomElementRegistry.define() is called
+	public static [PropertySymbol.observedAttributes]: string[];
 	public static observedAttributes: string[];
 	public tagName: string = null;
 	public nodeType = Node.ELEMENT_NODE;
@@ -51,6 +52,7 @@ export default class Element extends Node implements IElement {
 	public scrollTop = 0;
 	public scrollLeft = 0;
 	public readonly namespaceURI: string = null;
+	public readonly attributes: INamedNodeMap = new ElementNamedNodeMap(this);
 
 	// Events
 	public oncancel: (event: Event) => void | null = null;
@@ -88,21 +90,18 @@ export default class Element extends Node implements IElement {
 	public ontouchmove: (event: Event) => void | null = null;
 	public ontouchstart: (event: Event) => void | null = null;
 
-	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
-
-	// Used for being able to access closed shadow roots
-	public _shadowRoot: IShadowRoot = null;
-	public readonly attributes: INamedNodeMap = new ElementNamedNodeMap(this);
-
-	public _classList: DOMTokenList = null;
-	public _isValue?: string | null = null;
-	public _computedStyle: CSSStyleDeclaration | null = null;
+	// Internal properties
+	public [PropertySymbol.children]: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
+	public [PropertySymbol.shadowRoot]: IShadowRoot = null;
+	public [PropertySymbol.classList]: DOMTokenList = null;
+	public [PropertySymbol.isValue]: string | null = null;
+	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
 
 	/**
 	 * Returns element children.
 	 */
 	public get children(): IHTMLCollection<IElement> {
-		return this._children;
+		return this[PropertySymbol.children];
 	}
 
 	/**
@@ -111,10 +110,10 @@ export default class Element extends Node implements IElement {
 	 * @returns Class list.
 	 */
 	public get classList(): IDOMTokenList {
-		if (!this._classList) {
-			this._classList = new DOMTokenList(this, 'class');
+		if (!this[PropertySymbol.classList]) {
+			this[PropertySymbol.classList] = new DOMTokenList(this, 'class');
 		}
-		return <IDOMTokenList>this._classList;
+		return <IDOMTokenList>this[PropertySymbol.classList];
 	}
 
 	/**
@@ -214,7 +213,7 @@ export default class Element extends Node implements IElement {
 	 */
 	public get textContent(): string {
 		let result = '';
-		for (const childNode of this._childNodes) {
+		for (const childNode of this[PropertySymbol.childNodes]) {
 			if (childNode.nodeType === Node.ELEMENT_NODE || childNode.nodeType === Node.TEXT_NODE) {
 				result += childNode.textContent;
 			}
@@ -228,7 +227,7 @@ export default class Element extends Node implements IElement {
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		for (const child of this._childNodes.slice()) {
+		for (const child of this[PropertySymbol.childNodes].slice()) {
 			this.removeChild(child);
 		}
 		if (textContent) {
@@ -251,7 +250,7 @@ export default class Element extends Node implements IElement {
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		for (const child of this._childNodes.slice()) {
+		for (const child of this[PropertySymbol.childNodes].slice()) {
 			this.removeChild(child);
 		}
 
@@ -282,7 +281,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
-		return this._children[0] ?? null;
+		return this[PropertySymbol.children][0] ?? null;
 	}
 
 	/**
@@ -291,7 +290,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
-		return this._children[this._children.length - 1] ?? null;
+		return this[PropertySymbol.children][this[PropertySymbol.children].length - 1] ?? null;
 	}
 
 	/**
@@ -300,7 +299,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this._children.length;
+		return this[PropertySymbol.children].length;
 	}
 
 	/**
@@ -347,7 +346,7 @@ export default class Element extends Node implements IElement {
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of this._childNodes) {
+		for (const node of this[PropertySymbol.childNodes]) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
@@ -363,17 +362,20 @@ export default class Element extends Node implements IElement {
 	public cloneNode(deep = false): IElement {
 		const clone = <Element>super.cloneNode(deep);
 
-		Attr._ownerDocument = this.ownerDocument;
-
 		for (let i = 0, max = this.attributes.length; i < max; i++) {
 			const attribute = this.attributes[i];
-			clone.attributes.setNamedItem(Object.assign(new Attr(), attribute));
+			clone.attributes.setNamedItem(
+				Object.assign(
+					this.ownerDocument.createAttributeNS(attribute.namespaceURI, attribute.name),
+					attribute
+				)
+			);
 		}
 
 		if (deep) {
-			for (const node of clone._childNodes) {
+			for (const node of clone[PropertySymbol.childNodes]) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
-					clone._children.push(<IElement>node);
+					clone[PropertySymbol.children].push(<IElement>node);
 				}
 			}
 		}
@@ -511,9 +513,9 @@ export default class Element extends Node implements IElement {
 	 * @param text HTML string to insert.
 	 */
 	public insertAdjacentHTML(position: TInsertAdjacentPositions, text: string): void {
-		for (const node of (<DocumentFragment>(
-			XMLParser.parse(this.ownerDocument, text)
-		))._childNodes.slice()) {
+		for (const node of (<DocumentFragment>XMLParser.parse(this.ownerDocument, text))[
+			PropertySymbol.childNodes
+		].slice()) {
 			this.insertAdjacentElement(position, node);
 		}
 	}
@@ -677,27 +679,29 @@ export default class Element extends Node implements IElement {
 	/**
 	 * Attaches a shadow root.
 	 *
-	 * @param _shadowRootInit Shadow root init.
-	 * @param shadowRootInit
-	 * @param shadowRootInit.mode
+	 * @param init Shadow root init.
+	 * @param init.mode Shadow root mode.
 	 * @returns Shadow root.
 	 */
-	public attachShadow(shadowRootInit: { mode: string }): IShadowRoot {
-		if (this._shadowRoot) {
+	public attachShadow(init: { mode: string }): IShadowRoot {
+		if (this[PropertySymbol.shadowRoot]) {
 			throw new DOMException('Shadow root has already been attached.');
 		}
 
-		(<IShadowRoot>this._shadowRoot) = new ShadowRoot();
-		(<IDocument>this._shadowRoot.ownerDocument) = this.ownerDocument;
-		(<Element>this._shadowRoot.host) = this;
-		(<string>this._shadowRoot.mode) = shadowRootInit.mode;
-		(<ShadowRoot>this._shadowRoot)._connectToNode(this);
+		NodeCreationOwnerDocument.ownerDocument = this.ownerDocument;
+		(<IShadowRoot>this[PropertySymbol.shadowRoot]) = new this.ownerDocument[
+			PropertySymbol.defaultView
+		].ShadowRoot();
+		NodeCreationOwnerDocument.ownerDocument = null;
+		(<Element>this[PropertySymbol.shadowRoot].host) = this;
+		(<string>this[PropertySymbol.shadowRoot].mode) = init.mode;
+		(<ShadowRoot>this[PropertySymbol.shadowRoot])[PropertySymbol.connectToNode](this);
 
-		if (this._shadowRoot.mode === 'open') {
-			(<IShadowRoot>this.shadowRoot) = this._shadowRoot;
+		if (this[PropertySymbol.shadowRoot].mode === 'open') {
+			(<IShadowRoot>this.shadowRoot) = this[PropertySymbol.shadowRoot];
 		}
 
-		return this._shadowRoot;
+		return this[PropertySymbol.shadowRoot];
 	}
 
 	/**
@@ -881,7 +885,7 @@ export default class Element extends Node implements IElement {
 	public scroll(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void {
 		if (typeof x === 'object') {
 			if (x.behavior === 'smooth') {
-				this.ownerDocument.defaultView.setTimeout(() => {
+				this.ownerDocument[PropertySymbol.defaultView].setTimeout(() => {
 					if (x.top !== undefined) {
 						(<number>this.scrollTop) = x.top;
 					}
@@ -921,38 +925,37 @@ export default class Element extends Node implements IElement {
 	 */
 	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
+		const browserSettings = WindowBrowserSettingsReader.getSettings(
+			this.ownerDocument[PropertySymbol.defaultView]
+		);
 
 		if (
+			browserSettings &&
+			!browserSettings.disableJavaScriptEvaluation &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			!event._immediatePropagationStopped
+			!event[PropertySymbol.immediatePropagationStopped]
 		) {
 			const attribute = this.getAttribute('on' + event.type);
 
-			if (attribute && !event._immediatePropagationStopped) {
-				if (this.ownerDocument.defaultView.happyDOM.settings.disableErrorCapturing) {
-					this.ownerDocument.defaultView.eval(attribute);
+			if (attribute && !event[PropertySymbol.immediatePropagationStopped]) {
+				const code = `//# sourceURL=${
+					this.ownerDocument[PropertySymbol.defaultView].location.href
+				}\n${attribute}`;
+
+				if (
+					browserSettings.disableErrorCapturing ||
+					browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+				) {
+					this.ownerDocument[PropertySymbol.defaultView].eval(code);
 				} else {
-					WindowErrorUtility.captureError(this.ownerDocument.defaultView, () =>
-						this.ownerDocument.defaultView.eval(attribute)
+					WindowErrorUtility.captureError(this.ownerDocument[PropertySymbol.defaultView], () =>
+						this.ownerDocument[PropertySymbol.defaultView].eval(code)
 					);
 				}
 			}
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * Returns attribute name.
-	 *
-	 * @param name Name.
-	 * @returns Attribute name based on namespace.
-	 */
-	protected _getAttributeName(name): string {
-		if (this.namespaceURI === NamespaceURI.svg) {
-			return name;
-		}
-		return name.toLowerCase();
 	}
 }

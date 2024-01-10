@@ -1,5 +1,6 @@
 import Blob from '../../src/file/Blob.js';
 import { describe, it, expect } from 'vitest';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 describe('Blob', () => {
 	describe('get size()', () => {
@@ -19,7 +20,7 @@ describe('Blob', () => {
 	describe('slice()', () => {
 		it('Returns a slice of the data when bits is an Array of strings.', () => {
 			const blob = new Blob(['TEST']);
-			expect(blob.slice(1, 2)._buffer.toString()).toBe('E');
+			expect(blob.slice(1, 2)[PropertySymbol.buffer].toString()).toBe('E');
 		});
 	});
 

@@ -1,5 +1,6 @@
 import CSSMeasurementConverter from '../css/declaration/measurement-converter/CSSMeasurementConverter.js';
-import IWindow from '../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
+import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
 import IMediaQueryRange from './IMediaQueryRange.js';
 import IMediaQueryRule from './IMediaQueryRule.js';
 import MediaQueryTypeEnum from './MediaQueryTypeEnum.js';
@@ -13,7 +14,7 @@ export default class MediaQueryItem {
 	public rules: IMediaQueryRule[];
 	public ranges: IMediaQueryRange[];
 	private rootFontSize: string | number | null = null;
-	private ownerWindow: IWindow;
+	private ownerWindow: IBrowserWindow;
 
 	/**
 	 * Constructor.
@@ -27,7 +28,7 @@ export default class MediaQueryItem {
 	 * @param [options.ranges] Ranges.
 	 */
 	constructor(options: {
-		ownerWindow: IWindow;
+		ownerWindow: IBrowserWindow;
 		rootFontSize?: string | number | null;
 		mediaTypes?: MediaQueryTypeEnum[];
 		not?: boolean;
@@ -114,7 +115,7 @@ export default class MediaQueryItem {
 		if (mediaType === MediaQueryTypeEnum.all) {
 			return true;
 		}
-		return mediaType === this.ownerWindow.happyDOM.settings.device.mediaType;
+		return mediaType === WindowBrowserSettingsReader.getSettings(this.ownerWindow).device.mediaType;
 	}
 
 	/**
@@ -246,7 +247,10 @@ export default class MediaQueryItem {
 					? this.ownerWindow.innerWidth > this.ownerWindow.innerHeight
 					: this.ownerWindow.innerWidth < this.ownerWindow.innerHeight;
 			case 'prefers-color-scheme':
-				return rule.value === this.ownerWindow.happyDOM.settings.device.prefersColorScheme;
+				return (
+					rule.value ===
+					WindowBrowserSettingsReader.getSettings(this.ownerWindow).device.prefersColorScheme
+				);
 			case 'any-hover':
 			case 'hover':
 				if (rule.value === 'none') {
@@ -313,7 +317,10 @@ export default class MediaQueryItem {
 	 * @returns Value in pixels.
 	 */
 	private toPixels(value: string): number | null {
-		if (!this.ownerWindow.happyDOM.settings.disableComputedStyleRendering && value.endsWith('em')) {
+		if (
+			!WindowBrowserSettingsReader.getSettings(this.ownerWindow).disableComputedStyleRendering &&
+			value.endsWith('em')
+		) {
 			this.rootFontSize =
 				this.rootFontSize ||
 				parseFloat(

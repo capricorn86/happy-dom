@@ -3,56 +3,37 @@
  */
 export default class AsyncTaskManager {
 	private static taskID = 0;
-	private runningTasks: { [k: string]: () => void } = {};
+	private runningTasks: { [k: string]: (destroy: boolean) => void } = {};
 	private runningTaskCount = 0;
 	private runningTimers: NodeJS.Timeout[] = [];
 	private runningImmediates: NodeJS.Immediate[] = [];
-	private whenCompleteImmediate: NodeJS.Immediate | null = null;
-	private whenCompleteResolvers: Array<() => void> = [];
+	private waitUntilCompleteTimer: NodeJS.Immediate | null = null;
+	private waitUntilCompleteResolvers: Array<() => void> = [];
 
 	/**
 	 * Returns a promise that is resolved when async tasks are complete.
 	 *
 	 * @returns Promise.
 	 */
-	public whenComplete(): Promise<void> {
+	public waitUntilComplete(): Promise<void> {
 		return new Promise((resolve) => {
-			this.whenCompleteResolvers.push(resolve);
+			this.waitUntilCompleteResolvers.push(resolve);
 			this.endTask(this.startTask());
 		});
 	}
 
 	/**
-	 * Cancels all tasks.
+	 * Aborts all tasks.
 	 */
-	public cancelAll(): void {
-		const runningTimers = this.runningTimers;
-		const runningImmediates = this.runningImmediates;
-		const runningTasks = this.runningTasks;
+	public abort(): Promise<void> {
+		return this.abortAll(false);
+	}
 
-		this.runningTasks = {};
-		this.runningTaskCount = 0;
-		this.runningImmediates = [];
-		this.runningTimers = [];
-
-		if (this.whenCompleteImmediate) {
-			global.clearImmediate(this.whenCompleteImmediate);
-			this.whenCompleteImmediate = null;
-		}
-
-		for (const immediate of runningImmediates) {
-			global.clearImmediate(immediate);
-		}
-
-		for (const timer of runningTimers) {
-			global.clearTimeout(timer);
-		}
-
-		for (const key of Object.keys(runningTasks)) {
-			runningTasks[key]();
-		}
-
-		this.resolveWhenComplete();
+	/**
+	 * Destroys the manager.
+	 */
+	public destroy(): Promise<void> {
+		return this.abortAll(true);
 	}
 
 	/**
@@ -125,12 +106,12 @@ export default class AsyncTaskManager {
 		if (this.runningTasks[taskID]) {
 			delete this.runningTasks[taskID];
 			this.runningTaskCount--;
-			if (this.whenCompleteImmediate) {
-				global.clearImmediate(this.whenCompleteImmediate);
+			if (this.waitUntilCompleteTimer) {
+				global.clearImmediate(this.waitUntilCompleteTimer);
 			}
 			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-				this.whenCompleteImmediate = global.setImmediate(() => {
-					this.whenCompleteImmediate = null;
+				this.waitUntilCompleteTimer = global.setImmediate(() => {
+					this.waitUntilCompleteTimer = null;
 					if (
 						!this.runningTaskCount &&
 						!this.runningTimers.length &&
@@ -166,10 +147,46 @@ export default class AsyncTaskManager {
 	 * Resolves when complete.
 	 */
 	private resolveWhenComplete(): void {
-		const resolvers = this.whenCompleteResolvers;
-		this.whenCompleteResolvers = [];
+		const resolvers = this.waitUntilCompleteResolvers;
+		this.waitUntilCompleteResolvers = [];
 		for (const resolver of resolvers) {
 			resolver();
 		}
+	}
+
+	/**
+	 * Aborts all tasks.
+	 *
+	 * @param destroy Destroy.
+	 */
+	private abortAll(destroy: boolean): Promise<void> {
+		const runningTimers = this.runningTimers;
+		const runningImmediates = this.runningImmediates;
+		const runningTasks = this.runningTasks;
+
+		this.runningTasks = {};
+		this.runningTaskCount = 0;
+		this.runningImmediates = [];
+		this.runningTimers = [];
+
+		if (this.waitUntilCompleteTimer) {
+			global.clearImmediate(this.waitUntilCompleteTimer);
+			this.waitUntilCompleteTimer = null;
+		}
+
+		for (const immediate of runningImmediates) {
+			global.clearImmediate(immediate);
+		}
+
+		for (const timer of runningTimers) {
+			global.clearTimeout(timer);
+		}
+
+		for (const key of Object.keys(runningTasks)) {
+			runningTasks[key](destroy);
+		}
+
+		// We need to wait for microtasks to complete before resolving.
+		return this.waitUntilComplete();
 	}
 }

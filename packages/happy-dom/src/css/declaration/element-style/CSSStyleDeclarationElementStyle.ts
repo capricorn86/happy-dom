@@ -1,4 +1,5 @@
 import IShadowRoot from '../../../nodes/shadow-root/IShadowRoot.js';
+import * as PropertySymbol from '../../../PropertySymbol.js';
 import IElement from '../../../nodes/element/IElement.js';
 import IDocument from '../../../nodes/document/IDocument.js';
 import IHTMLStyleElement from '../../../nodes/html-style-element/IHTMLStyleElement.js';
@@ -16,6 +17,7 @@ import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSPa
 import QuerySelector from '../../../query-selector/QuerySelector.js';
 import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConverter.js';
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
+import WindowBrowserSettingsReader from '../../../window/WindowBrowserSettingsReader.js';
 
 const CSS_VARIABLE_REGEXP = /var\( *(--[^) ]+)\)/g;
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
@@ -98,12 +100,12 @@ export default class CSSStyleDeclarationElementStyle {
 
 		if (
 			this.cache.propertyManager &&
-			this.cache.documentCacheID === this.element.ownerDocument['_cacheID']
+			this.cache.documentCacheID === this.element.ownerDocument[PropertySymbol.cacheID]
 		) {
 			return this.cache.propertyManager;
 		}
 
-		this.cache.documentCacheID = this.element.ownerDocument['_cacheID'];
+		this.cache.documentCacheID = this.element.ownerDocument[PropertySymbol.cacheID];
 
 		// Walks through all parent elements and stores them in an array with element and matching CSS text.
 		while (styleAndElement.element) {
@@ -275,7 +277,7 @@ export default class CSSStyleDeclarationElementStyle {
 			return;
 		}
 
-		const ownerWindow = this.element.ownerDocument.defaultView;
+		const ownerWindow = this.element.ownerDocument[PropertySymbol.defaultView];
 
 		for (const rule of options.cssRules) {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
@@ -284,7 +286,7 @@ export default class CSSStyleDeclarationElementStyle {
 					if (selectorText.startsWith(':host')) {
 						if (options.hostElement) {
 							options.hostElement.cssTexts.push({
-								cssText: (<CSSStyleRule>rule)._cssText,
+								cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
 								priorityWeight: 0
 							});
 						}
@@ -293,7 +295,7 @@ export default class CSSStyleDeclarationElementStyle {
 							const matchResult = QuerySelector.match(<IElement>element.element, selectorText);
 							if (matchResult) {
 								element.cssTexts.push({
-									cssText: (<CSSStyleRule>rule)._cssText,
+									cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
 									priorityWeight: matchResult.priorityWeight
 								});
 							}
@@ -353,7 +355,11 @@ export default class CSSStyleDeclarationElementStyle {
 		parentFontSize: string | number;
 		parentSize: string | number | null;
 	}): string {
-		if (this.element.ownerDocument.defaultView.happyDOM.settings.disableComputedStyleRendering) {
+		if (
+			WindowBrowserSettingsReader.getSettings(
+				this.element.ownerDocument[PropertySymbol.defaultView]
+			).disableComputedStyleRendering
+		) {
 			return options.value;
 		}
 
@@ -364,7 +370,7 @@ export default class CSSStyleDeclarationElementStyle {
 		while ((match = regexp.exec(options.value)) !== null) {
 			if (match[1] !== 'px') {
 				const valueInPixels = CSSMeasurementConverter.toPixels({
-					ownerWindow: this.element.ownerDocument.defaultView,
+					ownerWindow: this.element.ownerDocument[PropertySymbol.defaultView],
 					value: match[0],
 					rootFontSize: options.rootFontSize,
 					parentFontSize: options.parentFontSize,
