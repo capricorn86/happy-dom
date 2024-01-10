@@ -1088,11 +1088,34 @@ describe('Document', () => {
 
 	describe('importNode()', () => {
 		it('Creates a clone of a Node and sets the ownerDocument to be the current document.', () => {
-			const node = new Window().document.createElement('div');
-			const clone = <Element>document.importNode(node);
+			const window1 = new Window();
+			const window2 = new Window();
+			const node = window1.document.createElement('div');
+			const clone = <Element>window2.document.importNode(node);
 			expect(clone.tagName).toBe('DIV');
-			expect(clone.ownerDocument === document).toBe(true);
+			expect(clone.ownerDocument === window2.document).toBe(true);
 			expect(clone instanceof HTMLElement).toBe(true);
+		});
+
+		it('Creates a clone of a Node and sets the ownerDocument to be the current document on child nodes when setting the "deep" parameter to "true".', () => {
+			const window1 = new Window();
+			const window2 = new Window();
+			const node = window1.document.createElement('div');
+			const childNode1 = window1.document.createElement('span');
+			const childNode2 = window1.document.createElement('span');
+
+			node.appendChild(childNode1);
+			node.appendChild(childNode2);
+
+			const clone = <Element>window2.document.importNode(node, true);
+			expect(clone.tagName).toBe('DIV');
+			expect(clone.ownerDocument === window2.document).toBe(true);
+
+			expect(clone.children.length).toBe(2);
+			expect(clone.children[0].tagName).toBe('SPAN');
+			expect(clone.children[0].ownerDocument === window2.document).toBe(true);
+			expect(clone.children[1].tagName).toBe('SPAN');
+			expect(clone.children[1].ownerDocument === window2.document).toBe(true);
 		});
 	});
 
