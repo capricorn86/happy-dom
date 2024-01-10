@@ -21,11 +21,11 @@ export default interface IBrowserContext {
 	close(): Promise<void>;
 
 	/**
-	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all tasks such as timers are complete.
+	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.
 	 *
 	 * @returns Promise.
 	 */
-	whenComplete(): Promise<void>;
+	waitUntilComplete(): Promise<void>;
 
 	/**
 	 * Aborts all ongoing operations.

@@ -1,7 +1,6 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
-import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import IBrowserPage from '../types/IBrowserPage.js';
 /**
  * Browser frame factory.
@@ -42,29 +41,25 @@ export default class BrowserFrameFactory {
 				}
 			}
 
-			(<boolean>frame.window.closed) = true;
+			// We need to destroy the Window instance before triggering any async tasks as Window.close() is not async.
+			frame.window[PropertySymbol.destroy]();
+			(<IBrowserPage | null>frame.page) = null;
+			(<IBrowserWindow | null>frame.window) = null;
+			(<IBrowserFrame | null>frame.opener) = null;
 
 			if (!frame.childFrames.length) {
-				const window = <IBrowserWindow>frame.window;
-				WindowBrowserSettingsReader.removeSettings(frame.window);
-				(<IBrowserPage | null>frame.page) = null;
-				(<IBrowserWindow | null>frame.window) = null;
-				(<IBrowserFrame | null>frame.opener) = null;
-				window.close();
-				frame[PropertySymbol.exceptionObserver]?.disconnect();
-				resolve();
-				return;
+				return frame[PropertySymbol.asyncTaskManager]
+					.destroy()
+					.then(() => {
+						frame[PropertySymbol.exceptionObserver]?.disconnect();
+						resolve();
+					})
+					.catch((error) => reject(error));
 			}
 
 			Promise.all(frame.childFrames.slice().map((childFrame) => this.destroyFrame(childFrame)))
 				.then(() => {
 					return frame[PropertySymbol.asyncTaskManager].destroy().then(() => {
-						const window = <IBrowserWindow>frame.window;
-						WindowBrowserSettingsReader.removeSettings(frame.window);
-						(<IBrowserPage | null>frame.page) = null;
-						(<IBrowserWindow | null>frame.window) = null;
-						(<IBrowserFrame | null>frame.opener) = null;
-						window.close();
 						frame[PropertySymbol.exceptionObserver]?.disconnect();
 						resolve();
 					});

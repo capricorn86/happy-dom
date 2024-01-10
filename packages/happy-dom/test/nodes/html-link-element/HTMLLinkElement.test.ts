@@ -100,7 +100,7 @@ describe('HTMLLinkElement', () => {
 			element.rel = 'stylesheet';
 			element.href = 'https://localhost:8080/test/path/file.css';
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect(loadedWindow).toBe(window);
 			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
@@ -127,7 +127,7 @@ describe('HTMLLinkElement', () => {
 			element.rel = 'stylesheet';
 			element.href = 'https://localhost:8080/test/path/file.css';
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error).toEqual(thrownError);
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toEqual('error');
@@ -175,7 +175,7 @@ describe('HTMLLinkElement', () => {
 
 			document.body.appendChild(element);
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect(loadedWindow).toBe(window);
 			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
@@ -201,7 +201,7 @@ describe('HTMLLinkElement', () => {
 
 			document.body.appendChild(element);
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error).toEqual(thrownError);
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toEqual('error');

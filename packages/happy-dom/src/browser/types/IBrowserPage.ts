@@ -25,11 +25,14 @@ export default interface IBrowserPage {
 	close(): Promise<void>;
 
 	/**
-	 * Returns a promise that is resolved when all async tasks are complete.
-	 *
-	 * @returns Promise.
+	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.
 	 */
-	whenComplete(): Promise<void>;
+	waitUntilComplete(): Promise<void>;
+
+	/**
+	 * Returns a promise that is resolved when the page has navigated and the response HTML has been written to the document.
+	 */
+	waitForNavigation(): Promise<void>;
 
 	/**
 	 * Aborts all ongoing operations.

@@ -14,22 +14,26 @@ import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObs
  */
 export default interface IBrowserFrame {
 	readonly childFrames: IBrowserFrame[];
+	readonly parentFrame: IBrowserFrame | null;
+	readonly opener: IBrowserFrame | null;
+	readonly page: IBrowserPage;
 	readonly window: IBrowserWindow;
 	readonly document: IDocument;
 	content: string;
 	url: string;
-	readonly parentFrame: IBrowserFrame | null;
-	readonly opener: IBrowserFrame | null;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null;
-	readonly page: IBrowserPage;
+	[PropertySymbol.listeners]: { navigation: Array<() => void> };
 
 	/**
-	 * Returns a promise that is resolved when all async tasks are complete.
-	 *
-	 * @returns Promise.
+	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.
 	 */
-	whenComplete(): Promise<void>;
+	waitUntilComplete(): Promise<void>;
+
+	/**
+	 * Returns a promise that is resolved when the frame has navigated and the response HTML has been written to the document.
+	 */
+	waitForNavigation(): Promise<void>;
 
 	/**
 	 * Aborts all ongoing operations.
@@ -56,7 +60,6 @@ export default interface IBrowserFrame {
 	 * Reloads the current frame.
 	 *
 	 * @param [options] Options.
-	 * @returns Response.
 	 */
 	reload(options: IReloadOptions): Promise<IResponse | null>;
 }

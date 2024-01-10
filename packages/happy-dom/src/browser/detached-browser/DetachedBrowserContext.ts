@@ -60,8 +60,8 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	 *
 	 * @returns Promise.
 	 */
-	public async whenComplete(): Promise<void> {
-		await Promise.all(this.pages.map((page) => page.whenComplete()));
+	public async waitUntilComplete(): Promise<void> {
+		await Promise.all(this.pages.map((page) => page.waitUntilComplete()));
 	}
 
 	/**

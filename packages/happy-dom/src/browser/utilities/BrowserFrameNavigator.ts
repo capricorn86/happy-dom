@@ -1,6 +1,5 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import IGoToOptions from '../types/IGoToOptions.js';
 import IResponse from '../../fetch/types/IResponse.js';
 import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
@@ -12,7 +11,7 @@ import BrowserFrameFactory from './BrowserFrameFactory.js';
 import BrowserFrameURL from './BrowserFrameURL.js';
 import BrowserFrameValidator from './BrowserFrameValidator.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
-import BrowserErrorCapturingEnum from '../enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 
 /**
  * Browser frame navigation utility.
@@ -59,8 +58,7 @@ export default class BrowserFrameNavigator {
 
 				if (
 					frame.page.context.browser.settings.disableErrorCapturing ||
-					frame.page.context.browser.settings.errorCapturing !==
-						BrowserErrorCapturingEnum.tryAndCatch
+					frame.page.context.browser.settings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 				) {
 					frame.window.eval(code);
 				} else {
@@ -94,10 +92,9 @@ export default class BrowserFrameNavigator {
 		}
 
 		(<IBrowserFrame[]>frame.childFrames) = [];
-		(<boolean>frame.window.closed) = true;
+		frame.window[PropertySymbol.destroy]();
 		frame[PropertySymbol.asyncTaskManager].destroy();
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
-		WindowBrowserSettingsReader.removeSettings(frame.window);
 
 		(<IBrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
@@ -124,6 +121,15 @@ export default class BrowserFrameNavigator {
 			() => abortController.abort('Request timed out.'),
 			options?.timeout ?? 30000
 		);
+		const finalize = (): void => {
+			frame.window.clearTimeout(timeout);
+			readyStateManager.endTask();
+			const listeners = frame[PropertySymbol.listeners].navigation;
+			frame[PropertySymbol.listeners].navigation = [];
+			for (const listener of listeners) {
+				listener();
+			}
+		};
 
 		try {
 			response = await frame.window.fetch(targetURL.href, {
@@ -148,18 +154,25 @@ export default class BrowserFrameNavigator {
 
 			responseText = await response.text();
 		} catch (error) {
-			frame.window.clearTimeout(timeout);
-			readyStateManager.endTask();
+			finalize();
 			throw error;
 		}
-
-		frame.window.clearTimeout(timeout);
-		frame.content = responseText;
-		readyStateManager.endTask();
 
 		if (!response.ok) {
 			frame.page.console.error(`GET ${targetURL.href} ${response.status} (${response.statusText})`);
 		}
+
+		// Fixes issue where evaluating the response can throw an error.
+		// By using requestAnimationFrame() the error will not reject the promise.
+		// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().
+		frame.window.requestAnimationFrame(() => (frame.content = responseText));
+
+		await new Promise((resolve) =>
+			frame.window.requestAnimationFrame(() => {
+				finalize();
+				resolve(null);
+			})
+		);
 
 		return response;
 	}

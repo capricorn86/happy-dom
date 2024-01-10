@@ -1,5 +1,5 @@
 import PackageVersion from '../version.js';
-import BrowserErrorCapturingEnum from './enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from './enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import IBrowserSettings from './types/IBrowserSettings.js';
 
@@ -10,7 +10,7 @@ export default <IBrowserSettings>{
 	disableIframePageLoading: false,
 	disableComputedStyleRendering: false,
 	disableErrorCapturing: false,
-	errorCapturing: BrowserErrorCapturingEnum.tryAndCatch,
+	errorCapture: BrowserErrorCaptureEnum.tryAndCatch,
 	enableFileSystemHttpRequests: false,
 	navigation: {
 		disableMainFrameNavigation: false,

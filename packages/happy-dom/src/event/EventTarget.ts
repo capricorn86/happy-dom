@@ -9,7 +9,7 @@ import IDocument from '../nodes/document/IDocument.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import WindowErrorUtility from '../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
-import BrowserErrorCapturingEnum from '../browser/enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 
 /**
  * Handles events.
@@ -169,7 +169,7 @@ export default abstract class EventTarget implements IEventTarget {
 					window &&
 					(this !== <IEventTarget>window || event.type !== 'error') &&
 					!browserSettings?.disableErrorCapturing &&
-					browserSettings?.errorCapturing === BrowserErrorCapturingEnum.tryAndCatch
+					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 				) {
 					WindowErrorUtility.captureError(window, this[onEventName].bind(this, event));
 				} else {
@@ -203,7 +203,7 @@ export default abstract class EventTarget implements IEventTarget {
 					window &&
 					(this !== <IEventTarget>window || event.type !== 'error') &&
 					!browserSettings?.disableErrorCapturing &&
-					browserSettings?.errorCapturing === BrowserErrorCapturingEnum.tryAndCatch
+					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 				) {
 					if ((<IEventListener>listener).handleEvent) {
 						WindowErrorUtility.captureError(

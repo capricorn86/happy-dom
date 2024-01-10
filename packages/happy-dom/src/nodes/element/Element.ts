@@ -31,7 +31,8 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import ElementNamedNodeMap from './ElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
-import BrowserErrorCapturingEnum from '../../browser/enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
+import NodeCreationOwnerDocument from '../document/NodeCreationOwnerDocument.js';
 
 /**
  * Element.
@@ -691,12 +692,11 @@ export default class Element extends Node implements IElement {
 			throw new DOMException('Shadow root has already been attached.');
 		}
 
-		this.ownerDocument[PropertySymbol.defaultView].ShadowRoot[PropertySymbol.ownerDocument] =
-			this.ownerDocument;
+		NodeCreationOwnerDocument.ownerDocument = this.ownerDocument;
 		(<IShadowRoot>this[PropertySymbol.shadowRoot]) = new this.ownerDocument[
 			PropertySymbol.defaultView
 		].ShadowRoot();
-		this.ownerDocument[PropertySymbol.defaultView].ShadowRoot[PropertySymbol.ownerDocument] = null;
+		NodeCreationOwnerDocument.ownerDocument = null;
 		(<Element>this[PropertySymbol.shadowRoot].host) = this;
 		(<string>this[PropertySymbol.shadowRoot].mode) = init.mode;
 		(<ShadowRoot>this[PropertySymbol.shadowRoot])[PropertySymbol.connectToNode](this);
@@ -949,7 +949,7 @@ export default class Element extends Node implements IElement {
 
 				if (
 					browserSettings.disableErrorCapturing ||
-					browserSettings.errorCapturing !== BrowserErrorCapturingEnum.tryAndCatch
+					browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 				) {
 					this.ownerDocument[PropertySymbol.defaultView].eval(code);
 				} else {

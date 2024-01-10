@@ -54,11 +54,11 @@ export default class Browser implements IBrowser {
 	 *
 	 * @returns Promise.
 	 */
-	public async whenComplete(): Promise<void> {
+	public async waitUntilComplete(): Promise<void> {
 		if (this.contexts.length === 0) {
 			throw new Error('No default context. The browser has been closed.');
 		}
-		await Promise.all(this.contexts.map((page) => page.whenComplete()));
+		await Promise.all(this.contexts.map((page) => page.waitUntilComplete()));
 	}
 
 	/**

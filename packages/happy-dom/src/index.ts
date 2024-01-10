@@ -7,7 +7,7 @@ import DetachedBrowser from './browser/detached-browser/DetachedBrowser.js';
 import DetachedBrowserContext from './browser/detached-browser/DetachedBrowserContext.js';
 import DetachedBrowserFrame from './browser/detached-browser/DetachedBrowserFrame.js';
 import DetachedBrowserPage from './browser/detached-browser/DetachedBrowserPage.js';
-import BrowserErrorCapturingEnum from './browser/enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from './browser/enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from './browser/enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import Clipboard from './clipboard/Clipboard.js';
 import ClipboardItem from './clipboard/ClipboardItem.js';
@@ -168,11 +168,19 @@ import type ISVGSVGElement from './nodes/svg-element/ISVGSVGElement.js';
 import type IText from './nodes/text/IText.js';
 import type IBrowserWindow from './window/IBrowserWindow.js';
 import type IWindow from './window/IWindow.js';
+import type IBrowser from './browser/types/IBrowser.js';
+import type IBrowserContext from './browser/types/IBrowserContext.js';
+import type IBrowserFrame from './browser/types/IBrowserFrame.js';
+import type IBrowserPage from './browser/types/IBrowserPage.js';
 
 export type {
 	IAnimationEventInit,
 	IAttr,
 	IBrowserWindow,
+	IBrowser,
+	IBrowserContext,
+	IBrowserFrame,
+	IBrowserPage,
 	IClipboardEventInit,
 	IComment,
 	ICustomEventInit,
@@ -233,7 +241,7 @@ export {
 	Blob,
 	Browser,
 	BrowserContext,
-	BrowserErrorCapturingEnum,
+	BrowserErrorCaptureEnum,
 	BrowserFrame,
 	BrowserNavigationCrossOriginPolicyEnum,
 	BrowserPage,

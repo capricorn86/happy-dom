@@ -10,7 +10,7 @@ import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import BrowserNavigationCrossOriginPolicyEnum from '../../src/browser/enums/BrowserNavigationCrossOriginPolicyEnum';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';
-import BrowserErrorCapturingEnum from '../../src/browser/enums/BrowserErrorCapturingEnum';
+import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum';
 
 describe('BrowserFrame', () => {
 	afterEach(() => {
@@ -79,7 +79,7 @@ describe('BrowserFrame', () => {
 
 		it('Removes listeners and child nodes before setting the document HTML content.', () => {
 			const browser = new Browser({
-				settings: { errorCapturing: BrowserErrorCapturingEnum.disabled }
+				settings: { errorCapture: BrowserErrorCaptureEnum.disabled }
 			});
 			const page = browser.defaultContext.newPage();
 			page.mainFrame.content = '<div>test</div>';
@@ -118,7 +118,7 @@ describe('BrowserFrame', () => {
 		});
 	});
 
-	describe('whenComplete()', () => {
+	describe('waitUntilComplete()', () => {
 		it('Waits for all pages to complete.', async () => {
 			const browser = new Browser();
 			const page = browser.newPage();
@@ -127,7 +127,7 @@ describe('BrowserFrame', () => {
 			page.mainFrame.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame1.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 3; }, 10);');
-			await page.whenComplete();
+			await page.waitUntilComplete();
 			expect(page.mainFrame.window['test']).toBe(1);
 			expect(frame1.window['test']).toBe(2);
 			expect(frame2.window['test']).toBe(3);

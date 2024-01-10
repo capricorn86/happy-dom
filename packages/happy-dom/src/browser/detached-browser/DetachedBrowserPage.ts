@@ -91,12 +91,17 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	}
 
 	/**
-	 * Returns a promise that is resolved when all async tasks are complete.
-	 *
-	 * @returns Promise.
+	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.
 	 */
-	public async whenComplete(): Promise<void> {
-		await this.mainFrame.whenComplete();
+	public waitUntilComplete(): Promise<void> {
+		return this.mainFrame.waitUntilComplete();
+	}
+
+	/**
+	 * Returns a promise that is resolved when the page has navigated and the response HTML has been written to the document.
+	 */
+	public waitForNavigation(): Promise<void> {
+		return this.mainFrame.waitForNavigation();
 	}
 
 	/**

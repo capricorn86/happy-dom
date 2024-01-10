@@ -1,6 +1,7 @@
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import IDocument from '../nodes/document/IDocument.js';
+import NodeCreationOwnerDocument from '../nodes/document/NodeCreationOwnerDocument.js';
 
 /**
  * The DOMImplementation interface represents an object providing methods which are not dependent on any particular document. Such an object is returned by the.
@@ -45,10 +46,9 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		this.#document[PropertySymbol.defaultView].DocumentType[PropertySymbol.ownerDocument] =
-			this.#document;
+		NodeCreationOwnerDocument.ownerDocument = this.#document;
 		const documentType = new this.#document[PropertySymbol.defaultView].DocumentType();
-		this.#document[PropertySymbol.defaultView].DocumentType[PropertySymbol.ownerDocument] = null;
+		NodeCreationOwnerDocument.ownerDocument = null;
 		documentType.name = qualifiedName;
 		documentType.publicId = publicId;
 		documentType.systemId = systemId;

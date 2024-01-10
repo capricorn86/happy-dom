@@ -1,4 +1,4 @@
-import BrowserErrorCapturingEnum from '../enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 
 export default interface IOptionalBrowserSettings {
@@ -17,14 +17,14 @@ export default interface IOptionalBrowserSettings {
 	/**
 	 * Disables error capturing.
 	 *
-	 * @deprecated Use errorCapturing instead.
+	 * @deprecated Use errorCapture instead.
 	 */
 	disableErrorCapturing?: boolean;
 
 	/**
 	 * Error capturing policy.
 	 */
-	errorCapturing?: BrowserErrorCapturingEnum;
+	errorCapture?: BrowserErrorCaptureEnum;
 
 	/**
 	 * @deprecated Not something that browsers support anymore as it is not secure.

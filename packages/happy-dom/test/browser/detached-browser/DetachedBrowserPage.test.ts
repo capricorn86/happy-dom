@@ -132,7 +132,7 @@ describe('DetachedBrowserPage', () => {
 		});
 	});
 
-	describe('whenComplete()', () => {
+	describe('waitUntilComplete()', () => {
 		it('Waits for all pages to complete.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
@@ -141,7 +141,7 @@ describe('DetachedBrowserPage', () => {
 			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
-			await page.whenComplete();
+			await page.waitUntilComplete();
 			expect(frame1.window['test']).toBe(1);
 			expect(frame2.window['test']).toBe(2);
 		});

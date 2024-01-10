@@ -47,7 +47,7 @@ describe('DetachedWindowAPI', () => {
 		});
 	});
 
-	describe('whenComplete()', () => {
+	describe('waitUntilComplete()', () => {
 		it('Resolves the Promise when all async tasks has been completed.', async () => {
 			const responseText = '{ "test": "test" }';
 			mockModule('https', {
@@ -79,7 +79,7 @@ describe('DetachedWindowAPI', () => {
 
 			window.location.href = 'https://localhost:8080';
 			let isFirstWhenAsyncCompleteCalled = false;
-			window.happyDOM?.whenComplete().then(() => {
+			window.happyDOM?.waitUntilComplete().then(() => {
 				isFirstWhenAsyncCompleteCalled = true;
 			});
 			let tasksDone = 0;
@@ -109,20 +109,20 @@ describe('DetachedWindowAPI', () => {
 					tasksDone++;
 				});
 			});
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 			expect(tasksDone).toBe(6);
 			expect(isFirstWhenAsyncCompleteCalled).toBe(true);
 		});
 	});
 
 	describe('whenAsyncComplete()', () => {
-		it('Calls whenComplete().', async () => {
+		it('Calls waitUntilComplete().', async () => {
 			let isCalled = false;
-			vi.spyOn(<DetachedWindowAPI>window.happyDOM, 'whenComplete').mockImplementation(() => {
+			vi.spyOn(<DetachedWindowAPI>window.happyDOM, 'waitUntilComplete').mockImplementation(() => {
 				isCalled = true;
 				return Promise.resolve();
 			});
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 			expect(isCalled).toBe(true);
 		});
 	});
@@ -132,7 +132,7 @@ describe('DetachedWindowAPI', () => {
 			await new Promise((resolve) => {
 				window.location.href = 'https://localhost:8080';
 				let isFirstWhenAsyncCompleteCalled = false;
-				window.happyDOM?.whenComplete().then(() => {
+				window.happyDOM?.waitUntilComplete().then(() => {
 					isFirstWhenAsyncCompleteCalled = true;
 				});
 				let tasksDone = 0;
@@ -178,7 +178,7 @@ describe('DetachedWindowAPI', () => {
 					.catch(() => {});
 
 				let isSecondWhenAsyncCompleteCalled = false;
-				window.happyDOM?.whenComplete().then(() => {
+				window.happyDOM?.waitUntilComplete().then(() => {
 					isSecondWhenAsyncCompleteCalled = true;
 				});
 

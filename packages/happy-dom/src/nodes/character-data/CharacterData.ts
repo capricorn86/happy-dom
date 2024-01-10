@@ -65,11 +65,13 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 		if (this[PropertySymbol.observers].length > 0) {
 			for (const observer of this[PropertySymbol.observers]) {
 				if (observer.options.characterData) {
-					const record = new MutationRecord();
-					record.target = this;
-					record.type = MutationTypeEnum.characterData;
-					record.oldValue = observer.options.characterDataOldValue ? oldValue : null;
-					observer.callback([record], observer.observer);
+					observer.report(
+						new MutationRecord({
+							target: this,
+							type: MutationTypeEnum.characterData,
+							oldValue: observer.options.characterDataOldValue ? oldValue : null
+						})
+					);
 				}
 			}
 		}

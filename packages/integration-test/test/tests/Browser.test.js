@@ -1,18 +1,17 @@
 import { describe, it, expect } from '../utilities/TestFunctions.js';
-import { Browser, BrowserErrorCapturingEnum } from 'happy-dom';
+import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
 
 describe('Browser', () => {
 	it('Goes to a real page.', async () => {
 		const browser = new Browser({
-			settings: { errorCapturing: BrowserErrorCapturingEnum.processLevel }
+			settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
 		});
 		const page = browser.newPage();
 
 		await page.goto('https://github.com/capricorn86');
-		await page.whenComplete();
 
 		page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]').click();
-		await page.whenComplete();
+		await page.waitForNavigation();
 
 		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom');
 		expect(

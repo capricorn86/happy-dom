@@ -140,7 +140,7 @@ import IResponseBody from '../fetch/types/IResponseBody.js';
 import IResponseInit from '../fetch/types/IResponseInit.js';
 import IRequestInfo from '../fetch/types/IRequestInfo.js';
 import IBrowserWindow from './IBrowserWindow.js';
-import BrowserErrorCapturingEnum from '../browser/enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import AudioImplementation from '../nodes/html-audio-element/Audio.js';
 import ImageImplementation from '../nodes/html-image-element/Image.js';
 import DocumentFragmentImplementation from '../nodes/document-fragment/DocumentFragment.js';
@@ -493,6 +493,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	// Used for tracking capture event listeners to improve performance when they are not used.
 	// See EventTarget class.
 	public [PropertySymbol.captureEventListenerCount]: { [eventType: string]: number } = {};
+	public readonly [PropertySymbol.mutationObservers]: MutationObserver[] = [];
 	public readonly [PropertySymbol.readyStateManager] = new DocumentReadyStateManager(this);
 
 	// Private properties
@@ -558,7 +559,8 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 				key !== 'constructor' &&
 				key[0] !== '_' &&
 				key[0] === key[0].toLowerCase() &&
-				typeof this[key] === 'function'
+				typeof this[key] === 'function' &&
+				!this[key].toString().startsWith('class ')
 			) {
 				this[key] = this[key].bind(this);
 			}
@@ -674,7 +676,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		this.DocumentFragment[PropertySymbol.ownerDocument] = this.document;
 
 		// Ready state manager
-		this[PropertySymbol.readyStateManager].whenComplete().then(() => {
+		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
 			(<DocumentReadyStateEnum>this.document.readyState) = DocumentReadyStateEnum.complete;
 			this.document.dispatchEvent(new Event('readystatechange'));
 			this.document.dispatchEvent(new Event('load', { bubbles: true }));
@@ -829,9 +831,8 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * Closes the window.
 	 */
 	public close(): void {
-		this.Audio[PropertySymbol.ownerDocument] = null;
-		this.Image[PropertySymbol.ownerDocument] = null;
-		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
+		// When using a Window instance directly, the Window instance is the main frame and we will close the page and destroy the browser.
+		// When using the Browser API we should only close the page when the Window instance is connected to the main frame (we should not close child frames such as iframes).
 		if (this.#browserFrame.page?.mainFrame === this.#browserFrame) {
 			this.#browserFrame.page.close();
 		}
@@ -860,7 +861,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		const useTryCatch =
 			!settings ||
 			!settings.disableErrorCapturing ||
-			settings.errorCapturing === BrowserErrorCapturingEnum.tryAndCatch;
+			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
 		const id = this.#setTimeout(() => {
 			if (useTryCatch) {
 				WindowErrorUtility.captureError(this, () => callback(...args));
@@ -896,7 +897,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		const useTryCatch =
 			!settings ||
 			!settings.disableErrorCapturing ||
-			settings.errorCapturing === BrowserErrorCapturingEnum.tryAndCatch;
+			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
 		const id = this.#setInterval(() => {
 			if (useTryCatch) {
 				WindowErrorUtility.captureError(
@@ -933,7 +934,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		const useTryCatch =
 			!settings ||
 			!settings.disableErrorCapturing ||
-			settings.errorCapturing === BrowserErrorCapturingEnum.tryAndCatch;
+			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
 		const id = global.setImmediate(() => {
 			if (useTryCatch) {
 				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
@@ -970,7 +971,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		const useTryCatch =
 			!settings ||
 			!settings.disableErrorCapturing ||
-			settings.errorCapturing === BrowserErrorCapturingEnum.tryAndCatch;
+			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
 		this.#queueMicrotask(() => {
 			if (!isAborted) {
 				if (useTryCatch) {
@@ -1076,5 +1077,30 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 			// Otherwise "this.Array" will be undefined for example.
 			VMGlobalPropertyScript.runInContext(this);
 		}
+	}
+
+	/**
+	 * Destroys the window.
+	 */
+	public [PropertySymbol.destroy](): void {
+		(<boolean>this.closed) = true;
+		this.Audio[PropertySymbol.ownerDocument] = null;
+		this.Image[PropertySymbol.ownerDocument] = null;
+		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
+		for (const mutationObserver of this[PropertySymbol.mutationObservers]) {
+			mutationObserver.disconnect();
+		}
+
+		// Disconnects nodes from the document, so that they can be garbage collected.
+		for (const node of this.document[PropertySymbol.childNodes].slice()) {
+			this.document.removeChild(node);
+		}
+
+		this.document[PropertySymbol.activeElement] = null;
+		this.document[PropertySymbol.nextActiveElement] = null;
+		this.document[PropertySymbol.currentScript] = null;
+		this.document[PropertySymbol.selection] = null;
+
+		WindowBrowserSettingsReader.removeSettings(this);
 	}
 }

@@ -1,11 +1,11 @@
 import { describe, it, expect } from '../utilities/TestFunctions.js';
-import { Browser, BrowserErrorCapturingEnum } from 'happy-dom';
+import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
 
 describe('BrowserFrameExceptionObserver', () => {
 	describe('observe()', () => {
 		it('Observes unhandles fetch rejections.', async () => {
 			const browser = new Browser({
-				settings: { errorCapturing: BrowserErrorCapturingEnum.processLevel }
+				settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
 			});
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
@@ -42,7 +42,7 @@ describe('BrowserFrameExceptionObserver', () => {
 
 		it('Observes uncaught exceptions.', async () => {
 			const browser = new Browser({
-				settings: { errorCapturing: BrowserErrorCapturingEnum.processLevel }
+				settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
 			});
 			const page = browser.newPage();
 			const window = page.mainFrame.window;

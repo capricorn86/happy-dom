@@ -41,18 +41,18 @@ export default class DetachedWindowAPI {
 	 *
 	 * @returns Promise.
 	 */
-	public whenComplete(): Promise<void> {
-		return this.#browserFrame.whenComplete();
+	public waitUntilComplete(): Promise<void> {
+		return this.#browserFrame.waitUntilComplete();
 	}
 
 	/**
 	 * Waits for all async tasks to complete.
 	 *
-	 * @deprecated Use whenComplete() instead.
+	 * @deprecated Use waitUntilComplete() instead.
 	 * @returns Promise.
 	 */
 	public whenAsyncComplete(): Promise<void> {
-		return this.whenComplete();
+		return this.waitUntilComplete();
 	}
 
 	/**

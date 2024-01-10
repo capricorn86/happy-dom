@@ -72,17 +72,18 @@ export default class NodeUtility {
 
 		// MutationObserver
 		if ((<Node>ancestorNode)[PropertySymbol.observers].length > 0) {
-			const record = new MutationRecord();
-			record.target = ancestorNode;
-			record.type = MutationTypeEnum.childList;
-			record.addedNodes = [node];
+			const record = new MutationRecord({
+				target: ancestorNode,
+				type: MutationTypeEnum.childList,
+				addedNodes: [node]
+			});
 
 			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
 				if (observer.options.subtree) {
 					(<Node>node)[PropertySymbol.observe](observer);
 				}
 				if (observer.options.childList) {
-					observer.callback([record], observer.observer);
+					observer.report(record);
 				}
 			}
 		}
@@ -114,15 +115,18 @@ export default class NodeUtility {
 
 		// MutationObserver
 		if ((<Node>ancestorNode)[PropertySymbol.observers].length > 0) {
-			const record = new MutationRecord();
-			record.target = ancestorNode;
-			record.type = MutationTypeEnum.childList;
-			record.removedNodes = [node];
+			const record = new MutationRecord({
+				target: ancestorNode,
+				type: MutationTypeEnum.childList,
+				removedNodes: [node]
+			});
 
 			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
-				(<Node>node)[PropertySymbol.unobserve](observer);
+				if (observer.options.subtree) {
+					(<Node>node)[PropertySymbol.unobserve](observer);
+				}
 				if (observer.options.childList) {
-					observer.callback([record], observer.observer);
+					observer.report(record);
 				}
 			}
 		}
@@ -199,17 +203,18 @@ export default class NodeUtility {
 
 		// MutationObserver
 		if ((<Node>ancestorNode)[PropertySymbol.observers].length > 0) {
-			const record = new MutationRecord();
-			record.target = ancestorNode;
-			record.type = MutationTypeEnum.childList;
-			record.addedNodes = [newNode];
+			const record = new MutationRecord({
+				target: ancestorNode,
+				type: MutationTypeEnum.childList,
+				addedNodes: [newNode]
+			});
 
 			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
 				if (observer.options.subtree) {
 					(<Node>newNode)[PropertySymbol.observe](observer);
 				}
 				if (observer.options.childList) {
-					observer.callback([record], observer.observer);
+					observer.report(record);
 				}
 			}
 		}

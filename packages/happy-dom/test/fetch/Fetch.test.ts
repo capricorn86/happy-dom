@@ -3432,7 +3432,7 @@ describe('Fetch', () => {
 			expect(response.status).toBe(200);
 		});
 
-		it('Supports window.happyDOM?.whenComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
 				const window = new Window({ url: 'https://localhost:8080/' });
 				const chunks = ['chunk1', 'chunk2', 'chunk3'];
@@ -3488,7 +3488,7 @@ describe('Fetch', () => {
 					}
 				});
 
-				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 
 				window.fetch('https://localhost:8080/test/', {
 					method: 'POST',

@@ -492,7 +492,7 @@ describe('Request', () => {
 			expect(Buffer.from(arrayBuffer).toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM?.whenComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
@@ -502,7 +502,7 @@ describe('Request', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				request.arrayBuffer();
 
 				setTimeout(() => {
@@ -533,7 +533,7 @@ describe('Request', () => {
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM?.whenComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
@@ -543,7 +543,7 @@ describe('Request', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				request.blob();
 
 				setTimeout(() => {
@@ -567,7 +567,7 @@ describe('Request', () => {
 			expect(buffer.toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM?.whenComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
@@ -577,7 +577,7 @@ describe('Request', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				request.buffer();
 
 				setTimeout(() => {
@@ -600,7 +600,7 @@ describe('Request', () => {
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM?.whenComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 				let isAsyncComplete = false;
@@ -610,7 +610,7 @@ describe('Request', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				request.text();
 
 				setTimeout(() => {
@@ -636,7 +636,7 @@ describe('Request', () => {
 			expect(json).toEqual({ key1: 'value1' });
 		});
 
-		it('Supports window.happyDOM?.whenComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
 				const request = new window.Request(TEST_URL, {
 					method: 'POST',
@@ -651,7 +651,7 @@ describe('Request', () => {
 						)
 				);
 
-				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				request.json();
 
 				setTimeout(() => {
@@ -676,7 +676,7 @@ describe('Request', () => {
 			expect(requestFormData).toEqual(formData);
 		});
 
-		it('Supports window.happyDOM?.whenComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
 				const formData = new FormData();
 				formData.append('some', 'test');
@@ -687,7 +687,7 @@ describe('Request', () => {
 					(): Promise<FormData> => new Promise((resolve) => setTimeout(() => resolve(formData), 10))
 				);
 
-				window.happyDOM?.whenComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				request.formData();
 
 				setTimeout(() => {

@@ -350,7 +350,12 @@ export default class Fetch {
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
 				// We can end up here when closing down the browser frame and there is an ongoing request.
 				// Therefore we need to check if browserFrame.page.context is still available.
-				if (!this.disableCache && response instanceof Response && this.#browserFrame.page.context) {
+				if (
+					!this.disableCache &&
+					response instanceof Response &&
+					this.#browserFrame.page &&
+					this.#browserFrame.page.context
+				) {
 					response[PropertySymbol.cachedResponse] =
 						this.#browserFrame.page.context.responseCache.add(this.request, {
 							...response,
@@ -484,7 +489,7 @@ export default class Fetch {
 			return;
 		}
 
-		this.response.body.emit('error', error);
+		this.response.body.destroy(error);
 	}
 
 	/**
@@ -786,7 +791,7 @@ export default class Fetch {
 			return;
 		}
 
-		this.response.body.emit('error', error);
+		this.response.body.destroy(error);
 
 		if (this.reject) {
 			this.reject(error);

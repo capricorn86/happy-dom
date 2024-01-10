@@ -6,81 +6,11 @@
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "A utility for observing uncaught exceptions thrown in Happy DOM and dispatch them as events on the Happy DOM window.",
-	"main": "lib/index.js",
-	"type": "module",
-	"exports": {
-		".": {
-			"import": "./lib/index.js",
-			"require": "./cjs/index.cjs",
-			"default": "./lib/index.js"
-		},
-		"./lib/*.js": {
-			"import": "./lib/*.js",
-			"require": "./cjs/*.cjs",
-			"default": "./lib/*.js"
-		},
-		"./lib/*.ts": {
-			"import": "./lib/*.ts",
-			"require": "./cjs/*.ts",
-			"default": "./lib/*.ts"
-		},
-		"./lib/*.map": {
-			"import": "./lib/*.map",
-			"require": "./cjs/*.map",
-			"default": "./lib/*.map"
-		},
-		"./cjs/*.cjs": {
-			"import": "./cjs/*.cjs",
-			"require": "./cjs/*.cjs",
-			"default": "./cjs/*.cjs"
-		},
-		"./cjs/*.ts": {
-			"import": "./cjs/*.ts",
-			"require": "./cjs/*.ts",
-			"default": "./cjs/*.ts"
-		},
-		"./cjs/*.map": {
-			"import": "./cjs/*.map",
-			"require": "./cjs/*.map",
-			"default": "./cjs/*.map"
-		},
-		"./src/*.ts": "./src/*.ts",
-		"./package.json": "./package.json",
-		"./.eslintrc": "./.eslintrc.js"
-	},
-	"keywords": [
-		"jsdom",
-		"happy",
-		"dom",
-		"webcomponents",
-		"web",
-		"component",
-		"custom",
-		"elements",
-		"uncaught",
-		"error",
-		"exception",
-		"observer"
-	],
+	"keywords": [],
 	"publishConfig": {
 		"access": "public"
 	},
-	"scripts": {
-		"compile": "tsc && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
-		"change-cjs-file-extension": "node ../happy-dom/bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
-		"watch": "npm run compile && tsc -w --preserveWatchOutput",
-		"test": "tsc --project ./test && node ./tmp/UncaughtExceptionObserver.test.js",
-		"test:debug": "tsc --project ./test && node --inspect-brk ./tmp/UncaughtExceptionObserver.test.js"
-	},
-	"peerDependencies": {
-		"happy-dom": ">= 2.25.2"
-	},
-	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^5.16.0",
-		"@typescript-eslint/parser": "^5.16.0",
-		"@types/node": "^16.11.7",
-		"prettier": "^2.6.0",
-		"typescript": "^5.0.4",
-		"happy-dom": "^0.0.0"
-	}
+	"scripts": {},
+	"peerDependencies": {},
+	"devDependencies": {}
 }

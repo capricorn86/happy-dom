@@ -22,7 +22,7 @@ describe('FileReader', () => {
 				result = <string>fileReader.result;
 			});
 			fileReader.readAsDataURL(blob);
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 			expect(result).toBe('data:text/plain;charset=utf-8;base64,VEVTVA==');
 		});
 	});

@@ -9,7 +9,7 @@ import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import IWindow from '../../../src/window/IWindow.js';
 import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
-import BrowserErrorCapturingEnum from '../../../src/browser/enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
 
 describe('HTMLScriptElement', () => {
 	let window: IWindow;
@@ -99,7 +99,7 @@ describe('HTMLScriptElement', () => {
 			element.async = true;
 			element.src = 'https://localhost:8080/path/to/script.js';
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect(window['test']).toBe('test');
 		});
@@ -119,7 +119,7 @@ describe('HTMLScriptElement', () => {
 			element.async = true;
 			element.src = 'https://localhost:8080/path/to/script.js';
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect(window['test']).toBe(undefined);
 		});
@@ -190,7 +190,7 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<Event>(<unknown>loadEvent)).target).toBe(script);
 			expect(fetchedURL).toBe('https://localhost:8080/path/to/script.js');
@@ -219,7 +219,7 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
 				'Failed to perform request to "https://localhost:8080/path/to/script.js". Status 404 Not Found.'
@@ -451,7 +451,7 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
 				'Invalid regular expression: missing /'
@@ -522,9 +522,9 @@ describe('HTMLScriptElement', () => {
 			}).toThrow(new TypeError('Invalid regular expression: missing /'));
 		});
 
-		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "errorCapturing" is set to "disabled".', () => {
+		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "errorCapture" is set to "disabled".', () => {
 			window = new Window({
-				settings: { errorCapturing: BrowserErrorCapturingEnum.disabled }
+				settings: { errorCapture: BrowserErrorCaptureEnum.disabled }
 			});
 			document = window.document;
 

@@ -1,4 +1,5 @@
 import CustomElementRegistry from '../custom-element/CustomElementRegistry.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import Document from '../nodes/document/Document.js';
 import IDocument from '../nodes/document/IDocument.js';
 import HTMLDocument from '../nodes/html-document/HTMLDocument.js';
@@ -568,4 +569,9 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	 * @param listener Listener.
 	 */
 	postMessage(message: unknown, targetOrigin?: string, transfer?: unknown[]): void;
+
+	/**
+	 * Destroys the window.
+	 */
+	[PropertySymbol.destroy](): void;
 }

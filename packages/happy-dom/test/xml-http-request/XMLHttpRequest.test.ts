@@ -1055,7 +1055,7 @@ describe('XMLHttpRequest', () => {
 			request.open('GET', REQUEST_URL, true);
 			request.send();
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect(request.responseText).toBe(responseText);
 		});
@@ -1126,7 +1126,7 @@ describe('XMLHttpRequest', () => {
 			request.open('GET', REQUEST_URL, true);
 			request.send();
 
-			await window.happyDOM?.whenComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 			expect(request.responseText).toBe(responseText);

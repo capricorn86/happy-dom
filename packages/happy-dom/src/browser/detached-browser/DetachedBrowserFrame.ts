@@ -11,7 +11,7 @@ import BrowserFrameScriptEvaluator from '../utilities/BrowserFrameScriptEvaluato
 import BrowserFrameNavigator from '../utilities/BrowserFrameNavigator.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import IReloadOptions from '../types/IReloadOptions.js';
-import BrowserErrorCapturingEnum from '../enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
 import IDocument from '../../nodes/document/IDocument.js';
 
@@ -27,6 +27,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public window: IBrowserWindow;
 	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 	public [PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null = null;
+	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 
 	/**
 	 * Constructor.
@@ -41,7 +42,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		}
 
 		// Attach process level error capturing.
-		if (page.context.browser.settings.errorCapturing === BrowserErrorCapturingEnum.processLevel) {
+		if (page.context.browser.settings.errorCapture === BrowserErrorCaptureEnum.processLevel) {
 			this[PropertySymbol.exceptionObserver] = new BrowserFrameExceptionObserver();
 			this[PropertySymbol.exceptionObserver].observe(this);
 		}
@@ -111,15 +112,20 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	}
 
 	/**
-	 * Returns a promise that is resolved when all async tasks are complete.
-	 *
-	 * @returns Promise.
+	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.
 	 */
-	public async whenComplete(): Promise<void> {
+	public async waitUntilComplete(): Promise<void> {
 		await Promise.all([
-			this[PropertySymbol.asyncTaskManager].whenComplete(),
-			...this.childFrames.map((frame) => frame.whenComplete())
+			this[PropertySymbol.asyncTaskManager].waitUntilComplete(),
+			...this.childFrames.map((frame) => frame.waitUntilComplete())
 		]);
+	}
+
+	/**
+	 * Returns a promise that is resolved when the frame has navigated and the response HTML has been written to the document.
+	 */
+	public waitForNavigation(): Promise<void> {
+		return new Promise((resolve) => this[PropertySymbol.listeners].navigation.push(resolve));
 	}
 
 	/**

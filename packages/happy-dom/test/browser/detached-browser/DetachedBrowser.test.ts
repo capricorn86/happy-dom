@@ -95,14 +95,14 @@ describe('DetachedBrowser', () => {
 		});
 	});
 
-	describe('whenComplete()', () => {
+	describe('waitUntilComplete()', () => {
 		it('Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			const page1 = browser.newPage();
 			const page2 = browser.newPage();
 			page1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			page2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
-			await browser.whenComplete();
+			await browser.waitUntilComplete();
 			expect(page1.mainFrame.window['test']).toBe(1);
 			expect(page2.mainFrame.window['test']).toBe(2);
 		});

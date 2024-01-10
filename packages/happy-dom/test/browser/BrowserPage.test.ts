@@ -123,7 +123,7 @@ describe('BrowserPage', () => {
 		});
 	});
 
-	describe('whenComplete()', () => {
+	describe('waitUntilComplete()', () => {
 		it('Waits for all pages to complete.', async () => {
 			const browser = new Browser();
 			const page = browser.newPage();
@@ -131,7 +131,7 @@ describe('BrowserPage', () => {
 			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
-			await page.whenComplete();
+			await page.waitUntilComplete();
 			expect(frame1.window['test']).toBe(1);
 			expect(frame2.window['test']).toBe(2);
 		});

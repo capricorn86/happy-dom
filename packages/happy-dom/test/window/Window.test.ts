@@ -12,7 +12,7 @@ import PackageVersion from '../../src/version.js';
 import IHTMLIFrameElement from '../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
 import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
 import '../types.d.js';
-import BrowserErrorCapturingEnum from '../../src/browser/enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
@@ -177,8 +177,8 @@ describe('Window', () => {
 			expect(windowWithOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableErrorCapturing).toBe(false);
-			expect(windowWithOptions.happyDOM?.settings.errorCapturing).toBe(
-				BrowserErrorCapturingEnum.tryAndCatch
+			expect(windowWithOptions.happyDOM?.settings.errorCapture).toBe(
+				BrowserErrorCaptureEnum.tryAndCatch
 			);
 			expect(windowWithOptions.happyDOM?.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.navigator.userAgent).toBe('test');
@@ -199,8 +199,8 @@ describe('Window', () => {
 			expect(windowWithoutOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableErrorCapturing).toBe(false);
-			expect(windowWithoutOptions.happyDOM?.settings.errorCapturing).toBe(
-				BrowserErrorCapturingEnum.tryAndCatch
+			expect(windowWithoutOptions.happyDOM?.settings.errorCapture).toBe(
+				BrowserErrorCaptureEnum.tryAndCatch
 			);
 			expect(windowWithoutOptions.happyDOM?.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.navigator.userAgent).toBe(

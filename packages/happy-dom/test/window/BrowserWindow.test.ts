@@ -940,7 +940,7 @@ describe('BrowserWindow', () => {
 				expect(window.pageYOffset).toBe(0);
 				expect(window.scrollX).toBe(0);
 				expect(window.scrollY).toBe(0);
-				await browserFrame.whenComplete();
+				await browserFrame.waitUntilComplete();
 				expect(window.document.documentElement.scrollLeft).toBe(50);
 				expect(window.document.documentElement.scrollTop).toBe(60);
 				expect(window.pageXOffset).toBe(50);

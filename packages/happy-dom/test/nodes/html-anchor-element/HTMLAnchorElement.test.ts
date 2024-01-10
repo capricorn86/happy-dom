@@ -428,7 +428,7 @@ describe('HTMLAnchorElement', () => {
 			expect(newWindow === window).toBe(false);
 			expect(newWindow.location.href).toBe('https://www.example.com/');
 
-			await browser.whenComplete();
+			await browser.waitUntilComplete();
 
 			expect(newWindow.document.body.innerHTML).toBe('Test');
 
@@ -459,7 +459,7 @@ describe('HTMLAnchorElement', () => {
 			expect(newWindow === window).toBe(false);
 			expect(newWindow.location.href).toBe('https://www.example.com/');
 
-			await browser.whenComplete();
+			await browser.waitUntilComplete();
 
 			expect(newWindow.document.body.innerHTML).toBe('Test');
 
@@ -488,7 +488,7 @@ describe('HTMLAnchorElement', () => {
 			expect(newWindow === window).toBe(false);
 			expect(newWindow.location.href).toBe('https://www.example.com/');
 
-			await browser.whenComplete();
+			await browser.waitUntilComplete();
 
 			expect(newWindow.document.body.innerHTML).toBe('Test');
 		});

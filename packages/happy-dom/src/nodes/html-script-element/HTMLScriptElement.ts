@@ -10,7 +10,7 @@ import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import HTMLScriptElementScriptLoader from './HTMLScriptElementScriptLoader.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import BrowserErrorCapturingEnum from '../../browser/enums/BrowserErrorCapturingEnum.js';
+import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 
 /**
  * HTML Script Element.
@@ -225,7 +225,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 
 					if (
 						browserSettings.disableErrorCapturing ||
-						browserSettings.errorCapturing !== BrowserErrorCapturingEnum.tryAndCatch
+						browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 					) {
 						this.ownerDocument[PropertySymbol.defaultView].eval(code);
 					} else {

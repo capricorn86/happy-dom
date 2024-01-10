@@ -3,8 +3,9 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import INode from '../nodes/node/INode.js';
 import Node from '../nodes/node/Node.js';
 import IMutationObserverInit from './IMutationObserverInit.js';
-import MutationObserverListener from './MutationListener.js';
+import MutationListener from './MutationListener.js';
 import MutationRecord from './MutationRecord.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 
 /**
  * The MutationObserver interface provides the ability to watch for changes being made to the DOM tree.
@@ -12,9 +13,9 @@ import MutationRecord from './MutationRecord.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
  */
 export default class MutationObserver {
-	private callback: (records: MutationRecord[], observer: MutationObserver) => void;
-	private target: INode = null;
-	private listener: MutationObserverListener = null;
+	#callback: (records: MutationRecord[], observer: MutationObserver) => void;
+	#listeners: MutationListener[] = [];
+	#window: IBrowserWindow | null = null;
 
 	/**
 	 * Constructor.
@@ -22,7 +23,7 @@ export default class MutationObserver {
 	 * @param callback Callback.
 	 */
 	constructor(callback: (records: MutationRecord[], observer: MutationObserver) => void) {
-		this.callback = callback;
+		this.#callback = callback;
 	}
 
 	/**
@@ -34,39 +35,90 @@ export default class MutationObserver {
 	public observe(target: INode, options: IMutationObserverInit): void {
 		if (!target) {
 			throw new DOMException(
-				'Failed to observer. The first parameter "target" should be of type "Node".'
+				`Failed to execute 'observe' on 'MutationObserver': The first parameter "target" should be of type "Node".`
 			);
 		}
 
+		if (!options || (!options.childList && !options.attributes && !options.characterData)) {
+			throw new DOMException(
+				`Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true.`
+			);
+		}
+
+		if (!this.#window) {
+			this.#window = target.ownerDocument
+				? target.ownerDocument[PropertySymbol.defaultView]
+				: target[PropertySymbol.defaultView];
+		}
+
+		// Makes sure that attribute names are lower case.
+		// TODO: Is this correct?
 		options = Object.assign({}, options, {
 			attributeFilter: options.attributeFilter
 				? options.attributeFilter.map((name) => name.toLowerCase())
 				: null
 		});
 
-		this.target = target;
-		this.listener = new MutationObserverListener();
-		this.listener.options = options;
-		this.listener.callback = this.callback.bind(this);
-		this.listener.observer = this;
+		/**
+		 * @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe#reusing_mutationobservers
+		 */
+		for (const listener of this.#listeners) {
+			if (listener.target === target) {
+				listener.options = options;
+				return;
+			}
+		}
 
-		(<Node>target)[PropertySymbol.observe](this.listener);
+		const listener = new MutationListener({
+			window: this.#window,
+			options,
+			callback: this.#callback.bind(this),
+			observer: this,
+			target
+		});
+
+		this.#listeners.push(listener);
+
+		// Stores all observers on the window object, so that they can be disconnected when the window is closed.
+		this.#window[PropertySymbol.mutationObservers].push(this);
+
+		// Starts observing target node.
+		(<Node>target)[PropertySymbol.observe](listener);
 	}
 
 	/**
 	 * Disconnects.
 	 */
 	public disconnect(): void {
-		if (this.target) {
-			(<Node>this.target)[PropertySymbol.unobserve](this.listener);
-			this.target = null;
+		if (this.#listeners.length === 0) {
+			return;
 		}
+
+		const mutationObservers = this.#window[PropertySymbol.mutationObservers];
+		const index = mutationObservers.indexOf(this);
+
+		if (index !== -1) {
+			mutationObservers.splice(index, 1);
+		}
+
+		for (const listener of this.#listeners) {
+			(<Node>listener.target)[PropertySymbol.unobserve](listener);
+			listener.destroy();
+		}
+
+		this.#listeners = [];
 	}
 
 	/**
-	 * Takes records.
+	 * Returns a list of all matching DOM changes that have been detected but not yet processed by the observer's callback function, leaving the mutation queue empty.
+	 *
+	 * @returns Records.
 	 */
-	public takeRecords(): [] {
-		return [];
+	public takeRecords(): MutationRecord[] {
+		let records = [];
+		for (const listener of this.#listeners) {
+			records = records.concat(listener.takeRecords());
+		}
+		return records;
 	}
 }

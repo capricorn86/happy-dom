@@ -7,6 +7,7 @@ import IAttr from '../attr/IAttr.js';
 import Element from './Element.js';
 import HTMLCollection from './HTMLCollection.js';
 import IElement from './IElement.js';
+import MutationListener from '../../mutation-observer/MutationListener.js';
 
 /**
  * Named Node Map.
@@ -95,18 +96,22 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 
 		// MutationObserver
 		if (this[PropertySymbol.ownerElement][PropertySymbol.observers].length > 0) {
-			for (const observer of this[PropertySymbol.ownerElement][PropertySymbol.observers]) {
+			for (const observer of <MutationListener[]>(
+				this[PropertySymbol.ownerElement][PropertySymbol.observers]
+			)) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
 						observer.options.attributeFilter.includes(item.name))
 				) {
-					const record = new MutationRecord();
-					record.target = this[PropertySymbol.ownerElement];
-					record.type = MutationTypeEnum.attributes;
-					record.attributeName = item.name;
-					record.oldValue = observer.options.attributeOldValue ? oldValue : null;
-					observer.callback([record], observer.observer);
+					observer.report(
+						new MutationRecord({
+							target: this[PropertySymbol.ownerElement],
+							type: MutationTypeEnum.attributes,
+							attributeName: item.name,
+							oldValue: observer.options.attributeOldValue ? oldValue : null
+						})
+					);
 				}
 			}
 		}
@@ -167,18 +172,22 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 
 		// MutationObserver
 		if (this[PropertySymbol.ownerElement][PropertySymbol.observers].length > 0) {
-			for (const observer of this[PropertySymbol.ownerElement][PropertySymbol.observers]) {
+			for (const observer of <MutationListener[]>(
+				this[PropertySymbol.ownerElement][PropertySymbol.observers]
+			)) {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
 						observer.options.attributeFilter.includes(removedItem.name))
 				) {
-					const record = new MutationRecord();
-					record.target = this[PropertySymbol.ownerElement];
-					record.type = MutationTypeEnum.attributes;
-					record.attributeName = removedItem.name;
-					record.oldValue = observer.options.attributeOldValue ? removedItem.value : null;
-					observer.callback([record], observer.observer);
+					observer.report(
+						new MutationRecord({
+							target: this[PropertySymbol.ownerElement],
+							type: MutationTypeEnum.attributes,
+							attributeName: removedItem.name,
+							oldValue: observer.options.attributeOldValue ? removedItem.value : null
+						})
+					);
 				}
 			}
 		}

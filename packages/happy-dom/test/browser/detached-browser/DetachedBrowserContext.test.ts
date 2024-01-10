@@ -55,14 +55,14 @@ describe('DetachedBrowserContext', () => {
 		});
 	});
 
-	describe('whenComplete()', () => {
+	describe('waitUntilComplete()', () => {
 		it('Waits for all pages to complete.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			const page1 = browser.newPage();
 			const page2 = browser.newPage();
 			page1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			page2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
-			await browser.defaultContext.whenComplete();
+			await browser.defaultContext.waitUntilComplete();
 			expect(page1.mainFrame.window['test']).toBe(1);
 			expect(page2.mainFrame.window['test']).toBe(2);
 		});

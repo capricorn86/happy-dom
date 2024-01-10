@@ -11,6 +11,7 @@ import NodeUtility from './NodeUtility.js';
 import IAttr from '../attr/IAttr.js';
 import NodeList from './NodeList.js';
 import INodeList from './INodeList.js';
+import NodeCreationOwnerDocument from '../document/NodeCreationOwnerDocument.js';
 
 /**
  * Node.
@@ -70,8 +71,13 @@ export default class Node extends EventTarget implements INode {
 	 */
 	constructor() {
 		super();
-		if ((<typeof Node>this.constructor)[PropertySymbol.ownerDocument]) {
-			this.ownerDocument = (<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
+		if (
+			NodeCreationOwnerDocument.ownerDocument ||
+			(<typeof Node>this.constructor)[PropertySymbol.ownerDocument]
+		) {
+			this.ownerDocument =
+				NodeCreationOwnerDocument.ownerDocument ||
+				(<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
 		}
 	}
 
@@ -273,9 +279,9 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): INode {
-		(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] = this.ownerDocument;
+		NodeCreationOwnerDocument.ownerDocument = this.ownerDocument;
 		const clone = new (<typeof Node>this.constructor)();
-		(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] = null;
+		NodeCreationOwnerDocument.ownerDocument = null;
 
 		// Document has childNodes directly when it is created
 		if (clone[PropertySymbol.childNodes].length) {

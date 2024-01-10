@@ -90,7 +90,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			global: <typeof globalThis>(<unknown>this.window)
 		});
 
-		// Jest is using the setTimeout function from Happy DOM internally for detecting when a test times out, but this causes window.happyDOM?.whenComplete() and window.happyDOM?.abort() to not work as expected.
+		// Jest is using the setTimeout function from Happy DOM internally for detecting when a test times out, but this causes window.happyDOM?.waitUntilComplete() and window.happyDOM?.abort() to not work as expected.
 		// Hopefully Jest can fix this in the future as this fix is not very pretty.
 		const happyDOMSetTimeout = this.global.setTimeout;
 		(<(...args: unknown[]) => number>this.global.setTimeout) = (...args: unknown[]): number => {
