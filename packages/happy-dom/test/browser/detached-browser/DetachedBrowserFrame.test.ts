@@ -14,6 +14,7 @@ import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFact
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../../src/fetch/Headers';
 import IHTMLAnchorElement from '../../../src/nodes/html-anchor-element/IHTMLAnchorElement';
+import * as PropertySymbol from '../../../src/PropertySymbol';
 
 describe('DetachedBrowserFrame', () => {
 	afterEach(() => {
@@ -423,7 +424,8 @@ describe('DetachedBrowserFrame', () => {
 			});
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -452,7 +454,8 @@ describe('DetachedBrowserFrame', () => {
 			});
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -505,7 +508,8 @@ describe('DetachedBrowserFrame', () => {
 			});
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'http://github.com';
@@ -533,7 +537,8 @@ describe('DetachedBrowserFrame', () => {
 			});
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -561,7 +566,8 @@ describe('DetachedBrowserFrame', () => {
 			});
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://github.com/capricorn86/happy-dom');
@@ -587,7 +593,8 @@ describe('DetachedBrowserFrame', () => {
 			});
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -693,7 +700,8 @@ describe('DetachedBrowserFrame', () => {
 			});
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://localhost:9999');
@@ -717,7 +725,8 @@ describe('DetachedBrowserFrame', () => {
 			});
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.pages[0];
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			const response = await childPage.mainFrame.goto('http://localhost:9999');

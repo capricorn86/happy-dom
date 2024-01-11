@@ -2,6 +2,7 @@ import IBrowserFrame from '../types/IBrowserFrame.js';
 import { URL } from 'url';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import DetachedBrowserFrame from '../detached-browser/DetachedBrowserFrame.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * Browser frame validator.
@@ -18,10 +19,9 @@ export default class BrowserFrameValidator {
 		const settings = frame.page.context.browser.settings;
 		let fromURL = frame.page.mainFrame.window.location;
 
-		if (frame.opener) {
-			fromURL = frame.opener.window.location;
-		}
-		if (frame.parentFrame) {
+		if (frame[PropertySymbol.openerFrame]) {
+			fromURL = frame[PropertySymbol.openerFrame].window.location;
+		} else if (frame.parentFrame) {
 			fromURL = frame.parentFrame.window.location;
 		}
 
@@ -74,7 +74,7 @@ export default class BrowserFrameValidator {
 			return false;
 		}
 
-		if (settings.navigation.disableChildPageNavigation && !!frame.opener) {
+		if (settings.navigation.disableChildPageNavigation && !!frame[PropertySymbol.openerFrame]) {
 			return false;
 		}
 

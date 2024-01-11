@@ -41,12 +41,18 @@ export default class Window extends BrowserWindow implements IWindow {
 			console: options?.console,
 			settings: options?.settings
 		});
-		const browserFrame = browser.defaultContext.pages[0].mainFrame;
+		const browserPage = browser.defaultContext.pages[0];
+		const browserFrame = browserPage.mainFrame;
+
+		if (options && (options.width || options.height || options.innerWidth || options.innerHeight)) {
+			Object.assign(browserPage.viewport, {
+				width: options.width || options.innerWidth || browserPage.viewport.width,
+				height: options.height || options.innerHeight || browserPage.viewport.height
+			});
+		}
 
 		super(browserFrame, {
-			url: options?.url,
-			width: options?.width ?? options?.innerWidth,
-			height: options?.height ?? options?.innerHeight
+			url: options?.url
 		});
 
 		browserFrame.window = this;

@@ -1,5 +1,5 @@
 export default interface IBrowserPageViewport {
-	width?: number;
-	height?: number;
-	devicePixelRatio?: number;
+	width: number;
+	height: number;
+	devicePixelRatio: number;
 }

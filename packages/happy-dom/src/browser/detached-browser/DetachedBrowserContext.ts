@@ -1,7 +1,6 @@
 import DetachedBrowser from './DetachedBrowser.js';
 import DetachedBrowserPage from './DetachedBrowserPage.js';
 import IBrowserContext from '../types/IBrowserContext.js';
-import DetachedBrowserFrame from './DetachedBrowserFrame.js';
 import ICookieContainer from '../../cookie/types/ICookieContainer.js';
 import CookieContainer from '../../cookie/CookieContainer.js';
 import ResponseCache from '../../fetch/cache/response/ResponseCache.js';
@@ -85,9 +84,8 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	public newPage(opener?: DetachedBrowserFrame): DetachedBrowserPage {
+	public newPage(): DetachedBrowserPage {
 		const page = new DetachedBrowserPage(this);
-		(<DetachedBrowserFrame | null>(<unknown>page.mainFrame.opener)) = opener || null;
 		this.pages.push(page);
 		return page;
 	}

@@ -3,6 +3,8 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import IBrowserFrame from './types/IBrowserFrame.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
+import ICrossOriginBrowserWindow from '../window/ICrossOriginBrowserWindow.js';
 import Location from '../location/Location.js';
 import IResponse from '../fetch/types/IResponse.js';
 import IGoToOptions from './types/IGoToOptions.js';
@@ -21,12 +23,14 @@ import IDocument from '../nodes/document/IDocument.js';
 export default class BrowserFrame implements IBrowserFrame {
 	public readonly childFrames: BrowserFrame[] = [];
 	public readonly parentFrame: BrowserFrame | null = null;
-	public readonly opener: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: BrowserWindow;
 	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 	public [PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null = null;
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
+	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
+	public [PropertySymbol.openerWindow]: IBrowserWindow | ICrossOriginBrowserWindow | null = null;
+	public [PropertySymbol.popup] = false;
 
 	/**
 	 * Constructor.

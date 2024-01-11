@@ -1,7 +1,5 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import IBrowserPage from '../types/IBrowserPage.js';
-import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
-import Event from '../../event/Event.js';
 import IVirtualConsolePrinter from '../../console/types/IVirtualConsolePrinter.js';
 import IBrowserContext from '../types/IBrowserContext.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
@@ -18,35 +16,6 @@ export default class BrowserPageUtility {
 	 */
 	public static getFrames(page: IBrowserPage): IBrowserFrame[] {
 		return this.findFrames(page.mainFrame);
-	}
-
-	/**
-	 * Sets the viewport.
-	 *
-	 * @param page Page.
-	 * @param viewport Viewport.
-	 */
-	public static setViewport(page: IBrowserPage, viewport: IBrowserPageViewport): void {
-		if (
-			(viewport.width !== undefined && page.mainFrame.window.innerWidth !== viewport.width) ||
-			(viewport.height !== undefined && page.mainFrame.window.innerHeight !== viewport.height)
-		) {
-			if (viewport.width !== undefined && page.mainFrame.window.innerWidth !== viewport.width) {
-				(<number>page.mainFrame.window.innerWidth) = viewport.width;
-				(<number>page.mainFrame.window.outerWidth) = viewport.width;
-			}
-
-			if (viewport.height !== undefined && page.mainFrame.window.innerHeight !== viewport.height) {
-				(<number>page.mainFrame.window.innerHeight) = viewport.height;
-				(<number>page.mainFrame.window.outerHeight) = viewport.height;
-			}
-
-			page.mainFrame.window.dispatchEvent(new Event('resize'));
-		}
-
-		if (viewport.devicePixelRatio !== undefined) {
-			(<number>page.mainFrame.window.devicePixelRatio) = viewport.devicePixelRatio;
-		}
 	}
 
 	/**

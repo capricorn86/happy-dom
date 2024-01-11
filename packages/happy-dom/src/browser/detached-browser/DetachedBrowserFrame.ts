@@ -14,6 +14,7 @@ import IReloadOptions from '../types/IReloadOptions.js';
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
 import IDocument from '../../nodes/document/IDocument.js';
+import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -21,13 +22,15 @@ import IDocument from '../../nodes/document/IDocument.js';
 export default class DetachedBrowserFrame implements IBrowserFrame {
 	public readonly childFrames: DetachedBrowserFrame[] = [];
 	public readonly parentFrame: DetachedBrowserFrame | null = null;
-	public readonly opener: DetachedBrowserFrame | null = null;
 	public readonly page: DetachedBrowserPage;
 	// Needs to be injected from the outside when the browser frame is constructed.
 	public window: IBrowserWindow;
 	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 	public [PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null = null;
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
+	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
+	public [PropertySymbol.openerWindow]: IBrowserWindow | ICrossOriginBrowserWindow | null = null;
+	public [PropertySymbol.popup] = false;
 
 	/**
 	 * Constructor.

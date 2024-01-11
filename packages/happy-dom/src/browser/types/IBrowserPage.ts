@@ -1,4 +1,4 @@
-import IBrowserPageViewport from './IBrowserPageViewport.js';
+import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
 import VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
 import IBrowserFrame from './IBrowserFrame.js';
 import IBrowserContext from './IBrowserContext.js';
@@ -6,6 +6,7 @@ import { Script } from 'vm';
 import IGoToOptions from './IGoToOptions.js';
 import IResponse from '../../fetch/types/IResponse.js';
 import IReloadOptions from './IReloadOptions.js';
+import IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
 
 /**
  * Browser page.
@@ -16,6 +17,7 @@ export default interface IBrowserPage {
 	readonly context: IBrowserContext;
 	readonly console: Console;
 	readonly frames: IBrowserFrame[];
+	readonly viewport: IBrowserPageViewport;
 	content: string;
 	url: string;
 
@@ -49,7 +51,7 @@ export default interface IBrowserPage {
 	 *
 	 * @param viewport Viewport.
 	 */
-	setViewport(viewport: IBrowserPageViewport): void;
+	setViewport(viewport: IOptionalBrowserPageViewport): void;
 
 	/**
 	 * Go to a page.

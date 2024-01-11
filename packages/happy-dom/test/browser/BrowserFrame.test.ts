@@ -13,6 +13,7 @@ import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../src/fetch/Headers';
 import IHTMLAnchorElement from '../../src/nodes/html-anchor-element/IHTMLAnchorElement';
+import * as PropertySymbol from '../../src/PropertySymbol';
 
 describe('BrowserFrame', () => {
 	afterEach(() => {
@@ -401,7 +402,8 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -429,7 +431,8 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -480,7 +483,8 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'http://github.com';
@@ -507,7 +511,8 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -534,7 +539,8 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://github.com/capricorn86/happy-dom');
@@ -559,7 +565,8 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -661,7 +668,8 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://localhost:9999');
@@ -684,7 +692,8 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childPage = browser.newPage(page.mainFrame);
+			const childPage = browser.newPage();
+			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			const response = await childPage.mainFrame.goto('http://localhost:9999');

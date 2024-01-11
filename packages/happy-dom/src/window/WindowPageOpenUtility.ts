@@ -4,6 +4,7 @@ import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import FetchCORSUtility from '../fetch/utilities/FetchCORSUtility.js';
 import ICrossOriginBrowserWindow from './ICrossOriginBrowserWindow.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * Window page open handler.
@@ -45,8 +46,9 @@ export default class WindowPageOpenUtility {
 				break;
 			case '_blank':
 			default:
-				const newPage = browserFrame.page.context.newPage(browserFrame);
+				const newPage = browserFrame.page.context.newPage();
 				targetFrame = newPage.mainFrame;
+				targetFrame[PropertySymbol.openerFrame] = browserFrame;
 				break;
 		}
 
@@ -66,6 +68,8 @@ export default class WindowPageOpenUtility {
 		}
 
 		if (features.popup && target !== '_self' && target !== '_top' && target !== '_parent') {
+			targetFrame[PropertySymbol.popup] = true;
+
 			if (features?.width || features?.height) {
 				targetFrame.page.setViewport({
 					width: features?.width,
@@ -100,9 +104,10 @@ export default class WindowPageOpenUtility {
 			!features.noopener &&
 			!features.noreferrer &&
 			browserFrame.window &&
+			targetFrame[PropertySymbol.openerFrame] &&
 			targetFrame.window !== browserFrame.window
 		) {
-			(<IBrowserWindow | ICrossOriginBrowserWindow>targetFrame.window.opener) = isCORS
+			targetFrame[PropertySymbol.openerWindow] = isCORS
 				? new CrossOriginBrowserWindow(browserFrame.window)
 				: browserFrame.window;
 		}
@@ -156,7 +161,7 @@ export default class WindowPageOpenUtility {
 			const [key, value] = part.split('=');
 			switch (key) {
 				case 'popup':
-					result.popup = value === 'yes' || value === '1' || value === 'true';
+					result.popup = !value || value === 'yes' || value === '1' || value === 'true';
 					break;
 				case 'width':
 				case 'innerWidth':
