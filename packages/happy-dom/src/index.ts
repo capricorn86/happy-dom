@@ -172,6 +172,7 @@ import type IBrowser from './browser/types/IBrowser.js';
 import type IBrowserContext from './browser/types/IBrowserContext.js';
 import type IBrowserFrame from './browser/types/IBrowserFrame.js';
 import type IBrowserPage from './browser/types/IBrowserPage.js';
+import type ICrossOriginBrowserWindow from './window/ICrossOriginBrowserWindow.js';
 
 export type {
 	IAnimationEventInit,
@@ -181,6 +182,7 @@ export type {
 	IBrowserContext,
 	IBrowserFrame,
 	IBrowserPage,
+	ICrossOriginBrowserWindow,
 	IClipboardEventInit,
 	IComment,
 	ICustomEventInit,

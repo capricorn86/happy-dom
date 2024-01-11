@@ -1,7 +1,6 @@
 import ICookieContainer from '../../cookie/types/ICookieContainer.js';
 import IResponseCache from '../../fetch/cache/response/IResponseCache.js';
 import IBrowser from './IBrowser.js';
-import IBrowserFrame from './IBrowserFrame.js';
 import IBrowserPage from './IBrowserPage.js';
 import IPreflightResponseCache from '../../fetch/cache/preflight/IPreflightResponseCache.js';
 
@@ -35,8 +34,7 @@ export default interface IBrowserContext {
 	/**
 	 * Creates a new page.
 	 *
-	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	newPage(opener?: IBrowserFrame): IBrowserPage;
+	newPage(): IBrowserPage;
 }

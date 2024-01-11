@@ -93,14 +93,5 @@ describe('DetachedBrowserContext', () => {
 			expect(browser.defaultContext.pages[0].mainFrame.window).toBe(window);
 			expect(browser.defaultContext.pages[1]).toBe(page);
 		});
-
-		it('Supports opener as parameter.', () => {
-			const window = new Window();
-			const browser = new DetachedBrowser(BrowserWindow);
-			browser.defaultContext.pages[0].mainFrame.window = window;
-			const page1 = browser.defaultContext.newPage();
-			const page2 = browser.defaultContext.newPage(page1.mainFrame);
-			expect(page2.mainFrame.opener).toBe(page1.mainFrame);
-		});
 	});
 });

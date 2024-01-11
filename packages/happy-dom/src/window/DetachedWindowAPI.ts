@@ -1,5 +1,5 @@
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
-import IBrowserPageViewport from '../browser/types/IBrowserPageViewport.js';
+import IOptionalBrowserPageViewport from '../browser/types/IOptionalBrowserPageViewport.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import IBrowserSettings from '../browser/types/IBrowserSettings.js';
 
@@ -85,7 +85,7 @@ export default class DetachedWindowAPI {
 	 *
 	 * @param viewport Viewport.
 	 */
-	public setViewport(viewport: IBrowserPageViewport): void {
+	public setViewport(viewport: IOptionalBrowserPageViewport): void {
 		this.#browserFrame.page.setViewport(viewport);
 	}
 

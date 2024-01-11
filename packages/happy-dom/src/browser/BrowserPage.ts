@@ -1,5 +1,4 @@
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
-import IBrowserPageViewport from './types/IBrowserPageViewport.js';
 import BrowserFrame from './BrowserFrame.js';
 import BrowserContext from './BrowserContext.js';
 import VirtualConsole from '../console/VirtualConsole.js';
@@ -9,6 +8,10 @@ import { Script } from 'vm';
 import IGoToOptions from './types/IGoToOptions.js';
 import IResponse from '../fetch/types/IResponse.js';
 import IReloadOptions from './types/IReloadOptions.js';
+import IBrowserPageViewport from './types/IBrowserPageViewport.js';
+import IOptionalBrowserPageViewport from './types/IOptionalBrowserPageViewport.js';
+import DefaultBrowserPageViewport from './DefaultBrowserPageViewport.js';
+import Event from '../event/Event.js';
 
 /**
  * Browser page.
@@ -18,6 +21,7 @@ export default class BrowserPage implements IBrowserPage {
 	public readonly mainFrame: BrowserFrame;
 	public readonly context: BrowserContext;
 	public readonly console: Console;
+	public readonly viewport: IBrowserPageViewport = Object.assign({}, DefaultBrowserPageViewport);
 
 	/**
 	 * Constructor.
@@ -114,8 +118,16 @@ export default class BrowserPage implements IBrowserPage {
 	 *
 	 * @param viewport Viewport.
 	 */
-	public setViewport(viewport: IBrowserPageViewport): void {
-		BrowserPageUtility.setViewport(this, viewport);
+	public setViewport(viewport: IOptionalBrowserPageViewport): void {
+		const previousViewport = Object.assign({}, this.viewport);
+		Object.assign(this.viewport, viewport);
+		if (
+			previousViewport.width !== this.viewport.width ||
+			previousViewport.height !== this.viewport.height ||
+			previousViewport.devicePixelRatio !== this.viewport.devicePixelRatio
+		) {
+			this.mainFrame.window.dispatchEvent(new Event('resize'));
+		}
 	}
 
 	/**

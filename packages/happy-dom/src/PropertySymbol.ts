@@ -79,3 +79,6 @@ export const width = Symbol('width');
 export const window = Symbol('window');
 export const windowResizeListener = Symbol('windowResizeListener');
 export const mutationObservers = Symbol('mutationObservers');
+export const openerFrame = Symbol('openerFrame');
+export const openerWindow = Symbol('openerFrame');
+export const popup = Symbol('popup');

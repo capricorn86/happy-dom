@@ -4,7 +4,6 @@ import IOptionalBrowserSettings from './types/IOptionalBrowserSettings.js';
 import BrowserSettingsFactory from './BrowserSettingsFactory.js';
 import BrowserPage from './BrowserPage.js';
 import IBrowser from './types/IBrowser.js';
-import BrowserFrame from './BrowserFrame.js';
 
 /**
  * Browser.
@@ -94,13 +93,12 @@ export default class Browser implements IBrowser {
 	/**
 	 * Creates a new page.
 	 *
-	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	public newPage(opener?: BrowserFrame): BrowserPage {
+	public newPage(): BrowserPage {
 		if (this.contexts.length === 0) {
 			throw new Error('No default context. The browser has been closed.');
 		}
-		return this.contexts[0].newPage(opener);
+		return this.contexts[0].newPage();
 	}
 }

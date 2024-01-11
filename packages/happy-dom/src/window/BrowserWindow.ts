@@ -405,21 +405,15 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly history: History;
 	public readonly navigator: Navigator;
 	public readonly console: Console;
-	public readonly opener: IBrowserWindow | null = null;
 	public readonly self: IBrowserWindow = this;
 	public readonly top: IBrowserWindow = this;
 	public readonly parent: IBrowserWindow = this;
 	public readonly window: IBrowserWindow = this;
 	public readonly globalThis: IBrowserWindow = this;
 	public readonly screen: Screen;
-	public readonly devicePixelRatio = 1;
 	public readonly sessionStorage: Storage;
 	public readonly localStorage: Storage;
 	public readonly performance = PerfHooks.performance;
-	public readonly innerWidth: number = 1024;
-	public readonly innerHeight: number = 768;
-	public readonly outerWidth: number = 1024;
-	public readonly outerHeight: number = 768;
 	public readonly screenLeft: number = 0;
 	public readonly screenTop: number = 0;
 	public readonly screenX: number = 0;
@@ -504,6 +498,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	#clearInterval: (id: NodeJS.Timeout) => void;
 	#queueMicrotask: (callback: Function) => void;
 	#browserFrame: IBrowserFrame;
+	#innerWidth: number | null = null;
+	#innerHeight: number | null = null;
+	#outerWidth: number | null = null;
+	#outerHeight: number | null = null;
+	#devicePixelRatio: number | null = null;
 
 	/**
 	 * Constructor.
@@ -511,13 +510,8 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * @param browserFrame Browser frame.
 	 * @param [options] Options.
 	 * @param [options.url] URL.
-	 * @param [options.width] Window width. Defaults to "1024".
-	 * @param [options.height] Window height. Defaults to "768".
 	 */
-	constructor(
-		browserFrame: IBrowserFrame,
-		options?: { url?: string; width?: number; height?: number }
-	) {
+	constructor(browserFrame: IBrowserFrame, options?: { url?: string }) {
 		super();
 
 		this.#browserFrame = browserFrame;
@@ -537,20 +531,6 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		this.console = browserFrame.page.console;
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
-
-		if (options) {
-			if (options.width !== undefined) {
-				if (options.width !== undefined && this.innerWidth !== options.width) {
-					(<number>this.innerWidth) = options.width;
-					(<number>this.outerWidth) = options.width;
-				}
-			}
-
-			if (options.height !== undefined && this.innerHeight !== options.height) {
-				(<number>this.innerHeight) = options.height;
-				(<number>this.outerHeight) = options.height;
-			}
-		}
 
 		// Binds all methods to "this", so that it will use the correct context when called globally.
 		for (const key of Object.getOwnPropertyNames(BrowserWindow.prototype).concat(
@@ -685,6 +665,15 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	}
 
 	/**
+	 * Returns opener.
+	 *
+	 * @returns Opener.
+	 */
+	public get opener(): IBrowserWindow | ICrossOriginBrowserWindow | null {
+		return this.#browserFrame[PropertySymbol.openerWindow];
+	}
+
+	/**
 	 * The number of pixels that the document is currently scrolled horizontally.
 	 *
 	 * @returns Scroll X.
@@ -727,6 +716,114 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 */
 	public get CSS(): CSS {
 		return new CSS();
+	}
+
+	/**
+	 * Returns inner width.
+	 *
+	 * @returns Inner width.
+	 */
+	public get innerWidth(): number {
+		if (this.#innerWidth === null) {
+			return this.#browserFrame.page.viewport.width;
+		}
+		return this.#innerWidth;
+	}
+
+	/**
+	 * Sets inner width.
+	 *
+	 * @param value Inner width.
+	 */
+	public set innerWidth(value: number) {
+		this.#innerWidth = value;
+	}
+
+	/**
+	 * Returns inner height.
+	 *
+	 * @returns Inner height.
+	 */
+	public get innerHeight(): number {
+		// It seems like this value can be defined according to spec, but changing it has no effect on the actual viewport.
+		if (this.#innerHeight === null) {
+			return this.#browserFrame.page.viewport.height;
+		}
+		return this.#innerHeight;
+	}
+
+	/**
+	 * Sets inner height.
+	 *
+	 * @param value Inner height.
+	 */
+	public set innerHeight(value: number) {
+		this.#innerHeight = value;
+	}
+
+	/**
+	 * Returns outer width.
+	 *
+	 * @returns Outer width.
+	 */
+	public get outerWidth(): number {
+		// It seems like this value can be defined according to spec, but changing it has no effect on the actual viewport.
+		if (this.#outerWidth === null) {
+			return this.#browserFrame.page.viewport.width;
+		}
+		return this.#outerWidth;
+	}
+
+	/**
+	 * Sets outer width.
+	 *
+	 * @param value Outer width.
+	 */
+	public set outerWidth(value: number) {
+		this.#outerWidth = value;
+	}
+
+	/**
+	 * Returns outer height.
+	 *
+	 * @returns Outer height.
+	 */
+	public get outerHeight(): number {
+		if (this.#outerHeight === null) {
+			return this.#browserFrame.page.viewport.height;
+		}
+		return this.#outerHeight;
+	}
+
+	/**
+	 * Sets outer height.
+	 *
+	 * @param value Outer height.
+	 */
+	public set outerHeight(value: number) {
+		this.#outerHeight = value;
+	}
+
+	/**
+	 * Returns device pixel ratio.
+	 *
+	 * @returns Device pixel ratio.
+	 */
+	public get devicePixelRatio(): number {
+		// It seems like this value can be defined according to spec, but changing it has no effect on the actual viewport.
+		if (this.#devicePixelRatio === null) {
+			return this.#browserFrame.page.viewport.devicePixelRatio;
+		}
+		return this.#devicePixelRatio;
+	}
+
+	/**
+	 * Sets device pixel ratio.
+	 *
+	 * @param value Device pixel ratio.
+	 */
+	public set devicePixelRatio(value: number) {
+		this.#devicePixelRatio = value;
 	}
 
 	/**
@@ -1065,6 +1162,48 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 				})
 			)
 		);
+	}
+
+	/**
+	 * Resizes the window.
+	 *
+	 * @param width Width.
+	 * @param height Height.
+	 */
+	public resizeTo(width: number, height: number): void {
+		if (!width || !height) {
+			throw new DOMException(
+				`Failed to execute 'resizeTo' on 'Window': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
+
+		// We can only resize the window if it is a popup.
+		if (this.#browserFrame[PropertySymbol.popup]) {
+			this.#browserFrame.page.setViewport({ width, height });
+		}
+	}
+
+	/**
+	 * Resizes the current window by a specified amount.
+	 *
+	 * @param width Width.
+	 * @param height Height.
+	 */
+	public resizeBy(width: number, height: number): void {
+		if (!width || !height) {
+			throw new DOMException(
+				`Failed to execute 'resizeBy' on 'Window': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
+
+		// We can only resize the window if it is a popup.
+		if (this.#browserFrame[PropertySymbol.popup]) {
+			const viewport = this.#browserFrame.page.viewport;
+			this.#browserFrame.page.setViewport({
+				width: viewport.width + width,
+				height: viewport.height + height
+			});
+		}
 	}
 
 	/**

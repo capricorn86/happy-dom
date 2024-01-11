@@ -152,14 +152,5 @@ describe('DetachedBrowser', () => {
 			await browser.close();
 			expect(() => browser.newPage()).toThrow('No default context. The browser has been closed.');
 		});
-
-		it('Supports opener as parameter.', () => {
-			const window = new Window();
-			const browser = new DetachedBrowser(BrowserWindow);
-			browser.defaultContext.pages[0].mainFrame.window = window;
-			const page1 = browser.newPage();
-			const page2 = browser.newPage(page1.mainFrame);
-			expect(page2.mainFrame.opener).toBe(page1.mainFrame);
-		});
 	});
 });

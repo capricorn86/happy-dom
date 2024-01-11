@@ -5,7 +5,6 @@ import BrowserSettingsFactory from '../BrowserSettingsFactory.js';
 import DetachedBrowserPage from './DetachedBrowserPage.js';
 import IBrowser from '../types/IBrowser.js';
 import IBrowserFrame from '../types/IBrowserFrame.js';
-import DetachedBrowserFrame from './DetachedBrowserFrame.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 
 /**
@@ -101,13 +100,12 @@ export default class DetachedBrowser implements IBrowser {
 	/**
 	 * Creates a new page.
 	 *
-	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	public newPage(opener?: DetachedBrowserFrame): DetachedBrowserPage {
+	public newPage(): DetachedBrowserPage {
 		if (this.contexts.length === 0) {
 			throw new Error('No default context. The browser has been closed.');
 		}
-		return this.contexts[0].newPage(opener);
+		return this.contexts[0].newPage();
 	}
 }

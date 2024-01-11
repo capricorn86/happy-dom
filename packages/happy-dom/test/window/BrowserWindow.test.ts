@@ -31,6 +31,7 @@ import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow.
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory.js';
 import IBrowser from '../../src/browser/types/IBrowser.js';
 import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
+import IBrowserPage from '../../src/browser/types/IBrowserPage.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
 import '../types.d.js';
 
@@ -46,13 +47,15 @@ const GET_NAVIGATOR_PLATFORM = (): string => {
 
 describe('BrowserWindow', () => {
 	let browser: IBrowser;
+	let browserPage: IBrowserPage;
 	let browserFrame: IBrowserFrame;
 	let window: IBrowserWindow;
 	let document: IDocument;
 
 	beforeEach(() => {
 		browser = new Browser();
-		browserFrame = browser.newPage().mainFrame;
+		browserPage = browser.newPage();
+		browserFrame = browserPage.mainFrame;
 		window = browserFrame.window;
 		document = window.document;
 		window.customElements.define('custom-element', CustomElement);
@@ -192,6 +195,81 @@ describe('BrowserWindow', () => {
 			for (const propertyKey in referenceValues) {
 				expect(window.navigator[propertyKey]).toEqual(referenceValues[propertyKey]);
 			}
+		});
+	});
+
+	describe('get innerWidth()', () => {
+		it('Returns the viewport width.', () => {
+			browserPage.setViewport({ width: 100 });
+			expect(window.innerWidth).toBe(100);
+		});
+	});
+
+	describe('set innerWidth()', () => {
+		it('Sets inner width.', () => {
+			window.innerWidth = 100;
+			expect(window.innerWidth).toBe(100);
+			expect(browserPage.viewport.width).toBe(1024);
+		});
+	});
+
+	describe('get innerHeight()', () => {
+		it('Returns the viewport height.', () => {
+			browserPage.setViewport({ height: 100 });
+			expect(window.innerHeight).toBe(100);
+		});
+	});
+
+	describe('set innerHeight()', () => {
+		it('Sets inner height.', () => {
+			window.innerHeight = 100;
+			expect(window.innerHeight).toBe(100);
+			expect(browserPage.viewport.height).toBe(768);
+		});
+	});
+
+	describe('get outerWidth()', () => {
+		it('Returns the viewport width.', () => {
+			browserPage.setViewport({ width: 100 });
+			expect(window.outerWidth).toBe(100);
+		});
+	});
+
+	describe('set outerWidth()', () => {
+		it('Sets outer width.', () => {
+			window.outerWidth = 100;
+			expect(window.outerWidth).toBe(100);
+			expect(browserPage.viewport.width).toBe(1024);
+		});
+	});
+
+	describe('get outerHeight()', () => {
+		it('Returns the viewport height.', () => {
+			browserPage.setViewport({ height: 100 });
+			expect(window.outerHeight).toBe(100);
+		});
+	});
+
+	describe('set outerHeight()', () => {
+		it('Sets outer height.', () => {
+			window.outerHeight = 100;
+			expect(window.outerHeight).toBe(100);
+			expect(browserPage.viewport.height).toBe(768);
+		});
+	});
+
+	describe('get devicePixelRatio()', () => {
+		it('Returns the viewport devicePixelRatio.', () => {
+			browserPage.setViewport({ devicePixelRatio: 2 });
+			expect(window.devicePixelRatio).toBe(2);
+		});
+	});
+
+	describe('set devicePixelRatio()', () => {
+		it('Sets devicePixelRatio.', () => {
+			window.devicePixelRatio = 2;
+			expect(window.devicePixelRatio).toBe(2);
+			expect(browserPage.viewport.devicePixelRatio).toBe(1);
 		});
 	});
 
@@ -1370,6 +1448,44 @@ describe('BrowserWindow', () => {
 					.readAsString()
 					.startsWith('Error: Test error\n')
 			).toBe(true);
+		});
+	});
+
+	describe('resizeTo()', () => {
+		it(`Doesn't resize a non-popup window.`, () => {
+			window.resizeTo(100, 200);
+			expect(window.innerWidth).toBe(1024);
+			expect(window.innerHeight).toBe(768);
+			expect(window.outerWidth).toBe(1024);
+			expect(window.outerHeight).toBe(768);
+		});
+
+		it(`Resize a popup window.`, () => {
+			const newWindow = <IWindow>window.open('', '', 'popup');
+			newWindow.resizeTo(100, 200);
+			expect(newWindow.innerWidth).toBe(100);
+			expect(newWindow.innerHeight).toBe(200);
+			expect(newWindow.outerWidth).toBe(100);
+			expect(newWindow.outerHeight).toBe(200);
+		});
+	});
+
+	describe('resizeBy()', () => {
+		it(`Doesn't resize a non-popup window.`, () => {
+			window.resizeBy(-100, -200);
+			expect(window.innerWidth).toBe(1024);
+			expect(window.innerHeight).toBe(768);
+			expect(window.outerWidth).toBe(1024);
+			expect(window.outerHeight).toBe(768);
+		});
+
+		it(`Resize a popup window.`, () => {
+			const newWindow = <IWindow>window.open('', '', 'popup');
+			newWindow.resizeBy(-100, -200);
+			expect(newWindow.innerWidth).toBe(1024 - 100);
+			expect(newWindow.innerHeight).toBe(768 - 200);
+			expect(newWindow.outerWidth).toBe(1024 - 100);
+			expect(newWindow.outerHeight).toBe(768 - 200);
 		});
 	});
 });

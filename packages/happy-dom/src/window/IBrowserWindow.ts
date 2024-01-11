@@ -398,11 +398,11 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly window: IBrowserWindow;
 	readonly globalThis: IBrowserWindow;
 	readonly screen: Screen;
-	readonly devicePixelRatio: number;
-	readonly innerWidth: number;
-	readonly innerHeight: number;
-	readonly outerWidth: number;
-	readonly outerHeight: number;
+	innerWidth: number;
+	innerHeight: number;
+	outerWidth: number;
+	outerHeight: number;
+	devicePixelRatio: number;
 	readonly screenLeft: number;
 	readonly screenTop: number;
 	readonly screenX: number;
@@ -570,6 +570,19 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	 * @param listener Listener.
 	 */
 	postMessage(message: unknown, targetOrigin?: string, transfer?: unknown[]): void;
+
+	/**
+	 * Resizes the window.
+	 *
+	 * @param width Width.
+	 * @param height Height.
+	 */
+	resizeTo(width: number, height: number): void;
+
+	/**
+	 * Resizes the current window by a specified amount.
+	 */
+	resizeBy(width: number, height: number): void;
 
 	/**
 	 * Destroys the window.

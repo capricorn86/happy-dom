@@ -1,5 +1,4 @@
 import VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
-import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
 import DetachedBrowserFrame from './DetachedBrowserFrame.js';
 import DetachedBrowserContext from './DetachedBrowserContext.js';
 import VirtualConsole from '../../console/VirtualConsole.js';
@@ -9,6 +8,10 @@ import IGoToOptions from '../types/IGoToOptions.js';
 import IResponse from '../../fetch/types/IResponse.js';
 import BrowserPageUtility from '../utilities/BrowserPageUtility.js';
 import IReloadOptions from '../types/IReloadOptions.js';
+import DefaultBrowserPageViewport from '../DefaultBrowserPageViewport.js';
+import IOptionalBrowserPageViewport from '../types/IOptionalBrowserPageViewport.js';
+import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
+import Event from '../../event/Event.js';
 
 /**
  * Detached browser page used when constructing a Window instance without a browser.
@@ -18,6 +21,7 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	public readonly mainFrame: DetachedBrowserFrame;
 	public readonly context: DetachedBrowserContext;
 	public readonly console: Console;
+	public readonly viewport: IBrowserPageViewport = Object.assign({}, DefaultBrowserPageViewport);
 
 	/**
 	 * Constructor.
@@ -126,8 +130,16 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	 *
 	 * @param viewport Viewport.
 	 */
-	public setViewport(viewport: IBrowserPageViewport): void {
-		BrowserPageUtility.setViewport(this, viewport);
+	public setViewport(viewport: IOptionalBrowserPageViewport): void {
+		const previousViewport = Object.assign({}, this.viewport);
+		Object.assign(this.viewport, viewport);
+		if (
+			previousViewport.width !== this.viewport.width ||
+			previousViewport.height !== this.viewport.height ||
+			previousViewport.devicePixelRatio !== this.viewport.devicePixelRatio
+		) {
+			this.mainFrame.window.dispatchEvent(new Event('resize'));
+		}
 	}
 
 	/**

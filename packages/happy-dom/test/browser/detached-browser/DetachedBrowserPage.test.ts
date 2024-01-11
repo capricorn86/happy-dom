@@ -8,6 +8,8 @@ import IResponse from '../../../src/fetch/types/IResponse';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import IGoToOptions from '../../../src/browser/types/IGoToOptions';
 import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFactory';
+import Event from '../../../src/event/Event';
+import DefaultBrowserPageViewport from '../../../src/browser/DefaultBrowserPageViewport';
 
 describe('DetachedBrowserPage', () => {
 	afterEach(() => {
@@ -53,6 +55,21 @@ describe('DetachedBrowserPage', () => {
 			const browser = new DetachedBrowser(BrowserWindow, { console });
 			const page = browser.defaultContext.newPage();
 			expect(page.console).toBe(console);
+		});
+	});
+
+	describe('get viewport()', () => {
+		it('Returns a default viewport.', () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			const page = browser.defaultContext.newPage();
+			expect(page.viewport).toEqual(DefaultBrowserPageViewport);
+		});
+
+		it('Returns defined viewport.', () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			const page = browser.defaultContext.newPage();
+			page.setViewport({ width: 100, height: 100, devicePixelRatio: 2 });
+			expect(page.viewport).toEqual({ width: 100, height: 100, devicePixelRatio: 2 });
 		});
 	});
 
@@ -198,39 +215,52 @@ describe('DetachedBrowserPage', () => {
 	describe('setViewport()', () => {
 		it('Sets the viewport width.', () => {
 			const browser = new DetachedBrowser(BrowserWindow);
-			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
+			let event: Event | null = null;
+			page.mainFrame.window.addEventListener('resize', (e) => (event = e));
 			page.setViewport({ width: 100 });
+			expect(page.viewport.width).toBe(100);
 			expect(page.mainFrame.window.innerWidth).toBe(100);
 			expect(page.mainFrame.window.outerWidth).toBe(100);
+			expect(event).toBeInstanceOf(Event);
 		});
 
 		it('Sets the viewport height.', () => {
 			const browser = new DetachedBrowser(BrowserWindow);
-			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
+			let event: Event | null = null;
+			page.mainFrame.window.addEventListener('resize', (e) => (event = e));
 			page.setViewport({ height: 100 });
+			expect(page.viewport.height).toBe(100);
 			expect(page.mainFrame.window.innerHeight).toBe(100);
 			expect(page.mainFrame.window.outerHeight).toBe(100);
+			expect(event).toBeInstanceOf(Event);
 		});
 
 		it('Sets the viewport width and height.', () => {
 			const browser = new DetachedBrowser(BrowserWindow);
-			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
+			let event: Event | null = null;
+			page.mainFrame.window.addEventListener('resize', (e) => (event = e));
 			page.setViewport({ width: 100, height: 100 });
+			expect(page.viewport.width).toBe(100);
+			expect(page.viewport.height).toBe(100);
 			expect(page.mainFrame.window.innerWidth).toBe(100);
 			expect(page.mainFrame.window.outerWidth).toBe(100);
 			expect(page.mainFrame.window.innerHeight).toBe(100);
 			expect(page.mainFrame.window.outerHeight).toBe(100);
+			expect(event).toBeInstanceOf(Event);
 		});
 
 		it('Sets the viewport device scale factor.', () => {
 			const browser = new DetachedBrowser(BrowserWindow);
-			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
+			let event: Event | null = null;
+			page.mainFrame.window.addEventListener('resize', (e) => (event = e));
 			page.setViewport({ devicePixelRatio: 2 });
+			expect(page.viewport.devicePixelRatio).toBe(2);
 			expect(page.mainFrame.window.devicePixelRatio).toBe(2);
+			expect(event).toBeInstanceOf(Event);
 		});
 	});
 

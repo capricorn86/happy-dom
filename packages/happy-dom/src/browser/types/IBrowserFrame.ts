@@ -8,6 +8,7 @@ import IGoToOptions from './IGoToOptions.js';
 import { Script } from 'vm';
 import IReloadOptions from './IReloadOptions.js';
 import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
+import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
 
 /**
  * Browser frame.
@@ -15,7 +16,6 @@ import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObs
 export default interface IBrowserFrame {
 	readonly childFrames: IBrowserFrame[];
 	readonly parentFrame: IBrowserFrame | null;
-	readonly opener: IBrowserFrame | null;
 	readonly page: IBrowserPage;
 	readonly window: IBrowserWindow;
 	readonly document: IDocument;
@@ -24,6 +24,9 @@ export default interface IBrowserFrame {
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
+	[PropertySymbol.openerFrame]: IBrowserFrame | null;
+	[PropertySymbol.openerWindow]: IBrowserWindow | ICrossOriginBrowserWindow | null;
+	[PropertySymbol.popup]: boolean;
 
 	/**
 	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.

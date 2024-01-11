@@ -3,7 +3,6 @@ import ICookieContainer from '../cookie/types/ICookieContainer.js';
 import ResponseCache from '../fetch/cache/response/ResponseCache.js';
 import IResponseCache from '../fetch/cache/response/IResponseCache.js';
 import Browser from './Browser.js';
-import BrowserFrame from './BrowserFrame.js';
 import BrowserPage from './BrowserPage.js';
 import IBrowserContext from './types/IBrowserContext.js';
 import IPreflightResponseCache from '../fetch/cache/preflight/IPreflightResponseCache.js';
@@ -80,12 +79,10 @@ export default class BrowserContext implements IBrowserContext {
 	/**
 	 * Creates a new page.
 	 *
-	 * @param [opener] Opener.
 	 * @returns Page.
 	 */
-	public newPage(opener?: BrowserFrame): BrowserPage {
+	public newPage(): BrowserPage {
 		const page = new BrowserPage(this);
-		(<BrowserFrame | null>(<unknown>page.mainFrame.opener)) = opener || null;
 		this.pages.push(page);
 		return page;
 	}

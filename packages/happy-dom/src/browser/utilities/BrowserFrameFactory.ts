@@ -45,7 +45,8 @@ export default class BrowserFrameFactory {
 			frame.window[PropertySymbol.destroy]();
 			(<IBrowserPage | null>frame.page) = null;
 			(<IBrowserWindow | null>frame.window) = null;
-			(<IBrowserFrame | null>frame.opener) = null;
+			frame[PropertySymbol.openerFrame] = null;
+			frame[PropertySymbol.openerWindow] = null;
 
 			if (!frame.childFrames.length) {
 				return frame[PropertySymbol.asyncTaskManager]
