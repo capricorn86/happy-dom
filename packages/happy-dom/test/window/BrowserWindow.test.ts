@@ -765,6 +765,10 @@ describe('BrowserWindow', () => {
 			});
 			window.clearTimeout(timeoutId);
 		});
+
+		it('Supports number values.', () => {
+			window.clearTimeout(<NodeJS.Timeout>(<unknown>-1));
+		});
 	});
 
 	describe('setInterval()', () => {
@@ -863,6 +867,10 @@ describe('BrowserWindow', () => {
 			});
 			window.clearInterval(intervalId);
 		});
+
+		it('Supports number values.', () => {
+			window.clearInterval(<NodeJS.Timeout>(<unknown>-1));
+		});
 	});
 
 	describe('requestAnimationFrame()', () => {
@@ -921,6 +929,10 @@ describe('BrowserWindow', () => {
 				throw new Error('This timeout should have been canceled.');
 			});
 			window.cancelAnimationFrame(timeoutId);
+		});
+
+		it('Supports number values.', () => {
+			window.cancelAnimationFrame(<NodeJS.Immediate>(<unknown>-1));
 		});
 	});
 
