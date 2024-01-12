@@ -155,6 +155,7 @@ const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
 const ORIGINAL_SET_INTERVAL = setInterval;
 const ORIGINAL_CLEAR_INTERVAL = clearInterval;
 const ORIGINAL_QUEUE_MICROTASK = queueMicrotask;
+const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
 
 /**
  * Browser window.
@@ -978,6 +979,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * @param id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
+		// We need to make sure that the ID is a Timeout object, otherwise Node.js might throw an error.
+		// This is only necessary if we are in a Node.js environment.
+		if (IS_NODE_JS_TIMEOUT_ENVIRONMENT && (!id || id.constructor.name !== 'Timeout')) {
+			return;
+		}
 		this.#clearTimeout(id);
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
 	}
@@ -1017,6 +1023,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * @param id ID of the interval.
 	 */
 	public clearInterval(id: NodeJS.Timeout): void {
+		// We need to make sure that the ID is a Timeout object, otherwise Node.js might throw an error.
+		// This is only necessary if we are in a Node.js environment.
+		if (IS_NODE_JS_TIMEOUT_ENVIRONMENT && (!id || id.constructor.name !== 'Timeout')) {
+			return;
+		}
 		this.#clearInterval(id);
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
 	}
@@ -1051,6 +1062,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * @param id ID.
 	 */
 	public cancelAnimationFrame(id: NodeJS.Immediate): void {
+		// We need to make sure that the ID is an Immediate object, otherwise Node.js might throw an error.
+		// This is only necessary if we are in a Node.js environment.
+		if (IS_NODE_JS_TIMEOUT_ENVIRONMENT && (!id || id.constructor.name !== 'Immediate')) {
+			return;
+		}
 		global.clearImmediate(id);
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endImmediate(id);
 	}
