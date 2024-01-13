@@ -2195,7 +2195,7 @@ describe('SyncFetch', () => {
 			expect(requestCount).toBe(1);
 		});
 
-		it('Revalidates cache with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0.010".', async () => {
+		it('Revalidates cache with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0.020".', async () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -2216,7 +2216,7 @@ describe('SyncFetch', () => {
 									'last-modified',
 									'Mon, 11 Dec 2023 02:00:00 GMT',
 									'cache-control',
-									'max-age=0.010'
+									'max-age=0.020'
 								],
 								data: ''
 							}
@@ -2233,7 +2233,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText.length),
 								'cache-control',
-								'max-age=0.010',
+								'max-age=0.020',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT'
 							],
@@ -2279,7 +2279,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.010`,
+				'cache-control': `max-age=0.020`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -2292,7 +2292,7 @@ describe('SyncFetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'Cache-Control': 'max-age=0.010',
+				'Cache-Control': 'max-age=0.020',
 				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
 			});
 
@@ -2329,7 +2329,7 @@ describe('SyncFetch', () => {
 			]);
 		});
 
-		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0.010".', async () => {
+		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0.020".', async () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -2353,7 +2353,7 @@ describe('SyncFetch', () => {
 									'content-length',
 									String(responseText2.length),
 									'cache-control',
-									'max-age=0.010',
+									'max-age=0.020',
 									'last-modified',
 									'Mon, 11 Dec 2023 02:00:00 GMT'
 								],
@@ -2372,7 +2372,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText1.length),
 								'cache-control',
-								'max-age=0.010',
+								'max-age=0.020',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT'
 							],
@@ -2426,7 +2426,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.010`,
+				'cache-control': `max-age=0.020`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -2439,7 +2439,7 @@ describe('SyncFetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText2.length),
-				'cache-control': 'max-age=0.010',
+				'cache-control': 'max-age=0.020',
 				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
 			});
 
@@ -2519,7 +2519,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText.length),
 								'cache-control',
-								'max-age=0.010',
+								'max-age=0.020',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT',
 								'etag',
@@ -2575,7 +2575,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.010`,
+				'cache-control': `max-age=0.020`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});
@@ -2589,7 +2589,7 @@ describe('SyncFetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.010`,
+				'cache-control': `max-age=0.020`,
 				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
 				ETag: etag2
 			});
@@ -2653,7 +2653,7 @@ describe('SyncFetch', () => {
 									'content-length',
 									String(responseText2.length),
 									'cache-control',
-									'max-age=0.010',
+									'max-age=0.020',
 									'last-modified',
 									'Mon, 11 Dec 2023 02:00:00 GMT',
 									'etag',
@@ -2674,7 +2674,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText1.length),
 								'cache-control',
-								'max-age=0.010',
+								'max-age=0.020',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT',
 								'etag',
@@ -2722,7 +2722,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.010`,
+				'cache-control': `max-age=0.020`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});
@@ -2736,7 +2736,7 @@ describe('SyncFetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText2.length),
-				'cache-control': `max-age=0.010`,
+				'cache-control': `max-age=0.020`,
 				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
 				etag: etag2
 			});
