@@ -11,14 +11,14 @@ import NodeUtility from './NodeUtility.js';
 import IAttr from '../attr/IAttr.js';
 import NodeList from './NodeList.js';
 import INodeList from './INodeList.js';
-import NodeCreationOwnerDocument from '../document/NodeCreationOwnerDocument.js';
+import NodeFactory from '../NodeFactory.js';
 
 /**
  * Node.
  */
 export default class Node extends EventTarget implements INode {
 	// Can be set before the Node is created.
-	public static [PropertySymbol.ownerDocument]: IDocument | null = null;
+	public static [PropertySymbol.ownerDocument]: IDocument | null;
 
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
@@ -71,13 +71,16 @@ export default class Node extends EventTarget implements INode {
 	 */
 	constructor() {
 		super();
-		if (
-			NodeCreationOwnerDocument.ownerDocument ||
-			(<typeof Node>this.constructor)[PropertySymbol.ownerDocument]
-		) {
-			this.ownerDocument =
-				NodeCreationOwnerDocument.ownerDocument ||
-				(<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
+		if ((<typeof Node>this.constructor)[PropertySymbol.ownerDocument] !== undefined) {
+			this.ownerDocument = (<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
+		} else {
+			const ownerDocument = NodeFactory.pullOwnerDocument();
+			if (!ownerDocument) {
+				throw new Error(
+					'Failed to construct "Node": No owner document in queue. Please use "NodeFactory" to create instances of a Node.'
+				);
+			}
+			this.ownerDocument = ownerDocument;
 		}
 	}
 
@@ -279,9 +282,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): INode {
-		NodeCreationOwnerDocument.ownerDocument = this.ownerDocument;
-		const clone = new (<typeof Node>this.constructor)();
-		NodeCreationOwnerDocument.ownerDocument = null;
+		const clone = NodeFactory.createNode<Node>(this.ownerDocument, <typeof Node>this.constructor);
 
 		// Document has childNodes directly when it is created
 		if (clone[PropertySymbol.childNodes].length) {

@@ -45,7 +45,7 @@ import VisibilityStateEnum from './VisibilityStateEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import NodeCreationOwnerDocument from './NodeCreationOwnerDocument.js';
+import NodeFactory from '../NodeFactory.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -835,10 +835,8 @@ export default class Document extends Node implements IDocument {
 			this[PropertySymbol.defaultView][ElementTag[tagName]] ||
 			HTMLUnknownElement;
 
-		NodeCreationOwnerDocument.ownerDocument = this;
-		const element = new elementClass();
-		NodeCreationOwnerDocument.ownerDocument = null;
-		element.tagName = tagName;
+		const element = NodeFactory.createNode<IElement>(this, elementClass);
+		(<string>element.tagName) = tagName;
 
 		(<string>element.namespaceURI) = namespaceURI;
 		if (element instanceof Element && options && options.is) {
@@ -857,10 +855,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createTextNode(data?: string): IText {
-		NodeCreationOwnerDocument.ownerDocument = this;
-		const node = new this[PropertySymbol.defaultView].Text(data);
-		NodeCreationOwnerDocument.ownerDocument = null;
-		return node;
+		return NodeFactory.createNode<IText>(this, this[PropertySymbol.defaultView].Text, data);
 	}
 
 	/**
@@ -870,10 +865,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createComment(data?: string): IComment {
-		NodeCreationOwnerDocument.ownerDocument = this;
-		const node = new this[PropertySymbol.defaultView].Comment(data);
-		NodeCreationOwnerDocument.ownerDocument = null;
-		return node;
+		return NodeFactory.createNode<IComment>(this, this[PropertySymbol.defaultView].Comment, data);
 	}
 
 	/**
@@ -943,9 +935,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr {
-		NodeCreationOwnerDocument.ownerDocument = this;
-		const attribute = new this[PropertySymbol.defaultView].Attr();
-		NodeCreationOwnerDocument.ownerDocument = null;
+		const attribute = NodeFactory.createNode<IAttr>(this, this[PropertySymbol.defaultView].Attr);
 		attribute.namespaceURI = namespaceURI;
 		attribute.name = qualifiedName;
 		return <IAttr>attribute;
@@ -1016,9 +1006,9 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Creates a Processing Instruction node.
 	 *
+	 * @param target Target.
+	 * @param data Data.
 	 * @returns IProcessingInstruction.
-	 * @param target
-	 * @param data
 	 */
 	public createProcessingInstruction(target: string, data: string): IProcessingInstruction {
 		if (!target || !PROCESSING_INSTRUCTION_TARGET_REGEXP.test(target)) {
@@ -1031,9 +1021,11 @@ export default class Document extends Node implements IDocument {
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
-		NodeCreationOwnerDocument.ownerDocument = this;
-		const processingInstruction = new this[PropertySymbol.defaultView].ProcessingInstruction(data);
-		NodeCreationOwnerDocument.ownerDocument = null;
+		const processingInstruction = NodeFactory.createNode<IProcessingInstruction>(
+			this,
+			this[PropertySymbol.defaultView].ProcessingInstruction,
+			data
+		);
 		processingInstruction.target = target;
 		return processingInstruction;
 	}

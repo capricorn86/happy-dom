@@ -333,9 +333,9 @@ export default interface IDocument extends IParentNode {
 	/**
 	 * Creates a Processing Instruction node.
 	 *
+	 * @param target Target.
+	 * @param data Data.
 	 * @returns IProcessingInstruction.
-	 * @param target
-	 * @param data
 	 */
 	createProcessingInstruction(target: string, data: string): IProcessingInstruction;
 }

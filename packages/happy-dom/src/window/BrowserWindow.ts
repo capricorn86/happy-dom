@@ -648,6 +648,12 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		this.XMLDocument = XMLDocument;
 		this.SVGDocument = SVGDocument;
 
+		// Override owner document
+		this.Document[PropertySymbol.ownerDocument] = null;
+		this.HTMLDocument[PropertySymbol.ownerDocument] = null;
+		this.XMLDocument[PropertySymbol.ownerDocument] = null;
+		this.SVGDocument[PropertySymbol.ownerDocument] = null;
+
 		// Document
 		this.document = new HTMLDocument();
 		(<IBrowserWindow>this.document.defaultView) = this;

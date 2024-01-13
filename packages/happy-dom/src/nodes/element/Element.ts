@@ -32,7 +32,7 @@ import ElementNamedNodeMap from './ElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
-import NodeCreationOwnerDocument from '../document/NodeCreationOwnerDocument.js';
+import NodeFactory from '../NodeFactory.js';
 
 /**
  * Element.
@@ -688,17 +688,19 @@ export default class Element extends Node implements IElement {
 			throw new DOMException('Shadow root has already been attached.');
 		}
 
-		NodeCreationOwnerDocument.ownerDocument = this.ownerDocument;
-		(<IShadowRoot>this[PropertySymbol.shadowRoot]) = new this.ownerDocument[
-			PropertySymbol.defaultView
-		].ShadowRoot();
-		NodeCreationOwnerDocument.ownerDocument = null;
-		(<Element>this[PropertySymbol.shadowRoot].host) = this;
-		(<string>this[PropertySymbol.shadowRoot].mode) = init.mode;
-		(<ShadowRoot>this[PropertySymbol.shadowRoot])[PropertySymbol.connectToNode](this);
+		const shadowRoot = NodeFactory.createNode<IShadowRoot>(
+			this.ownerDocument,
+			this.ownerDocument[PropertySymbol.defaultView].ShadowRoot
+		);
 
-		if (this[PropertySymbol.shadowRoot].mode === 'open') {
-			(<IShadowRoot>this.shadowRoot) = this[PropertySymbol.shadowRoot];
+		(<IShadowRoot>this[PropertySymbol.shadowRoot]) = shadowRoot;
+
+		(<Element>shadowRoot.host) = this;
+		(<string>shadowRoot.mode) = init.mode;
+		(<ShadowRoot>shadowRoot)[PropertySymbol.connectToNode](this);
+
+		if (shadowRoot.mode === 'open') {
+			(<IShadowRoot>this.shadowRoot) = shadowRoot;
 		}
 
 		return this[PropertySymbol.shadowRoot];
