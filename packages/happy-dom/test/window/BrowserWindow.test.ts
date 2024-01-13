@@ -487,6 +487,45 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('');
 		});
 
+		it('Returns values defined by a CSS variables when a fallback is used.', () => {
+			const parent = <IHTMLElement>document.createElement('div');
+			const element = <IHTMLElement>document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			browserFrame.page.setViewport({ width: 1024 });
+
+			parentStyle.innerHTML = `
+                html {
+                    font: 14px "Times New Roman";
+                }
+
+				div {
+					--border-variable: 1px solid var(--color-variable, #000);
+					--font-variable: 1rem "Tahoma";
+				}
+			`;
+
+			elementStyle.innerHTML = `
+				span {
+					border: var(--border-variable);
+					font: var(--font-variable);
+                    color: var(--invalid-variable);
+				}
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.border).toBe('1px solid #000');
+			expect(computedStyle.font).toBe('14px "Tahoma"');
+			expect(computedStyle.color).toBe('');
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values converted to pixels.', () => {
 			const parent = <IHTMLElement>document.createElement('div');
 			const element = <IHTMLElement>document.createElement('span');

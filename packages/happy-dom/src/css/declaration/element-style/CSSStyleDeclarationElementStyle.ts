@@ -19,7 +19,7 @@ import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConv
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
 import WindowBrowserSettingsReader from '../../../window/WindowBrowserSettingsReader.js';
 
-const CSS_VARIABLE_REGEXP = /var\( *(--[^) ]+)\)/g;
+const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)|var\( *(--[^), ]+), *([^), ]+)\)/g;
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 
 type IStyleAndElement = {
@@ -333,7 +333,12 @@ export default class CSSStyleDeclarationElementStyle {
 		let match;
 
 		while ((match = regexp.exec(value)) !== null) {
-			newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
+			// Fallback value - E.g. var(--my-var, #FFFFFF)
+			if (match[2] !== undefined) {
+				newValue = newValue.replace(match[0], cssVariables[match[2]] || match[3]);
+			} else {
+				newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
+			}
 		}
 
 		return newValue;
