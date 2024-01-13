@@ -1285,13 +1285,9 @@ describe('Document', () => {
 		it('Creates a Processing Instruction node with target & data.', () => {
 			const instruction = document.createProcessingInstruction('foo', 'bar');
 			expect(instruction instanceof ProcessingInstruction).toBe(true);
-			expect(instruction).toEqual(
-				expect.objectContaining({
-					target: 'foo',
-					data: 'bar',
-					ownerDocument: document
-				})
-			);
+			expect(instruction.target).toBe('foo');
+			expect(instruction.data).toBe('bar');
+			expect(instruction.ownerDocument).toBe(document);
 		});
 
 		it('Throws an exception if target is invalid".', () => {

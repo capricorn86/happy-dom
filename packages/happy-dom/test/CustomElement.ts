@@ -20,6 +20,9 @@ export default class CustomElement extends HTMLElement {
 	constructor() {
 		super();
 		this.internalShadowRoot = this.attachShadow({ mode: CustomElement.shadowRootMode });
+
+		// Test to create a node while constructing this node.
+		this.ownerDocument.createElement('div');
 	}
 
 	/**
