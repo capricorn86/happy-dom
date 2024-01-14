@@ -224,7 +224,7 @@ export default class DOMTokenList implements IDOMTokenList {
 		}
 		// It is possible to make this statement shorter by using Array.from() and Set, but this is faster when comparing using a bench test.
 		const list = [];
-		for (const item of attr.split(ATTRIBUTE_SPLIT_REGEXP)) {
+		for (const item of attr.trim().split(ATTRIBUTE_SPLIT_REGEXP)) {
 			if (!list.includes(item)) {
 				list.push(item);
 			}
