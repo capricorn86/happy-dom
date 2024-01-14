@@ -1,3 +1,10 @@
+// We need to set this as a global constant, so that using fake timers in Jest and Vitest won't override this on the global object.
+const TIMER = {
+	setImmediate: setImmediate,
+	clearImmediate: clearImmediate,
+	clearTimeout: clearTimeout
+};
+
 /**
  * Handles async tasks.
  */
@@ -107,10 +114,10 @@ export default class AsyncTaskManager {
 			delete this.runningTasks[taskID];
 			this.runningTaskCount--;
 			if (this.waitUntilCompleteTimer) {
-				global.clearImmediate(this.waitUntilCompleteTimer);
+				TIMER.clearImmediate(this.waitUntilCompleteTimer);
 			}
 			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-				this.waitUntilCompleteTimer = global.setImmediate(() => {
+				this.waitUntilCompleteTimer = TIMER.setImmediate(() => {
 					this.waitUntilCompleteTimer = null;
 					if (
 						!this.runningTaskCount &&
@@ -170,16 +177,16 @@ export default class AsyncTaskManager {
 		this.runningTimers = [];
 
 		if (this.waitUntilCompleteTimer) {
-			global.clearImmediate(this.waitUntilCompleteTimer);
+			TIMER.clearImmediate(this.waitUntilCompleteTimer);
 			this.waitUntilCompleteTimer = null;
 		}
 
 		for (const immediate of runningImmediates) {
-			global.clearImmediate(immediate);
+			TIMER.clearImmediate(immediate);
 		}
 
 		for (const timer of runningTimers) {
-			global.clearTimeout(timer);
+			TIMER.clearTimeout(timer);
 		}
 
 		for (const key of Object.keys(runningTasks)) {
