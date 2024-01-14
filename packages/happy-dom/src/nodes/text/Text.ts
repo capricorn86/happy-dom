@@ -1,16 +1,17 @@
-import Node from '../node/Node.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterData from '../character-data/CharacterData.js';
 import IText from './IText.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import INode from '../node/INode.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * Text node.
  */
 export default class Text extends CharacterData implements IText {
-	public readonly nodeType = Node.TEXT_NODE;
+	public override [PropertySymbol.nodeType] = NodeTypeEnum.textNode;
 
 	/**
 	 * Node name.
@@ -25,7 +26,7 @@ export default class Text extends CharacterData implements IText {
 	 * @override
 	 */
 	public override get data(): string {
-		return this._data;
+		return this[PropertySymbol.data];
 	}
 
 	/**
@@ -34,8 +35,8 @@ export default class Text extends CharacterData implements IText {
 	public override set data(data: string) {
 		super.data = data;
 
-		if (this._textAreaNode) {
-			(<HTMLTextAreaElement>this._textAreaNode)._resetSelection();
+		if (this[PropertySymbol.textAreaNode]) {
+			(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
 		}
 	}
 
@@ -47,7 +48,7 @@ export default class Text extends CharacterData implements IText {
 	 * @returns New text node.
 	 */
 	public splitText(offset: number): IText {
-		const length = this._data.length;
+		const length = this[PropertySymbol.data].length;
 
 		if (offset < 0 || offset > length) {
 			throw new DOMException(
@@ -58,10 +59,10 @@ export default class Text extends CharacterData implements IText {
 
 		const count = length - offset;
 		const newData = this.substringData(offset, count);
-		const newNode = <IText>this.ownerDocument.createTextNode(newData);
+		const newNode = <IText>this[PropertySymbol.ownerDocument].createTextNode(newData);
 
-		if (this.parentNode !== null) {
-			this.parentNode.insertBefore(newNode, this.nextSibling);
+		if (this[PropertySymbol.parentNode] !== null) {
+			this[PropertySymbol.parentNode].insertBefore(newNode, this.nextSibling);
 		}
 
 		this.replaceData(offset, count, '');
@@ -92,17 +93,17 @@ export default class Text extends CharacterData implements IText {
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const oldTextAreaNode = <HTMLTextAreaElement>this._textAreaNode;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const oldTextAreaNode = <HTMLTextAreaElement>this[PropertySymbol.textAreaNode];
 
-		super._connectToNode(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldTextAreaNode !== this._textAreaNode) {
+		if (oldTextAreaNode !== this[PropertySymbol.textAreaNode]) {
 			if (oldTextAreaNode) {
-				oldTextAreaNode._resetSelection();
+				oldTextAreaNode[PropertySymbol.resetSelection]();
 			}
-			if (this._textAreaNode) {
-				(<HTMLTextAreaElement>this._textAreaNode)._resetSelection();
+			if (this[PropertySymbol.textAreaNode]) {
+				(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
 			}
 		}
 	}

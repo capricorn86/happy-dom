@@ -1,5 +1,8 @@
 import Element from '../nodes/element/Element.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IDOMTokenList from './IDOMTokenList.js';
+
+const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ]+/;
 
 /**
  * DOM Token List.
@@ -8,9 +11,9 @@ import IDOMTokenList from './IDOMTokenList.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList.
  */
 export default class DOMTokenList implements IDOMTokenList {
-	public readonly length = 0;
-	private _ownerElement: Element;
-	private _attributeName: string;
+	#length = 0;
+	#ownerElement: Element;
+	#attributeName: string;
 
 	/**
 	 * Constructor.
@@ -19,9 +22,18 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * @param attributeName Attribute name.
 	 */
 	constructor(ownerElement: Element, attributeName) {
-		this._ownerElement = ownerElement;
-		this._attributeName = attributeName;
-		this._updateIndices();
+		this.#ownerElement = ownerElement;
+		this.#attributeName = attributeName;
+		this[PropertySymbol.updateIndices]();
+	}
+
+	/**
+	 * Returns length.
+	 *
+	 * @returns Length.
+	 */
+	public get length(): number {
+		return this.#length;
 	}
 
 	/**
@@ -30,14 +42,14 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		this._ownerElement.setAttribute(this._attributeName, value);
+		this.#ownerElement.setAttribute(this.#attributeName, value);
 	}
 
 	/**
 	 * Get value.
 	 */
 	public get value(): string {
-		return this._ownerElement.getAttribute(this._attributeName);
+		return this.#ownerElement.getAttribute(this.#attributeName);
 	}
 
 	/**
@@ -57,13 +69,13 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * @param newToken NewToken.
 	 */
 	public replace(token: string, newToken: string): boolean {
-		const list = this._getTokenList();
+		const list = this.#getTokenList();
 		const index = list.indexOf(token);
 		if (index === -1) {
 			return false;
 		}
 		list[index] = newToken;
-		this._ownerElement.setAttribute(this._attributeName, list.join(' '));
+		this.#ownerElement.setAttribute(this.#attributeName, list.join(' '));
 		return true;
 	}
 
@@ -80,16 +92,14 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
 	public values(): IterableIterator<string> {
-		const list = this._getTokenList();
-		return list.values();
+		return this.#getTokenList().values();
 	}
 
 	/**
 	 * Returns an iterator, allowing you to go through all key/value pairs contained in this object.
 	 */
 	public entries(): IterableIterator<[number, string]> {
-		const list = this._getTokenList();
-		return list.entries();
+		return this.#getTokenList().entries();
 	}
 
 	/**
@@ -99,8 +109,7 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * @param thisArg
 	 */
 	public forEach(callback: (currentValue, currentIndex, listObj) => void, thisArg?: this): void {
-		const list = this._getTokenList();
-		return list.forEach(callback, thisArg);
+		return this.#getTokenList().forEach(callback, thisArg);
 	}
 
 	/**
@@ -108,8 +117,7 @@ export default class DOMTokenList implements IDOMTokenList {
 	 *
 	 */
 	public keys(): IterableIterator<number> {
-		const list = this._getTokenList();
-		return list.keys();
+		return this.#getTokenList().keys();
 	}
 
 	/**
@@ -118,7 +126,7 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * @param tokens Tokens.
 	 */
 	public add(...tokens: string[]): void {
-		const list = this._getTokenList();
+		const list = this.#getTokenList();
 
 		for (const token of tokens) {
 			const index = list.indexOf(token);
@@ -129,7 +137,7 @@ export default class DOMTokenList implements IDOMTokenList {
 			}
 		}
 
-		this._ownerElement.setAttribute(this._attributeName, list.join(' '));
+		this.#ownerElement.setAttribute(this.#attributeName, list.join(' '));
 	}
 
 	/**
@@ -138,7 +146,7 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * @param tokens Tokens.
 	 */
 	public remove(...tokens: string[]): void {
-		const list = this._getTokenList();
+		const list = this.#getTokenList();
 
 		for (const token of tokens) {
 			const index = list.indexOf(token);
@@ -147,7 +155,7 @@ export default class DOMTokenList implements IDOMTokenList {
 			}
 		}
 
-		this._ownerElement.setAttribute(this._attributeName, list.join(' '));
+		this.#ownerElement.setAttribute(this.#attributeName, list.join(' '));
 	}
 
 	/**
@@ -157,7 +165,7 @@ export default class DOMTokenList implements IDOMTokenList {
 	 * @returns TRUE if it contains.
 	 */
 	public contains(className: string): boolean {
-		const list = this._getTokenList();
+		const list = this.#getTokenList();
 		return list.includes(className);
 	}
 
@@ -190,8 +198,8 @@ export default class DOMTokenList implements IDOMTokenList {
 	/**
 	 * Updates indices.
 	 */
-	public _updateIndices(): void {
-		const list = this._getTokenList();
+	public [PropertySymbol.updateIndices](): void {
+		const list = this.#getTokenList();
 
 		for (let i = list.length - 1, max = this.length; i < max; i++) {
 			delete this[i];
@@ -209,10 +217,19 @@ export default class DOMTokenList implements IDOMTokenList {
 	 *
 	 * @see https://infra.spec.whatwg.org/#split-on-ascii-whitespace
 	 */
-	private _getTokenList(): string[] {
-		let attr = this._ownerElement.getAttribute(this._attributeName) ?? '';
-		attr = attr.replace(/^[\t\n\f\r ]+|[\t\n\f\r ]+$/g, '');
-		return attr === '' ? [] : Array.from(new Set(attr.split(/[\t\n\f\r ]+/)));
+	#getTokenList(): string[] {
+		const attr = this.#ownerElement.getAttribute(this.#attributeName);
+		if (!attr) {
+			return [];
+		}
+		// It is possible to make this statement shorter by using Array.from() and Set, but this is faster when comparing using a bench test.
+		const list = [];
+		for (const item of attr.split(ATTRIBUTE_SPLIT_REGEXP)) {
+			if (!list.includes(item)) {
+				list.push(item);
+			}
+		}
+		return list;
 	}
 
 	/**

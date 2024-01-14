@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
 import IHTMLSlotElement from './IHTMLSlotElement.js';
 import IText from '../text/IText.js';
@@ -62,7 +63,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 				return this.assignedElements(options);
 			}
 
-			return (<HTMLElement>host)._childNodes.slice();
+			return (<HTMLElement>host)[PropertySymbol.childNodes].slice();
 		}
 
 		return [];
@@ -86,7 +87,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 			if (name) {
 				const assignedElements = [];
 
-				for (const child of (<HTMLElement>host)._children) {
+				for (const child of (<HTMLElement>host)[PropertySymbol.children]) {
 					if (child.slot === name) {
 						assignedElements.push(child);
 					}
@@ -95,7 +96,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 				return assignedElements;
 			}
 
-			return (<HTMLElement>host)._children.slice();
+			return (<HTMLElement>host)[PropertySymbol.children].slice();
 		}
 
 		return [];

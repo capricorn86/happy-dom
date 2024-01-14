@@ -1,4 +1,5 @@
 import IBlob from '../file/IBlob.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IDocument from '../nodes/document/IDocument.js';
 import IRequestInit from './types/IRequestInit.js';
 import URL from '../url/URL.js';
@@ -20,6 +21,8 @@ import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js'
 import IRequestCredentials from './types/IRequestCredentials.js';
 import FormData from '../form-data/FormData.js';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 
 /**
  * Fetch request.
@@ -30,10 +33,6 @@ import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
  * @see https://fetch.spec.whatwg.org/#request-class
  */
 export default class Request implements IRequest {
-	// Owner document is set by a sub-class in the Window constructor
-	public static _ownerDocument: IDocument = null;
-	public readonly _ownerDocument: IDocument = null;
-
 	// Public properties
 	public readonly method: string;
 	public readonly body: Stream.Readable | null;
@@ -45,20 +44,32 @@ export default class Request implements IRequest {
 	public readonly credentials: IRequestCredentials;
 
 	// Internal properties
-	public readonly _contentLength: number | null = null;
-	public readonly _contentType: string | null = null;
-	public _referrer: '' | 'no-referrer' | 'client' | URL = 'client';
-	public readonly _url: URL;
-	public readonly _bodyBuffer: Buffer | null;
+	public [PropertySymbol.contentLength]: number | null = null;
+	public [PropertySymbol.contentType]: string | null = null;
+	public [PropertySymbol.referrer]: '' | 'no-referrer' | 'client' | URL = 'client';
+	public [PropertySymbol.url]: URL;
+	public [PropertySymbol.bodyBuffer]: Buffer | null;
+
+	// Private properties
+	readonly #window: IBrowserWindow;
+	readonly #asyncTaskManager: AsyncTaskManager;
 
 	/**
 	 * Constructor.
 	 *
+	 * @param injected Injected properties.
+	 * @param injected.window
 	 * @param input Input.
+	 * @param injected.asyncTaskManager
 	 * @param [init] Init.
 	 */
-	constructor(input: IRequestInfo, init?: IRequestInit) {
-		this._ownerDocument = (<typeof Request>this.constructor)._ownerDocument;
+	constructor(
+		injected: { window: IBrowserWindow; asyncTaskManager: AsyncTaskManager },
+		input: IRequestInfo,
+		init?: IRequestInit
+	) {
+		this.#window = injected.window;
+		this.#asyncTaskManager = injected.asyncTaskManager;
 
 		if (!input) {
 			throw new TypeError(`Failed to contruct 'Request': 1 argument required, only 0 present.`);
@@ -67,12 +78,12 @@ export default class Request implements IRequest {
 		this.method = (init?.method || (<Request>input).method || 'GET').toUpperCase();
 
 		const { stream, buffer, contentType, contentLength } = FetchBodyUtility.getBodyStream(
-			input instanceof Request && (input._bodyBuffer || input.body)
-				? input._bodyBuffer || FetchBodyUtility.cloneRequestBodyStream(input)
+			input instanceof Request && (input[PropertySymbol.bodyBuffer] || input.body)
+				? input[PropertySymbol.bodyBuffer] || FetchBodyUtility.cloneBodyStream(input)
 				: init?.body
 		);
 
-		this._bodyBuffer = buffer;
+		this[PropertySymbol.bodyBuffer] = buffer;
 		this.body = stream;
 		this.credentials = init?.credentials || (<Request>input).credentials || 'same-origin';
 		this.headers = new Headers(init?.headers || (<Request>input).headers || {});
@@ -80,18 +91,18 @@ export default class Request implements IRequest {
 		FetchRequestHeaderUtility.removeForbiddenHeaders(this.headers);
 
 		if (contentLength) {
-			this._contentLength = contentLength;
+			this[PropertySymbol.contentLength] = contentLength;
 		} else if (!this.body && (this.method === 'POST' || this.method === 'PUT')) {
-			this._contentLength = 0;
+			this[PropertySymbol.contentLength] = 0;
 		}
 
 		if (contentType) {
 			if (!this.headers.has('Content-Type')) {
 				this.headers.set('Content-Type', contentType);
 			}
-			this._contentType = contentType;
-		} else if (input instanceof Request && input._contentType) {
-			this._contentType = input._contentType;
+			this[PropertySymbol.contentType] = contentType;
+		} else if (input instanceof Request && input[PropertySymbol.contentType]) {
+			this[PropertySymbol.contentType] = input[PropertySymbol.contentType];
 		}
 
 		this.redirect = init?.redirect || (<Request>input).redirect || 'follow';
@@ -99,28 +110,28 @@ export default class Request implements IRequest {
 			(init?.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
 		);
 		this.signal = init?.signal || (<Request>input).signal || new AbortSignal();
-		this._referrer = FetchRequestReferrerUtility.getInitialReferrer(
-			this._ownerDocument,
+		this[PropertySymbol.referrer] = FetchRequestReferrerUtility.getInitialReferrer(
+			injected.window,
 			init?.referrer !== null && init?.referrer !== undefined
 				? init?.referrer
 				: (<Request>input).referrer
 		);
 
 		if (input instanceof URL) {
-			this._url = input;
+			this[PropertySymbol.url] = input;
 		} else {
 			try {
 				if (input instanceof Request && input.url) {
-					this._url = new URL(input.url, this._ownerDocument.location);
+					this[PropertySymbol.url] = new URL(input.url, injected.window.location);
 				} else {
-					this._url = new URL(<string>input, this._ownerDocument.location);
+					this[PropertySymbol.url] = new URL(<string>input, injected.window.location);
 				}
 			} catch (error) {
 				throw new DOMException(
 					`Failed to construct 'Request. Invalid URL "${input}" on document location '${
-						this._ownerDocument.location
+						injected.window.location
 					}'.${
-						this._ownerDocument.location.origin === 'null'
+						injected.window.location.origin === 'null'
 							? ' Relative URLs are not permitted on current document location.'
 							: ''
 					}`,
@@ -129,10 +140,18 @@ export default class Request implements IRequest {
 			}
 		}
 
+		FetchRequestValidationUtility.validateMethod(this);
 		FetchRequestValidationUtility.validateBody(this);
-		FetchRequestValidationUtility.validateURL(this._url);
+		FetchRequestValidationUtility.validateURL(this[PropertySymbol.url]);
 		FetchRequestValidationUtility.validateReferrerPolicy(this.referrerPolicy);
 		FetchRequestValidationUtility.validateRedirect(this.redirect);
+	}
+
+	/**
+	 * Returns owner document.
+	 */
+	protected get [PropertySymbol.ownerDocument](): IDocument {
+		throw new Error('[PropertySymbol.ownerDocument] getter needs to be implemented by sub-class.');
 	}
 
 	/**
@@ -141,15 +160,15 @@ export default class Request implements IRequest {
 	 * @returns Referrer.
 	 */
 	public get referrer(): string {
-		if (!this._referrer || this._referrer === 'no-referrer') {
+		if (!this[PropertySymbol.referrer] || this[PropertySymbol.referrer] === 'no-referrer') {
 			return '';
 		}
 
-		if (this._referrer === 'client') {
+		if (this[PropertySymbol.referrer] === 'client') {
 			return 'about:client';
 		}
 
-		return this._referrer.toString();
+		return this[PropertySymbol.referrer].toString();
 	}
 
 	/**
@@ -158,7 +177,7 @@ export default class Request implements IRequest {
 	 * @returns URL.
 	 */
 	public get url(): string {
-		return this._url.href;
+		return this[PropertySymbol.url].href;
 	}
 
 	/**
@@ -185,18 +204,17 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
@@ -207,7 +225,7 @@ export default class Request implements IRequest {
 	 * @returns Blob.
 	 */
 	public async blob(): Promise<IBlob> {
-		const type = this.headers.get('content-type') || '';
+		const type = this.headers.get('Content-Type') || '';
 		const buffer = await this.arrayBuffer();
 
 		return new Blob([buffer], { type });
@@ -228,18 +246,17 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return buffer;
 	}
@@ -259,18 +276,17 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
 		let buffer: Buffer;
 
 		try {
 			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return new TextDecoder().decode(buffer);
 	}
@@ -300,19 +316,18 @@ export default class Request implements IRequest {
 
 		(<boolean>this.bodyUsed) = true;
 
-		const taskManager = this._ownerDocument.defaultView.happyDOM.asyncTaskManager;
-		const taskID = taskManager.startTask(() => this.signal._abort());
+		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
 		let formData: FormData;
 
 		try {
-			const type = this._contentType;
-			formData = await MultipartFormDataParser.streamToFormData(this.body, type);
+			const type = this[PropertySymbol.contentType];
+			formData = (await MultipartFormDataParser.streamToFormData(this.body, type)).formData;
 		} catch (error) {
-			taskManager.endTask(taskID);
+			this.#asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		taskManager.endTask(taskID);
+		this.#asyncTaskManager.endTask(taskID);
 
 		return formData;
 	}
@@ -322,7 +337,7 @@ export default class Request implements IRequest {
 	 *
 	 * @returns Clone.
 	 */
-	public clone(): IRequest {
-		return <IRequest>new Request(this);
+	public clone(): Request {
+		return new this.#window.Request(this);
 	}
 }

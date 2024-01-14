@@ -4,6 +4,7 @@ import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLTemplateElement from '../../../src/nodes/html-template-element/IHTMLTemplateElement.js';
 import XMLSerializer from '../../../src/xml-serializer/XMLSerializer.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import CustomElement from '../../CustomElement.js';
 
 describe('HTMLTemplateElement', () => {
 	let window: IWindow;
@@ -138,19 +139,16 @@ describe('HTMLTemplateElement', () => {
 		});
 
 		it('Returns HTML of children and shadow roots of custom elements as a concatenated string.', () => {
+			window.customElements.define('custom-element', CustomElement);
+
 			const div = document.createElement('div');
+			const customElement = <CustomElement>document.createElement('custom-element');
+			div.appendChild(customElement);
+			document.body.appendChild(div);
 
-			element.appendChild(div);
-
-			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation(function (
-				rootElement
-			) {
-				expect(rootElement === div).toBe(true);
-				expect(this._options.includeShadowRoots).toBe(true);
-				return 'EXPECTED_HTML';
-			});
-
-			expect(element.getInnerHTML({ includeShadowRoots: true })).toBe('EXPECTED_HTML');
+			expect(
+				document.body.getInnerHTML({ includeShadowRoots: true }).includes('<span class="propKey">')
+			).toBe(true);
 		});
 	});
 

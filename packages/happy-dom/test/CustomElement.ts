@@ -1,10 +1,10 @@
-import Window from '../src/window/Window.js';
 import IShadowRoot from '../src/nodes/shadow-root/IShadowRoot.js';
+import HTMLElement from '../src/nodes/html-element/HTMLElement.js';
 
 /**
  * CustomElement test class.
  */
-export default class CustomElement extends new Window().HTMLElement {
+export default class CustomElement extends HTMLElement {
 	public static observedAttributesCallCount = 0;
 	public static shadowRootMode = 'open';
 	public changedAttributes: Array<{
@@ -20,6 +20,9 @@ export default class CustomElement extends new Window().HTMLElement {
 	constructor() {
 		super();
 		this.internalShadowRoot = this.attachShadow({ mode: CustomElement.shadowRootMode });
+
+		// Test to create a node while constructing this node.
+		this.ownerDocument.createElement('div');
 	}
 
 	/**

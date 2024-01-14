@@ -1,7 +1,9 @@
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
 import INode from '../node/INode.js';
 import HTMLOptionElementNamedNodeMap from './HTMLOptionElementNamedNodeMap.js';
 import IHTMLOptionElement from './IHTMLOptionElement.js';
@@ -13,10 +15,11 @@ import IHTMLOptionElement from './IHTMLOptionElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionElement.
  */
 export default class HTMLOptionElement extends HTMLElement implements IHTMLOptionElement {
-	public override readonly attributes: INamedNodeMap = new HTMLOptionElementNamedNodeMap(this);
-	public _index: number;
-	public _selectedness = false;
-	public _dirtyness = false;
+	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLOptionElementNamedNodeMap(
+		this
+	);
+	public [PropertySymbol.selectedness] = false;
+	public [PropertySymbol.dirtyness] = false;
 
 	/**
 	 * Returns inner text, which is the rendered appearance of text.
@@ -42,7 +45,9 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Index.
 	 */
 	public get index(): number {
-		return this._index;
+		return this[PropertySymbol.selectNode]
+			? (<IHTMLSelectElement>this[PropertySymbol.selectNode]).options.indexOf(this)
+			: 0;
 	}
 
 	/**
@@ -51,7 +56,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this._formNode;
+		return <IHTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -60,7 +65,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @returns Selected.
 	 */
 	public get selected(): boolean {
-		return this._selectedness;
+		return this[PropertySymbol.selectedness];
 	}
 
 	/**
@@ -69,13 +74,13 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 * @param selected Selected.
 	 */
 	public set selected(selected: boolean) {
-		const selectNode = <HTMLSelectElement>this._selectNode;
+		const selectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
 
-		this._dirtyness = true;
-		this._selectedness = Boolean(selected);
+		this[PropertySymbol.dirtyness] = true;
+		this[PropertySymbol.selectedness] = Boolean(selected);
 
 		if (selectNode) {
-			selectNode._updateOptionItems(this._selectedness ? this : null);
+			selectNode[PropertySymbol.updateOptionItems](this[PropertySymbol.selectedness] ? this : null);
 		}
 	}
 
@@ -122,17 +127,17 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const oldSelectNode = <HTMLSelectElement>this._selectNode;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const oldSelectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
 
-		super._connectToNode(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldSelectNode !== this._selectNode) {
+		if (oldSelectNode !== this[PropertySymbol.selectNode]) {
 			if (oldSelectNode) {
-				oldSelectNode._updateOptionItems();
+				oldSelectNode[PropertySymbol.updateOptionItems]();
 			}
-			if (this._selectNode) {
-				(<HTMLSelectElement>this._selectNode)._updateOptionItems();
+			if (this[PropertySymbol.selectNode]) {
+				(<HTMLSelectElement>this[PropertySymbol.selectNode])[PropertySymbol.updateOptionItems]();
 			}
 		}
 	}

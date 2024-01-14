@@ -1,6 +1,7 @@
 import CustomElement from '../CustomElement.js';
 import CustomElementRegistry from '../../src/custom-element/CustomElementRegistry.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 describe('CustomElementRegistry', () => {
 	let customElements;
@@ -21,7 +22,7 @@ describe('CustomElementRegistry', () => {
 				extends: 'ul'
 			});
 			expect(customElements.get('custom-element')).toBe(CustomElement);
-			expect(customElements._registry['CUSTOM-ELEMENT'].extends).toBe('ul');
+			expect(customElements[PropertySymbol.registry]['CUSTOM-ELEMENT'].extends).toBe('ul');
 		});
 
 		it('Throws an error if tag name does not contain "-".', () => {
@@ -35,10 +36,10 @@ describe('CustomElementRegistry', () => {
 			);
 		});
 
-		it('Calls observed attributes and set _observedAttributes as a property on the element class.', () => {
+		it('Calls observed attributes and set "[PropertySymbol.observedAttributes]" as a property on the element class.', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(CustomElement.observedAttributesCallCount).toBe(1);
-			expect(CustomElement._observedAttributes).toEqual(['key1', 'key2']);
+			expect(CustomElement[PropertySymbol.observedAttributes]).toEqual(['key1', 'key2']);
 		});
 	});
 

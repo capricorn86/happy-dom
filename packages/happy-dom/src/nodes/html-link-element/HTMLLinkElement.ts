@@ -1,4 +1,5 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLLinkElement from './IHTMLLinkElement.js';
 import Event from '../../event/Event.js';
@@ -6,9 +7,10 @@ import ErrorEvent from '../../event/events/ErrorEvent.js';
 import INode from '../../nodes/node/INode.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
-import HTMLLinkElementUtility from './HTMLLinkElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLLinkElementNamedNodeMap from './HTMLLinkElementNamedNodeMap.js';
+import HTMLLinkElementStyleSheetLoader from './HTMLLinkElementStyleSheetLoader.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 
 /**
  * HTML Link Element.
@@ -17,12 +19,39 @@ import HTMLLinkElementNamedNodeMap from './HTMLLinkElementNamedNodeMap.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement.
  */
 export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkElement {
-	public override readonly attributes: INamedNodeMap = new HTMLLinkElementNamedNodeMap(this);
+	// Events
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
-	public readonly sheet: CSSStyleSheet = null;
-	public _evaluateCSS = true;
-	public _relList: DOMTokenList = null;
+
+	// Internal properties
+	public override [PropertySymbol.attributes]: INamedNodeMap;
+	public readonly [PropertySymbol.sheet]: CSSStyleSheet = null;
+	public [PropertySymbol.evaluateCSS] = true;
+	public [PropertySymbol.relList]: DOMTokenList = null;
+	#styleSheetLoader: HTMLLinkElementStyleSheetLoader;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param browserFrame Browser frame.
+	 */
+	constructor(browserFrame: IBrowserFrame) {
+		super();
+
+		this.#styleSheetLoader = new HTMLLinkElementStyleSheetLoader({
+			element: this,
+			browserFrame
+		});
+
+		this[PropertySymbol.attributes] = new HTMLLinkElementNamedNodeMap(this, this.#styleSheetLoader);
+	}
+
+	/**
+	 * Returns sheet.
+	 */
+	public get sheet(): CSSStyleSheet {
+		return this[PropertySymbol.sheet];
+	}
 
 	/**
 	 * Returns rel list.
@@ -30,10 +59,10 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Rel list.
 	 */
 	public get relList(): IDOMTokenList {
-		if (!this._relList) {
-			this._relList = new DOMTokenList(this, 'rel');
+		if (!this[PropertySymbol.relList]) {
+			this[PropertySymbol.relList] = new DOMTokenList(this, 'rel');
 		}
-		return <IDOMTokenList>this._relList;
+		return <IDOMTokenList>this[PropertySymbol.relList];
 	}
 
 	/**
@@ -183,14 +212,18 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const isConnected = this.isConnected;
-		const isParentConnected = parentNode ? parentNode.isConnected : false;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const isConnected = this[PropertySymbol.isConnected];
+		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
 
-		super._connectToNode(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (isParentConnected && isConnected !== isParentConnected && this._evaluateCSS) {
-			HTMLLinkElementUtility.loadExternalStylesheet(this);
+		if (
+			isParentConnected &&
+			isConnected !== isParentConnected &&
+			this[PropertySymbol.evaluateCSS]
+		) {
+			this.#styleSheetLoader.loadStyleSheet(this.getAttribute('href'), this.getAttribute('rel'));
 		}
 	}
 }

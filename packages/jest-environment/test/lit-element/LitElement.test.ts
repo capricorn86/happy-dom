@@ -21,6 +21,7 @@ describe('LitElementComponent', () => {
 		);
 
 		expect(shadowRoot.querySelector('span').innerText).toBe(PROP1);
+		expect(window.getComputedStyle(shadowRoot.querySelector('span')).color).toBe('green');
 		expect(
 			shadowRoot.innerHTML
 				.replace(/[\s]/gm, '')
@@ -29,11 +30,6 @@ describe('LitElementComponent', () => {
 			`
 			<!---->Some text
 			<span><!--?lit$123456$-->${PROP1}</span>!
-			<style>
-				span {
-					color: green;
-				}
-		    </style>
 		`.replace(/[\s]/gm, '')
 		);
 	});

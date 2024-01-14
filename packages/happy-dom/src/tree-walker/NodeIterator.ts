@@ -13,7 +13,7 @@ export default class NodeIterator {
 	public whatToShow = -1;
 	public filter: INodeFilter = null;
 
-	private readonly _walker: TreeWalker;
+	readonly #walker: TreeWalker;
 
 	/**
 	 * Constructor.
@@ -26,7 +26,7 @@ export default class NodeIterator {
 		this.root = root;
 		this.whatToShow = whatToShow;
 		this.filter = filter;
-		this._walker = new TreeWalker(root, whatToShow, filter);
+		this.#walker = new TreeWalker(root, whatToShow, filter);
 	}
 
 	/**
@@ -35,7 +35,7 @@ export default class NodeIterator {
 	 * @returns Current node.
 	 */
 	public nextNode(): INode {
-		return this._walker.nextNode();
+		return this.#walker.nextNode();
 	}
 
 	/**
@@ -44,6 +44,6 @@ export default class NodeIterator {
 	 * @returns Current node.
 	 */
 	public previousNode(): INode {
-		return this._walker.previousNode();
+		return this.#walker.previousNode();
 	}
 }

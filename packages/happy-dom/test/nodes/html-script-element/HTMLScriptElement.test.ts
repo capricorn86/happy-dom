@@ -1,17 +1,19 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
 import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IResponse from '../../../src/fetch/types/IResponse.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Event from '../../../src/event/Event.js';
-import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
+import Fetch from '../../../src/fetch/Fetch.js';
+import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
 
 describe('HTMLScriptElement', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window();
@@ -83,20 +85,21 @@ describe('HTMLScriptElement', () => {
 		it('Loads and evaluates an external script when the attribute "src" is set and the element is connected to DOM.', async () => {
 			const element = <IHTMLScriptElement>document.createElement('script');
 
-			vi.spyOn(window, 'fetch').mockImplementation(() => {
-				return Promise.resolve(<IResponse>{
-					text: async () => 'globalThis.test = "test";',
-					ok: true,
-					status: 200
-				});
-			});
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () =>
+					<IResponse>{
+						text: async () => 'globalThis.test = "test";',
+						ok: true,
+						status: 200
+					}
+			);
 
 			document.body.appendChild(element);
 
 			element.async = true;
-			element.src = 'test';
+			element.src = 'https://localhost:8080/path/to/script.js';
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect(window['test']).toBe('test');
 		});
@@ -104,18 +107,19 @@ describe('HTMLScriptElement', () => {
 		it('Does not evaluate script if the element is not connected to DOM.', async () => {
 			const element = <IHTMLScriptElement>document.createElement('script');
 
-			vi.spyOn(window, 'fetch').mockImplementation(() => {
-				return Promise.resolve(<IResponse>{
-					text: async () => 'globalThis.test = "test";',
-					ok: true,
-					status: 200
-				});
-			});
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () =>
+					<IResponse>{
+						text: async () => 'globalThis.test = "test";',
+						ok: true,
+						status: 200
+					}
+			);
 
 			element.async = true;
-			element.src = 'test';
+			element.src = 'https://localhost:8080/path/to/script.js';
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect(window['test']).toBe(undefined);
 		});
@@ -168,17 +172,17 @@ describe('HTMLScriptElement', () => {
 			let fetchedURL: string | null = null;
 			let loadEvent: Event | null = null;
 
-			vi.spyOn(window, 'fetch').mockImplementation((url: IRequestInfo) => {
-				fetchedURL = <string>url;
-				return Promise.resolve(<IResponse>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				fetchedURL = this.request.url;
+				return <IResponse>{
 					text: async () =>
 						'globalThis.test = "test";globalThis.currentScript = document.currentScript;',
 					ok: true
-				});
+				};
 			});
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
-			script.src = 'path/to/script/';
+			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('load', (event) => {
 				loadEvent = event;
@@ -186,10 +190,10 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<Event>(<unknown>loadEvent)).target).toBe(script);
-			expect(fetchedURL).toBe('path/to/script/');
+			expect(fetchedURL).toBe('https://localhost:8080/path/to/script.js');
 			expect(window['test']).toBe('test');
 			expect(window['currentScript']).toBe(script);
 		});
@@ -197,16 +201,17 @@ describe('HTMLScriptElement', () => {
 		it('Triggers error event when loading external script asynchronously.', async () => {
 			let errorEvent: ErrorEvent | null = null;
 
-			vi.spyOn(window, 'fetch').mockImplementation((): Promise<IResponse> => {
-				return Promise.resolve(<IResponse>(<unknown>{
-					text: () => null,
-					ok: false,
-					status: 404
-				}));
-			});
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () => <IResponse>(<unknown>{
+						text: () => null,
+						ok: false,
+						status: 404,
+						statusText: 'Not Found'
+					})
+			);
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
-			script.src = 'path/to/script/';
+			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
@@ -214,30 +219,27 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to perform request to "path/to/script/". Status code: 404'
+				'Failed to perform request to "https://localhost:8080/path/to/script.js". Status 404 Not Found.'
 			);
 		});
 
 		it('Loads external script synchronously with relative URL.', async () => {
-			let fetchedDocument: IDocument | null = null;
+			const window = new Window({ url: 'https://localhost:8080/base/' });
+			let fetchedWindow: IBrowserWindow | null = null;
 			let fetchedURL: string | null = null;
 			let loadEvent: Event | null = null;
 
-			window.location.href = 'https://localhost:8080/base/';
-
-			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation(
-				(document: IDocument, url: string) => {
-					fetchedDocument = document;
-					fetchedURL = url;
-					return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
-				}
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(function (url: string) {
+				fetchedWindow = this.window;
+				fetchedURL = url;
+				return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
+			});
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
-			script.src = 'path/to/script/';
+			script.src = 'path/to/script.js';
 			script.addEventListener('load', (event) => {
 				loadEvent = event;
 			});
@@ -245,24 +247,23 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(script);
 
 			expect((<Event>(<unknown>loadEvent)).target).toBe(script);
-			expect(fetchedDocument).toBe(document);
-			expect(fetchedURL).toBe('path/to/script/');
+			expect(fetchedWindow).toBe(window);
+			expect(fetchedURL).toBe('https://localhost:8080/base/path/to/script.js');
 			expect(window['test']).toBe('test');
 			expect(window['currentScript']).toBe(script);
 		});
 
 		it('Triggers error event when loading external script synchronously with relative URL.', () => {
+			const window = new Window({ url: 'https://localhost:8080/base/' });
 			const thrownError = new Error('error');
 			let errorEvent: ErrorEvent | null = null;
 
-			window.location.href = 'https://localhost:8080/base/';
-
-			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation(() => {
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(() => {
 				throw thrownError;
 			});
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
-			script.src = 'path/to/script/';
+			script.src = 'path/to/script.js';
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
 			});
@@ -318,11 +319,11 @@ describe('HTMLScriptElement', () => {
 		it('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {
 			const element = <IHTMLScriptElement>document.createElement('script');
 
-			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation(
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
 				() => 'globalThis.testFetch = "test";'
 			);
 
-			element.src = 'test';
+			element.src = 'https://localhost:8080/path/to/script.js';
 			element.text = 'globalThis.testContent = "test";';
 
 			document.body.appendChild(element);
@@ -334,100 +335,113 @@ describe('HTMLScriptElement', () => {
 		it('Does not load external scripts when "src" attribute has been set if the element is not connected to DOM.', () => {
 			const element = <IHTMLScriptElement>document.createElement('script');
 
-			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation(
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
 				() => 'globalThis.testFetch = "test";'
 			);
 
-			element.src = 'test';
+			element.src = 'https://localhost:8080/path/to/script.js';
 			element.text = 'globalThis.test = "test";';
 
 			expect(window['testFetch']).toBe(undefined);
 			expect(window['testContent']).toBe(undefined);
 		});
 
-		it('Triggers an error event when attempting to perform an asynchrounous request and "window.happyDOM.settings.disableJavaScriptFileLoading" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true }
+			});
+			document = window.document;
+
 			let errorEvent: ErrorEvent | null = null;
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
-			script.src = 'path/to/script/';
+			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
 			});
 
-			window.happyDOM.settings.disableJavaScriptFileLoading = true;
-
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external script "path/to/script/". JavaScript file loading is disabled.'
+				'Failed to load external script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
 			);
 		});
 
-		it('Triggers an error event when attempting to perform a synchrounous request and "window.happyDOM.settings.disableJavaScriptFileLoading" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform a synchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true }
+			});
+			document = window.document;
+
 			let errorEvent: ErrorEvent | null = null;
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
-			script.src = 'path/to/script/';
+			script.src = 'https://localhost:8080/path/to/script.js';
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
 			});
 
-			window.happyDOM.settings.disableJavaScriptFileLoading = true;
-
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external script "path/to/script/". JavaScript file loading is disabled.'
+				'Failed to load external script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
 			);
 		});
 
-		it('Triggers an error event when attempting to perform an asynchrounous request and "window.happyDOM.settings.disableJavaScriptEvaluation" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true }
+			});
+			document = window.document;
+
 			let errorEvent: ErrorEvent | null = null;
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
-			script.src = 'path/to/script/';
+			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
 			});
 
-			window.happyDOM.settings.disableJavaScriptEvaluation = true;
-
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external script "path/to/script/". JavaScript file loading is disabled.'
+				'Failed to load external script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
 			);
 		});
 
-		it('Triggers an error event when attempting to perform a synchrounous request and "window.happyDOM.settings.disableJavaScriptEvaluation" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform a synchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true }
+			});
+			document = window.document;
+
 			let errorEvent: ErrorEvent | null = null;
 
 			const script = <IHTMLScriptElement>window.document.createElement('script');
-			script.src = 'path/to/script/';
+			script.src = 'https://localhost:8080/path/to/script.js';
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
 			});
 
-			window.happyDOM.settings.disableJavaScriptEvaluation = true;
-
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external script "path/to/script/". JavaScript file loading is disabled.'
+				'Failed to load external script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
 			);
 		});
 
 		it('Triggers an error event on Window when attempting to perform an asynchrounous request containing invalid JavaScript.', async () => {
 			let errorEvent: ErrorEvent | null = null;
 
-			vi.spyOn(window, 'fetch').mockImplementation(() => {
-				return Promise.resolve(<IResponse>{
-					text: async () => 'globalThis.test = /;',
-					ok: true
-				});
-			});
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () =>
+					<IResponse>{
+						text: async () => 'globalThis.test = /;',
+						ok: true
+					}
+			);
 
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
@@ -437,13 +451,13 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
 				'Invalid regular expression: missing /'
 			);
 
-			const consoleOutput = window.happyDOM.virtualConsolePrinter?.readAsString() || '';
+			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
 				true
 			);
@@ -452,7 +466,9 @@ describe('HTMLScriptElement', () => {
 		it('Triggers an error event on Window when attempting to perform a synchrounous request containing invalid JavaScript.', () => {
 			let errorEvent: ErrorEvent | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetchSync').mockImplementation(() => 'globalThis.test = /;');
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
+				() => 'globalThis.test = /;'
+			);
 
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
@@ -465,7 +481,7 @@ describe('HTMLScriptElement', () => {
 				'Invalid regular expression: missing /'
 			);
 
-			const consoleOutput = window.happyDOM.virtualConsolePrinter?.readAsString() || '';
+			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
 				true
 			);
@@ -485,16 +501,34 @@ describe('HTMLScriptElement', () => {
 				'Invalid regular expression: missing /'
 			);
 
-			const consoleOutput = window.happyDOM.virtualConsolePrinter?.readAsString() || '';
+			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
 				true
 			);
 		});
 
-		it('Throws an exception when appending an element that contains invalid Javascript and Window.happyDOM.settings.disableErrorCapturing is set to true.', () => {
+		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "disableErrorCapturing" is set to true.', () => {
+			window = new Window({
+				settings: { disableErrorCapturing: true }
+			});
+			document = window.document;
+
 			const element = <IHTMLScriptElement>document.createElement('script');
 
-			window.happyDOM.settings.disableErrorCapturing = true;
+			element.text = 'globalThis.test = /;';
+
+			expect(() => {
+				document.body.appendChild(element);
+			}).toThrow(new TypeError('Invalid regular expression: missing /'));
+		});
+
+		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "errorCapture" is set to "disabled".', () => {
+			window = new Window({
+				settings: { errorCapture: BrowserErrorCaptureEnum.disabled }
+			});
+			document = window.document;
+
+			const element = <IHTMLScriptElement>document.createElement('script');
 
 			element.text = 'globalThis.test = /;';
 

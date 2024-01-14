@@ -1,49 +1,79 @@
 import DOMException from '../exception/DOMException.js';
-import IDocument from '../nodes/document/IDocument.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import URL from '../url/URL.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import Fetch from './Fetch.js';
+import SyncFetch from './SyncFetch.js';
 
 /**
  * Helper class for performing fetch of resources.
  */
 export default class ResourceFetch {
+	private window: IBrowserWindow;
+	#browserFrame: IBrowserFrame;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param options Options.
+	 * @param options.browserFrame Browser frame.
+	 * @param options.window Window.
+	 */
+	constructor(options: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
+		this.#browserFrame = options.browserFrame;
+		this.window = options.window;
+	}
+
 	/**
 	 * Returns resource data asynchronously.
 	 *
-	 * @param document Document.
 	 * @param url URL.
 	 * @returns Response.
 	 */
-	public static async fetch(document: IDocument, url: string): Promise<string> {
-		const response = await document.defaultView.fetch(url);
+	public async fetch(url: string): Promise<string> {
+		const fetch = new Fetch({
+			browserFrame: this.#browserFrame,
+			window: this.window,
+			url,
+			disableCrossOriginPolicy: true
+		});
+		const response = await fetch.send();
+
 		if (!response.ok) {
 			throw new DOMException(
-				`Failed to perform request to "${url}". Status code: ${response.status}`
+				`Failed to perform request to "${new URL(url, this.window.location.href).href}". Status ${
+					response.status
+				} ${response.statusText}.`
 			);
 		}
+
 		return await response.text();
 	}
 
 	/**
 	 * Returns resource data synchronously.
 	 *
-	 * @param document Document.
 	 * @param url URL.
 	 * @returns Response.
 	 */
-	public static fetchSync(document: IDocument, url: string): string {
-		// We want to only load SyncRequest when it is needed to improve performance and not have direct dependencies to server side packages.
-		const absoluteURL = new URL(url, document.defaultView.location).href;
+	public fetchSync(url: string): string {
+		const fetch = new SyncFetch({
+			browserFrame: this.#browserFrame,
+			window: this.window,
+			url,
+			disableCrossOriginPolicy: true
+		});
 
-		const xhr = new document.defaultView.XMLHttpRequest();
-		xhr.open('GET', absoluteURL, false);
-		xhr.send();
+		const response = fetch.send();
 
-		if (xhr.status !== 200) {
+		if (!response.ok) {
 			throw new DOMException(
-				`Failed to perform request to "${absoluteURL}". Status code: ${xhr.status}`
+				`Failed to perform request to "${new URL(url, this.window.location.href).href}". Status ${
+					response.status
+				} ${response.statusText}.`
 			);
 		}
 
-		return xhr.responseText;
+		return response.body.toString();
 	}
 }

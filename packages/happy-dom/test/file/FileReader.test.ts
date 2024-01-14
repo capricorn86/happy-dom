@@ -9,8 +9,7 @@ describe('FileReader', () => {
 
 	beforeEach(() => {
 		window = new Window();
-		FileReader._ownerDocument = window.document;
-		fileReader = new FileReader();
+		fileReader = new window.FileReader();
 	});
 
 	describe('readAsDataURL()', () => {
@@ -23,7 +22,7 @@ describe('FileReader', () => {
 				result = <string>fileReader.result;
 			});
 			fileReader.readAsDataURL(blob);
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 			expect(result).toBe('data:text/plain;charset=utf-8;base64,VEVTVA==');
 		});
 	});
