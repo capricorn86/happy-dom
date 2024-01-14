@@ -17,7 +17,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 
 	// Internal properties
 	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];
-	public [PropertySymbol.mode]: 'open' | 'closed' = 'open';
+	public [PropertySymbol.mode] = 'open';
 	public [PropertySymbol.host]: IElement | null = null;
 
 	/**
@@ -25,7 +25,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 *
 	 * @returns Mode.
 	 */
-	public get mode(): 'open' | 'closed' {
+	public get mode(): string {
 		return this[PropertySymbol.mode];
 	}
 

@@ -788,7 +788,7 @@ export default class Element extends Node implements IElement {
 	 * @param init.mode Shadow root mode.
 	 * @returns Shadow root.
 	 */
-	public attachShadow(init: { mode: 'open' | 'closed' }): IShadowRoot {
+	public attachShadow(init: { mode: string }): IShadowRoot {
 		if (this[PropertySymbol.shadowRoot]) {
 			throw new DOMException('Shadow root has already been attached.');
 		}

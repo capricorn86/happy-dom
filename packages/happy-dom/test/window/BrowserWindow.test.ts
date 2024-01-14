@@ -33,6 +33,8 @@ import IBrowser from '../../src/browser/types/IBrowser.js';
 import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import IBrowserPage from '../../src/browser/types/IBrowserPage.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
+import AdoptedStyleSheetCustomElement from '../AdoptedStyleSheetCustomElement.js';
+import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import '../types.d.js';
 
 const GET_NAVIGATOR_PLATFORM = (): string => {
@@ -59,6 +61,10 @@ describe('BrowserWindow', () => {
 		window = browserFrame.window;
 		document = window.document;
 		window.customElements.define('custom-element', CustomElement);
+		window.customElements.define(
+			'adopted-style-sheet-custom-element',
+			AdoptedStyleSheetCustomElement
+		);
 	});
 
 	afterEach(() => {
@@ -430,6 +436,38 @@ describe('BrowserWindow', () => {
 			`;
 
 			document.body.appendChild(elementStyle);
+			document.body.appendChild(element);
+			document.body.appendChild(customElement);
+
+			const customElementComputedStyle = window.getComputedStyle(
+				<IHTMLElement>customElement.shadowRoot?.querySelector('span')
+			);
+
+			// Default value on HTML is "16px Times New Roman"
+			expect(elementComputedStyle.font).toBe('16px "Times New Roman"');
+			expect(elementComputedStyle.color).toBe('green');
+
+			expect(customElementComputedStyle.color).toBe('yellow');
+			expect(customElementComputedStyle.font).toBe(
+				'14px "Lucida Grande", Helvetica, Arial, sans-serif'
+			);
+		});
+
+		it('Returns a CSSStyleDeclaration object with computed styles from adopted style sheets for elements in a HTMLShadowRoot.', () => {
+			const element = <IHTMLElement>document.createElement('span');
+			const customElement = <CustomElement>(
+				document.createElement('adopted-style-sheet-custom-element')
+			);
+			const elementComputedStyle = window.getComputedStyle(element);
+
+			const styleSheet = new CSSStyleSheet();
+			styleSheet.replaceSync(`
+                span {
+					color: green;
+                }
+            `);
+			document.adoptedStyleSheets = [styleSheet];
+
 			document.body.appendChild(element);
 			document.body.appendChild(customElement);
 

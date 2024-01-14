@@ -137,17 +137,25 @@ export default class CSSStyleDeclarationElementStyle {
 					}
 				}
 
+				for (const styleSheet of this.element[PropertySymbol.ownerDocument].adoptedStyleSheets) {
+					this.parseCSSRules({
+						elements: documentElements,
+						cssRules: styleSheet.cssRules
+					});
+				}
+
 				styleAndElement = { element: null, cssTexts: [] };
 			} else if (
 				styleAndElement.element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
 				(<IShadowRoot>styleAndElement.element).host
 			) {
+				const shadowRoot = <IShadowRoot>styleAndElement.element;
 				const styleSheets = <INodeList<IHTMLStyleElement>>(
-					(<IShadowRoot>styleAndElement.element).querySelectorAll('style,link[rel="stylesheet"]')
+					shadowRoot.querySelectorAll('style,link[rel="stylesheet"]')
 				);
 
 				styleAndElement = {
-					element: <IElement>(<IShadowRoot>styleAndElement.element).host,
+					element: <IElement>shadowRoot.host,
 					cssTexts: []
 				};
 
@@ -161,6 +169,15 @@ export default class CSSStyleDeclarationElementStyle {
 						});
 					}
 				}
+
+				for (const styleSheet of shadowRoot.adoptedStyleSheets) {
+					this.parseCSSRules({
+						elements: shadowRootElements,
+						cssRules: styleSheet.cssRules,
+						hostElement: styleAndElement
+					});
+				}
+
 				shadowRootElements = [];
 			} else {
 				styleAndElement = {

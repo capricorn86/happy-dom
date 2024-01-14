@@ -50,6 +50,7 @@ export default interface IDocument extends IParentNode {
 	readonly links: IHTMLCollection<IHTMLElement>;
 	readonly referrer: string;
 	readonly currentScript: IHTMLScriptElement;
+	adoptedStyleSheets: CSSStyleSheet[];
 	cookie: string;
 	title: string;
 
