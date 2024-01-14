@@ -63,12 +63,16 @@ export default class NamedNodeMap implements INamedNodeMap {
 	public getNamedItemNS(namespace: string, localName: string): IAttr | null {
 		const attribute = this.getNamedItem(localName);
 
-		if (attribute && attribute.namespaceURI === namespace && attribute.localName === localName) {
+		if (
+			attribute &&
+			attribute[PropertySymbol.namespaceURI] === namespace &&
+			attribute.localName === localName
+		) {
 			return attribute;
 		}
 
 		for (let i = 0, max = this.length; i < max; i++) {
-			if (this[i].namespaceURI === namespace && this[i].localName === localName) {
+			if (this[i][PropertySymbol.namespaceURI] === namespace && this[i].localName === localName) {
 				return this[i];
 			}
 		}
@@ -125,7 +129,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	public removeNamedItemNS(namespace: string, localName: string): IAttr | null {
 		const attribute = this.getNamedItemNS(namespace, localName);
 		if (attribute) {
-			return this.removeNamedItem(attribute.name);
+			return this.removeNamedItem(attribute[PropertySymbol.name]);
 		}
 		return null;
 	}
@@ -137,10 +141,10 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public [PropertySymbol.setNamedItemWithoutConsequences](item: IAttr): IAttr | null {
-		if (item.name) {
-			const replacedItem = this[PropertySymbol.namedItems][item.name] || null;
+		if (item[PropertySymbol.name]) {
+			const replacedItem = this[PropertySymbol.namedItems][item[PropertySymbol.name]] || null;
 
-			this[PropertySymbol.namedItems][item.name] = item;
+			this[PropertySymbol.namedItems][item[PropertySymbol.name]] = item;
 
 			if (replacedItem) {
 				this[PropertySymbol.removeNamedItemIndex](replacedItem);
@@ -149,8 +153,8 @@ export default class NamedNodeMap implements INamedNodeMap {
 			this[this.length] = item;
 			this.length++;
 
-			if (this[PropertySymbol.isValidPropertyName](item.name)) {
-				this[item.name] = item;
+			if (this[PropertySymbol.isValidPropertyName](item[PropertySymbol.name])) {
+				this[item[PropertySymbol.name]] = item;
 			}
 
 			return replacedItem;

@@ -2,6 +2,7 @@ import IAttr from '../attr/IAttr.js';
 import Element from '../element/Element.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * Named Node Map.
@@ -28,7 +29,11 @@ export default class HTMLIFrameElementNamedNodeMap extends HTMLElementNamedNodeM
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedAttribute = super.setNamedItem(item);
 
-		if (item.name === 'src' && item.value && item.value !== replacedAttribute?.value) {
+		if (
+			item[PropertySymbol.name] === 'src' &&
+			item[PropertySymbol.value] &&
+			item[PropertySymbol.value] !== replacedAttribute?.[PropertySymbol.value]
+		) {
 			this.#pageLoader.loadPage();
 		}
 

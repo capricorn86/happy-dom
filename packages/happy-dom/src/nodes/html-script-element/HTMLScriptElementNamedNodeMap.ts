@@ -31,11 +31,11 @@ export default class HTMLScriptElementNamedNodeMap extends HTMLElementNamedNodeM
 		const replacedItem = super.setNamedItem(item);
 
 		if (
-			item.name === 'src' &&
-			item.value !== null &&
-			this[PropertySymbol.ownerElement].isConnected
+			item[PropertySymbol.name] === 'src' &&
+			item[PropertySymbol.value] !== null &&
+			this[PropertySymbol.ownerElement][PropertySymbol.isConnected]
 		) {
-			this.#scriptLoader.loadScript(item.value);
+			this.#scriptLoader.loadScript(item[PropertySymbol.value]);
 		}
 
 		return replacedItem || null;

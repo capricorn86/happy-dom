@@ -22,9 +22,29 @@ const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement.
  */
 export default class HTMLButtonElement extends HTMLElement implements IHTMLButtonElement {
-	public override readonly attributes: INamedNodeMap = new HTMLButtonElementNamedNodeMap(this);
-	public readonly validationMessage = '';
-	public readonly validity = new ValidityState(this);
+	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLButtonElementNamedNodeMap(
+		this
+	);
+	public [PropertySymbol.validationMessage] = '';
+	public [PropertySymbol.validity] = new ValidityState(this);
+
+	/**
+	 * Returns validation message.
+	 *
+	 * @returns Validation message.
+	 */
+	public get validationMessage(): string {
+		return this[PropertySymbol.validationMessage];
+	}
+
+	/**
+	 * Returns validity.
+	 *
+	 * @returns Validity.
+	 */
+	public get validity(): ValidityState {
+		return this[PropertySymbol.validity];
+	}
 
 	/**
 	 * Returns name.
@@ -149,7 +169,10 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 */
 	public checkValidity(): boolean {
 		const valid =
-			this.disabled || this.type === 'reset' || this.type === 'button' || this.validity.valid;
+			this.disabled ||
+			this.type === 'reset' ||
+			this.type === 'button' ||
+			this[PropertySymbol.validity].valid;
 		if (!valid) {
 			this.dispatchEvent(new Event('invalid', { bubbles: true, cancelable: true }));
 		}
@@ -171,7 +194,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @param message Message.
 	 */
 	public setCustomValidity(message: string): void {
-		(<string>this.validationMessage) = String(message);
+		this[PropertySymbol.validationMessage] = String(message);
 	}
 
 	/**
@@ -189,7 +212,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			this[PropertySymbol.formNode] &&
-			this.isConnected
+			this[PropertySymbol.isConnected]
 		) {
 			const form = <IHTMLFormElement>this[PropertySymbol.formNode];
 			switch (this.type) {

@@ -29,7 +29,7 @@ import VisibilityStateEnum from './VisibilityStateEnum.js';
  */
 export default interface IDocument extends IParentNode {
 	readonly defaultView: IBrowserWindow | null;
-	readonly [PropertySymbol.defaultView]: IBrowserWindow;
+	readonly [PropertySymbol.ownerWindow]: IBrowserWindow;
 	readonly implementation: DOMImplementation;
 	readonly documentElement: IHTMLElement;
 	readonly doctype: IDocumentType;
@@ -50,6 +50,7 @@ export default interface IDocument extends IParentNode {
 	readonly links: IHTMLCollection<IHTMLElement>;
 	readonly referrer: string;
 	readonly currentScript: IHTMLScriptElement;
+	adoptedStyleSheets: CSSStyleSheet[];
 	cookie: string;
 	title: string;
 

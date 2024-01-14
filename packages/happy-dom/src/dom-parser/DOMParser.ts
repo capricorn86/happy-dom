@@ -1,10 +1,10 @@
 import IDocument from '../nodes/document/IDocument.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import XMLParser from '../xml-parser/XMLParser.js';
-import Node from '../nodes/node/Node.js';
 import DOMException from '../exception/DOMException.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 
 /**
  * DOM parser.
@@ -48,7 +48,7 @@ export default class DOMParser {
 		for (const node of root[PropertySymbol.childNodes]) {
 			if (node['tagName'] === 'HTML') {
 				documentElement = node;
-			} else if (node.nodeType === Node.DOCUMENT_TYPE_NODE) {
+			} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
 				documentTypeNode = node;
 			}
 

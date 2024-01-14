@@ -29,14 +29,14 @@ export default class FormData implements Iterable<[string, string | File]> {
 	constructor(form?: IHTMLFormElement) {
 		if (form) {
 			for (const name of Object.keys(
-				(<HTMLFormControlsCollection>form.elements)[PropertySymbol.namedItems]
+				(<HTMLFormControlsCollection>form[PropertySymbol.elements])[PropertySymbol.namedItems]
 			)) {
-				let radioNodeList = (<HTMLFormControlsCollection>form.elements)[PropertySymbol.namedItems][
-					name
-				];
+				let radioNodeList = (<HTMLFormControlsCollection>form[PropertySymbol.elements])[
+					PropertySymbol.namedItems
+				][name];
 
 				if (
-					radioNodeList[0].tagName === 'INPUT' &&
+					radioNodeList[0][PropertySymbol.tagName] === 'INPUT' &&
 					(radioNodeList[0].type === 'checkbox' || radioNodeList[0].type === 'radio')
 				) {
 					const newRadioNodeList = new RadioNodeList();
@@ -50,12 +50,12 @@ export default class FormData implements Iterable<[string, string | File]> {
 				}
 
 				for (const node of radioNodeList) {
-					if (node.name && SUBMITTABLE_ELEMENTS.includes(node.tagName)) {
-						if (node.tagName === 'INPUT' && node.type === 'file') {
-							if ((<IHTMLInputElement>node).files.length === 0) {
+					if (node.name && SUBMITTABLE_ELEMENTS.includes(node[PropertySymbol.tagName])) {
+						if (node[PropertySymbol.tagName] === 'INPUT' && node.type === 'file') {
+							if ((<IHTMLInputElement>node)[PropertySymbol.files].length === 0) {
 								this.append(node.name, new File([], '', { type: 'application/octet-stream' }));
 							} else {
-								for (const file of (<IHTMLInputElement>node).files) {
+								for (const file of (<IHTMLInputElement>node)[PropertySymbol.files]) {
 									this.append(node.name, file);
 								}
 							}

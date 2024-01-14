@@ -19,10 +19,15 @@ import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement.
  */
 export default class HTMLScriptElement extends HTMLElement implements IHTMLScriptElement {
-	public override readonly attributes: INamedNodeMap;
+	// Events
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
+
+	// Internal properties
+	public override [PropertySymbol.attributes]: INamedNodeMap;
 	public [PropertySymbol.evaluateScript] = true;
+
+	// Private properties
 	#scriptLoader: HTMLScriptElementScriptLoader;
 
 	/**
@@ -38,7 +43,7 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 			browserFrame
 		});
 
-		this.attributes = new HTMLScriptElementNamedNodeMap(this, this.#scriptLoader);
+		this[PropertySymbol.attributes] = new HTMLScriptElementNamedNodeMap(this, this.#scriptLoader);
 	}
 
 	/**
@@ -190,10 +195,10 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @override
 	 */
 	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
-		const isConnected = this.isConnected;
-		const isParentConnected = parentNode ? parentNode.isConnected : false;
+		const isConnected = this[PropertySymbol.isConnected];
+		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			this.ownerDocument[PropertySymbol.defaultView]
+			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
 		);
 
 		super[PropertySymbol.connectToNode](parentNode);
@@ -217,24 +222,26 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 						type === 'application/x-javascript' ||
 						type.startsWith('text/javascript'))
 				) {
-					this.ownerDocument[PropertySymbol.currentScript] = this;
+					this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
 					const code =
-						`//# sourceURL=${this.ownerDocument[PropertySymbol.defaultView].location.href}\n` +
-						textContent;
+						`//# sourceURL=${
+							this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
+						}\n` + textContent;
 
 					if (
 						browserSettings.disableErrorCapturing ||
 						browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 					) {
-						this.ownerDocument[PropertySymbol.defaultView].eval(code);
+						this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code);
 					} else {
-						WindowErrorUtility.captureError(this.ownerDocument[PropertySymbol.defaultView], () =>
-							this.ownerDocument[PropertySymbol.defaultView].eval(code)
+						WindowErrorUtility.captureError(
+							this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow],
+							() => this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code)
 						);
 					}
 
-					this.ownerDocument[PropertySymbol.currentScript] = null;
+					this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
 				}
 			}
 		}

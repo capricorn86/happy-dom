@@ -65,7 +65,7 @@ export default class SelectorItem {
 
 		// Tag name match
 		if (this.tagName) {
-			if (this.tagName !== '*' && this.tagName !== element.tagName) {
+			if (this.tagName !== '*' && this.tagName !== element[PropertySymbol.tagName]) {
 				return null;
 			}
 			priorityWeight += 1;
@@ -112,9 +112,9 @@ export default class SelectorItem {
 	 * @returns Result.
 	 */
 	private matchPsuedo(element: IElement): boolean {
-		const parent = <IElement>element.parentNode;
-		const parentChildren = element.parentNode
-			? (<Element>element.parentNode)[PropertySymbol.children]
+		const parent = <IElement>element[PropertySymbol.parentNode];
+		const parentChildren = element[PropertySymbol.parentNode]
+			? (<Element>element[PropertySymbol.parentNode])[PropertySymbol.children]
 			: [];
 
 		if (!this.pseudos) {
@@ -161,7 +161,7 @@ export default class SelectorItem {
 					return parentChildren.length === 1 && parentChildren[0] === element;
 				case 'first-of-type':
 					for (const child of parentChildren) {
-						if (child.tagName === element.tagName) {
+						if (child[PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
 							return child === element;
 						}
 					}
@@ -169,7 +169,7 @@ export default class SelectorItem {
 				case 'last-of-type':
 					for (let i = parentChildren.length - 1; i >= 0; i--) {
 						const child = parentChildren[i];
-						if (child.tagName === element.tagName) {
+						if (child[PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
 							return child === element;
 						}
 					}
@@ -177,7 +177,7 @@ export default class SelectorItem {
 				case 'only-of-type':
 					let isFound = false;
 					for (const child of parentChildren) {
-						if (child.tagName === element.tagName) {
+						if (child[PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
 							if (isFound || child !== element) {
 								return false;
 							}
@@ -186,11 +186,13 @@ export default class SelectorItem {
 					}
 					return isFound;
 				case 'checked':
-					return element.tagName === 'INPUT' && (<IHTMLInputElement>element).checked;
+					return (
+						element[PropertySymbol.tagName] === 'INPUT' && (<IHTMLInputElement>element).checked
+					);
 				case 'empty':
 					return !(<Element>element)[PropertySymbol.children].length;
 				case 'root':
-					return element.tagName === 'HTML';
+					return element[PropertySymbol.tagName] === 'HTML';
 				case 'not':
 					return !psuedo.selectorItem.match(element);
 				case 'nth-child':
@@ -199,11 +201,11 @@ export default class SelectorItem {
 						: parentChildren.indexOf(element);
 					return nthChildIndex !== -1 && psuedo.nthFunction(nthChildIndex + 1);
 				case 'nth-of-type':
-					if (!element.parentNode) {
+					if (!element[PropertySymbol.parentNode]) {
 						return false;
 					}
 					const nthOfTypeIndex = parentChildren
-						.filter((child) => child.tagName === element.tagName)
+						.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
 						.indexOf(element);
 					return nthOfTypeIndex !== -1 && psuedo.nthFunction(nthOfTypeIndex + 1);
 				case 'nth-last-child':
@@ -216,7 +218,7 @@ export default class SelectorItem {
 					return nthLastChildIndex !== -1 && psuedo.nthFunction(nthLastChildIndex + 1);
 				case 'nth-last-of-type':
 					const nthLastOfTypeIndex = parentChildren
-						.filter((child) => child.tagName === element.tagName)
+						.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
 						.reverse()
 						.indexOf(element);
 					return nthLastOfTypeIndex !== -1 && psuedo.nthFunction(nthLastOfTypeIndex + 1);
@@ -240,7 +242,9 @@ export default class SelectorItem {
 		let priorityWeight = 0;
 
 		for (const attribute of this.attributes) {
-			const elementAttribute = (<Element>element).attributes.getNamedItem(attribute.name);
+			const elementAttribute = (<Element>element)[PropertySymbol.attributes].getNamedItem(
+				attribute.name
+			);
 
 			if (!elementAttribute) {
 				return null;
@@ -250,9 +254,9 @@ export default class SelectorItem {
 
 			if (
 				attribute.value !== null &&
-				(elementAttribute.value === null ||
-					(attribute.regExp && !attribute.regExp.test(elementAttribute.value)) ||
-					(!attribute.regExp && attribute.value !== elementAttribute.value))
+				(elementAttribute[PropertySymbol.value] === null ||
+					(attribute.regExp && !attribute.regExp.test(elementAttribute[PropertySymbol.value])) ||
+					(!attribute.regExp && attribute.value !== elementAttribute[PropertySymbol.value]))
 			) {
 				return null;
 			}

@@ -17,8 +17,11 @@ export default class SVGElementNamedNodeMap extends ElementNamedNodeMap {
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'style' && this[PropertySymbol.ownerElement][PropertySymbol.style]) {
-			this[PropertySymbol.ownerElement][PropertySymbol.style].cssText = item.value;
+		if (
+			item[PropertySymbol.name] === 'style' &&
+			this[PropertySymbol.ownerElement][PropertySymbol.style]
+		) {
+			this[PropertySymbol.ownerElement][PropertySymbol.style].cssText = item[PropertySymbol.value];
 		}
 
 		return replacedItem || null;
@@ -32,7 +35,7 @@ export default class SVGElementNamedNodeMap extends ElementNamedNodeMap {
 
 		if (
 			removedItem &&
-			removedItem.name === 'style' &&
+			removedItem[PropertySymbol.name] === 'style' &&
 			this[PropertySymbol.ownerElement][PropertySymbol.style]
 		) {
 			this[PropertySymbol.ownerElement][PropertySymbol.style].cssText = '';

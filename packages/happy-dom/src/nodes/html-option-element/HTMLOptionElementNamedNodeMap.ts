@@ -20,8 +20,8 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 
 		if (
 			!this[PropertySymbol.ownerElement][PropertySymbol.dirtyness] &&
-			item.name === 'selected' &&
-			replacedItem?.value !== item.value
+			item[PropertySymbol.name] === 'selected' &&
+			replacedItem?.[PropertySymbol.value] !== item[PropertySymbol.value]
 		) {
 			const selectNode = <HTMLSelectElement>(
 				this[PropertySymbol.ownerElement][PropertySymbol.selectNode]
@@ -46,7 +46,7 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 		if (
 			removedItem &&
 			!this[PropertySymbol.ownerElement][PropertySymbol.dirtyness] &&
-			removedItem.name === 'selected'
+			removedItem[PropertySymbol.name] === 'selected'
 		) {
 			const selectNode = <HTMLSelectElement>(
 				this[PropertySymbol.ownerElement][PropertySymbol.selectNode]

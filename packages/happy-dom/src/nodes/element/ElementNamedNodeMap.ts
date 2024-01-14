@@ -45,39 +45,51 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	 * @override
 	 */
 	public override setNamedItem(item: IAttr): IAttr | null {
-		if (!item.name) {
+		if (!item[PropertySymbol.name]) {
 			return null;
 		}
 
-		item.name = this[PropertySymbol.getAttributeName](item.name);
-		(<IElement>item.ownerElement) = this[PropertySymbol.ownerElement];
+		item[PropertySymbol.name] = this[PropertySymbol.getAttributeName](item[PropertySymbol.name]);
+		(<IElement>item[PropertySymbol.ownerElement]) = this[PropertySymbol.ownerElement];
 
 		const replacedItem = super.setNamedItem(item);
-		const oldValue = replacedItem ? replacedItem.value : null;
+		const oldValue = replacedItem ? replacedItem[PropertySymbol.value] : null;
 
-		if (this[PropertySymbol.ownerElement].isConnected) {
+		if (this[PropertySymbol.ownerElement][PropertySymbol.isConnected]) {
 			this[PropertySymbol.ownerElement].ownerDocument[PropertySymbol.cacheID]++;
 		}
 
-		if (item.name === 'class' && this[PropertySymbol.ownerElement][PropertySymbol.classList]) {
+		if (
+			item[PropertySymbol.name] === 'class' &&
+			this[PropertySymbol.ownerElement][PropertySymbol.classList]
+		) {
 			this[PropertySymbol.ownerElement][PropertySymbol.classList][PropertySymbol.updateIndices]();
 		}
 
-		if (item.name === 'id' || item.name === 'name') {
+		if (item[PropertySymbol.name] === 'id' || item[PropertySymbol.name] === 'name') {
 			if (
-				this[PropertySymbol.ownerElement].parentNode &&
-				(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children] &&
-				item.value !== oldValue
+				this[PropertySymbol.ownerElement][PropertySymbol.parentNode] &&
+				(<Element>this[PropertySymbol.ownerElement][PropertySymbol.parentNode])[
+					PropertySymbol.children
+				] &&
+				item[PropertySymbol.value] !== oldValue
 			) {
 				if (oldValue) {
 					(<HTMLCollection<IElement>>(
-						(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children]
+						(<Element>this[PropertySymbol.ownerElement][PropertySymbol.parentNode])[
+							PropertySymbol.children
+						]
 					))[PropertySymbol.removeNamedItem](this[PropertySymbol.ownerElement], oldValue);
 				}
-				if (item.value) {
+				if (item[PropertySymbol.value]) {
 					(<HTMLCollection<IElement>>(
-						(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children]
-					))[PropertySymbol.appendNamedItem](this[PropertySymbol.ownerElement], item.value);
+						(<Element>this[PropertySymbol.ownerElement][PropertySymbol.parentNode])[
+							PropertySymbol.children
+						]
+					))[PropertySymbol.appendNamedItem](
+						this[PropertySymbol.ownerElement],
+						item[PropertySymbol.value]
+					);
 				}
 			}
 		}
@@ -89,9 +101,13 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 			] &&
 			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[
 				PropertySymbol.observedAttributes
-			].includes(item.name)
+			].includes(item[PropertySymbol.name])
 		) {
-			this[PropertySymbol.ownerElement].attributeChangedCallback(item.name, oldValue, item.value);
+			this[PropertySymbol.ownerElement].attributeChangedCallback(
+				item[PropertySymbol.name],
+				oldValue,
+				item[PropertySymbol.value]
+			);
 		}
 
 		// MutationObserver
@@ -102,13 +118,13 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
-						observer.options.attributeFilter.includes(item.name))
+						observer.options.attributeFilter.includes(item[PropertySymbol.name]))
 				) {
 					observer.report(
 						new MutationRecord({
 							target: this[PropertySymbol.ownerElement],
 							type: MutationTypeEnum.attributes,
-							attributeName: item.name,
+							attributeName: item[PropertySymbol.name],
 							oldValue: observer.options.attributeOldValue ? oldValue : null
 						})
 					);
@@ -131,26 +147,33 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 			return null;
 		}
 
-		if (this[PropertySymbol.ownerElement].isConnected) {
+		if (this[PropertySymbol.ownerElement][PropertySymbol.isConnected]) {
 			this[PropertySymbol.ownerElement].ownerDocument[PropertySymbol.cacheID]++;
 		}
 
 		if (
-			removedItem.name === 'class' &&
+			removedItem[PropertySymbol.name] === 'class' &&
 			this[PropertySymbol.ownerElement][PropertySymbol.classList]
 		) {
 			this[PropertySymbol.ownerElement][PropertySymbol.classList][PropertySymbol.updateIndices]();
 		}
 
-		if (removedItem.name === 'id' || removedItem.name === 'name') {
+		if (removedItem[PropertySymbol.name] === 'id' || removedItem[PropertySymbol.name] === 'name') {
 			if (
-				this[PropertySymbol.ownerElement].parentNode &&
-				(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children] &&
-				removedItem.value
+				this[PropertySymbol.ownerElement][PropertySymbol.parentNode] &&
+				(<Element>this[PropertySymbol.ownerElement][PropertySymbol.parentNode])[
+					PropertySymbol.children
+				] &&
+				removedItem[PropertySymbol.value]
 			) {
 				(<HTMLCollection<IElement>>(
-					(<Element>this[PropertySymbol.ownerElement].parentNode)[PropertySymbol.children]
-				))[PropertySymbol.removeNamedItem](this[PropertySymbol.ownerElement], removedItem.value);
+					(<Element>this[PropertySymbol.ownerElement][PropertySymbol.parentNode])[
+						PropertySymbol.children
+					]
+				))[PropertySymbol.removeNamedItem](
+					this[PropertySymbol.ownerElement],
+					removedItem[PropertySymbol.value]
+				);
 			}
 		}
 
@@ -161,11 +184,11 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 			] &&
 			(<typeof Element>this[PropertySymbol.ownerElement].constructor)[
 				PropertySymbol.observedAttributes
-			].includes(removedItem.name)
+			].includes(removedItem[PropertySymbol.name])
 		) {
 			this[PropertySymbol.ownerElement].attributeChangedCallback(
-				removedItem.name,
-				removedItem.value,
+				removedItem[PropertySymbol.name],
+				removedItem[PropertySymbol.value],
 				null
 			);
 		}
@@ -178,14 +201,16 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 				if (
 					observer.options.attributes &&
 					(!observer.options.attributeFilter ||
-						observer.options.attributeFilter.includes(removedItem.name))
+						observer.options.attributeFilter.includes(removedItem[PropertySymbol.name]))
 				) {
 					observer.report(
 						new MutationRecord({
 							target: this[PropertySymbol.ownerElement],
 							type: MutationTypeEnum.attributes,
-							attributeName: removedItem.name,
-							oldValue: observer.options.attributeOldValue ? removedItem.value : null
+							attributeName: removedItem[PropertySymbol.name],
+							oldValue: observer.options.attributeOldValue
+								? removedItem[PropertySymbol.value]
+								: null
 						})
 					);
 				}
@@ -209,7 +234,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	 * @returns Attribute name based on namespace.
 	 */
 	protected [PropertySymbol.getAttributeName](name): string {
-		if (this[PropertySymbol.ownerElement].namespaceURI === NamespaceURI.svg) {
+		if (this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI] === NamespaceURI.svg) {
 			return name;
 		}
 		return name.toLowerCase();

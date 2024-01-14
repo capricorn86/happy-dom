@@ -31,18 +31,21 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'rel' && this[PropertySymbol.ownerElement][PropertySymbol.relList]) {
+		if (
+			item[PropertySymbol.name] === 'rel' &&
+			this[PropertySymbol.ownerElement][PropertySymbol.relList]
+		) {
 			this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 
-		if (item.name === 'rel') {
+		if (item[PropertySymbol.name] === 'rel') {
 			this.#styleSheetLoader.loadStyleSheet(
 				this[PropertySymbol.ownerElement].getAttribute('href'),
-				item.value
+				item[PropertySymbol.value]
 			);
-		} else if (item.name === 'href') {
+		} else if (item[PropertySymbol.name] === 'href') {
 			this.#styleSheetLoader.loadStyleSheet(
-				item.value,
+				item[PropertySymbol.value],
 				this[PropertySymbol.ownerElement].getAttribute('rel')
 			);
 		}
@@ -58,7 +61,7 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 
 		if (
 			removedItem &&
-			removedItem.name === 'rel' &&
+			removedItem[PropertySymbol.name] === 'rel' &&
 			this[PropertySymbol.ownerElement][PropertySymbol.relList]
 		) {
 			this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();

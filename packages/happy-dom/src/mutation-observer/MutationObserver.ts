@@ -46,9 +46,9 @@ export default class MutationObserver {
 		}
 
 		if (!this.#window) {
-			this.#window = target.ownerDocument
-				? target.ownerDocument[PropertySymbol.defaultView]
-				: target[PropertySymbol.defaultView];
+			this.#window = target[PropertySymbol.ownerDocument]
+				? target[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
+				: target[PropertySymbol.ownerWindow];
 		}
 
 		// Makes sure that attribute names are lower case.

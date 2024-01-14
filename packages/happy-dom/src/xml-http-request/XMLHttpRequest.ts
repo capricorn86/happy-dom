@@ -297,7 +297,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (
 			typeof body === 'object' &&
 			body !== null &&
-			(<IDocument>body).nodeType === NodeTypeEnum.documentNode
+			(<IDocument>body)[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
 		) {
 			body = (<IDocument>body).documentElement.outerHTML;
 		}

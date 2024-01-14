@@ -17,8 +17,8 @@ export default class ChildNodeUtility {
 	 * @param childNode Child node.
 	 */
 	public static remove(childNode: IChildNode): void {
-		if (childNode.parentNode) {
-			childNode.parentNode.removeChild(childNode);
+		if (childNode[PropertySymbol.parentNode]) {
+			childNode[PropertySymbol.parentNode].removeChild(childNode);
 		}
 	}
 
@@ -29,7 +29,7 @@ export default class ChildNodeUtility {
 	 * @param nodes List of Node or DOMString.
 	 */
 	public static replaceWith(childNode: IChildNode, ...nodes: (INode | string)[]): void {
-		const parent = <IParentNode>childNode.parentNode;
+		const parent = <IParentNode>childNode[PropertySymbol.parentNode];
 
 		if (!parent) {
 			throw new DOMException('This element has no parent node.');
@@ -38,7 +38,7 @@ export default class ChildNodeUtility {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
-					XMLParser.parse(<Document>childNode.ownerDocument, node)
+					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
 				))[PropertySymbol.childNodes].slice();
 				for (const newChildNode of newChildNodes) {
 					parent.insertBefore(newChildNode, childNode);
@@ -58,7 +58,7 @@ export default class ChildNodeUtility {
 	 * @param nodes List of Node or DOMString.
 	 */
 	public static before(childNode: IChildNode, ...nodes: (string | INode)[]): void {
-		const parent = <IParentNode>childNode.parentNode;
+		const parent = <IParentNode>childNode[PropertySymbol.parentNode];
 
 		if (!parent) {
 			return;
@@ -67,7 +67,7 @@ export default class ChildNodeUtility {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
-					XMLParser.parse(<Document>childNode.ownerDocument, node)
+					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
 				))[PropertySymbol.childNodes].slice();
 				for (const newChildNode of newChildNodes) {
 					parent.insertBefore(newChildNode, childNode);
@@ -85,7 +85,7 @@ export default class ChildNodeUtility {
 	 * @param nodes List of Node or DOMString.
 	 */
 	public static after(childNode: IChildNode, ...nodes: (string | INode)[]): void {
-		const parent = <IParentNode>childNode.parentNode;
+		const parent = <IParentNode>childNode[PropertySymbol.parentNode];
 
 		if (!parent) {
 			return;
@@ -96,7 +96,7 @@ export default class ChildNodeUtility {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
-					XMLParser.parse(<Document>childNode.ownerDocument, node)
+					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
 				))[PropertySymbol.childNodes].slice();
 				for (const newChildNode of newChildNodes) {
 					if (!nextSibling) {

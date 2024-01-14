@@ -1,4 +1,4 @@
-import Element from '../element/Element.js';
+import Element from './Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 
@@ -23,11 +23,11 @@ export default class Dataset {
 		// Build the initial dataset record from all data attributes.
 		const dataset: DatasetRecord = {};
 
-		for (let i = 0, max = element.attributes.length; i < max; i++) {
-			const attribute = element.attributes[i];
-			if (attribute.name.startsWith('data-')) {
-				const key = Dataset.kebabToCamelCase(attribute.name.replace('data-', ''));
-				dataset[key] = attribute.value;
+		for (let i = 0, max = element[PropertySymbol.attributes].length; i < max; i++) {
+			const attribute = element[PropertySymbol.attributes][i];
+			if (attribute[PropertySymbol.name].startsWith('data-')) {
+				const key = Dataset.kebabToCamelCase(attribute[PropertySymbol.name].replace('data-', ''));
+				dataset[key] = attribute[PropertySymbol.value];
 			}
 		}
 
@@ -35,9 +35,11 @@ export default class Dataset {
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
 		this.proxy = new Proxy(dataset, {
 			get(dataset: DatasetRecord, key: string): string {
-				const attribute = element.attributes.getNamedItem('data-' + Dataset.camelCaseToKebab(key));
+				const attribute = element[PropertySymbol.attributes].getNamedItem(
+					'data-' + Dataset.camelCaseToKebab(key)
+				);
 				if (attribute) {
-					return (dataset[key] = attribute.value);
+					return (dataset[key] = attribute[PropertySymbol.value]);
 				}
 				delete dataset[key];
 				return undefined;
@@ -48,9 +50,9 @@ export default class Dataset {
 				return true;
 			},
 			deleteProperty(dataset: DatasetRecord, key: string): boolean {
-				(<HTMLElementNamedNodeMap>element.attributes)[PropertySymbol.removeNamedItem](
-					'data-' + Dataset.camelCaseToKebab(key)
-				);
+				(<HTMLElementNamedNodeMap>element[PropertySymbol.attributes])[
+					PropertySymbol.removeNamedItem
+				]('data-' + Dataset.camelCaseToKebab(key));
 				return delete dataset[key];
 			},
 			ownKeys(dataset: DatasetRecord): string[] {
@@ -59,12 +61,14 @@ export default class Dataset {
 				// "The result List must contain the keys of all non-configurable own properties of the target object."
 				const keys = [];
 				const deleteKeys = [];
-				for (let i = 0, max = element.attributes.length; i < max; i++) {
-					const attribute = element.attributes[i];
-					if (attribute.name.startsWith('data-')) {
-						const key = Dataset.kebabToCamelCase(attribute.name.replace('data-', ''));
+				for (let i = 0, max = element[PropertySymbol.attributes].length; i < max; i++) {
+					const attribute = element[PropertySymbol.attributes][i];
+					if (attribute[PropertySymbol.name].startsWith('data-')) {
+						const key = Dataset.kebabToCamelCase(
+							attribute[PropertySymbol.name].replace('data-', '')
+						);
 						keys.push(key);
-						dataset[key] = attribute.value;
+						dataset[key] = attribute[PropertySymbol.value];
 						if (!dataset[key]) {
 							deleteKeys.push(key);
 						}
@@ -76,7 +80,9 @@ export default class Dataset {
 				return keys;
 			},
 			has(_dataset: DatasetRecord, key: string): boolean {
-				return !!element.attributes.getNamedItem('data-' + Dataset.camelCaseToKebab(key));
+				return !!element[PropertySymbol.attributes].getNamedItem(
+					'data-' + Dataset.camelCaseToKebab(key)
+				);
 			}
 		});
 	}

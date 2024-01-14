@@ -24,7 +24,9 @@ export default class ParentNodeUtility {
 	): void {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
-				XMLParser.parse(<IDocument>parentNode.ownerDocument, node, { rootNode: parentNode });
+				XMLParser.parse(<IDocument>parentNode[PropertySymbol.ownerDocument], node, {
+					rootNode: parentNode
+				});
 			} else {
 				parentNode.appendChild(node);
 			}
@@ -45,7 +47,7 @@ export default class ParentNodeUtility {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
-					XMLParser.parse(<IDocument>parentNode.ownerDocument, node)
+					XMLParser.parse(<IDocument>parentNode[PropertySymbol.ownerDocument], node)
 				))[PropertySymbol.childNodes].slice();
 				for (const newChildNode of newChildNodes) {
 					parentNode.insertBefore(newChildNode, firstChild);
@@ -113,7 +115,7 @@ export default class ParentNodeUtility {
 		let matches = new HTMLCollection<IElement>();
 
 		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
-			if (includeAll || child.tagName === upperTagName) {
+			if (includeAll || child[PropertySymbol.tagName] === upperTagName) {
 				matches.push(child);
 			}
 			matches = <HTMLCollection<IElement>>(
@@ -142,7 +144,10 @@ export default class ParentNodeUtility {
 		let matches = new HTMLCollection<IElement>();
 
 		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
-			if ((includeAll || child.tagName === upperTagName) && child.namespaceURI === namespaceURI) {
+			if (
+				(includeAll || child[PropertySymbol.tagName] === upperTagName) &&
+				child[PropertySymbol.namespaceURI] === namespaceURI
+			) {
 				matches.push(child);
 			}
 			matches = <HTMLCollection<IElement>>(
@@ -168,7 +173,7 @@ export default class ParentNodeUtility {
 		const upperTagName = tagName.toUpperCase();
 
 		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
-			if (child.tagName === upperTagName) {
+			if (child[PropertySymbol.tagName] === upperTagName) {
 				return <IElement>child;
 			}
 			const match = this.getElementByTagName(<IElement>child, tagName);

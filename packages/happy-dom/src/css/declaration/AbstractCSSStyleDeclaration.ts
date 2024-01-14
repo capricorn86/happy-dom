@@ -79,21 +79,21 @@ export default abstract class AbstractCSSStyleDeclaration {
 
 		if (this.#ownerElement) {
 			const style = new CSSStyleDeclarationPropertyManager({ cssText });
-			let styleAttribute = <IAttr>this.#ownerElement.attributes['style'];
+			let styleAttribute = <IAttr>this.#ownerElement[PropertySymbol.attributes]['style'];
 
 			if (!styleAttribute) {
-				styleAttribute = this.#ownerElement.ownerDocument.createAttribute('style');
+				styleAttribute = this.#ownerElement[PropertySymbol.ownerDocument].createAttribute('style');
 				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement.attributes)[
+				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[
 					PropertySymbol.setNamedItemWithoutConsequences
 				](styleAttribute);
 			}
 
-			if (this.#ownerElement.isConnected) {
-				this.#ownerElement.ownerDocument[PropertySymbol.cacheID]++;
+			if (this.#ownerElement[PropertySymbol.isConnected]) {
+				this.#ownerElement[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
 			}
 
-			styleAttribute.value = style.toString();
+			styleAttribute[PropertySymbol.value] = style.toString();
 		} else {
 			this.#style = new CSSStyleDeclarationPropertyManager({ cssText });
 		}
@@ -136,25 +136,25 @@ export default abstract class AbstractCSSStyleDeclaration {
 		if (!stringValue) {
 			this.removeProperty(name);
 		} else if (this.#ownerElement) {
-			let styleAttribute = <IAttr>this.#ownerElement.attributes['style'];
+			let styleAttribute = <IAttr>this.#ownerElement[PropertySymbol.attributes]['style'];
 
 			if (!styleAttribute) {
-				styleAttribute = this.#ownerElement.ownerDocument.createAttribute('style');
+				styleAttribute = this.#ownerElement[PropertySymbol.ownerDocument].createAttribute('style');
 
 				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement.attributes)[
+				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[
 					PropertySymbol.setNamedItemWithoutConsequences
 				](styleAttribute);
 			}
 
-			if (this.#ownerElement.isConnected) {
-				this.#ownerElement.ownerDocument[PropertySymbol.cacheID]++;
+			if (this.#ownerElement[PropertySymbol.isConnected]) {
+				this.#ownerElement[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
 			}
 
 			const style = this.#elementStyle.getElementStyle();
 			style.set(name, stringValue, !!priority);
 
-			styleAttribute.value = style.toString();
+			styleAttribute[PropertySymbol.value] = style.toString();
 		} else {
 			this.#style.set(name, stringValue, !!priority);
 		}
@@ -180,15 +180,16 @@ export default abstract class AbstractCSSStyleDeclaration {
 			style.remove(name);
 			const newCSSText = style.toString();
 
-			if (this.#ownerElement.isConnected) {
-				this.#ownerElement.ownerDocument[PropertySymbol.cacheID]++;
+			if (this.#ownerElement[PropertySymbol.isConnected]) {
+				this.#ownerElement[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
 			}
 
 			if (newCSSText) {
-				(<IAttr>this.#ownerElement.attributes['style']).value = newCSSText;
+				(<IAttr>this.#ownerElement[PropertySymbol.attributes]['style'])[PropertySymbol.value] =
+					newCSSText;
 			} else {
 				// We use "[PropertySymbol.removeNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement.attributes)[
+				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[
 					PropertySymbol.removeNamedItemWithoutConsequences
 				]('style');
 			}

@@ -19,10 +19,13 @@ import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement.
  */
 export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkElement {
-	public override readonly attributes: INamedNodeMap;
+	// Events
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
-	public readonly sheet: CSSStyleSheet = null;
+
+	// Internal properties
+	public override [PropertySymbol.attributes]: INamedNodeMap;
+	public readonly [PropertySymbol.sheet]: CSSStyleSheet = null;
 	public [PropertySymbol.evaluateCSS] = true;
 	public [PropertySymbol.relList]: DOMTokenList = null;
 	#styleSheetLoader: HTMLLinkElementStyleSheetLoader;
@@ -40,7 +43,14 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 			browserFrame
 		});
 
-		this.attributes = new HTMLLinkElementNamedNodeMap(this, this.#styleSheetLoader);
+		this[PropertySymbol.attributes] = new HTMLLinkElementNamedNodeMap(this, this.#styleSheetLoader);
+	}
+
+	/**
+	 * Returns sheet.
+	 */
+	public get sheet(): CSSStyleSheet {
+		return this[PropertySymbol.sheet];
 	}
 
 	/**
@@ -203,8 +213,8 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @override
 	 */
 	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
-		const isConnected = this.isConnected;
-		const isParentConnected = parentNode ? parentNode.isConnected : false;
+		const isConnected = this[PropertySymbol.isConnected];
+		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
 
 		super[PropertySymbol.connectToNode](parentNode);
 

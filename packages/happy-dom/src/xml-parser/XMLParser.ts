@@ -115,7 +115,7 @@ export default class XMLParser {
 							if (unnestableTagNameIndex !== -1) {
 								unnestableTagNames.splice(unnestableTagNameIndex, 1);
 								while (currentNode !== root) {
-									if ((<IElement>currentNode).tagName === tagName) {
+									if ((<IElement>currentNode)[PropertySymbol.tagName] === tagName) {
 										stack.pop();
 										currentNode = stack[stack.length - 1] || root;
 										break;
@@ -130,7 +130,7 @@ export default class XMLParser {
 							const namespaceURI =
 								tagName === 'SVG'
 									? NamespaceURI.svg
-									: (<IElement>currentNode).namespaceURI || NamespaceURI.html;
+									: (<IElement>currentNode)[PropertySymbol.namespaceURI] || NamespaceURI.html;
 							const newElement = document.createElementNS(namespaceURI, tagName);
 
 							currentNode.appendChild(newElement);
@@ -141,11 +141,11 @@ export default class XMLParser {
 						} else if (match[2]) {
 							// End tag.
 
-							if (match[2].toUpperCase() === (<IElement>currentNode).tagName) {
+							if (match[2].toUpperCase() === (<IElement>currentNode)[PropertySymbol.tagName]) {
 								// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 								// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
 								const unnestableTagNameIndex = unnestableTagNames.indexOf(
-									(<IElement>currentNode).tagName
+									(<IElement>currentNode)[PropertySymbol.tagName]
 								);
 								if (unnestableTagNameIndex !== -1) {
 									unnestableTagNames.splice(unnestableTagNameIndex, 1);
@@ -157,7 +157,8 @@ export default class XMLParser {
 						} else if (
 							match[3] ||
 							match[4] ||
-							(match[6] && (<IElement>currentNode).namespaceURI === NamespaceURI.html)
+							(match[6] &&
+								(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.html)
 						) {
 							// Comment.
 
@@ -227,7 +228,9 @@ export default class XMLParser {
 											attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
 										const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
 										const namespaceURI =
-											(<IElement>currentNode).tagName === 'SVG' && name === 'xmlns' ? value : null;
+											(<IElement>currentNode)[PropertySymbol.tagName] === 'SVG' && name === 'xmlns'
+												? value
+												: null;
 
 										(<IElement>currentNode).setAttributeNS(namespaceURI, name, value);
 
@@ -253,24 +256,27 @@ export default class XMLParser {
 								// Self closing tags are not allowed in the HTML namespace, but the parser should still allow it for void elements.
 								// Self closing tags is supported in the SVG namespace.
 								if (
-									VoidElements[(<IElement>currentNode).tagName] ||
-									(match[7] && (<IElement>currentNode).namespaceURI === NamespaceURI.svg)
+									VoidElements[(<IElement>currentNode)[PropertySymbol.tagName]] ||
+									(match[7] &&
+										(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
 								) {
 									stack.pop();
 									currentNode = stack[stack.length - 1] || root;
 									readState = MarkupReadStateEnum.startOrEndTag;
 								} else {
 									// Plain text elements such as <script> and <style> should only contain text.
-									plainTextTagName = PlainTextElements[(<IElement>currentNode).tagName]
-										? (<IElement>currentNode).tagName
+									plainTextTagName = PlainTextElements[
+										(<IElement>currentNode)[PropertySymbol.tagName]
+									]
+										? (<IElement>currentNode)[PropertySymbol.tagName]
 										: null;
 
 									readState = !!plainTextTagName
 										? MarkupReadStateEnum.plainTextContent
 										: MarkupReadStateEnum.startOrEndTag;
 
-									if (UnnestableElements[(<IElement>currentNode).tagName]) {
-										unnestableTagNames.push((<IElement>currentNode).tagName);
+									if (UnnestableElements[(<IElement>currentNode)[PropertySymbol.tagName]]) {
+										unnestableTagNames.push((<IElement>currentNode)[PropertySymbol.tagName]);
 									}
 								}
 

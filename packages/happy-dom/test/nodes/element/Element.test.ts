@@ -1548,10 +1548,8 @@ describe('Element', () => {
 
 			child.className = 'className';
 
-			(<string>element.tagName) = 'tagName';
-
-			// @ts-ignore
-			element.namespaceURI = 'namespaceURI';
+			element[PropertySymbol.tagName] = 'tagName';
+			element[PropertySymbol.namespaceURI] = 'namespaceURI';
 
 			element.appendChild(child);
 

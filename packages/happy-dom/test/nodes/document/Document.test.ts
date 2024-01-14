@@ -1132,7 +1132,7 @@ describe('Document', () => {
 
 			const clone = document.cloneNode(false);
 			const clone2 = document.cloneNode(true);
-			expect(clone[PropertySymbol.defaultView] === window).toBe(true);
+			expect(clone[PropertySymbol.ownerWindow] === window).toBe(true);
 			expect(clone.defaultView === null).toBe(true);
 			expect(clone.children.length).toBe(0);
 			expect(clone2.children.length).toBe(1);

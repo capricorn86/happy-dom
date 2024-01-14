@@ -23,20 +23,43 @@ import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.j
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement.
  */
 export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTextAreaElement {
-	public override readonly attributes: INamedNodeMap = new HTMLTextAreaElementNamedNodeMap(this);
 	public readonly type = 'textarea';
-	public readonly validationMessage = '';
-	public readonly validity = new ValidityState(this);
 
 	// Events
 	public oninput: (event: Event) => void | null = null;
 	public onselectionchange: (event: Event) => void | null = null;
 
+	// Internal properties
+	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLTextAreaElementNamedNodeMap(
+		this
+	);
+	public [PropertySymbol.validationMessage] = '';
+	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.value] = null;
+	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement = this;
+
+	// Private properties
 	#selectionStart = null;
 	#selectionEnd = null;
 	#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
-	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement = this;
+
+	/**
+	 * Returns validation message.
+	 *
+	 * @returns Validation message.
+	 */
+	public get validationMessage(): string {
+		return this[PropertySymbol.validationMessage];
+	}
+
+	/**
+	 * Returns validity.
+	 *
+	 * @returns Validity.
+	 */
+	public get validity(): ValidityState {
+		return this[PropertySymbol.validity];
+	}
 
 	/**
 	 * Returns the default value.
@@ -519,7 +542,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param message Message.
 	 */
 	public setCustomValidity(message: string): void {
-		(<string>this.validationMessage) = String(message);
+		this[PropertySymbol.validationMessage] = String(message);
 	}
 
 	/**
@@ -528,7 +551,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @returns "true" if the field is valid.
 	 */
 	public checkValidity(): boolean {
-		const valid = this.disabled || this.readOnly || this.validity.valid;
+		const valid = this.disabled || this.readOnly || this[PropertySymbol.validity].valid;
 		if (!valid) {
 			this.dispatchEvent(new Event('invalid', { bubbles: true, cancelable: true }));
 		}

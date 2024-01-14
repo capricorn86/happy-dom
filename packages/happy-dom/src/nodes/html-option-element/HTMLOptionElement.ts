@@ -15,7 +15,9 @@ import IHTMLOptionElement from './IHTMLOptionElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionElement.
  */
 export default class HTMLOptionElement extends HTMLElement implements IHTMLOptionElement {
-	public override readonly attributes: INamedNodeMap = new HTMLOptionElementNamedNodeMap(this);
+	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLOptionElementNamedNodeMap(
+		this
+	);
 	public [PropertySymbol.selectedness] = false;
 	public [PropertySymbol.dirtyness] = false;
 

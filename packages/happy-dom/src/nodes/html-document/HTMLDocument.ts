@@ -1,6 +1,7 @@
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import Document from '../document/Document.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * Document.
@@ -17,7 +18,7 @@ export default class HTMLDocument extends Document {
 		super(injected);
 
 		// Default document elements
-		const doctype = this.implementation.createDocumentType('html', '', '');
+		const doctype = this[PropertySymbol.implementation].createDocumentType('html', '', '');
 		const documentElement = this.createElement('html');
 		const bodyElement = this.createElement('body');
 		const headElement = this.createElement('head');
