@@ -1,6 +1,7 @@
 import IProcessingInstruction from './IProcessingInstruction.js';
 import CharacterData from '../character-data/CharacterData.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * Processing instruction node interface.
@@ -8,6 +9,15 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
  * Reference: https://developer.mozilla.org/en-US/docs/Web/API/ProcessingInstruction.
  */
 export default class ProcessingInstruction extends CharacterData implements IProcessingInstruction {
-	public readonly nodeType = NodeTypeEnum.processingInstructionNode;
-	public target: string;
+	public [PropertySymbol.nodeType] = NodeTypeEnum.processingInstructionNode;
+	public [PropertySymbol.target]: string;
+
+	/**
+	 * Returns target.
+	 *
+	 * @returns Target.
+	 */
+	public get target(): string {
+		return this[PropertySymbol.target];
+	}
 }

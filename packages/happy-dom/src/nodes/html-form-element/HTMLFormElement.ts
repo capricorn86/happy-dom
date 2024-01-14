@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLFormElement from './IHTMLFormElement.js';
 import Event from '../../event/Event.js';
 import SubmitEvent from '../../event/events/SubmitEvent.js';
@@ -17,17 +18,33 @@ import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement.
  */
 export default class HTMLFormElement extends HTMLElement implements IHTMLFormElement {
-	// Public properties.
-	public readonly elements: IHTMLFormControlsCollection = new HTMLFormControlsCollection();
-	public readonly length = 0;
+	// Internal properties.
+	public [PropertySymbol.elements]: IHTMLFormControlsCollection = new HTMLFormControlsCollection();
+	public [PropertySymbol.length] = 0;
+	public [PropertySymbol.formNode]: INode = this;
 
 	// Events
 	public onformdata: (event: Event) => void | null = null;
 	public onreset: (event: Event) => void | null = null;
 	public onsubmit: (event: Event) => void | null = null;
 
-	// Private properties
-	public _formNode: INode = this;
+	/**
+	 * Returns elements.
+	 *
+	 * @returns Elements.
+	 */
+	public get elements(): IHTMLFormControlsCollection {
+		return this[PropertySymbol.elements];
+	}
+
+	/**
+	 * Returns length.
+	 *
+	 * @returns Length.
+	 */
+	public get length(): number {
+		return this[PropertySymbol.length];
+	}
 
 	/**
 	 * Returns name.
@@ -220,13 +237,16 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * Resets form.
 	 */
 	public reset(): void {
-		for (const element of this.elements) {
-			if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-				element['_value'] = null;
-				element['_checked'] = null;
-			} else if (element.tagName === 'TEXTAREA') {
-				element['_value'] = null;
-			} else if (element.tagName === 'SELECT') {
+		for (const element of this[PropertySymbol.elements]) {
+			if (
+				element[PropertySymbol.tagName] === 'INPUT' ||
+				element[PropertySymbol.tagName] === 'TEXTAREA'
+			) {
+				element[PropertySymbol.value] = null;
+				element[PropertySymbol.checked] = null;
+			} else if (element[PropertySymbol.tagName] === 'TEXTAREA') {
+				element[PropertySymbol.value] = null;
+			} else if (element[PropertySymbol.tagName] === 'SELECT') {
 				let hasSelectedAttribute = false;
 				for (const option of (<IHTMLSelectElement>element).options) {
 					if (option.hasAttribute('selected')) {
@@ -253,8 +273,8 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 		const radioValidationState: { [k: string]: boolean } = {};
 		let isFormValid = true;
 
-		for (const element of this.elements) {
-			if (element.tagName === 'INPUT' && element.type === 'radio' && element.name) {
+		for (const element of this[PropertySymbol.elements]) {
+			if (element[PropertySymbol.tagName] === 'INPUT' && element.type === 'radio' && element.name) {
 				if (!radioValidationState[element.name]) {
 					radioValidationState[element.name] = true;
 					if (!element.checkValidity()) {
@@ -295,18 +315,23 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param node Node.
 	 * @param name Name
 	 */
-	public _appendFormControlItem(
+	public [PropertySymbol.appendFormControlItem](
 		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
 		name: string
 	): void {
-		if (!this.elements.includes(node)) {
-			this[this.elements.length] = node;
-			this.elements.push(node);
-			(<number>this.length) = this.elements.length;
+		const elements = this[PropertySymbol.elements];
+
+		if (!elements.includes(node)) {
+			this[elements.length] = node;
+			elements.push(node);
+			this[PropertySymbol.length] = elements.length;
 		}
 
-		(<HTMLFormControlsCollection>this.elements)._appendNamedItem(node, name);
-		this[name] = this.elements[name];
+		(<HTMLFormControlsCollection>elements)[PropertySymbol.appendNamedItem](node, name);
+
+		if (this[PropertySymbol.isValidPropertyName](name)) {
+			this[name] = elements[name];
+		}
 	}
 
 	/**
@@ -315,27 +340,43 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param node Node.
 	 * @param name Name.
 	 */
-	public _removeFormControlItem(
+	public [PropertySymbol.removeFormControlItem](
 		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
 		name: string
 	): void {
-		const index = this.elements.indexOf(node);
+		const elements = this[PropertySymbol.elements];
+		const index = elements.indexOf(node);
 
 		if (index !== -1) {
-			this.elements.splice(index, 1);
-			for (let i = index; i < this.length; i++) {
+			elements.splice(index, 1);
+			for (let i = index; i < this[PropertySymbol.length]; i++) {
 				this[i] = this[i + 1];
 			}
-			delete this[this.length - 1];
-			(<number>this.length)--;
+			delete this[this[PropertySymbol.length] - 1];
+			this[PropertySymbol.length]--;
 		}
 
-		(<HTMLFormControlsCollection>this.elements)._removeNamedItem(node, name);
+		(<HTMLFormControlsCollection>elements)[PropertySymbol.removeNamedItem](node, name);
 
-		if (this.elements[name]) {
-			this[name] = this.elements[name];
-		} else {
-			delete this[name];
+		if (this[PropertySymbol.isValidPropertyName](name)) {
+			if (elements[name]) {
+				this[name] = elements[name];
+			} else {
+				delete this[name];
+			}
 		}
+	}
+
+	/**
+	 * Returns "true" if the property name is valid.
+	 *
+	 * @param name Name.
+	 * @returns True if the property name is valid.
+	 */
+	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
+		return (
+			!this.constructor.prototype.hasOwnProperty(name) &&
+			(isNaN(Number(name)) || name.includes('.'))
+		);
 	}
 }

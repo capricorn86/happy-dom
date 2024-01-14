@@ -1,10 +1,11 @@
 import IHTMLCollection from './IHTMLCollection.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * HTML collection.
  */
 export default class HTMLCollection<T> extends Array implements IHTMLCollection<T> {
-	protected _namedItems: { [k: string]: T[] } = {};
+	protected [PropertySymbol.namedItems]: { [k: string]: T[] } = {};
 
 	/**
 	 * Returns item by index.
@@ -22,8 +23,8 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 * @returns Node.
 	 */
 	public namedItem(name: string): T | null {
-		return this._namedItems[name] && this._namedItems[name].length
-			? this._namedItems[name][0]
+		return this[PropertySymbol.namedItems][name] && this[PropertySymbol.namedItems][name].length
+			? this[PropertySymbol.namedItems][name][0]
 			: null;
 	}
 
@@ -33,16 +34,16 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 * @param node Node.
 	 * @param name Name.
 	 */
-	public _appendNamedItem(node: T, name: string): void {
+	public [PropertySymbol.appendNamedItem](node: T, name: string): void {
 		if (name) {
-			this._namedItems[name] = this._namedItems[name] || [];
+			this[PropertySymbol.namedItems][name] = this[PropertySymbol.namedItems][name] || [];
 
-			if (!this._namedItems[name].includes(node)) {
-				this._namedItems[name].push(node);
+			if (!this[PropertySymbol.namedItems][name].includes(node)) {
+				this[PropertySymbol.namedItems][name].push(node);
 			}
 
-			if (!this.hasOwnProperty(name) && this._isValidPropertyName(name)) {
-				this[name] = this._namedItems[name][0];
+			if (!this.hasOwnProperty(name) && this[PropertySymbol.isValidPropertyName](name)) {
+				this[name] = this[PropertySymbol.namedItems][name][0];
 			}
 		}
 	}
@@ -53,20 +54,20 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 * @param node Node.
 	 * @param name Name.
 	 */
-	public _removeNamedItem(node: T, name: string): void {
-		if (name && this._namedItems[name]) {
-			const index = this._namedItems[name].indexOf(node);
+	public [PropertySymbol.removeNamedItem](node: T, name: string): void {
+		if (name && this[PropertySymbol.namedItems][name]) {
+			const index = this[PropertySymbol.namedItems][name].indexOf(node);
 
 			if (index > -1) {
-				this._namedItems[name].splice(index, 1);
+				this[PropertySymbol.namedItems][name].splice(index, 1);
 
-				if (this._namedItems[name].length === 0) {
-					delete this._namedItems[name];
-					if (this.hasOwnProperty(name) && this._isValidPropertyName(name)) {
+				if (this[PropertySymbol.namedItems][name].length === 0) {
+					delete this[PropertySymbol.namedItems][name];
+					if (this.hasOwnProperty(name) && this[PropertySymbol.isValidPropertyName](name)) {
 						delete this[name];
 					}
-				} else if (this._isValidPropertyName(name)) {
-					this[name] = this._namedItems[name][0];
+				} else if (this[PropertySymbol.isValidPropertyName](name)) {
+					this[name] = this[PropertySymbol.namedItems][name][0];
 				}
 			}
 		}
@@ -78,7 +79,7 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 * @param name Name.
 	 * @returns True if the property name is valid.
 	 */
-	protected _isValidPropertyName(name: string): boolean {
+	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
 		return (
 			!this.constructor.prototype.hasOwnProperty(name) &&
 			!Array.prototype.hasOwnProperty(name) &&

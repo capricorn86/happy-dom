@@ -4,6 +4,7 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLMediaElement, { IMediaError } from './IHTMLMediaElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  *
@@ -30,19 +31,6 @@ function getTimeRangeDummy(): object {
  *
  */
 export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaElement {
-	// Public Properties
-	public readonly buffered = getTimeRangeDummy();
-	public readonly duration = NaN;
-	public readonly error: IMediaError = null;
-	public readonly ended = false;
-	public readonly networkState = 0;
-	public readonly readyState = 0;
-	public readonly textTracks = [];
-	public readonly videoTracks = [];
-	public readonly seeking = false;
-	public readonly seekable = getTimeRangeDummy();
-	public readonly played = getTimeRangeDummy();
-
 	// Events
 	public onabort: (event: Event) => void | null = null;
 	public oncanplay: (event: Event) => void | null = null;
@@ -68,14 +56,126 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	public onvolumechange: (event: Event) => void | null = null;
 	public onwaiting: (event: Event) => void | null = null;
 
-	#volume = 1;
-	#paused = true;
-	#currentTime = 0;
-	#playbackRate = 1;
-	#defaultPlaybackRate = 1;
-	#muted = false;
-	#defaultMuted = false;
-	#preservesPitch = true;
+	// Internal Properties
+	public [PropertySymbol.volume] = 1;
+	public [PropertySymbol.paused] = true;
+	public [PropertySymbol.currentTime] = 0;
+	public [PropertySymbol.playbackRate] = 1;
+	public [PropertySymbol.defaultPlaybackRate] = 1;
+	public [PropertySymbol.muted] = false;
+	public [PropertySymbol.defaultMuted] = false;
+	public [PropertySymbol.preservesPitch] = true;
+	public [PropertySymbol.buffered]: object = getTimeRangeDummy();
+	public [PropertySymbol.duration] = NaN;
+	public [PropertySymbol.error]: IMediaError = null;
+	public [PropertySymbol.ended] = false;
+	public [PropertySymbol.networkState] = 0;
+	public [PropertySymbol.readyState] = 0;
+	public [PropertySymbol.textTracks]: object[] = [];
+	public [PropertySymbol.videoTracks]: object[] = [];
+	public [PropertySymbol.seeking] = false;
+	public [PropertySymbol.seekable] = getTimeRangeDummy();
+	public [PropertySymbol.played] = getTimeRangeDummy();
+
+	/**
+	 * Returns buffered.
+	 *
+	 * @returns Buffered.
+	 */
+	public get buffered(): object {
+		return this[PropertySymbol.buffered];
+	}
+
+	/**
+	 * Returns duration.
+	 *
+	 * @returns Duration.
+	 */
+	public get duration(): number {
+		return this[PropertySymbol.duration];
+	}
+
+	/**
+	 * Returns error.
+	 *
+	 * @returns Error.
+	 */
+	public get error(): IMediaError {
+		return this[PropertySymbol.error];
+	}
+
+	/**
+	 * Returns ended.
+	 *
+	 * @returns Ended.
+	 */
+	public get ended(): boolean {
+		return this[PropertySymbol.ended];
+	}
+
+	/**
+	 * Returns networkState.
+	 *
+	 * @returns NetworkState.
+	 */
+	public get networkState(): number {
+		return this[PropertySymbol.networkState];
+	}
+
+	/**
+	 * Returns readyState.
+	 *
+	 * @returns ReadyState.
+	 */
+	public get readyState(): number {
+		return this[PropertySymbol.readyState];
+	}
+
+	/**
+	 * Returns textTracks.
+	 *
+	 * @returns TextTracks.
+	 */
+	public get textTracks(): object[] {
+		return this[PropertySymbol.textTracks];
+	}
+
+	/**
+	 * Returns videoTracks.
+	 *
+	 * @returns VideoTracks.
+	 */
+	public get videoTracks(): object[] {
+		return this[PropertySymbol.videoTracks];
+	}
+
+	/**
+	 * Returns seeking.
+	 *
+	 * @returns Seeking.
+	 */
+	public get seeking(): boolean {
+		return this[PropertySymbol.seeking];
+	}
+
+	/**
+	 * Returns seekable.
+	 *
+	 * @returns Seekable.
+	 */
+	public get seekable(): object {
+		return this[PropertySymbol.seekable];
+	}
+
+	/**
+	 * Returns played.
+	 *
+	 * @returns Played.
+	 */
+	public get played(): object {
+		return this[PropertySymbol.played];
+	}
+
 	/**
 	 * Returns autoplay.
 	 *
@@ -147,11 +247,11 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns Muted.
 	 */
 	public get muted(): boolean {
-		if (this.#muted) {
-			return this.#muted;
+		if (this[PropertySymbol.muted]) {
+			return this[PropertySymbol.muted];
 		}
 
-		if (!this.#defaultMuted) {
+		if (!this[PropertySymbol.defaultMuted]) {
 			return this.getAttribute('muted') !== null;
 		}
 
@@ -164,8 +264,8 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @param muted Muted.
 	 */
 	public set muted(muted: boolean) {
-		this.#muted = !!muted;
-		if (!muted && !this.#defaultMuted) {
+		this[PropertySymbol.muted] = !!muted;
+		if (!muted && !this[PropertySymbol.defaultMuted]) {
 			this.removeAttribute('muted');
 		} else {
 			this.setAttribute('muted', '');
@@ -178,7 +278,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns DefaultMuted.
 	 */
 	public get defaultMuted(): boolean {
-		return this.#defaultMuted;
+		return this[PropertySymbol.defaultMuted];
 	}
 
 	/**
@@ -187,8 +287,8 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @param defaultMuted DefaultMuted.
 	 */
 	public set defaultMuted(defaultMuted: boolean) {
-		this.#defaultMuted = !!defaultMuted;
-		if (!this.#defaultMuted && !this.#muted) {
+		this[PropertySymbol.defaultMuted] = !!defaultMuted;
+		if (!this[PropertySymbol.defaultMuted] && !this[PropertySymbol.muted]) {
 			this.removeAttribute('muted');
 		} else {
 			this.setAttribute('muted', '');
@@ -232,7 +332,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns Volume.
 	 */
 	public get volume(): number {
-		return this.#volume;
+		return this[PropertySymbol.volume];
 	}
 
 	/**
@@ -255,7 +355,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 			);
 		}
 		// TODO: volumechange event https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/volumechange_event
-		this.#volume = parsedVolume;
+		this[PropertySymbol.volume] = parsedVolume;
 	}
 
 	/**
@@ -290,7 +390,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns CurrentTime.
 	 */
 	public get currentTime(): number {
-		return this.#currentTime;
+		return this[PropertySymbol.currentTime];
 	}
 
 	/**
@@ -305,7 +405,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 				`Failed to set the 'currentTime' property on 'HTMLMediaElement': The provided double value is non-finite.`
 			);
 		}
-		this.#currentTime = parsedCurrentTime;
+		this[PropertySymbol.currentTime] = parsedCurrentTime;
 	}
 
 	/**
@@ -314,7 +414,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns PlaybackRate.
 	 */
 	public get playbackRate(): number {
-		return this.#playbackRate;
+		return this[PropertySymbol.playbackRate];
 	}
 
 	/**
@@ -329,7 +429,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 				`Failed to set the 'playbackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`
 			);
 		}
-		this.#playbackRate = parsedPlaybackRate;
+		this[PropertySymbol.playbackRate] = parsedPlaybackRate;
 	}
 
 	/**
@@ -338,7 +438,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns DefaultPlaybackRate.
 	 */
 	public get defaultPlaybackRate(): number {
-		return this.#defaultPlaybackRate;
+		return this[PropertySymbol.defaultPlaybackRate];
 	}
 
 	/**
@@ -353,7 +453,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 				`Failed to set the 'defaultPlaybackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`
 			);
 		}
-		this.#defaultPlaybackRate = parsedDefaultPlaybackRate;
+		this[PropertySymbol.defaultPlaybackRate] = parsedDefaultPlaybackRate;
 	}
 
 	/**
@@ -362,7 +462,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns PlaybackRate.
 	 */
 	public get preservesPitch(): boolean {
-		return this.#preservesPitch;
+		return this[PropertySymbol.preservesPitch];
 	}
 
 	/**
@@ -371,7 +471,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @param preservesPitch PreservesPitch.
 	 */
 	public set preservesPitch(preservesPitch: boolean) {
-		this.#preservesPitch = Boolean(preservesPitch);
+		this[PropertySymbol.preservesPitch] = Boolean(preservesPitch);
 	}
 
 	/**
@@ -398,14 +498,14 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * @returns Paused.
 	 */
 	public get paused(): boolean {
-		return this.#paused;
+		return this[PropertySymbol.paused];
 	}
 
 	/**
 	 * Pause played media.
 	 */
 	public pause(): void {
-		this.#paused = true;
+		this[PropertySymbol.paused] = true;
 		this.dispatchEvent(new Event('pause', { bubbles: false, cancelable: false }));
 	}
 
@@ -413,7 +513,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 * Start playing media.
 	 */
 	public async play(): Promise<void> {
-		this.#paused = false;
+		this[PropertySymbol.paused] = false;
 		return Promise.resolve();
 	}
 

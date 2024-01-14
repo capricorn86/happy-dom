@@ -20,11 +20,11 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	readonly shadowRoot: IShadowRoot;
 	readonly classList: IDOMTokenList;
 	readonly namespaceURI: string;
-	prefix: string | null;
+	readonly prefix: string | null;
 	scrollTop: number;
 	scrollLeft: number;
-	scrollWidth: number;
-	scrollHeight: number;
+	readonly scrollWidth: number;
+	readonly scrollHeight: number;
 	id: string;
 	className: string;
 	role: string;
@@ -182,10 +182,10 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	/**
 	 * Attaches a shadow root.
 	 *
-	 * @param _shadowRootInit Shadow root init.
+	 * @param init Shadow root init.
 	 * @returns Shadow root.
 	 */
-	attachShadow(_shadowRootInit: { mode: string }): IShadowRoot;
+	attachShadow(init: { mode: string }): IShadowRoot;
 
 	/**
 	 * Scrolls to a particular set of coordinates.

@@ -1,4 +1,4 @@
-import IWindow from '../../../window/IWindow.js';
+import IBrowserWindow from '../../../window/IBrowserWindow.js';
 
 /**
  * CSS Measurement Converter.
@@ -16,7 +16,7 @@ export default class CSSMeasurementConverter {
 	 * @returns Measurement in pixels.
 	 */
 	public static toPixels(options: {
-		ownerWindow: IWindow;
+		ownerWindow: IBrowserWindow;
 		value: string;
 		rootFontSize: string | number;
 		parentFontSize: string | number;

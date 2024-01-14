@@ -1,4 +1,5 @@
 import IBlob from './IBlob.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * Reference:
@@ -8,8 +9,8 @@ import IBlob from './IBlob.js';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/Blob-impl.js (MIT licensed).
  */
 export default class Blob implements IBlob {
-	public _buffer: Buffer = null;
 	public readonly type: string = '';
+	public [PropertySymbol.buffer]: Buffer = null;
 
 	/**
 	 * Constructor.
@@ -31,7 +32,7 @@ export default class Blob implements IBlob {
 				if (bit instanceof ArrayBuffer) {
 					buffer = Buffer.from(new Uint8Array(bit));
 				} else if (bit instanceof Blob) {
-					buffer = bit._buffer;
+					buffer = bit[PropertySymbol.buffer];
 				} else if (bit instanceof Buffer) {
 					buffer = bit;
 				} else if (ArrayBuffer.isView(bit)) {
@@ -44,7 +45,7 @@ export default class Blob implements IBlob {
 			}
 		}
 
-		this._buffer = Buffer.concat(buffers);
+		this[PropertySymbol.buffer] = Buffer.concat(buffers);
 
 		if (options && options.type && options.type.match(/^[\u0020-\u007E]*$/)) {
 			this.type = String(options.type).toLowerCase();
@@ -57,7 +58,7 @@ export default class Blob implements IBlob {
 	 * @returns Size.
 	 */
 	public get size(): number {
-		return this._buffer.length;
+		return this[PropertySymbol.buffer].length;
 	}
 
 	/**
@@ -100,12 +101,12 @@ export default class Blob implements IBlob {
 
 		const span = Math.max(relativeEnd - relativeStart, 0);
 
-		const buffer = this._buffer;
+		const buffer = this[PropertySymbol.buffer];
 		const slicedBuffer = buffer.slice(relativeStart, relativeStart + span);
 
 		const blob = new Blob([], { type: relativeContentType });
 
-		(<Buffer>blob._buffer) = slicedBuffer;
+		(<Buffer>blob[PropertySymbol.buffer]) = slicedBuffer;
 
 		return blob;
 	}
@@ -123,7 +124,7 @@ export default class Blob implements IBlob {
 	 *
 	 */
 	public async arrayBuffer(): Promise<ArrayBuffer> {
-		return new Uint8Array(this._buffer).buffer;
+		return new Uint8Array(this[PropertySymbol.buffer]).buffer;
 	}
 
 	/**
@@ -132,7 +133,7 @@ export default class Blob implements IBlob {
 	 * @returns Text.
 	 */
 	public async text(): Promise<string> {
-		return this._buffer.toString();
+		return this[PropertySymbol.buffer].toString();
 	}
 
 	/**

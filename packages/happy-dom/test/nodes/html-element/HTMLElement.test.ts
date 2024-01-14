@@ -29,14 +29,12 @@ describe('HTMLElement', () => {
 		});
 	});
 
-	for (const property of ['accessKey', 'accessKeyLabel']) {
-		describe(`${property}`, () => {
-			it('Returns "".', () => {
-				const div = document.createElement('div');
-				expect(div[property]).toBe('');
-			});
+	describe('get accessKey()', () => {
+		it('Returns "".', () => {
+			const div = <IHTMLElement>document.createElement('div');
+			expect(div.accessKey).toBe('');
 		});
-	}
+	});
 
 	for (const property of [
 		'offsetHeight',
@@ -48,7 +46,7 @@ describe('HTMLElement', () => {
 		'clientLeft',
 		'clientTop'
 	]) {
-		describe(`${property}`, () => {
+		describe(`get ${property}()`, () => {
 			it('Returns "0".', () => {
 				const div = document.createElement('div');
 				expect(div[property]).toBe(0);

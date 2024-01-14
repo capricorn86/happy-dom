@@ -1,38 +1,29 @@
 import URL from '../url/URL.js';
-import DOMException from '../exception/DOMException.js';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 
 /**
- *
+ * Location.
  */
 export default class Location extends URL {
+	#browserFrame: IBrowserFrame;
+
 	/**
 	 * Constructor.
+	 *
+	 * @param browserFrame Browser frame.
+	 * @param url URL.
 	 */
-	constructor() {
-		super('about:blank');
+	constructor(browserFrame: IBrowserFrame, url: string) {
+		super(url);
+		this.#browserFrame = browserFrame;
 	}
 
 	/**
 	 * Override set href.
 	 */
 	// @ts-ignore
-	public set href(value: string) {
-		try {
-			super.href = this.hostname ? new URL(value, this).href : value;
-		} catch (e) {
-			if (this.hostname) {
-				throw new DOMException(
-					`Failed to construct URL from string "${value}".`,
-					DOMExceptionNameEnum.uriMismatchError
-				);
-			} else {
-				throw new DOMException(
-					`Failed to construct URL from string "${value}" relative to URL "${super.href}".`,
-					DOMExceptionNameEnum.uriMismatchError
-				);
-			}
-		}
+	public set href(url: string) {
+		this.#browserFrame.goto(url).catch((error) => this.#browserFrame.page.console.error(error));
 	}
 
 	/**
@@ -54,10 +45,7 @@ export default class Location extends URL {
 	/**
 	 * Loads the resource at the URL provided in parameter.
 	 *
-	 * Note: Will do the same thing as "replace()" as server-dom does not support loading the URL.
-	 *
-	 * @param url
-	 * @see this.replace()
+	 * @param url URL.
 	 */
 	public assign(url: string): void {
 		this.href = url;
@@ -65,10 +53,10 @@ export default class Location extends URL {
 
 	/**
 	 * Reloads the resource from the current URL.
-	 *
-	 * Note: Will do nothing as reloading is not supported in server-dom.
 	 */
 	public reload(): void {
-		// Do nothing
+		this.#browserFrame
+			.goto(this.href)
+			.catch((error) => this.#browserFrame.page.console.error(error));
 	}
 }

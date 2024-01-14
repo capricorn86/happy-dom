@@ -635,7 +635,7 @@ describe('Selection', () => {
 			expect(newRange.endContainer).toBe(end);
 			expect(newRange.endOffset).toBe(2);
 
-			expect(selection['_direction']).toBe(SelectionDirectionEnum.forwards);
+			expect(selection.anchorNode).toBe(newRange.startContainer);
 		});
 
 		it('Sets the selection to be a Range backward.', () => {
@@ -654,7 +654,7 @@ describe('Selection', () => {
 			expect(newRange.endContainer).toBe(end);
 			expect(newRange.endOffset).toBe(2);
 
-			expect(selection['_direction']).toBe(SelectionDirectionEnum.backwards);
+			expect(selection.anchorNode).toBe(newRange.endContainer);
 		});
 
 		it('Throws error if wrong offset.', () => {
