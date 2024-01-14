@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import Image from '../../../src/nodes/html-image-element/Image.js';
 import HTMLImageElement from '../../../src/nodes/html-image-element/HTMLImageElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
@@ -12,7 +11,7 @@ describe('Image', () => {
 
 	describe('constructor()', () => {
 		it('Create img element without width and height.', () => {
-			const image = new Image();
+			const image = new window.Image();
 			expect(image.width).toBe(0);
 			expect(image.height).toBe(0);
 			expect(image.tagName).toBe('IMG');

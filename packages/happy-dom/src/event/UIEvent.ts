@@ -1,4 +1,4 @@
-import IWindow from '../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import Event from './Event.js';
 import IUIEventInit from './IUIEventInit.js';
 
@@ -15,7 +15,7 @@ export default class UIEvent extends Event {
 	public readonly layerY: number = 0;
 	public readonly pageX: number = 0;
 	public readonly pageY: number = 0;
-	public readonly view: IWindow | null;
+	public readonly view: IBrowserWindow | null;
 
 	/**
 	 * Constructor.

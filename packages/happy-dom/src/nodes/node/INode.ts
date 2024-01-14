@@ -22,8 +22,8 @@ export default interface INode extends IEventTarget {
 	readonly DOCUMENT_POSITION_CONTAINED_BY: NodeDocumentPositionEnum;
 	readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: NodeDocumentPositionEnum;
 	readonly ownerDocument: IDocument;
-	readonly parentNode: INode;
-	readonly parentElement: IElement;
+	readonly parentNode: INode | null;
+	readonly parentElement: IElement | null;
 	readonly nodeType: number;
 	readonly childNodes: INodeList<INode>;
 	readonly isConnected: boolean;

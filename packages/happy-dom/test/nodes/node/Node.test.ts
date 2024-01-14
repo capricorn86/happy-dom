@@ -12,57 +12,7 @@ import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
-
-/**
- *
- */
-class CustomCounterElement extends HTMLElement {
-	public static output: string[] = [];
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this.attachShadow({ mode: 'open' });
-	}
-
-	/**
-	 * Connected.
-	 */
-	public connectedCallback(): void {
-		(<IShadowRoot>this.shadowRoot).innerHTML = '<div><span>Test</span></div>';
-		(<typeof CustomCounterElement>this.constructor).output.push('Counter:connected');
-	}
-
-	/**
-	 * Disconnected.
-	 */
-	public disconnectedCallback(): void {
-		(<typeof CustomCounterElement>this.constructor).output.push('Counter:disconnected');
-	}
-}
-
-/**
- *
- */
-class CustomButtonElement extends HTMLElement {
-	public static output: string[] = [];
-
-	/**
-	 * Connected.
-	 */
-	public connectedCallback(): void {
-		(<typeof CustomButtonElement>this.constructor).output.push('Button:connected');
-	}
-
-	/**
-	 * Disconnected.
-	 */
-	public disconnectedCallback(): void {
-		(<typeof CustomButtonElement>this.constructor).output.push('Button:disconnected');
-	}
-}
+import NodeFactory from '../../../src/nodes/NodeFactory.js';
 
 describe('Node', () => {
 	let window: IWindow;
@@ -72,6 +22,58 @@ describe('Node', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
+
+		/**
+		 *
+		 */
+		class CustomCounterElement extends window.HTMLElement {
+			public static output: string[] = [];
+
+			/**
+			 * Constructor.
+			 */
+			constructor() {
+				super();
+				this.attachShadow({ mode: 'open' });
+			}
+
+			/**
+			 * Connected.
+			 */
+			public connectedCallback(): void {
+				(<IShadowRoot>this.shadowRoot).innerHTML = '<div><span>Test</span></div>';
+				(<typeof CustomCounterElement>this.constructor).output.push('Counter:connected');
+			}
+
+			/**
+			 * Disconnected.
+			 */
+			public disconnectedCallback(): void {
+				(<typeof CustomCounterElement>this.constructor).output.push('Counter:disconnected');
+			}
+		}
+
+		/**
+		 *
+		 */
+		class CustomButtonElement extends window.HTMLElement {
+			public static output: string[] = [];
+
+			/**
+			 * Connected.
+			 */
+			public connectedCallback(): void {
+				(<typeof CustomButtonElement>this.constructor).output.push('Button:connected');
+			}
+
+			/**
+			 * Disconnected.
+			 */
+			public disconnectedCallback(): void {
+				(<typeof CustomButtonElement>this.constructor).output.push('Button:disconnected');
+			}
+		}
+
 		customElementOutput = [];
 		CustomCounterElement.output = customElementOutput;
 		CustomButtonElement.output = customElementOutput;
@@ -125,13 +127,13 @@ describe('Node', () => {
 
 	describe('get nodeValue()', () => {
 		it('Returns null.', () => {
-			expect(new Node().nodeValue).toBe(null);
+			expect(NodeFactory.createNode(document, Node).nodeValue).toBe(null);
 		});
 	});
 
 	describe('get nodeName()', () => {
 		it('Returns emptry string.', () => {
-			expect(new Node().nodeName).toBe('');
+			expect(NodeFactory.createNode(document, Node).nodeName).toBe('');
 		});
 	});
 
@@ -866,7 +868,7 @@ describe('Node', () => {
 			node.addEventListener('click', listener);
 			node.dispatchEvent(new Event('click'));
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test');
-			expect(window.happyDOM.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
+			expect(window.happyDOM?.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
 				true
 			);
 		});
@@ -886,7 +888,7 @@ describe('Node', () => {
 			node.dispatchEvent(new Event('click'));
 			await new Promise((resolve) => setTimeout(resolve, 2));
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test');
-			expect(window.happyDOM.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
+			expect(window.happyDOM?.virtualConsolePrinter?.readAsString().startsWith('Error: Test')).toBe(
 				true
 			);
 		});

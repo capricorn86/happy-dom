@@ -4,7 +4,9 @@ import Express from 'express';
 
 describe('Fetch', () => {
 	it('Can perform a real fetch()', async () => {
-		const window = new Window();
+		const window = new Window({
+			url: 'http://localhost:3000'
+		});
 		const express = Express();
 
 		express.get('/get/json', (_req, res) => {
@@ -31,7 +33,9 @@ describe('Fetch', () => {
 	});
 
 	it('Can perform a real FormData post request using fetch()', async () => {
-		const window = new Window();
+		const window = new Window({
+			url: 'http://localhost:3000'
+		});
 		const express = Express();
 
 		express.post('/post/formdata', (req, res) => {

@@ -14,7 +14,7 @@ export default class HTMLOptionsCollection
 	extends HTMLCollection<IHTMLOptionElement>
 	implements IHTMLOptionsCollection
 {
-	private _selectElement: IHTMLSelectElement;
+	#selectElement: IHTMLSelectElement;
 
 	/**
 	 *
@@ -23,7 +23,7 @@ export default class HTMLOptionsCollection
 	constructor(selectElement: IHTMLSelectElement) {
 		super();
 
-		this._selectElement = selectElement;
+		this.#selectElement = selectElement;
 	}
 
 	/**
@@ -32,7 +32,7 @@ export default class HTMLOptionsCollection
 	 * @returns SelectedIndex.
 	 */
 	public get selectedIndex(): number {
-		return this._selectElement.selectedIndex;
+		return this.#selectElement.selectedIndex;
 	}
 
 	/**
@@ -41,7 +41,7 @@ export default class HTMLOptionsCollection
 	 * @param selectedIndex SelectedIndex.
 	 */
 	public set selectedIndex(selectedIndex: number) {
-		this._selectElement.selectedIndex = selectedIndex;
+		this.#selectElement.selectedIndex = selectedIndex;
 	}
 
 	/**
@@ -60,7 +60,7 @@ export default class HTMLOptionsCollection
 	 */
 	public add(element: IHTMLOptionElement, before?: number | IHTMLOptionElement): void {
 		if (!before && before !== 0) {
-			this._selectElement.appendChild(element);
+			this.#selectElement.appendChild(element);
 			return;
 		}
 
@@ -69,7 +69,7 @@ export default class HTMLOptionsCollection
 				return;
 			}
 
-			this._selectElement.insertBefore(element, this[<number>before]);
+			this.#selectElement.insertBefore(element, this[<number>before]);
 			return;
 		}
 
@@ -81,7 +81,7 @@ export default class HTMLOptionsCollection
 			);
 		}
 
-		this._selectElement.insertBefore(element, this[index]);
+		this.#selectElement.insertBefore(element, this[index]);
 	}
 
 	/**
@@ -91,7 +91,7 @@ export default class HTMLOptionsCollection
 	 */
 	public remove(index: number): void {
 		if (this[index]) {
-			this._selectElement.removeChild(<IHTMLOptionElement>this[index]);
+			this.#selectElement.removeChild(<IHTMLOptionElement>this[index]);
 		}
 	}
 }

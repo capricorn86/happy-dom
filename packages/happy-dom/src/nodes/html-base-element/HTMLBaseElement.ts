@@ -1,5 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLBaseElement from './IHTMLBaseElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * HTML Base Element.
@@ -18,7 +19,7 @@ export default class HTMLBaseElement extends HTMLElement implements IHTMLBaseEle
 		if (href !== null) {
 			return href;
 		}
-		return this.ownerDocument.location.href;
+		return this[PropertySymbol.ownerDocument].location.href;
 	}
 
 	/**

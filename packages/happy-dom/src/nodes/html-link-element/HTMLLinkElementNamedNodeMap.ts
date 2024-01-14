@@ -1,7 +1,8 @@
 import IAttr from '../attr/IAttr.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLLinkElement from './HTMLLinkElement.js';
-import HTMLLinkElementUtility from './HTMLLinkElementUtility.js';
+import HTMLLinkElementStyleSheetLoader from './HTMLLinkElementStyleSheetLoader.js';
 
 /**
  * Named Node Map.
@@ -9,7 +10,20 @@ import HTMLLinkElementUtility from './HTMLLinkElementUtility.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected _ownerElement: HTMLLinkElement;
+	protected [PropertySymbol.ownerElement]: HTMLLinkElement;
+	#styleSheetLoader: HTMLLinkElementStyleSheetLoader;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param ownerElement Owner element.
+	 * @param stylesheetLoader Stylesheet loader.
+	 * @param styleSheetLoader
+	 */
+	constructor(ownerElement: HTMLLinkElement, styleSheetLoader: HTMLLinkElementStyleSheetLoader) {
+		super(ownerElement);
+		this.#styleSheetLoader = styleSheetLoader;
+	}
 
 	/**
 	 * @override
@@ -17,12 +31,23 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'rel' && this._ownerElement._relList) {
-			this._ownerElement._relList._updateIndices();
+		if (
+			item[PropertySymbol.name] === 'rel' &&
+			this[PropertySymbol.ownerElement][PropertySymbol.relList]
+		) {
+			this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 
-		if (item.name === 'rel' || item.name === 'href') {
-			HTMLLinkElementUtility.loadExternalStylesheet(this._ownerElement);
+		if (item[PropertySymbol.name] === 'rel') {
+			this.#styleSheetLoader.loadStyleSheet(
+				this[PropertySymbol.ownerElement].getAttribute('href'),
+				item[PropertySymbol.value]
+			);
+		} else if (item[PropertySymbol.name] === 'href') {
+			this.#styleSheetLoader.loadStyleSheet(
+				item[PropertySymbol.value],
+				this[PropertySymbol.ownerElement].getAttribute('rel')
+			);
 		}
 
 		return replacedItem || null;
@@ -31,11 +56,15 @@ export default class HTMLLinkElementNamedNodeMap extends HTMLElementNamedNodeMap
 	/**
 	 * @override
 	 */
-	public override _removeNamedItem(name: string): IAttr | null {
-		const removedItem = super._removeNamedItem(name);
+	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
-		if (removedItem && removedItem.name === 'rel' && this._ownerElement._relList) {
-			this._ownerElement._relList._updateIndices();
+		if (
+			removedItem &&
+			removedItem[PropertySymbol.name] === 'rel' &&
+			this[PropertySymbol.ownerElement][PropertySymbol.relList]
+		) {
+			this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 
 		return removedItem;

@@ -1,7 +1,8 @@
 import IAttr from '../attr/IAttr.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLScriptElement from './HTMLScriptElement.js';
-import HTMLScriptElementUtility from './HTMLScriptElementUtility.js';
+import HTMLScriptElementScriptLoader from './HTMLScriptElementScriptLoader.js';
 
 /**
  * Named Node Map.
@@ -9,7 +10,19 @@ import HTMLScriptElementUtility from './HTMLScriptElementUtility.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLScriptElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected _ownerElement: HTMLScriptElement;
+	protected [PropertySymbol.ownerElement]: HTMLScriptElement;
+	#scriptLoader: HTMLScriptElementScriptLoader;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param ownerElement Owner element.
+	 * @param scriptLoader Script loader.
+	 */
+	constructor(ownerElement: HTMLScriptElement, scriptLoader: HTMLScriptElementScriptLoader) {
+		super(ownerElement);
+		this.#scriptLoader = scriptLoader;
+	}
 
 	/**
 	 * @override
@@ -17,8 +30,12 @@ export default class HTMLScriptElementNamedNodeMap extends HTMLElementNamedNodeM
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'src' && item.value !== null && this._ownerElement.isConnected) {
-			HTMLScriptElementUtility.loadExternalScript(this._ownerElement);
+		if (
+			item[PropertySymbol.name] === 'src' &&
+			item[PropertySymbol.value] !== null &&
+			this[PropertySymbol.ownerElement][PropertySymbol.isConnected]
+		) {
+			this.#scriptLoader.loadScript(item[PropertySymbol.value]);
 		}
 
 		return replacedItem || null;

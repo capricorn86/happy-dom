@@ -1,9 +1,10 @@
 import AbortSignal from '../../src/fetch/AbortSignal.js';
 import Event from '../../src/event/Event.js';
 import { describe, it, expect } from 'vitest';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 describe('AbortSignal', () => {
-	describe('_abort()', () => {
+	describe('[PropertySymbol.abort]()', () => {
 		it('Aborts the signal.', () => {
 			const signal = new AbortSignal();
 			const reason = 'abort reason';
@@ -11,7 +12,7 @@ describe('AbortSignal', () => {
 
 			signal.addEventListener('abort', (event: Event) => (triggeredEvent = event));
 
-			signal._abort(reason);
+			signal[PropertySymbol.abort](reason);
 
 			expect(signal.aborted).toBe(true);
 			expect(signal.reason).toBe(reason);
