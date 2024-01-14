@@ -209,7 +209,7 @@ export default class DOMTokenList implements IDOMTokenList {
 			this[i] = list[i];
 		}
 
-		(<number>this.length) = list.length;
+		this.#length = list.length;
 	}
 
 	/**
