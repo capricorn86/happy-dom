@@ -63,8 +63,12 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public parentNode(): INode {
-		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
-			this.currentNode = this.currentNode.parentNode;
+		if (
+			this.currentNode !== this.root &&
+			this.currentNode &&
+			this.currentNode[PropertySymbol.parentNode]
+		) {
+			this.currentNode = this.currentNode[PropertySymbol.parentNode];
 
 			if (this.filterNode(this.currentNode) === NodeFilter.FILTER_ACCEPT) {
 				return this.currentNode;
@@ -126,8 +130,14 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public previousSibling(): INode {
-		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
-			const siblings = (<Node>this.currentNode.parentNode)[PropertySymbol.childNodes];
+		if (
+			this.currentNode !== this.root &&
+			this.currentNode &&
+			this.currentNode[PropertySymbol.parentNode]
+		) {
+			const siblings = (<Node>this.currentNode[PropertySymbol.parentNode])[
+				PropertySymbol.childNodes
+			];
 			const index = siblings.indexOf(this.currentNode);
 
 			if (index > 0) {
@@ -150,8 +160,14 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public nextSibling(): INode {
-		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
-			const siblings = (<Node>this.currentNode.parentNode)[PropertySymbol.childNodes];
+		if (
+			this.currentNode !== this.root &&
+			this.currentNode &&
+			this.currentNode[PropertySymbol.parentNode]
+		) {
+			const siblings = (<Node>this.currentNode[PropertySymbol.parentNode])[
+				PropertySymbol.childNodes
+			];
 			const index = siblings.indexOf(this.currentNode);
 
 			if (index + 1 < siblings.length) {

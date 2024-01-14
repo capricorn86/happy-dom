@@ -18,13 +18,14 @@ import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement.
  */
 export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFrameElement {
-	public override readonly attributes: INamedNodeMap;
-
 	// Events
 	public onload: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
 
 	// Internal properties
+	public override [PropertySymbol.attributes]: INamedNodeMap;
+
+	// Private properties
 	#contentWindowContainer: { window: IBrowserWindow | ICrossOriginBrowserWindow | null } = {
 		window: null
 	};
@@ -42,7 +43,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 			contentWindowContainer: this.#contentWindowContainer,
 			browserParentFrame: browserFrame
 		});
-		this.attributes = new HTMLIFrameElementNamedNodeMap(this, this.#pageLoader);
+		this[PropertySymbol.attributes] = new HTMLIFrameElementNamedNodeMap(this, this.#pageLoader);
 	}
 
 	/**
@@ -193,8 +194,8 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 * @override
 	 */
 	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
-		const isConnected = this.isConnected;
-		const isParentConnected = parentNode ? parentNode.isConnected : false;
+		const isConnected = this[PropertySymbol.isConnected];
+		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
 
 		super[PropertySymbol.connectToNode](parentNode);
 

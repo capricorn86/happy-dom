@@ -44,11 +44,13 @@ export default class Request implements IRequest {
 	public readonly credentials: IRequestCredentials;
 
 	// Internal properties
-	public readonly [PropertySymbol.contentLength]: number | null = null;
-	public readonly [PropertySymbol.contentType]: string | null = null;
+	public [PropertySymbol.contentLength]: number | null = null;
+	public [PropertySymbol.contentType]: string | null = null;
 	public [PropertySymbol.referrer]: '' | 'no-referrer' | 'client' | URL = 'client';
-	public readonly [PropertySymbol.url]: URL;
-	public readonly [PropertySymbol.bodyBuffer]: Buffer | null;
+	public [PropertySymbol.url]: URL;
+	public [PropertySymbol.bodyBuffer]: Buffer | null;
+
+	// Private properties
 	readonly #window: IBrowserWindow;
 	readonly #asyncTaskManager: AsyncTaskManager;
 
@@ -149,7 +151,7 @@ export default class Request implements IRequest {
 	 * Returns owner document.
 	 */
 	protected get [PropertySymbol.ownerDocument](): IDocument {
-		throw new Error('[PropertySymbol.ownerDocument] needs to be implemented by sub-class.');
+		throw new Error('[PropertySymbol.ownerDocument] getter needs to be implemented by sub-class.');
 	}
 
 	/**

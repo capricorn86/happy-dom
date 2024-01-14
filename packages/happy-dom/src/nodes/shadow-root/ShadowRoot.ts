@@ -12,12 +12,31 @@ import Event from '../../event/Event.js';
  * ShadowRoot.
  */
 export default class ShadowRoot extends DocumentFragment implements IShadowRoot {
-	public readonly mode = 'open';
-	public readonly host: IElement = null;
-	public adoptedStyleSheets: CSSStyleSheet[] = [];
-
 	// Events
 	public onslotchange: (event: Event) => void | null = null;
+
+	// Internal properties
+	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];
+	public [PropertySymbol.mode]: 'open' | 'closed' = 'open';
+	public [PropertySymbol.host]: IElement | null = null;
+
+	/**
+	 * Returns mode.
+	 *
+	 * @returns Mode.
+	 */
+	public get mode(): 'open' | 'closed' {
+		return this[PropertySymbol.mode];
+	}
+
+	/**
+	 * Returns host.
+	 *
+	 * @returns Host.
+	 */
+	public get host(): IElement {
+		return this[PropertySymbol.host];
+	}
 
 	/**
 	 * Returns inner HTML.
@@ -45,7 +64,25 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 			this.removeChild(child);
 		}
 
-		XMLParser.parse(this.ownerDocument, html, { rootNode: this });
+		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });
+	}
+
+	/**
+	 * Returns adopted style sheets.
+	 *
+	 * @returns Adopted style sheets.
+	 */
+	public get adoptedStyleSheets(): CSSStyleSheet[] {
+		return this[PropertySymbol.adoptedStyleSheets];
+	}
+
+	/**
+	 * Sets adopted style sheets.
+	 *
+	 * @param value Adopted style sheets.
+	 */
+	public set adoptedStyleSheets(value: CSSStyleSheet[]) {
+		this[PropertySymbol.adoptedStyleSheets] = value;
 	}
 
 	/**
@@ -54,8 +91,13 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 * @returns Active element.
 	 */
 	public get activeElement(): IHTMLElement | null {
-		const activeElement: IHTMLElement = this.ownerDocument[PropertySymbol.activeElement];
-		if (activeElement && activeElement.isConnected && activeElement.getRootNode() === this) {
+		const activeElement: IHTMLElement =
+			this[PropertySymbol.ownerDocument][PropertySymbol.activeElement];
+		if (
+			activeElement &&
+			activeElement[PropertySymbol.isConnected] &&
+			activeElement.getRootNode() === this
+		) {
 			return activeElement;
 		}
 		return null;
@@ -79,7 +121,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 */
 	public cloneNode(deep = false): IShadowRoot {
 		const clone = <ShadowRoot>super.cloneNode(deep);
-		(<string>clone.mode) = this.mode;
+		clone[PropertySymbol.mode] = this.mode;
 		return clone;
 	}
 }

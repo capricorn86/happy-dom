@@ -57,8 +57,8 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 		const oldValue = this[PropertySymbol.data];
 		this[PropertySymbol.data] = String(data);
 
-		if (this.isConnected) {
-			this.ownerDocument[PropertySymbol.cacheID]++;
+		if (this[PropertySymbol.isConnected]) {
+			this[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
 		}
 
 		// MutationObserver

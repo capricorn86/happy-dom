@@ -43,7 +43,7 @@ export default class HTMLIFrameElementPageLoader {
 	 * Loads an iframe page.
 	 */
 	public loadPage(): void {
-		if (!this.#element.isConnected) {
+		if (!this.#element[PropertySymbol.isConnected]) {
 			if (this.#browserIFrame) {
 				BrowserFrameFactory.destroyFrame(this.#browserIFrame);
 				this.#browserIFrame = null;
@@ -52,7 +52,7 @@ export default class HTMLIFrameElementPageLoader {
 			return;
 		}
 
-		const window = this.#element.ownerDocument[PropertySymbol.defaultView];
+		const window = this.#element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
 		const originURL = this.#browserParentFrame.window.location;
 		const targetURL = BrowserFrameURL.getRelativeURL(this.#browserParentFrame, this.#element.src);
 

@@ -16,8 +16,6 @@ import SVGElementNamedNodeMap from './SVGElementNamedNodeMap.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/SVGElement.
  */
 export default class SVGElement extends Element implements ISVGElement {
-	public override readonly attributes: INamedNodeMap = new SVGElementNamedNodeMap(this);
-
 	// Events
 	public onabort: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
@@ -26,8 +24,11 @@ export default class SVGElement extends Element implements ISVGElement {
 	public onscroll: (event: Event) => void | null = null;
 	public onunload: (event: Event) => void | null = null;
 
+	// Internal properties
+	public override [PropertySymbol.attributes]: INamedNodeMap = new SVGElementNamedNodeMap(this);
+	public [PropertySymbol.style]: CSSStyleDeclaration | null = null;
+
 	// Private properties
-	public [PropertySymbol.style]: CSSStyleDeclaration = null;
 	#dataset: Dataset = null;
 
 	/**
@@ -45,13 +46,13 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Element.
 	 */
 	public get ownerSVGElement(): ISVGSVGElement {
-		let parent = this.parentNode;
+		let parent = this[PropertySymbol.parentNode];
 		while (parent) {
 			if (parent['tagName'] === 'SVG') {
 				return <ISVGSVGElement>parent;
 			}
 
-			parent = parent.parentNode;
+			parent = parent[PropertySymbol.parentNode];
 		}
 		return null;
 	}

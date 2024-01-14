@@ -24,14 +24,14 @@ export default class DOMImplementation {
 	 * TODO: Not fully implemented.
 	 */
 	public createDocument(): IDocument {
-		return new this.#document[PropertySymbol.defaultView].HTMLDocument();
+		return new this.#document[PropertySymbol.ownerWindow].HTMLDocument();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
 	public createHTMLDocument(): IDocument {
-		return new this.#document[PropertySymbol.defaultView].HTMLDocument();
+		return new this.#document[PropertySymbol.ownerWindow].HTMLDocument();
 	}
 
 	/**
@@ -48,11 +48,11 @@ export default class DOMImplementation {
 	): DocumentType {
 		const documentType = NodeFactory.createNode<DocumentType>(
 			this.#document,
-			this.#document[PropertySymbol.defaultView].DocumentType
+			this.#document[PropertySymbol.ownerWindow].DocumentType
 		);
-		documentType.name = qualifiedName;
-		documentType.publicId = publicId;
-		documentType.systemId = systemId;
+		documentType[PropertySymbol.name] = qualifiedName;
+		documentType[PropertySymbol.publicId] = publicId;
+		documentType[PropertySymbol.systemId] = systemId;
 		return documentType;
 	}
 }

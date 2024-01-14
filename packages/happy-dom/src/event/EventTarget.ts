@@ -279,11 +279,11 @@ export default abstract class EventTarget implements IEventTarget {
 	 * @returns Window.
 	 */
 	#getWindow(): IBrowserWindow | null {
-		if ((<INode>(<unknown>this)).ownerDocument) {
-			return (<INode>(<unknown>this)).ownerDocument[PropertySymbol.defaultView];
+		if ((<INode>(<unknown>this))[PropertySymbol.ownerDocument]) {
+			return (<INode>(<unknown>this))[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
 		}
-		if ((<IDocument>(<unknown>this))[PropertySymbol.defaultView]) {
-			return (<IDocument>(<unknown>this))[PropertySymbol.defaultView];
+		if ((<IDocument>(<unknown>this))[PropertySymbol.ownerWindow]) {
+			return (<IDocument>(<unknown>this))[PropertySymbol.ownerWindow];
 		}
 		if ((<IBrowserWindow>(<unknown>this)).document) {
 			return <IBrowserWindow>(<unknown>this);

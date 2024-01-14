@@ -94,12 +94,12 @@ export default class Event {
 				eventTarget = (<INode>(<unknown>eventTarget)).parentNode;
 			} else if (
 				this.composed &&
-				(<INode>eventTarget).nodeType === NodeTypeEnum.documentFragmentNode &&
+				(<INode>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
 				(<IShadowRoot>eventTarget).host
 			) {
 				eventTarget = (<IShadowRoot>eventTarget).host;
-			} else if ((<INode>eventTarget).nodeType === NodeTypeEnum.documentNode) {
-				eventTarget = (<IDocument>(<unknown>eventTarget))[PropertySymbol.defaultView];
+			} else if ((<INode>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentNode) {
+				eventTarget = (<IDocument>(<unknown>eventTarget))[PropertySymbol.ownerWindow];
 			} else {
 				break;
 			}

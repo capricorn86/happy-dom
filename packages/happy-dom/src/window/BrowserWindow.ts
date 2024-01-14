@@ -656,7 +656,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 
 		// Document
 		this.document = new HTMLDocument();
-		(<IBrowserWindow>this.document.defaultView) = this;
+		this.document[PropertySymbol.defaultView] = this;
 
 		// Override owner document
 		this.Audio[PropertySymbol.ownerDocument] = this.document;
@@ -665,7 +665,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 
 		// Ready state manager
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
-			(<DocumentReadyStateEnum>this.document.readyState) = DocumentReadyStateEnum.complete;
+			this.document[PropertySymbol.readyState] = DocumentReadyStateEnum.complete;
 			this.document.dispatchEvent(new Event('readystatechange'));
 			this.document.dispatchEvent(new Event('load', { bubbles: true }));
 		});

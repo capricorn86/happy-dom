@@ -17,7 +17,7 @@ import NodeFactory from '../NodeFactory.js';
  * Node.
  */
 export default class Node extends EventTarget implements INode {
-	// Can be set before the Node is created.
+	// This is used when overriding a Node class and set it in a owner document context (used in BrowserWindow.constructor()).
 	public static [PropertySymbol.ownerDocument]: IDocument | null;
 
 	// Public properties
@@ -37,28 +37,29 @@ export default class Node extends EventTarget implements INode {
 	public static readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC =
 		NodeDocumentPositionEnum.implementationSpecific;
 	public static readonly DOCUMENT_POSITION_PRECEDING = NodeDocumentPositionEnum.preceding;
-	public readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
-	public readonly ATTRIBUTE_NODE = NodeTypeEnum.attributeNode;
-	public readonly TEXT_NODE = NodeTypeEnum.textNode;
-	public readonly CDATA_SECTION_NODE = NodeTypeEnum.cdataSectionNode;
-	public readonly COMMENT_NODE = NodeTypeEnum.commentNode;
-	public readonly DOCUMENT_NODE = NodeTypeEnum.documentNode;
-	public readonly DOCUMENT_TYPE_NODE = NodeTypeEnum.documentTypeNode;
-	public readonly DOCUMENT_FRAGMENT_NODE = NodeTypeEnum.documentFragmentNode;
-	public readonly PROCESSING_INSTRUCTION_NODE = NodeTypeEnum.processingInstructionNode;
-	public readonly DOCUMENT_POSITION_CONTAINED_BY = NodeDocumentPositionEnum.containedBy;
-	public readonly DOCUMENT_POSITION_CONTAINS = NodeDocumentPositionEnum.contains;
-	public readonly DOCUMENT_POSITION_DISCONNECTED = NodeDocumentPositionEnum.disconnect;
-	public readonly DOCUMENT_POSITION_FOLLOWING = NodeDocumentPositionEnum.following;
-	public readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC =
-		NodeDocumentPositionEnum.implementationSpecific;
-	public readonly DOCUMENT_POSITION_PRECEDING = NodeDocumentPositionEnum.preceding;
-	public readonly parentNode: INode = null;
-	public readonly nodeType: number;
-	public readonly isConnected: boolean = false;
-	public readonly ownerDocument: IDocument = null;
+
+	// Defined on the prototype
+	public readonly ELEMENT_NODE;
+	public readonly ATTRIBUTE_NODE;
+	public readonly TEXT_NODE;
+	public readonly CDATA_SECTION_NODE;
+	public readonly COMMENT_NODE;
+	public readonly DOCUMENT_NODE;
+	public readonly DOCUMENT_TYPE_NODE;
+	public readonly DOCUMENT_FRAGMENT_NODE;
+	public readonly PROCESSING_INSTRUCTION_NODE;
+	public readonly DOCUMENT_POSITION_CONTAINED_BY;
+	public readonly DOCUMENT_POSITION_CONTAINS;
+	public readonly DOCUMENT_POSITION_DISCONNECTED;
+	public readonly DOCUMENT_POSITION_FOLLOWING;
+	public readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+	public readonly DOCUMENT_POSITION_PRECEDING;
 
 	// Internal properties
+	public [PropertySymbol.isConnected] = false;
+	public [PropertySymbol.ownerDocument]: IDocument;
+	public [PropertySymbol.parentNode]: INode | null = null;
+	public [PropertySymbol.nodeType]: NodeTypeEnum;
 	public [PropertySymbol.rootNode]: INode = null;
 	public [PropertySymbol.formNode]: INode = null;
 	public [PropertySymbol.selectNode]: INode = null;
@@ -72,7 +73,9 @@ export default class Node extends EventTarget implements INode {
 	constructor() {
 		super();
 		if ((<typeof Node>this.constructor)[PropertySymbol.ownerDocument] !== undefined) {
-			this.ownerDocument = (<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
+			this[PropertySymbol.ownerDocument] = (<typeof Node>this.constructor)[
+				PropertySymbol.ownerDocument
+			];
 		} else {
 			const ownerDocument = NodeFactory.pullOwnerDocument();
 			if (!ownerDocument) {
@@ -80,7 +83,7 @@ export default class Node extends EventTarget implements INode {
 					'Failed to construct "Node": No owner document in queue. Please use "NodeFactory" to create instances of a Node.'
 				);
 			}
-			this.ownerDocument = ownerDocument;
+			this[PropertySymbol.ownerDocument] = ownerDocument;
 		}
 	}
 
@@ -91,6 +94,42 @@ export default class Node extends EventTarget implements INode {
 	 */
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
+	}
+
+	/**
+	 * Returns connected state.
+	 *
+	 * @returns Connected state.
+	 */
+	public get isConnected(): boolean {
+		return this[PropertySymbol.isConnected];
+	}
+
+	/**
+	 * Returns owner document.
+	 *
+	 * @returns Owner document.
+	 */
+	public get ownerDocument(): IDocument {
+		return this[PropertySymbol.ownerDocument];
+	}
+
+	/**
+	 * Returns parent node.
+	 *
+	 * @returns Parent node.
+	 */
+	public get parentNode(): INode | null {
+		return this[PropertySymbol.parentNode];
+	}
+
+	/**
+	 * Returns node type.
+	 *
+	 * @returns Node type.
+	 */
+	public get nodeType(): number {
+		return this[PropertySymbol.nodeType];
 	}
 
 	/**
@@ -153,10 +192,12 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public get previousSibling(): INode {
-		if (this.parentNode) {
-			const index = (<Node>this.parentNode)[PropertySymbol.childNodes].indexOf(this);
+		if (this[PropertySymbol.parentNode]) {
+			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
+				this
+			);
 			if (index > 0) {
-				return (<Node>this.parentNode)[PropertySymbol.childNodes][index - 1];
+				return (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][index - 1];
 			}
 		}
 		return null;
@@ -168,10 +209,15 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public get nextSibling(): INode {
-		if (this.parentNode) {
-			const index = (<Node>this.parentNode)[PropertySymbol.childNodes].indexOf(this);
-			if (index > -1 && index + 1 < (<Node>this.parentNode)[PropertySymbol.childNodes].length) {
-				return (<Node>this.parentNode)[PropertySymbol.childNodes][index + 1];
+		if (this[PropertySymbol.parentNode]) {
+			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
+				this
+			);
+			if (
+				index > -1 &&
+				index + 1 < (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes].length
+			) {
+				return (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][index + 1];
 			}
 		}
 		return null;
@@ -206,10 +252,10 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @returns Element.
 	 */
-	public get parentElement(): IElement {
-		let parent = this.parentNode;
-		while (parent && parent.nodeType !== NodeTypeEnum.elementNode) {
-			parent = parent.parentNode;
+	public get parentElement(): IElement | null {
+		let parent = this[PropertySymbol.parentNode];
+		while (parent && parent[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode) {
+			parent = parent[PropertySymbol.parentNode];
 		}
 		return <IElement>parent;
 	}
@@ -220,11 +266,11 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Base URI.
 	 */
 	public get baseURI(): string {
-		const base = <IHTMLBaseElement>this.ownerDocument.querySelector('base');
+		const base = <IHTMLBaseElement>this[PropertySymbol.ownerDocument].querySelector('base');
 		if (base) {
 			return base.href;
 		}
-		return this.ownerDocument[PropertySymbol.defaultView].location.href;
+		return this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href;
 	}
 
 	/**
@@ -264,7 +310,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Node.
 	 */
 	public getRootNode(options?: { composed: boolean }): INode {
-		if (!this.isConnected) {
+		if (!this[PropertySymbol.isConnected]) {
 			return this;
 		}
 
@@ -272,7 +318,7 @@ export default class Node extends EventTarget implements INode {
 			return this[PropertySymbol.rootNode];
 		}
 
-		return this.ownerDocument;
+		return this[PropertySymbol.ownerDocument];
 	}
 
 	/**
@@ -282,19 +328,22 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): INode {
-		const clone = NodeFactory.createNode<Node>(this.ownerDocument, <typeof Node>this.constructor);
+		const clone = NodeFactory.createNode<Node>(
+			this[PropertySymbol.ownerDocument],
+			<typeof Node>this.constructor
+		);
 
 		// Document has childNodes directly when it is created
 		if (clone[PropertySymbol.childNodes].length) {
 			for (const node of clone[PropertySymbol.childNodes].slice()) {
-				node.parentNode.removeChild(node);
+				node[PropertySymbol.parentNode].removeChild(node);
 			}
 		}
 
 		if (deep) {
 			for (const childNode of this[PropertySymbol.childNodes]) {
 				const childClone = childNode.cloneNode(true);
-				(<Node>childClone.parentNode) = clone;
+				childClone[PropertySymbol.parentNode] = clone;
 				clone[PropertySymbol.childNodes].push(childClone);
 			}
 		}
@@ -400,14 +449,14 @@ export default class Node extends EventTarget implements INode {
 	 * @param parentNode Parent node.
 	 */
 	public [PropertySymbol.connectToNode](parentNode: INode = null): void {
-		const isConnected = !!parentNode && parentNode.isConnected;
+		const isConnected = !!parentNode && parentNode[PropertySymbol.isConnected];
 		const formNode = (<Node>this)[PropertySymbol.formNode];
 		const selectNode = (<Node>this)[PropertySymbol.selectNode];
 		const textAreaNode = (<Node>this)[PropertySymbol.textAreaNode];
 
-		if (this.nodeType !== NodeTypeEnum.documentFragmentNode) {
-			(<INode>this.parentNode) = parentNode;
-			(<Node>this)[PropertySymbol.rootNode] =
+		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
+			this[PropertySymbol.parentNode] = parentNode;
+			this[PropertySymbol.rootNode] =
 				isConnected && parentNode ? (<Node>parentNode)[PropertySymbol.rootNode] : null;
 
 			if (this['tagName'] !== 'FORM') {
@@ -429,12 +478,12 @@ export default class Node extends EventTarget implements INode {
 			}
 		}
 
-		if (this.isConnected !== isConnected) {
-			(<boolean>this.isConnected) = isConnected;
+		if (this[PropertySymbol.isConnected] !== isConnected) {
+			this[PropertySymbol.isConnected] = isConnected;
 
 			if (!isConnected) {
-				if (this.ownerDocument[PropertySymbol.activeElement] === this) {
-					this.ownerDocument[PropertySymbol.activeElement] = null;
+				if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === this) {
+					this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = null;
 				}
 			}
 
@@ -493,18 +542,18 @@ export default class Node extends EventTarget implements INode {
 		/**
 		 * 4. If node1 is an attribute, then set attr1 to node1 and node1 to attr1’s element.
 		 */
-		if (node1.nodeType === Node.ATTRIBUTE_NODE) {
+		if (node1[PropertySymbol.nodeType] === NodeTypeEnum.attributeNode) {
 			attr1 = node1;
-			node1 = (<IAttr>attr1).ownerElement;
+			node1 = (<IAttr>attr1)[PropertySymbol.ownerElement];
 		}
 
 		/**
 		 * 5. If node2 is an attribute, then:
 		 * 5.1. Set attr2 to node2 and node2 to attr2’s element.
 		 */
-		if (node2.nodeType === Node.ATTRIBUTE_NODE) {
+		if (node2[PropertySymbol.nodeType] === NodeTypeEnum.attributeNode) {
 			attr2 = node2;
-			node2 = (<IAttr>attr2).ownerElement;
+			node2 = (<IAttr>attr2)[PropertySymbol.ownerElement];
 
 			/**
 			 * 5.2. If attr1 and node1 are non-null, and node2 is node1, then:
@@ -513,7 +562,7 @@ export default class Node extends EventTarget implements INode {
 				/**
 				 * 5.2.1. For each attr in node2’s attribute list:
 				 */
-				for (const attr of Object.values((<IElement>node2).attributes)) {
+				for (const attr of Object.values((<IElement>node2)[PropertySymbol.attributes])) {
 					/**
 					 * 5.2.1.1. If attr equals attr1, then return the result of adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and DOCUMENT_POSITION_PRECEDING.
 					 */
@@ -547,7 +596,7 @@ export default class Node extends EventTarget implements INode {
 			}
 
 			node2Ancestors.push(node2Ancestor);
-			node2Ancestor = node2Ancestor.parentNode;
+			node2Ancestor = node2Ancestor[PropertySymbol.parentNode];
 		}
 
 		const node1Ancestors: INode[] = [];
@@ -562,7 +611,7 @@ export default class Node extends EventTarget implements INode {
 			}
 
 			node1Ancestors.push(node1Ancestor);
-			node1Ancestor = node1Ancestor.parentNode;
+			node1Ancestor = node1Ancestor[PropertySymbol.parentNode];
 		}
 
 		const reverseArrayIndex = (array: INode[], reverseIndex: number): INode => {
@@ -678,3 +727,27 @@ export default class Node extends EventTarget implements INode {
 		return this === node;
 	}
 }
+
+// According to the spec, these properties should be on the prototype.
+(<NodeTypeEnum>Node.prototype.ELEMENT_NODE) = NodeTypeEnum.elementNode;
+(<NodeTypeEnum>Node.prototype.ATTRIBUTE_NODE) = NodeTypeEnum.attributeNode;
+
+(<NodeTypeEnum>Node.prototype.TEXT_NODE) = NodeTypeEnum.textNode;
+(<NodeTypeEnum>Node.prototype.CDATA_SECTION_NODE) = NodeTypeEnum.cdataSectionNode;
+(<NodeTypeEnum>Node.prototype.COMMENT_NODE) = NodeTypeEnum.commentNode;
+(<NodeTypeEnum>Node.prototype.DOCUMENT_NODE) = NodeTypeEnum.documentNode;
+(<NodeTypeEnum>Node.prototype.DOCUMENT_TYPE_NODE) = NodeTypeEnum.documentTypeNode;
+(<NodeTypeEnum>Node.prototype.DOCUMENT_FRAGMENT_NODE) = NodeTypeEnum.documentFragmentNode;
+(<NodeTypeEnum>Node.prototype.PROCESSING_INSTRUCTION_NODE) = NodeTypeEnum.processingInstructionNode;
+(<NodeDocumentPositionEnum>Node.prototype.DOCUMENT_POSITION_CONTAINED_BY) =
+	NodeDocumentPositionEnum.containedBy;
+(<NodeDocumentPositionEnum>Node.prototype.DOCUMENT_POSITION_CONTAINS) =
+	NodeDocumentPositionEnum.contains;
+(<NodeDocumentPositionEnum>Node.prototype.DOCUMENT_POSITION_DISCONNECTED) =
+	NodeDocumentPositionEnum.disconnect;
+(<NodeDocumentPositionEnum>Node.prototype.DOCUMENT_POSITION_FOLLOWING) =
+	NodeDocumentPositionEnum.following;
+(<NodeDocumentPositionEnum>Node.prototype.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC) =
+	NodeDocumentPositionEnum.implementationSpecific;
+(<NodeDocumentPositionEnum>Node.prototype.DOCUMENT_POSITION_PRECEDING) =
+	NodeDocumentPositionEnum.preceding;

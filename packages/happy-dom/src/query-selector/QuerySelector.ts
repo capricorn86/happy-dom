@@ -48,7 +48,7 @@ export default class QuerySelector {
 
 		for (const items of groups) {
 			matches = matches.concat(
-				node.nodeType === NodeTypeEnum.elementNode
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findAll(<IElement>node, [<IElement>node], items)
 					: this.findAll(null, (<Element>node)[PropertySymbol.children], items)
 			);
@@ -92,7 +92,7 @@ export default class QuerySelector {
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =
-				node.nodeType === NodeTypeEnum.elementNode
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findFirst(<IElement>node, [<IElement>node], items)
 					: this.findFirst(null, (<Element>node)[PropertySymbol.children], items);
 

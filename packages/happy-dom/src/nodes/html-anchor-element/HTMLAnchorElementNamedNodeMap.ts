@@ -18,12 +18,15 @@ export default class HTMLAnchorElementNamedNodeMap extends HTMLElementNamedNodeM
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if (item.name === 'rel' && this[PropertySymbol.ownerElement][PropertySymbol.relList]) {
+		if (
+			item[PropertySymbol.name] === 'rel' &&
+			this[PropertySymbol.ownerElement][PropertySymbol.relList]
+		) {
 			this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();
-		} else if (item.name === 'href') {
+		} else if (item[PropertySymbol.name] === 'href') {
 			this[PropertySymbol.ownerElement][PropertySymbol.url] = HTMLAnchorElementUtility.getUrl(
 				this[PropertySymbol.ownerElement].ownerDocument,
-				item.value
+				item[PropertySymbol.value]
 			);
 		}
 
@@ -37,9 +40,12 @@ export default class HTMLAnchorElementNamedNodeMap extends HTMLElementNamedNodeM
 		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
 		if (removedItem) {
-			if (removedItem.name === 'rel' && this[PropertySymbol.ownerElement][PropertySymbol.relList]) {
+			if (
+				removedItem[PropertySymbol.name] === 'rel' &&
+				this[PropertySymbol.ownerElement][PropertySymbol.relList]
+			) {
 				this[PropertySymbol.ownerElement][PropertySymbol.relList][PropertySymbol.updateIndices]();
-			} else if (removedItem.name === 'href') {
+			} else if (removedItem[PropertySymbol.name] === 'href') {
 				this[PropertySymbol.ownerElement][PropertySymbol.url] = null;
 			}
 		}

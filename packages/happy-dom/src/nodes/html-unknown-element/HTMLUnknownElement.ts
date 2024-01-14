@@ -24,26 +24,32 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 	 * @param parentNode Parent node.
 	 */
 	public [PropertySymbol.connectToNode](parentNode: INode = null): void {
-		const tagName = this.tagName;
+		const tagName = this[PropertySymbol.tagName];
 
 		// This element can potentially be a custom element that has not been defined yet
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
 		if (
 			tagName.includes('-') &&
-			this.ownerDocument[PropertySymbol.defaultView].customElements[PropertySymbol.callbacks]
+			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
+				PropertySymbol.callbacks
+			]
 		) {
 			const callbacks =
-				this.ownerDocument[PropertySymbol.defaultView].customElements[PropertySymbol.callbacks];
+				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
+					PropertySymbol.callbacks
+				];
 
 			if (parentNode && !this.#customElementDefineCallback) {
 				const callback = (): void => {
-					if (this.parentNode) {
-						const newElement = <HTMLElement>this.ownerDocument.createElement(tagName);
+					if (this[PropertySymbol.parentNode]) {
+						const newElement = <HTMLElement>(
+							this[PropertySymbol.ownerDocument].createElement(tagName)
+						);
 						(<INodeList<INode>>newElement[PropertySymbol.childNodes]) =
 							this[PropertySymbol.childNodes];
 						(<IHTMLCollection<IElement>>newElement[PropertySymbol.children]) =
 							this[PropertySymbol.children];
-						(<boolean>newElement.isConnected) = this.isConnected;
+						(<boolean>newElement[PropertySymbol.isConnected]) = this[PropertySymbol.isConnected];
 
 						newElement[PropertySymbol.rootNode] = this[PropertySymbol.rootNode];
 						newElement[PropertySymbol.formNode] = this[PropertySymbol.formNode];
@@ -52,8 +58,10 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						newElement[PropertySymbol.observers] = this[PropertySymbol.observers];
 						newElement[PropertySymbol.isValue] = this[PropertySymbol.isValue];
 
-						for (let i = 0, max = this.attributes.length; i < max; i++) {
-							newElement.attributes.setNamedItem(this.attributes[i]);
+						for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
+							newElement[PropertySymbol.attributes].setNamedItem(
+								this[PropertySymbol.attributes][i]
+							);
 						}
 
 						(<INodeList<INode>>this[PropertySymbol.childNodes]) = new NodeList();
@@ -64,33 +72,46 @@ export default class HTMLUnknownElement extends HTMLElement implements IHTMLElem
 						this[PropertySymbol.textAreaNode] = null;
 						this[PropertySymbol.observers] = [];
 						this[PropertySymbol.isValue] = null;
-						(<HTMLElementNamedNodeMap>this.attributes) = new HTMLElementNamedNodeMap(this);
+						(<HTMLElementNamedNodeMap>this[PropertySymbol.attributes]) =
+							new HTMLElementNamedNodeMap(this);
 
 						for (
-							let i = 0, max = (<HTMLElement>this.parentNode)[PropertySymbol.childNodes].length;
+							let i = 0,
+								max = (<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.childNodes]
+									.length;
 							i < max;
 							i++
 						) {
-							if ((<HTMLElement>this.parentNode)[PropertySymbol.childNodes][i] === this) {
-								(<HTMLElement>this.parentNode)[PropertySymbol.childNodes][i] = newElement;
+							if (
+								(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][i] ===
+								this
+							) {
+								(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][i] =
+									newElement;
 								break;
 							}
 						}
 
-						if ((<HTMLElement>this.parentNode)[PropertySymbol.children]) {
+						if ((<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children]) {
 							for (
-								let i = 0, max = (<HTMLElement>this.parentNode)[PropertySymbol.children].length;
+								let i = 0,
+									max = (<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children]
+										.length;
 								i < max;
 								i++
 							) {
-								if ((<HTMLElement>this.parentNode)[PropertySymbol.children][i] === this) {
-									(<HTMLElement>this.parentNode)[PropertySymbol.children][i] = newElement;
+								if (
+									(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children][i] ===
+									this
+								) {
+									(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children][i] =
+										newElement;
 									break;
 								}
 							}
 						}
 
-						if (newElement.isConnected && newElement.connectedCallback) {
+						if (newElement[PropertySymbol.isConnected] && newElement.connectedCallback) {
 							newElement.connectedCallback();
 						}
 

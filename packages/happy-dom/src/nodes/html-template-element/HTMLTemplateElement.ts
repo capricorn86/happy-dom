@@ -14,7 +14,18 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement.
  */
 export default class HTMLTemplateElement extends HTMLElement implements IHTMLTemplateElement {
-	public readonly content: IDocumentFragment = this.ownerDocument.createDocumentFragment();
+	// Internal properties
+	public [PropertySymbol.content]: IDocumentFragment =
+		this[PropertySymbol.ownerDocument].createDocumentFragment();
+
+	/**
+	 * Returns content.
+	 *
+	 * @returns Content.
+	 */
+	public get content(): IDocumentFragment {
+		return this[PropertySymbol.content];
+	}
 
 	/**
 	 * @override
@@ -27,25 +38,29 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 * @override
 	 */
 	public set innerHTML(html: string) {
-		for (const child of (<DocumentFragment>this.content)[PropertySymbol.childNodes].slice()) {
-			this.content.removeChild(child);
+		const content = <DocumentFragment>this[PropertySymbol.content];
+
+		for (const child of content[PropertySymbol.childNodes].slice()) {
+			this[PropertySymbol.content].removeChild(child);
 		}
 
-		XMLParser.parse(this.ownerDocument, html, { rootNode: this.content });
+		XMLParser.parse(this[PropertySymbol.ownerDocument], html, {
+			rootNode: this[PropertySymbol.content]
+		});
 	}
 
 	/**
 	 * @override
 	 */
 	public get firstChild(): INode {
-		return this.content.firstChild;
+		return this[PropertySymbol.content].firstChild;
 	}
 
 	/**
 	 * @override
 	 */
 	public get lastChild(): INode {
-		return this.content.lastChild;
+		return this[PropertySymbol.content].lastChild;
 	}
 
 	/**
@@ -56,8 +71,9 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 			includeShadowRoots: options && options.includeShadowRoots,
 			escapeEntities: false
 		});
+		const content = <DocumentFragment>this[PropertySymbol.content];
 		let xml = '';
-		for (const node of (<DocumentFragment>this.content)[PropertySymbol.childNodes]) {
+		for (const node of content[PropertySymbol.childNodes]) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
@@ -67,28 +83,28 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 * @override
 	 */
 	public appendChild(node: INode): INode {
-		return this.content.appendChild(node);
+		return this[PropertySymbol.content].appendChild(node);
 	}
 
 	/**
 	 * @override
 	 */
 	public removeChild(node: INode): INode {
-		return this.content.removeChild(node);
+		return this[PropertySymbol.content].removeChild(node);
 	}
 
 	/**
 	 * @override
 	 */
 	public insertBefore(newNode: INode, referenceNode: INode): INode {
-		return this.content.insertBefore(newNode, referenceNode);
+		return this[PropertySymbol.content].insertBefore(newNode, referenceNode);
 	}
 
 	/**
 	 * @override
 	 */
 	public replaceChild(newChild: INode, oldChild: INode): INode {
-		return this.content.replaceChild(newChild, oldChild);
+		return this[PropertySymbol.content].replaceChild(newChild, oldChild);
 	}
 
 	/**
@@ -96,7 +112,7 @@ export default class HTMLTemplateElement extends HTMLElement implements IHTMLTem
 	 */
 	public cloneNode(deep = false): IHTMLTemplateElement {
 		const clone = <IHTMLTemplateElement>super.cloneNode(deep);
-		(<IDocumentFragment>clone.content) = this.content.cloneNode(deep);
+		clone[PropertySymbol.content] = this[PropertySymbol.content].cloneNode(deep);
 		return clone;
 	}
 }

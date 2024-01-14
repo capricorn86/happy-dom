@@ -17,7 +17,9 @@ import EventPhaseEnum from '../../event/EventPhaseEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement.
  */
 export default class HTMLAnchorElement extends HTMLElement implements IHTMLAnchorElement {
-	public override readonly attributes: INamedNodeMap = new HTMLAnchorElementNamedNodeMap(this);
+	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLAnchorElementNamedNodeMap(
+		this
+	);
 	public [PropertySymbol.relList]: DOMTokenList = null;
 	public [PropertySymbol.url]: URL | null = null;
 
@@ -432,11 +434,11 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 			!event.defaultPrevented &&
 			this[PropertySymbol.url]
 		) {
-			this.ownerDocument[PropertySymbol.defaultView].open(
+			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].open(
 				this[PropertySymbol.url].toString(),
 				this.target || '_self'
 			);
-			if (this.ownerDocument[PropertySymbol.defaultView].closed) {
+			if (this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].closed) {
 				event.stopImmediatePropagation();
 			}
 		}

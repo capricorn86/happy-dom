@@ -235,7 +235,7 @@ export default class Selection {
 			return;
 		}
 
-		if (node.nodeType === NodeTypeEnum.documentTypeNode) {
+		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
 			throw new DOMException(
 				"DocumentType Node can't be used as boundary point.",
 				DOMExceptionNameEnum.invalidNodeTypeError
@@ -246,11 +246,11 @@ export default class Selection {
 			throw new DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError);
 		}
 
-		if (node.ownerDocument !== this.#ownerDocument) {
+		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
 			return;
 		}
 
-		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
 
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = offset;
@@ -286,7 +286,7 @@ export default class Selection {
 		}
 
 		const { node, offset } = this.#range[PropertySymbol.end];
-		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
 
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = offset;
@@ -310,7 +310,7 @@ export default class Selection {
 		}
 
 		const { node, offset } = this.#range[PropertySymbol.start];
-		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
 
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = offset;
@@ -329,7 +329,7 @@ export default class Selection {
 	 * @returns Always returns "true" for now.
 	 */
 	public containsNode(node: INode, allowPartialContainment = false): boolean {
-		if (!this.#range || node.ownerDocument !== this.#ownerDocument) {
+		if (!this.#range || node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
 			return false;
 		}
 
@@ -368,7 +368,7 @@ export default class Selection {
 	 * @param offset Offset.
 	 */
 	public extend(node: INode, offset: number): void {
-		if (node.ownerDocument !== this.#ownerDocument) {
+		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
 			return;
 		}
 
@@ -381,13 +381,13 @@ export default class Selection {
 
 		const anchorNode = this.anchorNode;
 		const anchorOffset = this.anchorOffset;
-		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = 0;
 		newRange[PropertySymbol.end].node = node;
 		newRange[PropertySymbol.end].offset = 0;
 
-		if (node.ownerDocument !== this.#range[PropertySymbol.ownerDocument]) {
+		if (node[PropertySymbol.ownerDocument] !== this.#range[PropertySymbol.ownerDocument]) {
 			newRange[PropertySymbol.start].offset = offset;
 			newRange[PropertySymbol.end].offset = offset;
 		} else if (
@@ -424,19 +424,19 @@ export default class Selection {
 	 * @param node Node.
 	 */
 	public selectAllChildren(node: INode): void {
-		if (node.nodeType === NodeTypeEnum.documentTypeNode) {
+		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
 			throw new DOMException(
 				"DocumentType Node can't be used as boundary point.",
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
 
-		if (node.ownerDocument !== this.#ownerDocument) {
+		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
 			return;
 		}
 
 		const length = node.childNodes.length;
-		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
 
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = 0;
@@ -472,15 +472,15 @@ export default class Selection {
 		}
 
 		if (
-			anchorNode.ownerDocument !== this.#ownerDocument ||
-			focusNode.ownerDocument !== this.#ownerDocument
+			anchorNode[PropertySymbol.ownerDocument] !== this.#ownerDocument ||
+			focusNode[PropertySymbol.ownerDocument] !== this.#ownerDocument
 		) {
 			return;
 		}
 
 		const anchor = { node: anchorNode, offset: anchorOffset };
 		const focus = { node: focusNode, offset: focusOffset };
-		const newRange = new this.#ownerDocument[PropertySymbol.defaultView].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
 
 		if (RangeUtility.compareBoundaryPointsPosition(anchor, focus) === -1) {
 			newRange[PropertySymbol.start] = anchor;

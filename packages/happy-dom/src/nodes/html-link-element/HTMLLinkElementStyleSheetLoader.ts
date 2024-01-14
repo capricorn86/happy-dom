@@ -39,13 +39,21 @@ export default class HTMLLinkElementStyleSheetLoader {
 		const element = this.#element;
 		const browserSettings = this.#browserFrame.page.context.browser.settings;
 
-		if (!url || !rel || rel.toLowerCase() !== 'stylesheet' || !element.isConnected) {
+		if (
+			!url ||
+			!rel ||
+			rel.toLowerCase() !== 'stylesheet' ||
+			!element[PropertySymbol.isConnected]
+		) {
 			return;
 		}
 
 		let absoluteURL: string;
 		try {
-			absoluteURL = new URL(url, element.ownerDocument[PropertySymbol.defaultView].location).href;
+			absoluteURL = new URL(
+				url,
+				element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location
+			).href;
 		} catch (error) {
 			this.#loadedStyleSheetURL = null;
 			element.dispatchEvent(new Event('error'));
@@ -69,10 +77,10 @@ export default class HTMLLinkElementStyleSheetLoader {
 
 		const resourceFetch = new ResourceFetch({
 			browserFrame: this.#browserFrame,
-			window: element.ownerDocument[PropertySymbol.defaultView]
+			window: element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
 		});
 		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
-			(<unknown>element.ownerDocument[PropertySymbol.defaultView])
+			(<unknown>element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow])
 		))[PropertySymbol.readyStateManager];
 
 		this.#loadedStyleSheetURL = absoluteURL;
@@ -95,7 +103,7 @@ export default class HTMLLinkElementStyleSheetLoader {
 		} else {
 			const styleSheet = new CSSStyleSheet();
 			styleSheet.replaceSync(code);
-			(<CSSStyleSheet>element.sheet) = styleSheet;
+			element[PropertySymbol.sheet] = styleSheet;
 			element.dispatchEvent(new Event('load'));
 		}
 	}

@@ -100,7 +100,7 @@ export default class BrowserFrameNavigator {
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
 		if (options?.referrer) {
-			(<string>frame.window.document.referrer) = options.referrer;
+			frame.window.document[PropertySymbol.referrer] = options.referrer;
 		}
 
 		if (targetURL.protocol === 'about:') {

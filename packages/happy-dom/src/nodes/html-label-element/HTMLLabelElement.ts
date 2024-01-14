@@ -44,7 +44,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	public get control(): IHTMLElement {
 		const htmlFor = this.htmlFor;
 		if (htmlFor) {
-			const control = <IHTMLElement>this.ownerDocument.getElementById(htmlFor);
+			const control = <IHTMLElement>this[PropertySymbol.ownerDocument].getElementById(htmlFor);
 			return control !== this ? control : null;
 		}
 		return <IHTMLElement>(

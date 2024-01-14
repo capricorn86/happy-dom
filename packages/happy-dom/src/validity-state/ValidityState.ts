@@ -59,7 +59,7 @@ export default class ValidityState {
 	 * @returns "true" if valid.
 	 */
 	public get customError(): boolean {
-		return this.element.validationMessage.length > 0;
+		return this.element[PropertySymbol.validationMessage].length > 0;
 	}
 
 	/**

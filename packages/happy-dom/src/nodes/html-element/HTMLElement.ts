@@ -18,23 +18,6 @@ import HTMLElementNamedNodeMap from './HTMLElementNamedNodeMap.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement.
  */
 export default class HTMLElement extends Element implements IHTMLElement {
-	public override readonly attributes: INamedNodeMap = new HTMLElementNamedNodeMap(this);
-	public readonly accessKey = '';
-	public readonly accessKeyLabel = '';
-	public readonly contentEditable = 'inherit';
-	public readonly isContentEditable = false;
-	public readonly offsetHeight = 0;
-	public readonly offsetWidth = 0;
-	public readonly offsetLeft = 0;
-	public readonly offsetTop = 0;
-	public readonly clientHeight = 0;
-	public readonly clientWidth = 0;
-	public readonly clientLeft = 0;
-	public readonly clientTop = 0;
-
-	public [PropertySymbol.style]: CSSStyleDeclaration = null;
-	#dataset: Dataset = null;
-
 	// Events
 	public oncopy: (event: Event) => void | null = null;
 	public oncut: (event: Event) => void | null = null;
@@ -61,6 +44,141 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public ontransitionend: (event: Event) => void | null = null;
 	public ontransitionrun: (event: Event) => void | null = null;
 	public ontransitionstart: (event: Event) => void | null = null;
+
+	// Internal properties
+	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLElementNamedNodeMap(this);
+	public [PropertySymbol.accessKey] = '';
+	public [PropertySymbol.contentEditable] = 'inherit';
+	public [PropertySymbol.isContentEditable] = false;
+	public [PropertySymbol.offsetHeight] = 0;
+	public [PropertySymbol.offsetWidth] = 0;
+	public [PropertySymbol.offsetLeft] = 0;
+	public [PropertySymbol.offsetTop] = 0;
+	public [PropertySymbol.clientHeight] = 0;
+	public [PropertySymbol.clientWidth] = 0;
+	public [PropertySymbol.clientLeft] = 0;
+	public [PropertySymbol.clientTop] = 0;
+	public [PropertySymbol.style]: CSSStyleDeclaration = null;
+
+	// Private properties
+	#dataset: Dataset = null;
+
+	/**
+	 * Returns access key.
+	 *
+	 * @returns Access key.
+	 */
+	public get accessKey(): string {
+		return this[PropertySymbol.accessKey];
+	}
+
+	/**
+	 * Sets access key.
+	 *
+	 * @param accessKey Access key.
+	 */
+	public set accessKey(accessKey: string) {
+		this[PropertySymbol.accessKey] = accessKey;
+	}
+
+	/**
+	 * Returns content editable.
+	 *
+	 * @returns Content editable.
+	 */
+	public get contentEditable(): string {
+		return this[PropertySymbol.contentEditable];
+	}
+
+	/**
+	 * Sets content editable.
+	 *
+	 * @param contentEditable Content editable.
+	 */
+	public set contentEditable(contentEditable: string) {
+		this[PropertySymbol.contentEditable] = contentEditable;
+	}
+
+	/**
+	 * Returns is content editable.
+	 *
+	 * @returns Is content editable.
+	 */
+	public get isContentEditable(): boolean {
+		return this[PropertySymbol.isContentEditable];
+	}
+
+	/**
+	 * Returns offset height.
+	 *
+	 * @returns Offset height.
+	 */
+	public get offsetHeight(): number {
+		return this[PropertySymbol.offsetHeight];
+	}
+
+	/**
+	 * Returns offset width.
+	 *
+	 * @returns Offset width.
+	 */
+	public get offsetWidth(): number {
+		return this[PropertySymbol.offsetWidth];
+	}
+
+	/**
+	 * Returns offset left.
+	 *
+	 * @returns Offset left.
+	 */
+	public get offsetLeft(): number {
+		return this[PropertySymbol.offsetLeft];
+	}
+
+	/**
+	 * Returns offset top.
+	 *
+	 * @returns Offset top.
+	 */
+	public get offsetTop(): number {
+		return this[PropertySymbol.offsetTop];
+	}
+
+	/**
+	 * Returns client height.
+	 *
+	 * @returns Client height.
+	 */
+	public get clientHeight(): number {
+		return this[PropertySymbol.clientHeight];
+	}
+
+	/**
+	 * Returns client width.
+	 *
+	 * @returns Client width.
+	 */
+	public get clientWidth(): number {
+		return this[PropertySymbol.clientWidth];
+	}
+
+	/**
+	 * Returns client left.
+	 *
+	 * @returns Client left.
+	 */
+	public get clientLeft(): number {
+		return this[PropertySymbol.clientLeft];
+	}
+
+	/**
+	 * Returns client top.
+	 *
+	 * @returns Client top.
+	 */
+	public get clientTop(): number {
+		return this[PropertySymbol.clientTop];
+	}
 
 	/**
 	 * Returns tab index.
@@ -92,19 +210,24 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @returns Inner text.
 	 */
 	public get innerText(): string {
-		if (!this.isConnected) {
+		if (!this[PropertySymbol.isConnected]) {
 			return this.textContent;
 		}
 
 		let result = '';
 
 		for (const childNode of this[PropertySymbol.childNodes]) {
-			if (childNode.nodeType === NodeTypeEnum.elementNode) {
+			if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
 				const childElement = <IHTMLElement>childNode;
 				const computedStyle =
-					this.ownerDocument[PropertySymbol.defaultView].getComputedStyle(childElement);
+					this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].getComputedStyle(
+						childElement
+					);
 
-				if (childElement.tagName !== 'SCRIPT' && childElement.tagName !== 'STYLE') {
+				if (
+					childElement[PropertySymbol.tagName] !== 'SCRIPT' &&
+					childElement[PropertySymbol.tagName] !== 'STYLE'
+				) {
 					const display = computedStyle.display;
 					if (display !== 'none') {
 						const textTransform = computedStyle.textTransform;
@@ -130,7 +253,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 						result += text;
 					}
 				}
-			} else if (childNode.nodeType === NodeTypeEnum.textNode) {
+			} else if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
 				result += childNode.textContent.replace(/[\n\r]/, '');
 			}
 		}
@@ -153,9 +276,9 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		for (let i = 0, max = texts.length; i < max; i++) {
 			if (i !== 0) {
-				this.appendChild(this.ownerDocument.createElement('br'));
+				this.appendChild(this[PropertySymbol.ownerDocument].createElement('br'));
 			}
-			this.appendChild(this.ownerDocument.createTextNode(texts[i]));
+			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(texts[i]));
 		}
 	}
 
@@ -176,7 +299,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @param text Text.
 	 */
 	public set outerText(text: string) {
-		if (!this.parentNode) {
+		if (!this[PropertySymbol.parentNode]) {
 			throw new DOMException(
 				"Failed to set the 'outerHTML' property on 'Element': This element has no parent node."
 			);
@@ -186,12 +309,18 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		for (let i = 0, max = texts.length; i < max; i++) {
 			if (i !== 0) {
-				this.parentNode.insertBefore(this.ownerDocument.createElement('br'), this);
+				this[PropertySymbol.parentNode].insertBefore(
+					this[PropertySymbol.ownerDocument].createElement('br'),
+					this
+				);
 			}
-			this.parentNode.insertBefore(this.ownerDocument.createTextNode(texts[i]), this);
+			this[PropertySymbol.parentNode].insertBefore(
+				this[PropertySymbol.ownerDocument].createTextNode(texts[i]),
+				this
+			);
 		}
 
-		this.parentNode.removeChild(this);
+		this[PropertySymbol.parentNode].removeChild(this);
 	}
 
 	/**
@@ -334,10 +463,9 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public cloneNode(deep = false): IHTMLElement {
 		const clone = <HTMLElement>super.cloneNode(deep);
 
-		(<string>clone.accessKey) = this.accessKey;
-		(<string>clone.accessKeyLabel) = this.accessKeyLabel;
-		(<string>clone.contentEditable) = this.contentEditable;
-		(<boolean>clone.isContentEditable) = this.isContentEditable;
+		clone[PropertySymbol.accessKey] = this[PropertySymbol.accessKey];
+		clone[PropertySymbol.contentEditable] = this[PropertySymbol.contentEditable];
+		clone[PropertySymbol.isContentEditable] = this[PropertySymbol.isContentEditable];
 
 		if (this[PropertySymbol.style]) {
 			clone.style.cssText = this[PropertySymbol.style].cssText;

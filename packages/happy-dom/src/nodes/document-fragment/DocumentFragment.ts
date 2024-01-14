@@ -9,14 +9,15 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import ElementUtility from '../element/ElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import INodeList from '../node/INodeList.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * DocumentFragment.
  */
 export default class DocumentFragment extends Node implements IDocumentFragment {
-	public nodeType = Node.DOCUMENT_FRAGMENT_NODE;
 	public readonly [PropertySymbol.children]: IHTMLCollection<IElement> = new HTMLCollection();
 	public [PropertySymbol.rootNode]: INode = this;
+	public [PropertySymbol.nodeType] = NodeTypeEnum.documentFragmentNode;
 
 	/**
 	 * Returns the document fragment children.
@@ -60,7 +61,10 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	public get textContent(): string {
 		let result = '';
 		for (const childNode of this[PropertySymbol.childNodes]) {
-			if (childNode.nodeType === Node.ELEMENT_NODE || childNode.nodeType === Node.TEXT_NODE) {
+			if (
+				childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
+				childNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode
+			) {
 				result += childNode.textContent;
 			}
 		}
@@ -77,7 +81,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 			this.removeChild(child);
 		}
 		if (textContent) {
-			this.appendChild(this.ownerDocument.createTextNode(textContent));
+			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(textContent));
 		}
 	}
 
@@ -150,7 +154,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 
 		if (deep) {
 			for (const node of clone[PropertySymbol.childNodes]) {
-				if (node.nodeType === Node.ELEMENT_NODE) {
+				if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
 					clone[PropertySymbol.children].push(<IElement>node);
 				}
 			}

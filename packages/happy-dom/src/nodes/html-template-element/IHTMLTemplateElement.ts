@@ -8,7 +8,7 @@ import IHTMLElement from '../html-element/IHTMLElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement.
  */
 export default interface IHTMLTemplateElement extends IHTMLElement {
-	content: IDocumentFragment;
+	readonly content: IDocumentFragment;
 
 	/**
 	 * Clones a node.

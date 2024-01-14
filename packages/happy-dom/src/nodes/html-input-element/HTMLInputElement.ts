@@ -23,6 +23,7 @@ import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
+import { URL } from 'url';
 
 /**
  * HTML Input Element.
@@ -34,38 +35,130 @@ import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/nodes/HTMLInputElement-impl.js (MIT licensed).
  */
 export default class HTMLInputElement extends HTMLElement implements IHTMLInputElement {
-	public override readonly attributes: INamedNodeMap = new HTMLInputElementNamedNodeMap(this);
-
-	// Related to parent form.
-	public formAction = '';
-	public formMethod = '';
-
-	// Any type of input
-	public [PropertySymbol.value] = null;
-	public [PropertySymbol.height] = 0;
-	public [PropertySymbol.width] = 0;
-
-	// Type specific: checkbox/radio
-	public defaultChecked = false;
-	public [PropertySymbol.checked]: boolean | null = null;
-
-	// Type specific: file
-	public files: IFileList<File> = new FileList();
-
-	// All fields
-	public readonly validationMessage = '';
-	public readonly validity = new ValidityState(this);
-
 	// Events
 	public oninput: (event: Event) => void | null = null;
 	public oninvalid: (event: Event) => void | null = null;
 	public onselectionchange: (event: Event) => void | null = null;
 
-	// Type specific: text/password/search/tel/url/week/month
+	// Internal properties
+	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLInputElementNamedNodeMap(
+		this
+	);
+	public [PropertySymbol.value] = null;
+	public [PropertySymbol.height] = 0;
+	public [PropertySymbol.width] = 0;
+	public [PropertySymbol.defaultChecked] = false;
+	public [PropertySymbol.checked]: boolean | null = null;
+	public [PropertySymbol.validationMessage] = '';
+	public [PropertySymbol.validity] = new ValidityState(this);
+	public [PropertySymbol.files]: IFileList<File> = new FileList();
+
+	// Private properties
 	#selectionStart: number = null;
 	#selectionEnd: number = null;
 	#selectionDirection: HTMLInputElementSelectionDirectionEnum =
 		HTMLInputElementSelectionDirectionEnum.none;
+
+	/**
+	 * Returns default checked.
+	 *
+	 * @returns Default checked.
+	 */
+	public get defaultChecked(): boolean {
+		return this[PropertySymbol.defaultChecked];
+	}
+
+	/**
+	 * Sets default checked.
+	 *
+	 * @param defaultChecked Default checked.
+	 */
+	public set defaultChecked(defaultChecked: boolean) {
+		this[PropertySymbol.defaultChecked] = defaultChecked;
+	}
+
+	/**
+	 * Returns files.
+	 *
+	 * @returns Files.
+	 */
+	public get files(): IFileList<File> {
+		return this[PropertySymbol.files];
+	}
+
+	/**
+	 * Sets files.
+	 *
+	 * @param files Files.
+	 */
+	public set files(files: IFileList<File>) {
+		this[PropertySymbol.files] = files;
+	}
+
+	/**
+	 * Returns form action.
+	 *
+	 * @returns URL.
+	 */
+	public get formAction(): string {
+		return (
+			this.getAttribute('formaction') ||
+			(<IHTMLFormElement>this[PropertySymbol.formNode])?.action ||
+			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
+		);
+	}
+
+	/**
+	 * Sets form action.
+	 *
+	 * @param url URL.
+	 */
+	public set formAction(url: string) {
+		try {
+			new URL(url);
+		} catch (error) {
+			return;
+		}
+		this.setAttribute('formaction', url);
+	}
+
+	/**
+	 * Returns form method.
+	 */
+	public get formMethod(): string {
+		return (
+			this.getAttribute('formmethod') ||
+			(<IHTMLFormElement>this[PropertySymbol.formNode])?.method ||
+			''
+		);
+	}
+
+	/**
+	 * Sets form method.
+	 *
+	 * @param method Method.
+	 */
+	public set formMethod(method: string) {
+		this.setAttribute('formmethod', method);
+	}
+
+	/**
+	 * Returns validation message.
+	 *
+	 * @returns Validation message.
+	 */
+	public get validationMessage(): string {
+		return this[PropertySymbol.validationMessage];
+	}
+
+	/**
+	 * Returns validity.
+	 *
+	 * @returns Validity.
+	 */
+	public get validity(): ValidityState {
+		return this[PropertySymbol.validity];
+	}
 
 	/**
 	 * Returns height.
@@ -594,7 +687,9 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				const attritube = this.getAttribute('value');
 				return attritube !== null ? attritube : 'on';
 			case 'file':
-				return this.files.length > 0 ? '/fake/path/' + this.files[0].name : '';
+				return this[PropertySymbol.files].length > 0
+					? '/fake/path/' + this[PropertySymbol.files][0].name
+					: '';
 		}
 
 		if (this[PropertySymbol.value] === null) {
@@ -631,7 +726,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 				}
 				break;
 			default:
-				const oldValue = this[PropertySymbol.value];
+				const oldValue = this.value;
 				this[PropertySymbol.value] = HTMLInputElementValueSanitizer.sanitize(this, value);
 
 				if (oldValue !== this[PropertySymbol.value]) {
@@ -970,7 +1065,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param message Message.
 	 */
 	public setCustomValidity(message: string): void {
-		(<string>this.validationMessage) = String(message);
+		this[PropertySymbol.validationMessage] = String(message);
 	}
 
 	/**
@@ -1102,7 +1197,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			this.type === 'hidden' ||
 			this.type === 'reset' ||
 			this.type === 'button' ||
-			this.validity.valid;
+			this[PropertySymbol.validity].valid;
 		if (!valid) {
 			this.dispatchEvent(new Event('invalid', { bubbles: true, cancelable: true }));
 		}
@@ -1156,8 +1251,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		clone[PropertySymbol.value] = this[PropertySymbol.value];
 		clone[PropertySymbol.height] = this[PropertySymbol.height];
 		clone[PropertySymbol.width] = this[PropertySymbol.width];
-		clone.defaultChecked = this.defaultChecked;
-		clone.files = <FileList>this.files.slice();
+		clone[PropertySymbol.defaultChecked] = this[PropertySymbol.defaultChecked];
+		clone[PropertySymbol.files] = <FileList>this[PropertySymbol.files].slice();
 		clone.#selectionStart = this.#selectionStart;
 		clone.#selectionEnd = this.#selectionEnd;
 		clone.#selectionDirection = this.#selectionDirection;
@@ -1196,7 +1291,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
-			this.isConnected
+			this[PropertySymbol.isConnected]
 		) {
 			const inputType = this.type;
 			if (!this.readOnly || inputType === 'checkbox' || inputType === 'radio') {
@@ -1208,7 +1303,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 					if (form) {
 						form.requestSubmit();
 					}
-				} else if (inputType === 'reset' && this.isConnected) {
+				} else if (inputType === 'reset' && this[PropertySymbol.isConnected]) {
 					const form = <IHTMLFormElement>this[PropertySymbol.formNode];
 					if (form) {
 						form.reset();
