@@ -150,11 +150,15 @@ import RequestImplementation from '../fetch/Request.js';
 import ResponseImplementation from '../fetch/Response.js';
 import RangeImplementation from '../range/Range.js';
 
-const ORIGINAL_SET_TIMEOUT = setTimeout;
-const ORIGINAL_CLEAR_TIMEOUT = clearTimeout;
-const ORIGINAL_SET_INTERVAL = setInterval;
-const ORIGINAL_CLEAR_INTERVAL = clearInterval;
-const ORIGINAL_QUEUE_MICROTASK = queueMicrotask;
+const TIMER = {
+	setTimeout: setTimeout,
+	clearTimeout: clearTimeout,
+	setInterval: setInterval,
+	clearInterval: clearInterval,
+	queueMicrotask: queueMicrotask,
+	setImmediate: setImmediate,
+	clearImmediate: clearImmediate
+};
 const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
 
 /**
@@ -493,11 +497,6 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly [PropertySymbol.readyStateManager] = new DocumentReadyStateManager(this);
 
 	// Private properties
-	#setTimeout: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
-	#clearTimeout: (id: NodeJS.Timeout) => void;
-	#setInterval: (callback: Function, delay?: number, ...args: unknown[]) => NodeJS.Timeout;
-	#clearInterval: (id: NodeJS.Timeout) => void;
-	#queueMicrotask: (callback: Function) => void;
 	#browserFrame: IBrowserFrame;
 	#innerWidth: number | null = null;
 	#innerHeight: number | null = null;
@@ -516,11 +515,6 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		super();
 
 		this.#browserFrame = browserFrame;
-		this.#setTimeout = ORIGINAL_SET_TIMEOUT;
-		this.#clearTimeout = ORIGINAL_CLEAR_TIMEOUT;
-		this.#setInterval = ORIGINAL_SET_INTERVAL;
-		this.#clearInterval = ORIGINAL_CLEAR_INTERVAL;
-		this.#queueMicrotask = ORIGINAL_QUEUE_MICROTASK;
 
 		this.customElements = new CustomElementRegistry();
 		this.navigator = new Navigator(this);
@@ -967,7 +961,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 			!settings ||
 			!settings.disableErrorCapturing ||
 			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
-		const id = this.#setTimeout(() => {
+		const id = TIMER.setTimeout(() => {
 			if (useTryCatch) {
 				WindowErrorUtility.captureError(this, () => callback(...args));
 			} else {
@@ -990,7 +984,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		if (IS_NODE_JS_TIMEOUT_ENVIRONMENT && (!id || id.constructor.name !== 'Timeout')) {
 			return;
 		}
-		this.#clearTimeout(id);
+		TIMER.clearTimeout(id);
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
 	}
 
@@ -1008,7 +1002,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 			!settings ||
 			!settings.disableErrorCapturing ||
 			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
-		const id = this.#setInterval(() => {
+		const id = TIMER.setInterval(() => {
 			if (useTryCatch) {
 				WindowErrorUtility.captureError(
 					this,
@@ -1034,7 +1028,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		if (IS_NODE_JS_TIMEOUT_ENVIRONMENT && (!id || id.constructor.name !== 'Timeout')) {
 			return;
 		}
-		this.#clearInterval(id);
+		TIMER.clearInterval(id);
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
 	}
 
@@ -1050,7 +1044,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 			!settings ||
 			!settings.disableErrorCapturing ||
 			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
-		const id = global.setImmediate(() => {
+		const id = TIMER.setImmediate(() => {
 			if (useTryCatch) {
 				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
 			} else {
@@ -1073,7 +1067,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		if (IS_NODE_JS_TIMEOUT_ENVIRONMENT && (!id || id.constructor.name !== 'Immediate')) {
 			return;
 		}
-		global.clearImmediate(id);
+		TIMER.clearImmediate(id);
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endImmediate(id);
 	}
 
@@ -1092,7 +1086,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 			!settings ||
 			!settings.disableErrorCapturing ||
 			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
-		this.#queueMicrotask(() => {
+		TIMER.queueMicrotask(() => {
 			if (!isAborted) {
 				if (useTryCatch) {
 					WindowErrorUtility.captureError(this, <() => unknown>callback);

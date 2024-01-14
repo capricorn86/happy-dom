@@ -1117,8 +1117,8 @@ describe('Element', () => {
 			div.innerHTML =
 				'<span id="a"></span><span id="b"></span><span id="c"></span><span id="d"></span>';
 
-			const a = div.querySelector('#a');
-			const b = div.querySelector('#b');
+			const a = <IElement>div.querySelector('#a');
+			const b = <IElement>div.querySelector('#b');
 
 			div.insertBefore(a, b);
 
