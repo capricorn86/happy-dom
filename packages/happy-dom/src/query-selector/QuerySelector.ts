@@ -17,6 +17,11 @@ type IDocumentPositionAndElement = {
 };
 
 /**
+ * Invalid Selector RegExp.
+ */
+const INVALID_SELECTOR_REGEXP = /^[.#\[]?\d/;
+
+/**
  * Utility for query selection in an HTML element.
  *
  * @class QuerySelector
@@ -35,12 +40,18 @@ export default class QuerySelector {
 	): INodeList<IElement> {
 		if (selector === '') {
 			throw new Error(
-				"Failed to execute 'querySelectorAll' on 'Element': The provided selector is empty."
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
 		if (selector === null || selector === undefined) {
 			return new NodeList<IElement>();
+		}
+
+		if (INVALID_SELECTOR_REGEXP.test(selector)) {
+			throw new Error(
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`
+			);
 		}
 
 		const groups = SelectorParser.getSelectorGroups(selector);
@@ -79,15 +90,21 @@ export default class QuerySelector {
 	public static querySelector(
 		node: IElement | IDocument | IDocumentFragment,
 		selector: string
-	): IElement {
+	): IElement | null {
 		if (selector === '') {
 			throw new Error(
-				"Failed to execute 'querySelector' on 'Element': The provided selector is empty."
+				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
 		if (selector === null || selector === undefined) {
 			return null;
+		}
+
+		if (INVALID_SELECTOR_REGEXP.test(selector)) {
+			throw new Error(
+				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
+			);
 		}
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
@@ -112,10 +129,20 @@ export default class QuerySelector {
 	 * @returns Result.
 	 */
 	public static match(element: IElement, selector: string): ISelectorMatch | null {
+		if (!selector) {
+			return null;
+		}
+
 		if (selector === '*') {
 			return {
 				priorityWeight: 1
 			};
+		}
+
+		if (INVALID_SELECTOR_REGEXP.test(selector)) {
+			throw new Error(
+				`Failed to execute 'match' on '${element.constructor.name}': '${selector}' is not a valid selector.`
+			);
 		}
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
