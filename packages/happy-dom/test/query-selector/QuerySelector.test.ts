@@ -975,6 +975,22 @@ describe('QuerySelector', () => {
 
 			expect(elements.length).toBe(0);
 		});
+
+		it('Throws an error when providing an invalid selector', () => {
+			const div = document.createElement('div');
+			expect(() => div.querySelectorAll('1')).toThrowError(
+				"Failed to execute 'querySelectorAll' on 'HTMLElement': '1' is not a valid selector."
+			);
+			expect(() => div.querySelectorAll('[1')).toThrowError(
+				"Failed to execute 'querySelectorAll' on 'HTMLElement': '[1' is not a valid selector."
+			);
+			expect(() => div.querySelectorAll('.1')).toThrowError(
+				"Failed to execute 'querySelectorAll' on 'HTMLElement': '.1' is not a valid selector."
+			);
+			expect(() => div.querySelectorAll('#1')).toThrowError(
+				"Failed to execute 'querySelectorAll' on 'HTMLElement': '#1' is not a valid selector."
+			);
+		});
 	});
 
 	describe('querySelector', () => {
@@ -1125,6 +1141,22 @@ describe('QuerySelector', () => {
 			const element2 = div.querySelector('[ab="a:b"]');
 			expect(element === div.children[0]).toBe(true);
 			expect(element2 === div.children[0]).toBe(true);
+		});
+
+		it('Throws an error when providing an invalid selector', () => {
+			const div = document.createElement('div');
+			expect(() => div.querySelector('1')).toThrowError(
+				"Failed to execute 'querySelector' on 'HTMLElement': '1' is not a valid selector."
+			);
+			expect(() => div.querySelector('[1')).toThrowError(
+				"Failed to execute 'querySelector' on 'HTMLElement': '[1' is not a valid selector."
+			);
+			expect(() => div.querySelector('.1')).toThrowError(
+				"Failed to execute 'querySelector' on 'HTMLElement': '.1' is not a valid selector."
+			);
+			expect(() => div.querySelector('#1')).toThrowError(
+				"Failed to execute 'querySelector' on 'HTMLElement': '#1' is not a valid selector."
+			);
 		});
 	});
 });
