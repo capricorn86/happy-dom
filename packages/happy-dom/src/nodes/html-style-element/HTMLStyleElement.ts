@@ -1,4 +1,5 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLStyleElement from './IHTMLStyleElement.js';
 
@@ -9,7 +10,7 @@ import IHTMLStyleElement from './IHTMLStyleElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLStyleElement.
  */
 export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleElement {
-	private _styleSheet: CSSStyleSheet | null = null;
+	private [PropertySymbol.sheet]: CSSStyleSheet | null = null;
 
 	/**
 	 * Returns CSS style sheet.
@@ -17,14 +18,14 @@ export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleE
 	 * @returns CSS style sheet.
 	 */
 	public get sheet(): CSSStyleSheet {
-		if (!this.isConnected) {
+		if (!this[PropertySymbol.isConnected]) {
 			return null;
 		}
-		if (!this._styleSheet) {
-			this._styleSheet = new CSSStyleSheet();
+		if (!this[PropertySymbol.sheet]) {
+			this[PropertySymbol.sheet] = new CSSStyleSheet();
 		}
-		this._styleSheet.replaceSync(this.textContent);
-		return this._styleSheet;
+		this[PropertySymbol.sheet].replaceSync(this.textContent);
+		return this[PropertySymbol.sheet];
 	}
 
 	/**

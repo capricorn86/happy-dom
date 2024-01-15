@@ -9,6 +9,9 @@ import IElement from '../element/IElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement.
  */
 export default interface IHTMLElement extends IElement {
+	accessKey: string;
+	contentEditable: string;
+	isContentEditable: boolean;
 	dataset: { [key: string]: string };
 	tabIndex: number;
 	offsetHeight: number;

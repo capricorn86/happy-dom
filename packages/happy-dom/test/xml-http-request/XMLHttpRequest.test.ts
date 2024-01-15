@@ -3,15 +3,21 @@ import Window from '../../src/window/Window.js';
 import IWindow from '../../src/window/IWindow.js';
 import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequestReadyStateEnum.js';
 import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum.js';
-import XMLHttpRequestSyncRequestScriptBuilder from '../../src/xml-http-request/utilities/XMLHttpRequestSyncRequestScriptBuilder.js';
-import XMLHttpRequestCertificate from '../../src/xml-http-request/XMLHttpRequestCertificate.js';
 import ProgressEvent from '../../src/event/events/ProgressEvent.js';
-import HTTP from 'http';
 import { TextDecoder } from 'util';
 import Blob from '../../src/file/Blob.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import '../types.d.js';
+import { Stream } from 'stream';
+import SyncFetch from '../../src/fetch/SyncFetch.js';
+import IResponse from '../../src/fetch/types/IResponse.js';
+import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
+import Fetch from '../../src/fetch/Fetch.js';
+import Headers from '../../src/fetch/Headers.js';
+import IHeaders from '../../src/fetch/types/IHeaders.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const WINDOW_URL = 'https://localhost:8080';
 const REQUEST_URL = '/path/to/resource/';
@@ -27,6 +33,7 @@ const FORBIDDEN_REQUEST_HEADERS = [
 	'cookie',
 	'cookie2',
 	'date',
+	'dnt',
 	'expect',
 	'host',
 	'keep-alive',
@@ -51,28 +58,20 @@ describe('XMLHttpRequest', () => {
 	});
 
 	afterEach(() => {
-		resetMockedModules();
 		vi.restoreAllMocks();
 	});
 
 	describe('get status()', () => {
 		it('Returns status for synchrounous requests.', () => {
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 201,
-							statusMessage: 'OK',
-							headers: {},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() =>
+					<ISyncResponse>{
+						headers: <IHeaders>new Headers(),
+						status: 201
+					}
+			);
 
-			expect(request.status).toBe(null);
+			expect(request.status).toBe(0);
 
 			request.open('GET', REQUEST_URL, false);
 			request.send();
@@ -82,29 +81,11 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns status for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 201,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(''));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () => <IResponse>{ headers: <IHeaders>new Headers(), status: 201 }
+				);
 
-				expect(request.status).toBe(null);
+				expect(request.status).toBe(0);
 
 				request.open('GET', REQUEST_URL, true);
 
@@ -120,63 +101,34 @@ describe('XMLHttpRequest', () => {
 
 	describe('get statusText()', () => {
 		it('Returns status text for synchrounous requests.', () => {
-			const expectedStatusText = 'Test';
+			const statusText = 'Test';
 
-			expect(request.statusText).toBe(null);
+			expect(request.statusText).toBe('');
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: expectedStatusText,
-							headers: {},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), statusText }
+			);
 
 			request.open('GET', REQUEST_URL, false);
 			request.send();
 
-			expect(request.statusText).toBe(expectedStatusText);
+			expect(request.statusText).toBe(statusText);
 		});
 
 		it('Returns status text for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
-				const expectedStatusText = 'Test';
+				const statusText = 'Test';
 
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: expectedStatusText,
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(''));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () => <IResponse>{ headers: <IHeaders>new Headers(), statusText }
+				);
 
-				expect(request.statusText).toBe(null);
+				expect(request.statusText).toBe('');
 
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
-					expect(request.statusText).toBe(expectedStatusText);
+					expect(request.statusText).toBe(statusText);
 					resolve(null);
 				});
 
@@ -188,35 +140,22 @@ describe('XMLHttpRequest', () => {
 	describe('get response()', () => {
 		it('Returns ArrayBuffer when "responseType" is set to "arrayBuffer".', async () => {
 			await new Promise((resolve) => {
-				const expectedResponse = 'Test';
+				const responseText = 'Test';
 
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(expectedResponse));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+				);
 
 				request.responseType = XMLHttpResponseTypeEnum.arraybuffer;
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
-					expect(new TextDecoder().decode(<ArrayBuffer>request.response)).toBe(expectedResponse);
+					expect(responseText).toBe(new TextDecoder().decode(<ArrayBuffer>request.response));
 					resolve(null);
 				});
 
@@ -226,35 +165,22 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns Blob when "responseType" is set to "blob".', async () => {
 			await new Promise((resolve) => {
-				const expectedResponse = 'Test';
+				const responseText = 'Test';
 
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(expectedResponse));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+				);
 
 				request.responseType = XMLHttpResponseTypeEnum.blob;
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
-					expect((<Blob>request.response)._buffer.toString()).toBe(expectedResponse);
+					expect(responseText).toBe((<Blob>request.response)[PropertySymbol.buffer].toString());
 					resolve(null);
 				});
 
@@ -264,29 +190,16 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns Document when "responseType" is set to "document".', async () => {
 			await new Promise((resolve) => {
-				const expectedResponse = 'Test';
+				const responseText = 'Test';
 
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(expectedResponse));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+				);
 
 				request.responseType = XMLHttpResponseTypeEnum.document;
 				request.open('GET', REQUEST_URL, true);
@@ -304,29 +217,16 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns JSON when "responseType" is set to "json".', async () => {
 			await new Promise((resolve) => {
-				const expectedResponse = '{ "key1": "value1", "key2": "value2" }';
+				const responseText = '{ "key1": "value1", "key2": "value2" }';
 
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(expectedResponse));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+				);
 
 				request.responseType = XMLHttpResponseTypeEnum.json;
 				request.open('GET', REQUEST_URL, true);
@@ -342,34 +242,21 @@ describe('XMLHttpRequest', () => {
 
 		it('Defaults to text.', async () => {
 			await new Promise((resolve) => {
-				const expectedResponse = 'Test';
+				const responseText = 'Test';
 
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(expectedResponse));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+				);
 
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
-					expect(<string>request.response).toEqual('Test');
+					expect(<string>request.response).toEqual(responseText);
 					resolve(null);
 				});
 
@@ -380,20 +267,9 @@ describe('XMLHttpRequest', () => {
 
 	describe('get responseURL()', () => {
 		it('Returns response URL for synchrounous requests.', () => {
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), url: WINDOW_URL + REQUEST_URL }
+			);
 
 			expect(request.responseURL).toBe('');
 
@@ -405,27 +281,9 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns response URL for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(''));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () => <IResponse>{ headers: <IHeaders>new Headers(), url: WINDOW_URL + REQUEST_URL }
+				);
 
 				expect(request.responseURL).toBe('');
 
@@ -443,20 +301,9 @@ describe('XMLHttpRequest', () => {
 
 	describe('get readyState()', () => {
 		it('Returns ready state for synchrounous requests.', () => {
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers() }
+			);
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
 
@@ -468,27 +315,16 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns ready state for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(''));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				const responseText = 'test';
+
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+				);
 
 				let isProgressTriggered = false;
 
@@ -498,7 +334,7 @@ describe('XMLHttpRequest', () => {
 
 				request.addEventListener('progress', () => {
 					isProgressTriggered = true;
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
@@ -516,20 +352,9 @@ describe('XMLHttpRequest', () => {
 		it('Returns response text for synchrounous requests.', () => {
 			const responseText = 'test';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {},
-							text: responseText,
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), body: Buffer.from(responseText) }
+			);
 
 			request.open('GET', REQUEST_URL, false);
 			request.send();
@@ -539,27 +364,17 @@ describe('XMLHttpRequest', () => {
 		it('Returns response text for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'test';
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{
+							headers: <IHeaders>new Headers(),
+							body: Stream.Readable.from(generate())
+						}
+				);
 
 				request.open('GET', REQUEST_URL, true);
 				request.addEventListener('load', () => {
@@ -586,27 +401,9 @@ describe('XMLHttpRequest', () => {
 
 		it(`Throws an exception if readyState is "loading".`, async () => {
 			await new Promise((resolve) => {
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(''));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () => <IResponse>{ headers: <IHeaders>new Headers() }
+				);
 
 				request.open('GET', REQUEST_URL, true);
 				request.addEventListener('progress', () => {
@@ -636,7 +433,7 @@ describe('XMLHttpRequest', () => {
 		it('Throws an exception for forbidden request methods.', () => {
 			for (const forbiddenMethod of FORBIDDEN_REQUEST_METHODS) {
 				expect(() => request.open(forbiddenMethod, REQUEST_URL, true)).toThrowError(
-					'Request method not allowed'
+					`'${forbiddenMethod}' is not a valid HTTP method.`
 				);
 			}
 		});
@@ -651,97 +448,50 @@ describe('XMLHttpRequest', () => {
 
 	describe('setRequestHeader()', () => {
 		it('Sets a request header on a synchronous request.', () => {
-			let isExecuted = false;
+			let requestArgs: { headers: { [name: string]: string } } | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					expect(args[1]).toBe(
-						XMLHttpRequestSyncRequestScriptBuilder.getScript(
-							{
-								host: 'localhost',
-								port: 8080,
-								path: REQUEST_URL,
-								method: 'GET',
-								headers: {
-									accept: '*/*',
-									referer: WINDOW_URL + '/',
-									'user-agent': window.navigator.userAgent,
-									cookie: '',
-									'test-header': 'test',
-									host: window.location.host
-								},
-								agent: false,
-								rejectUnauthorized: true,
-								key: XMLHttpRequestCertificate.key,
-								cert: XMLHttpRequestCertificate.cert
-							},
-							true
-						)
-					);
-
-					isExecuted = true;
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(function () {
+				requestArgs = {
+					headers: {
+						'test-header': this.request.headers.get('test-header')
+					}
+				};
+				return <ISyncResponse>{ headers: <IHeaders>new Headers() };
 			});
 
 			request.open('GET', REQUEST_URL, false);
 			expect(request.setRequestHeader('test-header', 'test')).toBe(true);
 			request.send();
-			expect(isExecuted).toBe(true);
+			expect(requestArgs).toEqual({
+				headers: {
+					'test-header': 'test'
+				}
+			});
 		});
 
 		it('Sets a request header on an asynchrounous request.', async () => {
 			await new Promise((resolve) => {
-				const responseText = 'test';
+				let requestArgs: { headers: { [name: string]: string } } | null = null;
 
-				mockModule('https', {
-					request: (
-						options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						expect(options.headers).toEqual({
-							accept: '*/*',
-							cookie: '',
-							host: window.location.host,
-							referer: WINDOW_URL + '/',
-							'user-agent': window.navigator.userAgent,
-							'test-header': 'test'
-						});
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'content-length': responseText.length
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						headers: {
+							'test-header': this.request.headers.get('test-header')
+						}
+					};
+					return <IResponse>{ headers: <IHeaders>new Headers() };
 				});
 
 				request.open('GET', REQUEST_URL, true);
 				expect(request.setRequestHeader('test-header', 'test')).toBe(true);
-				request.addEventListener('load', () => resolve(null));
+				request.addEventListener('load', () => {
+					expect(requestArgs).toEqual({
+						headers: {
+							'test-header': 'test'
+						}
+					});
+					resolve(null);
+				});
 				request.send();
 			});
 		});
@@ -762,25 +512,15 @@ describe('XMLHttpRequest', () => {
 
 	describe('getResponseHeader()', () => {
 		it('Returns response header for a synchrounous request.', () => {
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {
-								key1: 'value1',
-								key2: 'value2',
-								'set-cookie': 'key1=value1',
-								'set-cookie2': 'key1=value1'
-							},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() =>
+					<ISyncResponse>{
+						headers: <IHeaders>new Headers({
+							key1: 'value1',
+							key2: 'value2'
+						})
+					}
+			);
 
 			request.open('GET', REQUEST_URL, false);
 			request.send();
@@ -788,43 +528,19 @@ describe('XMLHttpRequest', () => {
 			expect(request.getResponseHeader('key1')).toBe('value1');
 			expect(request.getResponseHeader('key2')).toBe('value2');
 			expect(request.getResponseHeader('key3')).toBe(null);
-
-			// These cookies should always be null for security reasons.
-			expect(request.getResponseHeader('set-cookie')).toBe(null);
-			expect(request.getResponseHeader('set-cookie2')).toBe(null);
 		});
 
 		it('Returns response header for an asynchrounous request.', async () => {
 			await new Promise((resolve) => {
-				const responseText = 'test';
-
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'content-length': responseText.length,
-										key1: 'value1',
-										key2: 'value2',
-										'set-cookie': 'key1=value1',
-										'set-cookie2': 'key1=value1'
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{
+							headers: <IHeaders>new Headers({
+								key1: 'value1',
+								key2: 'value2'
+							})
+						}
+				);
 
 				request.open('GET', REQUEST_URL, true);
 
@@ -832,10 +548,6 @@ describe('XMLHttpRequest', () => {
 					expect(request.getResponseHeader('key1')).toBe('value1');
 					expect(request.getResponseHeader('key2')).toBe('value2');
 					expect(request.getResponseHeader('key3')).toBe(null);
-
-					// These cookies should always be null for security reasons.
-					expect(request.getResponseHeader('set-cookie')).toBe(null);
-					expect(request.getResponseHeader('set-cookie2')).toBe(null);
 
 					resolve(null);
 				});
@@ -851,25 +563,15 @@ describe('XMLHttpRequest', () => {
 
 	describe('getAllResponseHeaders()', () => {
 		it('Returns all response headers for a synchrounous request.', () => {
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {
-								key1: 'value1',
-								key2: 'value2',
-								'set-cookie': 'key1=value1',
-								'set-cookie2': 'key1=value1'
-							},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() =>
+					<ISyncResponse>{
+						headers: <IHeaders>new Headers({
+							key1: 'value1',
+							key2: 'value2'
+						})
+					}
+			);
 
 			request.open('GET', REQUEST_URL, false);
 			request.send();
@@ -879,41 +581,22 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns all response headers for an asynchrounous request.', async () => {
 			await new Promise((resolve) => {
-				const responseText = 'test';
-
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'content-length': responseText.length,
-										key1: 'value1',
-										key2: 'value2',
-										'set-cookie': 'key1=value1',
-										'set-cookie2': 'key1=value1'
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{
+							headers: <IHeaders>new Headers({
+								'Content-Length': '4',
+								key1: 'value1',
+								key2: 'value2'
+							})
+						}
+				);
 
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
 					expect(request.getAllResponseHeaders()).toBe(
-						'content-length: 4\r\nkey1: value1\r\nkey2: value2'
+						'Content-Length: 4\r\nkey1: value1\r\nkey2: value2'
 					);
 					resolve(null);
 				});
@@ -934,181 +617,17 @@ describe('XMLHttpRequest', () => {
 			);
 		});
 
-		it('Throws an exception if the request has already been sent.', () => {
-			mockModule('https', {
-				request: (_options: unknown) => {
-					return {
-						end: () => {},
-						on: () => {}
-					};
-				}
-			});
-
-			request.open('GET', REQUEST_URL, true);
-			request.send();
-
-			expect(() => request.send()).toThrowError(
-				`Failed to execute 'send' on 'XMLHttpRequest': Send has already been called.`
-			);
-		});
-
-		it('Throws an exception when the page is HTTPS and the request is HTTP.', () => {
-			const unsecureURL = 'http://unsecure.happydom';
-			request.open('GET', unsecureURL, false);
-
-			expect(() => request.send()).toThrowError(
-				`Mixed Content: The page at '${window.location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${unsecureURL}/'. This request has been blocked; the content must be served over HTTPS.`
-			);
-		});
-
-		it('Throws an exception when doing a synchronous request towards a local file if "window.happyDOM.settings.enableFileSystemHttpRequests" has not been enabled.', () => {
-			request.open('GET', 'file://C:/path/to/file.txt', false);
-
-			expect(() => request.send()).toThrowError(
-				'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.'
-			);
-		});
-
-		it('Throws an exception when doing an asynchronous request towards a local file if "window.happyDOM.settings.enableFileSystemHttpRequests" has not been enabled.', () => {
-			request.open('GET', 'file://C:/path/to/file.txt', true);
-
-			expect(() => request.send()).toThrowError(
-				'File system is disabled by default for security reasons. To enable it, set the "window.happyDOM.settings.enableFileSystemHttpRequests" option to true.'
-			);
-		});
-
-		it('Throws an exception when doing a synchronous request towards a local file with another method than "GET".', () => {
-			window.happyDOM.settings.enableFileSystemHttpRequests = true;
-
-			request.open('POST', 'file://C:/path/to/file.txt', false);
-
-			expect(() => request.send()).toThrowError(
-				'Failed to send local file system request. Only "GET" method is supported for local file system requests.'
-			);
-		});
-
-		it('Throws an exception when doing a asynchronous request towards a local file with another method than "GET".', () => {
-			window.happyDOM.settings.enableFileSystemHttpRequests = true;
-
-			request.open('POST', 'file://C:/path/to/file.txt', true);
-
-			expect(() => request.send()).toThrowError(
-				'Failed to send local file system request. Only "GET" method is supported for local file system requests.'
-			);
-		});
-
-		it('Performs a synchronous request towards a local file.', () => {
-			const filepath = 'C:/path/to/file.txt';
-			const fileContent = 'test';
-
-			mockModule('fs', {
-				readFileSync: (path: string) => {
-					expect(path).toBe(filepath);
-					return Buffer.from(fileContent);
-				}
-			});
-
-			window.happyDOM.settings.enableFileSystemHttpRequests = true;
-
-			request.open('GET', `file://${filepath}`, false);
-
-			request.send();
-
-			expect(request.responseText).toBe(fileContent);
-			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
-			expect(request.getAllResponseHeaders()).toBe('content-length: 4\r\ncontent-type: text/plain');
-		});
-
-		it('Performs an asynchronous request towards a local file.', async () => {
-			await new Promise((resolve) => {
-				const filepath = 'C:/path/to/file.txt';
-				const fileContent = 'test';
-
-				mockModule('fs', {
-					promises: {
-						readFile: (path: string) => {
-							expect(path).toBe(filepath);
-							return Promise.resolve(Buffer.from(fileContent));
-						}
-					}
-				});
-
-				window.happyDOM.settings.enableFileSystemHttpRequests = true;
-
-				request.open('GET', `file://${filepath}`, true);
-
-				let isProgressTriggered = false;
-
-				request.addEventListener('progress', (event) => {
-					isProgressTriggered = true;
-					expect((<ProgressEvent>event).lengthComputable).toBe(true);
-					expect((<ProgressEvent>event).loaded).toBe(fileContent.length);
-					expect((<ProgressEvent>event).total).toBe(fileContent.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
-				});
-
-				request.addEventListener('load', () => {
-					expect(request.responseText).toBe(fileContent);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
-					expect(isProgressTriggered).toBe(true);
-					resolve(null);
-				});
-
-				request.send();
-			});
-		});
-
 		it('Performs a synchronous GET request with the HTTP protocol.', () => {
 			const windowURL = 'http://localhost:8080';
+			const window = new Window({
+				url: windowURL
+			});
+			const request = new window.XMLHttpRequest();
 			const responseText = 'test';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						XMLHttpRequestSyncRequestScriptBuilder.getScript(
-							{
-								host: 'localhost',
-								port: 8080,
-								path: REQUEST_URL,
-								method: 'GET',
-								headers: {
-									accept: '*/*',
-									referer: windowURL + '/',
-									'user-agent': window.navigator.userAgent,
-									cookie: '',
-									host: window.location.host
-								},
-								agent: false,
-								rejectUnauthorized: true
-							},
-							false
-						)
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {},
-							text: responseText,
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
-
-			window.happyDOM.setURL(windowURL);
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), body: Buffer.from(responseText) }
+			);
 
 			request.open('GET', REQUEST_URL, false);
 
@@ -1120,53 +639,9 @@ describe('XMLHttpRequest', () => {
 		it('Performs a synchronous GET request with the HTTPS protocol.', () => {
 			const responseText = 'test';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						XMLHttpRequestSyncRequestScriptBuilder.getScript(
-							{
-								host: 'localhost',
-								port: 8080,
-								path: REQUEST_URL,
-								method: 'GET',
-								headers: {
-									accept: '*/*',
-									referer: WINDOW_URL + '/',
-									'user-agent': window.navigator.userAgent,
-									cookie: '',
-									host: window.location.host
-								},
-								agent: false,
-								rejectUnauthorized: true,
-								key: XMLHttpRequestCertificate.key,
-								cert: XMLHttpRequestCertificate.cert
-							},
-							true
-						)
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {},
-							text: responseText,
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
+				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), body: Buffer.from(responseText) }
+			);
 
 			request.open('GET', REQUEST_URL, false);
 
@@ -1179,52 +654,28 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'test';
 				const windowURL = 'http://localhost:8080';
-				let body = '';
-
-				mockModule('http', {
-					request: (
-						options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						expect(options).toEqual({
-							host: 'localhost',
-							port: 8080,
-							path: REQUEST_URL,
-							method: 'GET',
-							headers: {
-								accept: '*/*',
-								referer: windowURL + '/',
-								'user-agent': window.navigator.userAgent,
-								cookie: '',
-								host: window.location.host
-							},
-							agent: false,
-							rejectUnauthorized: true
-						});
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'content-length': responseText.length
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							write: (data) => (body += data),
-							on: () => {}
-						};
-					}
+				const window = new Window({
+					url: windowURL
 				});
+				const request = new window.XMLHttpRequest();
+				let requestArgs: { method: string; url: string };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				window.location.href = windowURL;
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
+				});
 
 				request.open('GET', REQUEST_URL, true);
 
@@ -1235,14 +686,18 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('loadend', () => {
-					expect(body).toBe('');
+					expect(requestArgs).toEqual({
+						method: 'GET',
+						url: windowURL + REQUEST_URL
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
+
 					resolve(null);
 				});
 
@@ -1254,51 +709,23 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'http.request.body';
 				const queryString = '?query=string';
-				let body = '';
+				let requestArgs: { method: string; url: string };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				mockModule('https', {
-					request: (
-						options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						expect(options).toEqual({
-							host: 'localhost',
-							port: 8080,
-							path: REQUEST_URL + queryString,
-							method: 'GET',
-							headers: {
-								accept: '*/*',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-								cookie: '',
-								host: window.location.host
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: XMLHttpRequestCertificate.key,
-							cert: XMLHttpRequestCertificate.cert
-						});
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'content-length': responseText.length
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							write: (data) => (body += data),
-							on: () => {}
-						};
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('GET', REQUEST_URL + queryString, true);
@@ -1310,14 +737,18 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
-					expect(body).toBe('');
+					expect(requestArgs).toEqual({
+						method: 'GET',
+						url: WINDOW_URL + REQUEST_URL + queryString
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
+
 					resolve(null);
 				});
 
@@ -1328,33 +759,17 @@ describe('XMLHttpRequest', () => {
 		it('Handles responses without content length.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'http.request.body';
-				let body = '';
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				mockModule('https', {
-					request: (
-						_options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							write: (data) => (body += data),
-							on: () => {}
-						};
-					}
-				});
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<IResponse>{
+							headers: <IHeaders>new Headers(),
+							body: Stream.Readable.from(generate())
+						}
+				);
 
 				request.open('GET', REQUEST_URL, true);
 
@@ -1372,51 +787,23 @@ describe('XMLHttpRequest', () => {
 		it('Performs an asynchronous GET request with the HTTPS protocol.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'http.request.body';
-				let body = '';
+				let requestArgs: { method: string; url: string };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				mockModule('https', {
-					request: (
-						options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						expect(options).toEqual({
-							host: 'localhost',
-							port: 8080,
-							path: REQUEST_URL,
-							method: 'GET',
-							headers: {
-								accept: '*/*',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-								cookie: '',
-								host: window.location.host
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: XMLHttpRequestCertificate.key,
-							cert: XMLHttpRequestCertificate.cert
-						});
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'content-length': responseText.length
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							write: (data) => (body += data),
-							on: () => {}
-						};
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('GET', REQUEST_URL, true);
@@ -1428,14 +815,18 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
-					expect(body).toBe('');
+					expect(requestArgs).toEqual({
+						method: 'GET',
+						url: WINDOW_URL + REQUEST_URL
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
+
 					resolve(null);
 				});
 
@@ -1448,52 +839,27 @@ describe('XMLHttpRequest', () => {
 				const username = 'username';
 				const password = 'password';
 				const responseText = 'http.request.body';
-				let body = '';
+				let requestArgs: { method: string; url: string; headers: { [name: string]: string } };
 
-				mockModule('https', {
-					request: (
-						options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						expect(options).toEqual({
-							host: 'localhost',
-							port: 8080,
-							path: REQUEST_URL,
-							method: 'GET',
-							headers: {
-								accept: '*/*',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-								cookie: '',
-								host: window.location.host,
-								authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: XMLHttpRequestCertificate.key,
-							cert: XMLHttpRequestCertificate.cert
-						});
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'content-length': responseText.length
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							write: (data) => (body += data),
-							on: () => {}
-						};
-					}
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url,
+						headers: {
+							Authorization: this.request.headers.get('Authorization')
+						}
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('GET', REQUEST_URL, true, username, password);
@@ -1505,14 +871,21 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
-					expect(body).toBe('');
+					expect(requestArgs).toEqual({
+						method: 'GET',
+						url: WINDOW_URL + REQUEST_URL,
+						headers: {
+							Authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
+						}
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
+
 					resolve(null);
 				});
 
@@ -1524,60 +897,41 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const username = 'username';
 				const responseText = 'http.request.body';
-				let body = '';
+				let requestArgs: { method: string; url: string; headers: { [name: string]: string } };
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
 
-				mockModule('https', {
-					request: (
-						options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						expect(options).toEqual({
-							host: 'localhost',
-							port: 8080,
-							path: REQUEST_URL,
-							method: 'GET',
-							headers: {
-								accept: '*/*',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-								cookie: '',
-								host: window.location.host,
-								authorization: `Basic ${Buffer.from(`${username}:`).toString('base64')}`
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: XMLHttpRequestCertificate.key,
-							cert: XMLHttpRequestCertificate.cert
-						});
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'content-length': responseText.length
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							write: (data) => (body += data),
-							on: () => {}
-						};
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url,
+						headers: {
+							Authorization: this.request.headers.get('Authorization')
+						}
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('GET', REQUEST_URL, true, username);
 
 				request.addEventListener('load', () => {
-					expect(body).toBe('');
+					expect(requestArgs).toEqual({
+						method: 'GET',
+						url: WINDOW_URL + REQUEST_URL,
+						headers: {
+							Authorization: `Basic ${Buffer.from(`${username}:`).toString('base64')}`
+						}
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+
 					resolve(null);
 				});
 
@@ -1587,55 +941,28 @@ describe('XMLHttpRequest', () => {
 
 		it('Performs an asynchronous POST request.', async () => {
 			await new Promise((resolve) => {
-				const postData = 'post.data';
 				const responseText = 'http.request.body';
-				let body = '';
+				const body = 'Hello, world!\n';
+				let requestArgs: { method: string; url: string; body: string };
 
-				mockModule('https', {
-					request: (
-						options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						expect(options).toEqual({
-							host: 'localhost',
-							port: 8080,
-							path: REQUEST_URL,
-							method: 'POST',
-							headers: {
-								accept: '*/*',
-								'content-length': postData.length,
-								'content-type': 'text/plain;charset=UTF-8',
-								referer: WINDOW_URL + '/',
-								'user-agent': window.navigator.userAgent,
-								cookie: '',
-								host: window.location.host
-							},
-							agent: false,
-							rejectUnauthorized: true,
-							key: XMLHttpRequestCertificate.key,
-							cert: XMLHttpRequestCertificate.cert
-						});
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'content-length': responseText.length
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(responseText));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							write: (data) => (body += data),
-							on: () => {}
-						};
-					}
+				async function* generate(): AsyncGenerator<string> {
+					yield responseText;
+				}
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					const requestBody = await this.request.text();
+					requestArgs = {
+						method: this.request.method,
+						url: this.request.url,
+						body: requestBody
+					};
+					return <IResponse>{
+						headers: <IHeaders>new Headers({
+							'Content-Length': String(responseText.length),
+							'Content-Type': 'text/html'
+						}),
+						body: Stream.Readable.from(generate())
+					};
 				});
 
 				request.open('POST', REQUEST_URL, true);
@@ -1647,106 +974,30 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.loading);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
 				});
 
 				request.addEventListener('load', () => {
-					expect(body).toBe(postData);
+					expect(requestArgs).toEqual({
+						method: 'POST',
+						url: WINDOW_URL + REQUEST_URL,
+						body
+					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					expect(isProgressTriggered).toBe(true);
+
 					resolve(null);
 				});
 
-				request.send(postData);
-			});
-		});
-
-		it('Writes cookies to document.cookie for synchrounous requests when the header "set-cookie" is returned in the response.', () => {
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						data: {
-							statusCode: 200,
-							statusMessage: '',
-							headers: {
-								'set-cookie': ['key1=value1', 'key2=value2']
-							},
-							text: '',
-							data: Buffer.from('').toString('base64')
-						}
-					});
-				}
-			});
-
-			request.open('GET', REQUEST_URL, false);
-			request.send();
-
-			expect(window.document.cookie).toBe('key1=value1; key2=value2');
-		});
-
-		it('Returns response header for an asynchrounous request.', async () => {
-			await new Promise((resolve) => {
-				mockModule('https', {
-					request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {
-										'set-cookie': ['key1=value1', 'key2=value2']
-									},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(''));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							},
-							on: () => {}
-						};
-					}
-				});
-
-				request.open('GET', REQUEST_URL, true);
-
-				request.addEventListener('load', () => {
-					expect(window.document.cookie).toBe('key1=value1; key2=value2');
-					resolve(null);
-				});
-
-				request.send();
+				request.send(body);
 			});
 		});
 
 		it('Handles error in request when performing an asynchronous request.', async () => {
 			await new Promise((resolve) => {
-				mockModule('https', {
-					request: (
-						_options: { headers: { [k: string]: string } },
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						return {
-							end: () => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'error') {
-											setTimeout(() => callback(new Error('error')));
-										}
-									}
-								}));
-							},
-							write: () => {},
-							on: () => {}
-						};
-					}
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					throw new Error('error');
 				});
 
 				request.open('GET', REQUEST_URL, true);
@@ -1757,10 +1008,8 @@ describe('XMLHttpRequest', () => {
 
 				request.addEventListener('error', () => {
 					expect(request.status).toBe(0);
-					expect(request.statusText).toBe('Error: error');
-					expect(
-						request.responseText.startsWith('Error: error') && request.responseText.includes(' at ')
-					).toBe(true);
+					expect(request.statusText).toBe('');
+					expect(request.responseText).toBe('');
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					resolve(null);
 				});
@@ -1771,20 +1020,15 @@ describe('XMLHttpRequest', () => {
 
 		it('Handles error in response when performing a synchronous request.', async () => {
 			await new Promise((resolve) => {
-				mockModule('child_process', {
-					execFileSync: () => {
-						return JSON.stringify({
-							error: 'Error',
-							data: {}
-						});
-					}
+				vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(function () {
+					throw new Error('error');
 				});
 
 				request.open('GET', REQUEST_URL, false);
 
 				request.addEventListener('error', () => {
 					expect(request.status).toBe(0);
-					expect(request.statusText).toBe('Error');
+					expect(request.statusText).toBe('');
 					expect(request.responseText).toBe('');
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 					resolve(null);
@@ -1796,149 +1040,140 @@ describe('XMLHttpRequest', () => {
 
 		it('Handles Happy DOM asynchrounous tasks.', async () => {
 			const responseText = 'responseText';
-			mockModule('https', {
-				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-					return {
-						end: () => {
-							callback(<HTTP.IncomingMessage>(<unknown>{
-								statusCode: 200,
-								statusMessage: '',
-								headers: {},
-								on: (event, callback) => {
-									if (event === 'data') {
-										callback(Buffer.from(responseText));
-									} else if (event === 'end') {
-										callback();
-									}
-								}
-							}));
-						},
-						on: () => {}
-					};
-				}
+			async function* generate(): AsyncGenerator<string> {
+				yield responseText;
+			}
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				await new Promise((resolve) => setTimeout(resolve, 2));
+				return <IResponse>{
+					headers: <IHeaders>new Headers(),
+					body: Stream.Readable.from(generate())
+				};
 			});
 
 			request.open('GET', REQUEST_URL, true);
 			request.send();
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect(request.responseText).toBe(responseText);
 		});
 	});
 
 	describe('abort()', () => {
-		it('Aborts an asynchrounous request.', () => {
-			let isDestroyed = false;
-			mockModule('https', {
-				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-					return {
-						end: () => {
-							setTimeout(() => {
-								callback(<HTTP.IncomingMessage>(<unknown>{
-									statusCode: 200,
-									statusMessage: '',
-									headers: {},
-									on: (event, callback) => {
-										if (event === 'data') {
-											callback(Buffer.from(''));
-										} else if (event === 'end') {
-											callback();
-										}
-									}
-								}));
-							});
-						},
-						on: () => {},
-						destroy: () => (isDestroyed = true)
-					};
-				}
-			});
+		it('Aborts an asynchrounous request.', async () => {
+			return await new Promise((resolve) => {
+				let isAborted = false;
 
-			let isAbortTriggered = false;
-			let isLoadEndTriggered = false;
-			request.open('GET', REQUEST_URL, true);
-			request.send();
-			request.addEventListener('abort', () => {
-				isAbortTriggered = true;
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+					return new Promise((resolve, reject) => {
+						const timeout = setTimeout(() => {
+							resolve(<IResponse>{ headers: <IHeaders>new Headers() });
+						}, 50);
+						this.request.signal.addEventListener('abort', () => {
+							isAborted = true;
+							clearTimeout(timeout);
+							reject(
+								new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+							);
+						});
+					});
+				});
+
+				let isAbortTriggered = false;
+				let isErrorTriggered = false;
+				let isLoadEndTriggered = false;
+				request.open('GET', REQUEST_URL, true);
+				request.send();
+				request.addEventListener('abort', () => {
+					isAbortTriggered = true;
+				});
+				request.addEventListener('error', () => {
+					isErrorTriggered = true;
+				});
+				request.addEventListener('loadend', () => {
+					isLoadEndTriggered = true;
+				});
+				setTimeout(() => {
+					request.abort();
+
+					expect(isAbortTriggered).toBe(true);
+					expect(isErrorTriggered).toBe(false);
+					expect(isLoadEndTriggered).toBe(true);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
+					expect(isAborted).toBe(true);
+
+					resolve(null);
+				});
 			});
-			request.addEventListener('loadend', () => {
-				isLoadEndTriggered = true;
-			});
-			request.abort();
-			expect(isAbortTriggered).toBe(true);
-			expect(isLoadEndTriggered).toBe(true);
-			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
-			expect(isDestroyed).toBe(true);
 		});
 
-		it('Ends an ongoing Happy DOM asynchrounous task.', async () => {
-			let isDestroyed = false;
-			mockModule('https', {
-				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-					return {
-						end: () => {
-							callback(<HTTP.IncomingMessage>(<unknown>{
-								statusCode: 200,
-								statusMessage: '',
-								headers: {},
-								on: (event, callback) => {
-									if (event === 'data') {
-										callback(Buffer.from(''));
-									} else if (event === 'end') {
-										callback();
-									}
-								}
-							}));
-						},
-						on: () => {},
-						destroy: () => (isDestroyed = true)
-					};
-				}
+		it('Waits for ongoing Happy DOM asynchrounous task.', async () => {
+			const responseText = 'responseText';
+			async function* generate(): AsyncGenerator<string> {
+				yield responseText;
+			}
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				await new Promise((resolve) => setTimeout(resolve, 2));
+				return <IResponse>{
+					headers: <IHeaders>new Headers(),
+					body: Stream.Readable.from(generate())
+				};
 			});
 
 			request.open('GET', REQUEST_URL, true);
 			request.send();
-			request.abort();
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
-			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
-			expect(isDestroyed).toBe(true);
+			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+			expect(request.responseText).toBe(responseText);
 		});
 
 		it('Aborts an ongoing request when cancelling all Happy DOM asynchrounous tasks.', async () => {
-			let isDestroyed = false;
-			mockModule('https', {
-				request: (_options: unknown, callback: (response: HTTP.IncomingMessage) => void) => {
-					return {
-						end: () => {
-							callback(<HTTP.IncomingMessage>(<unknown>{
-								statusCode: 200,
-								statusMessage: '',
-								headers: {},
-								on: (event, callback) => {
-									if (event === 'data') {
-										callback(Buffer.from(''));
-									} else if (event === 'end') {
-										callback();
-									}
-								}
-							}));
-						},
-						on: () => {},
-						destroy: () => (isDestroyed = true)
-					};
-				}
+			let isAborted = false;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				return new Promise((resolve, reject) => {
+					const timeout = setTimeout(() => {
+						resolve(<IResponse>{ headers: <IHeaders>new Headers() });
+					}, 50);
+					this.request.signal.addEventListener('abort', () => {
+						isAborted = true;
+						clearTimeout(timeout);
+						reject(new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError));
+					});
+				});
 			});
+
+			let isAbortTriggered = false;
+			let isErrorTriggered = false;
+			let isLoadEndTriggered = false;
 
 			request.open('GET', REQUEST_URL, true);
 			request.send();
 
-			window.happyDOM.cancelAsync();
+			request.addEventListener('abort', () => {
+				isAbortTriggered = true;
+			});
 
+			request.addEventListener('error', () => {
+				isErrorTriggered = true;
+			});
+
+			request.addEventListener('loadend', () => {
+				isLoadEndTriggered = true;
+			});
+
+			await window.happyDOM?.abort();
+
+			expect(isAbortTriggered).toBe(true);
+			expect(isErrorTriggered).toBe(false);
+			expect(isLoadEndTriggered).toBe(true);
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
-			expect(isDestroyed).toBe(true);
+			expect(isAborted).toBe(true);
 		});
 	});
 });

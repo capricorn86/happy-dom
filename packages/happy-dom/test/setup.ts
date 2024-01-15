@@ -1,10 +1,10 @@
 import { vi } from 'vitest';
 
-const mockedModuleNames = ['fs', 'child_process', 'http', 'https'];
+const mockedModuleNames = ['child_process', 'http', 'https'];
 const mockedModuleImplementations = {};
 const mockedModuleOriginals = {};
 
-global['mockModule'] = (name, module) => {
+(<any>global)['mockModule'] = (name, module) => {
 	if (!mockedModuleNames.includes(name)) {
 		throw new Error(
 			`The module "${name}" is not mocked. Please add it to the mocked modules array in "setup.js".`
@@ -24,25 +24,17 @@ global['mockModule'] = (name, module) => {
 	mockedModuleImplementations[name]['default'] = mockedModuleImplementations[name];
 };
 
-global['resetMockedModules'] = () => {
+(<any>global)['resetMockedModules'] = () => {
 	for (const name of mockedModuleNames) {
+		if (!mockedModuleImplementations[name]) {
+			throw new Error(`The module "${name}" has not been mocked.`);
+		}
 		mockedModuleImplementations[name] = Object.assign(
 			mockedModuleImplementations[name],
 			mockedModuleOriginals[name]
 		);
 	}
 };
-
-vi.mock('fs', async (importOriginal) => {
-	if (!mockedModuleImplementations['fs']) {
-		const original = await importOriginal();
-		mockedModuleOriginals['fs'] = original;
-		mockedModuleImplementations['fs'] = Object.assign({}, original);
-		mockedModuleImplementations['fs'].default =
-			mockedModuleImplementations['fs'].default || mockedModuleImplementations['fs'];
-	}
-	return mockedModuleImplementations['fs'];
-});
 
 vi.mock('child_process', async (importOriginal) => {
 	if (!mockedModuleImplementations['child_process']) {

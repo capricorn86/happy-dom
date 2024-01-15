@@ -1,14 +1,14 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import IWindow from '../../../src/window/IWindow.js';
+import IDocument from '../../../src/nodes/document/IDocument.js';
 import NodeUtility from '../../../src/nodes/node/NodeUtility.js';
 import NodeTypeEnum from '../../../src/nodes/node/NodeTypeEnum.js';
-import DOMImplementation from '../../../src/dom-implementation/DOMImplementation.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('NodeUtility', () => {
-	let window: Window;
-	let document: Document;
+	let window: IWindow;
+	let document: IDocument;
 
 	beforeEach(() => {
 		window = new Window();
@@ -170,38 +170,30 @@ describe('NodeUtility', () => {
 		});
 
 		describe('w/ document type node', () => {
-			let document: IDocument;
-			let implementation: DOMImplementation;
-
-			beforeEach(() => {
-				document = new Document();
-				implementation = new DOMImplementation(document);
-			});
-
 			it('Returns false if name are different', () => {
-				const doctype1 = implementation.createDocumentType('html1', 'foo', 'bar');
-				const doctype2 = implementation.createDocumentType('html2', 'foo', 'bar');
+				const doctype1 = window.document.implementation.createDocumentType('html1', 'foo', 'bar');
+				const doctype2 = window.document.implementation.createDocumentType('html2', 'foo', 'bar');
 
 				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(false);
 			});
 
 			it('Returns false if public id are different', () => {
-				const doctype1 = implementation.createDocumentType('html', 'foo1', 'bar');
-				const doctype2 = implementation.createDocumentType('html', 'foo2', 'bar');
+				const doctype1 = window.document.implementation.createDocumentType('html', 'foo1', 'bar');
+				const doctype2 = window.document.implementation.createDocumentType('html', 'foo2', 'bar');
 
 				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(false);
 			});
 
 			it('Returns false if system id are different', () => {
-				const doctype1 = implementation.createDocumentType('html', 'foo', 'bar1');
-				const doctype2 = implementation.createDocumentType('html', 'foo', 'bar2');
+				const doctype1 = window.document.implementation.createDocumentType('html', 'foo', 'bar1');
+				const doctype2 = window.document.implementation.createDocumentType('html', 'foo', 'bar2');
 
 				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(false);
 			});
 
 			it('Returns true if doctype are equals', () => {
-				const doctype1 = implementation.createDocumentType('html', 'foo', 'bar');
-				const doctype2 = implementation.createDocumentType('html', 'foo', 'bar');
+				const doctype1 = window.document.implementation.createDocumentType('html', 'foo', 'bar');
+				const doctype2 = window.document.implementation.createDocumentType('html', 'foo', 'bar');
 
 				expect(NodeUtility.isEqualNode(doctype1, doctype2)).toEqual(true);
 			});
@@ -226,8 +218,8 @@ describe('NodeUtility', () => {
 				const element1 = document.createElement('span');
 				const element2 = document.createElement('span');
 
-				element1.prefix = 'prefix1';
-				element2.prefix = 'prefix2';
+				element1[PropertySymbol.prefix] = 'prefix1';
+				element2[PropertySymbol.prefix] = 'prefix2';
 
 				expect(NodeUtility.isEqualNode(element1, element2)).toEqual(false);
 			});
@@ -245,8 +237,8 @@ describe('NodeUtility', () => {
 			it('Returns false if element attributes are not equal', () => {
 				const element1 = document.createElementNS('ns1', 'span');
 				const element2 = document.createElementNS('ns1', 'span');
-				element1.prefix = 'prefix1';
-				element2.prefix = 'prefix1';
+				element1[PropertySymbol.prefix] = 'prefix1';
+				element2[PropertySymbol.prefix] = 'prefix1';
 				const attrFoo = document.createAttribute('data-foo');
 				const attrBar = document.createAttribute('data-bar');
 				element1.setAttributeNode(attrFoo);

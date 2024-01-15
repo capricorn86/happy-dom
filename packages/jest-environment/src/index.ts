@@ -70,9 +70,9 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		}
 
 		if (projectConfig.testEnvironmentOptions['url']) {
-			this.window.happyDOM.setURL(String(projectConfig.testEnvironmentOptions['url']));
+			this.window.happyDOM?.setURL(String(projectConfig.testEnvironmentOptions['url']));
 		} else {
-			this.window.happyDOM.setURL('http://localhost/');
+			this.window.happyDOM?.setURL('http://localhost/');
 		}
 
 		this.fakeTimers = new LegacyFakeTimers({
@@ -90,7 +90,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			global: <typeof globalThis>(<unknown>this.window)
 		});
 
-		// Jest is using the setTimeout function from Happy DOM internally for detecting when a test times out, but this causes Window.happyDOM.whenAsyncComplete() and Window.happyDOM.cancelAsync() to not work as expected.
+		// Jest is using the setTimeout function from Happy DOM internally for detecting when a test times out, but this causes window.happyDOM?.waitUntilComplete() and window.happyDOM?.abort() to not work as expected.
 		// Hopefully Jest can fix this in the future as this fix is not very pretty.
 		const happyDOMSetTimeout = this.global.setTimeout;
 		(<(...args: unknown[]) => number>this.global.setTimeout) = (...args: unknown[]): number => {
@@ -117,7 +117,8 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.fakeTimers.dispose();
 		this.fakeTimersModern.dispose();
 
-		(<IWindow>(<unknown>this.global)).happyDOM.cancelAsync();
+		await (<IWindow>(<unknown>this.global)).happyDOM.abort();
+		(<IWindow>(<unknown>this.global)).close();
 
 		this.global = null;
 		this.moduleMocker = null;

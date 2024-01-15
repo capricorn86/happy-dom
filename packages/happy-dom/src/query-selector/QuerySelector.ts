@@ -1,4 +1,5 @@
 import IElement from '../nodes/element/IElement.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import INodeList from '../nodes/node/INodeList.js';
 import SelectorItem from './SelectorItem.js';
 import NodeList from '../nodes/node/NodeList.js';
@@ -55,9 +56,9 @@ export default class QuerySelector {
 
 		for (const items of groups) {
 			matches = matches.concat(
-				node.nodeType === NodeTypeEnum.elementNode
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findAll(<IElement>node, [<IElement>node], items)
-					: this.findAll(null, (<Element>node)._children, items)
+					: this.findAll(null, (<Element>node)[PropertySymbol.children], items)
 			);
 		}
 
@@ -107,9 +108,9 @@ export default class QuerySelector {
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =
-				node.nodeType === NodeTypeEnum.elementNode
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findFirst(<IElement>node, [<IElement>node], items)
-					: this.findFirst(null, (<Element>node)._children, items);
+					: this.findFirst(null, (<Element>node)[PropertySymbol.children], items);
 
 			if (match) {
 				return match;
@@ -267,7 +268,7 @@ export default class QuerySelector {
 							matched = matched.concat(
 								this.findAll(
 									rootElement,
-									(<Element>child)._children,
+									(<Element>child)[PropertySymbol.children],
 									selectorItems.slice(1),
 									position
 								)
@@ -279,10 +280,15 @@ export default class QuerySelector {
 
 			if (
 				selectorItem.combinator === SelectorCombinatorEnum.descendant &&
-				(<Element>child)._children.length
+				(<Element>child)[PropertySymbol.children].length
 			) {
 				matched = matched.concat(
-					this.findAll(rootElement, (<Element>child)._children, selectorItems, position)
+					this.findAll(
+						rootElement,
+						(<Element>child)[PropertySymbol.children],
+						selectorItems,
+						position
+					)
 				);
 			}
 		}
@@ -330,7 +336,7 @@ export default class QuerySelector {
 						case SelectorCombinatorEnum.child:
 							const match = this.findFirst(
 								rootElement,
-								(<Element>child)._children,
+								(<Element>child)[PropertySymbol.children],
 								selectorItems.slice(1)
 							);
 							if (match) {
@@ -343,9 +349,13 @@ export default class QuerySelector {
 
 			if (
 				selectorItem.combinator === SelectorCombinatorEnum.descendant &&
-				(<Element>child)._children.length
+				(<Element>child)[PropertySymbol.children].length
 			) {
-				const match = this.findFirst(rootElement, (<Element>child)._children, selectorItems);
+				const match = this.findFirst(
+					rootElement,
+					(<Element>child)[PropertySymbol.children],
+					selectorItems
+				);
 
 				if (match) {
 					return match;
