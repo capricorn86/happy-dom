@@ -92,7 +92,7 @@ export default class Selection {
 	 */
 	public get anchorOffset(): number {
 		if (!this.#range) {
-			return null;
+			return 0;
 		}
 		return this.#direction === SelectionDirectionEnum.forwards
 			? this.#range.startOffset
