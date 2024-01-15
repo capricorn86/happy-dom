@@ -990,6 +990,12 @@ describe('QuerySelector', () => {
 			expect(() => div.querySelectorAll('#1')).toThrowError(
 				"Failed to execute 'querySelectorAll' on 'HTMLElement': '#1' is not a valid selector."
 			);
+			expect(() => div.querySelectorAll('a.')).toThrowError(
+				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a.' is not a valid selector."
+			);
+			expect(() => div.querySelectorAll('a#')).toThrowError(
+				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a#' is not a valid selector."
+			);
 		});
 	});
 
@@ -1156,6 +1162,12 @@ describe('QuerySelector', () => {
 			);
 			expect(() => div.querySelector('#1')).toThrowError(
 				"Failed to execute 'querySelector' on 'HTMLElement': '#1' is not a valid selector."
+			);
+			expect(() => div.querySelector('a.')).toThrowError(
+				"Failed to execute 'querySelector' on 'HTMLElement': 'a.' is not a valid selector."
+			);
+			expect(() => div.querySelector('a#')).toThrowError(
+				"Failed to execute 'querySelector' on 'HTMLElement': 'a#' is not a valid selector."
 			);
 		});
 	});
