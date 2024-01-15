@@ -10,6 +10,7 @@ import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-inpu
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
+import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLInputElement', () => {
@@ -1206,11 +1207,16 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(form);
 
-			form.addEventListener('submit', () => submitTriggeredCount++);
+			let submitter: IHTMLInputElement | null = null;
+			form.addEventListener('submit', (event) => {
+				submitTriggeredCount++;
+				submitter = <IHTMLInputElement>(<SubmitEvent>event).submitter;
+			});
 
 			button.click();
 
 			expect(submitTriggeredCount).toBe(1);
+			expect(submitter).toBe(button);
 		});
 
 		it('Resets form if type is "reset" and is a "click" event.', () => {

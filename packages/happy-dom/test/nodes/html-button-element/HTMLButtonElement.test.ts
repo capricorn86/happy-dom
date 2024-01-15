@@ -265,7 +265,7 @@ describe('HTMLButtonElement', () => {
 			button.click();
 
 			expect(submitTriggeredCount).toBe(1);
-			expect(submitter).toEqual(button);
+			expect(submitter).toBe(button);
 		});
 
 		it('Resets form if type is "reset" and is a "click" event.', () => {
