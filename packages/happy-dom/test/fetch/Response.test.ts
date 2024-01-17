@@ -1,19 +1,19 @@
-import IWindow from '../../src/window/IWindow.js';
-import Window from '../../src/window/Window.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
-import Headers from '../../src/fetch/Headers.js';
-import Blob from '../../src/file/Blob.js';
-import FormData from '../../src/form-data/FormData.js';
-import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
-import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser.js';
 import FS from 'fs';
 import Path from 'path';
-import File from '../../src/file/File.js';
+import Stream from 'stream';
+import { URLSearchParams } from 'url';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import { URLSearchParams } from 'url';
-import Stream from 'stream';
-import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import Headers from '../../src/fetch/Headers.js';
+import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser.js';
+import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
+import Blob from '../../src/file/Blob.js';
+import File from '../../src/file/File.js';
+import FormData from '../../src/form-data/FormData.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
 
 describe('Response', () => {
 	let window: IWindow;
@@ -464,6 +464,48 @@ describe('Response', () => {
 			const bodyText = await clone.text();
 
 			expect(bodyText).toBe('Hello World');
+		});
+
+		it('Can use the body of the cloned Response independently (cached).', async () => {
+			const originalResponse = new window.Response('Hello World', {
+				status: 200,
+				statusText: 'OK',
+				headers: { 'Content-Type': 'text/plain' }
+			});
+			const clonedResponse = originalResponse.clone();
+
+			const originalResponseText = await originalResponse.text();
+			const clonedResponseText = await clonedResponse.text();
+			expect(originalResponseText).toBe('Hello World');
+			expect(clonedResponseText).toBe('Hello World');
+		});
+
+		it('Can use the body of the cloned Response independently (stream).', async () => {
+			const originalResponse = new window.Response(Stream.Readable.from(['Hello World']), {
+				status: 200,
+				statusText: 'OK',
+				headers: { 'Content-Type': 'text/plain' }
+			});
+			const clonedResponse = originalResponse.clone();
+
+			const originalResponseText = await originalResponse.text();
+			const clonedResponseText = await clonedResponse.text();
+			expect(originalResponseText).toBe('Hello World');
+			expect(clonedResponseText).toBe('Hello World');
+		});
+
+		it('Fails if the body of the original Response is already used.', async () => {
+			const originalResponse = new window.Response(Stream.Readable.from(['Hello World']), {
+				status: 200,
+				statusText: 'OK',
+				headers: { 'Content-Type': 'text/plain' }
+			});
+			await expect(originalResponse.text()).resolves.toBe('Hello World');
+
+			expect(() => originalResponse.clone()).toThrowError(DOMException);
+			expect(() => originalResponse.clone()).toThrowError(
+				'Failed to clone body stream of request: Request body is already used.'
+			);
 		});
 	});
 
