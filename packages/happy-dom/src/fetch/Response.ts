@@ -267,7 +267,9 @@ export default class Response implements IResponse {
 	 * @returns Clone.
 	 */
 	public clone(): Response {
-		const response = new this.#window.Response(this.body, {
+		const body = FetchBodyUtility.cloneBodyStream(this);
+
+		const response = new this.#window.Response(body, {
 			status: this.status,
 			statusText: this.statusText,
 			headers: this.headers
