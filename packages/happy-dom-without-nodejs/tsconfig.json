@@ -1,0 +1,35 @@
+{
+	"compilerOptions": {
+		"rootDir": "lib",
+		"target": "ES2020",
+		"declaration": true,
+		"declarationMap": true,
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"removeComments": false,
+		"preserveConstEnums": true,
+		"sourceMap": true,
+		"skipLibCheck": true,
+		"baseUrl": ".",
+		"composite": false,
+		"incremental": false,
+        "allowJs": true,
+        "lib": [
+            "es2020",
+            "dom"
+        ],
+		"types": []
+	},
+	"include": [
+		"lib"
+	],
+    "exclude": [
+        "@types/dom"
+    ]
+}

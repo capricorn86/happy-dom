@@ -2353,7 +2353,7 @@ describe('SyncFetch', () => {
 									'content-length',
 									String(responseText2.length),
 									'cache-control',
-									'max-age=0.05',
+									'max-age=0.5',
 									'last-modified',
 									'Mon, 11 Dec 2023 02:00:00 GMT'
 								],
@@ -2439,7 +2439,7 @@ describe('SyncFetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText2.length),
-				'cache-control': 'max-age=0.05',
+				'cache-control': 'max-age=0.5',
 				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
 			});
 

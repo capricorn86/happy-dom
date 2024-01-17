@@ -1,4 +1,4 @@
-:warning: **This package is deprecated. Happy DOM now supports built in by setting "errorCapture" to "processLevel".** :warning:
+:warning: **This package has been deprecated. Happy DOM now supports this feature built in by setting "errorCapture" to "processLevel".** :warning:
 
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
@@ -16,36 +16,36 @@ Uncaught exceptions and rejections must be listened to on the NodeJS process at 
 
 ### DOM Features
 
-- Custom Elements (Web Components)
+-   Custom Elements (Web Components)
 
-- Shadow Root (Shadow DOM)
+-   Shadow Root (Shadow DOM)
 
-- Declarative Shadow DOM
+-   Declarative Shadow DOM
 
-- Mutation Observer
+-   Mutation Observer
 
-- Tree Walker
+-   Tree Walker
 
-- Fetch
+-   Fetch
 
 And much more..
 
 ### Works With
 
-- [Google LitHTML](https://lit-html.polymer-project.org)
+-   [Google LitHTML](https://lit-html.polymer-project.org)
 
-- [Google LitElement](https://lit-element.polymer-project.org)
+-   [Google LitElement](https://lit-element.polymer-project.org)
 
-- [React](https://reactjs.org)
+-   [React](https://reactjs.org)
 
-- [Angular](https://angular.io/)
+-   [Angular](https://angular.io/)
 
-- [Vue](https://vuejs.org/)
+-   [Vue](https://vuejs.org/)
 
 ### Module Systems
 
-- [ESM](https://nodejs.org/api/esm.html#introduction)
-- [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules)
+-   [ESM](https://nodejs.org/api/esm.html#introduction)
+-   [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules)
 
 # Installation
 
@@ -56,8 +56,8 @@ npm install happy-dom @happy-dom/uncaught-exception-observer
 # Usage
 
 ```javascript
-import { Window } from 'happy-dom';
-import { UncaughtExceptionObserver } from '@happy-dom/uncaught-exception-observer';
+import { Window } from "happy-dom";
+import { UncaughtExceptionObserver } from "@happy-dom/uncaught-exception-observer";
 
 const window = new Window();
 const document = window.document;

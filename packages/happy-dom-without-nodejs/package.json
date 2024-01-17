@@ -1,8 +1,8 @@
 {
-	"name": "happy-dom",
+	"name": "happy-dom-without-nodejs",
 	"version": "0.0.0",
 	"license": "MIT",
-	"homepage": "https://github.com/capricorn86/happy-dom",
+	"homepage": "https://github.com/capricorn86/happy-dom/packages/happy-dom-without-nodejs",
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "Happy DOM is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG DOM and HTML.",
@@ -11,38 +11,19 @@
 	"exports": {
 		".": {
 			"import": "./lib/index.js",
-			"require": "./cjs/index.cjs",
 			"default": "./lib/index.js"
 		},
 		"./lib/*.js": {
 			"import": "./lib/*.js",
-			"require": "./cjs/*.cjs",
 			"default": "./lib/*.js"
 		},
 		"./lib/*.ts": {
 			"import": "./lib/*.ts",
-			"require": "./cjs/*.ts",
 			"default": "./lib/*.ts"
 		},
 		"./lib/*.map": {
 			"import": "./lib/*.map",
-			"require": "./cjs/*.map",
 			"default": "./lib/*.map"
-		},
-		"./cjs/*.cjs": {
-			"import": "./cjs/*.cjs",
-			"require": "./cjs/*.cjs",
-			"default": "./cjs/*.cjs"
-		},
-		"./cjs/*.ts": {
-			"import": "./cjs/*.ts",
-			"require": "./cjs/*.ts",
-			"default": "./cjs/*.ts"
-		},
-		"./cjs/*.map": {
-			"import": "./cjs/*.map",
-			"require": "./cjs/*.map",
-			"default": "./cjs/*.map"
 		},
 		"./src/*.ts": "./src/*.ts",
 		"./package.json": "./package.json",
@@ -65,21 +46,18 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && rm -rf ./cjs && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension && npm run build-version-file",
-		"change-cjs-file-extension": "node ./bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
-		"build-version-file": "node ./bin/build-version-file.cjs",
-		"watch": "tsc -w --preserveWatchOutput",
-		"test": "vitest run --singleThread",
-		"test:ui": "vitest --ui",
-		"test:watch": "vitest --singleThread",
-		"test:debug": "vitest run --inspect-brk --threads=false"
+		"compile": "rm -rf ./lib ./src && cp -r ../happy-dom/lib ./lib && cp -r ../happy-dom/src ./src && cp -r ./polyfills ./lib && npm run polyfill",
+		"polyfill": "node ./bin/polyfill-source.cjs --dir=./lib",
+		"test": "tsc --noEmit"
 	},
 	"dependencies": {
 		"css.escape": "^1.5.1",
 		"entities": "^4.5.0",
 		"webidl-conversions": "^7.0.0",
 		"whatwg-encoding": "^2.0.0",
-		"whatwg-mimetype": "^3.0.0"
+		"whatwg-mimetype": "^3.0.0",
+		"whatwg-url": "^14.0.0",
+		"buffer": "^6.0.3"
 	},
 	"devDependencies": {
 		"@types/css.escape": "^1.5.0",

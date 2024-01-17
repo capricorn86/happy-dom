@@ -108,7 +108,6 @@ import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTa
 import DOMRect from '../nodes/element/DOMRect.js';
 import Attr from '../nodes/attr/Attr.js';
 import NamedNodeMap from '../named-node-map/NamedNodeMap.js';
-import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement.js';
 import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
@@ -409,7 +408,7 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly screenY: number;
 	readonly sessionStorage: Storage;
 	readonly localStorage: Storage;
-	readonly performance: Performance;
+	readonly performance: typeof performance;
 	readonly pageXOffset: number;
 	readonly pageYOffset: number;
 	readonly scrollX: number;
