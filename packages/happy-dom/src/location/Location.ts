@@ -30,6 +30,7 @@ export default class Location extends URL {
 	 * Override set href.
 	 */
 	public get href(): string {
+		// @ts-ignore
 		return super.href;
 	}
 

@@ -49,7 +49,7 @@ npm install happy-dom
 
 # Usage
 
-A simple example of how you can use Happy DOM.
+Happy DOM can be used as a simulated [Browser](https://github.com/capricorn86/happy-dom/wiki/Browser) or by using the [Window](https://github.com/capricorn86/happy-dom/wiki/Window) class directly to quickly setup up a DOM.
 
 ## Window
 

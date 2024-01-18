@@ -1,6 +1,5 @@
 import WhatwgMIMEType from 'whatwg-mimetype';
 import * as PropertySymbol from '../PropertySymbol.js';
-import WhatwgEncoding from 'whatwg-encoding';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import DOMException from '../exception/DOMException.js';
@@ -10,6 +9,7 @@ import FileReaderReadyStateEnum from './FileReaderReadyStateEnum.js';
 import FileReaderFormatEnum from './FileReaderFormatEnum.js';
 import EventTarget from '../event/EventTarget.js';
 import FileReaderEventTypeEnum from './FileReaderEventTypeEnum.js';
+import { Buffer } from 'buffer';
 
 /**
  * Reference:
@@ -76,12 +76,8 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 * @param [encoding] Encoding.
 	 */
-	public readAsText(blob: Blob, encoding: string = null): void {
-		this.#readFile(
-			blob,
-			FileReaderFormatEnum.text,
-			WhatwgEncoding.labelToName(encoding) || 'UTF-8'
-		);
+	public readAsText(blob: Blob, encoding: string | null = null): void {
+		this.#readFile(blob, FileReaderFormatEnum.text, encoding || 'UTF-8');
 	}
 
 	/**
@@ -116,7 +112,7 @@ export default class FileReader extends EventTarget {
 	 * @param format Format.
 	 * @param [encoding] Encoding.
 	 */
-	#readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string = null): void {
+	#readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string | null = null): void {
 		if (this.readyState === FileReaderReadyStateEnum.loading) {
 			throw new DOMException(
 				'The object is in an invalid state.',
@@ -172,7 +168,9 @@ export default class FileReader extends EventTarget {
 						break;
 					}
 					case FileReaderFormatEnum.text: {
-						(<Buffer | ArrayBuffer | string>this.result) = WhatwgEncoding.decode(data, encoding);
+						(<Buffer | ArrayBuffer | string>this.result) = new TextDecoder(
+							encoding || 'UTF-8'
+						).decode(data);
 						break;
 					}
 				}

@@ -98,7 +98,6 @@ import PluginArray from '../navigator/PluginArray.js';
 import Fetch from '../fetch/Fetch.js';
 import DOMRect from '../nodes/element/DOMRect.js';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
-import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
 import { webcrypto } from 'crypto';
@@ -151,13 +150,13 @@ import ResponseImplementation from '../fetch/Response.js';
 import RangeImplementation from '../range/Range.js';
 
 const TIMER = {
-	setTimeout: setTimeout,
-	clearTimeout: clearTimeout,
-	setInterval: setInterval,
-	clearInterval: clearInterval,
-	queueMicrotask: queueMicrotask,
-	setImmediate: setImmediate,
-	clearImmediate: clearImmediate
+	setTimeout: globalThis.setTimeout.bind(globalThis),
+	clearTimeout: globalThis.clearTimeout.bind(globalThis),
+	setInterval: globalThis.setInterval.bind(globalThis),
+	clearInterval: globalThis.clearInterval.bind(globalThis),
+	queueMicrotask: globalThis.queueMicrotask.bind(globalThis),
+	setImmediate: globalThis.setImmediate.bind(globalThis),
+	clearImmediate: globalThis.clearImmediate.bind(globalThis)
 };
 const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
 
@@ -418,12 +417,12 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly screen: Screen;
 	public readonly sessionStorage: Storage;
 	public readonly localStorage: Storage;
-	public readonly performance = PerfHooks.performance;
+	public readonly performance: typeof performance = performance;
 	public readonly screenLeft: number = 0;
 	public readonly screenTop: number = 0;
 	public readonly screenX: number = 0;
 	public readonly screenY: number = 0;
-	public readonly crypto = webcrypto;
+	public readonly crypto: typeof webcrypto = webcrypto;
 	public readonly closed = false;
 	public name = '';
 
@@ -431,7 +430,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public Array: typeof Array;
 	public ArrayBuffer: typeof ArrayBuffer;
 	public Boolean: typeof Boolean;
-	public Buffer = Buffer;
+	public Buffer: typeof Buffer = Buffer;
 	public DataView: typeof DataView;
 	public Date: typeof Date;
 	public Error: typeof Error;
