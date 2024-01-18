@@ -150,13 +150,13 @@ import ResponseImplementation from '../fetch/Response.js';
 import RangeImplementation from '../range/Range.js';
 
 const TIMER = {
-	setTimeout: setTimeout,
-	clearTimeout: clearTimeout,
-	setInterval: setInterval,
-	clearInterval: clearInterval,
-	queueMicrotask: queueMicrotask,
-	setImmediate: setImmediate,
-	clearImmediate: clearImmediate
+	setTimeout: globalThis.setTimeout.bind(globalThis),
+	clearTimeout: globalThis.clearTimeout.bind(globalThis),
+	setInterval: globalThis.setInterval.bind(globalThis),
+	clearInterval: globalThis.clearInterval.bind(globalThis),
+	queueMicrotask: globalThis.queueMicrotask.bind(globalThis),
+	setImmediate: globalThis.setImmediate.bind(globalThis),
+	clearImmediate: globalThis.clearImmediate.bind(globalThis)
 };
 const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
 

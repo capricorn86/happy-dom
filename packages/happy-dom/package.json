@@ -77,7 +77,6 @@
 	"dependencies": {
 		"entities": "^4.5.0",
 		"webidl-conversions": "^7.0.0",
-		"whatwg-encoding": "^2.0.0",
 		"whatwg-mimetype": "^3.0.0"
 	},
 	"devDependencies": {

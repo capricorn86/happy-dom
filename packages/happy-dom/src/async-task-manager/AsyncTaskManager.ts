@@ -1,8 +1,8 @@
 // We need to set this as a global constant, so that using fake timers in Jest and Vitest won't override this on the global object.
 const TIMER = {
-	setImmediate: setImmediate,
-	clearImmediate: clearImmediate,
-	clearTimeout: clearTimeout
+	setImmediate: globalThis.setImmediate.bind(globalThis),
+	clearImmediate: globalThis.clearImmediate.bind(globalThis),
+	clearTimeout: globalThis.clearTimeout.bind(globalThis)
 };
 
 /**

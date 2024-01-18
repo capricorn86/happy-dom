@@ -4,7 +4,6 @@ import IWindow from '../../src/window/IWindow.js';
 import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequestReadyStateEnum.js';
 import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum.js';
 import ProgressEvent from '../../src/event/events/ProgressEvent.js';
-import { TextDecoder } from 'util';
 import Blob from '../../src/file/Blob.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';

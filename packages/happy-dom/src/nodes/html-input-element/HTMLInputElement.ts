@@ -1036,7 +1036,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 					this.value = new Date(Number(value)).toISOString().slice(11, -1);
 				}
 				break;
-			case 'week':
 			case 'week': {
 				const d = new Date(Number(value));
 				this.value = isNaN(d.getTime()) ? '' : HTMLInputElementDateUtility.dateIsoWeek(d);
