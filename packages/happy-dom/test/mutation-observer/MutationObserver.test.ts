@@ -49,6 +49,11 @@ describe('MutationObserver', () => {
 		it('Allows to omit "attributes" if "attributeOldValue" or "attributeFilter" is specified.', async () => {
 			const div = document.createElement('div');
 			const observer = new MutationObserver(() => {});
+			expect(() => observer.observe(div, { attributes: false, attributeOldValue: true })).toThrow();
+			expect(() =>
+				observer.observe(div, { attributes: false, attributeFilter: ['style', 'class'] })
+			).toThrow();
+
 			expect(() => observer.observe(div, { attributeOldValue: true })).not.toThrow();
 			expect(() => observer.observe(div, { attributeFilter: ['style', 'class'] })).not.toThrow();
 		});
@@ -56,6 +61,9 @@ describe('MutationObserver', () => {
 		it('Allows to omit "characterData" if "characterDataOldValue" is specified.', async () => {
 			const text = document.createTextNode('old');
 			const observer = new MutationObserver(() => {});
+			expect(() =>
+				observer.observe(text, { characterData: false, characterDataOldValue: true })
+			).toThrow();
 			expect(() => observer.observe(text, { characterDataOldValue: true })).not.toThrow();
 		});
 
