@@ -10,6 +10,7 @@ import FileReaderReadyStateEnum from './FileReaderReadyStateEnum.js';
 import FileReaderFormatEnum from './FileReaderFormatEnum.js';
 import EventTarget from '../event/EventTarget.js';
 import FileReaderEventTypeEnum from './FileReaderEventTypeEnum.js';
+import { Buffer } from 'buffer';
 
 /**
  * Reference:

@@ -1,4 +1,5 @@
 import IBlob from './IBlob.js';
+import { Buffer } from 'buffer';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**

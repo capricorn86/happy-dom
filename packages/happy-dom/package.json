@@ -75,7 +75,6 @@
 		"test:debug": "vitest run --inspect-brk --threads=false"
 	},
 	"dependencies": {
-		"css.escape": "^1.5.1",
 		"entities": "^4.5.0",
 		"webidl-conversions": "^7.0.0",
 		"whatwg-encoding": "^2.0.0",

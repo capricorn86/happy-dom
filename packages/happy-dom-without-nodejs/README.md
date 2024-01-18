@@ -8,6 +8,10 @@ The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate 
 
 [Happy DOM](https://github.com/capricorn86/happy-dom) focuses heavily on performance and can be used as an alternative to [JSDOM](https://github.com/jsdom/jsdom).
 
+This package makes it possible to use Happy DOM in an environment without Node.js. Some functionality such as HTTP requests is not supported by this package yet.
+
+As VM is part of Node.js, this package does not support running JavaScript in a sandbox. Javascript will be executed in the global scope.
+
 ### DOM Features
 
 - Custom Elements (Web Components)
@@ -39,7 +43,6 @@ And much more..
 ### Module Systems
 
 - [ESM](https://nodejs.org/api/esm.html#introduction)
-- [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules)
 
 # Installation
 
@@ -48,10 +51,6 @@ npm install happy-dom
 ```
 
 # Usage
-
-Happy DOM can be used as a simulated [Browser](https://github.com/capricorn86/happy-dom/wiki/Browser) or by using the [Window](https://github.com/capricorn86/happy-dom/wiki/Window) class directly to quickly setup up a DOM.
-
-## Window
 
 ```javascript
 import { Window } from 'happy-dom';
@@ -68,30 +67,6 @@ container.appendChild(button);
 
 // Outputs "<div class="container"><button></button></div>"
 console.log(document.body.innerHTML);
-```
-
-## Browser
-
-```javascript
-import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
-
-const browser = new Browser({ settings: { errorCapture: BrowserErrorCaptureEnum.processLevel } });
-const page = browser.newPage();
-
-// Navigates page
-await page.goto('https://github.com/capricorn86');
-
-// Clicks on link
-page.mainFrame.document.querySelector('a[href*="capricorn86/happy-dom"]').click();
-
-// Waits for all operations on the page to complete (fetch, timers etc.)
-await page.waitUntilComplete();
-
-// Outputs "GitHub - capricorn86/happy-dom: Happy DOM..."
-console.log(page.mainFrame.document.title);
-
-// Closes the browser
-await browser.close();
 ```
 
 # Documentation

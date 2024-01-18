@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
-		"rootDir": "lib",
+		"rootDir": "polyfills",
+		"outDir": "lib/polyfills",
 		"target": "ES2020",
 		"declaration": true,
 		"declarationMap": true,
@@ -27,9 +28,6 @@
 		"types": []
 	},
 	"include": [
-		"lib"
-	],
-    "exclude": [
-        "@types/dom"
-    ]
+		"polyfills"
+	]
 }

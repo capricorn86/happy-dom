@@ -11,7 +11,7 @@ process.on('unhandledRejection', (reason) => {
 
 main();
 
-const POLYFILL_MODULES = ['net', 'crypto', 'url', 'stream', 'vm'];
+const POLYFILL_MODULES = ['net', 'crypto', 'url', 'stream', 'vm', 'buffer', 'console'];
 
 const POLYFILLS = [
 	function polyfillProcess(_directory, file, content) {
@@ -27,13 +27,16 @@ const POLYFILLS = [
 	},
 	function polyfillFetch(_directory, file, content) {
 		if (file.endsWith('/Fetch.d.ts') || file.endsWith('/SyncFetch.d.ts')) {
-			return `export default class Fetch { send(): Promise<void>; }`;
+			return `export default class NotSupported { send(): Promise<void>; }`;
 		}
 		if (file.endsWith('/Fetch.js') || file.endsWith('/SyncFetch.js')) {
-			return `export default class Fetch { send() { throw Error('Fetch is not supported without Node.js.'); } }`;
+			return `export default class NotSupported { send() { throw Error('Fetch is not supported without Node.js.'); } }`;
 		}
-		if (file.endsWith('/Fetch.cjs') || file.endsWith('/SyncFetch.cjs')) {
-			return `class Fetch { send() { throw Error('Fetch is not supported without Node.js.'); } }\n\nmodule.exports = Fetch;\nmodule.exports.default = Fetch;`;
+		if (file.includes('/fetch/') || file.includes('/xml-http-request/')) {
+			if (file.endsWith('.d.ts')) {
+				return `export default class NotSupported { }`;
+			}
+			return 'export default class NotSupported { }';
 		}
 		return content;
 	},
@@ -53,11 +56,12 @@ const POLYFILLS = [
 			const regexp = new RegExp(`import.+from\\s*(["']${module}["'])`);
 			moduleMatch = content.match(regexp);
 			if (moduleMatch) {
+				const modulePath = Path.relative(Path.dirname(file), polyfillDirectory) + `/${module}.js`;
 				content = content.replace(
 					moduleMatch[0],
 					moduleMatch[0].replace(
-						moduleMatch[1] || moduleMatch[2],
-						`'${Path.relative(Path.dirname(file), Path.join(polyfillDirectory, `${module}.js`))}'`
+						moduleMatch[1],
+						`'${modulePath.startsWith('.') ? modulePath : `./${modulePath}`}'`
 					)
 				);
 			}

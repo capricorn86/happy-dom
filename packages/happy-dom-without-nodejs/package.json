@@ -46,18 +46,18 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "rm -rf ./lib ./src && cp -r ../happy-dom/lib ./lib && cp -r ../happy-dom/src ./src && cp -r ./polyfills ./lib && npm run polyfill",
-		"polyfill": "node ./bin/polyfill-source.cjs --dir=./lib",
-		"test": "tsc --noEmit"
+		"compile": "npm run copy-src-and-lib && npm run compile-polyfill-modules && npm run polyfill-source-in-lib",
+		"copy-src-and-lib": "rm -rf ./lib ./src && cp -r ../happy-dom/lib ./lib && cp -r ../happy-dom/src ./src",
+		"compile-polyfill-modules": "tsc --project ./tsconfig.polyfills.json",
+		"polyfill-source-in-lib": "node ./bin/polyfill-source.cjs --dir=./lib",
+		"test": "tsc --noEmit --project ./tsconfig.typecheck.json"
 	},
 	"dependencies": {
-		"css.escape": "^1.5.1",
 		"entities": "^4.5.0",
 		"webidl-conversions": "^7.0.0",
 		"whatwg-encoding": "^2.0.0",
 		"whatwg-mimetype": "^3.0.0",
-		"whatwg-url": "^14.0.0",
-		"buffer": "^6.0.3"
+		"whatwg-url": "^14.0.0"
 	},
 	"devDependencies": {
 		"@types/css.escape": "^1.5.0",
