@@ -89,6 +89,12 @@ import HTMLStyleElement from './nodes/html-style-element/HTMLStyleElement.js';
 import HTMLTemplateElement from './nodes/html-template-element/HTMLTemplateElement.js';
 import HTMLTextAreaElement from './nodes/html-text-area-element/HTMLTextAreaElement.js';
 import HTMLVideoElement from './nodes/html-video-element/HTMLVideoElement.js';
+import HTMLAnchorElement from './nodes/html-anchor-element/HTMLAnchorElement.js';
+import HTMLButtonElement from './nodes/html-button-element/HTMLButtonElement.js';
+import HTMLOptGroupElement from './nodes/html-opt-group-element/HTMLOptGroupElement.js';
+import HTMLOptionElement from './nodes/html-option-element/HTMLOptionElement.js';
+import HTMLSelectElement from './nodes/html-select-element/HTMLSelectElement.js';
+import HTMLUnknownElement from './nodes/html-unknown-element/HTMLUnknownElement.js';
 import Node from './nodes/node/Node.js';
 import ProcessingInstruction from './nodes/processing-instruction/ProcessingInstruction.js';
 import ShadowRoot from './nodes/shadow-root/ShadowRoot.js';
@@ -151,13 +157,18 @@ import type IFileList from './nodes/html-input-element/IFileList.js';
 import type IHTMLInputElement from './nodes/html-input-element/IHTMLInputElement.js';
 import type IHTMLLabelElement from './nodes/html-label-element/IHTMLLabelElement.js';
 import type IHTMLLinkElement from './nodes/html-link-element/IHTMLLinkElement.js';
-import type IHTMLMediaElement from './nodes/html-media-element/IHTMLMediaElement.js';
 import type IHTMLMetaElement from './nodes/html-meta-element/IHTMLMetaElement.js';
 import type IHTMLSlotElement from './nodes/html-slot-element/IHTMLSlotElement.js';
 import type IHTMLStyleElement from './nodes/html-style-element/IHTMLStyleElement.js';
 import type IHTMLTemplateElement from './nodes/html-template-element/IHTMLTemplateElement.js';
 import type IHTMLTextAreaElement from './nodes/html-text-area-element/IHTMLTextAreaElement.js';
 import type IHTMLVideoElement from './nodes/html-video-element/IHTMLVideoElement.js';
+import type IHTMLAnchorElement from './nodes/html-anchor-element/IHTMLAnchorElement.js';
+import type IHTMLButtonElement from './nodes/html-button-element/IHTMLButtonElement.js';
+import type IHTMLOptGroupElement from './nodes/html-opt-group-element/IHTMLOptGroupElement.js';
+import type IHTMLOptionElement from './nodes/html-option-element/IHTMLOptionElement.js';
+import type IHTMLSelectElement from './nodes/html-select-element/IHTMLSelectElement.js';
+import type IHTMLMediaElement from './nodes/html-media-element/IHTMLMediaElement.js';
 import type INode from './nodes/node/INode.js';
 import type INodeList from './nodes/node/INodeList.js';
 import type IProcessingInstruction from './nodes/processing-instruction/IProcessingInstruction.js';
@@ -195,6 +206,11 @@ export type {
 	IEventListener,
 	IFileList,
 	IFocusEventInit,
+	IHTMLAnchorElement,
+	IHTMLButtonElement,
+	IHTMLOptGroupElement,
+	IHTMLOptionElement,
+	IHTMLSelectElement,
 	IHTMLAudioElement,
 	IHTMLBaseElement,
 	IHTMLCollection,
@@ -288,7 +304,13 @@ export {
 	FocusEvent,
 	FormData,
 	GlobalWindow,
+	HTMLAnchorElement,
+	HTMLButtonElement,
 	HTMLAudioElement,
+	HTMLOptGroupElement,
+	HTMLOptionElement,
+	HTMLUnknownElement,
+	HTMLSelectElement,
 	HTMLBaseElement,
 	HTMLCollection,
 	HTMLDialogElement,
@@ -309,6 +331,53 @@ export {
 	HTMLTemplateElement,
 	HTMLTextAreaElement,
 	HTMLVideoElement,
+	HTMLElement as HTMLTitleElement,
+	HTMLElement as HTMLHeadElement,
+	HTMLElement as HTMLBodyElement,
+	HTMLElement as HTMLHeadingElement,
+	HTMLElement as HTMLParagraphElement,
+	HTMLElement as HTMLHRElement,
+	HTMLElement as HTMLPreElement,
+	HTMLElement as HTMLUListElement,
+	HTMLElement as HTMLOListElement,
+	HTMLElement as HTMLLIElement,
+	HTMLElement as HTMLMenuElement,
+	HTMLElement as HTMLDListElement,
+	HTMLElement as HTMLDivElement,
+	HTMLElement as HTMLAreaElement,
+	HTMLElement as HTMLBRElement,
+	HTMLElement as HTMLCanvasElement,
+	HTMLElement as HTMLDataElement,
+	HTMLElement as HTMLDataListElement,
+	HTMLElement as HTMLDetailsElement,
+	HTMLElement as HTMLDirectoryElement,
+	HTMLElement as HTMLFieldSetElement,
+	HTMLElement as HTMLFontElement,
+	HTMLElement as HTMLHtmlElement,
+	HTMLElement as HTMLLegendElement,
+	HTMLElement as HTMLMapElement,
+	HTMLElement as HTMLMarqueeElement,
+	HTMLElement as HTMLMeterElement,
+	HTMLElement as HTMLModElement,
+	HTMLElement as HTMLOutputElement,
+	HTMLElement as HTMLPictureElement,
+	HTMLElement as HTMLProgressElement,
+	HTMLElement as HTMLQuoteElement,
+	HTMLElement as HTMLSourceElement,
+	HTMLElement as HTMLSpanElement,
+	HTMLElement as HTMLTableCaptionElement,
+	HTMLElement as HTMLTableCellElement,
+	HTMLElement as HTMLTableColElement,
+	HTMLElement as HTMLTableElement,
+	HTMLElement as HTMLTimeElement,
+	HTMLElement as HTMLTableRowElement,
+	HTMLElement as HTMLTableSectionElement,
+	HTMLElement as HTMLFrameElement,
+	HTMLElement as HTMLFrameSetElement,
+	HTMLElement as HTMLEmbedElement,
+	HTMLElement as HTMLObjectElement,
+	HTMLElement as HTMLParamElement,
+	HTMLElement as HTMLTrackElement,
 	Headers,
 	History,
 	Image,
