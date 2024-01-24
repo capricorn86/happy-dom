@@ -49,6 +49,12 @@ async function main(): Promise<void> {
 		}
 	}
 
+	/** @see https://github.com/capricorn86/happy-dom/issues/1230 */
+	globalThis.location.href = 'https://example.com/';
+	if (globalThis.location.href !== 'https://example.com/') {
+		throw Error('The property "location.href" could not be set.');
+	}
+
 	await mountReactComponent();
 	unmountReactComponent();
 

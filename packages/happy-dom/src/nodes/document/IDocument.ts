@@ -17,7 +17,7 @@ import Selection from '../../selection/Selection.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
 import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
-import Location from '../../location/Location.js';
+import Location from '../../url/Location.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
 import INodeList from '../node/INodeList.js';
 import Range from '../../range/Range.js';
