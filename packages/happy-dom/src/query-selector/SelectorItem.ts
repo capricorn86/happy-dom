@@ -222,6 +222,12 @@ export default class SelectorItem {
 						.reverse()
 						.indexOf(element);
 					return nthLastOfTypeIndex !== -1 && psuedo.nthFunction(nthLastOfTypeIndex + 1);
+				case 'target':
+					const hash = element[PropertySymbol.ownerDocument].location.hash;
+					if (!hash) {
+						return false;
+					}
+					return element.isConnected && element.id === hash.slice(1);
 			}
 		}
 
