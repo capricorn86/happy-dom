@@ -184,6 +184,8 @@ import type IBrowserContext from './browser/types/IBrowserContext.js';
 import type IBrowserFrame from './browser/types/IBrowserFrame.js';
 import type IBrowserPage from './browser/types/IBrowserPage.js';
 import type ICrossOriginBrowserWindow from './window/ICrossOriginBrowserWindow.js';
+import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
+import type IBrowserSettings from './browser/types/IBrowserSettings.js';
 
 export type {
 	IAnimationEventInit,
@@ -248,7 +250,9 @@ export type {
 	IText,
 	IUIEventInit,
 	IWheelEventInit,
-	IWindow
+	IWindow,
+	IBrowserSettings,
+	IOptionalBrowserSettings
 };
 
 export {
