@@ -32,7 +32,7 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement.js';
 import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
-import Location from '../../location/Location.js';
+import Location from '../../url/Location.js';
 import Selection from '../../selection/Selection.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
 import Range from '../../range/Range.js';

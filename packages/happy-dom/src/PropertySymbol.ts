@@ -148,3 +148,4 @@ export const options = Symbol('options');
 export const content = Symbol('content');
 export const mode = Symbol('mode');
 export const host = Symbol('host');
+export const setURL = Symbol('setURL');

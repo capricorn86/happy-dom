@@ -65,10 +65,10 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
+		"compile": "rm -rf lib cjs && tsc && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
 		"change-cjs-file-extension": "node ../happy-dom/bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
-		"test": "tsc --project ./test && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node ./tmp/react/React.test.cjs",
+		"test": "rm -rf tmp && tsc --project ./test && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node ./tmp/react/React.test.cjs",
 		"test:debug": "tsc --project ./test && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node --inspect-brk ./tmp/react/React.test.cjs"
 	},
 	"dependencies": {

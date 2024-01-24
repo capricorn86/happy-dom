@@ -56,7 +56,7 @@ import File from './file/File.js';
 import FileReader from './file/FileReader.js';
 import FormData from './form-data/FormData.js';
 import History from './history/History.js';
-import Location from './location/Location.js';
+import Location from './url/Location.js';
 import MutationObserver from './mutation-observer/MutationObserver.js';
 import MutationRecord from './mutation-observer/MutationRecord.js';
 import Attr from './nodes/attr/Attr.js';

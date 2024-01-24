@@ -48,7 +48,7 @@ import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
 import EventTarget from '../event/EventTarget.js';
 import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
-import Location from '../location/Location.js';
+import Location from '../url/Location.js';
 import MutationObserver from '../mutation-observer/MutationObserver.js';
 import MutationRecord from '../mutation-observer/MutationRecord.js';
 import DOMParser from '../dom-parser/DOMParser.js';
