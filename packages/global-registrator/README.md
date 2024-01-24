@@ -56,7 +56,7 @@ npm install @happy-dom/global-registrator --save-dev
 ```javascript
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
-GlobalRegistrator.register();
+GlobalRegistrator.register({ url: 'http://localhost:3000', width: 1920, height: 1080 });
 
 document.body.innerHTML = `<button>My button</button>`;
 
