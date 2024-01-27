@@ -36,24 +36,23 @@ jobs:
             ./packages/*/node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
       
-      - name: Install Dependencies
+      - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: |
-          npm ci --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - id: versionCheck
         run: |
-          echo "next_version=$(node ./bin/print-next-version.js)" >> $GITHUB_OUTPUT
-          echo "current_version=$(node ./bin/print-latest-version.js)" >> $GITHUB_OUTPUT
+          echo "next_version=$(node ./node_modules/.bin/happy-next-version)" >> $GITHUB_OUTPUT
+          echo "current_version=$(node ./node_modules/.bin/happy-current-version)" >> $GITHUB_OUTPUT
 
   publish: 
     runs-on: ubuntu-latest
     needs: [check-next-version]
-    if: ${{ needs.check-next-version.outputs.next_version != needs.check-next-version.outputs.current_version }}
+    if: ${{ needs.check-next-version.outputs.next_version != '' }}
 
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [20]
 
     steps:
       - uses: actions/checkout@v3
@@ -84,10 +83,9 @@ jobs:
           restore-keys: |
             turbo-master
       
-      - name: Install Dependencies
+      - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: |
-          npm ci --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - name: Set version
         run: node ./bin/set-version.js --version=${{needs.check-next-version.outputs.next_version }}
@@ -127,7 +125,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [20]
 
     steps:
       - uses: actions/checkout@v3
@@ -150,14 +148,14 @@ jobs:
             ./packages/*/node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
       
-      - name: Install Dependencies
+      - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: |
-          npm ci --ignore-scripts
+        run: npm ci --ignore-scripts
 
-      - run: node ./bin/generate-release-notes.js --latest-version=${{needs.check-next-version.outputs.current_version}} --next-version=${{needs.check-next-version.outputs.next_version}}
+      - name: Generate release notes
+        run: node ./node_modules/.bin/happy-release-notes --author=githubUsername
 
-      - name: Create Release
+      - name: Create release
         id: create_release
         uses: actions/create-release@v1
         env:

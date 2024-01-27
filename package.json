@@ -12,13 +12,15 @@
 		"lint:fix": "eslint --ignore-path .lintignore --max-warnings 0 --fix .",
 		"lint:changed": "eslint --ignore-path .lintignore --max-warnings 0 --fix $(git diff --diff-filter=d --name-only HEAD | grep -E '^[a-zA-Z0-9_].*\\.(cjs|mjs|js|jsx|ts|tsx|json)$' | xargs)",
 		"test": "turbo run test --cache-dir=.turbo",
-		"test:watch": "turbo run test:watch --parallel"
+		"test:watch": "turbo run test:watch --parallel",
+		"prepare": "husky install"
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
 		"@types/node": "^16.11.7",
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
 		"@typescript-eslint/parser": "^5.16.0",
+		"happy-conventional-commit": "^0.0.9",
 		"chalk": "^4.1.0",
 		"eslint": "^8.11.0",
 		"eslint-config-prettier": "^8.5.0",
@@ -27,7 +29,7 @@
 		"eslint-plugin-jsdoc": "^38.0.6",
 		"eslint-plugin-json": "^3.1.0",
 		"eslint-plugin-prettier": "^4.0.0",
-		"husky": "2.3.0",
+		"husky": "^9.0.6",
 		"vitest": "^0.32.4",
 		"prettier": "^2.6.0",
 		"semver": "^7.3.5",

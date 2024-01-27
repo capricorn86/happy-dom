@@ -10,13 +10,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
       - name: Cache node modules
         uses: actions/cache@v3
@@ -45,12 +44,18 @@ jobs:
           path: .turbo
           key: turbo-master
       
-      - name: Install Dependencies
+      - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: |
-          npm ci
+        run: npm ci --ignore-scripts
   
-      - run: node ./bin/validate-commit-messages.js
-      - run: npm run compile
-      - run: npm run lint
-      - run: npm run test
+      - name: Compile package
+        run: npm run compile
+
+      - name: Validate commit messages
+        run: node ./node_modules/.bin/happy-validate-pr-commit-messages
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
