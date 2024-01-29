@@ -45,6 +45,7 @@ import MessageEvent from '../event/events/MessageEvent.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
 import TouchEvent from '../event/events/TouchEvent.js';
+import Touch from '../event/Touch.js';
 import EventTarget from '../event/EventTarget.js';
 import MessagePort from '../event/MessagePort.js';
 import { URLSearchParams } from 'url';
@@ -280,6 +281,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
 	public readonly TouchEvent = TouchEvent;
+	public readonly Touch = Touch;
 
 	// Non-implemented event classes
 	public readonly AudioProcessingEvent = Event;

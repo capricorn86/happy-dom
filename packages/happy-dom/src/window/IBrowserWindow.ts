@@ -46,6 +46,7 @@ import KeyboardEvent from '../event/events/KeyboardEvent.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
 import TouchEvent from '../event/events/TouchEvent.js';
+import Touch from '../event/Touch.js';
 import EventTarget from '../event/EventTarget.js';
 import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
@@ -259,6 +260,7 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly MediaQueryListEvent: typeof MediaQueryListEvent;
 	readonly ClipboardEvent: typeof ClipboardEvent;
 	readonly TouchEvent: typeof TouchEvent;
+	readonly Touch: typeof Touch;
 
 	/**
 	 * Non-implemented event classes

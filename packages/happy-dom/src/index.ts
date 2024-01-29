@@ -33,6 +33,7 @@ import DataTransferItemList from './event/DataTransferItemList.js';
 import Event from './event/Event.js';
 import EventPhaseEnum from './event/EventPhaseEnum.js';
 import EventTarget from './event/EventTarget.js';
+import Touch from './event/Touch.js';
 import UIEvent from './event/UIEvent.js';
 import AnimationEvent from './event/events/AnimationEvent.js';
 import ClipboardEvent from './event/events/ClipboardEvent.js';
@@ -44,6 +45,7 @@ import KeyboardEvent from './event/events/KeyboardEvent.js';
 import MouseEvent from './event/events/MouseEvent.js';
 import ProgressEvent from './event/events/ProgressEvent.js';
 import SubmitEvent from './event/events/SubmitEvent.js';
+import TouchEvent from './event/events/TouchEvent.js';
 import WheelEvent from './event/events/WheelEvent.js';
 import DOMException from './exception/DOMException.js';
 import AbortController from './fetch/AbortController.js';
@@ -56,7 +58,6 @@ import File from './file/File.js';
 import FileReader from './file/FileReader.js';
 import FormData from './form-data/FormData.js';
 import History from './history/History.js';
-import Location from './url/Location.js';
 import MutationObserver from './mutation-observer/MutationObserver.js';
 import MutationRecord from './mutation-observer/MutationRecord.js';
 import Attr from './nodes/attr/Attr.js';
@@ -67,8 +68,10 @@ import Document from './nodes/document/Document.js';
 import DOMRect from './nodes/element/DOMRect.js';
 import Element from './nodes/element/Element.js';
 import HTMLCollection from './nodes/element/HTMLCollection.js';
+import HTMLAnchorElement from './nodes/html-anchor-element/HTMLAnchorElement.js';
 import HTMLAudioElement from './nodes/html-audio-element/HTMLAudioElement.js';
 import HTMLBaseElement from './nodes/html-base-element/HTMLBaseElement.js';
+import HTMLButtonElement from './nodes/html-button-element/HTMLButtonElement.js';
 import HTMLDialogElement from './nodes/html-dialog-element/HTMLDialogElement.js';
 import HTMLDocument from './nodes/html-document/HTMLDocument.js';
 import HTMLElement from './nodes/html-element/HTMLElement.js';
@@ -83,18 +86,16 @@ import HTMLLabelElement from './nodes/html-label-element/HTMLLabelElement.js';
 import HTMLLinkElement from './nodes/html-link-element/HTMLLinkElement.js';
 import HTMLMediaElement from './nodes/html-media-element/HTMLMediaElement.js';
 import HTMLMetaElement from './nodes/html-meta-element/HTMLMetaElement.js';
+import HTMLOptGroupElement from './nodes/html-opt-group-element/HTMLOptGroupElement.js';
+import HTMLOptionElement from './nodes/html-option-element/HTMLOptionElement.js';
 import HTMLScriptElement from './nodes/html-script-element/HTMLScriptElement.js';
+import HTMLSelectElement from './nodes/html-select-element/HTMLSelectElement.js';
 import HTMLSlotElement from './nodes/html-slot-element/HTMLSlotElement.js';
 import HTMLStyleElement from './nodes/html-style-element/HTMLStyleElement.js';
 import HTMLTemplateElement from './nodes/html-template-element/HTMLTemplateElement.js';
 import HTMLTextAreaElement from './nodes/html-text-area-element/HTMLTextAreaElement.js';
-import HTMLVideoElement from './nodes/html-video-element/HTMLVideoElement.js';
-import HTMLAnchorElement from './nodes/html-anchor-element/HTMLAnchorElement.js';
-import HTMLButtonElement from './nodes/html-button-element/HTMLButtonElement.js';
-import HTMLOptGroupElement from './nodes/html-opt-group-element/HTMLOptGroupElement.js';
-import HTMLOptionElement from './nodes/html-option-element/HTMLOptionElement.js';
-import HTMLSelectElement from './nodes/html-select-element/HTMLSelectElement.js';
 import HTMLUnknownElement from './nodes/html-unknown-element/HTMLUnknownElement.js';
+import HTMLVideoElement from './nodes/html-video-element/HTMLVideoElement.js';
 import Node from './nodes/node/Node.js';
 import ProcessingInstruction from './nodes/processing-instruction/ProcessingInstruction.js';
 import ShadowRoot from './nodes/shadow-root/ShadowRoot.js';
@@ -114,6 +115,7 @@ import Storage from './storage/Storage.js';
 import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
+import Location from './url/Location.js';
 import URL from './url/URL.js';
 import BrowserWindow from './window/BrowserWindow.js';
 import GlobalWindow from './window/GlobalWindow.js';
@@ -121,8 +123,15 @@ import Window from './window/Window.js';
 import XMLParser from './xml-parser/XMLParser.js';
 import XMLSerializer from './xml-serializer/XMLSerializer.js';
 
+import type IBrowser from './browser/types/IBrowser.js';
+import type IBrowserContext from './browser/types/IBrowserContext.js';
+import type IBrowserFrame from './browser/types/IBrowserFrame.js';
+import type IBrowserPage from './browser/types/IBrowserPage.js';
+import type IBrowserSettings from './browser/types/IBrowserSettings.js';
+import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
 import type IEventInit from './event/IEventInit.js';
 import type IEventListener from './event/IEventListener.js';
+import type ITouchInit from './event/ITouchInit.js';
 import type IUIEventInit from './event/IUIEventInit.js';
 import type IAnimationEventInit from './event/events/IAnimationEventInit.js';
 import type IClipboardEventInit from './event/events/IClipboardEventInit.js';
@@ -134,6 +143,7 @@ import type IKeyboardEventInit from './event/events/IKeyboardEventInit.js';
 import type IMouseEventInit from './event/events/IMouseEventInit.js';
 import type IProgressEventInit from './event/events/IProgressEventInit.js';
 import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
+import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
 import type IHeaders from './fetch/types/IHeaders.js';
 import type IRequest from './fetch/types/IRequest.js';
@@ -145,8 +155,10 @@ import type IDocumentType from './nodes/document-type/IDocumentType.js';
 import type IDocument from './nodes/document/IDocument.js';
 import type IElement from './nodes/element/IElement.js';
 import type IHTMLCollection from './nodes/element/IHTMLCollection.js';
+import type IHTMLAnchorElement from './nodes/html-anchor-element/IHTMLAnchorElement.js';
 import type IHTMLAudioElement from './nodes/html-audio-element/IHTMLAudioElement.js';
 import type IHTMLBaseElement from './nodes/html-base-element/IHTMLBaseElement.js';
+import type IHTMLButtonElement from './nodes/html-button-element/IHTMLButtonElement.js';
 import type IHTMLDialogElement from './nodes/html-dialog-element/IHTMLDialogElement.js';
 import type IHTMLElement from './nodes/html-element/IHTMLElement.js';
 import type IHTMLFormControlsCollection from './nodes/html-form-element/IHTMLFormControlsCollection.js';
@@ -157,18 +169,16 @@ import type IFileList from './nodes/html-input-element/IFileList.js';
 import type IHTMLInputElement from './nodes/html-input-element/IHTMLInputElement.js';
 import type IHTMLLabelElement from './nodes/html-label-element/IHTMLLabelElement.js';
 import type IHTMLLinkElement from './nodes/html-link-element/IHTMLLinkElement.js';
+import type IHTMLMediaElement from './nodes/html-media-element/IHTMLMediaElement.js';
 import type IHTMLMetaElement from './nodes/html-meta-element/IHTMLMetaElement.js';
+import type IHTMLOptGroupElement from './nodes/html-opt-group-element/IHTMLOptGroupElement.js';
+import type IHTMLOptionElement from './nodes/html-option-element/IHTMLOptionElement.js';
+import type IHTMLSelectElement from './nodes/html-select-element/IHTMLSelectElement.js';
 import type IHTMLSlotElement from './nodes/html-slot-element/IHTMLSlotElement.js';
 import type IHTMLStyleElement from './nodes/html-style-element/IHTMLStyleElement.js';
 import type IHTMLTemplateElement from './nodes/html-template-element/IHTMLTemplateElement.js';
 import type IHTMLTextAreaElement from './nodes/html-text-area-element/IHTMLTextAreaElement.js';
 import type IHTMLVideoElement from './nodes/html-video-element/IHTMLVideoElement.js';
-import type IHTMLAnchorElement from './nodes/html-anchor-element/IHTMLAnchorElement.js';
-import type IHTMLButtonElement from './nodes/html-button-element/IHTMLButtonElement.js';
-import type IHTMLOptGroupElement from './nodes/html-opt-group-element/IHTMLOptGroupElement.js';
-import type IHTMLOptionElement from './nodes/html-option-element/IHTMLOptionElement.js';
-import type IHTMLSelectElement from './nodes/html-select-element/IHTMLSelectElement.js';
-import type IHTMLMediaElement from './nodes/html-media-element/IHTMLMediaElement.js';
 import type INode from './nodes/node/INode.js';
 import type INodeList from './nodes/node/INodeList.js';
 import type IProcessingInstruction from './nodes/processing-instruction/IProcessingInstruction.js';
@@ -178,26 +188,21 @@ import type ISVGGraphicsElement from './nodes/svg-element/ISVGGraphicsElement.js
 import type ISVGSVGElement from './nodes/svg-element/ISVGSVGElement.js';
 import type IText from './nodes/text/IText.js';
 import type IBrowserWindow from './window/IBrowserWindow.js';
-import type IWindow from './window/IWindow.js';
-import type IBrowser from './browser/types/IBrowser.js';
-import type IBrowserContext from './browser/types/IBrowserContext.js';
-import type IBrowserFrame from './browser/types/IBrowserFrame.js';
-import type IBrowserPage from './browser/types/IBrowserPage.js';
 import type ICrossOriginBrowserWindow from './window/ICrossOriginBrowserWindow.js';
-import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
-import type IBrowserSettings from './browser/types/IBrowserSettings.js';
+import type IWindow from './window/IWindow.js';
 
 export type {
 	IAnimationEventInit,
 	IAttr,
-	IBrowserWindow,
 	IBrowser,
 	IBrowserContext,
 	IBrowserFrame,
 	IBrowserPage,
-	ICrossOriginBrowserWindow,
+	IBrowserSettings,
+	IBrowserWindow,
 	IClipboardEventInit,
 	IComment,
+	ICrossOriginBrowserWindow,
 	ICustomEventInit,
 	IDocument,
 	IDocumentFragment,
@@ -209,12 +214,9 @@ export type {
 	IFileList,
 	IFocusEventInit,
 	IHTMLAnchorElement,
-	IHTMLButtonElement,
-	IHTMLOptGroupElement,
-	IHTMLOptionElement,
-	IHTMLSelectElement,
 	IHTMLAudioElement,
 	IHTMLBaseElement,
+	IHTMLButtonElement,
 	IHTMLCollection,
 	IHTMLDialogElement,
 	IHTMLElement,
@@ -227,6 +229,9 @@ export type {
 	IHTMLLinkElement,
 	IHTMLMediaElement,
 	IHTMLMetaElement,
+	IHTMLOptGroupElement,
+	IHTMLOptionElement,
+	IHTMLSelectElement,
 	IHTMLSlotElement,
 	IHTMLStyleElement,
 	IHTMLTemplateElement,
@@ -238,6 +243,7 @@ export type {
 	IMouseEventInit,
 	INode,
 	INodeList,
+	IOptionalBrowserSettings,
 	IProcessingInstruction,
 	IProgressEventInit,
 	IRequest,
@@ -248,11 +254,11 @@ export type {
 	IShadowRoot,
 	ISubmitEventInit,
 	IText,
+	ITouchEventInit,
+	ITouchInit,
 	IUIEventInit,
 	IWheelEventInit,
-	IWindow,
-	IBrowserSettings,
-	IOptionalBrowserSettings
+	IWindow
 };
 
 export {
@@ -309,79 +315,79 @@ export {
 	FormData,
 	GlobalWindow,
 	HTMLAnchorElement,
-	HTMLButtonElement,
-	HTMLAudioElement,
-	HTMLOptGroupElement,
-	HTMLOptionElement,
-	HTMLUnknownElement,
-	HTMLSelectElement,
-	HTMLBaseElement,
-	HTMLCollection,
-	HTMLDialogElement,
-	HTMLDocument,
-	HTMLElement,
-	HTMLFormControlsCollection,
-	HTMLFormElement,
-	HTMLIFrameElement,
-	HTMLImageElement,
-	HTMLInputElement,
-	HTMLLabelElement,
-	HTMLLinkElement,
-	HTMLMediaElement,
-	HTMLMetaElement,
-	HTMLScriptElement,
-	HTMLSlotElement,
-	HTMLStyleElement,
-	HTMLTemplateElement,
-	HTMLTextAreaElement,
-	HTMLVideoElement,
-	HTMLElement as HTMLTitleElement,
-	HTMLElement as HTMLHeadElement,
-	HTMLElement as HTMLBodyElement,
-	HTMLElement as HTMLHeadingElement,
-	HTMLElement as HTMLParagraphElement,
-	HTMLElement as HTMLHRElement,
-	HTMLElement as HTMLPreElement,
-	HTMLElement as HTMLUListElement,
-	HTMLElement as HTMLOListElement,
-	HTMLElement as HTMLLIElement,
-	HTMLElement as HTMLMenuElement,
-	HTMLElement as HTMLDListElement,
-	HTMLElement as HTMLDivElement,
 	HTMLElement as HTMLAreaElement,
+	HTMLAudioElement,
 	HTMLElement as HTMLBRElement,
+	HTMLBaseElement,
+	HTMLElement as HTMLBodyElement,
+	HTMLButtonElement,
 	HTMLElement as HTMLCanvasElement,
+	HTMLCollection,
+	HTMLElement as HTMLDListElement,
 	HTMLElement as HTMLDataElement,
 	HTMLElement as HTMLDataListElement,
 	HTMLElement as HTMLDetailsElement,
+	HTMLDialogElement,
 	HTMLElement as HTMLDirectoryElement,
+	HTMLElement as HTMLDivElement,
+	HTMLDocument,
+	HTMLElement,
+	HTMLElement as HTMLEmbedElement,
 	HTMLElement as HTMLFieldSetElement,
 	HTMLElement as HTMLFontElement,
+	HTMLFormControlsCollection,
+	HTMLFormElement,
+	HTMLElement as HTMLFrameElement,
+	HTMLElement as HTMLFrameSetElement,
+	HTMLElement as HTMLHRElement,
+	HTMLElement as HTMLHeadElement,
+	HTMLElement as HTMLHeadingElement,
 	HTMLElement as HTMLHtmlElement,
+	HTMLIFrameElement,
+	HTMLImageElement,
+	HTMLInputElement,
+	HTMLElement as HTMLLIElement,
+	HTMLLabelElement,
 	HTMLElement as HTMLLegendElement,
+	HTMLLinkElement,
 	HTMLElement as HTMLMapElement,
 	HTMLElement as HTMLMarqueeElement,
+	HTMLMediaElement,
+	HTMLElement as HTMLMenuElement,
+	HTMLMetaElement,
 	HTMLElement as HTMLMeterElement,
 	HTMLElement as HTMLModElement,
+	HTMLElement as HTMLOListElement,
+	HTMLElement as HTMLObjectElement,
+	HTMLOptGroupElement,
+	HTMLOptionElement,
 	HTMLElement as HTMLOutputElement,
+	HTMLElement as HTMLParagraphElement,
+	HTMLElement as HTMLParamElement,
 	HTMLElement as HTMLPictureElement,
+	HTMLElement as HTMLPreElement,
 	HTMLElement as HTMLProgressElement,
 	HTMLElement as HTMLQuoteElement,
+	HTMLScriptElement,
+	HTMLSelectElement,
+	HTMLSlotElement,
 	HTMLElement as HTMLSourceElement,
 	HTMLElement as HTMLSpanElement,
+	HTMLStyleElement,
 	HTMLElement as HTMLTableCaptionElement,
 	HTMLElement as HTMLTableCellElement,
 	HTMLElement as HTMLTableColElement,
 	HTMLElement as HTMLTableElement,
-	HTMLElement as HTMLTimeElement,
 	HTMLElement as HTMLTableRowElement,
 	HTMLElement as HTMLTableSectionElement,
-	HTMLElement as HTMLFrameElement,
-	HTMLElement as HTMLFrameSetElement,
-	HTMLElement as HTMLEmbedElement,
-	HTMLElement as HTMLObjectElement,
-	HTMLElement as HTMLParamElement,
+	HTMLTemplateElement,
+	HTMLTextAreaElement,
+	HTMLElement as HTMLTimeElement,
+	HTMLElement as HTMLTitleElement,
 	HTMLElement as HTMLTrackElement,
+	HTMLElement as HTMLUListElement,
+	HTMLUnknownElement,
+	HTMLVideoElement,
 	Headers,
 	History,
 	Image,
@@ -412,6 +418,8 @@ export {
 	Storage,
 	SubmitEvent,
 	Text,
+	Touch,
+	TouchEvent,
 	TreeWalker,
 	UIEvent,
 	URL,
