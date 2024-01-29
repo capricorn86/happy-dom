@@ -128,7 +128,7 @@ Happy DOM provide with a package called [@happy-dom/global-registrator](https://
 
 # Sister Projects
 
-[<img alt="Happy Conventional Commit" width="120px" src="https://raw.githubusercontent.com/capricorn86/happy-conventional-commit/main/docs/logo.jpg" />](https://github.com/capricorn86/happy-conventional-commit)
+[<img alt="Happy Conventional Commit" width="120px" src="https://raw.githubusercontent.com/capricorn86/happy-conventional-commit/main/docs/logo_thumbnail.jpg" />](https://github.com/capricorn86/happy-conventional-commit)
 
 # Sponsors
 
