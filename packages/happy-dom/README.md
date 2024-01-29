@@ -126,6 +126,10 @@ Happy DOM provide with a package called [@happy-dom/jest-environment](https://gi
 
 Happy DOM provide with a package called [@happy-dom/global-registrator](https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator) that can register Happy DOM globally. It makes it possible to use Happy DOM for testing in a Node environment.
 
+# Sister Projects
+
+[<img alt="Happy Conventional Commit" width="120px" src="https://raw.githubusercontent.com/capricorn86/happy-conventional-commit/main/docs/logo.jpg" />](https://github.com/capricorn86/happy-conventional-commit)
+
 # Sponsors
 
 [<img alt="RTVision" width="120px" src="https://avatars.githubusercontent.com/u/8292810?s=200&v=4" />](https://rtvision.com)

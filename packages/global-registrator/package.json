@@ -72,7 +72,7 @@
 		"test:debug": "tsc --project ./test && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node --inspect-brk ./tmp/react/React.test.cjs"
 	},
 	"dependencies": {
-		"happy-dom": "0.0.0"
+		"happy-dom": "^0.0.0"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",

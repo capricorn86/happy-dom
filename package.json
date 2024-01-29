@@ -8,31 +8,40 @@
 		"compile": "turbo run compile --cache-dir=.turbo",
 		"watch": "turbo run watch --parallel",
 		"clean": "git clean -Xdfq",
-		"lint": "eslint --ignore-path .lintignore --max-warnings 0 .",
-		"lint:fix": "eslint --ignore-path .lintignore --max-warnings 0 --fix .",
-		"lint:changed": "eslint --ignore-path .lintignore --max-warnings 0 --fix $(git diff --diff-filter=d --name-only HEAD | grep -E '^[a-zA-Z0-9_].*\\.(cjs|mjs|js|jsx|ts|tsx|json)$' | xargs)",
+		"lint": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.cache .",
+		"lint:fix": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.cache --fix .",
 		"test": "turbo run test --cache-dir=.turbo",
-		"test:watch": "turbo run test:watch --parallel"
+		"test:watch": "turbo run test:watch --parallel",
+		"prepare": "husky install"
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
 		"@types/node": "^16.11.7",
-		"@typescript-eslint/eslint-plugin": "^5.16.0",
-		"@typescript-eslint/parser": "^5.16.0",
+		"happy-conventional-commit": "^0.0.14",
 		"chalk": "^4.1.0",
-		"eslint": "^8.11.0",
-		"eslint-config-prettier": "^8.5.0",
+		"@typescript-eslint/eslint-plugin": "^6.19.0",
+		"@typescript-eslint/parser": "^6.19.0",
+		"eslint": "^8.56.0",
+		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-filenames": "^1.3.2",
-		"eslint-plugin-import": "^2.27.5",
-		"eslint-plugin-jsdoc": "^38.0.6",
+		"eslint-plugin-import": "^2.29.1",
+		"eslint-plugin-jsdoc": "^48.0.2",
 		"eslint-plugin-json": "^3.1.0",
-		"eslint-plugin-prettier": "^4.0.0",
-		"husky": "2.3.0",
+		"eslint-plugin-prettier": "^5.1.3",
+		"husky": "^9.0.6",
 		"vitest": "^0.32.4",
-		"prettier": "^2.6.0",
+		"prettier": "^3.2.4",
 		"semver": "^7.3.5",
 		"turbo": "^1.11.3",
 		"typescript": "^5.0.4"
+	},
+	"happyLintChanged": {
+		"rules": [
+			{
+				"command": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.cache --fix",
+				"regexp": "^[a-zA-Z0-9_].*\\.(cjs|mjs|js|jsx|ts|tsx|json)$"
+			}
+		]
 	},
 	"engines": {
 		"node": ">=16.0.0"
