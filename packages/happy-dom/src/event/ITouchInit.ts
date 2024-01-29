@@ -1,8 +1,8 @@
-import EventTarget from './EventTarget.js';
+import IEventTarget from './IEventTarget.js';
 
 export default interface ITouchInit {
 	identifier: number;
-	target: EventTarget;
+	target: IEventTarget;
 	clientX?: number;
 	clientY?: number;
 	screenX?: number;

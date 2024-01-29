@@ -1,8 +1,8 @@
 import Touch from '../../../src/event/Touch.js';
 import ITouchEventInit from '../../../src/event/events/ITouchEventInit.js';
 import TouchEvent from '../../../src/event/events/TouchEvent.js';
+import Window from '../../../src/window/Window.js';
 import { describe, it, expect } from 'vitest';
-import { HTMLElement } from '../../../src/index.js';
 
 describe('TouchEvent', () => {
 	describe('constructor()', () => {
@@ -15,7 +15,7 @@ describe('TouchEvent', () => {
 		it('Initializes properties', () => {
 			const touch = new Touch({
 				identifier: 0,
-				target: new HTMLElement()
+				target: new Window().document.createElement('div')
 			});
 
 			const eventInit: ITouchEventInit = {
