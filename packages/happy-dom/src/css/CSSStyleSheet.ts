@@ -1,6 +1,6 @@
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import CSSParser from './CSSParser.js';
+import CSSParser from './utilities/CSSParser.js';
 import CSSRule from './CSSRule.js';
 import MediaList from './MediaList.js';
 
@@ -21,7 +21,7 @@ export default class CSSStyleSheet {
 	public title: string;
 	public alternate: boolean;
 	public disabled: boolean;
-	private _currentText: string = null;
+	#currentText: string = null;
 
 	/**
 	 * Constructor.
@@ -112,8 +112,8 @@ export default class CSSStyleSheet {
 	 * @param text CSS text.
 	 */
 	public replaceSync(text: string): void {
-		if (this._currentText !== text) {
-			this._currentText = text;
+		if (this.#currentText !== text) {
+			this.#currentText = text;
 			(<CSSRule[]>this.cssRules) = CSSParser.parseFromString(this, text);
 		}
 	}

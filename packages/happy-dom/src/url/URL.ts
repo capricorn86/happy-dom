@@ -1,4 +1,5 @@
 import { URL as NodeJSURL } from 'url';
+import * as PropertySymbol from '../PropertySymbol.js';
 import { Blob as NodeJSBlob } from 'buffer';
 import Blob from '../file/Blob.js';
 
@@ -14,7 +15,7 @@ export default class URL extends NodeJSURL {
 	 */
 	public static override createObjectURL(object: NodeJSBlob | Blob): string {
 		if (object instanceof Blob) {
-			const blob = new NodeJSBlob([object._buffer], { type: object.type });
+			const blob = new NodeJSBlob([object[PropertySymbol.buffer]], { type: object.type });
 			return super.createObjectURL(blob);
 		}
 		return super.createObjectURL(object);

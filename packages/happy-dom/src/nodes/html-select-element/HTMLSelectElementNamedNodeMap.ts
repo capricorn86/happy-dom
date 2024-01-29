@@ -1,4 +1,5 @@
 import IAttr from '../attr/IAttr.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLSelectElement from './HTMLSelectElement.js';
@@ -9,7 +10,7 @@ import HTMLSelectElement from './HTMLSelectElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class HTMLSelectElementNamedNodeMap extends HTMLElementNamedNodeMap {
-	protected _ownerElement: HTMLSelectElement;
+	protected [PropertySymbol.ownerElement]: HTMLSelectElement;
 
 	/**
 	 * @override
@@ -17,18 +18,19 @@ export default class HTMLSelectElementNamedNodeMap extends HTMLElementNamedNodeM
 	public override setNamedItem(item: IAttr): IAttr | null {
 		const replacedItem = super.setNamedItem(item);
 
-		if ((item.name === 'id' || item.name === 'name') && this._ownerElement._formNode) {
-			if (replacedItem && replacedItem.value) {
-				(<HTMLFormElement>this._ownerElement._formNode)._removeFormControlItem(
-					this._ownerElement,
-					replacedItem.value
-				);
+		if (
+			(item[PropertySymbol.name] === 'id' || item[PropertySymbol.name] === 'name') &&
+			this[PropertySymbol.ownerElement][PropertySymbol.formNode]
+		) {
+			if (replacedItem && replacedItem[PropertySymbol.value]) {
+				(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[
+					PropertySymbol.removeFormControlItem
+				](this[PropertySymbol.ownerElement], replacedItem[PropertySymbol.value]);
 			}
-			if (item.value) {
-				(<HTMLFormElement>this._ownerElement._formNode)._appendFormControlItem(
-					this._ownerElement,
-					item.value
-				);
+			if (item[PropertySymbol.value]) {
+				(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[
+					PropertySymbol.appendFormControlItem
+				](this[PropertySymbol.ownerElement], item[PropertySymbol.value]);
 			}
 		}
 
@@ -38,18 +40,17 @@ export default class HTMLSelectElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override _removeNamedItem(name: string): IAttr | null {
-		const removedItem = super._removeNamedItem(name);
+	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
 		if (
 			removedItem &&
-			(removedItem.name === 'id' || removedItem.name === 'name') &&
-			this._ownerElement._formNode
+			(removedItem[PropertySymbol.name] === 'id' || removedItem[PropertySymbol.name] === 'name') &&
+			this[PropertySymbol.ownerElement][PropertySymbol.formNode]
 		) {
-			(<HTMLFormElement>this._ownerElement._formNode)._removeFormControlItem(
-				this._ownerElement,
-				removedItem.value
-			);
+			(<HTMLFormElement>this[PropertySymbol.ownerElement][PropertySymbol.formNode])[
+				PropertySymbol.removeFormControlItem
+			](this[PropertySymbol.ownerElement], removedItem[PropertySymbol.value]);
 		}
 
 		return removedItem;

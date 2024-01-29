@@ -8,8 +8,8 @@ import IVirtualConsolePrinter from './types/IVirtualConsolePrinter.js';
  * Virtual console printer.
  */
 export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
-	private _logEntries: IVirtualConsoleLogEntry[] = [];
-	private _listeners: {
+	#logEntries: IVirtualConsoleLogEntry[] = [];
+	#listeners: {
 		print: Array<(event: Event) => void>;
 		clear: Array<(event: Event) => void>;
 	} = { print: [], clear: [] };
@@ -20,7 +20,7 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param logEntry Log entry.
 	 */
 	public print(logEntry: IVirtualConsoleLogEntry): void {
-		this._logEntries.push(logEntry);
+		this.#logEntries.push(logEntry);
 		this.dispatchEvent(new Event('print'));
 	}
 
@@ -28,7 +28,7 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * Clears the output.
 	 */
 	public clear(): void {
-		this._logEntries = [];
+		this.#logEntries = [];
 		this.dispatchEvent(new Event('clear'));
 	}
 
@@ -39,10 +39,10 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param listener Listener.
 	 */
 	public addEventListener(eventType: 'print' | 'clear', listener: (event: Event) => void): void {
-		if (!this._listeners[eventType]) {
+		if (!this.#listeners[eventType]) {
 			throw new Error(`Event type "${eventType}" is not supported.`);
 		}
-		this._listeners[eventType].push(listener);
+		this.#listeners[eventType].push(listener);
 	}
 
 	/**
@@ -52,12 +52,12 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param listener Listener.
 	 */
 	public removeEventListener(eventType: 'print' | 'clear', listener: (event: Event) => void): void {
-		if (!this._listeners[eventType]) {
+		if (!this.#listeners[eventType]) {
 			throw new Error(`Event type "${eventType}" is not supported.`);
 		}
-		const index = this._listeners[eventType].indexOf(listener);
+		const index = this.#listeners[eventType].indexOf(listener);
 		if (index !== -1) {
-			this._listeners[eventType].splice(index, 1);
+			this.#listeners[eventType].splice(index, 1);
 		}
 	}
 
@@ -67,10 +67,10 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param event Event.
 	 */
 	public dispatchEvent(event: Event): void {
-		if (!this._listeners[event.type]) {
+		if (!this.#listeners[event.type]) {
 			throw new Error(`Event type "${event.type}" is not supported.`);
 		}
-		for (const listener of this._listeners[event.type]) {
+		for (const listener of this.#listeners[event.type]) {
 			listener(event);
 		}
 	}
@@ -81,8 +81,8 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @returns Console log entries.
 	 */
 	public read(): IVirtualConsoleLogEntry[] {
-		const logEntries = this._logEntries;
-		this._logEntries = [];
+		const logEntries = this.#logEntries;
+		this.#logEntries = [];
 		return logEntries;
 	}
 

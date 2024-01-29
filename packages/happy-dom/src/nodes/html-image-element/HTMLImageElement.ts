@@ -1,5 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import IHTMLImageElement from './IHTMLImageElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * HTML Image Element.
@@ -8,15 +9,101 @@ import IHTMLImageElement from './IHTMLImageElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement.
  */
 export default class HTMLImageElement extends HTMLElement implements IHTMLImageElement {
-	public readonly tagName: string = 'IMG';
-	public readonly complete = false;
-	public readonly naturalHeight = 0;
-	public readonly naturalWidth = 0;
-	public crossOrigin = null;
-	public decoding = 'auto';
-	public loading = 'auto';
-	public readonly x = 0;
-	public readonly y = 0;
+	public [PropertySymbol.tagName] = 'IMG';
+	public [PropertySymbol.complete] = false;
+	public [PropertySymbol.naturalHeight] = 0;
+	public [PropertySymbol.naturalWidth] = 0;
+	public [PropertySymbol.loading] = 'auto';
+	public [PropertySymbol.x] = 0;
+	public [PropertySymbol.y] = 0;
+
+	/**
+	 * Returns complete.
+	 *
+	 * @returns Complete.
+	 */
+	public get complete(): boolean {
+		return this[PropertySymbol.complete];
+	}
+
+	/**
+	 * Returns natural height.
+	 *
+	 * @returns Natural height.
+	 */
+	public get naturalHeight(): number {
+		return this[PropertySymbol.naturalHeight];
+	}
+
+	/**
+	 * Returns natural width.
+	 *
+	 * @returns Natural width.
+	 */
+	public get naturalWidth(): number {
+		return this[PropertySymbol.naturalWidth];
+	}
+
+	/**
+	 * Returns loading.
+	 *
+	 * @returns Loading.
+	 */
+	public get loading(): string {
+		return this[PropertySymbol.loading];
+	}
+
+	/**
+	 * Returns x.
+	 */
+	public get x(): number {
+		return this[PropertySymbol.x];
+	}
+
+	/**
+	 * Returns y.
+	 */
+	public get y(): number {
+		return this[PropertySymbol.y];
+	}
+
+	/**
+	 * Returns decoding.
+	 *
+	 * @returns Decoding.
+	 */
+	public get decoding(): string {
+		return this.getAttribute('decoding') || 'auto';
+	}
+
+	/**
+	 * Sets decoding.
+	 *
+	 * @param decoding Decoding.
+	 */
+	public set decoding(decoding: string) {
+		this.setAttribute('decoding', decoding);
+	}
+
+	/**
+	 * Returns cross origin.
+	 *
+	 * @returns Cross origin.
+	 */
+	public get crossOrigin(): string | null {
+		return this.getAttribute('crossOrigin');
+	}
+
+	/**
+	 * Sets cross origin.
+	 *
+	 * @param crossOrigin Cross origin.
+	 */
+	public set crossOrigin(crossOrigin: string | null) {
+		if (crossOrigin === 'anonymous' || crossOrigin === 'use-credentials') {
+			this.setAttribute('crossOrigin', crossOrigin);
+		}
+	}
 
 	/**
 	 * Returns alt.
@@ -43,6 +130,25 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 */
 	public get currentSrc(): string {
 		return this.src;
+	}
+
+	/**
+	 * Returns width.
+	 *
+	 * @returns Width.
+	 */
+	public get width(): number {
+		const width = this.getAttribute('width');
+		return width !== null ? Number(width) : 0;
+	}
+
+	/**
+	 * Sets width.
+	 *
+	 * @param width Width.
+	 */
+	public set width(width: number) {
+		this.setAttribute('width', String(width));
 	}
 
 	/**
@@ -174,25 +280,6 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 */
 	public set useMap(useMap: string) {
 		this.setAttribute('usemap', useMap);
-	}
-
-	/**
-	 * Returns width.
-	 *
-	 * @returns Width.
-	 */
-	public get width(): number {
-		const width = this.getAttribute('width');
-		return width !== null ? Number(width) : 0;
-	}
-
-	/**
-	 * Sets width.
-	 *
-	 * @param width Width.
-	 */
-	public set width(width: number) {
-		this.setAttribute('width', String(width));
 	}
 
 	/**

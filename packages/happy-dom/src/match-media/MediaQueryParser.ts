@@ -1,6 +1,6 @@
 import MediaQueryItem from './MediaQueryItem.js';
 import MediaQueryTypeEnum from './MediaQueryTypeEnum.js';
-import IWindow from '../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 
 /**
  * Media query RegExp.
@@ -44,7 +44,7 @@ export default class MediaQueryParser {
 	 * @returns Media query items.
 	 */
 	public static parse(options: {
-		ownerWindow: IWindow;
+		ownerWindow: IBrowserWindow;
 		mediaQuery: string;
 		rootFontSize?: string | number | null;
 	}): MediaQueryItem[] {
@@ -77,14 +77,14 @@ export default class MediaQueryParser {
 							? {
 									value: resolutionMatch[1],
 									operator: resolutionMatch[2]
-							  }
+								}
 							: null,
 						type: resolutionMatch[3],
 						after: resolutionMatch[5]
 							? {
 									value: resolutionMatch[5],
 									operator: resolutionMatch[4]
-							  }
+								}
 							: null
 					});
 				} else {

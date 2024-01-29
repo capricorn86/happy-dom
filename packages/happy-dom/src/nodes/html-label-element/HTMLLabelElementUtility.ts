@@ -4,6 +4,7 @@ import IHTMLLabelElement from './IHTMLLabelElement.js';
 import INodeList from '../node/INodeList.js';
 import NodeList from '../node/NodeList.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * Utility for finding labels associated with a form element.
@@ -25,13 +26,13 @@ export default class HTMLLabelElementUtility {
 			labels = new NodeList<IHTMLLabelElement>();
 		}
 
-		let parent = element.parentNode;
+		let parent = element[PropertySymbol.parentNode];
 		while (parent) {
 			if (parent['tagName'] === 'LABEL') {
 				labels.push(<IHTMLLabelElement>parent);
 				break;
 			}
-			parent = parent.parentNode;
+			parent = parent[PropertySymbol.parentNode];
 		}
 
 		return labels;

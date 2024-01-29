@@ -2,6 +2,7 @@ import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement.js';
 import Event from '../../../src/event/Event.js';
+import SubmitEvent from '../../../src/event/events/SubmitEvent';
 import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
 import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
@@ -255,11 +256,16 @@ describe('HTMLButtonElement', () => {
 
 			document.body.appendChild(form);
 
-			form.addEventListener('submit', () => submitTriggeredCount++);
+			let submitter: IHTMLElement | null = null;
+			form.addEventListener('submit', (event) => {
+				submitTriggeredCount++;
+				submitter = (<SubmitEvent>event).submitter;
+			});
 
 			button.click();
 
 			expect(submitTriggeredCount).toBe(1);
+			expect(submitter).toBe(button);
 		});
 
 		it('Resets form if type is "reset" and is a "click" event.', () => {

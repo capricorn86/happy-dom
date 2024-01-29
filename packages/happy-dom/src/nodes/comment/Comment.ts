@@ -1,12 +1,13 @@
-import Node from '../node/Node.js';
 import CharacterData from '../character-data/CharacterData.js';
 import IComment from './IComment.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * Comment node.
  */
 export default class Comment extends CharacterData implements IComment {
-	public readonly nodeType = Node.COMMENT_NODE;
+	public [PropertySymbol.nodeType] = NodeTypeEnum.commentNode;
 
 	/**
 	 * Node name.

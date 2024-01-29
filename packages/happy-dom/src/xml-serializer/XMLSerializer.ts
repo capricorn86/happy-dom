@@ -1,4 +1,5 @@
 import Element from '../nodes/element/Element.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
 import VoidElements from '../config/VoidElements.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
@@ -15,7 +16,7 @@ import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
  * Utility for converting an element to string.
  */
 export default class XMLSerializer {
-	public _options = {
+	private options = {
 		includeShadowRoots: false,
 		escapeEntities: true
 	};
@@ -30,11 +31,11 @@ export default class XMLSerializer {
 	constructor(options?: { includeShadowRoots?: boolean; escapeEntities?: boolean }) {
 		if (options) {
 			if (options.includeShadowRoots !== undefined) {
-				this._options.includeShadowRoots = options.includeShadowRoots;
+				this.options.includeShadowRoots = options.includeShadowRoots;
 			}
 
 			if (options.escapeEntities !== undefined) {
-				this._options.escapeEntities = options.escapeEntities;
+				this.options.escapeEntities = options.escapeEntities;
 			}
 		}
 	}
@@ -46,40 +47,42 @@ export default class XMLSerializer {
 	 * @returns Result.
 	 */
 	public serializeToString(root: INode): string {
-		switch (root.nodeType) {
+		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
-				const tagName = element.tagName.toLowerCase();
+				const tagName = element[PropertySymbol.tagName].toLowerCase();
 
-				if (VoidElements[element.tagName]) {
-					return `<${tagName}${this._getAttributes(element)}>`;
+				if (VoidElements[element[PropertySymbol.tagName]]) {
+					return `<${tagName}${this.getAttributes(element)}>`;
 				}
 
 				const childNodes =
 					tagName === 'template'
-						? (<DocumentFragment>(<IHTMLTemplateElement>root).content)._childNodes
-						: (<DocumentFragment>root)._childNodes;
+						? (<DocumentFragment>(<IHTMLTemplateElement>root).content)[PropertySymbol.childNodes]
+						: (<DocumentFragment>root)[PropertySymbol.childNodes];
 				let innerHTML = '';
 
 				for (const node of childNodes) {
 					innerHTML += this.serializeToString(node);
 				}
 
-				if (this._options.includeShadowRoots && element.shadowRoot) {
-					innerHTML += `<template shadowrootmode="${element.shadowRoot.mode}">`;
+				// TODO: Should we include closed shadow roots?
+				// We are currently only including open shadow roots.
+				if (this.options.includeShadowRoots && element.shadowRoot) {
+					innerHTML += `<template shadowrootmode="${element.shadowRoot[PropertySymbol.mode]}">`;
 
-					for (const node of (<ShadowRoot>element.shadowRoot)._childNodes) {
+					for (const node of (<ShadowRoot>element.shadowRoot)[PropertySymbol.childNodes]) {
 						innerHTML += this.serializeToString(node);
 					}
 
 					innerHTML += '</template>';
 				}
 
-				return `<${tagName}${this._getAttributes(element)}>${innerHTML}</${tagName}>`;
+				return `<${tagName}${this.getAttributes(element)}>${innerHTML}</${tagName}>`;
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
 				let html = '';
-				for (const node of (<Node>root)._childNodes) {
+				for (const node of (<Node>root)[PropertySymbol.childNodes]) {
 					html += this.serializeToString(node);
 				}
 				return html;
@@ -89,7 +92,7 @@ export default class XMLSerializer {
 				// TODO: Add support for processing instructions.
 				return `<!--?${(<IProcessingInstruction>root).target} ${root.textContent}?-->`;
 			case NodeTypeEnum.textNode:
-				return this._options.escapeEntities
+				return this.options.escapeEntities
 					? Entities.escapeText(root.textContent)
 					: root.textContent;
 			case NodeTypeEnum.documentTypeNode:
@@ -109,20 +112,23 @@ export default class XMLSerializer {
 	 * @param element Element.
 	 * @returns Attributes.
 	 */
-	private _getAttributes(element: IElement): string {
+	private getAttributes(element: IElement): string {
 		let attributeString = '';
 
-		if (!(<Element>element).attributes.getNamedItem('is') && (<Element>element)._isValue) {
-			attributeString += ' is="' + (<Element>element)._isValue + '"';
+		if (
+			!(<Element>element)[PropertySymbol.attributes].getNamedItem('is') &&
+			(<Element>element)[PropertySymbol.isValue]
+		) {
+			attributeString += ' is="' + (<Element>element)[PropertySymbol.isValue] + '"';
 		}
 
-		for (let i = 0, max = (<Element>element).attributes.length; i < max; i++) {
-			const attribute = (<Element>element).attributes[i];
-			if (attribute.value !== null) {
-				const escapedValue = this._options.escapeEntities
-					? Entities.escapeText(attribute.value)
-					: attribute.value;
-				attributeString += ' ' + attribute.name + '="' + escapedValue + '"';
+		for (let i = 0, max = (<Element>element)[PropertySymbol.attributes].length; i < max; i++) {
+			const attribute = (<Element>element)[PropertySymbol.attributes][i];
+			if (attribute[PropertySymbol.value] !== null) {
+				const escapedValue = this.options.escapeEntities
+					? Entities.escapeText(attribute[PropertySymbol.value])
+					: attribute[PropertySymbol.value];
+				attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
 			}
 		}
 
