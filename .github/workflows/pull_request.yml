@@ -47,12 +47,12 @@ jobs:
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
-  
-      - name: Compile package
-        run: npm run compile
 
       - name: Validate commit messages
         run: node ./node_modules/.bin/happy-validate-pr-commit-messages
+  
+      - name: Compile package
+        run: npm run compile
 
       - name: Lint
         run: npm run lint
