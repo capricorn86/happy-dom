@@ -1,5 +1,6 @@
-import URL from '../url/URL.js';
+import URL from './URL.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * Location.
@@ -30,6 +31,7 @@ export default class Location extends URL {
 	 * Override set href.
 	 */
 	public get href(): string {
+		// @ts-ignore
 		return super.href;
 	}
 
@@ -58,5 +60,20 @@ export default class Location extends URL {
 		this.#browserFrame
 			.goto(this.href)
 			.catch((error) => this.#browserFrame.page.console.error(error));
+	}
+
+	/**
+	 * Replaces the current URL state with the provided one without navigating to the new URL.
+	 *
+	 * @param browserFrame Browser frame that must match the current one as validation.
+	 * @param url URL.
+	 */
+	public [PropertySymbol.setURL](browserFrame: IBrowserFrame, url: string): void {
+		if (this.#browserFrame !== browserFrame) {
+			throw new Error('Failed to set URL. Browser frame mismatch.');
+		}
+
+		// @ts-ignore
+		super.href = url;
 	}
 }

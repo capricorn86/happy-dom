@@ -1,0 +1,4 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+node ./node_modules/.bin/happy-validate-commit-message --commitFile=$1

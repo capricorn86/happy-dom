@@ -1,6 +1,6 @@
-# Happy DOM Contributing Guide
+# Contributing Guide
 
-We are very happy that you would like to contribute. In this guide you will find instructions on how to setup the repo locally and how to branch and create a pull request.
+We are very happy that you would like to contribute. In this guide you will find instructions on how to setup the repo locally.
 
 ## Setup
 
@@ -40,51 +40,34 @@ npm run test:debug
 7. Click on the green ball.
 8. Click continue to jump to your breakpoint.
 
-### Test
+### Automated Tests
 
-##### Run all Tests
+**Run tests**
 
 ```bash
 npm test
 ```
 
-##### Watch Tests
+**Watch tests**
 
 ```bash
 npm run test:watch
 ```
 
-## Branch
+# Commit Convention
 
-Branch names currently have the pattern "task/{issueID}-name-of-branch". However, there is a plan to change this in the future and remove "task/".
+We use the [Conventional Commits](https://www.conventionalcommits.org/en/) standard for our commit messages. The description should start with an uppercase character.
 
-## Commit Convention
+**Example**
 
-The release process in Happy DOM is completely automated. In order to determine which version type a package should be released with and to be able to generate release notes, commits has to follow a certain format.
-
-#### Format
-
-\#{taskId}@{versionType}: {description}.
-
-#### Version Types
-
-| Type    | Description                                                                                                             |
-| ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| trivial | Use this version type if the change doesn't affect the end user. The change will not be displayed in the release notes. |
-| patch   | Bug fixes should use this version type.                                                                                 |
-| minor   | New features that doesn't break anything for the end user should have this version type.                                |
-| major   | Breaking changes should use this version type.                                                                          |
-
-### Rebasing
-
-The commit convention can cause problems when editing a message when rebasing. You can then set the setting "core.commentChar" to "auto" to workaround the problem.
-
-We should consider moving over to Conventional Commit as it is more of a standard and doesn't have this problem.
+```
+fix: [#123] This is my commit message
+```
 
 # Pull Request
 
 Do your changes on a branch. When you are done with your changes you can create a pull request.
 
-Each pushed commit will trigger a Github Workflow that will compile, run tests, lint and check that the commit convention is followed. The Github Workflow has to comple successfully in order to merge the pull request.
+Each pushed commit will trigger a Github Workflow that will compile, run tests, lint and check that the commit convention is followed. The Github Workflow has to complete successfully in order to merge the pull request.
 
 One code owner has to approve the pull request. The code owner will usually merge the pull request if the build has passed and the code looks good.

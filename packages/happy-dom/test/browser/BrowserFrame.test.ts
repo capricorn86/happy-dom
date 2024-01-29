@@ -117,7 +117,6 @@ describe('BrowserFrame', () => {
 			const location = page.mainFrame.window.location;
 			page.mainFrame.url = 'http://localhost:3000';
 			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
-			expect(page.mainFrame.window.location).not.toBe(location);
 		});
 	});
 

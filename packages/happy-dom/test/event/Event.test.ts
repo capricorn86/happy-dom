@@ -3,7 +3,6 @@ import Window from '../../src/window/Window.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import Event from '../../src/event/Event.js';
 import CustomElement from '../CustomElement.js';
-import { performance } from 'perf_hooks';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import IEventTarget from '../../src/event/IEventTarget.js';
 

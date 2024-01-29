@@ -1,5 +1,5 @@
 import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
-import CSSParser from '../../src/css/CSSParser.js';
+import CSSParser from '../../src/css/utilities/CSSParser.js';
 import CSSStyleRule from '../../src/css/rules/CSSStyleRule.js';
 import CSSMediaRule from '../../src/css/rules/CSSMediaRule.js';
 import CSSParserInput from './data/CSSParserInput.js';

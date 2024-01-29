@@ -13,7 +13,6 @@ import FormData from '../form-data/FormData.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import { TextDecoder } from 'util';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
