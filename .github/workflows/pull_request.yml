@@ -3,15 +3,12 @@ on: pull_request
 jobs:
   build:
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
         node-version: [16, 18, 20]
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
