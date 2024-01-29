@@ -1158,5 +1158,16 @@ describe('QuerySelector', () => {
 				"Failed to execute 'querySelector' on 'HTMLElement': '#1' is not a valid selector."
 			);
 		});
+
+		it('Has support for passing pseudoseletors inside :not', () => {
+			const div = document.createElement('div');
+			const child = document.createElement('div');
+			const child2 = document.createElement('div');
+
+			div.appendChild(child);
+			div.appendChild(child2);
+
+			expect(div.querySelector(':not(:nth-child(1))')).toBe(child2);
+		});
 	});
 });
