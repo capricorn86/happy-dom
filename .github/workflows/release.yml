@@ -1,8 +1,9 @@
 name: Release
+
 on:
-  push:
-    branches:
-      - master
+  pull_request:
+    types: [closed]
+
 jobs:
   check-next-version:
     runs-on: ubuntu-latest
@@ -15,10 +16,13 @@ jobs:
       next_version: ${{ steps.versionCheck.outputs.next_version }}
       current_version: ${{ steps.versionCheck.outputs.current_version }}
 
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master'
+
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ref: master
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -58,6 +62,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ref: master
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -131,6 +136,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ref: master
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -153,7 +159,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Generate release notes
-        run: node ./node_modules/.bin/happy-release-notes --author=githubUsername > ./RELEASE_NOTES.md
+        run: node ./node_modules/.bin/happy-release-notes --author=githubUsername --authorUsername=${{ github.event.pull_request.user.login }} > ./RELEASE_NOTES.md
 
       - name: Create release
         id: create_release
