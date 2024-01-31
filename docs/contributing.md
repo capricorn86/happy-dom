@@ -68,6 +68,6 @@ fix: [#123] This is my commit message
 
 Do your changes on a branch. When you are done with your changes you can create a pull request.
 
-Each pushed commit will trigger a Github Workflow that will compile, run tests, lint and check that the commit convention is followed. The Github Workflow has to complete successfully in order to merge the pull request.
+Each pushed commit will trigger a Github Workflow that will compile, run tests and lint. The Github Workflow has to complete successfully in order to merge the pull request.
 
 One code owner has to approve the pull request. The code owner will usually merge the pull request if the build has passed and the code looks good.
