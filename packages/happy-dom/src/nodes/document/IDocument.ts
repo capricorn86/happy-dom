@@ -1,6 +1,7 @@
 import IElement from '../element/IElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
-import IWindow from '../../window/IWindow.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
 import Event from '../../event/Event.js';
@@ -16,7 +17,7 @@ import Selection from '../../selection/Selection.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
 import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
-import Location from '../../location/Location.js';
+import Location from '../../url/Location.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
 import INodeList from '../node/INodeList.js';
 import Range from '../../range/Range.js';
@@ -27,7 +28,8 @@ import VisibilityStateEnum from './VisibilityStateEnum.js';
  * Document.
  */
 export default interface IDocument extends IParentNode {
-	readonly defaultView: IWindow;
+	readonly defaultView: IBrowserWindow | null;
+	readonly [PropertySymbol.ownerWindow]: IBrowserWindow;
 	readonly implementation: DOMImplementation;
 	readonly documentElement: IHTMLElement;
 	readonly doctype: IDocumentType;
@@ -48,6 +50,7 @@ export default interface IDocument extends IParentNode {
 	readonly links: IHTMLCollection<IHTMLElement>;
 	readonly referrer: string;
 	readonly currentScript: IHTMLScriptElement;
+	adoptedStyleSheets: CSSStyleSheet[];
 	cookie: string;
 	title: string;
 
@@ -331,9 +334,9 @@ export default interface IDocument extends IParentNode {
 	/**
 	 * Creates a Processing Instruction node.
 	 *
+	 * @param target Target.
+	 * @param data Data.
 	 * @returns IProcessingInstruction.
-	 * @param target
-	 * @param data
 	 */
 	createProcessingInstruction(target: string, data: string): IProcessingInstruction;
 }

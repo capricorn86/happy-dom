@@ -4,7 +4,7 @@ import IWindow from '../../src/window/IWindow.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import Window from '../../src/window/Window.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import { rejects } from 'assert';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 describe('CustomElementRegistry', () => {
 	let customElements;
@@ -68,10 +68,10 @@ describe('CustomElementRegistry', () => {
 			expect(() => customElements.define('custom-element2', CustomElement)).toThrow();
 		});
 
-		it('Calls observed attributes and set _observedAttributes as a property on the element class.', () => {
+		it('Calls observed attributes and set "[PropertySymbol.observedAttributes]" as a property on the element class.', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(CustomElement.observedAttributesCallCount).toBe(1);
-			expect(CustomElement._observedAttributes).toEqual(['key1', 'key2']);
+			expect(CustomElement[PropertySymbol.observedAttributes]).toEqual(['key1', 'key2']);
 		});
 
 		it('Non-ASCII capital letter in localName.', () => {

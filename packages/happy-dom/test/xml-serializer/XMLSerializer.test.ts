@@ -229,7 +229,7 @@ describe('XMLSerializer', () => {
 			expect(
 				document.body
 					.querySelector('div')
-					.getInnerHTML({ includeShadowRoots: true })
+					?.getInnerHTML({ includeShadowRoots: true })
 					.replace(/\s/gm, '')
 			).toBe(
 				`

@@ -1,4 +1,5 @@
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IElement from './IElement.js';
 import INode from '../node/INode.js';
 import HTMLCollection from './HTMLCollection.js';
@@ -30,7 +31,7 @@ export default class ElementUtility {
 		node: INode,
 		options?: { disableAncestorValidation?: boolean }
 	): INode {
-		if (node.nodeType === NodeTypeEnum.elementNode && node !== ancestorNode) {
+		if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode && node !== ancestorNode) {
 			if (
 				!options?.disableAncestorValidation &&
 				NodeUtility.isInclusiveAncestor(node, ancestorNode)
@@ -40,18 +41,23 @@ export default class ElementUtility {
 					DOMExceptionNameEnum.domException
 				);
 			}
-			if (node.parentNode) {
+			if (node[PropertySymbol.parentNode]) {
 				const parentNodeChildren = <HTMLCollection<IHTMLElement>>(
-					(<Element>node.parentNode)._children
+					(<Element>node[PropertySymbol.parentNode])[PropertySymbol.children]
 				);
 
 				if (parentNodeChildren) {
 					const index = parentNodeChildren.indexOf(<IHTMLElement>node);
 					if (index !== -1) {
 						for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
-							const attribute = (<Element>node).attributes.getNamedItem(attributeName);
+							const attribute = (<Element>node)[PropertySymbol.attributes].getNamedItem(
+								attributeName
+							);
 							if (attribute) {
-								parentNodeChildren._removeNamedItem(<IHTMLElement>node, attribute.value);
+								parentNodeChildren[PropertySymbol.removeNamedItem](
+									<IHTMLElement>node,
+									attribute[PropertySymbol.value]
+								);
 							}
 						}
 
@@ -59,12 +65,17 @@ export default class ElementUtility {
 					}
 				}
 			}
-			const ancestorNodeChildren = <HTMLCollection<IHTMLElement>>(<Element>ancestorNode)._children;
+			const ancestorNodeChildren = <HTMLCollection<IHTMLElement>>(
+				(<Element>ancestorNode)[PropertySymbol.children]
+			);
 
 			for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
-				const attribute = (<Element>node).attributes.getNamedItem(attributeName);
+				const attribute = (<Element>node)[PropertySymbol.attributes].getNamedItem(attributeName);
 				if (attribute) {
-					ancestorNodeChildren._appendNamedItem(<IHTMLElement>node, attribute.value);
+					ancestorNodeChildren[PropertySymbol.appendNamedItem](
+						<IHTMLElement>node,
+						attribute[PropertySymbol.value]
+					);
 				}
 			}
 
@@ -89,14 +100,19 @@ export default class ElementUtility {
 		ancestorNode: IElement | IDocument | IDocumentFragment,
 		node: INode
 	): INode {
-		if (node.nodeType === NodeTypeEnum.elementNode) {
-			const ancestorNodeChildren = <HTMLCollection<IHTMLElement>>(<Element>ancestorNode)._children;
+		if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+			const ancestorNodeChildren = <HTMLCollection<IHTMLElement>>(
+				(<Element>ancestorNode)[PropertySymbol.children]
+			);
 			const index = ancestorNodeChildren.indexOf(<IElement>node);
 			if (index !== -1) {
 				for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
-					const attribute = (<Element>node).attributes.getNamedItem(attributeName);
+					const attribute = (<Element>node)[PropertySymbol.attributes].getNamedItem(attributeName);
 					if (attribute) {
-						ancestorNodeChildren._removeNamedItem(<IHTMLElement>node, attribute.value);
+						ancestorNodeChildren[PropertySymbol.removeNamedItem](
+							<IHTMLElement>node,
+							attribute[PropertySymbol.value]
+						);
 					}
 				}
 				ancestorNodeChildren.splice(index, 1);
@@ -126,7 +142,7 @@ export default class ElementUtility {
 		options?: { disableAncestorValidation?: boolean }
 	): INode {
 		// NodeUtility.insertBefore() will call appendChild() for the scenario where "referenceNode" is "null" or "undefined"
-		if (newNode.nodeType === NodeTypeEnum.elementNode && referenceNode) {
+		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode && referenceNode) {
 			if (
 				!options?.disableAncestorValidation &&
 				NodeUtility.isInclusiveAncestor(newNode, ancestorNode)
@@ -136,18 +152,23 @@ export default class ElementUtility {
 					DOMExceptionNameEnum.domException
 				);
 			}
-			if (newNode.parentNode) {
+			if (newNode[PropertySymbol.parentNode]) {
 				const parentNodeChildren = <HTMLCollection<IHTMLElement>>(
-					(<Element>newNode.parentNode)._children
+					(<Element>newNode[PropertySymbol.parentNode])[PropertySymbol.children]
 				);
 
 				if (parentNodeChildren) {
 					const index = parentNodeChildren.indexOf(<IHTMLElement>newNode);
 					if (index !== -1) {
 						for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
-							const attribute = (<Element>newNode).attributes.getNamedItem(attributeName);
+							const attribute = (<Element>newNode)[PropertySymbol.attributes].getNamedItem(
+								attributeName
+							);
 							if (attribute) {
-								parentNodeChildren._removeNamedItem(<IHTMLElement>newNode, attribute.value);
+								parentNodeChildren[PropertySymbol.removeNamedItem](
+									<IHTMLElement>newNode,
+									attribute[PropertySymbol.value]
+								);
 							}
 						}
 
@@ -156,9 +177,11 @@ export default class ElementUtility {
 				}
 			}
 
-			const ancestorNodeChildren = <HTMLCollection<IHTMLElement>>(<Element>ancestorNode)._children;
+			const ancestorNodeChildren = <HTMLCollection<IHTMLElement>>(
+				(<Element>ancestorNode)[PropertySymbol.children]
+			);
 
-			if (referenceNode.nodeType === NodeTypeEnum.elementNode) {
+			if (referenceNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
 				const index = ancestorNodeChildren.indexOf(<IElement>referenceNode);
 				if (index !== -1) {
 					ancestorNodeChildren.splice(index, 0, <IElement>newNode);
@@ -166,20 +189,23 @@ export default class ElementUtility {
 			} else {
 				ancestorNodeChildren.length = 0;
 
-				for (const node of (<Element>ancestorNode)._childNodes) {
+				for (const node of (<Element>ancestorNode)[PropertySymbol.childNodes]) {
 					if (node === referenceNode) {
 						ancestorNodeChildren.push(<IElement>newNode);
 					}
-					if (node.nodeType === NodeTypeEnum.elementNode) {
+					if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
 						ancestorNodeChildren.push(<IElement>node);
 					}
 				}
 			}
 
 			for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
-				const attribute = (<Element>newNode).attributes.getNamedItem(attributeName);
+				const attribute = (<Element>newNode)[PropertySymbol.attributes].getNamedItem(attributeName);
 				if (attribute) {
-					ancestorNodeChildren._appendNamedItem(<IHTMLElement>newNode, attribute.value);
+					ancestorNodeChildren[PropertySymbol.appendNamedItem](
+						<IHTMLElement>newNode,
+						attribute[PropertySymbol.value]
+					);
 				}
 			}
 

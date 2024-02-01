@@ -1,4 +1,4 @@
-import IWindow from '../../window/IWindow.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 
 /**
  * Document ready state manager.
@@ -6,7 +6,7 @@ import IWindow from '../../window/IWindow.js';
 export default class DocumentReadyStateManager {
 	private totalTasks = 0;
 	private readyStateCallbacks: (() => void)[] = [];
-	private window: IWindow = null;
+	private window: IBrowserWindow = null;
 	private immediate: NodeJS.Immediate | null = null;
 	private isComplete = false;
 
@@ -15,7 +15,7 @@ export default class DocumentReadyStateManager {
 	 *
 	 * @param window
 	 */
-	constructor(window: IWindow) {
+	constructor(window: IBrowserWindow) {
 		this.window = window;
 	}
 
@@ -24,7 +24,7 @@ export default class DocumentReadyStateManager {
 	 *
 	 * @returns Promise.
 	 */
-	public whenComplete(): Promise<void> {
+	public waitUntilComplete(): Promise<void> {
 		return new Promise((resolve) => {
 			if (this.isComplete) {
 				resolve();

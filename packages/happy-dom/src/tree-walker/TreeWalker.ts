@@ -1,4 +1,5 @@
 import Node from '../nodes/node/Node.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import NodeFilter from './NodeFilter.js';
 import INodeFilter from './INodeFilter.js';
 import NodeFilterMask from './NodeFilterMask.js';
@@ -62,8 +63,12 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public parentNode(): INode {
-		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
-			this.currentNode = this.currentNode.parentNode;
+		if (
+			this.currentNode !== this.root &&
+			this.currentNode &&
+			this.currentNode[PropertySymbol.parentNode]
+		) {
+			this.currentNode = this.currentNode[PropertySymbol.parentNode];
 
 			if (this.filterNode(this.currentNode) === NodeFilter.FILTER_ACCEPT) {
 				return this.currentNode;
@@ -83,7 +88,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public firstChild(): INode {
-		const childNodes = this.currentNode ? (<Node>this.currentNode)._childNodes : [];
+		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.childNodes] : [];
 
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[0];
@@ -104,7 +109,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public lastChild(): INode {
-		const childNodes = this.currentNode ? (<Node>this.currentNode)._childNodes : [];
+		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.childNodes] : [];
 
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[childNodes.length - 1];
@@ -125,8 +130,14 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public previousSibling(): INode {
-		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
-			const siblings = (<Node>this.currentNode.parentNode)._childNodes;
+		if (
+			this.currentNode !== this.root &&
+			this.currentNode &&
+			this.currentNode[PropertySymbol.parentNode]
+		) {
+			const siblings = (<Node>this.currentNode[PropertySymbol.parentNode])[
+				PropertySymbol.childNodes
+			];
 			const index = siblings.indexOf(this.currentNode);
 
 			if (index > 0) {
@@ -149,8 +160,14 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public nextSibling(): INode {
-		if (this.currentNode !== this.root && this.currentNode && this.currentNode.parentNode) {
-			const siblings = (<Node>this.currentNode.parentNode)._childNodes;
+		if (
+			this.currentNode !== this.root &&
+			this.currentNode &&
+			this.currentNode[PropertySymbol.parentNode]
+		) {
+			const siblings = (<Node>this.currentNode[PropertySymbol.parentNode])[
+				PropertySymbol.childNodes
+			];
 			const index = siblings.indexOf(this.currentNode);
 
 			if (index + 1 < siblings.length) {

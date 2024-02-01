@@ -1,4 +1,5 @@
 import DOMException from '../exception/DOMException.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import INode from '../nodes/node/INode.js';
@@ -46,11 +47,14 @@ export default class RangeUtility {
 		if (NodeUtility.isInclusiveAncestor(pointA.node, pointB.node)) {
 			let child = pointB.node;
 
-			while (child.parentNode !== pointA.node) {
-				child = child.parentNode;
+			while (child[PropertySymbol.parentNode] !== pointA.node) {
+				child = child[PropertySymbol.parentNode];
 			}
 
-			if ((<Node>child.parentNode)._childNodes.indexOf(child) < pointA.offset) {
+			if (
+				(<Node>child[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(child) <
+				pointA.offset
+			) {
 				return 1;
 			}
 		}
@@ -65,7 +69,7 @@ export default class RangeUtility {
 	 * @param point Boundary point.
 	 */
 	public static validateBoundaryPoint(point: IRangeBoundaryPoint): void {
-		if (point.node.nodeType === NodeTypeEnum.documentTypeNode) {
+		if (point.node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
 			throw new DOMException(
 				`DocumentType Node can't be used as boundary point.`,
 				DOMExceptionNameEnum.invalidNodeTypeError

@@ -35,8 +35,10 @@ import Range from '../../../src/range/Range.js';
 import ProcessingInstruction from '../../../src/nodes/processing-instruction/ProcessingInstruction.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import IRequestInit from '../../../src/fetch/types/IRequestInit.js';
 import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
+import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
+import Fetch from '../../../src/fetch/Fetch.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -321,14 +323,12 @@ describe('Document', () => {
 				const style = document.createElement('style');
 				const link = <IHTMLLinkElement>document.createElement('link');
 				let fetchedUrl: string | null = null;
-				let fetchedInit: IRequestInit | null = null;
 
 				link.rel = 'stylesheet';
-				link.href = '/path/to/file.css';
+				link.href = 'https://localhost:8080/path/to/file.css';
 
-				vi.spyOn(window, 'fetch').mockImplementation((url, init) => {
-					fetchedUrl = <string>url;
-					fetchedInit = <IRequestInit>init;
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function () {
+					fetchedUrl = this.request.url;
 					return <Promise<IResponse>>Promise.resolve({
 						text: () => Promise.resolve('button { background-color: red }'),
 						ok: true
@@ -341,8 +341,7 @@ describe('Document', () => {
 				document.appendChild(link);
 
 				setTimeout(() => {
-					expect(fetchedUrl).toBe('/path/to/file.css');
-					expect(fetchedInit).toBe(undefined);
+					expect(fetchedUrl).toBe('https://localhost:8080/path/to/file.css');
 
 					const styleSheets = document.styleSheets;
 
@@ -839,6 +838,14 @@ describe('Document', () => {
 				`.replace(/[\s]/gm, '')
 			);
 		});
+
+		it('Adds elements outside of the <html> tag to the <body> tag.', () => {
+			const html = `<html test="1"><body>Test></body></html>`;
+			document.write(html);
+			expect(document.documentElement.outerHTML).toBe(
+				'<html test="1"><head></head><body>Test></body></html>'
+			);
+		});
 	});
 
 	describe('open()', () => {
@@ -1081,11 +1088,34 @@ describe('Document', () => {
 
 	describe('importNode()', () => {
 		it('Creates a clone of a Node and sets the ownerDocument to be the current document.', () => {
-			const node = new Window().document.createElement('div');
-			const clone = <Element>document.importNode(node);
+			const window1 = new Window();
+			const window2 = new Window();
+			const node = window1.document.createElement('div');
+			const clone = <Element>window2.document.importNode(node);
 			expect(clone.tagName).toBe('DIV');
-			expect(clone.ownerDocument === document).toBe(true);
+			expect(clone.ownerDocument === window2.document).toBe(true);
 			expect(clone instanceof HTMLElement).toBe(true);
+		});
+
+		it('Creates a clone of a Node and sets the ownerDocument to be the current document on child nodes when setting the "deep" parameter to "true".', () => {
+			const window1 = new Window();
+			const window2 = new Window();
+			const node = window1.document.createElement('div');
+			const childNode1 = window1.document.createElement('span');
+			const childNode2 = window1.document.createElement('span');
+
+			node.appendChild(childNode1);
+			node.appendChild(childNode2);
+
+			const clone = <Element>window2.document.importNode(node, true);
+			expect(clone.tagName).toBe('DIV');
+			expect(clone.ownerDocument === window2.document).toBe(true);
+
+			expect(clone.children.length).toBe(2);
+			expect(clone.children[0].tagName).toBe('SPAN');
+			expect(clone.children[0].ownerDocument === window2.document).toBe(true);
+			expect(clone.children[1].tagName).toBe('SPAN');
+			expect(clone.children[1].ownerDocument === window2.document).toBe(true);
 		});
 	});
 
@@ -1102,7 +1132,8 @@ describe('Document', () => {
 
 			const clone = document.cloneNode(false);
 			const clone2 = document.cloneNode(true);
-			expect(clone.defaultView === window).toBe(true);
+			expect(clone[PropertySymbol.ownerWindow] === window).toBe(true);
+			expect(clone.defaultView === null).toBe(true);
 			expect(clone.children.length).toBe(0);
 			expect(clone2.children.length).toBe(1);
 			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
@@ -1153,29 +1184,27 @@ describe('Document', () => {
 
 		it('Triggers "readystatechange" event when all resources have been loaded.', async () => {
 			await new Promise((resolve) => {
-				const cssURL = '/path/to/file.css';
-				const jsURL = '/path/to/file.js';
+				const cssURL = 'https://localhost:8080/path/to/file.css';
+				const jsURL = 'https://localhost:8080/path/to/file.js';
 				const cssResponse = 'body { background-color: red; }';
 				const jsResponse = 'globalThis.test = "test";';
-				let resourceFetchCSSDocument: IDocument | null = null;
+				let resourceFetchCSSWindow: IBrowserWindow | null = null;
 				let resourceFetchCSSURL: string | null = null;
-				let resourceFetchJSDocument: IDocument | null = null;
+				let resourceFetchJSWindow: IBrowserWindow | null = null;
 				let resourceFetchJSURL: string | null = null;
 				let readyChangeEvent: Event | null = null;
 
-				vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-					async (document: IDocument, url: string) => {
-						if (url.endsWith('.css')) {
-							resourceFetchCSSDocument = document;
-							resourceFetchCSSURL = url;
-							return cssResponse;
-						}
-
-						resourceFetchJSDocument = document;
-						resourceFetchJSURL = url;
-						return jsResponse;
+				vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+					if (url.endsWith('.css')) {
+						resourceFetchCSSWindow = this.window;
+						resourceFetchCSSURL = url;
+						return cssResponse;
 					}
-				);
+
+					resourceFetchJSWindow = this.window;
+					resourceFetchJSURL = url;
+					return jsResponse;
+				});
 
 				document.addEventListener('readystatechange', (event) => {
 					readyChangeEvent = event;
@@ -1195,9 +1224,9 @@ describe('Document', () => {
 				expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
 
 				setTimeout(() => {
-					expect(resourceFetchCSSDocument).toBe(document);
+					expect(resourceFetchCSSWindow).toBe(window);
 					expect(resourceFetchCSSURL).toBe(cssURL);
-					expect(resourceFetchJSDocument).toBe(document);
+					expect(resourceFetchJSWindow).toBe(window);
 					expect(resourceFetchJSURL).toBe(jsURL);
 					expect((<Event>readyChangeEvent).target).toBe(document);
 					expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
@@ -1256,13 +1285,9 @@ describe('Document', () => {
 		it('Creates a Processing Instruction node with target & data.', () => {
 			const instruction = document.createProcessingInstruction('foo', 'bar');
 			expect(instruction instanceof ProcessingInstruction).toBe(true);
-			expect(instruction).toEqual(
-				expect.objectContaining({
-					target: 'foo',
-					data: 'bar',
-					ownerDocument: document
-				})
-			);
+			expect(instruction.target).toBe('foo');
+			expect(instruction.data).toBe('bar');
+			expect(instruction.ownerDocument).toBe(document);
 		});
 
 		it('Throws an exception if target is invalid".', () => {

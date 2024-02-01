@@ -1,62 +1,162 @@
-import DOMException from '../../src/exception/DOMException.js';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import Location from '../../src/location/Location.js';
-import { beforeEach, describe, it, expect } from 'vitest';
+import Browser from '../../src/browser/Browser.js';
+import BrowserFrame from '../../src/browser/BrowserFrame.js';
+import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
+import IGoToOptions from '../../src/browser/types/IGoToOptions.js';
+import IResponse from '../../src/fetch/types/IResponse.js';
+import Location from '../../src/url/Location.js';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 const HREF = 'https://google.com/some-path/?key=value&key2=value2#hash';
 
 describe('Location', () => {
+	let browserFrame: IBrowserFrame;
 	let location: Location;
 
 	beforeEach(() => {
-		location = new Location();
+		browserFrame = new BrowserFrame(new Browser().newPage());
+		location = new Location(browserFrame, 'about:blank');
+	});
+
+	describe('set href()', () => {
+		it('Calls browserFrame.goto() to navigate to the URL.', () => {
+			let calledURL: string | null = null;
+			let calledOptions: IGoToOptions | undefined = undefined;
+
+			vi.spyOn(browserFrame, 'goto').mockImplementation(
+				async (url, options?: IGoToOptions): Promise<IResponse | null> => {
+					calledURL = url;
+					calledOptions = options;
+					return null;
+				}
+			);
+
+			location.href = HREF;
+
+			expect(calledURL).toBe(HREF);
+			expect(calledOptions).toBeUndefined();
+		});
+
+		it('Handles promise rejections.', async () => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+				return Promise.reject(new Error('Test error'));
+			});
+
+			location.href = HREF;
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(
+				browserFrame.page.virtualConsolePrinter.readAsString().startsWith('Error: Test error\n')
+			).toBe(true);
+		});
+	});
+
+	describe('get href()', () => {
+		it('Returns the URL.', () => {
+			expect(location.href).toBe('about:blank');
+			expect(new Location(browserFrame, HREF).href).toBe(HREF);
+		});
 	});
 
 	describe('replace()', () => {
-		it('Replaces the url.', () => {
+		it('Calls browserFrame.goto() to navigate to the URL.', () => {
+			let calledURL: string | null = null;
+			let calledOptions: IGoToOptions | undefined = undefined;
+
+			vi.spyOn(browserFrame, 'goto').mockImplementation(
+				async (url, options?: IGoToOptions): Promise<IResponse | null> => {
+					calledURL = url;
+					calledOptions = options;
+					return null;
+				}
+			);
+
 			location.replace(HREF);
-			expect(location.href).toBe(HREF);
+
+			expect(calledURL).toBe(HREF);
+			expect(calledOptions).toBeUndefined();
+		});
+
+		it('Handles promise rejections.', async () => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+				return Promise.reject(new Error('Test error'));
+			});
+
+			location.replace(HREF);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(
+				browserFrame.page.virtualConsolePrinter.readAsString().startsWith('Error: Test error\n')
+			).toBe(true);
 		});
 	});
 
 	describe('assign()', () => {
-		it('Assign the url.', () => {
+		it('Calls browserFrame.goto() to navigate to the URL.', () => {
+			let calledURL: string | null = null;
+			let calledOptions: IGoToOptions | undefined = undefined;
+
+			vi.spyOn(browserFrame, 'goto').mockImplementation(
+				async (url, options?: IGoToOptions): Promise<IResponse | null> => {
+					calledURL = url;
+					calledOptions = options;
+					return null;
+				}
+			);
+
 			location.assign(HREF);
-			expect(location.href).toBe(HREF);
+
+			expect(calledURL).toBe(HREF);
+			expect(calledOptions).toBeUndefined();
+		});
+
+		it('Handles promise rejections.', async () => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+				return Promise.reject(new Error('Test error'));
+			});
+
+			location.assign(HREF);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(
+				browserFrame.page.virtualConsolePrinter.readAsString().startsWith('Error: Test error\n')
+			).toBe(true);
 		});
 	});
 
 	describe('reload()', () => {
-		it('Does nothing.', () => {
-			location.replace(HREF);
-			location.reload();
-			expect(location.href).toBe(HREF);
-		});
-	});
+		it('Reloads the page by calling browserFrame.goto() with the same URL.', () => {
+			let calledURL: string | null = null;
+			let calledOptions: IGoToOptions | undefined = undefined;
 
-	describe('href', () => {
-		it('Successully sets a relative URL.', () => {
-			location.href = HREF;
-			expect(location.href).toBe(HREF);
-			location.href = '/foo';
-			expect(location.href).toBe('https://google.com/foo');
-		});
-
-		it('Fails when it is not possible to construct a relative URL.', () => {
-			let error: Error | null = null;
-
-			try {
-				location.href = '/foo';
-			} catch (e) {
-				error = e;
-			}
-
-			expect(error).toEqual(
-				new DOMException(
-					`Failed to construct URL from string "/foo" relative to URL "about:blank".`,
-					DOMExceptionNameEnum.uriMismatchError
-				)
+			vi.spyOn(browserFrame, 'goto').mockImplementation(
+				async (url, options?: IGoToOptions): Promise<IResponse | null> => {
+					calledURL = url;
+					calledOptions = options;
+					return null;
+				}
 			);
+
+			location.reload();
+
+			expect(calledURL).toBe('about:blank');
+			expect(calledOptions).toBeUndefined();
+		});
+
+		it('Handles promise rejections.', async () => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+				return Promise.reject(new Error('Test error'));
+			});
+
+			location.reload();
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(
+				browserFrame.page.virtualConsolePrinter.readAsString().startsWith('Error: Test error\n')
+			).toBe(true);
 		});
 	});
 });

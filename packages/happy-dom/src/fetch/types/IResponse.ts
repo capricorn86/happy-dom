@@ -1,6 +1,7 @@
 import IHeaders from './IHeaders.js';
 import IBlob from '../../file/IBlob.js';
 import Stream from 'stream';
+import { Buffer } from 'buffer';
 
 /**
  * Fetch response.

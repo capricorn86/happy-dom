@@ -1,4 +1,5 @@
 import DOMException from '../exception/DOMException.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import Node from '../nodes/node/Node.js';
 
@@ -6,16 +7,113 @@ import Node from '../nodes/node/Node.js';
  * Custom elements registry.
  */
 export default class CustomElementRegistry {
-	public _registry: { [k: string]: { elementClass: typeof HTMLElement; extends: string } } = {};
-	public _callbacks: { [k: string]: (() => void)[] } = {};
+	public [PropertySymbol.registry]: {
+		[k: string]: { elementClass: typeof HTMLElement; extends: string };
+	} = {};
+	public [PropertySymbol.callbacks]: { [k: string]: (() => void)[] } = {};
+
+	/**
+	 * Defines a custom element class.
+	 *
+	 * @param name Tag name of element.
+	 * @param elementClass Element class.
+	 * @param [options] Options.
+	 * @param [options.extends] Extends tag name.
+	 */
+	public define(
+		name: string,
+		elementClass: typeof HTMLElement,
+		options?: { extends?: string }
+	): void {
+		if (!this.#isValidCustomElementName(name)) {
+			throw new DOMException(
+				"Failed to execute 'define' on 'CustomElementRegistry': \"" +
+					name +
+					'" is not a valid custom element name.'
+			);
+		}
+
+		this[PropertySymbol.registry][name] = {
+			elementClass,
+			extends: options && options.extends ? options.extends.toLowerCase() : null
+		};
+
+		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
+		if (elementClass.prototype.attributeChangedCallback) {
+			elementClass[PropertySymbol.observedAttributes] = elementClass.observedAttributes;
+		}
+
+		if (this[PropertySymbol.callbacks][name]) {
+			const callbacks = this[PropertySymbol.callbacks][name];
+			delete this[PropertySymbol.callbacks][name];
+			for (const callback of callbacks) {
+				callback();
+			}
+		}
+	}
+
+	/**
+	 * Returns a defined element class.
+	 *
+	 * @param name Tag name of element.
+	 * @returns HTMLElement Class defined or undefined.
+	 */
+	public get(name: string): typeof HTMLElement {
+		return this[PropertySymbol.registry][name]?.elementClass;
+	}
+
+	/**
+	 * Upgrades a custom element directly, even before it is connected to its shadow root.
+	 *
+	 * Not implemented yet.
+	 *
+	 * @param _root Root node.
+	 */
+	public upgrade(_root: Node): void {
+		// Do nothing
+	}
+
+	/**
+	 * When defined.
+	 *
+	 * @param name Tag name of element.
+	 */
+	public whenDefined(name: string): Promise<void> {
+		if (!this.#isValidCustomElementName(name)) {
+			return Promise.reject(new DOMException(`Invalid custom element name: "${name}"`));
+		}
+		if (this.get(name)) {
+			return Promise.resolve();
+		}
+		return new Promise((resolve) => {
+			this[PropertySymbol.callbacks][name] = this[PropertySymbol.callbacks][name] || [];
+			this[PropertySymbol.callbacks][name].push(resolve);
+		});
+	}
+
+	/**
+	 * Reverse lookup searching for name by given element class.
+	 *
+	 * @param elementClass Class constructor.
+	 * @returns Found tag name or `null`.
+	 */
+	public getName(elementClass: typeof HTMLElement): string | null {
+		// For loops are faster than find()
+		for (const name of Object.keys(this[PropertySymbol.registry])) {
+			if (this[PropertySymbol.registry][name].elementClass === elementClass) {
+				return name;
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Validates the correctness of custom element tag names.
 	 *
-	 * @param localName custom element tag name.
-	 * @returns boolean True, if tag name is standard compliant.
+	 * @param name Custom element tag name.
+	 * @returns True, if tag name is standard compliant.
 	 */
-	private isValidCustomElementName(localName: string): boolean {
+	#isValidCustomElementName(name: string): boolean {
 		// Validation criteria based on:
 		// https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name
 		const PCENChar =
@@ -37,108 +135,6 @@ export default class CustomElementRegistry {
 			'font-face-name',
 			'missing-glyph'
 		];
-		return PCEN.test(localName) && !reservedNames.includes(localName);
-	}
-
-	/**
-	 * Defines a custom element class.
-	 *
-	 * @param localName Tag name of element.
-	 * @param elementClass Element class.
-	 * @param [options] Options.
-	 * @param options.extends
-	 */
-	public define(
-		localName: string,
-		elementClass: typeof HTMLElement,
-		options?: { extends: string }
-	): void {
-		if (!this.isValidCustomElementName(localName)) {
-			throw new DOMException(
-				"Failed to execute 'define' on 'CustomElementRegistry': \"" +
-					localName +
-					'" is not a valid custom element name.'
-			);
-		}
-
-		if (this._registry[localName]) {
-			throw new DOMException(`Custom Element: "${localName}" already defined.`);
-		}
-
-		const otherName = this.getName(elementClass);
-		if (otherName) {
-			throw new DOMException(`Custom Element already defined as "${otherName}".`);
-		}
-
-		this._registry[localName] = {
-			elementClass,
-			extends: options && options.extends ? options.extends.toLowerCase() : null
-		};
-
-		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
-		if (elementClass.prototype.attributeChangedCallback) {
-			elementClass._observedAttributes = elementClass.observedAttributes;
-		}
-
-		if (this._callbacks[localName]) {
-			const callbacks = this._callbacks[localName];
-			delete this._callbacks[localName];
-			for (const callback of callbacks) {
-				callback();
-			}
-		}
-	}
-
-	/**
-	 * Returns a defined element class.
-	 *
-	 * @param localName Tag name of element.
-	 * @param HTMLElement Class defined.
-	 */
-	public get(localName: string): typeof HTMLElement {
-		return this._registry[localName] ? this._registry[localName].elementClass : undefined;
-	}
-
-	/**
-	 * Upgrades a custom element directly, even before it is connected to its shadow root.
-	 *
-	 * Not implemented yet.
-	 *
-	 * @param _root Root node.
-	 */
-	public upgrade(_root: Node): void {
-		// Do nothing
-	}
-
-	/**
-	 * When defined.
-	 *
-	 * @param localName Tag name of element.
-	 * @returns Promise.
-	 */
-	public whenDefined(localName: string): Promise<void> {
-		if (!this.isValidCustomElementName(localName)) {
-			return Promise.reject(new DOMException(`Invalid custom element name: "${localName}"`));
-		}
-		if (this.get(localName)) {
-			return Promise.resolve();
-		}
-		return new Promise((resolve) => {
-			this._callbacks[localName] = this._callbacks[localName] || [];
-			this._callbacks[localName].push(resolve);
-		});
-	}
-
-	/**
-	 * Reverse lookup searching for tagName by given element class.
-	 *
-	 * @param elementClass Class constructor.
-	 * @returns Found Tag name or `null`.
-	 */
-	public getName(elementClass: typeof HTMLElement): string | null {
-		const localName = Object.keys(this._registry).find(
-			(k) => this._registry[k].elementClass === elementClass
-		);
-		return !!localName ? localName : null;
+		return PCEN.test(name) && !reservedNames.includes(name);
 	}
 }

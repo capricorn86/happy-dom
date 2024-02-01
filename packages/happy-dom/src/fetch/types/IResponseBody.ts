@@ -1,11 +1,12 @@
 import { URLSearchParams } from 'url';
 import FormData from '../../form-data/FormData.js';
 import Blob from '../../file/Blob.js';
+import Stream from 'stream';
 
 type IResponseBody =
 	| ArrayBuffer
 	| ArrayBufferView
-	| NodeJS.ReadableStream
+	| Stream.Readable
 	| string
 	| URLSearchParams
 	| Blob

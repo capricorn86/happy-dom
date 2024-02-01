@@ -56,7 +56,7 @@ npm install @happy-dom/global-registrator --save-dev
 ```javascript
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
-GlobalRegistrator.register();
+GlobalRegistrator.register({ url: 'http://localhost:3000', width: 1920, height: 1080 });
 
 document.body.innerHTML = `<button>My button</button>`;
 
@@ -98,6 +98,10 @@ Read more about how Happy DOM works in our [documentation](https://github.com/ca
 | querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
 
 See how the test was done [here](https://github.com/capricorn86/happy-dom-performance-test)
+
+# Sister Projects
+
+[<img alt="Happy Conventional Commit" width="120px" src="https://raw.githubusercontent.com/capricorn86/happy-conventional-commit/main/docs/logo_thumbnail.jpg" />](https://github.com/capricorn86/happy-conventional-commit)
 
 # Sponsors
 

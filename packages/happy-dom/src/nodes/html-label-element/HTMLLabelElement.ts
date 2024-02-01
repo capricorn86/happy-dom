@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import IHTMLLabelElement from './IHTMLLabelElement.js';
@@ -43,7 +44,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	public get control(): IHTMLElement {
 		const htmlFor = this.htmlFor;
 		if (htmlFor) {
-			const control = <IHTMLElement>this.ownerDocument.getElementById(htmlFor);
+			const control = <IHTMLElement>this[PropertySymbol.ownerDocument].getElementById(htmlFor);
 			return control !== this ? control : null;
 		}
 		return <IHTMLElement>(
@@ -57,7 +58,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 * @returns Form.
 	 */
 	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this._formNode;
+		return <IHTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**

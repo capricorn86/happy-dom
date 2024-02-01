@@ -49,16 +49,14 @@ npm install happy-dom
 
 # Usage
 
-A simple example of how you can use Happy DOM.
+Happy DOM can be used as a simulated [Browser](https://github.com/capricorn86/happy-dom/wiki/Browser) or by using the [Window](https://github.com/capricorn86/happy-dom/wiki/Window) class directly to quickly setup up a DOM.
+
+## Window
 
 ```javascript
 import { Window } from 'happy-dom';
 
-const window = new Window({
-	url: 'https://localhost:8080',
-	width: 1024,
-	height: 768
-});
+const window = new Window({ url: 'https://localhost:8080' });
 const document = window.document;
 
 document.body.innerHTML = '<div class="container"></div>';
@@ -70,6 +68,30 @@ container.appendChild(button);
 
 // Outputs "<div class="container"><button></button></div>"
 console.log(document.body.innerHTML);
+```
+
+## Browser
+
+```javascript
+import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
+
+const browser = new Browser({ settings: { errorCapture: BrowserErrorCaptureEnum.processLevel } });
+const page = browser.newPage();
+
+// Navigates page
+await page.goto('https://github.com/capricorn86');
+
+// Clicks on link
+page.mainFrame.document.querySelector('a[href*="capricorn86/happy-dom"]').click();
+
+// Waits for all operations on the page to complete (fetch, timers etc.)
+await page.waitUntilComplete();
+
+// Outputs "GitHub - capricorn86/happy-dom: Happy DOM..."
+console.log(page.mainFrame.document.title);
+
+// Closes the browser
+await browser.close();
 ```
 
 # Documentation
@@ -103,6 +125,10 @@ Happy DOM provide with a package called [@happy-dom/jest-environment](https://gi
 # Global Registration
 
 Happy DOM provide with a package called [@happy-dom/global-registrator](https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator) that can register Happy DOM globally. It makes it possible to use Happy DOM for testing in a Node environment.
+
+# Sister Projects
+
+[<img alt="Happy Conventional Commit" width="120px" src="https://raw.githubusercontent.com/capricorn86/happy-conventional-commit/main/docs/logo_thumbnail.jpg" />](https://github.com/capricorn86/happy-conventional-commit)
 
 # Sponsors
 

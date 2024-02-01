@@ -1,5 +1,6 @@
 import Window from '../../../src/window/Window.js';
 import IWindow from '../../../src/window/IWindow.js';
+import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 import IDocument from '../../../src/nodes/document/IDocument.js';
 import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
@@ -80,17 +81,15 @@ describe('HTMLLinkElement', () => {
 		it('Loads and evaluates an external CSS file when the attribute "href" and "rel" is set and the element is connected to DOM.', async () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
-			let loadedDocument: IDocument | null = null;
+			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 			let loadEvent: Event | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (document: IDocument, url: string) => {
-					loadedDocument = document;
-					loadedURL = url;
-					return css;
-				}
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+				loadedWindow = this.window;
+				loadedURL = url;
+				return css;
+			});
 
 			document.body.appendChild(element);
 
@@ -99,12 +98,12 @@ describe('HTMLLinkElement', () => {
 			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
-			expect(loadedDocument).toBe(document);
-			expect(loadedURL).toBe('test');
+			expect(loadedWindow).toBe(window);
+			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
 			expect((<Event>(<unknown>loadEvent)).target).toBe(element);
@@ -115,7 +114,7 @@ describe('HTMLLinkElement', () => {
 			const thrownError = new Error('error');
 			let errorEvent: ErrorEvent | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(async () => {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function () {
 				throw thrownError;
 			});
 
@@ -126,9 +125,9 @@ describe('HTMLLinkElement', () => {
 			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error).toEqual(thrownError);
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toEqual('error');
@@ -137,21 +136,19 @@ describe('HTMLLinkElement', () => {
 		it('Does not load and evaluate external CSS files if the element is not connected to DOM.', () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
-			let loadedDocument: IDocument | null = null;
+			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (document: IDocument, url: string) => {
-					loadedDocument = document;
-					loadedURL = url;
-					return css;
-				}
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+				loadedWindow = this.window;
+				loadedURL = url;
+				return css;
+			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 
-			expect(loadedDocument).toBe(null);
+			expect(loadedWindow).toBe(null);
 			expect(loadedURL).toBe(null);
 		});
 	});
@@ -161,29 +158,27 @@ describe('HTMLLinkElement', () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadEvent: Event | null = null;
-			let loadedDocument: IDocument | null = null;
+			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (document: IDocument, url: string) => {
-					loadedDocument = document;
-					loadedURL = url;
-					return css;
-				}
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+				loadedWindow = this.window;
+				loadedURL = url;
+				return css;
+			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 			element.addEventListener('load', (event) => {
 				loadEvent = event;
 			});
 
 			document.body.appendChild(element);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
-			expect(loadedDocument).toBe(document);
-			expect(loadedURL).toBe('test');
+			expect(loadedWindow).toBe(window);
+			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
 			expect((<Event>(<unknown>loadEvent)).target).toBe(element);
@@ -194,19 +189,19 @@ describe('HTMLLinkElement', () => {
 			const thrownError = new Error('error');
 			let errorEvent: ErrorEvent | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(async () => {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function () {
 				throw thrownError;
 			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 			element.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
 			});
 
 			document.body.appendChild(element);
 
-			await window.happyDOM.whenAsyncComplete();
+			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error).toEqual(thrownError);
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toEqual('error');
@@ -215,40 +210,41 @@ describe('HTMLLinkElement', () => {
 		it('Does not load external CSS file when "href" attribute has been set if the element is not connected to DOM.', () => {
 			const element = <IHTMLLinkElement>document.createElement('link');
 			const css = 'div { background: red; }';
-			let loadedDocument: IDocument | null = null;
+			let loadedWindow: IBrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch, 'fetch').mockImplementation(
-				async (document: IDocument, url: string) => {
-					loadedDocument = document;
-					loadedURL = url;
-					return css;
-				}
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+				loadedWindow = this.window;
+				loadedURL = url;
+				return css;
+			});
 
 			element.rel = 'stylesheet';
-			element.href = 'test';
+			element.href = 'https://localhost:8080/test/path/file.css';
 
-			expect(loadedDocument).toBe(null);
+			expect(loadedWindow).toBe(null);
 			expect(loadedURL).toBe(null);
 			expect(element.sheet).toBe(null);
 		});
 
-		it('Triggers an error event when "window.happyDOM.settings.disableCSSFileLoading" is set to "true".', async () => {
+		it('Triggers an error event when the Happy DOM setting "disableCSSFileLoading" is set to "true".', async () => {
+			window = new Window({
+				settings: { disableCSSFileLoading: true }
+			});
+			document = window.document;
+
 			const element = <IHTMLLinkElement>document.createElement('link');
 			let errorEvent: ErrorEvent | null = null;
 
 			element.rel = 'stylesheet';
-			element.href = '/test/path/file.css';
+			element.href = 'https://localhost:8080/test/path/file.css';
 			element.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
-
-			window.happyDOM.settings.disableCSSFileLoading = true;
 
 			document.body.appendChild(element);
 
 			expect(element.sheet).toBe(null);
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external stylesheet "/test/path/file.css". CSS file loading is disabled.'
+				'Failed to load external stylesheet "https://localhost:8080/test/path/file.css". CSS file loading is disabled.'
 			);
 		});
 	});

@@ -1,6 +1,5 @@
 import GlobalWindow from '../../src/window/GlobalWindow.js';
 import IWindow from '../../src/window/IWindow.js';
-import ErrorEvent from '../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('GlobalWindow', () => {

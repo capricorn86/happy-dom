@@ -1,4 +1,5 @@
 import Blob from '../file/Blob.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import File from '../file/File.js';
 import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
 import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement.js';
@@ -18,7 +19,7 @@ const SUBMITTABLE_ELEMENTS = ['BUTTON', 'INPUT', 'OBJECT', 'SELECT', 'TEXTAREA']
  * @see https://developer.mozilla.org/en-US/docs/Web/API/FormData
  */
 export default class FormData implements Iterable<[string, string | File]> {
-	private _entries: FormDataEntry[] = [];
+	#entries: FormDataEntry[] = [];
 
 	/**
 	 * Constructor.
@@ -27,11 +28,15 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 */
 	constructor(form?: IHTMLFormElement) {
 		if (form) {
-			for (const name of Object.keys((<HTMLFormControlsCollection>form.elements)._namedItems)) {
-				let radioNodeList = (<HTMLFormControlsCollection>form.elements)._namedItems[name];
+			for (const name of Object.keys(
+				(<HTMLFormControlsCollection>form[PropertySymbol.elements])[PropertySymbol.namedItems]
+			)) {
+				let radioNodeList = (<HTMLFormControlsCollection>form[PropertySymbol.elements])[
+					PropertySymbol.namedItems
+				][name];
 
 				if (
-					radioNodeList[0].tagName === 'INPUT' &&
+					radioNodeList[0][PropertySymbol.tagName] === 'INPUT' &&
 					(radioNodeList[0].type === 'checkbox' || radioNodeList[0].type === 'radio')
 				) {
 					const newRadioNodeList = new RadioNodeList();
@@ -45,12 +50,12 @@ export default class FormData implements Iterable<[string, string | File]> {
 				}
 
 				for (const node of radioNodeList) {
-					if (node.name && SUBMITTABLE_ELEMENTS.includes(node.tagName)) {
-						if (node.tagName === 'INPUT' && node.type === 'file') {
-							if ((<IHTMLInputElement>node).files.length === 0) {
+					if (node.name && SUBMITTABLE_ELEMENTS.includes(node[PropertySymbol.tagName])) {
+						if (node[PropertySymbol.tagName] === 'INPUT' && node.type === 'file') {
+							if ((<IHTMLInputElement>node)[PropertySymbol.files].length === 0) {
 								this.append(node.name, new File([], '', { type: 'application/octet-stream' }));
 							} else {
-								for (const file of (<IHTMLInputElement>node).files) {
+								for (const file of (<IHTMLInputElement>node)[PropertySymbol.files]) {
 									this.append(node.name, file);
 								}
 							}
@@ -69,7 +74,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @param callback Callback.
 	 */
 	public forEach(callback: (key: string, value: string | File, thisArg: FormData) => void): void {
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			callback.call(this, entry.value, entry.name, this);
 		}
 	}
@@ -82,9 +87,9 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @param [filename] Filename.
 	 */
 	public append(name: string, value: string | Blob | File, filename?: string): void {
-		this._entries.push({
+		this.#entries.push({
 			name,
-			value: this._parseValue(value, filename)
+			value: this.#parseValue(value, filename)
 		});
 	}
 
@@ -95,12 +100,12 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 */
 	public delete(name: string): void {
 		const newEntries: FormDataEntry[] = [];
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			if (entry.name !== name) {
 				newEntries.push(entry);
 			}
 		}
-		this._entries = newEntries;
+		this.#entries = newEntries;
 	}
 
 	/**
@@ -110,7 +115,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @returns Value.
 	 */
 	public get(name: string): string | File | null {
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			if (entry.name === name) {
 				return entry.value;
 			}
@@ -126,7 +131,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 */
 	public getAll(name: string): Array<string | File> {
 		const values: Array<string | File> = [];
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			if (entry.name === name) {
 				values.push(entry.value);
 			}
@@ -141,7 +146,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @returns "true" if the FormData object contains the key.
 	 */
 	public has(name: string): boolean {
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			if (entry.name === name) {
 				return true;
 			}
@@ -157,9 +162,9 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @param [filename] Filename.
 	 */
 	public set(name: string, value: string | Blob | File, filename?: string): void {
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			if (entry.name === name) {
-				entry.value = this._parseValue(value, filename);
+				entry.value = this.#parseValue(value, filename);
 				return;
 			}
 		}
@@ -172,7 +177,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @returns Iterator.
 	 */
 	public *keys(): IterableIterator<string> {
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			yield entry.name;
 		}
 	}
@@ -183,7 +188,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @returns Iterator.
 	 */
 	public *values(): IterableIterator<string | File> {
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			yield entry.value;
 		}
 	}
@@ -194,7 +199,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @returns Iterator.
 	 */
 	public *entries(): IterableIterator<[string, string | File]> {
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			yield [entry.name, entry.value];
 		}
 	}
@@ -205,7 +210,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @returns Iterator.
 	 */
 	public *[Symbol.iterator](): IterableIterator<[string, string | File]> {
-		for (const entry of this._entries) {
+		for (const entry of this.#entries) {
 			yield [entry.name, entry.value];
 		}
 	}
@@ -217,17 +222,17 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @param [filename] Filename.
 	 * @returns Parsed value.
 	 */
-	private _parseValue(value: string | Blob | File, filename?: string): string | File {
+	#parseValue(value: string | Blob | File, filename?: string): string | File {
 		if (value instanceof Blob && !(value instanceof File)) {
 			const file = new File([], 'blob', { type: value.type });
-			file._buffer = value._buffer;
+			file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
 			return file;
 		}
 
 		if (value instanceof File) {
 			if (filename) {
 				const file = new File([], filename, { type: value.type, lastModified: value.lastModified });
-				file._buffer = value._buffer;
+				file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
 				return file;
 			}
 			return value;
