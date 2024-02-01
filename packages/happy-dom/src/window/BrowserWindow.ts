@@ -44,6 +44,8 @@ import KeyboardEvent from '../event/events/KeyboardEvent.js';
 import MessageEvent from '../event/events/MessageEvent.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
+import TouchEvent from '../event/events/TouchEvent.js';
+import Touch from '../event/Touch.js';
 import EventTarget from '../event/EventTarget.js';
 import MessagePort from '../event/MessagePort.js';
 import { URLSearchParams } from 'url';
@@ -260,7 +262,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly HTMLParamElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLTrackElement: typeof HTMLElement = HTMLElement;
 
-	// Events classes
+	// Event classes
 	public readonly Event = Event;
 	public readonly UIEvent = UIEvent;
 	public readonly CustomEvent = CustomEvent;
@@ -278,6 +280,8 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly ProgressEvent = ProgressEvent;
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
+	public readonly TouchEvent = TouchEvent;
+	public readonly Touch = Touch;
 
 	// Non-implemented event classes
 	public readonly AudioProcessingEvent = Event;
@@ -314,7 +318,6 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly SVGEvent = Event;
 	public readonly SVGZoomEvent = Event;
 	public readonly TimeEvent = Event;
-	public readonly TouchEvent = Event;
 	public readonly TrackEvent = Event;
 	public readonly TransitionEvent = Event;
 	public readonly UserProximityEvent = Event;
