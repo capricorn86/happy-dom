@@ -1,6 +1,6 @@
 import Event from '../Event.js';
 import IStorageEventInit from './IStorageEventInit.js';
-import Storage from '../../storage/Storage.js';
+import { Storage } from '../../storage/Storage.js';
 
 /**
  *

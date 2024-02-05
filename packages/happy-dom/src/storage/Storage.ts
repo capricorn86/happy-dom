@@ -3,16 +3,22 @@
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Storage
  */
-export default class Storage {
-	#store: { [k: string]: string } = {};
-
+export class Storage {
+	/**
+	 *
+	 */
+	constructor() {
+		if (new.target === Storage) {
+			throw Error('Storage is a base class and cannot be constructed directly.');
+		}
+	}
 	/**
 	 * Returns length.
 	 *
 	 * @returns Length.
 	 */
 	public get length(): number {
-		return Object.keys(this.#store).length;
+		return Object.keys(this).length;
 	}
 
 	/**
@@ -22,7 +28,7 @@ export default class Storage {
 	 * @returns Name.
 	 */
 	public key(index: number): string {
-		const name = Object.keys(this.#store)[index];
+		const name = Object.keys(this)[index];
 		return name === undefined ? null : name;
 	}
 
@@ -33,7 +39,7 @@ export default class Storage {
 	 * @param item Item.
 	 */
 	public setItem(name: string, item: string): void {
-		this.#store[name] = item;
+		this[name] = item;
 	}
 
 	/**
@@ -43,7 +49,7 @@ export default class Storage {
 	 * @returns Item.
 	 */
 	public getItem(name: string): string {
-		return this.#store[name] === undefined ? null : this.#store[name];
+		return this[name] === undefined ? null : this[name];
 	}
 
 	/**
@@ -52,13 +58,25 @@ export default class Storage {
 	 * @param name Name.
 	 */
 	public removeItem(name: string): void {
-		delete this.#store[name];
+		delete this[name];
 	}
 
 	/**
 	 * Clears storage.
 	 */
 	public clear(): void {
-		this.#store = {};
+		Object.keys(this).forEach((key) => {
+			delete this[key];
+		});
 	}
 }
+
+/**
+ * LocalStorage.
+ */
+export class LocalStorage extends Storage {}
+
+/**
+ * SessionStorage.
+ */
+export class SessionStorage extends Storage {}

@@ -111,7 +111,7 @@ import Range from './range/Range.js';
 import ResizeObserver from './resize-observer/ResizeObserver.js';
 import Screen from './screen/Screen.js';
 import Selection from './selection/Selection.js';
-import Storage from './storage/Storage.js';
+import { Storage, LocalStorage, SessionStorage } from './storage/Storage.js';
 import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
@@ -432,5 +432,7 @@ export {
 	Window,
 	XMLDocument,
 	XMLParser,
-	XMLSerializer
+	XMLSerializer,
+	LocalStorage,
+	SessionStorage
 };

@@ -88,7 +88,7 @@ import SubmitEvent from '../event/events/SubmitEvent.js';
 import MessageEvent from '../event/events/MessageEvent.js';
 import MessagePort from '../event/MessagePort.js';
 import Screen from '../screen/Screen.js';
-import Storage from '../storage/Storage.js';
+import { Storage } from '../storage/Storage.js';
 import NodeFilter from '../tree-walker/NodeFilter.js';
 import HTMLCollection from '../nodes/element/HTMLCollection.js';
 import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
