@@ -125,7 +125,7 @@ describe('Document', () => {
 			document.body.appendChild(form1);
 			document.body.appendChild(form2);
 
-			let forms = document.forms;
+			const forms = document.forms;
 
 			expect(forms.length).toBe(2);
 			expect(forms[0]).toBe(form1);
