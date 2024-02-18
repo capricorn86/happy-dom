@@ -294,7 +294,7 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 
 	/**
 	 * Compares two nodes.
-	 * 
+	 *
 	 * @param node Node to compare.
 	 * @returns "true" if nodes are equal.
 	 */
