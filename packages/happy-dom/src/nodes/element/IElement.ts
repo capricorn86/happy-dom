@@ -293,6 +293,14 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	cloneNode(deep?: boolean): IElement;
 
 	/**
+	 * Compares two nodes.
+	 * 
+	 * @param node Node to compare.
+	 * @returns "true" if nodes are equal.
+	 */
+	isEqualNode(node: INode): boolean;
+
+	/**
 	 * Inserts a node to the given position.
 	 *
 	 * @param position Position to insert element.
