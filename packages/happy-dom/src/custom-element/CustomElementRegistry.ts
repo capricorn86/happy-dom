@@ -10,6 +10,7 @@ export default class CustomElementRegistry {
 	public [PropertySymbol.registry]: {
 		[k: string]: { elementClass: typeof HTMLElement; extends: string };
 	} = {};
+	public [PropertySymbol.registedClass]: Map<typeof HTMLElement, string> = new Map();
 	public [PropertySymbol.callbacks]: { [k: string]: (() => void)[] } = {};
 
 	/**
@@ -27,9 +28,19 @@ export default class CustomElementRegistry {
 	): void {
 		if (!this.#isValidCustomElementName(name)) {
 			throw new DOMException(
-				"Failed to execute 'define' on 'CustomElementRegistry': \"" +
-					name +
-					'" is not a valid custom element name.'
+				`Failed to execute 'define' on 'CustomElementRegistry': "${name}" is not a valid custom element name`
+			);
+		}
+
+		if (this[PropertySymbol.registry][name]) {
+			throw new DOMException(
+				`Failed to execute 'define' on 'CustomElementRegistry': the name "${name}" has already been used with this registry`
+			);
+		}
+
+		if (this[PropertySymbol.registedClass].has(elementClass)) {
+			throw new DOMException(
+				"Failed to execute 'define' on 'CustomElementRegistry': this constructor has already been used with this registry"
 			);
 		}
 
@@ -37,6 +48,7 @@ export default class CustomElementRegistry {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
+		this[PropertySymbol.registedClass].set(elementClass, name);
 
 		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
 		if (elementClass.prototype.attributeChangedCallback) {
@@ -98,13 +110,7 @@ export default class CustomElementRegistry {
 	 * @returns Found tag name or `null`.
 	 */
 	public getName(elementClass: typeof HTMLElement): string | null {
-		// For loops are faster than find()
-		for (const name of Object.keys(this[PropertySymbol.registry])) {
-			if (this[PropertySymbol.registry][name].elementClass === elementClass) {
-				return name;
-			}
-		}
-		return null;
+		return this[PropertySymbol.registedClass].get(elementClass) || null;
 	}
 
 	/**

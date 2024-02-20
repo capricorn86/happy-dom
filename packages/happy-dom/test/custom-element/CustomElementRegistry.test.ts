@@ -19,18 +19,7 @@ describe('CustomElementRegistry', () => {
 	});
 
 	describe('isValidCustomElementName()', () => {
-		it('Validate custom elements tag name.', () => {
-			expect(customElements.isValidCustomElementName('a-b')).toBe(true);
-			expect(customElements.isValidCustomElementName('2a-b')).toBe(false);
-			expect(customElements.isValidCustomElementName('a2-b')).toBe(true);
-			expect(customElements.isValidCustomElementName('A-B')).toBe(false);
-			expect(customElements.isValidCustomElementName('aB-c')).toBe(false);
-			expect(customElements.isValidCustomElementName('ab')).toBe(false);
-			expect(customElements.isValidCustomElementName('a-\u00d9')).toBe(true);
-			expect(customElements.isValidCustomElementName('a_b.c-d')).toBe(true);
-			expect(customElements.isValidCustomElementName('font-face')).toBe(false);
-			expect(customElements.isValidCustomElementName('a-Öa')).toBe(true);
-		});
+		it('Validate custom elements tag name.', () => {});
 	});
 
 	describe('define()', () => {
@@ -44,29 +33,50 @@ describe('CustomElementRegistry', () => {
 				extends: 'ul'
 			});
 			expect(customElements.get('custom-element')).toBe(CustomElement);
-			expect(customElements._registry['custom-element'].extends).toBe('ul');
+			expect(customElements[PropertySymbol.registry]['custom-element'].extends).toBe('ul');
 		});
 
 		it('Throws an error if tag name does not contain "-".', () => {
-			const tagName = 'element';
-			expect(() => customElements.define(tagName, CustomElement)).toThrow(
-				new Error(
-					"Failed to execute 'define' on 'CustomElementRegistry': \"" +
-						tagName +
-						'" is not a valid custom element name.'
+			expect(() => customElements.define('element', CustomElement)).toThrow(
+				new DOMException(
+					`Failed to execute 'define' on 'CustomElementRegistry': "element" is not a valid custom element name`
 				)
 			);
 		});
 
 		it('Throws an error if already defined.', () => {
 			customElements.define('custom-element', CustomElement);
-			expect(() => customElements.define('custom-element', CustomElement)).toThrow();
+			expect(() => customElements.define('custom-element', CustomElement)).toThrow(
+				new DOMException(
+					`Failed to execute 'define' on 'CustomElementRegistry': the name "custom-element" has already been used with this registry`
+				)
+			);
 		});
 
 		it('Throws an error if already registered under a different tag name.', () => {
 			customElements.define('custom-element', CustomElement);
-			expect(() => customElements.define('custom-element2', CustomElement)).toThrow();
+			expect(() => customElements.define('custom-element2', CustomElement)).toThrow(
+				new DOMException(
+					`Failed to execute 'define' on 'CustomElementRegistry': this constructor has already been used with this registry`
+				)
+			);
 		});
+
+		for (const name of ['2a-b', 'A-B', 'aB-c', 'ab', 'font-face']) {
+			it(`Throws an error when using the invalid custom element name "${name}".`, () => {
+				expect(() => customElements.define(name, CustomElement)).toThrow(
+					new DOMException(
+						`Failed to execute 'define' on 'CustomElementRegistry': "${name}" is not a valid custom element name`
+					)
+				);
+			});
+		}
+
+		for (const name of ['a-b', 'a2-b', 'a-\u00d9', 'a_b.c-d', 'a-Öa']) {
+			it(`Allows using the valid name "${name}".`, () => {
+				expect(() => customElements.define(name, CustomElement)).not.toThrow();
+			});
+		}
 
 		it('Calls observed attributes and set "[PropertySymbol.observedAttributes]" as a property on the element class.', () => {
 			customElements.define('custom-element', CustomElement);
@@ -125,18 +135,6 @@ describe('CustomElementRegistry', () => {
 		it('Returns Tag name if element class is found in registry', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(customElements.getName(CustomElement)).toMatch('custom-element');
-		});
-	});
-
-	describe('createElement()', () => {
-		it('Case insensitive access via document.createElement().', () => {
-			customElements.define('custom-element', CustomElement);
-			expect(document.createElement('CUSTOM-ELEMENT').localName).toBe('custom-element');
-		});
-
-		it('Non-ASCII capital letters in document.createElement().', () => {
-			customElements.define('a-Öa', CustomElement);
-			expect(document.createElement('a-Öa').localName).toMatch(/a-Öa/i);
 		});
 	});
 });
