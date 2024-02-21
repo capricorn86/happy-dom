@@ -7,6 +7,7 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import INode from '../node/INode.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
+import NamespaceURI from '../../config/NamespaceURI.js';
 
 /**
  * Parent node utility.
@@ -115,7 +116,7 @@ export default class ParentNodeUtility {
 		let matches = new HTMLCollection<IElement>();
 
 		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
-			if (includeAll || child[PropertySymbol.tagName] === upperTagName) {
+			if (includeAll || child[PropertySymbol.tagName].toUpperCase() === upperTagName) {
 				matches.push(child);
 			}
 			matches = <HTMLCollection<IElement>>(
@@ -139,13 +140,14 @@ export default class ParentNodeUtility {
 		namespaceURI: string,
 		tagName: string
 	): IHTMLCollection<IElement> {
-		const upperTagName = tagName.toUpperCase();
+		// When the namespace is HTML, the tag name is case-insensitive.
+		const formattedTagName = namespaceURI === NamespaceURI.html ? tagName.toUpperCase() : tagName;
 		const includeAll = tagName === '*';
 		let matches = new HTMLCollection<IElement>();
 
 		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
 			if (
-				(includeAll || child[PropertySymbol.tagName] === upperTagName) &&
+				(includeAll || child[PropertySymbol.tagName] === formattedTagName) &&
 				child[PropertySymbol.namespaceURI] === namespaceURI
 			) {
 				matches.push(child);

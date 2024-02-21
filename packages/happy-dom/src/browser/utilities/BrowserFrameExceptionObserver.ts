@@ -34,6 +34,12 @@ export default class BrowserFrameExceptionObserver {
 				return;
 			}
 
+			if (!this.browserFrame.window) {
+				throw new Error(
+					'Browser frame was not closed correctly. Window is undefined on browser frame, but exception observer is still watching.'
+				);
+			}
+
 			if (
 				error instanceof this.browserFrame.window.Error ||
 				error instanceof this.browserFrame.window.DOMException
@@ -56,6 +62,12 @@ export default class BrowserFrameExceptionObserver {
 		// The "uncaughtException" event is not always triggered for unhandled rejections.
 		// Therefore we want to use the "unhandledRejection" event as well.
 		this.uncaughtRejectionListener = (error: unknown) => {
+			if (!this.browserFrame.window) {
+				throw new Error(
+					'Browser frame was not closed correctly. Window is undefined on browser frame, but exception observer is still watching.'
+				);
+			}
+
 			if (
 				error instanceof this.browserFrame.window.Error ||
 				error instanceof this.browserFrame.window.DOMException

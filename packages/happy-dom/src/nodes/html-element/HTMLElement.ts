@@ -10,6 +10,12 @@ import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLElementNamedNodeMap from './HTMLElementNamedNodeMap.js';
+import INodeList from '../node/INodeList.js';
+import INode from '../node/INode.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import IElement from '../element/IElement.js';
+import NodeList from '../node/NodeList.js';
+import HTMLCollection from '../element/HTMLCollection.js';
 
 /**
  * HTML Element.
@@ -62,6 +68,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 	// Private properties
 	#dataset: Dataset = null;
+	#customElementDefineCallback: () => void = null;
 
 	/**
 	 * Returns access key.
@@ -472,5 +479,125 @@ export default class HTMLElement extends Element implements IHTMLElement {
 		}
 
 		return clone;
+	}
+
+	/**
+	 * Connects this element to another element.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
+	 * @param parentNode Parent node.
+	 */
+	public [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const localName = this[PropertySymbol.localName];
+
+		// This element can potentially be a custom element that has not been defined yet
+		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
+		if (
+			this.constructor === HTMLElement &&
+			localName.includes('-') &&
+			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
+				PropertySymbol.callbacks
+			]
+		) {
+			const callbacks =
+				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
+					PropertySymbol.callbacks
+				];
+
+			if (parentNode && !this.#customElementDefineCallback) {
+				const callback = (): void => {
+					if (this[PropertySymbol.parentNode]) {
+						const newElement = <HTMLElement>(
+							this[PropertySymbol.ownerDocument].createElement(localName)
+						);
+						(<INodeList<INode>>newElement[PropertySymbol.childNodes]) =
+							this[PropertySymbol.childNodes];
+						(<IHTMLCollection<IElement>>newElement[PropertySymbol.children]) =
+							this[PropertySymbol.children];
+						(<boolean>newElement[PropertySymbol.isConnected]) = this[PropertySymbol.isConnected];
+
+						newElement[PropertySymbol.rootNode] = this[PropertySymbol.rootNode];
+						newElement[PropertySymbol.formNode] = this[PropertySymbol.formNode];
+						newElement[PropertySymbol.selectNode] = this[PropertySymbol.selectNode];
+						newElement[PropertySymbol.textAreaNode] = this[PropertySymbol.textAreaNode];
+						newElement[PropertySymbol.observers] = this[PropertySymbol.observers];
+						newElement[PropertySymbol.isValue] = this[PropertySymbol.isValue];
+
+						for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
+							newElement[PropertySymbol.attributes].setNamedItem(
+								this[PropertySymbol.attributes][i]
+							);
+						}
+
+						(<INodeList<INode>>this[PropertySymbol.childNodes]) = new NodeList();
+						(<IHTMLCollection<IElement>>this[PropertySymbol.children]) = new HTMLCollection();
+						this[PropertySymbol.rootNode] = null;
+						this[PropertySymbol.formNode] = null;
+						this[PropertySymbol.selectNode] = null;
+						this[PropertySymbol.textAreaNode] = null;
+						this[PropertySymbol.observers] = [];
+						this[PropertySymbol.isValue] = null;
+						(<HTMLElementNamedNodeMap>this[PropertySymbol.attributes]) =
+							new HTMLElementNamedNodeMap(this);
+
+						for (
+							let i = 0,
+								max = (<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.childNodes]
+									.length;
+							i < max;
+							i++
+						) {
+							if (
+								(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][i] ===
+								this
+							) {
+								(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][i] =
+									newElement;
+								break;
+							}
+						}
+
+						if ((<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children]) {
+							for (
+								let i = 0,
+									max = (<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children]
+										.length;
+								i < max;
+								i++
+							) {
+								if (
+									(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children][i] ===
+									this
+								) {
+									(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children][i] =
+										newElement;
+									break;
+								}
+							}
+						}
+
+						if (newElement[PropertySymbol.isConnected] && newElement.connectedCallback) {
+							newElement.connectedCallback();
+						}
+
+						this[PropertySymbol.connectToNode](null);
+					}
+				};
+				callbacks[localName] = callbacks[localName] || [];
+				callbacks[localName].push(callback);
+				this.#customElementDefineCallback = callback;
+			} else if (!parentNode && callbacks[localName] && this.#customElementDefineCallback) {
+				const index = callbacks[localName].indexOf(this.#customElementDefineCallback);
+				if (index !== -1) {
+					callbacks[localName].splice(index, 1);
+				}
+				if (!callbacks[localName].length) {
+					delete callbacks[localName];
+				}
+				this.#customElementDefineCallback = null;
+			}
+		}
+
+		super[PropertySymbol.connectToNode](parentNode);
 	}
 }
