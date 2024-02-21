@@ -70,7 +70,7 @@ export default class CustomElementRegistry {
 	 * @param name Tag name of element.
 	 * @returns HTMLElement Class defined or undefined.
 	 */
-	public get(name: string): typeof HTMLElement {
+	public get(name: string): typeof HTMLElement | undefined {
 		return this[PropertySymbol.registry][name]?.elementClass;
 	}
 
