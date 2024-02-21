@@ -2,7 +2,6 @@
 const TIMER = {
 	setImmediate: globalThis.setImmediate.bind(globalThis),
 	clearImmediate: globalThis.clearImmediate.bind(globalThis),
-	setTimeout: globalThis.setTimeout.bind(globalThis),
 	clearTimeout: globalThis.clearTimeout.bind(globalThis)
 };
 
