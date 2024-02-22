@@ -49,6 +49,12 @@ async function main(): Promise<void> {
 		}
 	}
 
+	/** @see https://github.com/capricorn86/happy-dom/issues/1230 */
+	globalThis.location.href = 'https://example.com/';
+	if (globalThis.location.href !== 'https://example.com/') {
+		throw Error('The property "location.href" could not be set.');
+	}
+
 	await mountReactComponent();
 	unmountReactComponent();
 
@@ -57,6 +63,35 @@ async function main(): Promise<void> {
 	if (global.setTimeout !== originalSetTimeout) {
 		throw Error('Global property was not restored.');
 	}
+
+	GlobalRegistrator.register({
+		url: 'https://example.com/',
+		width: 1920,
+		height: 1080,
+		settings: {
+			navigator: {
+				userAgent: 'Custom User Agent'
+			}
+		}
+	});
+
+	if (globalThis.location.href !== 'https://example.com/') {
+		throw Error('The option "url" has no affect.');
+	}
+
+	if (globalThis.innerWidth !== 1920) {
+		throw Error('The option "width" has no affect.');
+	}
+
+	if (globalThis.innerHeight !== 1080) {
+		throw Error('The option "height" has no affect.');
+	}
+
+	if (globalThis.navigator.userAgent !== 'Custom User Agent') {
+		throw Error('The option "settings.userAgent" has no affect.');
+	}
+
+	GlobalRegistrator.unregister();
 }
 
 main();

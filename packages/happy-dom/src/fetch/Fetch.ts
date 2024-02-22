@@ -1,13 +1,11 @@
 import IRequestInit from './types/IRequestInit.js';
-import IDocument from '../nodes/document/IDocument.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import IResponse from './types/IResponse.js';
-import Request from './Request.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import Headers from './Headers.js';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import Response from './Response.js';
 import HTTP, { IncomingMessage } from 'http';
 import HTTPS from 'https';
 import Zlib from 'zlib';
@@ -18,11 +16,21 @@ import DataURIParser from './data-uri/DataURIParser.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import CookieJar from '../cookie/CookieJar.js';
 import { ReadableStream } from 'stream/web';
+import Request from './Request.js';
+import Response from './Response.js';
+import Event from '../event/Event.js';
+import AbortSignal from './AbortSignal.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
+import CachedResponseStateEnum from './cache/response/CachedResponseStateEnum.js';
+import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js';
+import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
+import FetchResponseRedirectUtility from './utilities/FetchResponseRedirectUtility.js';
+import FetchResponseHeaderUtility from './utilities/FetchResponseHeaderUtility.js';
+import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
+import { Buffer } from 'buffer';
 
-const SUPPORTED_SCHEMAS = ['data:', 'http:', 'https:'];
-const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
-const MAX_REDIRECT_COUNT = 20;
 
 /**
  * Wraps a Node.js stream into a browser-compatible ReadableStream.
@@ -70,39 +78,49 @@ export default class Fetch {
 	private previousChunk: Buffer | null = null;
 	private nodeRequest: HTTP.ClientRequest | null = null;
 	private response: Response | null = null;
-	private ownerDocument: IDocument;
+	private responseHeaders: Headers | null = null;
 	private request: Request;
 	private redirectCount = 0;
+	private disableCache: boolean;
+	private disableCrossOriginPolicy: boolean;
+	#browserFrame: IBrowserFrame;
+	#window: IBrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param options Options.
-	 * @param options.document
+	 * @param options.browserFrame Browser frame.
+	 * @param options.window Window.
 	 * @param options.url URL.
 	 * @param [options.init] Init.
-	 * @param [options.ownerDocument] Owner document.
 	 * @param [options.redirectCount] Redirect count.
 	 * @param [options.contentType] Content Type.
+	 * @param [options.disableCache] Disables the use of cached responses. It will still store the response in the cache.
+	 * @param [options.disableCrossOriginPolicy] Disables the Cross-Origin policy.
 	 */
 	constructor(options: {
-		ownerDocument: IDocument;
+		browserFrame: IBrowserFrame;
+		window: IBrowserWindow;
 		url: IRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
 		contentType?: string;
+		disableCache?: boolean;
+		disableCrossOriginPolicy?: boolean;
 	}) {
-		const url = options.url;
-
-		this.ownerDocument = options.ownerDocument;
+		this.#browserFrame = options.browserFrame;
+		this.#window = options.window;
 		this.request =
 			typeof options.url === 'string' || options.url instanceof URL
-				? new Request(options.url, options.init)
-				: <Request>url;
+				? new options.browserFrame.window.Request(options.url, options.init)
+				: <Request>options.url;
 		if (options.contentType) {
-			(<string>this.request._contentType) = options.contentType;
+			(<string>this.request[PropertySymbol.contentType]) = options.contentType;
 		}
-		this.redirectCount = options.redirectCount || 0;
+		this.redirectCount = options.redirectCount ?? 0;
+		this.disableCache = options.disableCache ?? false;
+		this.disableCrossOriginPolicy = options.disableCrossOriginPolicy ?? false;
 	}
 
 	/**
@@ -110,48 +128,297 @@ export default class Fetch {
 	 *
 	 * @returns Response.
 	 */
-	public send(): Promise<IResponse> {
+	public async send(): Promise<IResponse> {
+		FetchRequestReferrerUtility.prepareRequest(this.#window.location, this.request);
+		FetchRequestValidationUtility.validateSchema(this.request);
+
+		if (this.request.signal.aborted) {
+			throw new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+		}
+
+		if (this.request[PropertySymbol.url].protocol === 'data:') {
+			const result = DataURIParser.parse(this.request.url);
+			this.response = new this.#window.Response(result.buffer, {
+				headers: { 'Content-Type': result.type }
+			});
+			return this.response;
+		}
+
+		// Security check for "https" to "http" requests.
+		if (
+			this.request[PropertySymbol.url].protocol === 'http:' &&
+			this.#window.location.protocol === 'https:'
+		) {
+			throw new DOMException(
+				`Mixed Content: The page at '${this.#window.location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${this.request.url}'. This request has been blocked; the content must be served over HTTPS.`,
+				DOMExceptionNameEnum.securityError
+			);
+		}
+
+		if (!this.disableCache) {
+			const cachedResponse = await this.getCachedResponse();
+
+			if (cachedResponse) {
+				return cachedResponse;
+			}
+		}
+
+		if (!this.disableCrossOriginPolicy) {
+			const compliesWithCrossOriginPolicy = await this.compliesWithCrossOriginPolicy();
+
+			if (!compliesWithCrossOriginPolicy) {
+				this.#window.console.warn(
+					`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`
+				);
+				throw new DOMException(
+					`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`,
+					DOMExceptionNameEnum.networkError
+				);
+			}
+		}
+
+		return await this.sendRequest();
+	}
+
+	/**
+	 * Returns cached response.
+	 *
+	 * @returns Response.
+	 */
+	private async getCachedResponse(): Promise<IResponse | null> {
+		if (this.disableCache) {
+			return null;
+		}
+
+		let cachedResponse = this.#browserFrame.page.context.responseCache.get(this.request);
+
+		if (!cachedResponse || cachedResponse.response.waitingForBody) {
+			return null;
+		}
+
+		if (cachedResponse.state === CachedResponseStateEnum.stale) {
+			const headers = new Headers(cachedResponse.request.headers);
+
+			if (cachedResponse.etag) {
+				headers.set('If-None-Match', cachedResponse.etag);
+			} else {
+				if (!cachedResponse.lastModified) {
+					return null;
+				}
+				headers.set('If-Modified-Since', new Date(cachedResponse.lastModified).toUTCString());
+			}
+
+			const fetch = new Fetch({
+				browserFrame: this.#browserFrame,
+				window: this.#window,
+				url: this.request.url,
+				init: { headers, method: cachedResponse.request.method },
+				disableCache: true,
+				disableCrossOriginPolicy: true
+			});
+
+			if (cachedResponse.etag || !cachedResponse.staleWhileRevalidate) {
+				const validateResponse = <Response>await fetch.send();
+				const body = validateResponse.status !== 304 ? await validateResponse.buffer() : null;
+
+				cachedResponse = this.#browserFrame.page.context.responseCache.add(this.request, {
+					...validateResponse,
+					body,
+					waitingForBody: false
+				});
+
+				if (validateResponse.status !== 304) {
+					const response = new this.#window.Response(body, {
+						status: validateResponse.status,
+						statusText: validateResponse.statusText,
+						headers: validateResponse.headers
+					});
+					(<string>response.url) = validateResponse.url;
+					response[PropertySymbol.cachedResponse] = cachedResponse;
+
+					return response;
+				}
+			} else {
+				fetch.send().then((response) => {
+					response.buffer().then((body: Buffer) => {
+						this.#browserFrame.page.context.responseCache.add(this.request, {
+							...response,
+							body,
+							waitingForBody: false
+						});
+					});
+				});
+			}
+		}
+
+		if (!cachedResponse || cachedResponse.response.waitingForBody) {
+			return null;
+		}
+
+		const response = new this.#window.Response(cachedResponse.response.body, {
+			status: cachedResponse.response.status,
+			statusText: cachedResponse.response.statusText,
+			headers: cachedResponse.response.headers
+		});
+		(<string>response.url) = cachedResponse.response.url;
+		response[PropertySymbol.cachedResponse] = cachedResponse;
+
+		return response;
+	}
+
+	/**
+	 * Checks if the request complies with the Cross-Origin policy.
+	 *
+	 * @returns True if it complies with the policy.
+	 */
+	private async compliesWithCrossOriginPolicy(): Promise<boolean> {
+		if (
+			this.disableCrossOriginPolicy ||
+			!FetchCORSUtility.isCORS(this.#window.location, this.request[PropertySymbol.url])
+		) {
+			return true;
+		}
+
+		const cachedPreflightResponse = this.#browserFrame.page.context.preflightResponseCache.get(
+			this.request
+		);
+
+		if (cachedPreflightResponse) {
+			if (
+				cachedPreflightResponse.allowOrigin !== '*' &&
+				cachedPreflightResponse.allowOrigin !== this.#window.location.origin
+			) {
+				return false;
+			}
+
+			if (
+				cachedPreflightResponse.allowMethods.length !== 0 &&
+				!cachedPreflightResponse.allowMethods.includes(this.request.method)
+			) {
+				return false;
+			}
+
+			return true;
+		}
+
+		const requestHeaders = [];
+
+		for (const [header] of this.request.headers) {
+			requestHeaders.push(header);
+		}
+
+		const fetch = new Fetch({
+			browserFrame: this.#browserFrame,
+			window: this.#window,
+			url: this.request.url,
+			init: {
+				method: 'OPTIONS',
+				headers: new Headers({
+					'Access-Control-Request-Method': this.request.method,
+					'Access-Control-Request-Headers': requestHeaders.join(', ')
+				})
+			},
+			disableCache: true,
+			disableCrossOriginPolicy: true
+		});
+
+		const response = <Response>await fetch.send();
+
+		if (!response.ok) {
+			return false;
+		}
+
+		const allowOrigin = response.headers.get('Access-Control-Allow-Origin');
+
+		if (!allowOrigin) {
+			return false;
+		}
+
+		if (allowOrigin !== '*' && allowOrigin !== this.#window.location.origin) {
+			return false;
+		}
+
+		const allowMethods: string[] = [];
+
+		if (response.headers.has('Access-Control-Allow-Methods')) {
+			const allowMethodsHeader = response.headers.get('Access-Control-Allow-Methods');
+			if (allowMethodsHeader !== '*') {
+				for (const method of allowMethodsHeader.split(',')) {
+					allowMethods.push(method.trim().toUpperCase());
+				}
+			}
+		}
+
+		if (allowMethods.length !== 0 && !allowMethods.includes(this.request.method)) {
+			return false;
+		}
+
+		// TODO: Add support for more Access-Control-Allow-* headers.
+
+		return true;
+	}
+
+	/**
+	 * Sends request.
+	 *
+	 * @returns Response.
+	 */
+	private sendRequest(): Promise<IResponse> {
 		return new Promise((resolve, reject) => {
-			const taskManager = this.ownerDocument.defaultView.happyDOM.asyncTaskManager;
-			const taskID = taskManager.startTask(() => this.abort());
+			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(() =>
+				this.onAsyncTaskManagerAbort()
+			);
 
 			if (this.resolve) {
 				throw new Error('Fetch already sent.');
 			}
 
 			this.resolve = (response: IResponse | Promise<IResponse>): void => {
-				taskManager.endTask(taskID);
+				// We can end up here when closing down the browser frame and there is an ongoing request.
+				// Therefore we need to check if browserFrame.page.context is still available.
+				if (
+					!this.disableCache &&
+					response instanceof Response &&
+					this.#browserFrame.page &&
+					this.#browserFrame.page.context
+				) {
+					response[PropertySymbol.cachedResponse] =
+						this.#browserFrame.page.context.responseCache.add(this.request, {
+							...response,
+							headers: this.responseHeaders,
+							body: response[PropertySymbol.buffer],
+							waitingForBody: !response[PropertySymbol.buffer] && !!response.body
+						});
+				}
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				resolve(response);
 			};
 			this.reject = (error: Error): void => {
-				taskManager.endTask(taskID);
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				reject(error);
 			};
 
-			this.prepareRequest();
-			this.validateRequest();
-
-			if (this.request._url.protocol === 'data:') {
-				const result = DataURIParser.parse(this.request.url);
-				this.response = new Response(result.buffer, {
-					headers: { 'Content-Type': result.type }
-				});
-				resolve(this.response);
-				return;
-			}
-
-			if (this.request.signal.aborted) {
-				this.abort();
-				return;
-			}
-
 			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
 
-			const send = (this.request._url.protocol === 'https:' ? HTTPS : HTTP).request;
+			const send = (this.request[PropertySymbol.url].protocol === 'https:' ? HTTPS : HTTP).request;
 
-			this.nodeRequest = send(this.request._url.href, {
+			this.nodeRequest = send(this.request[PropertySymbol.url].href, {
 				method: this.request.method,
-				headers: this.getRequestHeaders()
+				headers: FetchRequestHeaderUtility.getRequestHeaders({
+					browserFrame: this.#browserFrame,
+					window: this.#window,
+					request: this.request
+				}),
+				agent: false,
+				rejectUnauthorized: true,
+				key:
+					this.request[PropertySymbol.url].protocol === 'https:'
+						? FetchHTTPSCertificate.key
+						: undefined,
+				cert:
+					this.request[PropertySymbol.url].protocol === 'https:'
+						? FetchHTTPSCertificate.cert
+						: undefined
 			});
 
 			this.nodeRequest.on('error', this.onError.bind(this));
@@ -211,10 +478,12 @@ export default class Fetch {
 
 	/**
 	 * Event listener for signal "abort" event.
+	 *
+	 * @param event Event.
 	 */
-	private onSignalAbort(): void {
+	private onSignalAbort(event: Event): void {
 		this.finalizeRequest();
-		this.abort();
+		this.abort((<AbortSignal>event.target)?.reason);
 	}
 
 	/**
@@ -224,13 +493,30 @@ export default class Fetch {
 	 */
 	private onError(error: Error): void {
 		this.finalizeRequest();
-		this.ownerDocument.defaultView.console.error(error);
+		this.#window.console.error(error);
 		this.reject(
 			new DOMException(
 				`Fetch to "${this.request.url}" failed. Error: ${error.message}`,
 				DOMExceptionNameEnum.networkError
 			)
 		);
+	}
+
+	/**
+	 * Triggered when the async task manager aborts.
+	 */
+	private onAsyncTaskManagerAbort(): void {
+		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+
+		if (this.request.body) {
+			this.request.body.destroy(error);
+		}
+
+		if (!this.response || !this.response.body) {
+			return;
+		}
+
+		this.response.body.destroy(error);
 	}
 
 	/**
@@ -245,10 +531,13 @@ export default class Fetch {
 			!nodeResponse.headers['content-length'];
 
 		this.nodeRequest.setTimeout(0);
+		this.responseHeaders = FetchResponseHeaderUtility.parseResponseHeaders({
+			browserFrame: this.#browserFrame,
+			requestURL: this.request[PropertySymbol.url],
+			rawHeaders: nodeResponse.rawHeaders
+		});
 
-		const headers = this.getResponseHeaders(nodeResponse);
-
-		if (this.handleRedirectResponse(nodeResponse, headers)) {
+		if (this.handleRedirectResponse(nodeResponse, this.responseHeaders)) {
 			return;
 		}
 
@@ -261,10 +550,10 @@ export default class Fetch {
 		const responseOptions = {
 			status: nodeResponse.statusCode,
 			statusText: nodeResponse.statusMessage,
-			headers
+			headers: this.responseHeaders
 		};
 
-		const contentEncodingHeader = headers.get('Content-Encoding');
+		const contentEncodingHeader = this.responseHeaders.get('Content-Encoding');
 
 		if (
 			this.request.method === 'HEAD' ||
@@ -272,28 +561,19 @@ export default class Fetch {
 			nodeResponse.statusCode === 204 ||
 			nodeResponse.statusCode === 304
 		) {
-			this.response = new Response(body, responseOptions);
+			this.response = new this.#window.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
 			return;
 		}
 
-		// Be less strict when decoding compressed responses.
-		// Sometimes servers send slightly invalid responses that are still accepted by common browsers.
-		// "cURL" always uses Z_SYNC_FLUSH.
-		const zlibOptions = {
-			flush: Zlib.constants.Z_SYNC_FLUSH,
-			finishFlush: Zlib.constants.Z_SYNC_FLUSH
-		};
-
 		// For GZip
 		if (contentEncodingHeader === 'gzip' || contentEncodingHeader === 'x-gzip') {
 			const gzipStream = Zlib.createGunzip(zlibOptions);
 			nodeResponse.pipe(gzipStream);
 			body = nodeToWebStream(gzipStream);
-
-			this.response = new Response(body, responseOptions);
+			this.response = new this.#window.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -323,7 +603,7 @@ export default class Fetch {
 				// Convierte el stream de transformación a un ReadableStream
 				body = nodeToWebStream(deflateStream);
 
-				this.response = new Response(body, responseOptions);
+				this.response = new this.#window.Response(body, responseOptions);
 				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
@@ -336,7 +616,7 @@ export default class Fetch {
 			nodeResponse.pipe(brotliStream);
 			body = nodeToWebStream(brotliStream);
 
-			this.response = new Response(body, responseOptions);
+			this.response = new this.#window.Response(body, responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -344,7 +624,7 @@ export default class Fetch {
 		}
 
 		// Otherwise, use response as is
-		this.response = new Response(body, responseOptions);
+		this.response = new this.#window.Response(body, responseOptions);
 		(<boolean>this.response.redirected) = this.redirectCount > 0;
 		(<string>this.response.url) = this.request.url;
 		this.resolve(this.response);
@@ -358,7 +638,7 @@ export default class Fetch {
 	 * @returns True if redirect response was handled, false otherwise.
 	 */
 	private handleRedirectResponse(nodeResponse: IncomingMessage, responseHeaders: Headers): boolean {
-		if (!this.isRedirect(nodeResponse.statusCode)) {
+		if (!FetchResponseRedirectUtility.isRedirect(nodeResponse.statusCode)) {
 			return false;
 		}
 
@@ -402,7 +682,7 @@ export default class Fetch {
 					return false;
 				}
 
-				if (this.redirectCount >= MAX_REDIRECT_COUNT) {
+				if (FetchResponseRedirectUtility.isMaxRedirectsReached(this.redirectCount)) {
 					this.finalizeRequest();
 					this.reject(
 						new DOMException(
@@ -414,7 +694,7 @@ export default class Fetch {
 				}
 
 				const headers = new Headers(this.request.headers);
-				let body: ReadableStream | Buffer | null = this.request._bodyBuffer;
+				let body: ReadableStream | Buffer | null = this.request[PropertySymbol.bodyBuffer];
 
 				if (!body && this.request.body) {
 					// Piping a used request body is not possible.
@@ -447,30 +727,18 @@ export default class Fetch {
 					referrerPolicy: this.request.referrerPolicy,
 					credentials: this.request.credentials,
 					headers,
-					body
+					body: this.request[PropertySymbol.bodyBuffer]
 				};
 
-				// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.ownerDocument.location, locationURL))
+						FetchCORSUtility.isCORS(this.#window.location, locationURL))
 				) {
 					headers.delete('authorization');
 					headers.delete('www-authenticate');
 					headers.delete('cookie');
 					headers.delete('cookie2');
-				}
-
-				if (nodeResponse.statusCode !== 303 && this.request.body && !this.request._bodyBuffer) {
-					this.finalizeRequest();
-					this.reject(
-						new DOMException(
-							'Cannot follow redirect with body being a readable stream.',
-							DOMExceptionNameEnum.networkError
-						)
-					);
-					return true;
 				}
 
 				if (this.request.signal.aborted) {
@@ -491,16 +759,22 @@ export default class Fetch {
 					requestInit.referrerPolicy = responseReferrerPolicy;
 				}
 
-				const fetch = new (<typeof Fetch>this.constructor)({
-					ownerDocument: this.ownerDocument,
+				const fetch = new Fetch({
+					browserFrame: this.#browserFrame,
+					window: this.#window,
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
-					contentType: !shouldBecomeGetRequest ? this.request._contentType : undefined
+					contentType: !shouldBecomeGetRequest
+						? this.request[PropertySymbol.contentType]
+						: undefined
 				});
 
 				this.finalizeRequest();
-				this.resolve(fetch.send());
+				fetch
+					.send()
+					.then((response) => this.resolve(response))
+					.catch((error) => this.reject(error));
 				return true;
 			default:
 				this.finalizeRequest();
@@ -514,146 +788,6 @@ export default class Fetch {
 	}
 
 	/**
-	 * Prepares the request before being sent.
-	 */
-	private prepareRequest(): void {
-		if (!this.request.referrerPolicy) {
-			(<string>this.request.referrerPolicy) = 'strict-origin-when-cross-origin';
-		}
-
-		if (this.request.referrer && this.request.referrer !== 'no-referrer') {
-			this.request._referrer = FetchRequestReferrerUtility.getSentReferrer(
-				this.ownerDocument,
-				this.request
-			);
-		} else {
-			this.request._referrer = 'no-referrer';
-		}
-	}
-
-	/**
-	 * Validates the request.
-	 *
-	 * @throws {Error} Throws an error if the request is invalid.
-	 */
-	private validateRequest(): void {
-		if (!SUPPORTED_SCHEMAS.includes(this.request._url.protocol)) {
-			throw new DOMException(
-				`Failed to fetch from "${
-					this.request.url
-				}": URL scheme "${this.request._url.protocol.replace(/:$/, '')}" is not supported.`,
-				DOMExceptionNameEnum.notSupportedError
-			);
-		}
-	}
-
-	/**
-	 * Returns request headers.
-	 *
-	 * @returns Headers.
-	 */
-	private getRequestHeaders(): { [key: string]: string } {
-		const headers = new Headers(this.request.headers);
-		const document = this.ownerDocument;
-		const isCORS = FetchCORSUtility.isCORS(document.location, this.request._url);
-
-		// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
-		if (
-			this.request.credentials === 'omit' ||
-			(this.request.credentials === 'same-origin' && isCORS)
-		) {
-			headers.delete('authorization');
-			headers.delete('www-authenticate');
-		}
-
-		headers.set('Accept-Encoding', 'gzip, deflate, br');
-		headers.set('Connection', 'close');
-
-		if (!headers.has('User-Agent')) {
-			headers.set('User-Agent', document.defaultView.navigator.userAgent);
-		}
-
-		if (this.request._referrer instanceof URL) {
-			headers.set('Referer', this.request._referrer.href);
-		}
-
-		if (
-			this.request.credentials === 'include' ||
-			(this.request.credentials === 'same-origin' && !isCORS)
-		) {
-			const cookie = document.defaultView.document._cookie.getCookieString(
-				this.ownerDocument.defaultView.location,
-				false
-			);
-			if (cookie) {
-				headers.set('Cookie', cookie);
-			}
-		}
-
-		if (!headers.has('Accept')) {
-			headers.set('Accept', '*/*');
-		}
-
-		if (!headers.has('Content-Length') && this.request._contentLength !== null) {
-			headers.set('Content-Length', String(this.request._contentLength));
-		}
-
-		if (!headers.has('Content-Type') && this.request._contentType) {
-			headers.set('Content-Type', this.request._contentType);
-		}
-
-		// We need to convert the headers to Node request headers.
-		const httpRequestHeaders = {};
-
-		for (const header of Object.values(headers._entries)) {
-			httpRequestHeaders[header.name] = header.value;
-		}
-
-		return httpRequestHeaders;
-	}
-
-	/**
-	 * Returns "true" if redirect.
-	 *
-	 * @param statusCode Status code.
-	 * @returns "true" if redirect.
-	 */
-	private isRedirect(statusCode: number): boolean {
-		return REDIRECT_STATUS_CODES.includes(statusCode);
-	}
-
-	/**
-	 * Appends headers to response.
-	 *
-	 * @param nodeResponse HTTP request.
-	 * @returns Headers.
-	 */
-	private getResponseHeaders(nodeResponse: IncomingMessage): Headers {
-		const headers = new Headers();
-		let key = null;
-
-		for (const header of nodeResponse.rawHeaders) {
-			if (!key) {
-				key = header;
-			} else {
-				const lowerKey = key.toLowerCase();
-
-				// Handles setting cookie headers to the document.
-				// "set-cookie" and "set-cookie2" are not allowed in response headers according to spec.
-				if (lowerKey === 'set-cookie' || lowerKey === 'set-cookie2') {
-					(<CookieJar>this.ownerDocument['_cookie']).addCookieString(this.request._url, header);
-				} else {
-					headers.append(key, header);
-				}
-
-				key = null;
-			}
-		}
-
-		return headers;
-	}
-
-	/**
 	 * Finalizes the request.
 	 */
 	private finalizeRequest(): void {
@@ -663,9 +797,14 @@ export default class Fetch {
 
 	/**
 	 * Aborts the request.
+	 *
+	 * @param reason Reason.
 	 */
-	private abort(): void {
-		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+	private abort(reason?: string): void {
+		const error = new DOMException(
+			'The operation was aborted.' + (reason ? ' ' + reason : ''),
+			DOMExceptionNameEnum.abortError
+		);
 
 		if (this.request.body) {
 			const reader = this.request.body.getReader();

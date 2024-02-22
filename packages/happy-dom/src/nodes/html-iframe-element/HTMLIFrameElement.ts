@@ -1,13 +1,15 @@
 import Event from '../../event/Event.js';
-import IWindow from '../../window/IWindow.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import IDocument from '../document/IDocument.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import INode from '../node/INode.js';
-import IFrameCrossOriginWindow from './IFrameCrossOriginWindow.js';
 import IHTMLIFrameElement from './IHTMLIFrameElement.js';
-import HTMLIFrameUtility from './HTMLIFrameUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
+import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
 
 /**
  * HTML Iframe Element.
@@ -16,14 +18,33 @@ import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement.
  */
 export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFrameElement {
-	public override readonly attributes: INamedNodeMap = new HTMLIFrameElementNamedNodeMap(this);
-
 	// Events
 	public onload: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
 
 	// Internal properties
-	public _contentWindow: IWindow | IFrameCrossOriginWindow | null = null;
+	public override [PropertySymbol.attributes]: INamedNodeMap;
+
+	// Private properties
+	#contentWindowContainer: { window: IBrowserWindow | ICrossOriginBrowserWindow | null } = {
+		window: null
+	};
+	#pageLoader: HTMLIFrameElementPageLoader;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param browserFrame Browser frame.
+	 */
+	constructor(browserFrame: IBrowserFrame) {
+		super();
+		this.#pageLoader = new HTMLIFrameElementPageLoader({
+			element: this,
+			contentWindowContainer: this.#contentWindowContainer,
+			browserParentFrame: browserFrame
+		});
+		this[PropertySymbol.attributes] = new HTMLIFrameElementNamedNodeMap(this, this.#pageLoader);
+	}
 
 	/**
 	 * Returns source.
@@ -157,7 +178,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 * @returns Content document.
 	 */
 	public get contentDocument(): IDocument | null {
-		return (<IWindow>this._contentWindow)?.document || null;
+		return (<IBrowserWindow>this.#contentWindowContainer.window)?.document ?? null;
 	}
 
 	/**
@@ -165,21 +186,25 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 *
 	 * @returns Content window.
 	 */
-	public get contentWindow(): IWindow | IFrameCrossOriginWindow | null {
-		return this._contentWindow;
+	public get contentWindow(): IBrowserWindow | ICrossOriginBrowserWindow | null {
+		return this.#contentWindowContainer.window;
 	}
 
 	/**
 	 * @override
 	 */
-	public override _connectToNode(parentNode: INode = null): void {
-		const isConnected = this.isConnected;
-		const isParentConnected = parentNode ? parentNode.isConnected : false;
+	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+		const isConnected = this[PropertySymbol.isConnected];
+		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
 
-		super._connectToNode(parentNode);
+		super[PropertySymbol.connectToNode](parentNode);
 
-		if (isParentConnected && isConnected !== isParentConnected) {
-			HTMLIFrameUtility.loadPage(this);
+		if (isConnected !== isParentConnected) {
+			if (isParentConnected) {
+				this.#pageLoader.loadPage();
+			} else {
+				this.#pageLoader.unloadPage();
+			}
 		}
 	}
 

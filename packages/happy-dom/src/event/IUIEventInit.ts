@@ -1,7 +1,7 @@
-import IWindow from '../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import IEventInit from './IEventInit.js';
 
 export default interface IUIEventInit extends IEventInit {
 	detail?: number;
-	view?: IWindow;
+	view?: IBrowserWindow;
 }

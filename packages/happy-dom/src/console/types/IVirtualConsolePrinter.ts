@@ -54,5 +54,5 @@ export default interface IVirtualConsolePrinter {
 	 * @param [logLevel] Log level.
 	 * @returns Buffer as a string of concatenated log entries.
 	 */
-	readAsString(logLevel: VirtualConsoleLogLevelEnum): string;
+	readAsString(logLevel?: VirtualConsoleLogLevelEnum): string;
 }

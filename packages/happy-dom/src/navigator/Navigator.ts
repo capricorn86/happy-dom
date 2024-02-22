@@ -1,8 +1,9 @@
 import MimeTypeArray from './MimeTypeArray.js';
 import PluginArray from './PluginArray.js';
-import IWindow from '../window/IWindow.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import Permissions from '../permissions/Permissions.js';
 import Clipboard from '../clipboard/Clipboard.js';
+import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
 import Blob from '../file/Blob.js';
 import FormData from '../form-data/FormData.js';
 
@@ -15,7 +16,7 @@ import FormData from '../form-data/FormData.js';
  * https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator.
  */
 export default class Navigator {
-	#ownerWindow: IWindow;
+	#ownerWindow: IBrowserWindow;
 	#clipboard: Clipboard;
 	#permissions: Permissions;
 
@@ -24,7 +25,7 @@ export default class Navigator {
 	 *
 	 * @param ownerWindow Owner window.
 	 */
-	constructor(ownerWindow: IWindow) {
+	constructor(ownerWindow: IBrowserWindow) {
 		this.#ownerWindow = ownerWindow;
 		this.#clipboard = new Clipboard(ownerWindow);
 		this.#permissions = new Permissions();
@@ -76,7 +77,9 @@ export default class Navigator {
 	 * Maximum number of simultaneous touch contact points are supported by the current device.
 	 */
 	public get maxTouchPoints(): number {
-		return 0;
+		return (
+			WindowBrowserSettingsReader.getSettings(this.#ownerWindow)?.navigator.maxTouchPoints || 0
+		);
 	}
 
 	/**
@@ -153,7 +156,7 @@ export default class Navigator {
 	 * "appCodeName/appVersion number (Platform; Security; OS-or-CPU; Localization; rv: revision-version-number) product/productSub Application-Name Application-Name-version".
 	 */
 	public get userAgent(): string {
-		return this.#ownerWindow.happyDOM.settings.navigator.userAgent;
+		return WindowBrowserSettingsReader.getSettings(this.#ownerWindow)?.navigator.userAgent || '';
 	}
 
 	/**

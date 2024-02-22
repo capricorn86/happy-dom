@@ -1,5 +1,6 @@
 import MultipartFormDataParser from '../multipart/MultipartFormDataParser.js';
 import { ReadableStream } from 'stream/web';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import { URLSearchParams } from 'url';
 import FormData from '../../form-data/FormData.js';
 import Blob from '../../file/Blob.js';
@@ -7,7 +8,7 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestBody from '../types/IRequestBody.js';
 import IResponseBody from '../types/IResponseBody.js';
-import Request from '../Request.js';
+import { Buffer } from 'buffer';
 
 /**
  * Fetch body utility.
@@ -57,7 +58,7 @@ export default class FetchBodyUtility {
 				contentLength: buffer.length
 			};
 		} else if (body instanceof Blob) {
-			const buffer = (<Blob>body)._buffer;
+			const buffer = (<Blob>body)[PropertySymbol.buffer];
 			return {
 				buffer,
 				stream: this.toReadableStream(buffer),
@@ -108,13 +109,21 @@ export default class FetchBodyUtility {
 	}
 
 	/**
-	 * Clones a request body stream.
+	 * Clones a request or body body stream.
 	 *
-	 * @param request Request.
-	 * @returns Stream.
+	 * It is actually not cloning the stream.
+	 * It creates a pass through stream and pipes the original stream to it.
+	 *
+	 * @param requestOrResponse Request or Response.
+	 * @param requestOrResponse.body
+	 * @param requestOrResponse.bodyUsed
+	 * @returns New stream.
 	 */
-	public static cloneRequestBodyStream(request: Request): ReadableStream {
-		if (request.bodyUsed) {
+	public static cloneBodyStream(requestOrResponse: {
+		body: ReadableStream;
+		bodyUsed: boolean;
+	}): ReadableStream {
+		if (requestOrResponse.bodyUsed) {
 			throw new DOMException(
 				`Failed to clone body stream of request: Request body is already used.`,
 				DOMExceptionNameEnum.invalidStateError
@@ -122,11 +131,11 @@ export default class FetchBodyUtility {
 		}
 
 		// Uses the tee() method to clone the ReadableStream
-		const [stream1, stream2] = request.body.tee();
+		const [stream1, stream2] = requestOrResponse.body.tee();
 
 		// Sets the body of the cloned request to the first pass through stream.
 		// TODO: check id this is required as request should be read only object
-		<ReadableStream>request.body == stream1;
+		<ReadableStream>requestOrResponse.body == stream1;
 
 		// Returns the other stream as the clone
 		return stream2;

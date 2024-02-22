@@ -1,4 +1,5 @@
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import Element from '../element/Element.js';
 import ISVGElement from './ISVGElement.js';
 import ISVGSVGElement from './ISVGSVGElement.js';
@@ -15,8 +16,6 @@ import SVGElementNamedNodeMap from './SVGElementNamedNodeMap.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/SVGElement.
  */
 export default class SVGElement extends Element implements ISVGElement {
-	public override readonly attributes: INamedNodeMap = new SVGElementNamedNodeMap(this);
-
 	// Events
 	public onabort: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
@@ -25,9 +24,12 @@ export default class SVGElement extends Element implements ISVGElement {
 	public onscroll: (event: Event) => void | null = null;
 	public onunload: (event: Event) => void | null = null;
 
+	// Internal properties
+	public override [PropertySymbol.attributes]: INamedNodeMap = new SVGElementNamedNodeMap(this);
+	public [PropertySymbol.style]: CSSStyleDeclaration | null = null;
+
 	// Private properties
-	public _style: CSSStyleDeclaration = null;
-	private _dataset: Dataset = null;
+	#dataset: Dataset = null;
 
 	/**
 	 * Returns viewport.
@@ -44,13 +46,13 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Element.
 	 */
 	public get ownerSVGElement(): ISVGSVGElement {
-		let parent = this.parentNode;
+		let parent = this[PropertySymbol.parentNode];
 		while (parent) {
-			if (parent['tagName'] === 'SVG') {
+			if (parent[PropertySymbol.localName] === 'svg') {
 				return <ISVGSVGElement>parent;
 			}
 
-			parent = parent.parentNode;
+			parent = parent[PropertySymbol.parentNode];
 		}
 		return null;
 	}
@@ -61,7 +63,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Data set.
 	 */
 	public get dataset(): { [key: string]: string } {
-		return (this._dataset ??= new Dataset(this)).proxy;
+		return (this.#dataset ??= new Dataset(this)).proxy;
 	}
 
 	/**
@@ -70,10 +72,10 @@ export default class SVGElement extends Element implements ISVGElement {
 	 * @returns Style.
 	 */
 	public get style(): CSSStyleDeclaration {
-		if (!this._style) {
-			this._style = new CSSStyleDeclaration(this);
+		if (!this[PropertySymbol.style]) {
+			this[PropertySymbol.style] = new CSSStyleDeclaration(this);
 		}
-		return this._style;
+		return this[PropertySymbol.style];
 	}
 
 	/**

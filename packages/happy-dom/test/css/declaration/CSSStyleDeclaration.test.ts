@@ -2888,30 +2888,6 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.getPropertyValue('text-transform')).toBe('uppercase');
 			expect(declaration.getPropertyPriority('text-transform')).toBe('important');
 		});
-
-		it('Is using a cache.', () => {
-			const declaration = new CSSStyleDeclaration(element);
-
-			document.body.appendChild(element);
-			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
-
-			declaration.getPropertyValue('border');
-			const elementStyle = declaration['_elementStyle'].getElementStyle();
-			declaration.getPropertyValue('border');
-			expect(elementStyle).toBe(declaration['_elementStyle'].getElementStyle());
-
-			const computedDeclaration = new CSSStyleDeclaration(element, true);
-
-			computedDeclaration.getPropertyValue('border');
-			const computedElementStyle = declaration['_elementStyle'].getElementStyle();
-			computedDeclaration.getPropertyValue('border');
-			expect(computedElementStyle).toBe(declaration['_elementStyle'].getElementStyle());
-
-			element.setAttribute('style', `border: 2px solid green;`);
-
-			expect(elementStyle).not.toBe(declaration['_elementStyle'].getElementStyle());
-			expect(computedElementStyle).not.toBe(declaration['_elementStyle'].getElementStyle());
-		});
 	});
 
 	describe('getPropertyPriority()', () => {

@@ -1,7 +1,6 @@
 import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
-import Response from '../../src/fetch/Response.js';
 import Headers from '../../src/fetch/Headers.js';
 import Blob from '../../src/file/Blob.js';
 import FormData from '../../src/form-data/FormData.js';
@@ -23,7 +22,6 @@ describe('Response', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		Response._ownerDocument = document;
 	});
 
 	afterEach(() => {
@@ -32,7 +30,7 @@ describe('Response', () => {
 
 	describe('constructor()', () => {
 		it('Sets default values for properties.', () => {
-			const response = new Response();
+			const response = new window.Response();
 			let headersLength = 0;
 
 			for (const _header of response.headers) {
@@ -49,20 +47,20 @@ describe('Response', () => {
 		});
 
 		it('Sets status from init object.', () => {
-			const response = new Response(null, { status: 404 });
+			const response = new window.Response(null, { status: 404 });
 			expect(response.status).toBe(404);
 		});
 
 		it('Sets status text from init object.', () => {
-			const response = new Response(null, { statusText: 'test' });
+			const response = new window.Response(null, { statusText: 'test' });
 			expect(response.statusText).toBe('test');
 		});
 
 		it('Sets ok state correctly based on status code.', () => {
-			const response199 = new Response(null, { status: 199 });
-			const response200 = new Response(null, { status: 200 });
-			const response299 = new Response(null, { status: 299 });
-			const response300 = new Response(null, { status: 300 });
+			const response199 = new window.Response(null, { status: 199 });
+			const response200 = new window.Response(null, { status: 200 });
+			const response299 = new window.Response(null, { status: 299 });
+			const response300 = new window.Response(null, { status: 300 });
 			expect(response199.ok).toBe(false);
 			expect(response200.ok).toBe(true);
 			expect(response299.ok).toBe(true);
@@ -76,7 +74,7 @@ describe('Response', () => {
 			};
 
 			const headers = new Headers(headerValues);
-			const response = new Response(null, { headers });
+			const response = new window.Response(null, { headers });
 
 			const headerEntries = {};
 
@@ -89,7 +87,7 @@ describe('Response', () => {
 		});
 
 		it('Sets body from init object.', async () => {
-			const response = new Response('Hello World');
+			const response = new window.Response('Hello World');
 			const chunks: Buffer[] = [];
 
 			for await (const chunk of <Stream.Readable>response.body) {
@@ -102,22 +100,26 @@ describe('Response', () => {
 
 	describe('get [Symbol.toStringTag]()', () => {
 		it('Returns class name.', () => {
-			expect(String(new Response())).toBe('[object Response]');
+			expect(String(new window.Response())).toBe('[object Response]');
 		});
 	});
 
 	describe('arrayBuffer()', () => {
 		it('Returns ArrayBuffer.', async () => {
-			const response = new Response('Hello World');
+			const response = new window.Response('Hello World');
 			const arrayBuffer = await response.arrayBuffer();
 
 			expect(arrayBuffer).toBeInstanceOf(ArrayBuffer);
 			expect(Buffer.from(arrayBuffer).toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('Hello World');
+				async function* generate(): AsyncGenerator<string> {
+					yield 'Hello World';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()));
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -125,7 +127,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				response.arrayBuffer();
 
 				setTimeout(() => {
@@ -142,7 +144,9 @@ describe('Response', () => {
 
 	describe('blob()', () => {
 		it('Returns Blob.', async () => {
-			const response = new Response('Hello World', { headers: { 'Content-Type': 'text/plain' } });
+			const response = new window.Response('Hello World', {
+				headers: { 'Content-Type': 'text/plain' }
+			});
 			const blob = await response.blob();
 
 			expect(blob).toBeInstanceOf(Blob);
@@ -152,9 +156,15 @@ describe('Response', () => {
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('Hello World', { headers: { 'Content-Type': 'text/plain' } });
+				async function* generate(): AsyncGenerator<string> {
+					yield 'Hello World';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()), {
+					headers: { 'Content-Type': 'text/plain' }
+				});
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -162,7 +172,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				response.blob();
 
 				setTimeout(() => {
@@ -179,16 +189,20 @@ describe('Response', () => {
 
 	describe('buffer()', () => {
 		it('Returns Buffer.', async () => {
-			const response = new Response('Hello World');
+			const response = new window.Response('Hello World');
 			const buffer = await response.buffer();
 
 			expect(buffer).toBeInstanceOf(Buffer);
 			expect(buffer.toString()).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('Hello World');
+				async function* generate(): AsyncGenerator<string> {
+					yield 'Hello World';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()));
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -196,7 +210,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 5))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => {
+				window.happyDOM?.waitUntilComplete().then(() => {
 					isAsyncComplete = true;
 				});
 				response.buffer();
@@ -215,15 +229,19 @@ describe('Response', () => {
 
 	describe('text()', () => {
 		it('Returns text string.', async () => {
-			const response = new Response('Hello World');
+			const response = new window.Response('Hello World');
 			const text = await response.text();
 
 			expect(text).toBe('Hello World');
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('Hello World');
+				async function* generate(): AsyncGenerator<string> {
+					yield 'Hello World';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()));
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -231,7 +249,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('Hello World')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				response.text();
 
 				setTimeout(() => {
@@ -248,15 +266,19 @@ describe('Response', () => {
 
 	describe('json()', () => {
 		it('Returns JSON.', async () => {
-			const response = new Response('{ "key1": "value1" }');
+			const response = new window.Response('{ "key1": "value1" }');
 			const json = await response.json();
 
 			expect(json).toEqual({ key1: 'value1' });
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete().', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				const response = new Response('{ "key1": "value1" }');
+				async function* generate(): AsyncGenerator<string> {
+					yield '{ "key1": "value1" }';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()));
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -266,7 +288,7 @@ describe('Response', () => {
 						)
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				response.json();
 
 				setTimeout(() => {
@@ -289,7 +311,7 @@ describe('Response', () => {
 			urlSearchParams.set('key2', 'value2');
 			urlSearchParams.set('key3', 'value3');
 
-			const response = new Response(urlSearchParams);
+			const response = new window.Response(urlSearchParams);
 			const formDataResponse = await response.formData();
 			let size = 0;
 
@@ -312,7 +334,7 @@ describe('Response', () => {
 			formData.set('key2', 'value2');
 			formData.set('key3', 'value3');
 
-			const response = new Response(formData);
+			const response = new window.Response(formData);
 			const formDataResponse = await response.formData();
 			let size = 0;
 
@@ -339,7 +361,7 @@ describe('Response', () => {
 			formData.set('key2', 'value2');
 			formData.set('file2', new File([imageBuffer], 'test-image-2.jpg', { type: 'image/jpeg' }));
 
-			const response = new Response(formData);
+			const response = new window.Response(formData);
 			const formDataResponse = await response.formData();
 			let size = 0;
 
@@ -365,9 +387,17 @@ describe('Response', () => {
 			expect(await file2.arrayBuffer()).toEqual(imageBuffer.buffer);
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete() for "application/x-www-form-urlencoded" content.', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete() for "application/x-www-form-urlencoded" content.', async () => {
 			await new Promise((resolve) => {
-				const response = new Response(new URLSearchParams());
+				async function* generate(): AsyncGenerator<string> {
+					yield 'key=value';
+				}
+
+				const response = new window.Response(Stream.Readable.from(generate()), {
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					}
+				});
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -375,7 +405,7 @@ describe('Response', () => {
 						new Promise((resolve) => setTimeout(() => resolve(Buffer.from('')), 10))
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				response.formData();
 
 				setTimeout(() => {
@@ -389,17 +419,19 @@ describe('Response', () => {
 			});
 		});
 
-		it('Supports window.happyDOM.whenAsyncComplete() for multipart content.', async () => {
+		it('Supports window.happyDOM?.waitUntilComplete() for multipart content.', async () => {
 			await new Promise((resolve) => {
-				const response = new Response(new FormData());
+				const response = new window.Response(new FormData());
 				let isAsyncComplete = false;
 
 				vi.spyOn(MultipartFormDataParser, 'streamToFormData').mockImplementation(
-					(): Promise<FormData> =>
-						new Promise((resolve) => setTimeout(() => resolve(new FormData()), 10))
+					(): Promise<{ formData: FormData; buffer: Buffer }> =>
+						new Promise((resolve) =>
+							setTimeout(() => resolve({ formData: new FormData(), buffer: Buffer.from([]) }), 10)
+						)
 				);
 
-				window.happyDOM.whenAsyncComplete().then(() => (isAsyncComplete = true));
+				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 				response.formData();
 
 				setTimeout(() => {
@@ -416,7 +448,7 @@ describe('Response', () => {
 
 	describe('clone()', () => {
 		it('Returns a clone.', async () => {
-			const response = new Response('Hello World', {
+			const response = new window.Response('Hello World', {
 				status: 404,
 				statusText: 'Not Found',
 				headers: { 'Content-Type': 'text/plain' }
@@ -437,14 +469,14 @@ describe('Response', () => {
 
 	describe('static redirect()', () => {
 		it('Returns a new instance of Response with redirect status set to 302 by default.', async () => {
-			const response = Response.redirect('https://example.com');
+			const response = window.Response.redirect('https://example.com');
 
 			expect(response.status).toBe(302);
 			expect(response.headers.get('Location')).toBe('https://example.com/');
 		});
 
 		it('Returns a new instance of Response with redirect status set to 301.', async () => {
-			const response = Response.redirect('https://example.com', 301);
+			const response = window.Response.redirect('https://example.com', 301);
 
 			expect(response.status).toBe(301);
 			expect(response.headers.get('Location')).toBe('https://example.com/');
@@ -454,7 +486,7 @@ describe('Response', () => {
 			let error: Error | null = null;
 
 			try {
-				Response.redirect('https://example.com', 200);
+				window.Response.redirect('https://example.com', 200);
 			} catch (e) {
 				error = e;
 			}
@@ -470,7 +502,7 @@ describe('Response', () => {
 
 	describe('static error()', () => {
 		it('Returns a new instance of Response with type set to error.', async () => {
-			const response = Response.error();
+			const response = window.Response.error();
 
 			expect(response.status).toBe(0);
 			expect(response.statusText).toBe('');
@@ -481,7 +513,7 @@ describe('Response', () => {
 	describe('static json()', () => {
 		it('Returns a new instance of Response with JSON body.', async () => {
 			const data = { key1: 'value1', key2: 'value2' };
-			const response = Response.json(data);
+			const response = window.Response.json(data);
 
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('');
@@ -491,7 +523,7 @@ describe('Response', () => {
 
 		it('Returns a new instance of Response with JSON body and custom init.', async () => {
 			const data = { key1: 'value1', key2: 'value2' };
-			const response = Response.json(data, {
+			const response = window.Response.json(data, {
 				status: 201,
 				statusText: 'OK',
 				headers: { 'Content-Type': 'test' }

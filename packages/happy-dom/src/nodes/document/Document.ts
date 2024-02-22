@@ -1,8 +1,6 @@
 import Element from '../element/Element.js';
-import HTMLUnknownElement from '../html-unknown-element/HTMLUnknownElement.js';
-import Text from '../text/Text.js';
-import Comment from '../comment/Comment.js';
-import IWindow from '../../window/IWindow.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import IBrowserWindow from '../../window/IBrowserWindow.js';
 import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
@@ -10,9 +8,8 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import Event from '../../event/Event.js';
 import DOMImplementation from '../../dom-implementation/DOMImplementation.js';
-import ElementTag from '../../config/ElementTag.js';
+import HTMLElementLocalNameToClass from '../../config/HTMLElementLocalNameToClass.js';
 import INodeFilter from '../../tree-walker/INodeFilter.js';
-import Attr from '../attr/Attr.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import DocumentType from '../document-type/DocumentType.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
@@ -20,7 +17,6 @@ import QuerySelector from '../../query-selector/QuerySelector.js';
 import IDocument from './IDocument.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import DOMException from '../../exception/DOMException.js';
-import CookieJar from '../../cookie/CookieJar.js';
 import IElement from '../element/IElement.js';
 import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement.js';
 import IHTMLElement from '../html-element/IHTMLElement.js';
@@ -35,19 +31,20 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement.js';
 import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
-import DocumentReadyStateManager from './DocumentReadyStateManager.js';
-import Location from '../../location/Location.js';
+import Location from '../../url/Location.js';
 import Selection from '../../selection/Selection.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
 import Range from '../../range/Range.js';
 import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement.js';
 import IAttr from '../attr/IAttr.js';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction.js';
-import ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
 import ElementUtility from '../element/ElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import NodeFactory from '../NodeFactory.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -55,31 +52,28 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
  * Document.
  */
 export default class Document extends Node implements IDocument {
-	public static _defaultView: IWindow = null;
-	public static _windowClass: {} | null = null;
-	public nodeType = Node.DOCUMENT_NODE;
-	public adoptedStyleSheets: CSSStyleSheet[] = [];
-	public implementation: DOMImplementation;
-	public readonly readyState = DocumentReadyStateEnum.interactive;
-	public readonly isConnected: boolean = true;
-	public readonly defaultView: IWindow;
-	public readonly referrer = '';
-	public readonly _windowClass: {} | null = null;
-	public readonly _readyStateManager: DocumentReadyStateManager;
-	public readonly _children: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
-	public _activeElement: IHTMLElement = null;
-	public _nextActiveElement: IHTMLElement = null;
-	public _currentScript: IHTMLScriptElement = null;
-
+	// Internal properties
+	public [PropertySymbol.children]: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
+	public [PropertySymbol.activeElement]: IHTMLElement = null;
+	public [PropertySymbol.nextActiveElement]: IHTMLElement = null;
+	public [PropertySymbol.currentScript]: IHTMLScriptElement = null;
+	public [PropertySymbol.rootNode] = this;
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
-	public _cacheID = 0;
-	// Public in order to be accessible by the fetch and xhr.
-	public _cookie = new CookieJar();
+	public [PropertySymbol.cacheID] = 0;
+	public [PropertySymbol.isFirstWrite] = true;
+	public [PropertySymbol.isFirstWriteAfterOpen] = false;
+	public [PropertySymbol.nodeType] = NodeTypeEnum.documentNode;
+	public [PropertySymbol.isConnected] = true;
+	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];
+	public [PropertySymbol.implementation] = new DOMImplementation(this);
+	public [PropertySymbol.readyState] = DocumentReadyStateEnum.interactive;
+	public [PropertySymbol.referrer] = '';
+	public [PropertySymbol.defaultView]: IBrowserWindow | null = null;
+	public [PropertySymbol.ownerWindow]: IBrowserWindow;
 
-	protected _isFirstWrite = true;
-	protected _isFirstWriteAfterOpen = false;
-
-	private _selection: Selection = null;
+	// Private properties
+	#selection: Selection = null;
+	#browserFrame: IBrowserFrame;
 
 	// Events
 	public onreadystatechange: (event: Event) => void = null;
@@ -193,36 +187,77 @@ export default class Document extends Node implements IDocument {
 	public onbeforematch: (event: Event) => void = null;
 
 	/**
-	 * Creates an instance of Document.
+	 * Constructor.
 	 *
+	 * @param injected Injected properties.
+	 * @param injected.browserFrame Browser frame.
+	 * @param injected.window Window.
 	 */
-	constructor() {
+	constructor(injected: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
 		super();
+		this.#browserFrame = injected.browserFrame;
+		this[PropertySymbol.ownerWindow] = injected.window;
+	}
 
-		this.defaultView = (<typeof Document>this.constructor)._defaultView;
-		this.implementation = new DOMImplementation(this);
+	/**
+	 * Returns adopted style sheets.
+	 *
+	 * @returns Adopted style sheets.
+	 */
+	public get adoptedStyleSheets(): CSSStyleSheet[] {
+		return this[PropertySymbol.adoptedStyleSheets];
+	}
 
-		this._windowClass = (<typeof Document>this.constructor)._windowClass;
-		this._readyStateManager = new DocumentReadyStateManager(this.defaultView);
-		this._rootNode = this;
+	/**
+	 * Sets adopted style sheets.
+	 *
+	 * @param value Adopted style sheets.
+	 */
+	public set adoptedStyleSheets(value: CSSStyleSheet[]) {
+		this[PropertySymbol.adoptedStyleSheets] = value;
+	}
 
-		const doctype = this.implementation.createDocumentType('html', '', '');
-		const documentElement = this.createElement('html');
-		const bodyElement = this.createElement('body');
-		const headElement = this.createElement('head');
+	/**
+	 * Returns DOM implementation.
+	 *
+	 * @returns DOM implementation.
+	 */
+	public get implementation(): DOMImplementation {
+		return this[PropertySymbol.implementation];
+	}
 
-		this.appendChild(doctype);
-		this.appendChild(documentElement);
+	/**
+	 * Returns document ready state.
+	 *
+	 * @returns Document ready state.
+	 */
+	public get readyState(): DocumentReadyStateEnum {
+		return this[PropertySymbol.readyState];
+	}
 
-		documentElement.appendChild(headElement);
-		documentElement.appendChild(bodyElement);
+	/**
+	 * Returns referrer.
+	 *
+	 * @returns Referrer.
+	 */
+	public get referrer(): string {
+		return this[PropertySymbol.referrer];
+	}
+
+	/**
+	 * Returns default view.
+	 *
+	 * @returns Default view.
+	 */
+	public get defaultView(): IBrowserWindow | null {
+		return this[PropertySymbol.defaultView];
 	}
 
 	/**
 	 * Returns document children.
 	 */
 	public get children(): IHTMLCollection<IElement> {
-		return this._children;
+		return this[PropertySymbol.children];
 	}
 
 	/**
@@ -286,7 +321,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this._children.length;
+		return this[PropertySymbol.children].length;
 	}
 
 	/**
@@ -295,7 +330,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): IElement {
-		return this._children[0] ?? null;
+		return this[PropertySymbol.children][0] ?? null;
 	}
 
 	/**
@@ -304,7 +339,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): IElement {
-		return this._children[this._children.length - 1] ?? null;
+		return this[PropertySymbol.children][this[PropertySymbol.children].length - 1] ?? null;
 	}
 
 	/**
@@ -313,7 +348,12 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
-		return this._cookie.getCookieString(this.defaultView.location, true);
+		return CookieStringUtility.cookiesToString(
+			this.#browserFrame.page.context.cookieContainer.getCookies(
+				this[PropertySymbol.ownerWindow].location,
+				true
+			)
+		);
 	}
 
 	/**
@@ -322,7 +362,9 @@ export default class Document extends Node implements IDocument {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		this._cookie.addCookieString(this.defaultView.location, cookie);
+		this.#browserFrame.page.context.cookieContainer.addCookies([
+			CookieStringUtility.stringToCookie(this[PropertySymbol.ownerWindow].location, cookie)
+		]);
 	}
 
 	/**
@@ -349,7 +391,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document type.
 	 */
 	public get doctype(): IDocumentType {
-		for (const node of this._childNodes) {
+		for (const node of this[PropertySymbol.childNodes]) {
 			if (node instanceof DocumentType) {
 				return node;
 			}
@@ -400,22 +442,28 @@ export default class Document extends Node implements IDocument {
 	 * @returns Active element.
 	 */
 	public get activeElement(): IHTMLElement {
-		if (this._activeElement && !this._activeElement.isConnected) {
-			this._activeElement = null;
+		if (
+			this[PropertySymbol.activeElement] &&
+			!this[PropertySymbol.activeElement][PropertySymbol.isConnected]
+		) {
+			this[PropertySymbol.activeElement] = null;
 		}
 
-		if (this._activeElement && this._activeElement instanceof Element) {
+		if (
+			this[PropertySymbol.activeElement] &&
+			this[PropertySymbol.activeElement] instanceof Element
+		) {
 			let rootNode: IShadowRoot | IDocument = <IShadowRoot | IDocument>(
-				this._activeElement.getRootNode()
+				this[PropertySymbol.activeElement].getRootNode()
 			);
-			let activeElement: IHTMLElement = this._activeElement;
+			let activeElement: IHTMLElement = this[PropertySymbol.activeElement];
 			while (rootNode !== this) {
 				activeElement = <IHTMLElement>(<IShadowRoot>rootNode).host;
 				rootNode = activeElement ? <IShadowRoot | IDocument>activeElement.getRootNode() : this;
 			}
 			return activeElement;
 		}
-		return this._activeElement || this.body || this.documentElement || null;
+		return this[PropertySymbol.activeElement] || this.body || this.documentElement || null;
 	}
 
 	/**
@@ -433,7 +481,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Location.
 	 */
 	public get location(): Location {
-		return this.defaultView.location;
+		return this[PropertySymbol.ownerWindow].location;
 	}
 
 	/**
@@ -456,7 +504,7 @@ export default class Document extends Node implements IDocument {
 		if (element) {
 			return element.href;
 		}
-		return this.defaultView.location.href;
+		return this[PropertySymbol.ownerWindow].location.href;
 	}
 
 	/**
@@ -465,7 +513,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns the URL of the current document.
 	 * */
 	public get URL(): string {
-		return this.defaultView.location.href;
+		return this[PropertySymbol.ownerWindow].location.href;
 	}
 
 	/**
@@ -509,7 +557,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns the currently executing script element.
 	 */
 	public get currentScript(): IHTMLScriptElement {
-		return this._currentScript;
+		return this[PropertySymbol.currentScript];
 	}
 
 	/**
@@ -612,7 +660,7 @@ export default class Document extends Node implements IDocument {
 			name: string
 		): INodeList<IElement> => {
 			const matches = new NodeList<IElement>();
-			for (const child of (<Element | Document>parentNode)._children) {
+			for (const child of (<Element | Document>parentNode)[PropertySymbol.children]) {
 				if (child.getAttributeNS(null, 'name') === name) {
 					matches.push(child);
 				}
@@ -633,14 +681,12 @@ export default class Document extends Node implements IDocument {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): IDocument {
-		(<typeof Document>this.constructor)._defaultView = this.defaultView;
-
 		const clone = <Document>super.cloneNode(deep);
 
 		if (deep) {
-			for (const node of clone._childNodes) {
-				if (node.nodeType === Node.ELEMENT_NODE) {
-					clone._children.push(<IElement>node);
+			for (const node of clone[PropertySymbol.childNodes]) {
+				if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+					clone[PropertySymbol.children].push(<IElement>node);
 				}
 			}
 		}
@@ -686,23 +732,23 @@ export default class Document extends Node implements IDocument {
 	public write(html: string): void {
 		const root = <DocumentFragment>XMLParser.parse(this, html, { evaluateScripts: true });
 
-		if (this._isFirstWrite || this._isFirstWriteAfterOpen) {
-			if (this._isFirstWrite) {
-				if (!this._isFirstWriteAfterOpen) {
+		if (this[PropertySymbol.isFirstWrite] || this[PropertySymbol.isFirstWriteAfterOpen]) {
+			if (this[PropertySymbol.isFirstWrite]) {
+				if (!this[PropertySymbol.isFirstWriteAfterOpen]) {
 					this.open();
 				}
 
-				this._isFirstWrite = false;
+				this[PropertySymbol.isFirstWrite] = false;
 			}
 
-			this._isFirstWriteAfterOpen = false;
+			this[PropertySymbol.isFirstWriteAfterOpen] = false;
 			let documentElement = null;
 			let documentTypeNode = null;
 
-			for (const node of root._childNodes) {
+			for (const node of root[PropertySymbol.childNodes]) {
 				if (node['tagName'] === 'HTML') {
 					documentElement = node;
-				} else if (node.nodeType === NodeTypeEnum.documentTypeNode) {
+				} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
 					documentTypeNode = node;
 				}
 
@@ -718,11 +764,23 @@ export default class Document extends Node implements IDocument {
 					}
 
 					this.appendChild(documentElement);
+
+					const head = <IElement>ParentNodeUtility.getElementByTagName(this, 'head');
+					let body = <IElement>ParentNodeUtility.getElementByTagName(this, 'body');
+
+					if (!body) {
+						body = this.createElement('body');
+						documentElement.appendChild(this.createElement('body'));
+					}
+
+					if (!head) {
+						documentElement.insertBefore(this.createElement('head'), body);
+					}
 				} else {
 					const rootBody = <Element>ParentNodeUtility.getElementByTagName(root, 'body');
 					const body = ParentNodeUtility.getElementByTagName(this, 'body');
 					if (rootBody && body) {
-						for (const child of rootBody._childNodes.slice()) {
+						for (const child of rootBody[PropertySymbol.childNodes].slice()) {
 							body.appendChild(child);
 						}
 					}
@@ -731,8 +789,11 @@ export default class Document extends Node implements IDocument {
 				// Remaining nodes outside the <html> element are added to the <body> element.
 				const body = ParentNodeUtility.getElementByTagName(this, 'body');
 				if (body) {
-					for (const child of root._childNodes.slice()) {
-						if (child['tagName'] !== 'HTML' && child.nodeType !== NodeTypeEnum.documentTypeNode) {
+					for (const child of root[PropertySymbol.childNodes].slice()) {
+						if (
+							child['tagName'] !== 'HTML' &&
+							child[PropertySymbol.nodeType] !== NodeTypeEnum.documentTypeNode
+						) {
 							body.appendChild(child);
 						}
 					}
@@ -742,7 +803,7 @@ export default class Document extends Node implements IDocument {
 				const bodyElement = this.createElement('body');
 				const headElement = this.createElement('head');
 
-				for (const child of root._childNodes.slice()) {
+				for (const child of root[PropertySymbol.childNodes].slice()) {
 					bodyElement.appendChild(child);
 				}
 
@@ -754,7 +815,7 @@ export default class Document extends Node implements IDocument {
 		} else {
 			const bodyNode = ParentNodeUtility.getElementByTagName(root, 'body');
 			const body = ParentNodeUtility.getElementByTagName(this, 'body');
-			for (const child of (<Element>(bodyNode || root))._childNodes.slice()) {
+			for (const child of (<Element>(bodyNode || root))[PropertySymbol.childNodes].slice()) {
 				body.appendChild(child);
 			}
 		}
@@ -766,10 +827,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document.
 	 */
 	public open(): IDocument {
-		this._isFirstWriteAfterOpen = true;
+		this[PropertySymbol.isFirstWriteAfterOpen] = true;
 
-		for (const eventType of Object.keys(this._listeners)) {
-			const listeners = this._listeners[eventType];
+		for (const eventType of Object.keys(this[PropertySymbol.listeners])) {
+			const listeners = this[PropertySymbol.listeners][eventType];
 			if (listeners) {
 				for (const listener of listeners) {
 					this.removeEventListener(eventType, listener);
@@ -777,7 +838,7 @@ export default class Document extends Node implements IDocument {
 			}
 		}
 
-		for (const child of this._childNodes.slice()) {
+		for (const child of this[PropertySymbol.childNodes].slice()) {
 			this.removeChild(child);
 		}
 
@@ -817,27 +878,72 @@ export default class Document extends Node implements IDocument {
 		qualifiedName: string,
 		options?: { is?: string }
 	): IElement {
-		const tagName = String(qualifiedName).toUpperCase();
+		qualifiedName = String(qualifiedName);
 
-		let customElementClass;
-		if (this.defaultView && options && options.is) {
-			customElementClass = this.defaultView.customElements.get(String(options.is));
-		} else if (this.defaultView) {
-			customElementClass = this.defaultView.customElements.get(tagName);
+		if (!qualifiedName) {
+			throw new DOMException(
+				"Failed to execute 'createElementNS' on 'Document': The qualified name provided is empty."
+			);
 		}
 
-		const elementClass: typeof Element =
-			customElementClass || ElementTag[tagName] || HTMLUnknownElement;
-
-		elementClass._ownerDocument = this;
-
-		const element = new elementClass();
-		element.tagName = tagName;
-		(<IDocument>element.ownerDocument) = this;
-		(<string>element.namespaceURI) = namespaceURI;
-		if (element instanceof Element && options && options.is) {
-			element._isValue = String(options.is);
+		// SVG element
+		if (namespaceURI === NamespaceURI.svg) {
+			const element = NodeFactory.createNode<IElement>(
+				this,
+				qualifiedName === 'svg'
+					? this[PropertySymbol.ownerWindow].SVGSVGElement
+					: this[PropertySymbol.ownerWindow].SVGElement
+			);
+			element[PropertySymbol.tagName] = qualifiedName;
+			element[PropertySymbol.localName] = qualifiedName;
+			element[PropertySymbol.namespaceURI] = namespaceURI;
+			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+			return element;
 		}
+
+		// Custom HTML element
+		const customElement =
+			this[PropertySymbol.ownerWindow].customElements[PropertySymbol.registry]?.[
+				options && options.is ? String(options.is) : qualifiedName
+			];
+
+		if (customElement) {
+			const element = NodeFactory.createNode<IElement>(this, customElement.elementClass);
+			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
+			element[PropertySymbol.localName] = qualifiedName;
+			element[PropertySymbol.namespaceURI] = namespaceURI;
+			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+			return element;
+		}
+
+		const localName = qualifiedName.toLowerCase();
+		const elementClass = this[PropertySymbol.ownerWindow][HTMLElementLocalNameToClass[localName]];
+
+		// Known HTML element
+		if (elementClass) {
+			const element = NodeFactory.createNode<IElement>(this, elementClass);
+
+			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
+			element[PropertySymbol.localName] = localName;
+			element[PropertySymbol.namespaceURI] = namespaceURI;
+			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+			return element;
+		}
+
+		// Unknown HTML element
+		const element = NodeFactory.createNode<IElement>(
+			this,
+			// If the tag name contains a hyphen, it is an unknown custom element and we should use HTMLElement.
+			localName.includes('-')
+				? this[PropertySymbol.ownerWindow].HTMLElement
+				: this[PropertySymbol.ownerWindow].HTMLUnknownElement
+		);
+
+		element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
+		element[PropertySymbol.localName] = localName;
+		element[PropertySymbol.namespaceURI] = namespaceURI;
+		element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
 		return element;
 	}
@@ -851,8 +957,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createTextNode(data?: string): IText {
-		Text._ownerDocument = this;
-		return new Text(data);
+		return NodeFactory.createNode<IText>(this, this[PropertySymbol.ownerWindow].Text, data);
 	}
 
 	/**
@@ -862,8 +967,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Text node.
 	 */
 	public createComment(data?: string): IComment {
-		Comment._ownerDocument = this;
-		return new Comment(data);
+		return NodeFactory.createNode<IComment>(this, this[PropertySymbol.ownerWindow].Comment, data);
 	}
 
 	/**
@@ -872,8 +976,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Document fragment.
 	 */
 	public createDocumentFragment(): IDocumentFragment {
-		DocumentFragment._ownerDocument = this;
-		return new DocumentFragment();
+		return new this[PropertySymbol.ownerWindow].DocumentFragment();
 	}
 
 	/**
@@ -910,8 +1013,8 @@ export default class Document extends Node implements IDocument {
 	 * @returns Event.
 	 */
 	public createEvent(type: string): Event {
-		if (typeof this.defaultView[type] === 'function') {
-			return new this.defaultView[type]('init');
+		if (typeof this[PropertySymbol.ownerWindow][type] === 'function') {
+			return new this[PropertySymbol.ownerWindow][type]('init');
 		}
 		return new Event('init');
 	}
@@ -934,10 +1037,9 @@ export default class Document extends Node implements IDocument {
 	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr {
-		Attr._ownerDocument = this;
-		const attribute = new Attr();
-		attribute.namespaceURI = namespaceURI;
-		attribute.name = qualifiedName;
+		const attribute = NodeFactory.createNode<IAttr>(this, this[PropertySymbol.ownerWindow].Attr);
+		attribute[PropertySymbol.namespaceURI] = namespaceURI;
+		attribute[PropertySymbol.name] = qualifiedName;
 		return <IAttr>attribute;
 	}
 
@@ -952,7 +1054,7 @@ export default class Document extends Node implements IDocument {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}
 		const clone = node.cloneNode(deep);
-		(<Document>clone.ownerDocument) = this;
+		this.#importNode(clone);
 		return clone;
 	}
 
@@ -962,7 +1064,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Range.
 	 */
 	public createRange(): Range {
-		return new this.defaultView.Range();
+		return new this[PropertySymbol.ownerWindow].Range();
 	}
 
 	/**
@@ -976,8 +1078,11 @@ export default class Document extends Node implements IDocument {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}
 
-		const adopted = node.parentNode ? node.parentNode.removeChild(node) : node;
-		(<Document>adopted.ownerDocument) = this;
+		const adopted = node[PropertySymbol.parentNode]
+			? node[PropertySymbol.parentNode].removeChild(node)
+			: node;
+		const document = this;
+		Object.defineProperty(adopted, 'ownerDocument', { value: document });
 		return adopted;
 	}
 
@@ -987,10 +1092,10 @@ export default class Document extends Node implements IDocument {
 	 * @returns Selection.
 	 */
 	public getSelection(): Selection {
-		if (!this._selection) {
-			this._selection = new Selection(this);
+		if (!this.#selection) {
+			this.#selection = new Selection(this);
 		}
-		return this._selection;
+		return this.#selection;
 	}
 
 	/**
@@ -1003,22 +1108,11 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
-	 * Triggered by window when it is ready.
-	 */
-	public _onWindowReady(): void {
-		this._readyStateManager.whenComplete().then(() => {
-			(<DocumentReadyStateEnum>this.readyState) = DocumentReadyStateEnum.complete;
-			this.dispatchEvent(new Event('readystatechange'));
-			this.dispatchEvent(new Event('load', { bubbles: true }));
-		});
-	}
-
-	/**
 	 * Creates a Processing Instruction node.
 	 *
+	 * @param target Target.
+	 * @param data Data.
 	 * @returns IProcessingInstruction.
-	 * @param target
-	 * @param data
 	 */
 	public createProcessingInstruction(target: string, data: string): IProcessingInstruction {
 		if (!target || !PROCESSING_INSTRUCTION_TARGET_REGEXP.test(target)) {
@@ -1031,9 +1125,25 @@ export default class Document extends Node implements IDocument {
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
-		ProcessingInstruction._ownerDocument = this;
-		const processingInstruction = new ProcessingInstruction(data);
-		processingInstruction.target = target;
+		const processingInstruction = NodeFactory.createNode<IProcessingInstruction>(
+			this,
+			this[PropertySymbol.ownerWindow].ProcessingInstruction,
+			data
+		);
+		processingInstruction[PropertySymbol.target] = target;
 		return processingInstruction;
+	}
+
+	/**
+	 * Imports a node.
+	 *
+	 * @param node Node.
+	 */
+	#importNode(node: INode): void {
+		node[PropertySymbol.ownerDocument] = this;
+
+		for (const child of node[PropertySymbol.childNodes]) {
+			this.#importNode(child);
+		}
 	}
 }

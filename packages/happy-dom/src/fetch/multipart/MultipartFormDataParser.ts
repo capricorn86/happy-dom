@@ -1,8 +1,10 @@
 import FormData from '../../form-data/FormData.js';
 import { ReadableStream } from 'stream/web';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import MultipartReader from './MultipartReader.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import { Buffer } from 'buffer';
 
 /**
  * Multipart form data factory.
@@ -21,7 +23,7 @@ export default class MultipartFormDataParser {
 	public static async streamToFormData(
 		body: ReadableStream,
 		contentType: string
-	): Promise<FormData> {
+	): Promise<{ formData: FormData; buffer: Buffer }> {
 		if (!/multipart/i.test(contentType)) {
 			throw new DOMException(
 				`Failed to build FormData object: The "content-type" header isn't of type "multipart/form-data".`,
@@ -40,6 +42,9 @@ export default class MultipartFormDataParser {
 
 		const bodyReader = body.getReader();
 		const reader = new MultipartReader(match[1] || match[2]);
+		const chunks = [];
+		let buffer: Buffer;
+		let bytes = 0;
 
 		let readResult = await bodyReader.read();
 
@@ -48,7 +53,20 @@ export default class MultipartFormDataParser {
 			readResult = await bodyReader.read();
 		}
 
-		return reader.end();
+		try {
+			buffer =
+				typeof chunks[0] === 'string' ? Buffer.from(chunks.join('')) : Buffer.concat(chunks, bytes);
+		} catch (error) {
+			throw new DOMException(
+				`Could not create Buffer from response body. Error: ${error.message}.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		return {
+			formData: reader.end(),
+			buffer
+		};
 	}
 
 	/**
@@ -86,7 +104,7 @@ export default class MultipartFormDataParser {
 						)}"\r\nContent-Type: ${value.type || 'application/octet-stream'}\r\n\r\n`
 					)
 				);
-				chunks.push(value._buffer);
+				chunks.push(value[PropertySymbol.buffer]);
 				chunks.push(Buffer.from('\r\n'));
 			}
 		}

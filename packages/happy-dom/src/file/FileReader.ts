@@ -1,6 +1,6 @@
 import WhatwgMIMEType from 'whatwg-mimetype';
-import WhatwgEncoding from 'whatwg-encoding';
-import IDocument from '../nodes/document/IDocument.js';
+import * as PropertySymbol from '../PropertySymbol.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
@@ -9,6 +9,7 @@ import FileReaderReadyStateEnum from './FileReaderReadyStateEnum.js';
 import FileReaderFormatEnum from './FileReaderFormatEnum.js';
 import EventTarget from '../event/EventTarget.js';
 import FileReaderEventTypeEnum from './FileReaderEventTypeEnum.js';
+import { Buffer } from 'buffer';
 
 /**
  * Reference:
@@ -18,8 +19,6 @@ import FileReaderEventTypeEnum from './FileReaderEventTypeEnum.js';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/FileReader-impl.js (MIT licensed).
  */
 export default class FileReader extends EventTarget {
-	// Owner document is set by a sub-class in the Window constructor
-	public static _ownerDocument: IDocument = null;
 	public readonly error: Error = null;
 	public readonly result: Buffer | ArrayBuffer | string = null;
 	public readonly readyState: number = FileReaderReadyStateEnum.empty;
@@ -29,17 +28,19 @@ export default class FileReader extends EventTarget {
 	public readonly onloadstart: (event: ProgressEvent) => void = null;
 	public readonly onloadend: (event: ProgressEvent) => void = null;
 	public readonly onprogress: (event: ProgressEvent) => void = null;
-	public readonly _ownerDocument: IDocument = null;
-	private _isTerminated = false;
-	private _loadTimeout: NodeJS.Timeout = null;
-	private _parseTimeout: NodeJS.Timeout = null;
+	#isTerminated = false;
+	#loadTimeout: NodeJS.Timeout | null = null;
+	#parseTimeout: NodeJS.Timeout | null = null;
+	readonly #window: IBrowserWindow;
 
 	/**
 	 * Constructor.
+	 *
+	 * @param window Window.
 	 */
-	constructor() {
+	constructor(window: IBrowserWindow) {
 		super();
-		this._ownerDocument = (<typeof FileReader>this.constructor)._ownerDocument;
+		this.#window = window;
 	}
 
 	/**
@@ -48,7 +49,7 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 */
 	public readAsArrayBuffer(blob: Blob): void {
-		this._readFile(blob, FileReaderFormatEnum.buffer);
+		this.#readFile(blob, FileReaderFormatEnum.buffer);
 	}
 
 	/**
@@ -57,7 +58,7 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 */
 	public readAsBinaryString(blob: Blob): void {
-		this._readFile(blob, FileReaderFormatEnum.binaryString);
+		this.#readFile(blob, FileReaderFormatEnum.binaryString);
 	}
 
 	/**
@@ -66,7 +67,7 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 */
 	public readAsDataURL(blob: Blob): void {
-		this._readFile(blob, FileReaderFormatEnum.dataURL);
+		this.#readFile(blob, FileReaderFormatEnum.dataURL);
 	}
 
 	/**
@@ -75,22 +76,16 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 * @param [encoding] Encoding.
 	 */
-	public readAsText(blob: Blob, encoding: string = null): void {
-		this._readFile(
-			blob,
-			FileReaderFormatEnum.text,
-			WhatwgEncoding.labelToName(encoding) || 'UTF-8'
-		);
+	public readAsText(blob: Blob, encoding: string | null = null): void {
+		this.#readFile(blob, FileReaderFormatEnum.text, encoding || 'UTF-8');
 	}
 
 	/**
 	 * Aborts the file reader.
 	 */
 	public abort(): void {
-		const window = this._ownerDocument.defaultView;
-
-		window.clearTimeout(this._loadTimeout);
-		window.clearTimeout(this._parseTimeout);
+		this.#window.clearTimeout(this.#loadTimeout);
+		this.#window.clearTimeout(this.#parseTimeout);
 
 		if (
 			this.readyState === FileReaderReadyStateEnum.empty ||
@@ -105,7 +100,7 @@ export default class FileReader extends EventTarget {
 			(<Buffer | ArrayBuffer | string>this.result) = null;
 		}
 
-		this._isTerminated = true;
+		this.#isTerminated = true;
 		this.dispatchEvent(new ProgressEvent(FileReaderEventTypeEnum.abort));
 		this.dispatchEvent(new ProgressEvent(FileReaderEventTypeEnum.loadend));
 	}
@@ -117,9 +112,7 @@ export default class FileReader extends EventTarget {
 	 * @param format Format.
 	 * @param [encoding] Encoding.
 	 */
-	private _readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string = null): void {
-		const window = this._ownerDocument.defaultView;
-
+	#readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string | null = null): void {
 		if (this.readyState === FileReaderReadyStateEnum.loading) {
 			throw new DOMException(
 				'The object is in an invalid state.',
@@ -129,15 +122,15 @@ export default class FileReader extends EventTarget {
 
 		(<number>this.readyState) = FileReaderReadyStateEnum.loading;
 
-		this._loadTimeout = window.setTimeout(() => {
-			if (this._isTerminated) {
-				this._isTerminated = false;
+		this.#loadTimeout = this.#window.setTimeout(() => {
+			if (this.#isTerminated) {
+				this.#isTerminated = false;
 				return;
 			}
 
 			this.dispatchEvent(new ProgressEvent(FileReaderEventTypeEnum.loadstart));
 
-			let data = blob._buffer;
+			let data = blob[PropertySymbol.buffer];
 			if (!data) {
 				data = Buffer.alloc(0);
 			}
@@ -150,9 +143,9 @@ export default class FileReader extends EventTarget {
 				})
 			);
 
-			this._parseTimeout = window.setTimeout(() => {
-				if (this._isTerminated) {
-					this._isTerminated = false;
+			this.#parseTimeout = this.#window.setTimeout(() => {
+				if (this.#isTerminated) {
+					this.#isTerminated = false;
 					return;
 				}
 
@@ -169,13 +162,14 @@ export default class FileReader extends EventTarget {
 					case FileReaderFormatEnum.dataURL: {
 						// Spec seems very unclear here; see https://github.com/w3c/FileAPI/issues/104.
 						const contentType = WhatwgMIMEType.parse(blob.type) || 'application/octet-stream';
-						(<Buffer | ArrayBuffer | string>(
-							this.result
-						)) = `data:${contentType};base64,${data.toString('base64')}`;
+						(<Buffer | ArrayBuffer | string>this.result) =
+							`data:${contentType};base64,${data.toString('base64')}`;
 						break;
 					}
 					case FileReaderFormatEnum.text: {
-						(<Buffer | ArrayBuffer | string>this.result) = WhatwgEncoding.decode(data, encoding);
+						(<Buffer | ArrayBuffer | string>this.result) = new TextDecoder(
+							encoding || 'UTF-8'
+						).decode(data);
 						break;
 					}
 				}

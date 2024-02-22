@@ -1,4 +1,5 @@
 import XMLParser from '../../xml-parser/XMLParser.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
 import IDocument from '../document/IDocument.js';
 import IElement from '../element/IElement.js';
@@ -6,6 +7,7 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import INode from '../node/INode.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
+import NamespaceURI from '../../config/NamespaceURI.js';
 
 /**
  * Parent node utility.
@@ -23,7 +25,9 @@ export default class ParentNodeUtility {
 	): void {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
-				XMLParser.parse(<IDocument>parentNode.ownerDocument, node, { rootNode: parentNode });
+				XMLParser.parse(<IDocument>parentNode[PropertySymbol.ownerDocument], node, {
+					rootNode: parentNode
+				});
 			} else {
 				parentNode.appendChild(node);
 			}
@@ -44,8 +48,8 @@ export default class ParentNodeUtility {
 		for (const node of nodes) {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
-					XMLParser.parse(<IDocument>parentNode.ownerDocument, node)
-				))._childNodes.slice();
+					XMLParser.parse(<IDocument>parentNode[PropertySymbol.ownerDocument], node)
+				))[PropertySymbol.childNodes].slice();
 				for (const newChildNode of newChildNodes) {
 					parentNode.insertBefore(newChildNode, firstChild);
 				}
@@ -65,7 +69,7 @@ export default class ParentNodeUtility {
 		parentNode: IElement | IDocument | IDocumentFragment,
 		...nodes: (string | INode)[]
 	): void {
-		for (const node of (<DocumentFragment>parentNode)._childNodes.slice()) {
+		for (const node of (<DocumentFragment>parentNode)[PropertySymbol.childNodes].slice()) {
 			parentNode.removeChild(node);
 		}
 
@@ -84,7 +88,7 @@ export default class ParentNodeUtility {
 	): IHTMLCollection<IElement> {
 		let matches = new HTMLCollection<IElement>();
 
-		for (const child of (<DocumentFragment>parentNode)._children) {
+		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
 			if (child.className.split(' ').includes(className)) {
 				matches.push(child);
 			}
@@ -111,8 +115,8 @@ export default class ParentNodeUtility {
 		const includeAll = tagName === '*';
 		let matches = new HTMLCollection<IElement>();
 
-		for (const child of (<DocumentFragment>parentNode)._children) {
-			if (includeAll || child.tagName === upperTagName) {
+		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
+			if (includeAll || child[PropertySymbol.tagName].toUpperCase() === upperTagName) {
 				matches.push(child);
 			}
 			matches = <HTMLCollection<IElement>>(
@@ -136,12 +140,16 @@ export default class ParentNodeUtility {
 		namespaceURI: string,
 		tagName: string
 	): IHTMLCollection<IElement> {
-		const upperTagName = tagName.toUpperCase();
+		// When the namespace is HTML, the tag name is case-insensitive.
+		const formattedTagName = namespaceURI === NamespaceURI.html ? tagName.toUpperCase() : tagName;
 		const includeAll = tagName === '*';
 		let matches = new HTMLCollection<IElement>();
 
-		for (const child of (<DocumentFragment>parentNode)._children) {
-			if ((includeAll || child.tagName === upperTagName) && child.namespaceURI === namespaceURI) {
+		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
+			if (
+				(includeAll || child[PropertySymbol.tagName] === formattedTagName) &&
+				child[PropertySymbol.namespaceURI] === namespaceURI
+			) {
 				matches.push(child);
 			}
 			matches = <HTMLCollection<IElement>>(
@@ -166,8 +174,8 @@ export default class ParentNodeUtility {
 	): IElement {
 		const upperTagName = tagName.toUpperCase();
 
-		for (const child of (<DocumentFragment>parentNode)._children) {
-			if (child.tagName === upperTagName) {
+		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
+			if (child[PropertySymbol.tagName] === upperTagName) {
 				return <IElement>child;
 			}
 			const match = this.getElementByTagName(<IElement>child, tagName);
@@ -191,7 +199,7 @@ export default class ParentNodeUtility {
 		id: string
 	): IElement {
 		id = String(id);
-		for (const child of (<DocumentFragment>parentNode)._children) {
+		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
 			if (child.id === id) {
 				return <IElement>child;
 			}

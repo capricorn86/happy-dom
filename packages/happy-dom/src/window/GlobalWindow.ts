@@ -1,4 +1,5 @@
 import IWindow from './IWindow.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import Window from './Window.js';
 import { Buffer } from 'buffer';
 
@@ -13,7 +14,7 @@ export default class GlobalWindow extends Window implements IWindow {
 	public Array: typeof Array = globalThis.Array;
 	public ArrayBuffer: typeof ArrayBuffer = globalThis.ArrayBuffer;
 	public Boolean: typeof Boolean = globalThis.Boolean;
-	public Buffer = Buffer;
+	public Buffer: typeof Buffer = Buffer;
 	public DataView: typeof DataView = globalThis.DataView;
 	public Date: typeof Date = globalThis.Date;
 	public Error: typeof Error = globalThis.Error;
@@ -73,7 +74,7 @@ export default class GlobalWindow extends Window implements IWindow {
 	/**
 	 * Setup of VM context.
 	 */
-	protected override _setupVMContext(): void {
+	protected override [PropertySymbol.setupVMContext](): void {
 		// Do nothing
 	}
 }

@@ -211,4 +211,12 @@ describe('DOMTokenList', () => {
 			expect(element.classList.toString()).toEqual('class1 class2  class3');
 		});
 	});
+
+	describe('whitespace handling', () => {
+		it('Normalizes whitespace to a single space', () => {
+			element.className = ' class1  class2\nclass3 ';
+			expect(Array.from(element.classList.values())).toEqual(['class1', 'class2', 'class3']);
+			expect(element.classList.toString()).toEqual(' class1  class2\nclass3 ');
+		});
+	});
 });

@@ -9,7 +9,7 @@ import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
 export default class History {
 	public readonly length = 0;
 	public readonly state = null;
-	private _scrollRestoration = HistoryScrollRestorationEnum.auto;
+	#scrollRestoration = HistoryScrollRestorationEnum.auto;
 
 	/**
 	 * Returns scroll restoration.
@@ -17,7 +17,7 @@ export default class History {
 	 * @returns Sroll restoration.
 	 */
 	public get scrollRestoration(): HistoryScrollRestorationEnum {
-		return this._scrollRestoration;
+		return this.#scrollRestoration;
 	}
 
 	/**
@@ -26,9 +26,9 @@ export default class History {
 	 * @param scrollRestoration Sroll restoration.
 	 */
 	public set scrollRestoration(scrollRestoration: HistoryScrollRestorationEnum) {
-		this._scrollRestoration = HistoryScrollRestorationEnum[scrollRestoration]
+		this.#scrollRestoration = HistoryScrollRestorationEnum[scrollRestoration]
 			? scrollRestoration
-			: this._scrollRestoration;
+			: this.#scrollRestoration;
 	}
 
 	/**

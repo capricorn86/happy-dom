@@ -1,4 +1,5 @@
 import DOMException from '../exception/DOMException.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import Node from '../nodes/node/Node.js';
 
@@ -6,45 +7,57 @@ import Node from '../nodes/node/Node.js';
  * Custom elements registry.
  */
 export default class CustomElementRegistry {
-	public _registry: { [k: string]: { elementClass: typeof HTMLElement; extends: string } } = {};
-	public _callbacks: { [k: string]: (() => void)[] } = {};
+	public [PropertySymbol.registry]: {
+		[k: string]: { elementClass: typeof HTMLElement; extends: string };
+	} = {};
+	public [PropertySymbol.registedClass]: Map<typeof HTMLElement, string> = new Map();
+	public [PropertySymbol.callbacks]: { [k: string]: (() => void)[] } = {};
 
 	/**
 	 * Defines a custom element class.
 	 *
-	 * @param tagName Tag name of element.
+	 * @param name Tag name of element.
 	 * @param elementClass Element class.
 	 * @param [options] Options.
-	 * @param options.extends
+	 * @param [options.extends] Extends tag name.
 	 */
 	public define(
-		tagName: string,
+		name: string,
 		elementClass: typeof HTMLElement,
-		options?: { extends: string }
+		options?: { extends?: string }
 	): void {
-		const upperTagName = tagName.toUpperCase();
-
-		if (!upperTagName.includes('-')) {
+		if (!this.#isValidCustomElementName(name)) {
 			throw new DOMException(
-				"Failed to execute 'define' on 'CustomElementRegistry': \"" +
-					tagName +
-					'" is not a valid custom element name.'
+				`Failed to execute 'define' on 'CustomElementRegistry': "${name}" is not a valid custom element name`
 			);
 		}
 
-		this._registry[upperTagName] = {
+		if (this[PropertySymbol.registry][name]) {
+			throw new DOMException(
+				`Failed to execute 'define' on 'CustomElementRegistry': the name "${name}" has already been used with this registry`
+			);
+		}
+
+		if (this[PropertySymbol.registedClass].has(elementClass)) {
+			throw new DOMException(
+				"Failed to execute 'define' on 'CustomElementRegistry': this constructor has already been used with this registry"
+			);
+		}
+
+		this[PropertySymbol.registry][name] = {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
+		this[PropertySymbol.registedClass].set(elementClass, name);
 
 		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
 		if (elementClass.prototype.attributeChangedCallback) {
-			elementClass._observedAttributes = elementClass.observedAttributes;
+			elementClass[PropertySymbol.observedAttributes] = elementClass.observedAttributes;
 		}
 
-		if (this._callbacks[upperTagName]) {
-			const callbacks = this._callbacks[upperTagName];
-			delete this._callbacks[upperTagName];
+		if (this[PropertySymbol.callbacks][name]) {
+			const callbacks = this[PropertySymbol.callbacks][name];
+			delete this[PropertySymbol.callbacks][name];
 			for (const callback of callbacks) {
 				callback();
 			}
@@ -54,12 +67,11 @@ export default class CustomElementRegistry {
 	/**
 	 * Returns a defined element class.
 	 *
-	 * @param tagName Tag name of element.
-	 * @param HTMLElement Class defined.
+	 * @param name Tag name of element.
+	 * @returns HTMLElement Class defined or undefined.
 	 */
-	public get(tagName: string): typeof HTMLElement {
-		const upperTagName = tagName.toUpperCase();
-		return this._registry[upperTagName] ? this._registry[upperTagName].elementClass : undefined;
+	public get(name: string): typeof HTMLElement | undefined {
+		return this[PropertySymbol.registry][name]?.elementClass;
 	}
 
 	/**
@@ -76,17 +88,59 @@ export default class CustomElementRegistry {
 	/**
 	 * When defined.
 	 *
-	 * @param tagName Tag name of element.
-	 * @returns Promise.
+	 * @param name Tag name of element.
 	 */
-	public whenDefined(tagName: string): Promise<void> {
-		const upperTagName = tagName.toUpperCase();
-		if (this.get(upperTagName)) {
+	public whenDefined(name: string): Promise<void> {
+		if (!this.#isValidCustomElementName(name)) {
+			return Promise.reject(new DOMException(`Invalid custom element name: "${name}"`));
+		}
+		if (this.get(name)) {
 			return Promise.resolve();
 		}
 		return new Promise((resolve) => {
-			this._callbacks[upperTagName] = this._callbacks[upperTagName] || [];
-			this._callbacks[upperTagName].push(resolve);
+			this[PropertySymbol.callbacks][name] = this[PropertySymbol.callbacks][name] || [];
+			this[PropertySymbol.callbacks][name].push(resolve);
 		});
+	}
+
+	/**
+	 * Reverse lookup searching for name by given element class.
+	 *
+	 * @param elementClass Class constructor.
+	 * @returns Found tag name or `null`.
+	 */
+	public getName(elementClass: typeof HTMLElement): string | null {
+		return this[PropertySymbol.registedClass].get(elementClass) || null;
+	}
+
+	/**
+	 * Validates the correctness of custom element tag names.
+	 *
+	 * @param name Custom element tag name.
+	 * @returns True, if tag name is standard compliant.
+	 */
+	#isValidCustomElementName(name: string): boolean {
+		// Validation criteria based on:
+		// https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name
+		const PCENChar =
+			'[-_.]|[0-9]|[a-z]|\u{B7}|[\u{C0}-\u{D6}]|[\u{D8}-\u{F6}]' +
+			'|[\u{F8}-\u{37D}]|[\u{37F}-\u{1FFF}]' +
+			'|[\u{200C}-\u{200D}]|[\u{203F}-\u{2040}]|[\u{2070}-\u{218F}]' +
+			'|[\u{2C00}-\u{2FEF}]|[\u{3001}-\u{D7FF}]' +
+			'|[\u{F900}-\u{FDCF}]|[\u{FDF0}-\u{FFFD}]|[\u{10000}-\u{EFFFF}]';
+
+		const PCEN = new RegExp(`^[a-z](${PCENChar})*-(${PCENChar})*$`, 'u');
+
+		const reservedNames = [
+			'annotation-xml',
+			'color-profile',
+			'font-face',
+			'font-face-src',
+			'font-face-uri',
+			'font-face-format',
+			'font-face-name',
+			'missing-glyph'
+		];
+		return PCEN.test(name) && !reservedNames.includes(name);
 	}
 }
