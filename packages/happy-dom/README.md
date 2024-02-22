@@ -68,6 +68,9 @@ container.appendChild(button);
 
 // Outputs "<div class="container"><button></button></div>"
 console.log(document.body.innerHTML);
+
+// Closes the window
+await window.happyDOM.close();
 ```
 
 ## Browser
