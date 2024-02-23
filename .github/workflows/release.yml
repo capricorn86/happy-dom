@@ -103,8 +103,8 @@ jobs:
 
       - name: Configures Git
         run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "$(git log --format='%ae' HEAD^!)"
+          git config --global user.name "${{ secrets.GIT_USER_NAME }}"
+          git config --global user.email "${{ secrets.GIT_USER_EMAIL }}"
 
       - name: Creates release branch
         run: |
