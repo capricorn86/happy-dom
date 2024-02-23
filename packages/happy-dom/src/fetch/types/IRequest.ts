@@ -1,7 +1,7 @@
 import IHeaders from './IHeaders.js';
 import IBlob from '../../file/IBlob.js';
 import AbortSignal from '../AbortSignal.js';
-import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import IRequestReferrerPolicy from './IRequestReferrerPolicy.js';
 import IRequestRedirect from './IRequestRedirect.js';
 import IRequestCredentials from './IRequestCredentials.js';
@@ -16,7 +16,7 @@ export default interface IRequest {
 	readonly redirect: IRequestRedirect;
 	readonly referrer: string;
 	readonly url: string;
-	readonly body: Stream.Readable | null;
+	readonly body: ReadableStream | null;
 	readonly bodyUsed: boolean;
 	readonly referrerPolicy: IRequestReferrerPolicy;
 	readonly signal: AbortSignal | null;

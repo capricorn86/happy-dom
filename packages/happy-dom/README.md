@@ -68,6 +68,9 @@ container.appendChild(button);
 
 // Outputs "<div class="container"><button></button></div>"
 console.log(document.body.innerHTML);
+
+// Closes the window
+await window.happyDOM.close();
 ```
 
 ## Browser
@@ -125,6 +128,10 @@ Happy DOM provide with a package called [@happy-dom/jest-environment](https://gi
 # Global Registration
 
 Happy DOM provide with a package called [@happy-dom/global-registrator](https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator) that can register Happy DOM globally. It makes it possible to use Happy DOM for testing in a Node environment.
+
+# Sister Projects
+
+[<img alt="Happy Conventional Commit" width="120px" src="https://raw.githubusercontent.com/capricorn86/happy-conventional-commit/main/docs/logo_thumbnail.jpg" />](https://github.com/capricorn86/happy-conventional-commit)
 
 # Sponsors
 

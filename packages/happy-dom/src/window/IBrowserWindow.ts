@@ -45,6 +45,8 @@ import AnimationEvent from '../event/events/AnimationEvent.js';
 import KeyboardEvent from '../event/events/KeyboardEvent.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
+import TouchEvent from '../event/events/TouchEvent.js';
+import Touch from '../event/Touch.js';
 import EventTarget from '../event/EventTarget.js';
 import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
@@ -114,6 +116,7 @@ import ProcessingInstruction from '../nodes/processing-instruction/ProcessingIns
 import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import { webcrypto } from 'crypto';
 import FormData from '../form-data/FormData.js';
 import AbortController from '../fetch/AbortController.js';
@@ -257,6 +260,8 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly ProgressEvent: typeof ProgressEvent;
 	readonly MediaQueryListEvent: typeof MediaQueryListEvent;
 	readonly ClipboardEvent: typeof ClipboardEvent;
+	readonly TouchEvent: typeof TouchEvent;
+	readonly Touch: typeof Touch;
 
 	/**
 	 * Non-implemented event classes
@@ -295,7 +300,6 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly SVGEvent: typeof Event;
 	readonly SVGZoomEvent: typeof Event;
 	readonly TimeEvent: typeof Event;
-	readonly TouchEvent: typeof Event;
 	readonly TrackEvent: typeof Event;
 	readonly TransitionEvent: typeof Event;
 	readonly UserProximityEvent: typeof Event;
@@ -358,7 +362,7 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
 	readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
 	readonly FileList: typeof FileList;
-	readonly ReadableStream: typeof Stream.Readable;
+	readonly ReadableStream: typeof ReadableStream;
 	readonly WritableStream: typeof Stream.Writable;
 	readonly TransformStream: typeof Stream.Transform;
 	readonly FormData: typeof FormData;
