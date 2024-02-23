@@ -15,6 +15,7 @@ import Headers from '../../src/fetch/Headers.js';
 import IHeaders from '../../src/fetch/types/IHeaders.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const WINDOW_URL = 'https://localhost:8080';
