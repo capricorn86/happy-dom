@@ -14,7 +14,6 @@ import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
-import CookieJar from '../cookie/CookieJar.js';
 import { ReadableStream } from 'stream/web';
 import Request from './Request.js';
 import Response from './Response.js';
@@ -31,33 +30,6 @@ import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
 import { Buffer } from 'buffer';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
-
-/**
- * Wraps a Node.js stream into a browser-compatible ReadableStream.
- *
- * Enables the use of Node.js streams where browser ReadableStreams are required.
- * Handles 'data', 'end', and 'error' events from the Node.js stream.
- *
- * @param nodeStream The Node.js stream to be converted.
- * @returns ReadableStream
- */
-function nodeToWebStream(nodeStream): ReadableStream {
-	return new ReadableStream({
-		start(controller) {
-			nodeStream.on('data', (chunk) => {
-				controller.enqueue(chunk);
-			});
-
-			nodeStream.on('end', () => {
-				controller.close();
-			});
-
-			nodeStream.on('error', (err) => {
-				controller.error(err);
-			});
-		}
-	});
-}
 
 /**
  * Handles fetch requests.
@@ -77,6 +49,7 @@ export default class Fetch {
 	private isProperLastChunkReceived = false;
 	private previousChunk: Buffer | null = null;
 	private nodeRequest: HTTP.ClientRequest | null = null;
+	private nodeResponse: IncomingMessage | null = null;
 	private response: Response | null = null;
 	private responseHeaders: Headers | null = null;
 	private request: Request;
@@ -448,8 +421,10 @@ export default class Fetch {
 				const error = new DOMException('Premature close.', DOMExceptionNameEnum.networkError);
 
 				if (this.response && this.response.body) {
-					const reader = this.response.body.getReader();
-					reader.cancel(error);
+					this.response.body[PropertySymbol.error] = error;
+					if (!this.response.body.locked) {
+						this.response.body.cancel(error);
+					}
 				}
 			}
 		};
@@ -508,15 +483,20 @@ export default class Fetch {
 	private onAsyncTaskManagerAbort(): void {
 		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
 
-		if (this.request.body) {
-			this.request.body.destroy(error);
+		if (this.nodeRequest && !this.nodeRequest.destroyed) {
+			this.nodeRequest.destroy(error);
 		}
 
-		if (!this.response || !this.response.body) {
-			return;
+		if (this.nodeResponse && !this.nodeResponse.destroyed) {
+			this.nodeResponse.destroy(error);
 		}
 
-		this.response.body.destroy(error);
+		if (this.response && this.response.body) {
+			this.response.body[PropertySymbol.error] = error;
+			if (!this.response.body.locked) {
+				this.response.body.cancel(error);
+			}
+		}
 	}
 
 	/**
@@ -545,7 +525,11 @@ export default class Fetch {
 			this.request.signal.removeEventListener('abort', this.listeners.onSignalAbort)
 		);
 
-		let body = nodeToWebStream(nodeResponse);
+		let body = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error: Error) => {
+			if (error) {
+				// Ignore error as it is forwarded to the response body.
+			}
+		});
 
 		const responseOptions = {
 			status: nodeResponse.statusCode,
@@ -561,7 +545,7 @@ export default class Fetch {
 			nodeResponse.statusCode === 204 ||
 			nodeResponse.statusCode === 304
 		) {
-			this.response = new this.#window.Response(body, responseOptions);
+			this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -570,10 +554,20 @@ export default class Fetch {
 
 		// For GZip
 		if (contentEncodingHeader === 'gzip' || contentEncodingHeader === 'x-gzip') {
-			const gzipStream = Zlib.createGunzip(zlibOptions);
-			nodeResponse.pipe(gzipStream);
-			body = nodeToWebStream(gzipStream);
-			this.response = new this.#window.Response(body, responseOptions);
+			// Be less strict when decoding compressed responses.
+			// Sometimes servers send slightly invalid responses that are still accepted by common browsers.
+			// "cURL" always uses Z_SYNC_FLUSH.
+			const zlibOptions = {
+				flush: Zlib.constants.Z_SYNC_FLUSH,
+				finishFlush: Zlib.constants.Z_SYNC_FLUSH
+			};
+
+			body = Stream.pipeline(body, Zlib.createGunzip(zlibOptions), (error: Error) => {
+				if (error) {
+					// Ignore error as it is forwarded to the response body.
+				}
+			});
+			this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -582,41 +576,54 @@ export default class Fetch {
 
 		// For Deflate
 		if (contentEncodingHeader === 'deflate' || contentEncodingHeader === 'x-deflate') {
-			const passthrough = new Stream.PassThrough();
-			nodeResponse.pipe(passthrough);
-
-			passthrough.once('data', (chunk) => {
-				let deflateStream;
-				// Determina qué transformación aplicar basado en el primer chunk
+			// Handle the infamous raw deflate response from old servers
+			// A hack for old IIS and Apache servers
+			const raw = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error) => {
+				if (error) {
+					// Ignore error as it is forwarded to the response body.
+				}
+			});
+			raw.on('data', (chunk) => {
+				// See http://stackoverflow.com/questions/37519828
 				if ((chunk[0] & 0x0f) === 0x08) {
-					deflateStream = Zlib.createInflate();
+					body = Stream.pipeline(body, Zlib.createInflate(), (error) => {
+						if (error) {
+							// Ignore error as the fetch() promise has already been resolved.
+						}
+					});
 				} else {
-					deflateStream = Zlib.createInflateRaw();
+					body = Stream.pipeline(body, Zlib.createInflateRaw(), (error) => {
+						if (error) {
+							// Ignore error as it is forwarded to the response body.
+						}
+					});
 				}
 
-				// Retrocede el primer chunk al stream original
-				passthrough.unshift(chunk);
-
-				// Pipe el passthrough a través de la transformación elegida
-				passthrough.pipe(deflateStream);
-
-				// Convierte el stream de transformación a un ReadableStream
-				body = nodeToWebStream(deflateStream);
-
-				this.response = new this.#window.Response(body, responseOptions);
+				this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
 			});
+			raw.on('end', () => {
+				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
+				if (!this.response) {
+					this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
+					(<boolean>this.response.redirected) = this.redirectCount > 0;
+					(<string>this.response.url) = this.request.url;
+					this.resolve(this.response);
+				}
+			});
+			return;
 		}
 
 		// For BR
 		if (contentEncodingHeader === 'br') {
-			const brotliStream = Zlib.createBrotliDecompress();
-			nodeResponse.pipe(brotliStream);
-			body = nodeToWebStream(brotliStream);
-
-			this.response = new this.#window.Response(body, responseOptions);
+			body = Stream.pipeline(body, Zlib.createBrotliDecompress(), (error) => {
+				if (error) {
+					// Ignore error as it is forwarded to the response body.
+				}
+			});
+			this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -624,7 +631,7 @@ export default class Fetch {
 		}
 
 		// Otherwise, use response as is
-		this.response = new this.#window.Response(body, responseOptions);
+		this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 		(<boolean>this.response.redirected) = this.redirectCount > 0;
 		(<string>this.response.url) = this.request.url;
 		this.resolve(this.response);
@@ -694,32 +701,6 @@ export default class Fetch {
 				}
 
 				const headers = new Headers(this.request.headers);
-				let body: ReadableStream | Buffer | null = this.request[PropertySymbol.bodyBuffer];
-
-				if (!body && this.request.body) {
-					// Piping a used request body is not possible.
-					if (this.request.bodyUsed) {
-						throw new DOMException(
-							'It is not possible to pipe a body after it is used.',
-							DOMExceptionNameEnum.networkError
-						);
-					}
-
-					body = new ReadableStream({
-						async start(controller) {
-							const bodyReader = this.request.body.getReader();
-							let readResult = await bodyReader.read();
-
-							while (!readResult.done) {
-								controller.enqueue(readResult.value);
-								readResult = await bodyReader.read();
-							}
-
-							controller.close();
-						}
-					});
-				}
-
 				const requestInit: IRequestInit = {
 					method: this.request.method,
 					signal: this.request.signal,
@@ -806,18 +787,50 @@ export default class Fetch {
 			DOMExceptionNameEnum.abortError
 		);
 
-		if (this.request.body) {
-			const reader = this.request.body.getReader();
-			reader.cancel(error);
+		if (this.nodeRequest && !this.nodeRequest.destroyed) {
+			this.nodeRequest.destroy(error);
 		}
 
-		if (this.response && this.response.body instanceof ReadableStream) {
-			const reader = this.response.body.getReader();
-			reader.cancel(error);
+		if (this.nodeResponse && !this.nodeResponse.destroyed) {
+			this.nodeResponse.destroy(error);
+		}
+
+		if (this.response && this.response.body) {
+			this.response.body[PropertySymbol.error] = error;
+			if (!this.response.body.locked) {
+				this.response.body.cancel(error);
+			}
 		}
 
 		if (this.reject) {
 			this.reject(error);
 		}
+	}
+
+	/**
+	 * Wraps a Node.js stream into a browser-compatible ReadableStream.
+	 *
+	 * Enables the use of Node.js streams where browser ReadableStreams are required.
+	 * Handles 'data', 'end', and 'error' events from the Node.js stream.
+	 *
+	 * @param nodeStream The Node.js stream to be converted.
+	 * @returns ReadableStream
+	 */
+	private nodeToWebStream(nodeStream: Stream): ReadableStream {
+		return new ReadableStream({
+			start(controller) {
+				nodeStream.on('data', (chunk) => {
+					controller.enqueue(chunk);
+				});
+
+				nodeStream.on('end', () => {
+					controller.close();
+				});
+
+				nodeStream.on('error', (err) => {
+					controller.error(err);
+				});
+			}
+		});
 	}
 }

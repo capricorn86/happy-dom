@@ -44,7 +44,7 @@ export default class MultipartFormDataParser {
 		const reader = new MultipartReader(match[1] || match[2]);
 		const chunks = [];
 		let buffer: Buffer;
-		let bytes = 0;
+		const bytes = 0;
 
 		let readResult = await bodyReader.read();
 

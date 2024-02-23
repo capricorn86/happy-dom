@@ -156,6 +156,10 @@ export default class FetchBodyUtility {
 			return Buffer.alloc(0);
 		}
 
+		if (body[PropertySymbol.error]) {
+			throw body[PropertySymbol.error];
+		}
+
 		const reader = body.getReader();
 		const chunks = [];
 		let bytes = 0;
@@ -163,6 +167,9 @@ export default class FetchBodyUtility {
 		try {
 			let readResult = await reader.read();
 			while (!readResult.done) {
+				if (body[PropertySymbol.error]) {
+					throw body[PropertySymbol.error];
+				}
 				const chunk = readResult.value;
 				bytes += chunk.length;
 				chunks.push(chunk);
