@@ -72,6 +72,13 @@ export default class DetachedWindowAPI {
 	}
 
 	/**
+	 * Aborts all async tasks and closes the window.
+	 */
+	public close(): Promise<void> {
+		return this.#browserFrame.page.close();
+	}
+
+	/**
 	 * Sets the URL without navigating the browser.
 	 *
 	 * @param url URL.

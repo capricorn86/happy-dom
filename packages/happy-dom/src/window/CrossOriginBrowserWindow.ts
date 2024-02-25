@@ -2,7 +2,7 @@ import EventTarget from '../event/EventTarget.js';
 import IBrowserWindow from './IBrowserWindow.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import Location from '../location/Location.js';
+import Location from '../url/Location.js';
 import ICrossOriginBrowserWindow from './ICrossOriginBrowserWindow.js';
 
 /**

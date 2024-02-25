@@ -115,6 +115,10 @@ Read more about how Happy DOM works in our [documentation](https://github.com/ca
 
 See how the test was done [here](https://github.com/capricorn86/happy-dom-performance-test)
 
+# Sister Projects
+
+[<img alt="Happy Conventional Commit" width="120px" src="https://raw.githubusercontent.com/capricorn86/happy-conventional-commit/main/docs/logo_thumbnail.jpg" />](https://github.com/capricorn86/happy-conventional-commit)
+
 # Sponsors
 
 [<img alt="RTVision" width="120px" src="https://avatars.githubusercontent.com/u/8292810?s=200&v=4" />](https://rtvision.com)

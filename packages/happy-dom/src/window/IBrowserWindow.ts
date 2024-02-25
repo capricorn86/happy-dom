@@ -45,10 +45,12 @@ import AnimationEvent from '../event/events/AnimationEvent.js';
 import KeyboardEvent from '../event/events/KeyboardEvent.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
+import TouchEvent from '../event/events/TouchEvent.js';
+import Touch from '../event/Touch.js';
 import EventTarget from '../event/EventTarget.js';
 import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
-import Location from '../location/Location.js';
+import Location from '../url/Location.js';
 import MutationObserver from '../mutation-observer/MutationObserver.js';
 import MutationRecord from '../mutation-observer/MutationRecord.js';
 import DOMParser from '../dom-parser/DOMParser.js';
@@ -108,13 +110,13 @@ import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTa
 import DOMRect from '../nodes/element/DOMRect.js';
 import Attr from '../nodes/attr/Attr.js';
 import NamedNodeMap from '../named-node-map/NamedNodeMap.js';
-import { Performance } from 'perf_hooks';
 import IElement from '../nodes/element/IElement.js';
 import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
 import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import { webcrypto } from 'crypto';
 import FormData from '../form-data/FormData.js';
 import AbortController from '../fetch/AbortController.js';
@@ -258,6 +260,8 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly ProgressEvent: typeof ProgressEvent;
 	readonly MediaQueryListEvent: typeof MediaQueryListEvent;
 	readonly ClipboardEvent: typeof ClipboardEvent;
+	readonly TouchEvent: typeof TouchEvent;
+	readonly Touch: typeof Touch;
 
 	/**
 	 * Non-implemented event classes
@@ -296,7 +300,6 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly SVGEvent: typeof Event;
 	readonly SVGZoomEvent: typeof Event;
 	readonly TimeEvent: typeof Event;
-	readonly TouchEvent: typeof Event;
 	readonly TrackEvent: typeof Event;
 	readonly TransitionEvent: typeof Event;
 	readonly UserProximityEvent: typeof Event;
@@ -359,7 +362,7 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
 	readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
 	readonly FileList: typeof FileList;
-	readonly ReadableStream: typeof Stream.Readable;
+	readonly ReadableStream: typeof ReadableStream;
 	readonly WritableStream: typeof Stream.Writable;
 	readonly TransformStream: typeof Stream.Transform;
 	readonly FormData: typeof FormData;
@@ -409,7 +412,7 @@ export default interface IBrowserWindow extends IEventTarget, INodeJSGlobal {
 	readonly screenY: number;
 	readonly sessionStorage: Storage;
 	readonly localStorage: Storage;
-	readonly performance: Performance;
+	readonly performance: typeof performance;
 	readonly pageXOffset: number;
 	readonly pageYOffset: number;
 	readonly scrollX: number;

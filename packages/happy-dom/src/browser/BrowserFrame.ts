@@ -5,7 +5,6 @@ import IBrowserFrame from './types/IBrowserFrame.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import ICrossOriginBrowserWindow from '../window/ICrossOriginBrowserWindow.js';
-import Location from '../location/Location.js';
 import IResponse from '../fetch/types/IResponse.js';
 import IGoToOptions from './types/IGoToOptions.js';
 import { Script } from 'vm';
@@ -84,7 +83,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param url URL.
 	 */
 	public set url(url) {
-		(<Location>this.window.location) = new Location(
+		this.window.location[PropertySymbol.setURL](
 			this,
 			BrowserFrameURL.getRelativeURL(this, url).href
 		);

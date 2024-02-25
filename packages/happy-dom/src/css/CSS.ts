@@ -1,6 +1,6 @@
+import CSSEscaper from './utilities/CSSEscaper.js';
 import CSSUnitValue from './CSSUnitValue.js';
 import CSSUnits from './CSSUnits.js';
-import CSSEscape from 'css.escape';
 
 /**
  * The CSS interface holds useful CSS-related methods.
@@ -38,6 +38,6 @@ export default class CSS {
 	 * @returns Escaped string.
 	 */
 	public escape(value: string): string {
-		return CSSEscape(value);
+		return CSSEscaper.escape(value);
 	}
 }

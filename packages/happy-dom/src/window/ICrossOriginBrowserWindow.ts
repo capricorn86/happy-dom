@@ -1,5 +1,5 @@
 import IBrowserWindow from './IBrowserWindow.js';
-import Location from '../location/Location.js';
+import Location from '../url/Location.js';
 import IEventTarget from '../event/IEventTarget.js';
 
 /**
