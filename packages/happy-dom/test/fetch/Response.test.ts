@@ -13,6 +13,7 @@ import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import { URLSearchParams } from 'url';
 import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('Response', () => {
@@ -90,7 +91,7 @@ describe('Response', () => {
 			const response = new window.Response('Hello World');
 			const chunks: Buffer[] = [];
 
-			for await (const chunk of <Stream.Readable>response.body) {
+			for await (const chunk of <ReadableStream>response.body) {
 				chunks.push(Buffer.from(chunk));
 			}
 
@@ -115,11 +116,14 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'Hello World';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()));
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('Hello World');
+							controller.close();
+						}
+					})
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -158,13 +162,17 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'Hello World';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()), {
-					headers: { 'Content-Type': 'text/plain' }
-				});
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('Hello World');
+							controller.close();
+						}
+					}),
+					{
+						headers: { 'Content-Type': 'text/plain' }
+					}
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -198,11 +206,14 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'Hello World';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()));
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('Hello World');
+							controller.close();
+						}
+					})
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -237,11 +248,14 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'Hello World';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()));
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('Hello World');
+							controller.close();
+						}
+					})
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -274,11 +288,14 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield '{ "key1": "value1" }';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()));
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('{ "key1": "value1" }');
+							controller.close();
+						}
+					})
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -389,15 +406,19 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete() for "application/x-www-form-urlencoded" content.', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'key=value';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()), {
-					headers: {
-						'Content-Type': 'application/x-www-form-urlencoded'
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('key=value');
+							controller.close();
+						}
+					}),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded'
+						}
 					}
-				});
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(

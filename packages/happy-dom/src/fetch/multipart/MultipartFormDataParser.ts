@@ -1,9 +1,10 @@
 import FormData from '../../form-data/FormData.js';
+import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Stream from 'stream';
 import MultipartReader from './MultipartReader.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import { Buffer } from 'buffer';
 
 /**
  * Multipart form data factory.
@@ -20,7 +21,7 @@ export default class MultipartFormDataParser {
 	 * @returns Form data.
 	 */
 	public static async streamToFormData(
-		body: Stream.Readable,
+		body: ReadableStream,
 		contentType: string
 	): Promise<{ formData: FormData; buffer: Buffer }> {
 		if (!/multipart/i.test(contentType)) {
@@ -39,35 +40,17 @@ export default class MultipartFormDataParser {
 			);
 		}
 
+		const bodyReader = body.getReader();
 		const reader = new MultipartReader(match[1] || match[2]);
 		const chunks = [];
 		let buffer: Buffer;
-		let bytes = 0;
+		const bytes = 0;
 
-		try {
-			for await (const chunk of body) {
-				reader.write(chunk);
-				bytes += chunk.length;
-				chunks.push(chunk);
-			}
-		} catch (error) {
-			if (error instanceof DOMException) {
-				throw error;
-			}
-			throw new DOMException(
-				`Failed to read response body. Error: ${error.message}.`,
-				DOMExceptionNameEnum.encodingError
-			);
-		}
+		let readResult = await bodyReader.read();
 
-		if (
-			(<Stream.Readable>body).readableEnded === false ||
-			(<Stream.Readable>body)['_readableState']?.ended === false
-		) {
-			throw new DOMException(
-				`Premature close of server response.`,
-				DOMExceptionNameEnum.invalidStateError
-			);
+		while (!readResult.done) {
+			reader.write(readResult.value);
+			readResult = await bodyReader.read();
 		}
 
 		try {
@@ -96,7 +79,7 @@ export default class MultipartFormDataParser {
 		contentType: string;
 		contentLength: number;
 		buffer: Buffer;
-		stream: Stream.Readable;
+		stream: ReadableStream;
 	} {
 		const boundary = '----HappyDOMFormDataBoundary' + Math.random().toString(36);
 		const chunks: Buffer[] = [];
@@ -132,7 +115,12 @@ export default class MultipartFormDataParser {
 			contentType: `multipart/form-data; boundary=${boundary}`,
 			contentLength: buffer.length,
 			buffer,
-			stream: Stream.Readable.from(buffer)
+			stream: new ReadableStream({
+				start(controller) {
+					controller.enqueue(buffer);
+					controller.close();
+				}
+			})
 		};
 	}
 

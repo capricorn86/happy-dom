@@ -19,7 +19,7 @@ type IDocumentPositionAndElement = {
 /**
  * Invalid Selector RegExp.
  */
-const INVALID_SELECTOR_REGEXP = /^[.#\[]?\d/;
+const INVALID_SELECTOR_REGEXP = /^[.#\[]?\d|[.#]$/;
 
 /**
  * Utility for query selection in an HTML element.
