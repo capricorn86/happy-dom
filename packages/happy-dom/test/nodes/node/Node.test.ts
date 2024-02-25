@@ -646,6 +646,40 @@ describe('Node', () => {
 		});
 	});
 
+	describe('toEqualNode()', () => {
+		it('Returns "true" if the nodes are equal.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			const text = document.createTextNode('text');
+			const comment = document.createComment('comment');
+
+			div.appendChild(span);
+			span.appendChild(text);
+			span.appendChild(comment);
+
+			const clone = div.cloneNode(true);
+
+			expect(div.isEqualNode(clone)).toBe(true);
+		});
+
+		it('Returns "false" if the nodes are not equal.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			const text = document.createTextNode('text');
+			const comment = document.createComment('comment');
+
+			div.appendChild(span);
+			span.appendChild(text);
+			span.appendChild(comment);
+
+			const clone = div.cloneNode(true);
+
+			clone.appendChild(document.createElement('span'));
+
+			expect(div.isEqualNode(clone)).toBe(false);
+		});
+	});
+
 	describe('dispatchEvent()', () => {
 		it('Dispatches an event that is set to not bubble.', () => {
 			const child = document.createElement('span');
