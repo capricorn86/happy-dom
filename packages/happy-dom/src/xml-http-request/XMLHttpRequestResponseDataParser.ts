@@ -1,8 +1,8 @@
-import XMLHttpResponseTypeEnum from '../XMLHttpResponseTypeEnum.js';
-import XMLHttpRequestResponseTextDecoder from './XMLHttpRequestResponseTextDecoder.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
-import Blob from '../../file/Blob.js';
-import IDocument from '../../nodes/document/IDocument.js';
+import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum.js';
+import IBrowserWindow from '../window/IBrowserWindow.js';
+import Blob from '../file/Blob.js';
+import IDocument from '../nodes/document/IDocument.js';
+import { Buffer } from 'buffer';
 
 /**
  *
@@ -48,10 +48,7 @@ export default class XMLHttpRequestResponseDataParser {
 				const domParser = new window.DOMParser();
 
 				try {
-					return domParser.parseFromString(
-						XMLHttpRequestResponseTextDecoder.decode(options.data, options.contentType),
-						'text/xml'
-					);
+					return domParser.parseFromString(options.data.toString(), 'text/xml');
 				} catch (e) {
 					// Ignore error.
 				}
@@ -59,9 +56,7 @@ export default class XMLHttpRequestResponseDataParser {
 				return null;
 			case XMLHttpResponseTypeEnum.json:
 				try {
-					return JSON.parse(
-						XMLHttpRequestResponseTextDecoder.decode(options.data, options.contentType)
-					);
+					return JSON.parse(options.data.toString());
 				} catch (e) {
 					// Ignore error.
 				}
@@ -69,7 +64,7 @@ export default class XMLHttpRequestResponseDataParser {
 			case XMLHttpResponseTypeEnum.text:
 			case '':
 			default:
-				return XMLHttpRequestResponseTextDecoder.decode(options.data, options.contentType);
+				return options.data.toString();
 		}
 	}
 }

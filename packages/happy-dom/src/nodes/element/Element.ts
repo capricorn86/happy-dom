@@ -87,6 +87,7 @@ export default class Element extends Node implements IElement {
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
 	public [PropertySymbol.tagName]: string | null = null;
+	public [PropertySymbol.localName]: string | null = null;
 	public [PropertySymbol.prefix]: string | null = null;
 	public [PropertySymbol.shadowRoot]: IShadowRoot | null = null;
 	public [PropertySymbol.scrollHeight] = 0;
@@ -266,7 +267,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Local name.
 	 */
 	public get localName(): string {
-		return this[PropertySymbol.tagName] ? this[PropertySymbol.tagName].toLowerCase() : 'unknown';
+		return this[PropertySymbol.localName];
 	}
 
 	/**
@@ -486,6 +487,7 @@ export default class Element extends Node implements IElement {
 		}
 
 		clone[PropertySymbol.tagName] = this[PropertySymbol.tagName];
+		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
 		clone[PropertySymbol.namespaceURI] = this[PropertySymbol.namespaceURI];
 
 		return <IElement>clone;

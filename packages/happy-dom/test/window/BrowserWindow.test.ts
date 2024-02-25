@@ -144,7 +144,7 @@ describe('BrowserWindow', () => {
 	});
 
 	describe('get performance()', () => {
-		it('Exposes "performance" from the NodeJS perf_hooks package.', () => {
+		it('Exposes "performance" from NodeJS.', () => {
 			expect(typeof window.performance.now()).toBe('number');
 		});
 	});

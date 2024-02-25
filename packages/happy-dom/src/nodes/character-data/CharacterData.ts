@@ -64,7 +64,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 		// MutationObserver
 		if (this[PropertySymbol.observers].length > 0) {
 			for (const observer of this[PropertySymbol.observers]) {
-				if (observer.options.characterData) {
+				if (observer.options?.characterData) {
 					observer.report(
 						new MutationRecord({
 							target: this,

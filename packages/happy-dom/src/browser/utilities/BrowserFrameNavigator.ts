@@ -5,7 +5,6 @@ import IResponse from '../../fetch/types/IResponse.js';
 import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
-import Location from '../../location/Location.js';
 import AbortController from '../../fetch/AbortController.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
 import BrowserFrameURL from './BrowserFrameURL.js';
@@ -77,7 +76,7 @@ export default class BrowserFrameNavigator {
 
 		if (!BrowserFrameValidator.validateFrameNavigation(frame)) {
 			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
-				(<Location>frame.window.location) = new Location(frame, targetURL.href);
+				frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
 			}
 
 			return null;

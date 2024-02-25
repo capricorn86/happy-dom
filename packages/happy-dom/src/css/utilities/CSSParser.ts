@@ -1,13 +1,13 @@
-import CSSRule from './CSSRule.js';
-import * as PropertySymbol from '../PropertySymbol.js';
-import CSSStyleSheet from './CSSStyleSheet.js';
-import CSSStyleRule from './rules/CSSStyleRule.js';
-import CSSKeyframeRule from './rules/CSSKeyframeRule.js';
-import CSSKeyframesRule from './rules/CSSKeyframesRule.js';
-import CSSMediaRule from './rules/CSSMediaRule.js';
-import CSSContainerRule from './rules/CSSContainerRule.js';
-import CSSSupportsRule from './rules/CSSSupportsRule.js';
-import SelectorParser from '../query-selector/SelectorParser.js';
+import CSSRule from '../CSSRule.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import CSSStyleSheet from '../CSSStyleSheet.js';
+import CSSStyleRule from '../rules/CSSStyleRule.js';
+import CSSKeyframeRule from '../rules/CSSKeyframeRule.js';
+import CSSKeyframesRule from '../rules/CSSKeyframesRule.js';
+import CSSMediaRule from '../rules/CSSMediaRule.js';
+import CSSContainerRule from '../rules/CSSContainerRule.js';
+import CSSSupportsRule from '../rules/CSSSupportsRule.js';
+import SelectorParser from '../../query-selector/SelectorParser.js';
 
 const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
 

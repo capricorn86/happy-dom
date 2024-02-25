@@ -334,7 +334,7 @@ describe('XMLParser', () => {
 
 			expect(svg.attributes[3].name).toBe('xmlns');
 			expect(svg.attributes[3].value).toBe(NamespaceURI.html);
-			expect(svg.attributes[3].namespaceURI).toBe(NamespaceURI.html);
+			expect(svg.attributes[3].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(svg.attributes[3].specified).toBe(true);
 			expect(svg.attributes[3].ownerElement === svg).toBe(true);
 			expect(svg.attributes[3].ownerDocument === document).toBe(true);
@@ -362,7 +362,7 @@ describe('XMLParser', () => {
 
 			expect(svg.attributes['xmlns'].name).toBe('xmlns');
 			expect(svg.attributes['xmlns'].value).toBe(NamespaceURI.html);
-			expect(svg.attributes['xmlns'].namespaceURI).toBe(NamespaceURI.html);
+			expect(svg.attributes['xmlns'].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(svg.attributes['xmlns'].specified).toBe(true);
 			expect(svg.attributes['xmlns'].ownerElement === svg).toBe(true);
 			expect(svg.attributes['xmlns'].ownerDocument === document).toBe(true);

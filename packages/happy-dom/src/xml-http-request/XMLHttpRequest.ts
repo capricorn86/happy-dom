@@ -21,7 +21,7 @@ import AbortController from '../fetch/AbortController.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import IRequestBody from '../fetch/types/IRequestBody.js';
-import XMLHttpRequestResponseDataParser from './utilities/XMLHttpRequestResponseDataParser.js';
+import XMLHttpRequestResponseDataParser from './XMLHttpRequestResponseDataParser.js';
 import FetchRequestHeaderUtility from '../fetch/utilities/FetchRequestHeaderUtility.js';
 
 /**
