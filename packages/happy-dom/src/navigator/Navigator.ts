@@ -77,7 +77,9 @@ export default class Navigator {
 	 * Maximum number of simultaneous touch contact points are supported by the current device.
 	 */
 	public get maxTouchPoints(): number {
-		return WindowBrowserSettingsReader.getSettings(this.#ownerWindow).navigator.maxTouchPoints;
+		return (
+			WindowBrowserSettingsReader.getSettings(this.#ownerWindow)?.navigator.maxTouchPoints || 0
+		);
 	}
 
 	/**
@@ -154,7 +156,7 @@ export default class Navigator {
 	 * "appCodeName/appVersion number (Platform; Security; OS-or-CPU; Localization; rv: revision-version-number) product/productSub Application-Name Application-Name-version".
 	 */
 	public get userAgent(): string {
-		return WindowBrowserSettingsReader.getSettings(this.#ownerWindow).navigator.userAgent;
+		return WindowBrowserSettingsReader.getSettings(this.#ownerWindow)?.navigator.userAgent || '';
 	}
 
 	/**

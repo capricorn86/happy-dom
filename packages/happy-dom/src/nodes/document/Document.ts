@@ -1,6 +1,5 @@
 import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLUnknownElement from '../html-unknown-element/HTMLUnknownElement.js';
 import IBrowserWindow from '../../window/IBrowserWindow.js';
 import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
@@ -9,7 +8,7 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import Event from '../../event/Event.js';
 import DOMImplementation from '../../dom-implementation/DOMImplementation.js';
-import ElementTag from '../../config/ElementTag.js';
+import HTMLElementLocalNameToClass from '../../config/HTMLElementLocalNameToClass.js';
 import INodeFilter from '../../tree-walker/INodeFilter.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import DocumentType from '../document-type/DocumentType.js';
@@ -886,27 +885,72 @@ export default class Document extends Node implements IDocument {
 		qualifiedName: string,
 		options?: { is?: string }
 	): IElement {
-		const tagName = String(qualifiedName).toUpperCase();
+		qualifiedName = String(qualifiedName);
 
-		let customElementClass;
-		if (options && options.is) {
-			customElementClass = this[PropertySymbol.ownerWindow].customElements.get(String(options.is));
-		} else {
-			customElementClass = this[PropertySymbol.ownerWindow].customElements.get(tagName);
+		if (!qualifiedName) {
+			throw new DOMException(
+				"Failed to execute 'createElementNS' on 'Document': The qualified name provided is empty."
+			);
 		}
 
-		const elementClass: typeof Element =
-			customElementClass ||
-			this[PropertySymbol.ownerWindow][ElementTag[tagName]] ||
-			HTMLUnknownElement;
+		// SVG element
+		if (namespaceURI === NamespaceURI.svg) {
+			const element = NodeFactory.createNode<IElement>(
+				this,
+				qualifiedName === 'svg'
+					? this[PropertySymbol.ownerWindow].SVGSVGElement
+					: this[PropertySymbol.ownerWindow].SVGElement
+			);
+			element[PropertySymbol.tagName] = qualifiedName;
+			element[PropertySymbol.localName] = qualifiedName;
+			element[PropertySymbol.namespaceURI] = namespaceURI;
+			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+			return element;
+		}
 
-		const element = NodeFactory.createNode<IElement>(this, elementClass);
-		element[PropertySymbol.tagName] = tagName;
+		// Custom HTML element
+		const customElement =
+			this[PropertySymbol.ownerWindow].customElements[PropertySymbol.registry]?.[
+				options && options.is ? String(options.is) : qualifiedName
+			];
 
+		if (customElement) {
+			const element = NodeFactory.createNode<IElement>(this, customElement.elementClass);
+			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
+			element[PropertySymbol.localName] = qualifiedName;
+			element[PropertySymbol.namespaceURI] = namespaceURI;
+			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+			return element;
+		}
+
+		const localName = qualifiedName.toLowerCase();
+		const elementClass = this[PropertySymbol.ownerWindow][HTMLElementLocalNameToClass[localName]];
+
+		// Known HTML element
+		if (elementClass) {
+			const element = NodeFactory.createNode<IElement>(this, elementClass);
+
+			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
+			element[PropertySymbol.localName] = localName;
+			element[PropertySymbol.namespaceURI] = namespaceURI;
+			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+			return element;
+		}
+
+		// Unknown HTML element
+		const element = NodeFactory.createNode<IElement>(
+			this,
+			// If the tag name contains a hyphen, it is an unknown custom element and we should use HTMLElement.
+			localName.includes('-')
+				? this[PropertySymbol.ownerWindow].HTMLElement
+				: this[PropertySymbol.ownerWindow].HTMLUnknownElement
+		);
+
+		element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
+		element[PropertySymbol.localName] = localName;
 		element[PropertySymbol.namespaceURI] = namespaceURI;
-		if (element instanceof Element && options && options.is) {
-			element[PropertySymbol.isValue] = String(options.is);
-		}
+		element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
 		return element;
 	}

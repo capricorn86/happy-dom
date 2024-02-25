@@ -397,7 +397,6 @@ describe('Element', () => {
 		});
 
 		it('Returns HTML of children and shadow roots of custom elements as a concatenated string.', () => {
-			window.customElements.define('custom-element', CustomElement);
 			const div = document.createElement('div');
 			const customElement = <CustomElement>document.createElement('custom-element');
 
