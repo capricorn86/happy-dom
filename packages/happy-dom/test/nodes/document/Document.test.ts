@@ -119,6 +119,22 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get forms()', () => {
+		it('Returns a elements.', () => {
+			const form1 = document.createElement('form');
+			const form2 = document.createElement('form');
+
+			document.body.appendChild(form1);
+			document.body.appendChild(form2);
+
+			const forms = document.forms;
+
+			expect(forms.length).toBe(2);
+			expect(forms[0]).toBe(form1);
+			expect(forms[1]).toBe(form2);
+		});
+	});
+
 	describe('get scripts()', () => {
 		it('Returns script elements.', () => {
 			const div = document.createElement('div');

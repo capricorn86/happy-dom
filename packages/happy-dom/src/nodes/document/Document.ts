@@ -316,6 +316,13 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Returns a collection of all form elements in a document.
+	 */
+	public get forms(): IHTMLCollection<IHTMLElement> {
+		return <IHTMLCollection<IHTMLElement>>this.querySelectorAll('form');
+	}
+
+	/**
 	 * Last element child.
 	 *
 	 * @returns Element.
