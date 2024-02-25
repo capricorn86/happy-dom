@@ -6,10 +6,8 @@ We are very happy that you would like to contribute. In this guide you will find
 
 ### Install
 
-We need to add "--legacy-peer-deps" to the install as a workaround to be able to install Vitest. Otherwise we get an "Cannot set properties of null (setting 'parent')" error as Vitest has "happy-dom" as peer dependency. Hopefully we can find a better solution in the future.
-
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
 
 ### Compile
