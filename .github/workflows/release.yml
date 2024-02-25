@@ -107,8 +107,8 @@ jobs:
 
       - name: Configures Git
         run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "$(git log --format='%ae' HEAD^!)"
+         git config --local user.email "action@github.com"
+         git config --local user.name "GitHub Action"
 
       - name: Creates release branch
         run: |
