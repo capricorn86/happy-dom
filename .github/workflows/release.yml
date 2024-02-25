@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [closed]
 
+permissions:
+  contents: write
+  pull-requests: read
+
 jobs:
   check-next-version:
     runs-on: ubuntu-latest
@@ -103,8 +107,8 @@ jobs:
 
       - name: Configures Git
         run: |
-          git config --global user.name "${{ secrets.GIT_USER_NAME }}"
-          git config --global user.email "${{ secrets.GIT_USER_EMAIL }}"
+         git config --local user.email "action@github.com"
+         git config --local user.name "GitHub Action"
 
       - name: Creates release branch
         run: |

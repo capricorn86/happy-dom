@@ -65,7 +65,7 @@ export default class SelectorItem {
 
 		// Tag name match
 		if (this.tagName) {
-			if (this.tagName !== '*' && this.tagName !== element[PropertySymbol.tagName]) {
+			if (this.tagName !== '*' && this.tagName !== element[PropertySymbol.tagName].toUpperCase()) {
 				return null;
 			}
 			priorityWeight += 1;
