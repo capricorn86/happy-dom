@@ -1115,6 +1115,31 @@ describe('QuerySelector', () => {
 			expect(div.querySelector('#id') === div2).toBe(true);
 		});
 
+		it('Returns an element matching :target', () => {
+			const section = document.createElement('section');
+			const headline = document.createElement('h2');
+			headline.id = 'id';
+			section.appendChild(headline);
+			document.appendChild(section);
+
+			window.location.hash = '#id';
+			expect(section.querySelector(':target')).toBe(headline);
+			expect(section.querySelector('h2:target')).toBe(headline);
+			expect(section.querySelector('h3:target')).toBeNull();
+
+			window.location.hash = '#something-else';
+			expect(section.querySelector(':target')).toBeNull();
+			expect(section.querySelector('h2:target')).toBeNull();
+			expect(section.querySelector('h3:target')).toBeNull();
+
+			// Detached Elements should not match
+			window.location.hash = '#id';
+			section.remove();
+			expect(section.querySelector(':target')).toBeNull();
+			expect(section.querySelector('h2:target')).toBeNull();
+			expect(section.querySelector('h3:target')).toBeNull();
+		});
+
 		it('Returns an element by id matching "#:id:".', () => {
 			const div = document.createElement('div');
 			const div2 = document.createElement('div');
