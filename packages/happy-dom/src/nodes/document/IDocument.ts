@@ -48,6 +48,7 @@ export default interface IDocument extends IParentNode {
 	readonly visibilityState: VisibilityStateEnum;
 	readonly hidden: boolean;
 	readonly links: IHTMLCollection<IHTMLElement>;
+	readonly forms: IHTMLCollection<IHTMLElement>;
 	readonly referrer: string;
 	readonly currentScript: IHTMLScriptElement;
 	adoptedStyleSheets: CSSStyleSheet[];

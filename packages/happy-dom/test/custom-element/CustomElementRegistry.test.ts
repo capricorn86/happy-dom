@@ -3,6 +3,7 @@ import CustomElementRegistry from '../../src/custom-element/CustomElementRegistr
 import IWindow from '../../src/window/IWindow.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import Window from '../../src/window/Window.js';
+import DOMException from '../../src/exception/DOMException.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 

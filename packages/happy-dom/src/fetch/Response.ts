@@ -8,7 +8,7 @@ import IHeaders from './types/IHeaders.js';
 import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
 import Blob from '../file/Blob.js';
-import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import FormData from '../form-data/FormData.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import DOMException from '../exception/DOMException.js';
@@ -17,6 +17,7 @@ import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import ICachedResponse from './cache/response/ICachedResponse.js';
+import { Buffer } from 'buffer';
 
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 
@@ -33,7 +34,7 @@ export default class Response implements IResponse {
 	protected static [PropertySymbol.window]: IBrowserWindow;
 
 	// Public properties
-	public readonly body: Stream.Readable | null = null;
+	public readonly body: ReadableStream | null = null;
 	public readonly bodyUsed = false;
 	public readonly redirected = false;
 	public readonly type: 'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect' =
@@ -275,6 +276,8 @@ export default class Response implements IResponse {
 		(<number>response.status) = this.status;
 		(<string>response.statusText) = this.statusText;
 		(<boolean>response.ok) = this.ok;
+		(<Headers>response.headers) = new Headers(this.headers);
+		(<ReadableStream>response.body) = this.body;
 		(<boolean>response.bodyUsed) = this.bodyUsed;
 		(<boolean>response.redirected) = this.redirected;
 		(<string>response.type) = this.type;

@@ -113,6 +113,7 @@ import ProcessingInstruction from '../nodes/processing-instruction/ProcessingIns
 import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import FormData from '../form-data/FormData.js';
 import AbortController from '../fetch/AbortController.js';
 import AbortSignal from '../fetch/AbortSignal.js';
@@ -383,7 +384,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	};
 	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
 	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
-	public readonly ReadableStream = Stream.Readable;
+	public readonly ReadableStream = ReadableStream;
 	public readonly WritableStream = Stream.Writable;
 	public readonly TransformStream = Stream.Transform;
 	public readonly AbortController = AbortController;

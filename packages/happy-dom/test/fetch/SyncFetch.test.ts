@@ -1,10 +1,10 @@
 import IBrowserWindow from '../../src/window/IBrowserWindow.js';
-import Response from '../../src/fetch/Response.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import AbortController from '../../src/fetch/AbortController.js';
 import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import Zlib from 'zlib';
 import { TextEncoder } from 'util';
 import Blob from '../../src/file/Blob.js';
@@ -1974,10 +1974,6 @@ describe('SyncFetch', () => {
 		it('Rejects with error if body is Stream.Readable.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
-			async function* generate(): AsyncGenerator<Buffer> {
-				yield await Promise.resolve(Buffer.from('chunk1'));
-			}
-
 			mockModule('child_process', {
 				execFileSync: (_command: string, args: string[]) => {
 					return JSON.stringify({
@@ -2001,7 +1997,12 @@ describe('SyncFetch', () => {
 					url: 'https://localhost:8080/test/',
 					init: {
 						method: 'POST',
-						body: Stream.Readable.from(generate())
+						body: new ReadableStream({
+							start(controller) {
+								controller.enqueue('chunk1');
+								controller.close();
+							}
+						})
 					}
 				}).send();
 			} catch (e) {

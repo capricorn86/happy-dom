@@ -990,6 +990,12 @@ describe('QuerySelector', () => {
 			expect(() => div.querySelectorAll('#1')).toThrowError(
 				"Failed to execute 'querySelectorAll' on 'HTMLElement': '#1' is not a valid selector."
 			);
+			expect(() => div.querySelectorAll('a.')).toThrowError(
+				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a.' is not a valid selector."
+			);
+			expect(() => div.querySelectorAll('a#')).toThrowError(
+				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a#' is not a valid selector."
+			);
 		});
 	});
 
@@ -1143,6 +1149,27 @@ describe('QuerySelector', () => {
 			expect(element2 === div.children[0]).toBe(true);
 		});
 
+		it('Returns SVG elements', () => {
+			document.body.innerHTML = `<svg width="3955.829" height="880" viewBox="0 0 3955.829 880" xmlns="http://www.w3.org/2000/svg" id="id_svg_model">
+                <g id="svgGroup" stroke-linecap="round" fill-rule="evenodd" font-size="9pt" 
+                    stroke="#000" stroke-width="0.25mm" fill="none" style="stroke:#000;stroke-width:0.25mm;fill:none"
+                >
+                    <path d="M 0 0 L 0 880 L 1272.697 880 A 80 80 0 0 0 1350.647 817.996 L 1416.442 533.006 A 120 120 0 0 1 1533.367 440 L 1977.914 440 L 2422.462 440 A 120 120 0 0 1 2539.386 533.006 
+                        L 2605.182 817.996 A 80 80 0 0 0 2683.131 880 L 3955.829 880 L 3955.829 0" 
+                        vector-effect="non-scaling-stroke">
+                    </path>
+                </g>
+            </svg>`;
+
+			const svg = document.querySelector('svg');
+			const path = document.querySelector('path');
+
+			expect(svg?.constructor.name).toBe('SVGSVGElement');
+
+			// TODO: Should be SVGPathElement, but it is not supported yet
+			expect(path?.constructor.name).toBe('SVGElement');
+		});
+
 		it('Throws an error when providing an invalid selector', () => {
 			const div = document.createElement('div');
 			expect(() => div.querySelector('1')).toThrowError(
@@ -1156,6 +1183,12 @@ describe('QuerySelector', () => {
 			);
 			expect(() => div.querySelector('#1')).toThrowError(
 				"Failed to execute 'querySelector' on 'HTMLElement': '#1' is not a valid selector."
+			);
+			expect(() => div.querySelector('a.')).toThrowError(
+				"Failed to execute 'querySelector' on 'HTMLElement': 'a.' is not a valid selector."
+			);
+			expect(() => div.querySelector('a#')).toThrowError(
+				"Failed to execute 'querySelector' on 'HTMLElement': 'a#' is not a valid selector."
 			);
 		});
 

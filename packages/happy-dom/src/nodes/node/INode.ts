@@ -57,4 +57,12 @@ export default interface INode extends IEventTarget {
 	 * @returns True if the given node is equal to the current node, otherwise false.
 	 */
 	isSameNode(node: INode): boolean;
+
+	/**
+	 * Compares two nodes.
+	 *
+	 * @param node Node to compare.
+	 * @returns "true" if nodes are equal.
+	 */
+	isEqualNode(node: INode): boolean;
 }

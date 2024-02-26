@@ -402,6 +402,17 @@ export default class Node extends EventTarget implements INode {
 	}
 
 	/**
+	 * Compares two nodes.
+	 * Two nodes are equal if they have the same type, defining the same attributes, and so on.
+	 *
+	 * @param node  Node to compare.
+	 * @returns boolean - `true` if two nodes are equal.
+	 */
+	public isEqualNode(node: INode): boolean {
+		return NodeUtility.isEqualNode(this, node);
+	}
+
+	/**
 	 * Converts the node to a string.
 	 *
 	 * @param listener Listener.

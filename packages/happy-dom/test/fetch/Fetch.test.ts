@@ -14,6 +14,7 @@ import Blob from '../../src/file/Blob.js';
 import FormData from '../../src/form-data/FormData.js';
 import { URLSearchParams } from 'url';
 import '../types.d.js';
+import { ReadableStream } from 'stream/web';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
@@ -152,7 +153,7 @@ describe('Fetch', () => {
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('OK');
 			expect(response.bodyUsed).toBe(false);
-			expect(response.body instanceof Stream.Transform).toBe(true);
+			expect(response.body instanceof ReadableStream).toBe(true);
 			expect(response.headers instanceof Headers).toBe(true);
 
 			const headers = {};
@@ -239,7 +240,7 @@ describe('Fetch', () => {
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('OK');
 			expect(response.bodyUsed).toBe(false);
-			expect(response.body instanceof Stream.Transform).toBe(true);
+			expect(response.body instanceof ReadableStream).toBe(true);
 			expect(response.headers instanceof Headers).toBe(true);
 
 			const headers = {};
@@ -2404,24 +2405,20 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
-			async function* generate(): AsyncGenerator<Buffer> {
-				yield await new Promise((resolve) => {
+			const body = new ReadableStream({
+				start(controller) {
 					setTimeout(() => {
-						resolve(Buffer.from(chunks[0]));
+						controller.enqueue(chunks[0]);
 					}, 10);
-				});
-				yield await new Promise((resolve) => {
 					setTimeout(() => {
-						resolve(Buffer.from(chunks[1]));
-					}, 10);
-				});
-				yield await new Promise((resolve) => {
+						controller.enqueue(chunks[1]);
+					}, 20);
 					setTimeout(() => {
-						resolve(Buffer.from(chunks[2]));
-					}, 10);
-				});
-			}
-			const body = Stream.Readable.from(generate());
+						controller.enqueue(chunks[2]);
+						controller.close();
+					}, 30);
+				}
+			});
 
 			mockModule('https', {
 				request: () => {
@@ -3113,24 +3110,6 @@ describe('Fetch', () => {
 		it('Supports POST request with body as Stream.Readable.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
-			async function* generate(): AsyncGenerator<Buffer> {
-				yield await new Promise((resolve) => {
-					setTimeout(() => {
-						resolve(Buffer.from(chunks[0]));
-					}, 10);
-				});
-				yield await new Promise((resolve) => {
-					setTimeout(() => {
-						resolve(Buffer.from(chunks[1]));
-					}, 10);
-				});
-				yield await new Promise((resolve) => {
-					setTimeout(() => {
-						resolve(Buffer.from(chunks[2]));
-					}, 10);
-				});
-			}
-
 			let destroyCount = 0;
 			let writtenBodyData = '';
 			let requestArgs: {
@@ -3175,7 +3154,20 @@ describe('Fetch', () => {
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
-				body: Stream.Readable.from(generate())
+				body: new ReadableStream({
+					start(controller) {
+						setTimeout(() => {
+							controller.enqueue(chunks[0]);
+						}, 10);
+						setTimeout(() => {
+							controller.enqueue(chunks[1]);
+						}, 20);
+						setTimeout(() => {
+							controller.enqueue(chunks[2]);
+							controller.close();
+						}, 30);
+					}
+				})
 			});
 
 			expect(requestArgs).toEqual({
@@ -3203,23 +3195,6 @@ describe('Fetch', () => {
 		it('Should reject if Stream.Readable throws an error.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
-			async function* generate(): AsyncGenerator<Buffer> {
-				yield await new Promise((resolve) => {
-					setTimeout(() => {
-						resolve(Buffer.from(chunks[0]));
-					}, 10);
-				});
-				yield await new Promise((_resolve, reject) => {
-					setTimeout(() => {
-						reject(new Error('test'));
-					}, 10);
-				});
-				yield await new Promise((resolve) => {
-					setTimeout(() => {
-						resolve(Buffer.from(chunks[2]));
-					}, 10);
-				});
-			}
 
 			mockModule('https', {
 				request: () => {
@@ -3257,7 +3232,16 @@ describe('Fetch', () => {
 			try {
 				await window.fetch('https://localhost:8080/test/', {
 					method: 'POST',
-					body: Stream.Readable.from(generate())
+					body: new ReadableStream({
+						start(controller) {
+							setTimeout(() => {
+								controller.enqueue(chunks[0]);
+							}, 10);
+							setTimeout(() => {
+								controller.error(new Error('test'));
+							}, 20);
+						}
+					})
 				});
 			} catch (e) {
 				error = e;
@@ -3436,24 +3420,6 @@ describe('Fetch', () => {
 			await new Promise((resolve) => {
 				const window = new Window({ url: 'https://localhost:8080/' });
 				const chunks = ['chunk1', 'chunk2', 'chunk3'];
-				async function* generate(): AsyncGenerator<Buffer> {
-					yield await new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(Buffer.from(chunks[0]));
-						}, 10);
-					});
-					yield await new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(Buffer.from(chunks[1]));
-						}, 10);
-					});
-					yield await new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(Buffer.from(chunks[2]));
-						}, 10);
-					});
-				}
-
 				let isAsyncComplete = false;
 
 				mockModule('https', {
@@ -3492,7 +3458,20 @@ describe('Fetch', () => {
 
 				window.fetch('https://localhost:8080/test/', {
 					method: 'POST',
-					body: Stream.Readable.from(generate())
+					body: new ReadableStream({
+						start(controller) {
+							setTimeout(() => {
+								controller.enqueue(chunks[0]);
+							}, 10);
+							setTimeout(() => {
+								controller.enqueue(chunks[1]);
+							}, 20);
+							setTimeout(() => {
+								controller.enqueue(chunks[2]);
+								controller.close();
+							}, 30);
+						}
+					})
 				});
 
 				setTimeout(() => {
