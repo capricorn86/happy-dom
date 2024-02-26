@@ -107,14 +107,9 @@ jobs:
 
       - name: Configures Git
         run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "$(git log --format='%ae' HEAD^!)"
-          git remote set-url origin https://${{ secrets.GIT_REPOSITORY_URL_USERNAME }}:${{ secrets.GIT_REPOSITORY_URL_ACCESS_TOKEN }}@github.com/capricorn86/happy-dom.git
-
-      - name: Creates release branch
-        run: |
-          git checkout -b release/${{ needs.check-next-version.outputs.next_version }} origin/master
-          git push origin release/${{ needs.check-next-version.outputs.next_version }}
+          git config user.name "${{ secrets.GIT_REPOSITORY_USERNAME }}"
+          git config user.email "${{ secrets.GIT_REPOSITORY_EMAIL }}"
+          git remote set-url origin https://${{ secrets.GIT_REPOSITORY_USERNAME }}:${{ secrets.GIT_REPOSITORY_ACCESS_TOKEN }}@github.com/capricorn86/happy-dom.git
 
       - name: Pushes Git tag
         run: |
