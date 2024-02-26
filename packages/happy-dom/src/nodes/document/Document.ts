@@ -31,7 +31,7 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement.js';
 import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
-import Location from '../../url/Location.js';
+import Location from '../../location/Location.js';
 import Selection from '../../selection/Selection.js';
 import IShadowRoot from '../shadow-root/IShadowRoot.js';
 import Range from '../../range/Range.js';
@@ -45,6 +45,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import NodeFactory from '../NodeFactory.js';
+import { URL } from 'url';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -357,7 +358,7 @@ export default class Document extends Node implements IDocument {
 	public get cookie(): string {
 		return CookieStringUtility.cookiesToString(
 			this.#browserFrame.page.context.cookieContainer.getCookies(
-				this[PropertySymbol.ownerWindow].location,
+				new URL(this[PropertySymbol.ownerWindow].location.href),
 				true
 			)
 		);
@@ -370,7 +371,10 @@ export default class Document extends Node implements IDocument {
 	 */
 	public set cookie(cookie: string) {
 		this.#browserFrame.page.context.cookieContainer.addCookies([
-			CookieStringUtility.stringToCookie(this[PropertySymbol.ownerWindow].location, cookie)
+			CookieStringUtility.stringToCookie(
+				new URL(this[PropertySymbol.ownerWindow].location.href),
+				cookie
+			)
 		]);
 	}
 

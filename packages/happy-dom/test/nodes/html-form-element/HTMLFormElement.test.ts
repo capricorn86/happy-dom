@@ -30,7 +30,6 @@ describe('HTMLFormElement', () => {
 	for (const property of [
 		'name',
 		'target',
-		'action',
 		'encoding',
 		'enctype',
 		'acceptCharset',
@@ -51,6 +50,36 @@ describe('HTMLFormElement', () => {
 			});
 		});
 	}
+
+	describe('get action()', () => {
+		it('Returns attribute value.', () => {
+			expect(element.action).toBe('about:blank');
+
+			element.setAttribute('action', '/test/');
+
+			expect(element.action).toBe('');
+
+			window.happyDOM.setURL('https://localhost/path/');
+
+			expect(element.action).toBe('https://localhost/test/');
+
+			element.setAttribute('action', 'https://example.com');
+
+			expect(element.action).toBe('https://example.com/');
+		});
+	});
+
+	describe('set action()', () => {
+		it('Sets attribute value.', () => {
+			element.action = '/test/';
+
+			expect(element.getAttribute('action')).toBe('/test/');
+
+			element.action = 'https://example.com';
+
+			expect(element.getAttribute('action')).toBe('https://example.com');
+		});
+	});
 
 	describe('get noValidate()', () => {
 		it('Returns "true" if defined.', () => {

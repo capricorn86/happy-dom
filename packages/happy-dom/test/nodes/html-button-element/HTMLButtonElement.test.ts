@@ -136,17 +136,31 @@ describe('HTMLButtonElement', () => {
 
 	describe('get formAction()', () => {
 		it('Returns attribute value.', () => {
-			window.happyDOM.setURL('https://www.example.com/path/');
-			expect(element.formAction).toBe('https://www.example.com/path/');
-			element.setAttribute('formaction', 'test');
-			expect(element.formAction).toBe('https://www.example.com/path/test');
+			expect(element.formAction).toBe('about:blank');
+
+			element.setAttribute('formaction', '/test/');
+
+			expect(element.formAction).toBe('');
+
+			window.happyDOM.setURL('https://localhost/path/');
+
+			expect(element.formAction).toBe('https://localhost/test/');
+
+			element.setAttribute('formaction', 'https://example.com');
+
+			expect(element.formAction).toBe('https://example.com/');
 		});
 	});
 
 	describe('set formAction()', () => {
 		it('Sets attribute value.', () => {
-			element.formAction = 'test';
-			expect(element.getAttribute('formaction')).toBe('test');
+			element.formAction = '/test/';
+
+			expect(element.getAttribute('formaction')).toBe('/test/');
+
+			element.formAction = 'https://example.com';
+
+			expect(element.getAttribute('formaction')).toBe('https://example.com');
 		});
 	});
 

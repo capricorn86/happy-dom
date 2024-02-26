@@ -3,7 +3,7 @@ import BrowserFrame from '../../src/browser/BrowserFrame.js';
 import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import IGoToOptions from '../../src/browser/types/IGoToOptions.js';
 import IResponse from '../../src/fetch/types/IResponse.js';
-import Location from '../../src/url/Location.js';
+import Location from '../../src/location/Location.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 const HREF = 'https://google.com/some-path/?key=value&key2=value2#hash';

@@ -225,6 +225,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 */
 	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
 		return (
+			!!name &&
 			!this.constructor.prototype.hasOwnProperty(name) &&
 			(isNaN(Number(name)) || name.includes('.'))
 		);
