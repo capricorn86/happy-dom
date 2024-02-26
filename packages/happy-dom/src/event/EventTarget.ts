@@ -208,7 +208,7 @@ export default abstract class EventTarget implements IEventTarget {
 					if ((<IEventListener>listener).handleEvent) {
 						WindowErrorUtility.captureError(
 							window,
-							(<IEventListener>listener).handleEvent.bind(this, event)
+							(<IEventListener>listener).handleEvent.bind(listener, event)
 						);
 					} else {
 						WindowErrorUtility.captureError(
