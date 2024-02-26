@@ -107,8 +107,9 @@ jobs:
 
       - name: Configures Git
         run: |
-         git config --local user.email "action@github.com"
-         git config --local user.name "GitHub Action"
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "$(git log --format='%ae' HEAD^!)"
+          git remote set-url origin https://${{ secrets.GIT_REPOSITORY_URL_USERNAME }}:${{ secrets.GIT_REPOSITORY_URL_ACCESS_TOKEN }}@github.com/capricorn86/happy-dom.git
 
       - name: Creates release branch
         run: |
