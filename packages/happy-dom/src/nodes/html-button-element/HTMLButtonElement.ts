@@ -12,6 +12,8 @@ import INode from '../node/INode.js';
 import INodeList from '../node/INodeList.js';
 import HTMLButtonElementNamedNodeMap from './HTMLButtonElementNamedNodeMap.js';
 import IHTMLButtonElement from './IHTMLButtonElement.js';
+import PointerEvent from '../../event/events/PointerEvent.js';
+import { URL } from 'url';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
 
@@ -123,6 +125,67 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	}
 
 	/**
+	 * Returns form action.
+	 *
+	 * @returns Form action.
+	 */
+	public get formAction(): string {
+		try {
+			return new URL(
+				this.getAttribute('formaction') || '',
+				this[PropertySymbol.ownerDocument].location
+			).href;
+		} catch (e) {
+			return '';
+		}
+	}
+
+	/**
+	 * Sets form action.
+	 *
+	 * @param formAction Form action.
+	 */
+	public set formAction(formAction: string) {
+		this.setAttribute('formaction', formAction);
+	}
+
+	/**
+	 * Returns form enctype.
+	 *
+	 * @returns Form enctype.
+	 */
+	public get formEnctype(): string {
+		return this.getAttribute('formenctype') || '';
+	}
+
+	/**
+	 * Sets form enctype.
+	 *
+	 * @param formEnctype Form enctype.
+	 */
+	public set formEnctype(formEnctype: string) {
+		this.setAttribute('formenctype', formEnctype);
+	}
+
+	/**
+	 * Returns form method.
+	 *
+	 * @returns Form method.
+	 */
+	public get formMethod(): string {
+		return this.getAttribute('formmethod') || '';
+	}
+
+	/**
+	 * Sets form method.
+	 *
+	 * @param formMethod Form method.
+	 */
+	public set formMethod(formMethod: string) {
+		this.setAttribute('formmethod', formMethod);
+	}
+
+	/**
 	 * Returns no validate.
 	 *
 	 * @returns No validate.
@@ -145,12 +208,39 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	}
 
 	/**
+	 * Returns form target.
+	 *
+	 * @returns Form target.
+	 */
+	public get formTarget(): string {
+		return this.getAttribute('formtarget') || '';
+	}
+
+	/**
+	 * Sets form target.
+	 *
+	 * @param formTarget Form target.
+	 */
+	public set formTarget(formTarget: string) {
+		this.setAttribute('formtarget', formTarget);
+	}
+
+	/**
 	 * Returns the parent form element.
 	 *
 	 * @returns Form.
 	 */
-	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this[PropertySymbol.formNode];
+	public get form(): IHTMLFormElement | null {
+		if (this[PropertySymbol.formNode]) {
+			return <IHTMLFormElement>this[PropertySymbol.formNode];
+		}
+		if (!this.isConnected) {
+			return null;
+		}
+		const formID = this.getAttribute('form');
+		return formID
+			? <IHTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
+			: null;
 	}
 
 	/**
@@ -201,7 +291,12 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
-		if (event.type === 'click' && event.eventPhase === EventPhaseEnum.none && this.disabled) {
+		if (
+			event.type === 'click' &&
+			event instanceof PointerEvent &&
+			event.eventPhase === EventPhaseEnum.none &&
+			this.disabled
+		) {
 			return false;
 		}
 
@@ -209,12 +304,15 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 
 		if (
 			event.type === 'click' &&
+			event instanceof PointerEvent &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this[PropertySymbol.formNode] &&
 			this[PropertySymbol.isConnected]
 		) {
-			const form = <IHTMLFormElement>this[PropertySymbol.formNode];
+			const form = this.form;
+			if (!form) {
+				return returnValue;
+			}
 			switch (this.type) {
 				case 'submit':
 					form.requestSubmit(this);

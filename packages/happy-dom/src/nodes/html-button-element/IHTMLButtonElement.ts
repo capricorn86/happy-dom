@@ -15,9 +15,13 @@ export default interface IHTMLButtonElement extends IHTMLElement {
 	value: string;
 	disabled: boolean;
 	type: string;
+	formAction: string;
+	formEnctype: string;
+	formMethod: string;
 	formNoValidate: boolean;
+	formTarget: string;
 	readonly validity: ValidityState;
-	readonly form: IHTMLFormElement;
+	readonly form: IHTMLFormElement | null;
 	readonly validationMessage: string;
 	readonly labels: INodeList<IHTMLLabelElement>;
 

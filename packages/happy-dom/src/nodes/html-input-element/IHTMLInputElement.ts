@@ -19,8 +19,10 @@ export default interface IHTMLInputElement extends IHTMLElement {
 	readonly labels: INodeList<IHTMLLabelElement>;
 	readonly validity: ValidityState;
 	formAction: string;
+	formEnctype: string;
 	formMethod: string;
 	formNoValidate: boolean;
+	formTarget: string;
 	defaultChecked: boolean;
 	files: IFileList<File>;
 	defaultValue: string;
