@@ -103,6 +103,19 @@ describe('EventTarget', () => {
 			eventTarget.dispatchEvent(dispatchedEvent);
 			expect(scope).toBe(eventTarget);
 		});
+
+		it('Event listener with handleEvent is called in the scope of the listener when calling dispatchEvent().', () => {
+			let scope = null;
+			const listener = {
+				handleEvent(): void {
+					scope = this;
+				}
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+			eventTarget.addEventListener(EVENT_TYPE, listener);
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(scope).toBe(listener);
+		});
 	});
 
 	describe('removeEventListener()', () => {

@@ -7,7 +7,6 @@ import ProgressEvent from '../../src/event/events/ProgressEvent.js';
 import Blob from '../../src/file/Blob.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import { Stream } from 'stream';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
 import IResponse from '../../src/fetch/types/IResponse.js';
 import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
@@ -16,6 +15,7 @@ import Headers from '../../src/fetch/Headers.js';
 import IHeaders from '../../src/fetch/types/IHeaders.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const WINDOW_URL = 'https://localhost:8080';
@@ -141,13 +141,17 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'Test';
 
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
-
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+						<IResponse>{
+							headers: <IHeaders>new Headers(),
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
+						}
 				);
 
 				request.responseType = XMLHttpResponseTypeEnum.arraybuffer;
@@ -166,13 +170,17 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'Test';
 
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
-
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+						<IResponse>{
+							headers: <IHeaders>new Headers(),
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
+						}
 				);
 
 				request.responseType = XMLHttpResponseTypeEnum.blob;
@@ -191,13 +199,17 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'Test';
 
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
-
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+						<IResponse>{
+							headers: <IHeaders>new Headers(),
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
+						}
 				);
 
 				request.responseType = XMLHttpResponseTypeEnum.document;
@@ -218,13 +230,17 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = '{ "key1": "value1", "key2": "value2" }';
 
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
-
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+						<IResponse>{
+							headers: <IHeaders>new Headers(),
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
+						}
 				);
 
 				request.responseType = XMLHttpResponseTypeEnum.json;
@@ -243,13 +259,17 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'Test';
 
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
-
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+						<IResponse>{
+							headers: <IHeaders>new Headers(),
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
+						}
 				);
 
 				request.open('GET', REQUEST_URL, true);
@@ -316,13 +336,17 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'test';
 
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
-
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{ headers: <IHeaders>new Headers(), body: Stream.Readable.from(generate()) }
+						<IResponse>{
+							headers: <IHeaders>new Headers(),
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
+						}
 				);
 
 				let isProgressTriggered = false;
@@ -363,15 +387,17 @@ describe('XMLHttpRequest', () => {
 		it('Returns response text for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'test';
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
 						<IResponse>{
 							headers: <IHeaders>new Headers(),
-							body: Stream.Readable.from(generate())
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
 						}
 				);
 
@@ -658,9 +684,6 @@ describe('XMLHttpRequest', () => {
 				});
 				const request = new window.XMLHttpRequest();
 				let requestArgs: { method: string; url: string };
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 					requestArgs = {
@@ -672,7 +695,12 @@ describe('XMLHttpRequest', () => {
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
-						body: Stream.Readable.from(generate())
+						body: new ReadableStream({
+							start(controller) {
+								controller.enqueue(responseText);
+								controller.close();
+							}
+						})
 					};
 				});
 
@@ -709,9 +737,6 @@ describe('XMLHttpRequest', () => {
 				const responseText = 'http.request.body';
 				const queryString = '?query=string';
 				let requestArgs: { method: string; url: string };
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 					requestArgs = {
@@ -723,7 +748,12 @@ describe('XMLHttpRequest', () => {
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
-						body: Stream.Readable.from(generate())
+						body: new ReadableStream({
+							start(controller) {
+								controller.enqueue(responseText);
+								controller.close();
+							}
+						})
 					};
 				});
 
@@ -758,15 +788,17 @@ describe('XMLHttpRequest', () => {
 		it('Handles responses without content length.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'http.request.body';
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
 						<IResponse>{
 							headers: <IHeaders>new Headers(),
-							body: Stream.Readable.from(generate())
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
 						}
 				);
 
@@ -787,9 +819,6 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				const responseText = 'http.request.body';
 				let requestArgs: { method: string; url: string };
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 					requestArgs = {
@@ -801,7 +830,12 @@ describe('XMLHttpRequest', () => {
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
-						body: Stream.Readable.from(generate())
+						body: new ReadableStream({
+							start(controller) {
+								controller.enqueue(responseText);
+								controller.close();
+							}
+						})
 					};
 				});
 
@@ -840,10 +874,6 @@ describe('XMLHttpRequest', () => {
 				const responseText = 'http.request.body';
 				let requestArgs: { method: string; url: string; headers: { [name: string]: string } };
 
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
-
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 					requestArgs = {
 						method: this.request.method,
@@ -857,7 +887,12 @@ describe('XMLHttpRequest', () => {
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
-						body: Stream.Readable.from(generate())
+						body: new ReadableStream({
+							start(controller) {
+								controller.enqueue(responseText);
+								controller.close();
+							}
+						})
 					};
 				});
 
@@ -897,9 +932,6 @@ describe('XMLHttpRequest', () => {
 				const username = 'username';
 				const responseText = 'http.request.body';
 				let requestArgs: { method: string; url: string; headers: { [name: string]: string } };
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 					requestArgs = {
@@ -914,7 +946,12 @@ describe('XMLHttpRequest', () => {
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
-						body: Stream.Readable.from(generate())
+						body: new ReadableStream({
+							start(controller) {
+								controller.enqueue(responseText);
+								controller.close();
+							}
+						})
 					};
 				});
 
@@ -944,10 +981,6 @@ describe('XMLHttpRequest', () => {
 				const body = 'Hello, world!\n';
 				let requestArgs: { method: string; url: string; body: string };
 
-				async function* generate(): AsyncGenerator<string> {
-					yield responseText;
-				}
-
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 					const requestBody = await this.request.text();
 					requestArgs = {
@@ -960,7 +993,12 @@ describe('XMLHttpRequest', () => {
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
-						body: Stream.Readable.from(generate())
+						body: new ReadableStream({
+							start(controller) {
+								controller.enqueue(responseText);
+								controller.close();
+							}
+						})
 					};
 				});
 
@@ -1039,15 +1077,16 @@ describe('XMLHttpRequest', () => {
 
 		it('Handles Happy DOM asynchrounous tasks.', async () => {
 			const responseText = 'responseText';
-			async function* generate(): AsyncGenerator<string> {
-				yield responseText;
-			}
-
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 				await new Promise((resolve) => setTimeout(resolve, 2));
 				return <IResponse>{
 					headers: <IHeaders>new Headers(),
-					body: Stream.Readable.from(generate())
+					body: new ReadableStream({
+						start(controller) {
+							controller.enqueue(responseText);
+							controller.close();
+						}
+					})
 				};
 			});
 
@@ -1110,15 +1149,17 @@ describe('XMLHttpRequest', () => {
 
 		it('Waits for ongoing Happy DOM asynchrounous task.', async () => {
 			const responseText = 'responseText';
-			async function* generate(): AsyncGenerator<string> {
-				yield responseText;
-			}
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 				await new Promise((resolve) => setTimeout(resolve, 2));
 				return <IResponse>{
 					headers: <IHeaders>new Headers(),
-					body: Stream.Readable.from(generate())
+					body: new ReadableStream({
+						start(controller) {
+							controller.enqueue(responseText);
+							controller.close();
+						}
+					})
 				};
 			});
 

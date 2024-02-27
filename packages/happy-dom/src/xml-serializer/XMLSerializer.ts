@@ -1,7 +1,7 @@
 import Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
-import VoidElements from '../config/VoidElements.js';
+import HTMLElementVoid from '../config/HTMLElementVoid.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import INode from '../nodes/node/INode.js';
 import IElement from '../nodes/element/IElement.js';
@@ -50,14 +50,14 @@ export default class XMLSerializer {
 		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
-				const tagName = element[PropertySymbol.tagName].toLowerCase();
+				const localName = element[PropertySymbol.localName];
 
-				if (VoidElements[element[PropertySymbol.tagName]]) {
-					return `<${tagName}${this.getAttributes(element)}>`;
+				if (HTMLElementVoid[element[PropertySymbol.tagName]]) {
+					return `<${localName}${this.getAttributes(element)}>`;
 				}
 
 				const childNodes =
-					tagName === 'template'
+					localName === 'template'
 						? (<DocumentFragment>(<IHTMLTemplateElement>root).content)[PropertySymbol.childNodes]
 						: (<DocumentFragment>root)[PropertySymbol.childNodes];
 				let innerHTML = '';
@@ -78,7 +78,7 @@ export default class XMLSerializer {
 					innerHTML += '</template>';
 				}
 
-				return `<${tagName}${this.getAttributes(element)}>${innerHTML}</${tagName}>`;
+				return `<${localName}${this.getAttributes(element)}>${innerHTML}</${localName}>`;
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
 				let html = '';

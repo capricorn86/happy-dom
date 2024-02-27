@@ -116,7 +116,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 				this[PropertySymbol.ownerElement][PropertySymbol.observers]
 			)) {
 				if (
-					observer.options.attributes &&
+					observer.options?.attributes &&
 					(!observer.options.attributeFilter ||
 						observer.options.attributeFilter.includes(item[PropertySymbol.name]))
 				) {
@@ -199,7 +199,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 				this[PropertySymbol.ownerElement][PropertySymbol.observers]
 			)) {
 				if (
-					observer.options.attributes &&
+					observer.options?.attributes &&
 					(!observer.options.attributeFilter ||
 						observer.options.attributeFilter.includes(removedItem[PropertySymbol.name]))
 				) {

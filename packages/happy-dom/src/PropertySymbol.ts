@@ -149,3 +149,5 @@ export const content = Symbol('content');
 export const mode = Symbol('mode');
 export const host = Symbol('host');
 export const setURL = Symbol('setURL');
+export const localName = Symbol('localName');
+export const registedClass = Symbol('registedClass');

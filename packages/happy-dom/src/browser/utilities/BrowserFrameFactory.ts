@@ -41,18 +41,18 @@ export default class BrowserFrameFactory {
 				}
 			}
 
-			// We need to destroy the Window instance before triggering any async tasks as Window.close() is not async.
-			frame.window[PropertySymbol.destroy]();
-			(<IBrowserPage | null>frame.page) = null;
-			(<IBrowserWindow | null>frame.window) = null;
-			frame[PropertySymbol.openerFrame] = null;
-			frame[PropertySymbol.openerWindow] = null;
-
 			if (!frame.childFrames.length) {
 				return frame[PropertySymbol.asyncTaskManager]
 					.destroy()
 					.then(() => {
 						frame[PropertySymbol.exceptionObserver]?.disconnect();
+						if (frame.window) {
+							frame.window[PropertySymbol.destroy]();
+							(<IBrowserPage | null>frame.page) = null;
+							(<IBrowserWindow | null>frame.window) = null;
+							frame[PropertySymbol.openerFrame] = null;
+							frame[PropertySymbol.openerWindow] = null;
+						}
 						resolve();
 					})
 					.catch((error) => reject(error));
@@ -62,6 +62,13 @@ export default class BrowserFrameFactory {
 				.then(() => {
 					return frame[PropertySymbol.asyncTaskManager].destroy().then(() => {
 						frame[PropertySymbol.exceptionObserver]?.disconnect();
+						if (frame.window) {
+							frame.window[PropertySymbol.destroy]();
+							(<IBrowserPage | null>frame.page) = null;
+							(<IBrowserWindow | null>frame.window) = null;
+							frame[PropertySymbol.openerFrame] = null;
+							frame[PropertySymbol.openerWindow] = null;
+						}
 						resolve();
 					});
 				})
