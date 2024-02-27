@@ -5,6 +5,7 @@ import IGoToOptions from '../../src/browser/types/IGoToOptions.js';
 import IResponse from '../../src/fetch/types/IResponse.js';
 import Location from '../../src/location/Location.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
+import HashChangeEvent from '../../src/event/events/HashChangeEvent.js';
 
 const HREF = 'https://google.com/some-path/?key=value&key2=value2#hash';
 
@@ -15,6 +16,58 @@ describe('Location', () => {
 	beforeEach(() => {
 		browserFrame = new BrowserFrame(new Browser().newPage());
 		location = new Location(browserFrame, 'about:blank');
+	});
+
+	describe('get hash()', () => {
+		it('Returns the hash of the URL.', () => {
+			location = new Location(
+				browserFrame,
+				'https://localhost:8080/some-path/?key=value&key2=value2#hash'
+			);
+
+			expect(location.hash).toBe('#hash');
+		});
+	});
+
+	describe('set hash()', () => {
+		it('Sets the hash of the URL.', () => {
+			const events: HashChangeEvent[] = [];
+
+			browserFrame.window.addEventListener('hashchange', (event) => {
+				events.push(<HashChangeEvent>event);
+			});
+
+			location = new Location(
+				browserFrame,
+				'https://localhost:8080/some-path/?key=value&key2=value2'
+			);
+
+			location.hash = '#new-hash';
+
+			expect(location.hash).toBe('#new-hash');
+			expect(location.href).toBe(
+				'https://localhost:8080/some-path/?key=value&key2=value2#new-hash'
+			);
+
+			location.hash = '#new-hash2';
+
+			expect(location.hash).toBe('#new-hash2');
+			expect(location.href).toBe(
+				'https://localhost:8080/some-path/?key=value&key2=value2#new-hash2'
+			);
+
+			expect(events.length).toBe(2);
+			expect(events[0].oldURL).toBe('https://localhost:8080/some-path/?key=value&key2=value2');
+			expect(events[0].newURL).toBe(
+				'https://localhost:8080/some-path/?key=value&key2=value2#new-hash'
+			);
+			expect(events[1].oldURL).toBe(
+				'https://localhost:8080/some-path/?key=value&key2=value2#new-hash'
+			);
+			expect(events[1].newURL).toBe(
+				'https://localhost:8080/some-path/?key=value&key2=value2#new-hash2'
+			);
+		});
 	});
 
 	describe('set href()', () => {

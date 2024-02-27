@@ -1,5 +1,4 @@
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import BrowserFrameValidator from '../browser/utilities/BrowserFrameValidator.js';
 import HashChangeEvent from '../event/events/HashChangeEvent.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import { URL } from 'url';
@@ -45,7 +44,7 @@ export default class Location {
 		this.#url.hash = hash;
 		const newURL = this.#url.href;
 		if (newURL !== oldURL) {
-			this.#browserFrame.window.dispatchEvent(
+			this.#browserFrame.window?.dispatchEvent(
 				new HashChangeEvent('hashchange', { oldURL, newURL })
 			);
 		}
@@ -66,16 +65,11 @@ export default class Location {
 	 * @param host Value.
 	 */
 	public set host(host: string) {
-		const frame = this.#browserFrame;
-		if (
-			frame.page.context.browser.settings.navigation.disableFallbackToSetURL &&
-			!BrowserFrameValidator.validateFrameNavigation(frame)
-		) {
-			return;
-		}
-
-		this.#url.host = host;
-		frame.goto(this.#url.href).catch((error) => frame.page.console.error(error));
+		const url = new URL(this.#url.href);
+		url.host = host;
+		this.#browserFrame
+			.goto(url.href)
+			.catch((error) => this.#browserFrame.page.console.error(error));
 	}
 
 	/**
@@ -93,30 +87,11 @@ export default class Location {
 	 * @param hostname Value.
 	 */
 	public set hostname(hostname: string) {
-		const frame = this.#browserFrame;
-		if (
-			frame.page.context.browser.settings.navigation.disableFallbackToSetURL &&
-			!BrowserFrameValidator.validateFrameNavigation(frame)
-		) {
-			return;
-		}
-		this.#url.hostname = hostname;
-		frame.goto(this.#url.href).catch((error) => frame.page.console.error(error));
-	}
-
-	/**
-	 * Override set href.
-	 */
-	public set href(url: string) {
-		const frame = this.#browserFrame;
-		if (
-			frame.page.context.browser.settings.navigation.disableFallbackToSetURL &&
-			!BrowserFrameValidator.validateFrameNavigation(frame)
-		) {
-			return;
-		}
-		this.#url.href = url;
-		frame.goto(this.#url.href).catch((error) => frame.page.console.error(error));
+		const url = new URL(this.#url.href);
+		url.hostname = hostname;
+		this.#browserFrame
+			.goto(url.href)
+			.catch((error) => this.#browserFrame.page.console.error(error));
 	}
 
 	/**
@@ -124,6 +99,13 @@ export default class Location {
 	 */
 	public get href(): string {
 		return this.#url.href;
+	}
+
+	/**
+	 * Override set href.
+	 */
+	public set href(url: string) {
+		this.#browserFrame.goto(url).catch((error) => this.#browserFrame.page.console.error(error));
 	}
 
 	/**
@@ -150,15 +132,11 @@ export default class Location {
 	 * @param pathname Value.
 	 */
 	public set pathname(pathname: string) {
-		const frame = this.#browserFrame;
-		if (
-			frame.page.context.browser.settings.navigation.disableFallbackToSetURL &&
-			!BrowserFrameValidator.validateFrameNavigation(frame)
-		) {
-			return;
-		}
-		this.#url.pathname = pathname;
-		frame.goto(this.#url.href).catch((error) => frame.page.console.error(error));
+		const url = new URL(this.#url.href);
+		url.pathname = pathname;
+		this.#browserFrame
+			.goto(url.href)
+			.catch((error) => this.#browserFrame.page.console.error(error));
 	}
 
 	/**
@@ -176,15 +154,11 @@ export default class Location {
 	 * @param port Value.
 	 */
 	public set port(port: string) {
-		const frame = this.#browserFrame;
-		if (
-			frame.page.context.browser.settings.navigation.disableFallbackToSetURL &&
-			!BrowserFrameValidator.validateFrameNavigation(frame)
-		) {
-			return;
-		}
-		this.#url.port = port;
-		frame.goto(this.#url.href).catch((error) => frame.page.console.error(error));
+		const url = new URL(this.#url.href);
+		url.port = port;
+		this.#browserFrame
+			.goto(url.href)
+			.catch((error) => this.#browserFrame.page.console.error(error));
 	}
 
 	/**
@@ -202,15 +176,11 @@ export default class Location {
 	 * @param protocol Value.
 	 */
 	public set protocol(protocol: string) {
-		const frame = this.#browserFrame;
-		if (
-			frame.page.context.browser.settings.navigation.disableFallbackToSetURL &&
-			!BrowserFrameValidator.validateFrameNavigation(frame)
-		) {
-			return;
-		}
-		this.#url.protocol = protocol;
-		frame.goto(this.#url.href).catch((error) => frame.page.console.error(error));
+		const url = new URL(this.#url.href);
+		url.protocol = protocol;
+		this.#browserFrame
+			.goto(url.href)
+			.catch((error) => this.#browserFrame.page.console.error(error));
 	}
 
 	/**
@@ -228,15 +198,11 @@ export default class Location {
 	 * @param search Value.
 	 */
 	public set search(search: string) {
-		const frame = this.#browserFrame;
-		if (
-			frame.page.context.browser.settings.navigation.disableFallbackToSetURL &&
-			!BrowserFrameValidator.validateFrameNavigation(frame)
-		) {
-			return;
-		}
-		this.#url.search = search;
-		frame.goto(this.#url.href).catch((error) => frame.page.console.error(error));
+		const url = new URL(this.#url.href);
+		url.search = search;
+		this.#browserFrame
+			.goto(url.href)
+			.catch((error) => this.#browserFrame.page.console.error(error));
 	}
 
 	/**
