@@ -34,6 +34,8 @@ import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReade
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import NodeFactory from '../NodeFactory.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 /**
  * Element.
@@ -870,22 +872,29 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
-	 * Query CSS selector to find matching nodes.
+	 * Query CSS selector to find matching elments.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): INodeList<IElement> {
+	public querySelectorAll<
+		E extends keyof IElementTagNameMap,
+		S extends keyof ISVGElementTagNameMap
+	>(
+		selector: E | S | string
+	): INodeList<IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
 	/**
-	 * Query CSS Selector to find matching node.
+	 * Query CSS Selector to find a matching element.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector(selector: string): IElement {
+	public querySelector<E extends keyof IElementTagNameMap, S extends keyof ISVGElementTagNameMap>(
+		selector: E | S | string
+	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement | null {
 		return QuerySelector.querySelector(this, selector);
 	}
 

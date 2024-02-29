@@ -298,7 +298,7 @@ describe('Document', () => {
 		it('Returns and sets title.', () => {
 			document.title = 'test title';
 			expect(document.title).toBe('test title');
-			const title = <Element>document.head.querySelector('title');
+			const title = <IElement>document.head.querySelector('title');
 			expect(title.textContent).toBe('test title');
 			document.title = 'new title';
 			expect(document.title).toBe('new title');

@@ -6,6 +6,7 @@ import Headers from '../Headers.js';
 import Request from '../Request.js';
 import IHeaders from '../types/IHeaders.js';
 import FetchCORSUtility from './FetchCORSUtility.js';
+import { URL } from 'url';
 
 const FORBIDDEN_HEADER_NAMES = [
 	'accept-charset',
@@ -77,10 +78,8 @@ export default class FetchRequestHeaderUtility {
 		request: Request;
 	}): { [key: string]: string } {
 		const headers = new Headers(options.request.headers);
-		const isCORS = FetchCORSUtility.isCORS(
-			options.window.location,
-			options.request[PropertySymbol.url]
-		);
+		const originURL = new URL(options.window.location.href);
+		const isCORS = FetchCORSUtility.isCORS(originURL, options.request[PropertySymbol.url]);
 
 		// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
 		if (
@@ -107,7 +106,7 @@ export default class FetchRequestHeaderUtility {
 			(options.request.credentials === 'same-origin' && !isCORS)
 		) {
 			const cookies = options.browserFrame.page.context.cookieContainer.getCookies(
-				options.window.location,
+				originURL,
 				false
 			);
 			if (cookies.length > 0) {

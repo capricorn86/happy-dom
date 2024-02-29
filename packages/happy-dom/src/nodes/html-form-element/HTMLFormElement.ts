@@ -446,10 +446,12 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 				targetFrame = this.#browserFrame.parentFrame ?? this.#browserFrame;
 				break;
 			case '_blank':
-			default:
 				const newPage = this.#browserFrame.page.context.newPage();
 				targetFrame = newPage.mainFrame;
 				targetFrame[PropertySymbol.openerFrame] = this.#browserFrame;
+				break;
+			default:
+				targetFrame = this.#browserFrame;
 				break;
 		}
 
@@ -465,7 +467,10 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 			BrowserFrameNavigator.navigate({
 				windowClass: this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor,
 				frame: targetFrame,
-				url: url.href
+				url: url.href,
+				goToOptions: {
+					referrer: this.#browserFrame.page.mainFrame.window.location.origin
+				}
 			});
 
 			return;
@@ -476,7 +481,10 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 			frame: targetFrame,
 			method: method,
 			url: action,
-			formData
+			formData,
+			goToOptions: {
+				referrer: this.#browserFrame.page.mainFrame.window.location.origin
+			}
 		});
 	}
 }

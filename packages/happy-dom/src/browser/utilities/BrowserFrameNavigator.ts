@@ -42,6 +42,7 @@ export default class BrowserFrameNavigator {
 		formData?: FormData;
 	}): Promise<IResponse | null> {
 		const { windowClass, frame, url, formData, method, goToOptions } = options;
+		const referrer = goToOptions?.referrer || frame.window.location.origin;
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
 
 		if (!frame.window) {
@@ -105,8 +106,8 @@ export default class BrowserFrameNavigator {
 		(<IBrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
-		if (goToOptions?.referrer) {
-			frame.window.document[PropertySymbol.referrer] = goToOptions.referrer;
+		if (referrer) {
+			frame.window.document[PropertySymbol.referrer] = referrer;
 		}
 
 		if (targetURL.protocol === 'about:') {
@@ -139,8 +140,8 @@ export default class BrowserFrameNavigator {
 
 		try {
 			response = await frame.window.fetch(targetURL.href, {
-				referrer: goToOptions?.referrer,
-				referrerPolicy: goToOptions?.referrerPolicy,
+				referrer,
+				referrerPolicy: goToOptions?.referrerPolicy || 'origin',
 				signal: abortController.signal,
 				method: method || (formData ? 'POST' : 'GET'),
 				headers: goToOptions?.hard ? { 'Cache-Control': 'no-cache' } : undefined,

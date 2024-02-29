@@ -2,6 +2,8 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import IElement from '../element/IElement.js';
 import INode from '../node/INode.js';
 import INodeList from '../node/INodeList.js';
+import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 export default interface IParentNode extends INode {
 	readonly childElementCount: number;
@@ -29,7 +31,25 @@ export default interface IParentNode extends INode {
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
+	querySelector<K extends keyof IElementTagNameMap>(selector: K): IElementTagNameMap[K] | null;
+	querySelector<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): ISVGElementTagNameMap[K] | null;
 	querySelector(selector: string): IElement | null;
+
+	/**
+	 * Query CSS selector to find matching nodes.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	querySelectorAll<K extends keyof IElementTagNameMap>(
+		selector: K
+	): INodeList<IElementTagNameMap[K]>;
+	querySelectorAll<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): INodeList<ISVGElementTagNameMap[K]>;
+	querySelectorAll<K extends keyof IElement>(selector: K): INodeList<IElement>;
 
 	/**
 	 * Query CSS selector to find matching nodes.

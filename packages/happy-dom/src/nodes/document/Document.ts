@@ -46,6 +46,8 @@ import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import NodeFactory from '../NodeFactory.js';
 import { URL } from 'url';
+import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -604,7 +606,12 @@ export default class Document extends Node implements IDocument {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): INodeList<IElement> {
+	public querySelectorAll<
+		E extends keyof IElementTagNameMap,
+		S extends keyof ISVGElementTagNameMap
+	>(
+		selector: E | S | string
+	): INodeList<IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -614,7 +621,9 @@ export default class Document extends Node implements IDocument {
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector(selector: string): IElement {
+	public querySelector<E extends keyof IElementTagNameMap, S extends keyof ISVGElementTagNameMap>(
+		selector: E | S | string
+	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement {
 		return QuerySelector.querySelector(this, selector);
 	}
 
@@ -871,7 +880,10 @@ export default class Document extends Node implements IDocument {
 	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
 	 * @returns Element.
 	 */
-	public createElement(qualifiedName: string, options?: { is?: string }): IElement {
+	public createElement<E extends keyof IElementTagNameMap, S extends keyof ISVGElementTagNameMap>(
+		qualifiedName: E | S | string,
+		options?: { is?: string }
+	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement {
 		return this.createElementNS(NamespaceURI.html, qualifiedName, options);
 	}
 
@@ -884,11 +896,11 @@ export default class Document extends Node implements IDocument {
 	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
 	 * @returns Element.
 	 */
-	public createElementNS(
+	public createElementNS<E extends keyof IElementTagNameMap, S extends keyof ISVGElementTagNameMap>(
 		namespaceURI: string,
-		qualifiedName: string,
+		qualifiedName: E | S | string,
 		options?: { is?: string }
-	): IElement {
+	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement {
 		qualifiedName = String(qualifiedName);
 
 		if (!qualifiedName) {

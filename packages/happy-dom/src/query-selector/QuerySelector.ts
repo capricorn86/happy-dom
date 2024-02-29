@@ -1,7 +1,7 @@
 import IElement from '../nodes/element/IElement.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import INodeList from '../nodes/node/INodeList.js';
 import SelectorItem from './SelectorItem.js';
+import INodeList from '../nodes/node/INodeList.js';
 import NodeList from '../nodes/node/NodeList.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
@@ -10,6 +10,8 @@ import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
 import SelectorParser from './SelectorParser.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import Element from '../nodes/element/Element.js';
+import IElementTagNameMap from '../config/IElementTagNameMap.js';
+import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 
 type IDocumentPositionAndElement = {
 	documentPosition: string;
@@ -34,11 +36,14 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll(
+	public static querySelectorAll<
+		E extends keyof IElementTagNameMap,
+		S extends keyof ISVGElementTagNameMap
+	>(
 		node: IElement | IDocument | IDocumentFragment,
-		selector: string
-	): INodeList<IElement> {
-		if (selector === '') {
+		selector: E | S | string
+	): INodeList<IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement> {
+		if (<string>selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
 			);
@@ -87,10 +92,13 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML element.
 	 */
-	public static querySelector(
+	public static querySelector<
+		E extends keyof IElementTagNameMap,
+		S extends keyof ISVGElementTagNameMap
+	>(
 		node: IElement | IDocument | IDocumentFragment,
-		selector: string
-	): IElement | null {
+		selector: E | S | string
+	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement | null {
 		if (selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`

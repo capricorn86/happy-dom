@@ -23,6 +23,8 @@ import INodeList from '../node/INodeList.js';
 import Range from '../../range/Range.js';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
+import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 /**
  * Document.
@@ -192,7 +194,15 @@ export default interface IDocument extends IParentNode {
 	 * @param [options] Options.
 	 * @returns Element.
 	 */
-	createElement(tagName: string, options?: { is: string }): IElement;
+	createElement<K extends keyof IElementTagNameMap>(
+		tagName: K,
+		options?: { is: string }
+	): IElementTagNameMap[K];
+	createElement<K extends keyof ISVGElementTagNameMap>(
+		tagName: K,
+		options?: { is: string }
+	): ISVGElementTagNameMap[K];
+	createElement(tagName: string, options?: { is: string }): IHTMLElement;
 
 	/**
 	 * Creates an element with the specified namespace URI and qualified name.
@@ -201,7 +211,21 @@ export default interface IDocument extends IParentNode {
 	 * @param [options] Options.
 	 * @returns Element.
 	 */
-	createElementNS(namespaceURI: string, qualifiedName: string, options?: { is: string }): IElement;
+	createElementNS<K extends keyof IElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/1999/xhtml',
+		qualifiedName: K,
+		options?: { is: string }
+	): IElementTagNameMap[K];
+	createElementNS<K extends keyof ISVGElementTagNameMap>(
+		namespaceURI: '"http://www.w3.org/2000/svg"',
+		qualifiedName: K,
+		options?: { is: string }
+	): ISVGElementTagNameMap[K];
+	createElementNS(
+		namespaceURI: string,
+		qualifiedName: string,
+		options?: { is: string }
+	): IHTMLElement;
 
 	/**
 	 * Creates a text node.
