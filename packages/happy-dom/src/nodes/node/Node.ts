@@ -298,7 +298,10 @@ export default class Node extends EventTarget implements INode {
 	 * @param otherNode Node to test with.
 	 * @returns "true" if this node contains the other node.
 	 */
-	public contains(otherNode: INode): boolean {
+	public contains(otherNode: INode | undefined): boolean {
+		if (otherNode === undefined) {
+			return false;
+		}
 		return NodeUtility.isInclusiveAncestor(this, otherNode);
 	}
 
