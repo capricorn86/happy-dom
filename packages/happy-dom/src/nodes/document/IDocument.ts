@@ -11,7 +11,6 @@ import IAttr from '../attr/IAttr.js';
 import IDocumentType from '../document-type/IDocumentType.js';
 import IParentNode from '../parent-node/IParentNode.js';
 import INode from '../node/INode.js';
-import ICharacterData from '../character-data/ICharacterData.js';
 import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
 import Selection from '../../selection/Selection.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
@@ -25,6 +24,8 @@ import IProcessingInstruction from '../processing-instruction/IProcessingInstruc
 import VisibilityStateEnum from './VisibilityStateEnum.js';
 import IElementTagNameMap from '../../config/IElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import IText from '../text/IText.js';
+import IComment from '../comment/IComment.js';
 
 /**
  * Document.
@@ -217,7 +218,7 @@ export default interface IDocument extends IParentNode {
 		options?: { is: string }
 	): IElementTagNameMap[K];
 	createElementNS<K extends keyof ISVGElementTagNameMap>(
-		namespaceURI: '"http://www.w3.org/2000/svg"',
+		namespaceURI: 'http://www.w3.org/2000/svg',
 		qualifiedName: K,
 		options?: { is: string }
 	): ISVGElementTagNameMap[K];
@@ -233,7 +234,7 @@ export default interface IDocument extends IParentNode {
 	 * @param  data Text data.
 	 * @returns Text node.
 	 */
-	createTextNode(data?: string): ICharacterData;
+	createTextNode(data?: string): IText;
 
 	/**
 	 * Creates a comment node.
@@ -241,7 +242,7 @@ export default interface IDocument extends IParentNode {
 	 * @param  data Text data.
 	 * @returns Text node.
 	 */
-	createComment(data?: string): ICharacterData;
+	createComment(data?: string): IComment;
 
 	/**
 	 * Creates a document fragment.

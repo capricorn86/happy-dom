@@ -48,6 +48,7 @@ import NodeFactory from '../NodeFactory.js';
 import { URL } from 'url';
 import IElementTagNameMap from '../../config/IElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import ISVGElement from '../svg-element/ISVGElement.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -643,9 +644,53 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
+	public getElementsByTagName<K extends keyof IElementTagNameMap>(
+		tagName: K
+	): IHTMLCollection<IElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName<K extends keyof ISVGElementTagNameMap>(
+		tagName: K
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
 	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS<K extends keyof IElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/1999/xhtml',
+		tagName: K
+	): IHTMLCollection<IElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS<K extends keyof ISVGElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/2000/svg',
+		tagName: K
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -883,8 +928,10 @@ export default class Document extends Node implements IDocument {
 	public createElement<E extends keyof IElementTagNameMap, S extends keyof ISVGElementTagNameMap>(
 		qualifiedName: E | S | string,
 		options?: { is?: string }
-	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement {
-		return this.createElementNS(NamespaceURI.html, qualifiedName, options);
+	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IHTMLElement {
+		return <IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IHTMLElement>(
+			this.createElementNS(NamespaceURI.html, qualifiedName, options)
+		);
 	}
 
 	/**
@@ -900,7 +947,7 @@ export default class Document extends Node implements IDocument {
 		namespaceURI: string,
 		qualifiedName: E | S | string,
 		options?: { is?: string }
-	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement {
+	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IHTMLElement {
 		qualifiedName = String(qualifiedName);
 
 		if (!qualifiedName) {
@@ -911,7 +958,7 @@ export default class Document extends Node implements IDocument {
 
 		// SVG element
 		if (namespaceURI === NamespaceURI.svg) {
-			const element = NodeFactory.createNode<IElement>(
+			const element = NodeFactory.createNode<ISVGElement>(
 				this,
 				qualifiedName === 'svg'
 					? this[PropertySymbol.ownerWindow].SVGSVGElement
@@ -921,7 +968,7 @@ export default class Document extends Node implements IDocument {
 			element[PropertySymbol.localName] = qualifiedName;
 			element[PropertySymbol.namespaceURI] = namespaceURI;
 			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-			return element;
+			return <ISVGElementTagNameMap[S]>element;
 		}
 
 		// Custom HTML element
@@ -931,7 +978,7 @@ export default class Document extends Node implements IDocument {
 			];
 
 		if (customElement) {
-			const element = NodeFactory.createNode<IElement>(this, customElement.elementClass);
+			const element = NodeFactory.createNode<IHTMLElement>(this, customElement.elementClass);
 			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
 			element[PropertySymbol.localName] = qualifiedName;
 			element[PropertySymbol.namespaceURI] = namespaceURI;
@@ -951,7 +998,7 @@ export default class Document extends Node implements IDocument {
 			element[PropertySymbol.namespaceURI] = namespaceURI;
 			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
-			return element;
+			return <IElementTagNameMap[E]>element;
 		}
 
 		// Unknown HTML element
@@ -968,7 +1015,7 @@ export default class Document extends Node implements IDocument {
 		element[PropertySymbol.namespaceURI] = namespaceURI;
 		element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
-		return element;
+		return <IHTMLElement>element;
 	}
 
 	/* eslint-enable jsdoc/valid-types */

@@ -3,6 +3,7 @@ import IWindow from '../../src/window/IWindow.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import IHTMLFormElement from '../../src/nodes/html-form-element/IHTMLFormElement.js';
 import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
+import IHTMLButtonElement from '../../src/nodes/html-button-element/IHTMLButtonElement.js';
 import File from '../../src/file/File.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
@@ -17,20 +18,20 @@ describe('FormData', () => {
 
 	describe('constructor', () => {
 		it('Supports sending in an HTMLFormElement to the contructor.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
+			const form = document.createElement('form');
 			const file = new File([Buffer.from('fileContent')], 'file.txt', { type: 'text/plain' });
-			const textInput = <IHTMLInputElement>document.createElement('input');
-			const hiddenInput = <IHTMLInputElement>document.createElement('input');
-			const hiddenInput2 = <IHTMLInputElement>document.createElement('input');
-			const fileInput = <IHTMLInputElement>document.createElement('input');
-			const radioInput1 = <IHTMLInputElement>document.createElement('input');
-			const radioInput2 = <IHTMLInputElement>document.createElement('input');
-			const checkboxInput1 = <IHTMLInputElement>document.createElement('input');
-			const checkboxInput2 = <IHTMLInputElement>document.createElement('input');
-			const button1 = <IHTMLInputElement>document.createElement('button');
-			const button2 = <IHTMLInputElement>document.createElement('input');
-			const button3 = <IHTMLInputElement>document.createElement('button');
-			const button4 = <IHTMLInputElement>document.createElement('input');
+			const textInput = document.createElement('input');
+			const hiddenInput = document.createElement('input');
+			const hiddenInput2 = document.createElement('input');
+			const fileInput = document.createElement('input');
+			const radioInput1 = document.createElement('input');
+			const radioInput2 = document.createElement('input');
+			const checkboxInput1 = document.createElement('input');
+			const checkboxInput2 = document.createElement('input');
+			const button1 = document.createElement('button');
+			const button2 = document.createElement('input');
+			const button3 = document.createElement('button');
+			const button4 = document.createElement('input');
 
 			textInput.type = 'text';
 			textInput.name = 'textInput';

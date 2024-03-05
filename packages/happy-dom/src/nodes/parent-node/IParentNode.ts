@@ -73,6 +73,12 @@ export default interface IParentNode extends INode {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
+	getElementsByTagName<K extends keyof IElementTagNameMap>(
+		tagName: K
+	): IHTMLCollection<IElementTagNameMap[K]>;
+	getElementsByTagName<K extends keyof ISVGElementTagNameMap>(
+		tagName: K
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
 	getElementsByTagName(tagName: string): IHTMLCollection<IElement>;
 
 	/**
@@ -82,6 +88,14 @@ export default interface IParentNode extends INode {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
+	getElementsByTagNameNS<K extends keyof IElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/1999/xhtml',
+		tagName: K
+	): IHTMLCollection<IElementTagNameMap[K]>;
+	getElementsByTagNameNS<K extends keyof ISVGElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/2000/svg',
+		tagName: K
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
 	getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement>;
 
 	/**

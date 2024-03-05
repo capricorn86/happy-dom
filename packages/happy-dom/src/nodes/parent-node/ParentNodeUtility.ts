@@ -8,6 +8,8 @@ import INode from '../node/INode.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
+import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 /**
  * Parent node utility.
@@ -107,10 +109,16 @@ export default class ParentNodeUtility {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public static getElementsByTagName(
+	public static getElementsByTagName<
+		E extends keyof IElementTagNameMap,
+		S extends keyof ISVGElementTagNameMap
+	>(
 		parentNode: IElement | IDocumentFragment | IDocument,
-		tagName: string
-	): IHTMLCollection<IElement> {
+		tagName: E | S | string
+	):
+		| IHTMLCollection<IElementTagNameMap[E]>
+		| IHTMLCollection<ISVGElementTagNameMap[S]>
+		| IHTMLCollection<IElement> {
 		const upperTagName = tagName.toUpperCase();
 		const includeAll = tagName === '*';
 		let matches = new HTMLCollection<IElement>();
@@ -135,11 +143,17 @@ export default class ParentNodeUtility {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public static getElementsByTagNameNS(
+	public static getElementsByTagNameNS<
+		E extends keyof IElementTagNameMap,
+		S extends keyof ISVGElementTagNameMap
+	>(
 		parentNode: IElement | IDocumentFragment | IDocument,
 		namespaceURI: string,
-		tagName: string
-	): IHTMLCollection<IElement> {
+		tagName: E | S | string
+	):
+		| IHTMLCollection<IElementTagNameMap[E]>
+		| IHTMLCollection<ISVGElementTagNameMap[S]>
+		| IHTMLCollection<IElement> {
 		// When the namespace is HTML, the tag name is case-insensitive.
 		const formattedTagName = namespaceURI === NamespaceURI.html ? tagName.toUpperCase() : tagName;
 		const includeAll = tagName === '*';
