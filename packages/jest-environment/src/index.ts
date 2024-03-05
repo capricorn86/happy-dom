@@ -8,6 +8,7 @@ import { JestEnvironment, EnvironmentContext } from '@jest/environment';
 import { Window, IWindow } from 'happy-dom';
 import { Script } from 'vm';
 import { Global, Config } from '@jest/types';
+import { parseEnvironmentOptions } from './configuration';
 
 /**
  * Happy DOM Jest Environment.
@@ -69,10 +70,10 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			this.global.window['console'] = options.console;
 		}
 
-		if (projectConfig.testEnvironmentOptions['url']) {
-			this.window.happyDOM?.setURL(String(projectConfig.testEnvironmentOptions['url']));
-		} else {
-			this.window.happyDOM?.setURL('http://localhost/');
+		// Always set a default URL, override should the option be present in the environment options.
+		this.window.happyDOM?.setURL('http://localhost/');
+		if (projectConfig.testEnvironmentOptions && this.window.happyDOM) {
+			parseEnvironmentOptions(projectConfig.testEnvironmentOptions, this.window.happyDOM);
 		}
 
 		this.fakeTimers = new LegacyFakeTimers({
