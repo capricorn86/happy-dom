@@ -363,7 +363,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param [selectedOption] Selected option.
 	 */
 	public [PropertySymbol.updateOptionItems](selectedOption?: IHTMLOptionElement): void {
-		const optionElements = <IHTMLCollection<IHTMLOptionElement>>this.getElementsByTagName('option');
+		const optionElements = this.getElementsByTagName('option');
 
 		if (optionElements.length < this[PropertySymbol.options].length) {
 			this[PropertySymbol.options].splice(

@@ -77,6 +77,7 @@ export default class ParentNodeUtility {
 
 		this.append(parentNode, ...nodes);
 	}
+
 	/**
 	 * Returns an elements by class name.
 	 *
@@ -109,16 +110,10 @@ export default class ParentNodeUtility {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public static getElementsByTagName<
-		E extends keyof IElementTagNameMap,
-		S extends keyof ISVGElementTagNameMap
-	>(
+	public static getElementsByTagName(
 		parentNode: IElement | IDocumentFragment | IDocument,
-		tagName: E | S | string
-	):
-		| IHTMLCollection<IElementTagNameMap[E]>
-		| IHTMLCollection<ISVGElementTagNameMap[S]>
-		| IHTMLCollection<IElement> {
+		tagName: string
+	): IHTMLCollection<IElement> {
 		const upperTagName = tagName.toUpperCase();
 		const includeAll = tagName === '*';
 		let matches = new HTMLCollection<IElement>();
@@ -143,17 +138,11 @@ export default class ParentNodeUtility {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public static getElementsByTagNameNS<
-		E extends keyof IElementTagNameMap,
-		S extends keyof ISVGElementTagNameMap
-	>(
+	public static getElementsByTagNameNS(
 		parentNode: IElement | IDocumentFragment | IDocument,
 		namespaceURI: string,
-		tagName: E | S | string
-	):
-		| IHTMLCollection<IElementTagNameMap[E]>
-		| IHTMLCollection<ISVGElementTagNameMap[S]>
-		| IHTMLCollection<IElement> {
+		tagName: string
+	): IHTMLCollection<IElement> {
 		// When the namespace is HTML, the tag name is case-insensitive.
 		const formattedTagName = namespaceURI === NamespaceURI.html ? tagName.toUpperCase() : tagName;
 		const includeAll = tagName === '*';

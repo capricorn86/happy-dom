@@ -13,7 +13,6 @@ import IParentNode from '../parent-node/IParentNode.js';
 import INode from '../node/INode.js';
 import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
 import Selection from '../../selection/Selection.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
 import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import Location from '../../location/Location.js';
@@ -38,7 +37,7 @@ export default interface IDocument extends IParentNode {
 	readonly doctype: IDocumentType;
 	readonly body: IHTMLElement;
 	readonly head: IHTMLElement;
-	readonly scripts: IHTMLCollection<IHTMLScriptElement>;
+	readonly scripts: INodeList<IHTMLScriptElement>;
 	readonly activeElement: IHTMLElement;
 	readonly styleSheets: CSSStyleSheet[];
 	readonly scrollingElement: IHTMLElement;
@@ -50,8 +49,8 @@ export default interface IDocument extends IParentNode {
 	readonly documentURI: string;
 	readonly visibilityState: VisibilityStateEnum;
 	readonly hidden: boolean;
-	readonly links: IHTMLCollection<IHTMLElement>;
-	readonly forms: IHTMLCollection<IHTMLElement>;
+	readonly links: INodeList<IHTMLElement>;
+	readonly forms: INodeList<IHTMLElement>;
 	readonly referrer: string;
 	readonly currentScript: IHTMLScriptElement;
 	adoptedStyleSheets: CSSStyleSheet[];
@@ -191,41 +190,41 @@ export default interface IDocument extends IParentNode {
 	/**
 	 * Creates an element.
 	 *
-	 * @param tagName Tag name.
+	 * @param qualifiedName Tag name.
 	 * @param [options] Options.
 	 * @returns Element.
 	 */
 	createElement<K extends keyof IElementTagNameMap>(
-		tagName: K,
-		options?: { is: string }
+		qualifiedName: K,
+		options?: { is?: string }
 	): IElementTagNameMap[K];
 	createElement<K extends keyof ISVGElementTagNameMap>(
-		tagName: K,
-		options?: { is: string }
+		qualifiedName: K,
+		options?: { is?: string }
 	): ISVGElementTagNameMap[K];
-	createElement(tagName: string, options?: { is: string }): IHTMLElement;
+	createElement(tagName: string, options?: { is?: string }): IHTMLElement;
 
 	/**
 	 * Creates an element with the specified namespace URI and qualified name.
 	 *
-	 * @param tagName Tag name.
+	 * @param qualifiedName Tag name.
 	 * @param [options] Options.
 	 * @returns Element.
 	 */
 	createElementNS<K extends keyof IElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/1999/xhtml',
 		qualifiedName: K,
-		options?: { is: string }
+		options?: { is?: string }
 	): IElementTagNameMap[K];
 	createElementNS<K extends keyof ISVGElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/2000/svg',
 		qualifiedName: K,
-		options?: { is: string }
+		options?: { is?: string }
 	): ISVGElementTagNameMap[K];
 	createElementNS(
 		namespaceURI: string,
 		qualifiedName: string,
-		options?: { is: string }
+		options?: { is?: string }
 	): IHTMLElement;
 
 	/**

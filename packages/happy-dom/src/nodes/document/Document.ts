@@ -49,6 +49,8 @@ import { URL } from 'url';
 import IElementTagNameMap from '../../config/IElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import ISVGElement from '../svg-element/ISVGElement.js';
+import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import IHTMLAnchorElement from '../html-anchor-element/IHTMLAnchorElement.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -315,15 +317,15 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns a collection of all area elements and a elements in a document with a value for the href attribute.
 	 */
-	public get links(): IHTMLCollection<IHTMLElement> {
+	public get links(): IHTMLCollection<IHTMLAnchorElement | IHTMLElement> {
 		return <IHTMLCollection<IHTMLElement>>this.querySelectorAll('a[href],area[href]');
 	}
 
 	/**
 	 * Returns a collection of all form elements in a document.
 	 */
-	public get forms(): IHTMLCollection<IHTMLElement> {
-		return <IHTMLCollection<IHTMLElement>>this.querySelectorAll('form');
+	public get forms(): INodeList<IHTMLFormElement> {
+		return this.querySelectorAll('form');
 	}
 
 	/**
@@ -504,7 +506,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Scripts.
 	 */
 	public get scripts(): IHTMLCollection<IHTMLScriptElement> {
-		return <IHTMLCollection<IHTMLScriptElement>>this.getElementsByTagName('script');
+		return this.getElementsByTagName('script');
 	}
 
 	/**
@@ -602,29 +604,78 @@ export default class Document extends Node implements IDocument {
 	}
 
 	/**
+	 * Query CSS selector to find matching nodes.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll<K extends keyof IElementTagNameMap>(
+		selector: K
+	): INodeList<IElementTagNameMap[K]>;
+
+	/**
 	 * Query CSS selector to find matching elments.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll<
-		E extends keyof IElementTagNameMap,
-		S extends keyof ISVGElementTagNameMap
-	>(
-		selector: E | S | string
-	): INodeList<IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement> {
+	public querySelectorAll<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): INodeList<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): INodeList<IElement>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): INodeList<IElement> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
 	/**
-	 * Query CSS Selector to find a matching element.
+	 * Query CSS Selector to find matching node.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector<E extends keyof IElementTagNameMap, S extends keyof ISVGElementTagNameMap>(
-		selector: E | S | string
-	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement {
+	public querySelector<K extends keyof IElementTagNameMap>(
+		selector: K
+	): IElementTagNameMap[K] | null;
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): ISVGElementTagNameMap[K] | null;
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): IElement | null;
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): IElement | null {
 		return QuerySelector.querySelector(this, selector);
 	}
 
@@ -664,6 +715,14 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
+	public getElementsByTagName(tagName: string): IHTMLCollection<IElement>;
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
 	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
@@ -691,6 +750,15 @@ export default class Document extends Node implements IDocument {
 		namespaceURI: 'http://www.w3.org/2000/svg',
 		tagName: K
 	): IHTMLCollection<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -925,13 +993,44 @@ export default class Document extends Node implements IDocument {
 	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
 	 * @returns Element.
 	 */
-	public createElement<E extends keyof IElementTagNameMap, S extends keyof ISVGElementTagNameMap>(
-		qualifiedName: E | S | string,
+	public createElement<K extends keyof IElementTagNameMap>(
+		qualifiedName: K,
 		options?: { is?: string }
-	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IHTMLElement {
-		return <IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IHTMLElement>(
-			this.createElementNS(NamespaceURI.html, qualifiedName, options)
-		);
+	): IElementTagNameMap[K];
+
+	/**
+	 * Creates an element.
+	 *
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElement<K extends keyof ISVGElementTagNameMap>(
+		qualifiedName: K,
+		options?: { is?: string }
+	): ISVGElementTagNameMap[K];
+
+	/**
+	 * Creates an element.
+	 *
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElement(qualifiedName: string, options?: { is?: string }): IHTMLElement;
+
+	/**
+	 * Creates an element.
+	 *
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElement(qualifiedName: string, options?: { is?: string }): IHTMLElement {
+		return <IHTMLElement>this.createElementNS(NamespaceURI.html, qualifiedName, options);
 	}
 
 	/**
@@ -943,11 +1042,56 @@ export default class Document extends Node implements IDocument {
 	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
 	 * @returns Element.
 	 */
-	public createElementNS<E extends keyof IElementTagNameMap, S extends keyof ISVGElementTagNameMap>(
-		namespaceURI: string,
-		qualifiedName: E | S | string,
+	public createElementNS<K extends keyof IElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/1999/xhtml',
+		qualifiedName: K,
 		options?: { is?: string }
-	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IHTMLElement {
+	): IElementTagNameMap[K];
+
+	/**
+	 * Creates an element with the specified namespace URI and qualified name.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElementNS<K extends keyof ISVGElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/2000/svg',
+		qualifiedName: K,
+		options?: { is?: string }
+	): ISVGElementTagNameMap[K];
+
+	/**
+	 * Creates an element with the specified namespace URI and qualified name.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElementNS(
+		namespaceURI: string,
+		qualifiedName: string,
+		options?: { is?: string }
+	): IHTMLElement;
+
+	/**
+	 * Creates an element with the specified namespace URI and qualified name.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElementNS(
+		namespaceURI: string,
+		qualifiedName: string,
+		options?: { is?: string }
+	): IHTMLElement {
 		qualifiedName = String(qualifiedName);
 
 		if (!qualifiedName) {
@@ -968,7 +1112,7 @@ export default class Document extends Node implements IDocument {
 			element[PropertySymbol.localName] = qualifiedName;
 			element[PropertySymbol.namespaceURI] = namespaceURI;
 			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-			return <ISVGElementTagNameMap[S]>element;
+			return <IHTMLElement>(<unknown>element);
 		}
 
 		// Custom HTML element
@@ -991,14 +1135,14 @@ export default class Document extends Node implements IDocument {
 
 		// Known HTML element
 		if (elementClass) {
-			const element = NodeFactory.createNode<IElement>(this, elementClass);
+			const element = NodeFactory.createNode<IHTMLElement>(this, elementClass);
 
 			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
 			element[PropertySymbol.localName] = localName;
 			element[PropertySymbol.namespaceURI] = namespaceURI;
 			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
-			return <IElementTagNameMap[E]>element;
+			return element;
 		}
 
 		// Unknown HTML element

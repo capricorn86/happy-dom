@@ -49,7 +49,7 @@ export default interface IParentNode extends INode {
 	querySelectorAll<K extends keyof ISVGElementTagNameMap>(
 		selector: K
 	): INodeList<ISVGElementTagNameMap[K]>;
-	querySelectorAll<K extends keyof IElement>(selector: K): INodeList<IElement>;
+	querySelectorAll(selector: string): INodeList<IElement>;
 
 	/**
 	 * Query CSS selector to find matching nodes.

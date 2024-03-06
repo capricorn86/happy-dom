@@ -163,7 +163,7 @@ describe('BrowserFrame', () => {
 				referrerPolicy: 'no-referrer-when-downgrade'
 			});
 
-			(<IHTMLAnchorElement>page.mainFrame.document.querySelector('a')).click();
+			page.mainFrame.document.querySelector('a')?.click();
 
 			await page.mainFrame.waitForNavigation();
 

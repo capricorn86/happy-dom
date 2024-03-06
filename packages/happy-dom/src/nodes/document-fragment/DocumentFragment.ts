@@ -115,19 +115,52 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	}
 
 	/**
+	 * Query CSS selector to find matching nodes.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll<K extends keyof IElementTagNameMap>(
+		selector: K
+	): INodeList<IElementTagNameMap[K]>;
+
+	/**
 	 * Query CSS selector to find matching elments.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll<
-		E extends keyof IElementTagNameMap,
-		S extends keyof ISVGElementTagNameMap
-	>(
-		selector: E | S | string
-	): INodeList<IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement> {
+	public querySelectorAll<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): INodeList<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): INodeList<IElement>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): INodeList<IElement> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector<K extends keyof IElementTagNameMap>(
+		selector: K
+	): IElementTagNameMap[K] | null;
 
 	/**
 	 * Query CSS Selector to find a matching element.
@@ -135,9 +168,25 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector<E extends keyof IElementTagNameMap, S extends keyof ISVGElementTagNameMap>(
-		selector: E | S | string
-	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement | null {
+	public querySelector<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): ISVGElementTagNameMap[K] | null;
+
+	/**
+	 * Query CSS Selector to find a matching element.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): IElement | null;
+
+	/**
+	 * Query CSS Selector to find a matching element.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): IElement | null {
 		return QuerySelector.querySelector(this, selector);
 	}
 

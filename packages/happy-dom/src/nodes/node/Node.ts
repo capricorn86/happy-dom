@@ -266,7 +266,7 @@ export default class Node extends EventTarget implements INode {
 	 * @returns Base URI.
 	 */
 	public get baseURI(): string {
-		const base = <IHTMLBaseElement>this[PropertySymbol.ownerDocument].querySelector('base');
+		const base = this[PropertySymbol.ownerDocument].querySelector('base');
 		if (base) {
 			return base.href;
 		}
