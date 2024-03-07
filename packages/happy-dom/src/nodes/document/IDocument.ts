@@ -21,10 +21,12 @@ import INodeList from '../node/INodeList.js';
 import Range from '../../range/Range.js';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
-import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import IText from '../text/IText.js';
 import IComment from '../comment/IComment.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import IHTMLAnchorElement from '../html-anchor-element/IHTMLAnchorElement.js';
 
 /**
  * Document.
@@ -37,7 +39,7 @@ export default interface IDocument extends IParentNode {
 	readonly doctype: IDocumentType;
 	readonly body: IHTMLElement;
 	readonly head: IHTMLElement;
-	readonly scripts: INodeList<IHTMLScriptElement>;
+	readonly scripts: IHTMLCollection<IHTMLScriptElement>;
 	readonly activeElement: IHTMLElement;
 	readonly styleSheets: CSSStyleSheet[];
 	readonly scrollingElement: IHTMLElement;
@@ -49,7 +51,7 @@ export default interface IDocument extends IParentNode {
 	readonly documentURI: string;
 	readonly visibilityState: VisibilityStateEnum;
 	readonly hidden: boolean;
-	readonly links: INodeList<IHTMLElement>;
+	readonly links: INodeList<IHTMLElement | IHTMLAnchorElement>;
 	readonly forms: INodeList<IHTMLElement>;
 	readonly referrer: string;
 	readonly currentScript: IHTMLScriptElement;
@@ -194,10 +196,10 @@ export default interface IDocument extends IParentNode {
 	 * @param [options] Options.
 	 * @returns Element.
 	 */
-	createElement<K extends keyof IElementTagNameMap>(
+	createElement<K extends keyof IHTMLElementTagNameMap>(
 		qualifiedName: K,
 		options?: { is?: string }
-	): IElementTagNameMap[K];
+	): IHTMLElementTagNameMap[K];
 	createElement<K extends keyof ISVGElementTagNameMap>(
 		qualifiedName: K,
 		options?: { is?: string }
@@ -211,21 +213,17 @@ export default interface IDocument extends IParentNode {
 	 * @param [options] Options.
 	 * @returns Element.
 	 */
-	createElementNS<K extends keyof IElementTagNameMap>(
+	createElementNS<K extends keyof IHTMLElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/1999/xhtml',
 		qualifiedName: K,
 		options?: { is?: string }
-	): IElementTagNameMap[K];
+	): IHTMLElementTagNameMap[K];
 	createElementNS<K extends keyof ISVGElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/2000/svg',
 		qualifiedName: K,
 		options?: { is?: string }
 	): ISVGElementTagNameMap[K];
-	createElementNS(
-		namespaceURI: string,
-		qualifiedName: string,
-		options?: { is?: string }
-	): IHTMLElement;
+	createElementNS(namespaceURI: string, qualifiedName: string, options?: { is?: string }): IElement;
 
 	/**
 	 * Creates a text node.

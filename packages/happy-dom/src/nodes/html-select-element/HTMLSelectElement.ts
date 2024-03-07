@@ -14,7 +14,6 @@ import IHTMLOptionsCollection from './IHTMLOptionsCollection.js';
 import INode from '../node/INode.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLSelectElementNamedNodeMap from './HTMLSelectElementNamedNodeMap.js';

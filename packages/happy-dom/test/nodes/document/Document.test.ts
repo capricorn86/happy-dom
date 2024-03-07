@@ -652,7 +652,7 @@ describe('Document', () => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>[element];
+					return <IHTMLCollection<IElement>>(<unknown>[element]);
 				}
 			);
 
@@ -989,7 +989,7 @@ describe('Document', () => {
 		});
 
 		it("Creates an element when tag name isn't a string.", () => {
-			const element = <ISVGElement>(
+			const element = <IHTMLElement>(
 				document.createElementNS(<string>(<unknown>null), <string>(<unknown>true))
 			);
 			expect(element.tagName).toBe('TRUE');

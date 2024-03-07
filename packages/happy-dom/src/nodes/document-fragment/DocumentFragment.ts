@@ -10,7 +10,7 @@ import ElementUtility from '../element/ElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import INodeList from '../node/INodeList.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 /**
@@ -120,9 +120,9 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll<K extends keyof IElementTagNameMap>(
+	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): INodeList<IElementTagNameMap[K]>;
+	): INodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -158,9 +158,9 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector<K extends keyof IElementTagNameMap>(
+	public querySelector<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): IElementTagNameMap[K] | null;
+	): IHTMLElementTagNameMap[K] | null;
 
 	/**
 	 * Query CSS Selector to find a matching element.

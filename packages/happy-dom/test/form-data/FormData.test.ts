@@ -1,9 +1,6 @@
 import Window from '../../src/window/Window.js';
 import IWindow from '../../src/window/IWindow.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
-import IHTMLFormElement from '../../src/nodes/html-form-element/IHTMLFormElement.js';
-import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
-import IHTMLButtonElement from '../../src/nodes/html-button-element/IHTMLButtonElement.js';
 import File from '../../src/file/File.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
@@ -88,6 +85,10 @@ describe('FormData', () => {
 			form.appendChild(radioInput2);
 			form.appendChild(checkboxInput1);
 			form.appendChild(checkboxInput2);
+			form.appendChild(button1);
+			form.appendChild(button2);
+			form.appendChild(button3);
+			form.appendChild(button4);
 
 			const formData = new window.FormData(form);
 

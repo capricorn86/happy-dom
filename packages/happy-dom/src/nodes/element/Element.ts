@@ -34,7 +34,7 @@ import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReade
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import NodeFactory from '../NodeFactory.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 /**
@@ -877,9 +877,9 @@ export default class Element extends Node implements IElement {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll<K extends keyof IElementTagNameMap>(
+	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): INodeList<IElementTagNameMap[K]>;
+	): INodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -915,9 +915,9 @@ export default class Element extends Node implements IElement {
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector<K extends keyof IElementTagNameMap>(
+	public querySelector<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): IElementTagNameMap[K] | null;
+	): IHTMLElementTagNameMap[K] | null;
 
 	/**
 	 * Query CSS Selector to find matching node.
@@ -963,9 +963,9 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName<K extends keyof IElementTagNameMap>(
+	public getElementsByTagName<K extends keyof IHTMLElementTagNameMap>(
 		tagName: K
-	): IHTMLCollection<IElementTagNameMap[K]>;
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -1002,10 +1002,10 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS<K extends keyof IElementTagNameMap>(
+	public getElementsByTagNameNS<K extends keyof IHTMLElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/1999/xhtml',
 		tagName: K
-	): IHTMLCollection<IElementTagNameMap[K]>;
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name and namespace.

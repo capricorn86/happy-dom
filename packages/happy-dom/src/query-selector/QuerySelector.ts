@@ -10,7 +10,7 @@ import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
 import SelectorParser from './SelectorParser.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import Element from '../nodes/element/Element.js';
-import IElementTagNameMap from '../config/IElementTagNameMap.js';
+import IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 
 type IDocumentPositionAndElement = {
@@ -36,10 +36,10 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll<K extends keyof IElementTagNameMap>(
+	public static querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		node: IElement | IDocument | IDocumentFragment,
 		selector: K
-	): INodeList<IElementTagNameMap[K]>;
+	): INodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Finds elements based on a query selector.
@@ -125,10 +125,10 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML element.
 	 */
-	public static querySelector<K extends keyof IElementTagNameMap>(
+	public static querySelector<K extends keyof IHTMLElementTagNameMap>(
 		node: IElement | IDocument | IDocumentFragment,
 		selector: K
-	): IElementTagNameMap[K] | null;
+	): IHTMLElementTagNameMap[K] | null;
 
 	/**
 	 * Finds an element based on a query selector.
@@ -161,13 +161,10 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML element.
 	 */
-	public static querySelector<
-		E extends keyof IElementTagNameMap,
-		S extends keyof ISVGElementTagNameMap
-	>(
+	public static querySelector(
 		node: IElement | IDocument | IDocumentFragment,
-		selector: E | S | string
-	): IElementTagNameMap[E] | ISVGElementTagNameMap[S] | IElement | null {
+		selector: string
+	): IElement | null {
 		if (selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`

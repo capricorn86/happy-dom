@@ -21,7 +21,13 @@ import IHTMLOptionElement from '../nodes/html-option-element/IHTMLOptionElement.
 import IHTMLSelectElement from '../nodes/html-select-element/IHTMLSelectElement.js';
 import IHTMLVideoElement from '../nodes/html-video-element/IHTMLVideoElement.js';
 
-export default interface IElementTagNameMap {
+// Makes it work with custom elements when they declare their own interface.
+declare global {
+	/* eslint-disable-next-line @typescript-eslint/naming-convention */
+	interface HTMLElementTagNameMap {}
+}
+
+export default interface IHTMLElementTagNameMap extends HTMLElementTagNameMap {
 	a: IHTMLAnchorElement;
 	abbr: IHTMLElement;
 	address: IHTMLElement;

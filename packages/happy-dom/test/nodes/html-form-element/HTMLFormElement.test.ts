@@ -560,7 +560,7 @@ describe('HTMLFormElement', () => {
 										request?.url === 'http://example.com/iframe'
 											? `
                                 <button form="form-id">Submit</button>
-                                <form id="form-id" action="http://example.com" target="_self">
+                                <form id="form-id" action="http://example.com" target="_top">
                                     <input type="text" name="text1" value="value1">
                                     <input type="hidden" name="text2" value="value2">
                                     <input type="checkbox" name="checkbox1" value="value1" checked>
@@ -585,6 +585,10 @@ describe('HTMLFormElement', () => {
 			page.mainFrame.url = 'http://example.com';
 
 			oldWindow.document.write(`<iframe src="http://example.com/iframe"></iframe>`);
+
+			await new Promise((resolve) =>
+				oldWindow.document.querySelector('iframe')?.addEventListener('load', resolve)
+			);
 
 			(<IBrowserWindow>(
 				(<IHTMLIFrameElement>oldWindow.document.body.children[0]).contentWindow

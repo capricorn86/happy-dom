@@ -8,8 +8,6 @@ import INode from '../node/INode.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
-import IElementTagNameMap from '../../config/IElementTagNameMap.js';
-import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 /**
  * Parent node utility.

@@ -151,7 +151,7 @@ export default class BrowserFrameNavigator {
 			// Handles the "X-Frame-Options" header for child frames.
 			if (frame.parentFrame) {
 				const originURL = frame.parentFrame.window.location;
-				const xFrameOptions = response.headers.get('X-Frame-Options')?.toLowerCase();
+				const xFrameOptions = response.headers?.get('X-Frame-Options')?.toLowerCase();
 				const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
 
 				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {

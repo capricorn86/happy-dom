@@ -46,7 +46,7 @@ import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import NodeFactory from '../NodeFactory.js';
 import { URL } from 'url';
-import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import ISVGElement from '../svg-element/ISVGElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
@@ -317,8 +317,8 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns a collection of all area elements and a elements in a document with a value for the href attribute.
 	 */
-	public get links(): IHTMLCollection<IHTMLAnchorElement | IHTMLElement> {
-		return <IHTMLCollection<IHTMLElement>>this.querySelectorAll('a[href],area[href]');
+	public get links(): INodeList<IHTMLAnchorElement | IHTMLElement> {
+		return <INodeList<IHTMLElement>>this.querySelectorAll('a[href],area[href]');
 	}
 
 	/**
@@ -609,9 +609,9 @@ export default class Document extends Node implements IDocument {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll<K extends keyof IElementTagNameMap>(
+	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): INodeList<IElementTagNameMap[K]>;
+	): INodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -647,9 +647,9 @@ export default class Document extends Node implements IDocument {
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector<K extends keyof IElementTagNameMap>(
+	public querySelector<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): IElementTagNameMap[K] | null;
+	): IHTMLElementTagNameMap[K] | null;
 
 	/**
 	 * Query CSS Selector to find matching node.
@@ -695,9 +695,9 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName<K extends keyof IElementTagNameMap>(
+	public getElementsByTagName<K extends keyof IHTMLElementTagNameMap>(
 		tagName: K
-	): IHTMLCollection<IElementTagNameMap[K]>;
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -734,10 +734,10 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS<K extends keyof IElementTagNameMap>(
+	public getElementsByTagNameNS<K extends keyof IHTMLElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/1999/xhtml',
 		tagName: K
-	): IHTMLCollection<IElementTagNameMap[K]>;
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -993,10 +993,10 @@ export default class Document extends Node implements IDocument {
 	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
 	 * @returns Element.
 	 */
-	public createElement<K extends keyof IElementTagNameMap>(
+	public createElement<K extends keyof IHTMLElementTagNameMap>(
 		qualifiedName: K,
 		options?: { is?: string }
-	): IElementTagNameMap[K];
+	): IHTMLElementTagNameMap[K];
 
 	/**
 	 * Creates an element.
@@ -1042,11 +1042,11 @@ export default class Document extends Node implements IDocument {
 	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
 	 * @returns Element.
 	 */
-	public createElementNS<K extends keyof IElementTagNameMap>(
+	public createElementNS<K extends keyof IHTMLElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/1999/xhtml',
 		qualifiedName: K,
 		options?: { is?: string }
-	): IElementTagNameMap[K];
+	): IHTMLElementTagNameMap[K];
 
 	/**
 	 * Creates an element with the specified namespace URI and qualified name.
@@ -1076,7 +1076,7 @@ export default class Document extends Node implements IDocument {
 		namespaceURI: string,
 		qualifiedName: string,
 		options?: { is?: string }
-	): IHTMLElement;
+	): IElement;
 
 	/**
 	 * Creates an element with the specified namespace URI and qualified name.
@@ -1091,7 +1091,7 @@ export default class Document extends Node implements IDocument {
 		namespaceURI: string,
 		qualifiedName: string,
 		options?: { is?: string }
-	): IHTMLElement {
+	): IElement {
 		qualifiedName = String(qualifiedName);
 
 		if (!qualifiedName) {

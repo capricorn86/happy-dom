@@ -1,4 +1,4 @@
-import IElementTagNameMap from '../../config/IElementTagNameMap.js';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import IElement from '../element/IElement.js';
 import INode from '../node/INode.js';
@@ -30,7 +30,9 @@ export default interface IDocumentFragment extends INode {
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	querySelector<K extends keyof IElementTagNameMap>(selector: K): IElementTagNameMap[K] | null;
+	querySelector<K extends keyof IHTMLElementTagNameMap>(
+		selector: K
+	): IHTMLElementTagNameMap[K] | null;
 	querySelector<K extends keyof ISVGElementTagNameMap>(
 		selector: K
 	): ISVGElementTagNameMap[K] | null;
@@ -42,9 +44,9 @@ export default interface IDocumentFragment extends INode {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	querySelectorAll<K extends keyof IElementTagNameMap>(
+	querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): INodeList<IElementTagNameMap[K]>;
+	): INodeList<IHTMLElementTagNameMap[K]>;
 	querySelectorAll<K extends keyof ISVGElementTagNameMap>(
 		selector: K
 	): INodeList<ISVGElementTagNameMap[K]>;

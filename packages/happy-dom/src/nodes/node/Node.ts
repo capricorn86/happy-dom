@@ -4,7 +4,6 @@ import MutationListener from '../../mutation-observer/MutationListener.js';
 import INode from './INode.js';
 import IDocument from '../document/IDocument.js';
 import IElement from '../element/IElement.js';
-import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
 import NodeDocumentPositionEnum from './NodeDocumentPositionEnum.js';
 import NodeUtility from './NodeUtility.js';
