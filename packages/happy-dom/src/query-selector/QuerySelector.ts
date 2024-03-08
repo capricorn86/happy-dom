@@ -1,7 +1,7 @@
 import IElement from '../nodes/element/IElement.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import INodeList from '../nodes/node/INodeList.js';
 import SelectorItem from './SelectorItem.js';
+import INodeList from '../nodes/node/INodeList.js';
 import NodeList from '../nodes/node/NodeList.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
@@ -10,6 +10,8 @@ import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
 import SelectorParser from './SelectorParser.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import Element from '../nodes/element/Element.js';
+import IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
+import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 
 type IDocumentPositionAndElement = {
 	documentPosition: string;
@@ -34,11 +36,47 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
+	public static querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
+		node: IElement | IDocument | IDocumentFragment,
+		selector: K
+	): INodeList<IHTMLElementTagNameMap[K]>;
+
+	/**
+	 * Finds elements based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML elements.
+	 */
+	public static querySelectorAll<K extends keyof ISVGElementTagNameMap>(
+		node: IElement | IDocument | IDocumentFragment,
+		selector: K
+	): INodeList<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Finds elements based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML elements.
+	 */
+	public static querySelectorAll(
+		node: IElement | IDocument | IDocumentFragment,
+		selector: string
+	): INodeList<IElement>;
+
+	/**
+	 * Finds elements based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML elements.
+	 */
 	public static querySelectorAll(
 		node: IElement | IDocument | IDocumentFragment,
 		selector: string
 	): INodeList<IElement> {
-		if (selector === '') {
+		if (<string>selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
 			);
@@ -79,6 +117,42 @@ export default class QuerySelector {
 
 		return nodeList;
 	}
+
+	/**
+	 * Finds an element based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML element.
+	 */
+	public static querySelector<K extends keyof IHTMLElementTagNameMap>(
+		node: IElement | IDocument | IDocumentFragment,
+		selector: K
+	): IHTMLElementTagNameMap[K] | null;
+
+	/**
+	 * Finds an element based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML element.
+	 */
+	public static querySelector<K extends keyof ISVGElementTagNameMap>(
+		node: IElement | IDocument | IDocumentFragment,
+		selector: K
+	): ISVGElementTagNameMap[K] | null;
+
+	/**
+	 * Finds an element based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML element.
+	 */
+	public static querySelector(
+		node: IElement | IDocument | IDocumentFragment,
+		selector: string
+	): IElement | null;
 
 	/**
 	 * Finds an element based on a query selector.

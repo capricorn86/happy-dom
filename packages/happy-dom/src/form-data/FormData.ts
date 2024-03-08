@@ -59,7 +59,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 									this.append(node.name, file);
 								}
 							}
-						} else {
+						} else if (node.value) {
 							this.append(node.name, node.value);
 						}
 					}
@@ -73,7 +73,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @param callback Callback.
 	 */
-	public forEach(callback: (key: string, value: string | File, thisArg: FormData) => void): void {
+	public forEach(callback: (value: string | File, key: string, thisArg: FormData) => void): void {
 		for (const entry of this.#entries) {
 			callback.call(this, entry.value, entry.name, this);
 		}

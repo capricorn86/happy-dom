@@ -10,6 +10,11 @@ import IHTMLInputElement from '../html-input-element/IHTMLInputElement.js';
 import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement.js';
 import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
 import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import BrowserFrameNavigator from '../../browser/utilities/BrowserFrameNavigator.js';
+import FormData from '../../form-data/FormData.js';
+import Element from '../element/Element.js';
+import Node from '../node/Node.js';
 
 /**
  * HTML Form Element.
@@ -27,6 +32,19 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	public onformdata: (event: Event) => void | null = null;
 	public onreset: (event: Event) => void | null = null;
 	public onsubmit: (event: Event) => void | null = null;
+
+	// Private properties
+	#browserFrame: IBrowserFrame;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param browserFrame Browser frame.
+	 */
+	constructor(browserFrame: IBrowserFrame) {
+		super();
+		this.#browserFrame = browserFrame;
+	}
 
 	/**
 	 * Returns elements.
@@ -106,7 +124,18 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Action.
 	 */
 	public get action(): string {
-		return this.getAttribute('action') || '';
+		if (!this.hasAttribute('action')) {
+			return this[PropertySymbol.ownerDocument].location.href;
+		}
+
+		try {
+			return new URL(
+				this.getAttribute('action') || '',
+				this[PropertySymbol.ownerDocument].location.href
+			).href;
+		} catch (e) {
+			return '';
+		}
 	}
 
 	/**
@@ -214,10 +243,10 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 
 	/**
 	 * Submits form. No submit event is raised. In particular, the form's "submit" event handler is not run.
-	 *
-	 * In Happy DOM this means that nothing happens.
 	 */
-	public submit(): void {}
+	public submit(): void {
+		this.#submit();
+	}
 
 	/**
 	 * Submits form, reports validity and raises submit event.
@@ -230,6 +259,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 			this.dispatchEvent(
 				new SubmitEvent('submit', { bubbles: true, cancelable: true, submitter: submitter || this })
 			);
+			this.#submit(submitter);
 		}
 	}
 
@@ -375,8 +405,84 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 */
 	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
 		return (
-			!this.constructor.prototype.hasOwnProperty(name) &&
+			!!name &&
+			!HTMLFormElement.prototype.hasOwnProperty(name) &&
+			!HTMLElement.prototype.hasOwnProperty(name) &&
+			!Element.prototype.hasOwnProperty(name) &&
+			!Node.prototype.hasOwnProperty(name) &&
 			(isNaN(Number(name)) || name.includes('.'))
 		);
+	}
+
+	/**
+	 * Submits form.
+	 *
+	 * @param [submitter] Submitter.
+	 */
+	#submit(submitter?: IHTMLInputElement | IHTMLButtonElement): void {
+		const action = submitter?.hasAttribute('formaction')
+			? submitter?.formAction || this.action
+			: this.action;
+
+		if (!action) {
+			// The URL is invalid when the action is empty.
+			// This is what Chrome does when the URL is invalid.
+			this[PropertySymbol.ownerDocument].location.hash = '#blocked';
+			return;
+		}
+
+		const method = submitter?.formMethod || this.method;
+		const formData = new FormData(this);
+		let targetFrame: IBrowserFrame;
+
+		switch (submitter?.formTarget || this.target) {
+			default:
+			case '_self':
+				targetFrame = this.#browserFrame;
+				break;
+			case '_top':
+				targetFrame = this.#browserFrame.page.mainFrame;
+				break;
+			case '_parent':
+				targetFrame = this.#browserFrame.parentFrame ?? this.#browserFrame;
+				break;
+			case '_blank':
+				const newPage = this.#browserFrame.page.context.newPage();
+				targetFrame = newPage.mainFrame;
+				targetFrame[PropertySymbol.openerFrame] = this.#browserFrame;
+				break;
+		}
+
+		if (method === 'get') {
+			const url = new URL(action);
+
+			for (const [key, value] of formData) {
+				if (typeof value === 'string') {
+					url.searchParams.append(key, value);
+				}
+			}
+
+			BrowserFrameNavigator.navigate({
+				windowClass: this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor,
+				frame: targetFrame,
+				url: url.href,
+				goToOptions: {
+					referrer: this.#browserFrame.page.mainFrame.window.location.origin
+				}
+			});
+
+			return;
+		}
+
+		BrowserFrameNavigator.navigate({
+			windowClass: this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor,
+			frame: targetFrame,
+			method: method,
+			url: action,
+			formData,
+			goToOptions: {
+				referrer: this.#browserFrame.page.mainFrame.window.location.origin
+			}
+		});
 	}
 }

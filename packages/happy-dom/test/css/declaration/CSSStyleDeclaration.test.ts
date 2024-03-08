@@ -13,7 +13,7 @@ describe('CSSStyleDeclaration', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLElement>document.createElement('div');
+		element = document.createElement('div');
 	});
 
 	describe(`get {number}()`, () => {

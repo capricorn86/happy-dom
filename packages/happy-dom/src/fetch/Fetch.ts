@@ -102,7 +102,7 @@ export default class Fetch {
 	 * @returns Response.
 	 */
 	public async send(): Promise<IResponse> {
-		FetchRequestReferrerUtility.prepareRequest(this.#window.location, this.request);
+		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
 		FetchRequestValidationUtility.validateSchema(this.request);
 
 		if (this.request.signal.aborted) {
@@ -247,7 +247,7 @@ export default class Fetch {
 	private async compliesWithCrossOriginPolicy(): Promise<boolean> {
 		if (
 			this.disableCrossOriginPolicy ||
-			!FetchCORSUtility.isCORS(this.#window.location, this.request[PropertySymbol.url])
+			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -714,7 +714,7 @@ export default class Fetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.#window.location, locationURL))
+						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
 				) {
 					headers.delete('authorization');
 					headers.delete('www-authenticate');

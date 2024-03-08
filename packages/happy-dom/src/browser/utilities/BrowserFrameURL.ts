@@ -1,7 +1,7 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
-import { URL } from 'url';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import { URL } from 'url';
 
 /**
  * Browser frame URL utility.
@@ -22,7 +22,7 @@ export default class BrowserFrameURL {
 		}
 
 		try {
-			return new URL(url, frame.window.location);
+			return new URL(url, frame.window.location.href);
 		} catch (e) {
 			if (frame.window.location.hostname) {
 				throw new DOMException(

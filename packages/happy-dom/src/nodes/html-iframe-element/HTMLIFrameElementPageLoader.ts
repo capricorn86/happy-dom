@@ -10,6 +10,7 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
 import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js';
+import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
 
 /**
  * HTML Iframe page loader.
@@ -84,7 +85,10 @@ export default class HTMLIFrameElementPageLoader {
 			parentWindow;
 
 		this.#browserIFrame
-			.goto(targetURL.href)
+			.goto(targetURL.href, {
+				referrer: originURL.origin,
+				referrerPolicy: <IRequestReferrerPolicy>this.#element.referrerPolicy
+			})
 			.then(() => this.#element.dispatchEvent(new Event('load')))
 			.catch((error) => WindowErrorUtility.dispatchError(this.#element, error));
 
