@@ -436,6 +436,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 		let targetFrame: IBrowserFrame;
 
 		switch (submitter?.formTarget || this.target) {
+			default:
 			case '_self':
 				targetFrame = this.#browserFrame;
 				break;
@@ -449,9 +450,6 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 				const newPage = this.#browserFrame.page.context.newPage();
 				targetFrame = newPage.mainFrame;
 				targetFrame[PropertySymbol.openerFrame] = this.#browserFrame;
-				break;
-			default:
-				targetFrame = this.#browserFrame;
 				break;
 		}
 

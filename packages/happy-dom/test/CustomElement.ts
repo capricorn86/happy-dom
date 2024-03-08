@@ -62,8 +62,8 @@ export default class CustomElement extends HTMLElement {
             <div>
                 <span class="propKey">
                     key1 is "${this.getAttribute('key1')}" and key2 is "${this.getAttribute(
-			'key2'
-		)}".
+											'key2'
+										)}".
                 </span>
                 <span class="children">${this.childNodes
 									.map(

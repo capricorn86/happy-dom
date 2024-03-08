@@ -382,6 +382,12 @@ describe('HTMLFormElement', () => {
 
 	describe('submit()', () => {
 		it('Fallbacks to set location URL when in the main frame of a detached Window.', () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				throw new Error('Request should not be sent.');
+			});
+
+			expect(window.location.href).toBe('about:blank');
+
 			element.action = 'https://localhost:3000';
 			element.submit();
 
@@ -603,6 +609,106 @@ describe('HTMLFormElement', () => {
 			);
 		});
 
+		it(`Supports "_parent" as target.`, async () => {
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = this.request;
+				return Promise.resolve(<IResponse>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) =>
+							setTimeout(
+								() =>
+									resolve(
+										request?.url === 'http://example.com/iframe'
+											? `
+                                <button form="form-id">Submit</button>
+                                <form id="form-id" action="http://example.com" target="_parent">
+                                    <input type="text" name="text1" value="value1">
+                                    <input type="hidden" name="text2" value="value2">
+                                    <input type="checkbox" name="checkbox1" value="value1" checked>
+                                    <input type="checkbox" name="checkbox2" value="value2">
+                                    <input type="radio" name="radio1" value="value1">
+                                    <input type="radio" name="radio1" value="value2" checked>
+                                    <input type="radio" name="radio1" value="value3">
+                                </form>
+                                `
+											: 'Test'
+									),
+								2
+							)
+						)
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+
+			page.mainFrame.url = 'http://example.com';
+
+			oldWindow.document.write(`<iframe src="http://example.com/iframe"></iframe>`);
+
+			await new Promise((resolve) =>
+				oldWindow.document.querySelector('iframe')?.addEventListener('load', resolve)
+			);
+
+			(<IBrowserWindow>(
+				(<IHTMLIFrameElement>oldWindow.document.body.children[0]).contentWindow
+			)).document.body
+				.querySelector('button')
+				?.click();
+
+			await page.mainFrame.waitForNavigation();
+
+			expect(page.mainFrame.url).toBe(
+				'http://example.com/?text1=value1&text2=value2&checkbox1=value1&radio1=value2'
+			);
+		});
+
+		it(`Supports "_blank" as target.`, async () => {
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = this.request;
+				return Promise.resolve(<IResponse>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 2))
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+
+			oldWindow.document.write(`
+                    <form action="http://example.com" target="_blank">
+                        <input type="text" name="text1" value="value1">
+                        <input type="hidden" name="text2" value="value2">
+                        <input type="checkbox" name="checkbox1" value="value1" checked>
+                        <input type="checkbox" name="checkbox2" value="value2">
+                        <input type="radio" name="radio1" value="value1">
+                        <input type="radio" name="radio1" value="value2" checked>
+                        <input type="radio" name="radio1" value="value3">
+                        <button>Submit</button>
+                    </form>
+                `);
+
+			oldWindow.document.body.querySelector('button')?.click();
+
+			const newPage = page.context.pages[1];
+
+			expect(newPage.mainFrame.url).toBe(
+				'http://example.com/?text1=value1&text2=value2&checkbox1=value1&radio1=value2'
+			);
+
+			await newPage.waitForNavigation();
+
+			expect(newPage.mainFrame.document.body.innerHTML).toBe('Test');
+		});
+
 		it(`Uses "action" from button when "formaction" is set as an attribute on the button.`, async () => {
 			let request: IRequest | null = null;
 
@@ -638,6 +744,29 @@ describe('HTMLFormElement', () => {
 
 			expect(page.mainFrame.url).toBe('http://button.example.com/');
 			expect(page.mainFrame.window.location.href).toBe('http://button.example.com/');
+		});
+
+		it(`Sets hash to "#blocked" when action is invalid.`, async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+
+			oldWindow.document.write(`
+                    <form action="/not-possible-to-be-relative-to-about-blank/">
+                        <input type="text" name="text1" value="value1">
+                        <input type="hidden" name="text2" value="value2">
+                        <input type="checkbox" name="checkbox1" value="value1" checked>
+                        <input type="checkbox" name="checkbox2" value="value2">
+                        <input type="radio" name="radio1" value="value1">
+                        <input type="radio" name="radio1" value="value2" checked>
+                        <input type="radio" name="radio1" value="value3">
+                        <button>Submit</button>
+                    </form>
+                `);
+
+			oldWindow.document.querySelector('button')?.click();
+
+			expect(page.mainFrame.url).toBe('about:blank#blocked');
 		});
 	});
 
@@ -719,6 +848,80 @@ describe('HTMLFormElement', () => {
 			element.requestSubmit(submitter);
 
 			expect((<SubmitEvent>(<unknown>submitEvent)).type).toBe('submit');
+		});
+
+		it('Fallbacks to set location URL when in the main frame of a detached Window.', () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				throw new Error('Request should not be sent.');
+			});
+
+			expect(window.location.href).toBe('about:blank');
+
+			element.action = 'https://localhost:3000';
+			element.requestSubmit();
+
+			expect(window.location.href).toBe('https://localhost:3000/');
+		});
+
+		it('Submits form as query string when method is "GET".', async () => {
+			let request: IRequest | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				request = this.request;
+				return Promise.resolve(<IResponse>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 2))
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+			const oldWindow = page.mainFrame.window;
+
+			page.mainFrame.url = 'http://referrer.example.com';
+
+			oldWindow.document.write(`
+                <form action="http://example.com">
+                    <input type="text" name="text1" value="value1" pattern="^test$" required>
+                    <input type="hidden" name="text2" value="value2">
+                    <input type="checkbox" name="checkbox1" value="value1" checked>
+                    <input type="checkbox" name="checkbox2" value="value2">
+                    <input type="radio" name="radio1" value="value1">
+                    <input type="radio" name="radio1" value="value2" checked>
+                    <input type="radio" name="radio1" value="value3">
+                    <input type="submit" name="button1">
+                </form>
+            `);
+
+			(<IHTMLInputElement>oldWindow.document.querySelector('input[name="text1"]')).value =
+				'invalid';
+
+			oldWindow.document.body.children[0]['button1'].click();
+
+			await new Promise((resolve) => setTimeout(resolve, 2));
+
+			expect(page.mainFrame.url).toBe('http://referrer.example.com/');
+
+			(<IHTMLInputElement>oldWindow.document.querySelector('input[name="text1"]')).value = 'test';
+
+			oldWindow.document.body.children[0]['button1'].click();
+
+			await page.mainFrame.waitForNavigation();
+
+			expect((<IRequest>(<unknown>request)).referrer).toBe('about:client');
+			expect((<IRequest>(<unknown>request)).referrerPolicy).toBe('origin');
+			expect((<IRequest>(<unknown>request)).method).toBe('GET');
+
+			expect(page.mainFrame.url).toBe(
+				'http://example.com/?text1=test&text2=value2&checkbox1=value1&radio1=value2'
+			);
+			expect(page.mainFrame.window).not.toBe(oldWindow);
+			expect(oldWindow.location.href).toBe('http://referrer.example.com/');
+			expect(page.mainFrame.window.location.href).toBe(
+				'http://example.com/?text1=test&text2=value2&checkbox1=value1&radio1=value2'
+			);
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
 		});
 	});
 
