@@ -1,8 +1,8 @@
 // We need to set this as a global constant, so that using fake timers in Jest and Vitest won't override this on the global object.
 const TIMER = {
-	setImmediate: setImmediate,
-	clearImmediate: clearImmediate,
-	clearTimeout: clearTimeout
+	setImmediate: globalThis.setImmediate.bind(globalThis),
+	clearImmediate: globalThis.clearImmediate.bind(globalThis),
+	clearTimeout: globalThis.clearTimeout.bind(globalThis)
 };
 
 /**
@@ -10,7 +10,7 @@ const TIMER = {
  */
 export default class AsyncTaskManager {
 	private static taskID = 0;
-	private runningTasks: { [k: string]: (destroy: boolean) => void } = {};
+	private runningTasks: { [k: string]: (destroy: boolean) => void | Promise<void> } = {};
 	private runningTaskCount = 0;
 	private runningTimers: NodeJS.Timeout[] = [];
 	private runningImmediates: NodeJS.Immediate[] = [];
@@ -189,8 +189,23 @@ export default class AsyncTaskManager {
 			TIMER.clearTimeout(timer);
 		}
 
+		const taskPromises = [];
+
 		for (const key of Object.keys(runningTasks)) {
-			runningTasks[key](destroy);
+			const returnValue = runningTasks[key](destroy);
+			if (returnValue instanceof Promise) {
+				taskPromises.push(returnValue);
+			}
+		}
+
+		if (taskPromises.length) {
+			return Promise.all(taskPromises)
+				.then(() => this.waitUntilComplete())
+				.catch((error) => {
+					/* eslint-disable-next-line no-console */
+					console.error(error);
+					throw error;
+				});
 		}
 
 		// We need to wait for microtasks to complete before resolving.

@@ -11,10 +11,8 @@ import IAttr from '../attr/IAttr.js';
 import IDocumentType from '../document-type/IDocumentType.js';
 import IParentNode from '../parent-node/IParentNode.js';
 import INode from '../node/INode.js';
-import ICharacterData from '../character-data/ICharacterData.js';
 import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
 import Selection from '../../selection/Selection.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
 import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import Location from '../../location/Location.js';
@@ -23,6 +21,12 @@ import INodeList from '../node/INodeList.js';
 import Range from '../../range/Range.js';
 import IProcessingInstruction from '../processing-instruction/IProcessingInstruction.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import IText from '../text/IText.js';
+import IComment from '../comment/IComment.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import IHTMLAnchorElement from '../html-anchor-element/IHTMLAnchorElement.js';
 
 /**
  * Document.
@@ -47,7 +51,8 @@ export default interface IDocument extends IParentNode {
 	readonly documentURI: string;
 	readonly visibilityState: VisibilityStateEnum;
 	readonly hidden: boolean;
-	readonly links: IHTMLCollection<IHTMLElement>;
+	readonly links: INodeList<IHTMLElement | IHTMLAnchorElement>;
+	readonly forms: INodeList<IHTMLElement>;
 	readonly referrer: string;
 	readonly currentScript: IHTMLScriptElement;
 	adoptedStyleSheets: CSSStyleSheet[];
@@ -187,20 +192,38 @@ export default interface IDocument extends IParentNode {
 	/**
 	 * Creates an element.
 	 *
-	 * @param tagName Tag name.
+	 * @param qualifiedName Tag name.
 	 * @param [options] Options.
 	 * @returns Element.
 	 */
-	createElement(tagName: string, options?: { is: string }): IElement;
+	createElement<K extends keyof IHTMLElementTagNameMap>(
+		qualifiedName: K,
+		options?: { is?: string }
+	): IHTMLElementTagNameMap[K];
+	createElement<K extends keyof ISVGElementTagNameMap>(
+		qualifiedName: K,
+		options?: { is?: string }
+	): ISVGElementTagNameMap[K];
+	createElement(tagName: string, options?: { is?: string }): IHTMLElement;
 
 	/**
 	 * Creates an element with the specified namespace URI and qualified name.
 	 *
-	 * @param tagName Tag name.
+	 * @param qualifiedName Tag name.
 	 * @param [options] Options.
 	 * @returns Element.
 	 */
-	createElementNS(namespaceURI: string, qualifiedName: string, options?: { is: string }): IElement;
+	createElementNS<K extends keyof IHTMLElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/1999/xhtml',
+		qualifiedName: K,
+		options?: { is?: string }
+	): IHTMLElementTagNameMap[K];
+	createElementNS<K extends keyof ISVGElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/2000/svg',
+		qualifiedName: K,
+		options?: { is?: string }
+	): ISVGElementTagNameMap[K];
+	createElementNS(namespaceURI: string, qualifiedName: string, options?: { is?: string }): IElement;
 
 	/**
 	 * Creates a text node.
@@ -208,7 +231,7 @@ export default interface IDocument extends IParentNode {
 	 * @param  data Text data.
 	 * @returns Text node.
 	 */
-	createTextNode(data?: string): ICharacterData;
+	createTextNode(data?: string): IText;
 
 	/**
 	 * Creates a comment node.
@@ -216,7 +239,7 @@ export default interface IDocument extends IParentNode {
 	 * @param  data Text data.
 	 * @returns Text node.
 	 */
-	createComment(data?: string): ICharacterData;
+	createComment(data?: string): IComment;
 
 	/**
 	 * Creates a document fragment.

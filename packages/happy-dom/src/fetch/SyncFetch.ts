@@ -86,7 +86,7 @@ export default class SyncFetch {
 	 * @returns Response.
 	 */
 	public send(): ISyncResponse {
-		FetchRequestReferrerUtility.prepareRequest(this.#window.location, this.request);
+		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
 		FetchRequestValidationUtility.validateSchema(this.request);
 
 		if (this.request.signal.aborted) {
@@ -112,11 +112,7 @@ export default class SyncFetch {
 			this.#window.location.protocol === 'https:'
 		) {
 			throw new DOMException(
-				`Mixed Content: The page at '${
-					this.#window.location.href
-				}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
-					this.request.url
-				}'. This request has been blocked; the content must be served over HTTPS.`,
+				`Mixed Content: The page at '${this.#window.location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${this.request.url}'. This request has been blocked; the content must be served over HTTPS.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
@@ -235,7 +231,7 @@ export default class SyncFetch {
 	private compliesWithCrossOriginPolicy(): boolean {
 		if (
 			this.disableCrossOriginPolicy ||
-			!FetchCORSUtility.isCORS(this.#window.location, this.request[PropertySymbol.url])
+			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -516,7 +512,7 @@ export default class SyncFetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.#window.location, locationURL))
+						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
 				) {
 					headers.delete('authorization');
 					headers.delete('www-authenticate');

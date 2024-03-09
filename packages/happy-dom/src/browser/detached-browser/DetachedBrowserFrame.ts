@@ -2,7 +2,6 @@ import DetachedBrowserPage from './DetachedBrowserPage.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import IBrowserFrame from '../types/IBrowserFrame.js';
-import Location from '../../location/Location.js';
 import IResponse from '../../fetch/types/IResponse.js';
 import IGoToOptions from '../types/IGoToOptions.js';
 import { Script } from 'vm';
@@ -99,7 +98,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		if (!this.window) {
 			throw new Error('The frame has been destroyed, the "window" property is not set.');
 		}
-		(<Location>this.window.location) = new Location(
+		this.window.location[PropertySymbol.setURL](
 			this,
 			BrowserFrameURL.getRelativeURL(this, url).href
 		);
@@ -168,7 +167,12 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(this.page.context.browser.windowClass, this, url, options);
+		return BrowserFrameNavigator.navigate({
+			windowClass: this.page.context.browser.windowClass,
+			frame: this,
+			url: url,
+			goToOptions: options
+		});
 	}
 
 	/**
@@ -178,11 +182,11 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public reload(options: IReloadOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(
-			this.page.context.browser.windowClass,
-			this,
-			this.url,
-			options
-		);
+		return BrowserFrameNavigator.navigate({
+			windowClass: this.page.context.browser.windowClass,
+			frame: this,
+			url: this.url,
+			goToOptions: options
+		});
 	}
 }

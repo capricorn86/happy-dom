@@ -13,6 +13,7 @@ import Document from '../../../src/nodes/document/Document.js';
 import Element from '../../../src/nodes/element/Element.js';
 import Event from '../../../src/event/Event.js';
 import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement.js';
+import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import Attr from '../../../src/nodes/attr/Attr.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
@@ -39,6 +40,7 @@ import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
 import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnknownElement.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -117,6 +119,22 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get forms()', () => {
+		it('Returns a elements.', () => {
+			const form1 = document.createElement('form');
+			const form2 = document.createElement('form');
+
+			document.body.appendChild(form1);
+			document.body.appendChild(form2);
+
+			const forms = document.forms;
+
+			expect(forms.length).toBe(2);
+			expect(forms[0]).toBe(form1);
+			expect(forms[1]).toBe(form2);
+		});
+	});
+
 	describe('get scripts()', () => {
 		it('Returns script elements.', () => {
 			const div = document.createElement('div');
@@ -158,7 +176,7 @@ describe('Document', () => {
 			const text2 = document.createTextNode('text2');
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				(<Node>node.parentNode).removeChild(node);
 			}
 
 			div.appendChild(text1);
@@ -179,7 +197,7 @@ describe('Document', () => {
 			const text2 = document.createTextNode('text2');
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				(<Node>node.parentNode).removeChild(node);
 			}
 
 			div.appendChild(text1);
@@ -280,7 +298,7 @@ describe('Document', () => {
 		it('Returns and sets title.', () => {
 			document.title = 'test title';
 			expect(document.title).toBe('test title');
-			const title = <Element>document.head.querySelector('title');
+			const title = <IElement>document.head.querySelector('title');
 			expect(title.textContent).toBe('test title');
 			document.title = 'new title';
 			expect(document.title).toBe('new title');
@@ -321,7 +339,7 @@ describe('Document', () => {
 					'body { background-color: red }\ndiv { background-color: green }'
 				);
 				const style = document.createElement('style');
-				const link = <IHTMLLinkElement>document.createElement('link');
+				const link = document.createElement('link');
 				let fetchedUrl: string | null = null;
 
 				link.rel = 'stylesheet';
@@ -360,8 +378,8 @@ describe('Document', () => {
 
 	describe('get activeElement()', () => {
 		it('Returns the currently active element.', () => {
-			const div = <IHTMLElement>document.createElement('div');
-			const span = <IHTMLElement>document.createElement('span');
+			const div = document.createElement('div');
+			const span = document.createElement('span');
 
 			document.appendChild(div);
 			document.appendChild(span);
@@ -382,7 +400,7 @@ describe('Document', () => {
 		});
 
 		it('Unsets the active element when it gets disconnected.', () => {
-			const div = <IHTMLElement>document.createElement('div');
+			const div = document.createElement('div');
 
 			document.appendChild(div);
 
@@ -560,7 +578,7 @@ describe('Document', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode === document).toBe(true);
 				expect(selector).toEqual(expectedSelector);
-				return <INodeList<IElement>>[element];
+				return <INodeList<IHTMLElement>>[element];
 			});
 
 			const result = document.querySelectorAll(expectedSelector);
@@ -594,7 +612,7 @@ describe('Document', () => {
 				(parentNode, requestedClassName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedClassName).toEqual(className);
-					return <IHTMLCollection<IElement>>[element];
+					return <IHTMLCollection<IHTMLElement>>[element];
 				}
 			);
 
@@ -613,7 +631,7 @@ describe('Document', () => {
 				(parentNode, requestedTagName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>[element];
+					return <IHTMLCollection<IHTMLElement>>[element];
 				}
 			);
 
@@ -634,7 +652,7 @@ describe('Document', () => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>[element];
+					return <IHTMLCollection<IElement>>(<unknown>[element]);
 				}
 			);
 
@@ -678,7 +696,7 @@ describe('Document', () => {
 			const span = document.createElement('span');
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				(<Node>node.parentNode).removeChild(node);
 			}
 
 			document.appendChild(document.createComment('test'));
@@ -700,7 +718,7 @@ describe('Document', () => {
 			const clone = template.content.cloneNode(true);
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				(<Node>node.parentNode).removeChild(node);
 			}
 
 			document.appendChild(clone);
@@ -719,7 +737,7 @@ describe('Document', () => {
 			const span = document.createElement('span');
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				(<Node>node.parentNode).removeChild(node);
 			}
 
 			document.appendChild(document.createComment('test'));
@@ -741,7 +759,7 @@ describe('Document', () => {
 			const span = document.createElement('span');
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				(<Node>node.parentNode).removeChild(node);
 			}
 
 			document.appendChild(document.createComment('test'));
@@ -767,7 +785,7 @@ describe('Document', () => {
 			const clone = template.content.cloneNode(true);
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				(<Node>node.parentNode).removeChild(node);
 			}
 
 			document.appendChild(child1);
@@ -878,68 +896,100 @@ describe('Document', () => {
 
 	describe('createElement()', () => {
 		it('Creates an element.', () => {
-			const div = document.createElement('div');
-			expect(div.tagName).toBe('DIV');
-			expect(div.namespaceURI).toBe(NamespaceURI.html);
-			expect(div instanceof HTMLElement).toBe(true);
+			const element = document.createElement('div');
+			expect(element.tagName).toBe('DIV');
+			expect(element.localName).toBe('div');
+			expect(element.namespaceURI).toBe(NamespaceURI.html);
+			expect(element instanceof HTMLElement).toBe(true);
 		});
 
-		it('Creates an svg element.', () => {
-			const div = document.createElement('svg');
-			expect(div.tagName).toBe('SVG');
-			expect(div.namespaceURI).toBe(NamespaceURI.html);
-			expect(div instanceof SVGSVGElement).toBe(true);
+		it('Creates an HTMLUnknownElement if not a custom element and is not matching any known tag.', () => {
+			const element = document.createElement('unknown');
+			expect(element instanceof HTMLUnknownElement).toBe(true);
+		});
+
+		it('Creates an HTMLUnknownElement if given tag is "svg".', () => {
+			const element = document.createElement('svg');
+			expect(element.tagName).toBe('SVG');
+			expect(element.localName).toBe('svg');
+			expect(element.namespaceURI).toBe(NamespaceURI.html);
+			expect(element instanceof HTMLUnknownElement).toBe(true);
 		});
 
 		it('Creates a custom element.', () => {
 			window.customElements.define('custom-element', CustomElement);
-			const div = document.createElement('custom-element');
-			expect(div.tagName).toBe('CUSTOM-ELEMENT');
-			expect(div.namespaceURI).toBe(NamespaceURI.html);
-			expect(div instanceof CustomElement).toBe(true);
+			const element = document.createElement('custom-element');
+			expect(element.tagName).toBe('CUSTOM-ELEMENT');
+			expect(element.localName).toBe('custom-element');
+			expect(element.namespaceURI).toBe(NamespaceURI.html);
+			expect(element instanceof CustomElement).toBe(true);
 		});
 
 		it('Creates a custom element that has been extended from an "li" element.', () => {
 			window.customElements.define('custom-element', CustomElement, { extends: 'li' });
-			const div = document.createElement('li', { is: 'custom-element' });
-			expect(div.tagName).toBe('LI');
-			expect(div.namespaceURI).toBe(NamespaceURI.html);
-			expect(div instanceof CustomElement).toBe(true);
+			const element = document.createElement('li', { is: 'custom-element' });
+			expect(element.tagName).toBe('LI');
+			expect(element.localName).toBe('li');
+			expect(element.namespaceURI).toBe(NamespaceURI.html);
+			expect(element instanceof CustomElement).toBe(true);
+		});
+
+		it('Custom element must match local name (should not be case insensitive).', () => {
+			window.customElements.define('custom-element', CustomElement);
+
+			const element = document.createElement('CUSTOM-ELEMENT');
+
+			expect(element.tagName).toBe('CUSTOM-ELEMENT');
+			expect(element.localName).toBe('custom-element');
+			expect(element.namespaceURI).toBe(NamespaceURI.html);
+			expect(element instanceof HTMLElement).toBe(true);
+		});
+
+		it('Creates a custom element defined with non-ASCII capital letters.', () => {
+			window.customElements.define('a-Öa', CustomElement);
+			const element = document.createElement('a-Öa');
+			expect(element.tagName).toBe('A-ÖA');
+			expect(element.localName).toBe('a-Öa');
+			expect(element.namespaceURI).toBe(NamespaceURI.html);
+			expect(element instanceof CustomElement).toBe(true);
+			expect(element.outerHTML).toBe('<a-Öa></a-Öa>');
 		});
 	});
 
 	describe('createElementNS()', () => {
-		it('Creates an svg element with namespace set to SVG.', () => {
-			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
-			expect(svg.tagName).toBe('SVG');
-			expect(svg.namespaceURI).toBe(NamespaceURI.svg);
-			expect(svg instanceof SVGSVGElement).toBe(true);
+		it('Creates an svg element.', () => {
+			const element = document.createElementNS(NamespaceURI.svg, 'svg');
+			expect(element.tagName).toBe('svg');
+			expect(element.localName).toBe('svg');
+			expect(element.namespaceURI).toBe(NamespaceURI.svg);
+			expect(element instanceof SVGSVGElement).toBe(true);
 		});
 
-		it('Creates a custom element with namespace set to SVG.', () => {
-			window.customElements.define('custom-element', CustomElement);
-			const div = document.createElementNS(NamespaceURI.svg, 'custom-element');
-			expect(div.tagName).toBe('CUSTOM-ELEMENT');
-			expect(div.namespaceURI).toBe(NamespaceURI.svg);
-			expect(div instanceof CustomElement).toBe(true);
+		it('Creates an unknown SVG element.', () => {
+			const element = document.createElementNS(NamespaceURI.svg, 'test');
+			expect(element.tagName).toBe('test');
+			expect(element.localName).toBe('test');
+			expect(element.namespaceURI).toBe(NamespaceURI.svg);
+			expect(element instanceof SVGElement).toBe(true);
 		});
 
-		it('Creates a custom element that has been extended from an "li" element with namespace set to SVG.', () => {
+		it('Creates a custom element that has been extended from an "li" element.', () => {
 			window.customElements.define('custom-element', CustomElement, { extends: 'li' });
-			const div = document.createElementNS(NamespaceURI.svg, 'li', { is: 'custom-element' });
-			expect(div.tagName).toBe('LI');
-			expect(div.namespaceURI).toBe(NamespaceURI.svg);
-			expect(div instanceof CustomElement).toBe(true);
+			const element = document.createElementNS(NamespaceURI.html, 'li', { is: 'custom-element' });
+			expect(element.tagName).toBe('LI');
+			expect(element.localName).toBe('li');
+			expect(element.namespaceURI).toBe(NamespaceURI.html);
+			expect(element instanceof CustomElement).toBe(true);
 		});
 
-		it('Creates a custom element with namespace set to SVG and can set the style.', () => {
-			const svg = <ISVGElement>document.createElementNS(NamespaceURI.svg, 'svg');
-			svg.style.cssText = 'user-select:none;';
-			expect(svg.style.cssText).toBe('user-select: none;');
+		it('Creates an SVG element and can set style on it.', () => {
+			const element = <ISVGElement>document.createElementNS(NamespaceURI.svg, 'svg');
+			element.style.cssText = 'user-select:none;';
+			expect(element.style.cssText).toBe('user-select: none;');
 		});
 
 		it("Creates an element when tag name isn't a string.", () => {
-			const element = <ISVGElement>(
+			const element = <IHTMLElement>(
 				document.createElementNS(<string>(<unknown>null), <string>(<unknown>true))
 			);
 			expect(element.tagName).toBe('TRUE');
@@ -1125,7 +1175,7 @@ describe('Document', () => {
 			child.className = 'className';
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				(<Node>node.parentNode).removeChild(node);
 			}
 
 			document.appendChild(child);

@@ -14,6 +14,7 @@ import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
+import { ReadableStream } from 'stream/web';
 import Request from './Request.js';
 import Response from './Response.js';
 import Event from '../event/Event.js';
@@ -26,6 +27,7 @@ import FetchRequestValidationUtility from './utilities/FetchRequestValidationUti
 import FetchResponseRedirectUtility from './utilities/FetchResponseRedirectUtility.js';
 import FetchResponseHeaderUtility from './utilities/FetchResponseHeaderUtility.js';
 import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
+import { Buffer } from 'buffer';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -47,6 +49,7 @@ export default class Fetch {
 	private isProperLastChunkReceived = false;
 	private previousChunk: Buffer | null = null;
 	private nodeRequest: HTTP.ClientRequest | null = null;
+	private nodeResponse: IncomingMessage | null = null;
 	private response: Response | null = null;
 	private responseHeaders: Headers | null = null;
 	private request: Request;
@@ -99,7 +102,7 @@ export default class Fetch {
 	 * @returns Response.
 	 */
 	public async send(): Promise<IResponse> {
-		FetchRequestReferrerUtility.prepareRequest(this.#window.location, this.request);
+		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
 		FetchRequestValidationUtility.validateSchema(this.request);
 
 		if (this.request.signal.aborted) {
@@ -120,11 +123,7 @@ export default class Fetch {
 			this.#window.location.protocol === 'https:'
 		) {
 			throw new DOMException(
-				`Mixed Content: The page at '${
-					this.#window.location.href
-				}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
-					this.request.url
-				}'. This request has been blocked; the content must be served over HTTPS.`,
+				`Mixed Content: The page at '${this.#window.location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${this.request.url}'. This request has been blocked; the content must be served over HTTPS.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
@@ -248,7 +247,7 @@ export default class Fetch {
 	private async compliesWithCrossOriginPolicy(): Promise<boolean> {
 		if (
 			this.disableCrossOriginPolicy ||
-			!FetchCORSUtility.isCORS(this.#window.location, this.request[PropertySymbol.url])
+			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -422,7 +421,10 @@ export default class Fetch {
 				const error = new DOMException('Premature close.', DOMExceptionNameEnum.networkError);
 
 				if (this.response && this.response.body) {
-					this.response.body.destroy(error);
+					this.response.body[PropertySymbol.error] = error;
+					if (!this.response.body.locked) {
+						this.response.body.cancel(error);
+					}
 				}
 			}
 		};
@@ -481,15 +483,20 @@ export default class Fetch {
 	private onAsyncTaskManagerAbort(): void {
 		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
 
-		if (this.request.body) {
-			this.request.body.destroy(error);
+		if (this.nodeRequest && !this.nodeRequest.destroyed) {
+			this.nodeRequest.destroy(error);
 		}
 
-		if (!this.response || !this.response.body) {
-			return;
+		if (this.nodeResponse && !this.nodeResponse.destroyed) {
+			this.nodeResponse.destroy(error);
 		}
 
-		this.response.body.destroy(error);
+		if (this.response && this.response.body) {
+			this.response.body[PropertySymbol.error] = error;
+			if (!this.response.body.locked) {
+				this.response.body.cancel(error);
+			}
+		}
 	}
 
 	/**
@@ -538,7 +545,7 @@ export default class Fetch {
 			nodeResponse.statusCode === 204 ||
 			nodeResponse.statusCode === 304
 		) {
-			this.response = new this.#window.Response(body, responseOptions);
+			this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -560,7 +567,7 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new this.#window.Response(body, responseOptions);
+			this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -592,7 +599,7 @@ export default class Fetch {
 					});
 				}
 
-				this.response = new this.#window.Response(body, responseOptions);
+				this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
@@ -600,7 +607,7 @@ export default class Fetch {
 			raw.on('end', () => {
 				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
 				if (!this.response) {
-					this.response = new this.#window.Response(body, responseOptions);
+					this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 					(<boolean>this.response.redirected) = this.redirectCount > 0;
 					(<string>this.response.url) = this.request.url;
 					this.resolve(this.response);
@@ -616,7 +623,7 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new this.#window.Response(body, responseOptions);
+			this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -624,7 +631,7 @@ export default class Fetch {
 		}
 
 		// Otherwise, use response as is
-		this.response = new this.#window.Response(body, responseOptions);
+		this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
 		(<boolean>this.response.redirected) = this.redirectCount > 0;
 		(<string>this.response.url) = this.request.url;
 		this.resolve(this.response);
@@ -707,7 +714,7 @@ export default class Fetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.#window.location, locationURL))
+						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
 				) {
 					headers.delete('authorization');
 					headers.delete('www-authenticate');
@@ -780,21 +787,50 @@ export default class Fetch {
 			DOMExceptionNameEnum.abortError
 		);
 
-		if (this.request.body) {
-			this.request.body.destroy(error);
+		if (this.nodeRequest && !this.nodeRequest.destroyed) {
+			this.nodeRequest.destroy(error);
 		}
 
-		if (!this.response || !this.response.body) {
-			if (this.reject) {
-				this.reject(error);
+		if (this.nodeResponse && !this.nodeResponse.destroyed) {
+			this.nodeResponse.destroy(error);
+		}
+
+		if (this.response && this.response.body) {
+			this.response.body[PropertySymbol.error] = error;
+			if (!this.response.body.locked) {
+				this.response.body.cancel(error);
 			}
-			return;
 		}
-
-		this.response.body.destroy(error);
 
 		if (this.reject) {
 			this.reject(error);
 		}
+	}
+
+	/**
+	 * Wraps a Node.js stream into a browser-compatible ReadableStream.
+	 *
+	 * Enables the use of Node.js streams where browser ReadableStreams are required.
+	 * Handles 'data', 'end', and 'error' events from the Node.js stream.
+	 *
+	 * @param nodeStream The Node.js stream to be converted.
+	 * @returns ReadableStream
+	 */
+	private nodeToWebStream(nodeStream: Stream): ReadableStream {
+		return new ReadableStream({
+			start(controller) {
+				nodeStream.on('data', (chunk) => {
+					controller.enqueue(chunk);
+				});
+
+				nodeStream.on('end', () => {
+					controller.close();
+				});
+
+				nodeStream.on('error', (err) => {
+					controller.error(err);
+				});
+			}
+		});
 	}
 }

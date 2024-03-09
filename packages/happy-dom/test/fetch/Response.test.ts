@@ -2,7 +2,6 @@ import FS from 'fs';
 import Path from 'path';
 import Stream from 'stream';
 import { URLSearchParams } from 'url';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import Headers from '../../src/fetch/Headers.js';
@@ -14,6 +13,9 @@ import FormData from '../../src/form-data/FormData.js';
 import IDocument from '../../src/nodes/document/IDocument.js';
 import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
+import { ReadableStream } from 'stream/web';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('Response', () => {
 	let window: IWindow;
@@ -90,7 +92,7 @@ describe('Response', () => {
 			const response = new window.Response('Hello World');
 			const chunks: Buffer[] = [];
 
-			for await (const chunk of <Stream.Readable>response.body) {
+			for await (const chunk of <ReadableStream>response.body) {
 				chunks.push(Buffer.from(chunk));
 			}
 
@@ -115,11 +117,14 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'Hello World';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()));
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('Hello World');
+							controller.close();
+						}
+					})
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -158,13 +163,17 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'Hello World';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()), {
-					headers: { 'Content-Type': 'text/plain' }
-				});
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('Hello World');
+							controller.close();
+						}
+					}),
+					{
+						headers: { 'Content-Type': 'text/plain' }
+					}
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -198,11 +207,14 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'Hello World';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()));
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('Hello World');
+							controller.close();
+						}
+					})
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -237,11 +249,14 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'Hello World';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()));
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('Hello World');
+							controller.close();
+						}
+					})
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -274,11 +289,14 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield '{ "key1": "value1" }';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()));
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('{ "key1": "value1" }');
+							controller.close();
+						}
+					})
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -389,15 +407,19 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete() for "application/x-www-form-urlencoded" content.', async () => {
 			await new Promise((resolve) => {
-				async function* generate(): AsyncGenerator<string> {
-					yield 'key=value';
-				}
-
-				const response = new window.Response(Stream.Readable.from(generate()), {
-					headers: {
-						'Content-Type': 'application/x-www-form-urlencoded'
+				const response = new window.Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue('key=value');
+							controller.close();
+						}
+					}),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded'
+						}
 					}
-				});
+				);
 				let isAsyncComplete = false;
 
 				vi.spyOn(FetchBodyUtility, 'consumeBodyStream').mockImplementation(
@@ -481,7 +503,34 @@ describe('Response', () => {
 		});
 
 		it('Can use the body of the cloned Response independently (stream).', async () => {
-			const originalResponse = new window.Response(Stream.Readable.from(['Hello World']), {
+			const chunks = ['chunk1', 'chunk2', 'chunk3'];
+			async function* generate(): AsyncGenerator<Buffer> {
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[0]));
+					}, 10);
+				});
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[1]));
+					}, 10);
+				});
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[2]));
+					}, 10);
+				});
+			}
+			const nodeStream = Stream.Readable.from(generate());
+			const readableStream = new ReadableStream({
+				start(controller) {
+					controller.enqueue('Hello World');
+					controller.close();
+				}
+			});
+			// Simulating that there is an underlying node stream
+			readableStream[PropertySymbol.nodeStream] = nodeStream;
+			const originalResponse = new window.Response(readableStream, {
 				status: 200,
 				statusText: 'OK',
 				headers: { 'Content-Type': 'text/plain' }
@@ -490,16 +539,24 @@ describe('Response', () => {
 
 			const originalResponseText = await originalResponse.text();
 			const clonedResponseText = await clonedResponse.text();
-			expect(originalResponseText).toBe('Hello World');
-			expect(clonedResponseText).toBe('Hello World');
+			expect(originalResponseText).toBe('chunk1chunk2chunk3');
+			expect(clonedResponseText).toBe('chunk1chunk2chunk3');
 		});
 
 		it('Fails if the body of the original Response is already used.', async () => {
-			const originalResponse = new window.Response(Stream.Readable.from(['Hello World']), {
-				status: 200,
-				statusText: 'OK',
-				headers: { 'Content-Type': 'text/plain' }
-			});
+			const originalResponse = new window.Response(
+				new ReadableStream({
+					start(controller) {
+						controller.enqueue('Hello World');
+						controller.close();
+					}
+				}),
+				{
+					status: 200,
+					statusText: 'OK',
+					headers: { 'Content-Type': 'text/plain' }
+				}
+			);
 			await expect(originalResponse.text()).resolves.toBe('Hello World');
 
 			expect(() => originalResponse.clone()).toThrowError(DOMException);

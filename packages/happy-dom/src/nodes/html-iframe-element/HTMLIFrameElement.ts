@@ -173,6 +173,22 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	}
 
 	/**
+	 * Returns referrer policy.
+	 */
+	public get referrerPolicy(): string {
+		return this.getAttribute('referrerpolicy') || '';
+	}
+
+	/**
+	 * Sets referrer policy.
+	 *
+	 * @param referrerPolicy Referrer policy.
+	 */
+	public set referrerPolicy(referrerPolicy: string) {
+		this.setAttribute('referrerpolicy', referrerPolicy);
+	}
+
+	/**
 	 * Returns content document.
 	 *
 	 * @returns Content document.

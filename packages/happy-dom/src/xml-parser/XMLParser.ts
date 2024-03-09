@@ -1,12 +1,12 @@
 import IDocument from '../nodes/document/IDocument.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import VoidElements from '../config/VoidElements.js';
-import UnnestableElements from '../config/UnnestableElements.js';
+import HTMLElementVoid from '../config/HTMLElementVoid.js';
+import HTMLElementUnnestable from '../config/HTMLElementUnnestable.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
 import IElement from '../nodes/element/IElement.js';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
-import PlainTextElements from '../config/PlainTextElements.js';
+import HTMLElementPlainText from '../config/HTMLElementPlainText.js';
 import IDocumentType from '../nodes/document-type/IDocumentType.js';
 import INode from '../nodes/node/INode.js';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
@@ -106,8 +106,8 @@ export default class XMLParser {
 
 						if (match[1]) {
 							// Start tag.
-
 							const tagName = match[1].toUpperCase();
+							const localName = tagName === 'SVG' ? 'svg' : match[1];
 
 							// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 							// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
@@ -115,7 +115,7 @@ export default class XMLParser {
 							if (unnestableTagNameIndex !== -1) {
 								unnestableTagNames.splice(unnestableTagNameIndex, 1);
 								while (currentNode !== root) {
-									if ((<IElement>currentNode)[PropertySymbol.tagName] === tagName) {
+									if ((<IElement>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
 										stack.pop();
 										currentNode = stack[stack.length - 1] || root;
 										break;
@@ -126,12 +126,12 @@ export default class XMLParser {
 							}
 
 							// NamespaceURI is inherited from the parent element.
-							// It should default to SVG for SVG elements.
+							// NamespaceURI should be SVG for SVGSVGElement.
 							const namespaceURI =
 								tagName === 'SVG'
 									? NamespaceURI.svg
 									: (<IElement>currentNode)[PropertySymbol.namespaceURI] || NamespaceURI.html;
-							const newElement = document.createElementNS(namespaceURI, tagName);
+							const newElement = document.createElementNS(namespaceURI, localName);
 
 							currentNode.appendChild(newElement);
 							currentNode = newElement;
@@ -141,11 +141,14 @@ export default class XMLParser {
 						} else if (match[2]) {
 							// End tag.
 
-							if (match[2].toUpperCase() === (<IElement>currentNode)[PropertySymbol.tagName]) {
+							if (
+								match[2].toUpperCase() ===
+								(<IElement>currentNode)[PropertySymbol.tagName].toUpperCase()
+							) {
 								// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 								// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
 								const unnestableTagNameIndex = unnestableTagNames.indexOf(
-									(<IElement>currentNode)[PropertySymbol.tagName]
+									(<IElement>currentNode)[PropertySymbol.tagName].toUpperCase()
 								);
 								if (unnestableTagNameIndex !== -1) {
 									unnestableTagNames.splice(unnestableTagNameIndex, 1);
@@ -227,9 +230,12 @@ export default class XMLParser {
 										const rawValue =
 											attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
 										const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
+
+										// In XML and SVG namespaces, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
 										const namespaceURI =
-											(<IElement>currentNode)[PropertySymbol.tagName] === 'SVG' && name === 'xmlns'
-												? value
+											(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg &&
+											name === 'xmlns'
+												? NamespaceURI.xmlns
 												: null;
 
 										(<IElement>currentNode).setAttributeNS(namespaceURI, name, value);
@@ -256,7 +262,7 @@ export default class XMLParser {
 								// Self closing tags are not allowed in the HTML namespace, but the parser should still allow it for void elements.
 								// Self closing tags is supported in the SVG namespace.
 								if (
-									VoidElements[(<IElement>currentNode)[PropertySymbol.tagName]] ||
+									HTMLElementVoid[(<IElement>currentNode)[PropertySymbol.tagName]] ||
 									(match[7] &&
 										(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
 								) {
@@ -265,7 +271,7 @@ export default class XMLParser {
 									readState = MarkupReadStateEnum.startOrEndTag;
 								} else {
 									// Plain text elements such as <script> and <style> should only contain text.
-									plainTextTagName = PlainTextElements[
+									plainTextTagName = HTMLElementPlainText[
 										(<IElement>currentNode)[PropertySymbol.tagName]
 									]
 										? (<IElement>currentNode)[PropertySymbol.tagName]
@@ -275,7 +281,7 @@ export default class XMLParser {
 										? MarkupReadStateEnum.plainTextContent
 										: MarkupReadStateEnum.startOrEndTag;
 
-									if (UnnestableElements[(<IElement>currentNode)[PropertySymbol.tagName]]) {
+									if (HTMLElementUnnestable[(<IElement>currentNode)[PropertySymbol.tagName]]) {
 										unnestableTagNames.push((<IElement>currentNode)[PropertySymbol.tagName]);
 									}
 								}

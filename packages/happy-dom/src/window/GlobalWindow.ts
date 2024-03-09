@@ -14,7 +14,7 @@ export default class GlobalWindow extends Window implements IWindow {
 	public Array: typeof Array = globalThis.Array;
 	public ArrayBuffer: typeof ArrayBuffer = globalThis.ArrayBuffer;
 	public Boolean: typeof Boolean = globalThis.Boolean;
-	public Buffer = Buffer;
+	public Buffer: typeof Buffer = Buffer;
 	public DataView: typeof DataView = globalThis.DataView;
 	public Date: typeof Date = globalThis.Date;
 	public Error: typeof Error = globalThis.Error;

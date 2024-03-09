@@ -18,6 +18,7 @@ export default interface IHTMLIFrameElement extends IHTMLElement {
 	name: string | null;
 	sandbox: string | null;
 	srcdoc: string | null;
+	referrerPolicy: string | null;
 	readonly contentDocument: IDocument | null;
 	readonly contentWindow: IBrowserWindow | ICrossOriginBrowserWindow | null;
 

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires*/
 
 const Path = require('path');
-const CPY = require('cpy');
+const ChildProcess = require('child_process');
 
 const LIBS = ['@lit/reactive-element', 'lit', 'lit-element', 'lit-html'];
 
@@ -18,11 +18,22 @@ function getLibPath(lib) {
 
 async function main() {
 	await Promise.all(
-		LIBS.map((lib) =>
-			CPY(
-				[Path.join(getLibPath(lib), '*.d.ts')],
-				Path.resolve(Path.join('lib', 'node_modules', lib))
-			)
+		LIBS.map(
+			(lib) =>
+				new Promise((resolve, reject) => {
+					ChildProcess.exec(
+						`cp ${Path.join(getLibPath(lib), '*.d.ts')} ${Path.resolve(
+							Path.join('lib', 'node_modules', lib)
+						)}`,
+						(error, stdout, stderr) => {
+							if (error || stderr) {
+								reject(error || new Error(stderr));
+								return;
+							}
+							resolve(stdout);
+						}
+					);
+				})
 		)
 	);
 }

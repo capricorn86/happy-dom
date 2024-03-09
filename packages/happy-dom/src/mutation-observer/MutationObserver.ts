@@ -1,4 +1,3 @@
-import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import INode from '../nodes/node/INode.js';
 import Node from '../nodes/node/Node.js';
@@ -34,13 +33,50 @@ export default class MutationObserver {
 	 */
 	public observe(target: INode, options: IMutationObserverInit): void {
 		if (!target) {
-			throw new DOMException(
+			throw new TypeError(
 				`Failed to execute 'observe' on 'MutationObserver': The first parameter "target" should be of type "Node".`
 			);
 		}
 
+		if (options && (options.attributeFilter || options.attributeOldValue)) {
+			if (options.attributes === undefined) {
+				options = Object.assign({}, options, {
+					attributes: true,
+					attributeFilter: options.attributeFilter,
+					attributeOldValue: options.attributeOldValue
+				});
+			}
+
+			if (!options.attributes && options.attributeOldValue) {
+				throw new TypeError(
+					`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeOldValue' to true when 'attributes' is true or not present.`
+				);
+			}
+
+			if (!options.attributes && options.attributeFilter) {
+				throw new TypeError(
+					`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeFilter' when 'attributes' is true or not present.`
+				);
+			}
+		}
+
+		if (options && options.characterDataOldValue) {
+			if (options.characterData === undefined) {
+				options = Object.assign({}, options, {
+					characterData: true,
+					characterDataOldValue: options.characterDataOldValue
+				});
+			}
+
+			if (!options.characterData && options.characterDataOldValue) {
+				throw new TypeError(
+					`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'characterDataOldValue' to true when 'characterData' is true or not present.`
+				);
+			}
+		}
+
 		if (!options || (!options.childList && !options.attributes && !options.characterData)) {
-			throw new DOMException(
+			throw new TypeError(
 				`Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true.`
 			);
 		}

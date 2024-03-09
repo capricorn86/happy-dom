@@ -34,6 +34,8 @@ import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReade
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import NodeFactory from '../NodeFactory.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 /**
  * Element.
@@ -87,6 +89,7 @@ export default class Element extends Node implements IElement {
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
 	public [PropertySymbol.tagName]: string | null = null;
+	public [PropertySymbol.localName]: string | null = null;
 	public [PropertySymbol.prefix]: string | null = null;
 	public [PropertySymbol.shadowRoot]: IShadowRoot | null = null;
 	public [PropertySymbol.scrollHeight] = 0;
@@ -266,7 +269,7 @@ export default class Element extends Node implements IElement {
 	 * @returns Local name.
 	 */
 	public get localName(): string {
-		return this[PropertySymbol.tagName] ? this[PropertySymbol.tagName].toLowerCase() : 'unknown';
+		return this[PropertySymbol.localName];
 	}
 
 	/**
@@ -486,6 +489,7 @@ export default class Element extends Node implements IElement {
 		}
 
 		clone[PropertySymbol.tagName] = this[PropertySymbol.tagName];
+		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
 		clone[PropertySymbol.namespaceURI] = this[PropertySymbol.namespaceURI];
 
 		return <IElement>clone;
@@ -873,6 +877,34 @@ export default class Element extends Node implements IElement {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
+	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
+		selector: K
+	): INodeList<IHTMLElementTagNameMap[K]>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): INodeList<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): INodeList<IElement>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
 	public querySelectorAll(selector: string): INodeList<IElement> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
@@ -883,7 +915,35 @@ export default class Element extends Node implements IElement {
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector(selector: string): IElement {
+	public querySelector<K extends keyof IHTMLElementTagNameMap>(
+		selector: K
+	): IHTMLElementTagNameMap[K] | null;
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): ISVGElementTagNameMap[K] | null;
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): IElement | null;
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): IElement | null {
 		return QuerySelector.querySelector(this, selector);
 	}
 
@@ -903,9 +963,70 @@ export default class Element extends Node implements IElement {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
+	public getElementsByTagName<K extends keyof IHTMLElementTagNameMap>(
+		tagName: K
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName<K extends keyof ISVGElementTagNameMap>(
+		tagName: K
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName(tagName: string): IHTMLCollection<IElement>;
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
 	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS<K extends keyof IHTMLElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/1999/xhtml',
+		tagName: K
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS<K extends keyof ISVGElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/2000/svg',
+		tagName: K
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement>;
 
 	/**
 	 * Returns an elements by tag name and namespace.

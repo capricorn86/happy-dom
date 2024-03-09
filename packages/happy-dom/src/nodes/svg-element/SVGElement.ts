@@ -48,7 +48,7 @@ export default class SVGElement extends Element implements ISVGElement {
 	public get ownerSVGElement(): ISVGSVGElement {
 		let parent = this[PropertySymbol.parentNode];
 		while (parent) {
-			if (parent['tagName'] === 'SVG') {
+			if (parent[PropertySymbol.localName] === 'svg') {
 				return <ISVGSVGElement>parent;
 			}
 

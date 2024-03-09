@@ -11,7 +11,7 @@ import Comment from '../nodes/comment/Comment.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import Element from '../nodes/element/Element.js';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
-import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
+import HTMLFormElementImplementation from '../nodes/html-form-element/HTMLFormElement.js';
 import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
@@ -44,6 +44,9 @@ import KeyboardEvent from '../event/events/KeyboardEvent.js';
 import MessageEvent from '../event/events/MessageEvent.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
+import HashChangeEvent from '../event/events/HashChangeEvent.js';
+import TouchEvent from '../event/events/TouchEvent.js';
+import Touch from '../event/Touch.js';
 import EventTarget from '../event/EventTarget.js';
 import MessagePort from '../event/MessagePort.js';
 import { URLSearchParams } from 'url';
@@ -98,7 +101,6 @@ import PluginArray from '../navigator/PluginArray.js';
 import Fetch from '../fetch/Fetch.js';
 import DOMRect from '../nodes/element/DOMRect.js';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
-import * as PerfHooks from 'perf_hooks';
 import VM from 'vm';
 import { Buffer } from 'buffer';
 import { webcrypto } from 'crypto';
@@ -112,6 +114,7 @@ import ProcessingInstruction from '../nodes/processing-instruction/ProcessingIns
 import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import FormData from '../form-data/FormData.js';
 import AbortController from '../fetch/AbortController.js';
 import AbortSignal from '../fetch/AbortSignal.js';
@@ -151,13 +154,13 @@ import ResponseImplementation from '../fetch/Response.js';
 import RangeImplementation from '../range/Range.js';
 
 const TIMER = {
-	setTimeout: setTimeout,
-	clearTimeout: clearTimeout,
-	setInterval: setInterval,
-	clearInterval: clearInterval,
-	queueMicrotask: queueMicrotask,
-	setImmediate: setImmediate,
-	clearImmediate: clearImmediate
+	setTimeout: globalThis.setTimeout.bind(globalThis),
+	clearTimeout: globalThis.clearTimeout.bind(globalThis),
+	setInterval: globalThis.setInterval.bind(globalThis),
+	clearInterval: globalThis.clearInterval.bind(globalThis),
+	queueMicrotask: globalThis.queueMicrotask.bind(globalThis),
+	setImmediate: globalThis.setImmediate.bind(globalThis),
+	clearImmediate: globalThis.clearImmediate.bind(globalThis)
 };
 const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
 
@@ -194,7 +197,6 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly HTMLElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLUnknownElement: typeof HTMLUnknownElement = HTMLUnknownElement;
 	public readonly HTMLTemplateElement: typeof HTMLTemplateElement = HTMLTemplateElement;
-	public readonly HTMLFormElement: typeof HTMLFormElement = HTMLFormElement;
 	public readonly HTMLInputElement: typeof HTMLInputElement = HTMLInputElement;
 	public readonly HTMLSelectElement: typeof HTMLSelectElement = HTMLSelectElement;
 	public readonly HTMLTextAreaElement: typeof HTMLTextAreaElement = HTMLTextAreaElement;
@@ -211,6 +213,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly HTMLScriptElement: typeof HTMLScriptElementImplementation;
 	public readonly HTMLLinkElement: typeof HTMLLinkElementImplementation;
 	public readonly HTMLIFrameElement: typeof HTMLIFrameElementImplementation;
+	public readonly HTMLFormElement: typeof HTMLFormElementImplementation;
 
 	// Non-implemented element classes
 	public readonly HTMLHeadElement: typeof HTMLElement = HTMLElement;
@@ -261,7 +264,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly HTMLParamElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLTrackElement: typeof HTMLElement = HTMLElement;
 
-	// Events classes
+	// Event classes
 	public readonly Event = Event;
 	public readonly UIEvent = UIEvent;
 	public readonly CustomEvent = CustomEvent;
@@ -278,7 +281,10 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly SubmitEvent = SubmitEvent;
 	public readonly ProgressEvent = ProgressEvent;
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
+	public readonly HashChangeEvent = HashChangeEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
+	public readonly TouchEvent = TouchEvent;
+	public readonly Touch = Touch;
 
 	// Non-implemented event classes
 	public readonly AudioProcessingEvent = Event;
@@ -297,7 +303,6 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly EditingBeforeInputEvent = Event;
 	public readonly FetchEvent = Event;
 	public readonly GamepadEvent = Event;
-	public readonly HashChangeEvent = Event;
 	public readonly IDBVersionChangeEvent = Event;
 	public readonly MediaStreamEvent = Event;
 	public readonly MutationEvent = Event;
@@ -315,7 +320,6 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly SVGEvent = Event;
 	public readonly SVGZoomEvent = Event;
 	public readonly TimeEvent = Event;
-	public readonly TouchEvent = Event;
 	public readonly TrackEvent = Event;
 	public readonly TransitionEvent = Event;
 	public readonly UserProximityEvent = Event;
@@ -381,7 +385,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	};
 	public readonly XMLHttpRequestUpload = XMLHttpRequestUpload;
 	public readonly XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
-	public readonly ReadableStream = Stream.Readable;
+	public readonly ReadableStream = ReadableStream;
 	public readonly WritableStream = Stream.Writable;
 	public readonly TransformStream = Stream.Transform;
 	public readonly AbortController = AbortController;
@@ -418,12 +422,12 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly screen: Screen;
 	public readonly sessionStorage: Storage;
 	public readonly localStorage: Storage;
-	public readonly performance = PerfHooks.performance;
+	public readonly performance: typeof performance = performance;
 	public readonly screenLeft: number = 0;
 	public readonly screenTop: number = 0;
 	public readonly screenX: number = 0;
 	public readonly screenY: number = 0;
-	public readonly crypto = webcrypto;
+	public readonly crypto: typeof webcrypto = webcrypto;
 	public readonly closed = false;
 	public name = '';
 
@@ -431,7 +435,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public Array: typeof Array;
 	public ArrayBuffer: typeof ArrayBuffer;
 	public Boolean: typeof Boolean;
-	public Buffer = Buffer;
+	public Buffer: typeof Buffer = Buffer;
 	public DataView: typeof DataView;
 	public Date: typeof Date;
 	public Error: typeof Error;
@@ -598,6 +602,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 				super(browserFrame);
 			}
 		}
+		class HTMLFormElement extends HTMLFormElementImplementation {
+			constructor() {
+				super(browserFrame);
+			}
+		}
 		class Document extends DocumentImplementation {
 			constructor() {
 				super({ window, browserFrame });
@@ -637,6 +646,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		this.HTMLScriptElement = HTMLScriptElement;
 		this.HTMLLinkElement = HTMLLinkElement;
 		this.HTMLIFrameElement = HTMLIFrameElement;
+		this.HTMLFormElement = HTMLFormElement;
 		this.Document = Document;
 		this.HTMLDocument = HTMLDocument;
 		this.XMLDocument = XMLDocument;
@@ -933,6 +943,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		// When using a Window instance directly, the Window instance is the main frame and we will close the page and destroy the browser.
 		// When using the Browser API we should only close the page when the Window instance is connected to the main frame (we should not close child frames such as iframes).
 		if (this.#browserFrame.page?.mainFrame === this.#browserFrame) {
+			this[PropertySymbol.destroy]();
 			this.#browserFrame.page.close();
 		}
 	}
@@ -1239,16 +1250,27 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * Destroys the window.
 	 */
 	public [PropertySymbol.destroy](): void {
+		if (!this.Audio[PropertySymbol.ownerDocument]) {
+			return;
+		}
+
 		(<boolean>this.closed) = true;
 		this.Audio[PropertySymbol.ownerDocument] = null;
 		this.Image[PropertySymbol.ownerDocument] = null;
 		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
-		for (const mutationObserver of this[PropertySymbol.mutationObservers]) {
+
+		const mutationObservers = this[PropertySymbol.mutationObservers];
+
+		for (const mutationObserver of mutationObservers) {
 			mutationObserver.disconnect();
 		}
 
 		// Disconnects nodes from the document, so that they can be garbage collected.
 		for (const node of this.document[PropertySymbol.childNodes].slice()) {
+			// Makes sure that something won't be triggered by the disconnect.
+			if (node.disconnectedCallback) {
+				delete node.disconnectedCallback;
+			}
 			this.document.removeChild(node);
 		}
 

@@ -55,7 +55,8 @@ export default class FetchRequestReferrerUtility {
 		if (referrer === '' || referrer === 'no-referrer' || referrer === 'client') {
 			return referrer;
 		} else if (referrer) {
-			const referrerURL = referrer instanceof URL ? referrer : new URL(referrer, window.location);
+			const referrerURL =
+				referrer instanceof URL ? referrer : new URL(referrer, window.location.href);
 			return referrerURL.origin === window.location.origin ? referrerURL : 'client';
 		}
 

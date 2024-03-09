@@ -81,10 +81,10 @@ export default class NodeUtility {
 			});
 
 			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
-				if (observer.options.subtree) {
+				if (observer.options?.subtree) {
 					(<Node>node)[PropertySymbol.observe](observer);
 				}
-				if (observer.options.childList) {
+				if (observer.options?.childList) {
 					observer.report(record);
 				}
 			}
@@ -124,10 +124,10 @@ export default class NodeUtility {
 			});
 
 			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
-				if (observer.options.subtree) {
+				if (observer.options?.subtree) {
 					(<Node>node)[PropertySymbol.unobserve](observer);
 				}
-				if (observer.options.childList) {
+				if (observer.options?.childList) {
 					observer.report(record);
 				}
 			}
@@ -214,10 +214,10 @@ export default class NodeUtility {
 			});
 
 			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
-				if (observer.options.subtree) {
+				if (observer.options?.subtree) {
 					(<Node>newNode)[PropertySymbol.observe](observer);
 				}
-				if (observer.options.childList) {
+				if (observer.options?.childList) {
 					observer.report(record);
 				}
 			}
@@ -290,8 +290,8 @@ export default class NodeUtility {
 			parent = parent[PropertySymbol.parentNode]
 				? parent[PropertySymbol.parentNode]
 				: includeShadowRoots && (<IShadowRoot>parent).host
-				? (<IShadowRoot>parent).host
-				: null;
+					? (<IShadowRoot>parent).host
+					: null;
 		}
 
 		return false;

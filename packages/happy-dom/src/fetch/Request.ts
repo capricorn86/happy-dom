@@ -10,9 +10,8 @@ import IRequest from './types/IRequest.js';
 import Headers from './Headers.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import AbortSignal from './AbortSignal.js';
-import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import Blob from '../file/Blob.js';
-import { TextDecoder } from 'util';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
 import IRequestReferrerPolicy from './types/IRequestReferrerPolicy.js';
 import IRequestRedirect from './types/IRequestRedirect.js';
@@ -35,7 +34,7 @@ import IBrowserWindow from '../window/IBrowserWindow.js';
 export default class Request implements IRequest {
 	// Public properties
 	public readonly method: string;
-	public readonly body: Stream.Readable | null;
+	public readonly body: ReadableStream | null;
 	public readonly headers: Headers;
 	public readonly redirect: IRequestRedirect;
 	public readonly referrerPolicy: IRequestReferrerPolicy;
@@ -122,9 +121,9 @@ export default class Request implements IRequest {
 		} else {
 			try {
 				if (input instanceof Request && input.url) {
-					this[PropertySymbol.url] = new URL(input.url, injected.window.location);
+					this[PropertySymbol.url] = new URL(input.url, injected.window.location.href);
 				} else {
-					this[PropertySymbol.url] = new URL(<string>input, injected.window.location);
+					this[PropertySymbol.url] = new URL(<string>input, injected.window.location.href);
 				}
 			} catch (error) {
 				throw new DOMException(

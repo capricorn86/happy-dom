@@ -5,7 +5,6 @@ import IBrowserFrame from './types/IBrowserFrame.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import IBrowserWindow from '../window/IBrowserWindow.js';
 import ICrossOriginBrowserWindow from '../window/ICrossOriginBrowserWindow.js';
-import Location from '../location/Location.js';
 import IResponse from '../fetch/types/IResponse.js';
 import IGoToOptions from './types/IGoToOptions.js';
 import { Script } from 'vm';
@@ -84,7 +83,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param url URL.
 	 */
 	public set url(url) {
-		(<Location>this.window.location) = new Location(
+		this.window.location[PropertySymbol.setURL](
 			this,
 			BrowserFrameURL.getRelativeURL(this, url).href
 		);
@@ -153,7 +152,12 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(BrowserWindow, this, url, options);
+		return BrowserFrameNavigator.navigate({
+			windowClass: BrowserWindow,
+			frame: this,
+			url: url,
+			goToOptions: options
+		});
 	}
 
 	/**
@@ -163,6 +167,11 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public reload(options: IReloadOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(BrowserWindow, this, this.url, options);
+		return BrowserFrameNavigator.navigate({
+			windowClass: BrowserWindow,
+			frame: this,
+			url: this.url,
+			goToOptions: options
+		});
 	}
 }
