@@ -275,12 +275,7 @@ export default class Response implements IResponse {
 			headers: this.headers
 		});
 
-		(<number>response.status) = this.status;
-		(<string>response.statusText) = this.statusText;
 		(<boolean>response.ok) = this.ok;
-		(<Headers>response.headers) = new Headers(this.headers);
-		(<ReadableStream>response.body) = this.body;
-		(<boolean>response.bodyUsed) = this.bodyUsed;
 		(<boolean>response.redirected) = this.redirected;
 		(<string>response.type) = this.type;
 		(<string>response.url) = this.url;
