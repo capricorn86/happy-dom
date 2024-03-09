@@ -290,8 +290,8 @@ export default class NodeUtility {
 			parent = parent[PropertySymbol.parentNode]
 				? parent[PropertySymbol.parentNode]
 				: includeShadowRoots && (<IShadowRoot>parent).host
-					? (<IShadowRoot>parent).host
-					: null;
+				? (<IShadowRoot>parent).host
+				: null;
 		}
 
 		return false;

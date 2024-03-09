@@ -77,14 +77,14 @@ export default class MediaQueryParser {
 							? {
 									value: resolutionMatch[1],
 									operator: resolutionMatch[2]
-								}
+							  }
 							: null,
 						type: resolutionMatch[3],
 						after: resolutionMatch[5]
 							? {
 									value: resolutionMatch[5],
 									operator: resolutionMatch[4]
-								}
+							  }
 							: null
 					});
 				} else {
