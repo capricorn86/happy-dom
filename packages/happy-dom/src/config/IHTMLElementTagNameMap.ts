@@ -23,8 +23,11 @@ import IHTMLVideoElement from '../nodes/html-video-element/IHTMLVideoElement.js'
 
 // Makes it work with custom elements when they declare their own interface.
 declare global {
-	/* eslint-disable-next-line @typescript-eslint/naming-convention */
+	/* eslint-disable @typescript-eslint/naming-convention */
+	/* eslint-disable @typescript-eslint/no-empty-interface */
 	interface HTMLElementTagNameMap {}
+	/* eslint-enable @typescript-eslint/naming-convention */
+	/* eslint-enable @typescript-eslint/no-empty-interface */
 }
 
 export default interface IHTMLElementTagNameMap extends HTMLElementTagNameMap {

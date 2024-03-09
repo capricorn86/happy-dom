@@ -8,7 +8,7 @@ import { URL } from 'url';
  */
 export default class Location {
 	// Public properties
-	public [Symbol.toStringTag]: string = 'Location';
+	public [Symbol.toStringTag] = 'Location';
 
 	// Private properties
 	#browserFrame: IBrowserFrame;

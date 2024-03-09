@@ -151,3 +151,4 @@ export const host = Symbol('host');
 export const setURL = Symbol('setURL');
 export const localName = Symbol('localName');
 export const registedClass = Symbol('registedClass');
+export const nodeStream = Symbol('nodeStream');
