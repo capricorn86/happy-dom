@@ -330,6 +330,11 @@ describe('Node', () => {
 
 			expect(div.contains(null)).toBe(false);
 		});
+		it('Returns "false" if match node is undefined.', () => {
+			const div = document.createElement('div');
+
+			expect(div.contains(undefined)).toBe(false);
+		});
 	});
 
 	describe('getRootNode()', () => {
