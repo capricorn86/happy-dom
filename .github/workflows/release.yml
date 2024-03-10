@@ -6,7 +6,8 @@ on:
 
 permissions:
   contents: write
-  pull-requests: read
+  actions: read
+  pull-requests: write
 
 jobs:
   check-next-version:
