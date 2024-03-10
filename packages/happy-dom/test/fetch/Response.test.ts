@@ -1,18 +1,19 @@
-import IWindow from '../../src/window/IWindow.js';
-import Window from '../../src/window/Window.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
-import Headers from '../../src/fetch/Headers.js';
-import Blob from '../../src/file/Blob.js';
-import FormData from '../../src/form-data/FormData.js';
-import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
-import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser.js';
 import FS from 'fs';
 import Path from 'path';
-import File from '../../src/file/File.js';
+import Stream from 'stream';
+import { URLSearchParams } from 'url';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import { URLSearchParams } from 'url';
-import Stream from 'stream';
+import Headers from '../../src/fetch/Headers.js';
+import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser.js';
+import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
+import Blob from '../../src/file/Blob.js';
+import File from '../../src/file/File.js';
+import FormData from '../../src/form-data/FormData.js';
+import IDocument from '../../src/nodes/document/IDocument.js';
+import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { ReadableStream } from 'stream/web';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
@@ -485,6 +486,83 @@ describe('Response', () => {
 			const bodyText = await clone.text();
 
 			expect(bodyText).toBe('Hello World');
+		});
+
+		it('Can use the body of the cloned Response independently (cached).', async () => {
+			const originalResponse = new window.Response('Hello World', {
+				status: 200,
+				statusText: 'OK',
+				headers: { 'Content-Type': 'text/plain' }
+			});
+			const clonedResponse = originalResponse.clone();
+
+			const originalResponseText = await originalResponse.text();
+			const clonedResponseText = await clonedResponse.text();
+			expect(originalResponseText).toBe('Hello World');
+			expect(clonedResponseText).toBe('Hello World');
+		});
+
+		it('Can use the body of the cloned Response independently (stream).', async () => {
+			const chunks = ['chunk1', 'chunk2', 'chunk3'];
+			async function* generate(): AsyncGenerator<Buffer> {
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[0]));
+					}, 10);
+				});
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[1]));
+					}, 10);
+				});
+				yield await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(Buffer.from(chunks[2]));
+					}, 10);
+				});
+			}
+			const nodeStream = Stream.Readable.from(generate());
+			const readableStream = new ReadableStream({
+				start(controller) {
+					controller.enqueue('Hello World');
+					controller.close();
+				}
+			});
+			// Simulating that there is an underlying node stream
+			readableStream[PropertySymbol.nodeStream] = nodeStream;
+			const originalResponse = new window.Response(readableStream, {
+				status: 200,
+				statusText: 'OK',
+				headers: { 'Content-Type': 'text/plain' }
+			});
+			const clonedResponse = originalResponse.clone();
+
+			const originalResponseText = await originalResponse.text();
+			const clonedResponseText = await clonedResponse.text();
+			expect(originalResponseText).toBe('chunk1chunk2chunk3');
+			expect(clonedResponseText).toBe('chunk1chunk2chunk3');
+		});
+
+		it('Fails if the body of the original Response is already used.', async () => {
+			const originalResponse = new window.Response(
+				new ReadableStream({
+					start(controller) {
+						controller.enqueue('Hello World');
+						controller.close();
+					}
+				}),
+				{
+					status: 200,
+					statusText: 'OK',
+					headers: { 'Content-Type': 'text/plain' }
+				}
+			);
+			await expect(originalResponse.text()).resolves.toBe('Hello World');
+
+			expect(() => originalResponse.clone()).toThrowError(DOMException);
+			expect(() => originalResponse.clone()).toThrowError(
+				'Failed to clone body stream of request: Request body is already used.'
+			);
 		});
 	});
 

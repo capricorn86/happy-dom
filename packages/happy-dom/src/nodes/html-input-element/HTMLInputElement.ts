@@ -23,6 +23,7 @@ import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
+import PointerEvent from '../../event/events/PointerEvent.js';
 import { URL } from 'url';
 
 /**
@@ -98,48 +99,124 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * Returns form action.
 	 *
-	 * @returns URL.
+	 * @returns Form action.
 	 */
 	public get formAction(): string {
-		return (
-			this.getAttribute('formaction') ||
-			(<IHTMLFormElement>this[PropertySymbol.formNode])?.action ||
-			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
-		);
+		if (!this.hasAttribute('formaction')) {
+			return this[PropertySymbol.ownerDocument].location.href;
+		}
+
+		try {
+			return new URL(
+				this.getAttribute('formaction') || '',
+				this[PropertySymbol.ownerDocument].location.href
+			).href;
+		} catch (e) {
+			return '';
+		}
 	}
 
 	/**
 	 * Sets form action.
 	 *
-	 * @param url URL.
+	 * @param formAction Form action.
 	 */
-	public set formAction(url: string) {
-		try {
-			new URL(url);
-		} catch (error) {
-			return;
-		}
-		this.setAttribute('formaction', url);
+	public set formAction(formAction: string) {
+		this.setAttribute('formaction', formAction);
+	}
+
+	/**
+	 * Returns form enctype.
+	 *
+	 * @returns Form enctype.
+	 */
+	public get formEnctype(): string {
+		return this.getAttribute('formenctype') || '';
+	}
+
+	/**
+	 * Sets form enctype.
+	 *
+	 * @param formEnctype Form enctype.
+	 */
+	public set formEnctype(formEnctype: string) {
+		this.setAttribute('formenctype', formEnctype);
 	}
 
 	/**
 	 * Returns form method.
+	 *
+	 * @returns Form method.
 	 */
 	public get formMethod(): string {
-		return (
-			this.getAttribute('formmethod') ||
-			(<IHTMLFormElement>this[PropertySymbol.formNode])?.method ||
-			''
-		);
+		return this.getAttribute('formmethod') || '';
 	}
 
 	/**
 	 * Sets form method.
 	 *
-	 * @param method Method.
+	 * @param formMethod Form method.
 	 */
-	public set formMethod(method: string) {
-		this.setAttribute('formmethod', method);
+	public set formMethod(formMethod: string) {
+		this.setAttribute('formmethod', formMethod);
+	}
+
+	/**
+	 * Returns no validate.
+	 *
+	 * @returns No validate.
+	 */
+	public get formNoValidate(): boolean {
+		return this.getAttribute('formnovalidate') !== null;
+	}
+
+	/**
+	 * Sets no validate.
+	 *
+	 * @param formNoValidate No validate.
+	 */
+	public set formNoValidate(formNoValidate: boolean) {
+		if (!formNoValidate) {
+			this.removeAttribute('formnovalidate');
+		} else {
+			this.setAttribute('formnovalidate', '');
+		}
+	}
+
+	/**
+	 * Returns form target.
+	 *
+	 * @returns Form target.
+	 */
+	public get formTarget(): string {
+		return this.getAttribute('formtarget') || '';
+	}
+
+	/**
+	 * Sets form target.
+	 *
+	 * @param formTarget Form target.
+	 */
+	public set formTarget(formTarget: string) {
+		this.setAttribute('formtarget', formTarget);
+	}
+
+	/**
+	 * Returns the parent form element.
+	 *
+	 * @returns Form.
+	 */
+	public get form(): IHTMLFormElement | null {
+		if (this[PropertySymbol.formNode]) {
+			return <IHTMLFormElement>this[PropertySymbol.formNode];
+		}
+		if (!this.isConnected) {
+			return null;
+		}
+		const formID = this.getAttribute('form');
+		return formID
+			? <IHTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
+			: null;
 	}
 
 	/**
@@ -835,37 +912,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
-	 * Returns no validate.
-	 *
-	 * @returns No validate.
-	 */
-	public get formNoValidate(): boolean {
-		return this.getAttribute('formnovalidate') !== null;
-	}
-
-	/**
-	 * Sets no validate.
-	 *
-	 * @param formNoValidate No validate.
-	 */
-	public set formNoValidate(formNoValidate: boolean) {
-		if (!formNoValidate) {
-			this.removeAttribute('formnovalidate');
-		} else {
-			this.setAttribute('formnovalidate', '');
-		}
-	}
-
-	/**
-	 * Returns the parent form element.
-	 *
-	 * @returns Form.
-	 */
-	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this[PropertySymbol.formNode];
-	}
-
-	/**
 	 * Returns "true" if it will validate.
 	 *
 	 * @returns "true" if it will validate.
@@ -1263,7 +1309,12 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public override dispatchEvent(event: Event): boolean {
 		// Do nothing if the input element is disabled and the event is a click event.
-		if (event.type === 'click' && event.eventPhase === EventPhaseEnum.none && this.disabled) {
+		if (
+			event.type === 'click' &&
+			event instanceof PointerEvent &&
+			event.eventPhase === EventPhaseEnum.none &&
+			this.disabled
+		) {
 			return false;
 		}
 
@@ -1274,7 +1325,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		if (
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click'
+			event.type === 'click' &&
+			event instanceof PointerEvent
 		) {
 			const inputType = this.type;
 			if (inputType === 'checkbox' || inputType === 'radio') {
@@ -1290,6 +1342,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
+			event instanceof PointerEvent &&
 			this[PropertySymbol.isConnected]
 		) {
 			const inputType = this.type;
@@ -1298,12 +1351,12 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 					this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
 					this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 				} else if (inputType === 'submit') {
-					const form = <IHTMLFormElement>this[PropertySymbol.formNode];
+					const form = this.form;
 					if (form) {
 						form.requestSubmit(this);
 					}
 				} else if (inputType === 'reset' && this[PropertySymbol.isConnected]) {
-					const form = <IHTMLFormElement>this[PropertySymbol.formNode];
+					const form = this.form;
 					if (form) {
 						form.reset();
 					}
@@ -1317,6 +1370,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
+			event instanceof PointerEvent &&
 			previousCheckedValue !== null
 		) {
 			const inputType = this.type;

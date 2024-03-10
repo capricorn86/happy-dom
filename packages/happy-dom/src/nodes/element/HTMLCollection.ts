@@ -81,6 +81,7 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 */
 	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
 		return (
+			!!name &&
 			!this.constructor.prototype.hasOwnProperty(name) &&
 			!Array.prototype.hasOwnProperty(name) &&
 			(isNaN(Number(name)) || name.includes('.'))

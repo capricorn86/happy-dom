@@ -298,7 +298,7 @@ describe('Document', () => {
 		it('Returns and sets title.', () => {
 			document.title = 'test title';
 			expect(document.title).toBe('test title');
-			const title = <Element>document.head.querySelector('title');
+			const title = <IElement>document.head.querySelector('title');
 			expect(title.textContent).toBe('test title');
 			document.title = 'new title';
 			expect(document.title).toBe('new title');
@@ -339,7 +339,7 @@ describe('Document', () => {
 					'body { background-color: red }\ndiv { background-color: green }'
 				);
 				const style = document.createElement('style');
-				const link = <IHTMLLinkElement>document.createElement('link');
+				const link = document.createElement('link');
 				let fetchedUrl: string | null = null;
 
 				link.rel = 'stylesheet';
@@ -378,8 +378,8 @@ describe('Document', () => {
 
 	describe('get activeElement()', () => {
 		it('Returns the currently active element.', () => {
-			const div = <IHTMLElement>document.createElement('div');
-			const span = <IHTMLElement>document.createElement('span');
+			const div = document.createElement('div');
+			const span = document.createElement('span');
 
 			document.appendChild(div);
 			document.appendChild(span);
@@ -400,7 +400,7 @@ describe('Document', () => {
 		});
 
 		it('Unsets the active element when it gets disconnected.', () => {
-			const div = <IHTMLElement>document.createElement('div');
+			const div = document.createElement('div');
 
 			document.appendChild(div);
 
@@ -578,7 +578,7 @@ describe('Document', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode === document).toBe(true);
 				expect(selector).toEqual(expectedSelector);
-				return <INodeList<IElement>>[element];
+				return <INodeList<IHTMLElement>>[element];
 			});
 
 			const result = document.querySelectorAll(expectedSelector);
@@ -612,7 +612,7 @@ describe('Document', () => {
 				(parentNode, requestedClassName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedClassName).toEqual(className);
-					return <IHTMLCollection<IElement>>[element];
+					return <IHTMLCollection<IHTMLElement>>[element];
 				}
 			);
 
@@ -631,7 +631,7 @@ describe('Document', () => {
 				(parentNode, requestedTagName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>[element];
+					return <IHTMLCollection<IHTMLElement>>[element];
 				}
 			);
 
@@ -652,7 +652,7 @@ describe('Document', () => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>[element];
+					return <IHTMLCollection<IElement>>(<unknown>[element]);
 				}
 			);
 
@@ -989,7 +989,7 @@ describe('Document', () => {
 		});
 
 		it("Creates an element when tag name isn't a string.", () => {
-			const element = <ISVGElement>(
+			const element = <IHTMLElement>(
 				document.createElementNS(<string>(<unknown>null), <string>(<unknown>true))
 			);
 			expect(element.tagName).toBe('TRUE');

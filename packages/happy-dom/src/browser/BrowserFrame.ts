@@ -152,7 +152,12 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(BrowserWindow, this, url, options);
+		return BrowserFrameNavigator.navigate({
+			windowClass: BrowserWindow,
+			frame: this,
+			url: url,
+			goToOptions: options
+		});
 	}
 
 	/**
@@ -162,6 +167,11 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @returns Response.
 	 */
 	public reload(options: IReloadOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(BrowserWindow, this, this.url, options);
+		return BrowserFrameNavigator.navigate({
+			windowClass: BrowserWindow,
+			frame: this,
+			url: this.url,
+			goToOptions: options
+		});
 	}
 }

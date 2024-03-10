@@ -267,18 +267,15 @@ export default class Response implements IResponse {
 	 * @returns Clone.
 	 */
 	public clone(): Response {
-		const response = new this.#window.Response(this.body, {
+		const body = FetchBodyUtility.cloneBodyStream(this);
+
+		const response = new this.#window.Response(body, {
 			status: this.status,
 			statusText: this.statusText,
 			headers: this.headers
 		});
 
-		(<number>response.status) = this.status;
-		(<string>response.statusText) = this.statusText;
 		(<boolean>response.ok) = this.ok;
-		(<Headers>response.headers) = new Headers(this.headers);
-		(<ReadableStream>response.body) = this.body;
-		(<boolean>response.bodyUsed) = this.bodyUsed;
 		(<boolean>response.redirected) = this.redirected;
 		(<string>response.type) = this.type;
 		(<string>response.url) = this.url;

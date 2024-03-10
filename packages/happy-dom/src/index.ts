@@ -40,8 +40,10 @@ import ClipboardEvent from './event/events/ClipboardEvent.js';
 import CustomEvent from './event/events/CustomEvent.js';
 import ErrorEvent from './event/events/ErrorEvent.js';
 import FocusEvent from './event/events/FocusEvent.js';
+import HashChangeEvent from './event/events/HashChangeEvent.js';
 import InputEvent from './event/events/InputEvent.js';
 import KeyboardEvent from './event/events/KeyboardEvent.js';
+import MediaQueryListEvent from './event/events/MediaQueryListEvent.js';
 import MouseEvent from './event/events/MouseEvent.js';
 import ProgressEvent from './event/events/ProgressEvent.js';
 import SubmitEvent from './event/events/SubmitEvent.js';
@@ -115,7 +117,7 @@ import Storage from './storage/Storage.js';
 import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
-import Location from './url/Location.js';
+import Location from './location/Location.js';
 import URL from './url/URL.js';
 import BrowserWindow from './window/BrowserWindow.js';
 import GlobalWindow from './window/GlobalWindow.js';
@@ -138,8 +140,10 @@ import type IClipboardEventInit from './event/events/IClipboardEventInit.js';
 import type ICustomEventInit from './event/events/ICustomEventInit.js';
 import type IErrorEventInit from './event/events/IErrorEventInit.js';
 import type IFocusEventInit from './event/events/IFocusEventInit.js';
+import type IHashChangeEventInit from './event/events/IHashChangeEventInit.js';
 import type IInputEventInit from './event/events/IInputEventInit.js';
 import type IKeyboardEventInit from './event/events/IKeyboardEventInit.js';
+import type IMediaQueryListInit from './event/events/IMediaQueryListInit.js';
 import type IMouseEventInit from './event/events/IMouseEventInit.js';
 import type IProgressEventInit from './event/events/IProgressEventInit.js';
 import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
@@ -237,9 +241,11 @@ export type {
 	IHTMLTemplateElement,
 	IHTMLTextAreaElement,
 	IHTMLVideoElement,
+	IHashChangeEventInit,
 	IHeaders,
 	IInputEventInit,
 	IKeyboardEventInit,
+	IMediaQueryListInit,
 	IMouseEventInit,
 	INode,
 	INodeList,
@@ -388,12 +394,14 @@ export {
 	HTMLElement as HTMLUListElement,
 	HTMLUnknownElement,
 	HTMLVideoElement,
+	HashChangeEvent,
 	Headers,
 	History,
 	Image,
 	InputEvent,
 	KeyboardEvent,
 	Location,
+	MediaQueryListEvent,
 	MouseEvent,
 	MutationObserver,
 	MutationRecord,

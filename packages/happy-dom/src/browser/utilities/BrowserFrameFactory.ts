@@ -63,11 +63,18 @@ export default class BrowserFrameFactory {
 					return frame[PropertySymbol.asyncTaskManager].destroy().then(() => {
 						frame[PropertySymbol.exceptionObserver]?.disconnect();
 						if (frame.window) {
+							const listeners = frame[PropertySymbol.listeners];
+
 							frame.window[PropertySymbol.destroy]();
 							(<IBrowserPage | null>frame.page) = null;
 							(<IBrowserWindow | null>frame.window) = null;
+							frame[PropertySymbol.listeners] = null;
 							frame[PropertySymbol.openerFrame] = null;
 							frame[PropertySymbol.openerWindow] = null;
+
+							for (const listener of listeners.navigation) {
+								listener();
+							}
 						}
 						resolve();
 					});
