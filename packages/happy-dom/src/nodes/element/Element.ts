@@ -467,6 +467,10 @@ export default class Element extends Node implements IElement {
 	public cloneNode(deep = false): IElement {
 		const clone = <Element>super.cloneNode(deep);
 
+		clone[PropertySymbol.tagName] = this[PropertySymbol.tagName];
+		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
+		clone[PropertySymbol.namespaceURI] = this[PropertySymbol.namespaceURI];
+
 		for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
 			const attribute = this[PropertySymbol.attributes][i];
 			clone[PropertySymbol.attributes].setNamedItem(
@@ -487,10 +491,6 @@ export default class Element extends Node implements IElement {
 				}
 			}
 		}
-
-		clone[PropertySymbol.tagName] = this[PropertySymbol.tagName];
-		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
-		clone[PropertySymbol.namespaceURI] = this[PropertySymbol.namespaceURI];
 
 		return <IElement>clone;
 	}
