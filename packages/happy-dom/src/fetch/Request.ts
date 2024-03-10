@@ -121,9 +121,9 @@ export default class Request implements IRequest {
 		} else {
 			try {
 				if (input instanceof Request && input.url) {
-					this[PropertySymbol.url] = new URL(input.url, injected.window.location);
+					this[PropertySymbol.url] = new URL(input.url, injected.window.location.href);
 				} else {
-					this[PropertySymbol.url] = new URL(<string>input, injected.window.location);
+					this[PropertySymbol.url] = new URL(<string>input, injected.window.location.href);
 				}
 			} catch (error) {
 				throw new DOMException(

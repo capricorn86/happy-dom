@@ -80,6 +80,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 
 		if (
 			event.type === 'click' &&
+			event instanceof PointerEvent &&
 			(event.eventPhase === EventPhaseEnum.atTarget || event.eventPhase === EventPhaseEnum.bubbling)
 		) {
 			const control = this.control;

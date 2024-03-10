@@ -9,6 +9,7 @@ import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
 import HTMLAnchorElementNamedNodeMap from './HTMLAnchorElementNamedNodeMap.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import PointerEvent from '../../event/events/PointerEvent.js';
 
 /**
  * HTML Anchor Element.
@@ -429,6 +430,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 
 		if (
 			event.type === 'click' &&
+			event instanceof PointerEvent &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			!event.defaultPrevented &&

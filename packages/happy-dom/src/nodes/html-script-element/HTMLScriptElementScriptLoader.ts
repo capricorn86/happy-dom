@@ -47,7 +47,7 @@ export default class HTMLScriptElementScriptLoader {
 		try {
 			absoluteURL = new URL(
 				url,
-				element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location
+				element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
 			).href;
 		} catch (error) {
 			this.#loadedScriptURL = null;

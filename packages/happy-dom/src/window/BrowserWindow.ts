@@ -11,7 +11,7 @@ import Comment from '../nodes/comment/Comment.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import Element from '../nodes/element/Element.js';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
-import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
+import HTMLFormElementImplementation from '../nodes/html-form-element/HTMLFormElement.js';
 import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
@@ -44,13 +44,14 @@ import KeyboardEvent from '../event/events/KeyboardEvent.js';
 import MessageEvent from '../event/events/MessageEvent.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
+import HashChangeEvent from '../event/events/HashChangeEvent.js';
 import TouchEvent from '../event/events/TouchEvent.js';
 import Touch from '../event/Touch.js';
 import EventTarget from '../event/EventTarget.js';
 import MessagePort from '../event/MessagePort.js';
 import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
-import Location from '../url/Location.js';
+import Location from '../location/Location.js';
 import MutationObserver from '../mutation-observer/MutationObserver.js';
 import MutationRecord from '../mutation-observer/MutationRecord.js';
 import XMLSerializer from '../xml-serializer/XMLSerializer.js';
@@ -196,7 +197,6 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly HTMLElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLUnknownElement: typeof HTMLUnknownElement = HTMLUnknownElement;
 	public readonly HTMLTemplateElement: typeof HTMLTemplateElement = HTMLTemplateElement;
-	public readonly HTMLFormElement: typeof HTMLFormElement = HTMLFormElement;
 	public readonly HTMLInputElement: typeof HTMLInputElement = HTMLInputElement;
 	public readonly HTMLSelectElement: typeof HTMLSelectElement = HTMLSelectElement;
 	public readonly HTMLTextAreaElement: typeof HTMLTextAreaElement = HTMLTextAreaElement;
@@ -213,6 +213,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly HTMLScriptElement: typeof HTMLScriptElementImplementation;
 	public readonly HTMLLinkElement: typeof HTMLLinkElementImplementation;
 	public readonly HTMLIFrameElement: typeof HTMLIFrameElementImplementation;
+	public readonly HTMLFormElement: typeof HTMLFormElementImplementation;
 
 	// Non-implemented element classes
 	public readonly HTMLHeadElement: typeof HTMLElement = HTMLElement;
@@ -280,6 +281,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly SubmitEvent = SubmitEvent;
 	public readonly ProgressEvent = ProgressEvent;
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
+	public readonly HashChangeEvent = HashChangeEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
 	public readonly TouchEvent = TouchEvent;
 	public readonly Touch = Touch;
@@ -301,7 +303,6 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly EditingBeforeInputEvent = Event;
 	public readonly FetchEvent = Event;
 	public readonly GamepadEvent = Event;
-	public readonly HashChangeEvent = Event;
 	public readonly IDBVersionChangeEvent = Event;
 	public readonly MediaStreamEvent = Event;
 	public readonly MutationEvent = Event;
@@ -601,6 +602,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 				super(browserFrame);
 			}
 		}
+		class HTMLFormElement extends HTMLFormElementImplementation {
+			constructor() {
+				super(browserFrame);
+			}
+		}
 		class Document extends DocumentImplementation {
 			constructor() {
 				super({ window, browserFrame });
@@ -640,6 +646,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		this.HTMLScriptElement = HTMLScriptElement;
 		this.HTMLLinkElement = HTMLLinkElement;
 		this.HTMLIFrameElement = HTMLIFrameElement;
+		this.HTMLFormElement = HTMLFormElement;
 		this.Document = Document;
 		this.HTMLDocument = HTMLDocument;
 		this.XMLDocument = XMLDocument;

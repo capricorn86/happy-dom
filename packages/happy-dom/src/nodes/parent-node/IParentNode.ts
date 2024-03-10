@@ -2,6 +2,8 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
 import IElement from '../element/IElement.js';
 import INode from '../node/INode.js';
 import INodeList from '../node/INodeList.js';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 export default interface IParentNode extends INode {
 	readonly childElementCount: number;
@@ -29,7 +31,27 @@ export default interface IParentNode extends INode {
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
+	querySelector<K extends keyof IHTMLElementTagNameMap>(
+		selector: K
+	): IHTMLElementTagNameMap[K] | null;
+	querySelector<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): ISVGElementTagNameMap[K] | null;
 	querySelector(selector: string): IElement | null;
+
+	/**
+	 * Query CSS selector to find matching nodes.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
+		selector: K
+	): INodeList<IHTMLElementTagNameMap[K]>;
+	querySelectorAll<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): INodeList<ISVGElementTagNameMap[K]>;
+	querySelectorAll(selector: string): INodeList<IElement>;
 
 	/**
 	 * Query CSS selector to find matching nodes.
@@ -53,6 +75,12 @@ export default interface IParentNode extends INode {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
+	getElementsByTagName<K extends keyof IHTMLElementTagNameMap>(
+		tagName: K
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
+	getElementsByTagName<K extends keyof ISVGElementTagNameMap>(
+		tagName: K
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
 	getElementsByTagName(tagName: string): IHTMLCollection<IElement>;
 
 	/**
@@ -62,6 +90,14 @@ export default interface IParentNode extends INode {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
+	getElementsByTagNameNS<K extends keyof IHTMLElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/1999/xhtml',
+		tagName: K
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
+	getElementsByTagNameNS<K extends keyof ISVGElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/2000/svg',
+		tagName: K
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
 	getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement>;
 
 	/**

@@ -75,6 +75,7 @@ export default class ParentNodeUtility {
 
 		this.append(parentNode, ...nodes);
 	}
+
 	/**
 	 * Returns an elements by class name.
 	 *
