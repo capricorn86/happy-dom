@@ -27,6 +27,12 @@ describe('HTMLOptionElement', () => {
 			expect(element.value).toBe('VALUE');
 		});
 
+		it('Returns the attribute "value" even if the value is empty string.', () => {
+			element.textContent = 'TEXT VALUE';
+			element.setAttribute('value', '');
+			expect(element.value).toBe('');
+		});
+
 		it('Returns the text IDL value if no attribute is present.', () => {
 			element.removeAttribute('value');
 			element.textContent = 'TEXT VALUE';
