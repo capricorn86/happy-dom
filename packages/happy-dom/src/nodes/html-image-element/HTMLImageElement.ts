@@ -50,7 +50,17 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Loading.
 	 */
 	public get loading(): string {
-		return this[PropertySymbol.loading];
+		const loading = this.getAttribute('loading');
+		return loading === 'eager' || loading === 'lazy' ? loading : 'auto';
+	}
+
+	/**
+	 * Sets loading.
+	 *
+	 * @param loading Loading.
+	 */
+	public set loading(loading: string) {
+		this.setAttribute('loading', loading);
 	}
 
 	/**
