@@ -1,8 +1,9 @@
 name: Release
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches:
+      - master
 
 jobs:
   check-next-version:
@@ -15,8 +16,6 @@ jobs:
     outputs:
       next_version: ${{ steps.versionCheck.outputs.next_version }}
       current_version: ${{ steps.versionCheck.outputs.current_version }}
-
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master'
 
     steps:
       - uses: actions/checkout@v4
@@ -150,7 +149,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Generate release notes
-        run: node ./node_modules/.bin/happy-release-notes --author=githubUsername --authorUsername=${{ github.event.pull_request.user.login }} > ./RELEASE_NOTES.md
+        run: node ./node_modules/.bin/happy-release-notes --author=githubUsername > ./RELEASE_NOTES.md
 
       - name: Create release
         id: create_release
