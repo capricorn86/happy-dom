@@ -5,10 +5,9 @@ import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
 import { LegacyFakeTimers, ModernFakeTimers } from '@jest/fake-timers';
 import { JestEnvironment, EnvironmentContext } from '@jest/environment';
-import { Window, IWindow } from 'happy-dom';
+import { Window, IWindow, BrowserErrorCaptureEnum, IOptionalBrowserSettings } from 'happy-dom';
 import { Script } from 'vm';
 import { Global, Config } from '@jest/types';
-import { parseEnvironmentOptions } from './configuration';
 
 /**
  * Happy DOM Jest Environment.
@@ -16,12 +15,9 @@ import { parseEnvironmentOptions } from './configuration';
 export default class HappyDOMEnvironment implements JestEnvironment {
 	public fakeTimers: LegacyFakeTimers<number> = null;
 	public fakeTimersModern: ModernFakeTimers = null;
-	public window: IWindow = new Window({
-		console: globalThis.console,
-		settings: { disableErrorCapturing: true }
-	});
-	public global: Global.Global = <Global.Global>(<unknown>this.window);
-	public moduleMocker: ModuleMocker = new ModuleMocker(<typeof globalThis>(<unknown>this.window));
+	public window: IWindow;
+	public global: Global.Global;
+	public moduleMocker: ModuleMocker;
 
 	/**
 	 * Constructor.
@@ -37,17 +33,8 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			| Config.ProjectConfig,
 		options?: EnvironmentContext
 	) {
-		// Node's error-message stack size is limited to 10, but it's pretty useful to see more than that when a test fails.
-		this.global.Error.stackTraceLimit = 100;
-
-		// TODO: Remove this ASAP as it currently causes tests to run really slow.
-		this.global.Buffer = Buffer;
-
-		// Needed as Jest is using it
-		this.window['global'] = this.global;
-
-		let globals: Config.ConfigGlobals;
 		let projectConfig: Config.ProjectConfig;
+		let globals: Config.ConfigGlobals;
 		if (isJestConfigVersion29(config)) {
 			// Jest 29
 			globals = config.globals;
@@ -60,6 +47,28 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			throw new Error('Unsupported jest version.');
 		}
 
+		// Initialize Window and Global
+		this.window = new Window({
+			url: 'http://localhost/',
+			...projectConfig.testEnvironmentOptions,
+			console: options.console,
+			settings: {
+				...(<IOptionalBrowserSettings>projectConfig.testEnvironmentOptions?.settings),
+				errorCapture: BrowserErrorCaptureEnum.disabled
+			}
+		});
+		this.global = <Global.Global>(<unknown>this.window);
+		this.moduleMocker = new ModuleMocker(<typeof globalThis>(<unknown>this.window));
+
+		// Node's error-message stack size is limited to 10, but it's pretty useful to see more than that when a test fails.
+		this.global.Error.stackTraceLimit = 100;
+
+		// TODO: Remove this ASAP as it currently causes tests to run really slow.
+		this.global.Buffer = Buffer;
+
+		// Needed as Jest is using it
+		this.window['global'] = this.global;
+
 		JestUtil.installCommonGlobals(<typeof globalThis>(<unknown>this.window), globals);
 
 		// For some reason Jest removes the global setImmediate, so we need to add it back.
@@ -68,12 +77,6 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		if (options && options.console) {
 			this.global.console = options.console;
 			this.global.window['console'] = options.console;
-		}
-
-		// Always set a default URL, override should the option be present in the environment options.
-		this.window.happyDOM?.setURL('http://localhost/');
-		if (projectConfig.testEnvironmentOptions && this.window.happyDOM) {
-			parseEnvironmentOptions(projectConfig.testEnvironmentOptions, this.window.happyDOM);
 		}
 
 		this.fakeTimers = new LegacyFakeTimers({
