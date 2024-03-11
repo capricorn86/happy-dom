@@ -74,8 +74,8 @@ Jest uses `node` as test environment by default. In order to tell Jest to use a 
 
    ```json
    {
-   	"jest": {
-   	  "testEnvironment": "@happy-dom/jest-environment",
+    "jest": {
+      "testEnvironment": "@happy-dom/jest-environment",
       "testEnvironmentOptions": {
         "url": "http://localhost",
         "width": 1920,
@@ -86,7 +86,7 @@ Jest uses `node` as test environment by default. In order to tell Jest to use a 
           }
         }
       }
-   	}
+    }
    }
    ```
 
@@ -99,7 +99,7 @@ Jest uses `node` as test environment by default. In order to tell Jest to use a 
 
    ```json
    {
-   	"testEnvironment": "@happy-dom/jest-environment",
+    "testEnvironment": "@happy-dom/jest-environment",
     "testEnvironmentOptions": {
       "url": "http://localhost",
       "width": 1920,
