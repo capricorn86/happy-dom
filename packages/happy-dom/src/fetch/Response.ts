@@ -45,7 +45,7 @@ export default class Response implements IResponse {
 	public readonly ok: boolean;
 	public readonly headers: IHeaders;
 	public [PropertySymbol.cachedResponse]: ICachedResponse | null = null;
-	public readonly [PropertySymbol.buffer]: Buffer | null = null;
+	public [PropertySymbol.buffer]: Buffer | null = null;
 	readonly #window: IBrowserWindow;
 	readonly #browserFrame: IBrowserFrame;
 
@@ -275,6 +275,8 @@ export default class Response implements IResponse {
 			headers: this.headers
 		});
 
+		response[PropertySymbol.cachedResponse] = this[PropertySymbol.cachedResponse];
+		response[PropertySymbol.buffer] = this[PropertySymbol.buffer];
 		(<boolean>response.ok) = this.ok;
 		(<boolean>response.redirected) = this.redirected;
 		(<string>response.type) = this.type;
