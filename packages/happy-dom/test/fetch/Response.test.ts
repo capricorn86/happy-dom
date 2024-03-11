@@ -488,7 +488,24 @@ describe('Response', () => {
 			expect(bodyText).toBe('Hello World');
 		});
 
-		it('Can use the body of the cloned Response independently (cached).', async () => {
+		it('Can use the body of the cloned Response with a buffer independently.', async () => {
+			const originalResponse = new window.Response('Hello World', {
+				status: 200,
+				statusText: 'OK',
+				headers: { 'Content-Type': 'text/plain' }
+			});
+			const clonedResponse = originalResponse.clone();
+			const clonedResponse2 = clonedResponse.clone();
+
+			const originalResponseText = await originalResponse.text();
+			const clonedResponseText = await clonedResponse.text();
+			const clonedResponseText2 = await clonedResponse2.text();
+			expect(originalResponseText).toBe('Hello World');
+			expect(clonedResponseText).toBe('Hello World');
+			expect(clonedResponseText2).toBe('Hello World');
+		});
+
+		it('Can use the body of the cloned Response with a buffer independently when cloned multiple times.', async () => {
 			const originalResponse = new window.Response('Hello World', {
 				status: 200,
 				statusText: 'OK',
@@ -536,11 +553,14 @@ describe('Response', () => {
 				headers: { 'Content-Type': 'text/plain' }
 			});
 			const clonedResponse = originalResponse.clone();
+			const clonedResponse2 = clonedResponse.clone();
 
 			const originalResponseText = await originalResponse.text();
 			const clonedResponseText = await clonedResponse.text();
+			const clonedResponseText2 = await clonedResponse2.text();
 			expect(originalResponseText).toBe('chunk1chunk2chunk3');
 			expect(clonedResponseText).toBe('chunk1chunk2chunk3');
+			expect(clonedResponseText2).toBe('chunk1chunk2chunk3');
 		});
 
 		it('Fails if the body of the original Response is already used.', async () => {
