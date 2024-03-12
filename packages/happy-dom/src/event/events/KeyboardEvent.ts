@@ -20,6 +20,11 @@ export default class KeyboardEvent extends UIEvent {
 	public readonly shiftKey: boolean;
 
 	/**
+	 * @deprecated
+	 */
+	public readonly keyCode: number;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param type Event type.
@@ -37,5 +42,6 @@ export default class KeyboardEvent extends UIEvent {
 		this.metaKey = eventInit?.metaKey ?? false;
 		this.repeat = eventInit?.repeat ?? false;
 		this.shiftKey = eventInit?.shiftKey ?? false;
+		this.keyCode = eventInit?.keyCode ?? 0;
 	}
 }

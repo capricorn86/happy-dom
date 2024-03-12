@@ -10,4 +10,9 @@ export default interface IKeyboardEventInit extends IUIEventInit {
 	metaKey?: boolean;
 	repeat?: boolean;
 	isComposing?: boolean;
+
+	/**
+	 * @deprecated
+	 */
+	keyCode?: number;
 }
