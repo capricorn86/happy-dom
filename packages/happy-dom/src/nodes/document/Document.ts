@@ -1122,7 +1122,7 @@ export default class Document extends Node implements IDocument {
 			];
 
 		if (customElement) {
-			const element = NodeFactory.createNode<IHTMLElement>(this, customElement.elementClass);
+			const element = new customElement.elementClass();
 			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
 			element[PropertySymbol.localName] = qualifiedName;
 			element[PropertySymbol.namespaceURI] = namespaceURI;

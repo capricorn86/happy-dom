@@ -297,7 +297,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param otherNode Node to test with.
 	 * @returns "true" if this node contains the other node.
 	 */
-	public contains(otherNode: INode | undefined): boolean {
+	public contains(otherNode: INode): boolean {
 		if (otherNode === undefined) {
 			return false;
 		}
