@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCopyToClipboard } from 'usehooks-ts';
 
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 
@@ -72,4 +73,24 @@ export class ReactInputComponent extends React.Component<{}, {}> {
 	public render(): React.ReactElement {
 		return <input placeholder="input field" />;
 	}
+}
+
+/**
+ *
+ */
+export function ReactClipboardComponent(): React.ReactElement {
+	const [copiedText, copy] = useCopyToClipboard();
+
+	const handleCopy = (text: string) => () => {
+		copy(text);
+	};
+
+	return (
+		<>
+			<button onClick={handleCopy('test')}>A</button>
+			<p>
+				Copied value: <span>{copiedText ?? 'Nothing'}</span>
+			</p>
+		</>
+	);
 }

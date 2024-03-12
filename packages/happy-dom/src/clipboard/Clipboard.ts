@@ -54,7 +54,13 @@ export default class Clipboard {
 		let text = '';
 		for (const item of this.#data) {
 			if (item.types.includes('text/plain')) {
-				text += await (await item.getType('text/plain')).text();
+				const data = await item.getType('text/plain');
+				if (typeof data === 'string') {
+					text += data;
+				} else {
+					// Instance of Blob
+					text += await data.text();
+				}
 			}
 		}
 		return text;

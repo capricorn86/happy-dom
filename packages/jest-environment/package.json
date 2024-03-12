@@ -81,6 +81,7 @@
 		"prettier": "^2.6.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
+		"usehooks-ts": "^3.0.1",
 		"rxjs": "^6.5.3",
 		"ts-jest": "^29.1.1",
 		"typescript": "^5.0.4",
