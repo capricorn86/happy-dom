@@ -520,7 +520,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 
 		this.#browserFrame = browserFrame;
 
-		this.customElements = new CustomElementRegistry();
+		this.customElements = new CustomElementRegistry(this);
 		this.navigator = new Navigator(this);
 		this.history = new History();
 		this.screen = new Screen();
@@ -1272,6 +1272,10 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 				delete node.disconnectedCallback;
 			}
 			this.document.removeChild(node);
+		}
+
+		if (this.customElements[PropertySymbol.destroy]) {
+			this.customElements[PropertySymbol.destroy]();
 		}
 
 		this.document[PropertySymbol.activeElement] = null;
