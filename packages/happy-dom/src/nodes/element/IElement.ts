@@ -204,6 +204,21 @@ export default interface IElement extends IChildNode, INonDocumentTypeChildNode,
 	scrollTo(x: { top?: number; left?: number; behavior?: string } | number, y: number): void;
 
 	/**
+	 * Scrolls the element's ancestor containers such that the element on which scrollIntoView() is called is visible to the user.
+	 *
+	 * @param [options] Options.
+	 */
+	scrollIntoView(
+		options?:
+			| boolean
+			| {
+					behavior?: 'smooth' | 'instant' | 'auto';
+					block?: 'start' | 'center' | 'end' | 'nearest';
+					inline?: 'start' | 'center' | 'end' | 'nearest';
+			  }
+	): void;
+
+	/**
 	 * Returns the size of an element and its position relative to the viewport.
 	 *
 	 * @returns DOM rect.

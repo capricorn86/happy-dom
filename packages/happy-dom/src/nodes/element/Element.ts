@@ -1148,6 +1148,23 @@ export default class Element extends Node implements IElement {
 	}
 
 	/**
+	 * Scrolls the element's ancestor containers such that the element on which scrollIntoView() is called is visible to the user.
+	 *
+	 * @param [_options] Options.
+	 */
+	public scrollIntoView(
+		_options?:
+			| boolean
+			| {
+					behavior?: 'smooth' | 'instant' | 'auto';
+					block?: 'start' | 'center' | 'end' | 'nearest';
+					inline?: 'start' | 'center' | 'end' | 'nearest';
+			  }
+	): void {
+		// Do nothing
+	}
+
+	/**
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {

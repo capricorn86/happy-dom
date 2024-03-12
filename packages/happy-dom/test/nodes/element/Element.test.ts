@@ -1270,6 +1270,18 @@ describe('Element', () => {
 		});
 	});
 
+	describe('get scrollHeight()', () => {
+		it('Returns the scroll height.', () => {
+			expect(element.scrollHeight).toBe(0);
+		});
+	});
+
+	describe('get scrollWidth()', () => {
+		it('Returns the scroll width.', () => {
+			expect(element.scrollWidth).toBe(0);
+		});
+	});
+
 	describe('attributeChangedCallback()', () => {
 		it('Calls attribute changed callback when it is implemented by a custom element (web component).', () => {
 			const customElement = <CustomElement>document.createElement('custom-element');
@@ -1516,15 +1528,15 @@ describe('Element', () => {
 		});
 	}
 
-	describe('get scrollHeight()', () => {
-		it('Returns the scroll height.', () => {
-			expect(element.scrollHeight).toBe(0);
-		});
-	});
-
-	describe('get scrollWidth()', () => {
-		it('Returns the scroll width.', () => {
-			expect(element.scrollWidth).toBe(0);
+	describe('scrollIntoView()', () => {
+		it('Does nothing as it is currently not possible to implement.', () => {
+			element.scrollIntoView();
+			element.scrollIntoView(false);
+			element.scrollIntoView({
+				block: 'start',
+				inline: 'start',
+				behavior: 'auto'
+			});
 		});
 	});
 
