@@ -62,17 +62,23 @@ export default class CustomElementRegistry {
 
 		Object.defineProperty(elementClass.prototype, 'localName', {
 			configurable: true,
-			get: () => name
+			get: function () {
+				return this[PropertySymbol.localName] || name;
+			}
 		});
 
 		Object.defineProperty(elementClass.prototype, 'tagName', {
 			configurable: true,
-			get: () => tagName
+			get: function () {
+				return this[PropertySymbol.tagName] || tagName;
+			}
 		});
 
 		Object.defineProperty(elementClass.prototype, 'namespaceURI', {
 			configurable: true,
-			get: () => NamespaceURI.html
+			get: function () {
+				return this[PropertySymbol.namespaceURI] || NamespaceURI.html;
+			}
 		});
 
 		this[PropertySymbol.registry][name] = {
