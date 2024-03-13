@@ -457,8 +457,10 @@ describe('XMLParser', () => {
 
 		it('Parses conditional comments', () => {
 			const testHTML = [
+				// Conditional comment - IE 8
 				'<!--[if IE 8]>\n' + '<p>Welcome to Internet Explorer 8.</p>\n' + '<![endif]-->',
 
+				// Conditional comment - IE 7
 				'<!--[if gte IE 7]>\n' +
 					'<script>\n' +
 					'  alert("Congratulations! You are running Internet Explorer 7 or a later version of Internet Explorer.");\n' +
@@ -466,20 +468,25 @@ describe('XMLParser', () => {
 					'<p>Thank you for closing the message box.</p>\n' +
 					'<![endif]-->',
 
+				// Conditional comment - IE 5
 				'<!--[if IE 5]>\n' +
 					'<p>Welcome to any incremental version of Internet Explorer 5!</p>\n' +
 					'<![endif]-->',
 
+				// Conditional comment - IE 5.0000
 				'<!--[if IE 5.0000]>\n' + '<p>Welcome to Internet Explorer 5.0!</p>\n' + '<![endif]-->',
 
+				// Conditional comment - WindowsEdition 1
 				'<!--[if WindowsEdition 1]>\n' +
 					'<p>You are using Windows Ultimate Edition.</p>\n' +
 					'<![endif]-->',
 
+				// Conditional comment - Contoso 2
 				'<!--[if lt Contoso 2]>\n' +
 					'<p>Your version of the Contoso control is out of date; Please update to the latest.</p>\n' +
 					'<![endif]-->',
 
+				// Conditional comment - IE 9 - With multiple scripts
 				'<!DOCTYPE html><html lang="en">\n' +
 					'<head>\n' +
 					'    <meta charset="UTF-8">\n' +
@@ -700,6 +707,41 @@ describe('XMLParser', () => {
 				'<divkey1="value1">Test</div>'
 			);
 			expect(root.children[0].textContent.replace(/\s/gm, '')).toBe('Test');
+		});
+
+		it('Parses <ul> and <li> elements.', () => {
+			const root = XMLParser.parse(
+				document,
+				`<div>
+                    <ul>
+                        <li>
+                            <ul>
+                                <li>aaaaa</li>
+                                <li>bbbbb</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+				`<div>
+                    <ul>
+                        <li>
+                            <ul>
+                                <li>aaaaa</li>
+                                <li>bbbbb</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>`.replace(/\s/gm, '')
+			);
+
+			const root2 = XMLParser.parse(document, `<li><li><span>Test</span></li></li>`);
+
+			expect(new XMLSerializer().serializeToString(root2).replace(/\s/gm, '')).toBe(
+				`<li></li><li><span>Test</span></li>`.replace(/\s/gm, '')
+			);
 		});
 	});
 });

@@ -1,7 +1,6 @@
 import Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
-import HTMLElementVoid from '../config/HTMLElementVoid.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import INode from '../nodes/node/INode.js';
 import IElement from '../nodes/element/IElement.js';
@@ -11,6 +10,8 @@ import IProcessingInstruction from '../nodes/processing-instruction/IProcessingI
 import * as Entities from 'entities';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import HTMLElementConfig from '../config/HTMLElementConfig.js';
+import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 
 /**
  * Utility for converting an element to string.
@@ -51,8 +52,9 @@ export default class XMLSerializer {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
 				const localName = element[PropertySymbol.localName];
+				const config = HTMLElementConfig[element[PropertySymbol.localName]];
 
-				if (HTMLElementVoid[element[PropertySymbol.tagName]]) {
+				if (config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants) {
 					return `<${localName}${this.getAttributes(element)}>`;
 				}
 

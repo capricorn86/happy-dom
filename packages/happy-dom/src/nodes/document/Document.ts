@@ -8,7 +8,6 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import Event from '../../event/Event.js';
 import DOMImplementation from '../../dom-implementation/DOMImplementation.js';
-import HTMLElementLocalNameToClass from '../../config/HTMLElementLocalNameToClass.js';
 import INodeFilter from '../../tree-walker/INodeFilter.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import DocumentType from '../document-type/DocumentType.js';
@@ -51,6 +50,7 @@ import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import ISVGElement from '../svg-element/ISVGElement.js';
 import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import IHTMLAnchorElement from '../html-anchor-element/IHTMLAnchorElement.js';
+import HTMLElementConfig from '../../config/HTMLElementConfig.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -1131,7 +1131,9 @@ export default class Document extends Node implements IDocument {
 		}
 
 		const localName = qualifiedName.toLowerCase();
-		const elementClass = this[PropertySymbol.ownerWindow][HTMLElementLocalNameToClass[localName]];
+		const elementClass = HTMLElementConfig[localName]
+			? this[PropertySymbol.ownerWindow][HTMLElementConfig[localName].className]
+			: null;
 
 		// Known HTML element
 		if (elementClass) {
