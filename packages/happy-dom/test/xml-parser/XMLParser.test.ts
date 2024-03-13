@@ -701,5 +701,34 @@ describe('XMLParser', () => {
 			);
 			expect(root.children[0].textContent.replace(/\s/gm, '')).toBe('Test');
 		});
+
+		it('Parses UL and LI elements.', () => {
+			const root = XMLParser.parse(
+				document,
+				`<div>
+                    <ul>
+                        <li>
+                            <ul>
+                                <li>aaaaa</li>
+                                <li>bbbbb</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+				`<div>
+                    <ul>
+                        <li>
+                            <ul>
+                                <li>aaaaa</li>
+                                <li>bbbbb</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>`.replace(/\s/gm, '')
+			);
+		});
 	});
 });

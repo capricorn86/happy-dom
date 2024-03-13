@@ -1,15 +1,13 @@
 import IDocument from '../nodes/document/IDocument.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import HTMLElementVoid from '../config/HTMLElementVoid.js';
-import HTMLElementUnnestable from '../config/HTMLElementUnnestable.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
 import IElement from '../nodes/element/IElement.js';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
-import HTMLElementPlainText from '../config/HTMLElementPlainText.js';
 import IDocumentType from '../nodes/document-type/IDocumentType.js';
 import INode from '../nodes/node/INode.js';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
+import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import * as Entities from 'entities';
 
 /**
@@ -58,6 +56,8 @@ const DOCUMENT_TYPE_ATTRIBUTE_REGEXP = /"([^"]+)"/gm;
 
 /**
  * XML parser.
+ *
+ * @see https://html.spec.whatwg.org/multipage/indices.html
  */
 export default class XMLParser {
 	/**
@@ -79,7 +79,8 @@ export default class XMLParser {
 		const stack: INode[] = [root];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gm');
 		const { evaluateScripts = false } = options || {};
-		const unnestableTagNames: string[] = [];
+		const unallowedChildTagNames: string[] = [];
+		const unallowedDirectChildTagNames: string[] = [];
 		let currentNode: INode | null = root;
 		let match: RegExpExecArray;
 		let plainTextTagName: string | null = null;
@@ -111,9 +112,14 @@ export default class XMLParser {
 
 							// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 							// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
-							const unnestableTagNameIndex = unnestableTagNames.indexOf(tagName);
-							if (unnestableTagNameIndex !== -1) {
-								unnestableTagNames.splice(unnestableTagNameIndex, 1);
+							const unallowedChildTagNameIndex = unallowedChildTagNames.indexOf(tagName);
+							if (unallowedChildTagNameIndex !== -1) {
+								const unallowedDirectChildTagNameIndex =
+									unallowedDirectChildTagNames.indexOf(tagName);
+								unallowedChildTagNames.splice(unallowedChildTagNameIndex, 1);
+								if (unallowedDirectChildTagNameIndex !== -1) {
+									unallowedDirectChildTagNames.splice(unallowedDirectChildTagNameIndex, 1);
+								}
 								while (currentNode !== root) {
 									if ((<IElement>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
 										stack.pop();
@@ -123,6 +129,8 @@ export default class XMLParser {
 									stack.pop();
 									currentNode = stack[stack.length - 1] || root;
 								}
+							} else if (unallowedDirectChildTagNames.length > 0) {
+								unallowedDirectChildTagNames.pop();
 							}
 
 							// NamespaceURI is inherited from the parent element.
@@ -147,11 +155,17 @@ export default class XMLParser {
 							) {
 								// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 								// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
-								const unnestableTagNameIndex = unnestableTagNames.indexOf(
+								const unallowedChildTagNameIndex = unallowedChildTagNames.indexOf(
 									(<IElement>currentNode)[PropertySymbol.tagName].toUpperCase()
 								);
-								if (unnestableTagNameIndex !== -1) {
-									unnestableTagNames.splice(unnestableTagNameIndex, 1);
+								if (unallowedChildTagNameIndex !== -1) {
+									const unallowedDirectChildTagNameIndex = unallowedDirectChildTagNames.indexOf(
+										(<IElement>currentNode)[PropertySymbol.tagName].toUpperCase()
+									);
+									unallowedChildTagNames.splice(unallowedChildTagNameIndex, 1);
+									if (unallowedDirectChildTagNameIndex !== -1) {
+										unallowedDirectChildTagNames.splice(unallowedDirectChildTagNameIndex, 1);
+									}
 								}
 
 								stack.pop();
@@ -201,8 +215,6 @@ export default class XMLParser {
 					case MarkupReadStateEnum.insideStartTag:
 						// End of start tag
 						if (match[7] || match[8]) {
-							// End of start tag.
-
 							// Attribute name and value.
 
 							const attributeString = xml.substring(startTagIndex, match.index);
@@ -257,12 +269,14 @@ export default class XMLParser {
 							// We need to check if the attribute string is read completely.
 							// The attribute string can potentially contain "/>" or ">".
 							if (hasAttributeStringEnded) {
+								const config = HTMLElementConfig[(<IElement>currentNode)[PropertySymbol.localName]];
+
 								// Checks if the tag is a self closing tag (ends with "/>") or void element.
 								// When it is a self closing tag or void element it should be closed immediately.
 								// Self closing tags are not allowed in the HTML namespace, but the parser should still allow it for void elements.
 								// Self closing tags is supported in the SVG namespace.
 								if (
-									HTMLElementVoid[(<IElement>currentNode)[PropertySymbol.tagName]] ||
+									!config?.contentModel.allowChildren ||
 									(match[7] &&
 										(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
 								) {
@@ -271,9 +285,9 @@ export default class XMLParser {
 									readState = MarkupReadStateEnum.startOrEndTag;
 								} else {
 									// Plain text elements such as <script> and <style> should only contain text.
-									plainTextTagName = HTMLElementPlainText[
-										(<IElement>currentNode)[PropertySymbol.tagName]
-									]
+									plainTextTagName = HTMLElementConfig[
+										(<IElement>currentNode)[PropertySymbol.localName]
+									]?.contentModel.isPlainText
 										? (<IElement>currentNode)[PropertySymbol.tagName]
 										: null;
 
@@ -281,8 +295,14 @@ export default class XMLParser {
 										? MarkupReadStateEnum.plainTextContent
 										: MarkupReadStateEnum.startOrEndTag;
 
-									if (HTMLElementUnnestable[(<IElement>currentNode)[PropertySymbol.tagName]]) {
-										unnestableTagNames.push((<IElement>currentNode)[PropertySymbol.tagName]);
+									if (!config?.contentModel.allowSelfAsDirectChild) {
+										unallowedDirectChildTagNames.push(
+											(<IElement>currentNode)[PropertySymbol.tagName]
+										);
+									}
+
+									if (!config?.contentModel.allowSelfAsChild) {
+										unallowedChildTagNames.push((<IElement>currentNode)[PropertySymbol.tagName]);
 									}
 								}
 
