@@ -107,7 +107,16 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Href.
 	 */
 	public get href(): string {
-		return this.getAttribute('href') || '';
+		if (!this.hasAttribute('href')) {
+			return '';
+		}
+
+		try {
+			return new URL(this.getAttribute('href'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
+		} catch (e) {
+			return this.getAttribute('href');
+		}
 	}
 
 	/**

@@ -55,8 +55,6 @@ export default class HTMLLinkElementStyleSheetLoader {
 				element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
 			).href;
 		} catch (error) {
-			this.#loadedStyleSheetURL = null;
-			element.dispatchEvent(new Event('error'));
 			return;
 		}
 

@@ -19,7 +19,7 @@ describe('HTMLImageElement', () => {
 		});
 	});
 
-	for (const property of ['alt', 'referrerPolicy', 'sizes', 'src', 'srcset', 'useMap']) {
+	for (const property of ['alt', 'referrerPolicy', 'sizes', 'srcset', 'useMap']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				const element = document.createElement('img');
@@ -72,6 +72,29 @@ describe('HTMLImageElement', () => {
 			});
 		});
 	}
+
+	describe('get src()', () => {
+		it('Returns the "src" attribute.', () => {
+			const element = document.createElement('img');
+			element.setAttribute('src', 'test');
+			expect(element.src).toBe('test');
+		});
+
+		it('Returns URL relative to window location.', () => {
+			window.happyDOM.setURL('https://localhost:8080/test/path/');
+			const element = document.createElement('img');
+			element.setAttribute('src', 'test');
+			expect(element.src).toBe('https://localhost:8080/test/path/test');
+		});
+	});
+
+	describe('set src()', () => {
+		it('Sets the attribute "src".', () => {
+			const element = document.createElement('img');
+			element.src = 'test';
+			expect(element.getAttribute('src')).toBe('test');
+		});
+	});
 
 	describe('get complete()', () => {
 		it('Returns "false".', () => {

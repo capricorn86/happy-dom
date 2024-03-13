@@ -129,10 +129,8 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 		}
 
 		try {
-			return new URL(
-				this.getAttribute('action') || '',
-				this[PropertySymbol.ownerDocument].location.href
-			).href;
+			return new URL(this.getAttribute('action'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
 		} catch (e) {
 			return '';
 		}
