@@ -51,8 +51,9 @@ export default class XMLSerializer {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
 				const localName = element[PropertySymbol.localName];
+				const config = HTMLElementConfig[element[PropertySymbol.localName]];
 
-				if (!HTMLElementConfig[element[PropertySymbol.localName]]?.contentModel.allowChildren) {
+				if (config && !config.contentModel.allowChildren) {
 					return `<${localName}${this.getAttributes(element)}>`;
 				}
 
