@@ -11,6 +11,7 @@ import * as Entities from 'entities';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
+import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 
 /**
  * Utility for converting an element to string.
@@ -53,7 +54,7 @@ export default class XMLSerializer {
 				const localName = element[PropertySymbol.localName];
 				const config = HTMLElementConfig[element[PropertySymbol.localName]];
 
-				if (config && !config.contentModel.allowChildren) {
+				if (config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants) {
 					return `<${localName}${this.getAttributes(element)}>`;
 				}
 

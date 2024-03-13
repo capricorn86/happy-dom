@@ -709,7 +709,7 @@ describe('XMLParser', () => {
 			expect(root.children[0].textContent.replace(/\s/gm, '')).toBe('Test');
 		});
 
-		it('Parses UL and LI elements.', () => {
+		it('Parses <ul> and <li> elements.', () => {
 			const root = XMLParser.parse(
 				document,
 				`<div>
@@ -735,6 +735,12 @@ describe('XMLParser', () => {
                         </li>
                     </ul>
                 </div>`.replace(/\s/gm, '')
+			);
+
+			const root2 = XMLParser.parse(document, `<li><li><span>Test</span></li></li>`);
+
+			expect(new XMLSerializer().serializeToString(root2).replace(/\s/gm, '')).toBe(
+				`<li></li><li><span>Test</span></li>`.replace(/\s/gm, '')
 			);
 		});
 	});

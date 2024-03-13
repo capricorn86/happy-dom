@@ -9,6 +9,7 @@ import INode from '../nodes/node/INode.js';
 import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import * as Entities from 'entities';
+import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 
 /**
  * Markup RegExp.
@@ -111,23 +112,28 @@ export default class XMLParser {
 
 							// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 							// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
-							if (config && !config.contentModel.isPlainText) {
-								if (
-									(!config.contentModel.allowSelfAsDirectChild &&
-										stackTagNames[stackTagNames.length - 1] === tagName) ||
-									(!config.contentModel.allowSelfAsChild && stackTagNames.includes(tagName))
-								) {
-									while (currentNode !== root) {
-										if ((<IElement>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
-											stack.pop();
-											stackTagNames.pop();
-											currentNode = stack[stack.length - 1] || root;
-											break;
-										}
+							if (
+								config?.contentModel ===
+									HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants &&
+								stackTagNames[stackTagNames.length - 1] === tagName
+							) {
+								stack.pop();
+								stackTagNames.pop();
+								currentNode = stack[stack.length - 1] || root;
+							} else if (
+								config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
+								stackTagNames.includes(tagName)
+							) {
+								while (currentNode !== root) {
+									if ((<IElement>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
 										stack.pop();
 										stackTagNames.pop();
 										currentNode = stack[stack.length - 1] || root;
+										break;
 									}
+									stack.pop();
+									stackTagNames.pop();
+									currentNode = stack[stack.length - 1] || root;
 								}
 							}
 
@@ -261,9 +267,7 @@ export default class XMLParser {
 								// Self closing tags are not allowed in the HTML namespace, but the parser should still allow it for void elements.
 								// Self closing tags is supported in the SVG namespace.
 								if (
-									(config &&
-										!config.contentModel.isPlainText &&
-										!config.contentModel.allowChildren) ||
+									config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants ||
 									// SVG tag is self closing (<svg/>).
 									(match[7] &&
 										(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
@@ -273,9 +277,10 @@ export default class XMLParser {
 									currentNode = stack[stack.length - 1] || root;
 									readState = MarkupReadStateEnum.startOrEndTag;
 								} else {
-									readState = config?.contentModel.isPlainText
-										? MarkupReadStateEnum.plainTextContent
-										: MarkupReadStateEnum.startOrEndTag;
+									readState =
+										config?.contentModel === HTMLElementConfigContentModelEnum.rawText
+											? MarkupReadStateEnum.plainTextContent
+											: MarkupReadStateEnum.startOrEndTag;
 								}
 
 								startTagIndex = markupRegexp.lastIndex;

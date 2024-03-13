@@ -1,3 +1,4 @@
+import HTMLElementConfigContentModelEnum from './HTMLElementConfigContentModelEnum.js';
 import IHTMLElementConfigEntity from './IHTMLElementConfigEntity.js';
 
 /**
@@ -8,1287 +9,702 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		className: 'HTMLAnchorElement',
 		localName: 'a',
 		tagName: 'A',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: false
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noSelfDescendants
 	},
 	abbr: {
 		className: 'HTMLElement',
 		localName: 'abbr',
 		tagName: 'ABBR',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	address: {
 		className: 'HTMLElement',
 		localName: 'address',
 		tagName: 'ADDRESS',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	area: {
 		className: 'HTMLElement',
 		localName: 'area',
 		tagName: 'AREA',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	article: {
 		className: 'HTMLElement',
 		localName: 'article',
 		tagName: 'ARTICLE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	aside: {
 		className: 'HTMLElement',
 		localName: 'aside',
 		tagName: 'ASIDE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	audio: {
 		className: 'HTMLAudioElement',
 		localName: 'audio',
 		tagName: 'AUDIO',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	b: {
 		className: 'HTMLElement',
 		localName: 'b',
 		tagName: 'B',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	base: {
 		className: 'HTMLBaseElement',
 		localName: 'base',
 		tagName: 'BASE',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	bdi: {
 		className: 'HTMLElement',
 		localName: 'bdi',
 		tagName: 'BDI',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	bdo: {
 		className: 'HTMLElement',
 		localName: 'bdo',
 		tagName: 'BDO',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	blockquaote: {
 		className: 'HTMLElement',
 		localName: 'blockquaote',
 		tagName: 'BLOCKQUAOTE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	body: {
 		className: 'HTMLElement',
 		localName: 'body',
 		tagName: 'BODY',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	template: {
 		className: 'HTMLTemplateElement',
 		localName: 'template',
 		tagName: 'TEMPLATE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	form: {
 		className: 'HTMLFormElement',
 		localName: 'form',
 		tagName: 'FORM',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	input: {
 		className: 'HTMLInputElement',
 		localName: 'input',
 		tagName: 'INPUT',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	textarea: {
 		className: 'HTMLTextAreaElement',
 		localName: 'textarea',
 		tagName: 'TEXTAREA',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	script: {
 		className: 'HTMLScriptElement',
 		localName: 'script',
 		tagName: 'SCRIPT',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: true,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: false
-		}
+		contentModel: HTMLElementConfigContentModelEnum.rawText
 	},
 	img: {
 		className: 'HTMLImageElement',
 		localName: 'img',
 		tagName: 'IMG',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	link: {
 		className: 'HTMLLinkElement',
 		localName: 'link',
 		tagName: 'LINK',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	style: {
 		className: 'HTMLStyleElement',
 		localName: 'style',
 		tagName: 'STYLE',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: true,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: false
-		}
+		contentModel: HTMLElementConfigContentModelEnum.rawText
 	},
 	label: {
 		className: 'HTMLLabelElement',
 		localName: 'label',
 		tagName: 'LABEL',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	slot: {
 		className: 'HTMLSlotElement',
 		localName: 'slot',
 		tagName: 'SLOT',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	meta: {
 		className: 'HTMLMetaElement',
 		localName: 'meta',
 		tagName: 'META',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	blockquote: {
 		className: 'HTMLElement',
 		localName: 'blockquote',
 		tagName: 'BLOCKQUOTE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	br: {
 		className: 'HTMLElement',
 		localName: 'br',
 		tagName: 'BR',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	button: {
 		className: 'HTMLButtonElement',
 		localName: 'button',
 		tagName: 'BUTTON',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	canvas: {
 		className: 'HTMLElement',
 		localName: 'canvas',
 		tagName: 'CANVAS',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	caption: {
 		className: 'HTMLElement',
 		localName: 'caption',
 		tagName: 'CAPTION',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	cite: {
 		className: 'HTMLElement',
 		localName: 'cite',
 		tagName: 'CITE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	code: {
 		className: 'HTMLElement',
 		localName: 'code',
 		tagName: 'CODE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	col: {
 		className: 'HTMLElement',
 		localName: 'col',
 		tagName: 'COL',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	colgroup: {
 		className: 'HTMLElement',
 		localName: 'colgroup',
 		tagName: 'COLGROUP',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	data: {
 		className: 'HTMLElement',
 		localName: 'data',
 		tagName: 'DATA',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	datalist: {
 		className: 'HTMLElement',
 		localName: 'datalist',
 		tagName: 'DATALIST',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	dd: {
 		className: 'HTMLElement',
 		localName: 'dd',
 		tagName: 'DD',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	del: {
 		className: 'HTMLElement',
 		localName: 'del',
 		tagName: 'DEL',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	details: {
 		className: 'HTMLElement',
 		localName: 'details',
 		tagName: 'DETAILS',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	dfn: {
 		className: 'HTMLElement',
 		localName: 'dfn',
 		tagName: 'DFN',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	dialog: {
 		className: 'HTMLDialogElement',
 		localName: 'dialog',
 		tagName: 'DIALOG',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	div: {
 		className: 'HTMLElement',
 		localName: 'div',
 		tagName: 'DIV',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	dl: {
 		className: 'HTMLElement',
 		localName: 'dl',
 		tagName: 'DL',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	dt: {
 		className: 'HTMLElement',
 		localName: 'dt',
 		tagName: 'DT',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	em: {
 		className: 'HTMLElement',
 		localName: 'em',
 		tagName: 'EM',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	embed: {
 		className: 'HTMLElement',
 		localName: 'embed',
 		tagName: 'EMBED',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	fieldset: {
 		className: 'HTMLElement',
 		localName: 'fieldset',
 		tagName: 'FIELDSET',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	figcaption: {
 		className: 'HTMLElement',
 		localName: 'figcaption',
 		tagName: 'FIGCAPTION',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	figure: {
 		className: 'HTMLElement',
 		localName: 'figure',
 		tagName: 'FIGURE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	footer: {
 		className: 'HTMLElement',
 		localName: 'footer',
 		tagName: 'FOOTER',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	h1: {
 		className: 'HTMLElement',
 		localName: 'h1',
 		tagName: 'H1',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	h2: {
 		className: 'HTMLElement',
 		localName: 'h2',
 		tagName: 'H2',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	h3: {
 		className: 'HTMLElement',
 		localName: 'h3',
 		tagName: 'H3',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	h4: {
 		className: 'HTMLElement',
 		localName: 'h4',
 		tagName: 'H4',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	h5: {
 		className: 'HTMLElement',
 		localName: 'h5',
 		tagName: 'H5',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	h6: {
 		className: 'HTMLElement',
 		localName: 'h6',
 		tagName: 'H6',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	head: {
 		className: 'HTMLElement',
 		localName: 'head',
 		tagName: 'HEAD',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	header: {
 		className: 'HTMLElement',
 		localName: 'header',
 		tagName: 'HEADER',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	hgroup: {
 		className: 'HTMLElement',
 		localName: 'hgroup',
 		tagName: 'HGROUP',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	hr: {
 		className: 'HTMLElement',
 		localName: 'hr',
 		tagName: 'HR',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	html: {
 		className: 'HTMLElement',
 		localName: 'html',
 		tagName: 'HTML',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	i: {
 		className: 'HTMLElement',
 		localName: 'i',
 		tagName: 'I',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	iframe: {
 		className: 'HTMLIFrameElement',
 		localName: 'iframe',
 		tagName: 'IFRAME',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	ins: {
 		className: 'HTMLElement',
 		localName: 'ins',
 		tagName: 'INS',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	kbd: {
 		className: 'HTMLElement',
 		localName: 'kbd',
 		tagName: 'KBD',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	legend: {
 		className: 'HTMLElement',
 		localName: 'legend',
 		tagName: 'LEGEND',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	li: {
 		className: 'HTMLElement',
 		localName: 'li',
 		tagName: 'LI',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	main: {
 		className: 'HTMLElement',
 		localName: 'main',
 		tagName: 'MAIN',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	map: {
 		className: 'HTMLElement',
 		localName: 'map',
 		tagName: 'MAP',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	mark: {
 		className: 'HTMLElement',
 		localName: 'mark',
 		tagName: 'MARK',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	math: {
 		className: 'HTMLElement',
 		localName: 'math',
 		tagName: 'MATH',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	menu: {
 		className: 'HTMLElement',
 		localName: 'menu',
 		tagName: 'MENU',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	menuitem: {
 		className: 'HTMLElement',
 		localName: 'menuitem',
 		tagName: 'MENUITEM',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	meter: {
 		className: 'HTMLElement',
 		localName: 'meter',
 		tagName: 'METER',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	nav: {
 		className: 'HTMLElement',
 		localName: 'nav',
 		tagName: 'NAV',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	noscript: {
 		className: 'HTMLElement',
 		localName: 'noscript',
 		tagName: 'NOSCRIPT',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	object: {
 		className: 'HTMLElement',
 		localName: 'object',
 		tagName: 'OBJECT',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	ol: {
 		className: 'HTMLElement',
 		localName: 'ol',
 		tagName: 'OL',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	optgroup: {
 		className: 'HTMLOptGroupElement',
 		localName: 'optgroup',
 		tagName: 'OPTGROUP',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	option: {
 		className: 'HTMLOptionElement',
 		localName: 'option',
 		tagName: 'OPTION',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	output: {
 		className: 'HTMLElement',
 		localName: 'output',
 		tagName: 'OUTPUT',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	p: {
 		className: 'HTMLElement',
 		localName: 'p',
 		tagName: 'P',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	param: {
 		className: 'HTMLElement',
 		localName: 'param',
 		tagName: 'PARAM',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	picture: {
 		className: 'HTMLElement',
 		localName: 'picture',
 		tagName: 'PICTURE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	pre: {
 		className: 'HTMLElement',
 		localName: 'pre',
 		tagName: 'PRE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	progress: {
 		className: 'HTMLElement',
 		localName: 'progress',
 		tagName: 'PROGRESS',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	q: {
 		className: 'HTMLElement',
 		localName: 'q',
 		tagName: 'Q',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	rb: {
 		className: 'HTMLElement',
 		localName: 'rb',
 		tagName: 'RB',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	rp: {
 		className: 'HTMLElement',
 		localName: 'rp',
 		tagName: 'RP',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	rt: {
 		className: 'HTMLElement',
 		localName: 'rt',
 		tagName: 'RT',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	rtc: {
 		className: 'HTMLElement',
 		localName: 'rtc',
 		tagName: 'RTC',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	ruby: {
 		className: 'HTMLElement',
 		localName: 'ruby',
 		tagName: 'RUBY',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	s: {
 		className: 'HTMLElement',
 		localName: 's',
 		tagName: 'S',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	samp: {
 		className: 'HTMLElement',
 		localName: 'samp',
 		tagName: 'SAMP',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	section: {
 		className: 'HTMLElement',
 		localName: 'section',
 		tagName: 'SECTION',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	select: {
 		className: 'HTMLSelectElement',
 		localName: 'select',
 		tagName: 'SELECT',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	small: {
 		className: 'HTMLElement',
 		localName: 'small',
 		tagName: 'SMALL',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	source: {
 		className: 'HTMLElement',
 		localName: 'source',
 		tagName: 'SOURCE',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	span: {
 		className: 'HTMLElement',
 		localName: 'span',
 		tagName: 'SPAN',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	strong: {
 		className: 'HTMLElement',
 		localName: 'strong',
 		tagName: 'STRONG',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	sub: {
 		className: 'HTMLElement',
 		localName: 'sub',
 		tagName: 'SUB',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	summary: {
 		className: 'HTMLElement',
 		localName: 'summary',
 		tagName: 'SUMMARY',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	sup: {
 		className: 'HTMLElement',
 		localName: 'sup',
 		tagName: 'SUP',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	table: {
 		className: 'HTMLElement',
 		localName: 'table',
 		tagName: 'TABLE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: false,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
 	},
 	tbody: {
 		className: 'HTMLElement',
 		localName: 'tbody',
 		tagName: 'TBODY',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	td: {
 		className: 'HTMLElement',
 		localName: 'td',
 		tagName: 'TD',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	tfoot: {
 		className: 'HTMLElement',
 		localName: 'tfoot',
 		tagName: 'TFOOT',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	th: {
 		className: 'HTMLElement',
 		localName: 'th',
 		tagName: 'TH',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	thead: {
 		className: 'HTMLElement',
 		localName: 'thead',
 		tagName: 'THEAD',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	time: {
 		className: 'HTMLElement',
 		localName: 'time',
 		tagName: 'TIME',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	title: {
 		className: 'HTMLElement',
 		localName: 'title',
 		tagName: 'TITLE',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	tr: {
 		className: 'HTMLElement',
 		localName: 'tr',
 		tagName: 'TR',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	track: {
 		className: 'HTMLElement',
 		localName: 'track',
 		tagName: 'TRACK',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	u: {
 		className: 'HTMLElement',
 		localName: 'u',
 		tagName: 'U',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	ul: {
 		className: 'HTMLElement',
 		localName: 'ul',
 		tagName: 'UL',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	var: {
 		className: 'HTMLElement',
 		localName: 'var',
 		tagName: 'VAR',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	video: {
 		className: 'HTMLVideoElement',
 		localName: 'video',
 		tagName: 'VIDEO',
-		contentModel: {
-			allowChildren: true,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	wbr: {
 		className: 'HTMLElement',
 		localName: 'wbr',
 		tagName: 'WBR',
-		contentModel: {
-			allowChildren: false,
-			isPlainText: false,
-			allowSelfAsDirectChild: true,
-			allowSelfAsChild: true
-		}
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	}
 };
