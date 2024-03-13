@@ -1,5 +1,5 @@
 enum HTMLElementConfigContentModelEnum {
-	rawText = 'text',
+	rawText = 'rawText',
 	noSelfDescendants = 'noSelfDescendants',
 	noFirsLevelSelfDescendants = 'noFirsLevelSelfDescendants',
 	noDescendants = 'noDescendants',
