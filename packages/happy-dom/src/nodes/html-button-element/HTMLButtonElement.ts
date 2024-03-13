@@ -136,7 +136,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 
 		try {
 			return new URL(
-				this.getAttribute('formaction') || '',
+				this.getAttribute('formaction'),
 				this[PropertySymbol.ownerDocument].location.href
 			).href;
 		} catch (e) {

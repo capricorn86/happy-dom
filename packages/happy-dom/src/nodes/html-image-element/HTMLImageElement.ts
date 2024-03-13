@@ -244,13 +244,22 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Source.
 	 */
 	public get src(): string {
-		return this.getAttribute('src') || '';
+		if (!this.hasAttribute('src')) {
+			return '';
+		}
+
+		try {
+			return new URL(this.getAttribute('src'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
+		} catch (e) {
+			return this.getAttribute('src');
+		}
 	}
 
 	/**
 	 * Sets source.
 	 *
-	 * @param source Source.
+	 * @param src Source.
 	 */
 	public set src(src: string) {
 		this.setAttribute('src', src);

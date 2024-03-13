@@ -50,8 +50,6 @@ export default class HTMLScriptElementScriptLoader {
 				element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
 			).href;
 		} catch (error) {
-			this.#loadedScriptURL = null;
-			element.dispatchEvent(new Event('error'));
 			return;
 		}
 
