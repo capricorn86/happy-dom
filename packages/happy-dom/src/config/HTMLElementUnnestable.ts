@@ -10,7 +10,6 @@ export default {
 	H4: true,
 	H5: true,
 	H6: true,
-	LI: true,
 	OPTION: true,
 	P: true,
 	SELECT: true,

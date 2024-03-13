@@ -205,30 +205,50 @@ describe('XMLParser', () => {
 			expect(new XMLSerializer().serializeToString(root)).toBe(GET_EXPECTED_HTML(pageHTML));
 		});
 
-		it('Handles unclosed tags of unnestable elements (e.g. <a>, <li>).', () => {
+		it('Removes nesting from unnestable elements (e.g. <a>, <button>, <dt>).', () => {
 			const root = XMLParser.parse(
 				document,
 				`
 				<div class="test" disabled>
-					<ul>
-						<li><a href="http://localhost:8080/test/test" target="_blank">Test</a>
-						<li><span>Test 2</span></li>
-						<li><b>Test 3</b></li>
-					</ul>
 					<a><a>Test</a></a>
+					<button><button>Button</button></button>
+					<dt><dt>Description Term</dt></dt>
+					<dd><dd>Description Details</dd></dd>
+					<form><form></form></form>
+					<h1><h1>Heading One</h1></h1>
+					<h2><h2>Heading Two</h2></h2>
+					<h1><h1>Heading Three</h1></h1>
+					<h4><h4>Heading Four</h4></h4>
+					<h5><h5>Heading Five</h5></h5>
+					<h6><h6>Heading Six</h6></h6>
+					<option><option>Option</option></option>
+					<p><p>Paragraph</p></p>
+					<select><select>Select</select></select>
+					<table><table>Table<table></table>
 				</div>
 				`
 			);
 
 			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
 				`
-				<div class="test" disabled="">
-					<ul>
-						<li><a href="http://localhost:8080/test/test" target="_blank">Test</a></li>
-						<li><span>Test 2</span></li>
-						<li><b>Test 3</b></li>
-					</ul>
+				<divclass="test"disabled="">
 					<a></a><a>Test</a>
+					<button></button><button>Button</button>
+					<dt></dt><dt>DescriptionTerm</dt>
+					<dd></dd><dd>DescriptionDetails</dd>
+					<form></form><form></form>
+					<h1></h1><h1>HeadingOne</h1>
+					<h2></h2><h2>HeadingTwo</h2>
+					<h1></h1><h1>HeadingThree</h1>
+					<h4></h4><h4>HeadingFour</h4>
+					<h5></h5><h5>HeadingFive</h5>
+					<h6></h6><h6>HeadingSix</h6>
+					<option></option><option>Option</option>
+					<p></p><p>Paragraph</p>
+					<select></select><select>Select</select>
+					<table></table>
+					<table>Table</table>
+					<table></table>
 				</div>
 				`.replace(/\s/gm, '')
 			);
