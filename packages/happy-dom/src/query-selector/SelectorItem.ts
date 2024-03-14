@@ -106,7 +106,7 @@ export default class SelectorItem {
 	}
 
 	/**
-	 * Matches a psuedo selector.
+	 * Matches a pseudo selector.
 	 *
 	 * @param element Element.
 	 * @returns Result.
@@ -121,15 +121,15 @@ export default class SelectorItem {
 			return true;
 		}
 
-		for (const psuedo of this.pseudos) {
+		for (const pseudo of this.pseudos) {
 			// Validation
-			switch (psuedo.name) {
+			switch (pseudo.name) {
 				case 'not':
 				case 'nth-child':
 				case 'nth-of-type':
 				case 'nth-last-child':
 				case 'nth-last-of-type':
-					if (!psuedo.arguments) {
+					if (!pseudo.arguments) {
 						throw new DOMException(`The selector "${this.getSelectorString()}" is not valid.`);
 					}
 					break;
@@ -137,7 +137,7 @@ export default class SelectorItem {
 
 			// Check if parent exists
 			if (!parent) {
-				switch (psuedo.name) {
+				switch (pseudo.name) {
 					case 'first-child':
 					case 'last-child':
 					case 'only-child':
@@ -152,86 +152,103 @@ export default class SelectorItem {
 				}
 			}
 
-			switch (psuedo.name) {
-				case 'first-child':
-					return parentChildren[0] === element;
-				case 'last-child':
-					return parentChildren.length && parentChildren[parentChildren.length - 1] === element;
-				case 'only-child':
-					return parentChildren.length === 1 && parentChildren[0] === element;
-				case 'first-of-type':
-					for (const child of parentChildren) {
-						if (child[PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
-							return child === element;
-						}
-					}
-					return false;
-				case 'last-of-type':
-					for (let i = parentChildren.length - 1; i >= 0; i--) {
-						const child = parentChildren[i];
-						if (child[PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
-							return child === element;
-						}
-					}
-					return false;
-				case 'only-of-type':
-					let isFound = false;
-					for (const child of parentChildren) {
-						if (child[PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
-							if (isFound || child !== element) {
-								return false;
-							}
-							isFound = true;
-						}
-					}
-					return isFound;
-				case 'checked':
-					return (
-						element[PropertySymbol.tagName] === 'INPUT' && (<IHTMLInputElement>element).checked
-					);
-				case 'empty':
-					return !(<Element>element)[PropertySymbol.children].length;
-				case 'root':
-					return element[PropertySymbol.tagName] === 'HTML';
-				case 'not':
-					return !psuedo.selectorItem.match(element);
-				case 'nth-child':
-					const nthChildIndex = psuedo.selectorItem
-						? parentChildren.filter((child) => psuedo.selectorItem.match(child)).indexOf(element)
-						: parentChildren.indexOf(element);
-					return nthChildIndex !== -1 && psuedo.nthFunction(nthChildIndex + 1);
-				case 'nth-of-type':
-					if (!element[PropertySymbol.parentNode]) {
-						return false;
-					}
-					const nthOfTypeIndex = parentChildren
-						.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
-						.indexOf(element);
-					return nthOfTypeIndex !== -1 && psuedo.nthFunction(nthOfTypeIndex + 1);
-				case 'nth-last-child':
-					const nthLastChildIndex = psuedo.selectorItem
-						? parentChildren
-								.filter((child) => psuedo.selectorItem.match(child))
-								.reverse()
-								.indexOf(element)
-						: parentChildren.reverse().indexOf(element);
-					return nthLastChildIndex !== -1 && psuedo.nthFunction(nthLastChildIndex + 1);
-				case 'nth-last-of-type':
-					const nthLastOfTypeIndex = parentChildren
-						.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
-						.reverse()
-						.indexOf(element);
-					return nthLastOfTypeIndex !== -1 && psuedo.nthFunction(nthLastOfTypeIndex + 1);
-				case 'target':
-					const hash = element[PropertySymbol.ownerDocument].location.hash;
-					if (!hash) {
-						return false;
-					}
-					return element.isConnected && element.id === hash.slice(1);
+			if (!this.matchPseudoItem(element, parentChildren, pseudo)) {
+				return false;
 			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * Matches a pseudo selector.
+	 *
+	 * @param element Element.
+	 * @param parentChildren Parent children.
+	 * @param pseudo Pseudo.
+	 */
+	private matchPseudoItem(
+		element: IElement,
+		parentChildren: IElement[],
+		pseudo: ISelectorPseudo
+	): boolean {
+		switch (pseudo.name) {
+			case 'first-child':
+				return parentChildren[0] === element;
+			case 'last-child':
+				return parentChildren.length && parentChildren[parentChildren.length - 1] === element;
+			case 'only-child':
+				return parentChildren.length === 1 && parentChildren[0] === element;
+			case 'first-of-type':
+				for (const child of parentChildren) {
+					if (child[PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
+						return child === element;
+					}
+				}
+				return false;
+			case 'last-of-type':
+				for (let i = parentChildren.length - 1; i >= 0; i--) {
+					const child = parentChildren[i];
+					if (child[PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
+						return child === element;
+					}
+				}
+				return false;
+			case 'only-of-type':
+				let isFound = false;
+				for (const child of parentChildren) {
+					if (child[PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
+						if (isFound || child !== element) {
+							return false;
+						}
+						isFound = true;
+					}
+				}
+				return isFound;
+			case 'checked':
+				return element[PropertySymbol.tagName] === 'INPUT' && (<IHTMLInputElement>element).checked;
+			case 'empty':
+				return !(<Element>element)[PropertySymbol.children].length;
+			case 'root':
+				return element[PropertySymbol.tagName] === 'HTML';
+			case 'not':
+				return !pseudo.selectorItem.match(element);
+			case 'nth-child':
+				const nthChildIndex = pseudo.selectorItem
+					? parentChildren.filter((child) => pseudo.selectorItem.match(child)).indexOf(element)
+					: parentChildren.indexOf(element);
+				return nthChildIndex !== -1 && pseudo.nthFunction(nthChildIndex + 1);
+			case 'nth-of-type':
+				if (!element[PropertySymbol.parentNode]) {
+					return false;
+				}
+				const nthOfTypeIndex = parentChildren
+					.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
+					.indexOf(element);
+				return nthOfTypeIndex !== -1 && pseudo.nthFunction(nthOfTypeIndex + 1);
+			case 'nth-last-child':
+				const nthLastChildIndex = pseudo.selectorItem
+					? parentChildren
+							.filter((child) => pseudo.selectorItem.match(child))
+							.reverse()
+							.indexOf(element)
+					: parentChildren.reverse().indexOf(element);
+				return nthLastChildIndex !== -1 && pseudo.nthFunction(nthLastChildIndex + 1);
+			case 'nth-last-of-type':
+				const nthLastOfTypeIndex = parentChildren
+					.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
+					.reverse()
+					.indexOf(element);
+				return nthLastOfTypeIndex !== -1 && pseudo.nthFunction(nthLastOfTypeIndex + 1);
+			case 'target':
+				const hash = element[PropertySymbol.ownerDocument].location.hash;
+				if (!hash) {
+					return false;
+				}
+				return element.isConnected && element.id === hash.slice(1);
+			default:
+				return false;
+		}
 	}
 
 	/**
