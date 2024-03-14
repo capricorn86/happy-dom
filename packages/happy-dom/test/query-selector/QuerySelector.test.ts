@@ -654,6 +654,16 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 		});
 
+		it('Returns all span elements matching "span:first-of-type:last-of-type".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('h1:first-of-type:last-of-type');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0] === container.children[0].children[0]).toBe(true);
+			expect(elements[1] === container.children[1].children[0]).toBe(true);
+		});
+
 		it('Returns all span elements matching ":last-of-type".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -1226,6 +1236,78 @@ describe('QuerySelector', () => {
 			div.appendChild(child2);
 
 			expect(div.querySelector(':not(:nth-child(1))')).toBe(child2);
+		});
+
+		it('Returns false for selector with CSS pseado element ":before".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			expect(
+				container.querySelector('span.class1') === container.children[0].children[1].children[0]
+			).toBe(true);
+			expect(
+				container.querySelector('span.class1:first-of-type') ===
+					container.children[0].children[1].children[0]
+			).toBe(true);
+			expect(container.querySelector('span.class1:before') === null).toBe(true);
+			expect(container.querySelector('span.class1:first-of-type:before') === null).toBe(true);
+		});
+
+		it('Returns false for selector with CSS pseado element ":after".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			expect(
+				container.querySelector('span.class1') === container.children[0].children[1].children[0]
+			).toBe(true);
+			expect(
+				container.querySelector('span.class1:first-of-type') ===
+					container.children[0].children[1].children[0]
+			).toBe(true);
+			expect(container.querySelector('span.class1:after') === null).toBe(true);
+			expect(container.querySelector('span.class1:first-of-type:after') === null).toBe(true);
+		});
+	});
+
+	describe('match()', () => {
+		it('Returns true when the element matches the selector', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div class="foo"></div>';
+			const element = div.children[0];
+			expect(element.matches('.foo')).toBe(true);
+		});
+
+		it('Returns false when the element does not match the selector', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div class="foo"></div>';
+			const element = div.children[0];
+			expect(element.matches('.bar')).toBe(false);
+		});
+
+		it('Returns true for the selector "div.class1 .class2 span"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches('div.class1 .class2 span')).toBe(true);
+			expect(element.matches('div.class1 .class3 span')).toBe(false);
+		});
+
+		it('Returns false for selector with CSS pseado element ":before"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches('span.class1')).toBe(true);
+			expect(element.matches('span.class1:first-of-type')).toBe(true);
+			expect(element.matches('span.class1:before')).toBe(false);
+			expect(element.matches('span.class1:first-of-type:before')).toBe(false);
+		});
+
+		it('Returns false for selector with CSS pseado element ":after"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches('span.class1')).toBe(true);
+			expect(element.matches('span.class1:first-of-type')).toBe(true);
+			expect(element.matches('span.class1:after')).toBe(false);
+			expect(element.matches('span.class1:first-of-type:after')).toBe(false);
 		});
 	});
 });
