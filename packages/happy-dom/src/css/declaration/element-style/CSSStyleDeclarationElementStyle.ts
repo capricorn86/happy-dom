@@ -366,11 +366,16 @@ export default class CSSStyleDeclarationElementStyle {
 	private parseCSSVariablesInValue(value: string, cssVariables: { [k: string]: string }): string {
 		const regexp = new RegExp(CSS_VARIABLE_REGEXP);
 		let newValue = value;
-		let match;
+		let matches;
 
-		while ((match = regexp.exec(value)) !== null) {
+		while ((matches = newValue.matchAll(regexp)) !== null) {
+			const match = matches.next().value;
+
+			if (!match) {
+				break;
+			}
 			// Fallback value - E.g. var(--my-var, #FFFFFF)
-			if (match[2] !== undefined) {
+			if (match && match[2] !== undefined) {
 				newValue = newValue.replace(match[0], cssVariables[match[2]] || match[3]);
 			} else {
 				newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
