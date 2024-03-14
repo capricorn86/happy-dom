@@ -114,7 +114,7 @@ export default class XMLParser {
 							// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
 							if (
 								config?.contentModel ===
-									HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants &&
+									HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
 								stackTagNames[stackTagNames.length - 1] === tagName
 							) {
 								stack.pop();

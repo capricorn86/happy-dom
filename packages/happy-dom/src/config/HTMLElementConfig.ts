@@ -219,7 +219,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		className: 'HTMLElement',
 		localName: 'dd',
 		tagName: 'DD',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	del: {
 		className: 'HTMLElement',
@@ -261,7 +261,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		className: 'HTMLElement',
 		localName: 'dt',
 		tagName: 'DT',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	em: {
 		className: 'HTMLElement',
@@ -303,37 +303,37 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		className: 'HTMLElement',
 		localName: 'h1',
 		tagName: 'H1',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h2: {
 		className: 'HTMLElement',
 		localName: 'h2',
 		tagName: 'H2',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h3: {
 		className: 'HTMLElement',
 		localName: 'h3',
 		tagName: 'H3',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h4: {
 		className: 'HTMLElement',
 		localName: 'h4',
 		tagName: 'H4',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h5: {
 		className: 'HTMLElement',
 		localName: 'h5',
 		tagName: 'H5',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h6: {
 		className: 'HTMLElement',
 		localName: 'h6',
 		tagName: 'H6',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	head: {
 		className: 'HTMLElement',
@@ -399,7 +399,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		className: 'HTMLElement',
 		localName: 'li',
 		tagName: 'LI',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	main: {
 		className: 'HTMLElement',
@@ -477,7 +477,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		className: 'HTMLOptionElement',
 		localName: 'option',
 		tagName: 'OPTION',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	output: {
 		className: 'HTMLElement',
@@ -621,7 +621,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		className: 'HTMLElement',
 		localName: 'table',
 		tagName: 'TABLE',
-		contentModel: HTMLElementConfigContentModelEnum.noFirsLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	tbody: {
 		className: 'HTMLElement',

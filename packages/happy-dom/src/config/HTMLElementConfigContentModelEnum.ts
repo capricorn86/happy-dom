@@ -1,7 +1,7 @@
 enum HTMLElementConfigContentModelEnum {
 	rawText = 'rawText',
 	noSelfDescendants = 'noSelfDescendants',
-	noFirsLevelSelfDescendants = 'noFirsLevelSelfDescendants',
+	noFirstLevelSelfDescendants = 'noFirstLevelSelfDescendants',
 	noDescendants = 'noDescendants',
 	anyDescendants = 'anyDescendants'
 }
