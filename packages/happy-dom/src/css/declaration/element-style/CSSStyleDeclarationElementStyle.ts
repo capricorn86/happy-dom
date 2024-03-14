@@ -366,14 +366,9 @@ export default class CSSStyleDeclarationElementStyle {
 	private parseCSSVariablesInValue(value: string, cssVariables: { [k: string]: string }): string {
 		const regexp = new RegExp(CSS_VARIABLE_REGEXP);
 		let newValue = value;
-		let matches;
+		let match;
 
-		while ((matches = newValue.matchAll(regexp)) !== null) {
-			const match = matches.next().value;
-
-			if (!match) {
-				break;
-			}
+		while ((match = regexp.exec(newValue)) !== null) {
 			// Fallback value - E.g. var(--my-var, #FFFFFF)
 			if (match[2] !== undefined) {
 				newValue = newValue.replace(match[0], cssVariables[match[2]] || match[3]);
