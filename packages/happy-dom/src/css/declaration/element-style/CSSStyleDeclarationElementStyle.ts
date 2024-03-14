@@ -375,7 +375,7 @@ export default class CSSStyleDeclarationElementStyle {
 				break;
 			}
 			// Fallback value - E.g. var(--my-var, #FFFFFF)
-			if (match && match[2] !== undefined) {
+			if (match[2] !== undefined) {
 				newValue = newValue.replace(match[0], cssVariables[match[2]] || match[3]);
 			} else {
 				newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
