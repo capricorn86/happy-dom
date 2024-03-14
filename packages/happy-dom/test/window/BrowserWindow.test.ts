@@ -564,6 +564,36 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('');
 		});
 
+		it('Returns values defined by a CSS variables when multiple fallbacks are used', () => {
+			const div = <IHTMLElement>document.createElement('div');
+			const divStyle = document.createElement('style');
+
+			divStyle.innerHTML = `
+				div {
+					color: var(--my-var, var(--my-background, pink));
+
+					--color1: red;
+					--result1: var(--color1, var(--unknown, var(--unknown, green)));
+					--result2: var(--unknown, var(--color1, var(--unknown, green)));
+					--result3: var(--unknown, var(--unknown, var(--color1, green)));
+					
+					--result4: var(--unknown, var(--unknown, var(--unknown, var(--unknown, white))));
+				}
+			`;
+
+			document.body.appendChild(divStyle);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(div);
+			expect(computedStyle.color).toBe('pink');
+
+			expect(computedStyle.getPropertyValue('--result1')).toBe('red');
+			expect(computedStyle.getPropertyValue('--result2')).toBe('red');
+			expect(computedStyle.getPropertyValue('--result2')).toBe('red');
+
+			expect(computedStyle.getPropertyValue('--result4')).toBe('white');
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values converted to pixels.', () => {
 			const parent = <IHTMLElement>document.createElement('div');
 			const element = <IHTMLElement>document.createElement('span');

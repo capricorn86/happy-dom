@@ -368,7 +368,7 @@ export default class CSSStyleDeclarationElementStyle {
 		let newValue = value;
 		let match;
 
-		while ((match = regexp.exec(value)) !== null) {
+		while ((match = regexp.exec(newValue)) !== null) {
 			// Fallback value - E.g. var(--my-var, #FFFFFF)
 			if (match[2] !== undefined) {
 				newValue = newValue.replace(match[0], cssVariables[match[2]] || match[3]);
