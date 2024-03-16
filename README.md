@@ -38,6 +38,7 @@ And much more..
  - [Testing Library](https://testing-library.com/)
  - [React](https://reactjs.org)
  - [Vue](https://vuejs.org/)
+ - [Svelte](https://svelte.dev/)
  - [Angular](https://angular.io/)
  - [Google LitElement](https://lit.dev/)
 
