@@ -99,6 +99,27 @@ describe('Headers', () => {
 			});
 		});
 
+		describe('getSetCookie()', () => {
+			it('Returns an empty list if there is no Set-Cookie header.', () => {
+				const headers = new Headers();
+
+				expect(headers.getSetCookie()).toEqual([]);
+			});
+
+			it('Returns an array of strings representing the values of all the different Set-Cookie headers.', () => {
+				const headers = new Headers();
+
+				headers.append('Content-Type', 'application/json');
+				headers.append('Set-Cookie', 'a=1');
+				headers.append('Set-Cookie', 'b=2; Expires=Fri, 01 Jan 2100 00:00:00 GMT');
+
+				expect(headers.getSetCookie()).toEqual([
+					'a=1',
+					'b=2; Expires=Fri, 01 Jan 2100 00:00:00 GMT'
+				]);
+			});
+		});
+
 		describe('has()', () => {
 			it('Returns true if an header exists.', () => {
 				const headers = new Headers();

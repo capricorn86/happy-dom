@@ -36,6 +36,13 @@ export default interface IHeaders extends Iterable<[string, string]> {
 	set(name: string, value: string): void;
 
 	/**
+	 * Returns an array containing the values of all Set-Cookie headers associated with a response.
+	 *
+	 * @returns An array of strings representing the values of all the different Set-Cookie headers.
+	 */
+	getSetCookie(): string[];
+
+	/**
 	 * Returns whether an Headers object contains a certain key.
 	 *
 	 * @param name Name.

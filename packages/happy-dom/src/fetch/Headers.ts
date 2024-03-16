@@ -3,6 +3,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IHeaders from './types/IHeaders.js';
 import IHeadersInit from './types/IHeadersInit.js';
+import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
 
 /**
  * Fetch headers.
@@ -87,6 +88,15 @@ export default class Headers implements IHeaders {
 			name,
 			value
 		};
+	}
+
+	/**
+	 * Returns an array containing the values of all Set-Cookie headers associated with a response.
+	 *
+	 * @returns An array of strings representing the values of all the different Set-Cookie headers.
+	 */
+	public getSetCookie(): string[] {
+		return CookieStringUtility.splitCookiesString(this.get('Set-Cookie') || '');
 	}
 
 	/**
