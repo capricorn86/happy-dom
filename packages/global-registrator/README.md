@@ -1,57 +1,16 @@
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
-# About
+This package makes it possible to register [Happy DOM](https://github.com/capricorn86/happy-dom) in the global scope, e.g. for testing purposes.
 
-[Happy DOM](https://github.com/capricorn86/happy-dom) is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG [DOM](https://dom.spec.whatwg.org/) and [HTML](https://html.spec.whatwg.org/multipage/).
-
-The goal of [Happy DOM](https://github.com/capricorn86/happy-dom) is to emulate enough of a web browser to be useful for testing, scraping web sites and server-side rendering.
-
-[Happy DOM](https://github.com/capricorn86/happy-dom) focuses heavily on performance and can be used as an alternative to [JSDOM](https://github.com/jsdom/jsdom).
-
-This package contains a utility that registers [Happy DOM](https://github.com/capricorn86/happy-dom) globally, which makes it possible to use [Happy DOM](https://github.com/capricorn86/happy-dom) for testing in a Node environment.
-
-### DOM Features
-
-- Custom Elements (Web Components)
-
-- Shadow Root (Shadow DOM)
-
-- Declarative Shadow DOM
-
-- Mutation Observer
-
-- Tree Walker
-
-- Fetch
-
-And much more..
-
-### Works With
-
-- [Google LitHTML](https://lit-html.polymer-project.org)
-
-- [Google LitElement](https://lit-element.polymer-project.org)
-
-- [React](https://reactjs.org)
-
-- [Angular](https://angular.io/)
-
-- [Vue](https://vuejs.org/)
-
-### Module Systems
-
-- [ESM](https://nodejs.org/api/esm.html#introduction)
-- [CommonJS](https://nodejs.org/api/modules.html#modules-commonjs-modules)
-
-# Installation
+## Installation
 
 ```bash
 npm install @happy-dom/global-registrator --save-dev
 ```
 
-# Usage
+## Usage
 
-## Register
+#### Register
 
 ```javascript
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
@@ -66,7 +25,7 @@ const button = document.querySelector('button');
 console.log(button.innerText);
 ```
 
-## Unregister
+#### Unregister
 
 ```javascript
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
@@ -79,30 +38,6 @@ GlobalRegistrator.unregister();
 console.log(global.document);
 ```
 
-# Documentation
+## Happy DOM
 
-Read more about how Happy DOM works in our [documentation](https://github.com/capricorn86/happy-dom/wiki).
-
-# Performance
-
-| Operation                            | JSDOM   | Happy DOM |
-| ------------------------------------ | ------- | --------- |
-| Import / Require                     | 333 ms  | 45 ms     |
-| Parse HTML                           | 256 ms  | 26 ms     |
-| Serialize HTML                       | 65 ms   | 8 ms      |
-| Render custom element                | 214 ms  | 19 ms     |
-| querySelectorAll('tagname')          | 4.9 ms  | 0.7 ms    |
-| querySelectorAll('.class')           | 6.4 ms  | 3.7 ms    |
-| querySelectorAll('[attribute]')      | 4.0 ms  | 1.7 ms    |
-| querySelectorAll('[class~="name"]')  | 5.5 ms  | 2.9 ms    |
-| querySelectorAll(':nth-child(2n+1)') | 10.4 ms | 3.8 ms    |
-
-See how the test was done [here](https://github.com/capricorn86/happy-dom-performance-test)
-
-# Sister Projects
-
-[<img alt="Happy Conventional Commit" width="120px" src="https://raw.githubusercontent.com/capricorn86/happy-conventional-commit/main/docs/logo_thumbnail.jpg" />](https://github.com/capricorn86/happy-conventional-commit)
-
-# Sponsors
-
-[<img alt="RTVision" width="120px" src="https://avatars.githubusercontent.com/u/8292810?s=200&v=4" />](https://rtvision.com)
+[Documentation](https://github.com/capricorn86/happy-dom/wiki) | [Getting Started](https://github.com/capricorn86/happy-dom/wiki/Getting-started) | [Setup as Test Environment](https://github.com/capricorn86/happy-dom/wiki/Setup-as-Test-Environment) | [GitHub](https://github.com/capricorn86/happy-dom/)
