@@ -36,11 +36,11 @@ And much more..
  - [Bun](https://bun.sh)
  - [Jest](https://jestjs.io/)
  - [Testing Library](https://testing-library.com/)
- - [React](https://reactjs.org)
+ - [Google LitElement](https://lit.dev/)
  - [Vue](https://vuejs.org/)
+ - [React](https://reactjs.org)
  - [Svelte](https://svelte.dev/)
  - [Angular](https://angular.io/)
- - [Google LitElement](https://lit.dev/)
 
 ## Sponsors
 
