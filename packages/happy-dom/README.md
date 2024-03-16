@@ -22,7 +22,7 @@ And much more..
 
 ## Works With
 
-[Vitest](https://vitest.dev/) | [Bun](https://bun.sh) | [Jest](https://jestjs.io/) | [Testing Library](https://testing-library.com/) | [React](https://reactjs.org) | [Vue](https://vuejs.org/) | [Angular](https://angular.io/) | [Google LitElement](https://lit.dev/)
+[Vitest](https://vitest.dev/) | [Bun](https://bun.sh) | [Jest](https://jestjs.io/) | [Testing Library](https://testing-library.com/) | [React](https://reactjs.org) | [Vue](https://vuejs.org/) | [Svelte](https://svelte.dev/) | [Angular](https://angular.io/) | [Google LitElement](https://lit.dev/)
 
 ## Module Systems
 
