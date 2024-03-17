@@ -21,7 +21,7 @@ export default class AbortController {
 	 *
 	 * @param [reason] Reason.
 	 */
-	public abort(reason?: string): void {
+	public abort(reason?: Error): void {
 		this.signal[PropertySymbol.abort](reason);
 	}
 }
