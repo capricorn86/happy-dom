@@ -74,7 +74,7 @@ export default class Headers implements IHeaders {
 	 * @returns Value.
 	 */
 	public get(name: string): string | null {
-		return this[PropertySymbol.entries][name.toLowerCase()]?.value || null;
+		return this[PropertySymbol.entries][name.toLowerCase()]?.value ?? null;
 	}
 
 	/**
@@ -96,7 +96,13 @@ export default class Headers implements IHeaders {
 	 * @returns An array of strings representing the values of all the different Set-Cookie headers.
 	 */
 	public getSetCookie(): string[] {
-		return CookieStringUtility.splitCookiesString(this.get('Set-Cookie') || '');
+		const cookiesString = this.get('Set-Cookie');
+		if (cookiesString === null) {
+			return [];
+		} else if (cookiesString === '') {
+			return [''];
+		}
+		return CookieStringUtility.splitCookiesString(cookiesString);
 	}
 
 	/**

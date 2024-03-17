@@ -76,6 +76,14 @@ describe('Headers', () => {
 
 				expect(headers.get('Content-Type')).toBe('application/json, x-www-form-urlencoded');
 			});
+
+			it('Returns the value of Header as it is, set with an empty string.', () => {
+				const headers = new Headers();
+
+				headers.append('X-A', '');
+
+				expect(headers.get('X-A')).toBe('');
+			});
 		});
 
 		describe('set()', () => {
@@ -104,6 +112,13 @@ describe('Headers', () => {
 				const headers = new Headers();
 
 				expect(headers.getSetCookie()).toEqual([]);
+			});
+
+			it('Returns as a list of empty characters if the Set-Cookie header is set to an empty string.', () => {
+				const headers = new Headers();
+				headers.append('Set-Cookie', '');
+
+				expect(headers.getSetCookie()).toEqual(['']);
 			});
 
 			it('Returns an array of strings representing the values of all the different Set-Cookie headers.', () => {
