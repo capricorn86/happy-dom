@@ -123,11 +123,7 @@ export default class Fetch {
 			this.#window.location.protocol === 'https:'
 		) {
 			throw new DOMException(
-				`Mixed Content: The page at '${
-					this.#window.location.href
-				}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
-					this.request.url
-				}'. This request has been blocked; the content must be served over HTTPS.`,
+				`Mixed Content: The page at '${this.#window.location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${this.request.url}'. This request has been blocked; the content must be served over HTTPS.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
