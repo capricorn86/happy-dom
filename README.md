@@ -46,7 +46,7 @@ And much more..
 
 <p align="center"><b>Gold Sponsors</b></p>
 
-<p align="center"><a href="https://rtvision.com"><img alt="RTVision" width="100px" src="https://avatars.githubusercontent.com/u/8292810?s=200&v=4"></a></p>
+<p align="center"><a href="https://rtvision.com"><img alt="RT Vision" width="100px" src="https://avatars.githubusercontent.com/u/8292810?s=200&v=4"></a></p>
 
 <p align="center"><b>Sponsors</b></p>
 
@@ -54,7 +54,7 @@ And much more..
 
 <p align="center"><b>Backers</b></p>
 
-<p align="center"><a href="https://github.com/maxmilton"><img alt="Github user @maxmilton" src="https://images.weserv.nl/?url=avatars.githubusercontent.com/u/14946546?v=4&h=40&w=40&fit=cover&mask=circle&maxage=7d"></a> <a href="https://github.com/taufiq-dev"><img alt="Github user @taufiq-dev" src="https://images.weserv.nl/?url=avatars.githubusercontent.com/u/20721306?v=4&h=40&w=40&fit=cover&mask=circle&maxage=7d"></a></p>
+<p align="center"><a href="https://sourcegraph.com/"><img alt="Sourcegraph" src="https://images.weserv.nl/?url=avatars.githubusercontent.com/u/3979584?v=4&h=40&w=40&fit=cover&mask=circle&maxage=7d"></a> <a href="https://github.com/maxmilton"><img alt="Github user @maxmilton" src="https://images.weserv.nl/?url=avatars.githubusercontent.com/u/14946546?v=4&h=40&w=40&fit=cover&mask=circle&maxage=7d"></a> <a href="https://github.com/taufiq-dev"><img alt="Github user @taufiq-dev" src="https://images.weserv.nl/?url=avatars.githubusercontent.com/u/20721306?v=4&h=40&w=40&fit=cover&mask=circle&maxage=7d"></a></p>
 
 ## Contributing
 
