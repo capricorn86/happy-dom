@@ -7,7 +7,7 @@ describe('AbortController', () => {
 		it('Aborts the signal.', () => {
 			const controller = new AbortController();
 			const signal = controller.signal;
-			const reason = 'abort reason';
+			const reason = new Error('abort reason');
 			let triggeredEvent: Event | null = null;
 
 			signal.addEventListener('abort', (event: Event) => (triggeredEvent = event));
