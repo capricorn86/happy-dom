@@ -488,6 +488,40 @@ describe('Response', () => {
 			expect(bodyText).toBe('Hello World');
 		});
 
+		it('Can clone Response without body.', async () => {
+			const response = new window.Response(null, {
+				status: 404,
+				statusText: 'Not Found',
+				headers: { 'Content-Type': 'text/plain' }
+			});
+
+			const clone = response.clone();
+
+			expect(clone).not.toBe(response);
+			expect(clone.status).toBe(404);
+			expect(clone.statusText).toBe('Not Found');
+			expect(clone.headers.get('Content-Type')).toBe('text/plain');
+		});
+
+		it('Can clone Response with empty string as body.', async () => {
+			const response = new window.Response('', {
+				status: 404,
+				statusText: 'Not Found',
+				headers: { 'Content-Type': 'text/plain' }
+			});
+
+			const clone = response.clone();
+
+			expect(clone).not.toBe(response);
+			expect(clone.status).toBe(404);
+			expect(clone.statusText).toBe('Not Found');
+			expect(clone.headers.get('Content-Type')).toBe('text/plain');
+
+			const bodyText = await clone.text();
+
+			expect(bodyText).toBe('');
+		});
+
 		it('Can use the body of the cloned Response with a buffer independently.', async () => {
 			const originalResponse = new window.Response('Hello World', {
 				status: 200,
