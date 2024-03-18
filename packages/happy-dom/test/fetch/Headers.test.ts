@@ -76,6 +76,14 @@ describe('Headers', () => {
 
 				expect(headers.get('Content-Type')).toBe('application/json, x-www-form-urlencoded');
 			});
+
+			it('Returns the value of Header as it is, set with an empty string.', () => {
+				const headers = new Headers();
+
+				headers.append('X-A', '');
+
+				expect(headers.get('X-A')).toBe('');
+			});
 		});
 
 		describe('set()', () => {
@@ -96,6 +104,59 @@ describe('Headers', () => {
 					'Content-Type': 'x-www-form-urlencoded',
 					'Content-Encoding': 'gzip'
 				});
+			});
+		});
+
+		describe('getSetCookie()', () => {
+			it('Returns an empty list if there is no Set-Cookie header.', () => {
+				const headers = new Headers();
+
+				expect(headers.getSetCookie()).toEqual([]);
+			});
+
+			it('Returns as a list of empty characters if the Set-Cookie header is set to an empty string.', () => {
+				const headers = new Headers();
+				headers.append('Set-Cookie', '');
+
+				expect(headers.getSetCookie()).toEqual(['']);
+			});
+
+			it('Returns an array of strings representing the values of all the different Set-Cookie headers.', () => {
+				const headers = new Headers();
+
+				headers.append('Content-Type', 'application/json');
+				headers.append('Set-Cookie', 'a=1');
+				headers.append('Set-Cookie', 'b=2; Expires=Fri, 01 Jan 2100 00:00:00 GMT');
+
+				expect(headers.getSetCookie()).toEqual([
+					'a=1',
+					'b=2; Expires=Fri, 01 Jan 2100 00:00:00 GMT'
+				]);
+
+				const headers2 = new Headers();
+
+				headers2.append(
+					'Set-Cookie',
+					'key=value; HttpOnly; Path=/; Expires=Fri, 01 Jan 2100 00:00:00 GMT'
+				);
+
+				expect(headers2.getSetCookie()).toEqual([
+					'key=value; HttpOnly; Path=/; Expires=Fri, 01 Jan 2100 00:00:00 GMT'
+				]);
+
+				const headers3 = new Headers();
+
+				headers3.append(
+					'Set-Cookie',
+					'key1=value1; HttpOnly; Path=/; Expires=Fri, 01 Jan 2100 00:00:00 GMT'
+				);
+
+				headers3.append('Set-Cookie', 'key2=value2; Domain=example.com; Max-Age=1');
+
+				expect(headers3.getSetCookie()).toEqual([
+					'key1=value1; HttpOnly; Path=/; Expires=Fri, 01 Jan 2100 00:00:00 GMT',
+					'key2=value2; Domain=example.com; Max-Age=1'
+				]);
 			});
 		});
 
