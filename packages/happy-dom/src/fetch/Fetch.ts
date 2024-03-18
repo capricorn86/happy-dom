@@ -799,9 +799,9 @@ export default class Fetch {
 	 *
 	 * @param reason Reason.
 	 */
-	private abort(reason?: string): void {
+	private abort(reason?: Error): void {
 		const error = new DOMException(
-			'The operation was aborted.' + (reason ? ' ' + reason : ''),
+			'The operation was aborted.' + (reason ? ' ' + reason.toString() : ''),
 			DOMExceptionNameEnum.abortError
 		);
 

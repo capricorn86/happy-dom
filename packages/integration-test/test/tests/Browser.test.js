@@ -14,9 +14,7 @@ describe('Browser', () => {
 		await page.waitUntilComplete();
 
 		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom');
-		expect(
-			page.mainFrame.document.title.startsWith('GitHub - capricorn86/happy-dom: Happy DOM')
-		).toBe(true);
+		expect(page.mainFrame.document.title.startsWith('GitHub - capricorn86/happy-dom')).toBe(true);
 		expect(
 			page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]').textContent.trim()
 		).toBe('happy-dom');

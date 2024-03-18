@@ -125,7 +125,7 @@ export default class BrowserFrameNavigator {
 		let responseText: string;
 
 		const timeout = frame.window.setTimeout(
-			() => abortController.abort('Request timed out.'),
+			() => abortController.abort(new Error('Request timed out.')),
 			goToOptions?.timeout ?? 30000
 		);
 		const finalize = (): void => {

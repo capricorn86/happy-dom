@@ -2147,7 +2147,10 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+				new DOMException(
+					'The operation was aborted. AbortError: signal is aborted without reason',
+					DOMExceptionNameEnum.abortError
+				)
 			);
 		});
 
@@ -2202,7 +2205,10 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+				new DOMException(
+					'The operation was aborted. AbortError: signal is aborted without reason',
+					DOMExceptionNameEnum.abortError
+				)
 			);
 		});
 		it('Supports aborting multiple ongoing requests using AbortController.', async () => {
@@ -2249,10 +2255,16 @@ describe('Fetch', () => {
 				const onFetchCatch = (): void => {
 					if (error1 && error2) {
 						expect(error1).toEqual(
-							new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+							new DOMException(
+								'The operation was aborted. AbortError: signal is aborted without reason',
+								DOMExceptionNameEnum.abortError
+							)
 						);
 						expect(error2).toEqual(
-							new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+							new DOMException(
+								'The operation was aborted. AbortError: signal is aborted without reason',
+								DOMExceptionNameEnum.abortError
+							)
 						);
 						resolve(null);
 					}
@@ -2334,7 +2346,10 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+				new DOMException(
+					'The operation was aborted. AbortError: signal is aborted without reason',
+					DOMExceptionNameEnum.abortError
+				)
 			);
 		});
 
@@ -2397,7 +2412,10 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+				new DOMException(
+					'The operation was aborted. AbortError: signal is aborted without reason',
+					DOMExceptionNameEnum.abortError
+				)
 			);
 		});
 
@@ -2467,7 +2485,10 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+				new DOMException(
+					'The operation was aborted. AbortError: signal is aborted without reason',
+					DOMExceptionNameEnum.abortError
+				)
 			);
 		});
 
