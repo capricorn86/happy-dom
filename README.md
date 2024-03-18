@@ -62,4 +62,4 @@ See [Contributing Guide](https://github.com/capricorn86/happy-dom/blob/master/do
 
 ## License
 
-MIT License © 2020-Present [David Ortner](https://github.com/capricorn86)
+MIT License © 2019-Present [David Ortner](https://github.com/capricorn86)
