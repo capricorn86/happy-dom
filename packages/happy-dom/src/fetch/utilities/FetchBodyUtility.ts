@@ -103,7 +103,7 @@ export default class FetchBodyUtility {
 	 * @returns New stream.
 	 */
 	public static cloneBodyStream(requestOrResponse: {
-		body: ReadableStream;
+		body: ReadableStream | null;
 		bodyUsed: boolean;
 	}): ReadableStream {
 		if (requestOrResponse.bodyUsed) {
@@ -111,6 +111,10 @@ export default class FetchBodyUtility {
 				`Failed to clone body stream of request: Request body is already used.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
+		}
+
+		if (requestOrResponse.body === null || requestOrResponse.body === undefined) {
+			return null;
 		}
 
 		// If a buffer is set, use it to create a new stream.
