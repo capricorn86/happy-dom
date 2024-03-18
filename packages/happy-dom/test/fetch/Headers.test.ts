@@ -132,6 +132,31 @@ describe('Headers', () => {
 					'a=1',
 					'b=2; Expires=Fri, 01 Jan 2100 00:00:00 GMT'
 				]);
+
+				const headers2 = new Headers();
+
+				headers2.append(
+					'Set-Cookie',
+					'key=value; HttpOnly; Path=/; Expires=Fri, 01 Jan 2100 00:00:00 GMT'
+				);
+
+				expect(headers2.getSetCookie()).toEqual([
+					'key=value; HttpOnly; Path=/; Expires=Fri, 01 Jan 2100 00:00:00 GMT'
+				]);
+
+				const headers3 = new Headers();
+
+				headers3.append(
+					'Set-Cookie',
+					'key1=value1; HttpOnly; Path=/; Expires=Fri, 01 Jan 2100 00:00:00 GMT'
+				);
+
+				headers3.append('Set-Cookie', 'key2=value2; Domain=example.com; Max-Age=1');
+
+				expect(headers3.getSetCookie()).toEqual([
+					'key1=value1; HttpOnly; Path=/; Expires=Fri, 01 Jan 2100 00:00:00 GMT',
+					'key2=value2; Domain=example.com; Max-Age=1'
+				]);
 			});
 		});
 

@@ -3,7 +3,6 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IHeaders from './types/IHeaders.js';
 import IHeadersInit from './types/IHeadersInit.js';
-import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
 
 /**
  * Fetch headers.
@@ -11,7 +10,7 @@ import CookieStringUtility from '../cookie/urilities/CookieStringUtility.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Headers
  */
 export default class Headers implements IHeaders {
-	public [PropertySymbol.entries]: { [k: string]: { name: string; value: string } } = {};
+	public [PropertySymbol.entries]: { [k: string]: { name: string; value: string[] } } = {};
 
 	/**
 	 * Constructor.
@@ -49,11 +48,11 @@ export default class Headers implements IHeaders {
 	public append(name: string, value: string): void {
 		const lowerName = name.toLowerCase();
 		if (this[PropertySymbol.entries][lowerName]) {
-			this[PropertySymbol.entries][lowerName].value += `, ${value}`;
+			this[PropertySymbol.entries][lowerName].value.push(value);
 		} else {
 			this[PropertySymbol.entries][lowerName] = {
 				name,
-				value
+				value: [value]
 			};
 		}
 	}
@@ -74,7 +73,7 @@ export default class Headers implements IHeaders {
 	 * @returns Value.
 	 */
 	public get(name: string): string | null {
-		return this[PropertySymbol.entries][name.toLowerCase()]?.value ?? null;
+		return this[PropertySymbol.entries][name.toLowerCase()]?.value.join(', ') ?? null;
 	}
 
 	/**
@@ -86,7 +85,7 @@ export default class Headers implements IHeaders {
 	public set(name: string, value: string): void {
 		this[PropertySymbol.entries][name.toLowerCase()] = {
 			name,
-			value
+			value: [value]
 		};
 	}
 
@@ -96,13 +95,11 @@ export default class Headers implements IHeaders {
 	 * @returns An array of strings representing the values of all the different Set-Cookie headers.
 	 */
 	public getSetCookie(): string[] {
-		const cookiesString = this.get('Set-Cookie');
-		if (cookiesString === null) {
+		const entry = this[PropertySymbol.entries]['set-cookie'];
+		if (!entry) {
 			return [];
-		} else if (cookiesString === '') {
-			return [''];
 		}
-		return CookieStringUtility.splitCookiesString(cookiesString);
+		return entry.value;
 	}
 
 	/**
@@ -122,7 +119,7 @@ export default class Headers implements IHeaders {
 	 */
 	public forEach(callback: (name: string, value: string, thisArg: IHeaders) => void): void {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
-			callback(header.value, header.name, this);
+			callback(header.value.join(', '), header.name, this);
 		}
 	}
 
@@ -144,7 +141,7 @@ export default class Headers implements IHeaders {
 	 */
 	public *values(): IterableIterator<string> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
-			yield header.value;
+			yield header.value.join(', ');
 		}
 	}
 
@@ -155,7 +152,7 @@ export default class Headers implements IHeaders {
 	 */
 	public *entries(): IterableIterator<[string, string]> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
-			yield [header.name, header.value];
+			yield [header.name, header.value.join(', ')];
 		}
 	}
 
@@ -166,7 +163,7 @@ export default class Headers implements IHeaders {
 	 */
 	public *[Symbol.iterator](): IterableIterator<[string, string]> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
-			yield [header.name, header.value];
+			yield [header.name, header.value.join(', ')];
 		}
 	}
 }
