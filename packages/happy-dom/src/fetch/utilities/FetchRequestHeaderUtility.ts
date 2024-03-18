@@ -130,7 +130,7 @@ export default class FetchRequestHeaderUtility {
 		const httpRequestHeaders = {};
 
 		for (const header of Object.values(headers[PropertySymbol.entries])) {
-			httpRequestHeaders[header.name] = header.value;
+			httpRequestHeaders[header.name] = header.value.join(', ');
 		}
 
 		return httpRequestHeaders;
