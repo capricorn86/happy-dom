@@ -65,7 +65,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && rm -rf ./cjs && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension && npm run build-version-file",
+		"compile": "tsc && rimraf ./cjs && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension && npm run build-version-file",
 		"change-cjs-file-extension": "node ./bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"build-version-file": "node ./bin/build-version-file.cjs",
 		"watch": "tsc -w --preserveWatchOutput",
@@ -84,6 +84,7 @@
 		"@vitest/ui": "^0.33.0",
 		"@webref/css": "6.6.2",
 		"prettier": "^2.6.0",
+		"rimraf": "^5.0.5",
 		"typescript": "^5.0.4",
 		"vitest": "^0.32.4"
 	},
