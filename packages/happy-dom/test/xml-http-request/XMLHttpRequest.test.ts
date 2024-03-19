@@ -11,7 +11,6 @@ import Response from '../../src/fetch/Response.js';
 import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import Headers from '../../src/fetch/Headers.js';
-import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import { ReadableStream } from 'stream/web';

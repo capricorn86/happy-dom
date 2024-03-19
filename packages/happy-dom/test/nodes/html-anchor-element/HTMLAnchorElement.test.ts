@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLAnchorElement from '../../../src/nodes/html-anchor-element/HTMLAnchorElement.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';

@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import Window from '../../../src/window/Window.js';
 import XMLSerializer from '../../../src/xml-serializer/XMLSerializer.js';
 import XMLParser from '../../../src/xml-parser/XMLParser.js';
 import CustomElement from '../../CustomElement.js';
@@ -16,12 +15,10 @@ import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTe
 import Node from '../../../src/nodes/node/Node.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 import Element from '../../../src/nodes/element/Element.js';
-import Element from '../../../src/nodes/element/Element.js';
 import NodeList from '../../../src/nodes/node/NodeList.js';
 import Attr from '../../../src/nodes/attr/Attr.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import Node from '../../../src/nodes/node/Node.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 const NAMESPACE_URI = 'https://test.test';
@@ -349,7 +346,7 @@ describe('Element', () => {
 			const text2 = document.createTextNode('text2');
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				node.parentNode?.removeChild(node);
 			}
 
 			div.appendChild(text1);
@@ -370,7 +367,7 @@ describe('Element', () => {
 			const text2 = document.createTextNode('text2');
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				node.parentNode?.removeChild(node);
 			}
 
 			div.appendChild(text1);
@@ -838,7 +835,7 @@ describe('Element', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(document);
 				expect(selector).toEqual(expectedSelector);
-				return <NodeList<Element>>[element];
+				return <NodeList<Element>>(<unknown>[element]);
 			});
 
 			const result = document.querySelectorAll(expectedSelector);
@@ -1466,20 +1463,20 @@ describe('Element', () => {
 			element.attachShadow({ mode: 'open' });
 			expect(element[PropertySymbol.shadowRoot] instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot instanceof ShadowRoot).toBe(true);
-			expect(element.shadowRoot.ownerDocument === document).toBe(true);
-			expect(element.shadowRoot.isConnected).toBe(false);
+			expect(element.shadowRoot?.ownerDocument === document).toBe(true);
+			expect(element.shadowRoot?.isConnected).toBe(false);
 			document.appendChild(element);
-			expect(element.shadowRoot.isConnected).toBe(true);
+			expect(element.shadowRoot?.isConnected).toBe(true);
 		});
 
 		it('Creates a new closed ShadowRoot node and sets it to the internal "[PropertySymbol.shadowRoot]" property.', () => {
 			element.attachShadow({ mode: 'closed' });
 			expect(element.shadowRoot).toBe(null);
 			expect(element[PropertySymbol.shadowRoot] instanceof ShadowRoot).toBe(true);
-			expect(element[PropertySymbol.shadowRoot].ownerDocument === document).toBe(true);
-			expect(element[PropertySymbol.shadowRoot].isConnected).toBe(false);
+			expect(element[PropertySymbol.shadowRoot]?.ownerDocument === document).toBe(true);
+			expect(element[PropertySymbol.shadowRoot]?.isConnected).toBe(false);
 			document.appendChild(element);
-			expect(element[PropertySymbol.shadowRoot].isConnected).toBe(true);
+			expect(element[PropertySymbol.shadowRoot]?.isConnected).toBe(true);
 		});
 	});
 

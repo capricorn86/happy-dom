@@ -5,7 +5,6 @@ import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtili
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import Window from '../../../src/window/Window.js';
-import Window from '../../../src/window/Window.js';
 import CustomElement from '../../CustomElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';

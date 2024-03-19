@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLStyleElement from '../../../src/nodes/html-style-element/HTMLStyleElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';

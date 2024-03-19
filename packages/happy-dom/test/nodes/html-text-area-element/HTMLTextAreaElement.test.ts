@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLTextAreaElement from '../../../src/nodes/html-text-area-element/HTMLTextAreaElement.js';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';

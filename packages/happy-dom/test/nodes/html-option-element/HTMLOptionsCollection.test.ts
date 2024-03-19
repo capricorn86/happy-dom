@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
 import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';

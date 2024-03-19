@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import NodeUtility from '../../../src/nodes/node/NodeUtility.js';
 import NodeTypeEnum from '../../../src/nodes/node/NodeTypeEnum.js';

@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import Window from '../../../src/window/Window.js';
 import CustomElement from '../../CustomElement.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Text from '../../../src/nodes/text/Text.js';
@@ -8,7 +7,6 @@ import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragm
 import NodeIterator from '../../../src/tree-walker/NodeIterator.js';
 import TreeWalker from '../../../src/tree-walker/TreeWalker.js';
 import Node from '../../../src/nodes/node/Node.js';
-import Document from '../../../src/nodes/document/Document.js';
 import Document from '../../../src/nodes/document/Document.js';
 import Element from '../../../src/nodes/element/Element.js';
 import Event from '../../../src/event/Event.js';
@@ -21,15 +19,12 @@ import QuerySelector from '../../../src/query-selector/QuerySelector.js';
 import NodeFilter from '../../../src/tree-walker/NodeFilter.js';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
-import Element from '../../../src/nodes/element/Element.js';
 import NodeList from '../../../src/nodes/node/NodeList.js';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLLinkElement from '../../../src/nodes/html-link-element/HTMLLinkElement.js';
 import Response from '../../../src/fetch/Response.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement.js';
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum.js';
-import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import CustomEvent from '../../../src/event/events/CustomEvent.js';
 import Selection from '../../../src/selection/Selection.js';
 import Range from '../../../src/range/Range.js';
@@ -455,8 +450,8 @@ describe('Document', () => {
 
 			const button = <HTMLElement>(
 				(<HTMLElement>(
-					customElementA.shadowRoot.querySelector('custom-element-b')
-				)).shadowRoot.querySelector('button')
+					customElementA.shadowRoot?.querySelector('custom-element-b')
+				)).shadowRoot?.querySelector('button')
 			);
 
 			let focusCalls = 0;
