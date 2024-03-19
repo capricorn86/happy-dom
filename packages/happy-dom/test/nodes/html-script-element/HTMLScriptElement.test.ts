@@ -6,7 +6,6 @@ import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Event from '../../../src/event/Event.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
-import Window from '../../../src/window/Window.js';
 import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';

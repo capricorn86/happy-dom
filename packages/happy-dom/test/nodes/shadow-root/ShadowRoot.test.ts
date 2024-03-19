@@ -2,6 +2,7 @@ import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import CustomElement from '../../CustomElement.js';
+import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('ShadowRoot', () => {
@@ -16,7 +17,7 @@ describe('ShadowRoot', () => {
 
 	describe('set innerHTML()', () => {
 		it('Sets the innerHTML of the shadow root.', () => {
-			const shadowRoot = document.createElement('custom-element').shadowRoot;
+			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
 			shadowRoot.innerHTML = '<div attr1="value1" attr2="value2"><span>Test</span></div>';
 			expect(shadowRoot.childNodes.length).toBe(1);
 			expect(shadowRoot.childNodes[0].childNodes.length).toBe(1);
@@ -28,7 +29,7 @@ describe('ShadowRoot', () => {
 	describe('get innerHTML()', () => {
 		it('Returns the innerHTML of the shadow root.', () => {
 			const html = '<div attr1="value1" attr2="value2"><span>Test</span></div>';
-			const shadowRoot = document.createElement('custom-element').shadowRoot;
+			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
 			shadowRoot.innerHTML = html;
 			expect(shadowRoot.innerHTML).toBe(html);
 		});
@@ -37,7 +38,7 @@ describe('ShadowRoot', () => {
 	describe('get activeElement()', () => {
 		it('Returns the currently active element within the ShadowRoot.', () => {
 			const customElement = document.createElement('custom-element');
-			const shadowRoot = customElement.shadowRoot;
+			const shadowRoot = <ShadowRoot>customElement.shadowRoot;
 			const div = <HTMLElement>document.createElement('div');
 			const span = <HTMLElement>document.createElement('span');
 
@@ -69,7 +70,7 @@ describe('ShadowRoot', () => {
 
 		it('Unsets the active element when it gets disconnected.', () => {
 			const customElement = document.createElement('custom-element');
-			const shadowRoot = customElement.shadowRoot;
+			const shadowRoot = <ShadowRoot>customElement.shadowRoot;
 			const div = <HTMLElement>document.createElement('div');
 
 			document.body.appendChild(customElement);
@@ -91,7 +92,7 @@ describe('ShadowRoot', () => {
 	describe('toString()', () => {
 		it('Returns the innerHTML of the shadow root.', () => {
 			const html = '<div attr1="value1" attr2="value2"><span>Test</span></div>';
-			const shadowRoot = document.createElement('custom-element').shadowRoot;
+			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
 			shadowRoot.innerHTML = html;
 			expect(shadowRoot.toString()).toBe(html);
 		});
@@ -99,7 +100,7 @@ describe('ShadowRoot', () => {
 
 	describe('cloneNode()', () => {
 		it('Clones the value of the "mode" property when cloned.', () => {
-			const shadowRoot = document.createElement('custom-element').shadowRoot;
+			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
 			const clone = shadowRoot.cloneNode();
 			expect(shadowRoot.mode).toBe('open');
 			expect(clone.mode).toBe('open');

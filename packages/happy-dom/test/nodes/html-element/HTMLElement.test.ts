@@ -2,7 +2,6 @@ import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import Window from '../../../src/window/Window.js';
 import CustomElement from '../../CustomElement.js';
