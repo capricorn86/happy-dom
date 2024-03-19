@@ -1,7 +1,6 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import IHTMLStyleElement from './IHTMLStyleElement.js';
 
 /**
  * HTML Style Element.
@@ -9,7 +8,7 @@ import IHTMLStyleElement from './IHTMLStyleElement.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLStyleElement.
  */
-export default class HTMLStyleElement extends HTMLElement implements IHTMLStyleElement {
+export default class HTMLStyleElement extends HTMLElement {
 	private [PropertySymbol.sheet]: CSSStyleSheet | null = null;
 
 	/**

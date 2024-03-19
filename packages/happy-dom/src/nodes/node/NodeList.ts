@@ -1,9 +1,7 @@
-import INodeList from './INodeList.js';
-
 /**
  * Class list.
  */
-export default class NodeList<T> extends Array implements INodeList<T> {
+export default class NodeList<T> extends Array<T> {
 	/**
 	 * Returns `Symbol.toStringTag`.
 	 *

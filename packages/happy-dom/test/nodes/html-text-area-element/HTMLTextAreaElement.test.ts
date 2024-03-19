@@ -1,23 +1,22 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLTextAreaElement from '../../../src/nodes/html-text-area-element/HTMLTextAreaElement.js';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import Event from '../../../src/event/Event.js';
-import IText from '../../../src/nodes/text/IText.js';
+import Text from '../../../src/nodes/text/Text.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLTextAreaElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLTextAreaElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLTextAreaElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLTextAreaElement>document.createElement('textarea');
+		element = <HTMLTextAreaElement>document.createElement('textarea');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -49,7 +48,7 @@ describe('HTMLTextAreaElement', () => {
 			expect(element.selectionDirection).toBe(HTMLInputElementSelectionDirectionEnum.none);
 
 			element.selectionDirection = HTMLInputElementSelectionDirectionEnum.forward;
-			(<IText>element.childNodes[0]).data = 'NEW_TEST_VALUE';
+			(<Text>element.childNodes[0]).data = 'NEW_TEST_VALUE';
 			expect(element.selectionStart).toBe(14);
 			expect(element.selectionEnd).toBe(14);
 			expect(element.selectionDirection).toBe(HTMLInputElementSelectionDirectionEnum.none);

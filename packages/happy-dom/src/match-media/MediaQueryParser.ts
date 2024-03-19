@@ -1,6 +1,6 @@
 import MediaQueryItem from './MediaQueryItem.js';
 import MediaQueryTypeEnum from './MediaQueryTypeEnum.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Media query RegExp.
@@ -44,7 +44,7 @@ export default class MediaQueryParser {
 	 * @returns Media query items.
 	 */
 	public static parse(options: {
-		ownerWindow: IBrowserWindow;
+		ownerWindow: BrowserWindow;
 		mediaQuery: string;
 		rootFontSize?: string | number | null;
 	}): MediaQueryItem[] {

@@ -2,7 +2,7 @@ import Browser from '../../src/browser/Browser.js';
 import BrowserFrame from '../../src/browser/BrowserFrame.js';
 import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import IGoToOptions from '../../src/browser/types/IGoToOptions.js';
-import IResponse from '../../src/fetch/types/IResponse.js';
+import Response from '../../src/fetch/Response.js';
 import Location from '../../src/location/Location.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import HashChangeEvent from '../../src/event/events/HashChangeEvent.js';
@@ -148,7 +148,7 @@ describe('Location', () => {
 			let calledOptions: IGoToOptions | undefined = undefined;
 
 			vi.spyOn(browserFrame, 'goto').mockImplementation(
-				async (url, options?: IGoToOptions): Promise<IResponse | null> => {
+				async (url, options?: IGoToOptions): Promise<Response | null> => {
 					calledURL = url;
 					calledOptions = options;
 					return null;
@@ -164,7 +164,7 @@ describe('Location', () => {
 		it('Handles promise rejections.', async () => {
 			const location = new Location(browserFrame, 'about:blank');
 
-			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<Response | null> => {
 				return Promise.reject(new Error('Test error'));
 			});
 
@@ -321,7 +321,7 @@ describe('Location', () => {
 			let calledOptions: IGoToOptions | undefined = undefined;
 
 			vi.spyOn(browserFrame, 'goto').mockImplementation(
-				async (url, options?: IGoToOptions): Promise<IResponse | null> => {
+				async (url, options?: IGoToOptions): Promise<Response | null> => {
 					calledURL = url;
 					calledOptions = options;
 					return null;
@@ -337,7 +337,7 @@ describe('Location', () => {
 		it('Handles promise rejections.', async () => {
 			const location = new Location(browserFrame, 'about:blank');
 
-			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<Response | null> => {
 				return Promise.reject(new Error('Test error'));
 			});
 
@@ -358,7 +358,7 @@ describe('Location', () => {
 			let calledOptions: IGoToOptions | undefined = undefined;
 
 			vi.spyOn(browserFrame, 'goto').mockImplementation(
-				async (url, options?: IGoToOptions): Promise<IResponse | null> => {
+				async (url, options?: IGoToOptions): Promise<Response | null> => {
 					calledURL = url;
 					calledOptions = options;
 					return null;
@@ -374,7 +374,7 @@ describe('Location', () => {
 		it('Handles promise rejections.', async () => {
 			const location = new Location(browserFrame, 'about:blank');
 
-			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<Response | null> => {
 				return Promise.reject(new Error('Test error'));
 			});
 
@@ -395,7 +395,7 @@ describe('Location', () => {
 			let calledOptions: IGoToOptions | undefined = undefined;
 
 			vi.spyOn(browserFrame, 'goto').mockImplementation(
-				async (url, options?: IGoToOptions): Promise<IResponse | null> => {
+				async (url, options?: IGoToOptions): Promise<Response | null> => {
 					calledURL = url;
 					calledOptions = options;
 					return null;
@@ -411,7 +411,7 @@ describe('Location', () => {
 		it('Handles promise rejections.', async () => {
 			const location = new Location(browserFrame, 'about:blank');
 
-			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<IResponse | null> => {
+			vi.spyOn(browserFrame, 'goto').mockImplementation((): Promise<Response | null> => {
 				return Promise.reject(new Error('Test error'));
 			});
 

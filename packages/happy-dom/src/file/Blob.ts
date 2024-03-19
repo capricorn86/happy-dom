@@ -1,4 +1,3 @@
-import IBlob from './IBlob.js';
 import { Buffer } from 'buffer';
 import * as PropertySymbol from '../PropertySymbol.js';
 
@@ -9,7 +8,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
  * Based on:
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/Blob-impl.js (MIT licensed).
  */
-export default class Blob implements IBlob {
+export default class Blob {
 	public readonly type: string = '';
 	public [PropertySymbol.buffer]: Buffer = null;
 

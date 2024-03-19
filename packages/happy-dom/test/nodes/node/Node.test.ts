@@ -1,6 +1,5 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
+import Document from '../../../src/nodes/document/Document.js';
 import Node from '../../../src/nodes/node/Node.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
@@ -11,12 +10,12 @@ import Text from '../../../src/nodes/text/Text.js';
 import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
+import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import NodeFactory from '../../../src/nodes/NodeFactory.js';
 
 describe('Node', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 	let customElementOutput;
 
 	beforeEach(() => {
@@ -41,7 +40,7 @@ describe('Node', () => {
 			 * Connected.
 			 */
 			public connectedCallback(): void {
-				(<IShadowRoot>this.shadowRoot).innerHTML = '<div><span>Test</span></div>';
+				(<ShadowRoot>this.shadowRoot).innerHTML = '<div><span>Test</span></div>';
 				(<typeof CustomCounterElement>this.constructor).output.push('Counter:connected');
 			}
 
@@ -343,7 +342,7 @@ describe('Node', () => {
 
 			document.body.appendChild(customElement);
 
-			const rootNode = (<IShadowRoot>customElement.shadowRoot).querySelector('span')?.getRootNode();
+			const rootNode = (<ShadowRoot>customElement.shadowRoot).querySelector('span')?.getRootNode();
 
 			expect(rootNode === customElement.shadowRoot).toBe(true);
 		});
@@ -353,7 +352,7 @@ describe('Node', () => {
 
 			document.body.appendChild(customElement);
 
-			const rootNode = (<IShadowRoot>customElement.shadowRoot)
+			const rootNode = (<ShadowRoot>customElement.shadowRoot)
 				.querySelector('span')
 				?.getRootNode({ composed: true });
 

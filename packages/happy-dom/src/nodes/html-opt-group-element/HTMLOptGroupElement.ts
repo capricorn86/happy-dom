@@ -1,5 +1,4 @@
 import HTMLElement from '../html-element/HTMLElement.js';
-import IHTMLOptGroupElement from './IHTMLOptGroupElement.js';
 
 /**
  * HTML Opt Group Element.
@@ -7,7 +6,7 @@ import IHTMLOptGroupElement from './IHTMLOptGroupElement.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptGroupElement.
  */
-export default class HTMLOptGroupElement extends HTMLElement implements IHTMLOptGroupElement {
+export default class HTMLOptGroupElement extends HTMLElement {
 	/**
 	 * Returns label.
 	 *

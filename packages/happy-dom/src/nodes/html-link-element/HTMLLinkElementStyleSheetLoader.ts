@@ -6,14 +6,14 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
-import IHTMLLinkElement from './IHTMLLinkElement.js';
+import HTMLLinkElement from './HTMLLinkElement.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 
 /**
  * Helper class for getting the URL relative to a Location object.
  */
 export default class HTMLLinkElementStyleSheetLoader {
-	#element: IHTMLLinkElement;
+	#element: HTMLLinkElement;
 	#browserFrame: IBrowserFrame;
 	#loadedStyleSheetURL: string | null = null;
 
@@ -24,7 +24,7 @@ export default class HTMLLinkElementStyleSheetLoader {
 	 * @param options.element Element.
 	 * @param options.browserFrame Browser frame.
 	 */
-	constructor(options: { element: IHTMLLinkElement; browserFrame: IBrowserFrame }) {
+	constructor(options: { element: HTMLLinkElement; browserFrame: IBrowserFrame }) {
 		this.#element = options.element;
 		this.#browserFrame = options.browserFrame;
 	}

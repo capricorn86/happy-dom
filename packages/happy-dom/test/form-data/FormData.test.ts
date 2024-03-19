@@ -1,12 +1,11 @@
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import File from '../../src/file/File.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('FormData', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();

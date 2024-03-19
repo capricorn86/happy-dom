@@ -1,7 +1,7 @@
 import FocusEvent from '../../event/events/FocusEvent.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IHTMLElement from '../html-element/IHTMLElement.js';
-import ISVGElement from '../svg-element/ISVGElement.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import SVGElement from '../svg-element/SVGElement.js';
 
 /**
  * HTMLElement utility.
@@ -12,7 +12,7 @@ export default class HTMLElementUtility {
 	 *
 	 * @param element Element.
 	 */
-	public static blur(element: IHTMLElement | ISVGElement): void {
+	public static blur(element: HTMLElement | SVGElement): void {
 		if (
 			element[PropertySymbol.ownerDocument][PropertySymbol.activeElement] !== element ||
 			!element[PropertySymbol.isConnected]
@@ -46,7 +46,7 @@ export default class HTMLElementUtility {
 	 *
 	 * @param element Element.
 	 */
-	public static focus(element: IHTMLElement | ISVGElement): void {
+	public static focus(element: HTMLElement | SVGElement): void {
 		if (
 			element[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === element ||
 			!element[PropertySymbol.isConnected]

@@ -1,7 +1,7 @@
 import CustomElement from '../CustomElement.js';
 import CustomElementRegistry from '../../src/custom-element/CustomElementRegistry.js';
-import IWindow from '../../src/window/IWindow.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Window from '../../src/window/Window.js';
+import Document from '../../src/nodes/document/Document.js';
 import Window from '../../src/window/Window.js';
 import DOMException from '../../src/exception/DOMException.js';
 import { beforeEach, describe, it, expect } from 'vitest';
@@ -10,8 +10,8 @@ import NamespaceURI from '../../src/config/NamespaceURI.js';
 
 describe('CustomElementRegistry', () => {
 	let customElements;
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();

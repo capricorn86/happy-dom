@@ -1,5 +1,5 @@
-import URL from '../../url/URL.js';
-import ICookie from '../types/ICookie.js';
+import URL from '../url/URL.js';
+import ICookie from './ICookie.js';
 
 /**
  * Cookie Container.

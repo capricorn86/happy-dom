@@ -1,28 +1,27 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import File from '../../../src/file/File.js';
 import Event from '../../../src/event/Event.js';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
-import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
+import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
 
 describe('HTMLInputElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLInputElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLInputElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLInputElement>document.createElement('input');
+		element = <HTMLInputElement>document.createElement('input');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -761,9 +760,9 @@ describe('HTMLInputElement', () => {
 
 		it('Unchecks other radio buttons with the same name in a form.', () => {
 			const form = document.createElement('form');
-			const radio1 = <IHTMLInputElement>document.createElement('input');
-			const radio2 = <IHTMLInputElement>document.createElement('input');
-			const radio3 = <IHTMLInputElement>document.createElement('input');
+			const radio1 = <HTMLInputElement>document.createElement('input');
+			const radio2 = <HTMLInputElement>document.createElement('input');
+			const radio3 = <HTMLInputElement>document.createElement('input');
 
 			radio1.type = 'radio';
 			radio2.type = 'radio';
@@ -791,9 +790,9 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Unchecks other radio buttons with the same name outside of a form', () => {
-			const radio1 = <IHTMLInputElement>document.createElement('input');
-			const radio2 = <IHTMLInputElement>document.createElement('input');
-			const radio3 = <IHTMLInputElement>document.createElement('input');
+			const radio1 = <HTMLInputElement>document.createElement('input');
+			const radio2 = <HTMLInputElement>document.createElement('input');
+			const radio3 = <HTMLInputElement>document.createElement('input');
 
 			radio1.type = 'radio';
 			radio2.type = 'radio';
@@ -1292,8 +1291,8 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Submits form if type is "submit" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLInputElement>document.createElement('input');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLInputElement>document.createElement('input');
 
 			let submitTriggeredCount = 0;
 
@@ -1303,10 +1302,10 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(form);
 
-			let submitter: IHTMLInputElement | null = null;
+			let submitter: HTMLInputElement | null = null;
 			form.addEventListener('submit', (event) => {
 				submitTriggeredCount++;
-				submitter = <IHTMLInputElement>(<SubmitEvent>event).submitter;
+				submitter = <HTMLInputElement>(<SubmitEvent>event).submitter;
 			});
 
 			button.click();
@@ -1316,8 +1315,8 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Submits form associated by ID if type is "submit" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLInputElement>document.createElement('input');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLInputElement>document.createElement('input');
 
 			let submitTriggeredCount = 0;
 
@@ -1328,10 +1327,10 @@ describe('HTMLInputElement', () => {
 			document.body.appendChild(form);
 			document.body.appendChild(button);
 
-			let submitter: IHTMLInputElement | null = null;
+			let submitter: HTMLInputElement | null = null;
 			form.addEventListener('submit', (event) => {
 				submitTriggeredCount++;
-				submitter = <IHTMLInputElement>(<SubmitEvent>event).submitter;
+				submitter = <HTMLInputElement>(<SubmitEvent>event).submitter;
 			});
 
 			button.click();
@@ -1341,8 +1340,8 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Resets form if type is "reset" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLInputElement>document.createElement('input');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLInputElement>document.createElement('input');
 
 			let resetTriggeredCount = 0;
 
@@ -1360,8 +1359,8 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Resets form associated by ID if type is "reset" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLInputElement>document.createElement('input');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLInputElement>document.createElement('input');
 
 			let resetTriggeredCount = 0;
 

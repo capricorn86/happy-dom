@@ -1,10 +1,9 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
 import XMLSerializer from '../../../src/xml-serializer/XMLSerializer.js';
 import XMLParser from '../../../src/xml-parser/XMLParser.js';
 import CustomElement from '../../CustomElement.js';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
+import Document from '../../../src/nodes/document/Document.js';
 import Text from '../../../src/nodes/text/Text.js';
 import DOMRect from '../../../src/nodes/element/DOMRect.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
@@ -14,27 +13,25 @@ import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility.js'
 import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility.js';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import Node from '../../../src/nodes/node/Node.js';
-import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection.js';
-import IElement from '../../../src/nodes/element/IElement.js';
+import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 import Element from '../../../src/nodes/element/Element.js';
-import INodeList from '../../../src/nodes/node/INodeList.js';
-import IAttr from '../../../src/nodes/attr/IAttr.js';
+import NodeList from '../../../src/nodes/node/NodeList.js';
+import Attr from '../../../src/nodes/attr/Attr.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import INode from '../../../src/nodes/node/INode.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 const NAMESPACE_URI = 'https://test.test';
 
 describe('Element', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IElement;
+	let window: Window;
+	let document: Document;
+	let element: Element;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IElement>document.createElement('div');
+		element = <Element>document.createElement('div');
 		window.customElements.define('custom-element', CustomElement);
 	});
 
@@ -349,7 +346,7 @@ describe('Element', () => {
 			const text2 = document.createTextNode('text2');
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				node.parentNode?.removeChild(node);
 			}
 
 			div.appendChild(text1);
@@ -370,7 +367,7 @@ describe('Element', () => {
 			const text2 = document.createTextNode('text2');
 
 			for (const node of document.childNodes.slice()) {
-				node.parentNode.removeChild(node);
+				node.parentNode?.removeChild(node);
 			}
 
 			div.appendChild(text1);
@@ -454,7 +451,7 @@ describe('Element', () => {
 
 			document.body.appendChild(parent);
 
-			const insertedNode = <INode>parent.insertAdjacentElement('beforebegin', newNode);
+			const insertedNode = <Node>parent.insertAdjacentElement('beforebegin', newNode);
 
 			expect(insertedNode === newNode).toBe(true);
 			expect(parent.childNodes.length).toEqual(0);
@@ -480,7 +477,7 @@ describe('Element', () => {
 
 			document.body.appendChild(parent);
 
-			const insertedNode = <INode>parent.insertAdjacentElement('afterbegin', newNode);
+			const insertedNode = <Node>parent.insertAdjacentElement('afterbegin', newNode);
 
 			expect(insertedNode === newNode).toBe(true);
 			expect(parent.childNodes[0] === insertedNode).toBe(true);
@@ -495,7 +492,7 @@ describe('Element', () => {
 			parent.appendChild(child);
 			document.body.appendChild(parent);
 
-			const insertedNode = <INode>parent.insertAdjacentElement('beforeend', newNode);
+			const insertedNode = <Node>parent.insertAdjacentElement('beforeend', newNode);
 
 			expect(insertedNode === newNode).toBe(true);
 			expect(parent.childNodes[1] === insertedNode).toBe(true);
@@ -508,7 +505,7 @@ describe('Element', () => {
 
 			document.body.appendChild(parent);
 
-			const insertedNode = <INode>parent.insertAdjacentElement('afterend', newNode);
+			const insertedNode = <Node>parent.insertAdjacentElement('afterend', newNode);
 
 			expect(insertedNode === newNode).toBe(true);
 			expect(parent.childNodes.length).toEqual(0);
@@ -556,7 +553,7 @@ describe('Element', () => {
 			parent.insertAdjacentHTML('beforebegin', markup);
 
 			expect(parent.childNodes.length).toBe(0);
-			expect((<IElement>document.body.childNodes[0]).outerHTML).toEqual(markup);
+			expect((<Element>document.body.childNodes[0]).outerHTML).toEqual(markup);
 		});
 
 		it('Inserts the given HTML inside the reference element before the first child.', () => {
@@ -568,7 +565,7 @@ describe('Element', () => {
 			document.body.appendChild(parent);
 			parent.insertAdjacentHTML('afterbegin', markup);
 
-			expect((<IElement>parent.childNodes[0]).outerHTML).toEqual(markup);
+			expect((<Element>parent.childNodes[0]).outerHTML).toEqual(markup);
 			expect(parent.childNodes[1] === child).toBe(true);
 		});
 
@@ -582,7 +579,7 @@ describe('Element', () => {
 			parent.insertAdjacentHTML('beforeend', markup);
 
 			expect(parent.childNodes[0] === child).toBe(true);
-			expect((<IElement>parent.childNodes[1]).outerHTML).toEqual(markup);
+			expect((<Element>parent.childNodes[1]).outerHTML).toEqual(markup);
 		});
 
 		it('Inserts the given HTML right after the reference element.', () => {
@@ -594,7 +591,7 @@ describe('Element', () => {
 
 			expect(parent.childNodes.length).toEqual(0);
 			expect(document.body.childNodes[0] === parent).toBe(true);
-			expect((<IElement>document.body.childNodes[1]).outerHTML).toEqual(markup);
+			expect((<Element>document.body.childNodes[1]).outerHTML).toEqual(markup);
 		});
 
 		it('Inserts the given HTML right after the reference element if it has a sibling.', () => {
@@ -608,7 +605,7 @@ describe('Element', () => {
 
 			expect(parent.childNodes.length).toBe(0);
 			expect(document.body.childNodes[0] === parent).toBe(true);
-			expect((<IElement>document.body.childNodes[1]).outerHTML).toEqual(markup);
+			expect((<Element>document.body.childNodes[1]).outerHTML).toEqual(markup);
 			expect(document.body.childNodes[2] === sibling).toBe(true);
 		});
 	});
@@ -838,7 +835,7 @@ describe('Element', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(document);
 				expect(selector).toEqual(expectedSelector);
-				return <INodeList<IElement>>[element];
+				return <NodeList<Element>>(<unknown>[element]);
 			});
 
 			const result = document.querySelectorAll(expectedSelector);
@@ -871,7 +868,7 @@ describe('Element', () => {
 				(parentNode, requestedClassName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedClassName).toEqual(className);
-					return <IHTMLCollection<IElement>>[child];
+					return <HTMLCollection<Element>>[child];
 				}
 			);
 
@@ -890,7 +887,7 @@ describe('Element', () => {
 				(parentNode, requestedTagName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>[child];
+					return <HTMLCollection<Element>>[child];
 				}
 			);
 
@@ -911,7 +908,7 @@ describe('Element', () => {
 					expect(parentNode).toBe(element);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>[child];
+					return <HTMLCollection<Element>>[child];
 				}
 			);
 
@@ -1116,8 +1113,8 @@ describe('Element', () => {
 			div.innerHTML =
 				'<span id="a"></span><span id="b"></span><span id="c"></span><span id="d"></span>';
 
-			const a = <IElement>div.querySelector('#a');
-			const b = <IElement>div.querySelector('#b');
+			const a = <Element>div.querySelector('#a');
+			const b = <Element>div.querySelector('#b');
 
 			div.insertBefore(a, b);
 
@@ -1466,20 +1463,20 @@ describe('Element', () => {
 			element.attachShadow({ mode: 'open' });
 			expect(element[PropertySymbol.shadowRoot] instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot instanceof ShadowRoot).toBe(true);
-			expect(element.shadowRoot.ownerDocument === document).toBe(true);
-			expect(element.shadowRoot.isConnected).toBe(false);
+			expect(element.shadowRoot?.ownerDocument === document).toBe(true);
+			expect(element.shadowRoot?.isConnected).toBe(false);
 			document.appendChild(element);
-			expect(element.shadowRoot.isConnected).toBe(true);
+			expect(element.shadowRoot?.isConnected).toBe(true);
 		});
 
 		it('Creates a new closed ShadowRoot node and sets it to the internal "[PropertySymbol.shadowRoot]" property.', () => {
 			element.attachShadow({ mode: 'closed' });
 			expect(element.shadowRoot).toBe(null);
 			expect(element[PropertySymbol.shadowRoot] instanceof ShadowRoot).toBe(true);
-			expect(element[PropertySymbol.shadowRoot].ownerDocument === document).toBe(true);
-			expect(element[PropertySymbol.shadowRoot].isConnected).toBe(false);
+			expect(element[PropertySymbol.shadowRoot]?.ownerDocument === document).toBe(true);
+			expect(element[PropertySymbol.shadowRoot]?.isConnected).toBe(false);
 			document.appendChild(element);
-			expect(element[PropertySymbol.shadowRoot].isConnected).toBe(true);
+			expect(element[PropertySymbol.shadowRoot]?.isConnected).toBe(true);
 		});
 	});
 
@@ -1588,33 +1585,33 @@ describe('Element', () => {
 
 				expect(element.attributes.length).toBe(2);
 
-				expect((<IAttr>element.attributes[0]).name).toBe('key1');
-				expect((<IAttr>element.attributes[0]).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<IAttr>element.attributes[0]).value).toBe('value1');
-				expect((<IAttr>element.attributes[0]).specified).toBe(true);
-				expect((<IAttr>element.attributes[0]).ownerElement).toBe(element);
-				expect((<IAttr>element.attributes[0]).ownerDocument).toBe(document);
+				expect((<Attr>element.attributes[0]).name).toBe('key1');
+				expect((<Attr>element.attributes[0]).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<Attr>element.attributes[0]).value).toBe('value1');
+				expect((<Attr>element.attributes[0]).specified).toBe(true);
+				expect((<Attr>element.attributes[0]).ownerElement).toBe(element);
+				expect((<Attr>element.attributes[0]).ownerDocument).toBe(document);
 
-				expect((<IAttr>element.attributes[1]).name).toBe('key2');
-				expect((<IAttr>element.attributes[1]).namespaceURI).toBe(null);
-				expect((<IAttr>element.attributes[1]).value).toBe('value2');
-				expect((<IAttr>element.attributes[1]).specified).toBe(true);
-				expect((<IAttr>element.attributes[1]).ownerElement).toBe(element);
-				expect((<IAttr>element.attributes[1]).ownerDocument).toBe(document);
+				expect((<Attr>element.attributes[1]).name).toBe('key2');
+				expect((<Attr>element.attributes[1]).namespaceURI).toBe(null);
+				expect((<Attr>element.attributes[1]).value).toBe('value2');
+				expect((<Attr>element.attributes[1]).specified).toBe(true);
+				expect((<Attr>element.attributes[1]).ownerElement).toBe(element);
+				expect((<Attr>element.attributes[1]).ownerDocument).toBe(document);
 
-				expect((<IAttr>element.attributes['key1']).name).toBe('key1');
-				expect((<IAttr>element.attributes['key1']).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<IAttr>element.attributes['key1']).value).toBe('value1');
-				expect((<IAttr>element.attributes['key1']).specified).toBe(true);
-				expect((<IAttr>element.attributes['key1']).ownerElement).toBe(element);
-				expect((<IAttr>element.attributes['key1']).ownerDocument).toBe(document);
+				expect((<Attr>element.attributes['key1']).name).toBe('key1');
+				expect((<Attr>element.attributes['key1']).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<Attr>element.attributes['key1']).value).toBe('value1');
+				expect((<Attr>element.attributes['key1']).specified).toBe(true);
+				expect((<Attr>element.attributes['key1']).ownerElement).toBe(element);
+				expect((<Attr>element.attributes['key1']).ownerDocument).toBe(document);
 
-				expect((<IAttr>element.attributes['key2']).name).toBe('key2');
-				expect((<IAttr>element.attributes['key2']).namespaceURI).toBe(null);
-				expect((<IAttr>element.attributes['key2']).value).toBe('value2');
-				expect((<IAttr>element.attributes['key2']).specified).toBe(true);
-				expect((<IAttr>element.attributes['key2']).ownerElement).toBe(element);
-				expect((<IAttr>element.attributes['key2']).ownerDocument).toBe(document);
+				expect((<Attr>element.attributes['key2']).name).toBe('key2');
+				expect((<Attr>element.attributes['key2']).namespaceURI).toBe(null);
+				expect((<Attr>element.attributes['key2']).value).toBe('value2');
+				expect((<Attr>element.attributes['key2']).specified).toBe(true);
+				expect((<Attr>element.attributes['key2']).ownerElement).toBe(element);
+				expect((<Attr>element.attributes['key2']).ownerDocument).toBe(document);
 			});
 
 			it('Sets an Attr node on an <svg> element.', () => {
@@ -1630,33 +1627,33 @@ describe('Element', () => {
 
 				expect(svg.attributes.length).toBe(2);
 
-				expect((<IAttr>svg.attributes[0]).name).toBe('KEY1');
-				expect((<IAttr>svg.attributes[0]).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<IAttr>svg.attributes[0]).value).toBe('value1');
-				expect((<IAttr>svg.attributes[0]).specified).toBe(true);
-				expect((<IAttr>svg.attributes[0]).ownerElement).toBe(svg);
-				expect((<IAttr>svg.attributes[0]).ownerDocument).toBe(document);
+				expect((<Attr>svg.attributes[0]).name).toBe('KEY1');
+				expect((<Attr>svg.attributes[0]).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<Attr>svg.attributes[0]).value).toBe('value1');
+				expect((<Attr>svg.attributes[0]).specified).toBe(true);
+				expect((<Attr>svg.attributes[0]).ownerElement).toBe(svg);
+				expect((<Attr>svg.attributes[0]).ownerDocument).toBe(document);
 
-				expect((<IAttr>svg.attributes[1]).name).toBe('key2');
-				expect((<IAttr>svg.attributes[1]).namespaceURI).toBe(null);
-				expect((<IAttr>svg.attributes[1]).value).toBe('value2');
-				expect((<IAttr>svg.attributes[1]).specified).toBe(true);
-				expect((<IAttr>svg.attributes[1]).ownerElement).toBe(svg);
-				expect((<IAttr>svg.attributes[1]).ownerDocument).toBe(document);
+				expect((<Attr>svg.attributes[1]).name).toBe('key2');
+				expect((<Attr>svg.attributes[1]).namespaceURI).toBe(null);
+				expect((<Attr>svg.attributes[1]).value).toBe('value2');
+				expect((<Attr>svg.attributes[1]).specified).toBe(true);
+				expect((<Attr>svg.attributes[1]).ownerElement).toBe(svg);
+				expect((<Attr>svg.attributes[1]).ownerDocument).toBe(document);
 
-				expect((<IAttr>svg.attributes['KEY1']).name).toBe('KEY1');
-				expect((<IAttr>svg.attributes['KEY1']).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<IAttr>svg.attributes['KEY1']).value).toBe('value1');
-				expect((<IAttr>svg.attributes['KEY1']).specified).toBe(true);
-				expect((<IAttr>svg.attributes['KEY1']).ownerElement).toBe(svg);
-				expect((<IAttr>svg.attributes['KEY1']).ownerDocument).toBe(document);
+				expect((<Attr>svg.attributes['KEY1']).name).toBe('KEY1');
+				expect((<Attr>svg.attributes['KEY1']).namespaceURI).toBe(NamespaceURI.svg);
+				expect((<Attr>svg.attributes['KEY1']).value).toBe('value1');
+				expect((<Attr>svg.attributes['KEY1']).specified).toBe(true);
+				expect((<Attr>svg.attributes['KEY1']).ownerElement).toBe(svg);
+				expect((<Attr>svg.attributes['KEY1']).ownerDocument).toBe(document);
 
-				expect((<IAttr>svg.attributes['key2']).name).toBe('key2');
-				expect((<IAttr>svg.attributes['key2']).namespaceURI).toBe(null);
-				expect((<IAttr>svg.attributes['key2']).value).toBe('value2');
-				expect((<IAttr>svg.attributes['key2']).specified).toBe(true);
-				expect((<IAttr>svg.attributes['key2']).ownerElement).toBe(svg);
-				expect((<IAttr>svg.attributes['key2']).ownerDocument).toBe(document);
+				expect((<Attr>svg.attributes['key2']).name).toBe('key2');
+				expect((<Attr>svg.attributes['key2']).namespaceURI).toBe(null);
+				expect((<Attr>svg.attributes['key2']).value).toBe('value2');
+				expect((<Attr>svg.attributes['key2']).specified).toBe(true);
+				expect((<Attr>svg.attributes['key2']).ownerElement).toBe(svg);
+				expect((<Attr>svg.attributes['key2']).ownerDocument).toBe(document);
 			});
 		});
 	}

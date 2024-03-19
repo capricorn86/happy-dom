@@ -1,19 +1,18 @@
 import Event from '../../../src/event/Event.js';
-import IHTMLDialogElement from '../../../src/nodes/html-dialog-element/IHTMLDialogElement.js';
+import HTMLDialogElement from '../../../src/nodes/html-dialog-element/HTMLDialogElement.js';
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
+import Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLDialogElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLDialogElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLDialogElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLDialogElement>document.createElement('dialog');
+		element = <HTMLDialogElement>document.createElement('dialog');
 	});
 
 	describe('Object.prototype.toString', () => {

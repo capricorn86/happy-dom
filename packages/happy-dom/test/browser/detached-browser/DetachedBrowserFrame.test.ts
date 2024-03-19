@@ -2,8 +2,8 @@ import { Script } from 'vm';
 import DetachedBrowser from '../../../src/browser/detached-browser/DetachedBrowser';
 import Event from '../../../src/event/Event';
 import BrowserWindow from '../../../src/window/BrowserWindow';
-import IRequest from '../../../src/fetch/types/IRequest';
-import IResponse from '../../../src/fetch/types/IResponse';
+import Request from '../../../src/fetch/types/Request';
+import Response from '../../../src/fetch/types/Response';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import Fetch from '../../../src/fetch/Fetch';
 import DOMException from '../../../src/exception/DOMException';
@@ -12,7 +12,7 @@ import BrowserNavigationCrossOriginPolicyEnum from '../../../src/browser/enums/B
 import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFactory';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../../src/fetch/Headers';
-import IHTMLAnchorElement from '../../../src/nodes/html-anchor-element/IHTMLAnchorElement';
+import HTMLAnchorElement from '../../../src/nodes/html-anchor-element/HTMLAnchorElement';
 import * as PropertySymbol from '../../../src/PropertySymbol';
 
 describe('DetachedBrowserFrame', () => {
@@ -166,9 +166,9 @@ describe('DetachedBrowserFrame', () => {
 	describe('waitForNavigation()', () => {
 		it('Waits page to have been navigated.', async () => {
 			let count = 0;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				count++;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					text: () =>
 						new Promise((resolve) =>
 							setTimeout(
@@ -242,10 +242,10 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('goto()', () => {
 		it('Navigates to a URL.', async () => {
-			let request: IRequest | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			let request: Request | null = null;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				request = this.request;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
 						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 1))
@@ -263,9 +263,9 @@ describe('DetachedBrowserFrame', () => {
 				referrerPolicy: 'no-referrer-when-downgrade'
 			});
 
-			expect((<IResponse>response).url).toBe('http://localhost:3000/');
-			expect((<IRequest>(<unknown>request)).referrer).toBe('http://localhost:3000/referrer');
-			expect((<IRequest>(<unknown>request)).referrerPolicy).toBe('no-referrer-when-downgrade');
+			expect((<Response>response).url).toBe('http://localhost:3000/');
+			expect((<Request>(<unknown>request)).referrer).toBe('http://localhost:3000/referrer');
+			expect((<Request>(<unknown>request)).referrerPolicy).toBe('no-referrer-when-downgrade');
 			expect(page.mainFrame.url).toBe('http://localhost:3000/');
 			expect(page.mainFrame.window).not.toBe(oldWindow);
 			expect(oldWindow.location.href).toBe('about:blank');
@@ -332,10 +332,10 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it('Handles error status code in response.', async () => {
-			let request: IRequest | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			let request: Request | null = null;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				request = this.request;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					url: request?.url,
 					status: 404,
 					statusText: 'Not Found',
@@ -359,14 +359,14 @@ describe('DetachedBrowserFrame', () => {
 			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
 			expect(page.mainFrame.window.document.body.innerHTML).toBe('404 error');
 
-			expect((<IResponse>(<unknown>response)).status).toBe(404);
+			expect((<Response>(<unknown>response)).status).toBe(404);
 			expect(page.virtualConsolePrinter.readAsString()).toBe(
 				'GET http://localhost:3000/ 404 (Not Found)\n'
 			);
 		});
 
 		it('Handles reject when performing fetch.', async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Error'));
 			});
 
@@ -391,7 +391,7 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Doesn't navigate a child frame with a different origin from its parent if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
@@ -419,8 +419,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Navigates a child frame with the same origin as its parent if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>(<unknown>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
 					text: () => Promise.resolve('Test'),
 					headers: new Headers()
 				}));
@@ -449,7 +449,7 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Doesn't navigate a popup with a different origin from its parent if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
@@ -478,8 +478,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Navigates a popup with the same origin as its parent if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>(<unknown>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
 					text: () => Promise.resolve('Test'),
 					headers: new Headers()
 				}));
@@ -509,7 +509,7 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Doesn't navigate from one origin to another if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.sameOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
@@ -536,8 +536,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Navigates from "http" to "https" if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.strictOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>(<unknown>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
 					text: () => Promise.resolve('Test'),
 					headers: new Headers()
 				}));
@@ -567,8 +567,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Navigates from "https" to "https" if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.strictOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>(<unknown>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
 					text: () => Promise.resolve('Test'),
 					headers: new Headers()
 				}));
@@ -598,8 +598,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Navigates from "about" to "http" if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.strictOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>(<unknown>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
 					text: () => Promise.resolve('Test'),
 					headers: new Headers()
 				}));
@@ -627,8 +627,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Navigates from "https" to "about" if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.strictOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>(<unknown>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
 					text: () => Promise.resolve('Test'),
 					headers: new Headers()
 				}));
@@ -658,7 +658,7 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Doesn't navigate from "https" to "http" if the setting "navigation.crossOriginPolicy" is set to "${BrowserNavigationCrossOriginPolicyEnum.strictOrigin}".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
@@ -685,8 +685,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Navigates child frames if the setting "navigation.disableChildFrameNavigation" is set to "false".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>(<unknown>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
 					text: () => Promise.resolve('Test'),
 					headers: new Headers()
 				}));
@@ -714,7 +714,7 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Doesn't navigate child frames if the setting "navigation.disableChildFrameNavigation" is set to "true".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
@@ -741,8 +741,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Navigates child pages if the setting "navigation.disableChildPageNavigation" is set to "false".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>(<unknown>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
 					text: () => Promise.resolve('Test'),
 					headers: new Headers()
 				}));
@@ -771,7 +771,7 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Doesn't navigate child pages if the setting "navigation.disableChildPageNavigation" is set to "true".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
@@ -799,7 +799,7 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Doesn't navigate the main frame if the setting "navigation.disableMainFrameNavigation" is set to "true".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
@@ -824,8 +824,8 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Navigates the main frame if the setting "navigation.disableMainFrameNavigation" is set to "false".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
 					text: () => Promise.resolve('Test')
 				});
 			});
@@ -851,7 +851,7 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Doesn't navigate the main page frame of a detached browser.`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 
@@ -875,7 +875,7 @@ describe('DetachedBrowserFrame', () => {
 		});
 
 		it(`Sets URL when the main page frame of a detached browser if "disableFallbackToSetURL" is set to "false".`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Should not be called.'));
 			});
 

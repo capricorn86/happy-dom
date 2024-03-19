@@ -1,12 +1,11 @@
 import File from '../../file/File.js';
-import IFileList from './IFileList.js';
 
 /**
  * FileList.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/FileList
  */
-export default class FileList extends Array implements IFileList<File> {
+export default class FileList extends Array<File> {
 	/**
 	 * Constructor.
 	 */

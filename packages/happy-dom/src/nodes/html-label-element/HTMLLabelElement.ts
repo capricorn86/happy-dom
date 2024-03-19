@@ -1,8 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IHTMLElement from '../html-element/IHTMLElement.js';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
-import IHTMLLabelElement from './IHTMLLabelElement.js';
+import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
@@ -13,7 +11,7 @@ import PointerEvent from '../../event/events/PointerEvent.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement.
  */
-export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelElement {
+export default class HTMLLabelElement extends HTMLElement {
 	/**
 	 * Returns a string containing the ID of the labeled control. This reflects the "for" attribute.
 	 *
@@ -41,13 +39,13 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 *
 	 * @returns Control element.
 	 */
-	public get control(): IHTMLElement {
+	public get control(): HTMLElement {
 		const htmlFor = this.htmlFor;
 		if (htmlFor) {
-			const control = <IHTMLElement>this[PropertySymbol.ownerDocument].getElementById(htmlFor);
+			const control = <HTMLElement>this[PropertySymbol.ownerDocument].getElementById(htmlFor);
 			return control !== this ? control : null;
 		}
-		return <IHTMLElement>(
+		return <HTMLElement>(
 			this.querySelector('button,input:not([type="hidden"]),meter,output,progress,select,textarea')
 		);
 	}
@@ -57,8 +55,8 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 *
 	 * @returns Form.
 	 */
-	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this[PropertySymbol.formNode];
+	public get form(): HTMLFormElement {
+		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -68,7 +66,7 @@ export default class HTMLLabelElement extends HTMLElement implements IHTMLLabelE
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLLabelElement {
+	public cloneNode(deep = false): HTMLLabelElement {
 		return <HTMLLabelElement>super.cloneNode(deep);
 	}
 

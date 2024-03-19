@@ -1,14 +1,13 @@
 import XMLParser from '../../src/xml-parser/XMLParser.js';
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import Node from '../../src/nodes/node/Node.js';
-import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
+import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
 import XMLParserHTML from './data/XMLParserHTML.js';
 import NamespaceURI from '../../src/config/NamespaceURI.js';
 import DocumentType from '../../src/nodes/document-type/DocumentType.js';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
-import IHTMLTemplateElement from '../../src/nodes/html-template-element/IHTMLTemplateElement.js';
+import HTMLTemplateElement from '../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
@@ -21,8 +20,8 @@ const GET_EXPECTED_HTML = (html: string): string =>
 		.replace('<img />', '<img>');
 
 describe('XMLParser', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -34,7 +33,7 @@ describe('XMLParser', () => {
 			const root = XMLParser.parse(document, '<div></div>');
 			expect(root.childNodes.length).toBe(1);
 			expect(root.childNodes[0].childNodes.length).toBe(0);
-			expect((<IHTMLElement>root.childNodes[0]).tagName).toBe('DIV');
+			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
 		});
 
 		it('Parses HTML with a single <div> with attributes.', () => {
@@ -44,81 +43,73 @@ describe('XMLParser', () => {
 			);
 			expect(root.childNodes.length).toBe(1);
 			expect(root.childNodes[0].childNodes.length).toBe(0);
-			expect((<IHTMLElement>root.childNodes[0]).tagName).toBe('DIV');
-			expect((<IHTMLElement>root.childNodes[0]).id).toBe('id');
-			expect((<IHTMLElement>root.childNodes[0]).className).toBe('class1 class2');
+			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
+			expect((<HTMLElement>root.childNodes[0]).id).toBe('id');
+			expect((<HTMLElement>root.childNodes[0]).className).toBe('class1 class2');
 
-			expect((<IHTMLElement>root.childNodes[0]).attributes.length).toBe(3);
+			expect((<HTMLElement>root.childNodes[0]).attributes.length).toBe(3);
 
-			expect((<IHTMLElement>root.childNodes[0]).attributes[0].name).toBe('class');
-			expect((<IHTMLElement>root.childNodes[0]).attributes[0].value).toBe('class1 class2');
-			expect((<IHTMLElement>root.childNodes[0]).attributes[0].namespaceURI).toBe(null);
-			expect((<IHTMLElement>root.childNodes[0]).attributes[0].specified).toBe(true);
+			expect((<HTMLElement>root.childNodes[0]).attributes[0].name).toBe('class');
+			expect((<HTMLElement>root.childNodes[0]).attributes[0].value).toBe('class1 class2');
+			expect((<HTMLElement>root.childNodes[0]).attributes[0].namespaceURI).toBe(null);
+			expect((<HTMLElement>root.childNodes[0]).attributes[0].specified).toBe(true);
 			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes[0].ownerElement === root.childNodes[0]
+				(<HTMLElement>root.childNodes[0]).attributes[0].ownerElement === root.childNodes[0]
 			).toBe(true);
-			expect((<IHTMLElement>root.childNodes[0]).attributes[0].ownerDocument === document).toBe(
+			expect((<HTMLElement>root.childNodes[0]).attributes[0].ownerDocument === document).toBe(true);
+
+			expect((<HTMLElement>root.childNodes[0]).attributes[1].name).toBe('id');
+			expect((<HTMLElement>root.childNodes[0]).attributes[1].value).toBe('id');
+			expect((<HTMLElement>root.childNodes[0]).attributes[1].namespaceURI).toBe(null);
+			expect((<HTMLElement>root.childNodes[0]).attributes[1].specified).toBe(true);
+			expect(
+				(<HTMLElement>root.childNodes[0]).attributes[1].ownerElement === root.childNodes[0]
+			).toBe(true);
+			expect((<HTMLElement>root.childNodes[0]).attributes[1].ownerDocument === document).toBe(true);
+
+			expect((<HTMLElement>root.childNodes[0]).attributes[2].name).toBe('data-no-value');
+			expect((<HTMLElement>root.childNodes[0]).attributes[2].value).toBe('');
+			expect((<HTMLElement>root.childNodes[0]).attributes[2].namespaceURI).toBe(null);
+			expect((<HTMLElement>root.childNodes[0]).attributes[2].specified).toBe(true);
+			expect(
+				(<HTMLElement>root.childNodes[0]).attributes[2].ownerElement === root.childNodes[0]
+			).toBe(true);
+			expect((<HTMLElement>root.childNodes[0]).attributes[2].ownerDocument === document).toBe(true);
+
+			expect((<HTMLElement>root.childNodes[0]).attributes['class'].name).toBe('class');
+			expect((<HTMLElement>root.childNodes[0]).attributes['class'].value).toBe('class1 class2');
+			expect((<HTMLElement>root.childNodes[0]).attributes['class'].namespaceURI).toBe(null);
+			expect((<HTMLElement>root.childNodes[0]).attributes['class'].specified).toBe(true);
+			expect(
+				(<HTMLElement>root.childNodes[0]).attributes['class'].ownerElement === root.childNodes[0]
+			).toBe(true);
+			expect((<HTMLElement>root.childNodes[0]).attributes['class'].ownerDocument === document).toBe(
 				true
 			);
 
-			expect((<IHTMLElement>root.childNodes[0]).attributes[1].name).toBe('id');
-			expect((<IHTMLElement>root.childNodes[0]).attributes[1].value).toBe('id');
-			expect((<IHTMLElement>root.childNodes[0]).attributes[1].namespaceURI).toBe(null);
-			expect((<IHTMLElement>root.childNodes[0]).attributes[1].specified).toBe(true);
+			expect((<HTMLElement>root.childNodes[0]).attributes['id'].name).toBe('id');
+			expect((<HTMLElement>root.childNodes[0]).attributes['id'].value).toBe('id');
+			expect((<HTMLElement>root.childNodes[0]).attributes['id'].namespaceURI).toBe(null);
+			expect((<HTMLElement>root.childNodes[0]).attributes['id'].specified).toBe(true);
 			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes[1].ownerElement === root.childNodes[0]
+				(<HTMLElement>root.childNodes[0]).attributes['id'].ownerElement === root.childNodes[0]
 			).toBe(true);
-			expect((<IHTMLElement>root.childNodes[0]).attributes[1].ownerDocument === document).toBe(
+			expect((<HTMLElement>root.childNodes[0]).attributes['id'].ownerDocument === document).toBe(
 				true
 			);
 
-			expect((<IHTMLElement>root.childNodes[0]).attributes[2].name).toBe('data-no-value');
-			expect((<IHTMLElement>root.childNodes[0]).attributes[2].value).toBe('');
-			expect((<IHTMLElement>root.childNodes[0]).attributes[2].namespaceURI).toBe(null);
-			expect((<IHTMLElement>root.childNodes[0]).attributes[2].specified).toBe(true);
-			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes[2].ownerElement === root.childNodes[0]
-			).toBe(true);
-			expect((<IHTMLElement>root.childNodes[0]).attributes[2].ownerDocument === document).toBe(
-				true
-			);
-
-			expect((<IHTMLElement>root.childNodes[0]).attributes['class'].name).toBe('class');
-			expect((<IHTMLElement>root.childNodes[0]).attributes['class'].value).toBe('class1 class2');
-			expect((<IHTMLElement>root.childNodes[0]).attributes['class'].namespaceURI).toBe(null);
-			expect((<IHTMLElement>root.childNodes[0]).attributes['class'].specified).toBe(true);
-			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes['class'].ownerElement === root.childNodes[0]
-			).toBe(true);
-			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes['class'].ownerDocument === document
-			).toBe(true);
-
-			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].name).toBe('id');
-			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].value).toBe('id');
-			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].namespaceURI).toBe(null);
-			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].specified).toBe(true);
-			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes['id'].ownerElement === root.childNodes[0]
-			).toBe(true);
-			expect((<IHTMLElement>root.childNodes[0]).attributes['id'].ownerDocument === document).toBe(
-				true
-			);
-
-			expect((<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].name).toBe(
+			expect((<HTMLElement>root.childNodes[0]).attributes['data-no-value'].name).toBe(
 				'data-no-value'
 			);
-			expect((<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].value).toBe('');
-			expect((<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].namespaceURI).toBe(
-				null
-			);
-			expect((<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].specified).toBe(true);
+			expect((<HTMLElement>root.childNodes[0]).attributes['data-no-value'].value).toBe('');
+			expect((<HTMLElement>root.childNodes[0]).attributes['data-no-value'].namespaceURI).toBe(null);
+			expect((<HTMLElement>root.childNodes[0]).attributes['data-no-value'].specified).toBe(true);
 			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].ownerElement ===
+				(<HTMLElement>root.childNodes[0]).attributes['data-no-value'].ownerElement ===
 					root.childNodes[0]
 			).toBe(true);
 			expect(
-				(<IHTMLElement>root.childNodes[0]).attributes['data-no-value'].ownerDocument === document
+				(<HTMLElement>root.childNodes[0]).attributes['data-no-value'].ownerDocument === document
 			).toBe(true);
 		});
 
@@ -244,12 +235,12 @@ describe('XMLParser', () => {
 				</div>`
 			);
 
-			expect((<IHTMLElement>root.children[0].children[0]).innerText).toBe(
+			expect((<HTMLElement>root.children[0].children[0]).innerText).toBe(
 				`if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}`
 			);
 
-			expect((<IHTMLElement>root.children[0].children[1]).innerText).toBe('<b></b>');
-			expect((<IHTMLElement>root.children[0].children[2]).innerText).toBe('<b></b>');
+			expect((<HTMLElement>root.children[0].children[1]).innerText).toBe('<b></b>');
+			expect((<HTMLElement>root.children[0].children[2]).innerText).toBe('<b></b>');
 
 			expect(new XMLSerializer().serializeToString(root)).toBe(
 				`<div>
@@ -270,7 +261,7 @@ describe('XMLParser', () => {
                     </body>
                 </html>`
 			);
-			expect((<IHTMLElement>root2.children[0].children[1].children[0]).innerText).toBe(
+			expect((<HTMLElement>root2.children[0].children[1].children[0]).innerText).toBe(
 				'var vars = []; for (var i=0;i<vars.length;i++) {}'
 			);
 		});
@@ -279,7 +270,7 @@ describe('XMLParser', () => {
 			const root = XMLParser.parse(document, `<div>test`);
 
 			expect(root.childNodes.length).toBe(1);
-			expect((<IHTMLElement>root.childNodes[0]).tagName).toBe('DIV');
+			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
 			expect(root.childNodes[0].childNodes[0].nodeType).toBe(Node.TEXT_NODE);
 		});
 
@@ -438,7 +429,7 @@ describe('XMLParser', () => {
 				`
 			);
 
-			expect((<IHTMLElement>root.children[0]).innerText).toBe(`console.log('hello')`);
+			expect((<HTMLElement>root.children[0]).innerText).toBe(`console.log('hello')`);
 		});
 
 		it('Handles different value types.', () => {
@@ -525,7 +516,7 @@ describe('XMLParser', () => {
 		it('Parses <template> elements, including its content.', () => {
 			const root = XMLParser.parse(document, '<div><template><tr><td></td></tr></template></div>');
 			expect(root.childNodes.length).toBe(1);
-			const template = <IHTMLTemplateElement>root.childNodes[0].childNodes[0];
+			const template = <HTMLTemplateElement>root.childNodes[0].childNodes[0];
 			expect(template.childNodes.length).toBe(0);
 			expect(template.children.length).toBe(0);
 			expect(template.content.children.length).toBe(1);
@@ -542,10 +533,10 @@ describe('XMLParser', () => {
 
 			expect(root.childNodes.length).toBe(1);
 
-			const template = <IHTMLTemplateElement>root.childNodes[0];
+			const template = <HTMLTemplateElement>root.childNodes[0];
 			expect(template.content.childNodes.length).toBe(1);
-			expect((<IHTMLElement>template.content.childNodes[0]).tagName).toBe('COMPONENT');
-			expect((<IHTMLElement>template.content.childNodes[0]).getAttribute(':disabled')).toBe(
+			expect((<HTMLElement>template.content.childNodes[0]).tagName).toBe('COMPONENT');
+			expect((<HTMLElement>template.content.childNodes[0]).getAttribute(':disabled')).toBe(
 				'index > 1'
 			);
 		});

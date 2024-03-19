@@ -1,6 +1,6 @@
 import INodeFilter from './INodeFilter.js';
 import TreeWalker from './TreeWalker.js';
-import INode from '../nodes/node/INode.js';
+import Node from '../nodes/node/Node.js';
 
 /**
  * The NodeIterator object represents the nodes of a document subtree and a position within them.
@@ -9,7 +9,7 @@ import INode from '../nodes/node/INode.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
  */
 export default class NodeIterator {
-	public root: INode = null;
+	public root: Node = null;
 	public whatToShow = -1;
 	public filter: INodeFilter = null;
 
@@ -22,7 +22,7 @@ export default class NodeIterator {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	constructor(root: INode, whatToShow = -1, filter: INodeFilter = null) {
+	constructor(root: Node, whatToShow = -1, filter: INodeFilter = null) {
 		this.root = root;
 		this.whatToShow = whatToShow;
 		this.filter = filter;
@@ -34,7 +34,7 @@ export default class NodeIterator {
 	 *
 	 * @returns Current node.
 	 */
-	public nextNode(): INode {
+	public nextNode(): Node {
 		return this.#walker.nextNode();
 	}
 
@@ -43,7 +43,7 @@ export default class NodeIterator {
 	 *
 	 * @returns Current node.
 	 */
-	public previousNode(): INode {
+	public previousNode(): Node {
 		return this.#walker.previousNode();
 	}
 }

@@ -1,12 +1,13 @@
 import Node from '../node/Node.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterDataUtility from './CharacterDataUtility.js';
-import ICharacterData from './ICharacterData.js';
-import IElement from '../element/IElement.js';
+import Element from '../element/Element.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
 import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
+import IChildNode from '../child-node/IChildNode.js';
+import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
 
 /**
  * Character data base class.
@@ -14,7 +15,10 @@ import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/CharacterData.
  */
-export default abstract class CharacterData extends Node implements ICharacterData {
+export default abstract class CharacterData
+	extends Node
+	implements IChildNode, INonDocumentTypeChildNode
+{
 	public [PropertySymbol.data] = '';
 
 	/**
@@ -118,7 +122,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 *
 	 * @returns Element.
 	 */
-	public get previousElementSibling(): IElement {
+	public get previousElementSibling(): Element {
 		return NonDocumentChildNodeUtility.previousElementSibling(this);
 	}
 
@@ -127,7 +131,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 *
 	 * @returns Element.
 	 */
-	public get nextElementSibling(): IElement {
+	public get nextElementSibling(): Element {
 		return NonDocumentChildNodeUtility.nextElementSibling(this);
 	}
 
@@ -222,7 +226,7 @@ export default abstract class CharacterData extends Node implements ICharacterDa
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): ICharacterData {
+	public cloneNode(deep = false): CharacterData {
 		const clone = <CharacterData>super.cloneNode(deep);
 		clone[PropertySymbol.data] = this[PropertySymbol.data];
 		return clone;

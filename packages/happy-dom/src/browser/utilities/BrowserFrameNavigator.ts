@@ -1,9 +1,9 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import IGoToOptions from '../types/IGoToOptions.js';
-import IResponse from '../../fetch/types/IResponse.js';
+import Response from '../../fetch/Response.js';
 import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import AbortController from '../../fetch/AbortController.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
@@ -34,13 +34,13 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => IBrowserWindow;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		url: string;
 		goToOptions?: IGoToOptions;
 		method?: string;
 		formData?: FormData;
-	}): Promise<IResponse | null> {
+	}): Promise<Response | null> {
 		const { windowClass, frame, url, formData, method, goToOptions } = options;
 		const referrer = goToOptions?.referrer || frame.window.location.origin;
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
@@ -103,7 +103,7 @@ export default class BrowserFrameNavigator {
 		frame[PropertySymbol.asyncTaskManager].destroy();
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 
-		(<IBrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
+		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
 		if (referrer) {
@@ -121,7 +121,7 @@ export default class BrowserFrameNavigator {
 		readyStateManager.startTask();
 
 		const abortController = new AbortController();
-		let response: IResponse;
+		let response: Response;
 		let responseText: string;
 
 		const timeout = frame.window.setTimeout(

@@ -1,6 +1,6 @@
 import URL from '../../url/URL.js';
-import IRequest from './IRequest.js';
+import Request from '../Request.js';
 
-type IRequestInfo = IRequest | string | URL;
+type IRequestInfo = Request | string | URL;
 
 export default IRequestInfo;

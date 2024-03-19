@@ -1,10 +1,10 @@
-import IHeaders from '../../types/IHeaders.js';
+import Headers from '../../Headers.js';
 
 export default interface ICachableResponse {
 	status: number;
 	statusText: string;
 	url: string;
-	headers: IHeaders;
+	headers: Headers;
 	body: Buffer | null;
 	waitingForBody: boolean;
 }

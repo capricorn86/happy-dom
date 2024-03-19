@@ -1,6 +1,5 @@
 import IRequestInit from './types/IRequestInit.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IResponse from './types/IResponse.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import Headers from './Headers.js';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
@@ -19,7 +18,7 @@ import Response from './Response.js';
 import Event from '../event/Event.js';
 import AbortSignal from './AbortSignal.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import CachedResponseStateEnum from './cache/response/CachedResponseStateEnum.js';
 import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
@@ -41,7 +40,7 @@ const LAST_CHUNK = Buffer.from('0\r\n\r\n');
  */
 export default class Fetch {
 	private reject: (reason: Error) => void | null = null;
-	private resolve: (value: IResponse | Promise<IResponse>) => void | null = null;
+	private resolve: (value: Response | Promise<Response>) => void | null = null;
 	private listeners = {
 		onSignalAbort: this.onSignalAbort.bind(this)
 	};
@@ -57,7 +56,7 @@ export default class Fetch {
 	private disableCache: boolean;
 	private disableCrossOriginPolicy: boolean;
 	#browserFrame: IBrowserFrame;
-	#window: IBrowserWindow;
+	#window: BrowserWindow;
 
 	/**
 	 * Constructor.
@@ -74,7 +73,7 @@ export default class Fetch {
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
-		window: IBrowserWindow;
+		window: BrowserWindow;
 		url: IRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
@@ -101,7 +100,7 @@ export default class Fetch {
 	 *
 	 * @returns Response.
 	 */
-	public async send(): Promise<IResponse> {
+	public async send(): Promise<Response> {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
 		FetchRequestValidationUtility.validateSchema(this.request);
 
@@ -158,7 +157,7 @@ export default class Fetch {
 	 *
 	 * @returns Response.
 	 */
-	private async getCachedResponse(): Promise<IResponse | null> {
+	private async getCachedResponse(): Promise<Response | null> {
 		if (this.disableCache) {
 			return null;
 		}
@@ -336,7 +335,7 @@ export default class Fetch {
 	 *
 	 * @returns Response.
 	 */
-	private sendRequest(): Promise<IResponse> {
+	private sendRequest(): Promise<Response> {
 		return new Promise((resolve, reject) => {
 			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(() =>
 				this.onAsyncTaskManagerAbort()
@@ -346,7 +345,7 @@ export default class Fetch {
 				throw new Error('Fetch already sent.');
 			}
 
-			this.resolve = (response: IResponse | Promise<IResponse>): void => {
+			this.resolve = (response: Response | Promise<Response>): void => {
 				// We can end up here when closing down the browser frame and there is an ongoing request.
 				// Therefore we need to check if browserFrame.page.context is still available.
 				if (
@@ -779,7 +778,7 @@ export default class Fetch {
 				this.finalizeRequest();
 				this.reject(
 					new DOMException(
-						`Redirect option '${this.request.redirect}' is not a valid value of RequestRedirect`
+						`Redirect option '${this.request.redirect}' is not a valid value of IRequestRedirect`
 					)
 				);
 				return true;

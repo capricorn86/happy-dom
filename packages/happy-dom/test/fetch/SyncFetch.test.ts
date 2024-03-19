@@ -1,4 +1,4 @@
-import IBrowserWindow from '../../src/window/IBrowserWindow.js';
+import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
@@ -19,7 +19,7 @@ import '../types.d.js';
 
 describe('SyncFetch', () => {
 	let browserFrame: IBrowserFrame;
-	let window: IBrowserWindow;
+	let window: BrowserWindow;
 
 	beforeEach(() => {
 		const browser = new Browser();

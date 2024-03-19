@@ -1,15 +1,14 @@
-import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
+import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import QuerySelectorHTML from './data/QuerySelectorHTML.js';
 import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
-import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
+import HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('QuerySelector', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -155,7 +154,7 @@ describe('QuerySelector', () => {
 		});
 
 		it('Returns a NodeList with the method item().', () => {
-			const container = <IHTMLElement>document.createElement('div');
+			const container = <HTMLElement>document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
 			const elements = container.querySelectorAll('span');
 			expect(elements.item(0) === container.children[0].children[1].children[0]).toBe(true);
@@ -691,18 +690,18 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(1);
 			expect(elements[0] === container.children[0].children[0]).toBe(true);
 
-			const input = <IHTMLInputElement>elements[0];
+			const input = <HTMLInputElement>elements[0];
 
 			expect(input.value).toBe('one');
 
-			const twoEl = <IHTMLInputElement>container.querySelector("input[value='two']");
+			const twoEl = <HTMLInputElement>container.querySelector("input[value='two']");
 
 			twoEl.checked = true;
 			elements = container.querySelectorAll('input[name="op"]:checked');
 
 			expect(elements.length).toBe(1);
 			expect(elements[0] === container.children[0].children[1]).toBe(true);
-			expect((<IHTMLInputElement>elements[0]).value).toBe('two');
+			expect((<HTMLInputElement>elements[0]).value).toBe('two');
 		});
 
 		it('Returns all elements matching "span:not([type=hidden])".', () => {

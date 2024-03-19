@@ -1,20 +1,20 @@
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 import NodeFactory from '../nodes/NodeFactory.js';
 
 /**
  * The DOMImplementation interface represents an object providing methods which are not dependent on any particular document. Such an object is returned by the.
  */
 export default class DOMImplementation {
-	#document: IDocument;
+	#document: Document;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param window Window.
 	 */
-	constructor(window: IDocument) {
+	constructor(window: Document) {
 		this.#document = window;
 	}
 
@@ -23,14 +23,14 @@ export default class DOMImplementation {
 	 *
 	 * TODO: Not fully implemented.
 	 */
-	public createDocument(): IDocument {
+	public createDocument(): Document {
 		return new this.#document[PropertySymbol.ownerWindow].HTMLDocument();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
-	public createHTMLDocument(): IDocument {
+	public createHTMLDocument(): Document {
 		return new this.#document[PropertySymbol.ownerWindow].HTMLDocument();
 	}
 

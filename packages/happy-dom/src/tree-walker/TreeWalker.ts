@@ -1,19 +1,18 @@
 import Node from '../nodes/node/Node.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import NodeFilter from './NodeFilter.js';
 import INodeFilter from './INodeFilter.js';
 import NodeFilterMask from './NodeFilterMask.js';
 import DOMException from '../exception/DOMException.js';
-import INode from '../nodes/node/INode.js';
+import NodeFilter from './NodeFilter.js';
 
 /**
  * The TreeWalker object represents the nodes of a document subtree and a position within them.
  */
 export default class TreeWalker {
-	public root: INode = null;
+	public root: Node = null;
 	public whatToShow = -1;
 	public filter: INodeFilter = null;
-	public currentNode: INode = null;
+	public currentNode: Node = null;
 
 	/**
 	 * Constructor.
@@ -22,7 +21,7 @@ export default class TreeWalker {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	constructor(root: INode, whatToShow = -1, filter: INodeFilter = null) {
+	constructor(root: Node, whatToShow = -1, filter: INodeFilter = null) {
 		if (!(root instanceof Node)) {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}
@@ -38,7 +37,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public nextNode(): INode {
+	public nextNode(): Node {
 		if (!this.firstChild()) {
 			while (!this.nextSibling() && this.parentNode()) {}
 			this.currentNode = this.currentNode === this.root ? null : this.currentNode || null;
@@ -51,7 +50,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public previousNode(): INode {
+	public previousNode(): Node {
 		while (!this.previousSibling() && this.parentNode()) {}
 		this.currentNode = this.currentNode === this.root ? null : this.currentNode || null;
 		return this.currentNode;
@@ -62,7 +61,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public parentNode(): INode {
+	public parentNode(): Node {
 		if (
 			this.currentNode !== this.root &&
 			this.currentNode &&
@@ -87,7 +86,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public firstChild(): INode {
+	public firstChild(): Node {
 		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.childNodes] : [];
 
 		if (childNodes.length > 0) {
@@ -108,7 +107,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public lastChild(): INode {
+	public lastChild(): Node {
 		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.childNodes] : [];
 
 		if (childNodes.length > 0) {
@@ -129,7 +128,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public previousSibling(): INode {
+	public previousSibling(): Node {
 		if (
 			this.currentNode !== this.root &&
 			this.currentNode &&
@@ -159,7 +158,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public nextSibling(): INode {
+	public nextSibling(): Node {
 		if (
 			this.currentNode !== this.root &&
 			this.currentNode &&
@@ -193,7 +192,7 @@ export default class TreeWalker {
 	 * @param node Node.
 	 * @returns Child nodes.
 	 */
-	private filterNode(node: INode): number {
+	private filterNode(node: Node): number {
 		const mask = NodeFilterMask[node.nodeType];
 
 		if (mask && (this.whatToShow & mask) == 0) {

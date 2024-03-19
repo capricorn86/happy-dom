@@ -1,12 +1,10 @@
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
-import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
-import INode from '../node/INode.js';
+import Node from '../node/Node.js';
 import HTMLOptionElementNamedNodeMap from './HTMLOptionElementNamedNodeMap.js';
-import IHTMLOptionElement from './IHTMLOptionElement.js';
 
 /**
  * HTML Option Element.
@@ -14,8 +12,8 @@ import IHTMLOptionElement from './IHTMLOptionElement.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionElement.
  */
-export default class HTMLOptionElement extends HTMLElement implements IHTMLOptionElement {
-	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLOptionElementNamedNodeMap(
+export default class HTMLOptionElement extends HTMLElement {
+	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLOptionElementNamedNodeMap(
 		this
 	);
 	public [PropertySymbol.selectedness] = false;
@@ -46,7 +44,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 */
 	public get index(): number {
 		return this[PropertySymbol.selectNode]
-			? (<IHTMLSelectElement>this[PropertySymbol.selectNode]).options.indexOf(this)
+			? (<HTMLSelectElement>this[PropertySymbol.selectNode]).options.indexOf(this)
 			: 0;
 	}
 
@@ -55,8 +53,8 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	 *
 	 * @returns Form.
 	 */
-	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this[PropertySymbol.formNode];
+	public get form(): HTMLFormElement {
+		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -127,7 +125,7 @@ export default class HTMLOptionElement extends HTMLElement implements IHTMLOptio
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const oldSelectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
 
 		super[PropertySymbol.connectToNode](parentNode);

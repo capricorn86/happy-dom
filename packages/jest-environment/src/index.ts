@@ -5,7 +5,7 @@ import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
 import { LegacyFakeTimers, ModernFakeTimers } from '@jest/fake-timers';
 import { JestEnvironment, EnvironmentContext } from '@jest/environment';
-import { Window, IWindow, BrowserErrorCaptureEnum, IOptionalBrowserSettings } from 'happy-dom';
+import { Window, BrowserErrorCaptureEnum, IOptionalBrowserSettings } from 'happy-dom';
 import { Script } from 'vm';
 import { Global, Config } from '@jest/types';
 
@@ -15,7 +15,7 @@ import { Global, Config } from '@jest/types';
 export default class HappyDOMEnvironment implements JestEnvironment {
 	public fakeTimers: LegacyFakeTimers<number> = null;
 	public fakeTimersModern: ModernFakeTimers = null;
-	public window: IWindow;
+	public window: Window;
 	public global: Global.Global;
 	public moduleMocker: ModuleMocker;
 
@@ -121,8 +121,8 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.fakeTimers.dispose();
 		this.fakeTimersModern.dispose();
 
-		await (<IWindow>(<unknown>this.global)).happyDOM.abort();
-		(<IWindow>(<unknown>this.global)).close();
+		await (<Window>(<unknown>this.global)).happyDOM.abort();
+		(<Window>(<unknown>this.global)).close();
 
 		this.global = null;
 		this.moduleMocker = null;

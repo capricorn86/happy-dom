@@ -10,16 +10,15 @@ import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
 import Blob from '../../src/file/Blob.js';
 import File from '../../src/file/File.js';
 import FormData from '../../src/form-data/FormData.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
-import IWindow from '../../src/window/IWindow.js';
+import Document from '../../src/nodes/document/Document.js';
 import Window from '../../src/window/Window.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { ReadableStream } from 'stream/web';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('Response', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();

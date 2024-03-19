@@ -1,12 +1,12 @@
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
-import IElement from '../nodes/element/IElement.js';
+import Element from '../nodes/element/Element.js';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
-import IDocumentType from '../nodes/document-type/IDocumentType.js';
-import INode from '../nodes/node/INode.js';
-import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
+import DocumentType from '../nodes/document-type/DocumentType.js';
+import Node from '../nodes/node/Node.js';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import * as Entities from 'entities';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
@@ -72,16 +72,16 @@ export default class XMLParser {
 	 * @returns Root node.
 	 */
 	public static parse(
-		document: IDocument,
+		document: Document,
 		xml: string,
-		options?: { rootNode?: IElement | IDocumentFragment | IDocument; evaluateScripts?: boolean }
-	): IElement | IDocumentFragment | IDocument {
+		options?: { rootNode?: Element | DocumentFragment | Document; evaluateScripts?: boolean }
+	): Element | DocumentFragment | Document {
 		const root = options && options.rootNode ? options.rootNode : document.createDocumentFragment();
-		const stack: INode[] = [root];
+		const stack: Node[] = [root];
 		const stackTagNames: string[] = [];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gm');
 		const { evaluateScripts = false } = options || {};
-		let currentNode: INode | null = root;
+		let currentNode: Node | null = root;
 		let match: RegExpExecArray;
 		let readState: MarkupReadStateEnum = MarkupReadStateEnum.startOrEndTag;
 		let startTagIndex = 0;
@@ -125,7 +125,7 @@ export default class XMLParser {
 								stackTagNames.includes(tagName)
 							) {
 								while (currentNode !== root) {
-									if ((<IElement>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
+									if ((<Element>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
 										stack.pop();
 										stackTagNames.pop();
 										currentNode = stack[stack.length - 1] || root;
@@ -142,7 +142,7 @@ export default class XMLParser {
 							const namespaceURI =
 								tagName === 'SVG'
 									? NamespaceURI.svg
-									: (<IElement>currentNode)[PropertySymbol.namespaceURI] || NamespaceURI.html;
+									: (<Element>currentNode)[PropertySymbol.namespaceURI] || NamespaceURI.html;
 							const newElement = document.createElementNS(namespaceURI, localName);
 
 							currentNode.appendChild(newElement);
@@ -156,7 +156,7 @@ export default class XMLParser {
 
 							if (
 								match[2].toUpperCase() ===
-								(<IElement>currentNode)[PropertySymbol.tagName]?.toUpperCase()
+								(<Element>currentNode)[PropertySymbol.tagName]?.toUpperCase()
 							) {
 								stack.pop();
 								stackTagNames.pop();
@@ -166,7 +166,7 @@ export default class XMLParser {
 							match[3] ||
 							match[4] ||
 							(match[6] &&
-								(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.html)
+								(<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.html)
 						) {
 							// Comment.
 
@@ -236,12 +236,12 @@ export default class XMLParser {
 
 										// In XML and SVG namespaces, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
 										const namespaceURI =
-											(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg &&
+											(<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg &&
 											name === 'xmlns'
 												? NamespaceURI.xmlns
 												: null;
 
-										(<IElement>currentNode).setAttributeNS(namespaceURI, name, value);
+										(<Element>currentNode).setAttributeNS(namespaceURI, name, value);
 
 										startTagIndex += attributeMatch[0].length;
 									} else if (
@@ -260,7 +260,7 @@ export default class XMLParser {
 							// We need to check if the attribute string is read completely.
 							// The attribute string can potentially contain "/>" or ">".
 							if (hasAttributeStringEnded) {
-								const config = HTMLElementConfig[(<IElement>currentNode)[PropertySymbol.localName]];
+								const config = HTMLElementConfig[(<Element>currentNode)[PropertySymbol.localName]];
 
 								// Checks if the tag is a self closing tag (ends with "/>") or void element.
 								// When it is a self closing tag or void element it should be closed immediately.
@@ -270,7 +270,7 @@ export default class XMLParser {
 									config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants ||
 									// SVG tag is self closing (<svg/>).
 									(match[7] &&
-										(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
+										(<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
 								) {
 									stack.pop();
 									stackTagNames.pop();
@@ -342,7 +342,7 @@ export default class XMLParser {
 	 * @param value Value.
 	 * @returns Document type node.
 	 */
-	private static getDocumentTypeNode(document: IDocument, value: string): IDocumentType {
+	private static getDocumentTypeNode(document: Document, value: string): DocumentType {
 		if (!value.toUpperCase().startsWith('DOCTYPE')) {
 			return null;
 		}

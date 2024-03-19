@@ -1,6 +1,6 @@
-import IElement from '../../nodes/element/IElement.js';
+import Element from '../../nodes/element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IAttr from '../../nodes/attr/IAttr.js';
+import Attr from '../../nodes/attr/Attr.js';
 import CSSRule from '../CSSRule.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import DOMException from '../../exception/DOMException.js';
@@ -14,7 +14,7 @@ import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 export default abstract class AbstractCSSStyleDeclaration {
 	public readonly parentRule: CSSRule = null;
 	#style: CSSStyleDeclarationPropertyManager = null;
-	#ownerElement: IElement;
+	#ownerElement: Element;
 	#computed: boolean;
 	#elementStyle: CSSStyleDeclarationElementStyle = null;
 
@@ -24,7 +24,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 * @param [ownerElement] Computed style element.
 	 * @param [computed] Computed.
 	 */
-	constructor(ownerElement: IElement = null, computed = false) {
+	constructor(ownerElement: Element = null, computed = false) {
 		this.#style = !ownerElement ? new CSSStyleDeclarationPropertyManager() : null;
 		this.#ownerElement = ownerElement;
 		this.#computed = ownerElement ? computed : false;
@@ -79,7 +79,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 
 		if (this.#ownerElement) {
 			const style = new CSSStyleDeclarationPropertyManager({ cssText });
-			let styleAttribute = <IAttr>this.#ownerElement[PropertySymbol.attributes]['style'];
+			let styleAttribute = <Attr>this.#ownerElement[PropertySymbol.attributes]['style'];
 
 			if (!styleAttribute) {
 				styleAttribute = this.#ownerElement[PropertySymbol.ownerDocument].createAttribute('style');
@@ -136,7 +136,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 		if (!stringValue) {
 			this.removeProperty(name);
 		} else if (this.#ownerElement) {
-			let styleAttribute = <IAttr>this.#ownerElement[PropertySymbol.attributes]['style'];
+			let styleAttribute = <Attr>this.#ownerElement[PropertySymbol.attributes]['style'];
 
 			if (!styleAttribute) {
 				styleAttribute = this.#ownerElement[PropertySymbol.ownerDocument].createAttribute('style');
@@ -185,7 +185,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 			}
 
 			if (newCSSText) {
-				(<IAttr>this.#ownerElement[PropertySymbol.attributes]['style'])[PropertySymbol.value] =
+				(<Attr>this.#ownerElement[PropertySymbol.attributes]['style'])[PropertySymbol.value] =
 					newCSSText;
 			} else {
 				// We use "[PropertySymbol.removeNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.

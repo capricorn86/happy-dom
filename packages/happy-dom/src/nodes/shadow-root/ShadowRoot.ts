@@ -2,23 +2,23 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
-import IElement from '../element/IElement.js';
+import Element from '../element/Element.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
-import IShadowRoot from './IShadowRoot.js';
-import IHTMLElement from '../../nodes/html-element/IHTMLElement.js';
+import HTMLElement from '../../nodes/html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
+import SVGElement from '../svg-element/SVGElement.js';
 
 /**
  * ShadowRoot.
  */
-export default class ShadowRoot extends DocumentFragment implements IShadowRoot {
+export default class ShadowRoot extends DocumentFragment {
 	// Events
 	public onslotchange: (event: Event) => void | null = null;
 
 	// Internal properties
 	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];
 	public [PropertySymbol.mode] = 'open';
-	public [PropertySymbol.host]: IElement | null = null;
+	public [PropertySymbol.host]: Element | null = null;
 
 	/**
 	 * Returns mode.
@@ -34,7 +34,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 *
 	 * @returns Host.
 	 */
-	public get host(): IElement {
+	public get host(): Element {
 		return this[PropertySymbol.host];
 	}
 
@@ -90,8 +90,8 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 *
 	 * @returns Active element.
 	 */
-	public get activeElement(): IHTMLElement | null {
-		const activeElement: IHTMLElement =
+	public get activeElement(): HTMLElement | SVGElement | null {
+		const activeElement: HTMLElement | SVGElement =
 			this[PropertySymbol.ownerDocument][PropertySymbol.activeElement];
 		if (
 			activeElement &&
@@ -119,7 +119,7 @@ export default class ShadowRoot extends DocumentFragment implements IShadowRoot 
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IShadowRoot {
+	public cloneNode(deep = false): ShadowRoot {
 		const clone = <ShadowRoot>super.cloneNode(deep);
 		clone[PropertySymbol.mode] = this.mode;
 		return clone;

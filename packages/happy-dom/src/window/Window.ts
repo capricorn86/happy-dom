@@ -1,4 +1,3 @@
-import IWindow from './IWindow.js';
 import DetachedWindowAPI from './DetachedWindowAPI.js';
 import IOptionalBrowserSettings from '../browser/types/IOptionalBrowserSettings.js';
 import BrowserWindow from './BrowserWindow.js';
@@ -10,7 +9,7 @@ import DetachedBrowser from '../browser/detached-browser/DetachedBrowser.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/Window.
  */
-export default class Window extends BrowserWindow implements IWindow {
+export default class Window extends BrowserWindow {
 	// Detached Window API.
 	public readonly happyDOM: DetachedWindowAPI;
 

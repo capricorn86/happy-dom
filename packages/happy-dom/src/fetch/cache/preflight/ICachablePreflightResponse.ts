@@ -1,7 +1,7 @@
-import IHeaders from '../../types/IHeaders.js';
+import Headers from '../../Headers.js';
 
 export default interface ICachablePreflightResponse {
 	status: number;
 	url: string;
-	headers: IHeaders;
+	headers: Headers;
 }

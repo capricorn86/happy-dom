@@ -1,6 +1,5 @@
-import INamedNodeMap from './INamedNodeMap.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IAttr from '../nodes/attr/IAttr.js';
+import Attr from '../nodes/attr/Attr.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
@@ -9,10 +8,10 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
-export default class NamedNodeMap implements INamedNodeMap {
-	[index: number]: IAttr;
+export default class NamedNodeMap {
+	[index: number]: Attr;
 	public length = 0;
-	protected [PropertySymbol.namedItems]: { [k: string]: IAttr } = {};
+	protected [PropertySymbol.namedItems]: { [k: string]: Attr } = {};
 
 	/**
 	 * Returns string.
@@ -28,7 +27,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 *
 	 * @returns Iterator.
 	 */
-	public *[Symbol.iterator](): IterableIterator<IAttr> {
+	public *[Symbol.iterator](): IterableIterator<Attr> {
 		for (let i = 0, max = this.length; i < max; i++) {
 			yield this[i];
 		}
@@ -39,7 +38,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): IAttr | null {
+	public item(index: number): Attr | null {
 		return index >= 0 && this[index] ? this[index] : null;
 	}
 
@@ -49,7 +48,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name.
 	 * @returns Item.
 	 */
-	public getNamedItem(name: string): IAttr | null {
+	public getNamedItem(name: string): Attr | null {
 		return this[PropertySymbol.namedItems][name] || null;
 	}
 
@@ -60,7 +59,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param localName Local name of the attribute.
 	 * @returns Item.
 	 */
-	public getNamedItemNS(namespace: string, localName: string): IAttr | null {
+	public getNamedItemNS(namespace: string, localName: string): Attr | null {
 		const attribute = this.getNamedItem(localName);
 
 		if (
@@ -86,7 +85,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param item Item.
 	 * @returns Replaced item.
 	 */
-	public setNamedItem(item: IAttr): IAttr | null {
+	public setNamedItem(item: Attr): Attr | null {
 		return this[PropertySymbol.setNamedItemWithoutConsequences](item);
 	}
 
@@ -97,7 +96,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param item Item.
 	 * @returns Replaced item.
 	 */
-	public setNamedItemNS(item: IAttr): IAttr | null {
+	public setNamedItemNS(item: Attr): Attr | null {
 		return this.setNamedItem(item);
 	}
 
@@ -108,7 +107,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name of item.
 	 * @returns Removed item.
 	 */
-	public removeNamedItem(name: string): IAttr {
+	public removeNamedItem(name: string): Attr {
 		const item = this[PropertySymbol.removeNamedItem](name);
 		if (!item) {
 			throw new DOMException(
@@ -126,7 +125,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param localName Local name of the item.
 	 * @returns Removed item.
 	 */
-	public removeNamedItemNS(namespace: string, localName: string): IAttr | null {
+	public removeNamedItemNS(namespace: string, localName: string): Attr | null {
 		const attribute = this.getNamedItemNS(namespace, localName);
 		if (attribute) {
 			return this.removeNamedItem(attribute[PropertySymbol.name]);
@@ -140,7 +139,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param item Item.
 	 * @returns Replaced item.
 	 */
-	public [PropertySymbol.setNamedItemWithoutConsequences](item: IAttr): IAttr | null {
+	public [PropertySymbol.setNamedItemWithoutConsequences](item: Attr): Attr | null {
 		if (item[PropertySymbol.name]) {
 			const replacedItem = this[PropertySymbol.namedItems][item[PropertySymbol.name]] || null;
 
@@ -168,7 +167,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name of item.
 	 * @returns Removed item, or null if it didn't exist.
 	 */
-	public [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+	public [PropertySymbol.removeNamedItem](name: string): Attr | null {
 		return this[PropertySymbol.removeNamedItemWithoutConsequences](name);
 	}
 
@@ -178,7 +177,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 * @param name Name of item.
 	 * @returns Removed item, or null if it didn't exist.
 	 */
-	public [PropertySymbol.removeNamedItemWithoutConsequences](name: string): IAttr | null {
+	public [PropertySymbol.removeNamedItemWithoutConsequences](name: string): Attr | null {
 		const removedItem = this[PropertySymbol.namedItems][name] || null;
 
 		if (!removedItem) {
@@ -201,7 +200,7 @@ export default class NamedNodeMap implements INamedNodeMap {
 	 *
 	 * @param item Item.
 	 */
-	protected [PropertySymbol.removeNamedItemIndex](item: IAttr): void {
+	protected [PropertySymbol.removeNamedItemIndex](item: Attr): void {
 		for (let i = 0; i < this.length; i++) {
 			if (this[i] === item) {
 				for (let b = i; b < this.length; b++) {

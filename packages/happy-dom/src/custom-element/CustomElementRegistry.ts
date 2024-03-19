@@ -2,7 +2,7 @@ import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import Node from '../nodes/node/Node.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 
 /**
@@ -14,14 +14,14 @@ export default class CustomElementRegistry {
 	} = {};
 	public [PropertySymbol.registedClass]: Map<typeof HTMLElement, string> = new Map();
 	public [PropertySymbol.callbacks]: { [k: string]: (() => void)[] } = {};
-	#window: IBrowserWindow;
+	#window: BrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param window Window.
 	 */
-	constructor(window: IBrowserWindow) {
+	constructor(window: BrowserWindow) {
 		this.#window = window;
 	}
 

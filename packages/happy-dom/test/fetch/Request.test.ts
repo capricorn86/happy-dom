@@ -1,6 +1,5 @@
-import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import Request from '../../src/fetch/Request.js';
 import URL from '../../src/url/URL.js';
 import Headers from '../../src/fetch/Headers.js';
@@ -20,8 +19,8 @@ import * as PropertySymbol from '../../src/PropertySymbol.js';
 const TEST_URL = 'https://example.com/';
 
 describe('Request', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();

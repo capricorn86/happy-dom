@@ -1,13 +1,12 @@
 import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
-import IDocument from '../document/IDocument.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
+import Document from '../document/Document.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import INode from '../node/INode.js';
-import IHTMLIFrameElement from './IHTMLIFrameElement.js';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import Node from '../node/Node.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
-import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
+import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
 
@@ -17,16 +16,16 @@ import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement.
  */
-export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFrameElement {
+export default class HTMLIFrameElement extends HTMLElement {
 	// Events
 	public onload: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: INamedNodeMap;
+	public override [PropertySymbol.attributes]: NamedNodeMap;
 
 	// Private properties
-	#contentWindowContainer: { window: IBrowserWindow | ICrossOriginBrowserWindow | null } = {
+	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null } = {
 		window: null
 	};
 	#pageLoader: HTMLIFrameElementPageLoader;
@@ -193,8 +192,8 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 *
 	 * @returns Content document.
 	 */
-	public get contentDocument(): IDocument | null {
-		return (<IBrowserWindow>this.#contentWindowContainer.window)?.document ?? null;
+	public get contentDocument(): Document | null {
+		return (<BrowserWindow>this.#contentWindowContainer.window)?.document ?? null;
 	}
 
 	/**
@@ -202,14 +201,14 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 *
 	 * @returns Content window.
 	 */
-	public get contentWindow(): IBrowserWindow | ICrossOriginBrowserWindow | null {
+	public get contentWindow(): BrowserWindow | CrossOriginBrowserWindow | null {
 		return this.#contentWindowContainer.window;
 	}
 
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const isConnected = this[PropertySymbol.isConnected];
 		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
 
@@ -231,7 +230,7 @@ export default class HTMLIFrameElement extends HTMLElement implements IHTMLIFram
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLIFrameElement {
-		return <IHTMLIFrameElement>super.cloneNode(deep);
+	public cloneNode(deep = false): HTMLIFrameElement {
+		return <HTMLIFrameElement>super.cloneNode(deep);
 	}
 }

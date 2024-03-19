@@ -1,5 +1,4 @@
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
 import Response from '../../src/fetch/Response.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';

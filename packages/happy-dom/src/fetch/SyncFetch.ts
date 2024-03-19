@@ -6,7 +6,7 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import URL from '../url/URL.js';
 import Request from './Request.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import ChildProcess from 'child_process';
 import ISyncResponse from './types/ISyncResponse.js';
 import Headers from './Headers.js';
@@ -41,7 +41,7 @@ export default class SyncFetch {
 	private disableCache: boolean;
 	private disableCrossOriginPolicy: boolean;
 	#browserFrame: IBrowserFrame;
-	#window: IBrowserWindow;
+	#window: BrowserWindow;
 
 	/**
 	 * Constructor.
@@ -58,7 +58,7 @@ export default class SyncFetch {
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
-		window: IBrowserWindow;
+		window: BrowserWindow;
 		url: IRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
@@ -375,7 +375,7 @@ export default class SyncFetch {
 			url: this.request.url,
 			redirected: this.redirectCount > 0,
 			headers,
-			body: this.parseResponseBody({
+			body: this.parseIResponseBody({
 				headers,
 				status: incomingMessage.statusCode,
 				body: Buffer.from(incomingMessage.data, 'base64')
@@ -407,7 +407,7 @@ export default class SyncFetch {
 	 * @param options.body Body.
 	 * @returns Parsed body.
 	 */
-	private parseResponseBody(options: { headers: Headers; status: number; body: Buffer }): Buffer {
+	private parseIResponseBody(options: { headers: Headers; status: number; body: Buffer }): Buffer {
 		const contentEncodingHeader = options.headers.get('Content-Encoding');
 
 		if (
@@ -547,7 +547,7 @@ export default class SyncFetch {
 				return fetch.send();
 			default:
 				throw new DOMException(
-					`Redirect option '${this.request.redirect}' is not a valid value of RequestRedirect`
+					`Redirect option '${this.request.redirect}' is not a valid value of IRequestRedirect`
 				);
 		}
 	}

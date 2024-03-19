@@ -1,14 +1,13 @@
-import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import Event from '../../src/event/Event.js';
 import CustomElement from '../CustomElement.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import IEventTarget from '../../src/event/IEventTarget.js';
+import EventTarget from '../../src/event/EventTarget.js';
 
 describe('Event', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -173,7 +172,7 @@ describe('Event', () => {
 		it('Returns a composed path.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
-			let composedPath: IEventTarget[] | null = null;
+			let composedPath: EventTarget[] | null = null;
 
 			div.appendChild(span);
 			document.body.appendChild(div);
@@ -188,19 +187,19 @@ describe('Event', () => {
 				})
 			);
 
-			expect((<IEventTarget[]>(<unknown>composedPath)).length).toBe(6);
-			expect((<IEventTarget[]>(<unknown>composedPath))[0] === span).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[1] === div).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[2] === document.body).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[3] === document.documentElement).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[4] === document).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[5] === window).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath)).length).toBe(6);
+			expect((<EventTarget[]>(<unknown>composedPath))[0] === span).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[1] === div).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[2] === document.body).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[3] === document.documentElement).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[4] === document).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[5] === window).toBe(true);
 		});
 
 		it('Goes through shadow roots if composed is set to "true".', () => {
 			const div = document.createElement('div');
 			const customELement = document.createElement('custom-element');
-			let composedPath: IEventTarget[] | null = null;
+			let composedPath: EventTarget[] | null = null;
 
 			div.appendChild(customELement);
 
@@ -217,26 +216,26 @@ describe('Event', () => {
 				})
 			);
 
-			expect((<IEventTarget[]>(<unknown>composedPath)).length).toBe(9);
+			expect((<EventTarget[]>(<unknown>composedPath)).length).toBe(9);
 			expect(
-				(<IEventTarget[]>(<unknown>composedPath))[0] ===
+				(<EventTarget[]>(<unknown>composedPath))[0] ===
 					customELement.shadowRoot.children[1].children[0]
 			).toBe(true);
 			expect(
-				(<IEventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot.children[1]
+				(<EventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot.children[1]
 			).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[2] === customELement.shadowRoot).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[3] === customELement).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[4] === div).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[5] === document.body).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[6] === document.documentElement).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[7] === document).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[8] === window).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[2] === customELement.shadowRoot).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[3] === customELement).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[4] === div).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[5] === document.body).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[6] === document.documentElement).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[7] === document).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[8] === window).toBe(true);
 		});
 
 		it('Does not go through shadow roots if composed is set to "false".', () => {
 			const customELement = document.createElement('custom-element');
-			let composedPath: IEventTarget[] | null = null;
+			let composedPath: EventTarget[] | null = null;
 
 			document.body.appendChild(customELement);
 
@@ -250,21 +249,21 @@ describe('Event', () => {
 				})
 			);
 
-			expect((<IEventTarget[]>(<unknown>composedPath)).length).toBe(3);
+			expect((<EventTarget[]>(<unknown>composedPath)).length).toBe(3);
 			expect(
-				(<IEventTarget[]>(<unknown>composedPath))[0] ===
+				(<EventTarget[]>(<unknown>composedPath))[0] ===
 					customELement.shadowRoot.children[1].children[0]
 			).toBe(true);
 			expect(
-				(<IEventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot.children[1]
+				(<EventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot.children[1]
 			).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[2] === customELement.shadowRoot).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[2] === customELement.shadowRoot).toBe(true);
 		});
 
 		it('Returns correct composed for HTMLAnchorElement event target and composed is set to "true".', () => {
 			const anchor = document.createElement('a');
 			anchor.setAttribute('href', 'https://example.com');
-			let composedPath: IEventTarget[] | null = null;
+			let composedPath: EventTarget[] | null = null;
 
 			document.body.appendChild(anchor);
 
@@ -279,12 +278,12 @@ describe('Event', () => {
 				})
 			);
 
-			expect((<IEventTarget[]>(<unknown>composedPath)).length).toBe(5);
-			expect((<IEventTarget[]>(<unknown>composedPath))[0] === anchor).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[1] === document.body).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[2] === document.documentElement).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[3] === document).toBe(true);
-			expect((<IEventTarget[]>(<unknown>composedPath))[4] === window).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath)).length).toBe(5);
+			expect((<EventTarget[]>(<unknown>composedPath))[0] === anchor).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[1] === document.body).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[2] === document.documentElement).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[3] === document).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[4] === window).toBe(true);
 		});
 	});
 });

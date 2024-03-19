@@ -1,4 +1,4 @@
-import IAttr from '../attr/IAttr.js';
+import Attr from '../attr/Attr.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import ElementNamedNodeMap from '../element/ElementNamedNodeMap.js';
 import HTMLElement from './HTMLElement.js';
@@ -14,7 +14,7 @@ export default class HTMLElementNamedNodeMap extends ElementNamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override setNamedItem(item: IAttr): IAttr | null {
+	public override setNamedItem(item: Attr): Attr | null {
 		const replacedItem = super.setNamedItem(item);
 
 		if (
@@ -30,7 +30,7 @@ export default class HTMLElementNamedNodeMap extends ElementNamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+	public override [PropertySymbol.removeNamedItem](name: string): Attr | null {
 		const removedItem = super[PropertySymbol.removeNamedItem](name);
 
 		if (

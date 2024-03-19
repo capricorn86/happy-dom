@@ -1,13 +1,12 @@
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import NodeFilter from '../../src/tree-walker/NodeFilter.js';
 import Element from '../../src/nodes/element/Element.js';
 import Comment from '../../src/nodes/comment/Comment.js';
 import Node from '../../src/nodes/node/Node.js';
 import TreeWalkerHTML from './data/TreeWalkerHTML.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import INode from '../../src/nodes/node/INode.js';
+import Node from '../../src/nodes/node/Node.js';
 
 const NODE_TO_STRING = (node: Node): string => {
 	if (node instanceof Element) {
@@ -19,8 +18,8 @@ const NODE_TO_STRING = (node: Node): string => {
 };
 
 describe('NodeIterator', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -167,9 +166,9 @@ describe('NodeIterator', () => {
 	describe('previousNode()', () => {
 		it('Returns the previous node when executed after a nextNode() call.', () => {
 			const NodeIterator = document.createNodeIterator(document.body);
-			let expectedPreviousNode: INode | null = null;
-			let previousNode: INode | null = null;
-			let currentNode: INode | null = null;
+			let expectedPreviousNode: Node | null = null;
+			let previousNode: Node | null = null;
+			let currentNode: Node | null = null;
 
 			while ((currentNode = NodeIterator.nextNode())) {
 				if (previousNode) {

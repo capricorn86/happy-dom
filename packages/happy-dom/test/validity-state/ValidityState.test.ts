@@ -1,12 +1,11 @@
-import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
-import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
+import Document from '../../src/nodes/document/Document.js';
+import HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('ValidityState', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -15,7 +14,7 @@ describe('ValidityState', () => {
 
 	describe('get badInput()', () => {
 		it('Returns "false" for a valid "number" input field.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = '123';
 			input.type = 'number';
@@ -24,7 +23,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "false" for a valid "range" input field.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = '123';
 			input.type = 'range';
@@ -33,7 +32,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" for a "number" input field with non digit characters in the value.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = 'a123';
 			input.type = 'number';
@@ -42,7 +41,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" for a "range" input field with non digit characters in the value.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = 'a123';
 			input.type = 'range';
@@ -53,7 +52,7 @@ describe('ValidityState', () => {
 
 	describe('get customError()', () => {
 		it('Returns "true" if the field has a custom error message.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			expect(input.validity.customError).toBe(false);
 
@@ -65,7 +64,7 @@ describe('ValidityState', () => {
 
 	describe('get patternMismatch()', () => {
 		it('Returns "true" if a defined pattern doesn\'nt match.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = 'a123';
 			input.pattern = '[0-9]';
@@ -84,7 +83,7 @@ describe('ValidityState', () => {
 
 	describe('get rangeOverflow()', () => {
 		it('Returns "true" if a "number" input field has a "max" set to a value lower than the value.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = '10';
 			input.max = '9';
@@ -98,7 +97,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" if a "range" input field has a "max" set to a value greater than the value.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = '10';
 			input.max = '9';
@@ -114,7 +113,7 @@ describe('ValidityState', () => {
 
 	describe('get rangeUnderflow()', () => {
 		it('Returns "true" if a "number" input field has a "min" set to a value lower than the value.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = '9';
 			input.min = '10';
@@ -128,7 +127,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" if a "range" input field has a "min" set to a value lower than the value.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = '9';
 			input.min = '10';
@@ -144,7 +143,7 @@ describe('ValidityState', () => {
 
 	describe('get stepMismatch()', () => {
 		it('Returns "true" if a "number" input field has "step" set to a non-steppable value.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = '9';
 			input.step = '2';
@@ -158,7 +157,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" if a "range" input field has "step" set to a non-steppable value.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = '9';
 			input.step = '2';
@@ -174,7 +173,7 @@ describe('ValidityState', () => {
 
 	describe('get tooLong()', () => {
 		it('Returns "true" for an input field that has "maxLength" set and the length of "value" is longer.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = 'abcdef';
 			input.maxLength = 3;
@@ -187,7 +186,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" for an text area field that has "maxLength" set and the length of "value" is longer.', () => {
-			const textarea = <IHTMLInputElement>document.createElement('textarea');
+			const textarea = <HTMLInputElement>document.createElement('textarea');
 
 			textarea.value = 'abcdef';
 			textarea.maxLength = 3;
@@ -202,7 +201,7 @@ describe('ValidityState', () => {
 
 	describe('get tooShort()', () => {
 		it('Returns "true" for an input field that has "minLength" set and the length of "value" is shorter.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = 'abc';
 			input.minLength = 6;
@@ -215,7 +214,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" for an text area field that has "minLength" set and the length of "value" is shorter.', () => {
-			const textarea = <IHTMLInputElement>document.createElement('textarea');
+			const textarea = <HTMLInputElement>document.createElement('textarea');
 
 			textarea.value = 'abc';
 			textarea.minLength = 6;
@@ -230,7 +229,7 @@ describe('ValidityState', () => {
 
 	describe('get typeMismatch()', () => {
 		it('Returns "true" for an "email" input field with a value that is not an email.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = 'name@domain.';
 			input.type = 'email';
@@ -243,7 +242,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" for an "url" input field with a value that is not an URL.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.value = 'domain.com/path/';
 			input.type = 'url';
@@ -258,14 +257,14 @@ describe('ValidityState', () => {
 
 	describe('get valueMissing()', () => {
 		it('Returns "false" when required is set to "false".', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			expect(input.required).toBe(false);
 			expect(input.validity.valueMissing).toBe(false);
 		});
 
 		it('Returns "true" when required is set to "true" for a "checkbox" input element where "checked" is set to "false".', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.type = 'checkbox';
 			input.required = true;
@@ -279,7 +278,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" when required is set to "true" for a "radio" input element where "checked" is set to "false".', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.type = 'radio';
 			input.required = true;
@@ -293,7 +292,7 @@ describe('ValidityState', () => {
 		});
 
 		it('Returns "true" when required is set to "true" for any element where "value" has not been set.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			input.required = true;
 
@@ -307,7 +306,7 @@ describe('ValidityState', () => {
 
 	describe('get valid()', () => {
 		it('Returns "false" for an invalid field.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 
 			expect(input.validity.valid).toBe(true);
 

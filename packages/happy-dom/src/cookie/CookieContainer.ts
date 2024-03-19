@@ -1,6 +1,6 @@
 import URL from '../url/URL.js';
-import ICookie from './types/ICookie.js';
-import ICookieContainer from './types/ICookieContainer.js';
+import ICookie from './ICookie.js';
+import ICookieContainer from './ICookieContainer.js';
 import CookieExpireUtility from './urilities/CookieExpireUtility.js';
 import CookieURLUtility from './urilities/CookieURLUtility.js';
 

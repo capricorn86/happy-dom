@@ -1,6 +1,6 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import IBrowserPage from '../types/IBrowserPage.js';
-import IVirtualConsolePrinter from '../../console/types/IVirtualConsolePrinter.js';
+import IVirtualConsolePrinter from '../../console/IVirtualConsolePrinter.js';
 import IBrowserContext from '../types/IBrowserContext.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
 

@@ -2,7 +2,7 @@ import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum.js';
 import Event from '../event/Event.js';
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 import Blob from '../file/Blob.js';
 import XMLHttpRequestUpload from './XMLHttpRequestUpload.js';
 import DOMException from '../exception/DOMException.js';
@@ -10,12 +10,11 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import Headers from '../fetch/Headers.js';
 import Fetch from '../fetch/Fetch.js';
 import SyncFetch from '../fetch/SyncFetch.js';
 import Request from '../fetch/Request.js';
-import IResponse from '../fetch/types/IResponse.js';
 import ISyncResponse from '../fetch/types/ISyncResponse.js';
 import AbortController from '../fetch/AbortController.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
@@ -23,6 +22,7 @@ import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import IRequestBody from '../fetch/types/IRequestBody.js';
 import XMLHttpRequestResponseDataParser from './XMLHttpRequestResponseDataParser.js';
 import FetchRequestHeaderUtility from '../fetch/utilities/FetchRequestHeaderUtility.js';
+import Response from '../fetch/Response.js';
 
 /**
  * XMLHttpRequest.
@@ -44,14 +44,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
-	#window: IBrowserWindow;
+	#window: BrowserWindow;
 	#async = true;
 	#abortController: AbortController | null = null;
 	#aborted = false;
 	#request: Request | null = null;
-	#response: IResponse | ISyncResponse | null = null;
+	#response: Response | ISyncResponse | null = null;
 	#responseType: XMLHttpResponseTypeEnum | '' = '';
-	#responseBody: ArrayBuffer | Blob | IDocument | object | string | null = null;
+	#responseBody: ArrayBuffer | Blob | Document | object | string | null = null;
 	#readyState: XMLHttpRequestReadyStateEnum = XMLHttpRequestReadyStateEnum.unsent;
 
 	/**
@@ -61,7 +61,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param injected.browserFrame Browser frame.
 	 * @param injected.window Window.
 	 */
-	constructor(injected: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
+	constructor(injected: { browserFrame: IBrowserFrame; window: BrowserWindow }) {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this.#window = injected.window;
@@ -90,7 +90,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @returns Response.
 	 */
-	public get response(): ArrayBuffer | Blob | IDocument | object | string | null {
+	public get response(): ArrayBuffer | Blob | Document | object | string | null {
 		if (!this.#response) {
 			return '';
 		}
@@ -120,14 +120,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @throws {DOMException} If the response type is not text or empty.
 	 * @returns Response XML.
 	 */
-	public get responseXML(): IDocument {
+	public get responseXML(): Document {
 		if (this.responseType !== XMLHttpResponseTypeEnum.document && this.responseType !== '') {
 			throw new DOMException(
 				`Failed to read the 'responseXML' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'document' (was '${this.responseType}').`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
-		return this.responseType === '' ? null : <IDocument>this.#responseBody;
+		return this.responseType === '' ? null : <Document>this.#responseBody;
 	}
 
 	/**
@@ -285,7 +285,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param body Optional data to send as request body.
 	 */
-	public send(body?: IDocument | IRequestBody): void {
+	public send(body?: Document | IRequestBody): void {
 		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
 			throw new DOMException(
 				`Failed to execute 'send' on 'XMLHttpRequest': Connection must be opened before send() is called.`,
@@ -297,9 +297,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		if (
 			typeof body === 'object' &&
 			body !== null &&
-			(<IDocument>body)[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+			(<Document>body)[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
 		) {
-			body = (<IDocument>body).documentElement.outerHTML;
+			body = (<Document>body).documentElement.outerHTML;
 		}
 
 		if (this.#async) {

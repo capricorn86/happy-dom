@@ -1,23 +1,23 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import ISVGSVGElement from '../../../src/nodes/svg-element/ISVGSVGElement.js';
+import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
-import ISVGElement from '../../../src/nodes/svg-element/ISVGElement.js';
+import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 
 describe('SVGElement', () => {
 	let window: Window;
 	let document: Document;
-	let element: ISVGSVGElement;
-	let line: ISVGElement;
+	let element: SVGSVGElement;
+	let line: SVGElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <ISVGSVGElement>document.createElementNS(NamespaceURI.svg, 'svg');
-		line = <ISVGElement>document.createElementNS(NamespaceURI.svg, 'line');
+		element = <SVGSVGElement>document.createElementNS(NamespaceURI.svg, 'svg');
+		line = <SVGElement>document.createElementNS(NamespaceURI.svg, 'line');
 	});
 
 	afterEach(() => {
@@ -92,11 +92,11 @@ describe('SVGElement', () => {
 
 	describe('blur()', () => {
 		it('Calls HTMLElementUtility.blur().', () => {
-			let blurredElement: ISVGElement | null = null;
+			let blurredElement: SVGElement | null = null;
 
 			vi.spyOn(HTMLElementUtility, 'blur').mockImplementation(
-				(element: ISVGElement | IHTMLElement) => {
-					blurredElement = <ISVGElement>element;
+				(element: SVGElement | HTMLElement) => {
+					blurredElement = <SVGElement>element;
 				}
 			);
 
@@ -108,11 +108,11 @@ describe('SVGElement', () => {
 
 	describe('focus()', () => {
 		it('Calls HTMLElementUtility.focus().', () => {
-			let focusedElement: ISVGElement | null = null;
+			let focusedElement: SVGElement | null = null;
 
 			vi.spyOn(HTMLElementUtility, 'focus').mockImplementation(
-				(element: ISVGElement | IHTMLElement) => {
-					focusedElement = <ISVGElement>element;
+				(element: SVGElement | HTMLElement) => {
+					focusedElement = <SVGElement>element;
 				}
 			);
 

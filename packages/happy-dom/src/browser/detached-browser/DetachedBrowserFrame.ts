@@ -2,18 +2,18 @@ import DetachedBrowserPage from './DetachedBrowserPage.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import IBrowserFrame from '../types/IBrowserFrame.js';
-import IResponse from '../../fetch/types/IResponse.js';
+import Response from '../../fetch/Response.js';
 import IGoToOptions from '../types/IGoToOptions.js';
 import { Script } from 'vm';
 import BrowserFrameURL from '../utilities/BrowserFrameURL.js';
 import BrowserFrameScriptEvaluator from '../utilities/BrowserFrameScriptEvaluator.js';
 import BrowserFrameNavigator from '../utilities/BrowserFrameNavigator.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import IReloadOptions from '../types/IReloadOptions.js';
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
-import IDocument from '../../nodes/document/IDocument.js';
-import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
+import Document from '../../nodes/document/Document.js';
+import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -23,12 +23,12 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public readonly parentFrame: DetachedBrowserFrame | null = null;
 	public readonly page: DetachedBrowserPage;
 	// Needs to be injected from the outside when the browser frame is constructed.
-	public window: IBrowserWindow;
+	public window: BrowserWindow;
 	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 	public [PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null = null;
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
-	public [PropertySymbol.openerWindow]: IBrowserWindow | ICrossOriginBrowserWindow | null = null;
+	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;
 
 	/**
@@ -109,7 +109,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 *
 	 * @returns Document.
 	 */
-	public get document(): IDocument {
+	public get document(): Document {
 		return this.window?.document ?? null;
 	}
 
@@ -166,7 +166,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
+	public goto(url: string, options?: IGoToOptions): Promise<Response | null> {
 		return BrowserFrameNavigator.navigate({
 			windowClass: this.page.context.browser.windowClass,
 			frame: this,
@@ -181,7 +181,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public reload(options: IReloadOptions): Promise<IResponse | null> {
+	public reload(options: IReloadOptions): Promise<Response | null> {
 		return BrowserFrameNavigator.navigate({
 			windowClass: this.page.context.browser.windowClass,
 			frame: this,

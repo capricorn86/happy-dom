@@ -1,6 +1,5 @@
 import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IHTMLElement from './IHTMLElement.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import Dataset from '../element/Dataset.js';
@@ -8,13 +7,10 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import DOMException from '../../exception/DOMException.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLElementNamedNodeMap from './HTMLElementNamedNodeMap.js';
-import INodeList from '../node/INodeList.js';
-import INode from '../node/INode.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
-import IElement from '../element/IElement.js';
 import NodeList from '../node/NodeList.js';
+import Node from '../node/Node.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 
 /**
@@ -23,7 +19,7 @@ import HTMLCollection from '../element/HTMLCollection.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement.
  */
-export default class HTMLElement extends Element implements IHTMLElement {
+export default class HTMLElement extends Element {
 	// Events
 	public oncopy: (event: Event) => void | null = null;
 	public oncut: (event: Event) => void | null = null;
@@ -52,7 +48,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	public ontransitionstart: (event: Event) => void | null = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLElementNamedNodeMap(this);
+	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLElementNamedNodeMap(this);
 	public [PropertySymbol.accessKey] = '';
 	public [PropertySymbol.contentEditable] = 'inherit';
 	public [PropertySymbol.isContentEditable] = false;
@@ -225,7 +221,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 
 		for (const childNode of this[PropertySymbol.childNodes]) {
 			if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-				const childElement = <IHTMLElement>childNode;
+				const childElement = <HTMLElement>childNode;
 				const computedStyle =
 					this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].getComputedStyle(
 						childElement
@@ -467,7 +463,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	/**
 	 * @override
 	 */
-	public cloneNode(deep = false): IHTMLElement {
+	public cloneNode(deep = false): HTMLElement {
 		const clone = <HTMLElement>super.cloneNode(deep);
 
 		clone[PropertySymbol.accessKey] = this[PropertySymbol.accessKey];
@@ -487,7 +483,7 @@ export default class HTMLElement extends Element implements IHTMLElement {
 	 * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
 	 * @param parentNode Parent node.
 	 */
-	public [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const localName = this[PropertySymbol.localName];
 
 		// This element can potentially be a custom element that has not been defined yet
@@ -510,9 +506,9 @@ export default class HTMLElement extends Element implements IHTMLElement {
 						const newElement = <HTMLElement>(
 							this[PropertySymbol.ownerDocument].createElement(localName)
 						);
-						(<INodeList<INode>>newElement[PropertySymbol.childNodes]) =
+						(<NodeList<Node>>newElement[PropertySymbol.childNodes]) =
 							this[PropertySymbol.childNodes];
-						(<IHTMLCollection<IElement>>newElement[PropertySymbol.children]) =
+						(<HTMLCollection<Element>>newElement[PropertySymbol.children]) =
 							this[PropertySymbol.children];
 						(<boolean>newElement[PropertySymbol.isConnected]) = this[PropertySymbol.isConnected];
 
@@ -529,8 +525,8 @@ export default class HTMLElement extends Element implements IHTMLElement {
 							);
 						}
 
-						(<INodeList<INode>>this[PropertySymbol.childNodes]) = new NodeList();
-						(<IHTMLCollection<IElement>>this[PropertySymbol.children]) = new HTMLCollection();
+						(<NodeList<Node>>this[PropertySymbol.childNodes]) = new NodeList();
+						(<HTMLCollection<Element>>this[PropertySymbol.children]) = new HTMLCollection();
 						this[PropertySymbol.rootNode] = null;
 						this[PropertySymbol.formNode] = null;
 						this[PropertySymbol.selectNode] = null;

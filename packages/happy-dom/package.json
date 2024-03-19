@@ -65,7 +65,9 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && rm -rf ./cjs && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension && npm run build-version-file",
+		"compile": "npm run compile:esm && npm run compile:cjs npm run build-version-file",
+		"compile:esm": "tsc",
+		"compile:cjs": "rm -rf ./cjs && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run change-cjs-file-extension",
 		"change-cjs-file-extension": "node ./bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"build-version-file": "node ./bin/build-version-file.cjs",
 		"watch": "tsc -w --preserveWatchOutput",

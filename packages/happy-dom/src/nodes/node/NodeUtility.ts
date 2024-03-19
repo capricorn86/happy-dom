@@ -1,16 +1,15 @@
-import IText from '../text/IText.js';
+import Text from '../text/Text.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IComment from '../comment/IComment.js';
-import INode from './INode.js';
+import Comment from '../comment/Comment.js';
+import Node from './Node.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
-import IElement from '../element/IElement.js';
-import IDocumentType from '../document-type/IDocumentType.js';
-import IAttr from '../attr/IAttr.js';
-import IProcessingInstruction from '../processing-instruction/IProcessingInstruction.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import Element from '../element/Element.js';
+import DocumentType from '../document-type/DocumentType.js';
+import Attr from '../attr/Attr.js';
+import ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
+import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import Node from './Node.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 
@@ -28,10 +27,10 @@ export default class NodeUtility {
 	 * @returns Appended node.
 	 */
 	public static appendChild(
-		ancestorNode: INode,
-		node: INode,
+		ancestorNode: Node,
+		node: Node,
 		options?: { disableAncestorValidation?: boolean }
-	): INode {
+	): Node {
 		if (node === ancestorNode) {
 			throw new DOMException(
 				"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
@@ -100,7 +99,7 @@ export default class NodeUtility {
 	 * @param node Node to remove.
 	 * @returns Removed node.
 	 */
-	public static removeChild(ancestorNode: INode, node: INode): INode {
+	public static removeChild(ancestorNode: Node, node: Node): Node {
 		const index = (<Node>ancestorNode)[PropertySymbol.childNodes].indexOf(node);
 
 		if (index === -1) {
@@ -147,11 +146,11 @@ export default class NodeUtility {
 	 * @returns Inserted node.
 	 */
 	public static insertBefore(
-		ancestorNode: INode,
-		newNode: INode,
-		referenceNode: INode | null,
+		ancestorNode: Node,
+		newNode: Node,
+		referenceNode: Node | null,
 		options?: { disableAncestorValidation?: boolean }
-	): INode {
+	): Node {
 		if (
 			!options?.disableAncestorValidation &&
 			this.isInclusiveAncestor(newNode, ancestorNode, true)
@@ -232,7 +231,7 @@ export default class NodeUtility {
 	 * @param node The node to be tested.
 	 * @returns "true" if the node is a text node.
 	 */
-	public static isTextNode(node: INode | null): node is IText {
+	public static isTextNode(node: Node | null): node is Text {
 		return node?.[PropertySymbol.nodeType] === NodeTypeEnum.textNode;
 	}
 
@@ -249,8 +248,8 @@ export default class NodeUtility {
 	 * @returns "true" if inclusive ancestor.
 	 */
 	public static isInclusiveAncestor(
-		ancestorNode: INode | null,
-		referenceNode: INode | null,
+		ancestorNode: Node | null,
+		referenceNode: Node | null,
 		includeShadowRoots = false
 	): boolean {
 		if (ancestorNode === null || referenceNode === null) {
@@ -280,7 +279,7 @@ export default class NodeUtility {
 			return true;
 		}
 
-		let parent: INode = referenceNode[PropertySymbol.parentNode];
+		let parent: Node = referenceNode[PropertySymbol.parentNode];
 
 		while (parent) {
 			if (ancestorNode === parent) {
@@ -289,8 +288,8 @@ export default class NodeUtility {
 
 			parent = parent[PropertySymbol.parentNode]
 				? parent[PropertySymbol.parentNode]
-				: includeShadowRoots && (<IShadowRoot>parent).host
-					? (<IShadowRoot>parent).host
+				: includeShadowRoots && (<ShadowRoot>parent).host
+					? (<ShadowRoot>parent).host
 					: null;
 		}
 
@@ -308,12 +307,12 @@ export default class NodeUtility {
 	 * @param nodeB Node B.
 	 * @returns "true" if following.
 	 */
-	public static isFollowing(nodeA: INode, nodeB: INode): boolean {
+	public static isFollowing(nodeA: Node, nodeB: Node): boolean {
 		if (nodeA === nodeB) {
 			return false;
 		}
 
-		let current: INode = nodeB;
+		let current: Node = nodeB;
 
 		while (current) {
 			current = this.following(current);
@@ -336,7 +335,7 @@ export default class NodeUtility {
 	 * @param node Node.
 	 * @returns Node length.
 	 */
-	public static getNodeLength(node: INode): number {
+	public static getNodeLength(node: Node): number {
 		switch (node[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.documentTypeNode:
 				return 0;
@@ -344,7 +343,7 @@ export default class NodeUtility {
 			case NodeTypeEnum.textNode:
 			case NodeTypeEnum.processingInstructionNode:
 			case NodeTypeEnum.commentNode:
-				return (<IText | IComment>node).data.length;
+				return (<Text | Comment>node).data.length;
 
 			default:
 				return (<Node>node)[PropertySymbol.childNodes].length;
@@ -361,7 +360,7 @@ export default class NodeUtility {
 	 * @param [root] Root.
 	 * @returns Following node.
 	 */
-	public static following(node: INode, root?: INode): INode {
+	public static following(node: Node, root?: Node): Node {
 		const firstChild = node.firstChild;
 
 		if (firstChild) {
@@ -393,7 +392,7 @@ export default class NodeUtility {
 	 * @param node Node.
 	 * @returns Next descendant node.
 	 */
-	public static nextDescendantNode(node: INode): INode {
+	public static nextDescendantNode(node: Node): Node {
 		while (node && !node.nextSibling) {
 			node = node[PropertySymbol.parentNode];
 		}
@@ -411,7 +410,7 @@ export default class NodeUtility {
 	 * @param elementA
 	 * @param elementB
 	 */
-	public static attributeListsEqual(elementA: IElement, elementB: IElement): boolean {
+	public static attributeListsEqual(elementA: Element, elementB: Element): boolean {
 		for (let i = 0, max = elementA[PropertySymbol.attributes].length; i < max; i++) {
 			const attributeA = elementA[PropertySymbol.attributes][i];
 			const attributeB = elementB[PropertySymbol.attributes].getNamedItemNS(
@@ -432,15 +431,15 @@ export default class NodeUtility {
 	 * @param nodeA Node A.
 	 * @param nodeB Node B.
 	 */
-	public static isEqualNode(nodeA: INode, nodeB: INode): boolean {
+	public static isEqualNode(nodeA: Node, nodeB: Node): boolean {
 		if (nodeA[PropertySymbol.nodeType] !== nodeB[PropertySymbol.nodeType]) {
 			return false;
 		}
 
 		switch (nodeA[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.documentTypeNode:
-				const documentTypeA = <IDocumentType>nodeA;
-				const documentTypeB = <IDocumentType>nodeB;
+				const documentTypeA = <DocumentType>nodeA;
+				const documentTypeB = <DocumentType>nodeB;
 
 				if (
 					documentTypeA.name !== documentTypeB.name ||
@@ -451,8 +450,8 @@ export default class NodeUtility {
 				}
 				break;
 			case NodeTypeEnum.elementNode:
-				const elementA = <IElement>nodeA;
-				const elementB = <IElement>nodeB;
+				const elementA = <Element>nodeA;
+				const elementB = <Element>nodeB;
 
 				if (
 					elementA[PropertySymbol.namespaceURI] !== elementB[PropertySymbol.namespaceURI] ||
@@ -464,8 +463,8 @@ export default class NodeUtility {
 				}
 				break;
 			case NodeTypeEnum.attributeNode:
-				const attributeA = <IAttr>nodeA;
-				const attributeB = <IAttr>nodeB;
+				const attributeA = <Attr>nodeA;
+				const attributeB = <Attr>nodeB;
 
 				if (
 					attributeA[PropertySymbol.namespaceURI] !== attributeB[PropertySymbol.namespaceURI] ||
@@ -476,8 +475,8 @@ export default class NodeUtility {
 				}
 				break;
 			case NodeTypeEnum.processingInstructionNode:
-				const processingInstructionA = <IProcessingInstruction>nodeA;
-				const processingInstructionB = <IProcessingInstruction>nodeB;
+				const processingInstructionA = <ProcessingInstruction>nodeA;
+				const processingInstructionB = <ProcessingInstruction>nodeB;
 
 				if (
 					processingInstructionA.target !== processingInstructionB.target ||
@@ -488,7 +487,7 @@ export default class NodeUtility {
 				break;
 			case NodeTypeEnum.textNode:
 			case NodeTypeEnum.commentNode:
-				type TextOrComment = IText | IComment;
+				type TextOrComment = Text | Comment;
 				const textOrCommentA = <TextOrComment>nodeA;
 				const textOrCommentB = <TextOrComment>nodeB;
 
@@ -500,7 +499,7 @@ export default class NodeUtility {
 
 		if (
 			nodeA[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-			!NodeUtility.attributeListsEqual(<IElement>nodeA, <IElement>nodeB)
+			!NodeUtility.attributeListsEqual(<Element>nodeA, <Element>nodeB)
 		) {
 			return false;
 		}

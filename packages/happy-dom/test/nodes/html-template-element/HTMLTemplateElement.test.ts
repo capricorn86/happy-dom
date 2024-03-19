@@ -1,20 +1,19 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLTemplateElement from '../../../src/nodes/html-template-element/IHTMLTemplateElement.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import XMLSerializer from '../../../src/xml-serializer/XMLSerializer.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import CustomElement from '../../CustomElement.js';
 
 describe('HTMLTemplateElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLTemplateElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLTemplateElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLTemplateElement>document.createElement('template');
+		element = <HTMLTemplateElement>document.createElement('template');
 	});
 
 	afterEach(() => {

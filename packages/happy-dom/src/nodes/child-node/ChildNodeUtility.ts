@@ -3,7 +3,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Document from '../document/Document.js';
-import INode from '../node/INode.js';
+import Node from '../node/Node.js';
 import IParentNode from '../parent-node/IParentNode.js';
 import IChildNode from './IChildNode.js';
 
@@ -28,7 +28,7 @@ export default class ChildNodeUtility {
 	 * @param childNode Child node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static replaceWith(childNode: IChildNode, ...nodes: (INode | string)[]): void {
+	public static replaceWith(childNode: IChildNode, ...nodes: (Node | string)[]): void {
 		const parent = <IParentNode>childNode[PropertySymbol.parentNode];
 
 		if (!parent) {
@@ -57,7 +57,7 @@ export default class ChildNodeUtility {
 	 * @param childNode Child node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static before(childNode: IChildNode, ...nodes: (string | INode)[]): void {
+	public static before(childNode: IChildNode, ...nodes: (string | Node)[]): void {
 		const parent = <IParentNode>childNode[PropertySymbol.parentNode];
 
 		if (!parent) {
@@ -84,7 +84,7 @@ export default class ChildNodeUtility {
 	 * @param childNode Child node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static after(childNode: IChildNode, ...nodes: (string | INode)[]): void {
+	public static after(childNode: IChildNode, ...nodes: (string | Node)[]): void {
 		const parent = <IParentNode>childNode[PropertySymbol.parentNode];
 
 		if (!parent) {

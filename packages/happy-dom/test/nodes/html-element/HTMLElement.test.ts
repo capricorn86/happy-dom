@@ -1,10 +1,8 @@
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
+import Document from '../../../src/nodes/document/Document.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
-import ISVGElement from '../../../src/nodes/svg-element/ISVGElement.js';
-import IWindow from '../../../src/window/IWindow.js';
+import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import Window from '../../../src/window/Window.js';
 import CustomElement from '../../CustomElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
@@ -12,14 +10,14 @@ import CustomElementRegistry from '../../../src/custom-element/CustomElementRegi
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('HTMLElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLElement>document.createElement('div');
+		element = <HTMLElement>document.createElement('div');
 	});
 
 	afterEach(() => {
@@ -34,7 +32,7 @@ describe('HTMLElement', () => {
 
 	describe('get accessKey()', () => {
 		it('Returns "".', () => {
-			const div = <IHTMLElement>document.createElement('div');
+			const div = <HTMLElement>document.createElement('div');
 			expect(div.accessKey).toBe('');
 		});
 	});
@@ -312,7 +310,7 @@ describe('HTMLElement', () => {
 			const main = document.createElement('main');
 			main.innerHTML = `<button data-test="test"></button>`;
 			document.body.append(main);
-			const button = <IHTMLElement>main.querySelector('button');
+			const button = <HTMLElement>main.querySelector('button');
 			expect(button.dataset.test).toBe('test');
 		});
 
@@ -320,11 +318,11 @@ describe('HTMLElement', () => {
 		it('Finds closest ancestor element by data attribute.', () => {
 			const main = document.createElement('main');
 			document.body.append(main);
-			const div = <IHTMLElement>document.createElement('div');
+			const div = <HTMLElement>document.createElement('div');
 			div.dataset.test = 'test';
 			div.innerHTML = '<button>label</button>';
 			main.append(div);
-			const button = <IHTMLElement>main.querySelector('button');
+			const button = <HTMLElement>main.querySelector('button');
 			expect(button.closest('[data-test]')).toBe(div);
 		});
 	});
@@ -402,11 +400,11 @@ describe('HTMLElement', () => {
 
 	describe('blur()', () => {
 		it('Calls HTMLElementUtility.blur().', () => {
-			let blurredElement: IHTMLElement | null = null;
+			let blurredElement: HTMLElement | null = null;
 
 			vi.spyOn(HTMLElementUtility, 'blur').mockImplementation(
-				(element: IHTMLElement | ISVGElement) => {
-					blurredElement = <IHTMLElement>element;
+				(element: HTMLElement | SVGElement) => {
+					blurredElement = <HTMLElement>element;
 				}
 			);
 
@@ -418,11 +416,11 @@ describe('HTMLElement', () => {
 
 	describe('focus()', () => {
 		it('Calls HTMLElementUtility.focus().', () => {
-			let focusedElement: IHTMLElement | null = null;
+			let focusedElement: HTMLElement | null = null;
 
 			vi.spyOn(HTMLElementUtility, 'focus').mockImplementation(
-				(element: IHTMLElement | ISVGElement) => {
-					focusedElement = <IHTMLElement>element;
+				(element: HTMLElement | SVGElement) => {
+					focusedElement = <HTMLElement>element;
 				}
 			);
 

@@ -1,6 +1,6 @@
-import INode from '../node/INode.js';
+import Node from '../node/Node.js';
 
-export default interface IChildNode extends INode {
+export default interface IChildNode extends Node {
 	/**
 	 * Removes the node from its parent.
 	 */
@@ -11,19 +11,19 @@ export default interface IChildNode extends INode {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	before(...nodes: (INode | string)[]): void;
+	before(...nodes: (Node | string)[]): void;
 
 	/**
 	 * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent, just after this ChildNode. DOMString objects are inserted as equivalent Text nodes.
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	after(...nodes: (INode | string)[]): void;
+	after(...nodes: (Node | string)[]): void;
 
 	/**
 	 * The Node.replaceWith() method replaces this Node in the children list of its parent with a set of Node or DOMString objects.
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	replaceWith(...nodes: (INode | string)[]): void;
+	replaceWith(...nodes: (Node | string)[]): void;
 }

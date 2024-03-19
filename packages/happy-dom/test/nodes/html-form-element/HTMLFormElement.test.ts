@@ -2,20 +2,20 @@ import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import RadioNodeList from '../../../src/nodes/html-form-element/RadioNodeList.js';
-import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import Event from '../../../src/event/Event.js';
 import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
-import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement.js';
-import IHTMLTextAreaElement from '../../../src/nodes/html-text-area-element/IHTMLTextAreaElement.js';
-import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement.js';
+import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
+import HTMLTextAreaElement from '../../../src/nodes/html-text-area-element/HTMLTextAreaElement.js';
+import HTMLButtonElement from '../../../src/nodes/html-button-element/HTMLButtonElement.js';
 import Fetch from '../../../src/fetch/Fetch.js';
-import IRequest from '../../../src/fetch/types/IRequest.js';
-import IResponse from '../../../src/fetch/types/IResponse.js';
+import Request from '../../../src/fetch/Request.js';
+import Response from '../../../src/fetch/Response.js';
 import Browser from '../../../src/browser/Browser.js';
 import File from '../../../src/file/File.js';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
-import IHTMLIFrameElement from '../../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
-import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import HTMLIFrameElement from '../../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 describe('HTMLFormElement', () => {
@@ -199,8 +199,8 @@ describe('HTMLFormElement', () => {
 			expect(elements.namedItem('radio1')?.value).toBe('value2');
 			expect(elements.namedItem('1')?.value).toBe('value1');
 
-			(<IHTMLInputElement>elements.namedItem('text1')).name = 'text2';
-			(<IHTMLInputElement>elements.namedItem('text2')).id = 'text3';
+			(<HTMLInputElement>elements.namedItem('text1')).name = 'text2';
+			(<HTMLInputElement>elements.namedItem('text2')).id = 'text3';
 
 			expect(element['text2'] === root.children[0]).toBe(true);
 			expect(element['text3'] === root.children[0]).toBe(true);
@@ -382,7 +382,7 @@ describe('HTMLFormElement', () => {
 
 	describe('submit()', () => {
 		it('Fallbacks to set location URL when in the main frame of a detached Window.', () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				throw new Error('Request should not be sent.');
 			});
 
@@ -395,11 +395,11 @@ describe('HTMLFormElement', () => {
 		});
 
 		it('Submits form as query string when method is "GET".', async () => {
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				request = this.request;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
 						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 2))
@@ -429,9 +429,9 @@ describe('HTMLFormElement', () => {
 
 			await page.mainFrame.waitForNavigation();
 
-			expect((<IRequest>(<unknown>request)).referrer).toBe('about:client');
-			expect((<IRequest>(<unknown>request)).referrerPolicy).toBe('origin');
-			expect((<IRequest>(<unknown>request)).method).toBe('GET');
+			expect((<Request>(<unknown>request)).referrer).toBe('about:client');
+			expect((<Request>(<unknown>request)).referrerPolicy).toBe('origin');
+			expect((<Request>(<unknown>request)).method).toBe('GET');
 
 			expect(page.mainFrame.url).toBe(
 				'http://example.com/?text1=value1&text2=value2&checkbox1=value1&radio1=value2'
@@ -446,11 +446,11 @@ describe('HTMLFormElement', () => {
 
 		for (const method of ['POST', 'PUT', 'DELETE', 'PATCH']) {
 			it(`Submits form as form data when method is "${method}".`, async () => {
-				let request: IRequest | null = null;
+				let request: Request | null = null;
 
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 					request = this.request;
-					return Promise.resolve(<IResponse>{
+					return Promise.resolve(<Response>{
 						url: request?.url,
 						text: () =>
 							new Promise((resolve) =>
@@ -478,20 +478,20 @@ describe('HTMLFormElement', () => {
                     </form>
                 `);
 
-				(<IHTMLElement>oldWindow.document.body.children[0]).click();
+				(<HTMLElement>oldWindow.document.body.children[0]).click();
 
 				await page.mainFrame.waitForNavigation();
 
-				expect((<IRequest>(<unknown>request)).referrer).toBe('about:client');
-				expect((<IRequest>(<unknown>request)).referrerPolicy).toBe('origin');
-				expect((<IRequest>(<unknown>request)).method).toBe(method);
+				expect((<Request>(<unknown>request)).referrer).toBe('about:client');
+				expect((<Request>(<unknown>request)).referrerPolicy).toBe('origin');
+				expect((<Request>(<unknown>request)).method).toBe(method);
 				expect(
-					(<IRequest>(<unknown>request)).headers
+					(<Request>(<unknown>request)).headers
 						.get('Content-Type')
 						?.startsWith('multipart/form-data; boundary=----HappyDOMFormDataBoundary')
 				).toBe(true);
 
-				const requestFormData = await (<IRequest>(<unknown>request)).formData();
+				const requestFormData = await (<Request>(<unknown>request)).formData();
 				const list: Array<{ key: string; value: string | File }> = [];
 
 				for (const [key, value] of requestFormData) {
@@ -514,11 +514,11 @@ describe('HTMLFormElement', () => {
 		}
 
 		it(`Supports "_self" as target.`, async () => {
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				request = this.request;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
 						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 2))
@@ -542,7 +542,7 @@ describe('HTMLFormElement', () => {
                     </form>
                 `);
 
-			(<IHTMLElement>oldWindow.document.body.children[0]).click();
+			(<HTMLElement>oldWindow.document.body.children[0]).click();
 
 			await page.mainFrame.waitForNavigation();
 
@@ -552,11 +552,11 @@ describe('HTMLFormElement', () => {
 		});
 
 		it(`Supports "_top" as target.`, async () => {
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				request = this.request;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
 						new Promise((resolve) =>
@@ -596,8 +596,8 @@ describe('HTMLFormElement', () => {
 				oldWindow.document.querySelector('iframe')?.addEventListener('load', resolve)
 			);
 
-			(<IBrowserWindow>(
-				(<IHTMLIFrameElement>oldWindow.document.body.children[0]).contentWindow
+			(<BrowserWindow>(
+				(<HTMLIFrameElement>oldWindow.document.body.children[0]).contentWindow
 			)).document.body
 				.querySelector('button')
 				?.click();
@@ -610,11 +610,11 @@ describe('HTMLFormElement', () => {
 		});
 
 		it(`Supports "_parent" as target.`, async () => {
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				request = this.request;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
 						new Promise((resolve) =>
@@ -654,8 +654,8 @@ describe('HTMLFormElement', () => {
 				oldWindow.document.querySelector('iframe')?.addEventListener('load', resolve)
 			);
 
-			(<IBrowserWindow>(
-				(<IHTMLIFrameElement>oldWindow.document.body.children[0]).contentWindow
+			(<BrowserWindow>(
+				(<HTMLIFrameElement>oldWindow.document.body.children[0]).contentWindow
 			)).document.body
 				.querySelector('button')
 				?.click();
@@ -668,11 +668,11 @@ describe('HTMLFormElement', () => {
 		});
 
 		it(`Supports "_blank" as target.`, async () => {
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				request = this.request;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
 						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 2))
@@ -710,11 +710,11 @@ describe('HTMLFormElement', () => {
 		});
 
 		it(`Uses "action" from button when "formaction" is set as an attribute on the button.`, async () => {
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				request = this.request;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
 						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 2))
@@ -738,7 +738,7 @@ describe('HTMLFormElement', () => {
                     </form>
                 `);
 
-			(<IHTMLElement>oldWindow.document.body.children[0]).click();
+			(<HTMLElement>oldWindow.document.body.children[0]).click();
 
 			await page.mainFrame.waitForNavigation();
 
@@ -808,11 +808,11 @@ describe('HTMLFormElement', () => {
 
 			expect(submitEvent).toBe(null);
 
-			(<IHTMLInputElement>root.children[0]).value = 'value';
-			(<IHTMLInputElement>root.children[2]).click();
-			(<IHTMLInputElement>root.children[6]).click();
+			(<HTMLInputElement>root.children[0]).value = 'value';
+			(<HTMLInputElement>root.children[2]).click();
+			(<HTMLInputElement>root.children[6]).click();
 
-			element.requestSubmit(<IHTMLButtonElement>root.children[1]);
+			element.requestSubmit(<HTMLButtonElement>root.children[1]);
 
 			expect((<SubmitEvent>(<unknown>submitEvent)).type).toBe('submit');
 			expect((<SubmitEvent>(<unknown>submitEvent)).submitter).toBe(root.children[1]);
@@ -839,7 +839,7 @@ describe('HTMLFormElement', () => {
 			document.body.appendChild(element);
 
 			const root = element.children[0];
-			const submitter = <IHTMLInputElement>root.children[7];
+			const submitter = <HTMLInputElement>root.children[7];
 			let submitEvent: Event | null = null;
 
 			element.addEventListener('submit', (event: Event) => (submitEvent = event));
@@ -851,7 +851,7 @@ describe('HTMLFormElement', () => {
 		});
 
 		it('Fallbacks to set location URL when in the main frame of a detached Window.', () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				throw new Error('Request should not be sent.');
 			});
 
@@ -864,11 +864,11 @@ describe('HTMLFormElement', () => {
 		});
 
 		it('Submits form as query string when method is "GET".', async () => {
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				request = this.request;
-				return Promise.resolve(<IResponse>{
+				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
 						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 2))
@@ -894,8 +894,7 @@ describe('HTMLFormElement', () => {
                 </form>
             `);
 
-			(<IHTMLInputElement>oldWindow.document.querySelector('input[name="text1"]')).value =
-				'invalid';
+			(<HTMLInputElement>oldWindow.document.querySelector('input[name="text1"]')).value = 'invalid';
 
 			oldWindow.document.body.children[0]['button1'].click();
 
@@ -903,15 +902,15 @@ describe('HTMLFormElement', () => {
 
 			expect(page.mainFrame.url).toBe('http://referrer.example.com/');
 
-			(<IHTMLInputElement>oldWindow.document.querySelector('input[name="text1"]')).value = 'test';
+			(<HTMLInputElement>oldWindow.document.querySelector('input[name="text1"]')).value = 'test';
 
 			oldWindow.document.body.children[0]['button1'].click();
 
 			await page.mainFrame.waitForNavigation();
 
-			expect((<IRequest>(<unknown>request)).referrer).toBe('about:client');
-			expect((<IRequest>(<unknown>request)).referrerPolicy).toBe('origin');
-			expect((<IRequest>(<unknown>request)).method).toBe('GET');
+			expect((<Request>(<unknown>request)).referrer).toBe('about:client');
+			expect((<Request>(<unknown>request)).referrerPolicy).toBe('origin');
+			expect((<Request>(<unknown>request)).method).toBe('GET');
 
 			expect(page.mainFrame.url).toBe(
 				'http://example.com/?text1=test&text2=value2&checkbox1=value1&radio1=value2'
@@ -950,12 +949,12 @@ describe('HTMLFormElement', () => {
 			const root = element.children[0];
 			let resetEvent: Event | null = null;
 
-			(<IHTMLInputElement>root.children[0]).value = 'New value';
-			(<IHTMLSelectElement>root.children[1]).value = 'value3';
-			(<IHTMLTextAreaElement>root.children[2]).value = 'New value';
-			(<IHTMLInputElement>root.children[3]).click();
-			(<IHTMLInputElement>root.children[5]).click();
-			(<IHTMLInputElement>root.children[7]).click();
+			(<HTMLInputElement>root.children[0]).value = 'New value';
+			(<HTMLSelectElement>root.children[1]).value = 'value3';
+			(<HTMLTextAreaElement>root.children[2]).value = 'New value';
+			(<HTMLInputElement>root.children[3]).click();
+			(<HTMLInputElement>root.children[5]).click();
+			(<HTMLInputElement>root.children[7]).click();
 
 			element.addEventListener('reset', (event: Event) => (resetEvent = event));
 
@@ -963,17 +962,17 @@ describe('HTMLFormElement', () => {
 
 			expect((<Event>(<unknown>resetEvent)).type).toBe('reset');
 
-			expect((<IHTMLInputElement>root.children[0]).value).toBe('Default value');
-			expect((<IHTMLSelectElement>root.children[1]).value).toBe('value2');
-			expect((<IHTMLTextAreaElement>root.children[2]).value).toBe('Default value');
+			expect((<HTMLInputElement>root.children[0]).value).toBe('Default value');
+			expect((<HTMLSelectElement>root.children[1]).value).toBe('value2');
+			expect((<HTMLTextAreaElement>root.children[2]).value).toBe('Default value');
 
-			expect((<IHTMLInputElement>root.children[3]).checked).toBe(false);
-			expect((<IHTMLInputElement>root.children[4]).checked).toBe(true);
-			expect((<IHTMLInputElement>root.children[5]).checked).toBe(false);
+			expect((<HTMLInputElement>root.children[3]).checked).toBe(false);
+			expect((<HTMLInputElement>root.children[4]).checked).toBe(true);
+			expect((<HTMLInputElement>root.children[5]).checked).toBe(false);
 
-			expect((<IHTMLInputElement>root.children[6]).checked).toBe(false);
-			expect((<IHTMLInputElement>root.children[7]).checked).toBe(true);
-			expect((<IHTMLInputElement>root.children[8]).checked).toBe(false);
+			expect((<HTMLInputElement>root.children[6]).checked).toBe(false);
+			expect((<HTMLInputElement>root.children[7]).checked).toBe(true);
+			expect((<HTMLInputElement>root.children[8]).checked).toBe(false);
 		});
 	});
 
@@ -1007,13 +1006,13 @@ describe('HTMLFormElement', () => {
 				expect(invalidEvents.length).toBe(7);
 				invalidEvents = [];
 
-				(<IHTMLInputElement>root.children[0]).value = 'value';
-				(<IHTMLSelectElement>root.children[1]).options[0].value = 'value';
-				(<IHTMLTextAreaElement>root.children[2]).value = 'value';
-				(<IHTMLInputElement>root.children[3]).click();
-				(<IHTMLInputElement>root.children[4]).click();
-				(<IHTMLInputElement>root.children[5]).click();
-				(<IHTMLInputElement>root.children[7]).click();
+				(<HTMLInputElement>root.children[0]).value = 'value';
+				(<HTMLSelectElement>root.children[1]).options[0].value = 'value';
+				(<HTMLTextAreaElement>root.children[2]).value = 'value';
+				(<HTMLInputElement>root.children[3]).click();
+				(<HTMLInputElement>root.children[4]).click();
+				(<HTMLInputElement>root.children[5]).click();
+				(<HTMLInputElement>root.children[7]).click();
 
 				expect(element[method]()).toBe(true);
 				expect(invalidEvents.length).toBe(0);
