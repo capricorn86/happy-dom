@@ -9,7 +9,6 @@ import NodeFilter from '../tree-walker/NodeFilter.js';
 import Text from '../nodes/text/Text.js';
 import Comment from '../nodes/comment/Comment.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
-import Element from '../nodes/element/Element.js';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
 import HTMLFormElementImplementation from '../nodes/html-form-element/HTMLFormElement.js';
 import HTMLElement from '../nodes/html-element/HTMLElement.js';
@@ -85,7 +84,6 @@ import ErrorEvent from '../event/events/ErrorEvent.js';
 import StorageEvent from '../event/events/StorageEvent.js';
 import SubmitEvent from '../event/events/SubmitEvent.js';
 import Screen from '../screen/Screen.js';
-import IResponse from '../fetch/types/IResponse.js';
 import IRequestInit from '../fetch/types/IRequestInit.js';
 import Storage from '../storage/Storage.js';
 import HTMLCollection from '../nodes/element/HTMLCollection.js';
@@ -109,9 +107,8 @@ import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTa
 import Base64 from '../base64/Base64.js';
 import Attr from '../nodes/attr/Attr.js';
 import NamedNodeMap from '../named-node-map/NamedNodeMap.js';
-import IElement from '../nodes/element/IElement.js';
+import Element from '../nodes/element/Element.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
-import RequestInfo from '../fetch/types/IRequestInfo.js';
 import FileList from '../nodes/html-input-element/FileList.js';
 import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
@@ -122,7 +119,6 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 import ValidityState from '../validity-state/ValidityState.js';
 import WindowErrorUtility from './WindowErrorUtility.js';
-import ICrossOriginBrowserWindow from './ICrossOriginBrowserWindow.js';
 import Permissions from '../permissions/Permissions.js';
 import PermissionStatus from '../permissions/PermissionStatus.js';
 import Clipboard from '../clipboard/Clipboard.js';
@@ -142,7 +138,6 @@ import WindowPageOpenUtility from './WindowPageOpenUtility.js';
 import IResponseBody from '../fetch/types/IResponseBody.js';
 import IResponseInit from '../fetch/types/IResponseInit.js';
 import IRequestInfo from '../fetch/types/IRequestInfo.js';
-import IBrowserWindow from './IBrowserWindow.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import AudioImplementation from '../nodes/html-audio-element/Audio.js';
 import ImageImplementation from '../nodes/html-image-element/Image.js';
@@ -152,6 +147,9 @@ import FileReaderImplementation from '../file/FileReader.js';
 import RequestImplementation from '../fetch/Request.js';
 import ResponseImplementation from '../fetch/Response.js';
 import RangeImplementation from '../range/Range.js';
+import INodeJSGlobal from './INodeJSGlobal.js';
+import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
+import Response from '../fetch/Response.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -170,7 +168,7 @@ const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeo
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/Window.
  */
-export default class BrowserWindow extends EventTarget implements IBrowserWindow {
+export default class BrowserWindow extends EventTarget implements INodeJSGlobal {
 	// Nodes
 	public readonly Node: typeof Node = Node;
 	public readonly Attr: typeof Attr = Attr;
@@ -225,7 +223,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly HTMLPreElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLUListElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLOListElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLLIElement: typeof HTMLElement = HTMLElement;
+	public readonly HTMLLElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLMenuElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLDListElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLDivElement: typeof HTMLElement = HTMLElement;
@@ -414,11 +412,11 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	public readonly history: History;
 	public readonly navigator: Navigator;
 	public readonly console: Console;
-	public readonly self: IBrowserWindow = this;
-	public readonly top: IBrowserWindow = this;
-	public readonly parent: IBrowserWindow = this;
-	public readonly window: IBrowserWindow = this;
-	public readonly globalThis: IBrowserWindow = this;
+	public readonly self: BrowserWindow = this;
+	public readonly top: BrowserWindow = this;
+	public readonly parent: BrowserWindow = this;
+	public readonly window: BrowserWindow = this;
+	public readonly globalThis: BrowserWindow = this;
 	public readonly screen: Screen;
 	public readonly sessionStorage: Storage;
 	public readonly localStorage: Storage;
@@ -680,7 +678,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 *
 	 * @returns Opener.
 	 */
-	public get opener(): IBrowserWindow | ICrossOriginBrowserWindow | null {
+	public get opener(): BrowserWindow | CrossOriginBrowserWindow | null {
 		return this.#browserFrame[PropertySymbol.openerWindow];
 	}
 
@@ -843,7 +841,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * @param element Element.
 	 * @returns CSS style declaration.
 	 */
-	public getComputedStyle(element: IElement): CSSStyleDeclaration {
+	public getComputedStyle(element: Element): CSSStyleDeclaration {
 		element[PropertySymbol.computedStyle] =
 			element[PropertySymbol.computedStyle] || new CSSStyleDeclaration(element, true);
 		return element[PropertySymbol.computedStyle];
@@ -928,7 +926,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		url?: string,
 		target?: string,
 		features?: string
-	): IBrowserWindow | ICrossOriginBrowserWindow | null {
+	): BrowserWindow | CrossOriginBrowserWindow | null {
 		return WindowPageOpenUtility.openPage(this.#browserFrame, {
 			url,
 			target,
@@ -1116,7 +1114,7 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 	 * @param [init] Init.
 	 * @returns Promise.
 	 */
-	public async fetch(url: RequestInfo, init?: IRequestInit): Promise<IResponse> {
+	public async fetch(url: IRequestInfo, init?: IRequestInit): Promise<Response> {
 		return await new Fetch({
 			browserFrame: this.#browserFrame,
 			window: this,

@@ -1,17 +1,15 @@
 import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
-import INode from '../node/INode.js';
-import INodeList from '../node/INodeList.js';
+import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
+import Node from '../node/Node.js';
+import NodeList from '../node/NodeList.js';
 import HTMLButtonElementNamedNodeMap from './HTMLButtonElementNamedNodeMap.js';
-import IHTMLButtonElement from './IHTMLButtonElement.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import { URL } from 'url';
 
@@ -23,8 +21,8 @@ const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement.
  */
-export default class HTMLButtonElement extends HTMLElement implements IHTMLButtonElement {
-	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLButtonElementNamedNodeMap(
+export default class HTMLButtonElement extends HTMLElement {
+	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLButtonElementNamedNodeMap(
 		this
 	);
 	public [PropertySymbol.validationMessage] = '';
@@ -234,16 +232,16 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 *
 	 * @returns Form.
 	 */
-	public get form(): IHTMLFormElement | null {
+	public get form(): HTMLFormElement | null {
 		if (this[PropertySymbol.formNode]) {
-			return <IHTMLFormElement>this[PropertySymbol.formNode];
+			return <HTMLFormElement>this[PropertySymbol.formNode];
 		}
 		if (!this.isConnected) {
 			return null;
 		}
 		const formID = this.getAttribute('form');
 		return formID
-			? <IHTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
+			? <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
 			: null;
 	}
 
@@ -252,7 +250,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	 *
 	 * @returns Label elements.
 	 */
-	public get labels(): INodeList<IHTMLLabelElement> {
+	public get labels(): NodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
@@ -333,7 +331,7 @@ export default class HTMLButtonElement extends HTMLElement implements IHTMLButto
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
 		super[PropertySymbol.connectToNode](parentNode);

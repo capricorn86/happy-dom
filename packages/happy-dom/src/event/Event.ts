@@ -1,12 +1,12 @@
 import IEventInit from './IEventInit.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import INode from '../nodes/node/INode.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
-import IShadowRoot from '../nodes/shadow-root/IShadowRoot.js';
-import IEventTarget from './IEventTarget.js';
+import Node from '../nodes/node/Node.js';
+import BrowserWindow from '../window/BrowserWindow.js';
+import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import EventTarget from './EventTarget.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 
 /**
  * Event.
@@ -26,8 +26,8 @@ export default class Event {
 
 	public [PropertySymbol.immediatePropagationStopped] = false;
 	public [PropertySymbol.propagationStopped] = false;
-	public [PropertySymbol.target]: IEventTarget = null;
-	public [PropertySymbol.currentTarget]: IEventTarget = null;
+	public [PropertySymbol.target]: EventTarget = null;
+	public [PropertySymbol.currentTarget]: EventTarget = null;
 	public [PropertySymbol.isInPassiveEventListener] = false;
 
 	/**
@@ -49,7 +49,7 @@ export default class Event {
 	 *
 	 * @returns Target.
 	 */
-	public get target(): IEventTarget {
+	public get target(): EventTarget {
 		return this[PropertySymbol.target];
 	}
 
@@ -58,7 +58,7 @@ export default class Event {
 	 *
 	 * @returns Target.
 	 */
-	public get currentTarget(): IEventTarget {
+	public get currentTarget(): EventTarget {
 		return this[PropertySymbol.currentTarget];
 	}
 
@@ -76,29 +76,29 @@ export default class Event {
 	 *
 	 * @returns Composed path.
 	 */
-	public composedPath(): IEventTarget[] {
+	public composedPath(): EventTarget[] {
 		if (!this[PropertySymbol.target]) {
 			return [];
 		}
 
 		const composedPath = [];
-		let eventTarget: INode | IShadowRoot | IBrowserWindow = <INode | IShadowRoot>(
+		let eventTarget: Node | ShadowRoot | BrowserWindow = <Node | ShadowRoot>(
 			(<unknown>this[PropertySymbol.target])
 		);
 
 		while (eventTarget) {
 			composedPath.push(eventTarget);
 
-			if ((<INode>(<unknown>eventTarget)).parentNode) {
-				eventTarget = (<INode>(<unknown>eventTarget)).parentNode;
+			if ((<Node>(<unknown>eventTarget)).parentNode) {
+				eventTarget = (<Node>(<unknown>eventTarget)).parentNode;
 			} else if (
 				this.composed &&
-				(<INode>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
-				(<IShadowRoot>eventTarget).host
+				(<Node>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
+				(<ShadowRoot>eventTarget).host
 			) {
-				eventTarget = (<IShadowRoot>eventTarget).host;
-			} else if ((<INode>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentNode) {
-				eventTarget = (<IDocument>(<unknown>eventTarget))[PropertySymbol.ownerWindow];
+				eventTarget = (<ShadowRoot>eventTarget).host;
+			} else if ((<Node>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentNode) {
+				eventTarget = (<Document>(<unknown>eventTarget))[PropertySymbol.ownerWindow];
 			} else {
 				break;
 			}

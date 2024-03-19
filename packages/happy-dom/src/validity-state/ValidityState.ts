@@ -1,12 +1,10 @@
-import IHTMLButtonElement from '../nodes/html-button-element/IHTMLButtonElement.js';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement.js';
+import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
-import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
-import IHTMLSelectElement from '../nodes/html-select-element/IHTMLSelectElement.js';
+import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement.js';
 import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement.js';
-import IHTMLTextAreaElement from '../nodes/html-text-area-element/IHTMLTextAreaElement.js';
-import IShadowRoot from '../nodes/shadow-root/IShadowRoot.js';
+import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 
 const EMAIL_REGEXP =
 	/^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
@@ -22,11 +20,7 @@ const URL_REGEXP =
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ValidityState
  */
 export default class ValidityState {
-	private element:
-		| IHTMLInputElement
-		| IHTMLTextAreaElement
-		| IHTMLSelectElement
-		| IHTMLButtonElement;
+	private element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement;
 
 	/**
 	 * Constructor.
@@ -34,7 +28,7 @@ export default class ValidityState {
 	 * @param element Input element.
 	 */
 	constructor(
-		element: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement
+		element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement
 	) {
 		this.element = element;
 	}
@@ -169,7 +163,7 @@ export default class ValidityState {
 	 * @returns "true" if valid.
 	 */
 	public get valueMissing(): boolean {
-		if (!(<IHTMLInputElement>this.element).required) {
+		if (!(<HTMLInputElement>this.element).required) {
 			return false;
 		}
 		if (this.element instanceof HTMLInputElement) {
@@ -183,8 +177,8 @@ export default class ValidityState {
 					return true;
 				}
 				const root =
-					<IHTMLFormElement>this.element[PropertySymbol.formNode] ||
-					<IShadowRoot>this.element.getRootNode();
+					<HTMLFormElement>this.element[PropertySymbol.formNode] ||
+					<ShadowRoot>this.element.getRootNode();
 				return !root || !root.querySelector(`input[name="${this.element.name}"]:checked`);
 			}
 		}

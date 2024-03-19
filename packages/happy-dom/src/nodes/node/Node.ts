@@ -1,23 +1,21 @@
 import EventTarget from '../../event/EventTarget.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import MutationListener from '../../mutation-observer/MutationListener.js';
-import INode from './INode.js';
-import IDocument from '../document/IDocument.js';
-import IElement from '../element/IElement.js';
+import Document from '../document/Document.js';
+import Element from '../element/Element.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
 import NodeDocumentPositionEnum from './NodeDocumentPositionEnum.js';
 import NodeUtility from './NodeUtility.js';
-import IAttr from '../attr/IAttr.js';
+import Attr from '../attr/Attr.js';
 import NodeList from './NodeList.js';
-import INodeList from './INodeList.js';
 import NodeFactory from '../NodeFactory.js';
 
 /**
  * Node.
  */
-export default class Node extends EventTarget implements INode {
+export default class Node extends EventTarget {
 	// This is used when overriding a Node class and set it in a owner document context (used in BrowserWindow.constructor()).
-	public static [PropertySymbol.ownerDocument]: IDocument | null;
+	public static [PropertySymbol.ownerDocument]: Document | null;
 
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
@@ -56,15 +54,15 @@ export default class Node extends EventTarget implements INode {
 
 	// Internal properties
 	public [PropertySymbol.isConnected] = false;
-	public [PropertySymbol.ownerDocument]: IDocument;
-	public [PropertySymbol.parentNode]: INode | null = null;
+	public [PropertySymbol.ownerDocument]: Document;
+	public [PropertySymbol.parentNode]: Node | null = null;
 	public [PropertySymbol.nodeType]: NodeTypeEnum;
-	public [PropertySymbol.rootNode]: INode = null;
-	public [PropertySymbol.formNode]: INode = null;
-	public [PropertySymbol.selectNode]: INode = null;
-	public [PropertySymbol.textAreaNode]: INode = null;
+	public [PropertySymbol.rootNode]: Node = null;
+	public [PropertySymbol.formNode]: Node = null;
+	public [PropertySymbol.selectNode]: Node = null;
+	public [PropertySymbol.textAreaNode]: Node = null;
 	public [PropertySymbol.observers]: MutationListener[] = [];
-	public [PropertySymbol.childNodes]: INodeList<INode> = new NodeList<INode>();
+	public [PropertySymbol.childNodes]: NodeList<Node> = new NodeList<Node>();
 
 	/**
 	 * Constructor.
@@ -109,7 +107,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @returns Owner document.
 	 */
-	public get ownerDocument(): IDocument {
+	public get ownerDocument(): Document {
 		return this[PropertySymbol.ownerDocument];
 	}
 
@@ -118,7 +116,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @returns Parent node.
 	 */
-	public get parentNode(): INode | null {
+	public get parentNode(): Node | null {
 		return this[PropertySymbol.parentNode];
 	}
 
@@ -136,7 +134,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @returns Child nodes list.
 	 */
-	public get childNodes(): INodeList<INode> {
+	public get childNodes(): NodeList<Node> {
 		return this[PropertySymbol.childNodes];
 	}
 
@@ -190,7 +188,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @returns Node.
 	 */
-	public get previousSibling(): INode {
+	public get previousSibling(): Node {
 		if (this[PropertySymbol.parentNode]) {
 			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
 				this
@@ -207,7 +205,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @returns Node.
 	 */
-	public get nextSibling(): INode {
+	public get nextSibling(): Node {
 		if (this[PropertySymbol.parentNode]) {
 			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
 				this
@@ -227,7 +225,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @returns Node.
 	 */
-	public get firstChild(): INode {
+	public get firstChild(): Node {
 		if (this[PropertySymbol.childNodes].length > 0) {
 			return this[PropertySymbol.childNodes][0];
 		}
@@ -239,7 +237,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @returns Node.
 	 */
-	public get lastChild(): INode {
+	public get lastChild(): Node {
 		if (this[PropertySymbol.childNodes].length > 0) {
 			return this[PropertySymbol.childNodes][this[PropertySymbol.childNodes].length - 1];
 		}
@@ -251,12 +249,12 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @returns Element.
 	 */
-	public get parentElement(): IElement | null {
+	public get parentElement(): Element | null {
 		let parent = this[PropertySymbol.parentNode];
 		while (parent && parent[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode) {
 			parent = parent[PropertySymbol.parentNode];
 		}
-		return <IElement>parent;
+		return <Element>parent;
 	}
 
 	/**
@@ -297,7 +295,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param otherNode Node to test with.
 	 * @returns "true" if this node contains the other node.
 	 */
-	public contains(otherNode: INode): boolean {
+	public contains(otherNode: Node): boolean {
 		if (otherNode === undefined) {
 			return false;
 		}
@@ -311,7 +309,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param options.composed A Boolean that indicates whether the shadow root should be returned (false, the default), or a root node beyond shadow root (true).
 	 * @returns Node.
 	 */
-	public getRootNode(options?: { composed: boolean }): INode {
+	public getRootNode(options?: { composed: boolean }): Node {
 		if (!this[PropertySymbol.isConnected]) {
 			return this;
 		}
@@ -329,7 +327,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): INode {
+	public cloneNode(deep = false): Node {
 		const clone = NodeFactory.createNode<Node>(
 			this[PropertySymbol.ownerDocument],
 			<typeof Node>this.constructor
@@ -359,7 +357,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param  node Node to append.
 	 * @returns Appended node.
 	 */
-	public appendChild(node: INode): INode {
+	public appendChild(node: Node): Node {
 		return NodeUtility.appendChild(this, node);
 	}
 
@@ -369,7 +367,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param node Node to remove.
 	 * @returns Removed node.
 	 */
-	public removeChild(node: INode): INode {
+	public removeChild(node: Node): Node {
 		return NodeUtility.removeChild(this, node);
 	}
 
@@ -380,7 +378,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param referenceNode Node to insert before.
 	 * @returns Inserted node.
 	 */
-	public insertBefore(newNode: INode, referenceNode: INode | null): INode {
+	public insertBefore(newNode: Node, referenceNode: Node | null): Node {
 		if (arguments.length < 2) {
 			throw new TypeError(
 				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
@@ -396,7 +394,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param oldChild Old child.
 	 * @returns Replaced node.
 	 */
-	public replaceChild(newChild: INode, oldChild: INode): INode {
+	public replaceChild(newChild: Node, oldChild: Node): Node {
 		this.insertBefore(newChild, oldChild);
 		this.removeChild(oldChild);
 
@@ -410,7 +408,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param node  Node to compare.
 	 * @returns boolean - `true` if two nodes are equal.
 	 */
-	public isEqualNode(node: INode): boolean {
+	public isEqualNode(node: Node): boolean {
 		return NodeUtility.isEqualNode(this, node);
 	}
 
@@ -461,7 +459,7 @@ export default class Node extends EventTarget implements INode {
 	 *
 	 * @param parentNode Parent node.
 	 */
-	public [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const isConnected = !!parentNode && parentNode[PropertySymbol.isConnected];
 		const formNode = (<Node>this)[PropertySymbol.formNode];
 		const selectNode = (<Node>this)[PropertySymbol.selectNode];
@@ -495,7 +493,7 @@ export default class Node extends EventTarget implements INode {
 			this[PropertySymbol.isConnected] = isConnected;
 
 			if (!isConnected) {
-				if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === this) {
+				if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === <unknown>this) {
 					this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = null;
 				}
 			}
@@ -532,7 +530,7 @@ export default class Node extends EventTarget implements INode {
 	 * @see https://dom.spec.whatwg.org/#dom-node-comparedocumentposition
 	 * @param otherNode Other node.
 	 */
-	public compareDocumentPosition(otherNode: INode): number {
+	public compareDocumentPosition(otherNode: Node): number {
 		/**
 		 * 1. If this is other, then return zero.
 		 */
@@ -543,8 +541,8 @@ export default class Node extends EventTarget implements INode {
 		/**
 		 * 2. Let node1 be other and node2 be this.
 		 */
-		let node1: INode = otherNode;
-		let node2: INode = this;
+		let node1: Node = otherNode;
+		let node2: Node = this;
 
 		/**
 		 * 3. Let attr1 and attr2 be null.
@@ -557,7 +555,7 @@ export default class Node extends EventTarget implements INode {
 		 */
 		if (node1[PropertySymbol.nodeType] === NodeTypeEnum.attributeNode) {
 			attr1 = node1;
-			node1 = (<IAttr>attr1)[PropertySymbol.ownerElement];
+			node1 = (<Attr>attr1)[PropertySymbol.ownerElement];
 		}
 
 		/**
@@ -566,7 +564,7 @@ export default class Node extends EventTarget implements INode {
 		 */
 		if (node2[PropertySymbol.nodeType] === NodeTypeEnum.attributeNode) {
 			attr2 = node2;
-			node2 = (<IAttr>attr2)[PropertySymbol.ownerElement];
+			node2 = (<Attr>attr2)[PropertySymbol.ownerElement];
 
 			/**
 			 * 5.2. If attr1 and node1 are non-null, and node2 is node1, then:
@@ -575,11 +573,11 @@ export default class Node extends EventTarget implements INode {
 				/**
 				 * 5.2.1. For each attr in node2’s attribute list:
 				 */
-				for (const attr of Object.values((<IElement>node2)[PropertySymbol.attributes])) {
+				for (const attr of Object.values((<Element>node2)[PropertySymbol.attributes])) {
 					/**
 					 * 5.2.1.1. If attr equals attr1, then return the result of adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and DOCUMENT_POSITION_PRECEDING.
 					 */
-					if (NodeUtility.isEqualNode(<IAttr>attr, attr1)) {
+					if (NodeUtility.isEqualNode(<Attr>attr, attr1)) {
 						return (
 							Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_PRECEDING
 						);
@@ -588,7 +586,7 @@ export default class Node extends EventTarget implements INode {
 					/**
 					 * 5.2.1.2. If attr equals attr2, then return the result of adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and DOCUMENT_POSITION_FOLLOWING.
 					 */
-					if (NodeUtility.isEqualNode(<IAttr>attr, attr2)) {
+					if (NodeUtility.isEqualNode(<Attr>attr, attr2)) {
 						return (
 							Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_FOLLOWING
 						);
@@ -597,8 +595,8 @@ export default class Node extends EventTarget implements INode {
 			}
 		}
 
-		const node2Ancestors: INode[] = [];
-		let node2Ancestor: INode = node2;
+		const node2Ancestors: Node[] = [];
+		let node2Ancestor: Node = node2;
 
 		while (node2Ancestor) {
 			/**
@@ -612,8 +610,8 @@ export default class Node extends EventTarget implements INode {
 			node2Ancestor = node2Ancestor[PropertySymbol.parentNode];
 		}
 
-		const node1Ancestors: INode[] = [];
-		let node1Ancestor: INode = node1;
+		const node1Ancestors: Node[] = [];
+		let node1Ancestor: Node = node1;
 
 		while (node1Ancestor) {
 			/**
@@ -627,7 +625,7 @@ export default class Node extends EventTarget implements INode {
 			node1Ancestor = node1Ancestor[PropertySymbol.parentNode];
 		}
 
-		const reverseArrayIndex = (array: INode[], reverseIndex: number): INode => {
+		const reverseArrayIndex = (array: Node[], reverseIndex: number): Node => {
 			return array[array.length - 1 - reverseIndex];
 		};
 
@@ -670,7 +668,7 @@ export default class Node extends EventTarget implements INode {
 		const node2Node = reverseArrayIndex(node2Ancestors, commonAncestorIndex + 1);
 		const node1Node = reverseArrayIndex(node1Ancestors, commonAncestorIndex + 1);
 
-		const computeNodeIndexes = (nodes: INode[]): void => {
+		const computeNodeIndexes = (nodes: Node[]): void => {
 			for (const childNode of nodes) {
 				computeNodeIndexes((<Node>childNode)[PropertySymbol.childNodes]);
 
@@ -736,7 +734,7 @@ export default class Node extends EventTarget implements INode {
 	 * @param node Node to check.
 	 * @returns True if the given node is equal to the current node, otherwise false.
 	 */
-	public isSameNode(node: INode): boolean {
+	public isSameNode(node: Node): boolean {
 		return this === node;
 	}
 }

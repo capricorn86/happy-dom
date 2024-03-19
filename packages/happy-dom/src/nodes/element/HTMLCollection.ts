@@ -1,10 +1,9 @@
-import IHTMLCollection from './IHTMLCollection.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * HTML collection.
  */
-export default class HTMLCollection<T> extends Array implements IHTMLCollection<T> {
+export default class HTMLCollection<T> extends Array implements HTMLCollection<T> {
 	protected [PropertySymbol.namedItems]: { [k: string]: T[] } = {};
 
 	/**

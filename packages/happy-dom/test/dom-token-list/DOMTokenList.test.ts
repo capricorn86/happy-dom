@@ -1,15 +1,15 @@
-import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
-import IElement from '../../src/nodes/element/IElement.js';
-import IDOMTokenList from '../../src/dom-token-list/IDOMTokenList.js';
+import Window from '../../src/window/Window.js';
+import Document from '../../src/nodes/document/Document.js';
+import Element from '../../src/nodes/element/Element.js';
+import DOMTokenList from '../../src/dom-token-list/DOMTokenList.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('DOMTokenList', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IElement;
-	let classList: IDOMTokenList;
+	let window: Window;
+	let document: Document;
+	let element: Element;
+	let classList: DOMTokenList;
 
 	beforeEach(() => {
 		window = new Window();

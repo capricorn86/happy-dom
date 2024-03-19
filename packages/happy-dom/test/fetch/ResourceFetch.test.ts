@@ -1,6 +1,6 @@
-import IBrowserWindow from '../../src/window/IBrowserWindow.js';
+import BrowserWindow from '../../src/window/BrowserWindow.js';
 import ResourceFetch from '../../src/fetch/ResourceFetch.js';
-import IResponse from '../../src/fetch/types/IResponse.js';
+import Response from '../../src/fetch/Response.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Browser from '../../src/browser/Browser.js';
 import Fetch from '../../src/fetch/Fetch.js';
@@ -11,7 +11,7 @@ import DOMException from '../../src/exception/DOMException.js';
 const URL = 'https://localhost:8080/base/';
 
 describe('ResourceFetch', () => {
-	let window: IBrowserWindow;
+	let window: BrowserWindow;
 	let resourceFetch: ResourceFetch;
 
 	beforeEach(() => {
@@ -38,7 +38,7 @@ describe('ResourceFetch', () => {
 					url: this.request.url,
 					method: this.request.method
 				};
-				return <IResponse>{
+				return <Response>{
 					text: () => Promise.resolve('test'),
 					ok: true
 				};
@@ -55,7 +55,7 @@ describe('ResourceFetch', () => {
 
 		it('Handles error when resource is fetched asynchrounously.', async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
-				return <IResponse>{
+				return <Response>{
 					ok: false,
 					status: 404,
 					statusText: 'Not Found'

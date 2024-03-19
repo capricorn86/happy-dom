@@ -1,7 +1,7 @@
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import Blob from '../file/Blob.js';
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 import { Buffer } from 'buffer';
 
 /**
@@ -19,11 +19,11 @@ export default class XMLHttpRequestResponseDataParser {
 	 * @returns Parsed response.
 	 **/
 	public static parse(options: {
-		window: IBrowserWindow;
+		window: BrowserWindow;
 		responseType: string;
 		data?: Buffer;
 		contentType?: string;
-	}): ArrayBuffer | Blob | IDocument | object | string | null {
+	}): ArrayBuffer | Blob | Document | object | string | null {
 		if (!options.data) {
 			return '';
 		}

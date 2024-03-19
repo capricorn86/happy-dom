@@ -1,5 +1,5 @@
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
 import HTTP from 'http';
 import Stream from 'stream';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
@@ -9,7 +9,7 @@ import DefaultBrowserSettings from '../../src/browser/DefaultBrowserSettings.js'
 import '../types.d.js';
 
 describe('DetachedWindowAPI', () => {
-	let window: IWindow;
+	let window: Window;
 
 	beforeEach(() => {
 		window = new Window();

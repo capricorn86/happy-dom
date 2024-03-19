@@ -1,7 +1,7 @@
-import IHeaders from '../../types/IHeaders.js';
+import Headers from '../../Headers.js';
 
 export default interface ICachableRequest {
 	url: string;
 	method: string;
-	headers: IHeaders;
+	headers: Headers;
 }

@@ -1,20 +1,18 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IHTMLFormElement from './IHTMLFormElement.js';
 import Event from '../../event/Event.js';
 import SubmitEvent from '../../event/events/SubmitEvent.js';
 import HTMLFormControlsCollection from './HTMLFormControlsCollection.js';
-import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
-import INode from '../node/INode.js';
-import IHTMLInputElement from '../html-input-element/IHTMLInputElement.js';
-import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement.js';
-import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
-import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
+import Node from '../node/Node.js';
+import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import BrowserFrameNavigator from '../../browser/utilities/BrowserFrameNavigator.js';
 import FormData from '../../form-data/FormData.js';
 import Element from '../element/Element.js';
-import Node from '../node/Node.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * HTML Form Element.
@@ -22,11 +20,11 @@ import Node from '../node/Node.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement.
  */
-export default class HTMLFormElement extends HTMLElement implements IHTMLFormElement {
+export default class HTMLFormElement extends HTMLElement {
 	// Internal properties.
-	public [PropertySymbol.elements]: IHTMLFormControlsCollection = new HTMLFormControlsCollection();
+	public [PropertySymbol.elements]: HTMLFormControlsCollection = new HTMLFormControlsCollection();
 	public [PropertySymbol.length] = 0;
-	public [PropertySymbol.formNode]: INode = this;
+	public [PropertySymbol.formNode]: Node = this;
 
 	// Events
 	public onformdata: (event: Event) => void | null = null;
@@ -51,7 +49,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 *
 	 * @returns Elements.
 	 */
-	public get elements(): IHTMLFormControlsCollection {
+	public get elements(): HTMLFormControlsCollection {
 		return this[PropertySymbol.elements];
 	}
 
@@ -251,7 +249,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 *
 	 * @param [submitter] Submitter.
 	 */
-	public requestSubmit(submitter?: IHTMLInputElement | IHTMLButtonElement): void {
+	public requestSubmit(submitter?: HTMLInputElement | HTMLButtonElement): void {
 		const noValidate = submitter?.formNoValidate || this.noValidate;
 		if (noValidate || this.checkValidity()) {
 			this.dispatchEvent(
@@ -276,15 +274,15 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 				element[PropertySymbol.value] = null;
 			} else if (element[PropertySymbol.tagName] === 'SELECT') {
 				let hasSelectedAttribute = false;
-				for (const option of (<IHTMLSelectElement>element).options) {
+				for (const option of (<HTMLSelectElement>element).options) {
 					if (option.hasAttribute('selected')) {
 						hasSelectedAttribute = true;
 						option.selected = true;
 						break;
 					}
 				}
-				if (!hasSelectedAttribute && (<IHTMLSelectElement>element).options.length > 0) {
-					(<IHTMLSelectElement>element).options[0].selected = true;
+				if (!hasSelectedAttribute && (<HTMLSelectElement>element).options.length > 0) {
+					(<HTMLSelectElement>element).options[0].selected = true;
 				}
 			}
 		}
@@ -333,8 +331,8 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLFormElement {
-		return <IHTMLFormElement>super.cloneNode(deep);
+	public cloneNode(deep = false): HTMLFormElement {
+		return <HTMLFormElement>super.cloneNode(deep);
 	}
 
 	/**
@@ -344,7 +342,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param name Name
 	 */
 	public [PropertySymbol.appendFormControlItem](
-		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
+		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
 		name: string
 	): void {
 		const elements = this[PropertySymbol.elements];
@@ -369,7 +367,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param name Name.
 	 */
 	public [PropertySymbol.removeFormControlItem](
-		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
+		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
 		name: string
 	): void {
 		const elements = this[PropertySymbol.elements];
@@ -417,7 +415,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 *
 	 * @param [submitter] Submitter.
 	 */
-	#submit(submitter?: IHTMLInputElement | IHTMLButtonElement): void {
+	#submit(submitter?: HTMLInputElement | HTMLButtonElement): void {
 		const action = submitter?.hasAttribute('formaction')
 			? submitter?.formAction || this.action
 			: this.action;
@@ -461,7 +459,9 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 			}
 
 			BrowserFrameNavigator.navigate({
-				windowClass: this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor,
+				windowClass: <typeof BrowserWindow>(
+					this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor
+				),
 				frame: targetFrame,
 				url: url.href,
 				goToOptions: {
@@ -473,7 +473,9 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 		}
 
 		BrowserFrameNavigator.navigate({
-			windowClass: this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor,
+			windowClass: <typeof BrowserWindow>(
+				this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor
+			),
 			frame: targetFrame,
 			method: method,
 			url: action,

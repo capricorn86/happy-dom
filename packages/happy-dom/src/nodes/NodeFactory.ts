@@ -1,10 +1,10 @@
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 
 /**
  * Node factory used for setting the owner document to nodes.
  */
 export default class NodeFactory {
-	public static ownerDocuments: IDocument[] = [];
+	public static ownerDocuments: Document[] = [];
 
 	/**
 	 * Creates a node instance with the given owner document.
@@ -15,7 +15,7 @@ export default class NodeFactory {
 	 * @returns Node instance.
 	 */
 	public static createNode<T>(
-		ownerDocument: IDocument,
+		ownerDocument: Document,
 		nodeClass: new (...args) => T,
 		...args: any[]
 	): T {
@@ -28,7 +28,7 @@ export default class NodeFactory {
 	 *
 	 * @returns Document.
 	 */
-	public static pullOwnerDocument(): IDocument {
+	public static pullOwnerDocument(): Document {
 		return this.ownerDocuments.pop();
 	}
 }

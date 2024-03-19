@@ -1,9 +1,9 @@
-import IShadowRoot from '../../../nodes/shadow-root/IShadowRoot.js';
+import ShadowRoot from '../../../nodes/shadow-root/ShadowRoot.js';
 import * as PropertySymbol from '../../../PropertySymbol.js';
-import IElement from '../../../nodes/element/IElement.js';
-import IDocument from '../../../nodes/document/IDocument.js';
-import IHTMLStyleElement from '../../../nodes/html-style-element/IHTMLStyleElement.js';
-import INodeList from '../../../nodes/node/INodeList.js';
+import Element from '../../../nodes/element/Element.js';
+import Document from '../../../nodes/document/Document.js';
+import HTMLStyleElement from '../../../nodes/html-style-element/HTMLStyleElement.js';
+import NodeList from '../../../nodes/node/NodeList.js';
 import CSSStyleDeclarationPropertyManager from '../property-manager/CSSStyleDeclarationPropertyManager.js';
 import NodeTypeEnum from '../../../nodes/node/NodeTypeEnum.js';
 import CSSRuleTypeEnum from '../../CSSRuleTypeEnum.js';
@@ -23,7 +23,7 @@ const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)|var\( *(--[^), ]+), *([^), ]+)
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 
 type IStyleAndElement = {
-	element: IElement | IShadowRoot | IDocument;
+	element: Element | ShadowRoot | Document;
 	cssTexts: Array<{ cssText: string; priorityWeight: number }>;
 };
 
@@ -41,7 +41,7 @@ export default class CSSStyleDeclarationElementStyle {
 		documentCacheID: null
 	};
 
-	private element: IElement;
+	private element: Element;
 	private computed: boolean;
 
 	/**
@@ -50,7 +50,7 @@ export default class CSSStyleDeclarationElementStyle {
 	 * @param element Element.
 	 * @param [computed] Computed.
 	 */
-	constructor(element: IElement, computed = false) {
+	constructor(element: Element, computed = false) {
 		this.element = element;
 		this.computed = computed;
 	}
@@ -89,7 +89,7 @@ export default class CSSStyleDeclarationElementStyle {
 		const documentElements: Array<IStyleAndElement> = [];
 		const parentElements: Array<IStyleAndElement> = [];
 		let styleAndElement: IStyleAndElement = {
-			element: <IElement | IShadowRoot | IDocument>this.element,
+			element: <Element | ShadowRoot | Document>this.element,
 			cssTexts: []
 		};
 		let shadowRootElements: Array<IStyleAndElement> = [];
@@ -121,7 +121,7 @@ export default class CSSStyleDeclarationElementStyle {
 			}
 
 			if (styleAndElement.element === this.element[PropertySymbol.ownerDocument]) {
-				const styleSheets = <INodeList<IHTMLStyleElement>>(
+				const styleSheets = <NodeList<HTMLStyleElement>>(
 					this.element[PropertySymbol.ownerDocument].querySelectorAll(
 						'style,link[rel="stylesheet"]'
 					)
@@ -147,15 +147,15 @@ export default class CSSStyleDeclarationElementStyle {
 				styleAndElement = { element: null, cssTexts: [] };
 			} else if (
 				styleAndElement.element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
-				(<IShadowRoot>styleAndElement.element).host
+				(<ShadowRoot>styleAndElement.element).host
 			) {
-				const shadowRoot = <IShadowRoot>styleAndElement.element;
-				const styleSheets = <INodeList<IHTMLStyleElement>>(
+				const shadowRoot = <ShadowRoot>styleAndElement.element;
+				const styleSheets = <NodeList<HTMLStyleElement>>(
 					shadowRoot.querySelectorAll('style,link[rel="stylesheet"]')
 				);
 
 				styleAndElement = {
-					element: <IElement>shadowRoot.host,
+					element: <Element>shadowRoot.host,
 					cssTexts: []
 				};
 
@@ -181,7 +181,7 @@ export default class CSSStyleDeclarationElementStyle {
 				shadowRootElements = [];
 			} else {
 				styleAndElement = {
-					element: <IElement>styleAndElement.element[PropertySymbol.parentNode],
+					element: <Element>styleAndElement.element[PropertySymbol.parentNode],
 					cssTexts: []
 				};
 			}
@@ -200,35 +200,35 @@ export default class CSSStyleDeclarationElementStyle {
 			let elementCSSText = '';
 			if (
 				CSSStyleDeclarationElementDefaultCSS[
-					(<IElement>parentElement.element)[PropertySymbol.tagName]
+					(<Element>parentElement.element)[PropertySymbol.tagName]
 				]
 			) {
 				if (
 					typeof CSSStyleDeclarationElementDefaultCSS[
-						(<IElement>parentElement.element)[PropertySymbol.tagName]
+						(<Element>parentElement.element)[PropertySymbol.tagName]
 					] === 'string'
 				) {
 					elementCSSText +=
 						CSSStyleDeclarationElementDefaultCSS[
-							(<IElement>parentElement.element)[PropertySymbol.tagName]
+							(<Element>parentElement.element)[PropertySymbol.tagName]
 						];
 				} else {
 					for (const key of Object.keys(
 						CSSStyleDeclarationElementDefaultCSS[
-							(<IElement>parentElement.element)[PropertySymbol.tagName]
+							(<Element>parentElement.element)[PropertySymbol.tagName]
 						]
 					)) {
 						if (key === 'default' || !!parentElement.element[key]) {
 							elementCSSText +=
 								CSSStyleDeclarationElementDefaultCSS[
-									(<IElement>parentElement.element)[PropertySymbol.tagName]
+									(<Element>parentElement.element)[PropertySymbol.tagName]
 								][key];
 						}
 					}
 				}
 				elementCSSText +=
 					CSSStyleDeclarationElementDefaultCSS[
-						(<IElement>parentElement.element)[PropertySymbol.tagName]
+						(<Element>parentElement.element)[PropertySymbol.tagName]
 					];
 			}
 
@@ -236,7 +236,7 @@ export default class CSSStyleDeclarationElementStyle {
 				elementCSSText += cssText.cssText;
 			}
 
-			const elementStyleAttribute = (<IElement>parentElement.element)[PropertySymbol.attributes][
+			const elementStyleAttribute = (<Element>parentElement.element)[PropertySymbol.attributes][
 				'style'
 			];
 			if (elementStyleAttribute) {
@@ -265,7 +265,7 @@ export default class CSSStyleDeclarationElementStyle {
 									parentFontSize,
 									parentSize: parentFontSize
 								});
-								if ((<IElement>parentElement.element)[PropertySymbol.tagName] === 'HTML') {
+								if ((<Element>parentElement.element)[PropertySymbol.tagName] === 'HTML') {
 									rootFontSize = parsedValue;
 								} else if (parentElement !== targetElement) {
 									parentFontSize = parsedValue;
@@ -328,7 +328,7 @@ export default class CSSStyleDeclarationElementStyle {
 						}
 					} else {
 						for (const element of options.elements) {
-							const matchResult = QuerySelector.match(<IElement>element.element, selectorText);
+							const matchResult = QuerySelector.match(<Element>element.element, selectorText);
 							if (matchResult) {
 								element.cssTexts.push({
 									cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],

@@ -1,12 +1,11 @@
 import IEventListener from './IEventListener.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Event from './Event.js';
-import IEventTarget from './IEventTarget.js';
 import IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
-import INode from '../nodes/node/INode.js';
-import IDocument from '../nodes/document/IDocument.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import Node from '../nodes/node/Node.js';
+import Document from '../nodes/document/Document.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import WindowErrorUtility from '../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
@@ -14,7 +13,7 @@ import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js
 /**
  * Handles events.
  */
-export default abstract class EventTarget implements IEventTarget {
+export default abstract class EventTarget {
 	public readonly [PropertySymbol.listeners]: {
 		[k: string]: (((event: Event) => void) | IEventListener)[];
 	} = {};
@@ -167,7 +166,7 @@ export default abstract class EventTarget implements IEventTarget {
 				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
 				if (
 					window &&
-					(this !== <IEventTarget>window || event.type !== 'error') &&
+					(this !== <EventTarget>window || event.type !== 'error') &&
 					!browserSettings?.disableErrorCapturing &&
 					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 				) {
@@ -201,7 +200,7 @@ export default abstract class EventTarget implements IEventTarget {
 				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
 				if (
 					window &&
-					(this !== <IEventTarget>window || event.type !== 'error') &&
+					(this !== <EventTarget>window || event.type !== 'error') &&
 					!browserSettings?.disableErrorCapturing &&
 					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 				) {
@@ -278,15 +277,15 @@ export default abstract class EventTarget implements IEventTarget {
 	 *
 	 * @returns Window.
 	 */
-	#getWindow(): IBrowserWindow | null {
-		if ((<INode>(<unknown>this))[PropertySymbol.ownerDocument]) {
-			return (<INode>(<unknown>this))[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+	#getWindow(): BrowserWindow | null {
+		if ((<Node>(<unknown>this))[PropertySymbol.ownerDocument]) {
+			return (<Node>(<unknown>this))[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
 		}
-		if ((<IDocument>(<unknown>this))[PropertySymbol.ownerWindow]) {
-			return (<IDocument>(<unknown>this))[PropertySymbol.ownerWindow];
+		if ((<Document>(<unknown>this))[PropertySymbol.ownerWindow]) {
+			return (<Document>(<unknown>this))[PropertySymbol.ownerWindow];
 		}
-		if ((<IBrowserWindow>(<unknown>this)).document) {
-			return <IBrowserWindow>(<unknown>this);
+		if ((<BrowserWindow>(<unknown>this)).document) {
+			return <BrowserWindow>(<unknown>this);
 		}
 		return null;
 	}

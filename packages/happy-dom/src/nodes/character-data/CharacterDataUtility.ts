@@ -1,4 +1,4 @@
-import ICharacterData from './ICharacterData.js';
+import CharacterData from './CharacterData.js';
 
 /**
  * Child node utility.
@@ -10,7 +10,7 @@ export default class CharacterDataUtility {
 	 * @param characterData Character data.
 	 * @param data Data.
 	 */
-	public static appendData(characterData: ICharacterData, data: string): void {
+	public static appendData(characterData: CharacterData, data: string): void {
 		characterData.data += data;
 	}
 
@@ -21,7 +21,7 @@ export default class CharacterDataUtility {
 	 * @param offset Offset.
 	 * @param count Count.
 	 */
-	public static deleteData(characterData: ICharacterData, offset: number, count: number): void {
+	public static deleteData(characterData: CharacterData, offset: number, count: number): void {
 		characterData.data =
 			characterData.data.substring(0, offset) + characterData.data.substring(offset + count);
 	}
@@ -33,7 +33,7 @@ export default class CharacterDataUtility {
 	 * @param offset Offset.
 	 * @param data Data.
 	 */
-	public static insertData(characterData: ICharacterData, offset: number, data: string): void {
+	public static insertData(characterData: CharacterData, offset: number, data: string): void {
 		characterData.data =
 			characterData.data.substring(0, offset) + data + characterData.data.substring(offset);
 	}
@@ -46,7 +46,7 @@ export default class CharacterDataUtility {
 	 * @param data Data.
 	 */
 	public static replaceData(
-		characterData: ICharacterData,
+		characterData: CharacterData,
 		offset: number,
 		count: number,
 		data: string
@@ -62,11 +62,7 @@ export default class CharacterDataUtility {
 	 * @param offset Offset.
 	 * @param count Count.
 	 */
-	public static substringData(
-		characterData: ICharacterData,
-		offset: number,
-		count: number
-	): string {
+	public static substringData(characterData: CharacterData, offset: number, count: number): string {
 		return characterData.data.substring(offset, offset + count);
 	}
 }

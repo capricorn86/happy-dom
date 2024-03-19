@@ -1,11 +1,11 @@
-import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
 import Window from '../../src/window/Window.js';
 import MediaQueryList from '../../src/match-media/MediaQueryList.js';
 import MediaQueryListEvent from '../../src/event/events/MediaQueryListEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('MediaQueryList', () => {
-	let window: IWindow;
+	let window: Window;
 
 	beforeEach(() => {
 		window = new Window({ width: 1024, height: 768 });

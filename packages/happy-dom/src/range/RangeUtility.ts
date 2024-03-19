@@ -2,7 +2,6 @@ import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
-import INode from '../nodes/node/INode.js';
 import Node from '../nodes/node/Node.js';
 import NodeUtility from '../nodes/node/NodeUtility.js';
 import Range from './Range.js';
@@ -88,7 +87,7 @@ export default class RangeUtility {
 	 * @param range Range.
 	 * @returns "true" if contained.
 	 */
-	public static isContained(node: INode, range: Range): boolean {
+	public static isContained(node: Node, range: Range): boolean {
 		return (
 			this.compareBoundaryPointsPosition(
 				{ node, offset: 0 },
@@ -108,7 +107,7 @@ export default class RangeUtility {
 	 * @param range Range.
 	 * @returns "true" if partially contained.
 	 */
-	public static isPartiallyContained(node: INode, range: Range): boolean {
+	public static isPartiallyContained(node: Node, range: Range): boolean {
 		return (
 			(NodeUtility.isInclusiveAncestor(node, range.startContainer) &&
 				!NodeUtility.isInclusiveAncestor(node, range.endContainer)) ||

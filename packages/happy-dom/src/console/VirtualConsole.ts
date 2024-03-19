@@ -1,7 +1,7 @@
-import IVirtualConsolePrinter from './types/IVirtualConsolePrinter.js';
+import IVirtualConsolePrinter from './IVirtualConsolePrinter.js';
 import VirtualConsoleLogLevelEnum from './enums/VirtualConsoleLogLevelEnum.js';
 import VirtualConsoleLogTypeEnum from './enums/VirtualConsoleLogTypeEnum.js';
-import IVirtualConsoleLogGroup from './types/IVirtualConsoleLogGroup.js';
+import IVirtualConsoleLogGroup from './IVirtualConsoleLogGroup.js';
 import { ConsoleConstructor } from 'console';
 
 /**

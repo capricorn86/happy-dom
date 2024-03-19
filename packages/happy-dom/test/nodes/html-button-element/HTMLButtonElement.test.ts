@@ -1,22 +1,22 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement.js';
+import HTMLButtonElement from '../../../src/nodes/html-button-element/HTMLButtonElement.js';
 import Event from '../../../src/event/Event.js';
 import SubmitEvent from '../../../src/event/events/SubmitEvent';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
-import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('HTMLButtonElement', () => {
 	let window: Window;
 	let document: Document;
-	let element: IHTMLButtonElement;
+	let element: HTMLButtonElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLButtonElement>document.createElement('button');
+		element = <HTMLButtonElement>document.createElement('button');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -53,14 +53,14 @@ describe('HTMLButtonElement', () => {
 		});
 
 		it(`Sets name as property in parent form elements.`, () => {
-			const form = <IHTMLFormElement>document.createElement('form');
+			const form = <HTMLFormElement>document.createElement('form');
 			form.appendChild(element);
 			element.name = 'button1';
 			expect(form.elements['button1']).toBe(element);
 		});
 
 		it(`Sets name as property in parent element children.`, () => {
-			const div = <IHTMLElement>document.createElement('div');
+			const div = <HTMLElement>document.createElement('div');
 			div.appendChild(element);
 			element.name = 'button1';
 			expect(div.children['button1']).toBe(element);
@@ -334,8 +334,8 @@ describe('HTMLButtonElement', () => {
 
 	describe('dispatchEvent()', () => {
 		it('Submits form if type is "submit" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLButtonElement>document.createElement('button');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
 
 			let submitTriggeredCount = 0;
 
@@ -346,7 +346,7 @@ describe('HTMLButtonElement', () => {
 
 			document.body.appendChild(form);
 
-			let submitter: IHTMLElement | null = null;
+			let submitter: HTMLElement | null = null;
 			form.addEventListener('submit', (event) => {
 				submitTriggeredCount++;
 				submitter = (<SubmitEvent>event).submitter;
@@ -359,8 +359,8 @@ describe('HTMLButtonElement', () => {
 		});
 
 		it('Submits form associated by ID if type is "submit" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLButtonElement>document.createElement('button');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
 
 			let submitTriggeredCount = 0;
 
@@ -370,7 +370,7 @@ describe('HTMLButtonElement', () => {
 			document.body.appendChild(form);
 			document.body.appendChild(button);
 
-			let submitter: IHTMLElement | null = null;
+			let submitter: HTMLElement | null = null;
 			form.addEventListener('submit', (event) => {
 				submitTriggeredCount++;
 				submitter = (<SubmitEvent>event).submitter;
@@ -383,8 +383,8 @@ describe('HTMLButtonElement', () => {
 		});
 
 		it('Resets form if type is "reset" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLButtonElement>document.createElement('button');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
 
 			let resetTriggeredCount = 0;
 
@@ -402,8 +402,8 @@ describe('HTMLButtonElement', () => {
 		});
 
 		it('Resets form associated by ID if type is "reset" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLButtonElement>document.createElement('button');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
 
 			let resetTriggeredCount = 0;
 

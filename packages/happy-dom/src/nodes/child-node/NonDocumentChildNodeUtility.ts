@@ -1,4 +1,4 @@
-import IElement from '../element/IElement.js';
+import Element from '../element/Element.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import INonDocumentTypeChildNode from './INonDocumentTypeChildNode.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
@@ -13,12 +13,12 @@ export default class NonDocumentChildNodeUtility {
 	 * @param childNode Child node.
 	 * @returns Element.
 	 */
-	public static previousElementSibling(childNode: INonDocumentTypeChildNode): IElement {
+	public static previousElementSibling(childNode: INonDocumentTypeChildNode): Element {
 		let sibling = childNode.previousSibling;
 		while (sibling && sibling[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode) {
 			sibling = sibling.previousSibling;
 		}
-		return <IElement>sibling;
+		return <Element>sibling;
 	}
 
 	/**
@@ -27,11 +27,11 @@ export default class NonDocumentChildNodeUtility {
 	 * @param childNode Child node.
 	 * @returns Element.
 	 */
-	public static nextElementSibling(childNode: INonDocumentTypeChildNode): IElement {
+	public static nextElementSibling(childNode: INonDocumentTypeChildNode): Element {
 		let sibling = childNode.nextSibling;
 		while (sibling && sibling[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode) {
 			sibling = sibling.nextSibling;
 		}
-		return <IElement>sibling;
+		return <Element>sibling;
 	}
 }

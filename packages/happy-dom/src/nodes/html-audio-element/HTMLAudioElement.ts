@@ -1,5 +1,4 @@
 import HTMLMediaElement from '../html-media-element/HTMLMediaElement.js';
-import IHTMLAudioElement from './IHTMLAudioElement.js';
 
 /**
  * HTML Audio Element.
@@ -8,4 +7,4 @@ import IHTMLAudioElement from './IHTMLAudioElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement.
  *
  */
-export default class HTMLAudioElement extends HTMLMediaElement implements IHTMLAudioElement {}
+export default class HTMLAudioElement extends HTMLMediaElement {}

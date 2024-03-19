@@ -5,7 +5,7 @@ import BrowserSettingsFactory from '../BrowserSettingsFactory.js';
 import DetachedBrowserPage from './DetachedBrowserPage.js';
 import IBrowser from '../types/IBrowser.js';
 import IBrowserFrame from '../types/IBrowserFrame.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Detached browser used when constructing a Window instance without a browser.
@@ -19,7 +19,7 @@ export default class DetachedBrowser implements IBrowser {
 	public readonly windowClass: new (
 		browserFrame: IBrowserFrame,
 		options?: { url?: string; width?: number; height?: number }
-	) => IBrowserWindow | null;
+	) => BrowserWindow | null;
 
 	/**
 	 * Constructor.
@@ -33,7 +33,7 @@ export default class DetachedBrowser implements IBrowser {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => IBrowserWindow,
+		) => BrowserWindow,
 		options?: { settings?: IOptionalBrowserSettings; console?: Console }
 	) {
 		this.windowClass = windowClass;
@@ -62,7 +62,7 @@ export default class DetachedBrowser implements IBrowser {
 		await Promise.all(this.contexts.slice().map((context) => context.close()));
 		(<DetachedBrowserContext[]>this.contexts) = [];
 		(<Console | null>this.console) = null;
-		(<new (browserFrame: IBrowserFrame) => IBrowserWindow | null>this.windowClass) = null;
+		(<new (browserFrame: IBrowserFrame) => BrowserWindow | null>this.windowClass) = null;
 	}
 
 	/**

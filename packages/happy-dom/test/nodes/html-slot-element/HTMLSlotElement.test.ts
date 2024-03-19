@@ -1,9 +1,9 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import IHTMLSlotElement from '../../../src/nodes/html-slot-element/IHTMLSlotElement.js';
+import HTMLSlotElement from '../../../src/nodes/html-slot-element/HTMLSlotElement.js';
 import CustomElementWithNamedSlots from './CustomElementWithNamedSlots.js';
 import CustomElementWithSlot from './CustomElementWithSlot.js';
-import INodeList from '../../../src/nodes/node/INodeList.js';
+import NodeList from '../../../src/nodes/node/NodeList.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLSlotElement', () => {
@@ -32,7 +32,7 @@ describe('HTMLSlotElement', () => {
 
 	describe('get name()', () => {
 		it('Returns attribute value.', () => {
-			const slot = <IHTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
+			const slot = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
 			expect(slot.name).toBe('');
 			slot.setAttribute('name', 'value');
 			expect(slot.name).toBe('value');
@@ -41,7 +41,7 @@ describe('HTMLSlotElement', () => {
 
 	describe('set name()', () => {
 		it('Sets attribute value.', () => {
-			const slot = <IHTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
+			const slot = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
 			slot.name = 'value';
 			expect(slot.getAttribute('name')).toBe('value');
 		});
@@ -49,7 +49,7 @@ describe('HTMLSlotElement', () => {
 
 	describe('assign()', () => {
 		it("Sets the slot's manually assigned nodes to an ordered set of slottables.", () => {
-			const slot = <IHTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
+			const slot = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
 			// TODO: Do nothing for now. We need to find an example of how it is expected to work before it can be implemented.
 			expect(slot.assign()).toBe(undefined);
 		});
@@ -57,7 +57,7 @@ describe('HTMLSlotElement', () => {
 
 	describe('assignedNodes()', () => {
 		it('Returns nodes appended to the custom element.', () => {
-			const slot = <IHTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
+			const slot = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
 			const text = document.createTextNode('text');
 			const comment = document.createComment('text');
 			const div = document.createElement('div');
@@ -84,7 +84,7 @@ describe('HTMLSlotElement', () => {
 			customElementWithNamedSlots.appendChild(div);
 			customElementWithNamedSlots.appendChild(span);
 
-			const slots = <INodeList<IHTMLSlotElement>>(
+			const slots = <NodeList<HTMLSlotElement>>(
 				customElementWithNamedSlots.shadowRoot.querySelectorAll('slot')
 			);
 
@@ -95,7 +95,7 @@ describe('HTMLSlotElement', () => {
 
 	describe('assignedElements()', () => {
 		it('Returns elements appended to the custom element.', () => {
-			const slot = <IHTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
+			const slot = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
 			const text = document.createTextNode('text');
 			const comment = document.createComment('text');
 			const div = document.createElement('div');
@@ -126,7 +126,7 @@ describe('HTMLSlotElement', () => {
 			customElementWithNamedSlots.appendChild(span1);
 			customElementWithNamedSlots.appendChild(span2);
 
-			const slots = <INodeList<IHTMLSlotElement>>(
+			const slots = <NodeList<HTMLSlotElement>>(
 				customElementWithNamedSlots.shadowRoot.querySelectorAll('slot')
 			);
 

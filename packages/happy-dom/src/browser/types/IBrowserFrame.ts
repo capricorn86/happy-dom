@@ -1,14 +1,14 @@
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
-import IDocument from '../../nodes/document/IDocument.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
+import Document from '../../nodes/document/Document.js';
 import IBrowserPage from './IBrowserPage.js';
-import IResponse from '../../fetch/types/IResponse.js';
+import Response from '../../fetch/Response.js';
 import IGoToOptions from './IGoToOptions.js';
 import { Script } from 'vm';
 import IReloadOptions from './IReloadOptions.js';
 import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
-import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
+import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 
 /**
  * Browser frame.
@@ -17,15 +17,15 @@ export default interface IBrowserFrame {
 	readonly childFrames: IBrowserFrame[];
 	readonly parentFrame: IBrowserFrame | null;
 	readonly page: IBrowserPage;
-	readonly window: IBrowserWindow;
-	readonly document: IDocument;
+	readonly window: BrowserWindow;
+	readonly document: Document;
 	content: string;
 	url: string;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
 	[PropertySymbol.openerFrame]: IBrowserFrame | null;
-	[PropertySymbol.openerWindow]: IBrowserWindow | ICrossOriginBrowserWindow | null;
+	[PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
 	[PropertySymbol.popup]: boolean;
 
 	/**
@@ -57,12 +57,12 @@ export default interface IBrowserFrame {
 	 * @param url URL.
 	 * @param [options] Options.
 	 */
-	goto(url: string, options?: IGoToOptions): Promise<IResponse | null>;
+	goto(url: string, options?: IGoToOptions): Promise<Response | null>;
 
 	/**
 	 * Reloads the current frame.
 	 *
 	 * @param [options] Options.
 	 */
-	reload(options: IReloadOptions): Promise<IResponse | null>;
+	reload(options: IReloadOptions): Promise<Response | null>;
 }

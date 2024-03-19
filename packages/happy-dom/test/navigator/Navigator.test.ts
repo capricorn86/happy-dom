@@ -1,12 +1,12 @@
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
 import Navigator from '../../src/navigator/Navigator.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
-import IResponse from '../../src/fetch/types/IResponse.js';
-import IRequest from '../../src/fetch/types/IRequest.js';
+import Response from '../../src/fetch/Response.js';
+import Request from '../../src/fetch/Request.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import Stream from 'stream';
 
@@ -54,7 +54,7 @@ const PROPERTIES = {
 };
 
 describe('Window', () => {
-	let window: IWindow;
+	let window: Window;
 
 	beforeEach(() => {
 		window = new Window();
@@ -88,23 +88,23 @@ describe('Window', () => {
 	describe('sendBeacon()', () => {
 		it('Sends a beacon request.', async () => {
 			const expectedURL = 'https://localhost:8080/path/';
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				request = <IRequest>this.request;
-				return Promise.resolve(<IResponse>{});
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = <Request>this.request;
+				return Promise.resolve(<Response>{});
 			});
 
 			window.navigator.sendBeacon(expectedURL, 'test-data');
 
 			const chunks: Buffer[] = [];
 
-			for await (const chunk of <Stream.Readable>(<IRequest>(<unknown>request)).body) {
+			for await (const chunk of <Stream.Readable>(<Request>(<unknown>request)).body) {
 				chunks.push(Buffer.from(chunk));
 			}
 
 			expect(Buffer.concat(chunks).toString()).toBe('test-data');
-			expect((<IRequest>(<unknown>request)).url).toBe(expectedURL);
+			expect((<Request>(<unknown>request)).url).toBe(expectedURL);
 		});
 	});
 });

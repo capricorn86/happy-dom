@@ -1,15 +1,15 @@
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Window from '../../src/window/Window.js';
+import Document from '../../src/nodes/document/Document.js';
 import Range from '../../src/range/Range.js';
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
-import IText from '../../src/nodes/text/IText.js';
+import Text from '../../src/nodes/text/Text.js';
 import DOMRect from '../../src/nodes/element/DOMRect.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('Range', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 	let range: Range;
 
 	beforeEach(() => {
@@ -271,7 +271,7 @@ describe('Range', () => {
 			expect(documentFragment.nodeType).toBe(NodeTypeEnum.documentFragmentNode);
 			expect(documentFragment.childNodes.length).toBe(1);
 			expect(documentFragment.firstChild.nodeType).toBe(NodeTypeEnum.textNode);
-			expect((<IText>documentFragment.firstChild).data).toBe('My text');
+			expect((<Text>documentFragment.firstChild).data).toBe('My text');
 
 			document.body.appendChild(documentFragment);
 
@@ -392,7 +392,7 @@ describe('Range', () => {
 	});
 
 	describe('getClientRects()', () => {
-		it('Returns an empty IDOMRectList.', () => {
+		it('Returns an empty DOMRectList.', () => {
 			const clientRects = range.getClientRects();
 			expect(Array.isArray(clientRects)).toBe(true);
 			expect(typeof clientRects.item).toBe('function');

@@ -1,10 +1,10 @@
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
 import PermissionNameEnum from '../../src/permissions/PermissionNameEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('Permissions', () => {
-	let window: IWindow;
+	let window: Window;
 
 	beforeEach(() => {
 		window = new Window();

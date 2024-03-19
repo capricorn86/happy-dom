@@ -1,4 +1,4 @@
-import IShadowRoot from '../src/nodes/shadow-root/IShadowRoot.js';
+import ShadowRoot from '../src/nodes/shadow-root/ShadowRoot.js';
 import HTMLElement from '../src/nodes/html-element/HTMLElement.js';
 import CSSStyleSheet from '../src/css/CSSStyleSheet.js';
 
@@ -13,7 +13,7 @@ export default class AdoptedStyleSheetCustomElement extends HTMLElement {
 		oldValue: string | null;
 		newValue: string | null;
 	}> = [];
-	private internalShadowRoot: IShadowRoot;
+	private internalShadowRoot: ShadowRoot;
 
 	/**
 	 * Constructor.

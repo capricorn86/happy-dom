@@ -1,21 +1,21 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
+import Window from '../../../src/window/Window.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLMediaElement from '../../../src/nodes/html-media-element/IHTMLMediaElement.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLMediaElement from '../../../src/nodes/html-media-element/HTMLMediaElement.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLMediaElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLMediaElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLMediaElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLMediaElement>document.createElement('audio');
+		element = <HTMLMediaElement>document.createElement('audio');
 	});
 
 	describe('Object.prototype.toString', () => {

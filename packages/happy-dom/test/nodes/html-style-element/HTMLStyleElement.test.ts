@@ -1,18 +1,18 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLStyleElement from '../../../src/nodes/html-style-element/IHTMLStyleElement.js';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLStyleElement from '../../../src/nodes/html-style-element/HTMLStyleElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLStyleElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLStyleElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLStyleElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLStyleElement>document.createElement('style');
+		element = <HTMLStyleElement>document.createElement('style');
 	});
 
 	describe('Object.prototype.toString', () => {

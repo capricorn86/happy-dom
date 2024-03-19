@@ -1,6 +1,6 @@
 import WhatwgMIMEType from 'whatwg-mimetype';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
@@ -31,14 +31,14 @@ export default class FileReader extends EventTarget {
 	#isTerminated = false;
 	#loadTimeout: NodeJS.Timeout | null = null;
 	#parseTimeout: NodeJS.Timeout | null = null;
-	readonly #window: IBrowserWindow;
+	readonly #window: BrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param window Window.
 	 */
-	constructor(window: IBrowserWindow) {
+	constructor(window: BrowserWindow) {
 		super();
 		this.#window = window;
 	}

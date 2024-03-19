@@ -1,21 +1,21 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement.js';
-import IHTMLOptionElement from '../../../src/nodes/html-option-element/IHTMLOptionElement.js';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
+import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLSelectElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLSelectElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLSelectElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLSelectElement>document.createElement('select');
+		element = <HTMLSelectElement>document.createElement('select');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -26,32 +26,32 @@ describe('HTMLSelectElement', () => {
 
 	describe('get options()', () => {
 		it('Reflects changes as options elements are added and removed from the DOM.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
 			option1.value = 'option1';
 			element.appendChild(option1);
 
 			expect(element.options.length).toBe(1);
-			expect((<IHTMLOptionElement>element.options[0]).value).toBe('option1');
+			expect((<HTMLOptionElement>element.options[0]).value).toBe('option1');
 
 			element.removeChild(option1);
 
-			const option2 = <IHTMLOptionElement>document.createElement('option');
-			const option3 = <IHTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
 			option2.value = 'option2';
 			option3.value = 'option3';
 			element.appendChild(option2);
 			element.appendChild(option3);
 
 			expect(element.options.length).toBe(2);
-			expect((<IHTMLOptionElement>element.options[0]).value).toBe('option2');
-			expect((<IHTMLOptionElement>element.options[1]).value).toBe('option3');
+			expect((<HTMLOptionElement>element.options[0]).value).toBe('option2');
+			expect((<HTMLOptionElement>element.options[1]).value).toBe('option3');
 		});
 	});
 
 	describe('get value()', () => {
 		it('Returns the value of the first option element in the list of options in tree order that has its selectedness set to true.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
 			option1.selected = true;
 			option1.value = 'option1';
 			option2.value = 'option2';
@@ -66,8 +66,8 @@ describe('HTMLSelectElement', () => {
 		});
 
 		it('Returns empty string if no option is selected.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
 			option1.value = 'option1';
 			option2.value = 'option2';
 			element.appendChild(option1);
@@ -83,8 +83,8 @@ describe('HTMLSelectElement', () => {
 
 	describe('set value()', () => {
 		it('Sets options.selectedIndex.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
 			option1.value = 'option1';
 			option2.value = 'option2';
 			element.appendChild(option1);
@@ -229,8 +229,8 @@ describe('HTMLSelectElement', () => {
 
 	describe(`add()`, () => {
 		it('Appends options.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
 
 			element.add(option1);
 			element.add(option2);
@@ -247,9 +247,9 @@ describe('HTMLSelectElement', () => {
 		});
 
 		it('Appends an option before an index.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
-			const option3 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
 
 			element.add(option1);
 			element.add(option2);
@@ -270,9 +270,9 @@ describe('HTMLSelectElement', () => {
 		});
 
 		it('Appends an option before an option element.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
-			const option3 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
 
 			element.add(option1);
 			element.add(option2);
@@ -295,9 +295,9 @@ describe('HTMLSelectElement', () => {
 
 	describe(`item()`, () => {
 		it('Returns an option element on a specified index.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
-			const option3 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
 
 			element.add(option1);
 			element.add(option2);
@@ -316,9 +316,9 @@ describe('HTMLSelectElement', () => {
 
 	describe(`appendChild()`, () => {
 		it('Adds appended option or option group elements to the HTMLOptionsCollection.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
-			const option3 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
 
 			element.appendChild(option1);
 			element.appendChild(option2);
@@ -342,10 +342,10 @@ describe('HTMLSelectElement', () => {
 		});
 
 		it('Does not include other types of elements in the HTMLOptionsCollection.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
-			const option3 = <IHTMLOptionElement>document.createElement('option');
-			const div = <IHTMLOptionElement>document.createElement('div');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
+			const div = <HTMLOptionElement>document.createElement('div');
 
 			element.appendChild(option1);
 			element.appendChild(option2);
@@ -373,9 +373,9 @@ describe('HTMLSelectElement', () => {
 
 	describe(`insertBefore()`, () => {
 		it('Adds inserted option or option group elements to the HTMLOptionsCollection at correct index.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
-			const option3 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
 
 			element.appendChild(option1);
 			element.appendChild(option2);
@@ -399,9 +399,9 @@ describe('HTMLSelectElement', () => {
 		});
 
 		it('Appends inserted option or option group elements to the HTMLOptionsCollection if referenceNode is null.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
-			const option3 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
 
 			element.appendChild(option1);
 			element.appendChild(option2);
@@ -427,9 +427,9 @@ describe('HTMLSelectElement', () => {
 
 	describe(`removeChild()`, () => {
 		it('Removes an option or option group elements from the HTMLOptionsCollection.', () => {
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
-			const option3 = <IHTMLOptionElement>document.createElement('option');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
 
 			element.appendChild(option1);
 			element.appendChild(option2);
@@ -465,7 +465,7 @@ describe('HTMLSelectElement', () => {
 	for (const method of ['checkValidity', 'reportValidity']) {
 		describe(`${method}()`, () => {
 			it('Returns "true" if the field is "disabled".', () => {
-				const option1 = <IHTMLOptionElement>document.createElement('option');
+				const option1 = <HTMLOptionElement>document.createElement('option');
 				option1.value = '';
 				element.appendChild(option1);
 
@@ -476,7 +476,7 @@ describe('HTMLSelectElement', () => {
 			});
 
 			it('Returns "false" if invalid.', () => {
-				const option1 = <IHTMLOptionElement>document.createElement('option');
+				const option1 = <HTMLOptionElement>document.createElement('option');
 				option1.value = '';
 				element.appendChild(option1);
 
@@ -486,7 +486,7 @@ describe('HTMLSelectElement', () => {
 			});
 
 			it('Triggers an "invalid" event when invalid.', () => {
-				const option1 = <IHTMLOptionElement>document.createElement('option');
+				const option1 = <HTMLOptionElement>document.createElement('option');
 				option1.value = '';
 				element.appendChild(option1);
 

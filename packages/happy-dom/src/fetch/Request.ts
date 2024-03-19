@@ -1,12 +1,10 @@
-import IBlob from '../file/IBlob.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 import IRequestInit from './types/IRequestInit.js';
 import URL from '../url/URL.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IRequestInfo from './types/IRequestInfo.js';
-import IRequest from './types/IRequest.js';
 import Headers from './Headers.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import AbortSignal from './AbortSignal.js';
@@ -21,7 +19,7 @@ import IRequestCredentials from './types/IRequestCredentials.js';
 import FormData from '../form-data/FormData.js';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Fetch request.
@@ -31,7 +29,7 @@ import IBrowserWindow from '../window/IBrowserWindow.js';
  *
  * @see https://fetch.spec.whatwg.org/#request-class
  */
-export default class Request implements IRequest {
+export default class Request implements Request {
 	// Public properties
 	public readonly method: string;
 	public readonly body: ReadableStream | null;
@@ -50,7 +48,7 @@ export default class Request implements IRequest {
 	public [PropertySymbol.bodyBuffer]: Buffer | null;
 
 	// Private properties
-	readonly #window: IBrowserWindow;
+	readonly #window: BrowserWindow;
 	readonly #asyncTaskManager: AsyncTaskManager;
 
 	/**
@@ -63,7 +61,7 @@ export default class Request implements IRequest {
 	 * @param [init] Init.
 	 */
 	constructor(
-		injected: { window: IBrowserWindow; asyncTaskManager: AsyncTaskManager },
+		injected: { window: BrowserWindow; asyncTaskManager: AsyncTaskManager },
 		input: IRequestInfo,
 		init?: IRequestInit
 	) {
@@ -149,7 +147,7 @@ export default class Request implements IRequest {
 	/**
 	 * Returns owner document.
 	 */
-	protected get [PropertySymbol.ownerDocument](): IDocument {
+	protected get [PropertySymbol.ownerDocument](): Document {
 		throw new Error('[PropertySymbol.ownerDocument] getter needs to be implemented by sub-class.');
 	}
 
@@ -223,7 +221,7 @@ export default class Request implements IRequest {
 	 *
 	 * @returns Blob.
 	 */
-	public async blob(): Promise<IBlob> {
+	public async blob(): Promise<Blob> {
 		const type = this.headers.get('Content-Type') || '';
 		const buffer = await this.arrayBuffer();
 

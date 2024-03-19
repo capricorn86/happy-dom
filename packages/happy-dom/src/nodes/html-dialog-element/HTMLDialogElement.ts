@@ -1,6 +1,5 @@
 import Event from '../../event/Event.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import IHTMLDialogElement from './IHTMLDialogElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
@@ -9,7 +8,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement.
  */
-export default class HTMLDialogElement extends HTMLElement implements IHTMLDialogElement {
+export default class HTMLDialogElement extends HTMLElement {
 	// Internal properties
 	public [PropertySymbol.returnValue] = '';
 

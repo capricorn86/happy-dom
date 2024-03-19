@@ -1,5 +1,5 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
+import Window from '../../../src/window/Window.js';
 import CustomElement from '../../CustomElement.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Text from '../../../src/nodes/text/Text.js';
@@ -8,7 +8,7 @@ import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragm
 import NodeIterator from '../../../src/tree-walker/NodeIterator.js';
 import TreeWalker from '../../../src/tree-walker/TreeWalker.js';
 import Node from '../../../src/nodes/node/Node.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
+import Document from '../../../src/nodes/document/Document.js';
 import Document from '../../../src/nodes/document/Document.js';
 import Element from '../../../src/nodes/element/Element.js';
 import Event from '../../../src/event/Event.js';
@@ -20,24 +20,24 @@ import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.
 import QuerySelector from '../../../src/query-selector/QuerySelector.js';
 import NodeFilter from '../../../src/tree-walker/NodeFilter.js';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
-import IHTMLCollection from '../../../src/nodes/element/IHTMLCollection.js';
-import IElement from '../../../src/nodes/element/IElement.js';
-import INodeList from '../../../src/nodes/node/INodeList.js';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
-import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement.js';
-import IResponse from '../../../src/fetch/types/IResponse.js';
+import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
+import Element from '../../../src/nodes/element/Element.js';
+import NodeList from '../../../src/nodes/node/NodeList.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import HTMLLinkElement from '../../../src/nodes/html-link-element/HTMLLinkElement.js';
+import Response from '../../../src/fetch/Response.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
-import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement.js';
+import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement.js';
 import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadyStateEnum.js';
-import ISVGElement from '../../../src/nodes/svg-element/ISVGElement.js';
+import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import CustomEvent from '../../../src/event/events/CustomEvent.js';
 import Selection from '../../../src/selection/Selection.js';
 import Range from '../../../src/range/Range.js';
 import ProcessingInstruction from '../../../src/nodes/processing-instruction/ProcessingInstruction.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import IShadowRoot from '../../../src/nodes/shadow-root/IShadowRoot.js';
-import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
+import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnknownElement.js';
@@ -45,8 +45,8 @@ import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnkn
 /* eslint-disable jsdoc/require-jsdoc */
 
 describe('Document', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -298,7 +298,7 @@ describe('Document', () => {
 		it('Returns and sets title.', () => {
 			document.title = 'test title';
 			expect(document.title).toBe('test title');
-			const title = <IElement>document.head.querySelector('title');
+			const title = <Element>document.head.querySelector('title');
 			expect(title.textContent).toBe('test title');
 			document.title = 'new title';
 			expect(document.title).toBe('new title');
@@ -347,7 +347,7 @@ describe('Document', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function () {
 					fetchedUrl = this.request.url;
-					return <Promise<IResponse>>Promise.resolve({
+					return <Promise<Response>>Promise.resolve({
 						text: () => Promise.resolve('button { background-color: red }'),
 						ok: true
 					});
@@ -423,7 +423,7 @@ describe('Document', () => {
 				}
 
 				public connectedCallback(): void {
-					(<IShadowRoot>this.shadowRoot).innerHTML = `
+					(<ShadowRoot>this.shadowRoot).innerHTML = `
 						<div>
 							<custom-element-b></custom-element-b>
 						</div>
@@ -437,7 +437,7 @@ describe('Document', () => {
 				}
 
 				public connectedCallback(): void {
-					(<IShadowRoot>this.shadowRoot).innerHTML = `
+					(<ShadowRoot>this.shadowRoot).innerHTML = `
 						<div>
 							<button tabindex="0"></button>
 						</div>
@@ -453,8 +453,8 @@ describe('Document', () => {
 			div.appendChild(customElementA);
 			document.body.appendChild(div);
 
-			const button = <IHTMLElement>(
-				(<IHTMLElement>(
+			const button = <HTMLElement>(
+				(<HTMLElement>(
 					customElementA.shadowRoot.querySelector('custom-element-b')
 				)).shadowRoot.querySelector('button')
 			);
@@ -578,7 +578,7 @@ describe('Document', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode === document).toBe(true);
 				expect(selector).toEqual(expectedSelector);
-				return <INodeList<IHTMLElement>>[element];
+				return <NodeList<HTMLElement>>[element];
 			});
 
 			const result = document.querySelectorAll(expectedSelector);
@@ -612,7 +612,7 @@ describe('Document', () => {
 				(parentNode, requestedClassName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedClassName).toEqual(className);
-					return <IHTMLCollection<IHTMLElement>>[element];
+					return <HTMLCollection<HTMLElement>>[element];
 				}
 			);
 
@@ -631,7 +631,7 @@ describe('Document', () => {
 				(parentNode, requestedTagName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IHTMLElement>>[element];
+					return <HTMLCollection<HTMLElement>>[element];
 				}
 			);
 
@@ -652,7 +652,7 @@ describe('Document', () => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return <IHTMLCollection<IElement>>(<unknown>[element]);
+					return <HTMLCollection<Element>>(<unknown>[element]);
 				}
 			);
 
@@ -983,13 +983,13 @@ describe('Document', () => {
 		});
 
 		it('Creates an SVG element and can set style on it.', () => {
-			const element = <ISVGElement>document.createElementNS(NamespaceURI.svg, 'svg');
+			const element = <SVGElement>document.createElementNS(NamespaceURI.svg, 'svg');
 			element.style.cssText = 'user-select:none;';
 			expect(element.style.cssText).toBe('user-select: none;');
 		});
 
 		it("Creates an element when tag name isn't a string.", () => {
-			const element = <IHTMLElement>(
+			const element = <HTMLElement>(
 				document.createElementNS(<string>(<unknown>null), <string>(<unknown>true))
 			);
 			expect(element.tagName).toBe('TRUE');
@@ -1238,9 +1238,9 @@ describe('Document', () => {
 				const jsURL = 'https://localhost:8080/path/to/file.js';
 				const cssResponse = 'body { background-color: red; }';
 				const jsResponse = 'globalThis.test = "test";';
-				let resourceFetchCSSWindow: IBrowserWindow | null = null;
+				let resourceFetchCSSWindow: BrowserWindow | null = null;
 				let resourceFetchCSSURL: string | null = null;
-				let resourceFetchJSWindow: IBrowserWindow | null = null;
+				let resourceFetchJSWindow: BrowserWindow | null = null;
 				let resourceFetchJSURL: string | null = null;
 				let readyChangeEvent: Event | null = null;
 
@@ -1260,11 +1260,11 @@ describe('Document', () => {
 					readyChangeEvent = event;
 				});
 
-				const script = <IHTMLScriptElement>document.createElement('script');
+				const script = <HTMLScriptElement>document.createElement('script');
 				script.async = true;
 				script.src = jsURL;
 
-				const link = <IHTMLLinkElement>document.createElement('link');
+				const link = <HTMLLinkElement>document.createElement('link');
 				link.href = cssURL;
 				link.rel = 'stylesheet';
 

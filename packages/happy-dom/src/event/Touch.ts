@@ -1,4 +1,4 @@
-import IEventTarget from './IEventTarget.js';
+import EventTarget from './EventTarget.js';
 import ITouchInit from './ITouchInit.js';
 
 /**
@@ -6,7 +6,7 @@ import ITouchInit from './ITouchInit.js';
  */
 export default class Touch {
 	public readonly identifier: number;
-	public readonly target: IEventTarget;
+	public readonly target: EventTarget;
 	public readonly clientX: number;
 	public readonly clientY: number;
 	public readonly screenX: number;

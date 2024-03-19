@@ -1,6 +1,6 @@
 import URL from '../../url/URL.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import { isIP } from 'net';
 import Headers from '../Headers.js';
 import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy.js';
@@ -49,7 +49,7 @@ export default class FetchRequestReferrerUtility {
 	 * @returns Initial referrer.
 	 */
 	public static getInitialReferrer(
-		window: IBrowserWindow,
+		window: BrowserWindow,
 		referrer: '' | 'no-referrer' | 'client' | string | URL
 	): '' | 'no-referrer' | 'client' | URL {
 		if (referrer === '' || referrer === 'no-referrer' || referrer === 'client') {

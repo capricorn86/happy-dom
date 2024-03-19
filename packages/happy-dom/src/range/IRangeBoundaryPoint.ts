@@ -1,9 +1,9 @@
-import INode from '../nodes/node/INode.js';
+import Node from '../nodes/node/Node.js';
 
 /**
  * Range boundary point.
  */
 export default interface IRangeBoundaryPoint {
-	node: INode;
+	node: Node;
 	offset: number;
 }

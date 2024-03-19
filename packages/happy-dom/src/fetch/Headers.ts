@@ -1,7 +1,6 @@
 import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import IHeaders from './types/IHeaders.js';
 import IHeadersInit from './types/IHeadersInit.js';
 
 /**
@@ -9,7 +8,7 @@ import IHeadersInit from './types/IHeadersInit.js';
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Headers
  */
-export default class Headers implements IHeaders {
+export default class Headers {
 	public [PropertySymbol.entries]: { [k: string]: { name: string; value: string[] } } = {};
 
 	/**
@@ -117,7 +116,7 @@ export default class Headers implements IHeaders {
 	 *
 	 * @param callback Callback.
 	 */
-	public forEach(callback: (name: string, value: string, thisArg: IHeaders) => void): void {
+	public forEach(callback: (name: string, value: string, thisArg: Headers) => void): void {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
 			callback(header.value.join(', '), header.name, this);
 		}

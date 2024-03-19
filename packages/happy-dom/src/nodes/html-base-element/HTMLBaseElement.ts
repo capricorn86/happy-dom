@@ -1,5 +1,4 @@
 import HTMLElement from '../html-element/HTMLElement.js';
-import IHTMLBaseElement from './IHTMLBaseElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
@@ -8,7 +7,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base.
  */
-export default class HTMLBaseElement extends HTMLElement implements IHTMLBaseElement {
+export default class HTMLBaseElement extends HTMLElement {
 	/**
 	 * Returns href.
 	 *
@@ -56,7 +55,7 @@ export default class HTMLBaseElement extends HTMLElement implements IHTMLBaseEle
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLBaseElement {
-		return <IHTMLBaseElement>super.cloneNode(deep);
+	public cloneNode(deep = false): HTMLBaseElement {
+		return <HTMLBaseElement>super.cloneNode(deep);
 	}
 }

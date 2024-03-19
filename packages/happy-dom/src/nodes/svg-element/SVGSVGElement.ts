@@ -6,14 +6,13 @@ import SVGAngle from './SVGAngle.js';
 import SVGNumber from './SVGNumber.js';
 import SVGTransform from './SVGTransform.js';
 import SVGAnimatedRect from './SVGAnimatedRect.js';
-import ISVGSVGElement from './ISVGSVGElement.js';
-import INode from '../node/INode.js';
+import Node from '../node/Node.js';
 import Event from '../../event/Event.js';
 
 /**
  * SVGSVGElement.
  */
-export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVGElement {
+export default class SVGSVGElement extends SVGGraphicsElement {
 	// Events
 	public onafterprint: (event: Event) => void | null = null;
 	public onbeforeprint: (event: Event) => void | null = null;
@@ -236,7 +235,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	 *
 	 * @returns Intersection list.
 	 */
-	public getIntersectionList(): INode[] {
+	public getIntersectionList(): Node[] {
 		return [];
 	}
 
@@ -245,7 +244,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	 *
 	 * @returns Enclousure list.
 	 */
-	public getEnclosureList(): INode[] {
+	public getEnclosureList(): Node[] {
 		return [];
 	}
 
@@ -333,7 +332,7 @@ export default class SVGSVGElement extends SVGGraphicsElement implements ISVGSVG
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): ISVGSVGElement {
-		return <ISVGSVGElement>super.cloneNode(deep);
+	public cloneNode(deep = false): SVGSVGElement {
+		return <SVGSVGElement>super.cloneNode(deep);
 	}
 }

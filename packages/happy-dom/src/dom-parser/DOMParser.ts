@@ -1,9 +1,9 @@
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import XMLParser from '../xml-parser/XMLParser.js';
 import DOMException from '../exception/DOMException.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 
 /**
@@ -13,14 +13,14 @@ import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser.
  */
 export default class DOMParser {
-	readonly #window: IBrowserWindow;
+	readonly #window: BrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param window Window.
 	 */
-	constructor(window: IBrowserWindow) {
+	constructor(window: BrowserWindow) {
 		this.#window = window;
 	}
 
@@ -31,12 +31,12 @@ export default class DOMParser {
 	 * @param mimeType Mime type.
 	 * @returns Root element.
 	 */
-	public parseFromString(string: string, mimeType: string): IDocument {
+	public parseFromString(string: string, mimeType: string): Document {
 		if (!mimeType) {
 			throw new DOMException('Second parameter "mimeType" is mandatory.');
 		}
 
-		const newDocument = <IDocument>this.#createDocument(mimeType);
+		const newDocument = <Document>this.#createDocument(mimeType);
 
 		newDocument[PropertySymbol.childNodes].length = 0;
 		newDocument[PropertySymbol.children].length = 0;
@@ -102,9 +102,9 @@ export default class DOMParser {
 	/**
 	 *
 	 * @param mimeType Mime type.
-	 * @returns IDocument.
+	 * @returns Document.
 	 */
-	#createDocument(mimeType: string): IDocument {
+	#createDocument(mimeType: string): Document {
 		switch (mimeType) {
 			case 'text/html':
 				return new this.#window.HTMLDocument();

@@ -1,18 +1,18 @@
 import XMLHttpRequest from '../../src/xml-http-request/XMLHttpRequest.js';
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
 import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequestReadyStateEnum.js';
 import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum.js';
 import ProgressEvent from '../../src/event/events/ProgressEvent.js';
 import Blob from '../../src/file/Blob.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
-import IResponse from '../../src/fetch/types/IResponse.js';
+import Response from '../../src/fetch/Response.js';
 import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import Headers from '../../src/fetch/Headers.js';
-import IHeaders from '../../src/fetch/types/IHeaders.js';
+import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import { ReadableStream } from 'stream/web';
@@ -46,7 +46,7 @@ const FORBIDDEN_REQUEST_HEADERS = [
 ];
 
 describe('XMLHttpRequest', () => {
-	let window: IWindow;
+	let window: Window;
 	let request: XMLHttpRequest;
 
 	beforeEach(() => {
@@ -65,7 +65,7 @@ describe('XMLHttpRequest', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() =>
 					<ISyncResponse>{
-						headers: <IHeaders>new Headers(),
+						headers: <Headers>new Headers(),
 						status: 201
 					}
 			);
@@ -81,7 +81,7 @@ describe('XMLHttpRequest', () => {
 		it('Returns status for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-					async () => <IResponse>{ headers: <IHeaders>new Headers(), status: 201 }
+					async () => <Response>{ headers: <Headers>new Headers(), status: 201 }
 				);
 
 				expect(request.status).toBe(0);
@@ -105,7 +105,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.statusText).toBe('');
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), statusText }
+				() => <ISyncResponse>{ headers: <Headers>new Headers(), statusText }
 			);
 
 			request.open('GET', REQUEST_URL, false);
@@ -119,7 +119,7 @@ describe('XMLHttpRequest', () => {
 				const statusText = 'Test';
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-					async () => <IResponse>{ headers: <IHeaders>new Headers(), statusText }
+					async () => <Response>{ headers: <Headers>new Headers(), statusText }
 				);
 
 				expect(request.statusText).toBe('');
@@ -143,8 +143,8 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers(),
+						<Response>{
+							headers: <Headers>new Headers(),
 							body: new ReadableStream({
 								start(controller) {
 									controller.enqueue(responseText);
@@ -172,8 +172,8 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers(),
+						<Response>{
+							headers: <Headers>new Headers(),
 							body: new ReadableStream({
 								start(controller) {
 									controller.enqueue(responseText);
@@ -201,8 +201,8 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers(),
+						<Response>{
+							headers: <Headers>new Headers(),
 							body: new ReadableStream({
 								start(controller) {
 									controller.enqueue(responseText);
@@ -216,7 +216,7 @@ describe('XMLHttpRequest', () => {
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
-					expect((<IDocument>request.response).documentElement.outerHTML).toBe(
+					expect((<Document>request.response).documentElement.outerHTML).toBe(
 						'<html><head></head><body>Test</body></html>'
 					);
 					resolve(null);
@@ -232,8 +232,8 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers(),
+						<Response>{
+							headers: <Headers>new Headers(),
 							body: new ReadableStream({
 								start(controller) {
 									controller.enqueue(responseText);
@@ -261,8 +261,8 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers(),
+						<Response>{
+							headers: <Headers>new Headers(),
 							body: new ReadableStream({
 								start(controller) {
 									controller.enqueue(responseText);
@@ -287,7 +287,7 @@ describe('XMLHttpRequest', () => {
 	describe('get responseURL()', () => {
 		it('Returns response URL for synchrounous requests.', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), url: WINDOW_URL + REQUEST_URL }
+				() => <ISyncResponse>{ headers: <Headers>new Headers(), url: WINDOW_URL + REQUEST_URL }
 			);
 
 			expect(request.responseURL).toBe('');
@@ -301,7 +301,7 @@ describe('XMLHttpRequest', () => {
 		it('Returns response URL for asynchrounous requests.', async () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-					async () => <IResponse>{ headers: <IHeaders>new Headers(), url: WINDOW_URL + REQUEST_URL }
+					async () => <Response>{ headers: <Headers>new Headers(), url: WINDOW_URL + REQUEST_URL }
 				);
 
 				expect(request.responseURL).toBe('');
@@ -321,7 +321,7 @@ describe('XMLHttpRequest', () => {
 	describe('get readyState()', () => {
 		it('Returns ready state for synchrounous requests.', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() => <ISyncResponse>{ headers: <IHeaders>new Headers() }
+				() => <ISyncResponse>{ headers: <Headers>new Headers() }
 			);
 
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
@@ -338,8 +338,8 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers(),
+						<Response>{
+							headers: <Headers>new Headers(),
 							body: new ReadableStream({
 								start(controller) {
 									controller.enqueue(responseText);
@@ -376,7 +376,7 @@ describe('XMLHttpRequest', () => {
 			const responseText = 'test';
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), body: Buffer.from(responseText) }
+				() => <ISyncResponse>{ headers: <Headers>new Headers(), body: Buffer.from(responseText) }
 			);
 
 			request.open('GET', REQUEST_URL, false);
@@ -390,8 +390,8 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers(),
+						<Response>{
+							headers: <Headers>new Headers(),
 							body: new ReadableStream({
 								start(controller) {
 									controller.enqueue(responseText);
@@ -427,7 +427,7 @@ describe('XMLHttpRequest', () => {
 		it(`Throws an exception if readyState is "loading".`, async () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-					async () => <IResponse>{ headers: <IHeaders>new Headers() }
+					async () => <Response>{ headers: <Headers>new Headers() }
 				);
 
 				request.open('GET', REQUEST_URL, true);
@@ -481,7 +481,7 @@ describe('XMLHttpRequest', () => {
 						'test-header': this.request.headers.get('test-header')
 					}
 				};
-				return <ISyncResponse>{ headers: <IHeaders>new Headers() };
+				return <ISyncResponse>{ headers: <Headers>new Headers() };
 			});
 
 			request.open('GET', REQUEST_URL, false);
@@ -504,7 +504,7 @@ describe('XMLHttpRequest', () => {
 							'test-header': this.request.headers.get('test-header')
 						}
 					};
-					return <IResponse>{ headers: <IHeaders>new Headers() };
+					return <Response>{ headers: <Headers>new Headers() };
 				});
 
 				request.open('GET', REQUEST_URL, true);
@@ -540,7 +540,7 @@ describe('XMLHttpRequest', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() =>
 					<ISyncResponse>{
-						headers: <IHeaders>new Headers({
+						headers: <Headers>new Headers({
 							key1: 'value1',
 							key2: 'value2'
 						})
@@ -559,8 +559,8 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers({
+						<Response>{
+							headers: <Headers>new Headers({
 								key1: 'value1',
 								key2: 'value2'
 							})
@@ -591,7 +591,7 @@ describe('XMLHttpRequest', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() =>
 					<ISyncResponse>{
-						headers: <IHeaders>new Headers({
+						headers: <Headers>new Headers({
 							key1: 'value1',
 							key2: 'value2'
 						})
@@ -608,8 +608,8 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers({
+						<Response>{
+							headers: <Headers>new Headers({
 								'Content-Length': '4',
 								key1: 'value1',
 								key2: 'value2'
@@ -651,7 +651,7 @@ describe('XMLHttpRequest', () => {
 			const responseText = 'test';
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), body: Buffer.from(responseText) }
+				() => <ISyncResponse>{ headers: <Headers>new Headers(), body: Buffer.from(responseText) }
 			);
 
 			request.open('GET', REQUEST_URL, false);
@@ -665,7 +665,7 @@ describe('XMLHttpRequest', () => {
 			const responseText = 'test';
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
-				() => <ISyncResponse>{ headers: <IHeaders>new Headers(), body: Buffer.from(responseText) }
+				() => <ISyncResponse>{ headers: <Headers>new Headers(), body: Buffer.from(responseText) }
 			);
 
 			request.open('GET', REQUEST_URL, false);
@@ -690,8 +690,8 @@ describe('XMLHttpRequest', () => {
 						method: this.request.method,
 						url: this.request.url
 					};
-					return <IResponse>{
-						headers: <IHeaders>new Headers({
+					return <Response>{
+						headers: <Headers>new Headers({
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
@@ -743,8 +743,8 @@ describe('XMLHttpRequest', () => {
 						method: this.request.method,
 						url: this.request.url
 					};
-					return <IResponse>{
-						headers: <IHeaders>new Headers({
+					return <Response>{
+						headers: <Headers>new Headers({
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
@@ -791,8 +791,8 @@ describe('XMLHttpRequest', () => {
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
-						<IResponse>{
-							headers: <IHeaders>new Headers(),
+						<Response>{
+							headers: <Headers>new Headers(),
 							body: new ReadableStream({
 								start(controller) {
 									controller.enqueue(responseText);
@@ -825,8 +825,8 @@ describe('XMLHttpRequest', () => {
 						method: this.request.method,
 						url: this.request.url
 					};
-					return <IResponse>{
-						headers: <IHeaders>new Headers({
+					return <Response>{
+						headers: <Headers>new Headers({
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
@@ -882,8 +882,8 @@ describe('XMLHttpRequest', () => {
 							Authorization: this.request.headers.get('Authorization')
 						}
 					};
-					return <IResponse>{
-						headers: <IHeaders>new Headers({
+					return <Response>{
+						headers: <Headers>new Headers({
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
@@ -941,8 +941,8 @@ describe('XMLHttpRequest', () => {
 							Authorization: this.request.headers.get('Authorization')
 						}
 					};
-					return <IResponse>{
-						headers: <IHeaders>new Headers({
+					return <Response>{
+						headers: <Headers>new Headers({
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
@@ -988,8 +988,8 @@ describe('XMLHttpRequest', () => {
 						url: this.request.url,
 						body: requestBody
 					};
-					return <IResponse>{
-						headers: <IHeaders>new Headers({
+					return <Response>{
+						headers: <Headers>new Headers({
 							'Content-Length': String(responseText.length),
 							'Content-Type': 'text/html'
 						}),
@@ -1079,8 +1079,8 @@ describe('XMLHttpRequest', () => {
 			const responseText = 'responseText';
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 				await new Promise((resolve) => setTimeout(resolve, 2));
-				return <IResponse>{
-					headers: <IHeaders>new Headers(),
+				return <Response>{
+					headers: <Headers>new Headers(),
 					body: new ReadableStream({
 						start(controller) {
 							controller.enqueue(responseText);
@@ -1104,10 +1104,10 @@ describe('XMLHttpRequest', () => {
 			return await new Promise((resolve) => {
 				let isAborted = false;
 
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 					return new Promise((resolve, reject) => {
 						const timeout = setTimeout(() => {
-							resolve(<IResponse>{ headers: <IHeaders>new Headers() });
+							resolve(<Response>{ headers: <Headers>new Headers() });
 						}, 50);
 						this.request.signal.addEventListener('abort', () => {
 							isAborted = true;
@@ -1152,8 +1152,8 @@ describe('XMLHttpRequest', () => {
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 				await new Promise((resolve) => setTimeout(resolve, 2));
-				return <IResponse>{
-					headers: <IHeaders>new Headers(),
+				return <Response>{
+					headers: <Headers>new Headers(),
 					body: new ReadableStream({
 						start(controller) {
 							controller.enqueue(responseText);
@@ -1175,10 +1175,10 @@ describe('XMLHttpRequest', () => {
 		it('Aborts an ongoing request when cancelling all Happy DOM asynchrounous tasks.', async () => {
 			let isAborted = false;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return new Promise((resolve, reject) => {
 					const timeout = setTimeout(() => {
-						resolve(<IResponse>{ headers: <IHeaders>new Headers() });
+						resolve(<Response>{ headers: <Headers>new Headers() });
 					}, 50);
 					this.request.signal.addEventListener('abort', () => {
 						isAborted = true;

@@ -4,16 +4,14 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum.js';
-import INode from '../node/INode.js';
+import Node from '../node/Node.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import IHTMLTextAreaElement from './IHTMLTextAreaElement.js';
-import INodeList from '../node/INodeList.js';
-import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
+import NodeList from '../node/NodeList.js';
+import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.js';
 
 /**
@@ -22,7 +20,7 @@ import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.j
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement.
  */
-export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTextAreaElement {
+export default class HTMLTextAreaElement extends HTMLElement {
 	public readonly type = 'textarea';
 
 	// Events
@@ -30,7 +28,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	public onselectionchange: (event: Event) => void | null = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLTextAreaElementNamedNodeMap(
+	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLTextAreaElementNamedNodeMap(
 		this
 	);
 	public [PropertySymbol.validationMessage] = '';
@@ -415,8 +413,8 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 *
 	 * @returns Form.
 	 */
-	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this[PropertySymbol.formNode];
+	public get form(): HTMLFormElement {
+		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -433,7 +431,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 *
 	 * @returns Label elements.
 	 */
-	public get labels(): INodeList<IHTMLLabelElement> {
+	public get labels(): NodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
@@ -574,7 +572,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLTextAreaElement {
+	public cloneNode(deep = false): HTMLTextAreaElement {
 		const clone = <HTMLTextAreaElement>super.cloneNode(deep);
 
 		clone[PropertySymbol.value] = this[PropertySymbol.value];
@@ -599,7 +597,7 @@ export default class HTMLTextAreaElement extends HTMLElement implements IHTMLTex
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
 		super[PropertySymbol.connectToNode](parentNode);

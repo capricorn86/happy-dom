@@ -1,18 +1,18 @@
-import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
-import IElement from '../../src/nodes/element/IElement.js';
-import INamedNodeMap from '../../src/named-node-map/INamedNodeMap.js';
-import IAttr from '../../src/nodes/attr/IAttr.js';
+import Window from '../../src/window/Window.js';
+import Document from '../../src/nodes/document/Document.js';
+import Element from '../../src/nodes/element/Element.js';
+import NamedNodeMap from '../../src/named-node-map/NamedNodeMap.js';
+import Attr from '../../src/nodes/attr/Attr.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('NamedNodeMap', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IElement;
-	let attributes: INamedNodeMap;
+	let window: Window;
+	let document: Document;
+	let element: Element;
+	let attributes: NamedNodeMap;
 
 	beforeEach(() => {
 		window = new Window();
@@ -38,7 +38,7 @@ describe('NamedNodeMap', () => {
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', 'value2');
 
-			const attributeList: IAttr[] = [];
+			const attributeList: Attr[] = [];
 
 			for (const attribute of attributes) {
 				attributeList.push(attribute);

@@ -1,5 +1,4 @@
 import HTMLElement from '../html-element/HTMLElement.js';
-import IHTMLImageElement from './IHTMLImageElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
@@ -8,7 +7,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement.
  */
-export default class HTMLImageElement extends HTMLElement implements IHTMLImageElement {
+export default class HTMLImageElement extends HTMLElement {
 	public [PropertySymbol.tagName] = 'IMG';
 	public [PropertySymbol.complete] = false;
 	public [PropertySymbol.naturalHeight] = 0;
@@ -317,7 +316,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLImageElement {
-		return <IHTMLImageElement>super.cloneNode(deep);
+	public cloneNode(deep = false): HTMLImageElement {
+		return <HTMLImageElement>super.cloneNode(deep);
 	}
 }

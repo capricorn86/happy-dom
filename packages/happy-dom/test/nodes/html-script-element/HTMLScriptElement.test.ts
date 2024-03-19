@@ -1,19 +1,19 @@
 import Window from '../../../src/window/Window.js';
-import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IResponse from '../../../src/fetch/types/IResponse.js';
+import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement.js';
+import Document from '../../../src/nodes/document/Document.js';
+import Response from '../../../src/fetch/Response.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Event from '../../../src/event/Event.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
+import Window from '../../../src/window/Window.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
 
 describe('HTMLScriptElement', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -94,7 +94,7 @@ describe('HTMLScriptElement', () => {
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 				async () =>
-					<IResponse>{
+					<Response>{
 						text: async () => 'globalThis.test = "test";',
 						ok: true,
 						status: 200
@@ -116,7 +116,7 @@ describe('HTMLScriptElement', () => {
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 				async () =>
-					<IResponse>{
+					<Response>{
 						text: async () => 'globalThis.test = "test";',
 						ok: true,
 						status: 200
@@ -181,14 +181,14 @@ describe('HTMLScriptElement', () => {
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 				fetchedURL = this.request.url;
-				return <IResponse>{
+				return <Response>{
 					text: async () =>
 						'globalThis.test = "test";globalThis.currentScript = document.currentScript;',
 					ok: true
 				};
 			});
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('load', (event) => {
@@ -209,7 +209,7 @@ describe('HTMLScriptElement', () => {
 			let errorEvent: ErrorEvent | null = null;
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-				async () => <IResponse>(<unknown>{
+				async () => <Response>(<unknown>{
 						text: () => null,
 						ok: false,
 						status: 404,
@@ -217,7 +217,7 @@ describe('HTMLScriptElement', () => {
 					})
 			);
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('error', (event) => {
@@ -235,7 +235,7 @@ describe('HTMLScriptElement', () => {
 
 		it('Loads external script synchronously with relative URL.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/base/' });
-			let fetchedWindow: IBrowserWindow | null = null;
+			let fetchedWindow: BrowserWindow | null = null;
 			let fetchedURL: string | null = null;
 			let loadEvent: Event | null = null;
 
@@ -245,7 +245,7 @@ describe('HTMLScriptElement', () => {
 				return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
 			});
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script.js';
 			script.addEventListener('load', (event) => {
 				loadEvent = event;
@@ -269,7 +269,7 @@ describe('HTMLScriptElement', () => {
 				throw thrownError;
 			});
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script.js';
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
@@ -361,7 +361,7 @@ describe('HTMLScriptElement', () => {
 
 			let errorEvent: ErrorEvent | null = null;
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('error', (event) => {
@@ -383,7 +383,7 @@ describe('HTMLScriptElement', () => {
 
 			let errorEvent: ErrorEvent | null = null;
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
@@ -404,7 +404,7 @@ describe('HTMLScriptElement', () => {
 
 			let errorEvent: ErrorEvent | null = null;
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('error', (event) => {
@@ -426,7 +426,7 @@ describe('HTMLScriptElement', () => {
 
 			let errorEvent: ErrorEvent | null = null;
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
@@ -444,7 +444,7 @@ describe('HTMLScriptElement', () => {
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 				async () =>
-					<IResponse>{
+					<Response>{
 						text: async () => 'globalThis.test = /;',
 						ok: true
 					}
@@ -452,7 +452,7 @@ describe('HTMLScriptElement', () => {
 
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/base/path/to/script/';
 			script.async = true;
 
@@ -479,7 +479,7 @@ describe('HTMLScriptElement', () => {
 
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/base/path/to/script/';
 
 			document.body.appendChild(script);

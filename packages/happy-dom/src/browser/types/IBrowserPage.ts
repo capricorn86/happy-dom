@@ -4,7 +4,7 @@ import IBrowserFrame from './IBrowserFrame.js';
 import IBrowserContext from './IBrowserContext.js';
 import { Script } from 'vm';
 import IGoToOptions from './IGoToOptions.js';
-import IResponse from '../../fetch/types/IResponse.js';
+import Response from '../../fetch/Response.js';
 import IReloadOptions from './IReloadOptions.js';
 import IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
 
@@ -59,7 +59,7 @@ export default interface IBrowserPage {
 	 * @param url URL.
 	 * @param [options] Options.
 	 */
-	goto(url: string, options?: IGoToOptions): Promise<IResponse | null>;
+	goto(url: string, options?: IGoToOptions): Promise<Response | null>;
 
 	/**
 	 * Reloads the current page.
@@ -67,5 +67,5 @@ export default interface IBrowserPage {
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	reload(options: IReloadOptions): Promise<IResponse | null>;
+	reload(options: IReloadOptions): Promise<Response | null>;
 }

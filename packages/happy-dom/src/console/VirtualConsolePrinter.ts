@@ -1,8 +1,8 @@
-import IVirtualConsoleLogEntry from './types/IVirtualConsoleLogEntry.js';
+import IVirtualConsoleLogEntry from './IVirtualConsoleLogEntry.js';
 import VirtualConsoleLogLevelEnum from './enums/VirtualConsoleLogLevelEnum.js';
 import Event from '../event/Event.js';
 import VirtualConsoleLogEntryStringifier from './utilities/VirtualConsoleLogEntryStringifier.js';
-import IVirtualConsolePrinter from './types/IVirtualConsolePrinter.js';
+import IVirtualConsolePrinter from './IVirtualConsolePrinter.js';
 
 /**
  * Virtual console printer.

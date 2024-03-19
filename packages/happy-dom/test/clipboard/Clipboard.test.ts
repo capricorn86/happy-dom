@@ -1,11 +1,11 @@
 import ClipboardItem from '../../src/clipboard/ClipboardItem.js';
 import Blob from '../../src/file/Blob.js';
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
+import Window from '../../src/window/Window.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('Clipboard', () => {
-	let window: IWindow;
+	let window: Window;
 
 	beforeEach(() => {
 		window = new Window();

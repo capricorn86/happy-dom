@@ -1,8 +1,7 @@
 import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IElement from '../nodes/element/IElement.js';
 import Element from '../nodes/element/Element.js';
-import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
+import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import ISelectorAttribute from './ISelectorAttribute.js';
 import ISelectorMatch from './ISelectorMatch.js';
@@ -56,7 +55,7 @@ export default class SelectorItem {
 	 * @param element HTML element.
 	 * @returns Result.
 	 */
-	public match(element: IElement): ISelectorMatch | null {
+	public match(element: Element): ISelectorMatch | null {
 		let priorityWeight = 0;
 
 		if (this.isPseudoElement) {
@@ -111,8 +110,8 @@ export default class SelectorItem {
 	 * @param element Element.
 	 * @returns Result.
 	 */
-	private matchPsuedo(element: IElement): boolean {
-		const parent = <IElement>element[PropertySymbol.parentNode];
+	private matchPsuedo(element: Element): boolean {
+		const parent = <Element>element[PropertySymbol.parentNode];
 		const parentChildren = element[PropertySymbol.parentNode]
 			? (<Element>element[PropertySymbol.parentNode])[PropertySymbol.children]
 			: [];
@@ -168,8 +167,8 @@ export default class SelectorItem {
 	 * @param pseudo Pseudo.
 	 */
 	private matchPseudoItem(
-		element: IElement,
-		parentChildren: IElement[],
+		element: Element,
+		parentChildren: Element[],
 		pseudo: ISelectorPseudo
 	): boolean {
 		switch (pseudo.name) {
@@ -206,7 +205,7 @@ export default class SelectorItem {
 				}
 				return isFound;
 			case 'checked':
-				return element[PropertySymbol.tagName] === 'INPUT' && (<IHTMLInputElement>element).checked;
+				return element[PropertySymbol.tagName] === 'INPUT' && (<HTMLInputElement>element).checked;
 			case 'empty':
 				return !(<Element>element)[PropertySymbol.children].length;
 			case 'root':
@@ -257,7 +256,7 @@ export default class SelectorItem {
 	 * @param element Element.
 	 * @returns Result.
 	 */
-	private matchAttributes(element: IElement): ISelectorMatch | null {
+	private matchAttributes(element: Element): ISelectorMatch | null {
 		if (!this.attributes) {
 			return null;
 		}
@@ -294,7 +293,7 @@ export default class SelectorItem {
 	 * @param element Element.
 	 * @returns Result.
 	 */
-	private matchClass(element: IElement): ISelectorMatch | null {
+	private matchClass(element: Element): ISelectorMatch | null {
 		if (!this.classNames) {
 			return null;
 		}

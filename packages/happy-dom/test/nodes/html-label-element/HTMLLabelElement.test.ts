@@ -1,19 +1,19 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import IHTMLLabelElement from '../../../src/nodes/html-label-element/IHTMLLabelElement.js';
-import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import HTMLLabelElement from '../../../src/nodes/html-label-element/HTMLLabelElement.js';
+import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLLabelElement', () => {
 	let window: Window;
 	let document: Document;
-	let element: IHTMLLabelElement;
+	let element: HTMLLabelElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLLabelElement>document.createElement('label');
+		element = <HTMLLabelElement>document.createElement('label');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -81,7 +81,7 @@ describe('HTMLLabelElement', () => {
 
 	describe('dispatchEvent()', () => {
 		it('Dispatches a click event on the control element if it exists.', () => {
-			const input = <IHTMLInputElement>document.createElement('input');
+			const input = <HTMLInputElement>document.createElement('input');
 			const span = document.createElement('span');
 
 			input.type = 'checkbox';

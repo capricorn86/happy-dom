@@ -1,8 +1,8 @@
 import Blob from '../file/Blob.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import File from '../file/File.js';
-import IHTMLInputElement from '../nodes/html-input-element/IHTMLInputElement.js';
-import IHTMLFormElement from '../nodes/html-form-element/IHTMLFormElement.js';
+import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
+import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
 
@@ -26,7 +26,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @param [form] Form.
 	 */
-	constructor(form?: IHTMLFormElement) {
+	constructor(form?: HTMLFormElement) {
 		if (form) {
 			for (const name of Object.keys(
 				(<HTMLFormControlsCollection>form[PropertySymbol.elements])[PropertySymbol.namedItems]
@@ -41,7 +41,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 				) {
 					const newRadioNodeList = new RadioNodeList();
 					for (const node of radioNodeList) {
-						if (node.checked) {
+						if ((<HTMLInputElement>node).checked) {
 							newRadioNodeList.push(node);
 							break;
 						}
@@ -52,10 +52,10 @@ export default class FormData implements Iterable<[string, string | File]> {
 				for (const node of radioNodeList) {
 					if (node.name && SUBMITTABLE_ELEMENTS.includes(node[PropertySymbol.tagName])) {
 						if (node[PropertySymbol.tagName] === 'INPUT' && node.type === 'file') {
-							if ((<IHTMLInputElement>node)[PropertySymbol.files].length === 0) {
+							if ((<HTMLInputElement>node)[PropertySymbol.files].length === 0) {
 								this.append(node.name, new File([], '', { type: 'application/octet-stream' }));
 							} else {
-								for (const file of (<IHTMLInputElement>node)[PropertySymbol.files]) {
+								for (const file of (<HTMLInputElement>node)[PropertySymbol.files]) {
 									this.append(node.name, file);
 								}
 							}

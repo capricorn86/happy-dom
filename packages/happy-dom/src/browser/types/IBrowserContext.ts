@@ -1,4 +1,4 @@
-import ICookieContainer from '../../cookie/types/ICookieContainer.js';
+import ICookieContainer from '../../cookie/ICookieContainer.js';
 import IResponseCache from '../../fetch/cache/response/IResponseCache.js';
 import IBrowser from './IBrowser.js';
 import IBrowserPage from './IBrowserPage.js';

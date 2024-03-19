@@ -1,10 +1,9 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
-import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
-import IHTMLAnchorElement from './IHTMLAnchorElement.js';
+import IHTMLHyperlinkElementUtils from './IHTMLHyperlinkElementUtils.js';
 import URL from '../../url/URL.js';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLAnchorElementNamedNodeMap from './HTMLAnchorElementNamedNodeMap.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
@@ -16,8 +15,8 @@ import PointerEvent from '../../event/events/PointerEvent.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement.
  */
-export default class HTMLAnchorElement extends HTMLElement implements IHTMLAnchorElement {
-	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLAnchorElementNamedNodeMap(
+export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyperlinkElementUtils {
+	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLAnchorElementNamedNodeMap(
 		this
 	);
 	public [PropertySymbol.relList]: DOMTokenList = null;
@@ -395,11 +394,11 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLAncho
 	 *
 	 * @returns Rel list.
 	 */
-	public get relList(): IDOMTokenList {
+	public get relList(): DOMTokenList {
 		if (!this[PropertySymbol.relList]) {
 			this[PropertySymbol.relList] = new DOMTokenList(this, 'rel');
 		}
-		return <IDOMTokenList>this[PropertySymbol.relList];
+		return <DOMTokenList>this[PropertySymbol.relList];
 	}
 
 	/**

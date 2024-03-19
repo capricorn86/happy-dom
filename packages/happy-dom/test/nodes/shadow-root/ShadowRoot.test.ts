@@ -1,4 +1,4 @@
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import CustomElement from '../../CustomElement.js';
@@ -20,8 +20,8 @@ describe('ShadowRoot', () => {
 			shadowRoot.innerHTML = '<div attr1="value1" attr2="value2"><span>Test</span></div>';
 			expect(shadowRoot.childNodes.length).toBe(1);
 			expect(shadowRoot.childNodes[0].childNodes.length).toBe(1);
-			expect((<IHTMLElement>shadowRoot.childNodes[0]).tagName).toBe('DIV');
-			expect((<IHTMLElement>shadowRoot.childNodes[0].childNodes[0]).tagName).toBe('SPAN');
+			expect((<HTMLElement>shadowRoot.childNodes[0]).tagName).toBe('DIV');
+			expect((<HTMLElement>shadowRoot.childNodes[0].childNodes[0]).tagName).toBe('SPAN');
 		});
 	});
 
@@ -38,8 +38,8 @@ describe('ShadowRoot', () => {
 		it('Returns the currently active element within the ShadowRoot.', () => {
 			const customElement = document.createElement('custom-element');
 			const shadowRoot = customElement.shadowRoot;
-			const div = <IHTMLElement>document.createElement('div');
-			const span = <IHTMLElement>document.createElement('span');
+			const div = <HTMLElement>document.createElement('div');
+			const span = <HTMLElement>document.createElement('span');
 
 			document.body.appendChild(customElement);
 
@@ -70,7 +70,7 @@ describe('ShadowRoot', () => {
 		it('Unsets the active element when it gets disconnected.', () => {
 			const customElement = document.createElement('custom-element');
 			const shadowRoot = customElement.shadowRoot;
-			const div = <IHTMLElement>document.createElement('div');
+			const div = <HTMLElement>document.createElement('div');
 
 			document.body.appendChild(customElement);
 

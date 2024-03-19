@@ -1,4 +1,3 @@
-import IHTMLMetaElement from './IHTMLMetaElement.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 
 /**
@@ -7,7 +6,7 @@ import HTMLElement from '../html-element/HTMLElement.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLMetaElement.
  */
-export default class HTMLMetaElement extends HTMLElement implements IHTMLMetaElement {
+export default class HTMLMetaElement extends HTMLElement {
 	/**
 	 * Returns content.
 	 *

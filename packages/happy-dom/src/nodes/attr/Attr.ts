@@ -1,6 +1,5 @@
-import IElement from '../element/IElement.js';
+import Element from '../element/Element.js';
 import Node from '../node/Node.js';
-import IAttr from './IAttr.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
@@ -9,13 +8,13 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
  *
  * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Attr.
  */
-export default class Attr extends Node implements IAttr {
+export default class Attr extends Node implements Attr {
 	public [PropertySymbol.nodeType] = NodeTypeEnum.attributeNode;
 	public [PropertySymbol.namespaceURI]: string | null = null;
 	public [PropertySymbol.name]: string | null = null;
 	public [PropertySymbol.value]: string | null = null;
 	public [PropertySymbol.specified] = true;
-	public [PropertySymbol.ownerElement]: IElement | null = null;
+	public [PropertySymbol.ownerElement]: Element | null = null;
 
 	/**
 	 * Returns specified.
@@ -31,7 +30,7 @@ export default class Attr extends Node implements IAttr {
 	 *
 	 * @returns Owner element.
 	 */
-	public get ownerElement(): IElement | null {
+	public get ownerElement(): Element | null {
 		return this[PropertySymbol.ownerElement];
 	}
 

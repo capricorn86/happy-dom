@@ -1,10 +1,9 @@
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 import Headers from '../Headers.js';
 import Request from '../Request.js';
-import IHeaders from '../types/IHeaders.js';
 import FetchCORSUtility from './FetchCORSUtility.js';
 import { URL } from 'url';
 
@@ -41,7 +40,7 @@ export default class FetchRequestHeaderUtility {
 	 *
 	 * @param headers Headers.
 	 */
-	public static removeForbiddenHeaders(headers: IHeaders): void {
+	public static removeForbiddenHeaders(headers: Headers): void {
 		for (const key of Object.keys((<Headers>headers)[PropertySymbol.entries])) {
 			if (
 				FORBIDDEN_HEADER_NAMES.includes(key) ||
@@ -74,7 +73,7 @@ export default class FetchRequestHeaderUtility {
 	 */
 	public static getRequestHeaders(options: {
 		browserFrame: IBrowserFrame;
-		window: IBrowserWindow;
+		window: BrowserWindow;
 		request: Request;
 	}): { [key: string]: string } {
 		const headers = new Headers(options.request.headers);

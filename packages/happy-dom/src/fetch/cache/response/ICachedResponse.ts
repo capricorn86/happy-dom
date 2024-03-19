@@ -1,5 +1,5 @@
 import CachedResponseStateEnum from './CachedResponseStateEnum.js';
-import IHeaders from '../../types/IHeaders.js';
+import Headers from '../../Headers.js';
 
 export default interface ICachedResponse {
 	/** Response. */
@@ -7,14 +7,14 @@ export default interface ICachedResponse {
 		status: number;
 		statusText: string;
 		url: string;
-		headers: IHeaders;
+		headers: Headers;
 		// We need to wait for the body to be populated if set to "true".
 		waitingForBody: boolean;
 		body: Buffer | null;
 	};
 	/** Request. */
 	request: {
-		headers: IHeaders;
+		headers: Headers;
 		method: string;
 	};
 	/** Cache update time in milliseconds. */
