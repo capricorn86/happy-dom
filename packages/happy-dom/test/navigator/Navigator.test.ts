@@ -1,5 +1,4 @@
 import Window from '../../src/window/Window.js';
-import Window from '../../src/window/Window.js';
 import Navigator from '../../src/navigator/Navigator.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Permissions from '../../src/permissions/Permissions.js';

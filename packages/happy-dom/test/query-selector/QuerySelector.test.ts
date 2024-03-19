@@ -1,6 +1,5 @@
 import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
 import Window from '../../src/window/Window.js';
-import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import QuerySelectorHTML from './data/QuerySelectorHTML.js';
 import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';

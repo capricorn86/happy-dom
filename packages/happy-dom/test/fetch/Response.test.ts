@@ -12,7 +12,6 @@ import File from '../../src/file/File.js';
 import FormData from '../../src/form-data/FormData.js';
 import Document from '../../src/nodes/document/Document.js';
 import Window from '../../src/window/Window.js';
-import Window from '../../src/window/Window.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { ReadableStream } from 'stream/web';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';

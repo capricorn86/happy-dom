@@ -1,11 +1,11 @@
 import Window from '../../src/window/Window.js';
-import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import Range from '../../src/range/Range.js';
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
 import Text from '../../src/nodes/text/Text.js';
 import DOMRect from '../../src/nodes/element/DOMRect.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import Node from '../../src/nodes/node/Node.js';
 
 describe('Range', () => {
 	let window: Window;
@@ -284,7 +284,7 @@ describe('Range', () => {
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
 			range.setStart(paragraph.firstChild, 2);
-			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
 
 			const documentFragment = range.cloneContents();
 
@@ -299,8 +299,8 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			range.setStart(paragraph.querySelector('i').firstChild, 2);
-			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+			range.setStart((<Node>paragraph.querySelector('i')).firstChild, 2);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
 
 			const documentFragment = range.cloneContents();
 
@@ -317,7 +317,7 @@ describe('Range', () => {
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
 			range.setStart(paragraph.firstChild, 2);
-			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
 
 			const clone = range.cloneRange();
 
@@ -351,7 +351,7 @@ describe('Range', () => {
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
 			range.setStart(paragraph.firstChild, 2);
-			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
 
 			range.deleteContents();
 
@@ -374,7 +374,7 @@ describe('Range', () => {
 			document.body.appendChild(paragraph);
 
 			range.setStart(paragraph.firstChild, 2);
-			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
 
 			const documentFragment = range.extractContents();
 
@@ -406,9 +406,9 @@ describe('Range', () => {
 			const paragraph = document.body.children[0];
 
 			range.setStart(paragraph.firstChild, 2);
-			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
 
-			expect(range.isPointInRange(paragraph.querySelector('i').firstChild, 2)).toBe(true);
+			expect(range.isPointInRange((<Node>paragraph.querySelector('i')).firstChild, 2)).toBe(true);
 			expect(range.isPointInRange(document.body.children[1], 1)).toBe(false);
 			expect(range.isPointInRange(document.body.children[1].firstChild, 2)).toBe(false);
 		});
@@ -421,7 +421,7 @@ describe('Range', () => {
 			const paragraph = document.body.children[0];
 
 			range.setStart(paragraph.firstChild, 2);
-			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
 
 			const newNode = document.createElement('u');
 			newNode.innerHTML = 'New node';
@@ -441,10 +441,10 @@ describe('Range', () => {
 			const paragraph = document.body.children[0];
 
 			range.setStart(paragraph.firstChild, 2);
-			range.setEnd(paragraph.querySelector('b').firstChild, 3);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
 
-			expect(range.intersectsNode(paragraph.querySelector('i'))).toBe(true);
-			expect(range.intersectsNode(paragraph.querySelector('i').firstChild)).toBe(true);
+			expect(range.intersectsNode(<Node>paragraph.querySelector('i'))).toBe(true);
+			expect(range.intersectsNode((<Node>paragraph.querySelector('i')).firstChild)).toBe(true);
 			expect(range.intersectsNode(document.body.children[1])).toBe(false);
 			expect(range.intersectsNode(document.body.children[1].firstChild)).toBe(false);
 		});
@@ -456,7 +456,7 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			const italic = paragraph.querySelector('i');
+			const italic = <Node>paragraph.querySelector('i');
 
 			range.selectNode(italic);
 
@@ -473,7 +473,7 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			const italic = paragraph.querySelector('i');
+			const italic = <Node>paragraph.querySelector('i');
 
 			range.selectNodeContents(italic);
 
@@ -488,7 +488,7 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			const text = paragraph.querySelector('i').firstChild;
+			const text = (<Node>paragraph.querySelector('i')).firstChild;
 
 			range.selectNodeContents(text);
 
@@ -505,7 +505,7 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			const italic = paragraph.querySelector('i');
+			const italic = <Node>paragraph.querySelector('i');
 
 			range.selectNodeContents(italic);
 

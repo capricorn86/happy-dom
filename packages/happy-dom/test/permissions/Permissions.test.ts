@@ -1,5 +1,4 @@
 import Window from '../../src/window/Window.js';
-import Window from '../../src/window/Window.js';
 import PermissionNameEnum from '../../src/permissions/PermissionNameEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 

@@ -1,5 +1,4 @@
 import Window from '../../src/window/Window.js';
-import Window from '../../src/window/Window.js';
 import HTTP from 'http';
 import Stream from 'stream';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';

@@ -1,6 +1,5 @@
 import Document from '../../src/nodes/document/Document.js';
 import Window from '../../src/window/Window.js';
-import Window from '../../src/window/Window.js';
 import Headers from '../../src/fetch/Headers.js';
 import CustomElement from '../../test/CustomElement.js';
 import Response from '../../src/fetch/Response.js';

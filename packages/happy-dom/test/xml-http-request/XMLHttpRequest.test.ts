@@ -1,6 +1,5 @@
 import XMLHttpRequest from '../../src/xml-http-request/XMLHttpRequest.js';
 import Window from '../../src/window/Window.js';
-import Window from '../../src/window/Window.js';
 import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequestReadyStateEnum.js';
 import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum.js';
 import ProgressEvent from '../../src/event/events/ProgressEvent.js';
