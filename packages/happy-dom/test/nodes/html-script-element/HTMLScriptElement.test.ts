@@ -374,6 +374,26 @@ describe('HTMLScriptElement', () => {
 			);
 		});
 
+		it('Triggers a load event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" and "handleDisabledFileLoadingAsSuccess" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true, handleDisabledFileLoadingAsSuccess: true }
+			});
+			document = window.document;
+
+			let loadEvent: Event | null = null;
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'https://localhost:8080/path/to/script.js';
+			script.async = true;
+			script.addEventListener('load', (event) => {
+				loadEvent = <Event>event;
+			});
+
+			document.body.appendChild(script);
+
+			expect((<Event>(<unknown>loadEvent)).type).toBe('load');
+		});
+
 		it('Triggers an error event when attempting to perform a synchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
 			window = new Window({
 				settings: { disableJavaScriptFileLoading: true }

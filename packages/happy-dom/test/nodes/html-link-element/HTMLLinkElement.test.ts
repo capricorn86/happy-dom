@@ -253,5 +253,24 @@ describe('HTMLLinkElement', () => {
 				'Failed to load external stylesheet "https://localhost:8080/test/path/file.css". CSS file loading is disabled.'
 			);
 		});
+
+		it('Triggers a load event when the Happy DOM setting "disableCSSFileLoading" and "handleDisabledFileLoadingAsSuccess" is set to "true".', async () => {
+			window = new Window({
+				settings: { disableCSSFileLoading: true, handleDisabledFileLoadingAsSuccess: true }
+			});
+			document = window.document;
+
+			const element = document.createElement('link');
+			let loadEvent: Event | null = null;
+
+			element.rel = 'stylesheet';
+			element.href = 'https://localhost:8080/test/path/file.css';
+			element.addEventListener('load', (event) => (loadEvent = <Event>event));
+
+			document.body.appendChild(element);
+
+			expect(element.sheet).toBe(null);
+			expect((<Event>(<unknown>loadEvent)).type).toBe('load');
+		});
 	});
 });

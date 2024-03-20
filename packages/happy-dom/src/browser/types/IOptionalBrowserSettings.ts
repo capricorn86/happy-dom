@@ -14,6 +14,9 @@ export default interface IOptionalBrowserSettings {
 	/** Disables computed style rendering. */
 	disableComputedStyleRendering?: boolean;
 
+	/** Handle disabled file loading as success */
+	handleDisabledFileLoadingAsSuccess?: boolean;
+
 	/**
 	 * Disables error capturing.
 	 *
