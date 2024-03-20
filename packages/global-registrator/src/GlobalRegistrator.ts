@@ -1,4 +1,4 @@
-import { GlobalWindow, Window, EventTarget } from 'happy-dom';
+import { GlobalWindow } from 'happy-dom';
 import type { IOptionalBrowserSettings } from 'happy-dom';
 
 const IGNORE_LIST = ['constructor', 'undefined', 'NaN', 'global', 'globalThis'];
@@ -41,8 +41,8 @@ export default class GlobalRegistrator {
 				const globalPropertyDescriptor = Object.getOwnPropertyDescriptor(global, key);
 
 				if (
-					windowPropertyDescriptor.value !== undefined &&
-					(!globalPropertyDescriptor ||
+					!globalPropertyDescriptor ||
+					(windowPropertyDescriptor.value !== undefined &&
 						windowPropertyDescriptor.value !== globalPropertyDescriptor.value)
 				) {
 					this.registered[key] = globalPropertyDescriptor || null;
@@ -57,29 +57,6 @@ export default class GlobalRegistrator {
 						});
 					} else {
 						Object.defineProperty(global, key, windowPropertyDescriptor);
-					}
-				}
-			}
-		}
-
-		for (const windowClass of [GlobalWindow, Window, EventTarget]) {
-			const propertyDescriptors = Object.getOwnPropertyDescriptors(
-				Reflect.getPrototypeOf(windowClass.prototype)
-			);
-			for (const key of Object.keys(propertyDescriptors)) {
-				if (!IGNORE_LIST.includes(key) && !this.registered[key]) {
-					const windowPropertyDescriptor = propertyDescriptors[key];
-					if (windowPropertyDescriptor.get || windowPropertyDescriptor.set) {
-						const globalPropertyDescriptor = Object.getOwnPropertyDescriptor(global, key);
-
-						this.registered[key] = globalPropertyDescriptor || null;
-
-						Object.defineProperty(global, key, {
-							configurable: true,
-							enumerable: windowPropertyDescriptor.enumerable,
-							get: windowPropertyDescriptor.get?.bind(window),
-							set: windowPropertyDescriptor.set?.bind(window)
-						});
 					}
 				}
 			}
