@@ -9,21 +9,17 @@ import Request from '../../src/fetch/Request.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import Stream from 'stream';
 
-const GET_NAVIGATOR_PLATFORM = (): string => {
-	return (
-		'X11; ' +
-		process.platform.charAt(0).toUpperCase() +
-		process.platform.slice(1) +
-		' ' +
-		process.arch
-	);
-};
+const PLATFORM =
+	'X11; ' +
+	process.platform.charAt(0).toUpperCase() +
+	process.platform.slice(1) +
+	' ' +
+	process.arch;
+
 const PROPERTIES = {
 	appCodeName: 'Mozilla',
 	appName: 'Netscape',
-	appVersion: `5.0 (${GET_NAVIGATOR_PLATFORM()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
-		PackageVersion.version
-	}`,
+	appVersion: `5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
 	cookieEnabled: true,
 	credentials: null,
 	doNotTrack: 'unspecified',
@@ -38,15 +34,13 @@ const PROPERTIES = {
 	},
 	onLine: true,
 	permissions: new Permissions(),
-	platform: GET_NAVIGATOR_PLATFORM(),
+	platform: PLATFORM,
 	plugins: {
 		length: 0
 	},
 	product: 'Gecko',
 	productSub: '20100101',
-	userAgent: `Mozilla/5.0 (${GET_NAVIGATOR_PLATFORM()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
-		PackageVersion.version
-	}`,
+	userAgent: `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
 	vendor: '',
 	vendorSub: '',
 	webdriver: true

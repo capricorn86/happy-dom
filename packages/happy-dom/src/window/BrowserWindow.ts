@@ -408,18 +408,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	// Public properties.
 	public readonly document: DocumentImplementation;
 	public readonly customElements: CustomElementRegistry;
-	public readonly location: Location;
-	public readonly history: History;
-	public readonly navigator: Navigator;
-	public readonly console: Console;
 	public readonly self: BrowserWindow = this;
 	public readonly top: BrowserWindow = this;
 	public readonly parent: BrowserWindow = this;
 	public readonly window: BrowserWindow = this;
 	public readonly globalThis: BrowserWindow = this;
-	public readonly screen: Screen;
-	public readonly sessionStorage: Storage;
-	public readonly localStorage: Storage;
 	public readonly performance: typeof performance = performance;
 	public readonly screenLeft: number = 0;
 	public readonly screenTop: number = 0;
@@ -497,6 +490,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.captureEventListenerCount]: { [eventType: string]: number } = {};
 	public readonly [PropertySymbol.mutationObservers]: MutationObserver[] = [];
 	public readonly [PropertySymbol.readyStateManager] = new DocumentReadyStateManager(this);
+	public [PropertySymbol.location]: Location;
+	public [PropertySymbol.history]: History;
+	public [PropertySymbol.navigator]: Navigator;
+	public [PropertySymbol.console]: Console;
+	public [PropertySymbol.screen]: Screen;
+	public [PropertySymbol.sessionStorage]: Storage;
+	public [PropertySymbol.localStorage]: Storage;
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -519,13 +519,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.#browserFrame = browserFrame;
 
 		this.customElements = new CustomElementRegistry(this);
-		this.navigator = new Navigator(this);
-		this.history = new History();
-		this.screen = new Screen();
-		this.sessionStorage = new Storage();
-		this.localStorage = new Storage();
-		this.location = new Location(this.#browserFrame, options?.url ?? 'about:blank');
-		this.console = browserFrame.page.console;
+		this[PropertySymbol.navigator] = new Navigator(this);
+		this[PropertySymbol.history] = new History();
+		this[PropertySymbol.screen] = new Screen();
+		this[PropertySymbol.sessionStorage] = new Storage();
+		this[PropertySymbol.localStorage] = new Storage();
+		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
+		this[PropertySymbol.console] = browserFrame.page.console;
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
@@ -671,6 +671,64 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			this.document.dispatchEvent(new Event('readystatechange'));
 			this.document.dispatchEvent(new Event('load', { bubbles: true }));
 		});
+	}
+
+	/**
+	 * Returns location.
+	 */
+	public get location(): Location {
+		return this[PropertySymbol.location];
+	}
+
+	/**
+	 * Returns location.
+	 *
+	 * @param href Href.
+	 */
+	public set location(href: string) {
+		this[PropertySymbol.location].href = href;
+	}
+
+	/**
+	 * Returns history.
+	 */
+	public get history(): History {
+		return this[PropertySymbol.history];
+	}
+
+	/**
+	 * Returns navigator.
+	 */
+	public get navigator(): Navigator {
+		return this[PropertySymbol.navigator];
+	}
+
+	/**
+	 * Returns console.
+	 */
+	public get console(): Console {
+		return this[PropertySymbol.console];
+	}
+
+	/**
+	 * Returns screen.
+	 */
+	public get screen(): Screen {
+		return this[PropertySymbol.screen];
+	}
+
+	/**
+	 * Returns session storage.
+	 */
+	public get sessionStorage(): Storage {
+		return this[PropertySymbol.sessionStorage];
+	}
+
+	/**
+	 * Returns local storage.
+	 */
+	public get localStorage(): Storage {
+		return this[PropertySymbol.localStorage];
 	}
 
 	/**
