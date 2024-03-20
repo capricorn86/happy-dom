@@ -14,15 +14,12 @@ import '../types.d.js';
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 
-const GET_NAVIGATOR_PLATFORM = (): string => {
-	return (
-		'X11; ' +
-		process.platform.charAt(0).toUpperCase() +
-		process.platform.slice(1) +
-		' ' +
-		process.arch
-	);
-};
+const PLATFORM =
+	'X11; ' +
+	process.platform.charAt(0).toUpperCase() +
+	process.platform.slice(1) +
+	' ' +
+	process.arch;
 
 describe('Window', () => {
 	let window: Window;
@@ -203,9 +200,7 @@ describe('Window', () => {
 			);
 			expect(windowWithoutOptions.happyDOM?.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.navigator.userAgent).toBe(
-				`Mozilla/5.0 (${GET_NAVIGATOR_PLATFORM()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
-					PackageVersion.version
-				}`
+				`Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`
 			);
 			expect(windowWithoutOptions.happyDOM?.settings.device.prefersColorScheme).toBe('light');
 			expect(windowWithoutOptions.happyDOM?.settings.device.mediaType).toBe('screen');

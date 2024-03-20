@@ -14,8 +14,6 @@ import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import CustomElement from '../CustomElement.js';
 import Request from '../../src/fetch/Request.js';
 import Response from '../../src/fetch/Response.js';
-import Request from '../../src/fetch/Request.js';
-import Response from '../../src/fetch/Response.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import MessageEvent from '../../src/event/events/MessageEvent.js';
 import Event from '../../src/event/Event.js';
@@ -27,25 +25,22 @@ import PackageVersion from '../../src/version.js';
 import HTMLDialogElement from '../../src/nodes/html-dialog-element/HTMLDialogElement.js';
 import Browser from '../../src/browser/Browser.js';
 import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow.js';
-import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow.js';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory.js';
 import IBrowser from '../../src/browser/types/IBrowser.js';
 import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import IBrowserPage from '../../src/browser/types/IBrowserPage.js';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
 import AdoptedStyleSheetCustomElement from '../AdoptedStyleSheetCustomElement.js';
 import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
+import Location from '../../src/location/Location.js';
+
 import '../types.d.js';
 
-const GET_NAVIGATOR_PLATFORM = (): string => {
-	return (
-		'X11; ' +
-		process.platform.charAt(0).toUpperCase() +
-		process.platform.slice(1) +
-		' ' +
-		process.arch
-	);
-};
+const PLATFORM =
+	'X11; ' +
+	process.platform.charAt(0).toUpperCase() +
+	process.platform.slice(1) +
+	' ' +
+	process.arch;
 
 describe('BrowserWindow', () => {
 	let browser: IBrowser;
@@ -161,16 +156,28 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get location()', () => {
+		it('Returns an instance of Location', () => {
+			expect(window.location).toBeInstanceOf(Location);
+		});
+	});
+
+	describe('set location()', () => {
+		it('Sets the location.', () => {
+			browser.settings.navigation.disableMainFrameNavigation = true;
+			window.location = 'https://localhost:8080/test/page/';
+			expect(window.location.href).toBe('https://localhost:8080/test/page/');
+		});
+	});
+
 	describe('get navigator()', () => {
 		it('Returns an instance of Navigator with browser data.', () => {
-			const platform = GET_NAVIGATOR_PLATFORM();
-
 			expect(window.navigator instanceof Navigator).toBe(true);
 
 			const referenceValues = {
 				appCodeName: 'Mozilla',
 				appName: 'Netscape',
-				appVersion: `5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
+				appVersion: `5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
 				cookieEnabled: true,
 				credentials: null,
 				doNotTrack: 'unspecified',
@@ -186,13 +193,13 @@ describe('BrowserWindow', () => {
 				onLine: true,
 				permissions: new Permissions(),
 				clipboard: new Clipboard(window),
-				platform,
+				platform: PLATFORM,
 				plugins: {
 					length: 0
 				},
 				product: 'Gecko',
 				productSub: '20100101',
-				userAgent: `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
+				userAgent: `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
 				vendor: '',
 				vendorSub: '',
 				webdriver: true

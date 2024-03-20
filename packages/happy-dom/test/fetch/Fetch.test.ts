@@ -20,6 +20,13 @@ import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
+const PLATFORM =
+	'X11; ' +
+	process.platform.charAt(0).toUpperCase() +
+	process.platform.slice(1) +
+	' ' +
+	process.arch;
+
 describe('Fetch', () => {
 	afterEach(() => {
 		resetMockedModules();
@@ -3701,8 +3708,7 @@ describe('Fetch', () => {
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							key1: 'value1'
 						},
 						method: 'GET',
@@ -3721,8 +3727,7 @@ describe('Fetch', () => {
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
 							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							key1: 'value1'
 						},
 						method: 'GET',
@@ -3878,8 +3883,7 @@ describe('Fetch', () => {
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							key1: 'value1'
 						},
 						method: 'GET',
@@ -3898,8 +3902,7 @@ describe('Fetch', () => {
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
 							'If-Modified-Since': 'Mon, 11 Dec 2023 01:00:00 GMT',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							key1: 'value1'
 						},
 						method: 'GET',
@@ -4039,8 +4042,7 @@ describe('Fetch', () => {
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							key1: 'value1'
 						},
 						method: 'HEAD',
@@ -4059,8 +4061,7 @@ describe('Fetch', () => {
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
 							'If-None-Match': etag1,
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							key1: 'value1'
 						},
 						method: 'HEAD',
@@ -4208,8 +4209,7 @@ describe('Fetch', () => {
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							key1: 'value1'
 						},
 						method: 'GET',
@@ -4228,8 +4228,7 @@ describe('Fetch', () => {
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
 							'If-None-Match': etag1,
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							key1: 'value1'
 						},
 						method: 'GET',
@@ -4417,8 +4416,7 @@ describe('Fetch', () => {
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							'vary-header': 'vary1'
 						},
 						method: 'GET',
@@ -4436,8 +4434,7 @@ describe('Fetch', () => {
 							'Accept-Encoding': 'gzip, deflate, br',
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
-							'User-Agent':
-								'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0',
+							'User-Agent': `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/0.0.0`,
 							'vary-header': 'vary2'
 						},
 						method: 'GET',
