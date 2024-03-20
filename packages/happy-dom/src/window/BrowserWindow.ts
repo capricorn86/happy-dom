@@ -420,6 +420,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly screenY: number = 0;
 	public readonly crypto: typeof webcrypto = webcrypto;
 	public readonly closed = false;
+	public console: Console;
 	public name = '';
 
 	// Node.js Globals
@@ -493,7 +494,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.location]: Location;
 	public [PropertySymbol.history]: History;
 	public [PropertySymbol.navigator]: Navigator;
-	public [PropertySymbol.console]: Console;
 	public [PropertySymbol.screen]: Screen;
 	public [PropertySymbol.sessionStorage]: Storage;
 	public [PropertySymbol.localStorage]: Storage;
@@ -525,7 +525,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.sessionStorage] = new Storage();
 		this[PropertySymbol.localStorage] = new Storage();
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
-		this[PropertySymbol.console] = browserFrame.page.console;
+
+		this.console = browserFrame.page.console;
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
@@ -701,13 +702,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public get navigator(): Navigator {
 		return this[PropertySymbol.navigator];
-	}
-
-	/**
-	 * Returns console.
-	 */
-	public get console(): Console {
-		return this[PropertySymbol.console];
 	}
 
 	/**

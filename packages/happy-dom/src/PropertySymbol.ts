@@ -155,7 +155,6 @@ export const nodeStream = Symbol('nodeStream');
 export const location = Symbol('location');
 export const history = Symbol('history');
 export const navigator = Symbol('navigator');
-export const console = Symbol('console');
 export const screen = Symbol('screen');
 export const sessionStorage = Symbol('sessionStorage');
 export const localStorage = Symbol('localStorage');
