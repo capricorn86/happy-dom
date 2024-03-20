@@ -63,13 +63,17 @@ export default class HTMLLinkElementStyleSheetLoader {
 		}
 
 		if (browserSettings.disableCSSFileLoading) {
-			WindowErrorUtility.dispatchError(
-				element,
-				new DOMException(
-					`Failed to load external stylesheet "${absoluteURL}". CSS file loading is disabled.`,
-					DOMExceptionNameEnum.notSupportedError
-				)
-			);
+			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+				element.dispatchEvent(new Event('load'));
+			} else {
+				WindowErrorUtility.dispatchError(
+					element,
+					new DOMException(
+						`Failed to load external stylesheet "${absoluteURL}". CSS file loading is disabled.`,
+						DOMExceptionNameEnum.notSupportedError
+					)
+				);
+			}
 			return;
 		}
 

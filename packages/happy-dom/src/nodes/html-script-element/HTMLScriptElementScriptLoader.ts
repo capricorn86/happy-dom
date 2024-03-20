@@ -61,13 +61,17 @@ export default class HTMLScriptElementScriptLoader {
 			browserSettings.disableJavaScriptFileLoading ||
 			browserSettings.disableJavaScriptEvaluation
 		) {
-			WindowErrorUtility.dispatchError(
-				element,
-				new DOMException(
-					`Failed to load external script "${absoluteURL}". JavaScript file loading is disabled.`,
-					DOMExceptionNameEnum.notSupportedError
-				)
-			);
+			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+				element.dispatchEvent(new Event('load'));
+			} else {
+				WindowErrorUtility.dispatchError(
+					element,
+					new DOMException(
+						`Failed to load external script "${absoluteURL}". JavaScript file loading is disabled.`,
+						DOMExceptionNameEnum.notSupportedError
+					)
+				);
+			}
 			return;
 		}
 
