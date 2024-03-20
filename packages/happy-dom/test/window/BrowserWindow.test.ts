@@ -34,6 +34,7 @@ import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import Location from '../../src/location/Location.js';
 
 import '../types.d.js';
+import VirtualConsole from '../../src/console/VirtualConsole.js';
 
 const PLATFORM =
 	'X11; ' +

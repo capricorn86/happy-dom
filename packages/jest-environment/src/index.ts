@@ -51,7 +51,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.window = new Window({
 			url: 'http://localhost/',
 			...projectConfig.testEnvironmentOptions,
-			console: options.console,
+			console: options.console || console,
 			settings: {
 				...(<IOptionalBrowserSettings>projectConfig.testEnvironmentOptions?.settings),
 				errorCapture: BrowserErrorCaptureEnum.disabled
@@ -73,11 +73,6 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 
 		// For some reason Jest removes the global setImmediate, so we need to add it back.
 		this.global.setImmediate = global.setImmediate;
-
-		if (options && options.console) {
-			this.global.console = options.console;
-			this.global.window['console'] = options.console;
-		}
 
 		this.fakeTimers = new LegacyFakeTimers({
 			config: projectConfig,
