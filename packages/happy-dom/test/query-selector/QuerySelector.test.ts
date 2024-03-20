@@ -1237,7 +1237,7 @@ describe('QuerySelector', () => {
 			expect(div.querySelector(':not(:nth-child(1))')).toBe(child2);
 		});
 
-		it('Returns false for selector with CSS pseado element ":before".', () => {
+		it('Returns null for selector with CSS pseado element ":before".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
 			expect(
@@ -1251,7 +1251,7 @@ describe('QuerySelector', () => {
 			expect(container.querySelector('span.class1:first-of-type:before') === null).toBe(true);
 		});
 
-		it('Returns false for selector with CSS pseado element ":after".', () => {
+		it('Returns null for selector with CSS pseado element ":after".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
 			expect(
@@ -1263,6 +1263,38 @@ describe('QuerySelector', () => {
 			).toBe(true);
 			expect(container.querySelector('span.class1:after') === null).toBe(true);
 			expect(container.querySelector('span.class1:first-of-type:after') === null).toBe(true);
+		});
+
+		it('Returns element matching selector with CSS pseudo ":is()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			expect(container.querySelector(':is(span[attr1="word1.word2"])')).toBe(
+				container.children[0].children[1].children[2]
+			);
+			expect(container.querySelector(':is(div, span[attr1="word1.word2"])')).toBe(
+				container.children[0]
+			);
+			expect(container.querySelector(':is(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(
+				container.children[0].children[1].children[0]
+			);
+			expect(container.querySelector(':is(div)')).toBe(container.children[0]);
+			expect(container.querySelector(':is(span[attr1="val,ue1"])')).toBe(null);
+		});
+
+		it('Returns element matching selector with CSS pseudo ":where()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			expect(container.querySelector(':where(span[attr1="word1.word2"])')).toBe(
+				container.children[0].children[1].children[2]
+			);
+			expect(container.querySelector(':where(div, span[attr1="word1.word2"])')).toBe(
+				container.children[0]
+			);
+			expect(container.querySelector(':where(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(
+				container.children[0].children[1].children[0]
+			);
+			expect(container.querySelector(':where(div)')).toBe(container.children[0]);
+			expect(container.querySelector(':where(span[attr1="val,ue1"])')).toBe(null);
 		});
 	});
 
@@ -1307,6 +1339,30 @@ describe('QuerySelector', () => {
 			expect(element.matches('span.class1:first-of-type')).toBe(true);
 			expect(element.matches('span.class1:after')).toBe(false);
 			expect(element.matches('span.class1:first-of-type:after')).toBe(false);
+		});
+
+		it('Returns true for selector with CSS pseudo ":is()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches(':is(span)')).toBe(true);
+			expect(element.matches(':is(div, span)')).toBe(true);
+			expect(element.matches(':is(div, span.class1)')).toBe(true);
+			expect(element.matches(':is(div, span[attr1="value1"])')).toBe(true);
+			expect(element.matches(':is(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(true);
+			expect(element.matches(':is(div)')).toBe(false);
+		});
+
+		it('Returns true for selector with CSS pseudo ":where()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches(':where(span)')).toBe(true);
+			expect(element.matches(':where(div, span)')).toBe(true);
+			expect(element.matches(':where(div, span.class1)')).toBe(true);
+			expect(element.matches(':where(div, span[attr1="value1"])')).toBe(true);
+			expect(element.matches(':where(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(true);
+			expect(element.matches(':where(div)')).toBe(false);
 		});
 	});
 });

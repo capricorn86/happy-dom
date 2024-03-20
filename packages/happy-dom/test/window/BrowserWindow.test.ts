@@ -34,7 +34,6 @@ import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import Location from '../../src/location/Location.js';
 
 import '../types.d.js';
-import VirtualConsole from '../../src/console/VirtualConsole.js';
 
 const PLATFORM =
 	'X11; ' +
@@ -318,7 +317,7 @@ describe('BrowserWindow', () => {
 
 	describe('getComputedStyle()', () => {
 		it('Handles default properties "display" and "direction".', () => {
-			const element = <HTMLElement>document.createElement('div');
+			const element = document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
 
 			expect(computedStyle.display).toBe('');
@@ -349,7 +348,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
-			const element = <HTMLElement>document.createElement('div');
+			const element = document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
 
 			element.style.color = 'red';
@@ -368,8 +367,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
-			const parent = <HTMLElement>document.createElement('div');
-			const element = <HTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -432,7 +431,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets for elements in a HTMLShadowRoot.', () => {
-			const element = <HTMLElement>document.createElement('span');
+			const element = document.createElement('span');
 			const elementStyle = document.createElement('style');
 			const customElement = <CustomElement>document.createElement('custom-element');
 			const elementComputedStyle = window.getComputedStyle(element);
@@ -462,7 +461,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles from adopted style sheets for elements in a HTMLShadowRoot.', () => {
-			const element = <HTMLElement>document.createElement('span');
+			const element = document.createElement('span');
 			const customElement = <CustomElement>(
 				document.createElement('adopted-style-sheet-custom-element')
 			);
@@ -494,8 +493,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns values defined by a CSS variables.', () => {
-			const parent = <HTMLElement>document.createElement('div');
-			const element = <HTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -534,8 +533,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns values defined by a CSS variables when a fallback is used.', () => {
-			const parent = <HTMLElement>document.createElement('div');
-			const element = <HTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -573,7 +572,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns values defined by a CSS variables when multiple fallbacks are used', () => {
-			const div = <HTMLElement>document.createElement('div');
+			const div = document.createElement('div');
 			const divStyle = document.createElement('style');
 
 			divStyle.innerHTML = `
@@ -603,8 +602,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values converted to pixels.', () => {
-			const parent = <HTMLElement>document.createElement('div');
-			const element = <HTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -639,8 +638,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles containing "%" measurement values that have not been converted, as it is not supported yet.', () => {
-			const parent = <HTMLElement>document.createElement('div');
-			const element = <HTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -678,8 +677,8 @@ describe('BrowserWindow', () => {
 			browser.settings.disableComputedStyleRendering = true;
 			document = window.document;
 
-			const parent = <HTMLElement>document.createElement('div');
-			const element = <HTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -711,6 +710,32 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.height).toBe('10em');
 		});
 
+		it('Returns a CSSStyleDeclaration object with computed styles from style sheets using :is() and where().', () => {
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const elementStyle = document.createElement('style');
+
+			elementStyle.innerHTML = `
+                /* Should have 10 priority as :is() will use the tag match as priority */
+				:is(span) {
+					color: green;
+				}
+
+                /* Should have 0 priority as :is() will have 0 in priority */
+				:where(span) {
+					color: red;
+				}
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parent);
+
+			expect(computedStyle.color).toBe('green');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },
@@ -724,7 +749,7 @@ describe('BrowserWindow', () => {
 			{ value: '1Q', result: '0.945px' }
 		]) {
 			it(`Returns a CSSStyleDeclaration object with computed styles for a "${measurement.value}" measurement value converted to pixels.`, () => {
-				const element = <HTMLElement>document.createElement('div');
+				const element = document.createElement('div');
 				element.style.width = measurement.value;
 				document.body.appendChild(element);
 				expect(window.getComputedStyle(element).width).toBe(measurement.result);
