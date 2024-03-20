@@ -247,7 +247,7 @@ export default class SelectorParser {
 		const lowerName = name.toLowerCase();
 
 		if (!args) {
-			return { name: lowerName, arguments: null, selectorItem: null, nthFunction: null };
+			return { name: lowerName, arguments: null, selectorItems: null, nthFunction: null };
 		}
 
 		switch (lowerName) {
@@ -260,7 +260,7 @@ export default class SelectorParser {
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItem,
+					selectorItems: [selectorItem],
 					nthFunction: this.getPseudoNthFunction(nthFunction)
 				};
 			case 'nth-of-type':
@@ -268,18 +268,31 @@ export default class SelectorParser {
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItem: null,
+					selectorItems: null,
 					nthFunction: this.getPseudoNthFunction(args)
 				};
 			case 'not':
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItem: this.getSelectorItem(args),
+					selectorItems: [this.getSelectorItem(args)],
+					nthFunction: null
+				};
+			case 'is':
+			case 'where':
+				const selectorGroups = this.getSelectorGroups(args);
+				const selectorItems = [];
+				for (const group of selectorGroups) {
+					selectorItems.push(group[0]);
+				}
+				return {
+					name: lowerName,
+					arguments: args,
+					selectorItems,
 					nthFunction: null
 				};
 			default:
-				return { name: lowerName, arguments: args, selectorItem: null, nthFunction: null };
+				return { name: lowerName, arguments: args, selectorItems: null, nthFunction: null };
 		}
 	}
 
