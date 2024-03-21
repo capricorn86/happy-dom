@@ -15,6 +15,8 @@ describe('Storage', () => {
 			expect(storage.length).toBe(2);
 			storage.setItem('key3', 'value3');
 			expect(storage.length).toBe(3);
+			storage['key4'] = 'value4';
+			expect(storage.length).toBe(4);
 		});
 	});
 
@@ -34,6 +36,8 @@ describe('Storage', () => {
 			storage.setItem('key2', 'value2');
 			expect(storage.getItem('key1')).toBe('value1');
 			expect(storage.getItem('key2')).toBe('value2');
+			storage['key3'] = 'value3';
+			expect(storage.getItem('key3')).toBe('value3');
 		});
 	});
 
@@ -43,6 +47,10 @@ describe('Storage', () => {
 			storage.setItem('key2', 'value2');
 			expect(storage.getItem('key1')).toBe('value1');
 			expect(storage.getItem('key2')).toBe('value2');
+			expect(storage['key1']).toBe('value1');
+			expect(storage['key2']).toBe('value2');
+			storage['key1'] = 'value3';
+			expect(storage.getItem('key1')).toBe('value3');
 		});
 	});
 
@@ -54,6 +62,21 @@ describe('Storage', () => {
 			expect(storage.length).toBe(1);
 			expect(storage.getItem('key1')).toBe('value1');
 			expect(storage.getItem('key2')).toBe(null);
+			expect(storage['key1']).toBe('value1');
+			expect(storage['key2']).toBe(undefined);
+		});
+	});
+
+	describe('clear()', () => {
+		it('Clears storage.', () => {
+			storage.setItem('key1', 'value1');
+			storage.setItem('key2', 'value2');
+			storage.clear();
+			expect(storage.length).toBe(0);
+			expect(storage.getItem('key1')).toBe(null);
+			expect(storage.getItem('key2')).toBe(null);
+			expect(storage['key1']).toBe(undefined);
+			expect(storage['key2']).toBe(undefined);
 		});
 	});
 });
