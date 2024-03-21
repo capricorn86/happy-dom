@@ -1,6 +1,4 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import { IOptionalBrowserSettings } from '../index.js';
-import BrowserWindow from './BrowserWindow.js';
 import Window from './Window.js';
 import { Buffer } from 'buffer';
 
