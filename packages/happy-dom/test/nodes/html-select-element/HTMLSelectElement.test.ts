@@ -5,6 +5,7 @@ import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOption
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 
 describe('HTMLSelectElement', () => {
 	let window: Window;
@@ -158,6 +159,61 @@ describe('HTMLSelectElement', () => {
 			option2.removeAttribute('selected');
 
 			expect(element.selectedIndex).toBe(0);
+		});
+	});
+
+	describe(`get selectedOptions()`, () => {
+		it('Defaults to an empty HTMLCollection.', () => {
+			expect(element.selectedOptions).toBeInstanceOf(HTMLCollection);
+			expect(element.selectedOptions.length).toBe(0);
+		});
+
+		it('Returns selected options with "selected" attribute is defined.', () => {
+			const option1 = document.createElement('option');
+			const option2 = document.createElement('option');
+
+			option2.setAttribute('selected', '');
+
+			element.appendChild(option1);
+			element.appendChild(option2);
+
+			expect(element.selectedOptions.length).toBe(1);
+			expect(element.selectedOptions[0]).toBe(option2);
+
+			option1.setAttribute('selected', '');
+
+			expect(element.selectedOptions.length).toBe(1);
+			expect(element.selectedOptions[0]).toBe(option1);
+
+			option2.removeAttribute('selected');
+
+			expect(element.selectedOptions.length).toBe(1);
+			expect(element.selectedOptions[0]).toBe(option1);
+		});
+
+		it('Multiple - Returns selected options with "selected" attribute is defined.', () => {
+			element.setAttribute('multiple', '');
+			const option1 = document.createElement('option');
+			const option2 = document.createElement('option');
+
+			option2.setAttribute('selected', '');
+
+			element.appendChild(option1);
+			element.appendChild(option2);
+
+			expect(element.selectedOptions.length).toBe(1);
+			expect(element.selectedOptions[0]).toBe(option2);
+
+			option1.setAttribute('selected', '');
+
+			expect(element.selectedOptions.length).toBe(2);
+			expect(element.selectedOptions[0]).toBe(option1);
+			expect(element.selectedOptions[1]).toBe(option2);
+
+			option2.removeAttribute('selected');
+
+			expect(element.selectedOptions.length).toBe(1);
+			expect(element.selectedOptions[0]).toBe(option1);
 		});
 	});
 

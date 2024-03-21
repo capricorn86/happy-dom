@@ -12,6 +12,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLSelectElementNamedNodeMap from './HTMLSelectElementNamedNodeMap.js';
+import HTMLCollection from '../element/HTMLCollection.js';
 
 /**
  * HTML Select Element.
@@ -249,6 +250,21 @@ export default class HTMLSelectElement extends HTMLElement {
 				selectedOption[PropertySymbol.dirtyness] = true;
 			}
 		}
+	}
+
+	/**
+	 * Returns selected options.
+	 *
+	 * @returns HTMLCollection.
+	 */
+	public get selectedOptions(): HTMLCollection<HTMLOptionElement> {
+		const selectedOptions = new HTMLCollection<HTMLOptionElement>();
+		for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
+			if ((<HTMLOptionElement>this[PropertySymbol.options][i])[PropertySymbol.selectedness]) {
+				selectedOptions.push(<HTMLOptionElement>this[PropertySymbol.options][i]);
+			}
+		}
+		return selectedOptions;
 	}
 
 	/**
