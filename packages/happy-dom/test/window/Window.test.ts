@@ -342,4 +342,36 @@ describe('Window', () => {
 			expect(newWindow2.document.body.innerHTML).toBe('Test');
 		});
 	});
+	describe('Object.getOwnPropertyNames()', () => {
+		it('Returns property names for Vitest.', () => {
+			const expected = [
+				'location',
+				'history',
+				'navigator',
+				'screen',
+				'sessionStorage',
+				'localStorage',
+				'opener',
+				'scrollX',
+				'pageXOffset',
+				'scrollY',
+				'pageYOffset',
+				'CSS',
+				'innerWidth',
+				'innerHeight',
+				'outerWidth',
+				'outerHeight',
+				'devicePixelRatio'
+			];
+			const included: string[] = [];
+			const propertyNames = Object.getOwnPropertyNames(window);
+			for (const name of expected) {
+				if (propertyNames.includes(name)) {
+					included.push(name);
+				}
+			}
+
+			expect(included).toEqual(expected);
+		});
+	});
 });
